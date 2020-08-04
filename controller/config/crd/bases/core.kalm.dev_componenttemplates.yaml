@@ -93,15 +93,14 @@ spec:
                   containerPort:
                     format: int32
                     type: integer
-                  name:
-                    type: string
                   protocol:
-                    description: Protocol defines network protocols supported for
-                      things like container ports.
                     enum:
-                    - TCP
-                    - UDP
-                    - SCTP
+                    - http
+                    - http2
+                    - grpc
+                    - https
+                    - tcp
+                    - udp
                     type: string
                   servicePort:
                     description: port for service
@@ -109,7 +108,7 @@ spec:
                     type: integer
                 required:
                 - containerPort
-                - name
+                - protocol
                 type: object
               type: array
             schedule:

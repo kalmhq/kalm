@@ -1,7 +1,6 @@
 import Immutable from "immutable";
 import { Actions } from "types";
 import {
-  Certificate,
   CertificateIssuerList,
   CertificateList,
   CREATE_CERTIFICATE,
@@ -11,7 +10,6 @@ import {
   LOAD_CERTIFICATES_FULFILLED,
   LOAD_CERTIFICATES_PENDING,
   LOAD_CERTIFICATE_ISSUERS_FULFILLED,
-  SET_EDIT_CERTIFICATE_MODAL,
   SET_IS_SUBMITTING_CERTIFICATE,
 } from "types/certificate";
 import {
@@ -28,7 +26,6 @@ export type State = ImmutableMap<{
   isLoading: boolean;
   isFirstLoaded: boolean;
   isSubmittingCreateCertificate: boolean;
-  editingCertificate?: Certificate;
   certificates: CertificateList;
   certificateIssuers: CertificateIssuerList;
 }>;
@@ -56,9 +53,6 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case LOAD_CERTIFICATE_ISSUERS_FULFILLED: {
       return state.set("certificateIssuers", action.payload.certificateIssuers || Immutable.List());
-    }
-    case SET_EDIT_CERTIFICATE_MODAL: {
-      return state.set("editingCertificate", action.payload.certificate);
     }
     case DELETE_CERTIFICATE: {
       state = state.update("certificates", (x) => removeInListByName(x, action.payload.name));

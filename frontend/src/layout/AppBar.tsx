@@ -12,7 +12,8 @@ import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
 import { HelpIcon, KalmUserIcon, MenuOpenIcon, MenuIcon } from "widgets/Icon";
 import { ThemeToggle } from "theme/ThemeToggle";
-import sc from "utils/stringConstants";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import stringConstants from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   const activeNamespace = state.get("namespaces").get("active");
@@ -119,9 +120,9 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     const { authMenuAnchorElement } = this.state;
     return (
       <div>
-        <IconButton
-          aria-label="account of current user"
-          aria-controls="menu-appbar"
+        <IconButtonWithTooltip
+          tooltipTitle={stringConstants.APP_AUTH_TOOLTIPS}
+          aria-label={stringConstants.APP_AUTH_TOOLTIPS}
           aria-haspopup="true"
           onClick={(event: React.MouseEvent<HTMLElement>) => {
             this.setState({ authMenuAnchorElement: event.currentTarget });
@@ -129,7 +130,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           color="inherit"
         >
           <KalmUserIcon />
-        </IconButton>
+        </IconButtonWithTooltip>
         <Menu
           id="menu-appbar"
           anchorEl={authMenuAnchorElement}
@@ -167,16 +168,15 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   renderTutorialIcon = () => {
     const { tutorialDrawerOpen, dispatch } = this.props;
     return (
-      <IconButton
-        aria-label="Switch Tutorial"
-        aria-haspopup="true"
+      <IconButtonWithTooltip
+        tooltipTitle={stringConstants.APP_TUTORIAL_TOOLTIPS}
+        aria-label={stringConstants.APP_TUTORIAL_TOOLTIPS}
         onClick={(event: React.MouseEvent<HTMLElement>) => {
           tutorialDrawerOpen ? dispatch(closeTutorialDrawerAction()) : dispatch(openTutorialDrawerAction());
         }}
-        color="inherit"
       >
         <HelpIcon style={{ fill: "white" }} />
-      </IconButton>
+      </IconButtonWithTooltip>
     );
   };
 
@@ -190,7 +190,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
       case "ci":
         return "CI";
       case "metrics":
-        return sc.APP_DASHBOARD_PAGE_NAME;
+        return stringConstants.APP_DASHBOARD_PAGE_NAME;
       default:
         return path[0].toUpperCase() + path.slice(1);
     }

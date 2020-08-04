@@ -162,13 +162,13 @@ spec:
         type: emptyDirMemory
         size: 128Mi
     ports:
-      - name: client
+      - protocol: tcp
         containerPort: 2181
         servicePort: 2181
-      - name: election
+      - protocol: tcp
         containerPort: 3888
         servicePort: 3888
-      - name: server
+      - protocol: tcp
         containerPort: 2888
         servicePort: 2888
     livenessProbe:

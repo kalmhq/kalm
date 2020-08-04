@@ -71,7 +71,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
           items={component!
             .get("ports", Immutable.List())!
             .map((port) => ({
-              name: "Exposed port Name: " + port.get("name"),
+              name: "Exposed port: " + port.get("protocol"),
               content: (
                 <span>
                   Expose port <strong>{port.get("containerPort")}</strong> to cluster port{" "}

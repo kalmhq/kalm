@@ -33,8 +33,6 @@ func (r *Component) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-
 // +kubebuilder:webhook:path=/mutate-core-kalm-dev-v1alpha1-component,mutating=true,failurePolicy=fail,groups=core.kalm.dev,resources=components,verbs=create;update,versions=v1alpha1,name=mcomponent.kb.io
 
 var _ webhook.Defaulter = &Component{}
@@ -43,10 +41,16 @@ var _ webhook.Defaulter = &Component{}
 func (r *Component) Default() {
 	componentlog.Info("default", "name", r.Name)
 
-	// TODO(user): fill in your defaulting logic.
+	// set service port
+	if r.Spec.Ports != nil {
+		for i, port := range r.Spec.Ports {
+			if port.ServicePort == 0 {
+				r.Spec.Ports[i].ServicePort = port.ContainerPort
+			}
+		}
+	}
 }
 
-// TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-component,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=components,versions=v1alpha1,name=vcomponent.kb.io
 
 var _ webhook.Validator = &Component{}

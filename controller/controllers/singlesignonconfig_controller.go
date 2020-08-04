@@ -335,9 +335,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 			Command:      "/usr/local/bin/dex serve /etc/dex/cfg/config.yaml",
 			Ports: []corev1alpha1.Port{
 				{
-					Name:          "http",
 					ContainerPort: 5556,
-					Protocol:      coreV1.ProtocolTCP,
+					Protocol:      corev1alpha1.PortProtocolHTTP,
 				},
 			},
 			PreInjectedFiles: []corev1alpha1.PreInjectFile{
@@ -541,10 +540,9 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 			Command:      "./auth-proxy",
 			Ports: []corev1alpha1.Port{
 				{
-					Name:          "http",
 					ContainerPort: 3002,
 					ServicePort:   80,
-					Protocol:      coreV1.ProtocolTCP,
+					Protocol:      corev1alpha1.PortProtocolHTTP,
 				},
 			},
 			Env: []corev1alpha1.EnvVar{

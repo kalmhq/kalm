@@ -3,7 +3,7 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { loadDomainDNSInfo } from "actions/domain";
-import { KFreeSoloAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
+import { KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
 import { KBoolCheckboxRender, KCheckboxGroupRender } from "forms/Basic/checkbox";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { shouldError } from "forms/common";
@@ -11,7 +11,7 @@ import { ROUTE_FORM_ID } from "forms/formIDs";
 import {
   KValidatorHostsWithWildcardPrefix,
   KValidatorPaths,
-  ValidatorAtLeastOneHttpRouteDestination,
+  ValidatorHttpRouteDestinations,
   ValidatorListNotEmpty,
   ValidatorRequired,
 } from "forms/validator";
@@ -29,14 +29,15 @@ import { TDispatchProp } from "types";
 import { httpMethods, HttpRouteDestination, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
 import { isArray } from "util";
 import { arraysMatch } from "utils";
-import sc from "utils/stringConstants";
+import { includesForceHttpsDomain } from "utils/domain";
+import { default as sc, default as stringConstants } from "utils/stringConstants";
+import { CollapseWrapper } from "widgets/CollapseWrapper";
 import DomainStatus from "widgets/DomainStatus";
 import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
-import { includesForceHttpsDomain } from "utils/domain";
 
 const mapStateToProps = (state: RootState) => {
   const form = ROUTE_FORM_ID;
@@ -138,7 +139,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
     // for dev, app domains auto enable https
     if (!schemes.includes("https")) {
-      if (includesForceHttpsDomain(hosts)) {
+      if (includesForceHttpsDomain(hosts).length > 0) {
         if (schemes.includes("http")) {
           dispatch(change(form, "schemes", Immutable.List(["http", "https"])));
         } else {
@@ -283,7 +284,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     return (
       <Box p={2}>
         <Grid container spacing={2}>
-          <Grid item xs={8}>
+          <Grid item xs={12} sm={12} md={12}>
             <Box mt={2} mr={2} mb={2}>
               <Button
                 variant="outlined"
@@ -316,16 +317,18 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
               name="destinations"
               component={RenderHttpRouteDestinations}
               rerenderOnEveryChange
-              validate={ValidatorAtLeastOneHttpRouteDestination}
+              validate={ValidatorHttpRouteDestinations}
             />
           </Grid>
-          <Grid item xs={4}>
-            <Box style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%" }}>
-              <img src={routesGif} alt="routes with multi-target" width={233} height={133} />
-              <Box pt={2}>
-                <Caption>You can add extra targets and assign weights to them.</Caption>
+          <Grid item xs={8} sm={8} md={8}>
+            <CollapseWrapper title={stringConstants.ROUTE_MULTIPLE_TARGETS_HELPER}>
+              <Box m={2} style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%" }}>
+                <img src={routesGif} alt="routes with multi-target" width={233} height={133} />
+                <Box pt={2}>
+                  <Caption>{stringConstants.ROUTE_MULTIPLE_TARGETS_DESC}</Caption>
+                </Box>
               </Box>
-            </Box>
+            </CollapseWrapper>
           </Grid>
         </Grid>
       </Box>
@@ -348,6 +351,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       syncErrors,
     } = this.props;
 
+    const hstsDomains = includesForceHttpsDomain(hosts);
+
     const icons = hosts.map((host, index) => {
       if (isArray(syncErrors.hosts) && syncErrors.hosts[index]) {
         return undefined;
@@ -365,7 +370,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                 title="Hosts and paths"
                 content={
                   <Box p={2}>
-                    <KFreeSoloAutoCompleteMultipleSelectField
+                    <KFreeSoloAutoCompleteMultipleSelectStringField
                       icons={icons}
                       label="Hosts"
                       name="hosts"
@@ -389,7 +394,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         </Caption>
                       }
                     />
-                    <KFreeSoloAutoCompleteMultipleSelectField
+                    <KFreeSoloAutoCompleteMultipleSelectStringField
                       label="Path Prefixes"
                       name="paths"
                       validate={pathsValidators}
@@ -471,9 +476,15 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       <Alert className="alert" severity="info">
                         {sc.ROUTE_HTTPS_ALERT}
                       </Alert>
-                      {includesForceHttpsDomain(hosts) ? (
+                      {hstsDomains.length > 0 ? (
                         <Alert className="alert" severity="warning">
-                          The .dev and .app top-level domains is included on the HSTS preload list, HTTPS is required.
+                          <Box display="flex">
+                            The
+                            <Box ml="4px" mr="4px">
+                              <strong>{hstsDomains.join(", ")}</strong>
+                            </Box>
+                            {stringConstants.HSTS_DOMAINS_REQUIRED_HTTPS}
+                          </Box>
                         </Alert>
                       ) : null}
                       {this.renderCertificationStatus()}

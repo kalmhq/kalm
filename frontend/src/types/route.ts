@@ -125,23 +125,19 @@ export interface LoadHttpRoutesAction {
   type: typeof LOAD_ROUTES_FULFILLED;
   payload: {
     httpRoutes: Immutable.List<HttpRoute>;
-    namespace: string;
   };
 }
 
 export interface DeleteRouteAction {
   type: typeof DELETE_ROUTE_FULFILLED;
   payload: {
-    name: string;
-    namespace: string;
+    route: HttpRoute;
   };
 }
 
 export interface CreateRouteAction {
   type: typeof CREATE_ROUTE_FULFILLED;
   payload: {
-    name: string;
-    namespace: string;
     route: HttpRoute;
   };
 }
@@ -149,8 +145,6 @@ export interface CreateRouteAction {
 export interface UpdateRouteAction {
   type: typeof UPDATE_ROUTE_FULFILLED;
   payload: {
-    name: string;
-    namespace: string;
     route: HttpRoute;
   };
 }

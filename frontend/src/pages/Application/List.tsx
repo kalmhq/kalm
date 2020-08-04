@@ -53,7 +53,7 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   const internalEndpointsDialog = state.get("dialogs").get(internalEndpointsModalID);
   const externalEndpointsDialog = state.get("dialogs").get(externalEndpointsModalID);
-  const routesMap = state.get("routes").get("httpRoutes");
+  const httpRoutes = state.get("routes").get("httpRoutes");
   const componentsMap = state.get("components").get("components");
   const clusterInfo = state.get("cluster").get("info");
   const usingApplicationCard = state.get("settings").get("usingApplicationCard");
@@ -61,7 +61,7 @@ const mapStateToProps = (state: RootState) => {
     clusterInfo,
     internalEndpointsDialogData: internalEndpointsDialog ? internalEndpointsDialog.get("data") : {},
     externalEndpointsDialogData: externalEndpointsDialog ? externalEndpointsDialog.get("data") : {},
-    routesMap,
+    httpRoutes,
     componentsMap,
     usingApplicationCard,
   };
@@ -245,12 +245,9 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderExternalAccesses = (applicationDetails: RowData) => {
-    const { routesMap, activeNamespaceName } = this.props;
+    const { httpRoutes, activeNamespaceName } = this.props;
 
-    const applicationRoutes: Immutable.List<HttpRoute> = routesMap.get(
-      applicationDetails.get("name"),
-      Immutable.List(),
-    );
+    const applicationRoutes = httpRoutes.filter((x) => x.get("namespace") === activeNamespaceName);
 
     if (applicationRoutes && applicationRoutes.size > 0) {
       return (
@@ -459,14 +456,17 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderGrid = () => {
-    const { applications, componentsMap, routesMap, activeNamespaceName } = this.props;
+    const { applications, componentsMap, httpRoutes, activeNamespaceName } = this.props;
+    const applicationRoutes: Immutable.List<HttpRoute> = httpRoutes.filter(
+      (x) => x.get("namespace") === activeNamespaceName,
+    );
     const GridRow = (app: ApplicationDetails, index: number) => {
       return (
         <Grid key={index} item sm={6} md={4} lg={3}>
           <ApplicationCard
             application={app}
             componentsMap={componentsMap}
-            routesMap={routesMap}
+            httpRoutes={applicationRoutes}
             activeNamespaceName={activeNamespaceName}
             showDeleteConfirmDialog={this.showDeleteConfirmDialog}
           />

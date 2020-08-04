@@ -26,6 +26,10 @@ export const CREATE_PROTECTED_ENDPOINT_FULFILLED = "CREATE_PROTECTED_ENDPOINT_FU
 export const CREATE_PROTECTED_ENDPOINT_PENDING = "CREATE_PROTECTED_ENDPOINT_PENDING";
 export const CREATE_PROTECTED_ENDPOINT_FAILED = "CREATE_PROTECTED_ENDPOINT_FAILED";
 
+export const UPDATE_PROTECTED_ENDPOINT_FULFILLED = "UPDATE_PROTECTED_ENDPOINT_FULFILLED";
+export const UPDATE_PROTECTED_ENDPOINT_PENDING = "UPDATE_PROTECTED_ENDPOINT_PENDING";
+export const UPDATE_PROTECTED_ENDPOINT_FAILED = "UPDATE_PROTECTED_ENDPOINT_FAILED";
+
 export const DELETE_PROTECTED_ENDPOINT_FULFILLED = "DELETE_PROTECTED_ENDPOINT_FULFILLED";
 export const DELETE_PROTECTED_ENDPOINT_PENDING = "DELETE_PROTECTED_ENDPOINT_PENDING";
 export const DELETE_PROTECTED_ENDPOINT_FAILED = "DELETE_PROTECTED_ENDPOINT_FAILED";
@@ -44,10 +48,28 @@ export interface CreateProtectedEndpointAction {
   payload: ProtectedEndpoint;
 }
 
+export interface UpdateProtectedEndpointAction {
+  type: typeof UPDATE_PROTECTED_ENDPOINT_FULFILLED;
+  payload: ProtectedEndpoint;
+}
+
 export type ProtectedEndpoint = ImmutableMap<{
+  name: string;
   namespace: string;
   endpointName: string;
+  ports?: Immutable.List<number>;
+  groups?: Immutable.List<string>;
 }>;
+
+export const newEmptyProtectedEndpoint = (): ProtectedEndpoint => {
+  return Immutable.Map({
+    name: "",
+    namespace: "",
+    endpointName: "",
+    groups: Immutable.List(),
+    ports: Immutable.List(),
+  });
+};
 
 export interface LoadSSOConfigAction {
   type: typeof LOAD_SSO_CONFIG_FULFILLED;
@@ -82,6 +104,8 @@ export interface SSOConfigsStateAction {
     | typeof LOAD_PROTECTED_ENDPOINTS_FAILED
     | typeof CREATE_PROTECTED_ENDPOINT_PENDING
     | typeof CREATE_PROTECTED_ENDPOINT_FAILED
+    | typeof UPDATE_PROTECTED_ENDPOINT_PENDING
+    | typeof UPDATE_PROTECTED_ENDPOINT_FAILED
     | typeof DELETE_PROTECTED_ENDPOINT_PENDING
     | typeof DELETE_PROTECTED_ENDPOINT_FAILED;
 }
@@ -94,6 +118,7 @@ export type SSOConfigActions =
   | UpdateSSOConfigAction
   | LoadProtectedEndpointsAction
   | CreateProtectedEndpointAction
+  | UpdateProtectedEndpointAction
   | DeleteProtectedEndpointAction;
 
 export type SSO_CONNECTOR_TYPE = string;
