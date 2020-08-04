@@ -103,7 +103,13 @@ func removeExtAuthPathPrefix(path string) string {
 }
 
 func getOriginalURL(c echo.Context) string {
-	requestURI := removeExtAuthPathPrefix(c.Request().RequestURI)
+	// If the request is rewrite at route level, use the original path
+	requestURI := c.Request().Header.Get("X-Envoy-Original-Path")
+
+	if requestURI == "" {
+		requestURI = removeExtAuthPathPrefix(c.Request().RequestURI)
+	}
+
 	ur := fmt.Sprintf("%s://%s%s", c.Scheme(), c.Request().Host, requestURI)
 	log.Debug("original url ", ur)
 	return ur
@@ -286,11 +292,21 @@ func handleSetIDToken(c echo.Context, idToken *oidc.IDToken, rawIDToken string) 
 	cookie.Path = "/"
 	c.SetCookie(cookie)
 
-	uri := c.Request().URL
+	requestURI := c.Request().Header.Get("X-Envoy-Original-Path")
+
+	if requestURI == "" {
+		requestURI = removeExtAuthPathPrefix(c.Request().RequestURI)
+	}
+
+	uri, err := url.Parse(requestURI)
+
+	if err != nil {
+		return err
+	}
+
 	params := uri.Query()
 	params.Del(ID_TOKEN_QUERY_NAME)
 	uri.RawQuery = params.Encode()
-	uri.Path = removeExtAuthPathPrefix(uri.Path)
 
 	return c.Redirect(302, uri.String())
 }
