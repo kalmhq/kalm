@@ -117,7 +117,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "react-scripts test --watchAll=false"
+      "pre-commit": "npm run lint && react-scripts test --watchAll=false"
     }
   }
 }

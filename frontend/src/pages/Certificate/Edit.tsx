@@ -37,10 +37,8 @@ class CertificateEditRaw extends React.PureComponent<Props> {
     }
   };
 
-  private onSubmitSuccess = (certificate: CertificateFormType) => {
-    if (certificate) {
-      this.props.dispatch(push("/certificates"));
-    }
+  private onSubmitSuccess = () => {
+    this.props.dispatch(push("/certificates"));
   };
 
   public render() {
