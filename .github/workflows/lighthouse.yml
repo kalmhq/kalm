@@ -28,9 +28,9 @@ jobs:
       #   run: |
       #     npm install
       #     npm run build
+      # lhci assert
       - name: run Lighthouse CI
         run: |
           npm install -g @lhci/cli@0.4.x
           lhci collect --settings.chromeFlags="--headless" --settings.extraHeaders="{\"authorization\":\"Bearer ${{secrets.KALM_AUTH_HEADER}}\"}"
-          lhci assert
           lhci upload
