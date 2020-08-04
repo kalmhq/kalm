@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"github.com/kalmhq/kalm/api/resources"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/clientcmd/api"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -83,6 +86,33 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 	if err := builder.Patch(copiedComp, client.MergeFrom(crdComp)); err != nil {
 		h.logger.Infof("fail updating component: %s at %d", copiedComp.Name, updateTs)
 		return err
+	}
+
+	if kClient, err := client.New(h.clientManager.ClusterConfig, client.Options{Scheme: scheme.Scheme}); err != nil {
+		h.logger.Warnf("fail create client from clusterConfig, err:", err)
+	} else {
+		var deployKeyList v1alpha1.DeployKeyList
+
+		ctx := context.Background()
+
+		if err := kClient.List(ctx, &deployKeyList); err != nil {
+			h.logger.Warnf("fail to list deployKeys, err:", copiedComp.Name, updateTs)
+		}
+
+		for _, key := range deployKeyList.Items {
+			if callParams.DeployKey != key.Status.ServiceAccountToken {
+				continue
+			}
+
+			copiedKey := key.DeepCopy()
+			copiedKey.Status.LastUsedTimestamp = updateTs
+			copiedKey.Status.UsedCount += 1
+
+			if err := kClient.Status().Update(ctx, copiedKey); err != nil {
+				h.logger.Warnf("fail update status of deployKeys, err:", err)
+			}
+			break
+		}
 	}
 
 	h.logger.Infof("updating component: %s at %d", copiedComp.Name, updateTs)
