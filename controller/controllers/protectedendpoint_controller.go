@@ -247,6 +247,9 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilter(req ctrl.Request) *v1
 								map[string]interface{}{
 									"exact": "cookie",
 								},
+								map[string]interface{}{
+									"exact": "x-envoy-original-path",
+								},
 							},
 						},
 						"headersToAdd": []interface{}{
