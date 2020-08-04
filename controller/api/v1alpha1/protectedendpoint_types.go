@@ -36,7 +36,9 @@ const (
 type ProtectedEndpointSpec struct {
 	EndpointName string                `json:"name"`
 	Type         ProtectedEndpointType `json:"type,omitempty"`
-	PortNumber   *int                  `json:"portNumber,omitempty"`
+
+	Ports  []uint32 `json:"ports,omitempty"`
+	Groups []string `json:"groups,omitempty"`
 }
 
 // ProtectedEndpointStatus defines the observed state of ProtectedEndpoint

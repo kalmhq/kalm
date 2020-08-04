@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { HttpRouteDestination } from "types/route";
+import { HttpRoute, HttpRouteDestination } from "types/route";
 import sc from "utils/stringConstants";
 
 export const validator = () => {
@@ -16,9 +16,9 @@ export const ValidatorListNotEmpty = (value: Immutable.List<any>, _allValues?: a
   return undefined;
 };
 
-export const ValidatorAtLeastOneHttpRouteDestination = (
+export const ValidatorHttpRouteDestinations = (
   value: Immutable.List<HttpRouteDestination>,
-  _allValues?: any,
+  _allValues?: HttpRoute,
   _props?: any,
   _name?: any,
 ) => {

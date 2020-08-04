@@ -10,13 +10,12 @@ const styles = (theme: Theme) =>
   });
 
 interface Props extends WithStyles<typeof styles>, WithTheme {
-  activeNamespaceName: string;
   destinations: Immutable.List<HttpRouteDestination>;
 }
 
 class TargetsRaw extends React.PureComponent<Props> {
   public render() {
-    const { activeNamespaceName, destinations, theme } = this.props;
+    const { destinations, theme } = this.props;
     let sum = 0;
     destinations.forEach((x) => (sum += x.get("weight")));
     const size = destinations.size;
@@ -88,7 +87,7 @@ class TargetsRaw extends React.PureComponent<Props> {
               <Box>
                 {x
                   .get("host")
-                  .replace(`.${activeNamespaceName}.svc.cluster.local`, "")
+                  // .replace(`.${activeNamespaceName}.svc.cluster.local`, "")
                   .replace(`.svc.cluster.local`, "")}
               </Box>
               {size > 1 && <Box>{Math.floor((x.get("weight") / sum) * 1000 + 0.5) / 10}%</Box>}

@@ -3,7 +3,7 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { loadDomainDNSInfo } from "actions/domain";
-import { KFreeSoloAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
+import { KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
 import { KBoolCheckboxRender, KCheckboxGroupRender } from "forms/Basic/checkbox";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { shouldError } from "forms/common";
@@ -11,11 +11,10 @@ import { ROUTE_FORM_ID } from "forms/formIDs";
 import {
   KValidatorHostsWithWildcardPrefix,
   KValidatorPaths,
-  ValidatorAtLeastOneHttpRouteDestination,
+  ValidatorHttpRouteDestinations,
   ValidatorListNotEmpty,
   ValidatorRequired,
 } from "forms/validator";
-import routesGif from "images/routes.gif";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
@@ -316,16 +315,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
               name="destinations"
               component={RenderHttpRouteDestinations}
               rerenderOnEveryChange
-              validate={ValidatorAtLeastOneHttpRouteDestination}
+              validate={ValidatorHttpRouteDestinations}
             />
-          </Grid>
-          <Grid item xs={4}>
-            <Box style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%" }}>
-              <img src={routesGif} alt="routes with multi-target" width={233} height={133} />
-              <Box pt={2}>
-                <Caption>You can add extra targets and assign weights to them.</Caption>
-              </Box>
-            </Box>
           </Grid>
         </Grid>
       </Box>
@@ -365,7 +356,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                 title="Hosts and paths"
                 content={
                   <Box p={2}>
-                    <KFreeSoloAutoCompleteMultipleSelectField
+                    <KFreeSoloAutoCompleteMultipleSelectStringField
                       icons={icons}
                       label="Hosts"
                       name="hosts"
@@ -389,7 +380,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         </Caption>
                       }
                     />
-                    <KFreeSoloAutoCompleteMultipleSelectField
+                    <KFreeSoloAutoCompleteMultipleSelectStringField
                       label="Path Prefixes"
                       name="paths"
                       validate={pathsValidators}

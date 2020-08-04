@@ -25,6 +25,8 @@ import (
 	"github.com/kalmhq/kalm/controller/lib/files"
 	"github.com/kalmhq/kalm/controller/vm"
 	"github.com/xeipuuv/gojsonschema"
+	v1alpha32 "istio.io/api/networking/v1alpha3"
+	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsV1 "k8s.io/api/apps/v1"
 	batchV1 "k8s.io/api/batch/v1"
 	batchV1Beta1 "k8s.io/api/batch/v1beta1"
@@ -63,6 +65,7 @@ type ComponentReconcilerTask struct {
 
 	// related resources
 	service         *coreV1.Service
+	destinationRule *v1alpha3.DestinationRule
 	headlessService *coreV1.Service
 	cronJob         *batchV1Beta1.CronJob
 	deployment      *appsV1.Deployment
@@ -355,14 +358,19 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 				port.ServicePort = port.ContainerPort
 			}
 
+			// https://istio.io/latest/docs/ops/configuration/traffic-management/protocol-selection/
+			serverPortName := fmt.Sprintf("%s-%d", port.Protocol, port.ServicePort)
+
 			sp := coreV1.ServicePort{
-				Name:       port.Name,
+				Name:       serverPortName,
 				TargetPort: intstr.FromInt(int(port.ContainerPort)),
 				Port:       int32(port.ServicePort),
 			}
 
-			if port.Protocol != "" {
-				sp.Protocol = port.Protocol
+			if port.Protocol == corev1alpha1.PortProtocolUDP {
+				sp.Protocol = coreV1.ProtocolUDP
+			} else {
+				sp.Protocol = coreV1.ProtocolTCP
 			}
 
 			ps = append(ps, sp)
@@ -407,6 +415,85 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 				}
 			}
 		}
+
+		destinationRule := &v1alpha3.DestinationRule{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      r.component.Name,
+				Namespace: r.component.Namespace,
+			},
+			Spec: v1alpha32.DestinationRule{
+				Host: fmt.Sprintf("%s.%s.svc.cluster.local", r.component.Name, r.component.Namespace),
+				TrafficPolicy: &v1alpha32.TrafficPolicy{
+
+					PortLevelSettings: make([]*v1alpha32.TrafficPolicy_PortTrafficPolicy, len(r.component.Spec.Ports)),
+				},
+				ExportTo: []string{"*"},
+			},
+		}
+
+		for i, port := range r.component.Spec.Ports {
+			servicePort := port.ServicePort
+
+			if servicePort == 0 {
+				servicePort = port.ContainerPort
+			}
+
+			policy := &v1alpha32.TrafficPolicy_PortTrafficPolicy{
+				Port: &v1alpha32.PortSelector{
+					Number: servicePort,
+				},
+				LoadBalancer: &v1alpha32.LoadBalancerSettings{
+					LbPolicy: &v1alpha32.LoadBalancerSettings_Simple{
+						Simple: v1alpha32.LoadBalancerSettings_LEAST_CONN,
+					},
+
+					// TODO; ConsistentHash will be used for sticky session
+					//LbPolicy: &v1alpha32.LoadBalancerSettings_ConsistentHash{
+					//	ConsistentHash: &v1alpha32.LoadBalancerSettings_ConsistentHashLB{
+					//		HashKey: &v1alpha32.LoadBalancerSettings_ConsistentHashLB_HttpCookie{
+					//			HttpCookie: &v1alpha32.LoadBalancerSettings_ConsistentHashLB_HTTPCookie{
+					//				Name: "kalm-sticky-session",
+					//				Ttl: &protoTypes.Duration{
+					//					Seconds: 10,
+					//				},
+					//			},
+					//		},
+					//	},
+					//},
+				},
+			}
+
+			// TODO, should we support to use https in a upstream server?
+			if port.Protocol == corev1alpha1.PortProtocolHTTPS {
+				policy.Tls = &v1alpha32.ClientTLSSettings{
+					Mode: v1alpha32.ClientTLSSettings_SIMPLE,
+				}
+			}
+
+			destinationRule.Spec.TrafficPolicy.PortLevelSettings[i] = policy
+		}
+
+		if r.destinationRule == nil {
+			if err := ctrl.SetControllerReference(r.component, destinationRule, r.Scheme); err != nil {
+				r.WarningEvent(err, "unable to set owner for DestinationRule")
+				return err
+			}
+
+			if err := r.Create(r.ctx, destinationRule); err != nil {
+				r.WarningEvent(err, "unable to create DestinationRule for Component")
+				return err
+			}
+
+		} else {
+			copied := r.destinationRule.DeepCopy()
+			copied.Spec = destinationRule.Spec
+
+			if err := r.Patch(r.ctx, copied, client.MergeFrom(r.destinationRule)); err != nil {
+				r.WarningEvent(err, "unable to patch DestinationRule for Component")
+				return err
+			}
+		}
+
 	}
 
 	if len(r.component.Spec.Ports) == 0 {
@@ -422,6 +509,15 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 			err := r.Delete(r.ctx, r.headlessService)
 			if err != nil {
 				r.WarningEvent(err, "unable to delete headlessService for Application Component")
+				return err
+			}
+		}
+
+		if r.destinationRule != nil {
+			err := r.Delete(r.ctx, r.destinationRule)
+
+			if err != nil {
+				r.WarningEvent(err, "unable to delete destinationRule for Application Component")
 				return err
 			}
 		}
@@ -922,23 +1018,6 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 		template.Spec.ServiceAccountName = r.getNameForPermission()
 	}
 
-	var ports []coreV1.ContainerPort
-	for _, p := range component.Spec.Ports {
-		port := coreV1.ContainerPort{
-			Name:          p.Name,
-			ContainerPort: int32(p.ContainerPort),
-			Protocol:      p.Protocol,
-		}
-
-		if p.Protocol != "" {
-			port.Protocol = p.Protocol
-		}
-
-		ports = append(ports, port)
-	}
-
-	mainContainer.Ports = ports
-
 	// resource requirements
 	resRequirements := component.Spec.ResourceRequirements
 	if resRequirements != nil {
@@ -1429,6 +1508,10 @@ func (r *ComponentReconcilerTask) LoadResources() (err error) {
 		return err
 	}
 
+	if err := r.LoadDestinationRule(); err != nil {
+		return err
+	}
+
 	switch r.component.Spec.WorkloadType {
 	case corev1alpha1.WorkloadTypeServer, "":
 		return r.LoadDeployment()
@@ -1438,6 +1521,26 @@ func (r *ComponentReconcilerTask) LoadResources() (err error) {
 		return r.LoadDaemonSet()
 	case corev1alpha1.WorkloadTypeStatefulSet:
 		return r.LoadStatefulSet()
+	}
+
+	return nil
+}
+
+func (r *ComponentReconcilerTask) LoadDestinationRule() error {
+	var rule v1alpha3.DestinationRule
+	if err := r.Reader.Get(
+		r.ctx,
+		types.NamespacedName{
+			Namespace: r.component.Namespace,
+			Name:      r.component.Name,
+		},
+		&rule,
+	); err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		r.destinationRule = &rule
 	}
 
 	return nil

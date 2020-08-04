@@ -289,7 +289,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 				Command: "./kalm-api-server",
 				Ports: []corev1alpha1.Port{
 					{
-						Name:          "http",
+						Protocol:      corev1alpha1.PortProtocolHTTP,
 						ContainerPort: 3001,
 						ServicePort:   80,
 					},
