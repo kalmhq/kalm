@@ -221,8 +221,6 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.TestEnv = testEnv
 	suite.K8sClient = k8sClient
 	suite.Cfg = cfg
-
-	suite.ensureNsExists("cert-manager")
 }
 
 func (suite *BasicSuite) TearDownSuite() {

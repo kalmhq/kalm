@@ -55,6 +55,17 @@ type HttpsCertIssuerReconciler struct {
 func (r *HttpsCertIssuerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 
+	certMgrNs := corev1.Namespace{}
+	err := r.Get(ctx, client.ObjectKey{Name: CertManagerNamespace}, &certMgrNs)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			r.Log.Error(err, fmt.Sprintf("%s not setup, HttpsCertIssuerReconciler skipped", CertManagerNamespace))
+			return ctrl.Result{}, nil
+		}
+
+		return ctrl.Result{}, err
+	}
+
 	var httpsCertIssuer corev1alpha1.HttpsCertIssuer
 	if err := r.Get(ctx, req.NamespacedName, &httpsCertIssuer); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
