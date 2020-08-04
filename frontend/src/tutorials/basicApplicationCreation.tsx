@@ -12,9 +12,9 @@ import {
   isApplicationFormFieldValueEqualTo,
   isComponentFormFieldValueEqualTo,
   isUnderPath,
+  popupTitle,
   requireSubStepCompleted,
   requireSubStepNotCompleted,
-  popupTitle,
 } from "tutorials/utils";
 import { APPLICATION_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
 import { AccessYourApplicationTutorialFactory } from "tutorials/accessYourApplication";
@@ -161,13 +161,13 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           {
             title: (
               <span>
-                Name the port <strong>http</strong>
+                Set the port protocol to <strong>http</strong>
               </span>
             ),
             formValidator: [
               {
                 form: COMPONENT_FORM_ID,
-                field: "ports[0].name",
+                field: "ports[0].protocol",
                 validate: (value) => (value === "http" ? undefined : `Please use "http"`),
               },
             ],
@@ -175,7 +175,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
               const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as
                 | Immutable.List<ComponentLikePort>
                 | undefined;
-              return !!ports && ports.size > 0 && ports.get(0)!.get("name") === "http";
+              return !!ports && ports.size > 0 && ports.get(0)!.get("protocol") === "http";
             },
           },
           {

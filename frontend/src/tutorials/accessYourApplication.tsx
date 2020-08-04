@@ -9,9 +9,9 @@ import {
   isFormFieldMeet,
   isFormFieldValueEqualTo,
   isUnderPath,
+  popupTitle,
   requireSubStepCompleted,
   requireSubStepNotCompleted,
-  popupTitle,
 } from "tutorials/utils";
 import { Actions } from "types";
 import { ActionTypes, actionTypes } from "redux-form";
@@ -56,7 +56,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   const applicationsPath = "/applications";
   const applicationDetailPath = "/applications/" + applicationName + "/components";
   const applicationRoutesPath = "/applications/" + applicationName + "/routes";
-  const applicationNewRoutePath = "/applications/" + applicationName + "/routes/new";
+  const applicationNewRoutePath = "/routes/new";
 
   const clusterInfo = state.get("cluster").get("info");
   const clusterIngressIP = clusterInfo.get("ingressIP") || "10.0.0.1"; // TODO

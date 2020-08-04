@@ -22,6 +22,9 @@ import {
   LOAD_SSO_CONFIG_PENDING,
   ProtectedEndpoint,
   SSOConfig,
+  UPDATE_PROTECTED_ENDPOINT_FAILED,
+  UPDATE_PROTECTED_ENDPOINT_FULFILLED,
+  UPDATE_PROTECTED_ENDPOINT_PENDING,
   UPDATE_SSO_CONFIG_FAILED,
   UPDATE_SSO_CONFIG_FULFILLED,
   UPDATE_SSO_CONFIG_PENDING,
@@ -125,6 +128,24 @@ export const createProtectedEndpointAction = (protectedEndpoint: ProtectedEndpoi
       });
     } catch (e) {
       dispatch({ type: CREATE_PROTECTED_ENDPOINT_FAILED });
+      throw e;
+    }
+  };
+};
+
+export const updateProtectedEndpointAction = (protectedEndpoint: ProtectedEndpoint): ThunkResult<Promise<void>> => {
+  return async (dispatch, getState) => {
+    try {
+      dispatch({ type: UPDATE_PROTECTED_ENDPOINT_PENDING });
+
+      const protectedEndpointRes = await api.updateProtectedEndpoint(protectedEndpoint);
+
+      dispatch({
+        type: UPDATE_PROTECTED_ENDPOINT_FULFILLED,
+        payload: protectedEndpointRes,
+      });
+    } catch (e) {
+      dispatch({ type: UPDATE_PROTECTED_ENDPOINT_FAILED });
       throw e;
     }
   };

@@ -34,10 +34,17 @@ spec:
         spec:
           description: ProtectedEndpointSpec defines the desired state of ProtectedEndpoint
           properties:
+            groups:
+              items:
+                type: string
+              type: array
             name:
               type: string
-            portNumber:
-              type: integer
+            ports:
+              items:
+                format: int32
+                type: integer
+              type: array
             type:
               type: string
           required:

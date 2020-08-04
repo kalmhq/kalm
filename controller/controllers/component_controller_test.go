@@ -76,10 +76,9 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 		Type:  v1alpha1.EnvVarTypeStatic,
 	})
 	component.Spec.Ports = append(component.Spec.Ports, v1alpha1.Port{
-		Name:          "port2",
 		ContainerPort: 8822,
 		ServicePort:   2233,
-		Protocol:      "TCP",
+		Protocol:      v1alpha1.PortProtocolTCP,
 	})
 	suite.updateComponent(component) // todo sometimes this line fail the test e.g. https://travis-ci.com/github/kalmhq/kalm/jobs/354813530
 
@@ -214,98 +213,6 @@ func (suite *ComponentControllerSuite) TestOnlyStaticEnvs() {
 	}, "the second value should be updated")
 }
 
-//func (suite *ComponentControllerSuite) TestExternalEnv() {
-//	// create
-//	suite.ns.Spec.SharedEnv = []v1alpha1.EnvVar{
-//		{
-//			Name:  "sharedEnv1",
-//			Value: "value1",
-//		},
-//	}
-//	suite.Nil(suite.K8sClient.Update(context.Background(), suite.ns))
-//
-//	component := generateEmptyComponent(suite.ns.Name)
-//	component.Spec.Env = []v1alpha1.EnvVar{
-//		{
-//			Name:  "env1",
-//			Value: "sharedEnv1",
-//			Type:  v1alpha1.EnvVarTypeExternal,
-//		},
-//	}
-//	suite.createComponent(component)
-//
-//	key := types.NamespacedName{
-//		Namespace: component.Namespace,
-//		Name:      component.Name,
-//	}
-//
-//	var deployment appsV1.Deployment
-//	suite.Eventually(func() bool { return suite.K8sClient.Get(context.Background(), key, &deployment) == nil }, "can't get deployment")
-//	suite.Equal(int32(1), *deployment.Spec.Replicas)
-//	suite.Len(deployment.Spec.Template.Spec.Containers, 1)
-//	suite.Len(deployment.Spec.Template.Spec.Containers[0].Env, 1)
-//	suite.Equal(deployment.Spec.Template.Spec.Containers[0].Env[0].Value, "value1")
-//
-//	// update SharedEnv value should update deployment env value
-//
-//	suite.reloadApplication(suite.ns)
-//	suite.ns.Spec.SharedEnv[0].Value = "value1-new"
-//	suite.updateApplication(suite.ns)
-//	suite.Eventually(func() bool {
-//		err := suite.K8sClient.Get(context.Background(), key, &deployment)
-//		if err != nil {
-//			return false
-//		}
-//		mainContainer := deployment.Spec.Template.Spec.Containers[0]
-//		return len(mainContainer.Env) == 1 &&
-//			mainContainer.Env[0].Value == "value1-new"
-//	}, "deployment env is not updated as ns env")
-//
-//	// non-exist external value will be ignore
-//	suite.reloadApplication(suite.ns)
-//	suite.ns.Spec.SharedEnv = suite.ns.Spec.SharedEnv[:0] // delete all sharedEnvs
-//	suite.updateApplication(suite.ns)
-//	suite.Eventually(func() bool {
-//		if err := suite.K8sClient.Get(context.Background(), key, &deployment); err != nil {
-//			return false
-//		}
-//		return len(deployment.Spec.Template.Spec.Containers[0].Env) == 0
-//	}, "missing external env value should be ignore")
-//}
-
-func (suite *ComponentControllerSuite) TestLinkedEnv() {
-	// create
-	component := generateEmptyComponent(suite.ns.Name)
-	component.Spec.Env = []v1alpha1.EnvVar{
-		{
-			Name:  "env1",
-			Value: fmt.Sprintf("%s/%s", component.Name, "forlink"),
-			Type:  v1alpha1.EnvVarTypeLinked,
-		},
-	}
-	component.Spec.Ports = []v1alpha1.Port{
-		{
-			Name:          "forlink",
-			ContainerPort: 3001,
-			ServicePort:   3002,
-			Protocol:      "TCP",
-		},
-	}
-	suite.createComponent(component)
-
-	key := types.NamespacedName{
-		Namespace: component.Namespace,
-		Name:      component.Name,
-	}
-
-	var deployment appsV1.Deployment
-	suite.Eventually(func() bool { return suite.K8sClient.Get(context.Background(), key, &deployment) == nil }, "can't get deployment")
-	suite.Equal(
-		fmt.Sprintf("%s.%s:%d", component.Name, component.Namespace, component.Spec.Ports[0].ServicePort),
-		deployment.Spec.Template.Spec.Containers[0].Env[0].Value,
-	)
-}
-
 func (suite *ComponentControllerSuite) TestVolumeTemporaryDisk() {
 	component := generateEmptyComponent(suite.ns.Name)
 	component.Spec.Volumes = []v1alpha1.Volume{
@@ -401,7 +308,6 @@ func (suite *ComponentControllerSuite) TestPorts() {
 	suite.Len(service.Spec.Ports, 1)
 	componentPort := component.Spec.Ports[0]
 	servicePort := service.Spec.Ports[0]
-	suite.Equal(servicePort.Protocol, componentPort.Protocol)
 	suite.Equal(uint32(servicePort.TargetPort.IntValue()), componentPort.ContainerPort)
 	suite.Equal(uint32(servicePort.Port), componentPort.ServicePort)
 
@@ -454,10 +360,9 @@ func generateEmptyComponent(namespace string, workloadTypeOpt ...v1alpha1.Worklo
 			},
 			Ports: []v1alpha1.Port{
 				{
-					Name:          "test",
 					ContainerPort: 8080,
 					ServicePort:   80,
-					Protocol:      coreV1.ProtocolTCP,
+					Protocol:      v1alpha1.PortProtocolTCP,
 				},
 			},
 		},
