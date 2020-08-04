@@ -127,7 +127,7 @@ const sideBarData = [
       },
       {
         icon: CIIcon,
-        text: "CI",
+        text: "CI / CD",
         to: "/ci",
       },
     ],

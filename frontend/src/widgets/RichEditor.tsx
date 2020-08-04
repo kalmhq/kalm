@@ -10,7 +10,12 @@ const styles = (theme: Theme) =>
 
 interface Props extends WithStyles<typeof styles> {
   value: string;
+  mode?: string;
+  readOnly?: boolean;
   onChange?: (value: string, event?: any) => void;
+  height?: string;
+  wrapEnabled?: boolean;
+  tabSize?: number;
 }
 
 interface State {
@@ -41,6 +46,9 @@ class RichEdtorRaw extends React.PureComponent<Props, State> {
   }
 
   private getMode() {
+    if (this.props.mode) {
+      return this.props.mode;
+    }
     return detectMode(this.props.value);
   }
 
@@ -69,16 +77,20 @@ class RichEdtorRaw extends React.PureComponent<Props, State> {
       return null;
     }
 
-    const { classes, value, onChange } = this.props;
+    const { readOnly, tabSize, height, wrapEnabled, classes, value, onChange } = this.props;
     return (
       <AceEditor
         className={classes.root}
         mode={this.getMode()}
         theme="monokai"
         value={value}
+        height={height}
         onChange={onChange}
+        readOnly={readOnly}
+        tabSize={tabSize}
         name="rich-editor"
         width="100%"
+        wrapEnabled={wrapEnabled}
         editorProps={{ $blockScrolling: true }}
         setOptions={{
           enableBasicAutocompletion: true,

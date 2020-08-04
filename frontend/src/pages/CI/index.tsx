@@ -1,9 +1,9 @@
 import React from "react";
-import { Box, Button, createStyles, Theme, withStyles, WithStyles, Typography } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { BasePage } from "pages/BasePage";
-import { CIIcon, CopyIcon } from "widgets/Icon";
+import { CIIcon } from "widgets/Icon";
 import { indigo } from "@material-ui/core/colors";
 import { CustomizedButton, DangerButton } from "widgets/Button";
 import { Link } from "react-router-dom";
@@ -12,13 +12,11 @@ import { KTable } from "widgets/Table";
 import { DeployKey, DeployKeyScopeCluster, DeployKeyScopeComponent, DeployKeyScopeNamespace } from "types/deployKey";
 import { Loading } from "widgets/Loading";
 import { deleteDeployKeyAction } from "actions/deployKey";
-import copy from "copy-to-clipboard";
-import { setSuccessNotificationAction } from "actions/notification";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { InfoBox } from "widgets/InfoBox";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import sc from "utils/stringConstants";
+
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
@@ -90,41 +88,27 @@ class CIPageRaw extends React.PureComponent<Props, State> {
   private renderActions = (rowData: DeployKey) => {
     const { dispatch } = this.props;
     return (
-      <DangerButton
-        variant="outlined"
-        size="small"
-        onClick={() => {
-          dispatch(deleteDeployKeyAction(rowData));
-        }}
-      >
-        Delete
-      </DangerButton>
-    );
-  };
-
-  private renderKey = (rowData: DeployKey) => {
-    if (rowData.get("key") === "") {
-      return <Loading />;
-    }
-
-    const key = rowData.get("key");
-    return (
-      <Box>
-        {"****" + key.slice(key.length - 4)}
-        <Box ml={1} display="inline-block">
-          <IconButtonWithTooltip
-            tooltipTitle="Copy"
-            size="small"
-            aria-label="copy"
-            onClick={() => {
-              copy(key);
-              this.props.dispatch(setSuccessNotificationAction("Copied successful!"));
-            }}
-          >
-            <CopyIcon fontSize="small" />
-          </IconButtonWithTooltip>
-        </Box>
-      </Box>
+      <>
+        <Button
+          component={Link}
+          style={{ marginRight: 20 }}
+          color="primary"
+          size="small"
+          variant="outlined"
+          to={`/ci/keys/${rowData.get("name")}`}
+        >
+          Use
+        </Button>
+        <DangerButton
+          variant="outlined"
+          size="small"
+          onClick={() => {
+            dispatch(deleteDeployKeyAction(rowData));
+          }}
+        >
+          Delete
+        </DangerButton>
+      </>
     );
   };
 
@@ -183,12 +167,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
               sorting: false,
               render: this.renderResources,
             },
-            {
-              title: "Key",
-              field: "key",
-              sorting: false,
-              render: this.renderKey,
-            },
+
             {
               title: "Action",
               field: "action",
