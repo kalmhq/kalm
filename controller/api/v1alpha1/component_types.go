@@ -58,6 +58,7 @@ type ComponentSpec struct {
 	Ports []Port `json:"ports,omitempty"`
 
 	// +kubebuilder:validation:Enum=server;cronjob;statefulset;daemonset
+	// +kubebuilder:default=server
 	WorkloadType WorkloadType `json:"workloadType,omitempty"`
 
 	Schedule string `json:"schedule,omitempty"`
