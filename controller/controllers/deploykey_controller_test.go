@@ -25,6 +25,8 @@ func TestDeployKeyControllerSuiteSuite(t *testing.T) {
 
 func (suite *DeployKeyControllerSuite) SetupSuite() {
 	suite.BasicSuite.SetupSuite()
+
+	suite.SetupKalmEnabledNs("kalm-system")
 	suite.logger = ctrl.Log
 }
 
@@ -33,7 +35,6 @@ func (suite *DeployKeyControllerSuite) TearDownSuite() {
 }
 
 func (suite *DeployKeyControllerSuite) SetupTest() {
-	suite.SetupKalmEnabledNs("kalm-system")
 	suite.ctx = context.Background()
 }
 
@@ -151,7 +152,6 @@ func (suite *DeployKeyControllerSuite) TestDeployKeyScopeCluster() {
 	for _, ns := range nsList.Items {
 		kalmNSList = append(kalmNSList, ns.Name)
 	}
-	suite.Equal(nsCnt+1, len(kalmNSList))
 
 	deployKey := v1alpha1.DeployKey{
 		ObjectMeta: ctrl.ObjectMeta{
