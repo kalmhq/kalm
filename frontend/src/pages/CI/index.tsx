@@ -77,10 +77,10 @@ class CIPageRaw extends React.PureComponent<Props, State> {
         return "-";
       }
       case DeployKeyScopeNamespace: {
-        return resoureces.map((r) => <Box>{r}</Box>).toArray();
+        return resoureces.map((r) => <Box key={r}>{r}</Box>).toArray();
       }
       case DeployKeyScopeComponent: {
-        return resoureces.map((r) => <Box>{r}</Box>).toArray();
+        return resoureces.map((r) => <Box key={r}>{r}</Box>).toArray();
       }
     }
   };

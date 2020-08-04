@@ -85,6 +85,7 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
               <Body2>The key is the identity used to call the webhook to restart components.</Body2>
             </Box>
             <Box mt={2}>{this.renderDeployKeyScope(deployKey)}</Box>
+            {this.renderCopyKey(deployKey)}
           </Box>
         </KPanel>
 
@@ -207,7 +208,7 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
       "deployKey":     "${deployKey.get("key")}",
       "application":   "<application-name>",
       "componentName": "<component-name>",
-      "imageTag":      "<image-tage>"
+      "imageTag":      "<image-tag>"
     }' \\
     https://<your-kalm-host>/webhook/components`;
 
@@ -231,7 +232,7 @@ jobs:
           KALM_DEPLOY_KEY: \${{ secrets.KALM_DEPLOY_KEY }}
           KALM_APP: <application-name>
           KALM_COMPONENT: <component-name>
-          KALM_COMPONENT_IMG_TAG: <image-tage>
+          KALM_COMPONENT_IMG_TAG: <image-tag>
       - name: output of step deploy
         run: echo 'The callback response was \${{ steps.deploy.outputs.resp }}.'
 `;
@@ -248,7 +249,7 @@ jobs:
           KALM_DEPLOY_KEY: $KALM_DEPLOY_KEY
           KALM_APP: <application-name>
           KALM_COMPONENT: <component-name>
-          KALM_COMPONENT_IMG_TAG: <image-tage>
+          KALM_COMPONENT_IMG_TAG: <image-tag>
 workflows:
   version: 2
   dashboard:
@@ -265,7 +266,7 @@ workflows:
             Copy the following command and modify the content in angle brackets. Then try the edited command in a shell.
           </Body2>
           <Box mt={2}>
-            <RichEdtor mode="bash" value={curl} readOnly height="280px" wrapEnabled />
+            <RichEdtor mode="bash" value={curl} height="280px" wrapEnabled />
           </Box>
         </Box>
         <Box display={tabs[currentTabIndex] === TAB_GITHUB_ACTION ? "block" : "none"}>
@@ -273,11 +274,11 @@ workflows:
             Copy the following action configs into your github action workflow. Remember to add{" "}
             <strong>KALM_API_ADDRESS</strong> and <strong>KALM_DEPLOY_KEY</strong> into your github project secrets. Set{" "}
             <strong>{`<application-name>`}</strong>, <strong>{`<component-name>`}</strong> and{" "}
-            <strong>{`<image-tage>`}</strong> as needed.
+            <strong>{`<image-tag>`}</strong> as needed.
           </Body2>
           {this.renderCopyKey(deployKey)}
           <Box mt={2}>
-            <RichEdtor mode="yaml" value={githubAction} readOnly height="400px" wrapEnabled tabSize={2} />
+            <RichEdtor mode="yaml" value={githubAction} height="400px" wrapEnabled tabSize={2} />
           </Box>
         </Box>
         <Box display={tabs[currentTabIndex] === TAB_CIRCLE_CI_ORD ? "block" : "none"}>
@@ -285,11 +286,11 @@ workflows:
             Copy the following job config into your Circle CI workflow. In the example, you need to create a context
             called <strong>deploy-context</strong>, then set <strong>KALM_API_ADDRESS</strong> and{" "}
             <strong>KALM_DEPLOY_KEY</strong> as environment variables. Set <strong>{`<application-name>`}</strong>,{" "}
-            <strong>{`<component-name>`}</strong> and <strong>{`<image-tage>`}</strong> as needed.
+            <strong>{`<component-name>`}</strong> and <strong>{`<image-tag>`}</strong> as needed.
           </Body2>
           {this.renderCopyKey(deployKey)}
           <Box mt={2}>
-            <RichEdtor mode="yaml" value={circleCIOrb} readOnly height="350px" wrapEnabled tabSize={2} />
+            <RichEdtor mode="yaml" value={circleCIOrb} height="350px" wrapEnabled tabSize={2} />
           </Box>
         </Box>
       </>
