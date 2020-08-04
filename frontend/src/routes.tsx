@@ -31,6 +31,8 @@ import { CIPage } from "pages/CI";
 import { DeployKeyNewPage } from "pages/CI/New";
 import { NewEndpointPage } from "pages/SSO/NewEndpoint";
 import { EditEndpointPage } from "pages/SSO/EditEndpoint";
+import { CertificateNewPage } from "pages/Certificate/New";
+import { CertificateEditPage } from "pages/Certificate/Edit";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -74,6 +76,8 @@ export const KalmRoutes = (
           <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(Log)} />
 
           <Route exact path="/certificates" component={CertificateListPage} />
+          <Route exact path="/certificates/new" component={CertificateNewPage} />
+          <Route exact path="/certificates/:name/edit" component={CertificateEditPage} />
           <Route component={NoMatch} />
         </Switch>
       </RequireAuthorizatedDashboard>

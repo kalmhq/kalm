@@ -9,17 +9,18 @@ interface Props {
   popupId: string;
   icon: any;
   popoverBody: any;
+  mr?: number;
 }
 
 class IconWithPopover extends React.PureComponent<Props> {
   render() {
-    const { icon, popoverBody, popupId } = this.props;
+    const { icon, popoverBody, popupId, mr } = this.props;
     return (
       <PopupState variant="popover" popupId={popupId}>
         {(popupState) => {
           return (
             <>
-              <FlexRowItemCenterBox mr={1} {...customBindHover(popupState)}>
+              <FlexRowItemCenterBox {...customBindHover(popupState)} mr={mr}>
                 {icon}
               </FlexRowItemCenterBox>
               <Popper style={{ zIndex: POPPER_ZINDEX }} {...customBindPopover(popupState)}>
