@@ -81,8 +81,8 @@ type ProtectedEndpoint struct {
 	Name         string   `json:"name"`
 	Namespace    string   `json:"namespace"`
 	EndpointName string   `json:"endpointName"`
-	Ports        []uint32 `json:"ports,omitempty"`
-	Groups       []string `json:"groups,omitempty"`
+	Ports        []uint32 `json:"ports"`
+	Groups       []string `json:"groups"`
 }
 
 type SSOConfig struct {
@@ -142,13 +142,24 @@ func (builder *Builder) DeleteSSOConfig() error {
 }
 
 func ProtectedEndpointCRDToProtectedEndpoint(endpoint *v1alpha1.ProtectedEndpoint) *ProtectedEndpoint {
-	return &ProtectedEndpoint{
+	ep := &ProtectedEndpoint{
 		Name:         endpoint.Name,
 		Namespace:    endpoint.Namespace,
 		EndpointName: endpoint.Spec.EndpointName,
 		Ports:        endpoint.Spec.Ports,
 		Groups:       endpoint.Spec.Groups,
 	}
+
+	// import for frontend
+	if ep.Ports == nil {
+		ep.Ports = []uint32{}
+	}
+
+	if ep.Groups == nil {
+		ep.Groups = []string{}
+	}
+
+	return ep
 }
 
 func (builder *Builder) ListProtectedEndpoints() ([]*ProtectedEndpoint, error) {
