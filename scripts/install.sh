@@ -7,17 +7,26 @@ kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/master/kalm-insta
 ## same as running this in code repo:
 #kubectl apply -f kalm-install-operator.yaml
 
-CRD_READY=""
-while [ "$CRD_READY" != "True" ]
+CRD_ESTABLISHED=""
+CRD_NAMES_ACCEPTED=""
+
+while [ "$CRD_ESTABLISHED" != "True" ] || [ "$CRD_NAMES_ACCEPTED" != "True" ]
 do
   echo -e "\nwaiting for installation of CRD..."
   #sleep 1
 
-  CRD_READY=$(kubectl get crd kalmoperatorconfigs.install.kalm.dev -ojsonpath='{.status.conditions[?(@.type=="Established")].status}')
+  CRD_ESTABLISHED=$(kubectl get crd kalmoperatorconfigs.install.kalm.dev -ojsonpath='{.status.conditions[?(@.type=="Established")].status}')
+  CRD_NAMES_ACCEPTED=$(kubectl get crd kalmoperatorconfigs.install.kalm.dev -ojsonpath='{.status.conditions[?(@.type=="NamesAccepted")].status}')
 done
 
-kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/master/kalm-install-kalmoperatorconfig.yaml
-## same as running this in code repo:
-#kubectl apply -f kalm-install-kalmoperatorconfig.yaml
+OPERATOR_CONFIG_APPLY_STATUS=1
+
+while [ "$OPERATOR_CONFIG_APPLY_STATUS" -eq 0 ]
+do
+  ## same as running this in code repo:
+  #kubectl apply -f kalm-install-kalmoperatorconfig.yaml
+  kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/master/kalm-install-kalmoperatorconfig.yaml
+  OPERATOR_CONFIG_APPLY_STATUS=$?
+done
 
 echo -e "\ndone"
