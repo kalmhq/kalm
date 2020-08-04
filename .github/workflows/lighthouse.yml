@@ -19,6 +19,7 @@ jobs:
     name: Lighthouse
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: run Lighthouse CI
         run: |
           npm install -g @lhci/cli@0.4.x
