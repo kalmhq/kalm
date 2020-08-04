@@ -38,6 +38,7 @@ import { RenderHttpRouteDestinations } from "./destinations";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
 import stringConstants from "utils/stringConstants";
 import { includesForceHttpsDomain } from "utils/domain";
+import routesGif from "images/routes.gif";
 
 const mapStateToProps = (state: RootState) => {
   const form = ROUTE_FORM_ID;
