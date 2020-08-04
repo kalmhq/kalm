@@ -55,7 +55,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     return (
       <Container>
         <Grid container className={classes.componentTitleRow} spacing={2}>
-          <Grid item xs={2}>
+          <Grid item xs={3}>
             <Box display={"flex"}>
               <Box className={classes.componentIcon} pr={2}>
                 <KalmComponentsIcon fontSize={"default"} />
@@ -65,7 +65,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
               </Box>
             </Box>
           </Grid>
-          <Grid item xs={9}>
+          <Grid item xs={8}>
             <Grid container spacing={10} justify={"flex-start"}>
               <Grid item>
                 <Caption>Pods</Caption>
