@@ -1,4 +1,4 @@
-import { createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
+import { createStyles, Grid, WithStyles, withStyles, Box } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import Immutable from "immutable";
 import React from "react";
@@ -12,10 +12,14 @@ import { RequireNoSuffix, RequirePrefix, ValidatorName, ValidatorRequired } from
 import { Prompt } from "widgets/Prompt";
 import { REGISTRY_FORM_ID } from "../formIDs";
 import sc from "utils/stringConstants";
+import { CustomizedButton } from "widgets/Button";
+import { KPanel } from "widgets/KPanel";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {},
+    root: {
+      padding: 20,
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -23,6 +27,7 @@ const mapStateToProps = (state: RootState) => {
 
   return {
     fieldValues,
+    isSubmittingRegistry: state.get("registries").get("isSubmittingRegistry"),
   };
 };
 
@@ -49,61 +54,72 @@ class RegistryFormRaw extends React.PureComponent<
   };
 
   public render() {
-    const { handleSubmit, classes, isEdit, dirty, submitSucceeded } = this.props;
+    const { handleSubmit, classes, isEdit, dirty, submitSucceeded, isSubmittingRegistry } = this.props;
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
         <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
-        <Grid container spacing={2}>
-          <Grid item md={12}>
-            <Field
-              name="name"
-              label="Name"
-              disabled={isEdit}
-              component={KRenderDebounceTextField}
-              validate={validateName}
-              helperText={isEdit ? "Can't modify name" : sc.NAME_RULE}
-              placeholder="Please type the registry name"
-            />
-          </Grid>
-          <Grid item md={12}>
-            <Field
-              name="username"
-              label="Username"
-              autoComplete="off"
-              component={KRenderDebounceTextField}
-              validate={ValidatorRequired}
-              placeholder="Please type the registry username"
-            />
-          </Grid>{" "}
-          <Grid item md={12}>
-            <Field
-              type="password"
-              name="password"
-              label="Password"
-              autoComplete="off"
-              component={KRenderDebounceTextField}
-              validate={ValidatorRequired}
-              placeholder="Please type the registry password"
-            />
-          </Grid>
-          <Grid item md={12}>
-            <Field
-              name="host"
-              label="Host"
-              component={KRenderDebounceTextField}
-              validate={validateHost}
-              placeholder="Please type the registry host"
-              helperText={<span>Leave blank for private docker hub registry</span>}
-            />
-          </Grid>
-        </Grid>
+        <KPanel
+          content={
+            <Box p={2}>
+              <Grid container spacing={2}>
+                <Grid item md={12}>
+                  <Field
+                    name="name"
+                    label="Name"
+                    disabled={isEdit}
+                    component={KRenderDebounceTextField}
+                    validate={validateName}
+                    helperText={isEdit ? "Can't modify name" : sc.NAME_RULE}
+                    placeholder="Please type the registry name"
+                  />
+                </Grid>
+                <Grid item md={12}>
+                  <Field
+                    name="username"
+                    label="Username"
+                    autoComplete="off"
+                    component={KRenderDebounceTextField}
+                    validate={ValidatorRequired}
+                    placeholder="Please type the registry username"
+                  />
+                </Grid>
+                <Grid item md={12}>
+                  <Field
+                    type="password"
+                    name="password"
+                    label="Password"
+                    autoComplete="off"
+                    component={KRenderDebounceTextField}
+                    validate={ValidatorRequired}
+                    placeholder="Please type the registry password"
+                  />
+                </Grid>
+                <Grid item md={12}>
+                  <Field
+                    name="host"
+                    label="Host"
+                    component={KRenderDebounceTextField}
+                    validate={validateHost}
+                    placeholder="Please type the registry host"
+                    helperText={<span>Leave blank for private docker hub registry</span>}
+                  />
+                </Grid>
+              </Grid>
 
-        {process.env.REACT_APP_DEBUG === "true" ? (
-          <pre style={{ maxWidth: 1500, background: "#eee" }}>
-            {JSON.stringify(this.props.fieldValues, undefined, 2)}
-          </pre>
-        ) : null}
+              {process.env.REACT_APP_DEBUG === "true" ? (
+                <pre style={{ maxWidth: 1500, background: "#eee" }}>
+                  {JSON.stringify(this.props.fieldValues, undefined, 2)}
+                </pre>
+              ) : null}
+            </Box>
+          }
+        />
+        <Box pt={2}>
+          <CustomizedButton disabled={isSubmittingRegistry} onClick={handleSubmit} color="primary" variant="contained">
+            Save
+          </CustomizedButton>
+        </Box>
       </form>
     );
   }

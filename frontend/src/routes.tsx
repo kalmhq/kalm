@@ -33,6 +33,8 @@ import { NewEndpointPage } from "pages/SSO/NewEndpoint";
 import { EditEndpointPage } from "pages/SSO/EditEndpoint";
 import { CertificateNewPage } from "pages/Certificate/New";
 import { CertificateEditPage } from "pages/Certificate/Edit";
+import { RegistryNewPage } from "pages/Registry/New";
+import { RegistryEditPage } from "pages/Registry/Edit";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -52,6 +54,8 @@ export const KalmRoutes = (
           <Route exact path="/cluster/loadbalancer" component={LoadBalancerInfoPage} />
           <Route exact path="/cluster/disks" component={DiskListPage} />
           <Route exact path="/cluster/registries" component={RegistryListPage} />
+          <Route exact path="/cluster/registries/new" component={RegistryNewPage} />
+          <Route exact path="/cluster/registries/:name/edit" component={RegistryEditPage} />
           <Route exact path="/ci" component={CIPage} />
           <Route exact path="/ci/keys/new" component={DeployKeyNewPage} />
           <Route exact path="/applications" component={RequireAdmin(ApplicationListPage)} />
