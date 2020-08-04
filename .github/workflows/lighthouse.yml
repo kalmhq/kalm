@@ -1,0 +1,34 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Lighthouse
+env:
+  LHCI_TOKEN: ${{ secrets.LHCI_TOKEN }}
+defaults:
+  run:
+    working-directory: frontend
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ performance/lighthouse-ci ]
+  pull_request:
+    branches: [ performance/lighthouse-ci ]
+jobs:
+  lhci:
+    name: Lighthouse
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 10.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - name: npm install, build
+        run: |
+          npm install
+          npm run build
+      - name: run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli@0.4.x
+          lhci autorun
