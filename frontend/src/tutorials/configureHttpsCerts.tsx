@@ -9,12 +9,10 @@ import {
   isUnderPath,
   requireSubStepCompleted,
   requireSubStepNotCompleted,
-  isDialogOpened,
   isCertificateFormFieldValueEqualTo,
   popupTitle,
 } from "tutorials/utils";
 import { CERTIFICATE_FORM_ID } from "forms/formIDs";
-import { addCertificateDialogId } from "pages/Certificate/New";
 import { Certificate } from "types/certificate";
 
 export const ConfigureHttpsCertsTutorialFactory: TutorialFactory = (title): Tutorial => {
@@ -61,11 +59,11 @@ export const ConfigureHttpsCertsTutorialFactory: TutorialFactory = (title): Tuto
           {
             title: (
               <span>
-                Click the <strong>Add</strong> button
+                Click the <strong>NEW CERTIFICATE</strong> button
               </span>
             ),
             irrevocable: true,
-            shouldCompleteByState: (state: RootState) => isDialogOpened(state, addCertificateDialogId),
+            shouldCompleteByState: (state: RootState) => isUnderPath(state, "/certificates/new"),
           },
           {
             title: (

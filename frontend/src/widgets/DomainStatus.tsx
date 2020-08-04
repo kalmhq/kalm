@@ -22,6 +22,7 @@ const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
 
 interface OwnProps {
   domain: string;
+  mr?: number;
 }
 
 interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp, OwnProps {}
@@ -70,13 +71,7 @@ class DomainStatus extends React.PureComponent<Props> {
     const isLoading = !domainStatus?.get("cname");
     const aRecords = domainStatus?.get("aRecords");
     const isError = (!aRecords || !aRecords.includes(ingressIP)) && domain !== ingressIP;
-
-    if (isLoading) {
-      return {
-        icon: <CircularProgress size={20} style={{ marginLeft: 2, marginRight: 2 }} />,
-        body: <Box p={2}>checking domain status</Box>,
-      };
-    } else if (isError) {
+    if (isError) {
       return {
         icon: <WarningIcon color="action" />,
         body: (
@@ -96,6 +91,11 @@ class DomainStatus extends React.PureComponent<Props> {
           </Box>
         ),
       };
+    } else if (isLoading) {
+      return {
+        icon: <CircularProgress size={20} style={{ marginLeft: 2, marginRight: 2 }} />,
+        body: <Box p={2}>checking domain status</Box>,
+      };
     } else {
       return {
         icon: <CheckCircleIcon />,
@@ -105,12 +105,12 @@ class DomainStatus extends React.PureComponent<Props> {
   };
 
   render() {
-    const { domain } = this.props;
+    const { domain, mr } = this.props;
     if (domain === "*") {
       return null;
     }
     const { icon, body } = this.getIconAndBody();
-    return <IconWithPopover icon={icon} popoverBody={body} popupId={`${domain}-popover`} />;
+    return <IconWithPopover icon={icon} popoverBody={body} popupId={`${domain}-popover`} mr={mr} />;
   }
 }
 

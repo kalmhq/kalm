@@ -1,6 +1,5 @@
 import { Box, createStyles, Theme, WithStyles, withStyles, Button, Typography } from "@material-ui/core";
-import { deleteCertificateAction, setEditCertificateModalAction } from "actions/certificate";
-import { openDialogAction } from "actions/dialog";
+import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { blinkTopProgressAction } from "actions/settings";
 import { BasePage } from "pages/BasePage";
@@ -14,11 +13,10 @@ import { PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { DeleteIcon, EditIcon, KalmCertificatesIcon } from "widgets/Icon";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { Loading } from "widgets/Loading";
 import { KTable } from "widgets/Table";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
-import { addCertificateDialogId, NewModal } from "./New";
 import { formatDate } from "utils/date";
 import { CustomizedButton } from "widgets/Button";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
@@ -26,6 +24,7 @@ import { indigo } from "@material-ui/core/colors";
 import { InfoBox } from "widgets/InfoBox";
 import DomainStatus from "widgets/DomainStatus";
 import sc from "utils/stringConstants";
+import { Link } from "react-router-dom";
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
@@ -73,7 +72,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         {rowData.get("domains")?.map((domain) => {
           return (
             <FlexRowItemCenterBox key={domain}>
-              <DomainStatus domain={domain} />
+              <DomainStatus mr={1} domain={domain} />
               {domain}
             </FlexRowItemCenterBox>
           );
@@ -83,21 +82,12 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderMoreActions = (rowData: RowData) => {
-    const { dispatch } = this.props;
     return (
       <>
         {rowData.get("isSelfManaged") && (
-          <IconButtonWithTooltip
-            tooltipTitle="Edit"
-            aria-label="edit"
-            onClick={() => {
-              blinkTopProgressAction();
-              dispatch(openDialogAction(addCertificateDialogId));
-              dispatch(setEditCertificateModalAction(rowData));
-            }}
-          >
+          <IconLinkWithToolTip tooltipTitle="Edit" aria-label="edit" to={`/certificates/${rowData.get("name")}/edit`}>
             <EditIcon />
-          </IconButtonWithTooltip>
+          </IconLinkWithToolTip>
         )}
         <IconButtonWithTooltip
           tooltipTitle="Delete"
@@ -258,23 +248,13 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderEmpty() {
-    const { dispatch } = this.props;
-
     return (
       <EmptyInfoBox
         image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={sc.EMPTY_CERT_TITLE}
         content={sc.EMPTY_CERT_SUBTITLE}
         button={
-          <CustomizedButton
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              blinkTopProgressAction();
-              dispatch(openDialogAction(addCertificateDialogId));
-              dispatch(setEditCertificateModalAction(null));
-            }}
-          >
+          <CustomizedButton variant="contained" color="primary" component={Link} to="/certificates/new">
             New Certificate
           </CustomizedButton>
         }
@@ -289,7 +269,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { dispatch, isFirstLoaded, isLoading, certificates } = this.props;
+    const { isFirstLoaded, isLoading, certificates } = this.props;
     const tableData = this.getData();
     return (
       <BasePage
@@ -300,19 +280,15 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               color="primary"
               variant="outlined"
               size="small"
+              component={Link}
               tutorial-anchor-id="add-certificate"
-              onClick={() => {
-                blinkTopProgressAction();
-                dispatch(openDialogAction(addCertificateDialogId));
-                dispatch(setEditCertificateModalAction(null));
-              }}
+              to="/certificates/new"
             >
               New Certificate
             </Button>
           </>
         }
       >
-        <NewModal />
         {this.renderDeleteConfirmDialog()}
         <Box p={2}>
           {isLoading && !isFirstLoaded ? (
