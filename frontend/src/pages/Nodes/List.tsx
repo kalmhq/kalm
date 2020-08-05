@@ -23,8 +23,9 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Node } from "types/node";
 import { formatTimeDistance, TimestampFilter } from "utils/date";
+import { customBindHover, customBindPopover } from "utils/popper";
+import sc from "utils/stringConstants";
 import { InfoBox } from "widgets/InfoBox";
-import { KSelect } from "widgets/KSelect";
 import { Subtitle1 } from "widgets/Label";
 import { InfoPaper } from "widgets/Paper";
 import { BigCPULineChart, BigMemoryLineChart, SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
@@ -34,8 +35,6 @@ import { NodeCPU, NodesCPU } from "./CPU";
 import { NodeMemory, NodesMemory } from "./Memory";
 import { NodePods } from "./Pods";
 import { ResourceRank } from "./ResourceRank";
-import { customBindHover, customBindPopover } from "utils/popper";
-import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -411,7 +410,7 @@ export class NodeListRaw extends React.Component<Props, States> {
     return (
       <BasePage>
         <Box p={2}>
-          <Grid container spacing={2}>
+          {/* <Grid container spacing={2}>
             <Grid item xs={10}></Grid>
             <Grid item xs={2}>
               <KSelect
@@ -444,7 +443,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                 }}
               />
             </Grid>
-          </Grid>
+          </Grid> */}
           <Grid container spacing={2}>
             <Grid item md={6}>
               <InfoPaper elevation={0} style={{ overflow: "hidden" }}>
