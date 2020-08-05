@@ -8,6 +8,13 @@ metadata:
   creationTimestamp: null
   name: httproutes.core.kalm.dev
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.hosts
+    name: Hosts
+    type: string
+  - JSONPath: .spec.paths
+    name: Paths
+    type: string
   group: core.kalm.dev
   names:
     kind: HttpRoute
