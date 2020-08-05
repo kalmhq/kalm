@@ -36,7 +36,7 @@ const styles = (theme: Theme) =>
     root: {},
     paper: {
       background: grey[50],
-      padding: 20,
+      padding: theme.spacing(2),
       margin: 8,
       width: "100%",
     },

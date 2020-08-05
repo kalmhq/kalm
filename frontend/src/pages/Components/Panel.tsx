@@ -1,6 +1,5 @@
 import { Box, Button, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteComponentAction } from "actions/component";
-import { blinkTopProgressAction } from "actions/settings";
 import { Expansion, ExpansionProps } from "forms/Route/expansion";
 import { PodsTable } from "pages/Components/PodsTable";
 import { ComponentStatus } from "pages/Components/Status";
@@ -11,9 +10,9 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Application, ApplicationComponentDetails } from "types/application";
 import { WorkloadType } from "types/componentTemplate";
-import { DangerButton } from "widgets/Button";
 import { Subtitle1 } from "widgets/Label";
 import { ComponentBrifeInfo } from "./BrifeInfo";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -103,17 +102,12 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
             Edit
           </Button>
 
-          <DangerButton
-            variant="outlined"
-            style={{ marginRight: 20 }}
-            size="small"
-            onClick={() => {
-              blinkTopProgressAction();
-              dispatch(deleteComponentAction(component.get("name"), application.get("name")));
-            }}
-          >
-            Delete
-          </DangerButton>
+          <DeleteButtonWithConfirmPopover
+            useText
+            popupId="delete-component-popup"
+            popupTitle="DELETE COMPONENT?"
+            confirmedAction={() => dispatch(deleteComponentAction(component.get("name"), application.get("name")))}
+          />
         </Box>
         <ComponentBrifeInfo component={component} activeNamespaceName={application.get("name")} />
 

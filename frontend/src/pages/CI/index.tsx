@@ -5,7 +5,7 @@ import { RootState } from "reducers";
 import { BasePage } from "pages/BasePage";
 import { CIIcon } from "widgets/Icon";
 import { indigo } from "@material-ui/core/colors";
-import { CustomizedButton, DangerButton } from "widgets/Button";
+import { CustomizedButton } from "widgets/Button";
 import { Link } from "react-router-dom";
 import { withDeployKeys, WithDeployKeysProps } from "hoc/withDeployKeys";
 import { KTable } from "widgets/Table";
@@ -16,6 +16,7 @@ import { InfoBox } from "widgets/InfoBox";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import sc from "utils/stringConstants";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -99,15 +100,12 @@ class CIPageRaw extends React.PureComponent<Props, State> {
         >
           Use
         </Button>
-        <DangerButton
-          variant="outlined"
-          size="small"
-          onClick={() => {
-            dispatch(deleteDeployKeyAction(rowData));
-          }}
-        >
-          Delete
-        </DangerButton>
+        <DeleteButtonWithConfirmPopover
+          useText
+          popupId="delete-ci-popup"
+          popupTitle="DELETE CI?"
+          confirmedAction={() => dispatch(deleteDeployKeyAction(rowData))}
+        />
       </>
     );
   };

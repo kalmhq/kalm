@@ -16,7 +16,6 @@ import { TDispatchProp } from "types";
 import { Disk } from "types/disk";
 import { sizeStringToGi } from "utils/sizeConv";
 import { CustomizedButton } from "widgets/Button";
-import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { DeleteIcon, KalmVolumeIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
@@ -25,6 +24,7 @@ import { KLink } from "widgets/Link";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
 import sc from "utils/stringConstants";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -75,32 +75,24 @@ export class VolumesRaw extends React.Component<Props, States> {
     });
   };
 
-  private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen, deletingPersistentVolume } = this.state;
+  // private renderDeleteConfirmDialog = () => {
+  //   const { isDeleteConfirmDialogOpen, deletingPersistentVolume } = this.state;
 
-    return (
-      <ConfirmDialog
-        open={isDeleteConfirmDialogOpen}
-        onClose={this.closeDeleteConfirmDialog}
-        title={`${sc.ARE_YOU_SURE_PREFIX} this Persistent Volume(${deletingPersistentVolume?.get("name")})?`}
-        content="You will lost this Persistent Volume, and this action is irrevocable."
-        onAgree={this.confirmDelete}
-      />
-    );
-  };
+  //   return (
+  //     <ConfirmDialog
+  //       open={isDeleteConfirmDialogOpen}
+  //       onClose={this.closeDeleteConfirmDialog}
+  //       title={`${sc.ARE_YOU_SURE_PREFIX} this Persistent Volume(${deletingPersistentVolume?.get("name")})?`}
+  //       content="You will lost this Persistent Volume, and this action is irrevocable."
+  //       onAgree={this.confirmDelete}
+  //     />
+  //   );
+  // };
 
-  private confirmDelete = async () => {
+  private confirmDelete = async (rowData: RowData) => {
     const { dispatch } = this.props;
     try {
-      const { deletingPersistentVolume } = this.state;
-      if (deletingPersistentVolume) {
-        await dispatch(
-          deletePersistentVolumeAction(
-            deletingPersistentVolume.get("componentNamespace") as string,
-            deletingPersistentVolume.get("name"),
-          ),
-        );
-      }
+      await dispatch(deletePersistentVolumeAction(rowData.get("componentNamespace") as string, rowData.get("name")));
     } catch {
       dispatch(setErrorNotificationAction());
     }
@@ -122,19 +114,20 @@ export class VolumesRaw extends React.Component<Props, States> {
   private renderActions = (rowData: RowData) => {
     return (
       <>
-        <IconButtonWithTooltip
-          disabled={rowData.get("isInUse")}
-          tooltipTitle={
-            rowData.get("isInUse")
-              ? "The disk must be unmounted(removed) from all associated components before it can be deleted"
-              : "Delete"
-          }
-          onClick={() => {
-            this.showDeleteConfirmDialog(rowData);
-          }}
-        >
-          <DeleteIcon />
-        </IconButtonWithTooltip>
+        {rowData.get("isInUse") ? (
+          <IconButtonWithTooltip
+            disabled
+            tooltipTitle={"The disk must be unmounted(removed) from all associated components before it can be deleted"}
+          >
+            <DeleteIcon />
+          </IconButtonWithTooltip>
+        ) : (
+          <DeleteButtonWithConfirmPopover
+            popupId="delete-disk-popup"
+            popupTitle="DELETE DISK?"
+            confirmedAction={() => this.confirmDelete(rowData)}
+          />
+        )}
       </>
     );
   };
@@ -244,7 +237,7 @@ export class VolumesRaw extends React.Component<Props, States> {
 
     return (
       <BasePage>
-        {this.renderDeleteConfirmDialog()}
+        {/* {this.renderDeleteConfirmDialog()} */}
         <Box p={2}>
           {loadPersistentVolumesError ? (
             <Alert severity="error">

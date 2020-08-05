@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import IconWithPopover from "./IconWithPopover";
+import { IconWithPopover } from "./IconWithPopover";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { loadDomainDNSInfo } from "actions/domain";
