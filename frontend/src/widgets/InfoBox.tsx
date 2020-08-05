@@ -27,7 +27,7 @@ class InfoBoxRaw extends React.PureComponent<Props> {
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item md={12}>
-              <Body>{title}</Body>
+              {typeof title === "string" ? <Body>{title}</Body> : title}
             </Grid>
           </Grid>
           <Grid container spacing={2}>
