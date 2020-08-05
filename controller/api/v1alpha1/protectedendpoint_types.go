@@ -46,6 +46,7 @@ type ProtectedEndpointStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:printcolumn:name="Type",type="string",JSONPath=".spec.type"
 
 // ProtectedEndpoint is the Schema for the protectedendpoints API
 type ProtectedEndpoint struct {

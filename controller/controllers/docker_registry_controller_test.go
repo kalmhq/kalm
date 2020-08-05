@@ -35,7 +35,6 @@ func (suite *DockerRegistryControllerSuite) SetupSuite() {
 
 	suite.BasicSuite.SetupSuite()
 	suite.SetupKalmEnabledNs("kalm-system")
-	suite.ensureNsExists("cert-manager")
 }
 
 func (suite *DockerRegistryControllerSuite) TearDownSuite() {

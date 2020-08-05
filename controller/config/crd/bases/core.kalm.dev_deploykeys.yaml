@@ -8,6 +8,13 @@ metadata:
   creationTimestamp: null
   name: deploykeys.core.kalm.dev
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.scope
+    name: Scope
+    type: string
+  - JSONPath: .spec.resources
+    name: Resources
+    type: string
   group: core.kalm.dev
   names:
     kind: DeployKey
