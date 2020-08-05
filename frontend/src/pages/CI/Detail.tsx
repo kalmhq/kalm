@@ -123,7 +123,7 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
                 <Box mt={2} ml={2}>
                   <pre>{`200 Success.      The component is successfully restart.`}</pre>
                   <pre>{`401 Unauthorized. Wrong key or the key is not granted for the component.`}</pre>
-                  <pre>{`404 Not Found.    The application or component is not exist.`}</pre>
+                  <pre>{`404 Not Found.    The application or component doesn't exist.`}</pre>
                 </Box>
               </Box>
             </Box>

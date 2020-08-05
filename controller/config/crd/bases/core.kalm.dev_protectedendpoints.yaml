@@ -8,6 +8,10 @@ metadata:
   creationTimestamp: null
   name: protectedendpoints.core.kalm.dev
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.type
+    name: Type
+    type: string
   group: core.kalm.dev
   names:
     kind: ProtectedEndpoint
@@ -15,6 +19,7 @@ spec:
     plural: protectedendpoints
     singular: protectedendpoint
   scope: Namespaced
+  subresources: {}
   validation:
     openAPIV3Schema:
       description: ProtectedEndpoint is the Schema for the protectedendpoints API

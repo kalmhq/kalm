@@ -13,6 +13,7 @@ import (
 	"github.com/kalmhq/kalm/api/utils"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/net/http2"
 	"golang.org/x/oauth2"
 	"net/http"
 	"net/url"
@@ -455,5 +456,9 @@ func main() {
 	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX+"/*", handleExtAuthz)
 	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX, handleExtAuthz)
 
-	e.Logger.Fatal(e.Start("0.0.0.0:3002"))
+	e.Logger.Fatal(e.StartH2CServer("0.0.0.0:3002", &http2.Server{
+		MaxConcurrentStreams: 250,
+		MaxReadFrameSize:     1048576,
+		IdleTimeout:          60 * time.Second,
+	}))
 }
