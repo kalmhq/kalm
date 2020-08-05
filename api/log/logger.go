@@ -13,6 +13,15 @@ var (
 	})
 )
 
+func InitDefaultLogger(level string) {
+	defaultLogger = zap.New(func(o *zap.Options) {
+		o.Development = true
+		logLevel := zapcore.InfoLevel
+		logLevel.UnmarshalText([]byte(level))
+		o.Level = logLevel
+	})
+}
+
 func DefaultLogger() logr.Logger {
 	return defaultLogger
 }

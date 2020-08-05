@@ -45,8 +45,9 @@ func (c *Config) Validate() {
 }
 
 func (c *Config) Install() {
+	log.InitDefaultLogger(c.LogLevel)
 	c.Normalize()
-	log.Debug("%#v\n", c)
+	log.Debug("config", "config", c)
 	c.Validate()
 }
 
