@@ -34,8 +34,8 @@ class InfoBoxRaw extends React.PureComponent<Props> {
             {gridItems.map((option, index) => {
               return (
                 <Grid item md={4} key={index}>
-                  <Body>{option.title}</Body>
-                  <Body2>{option.content}</Body2>
+                  {typeof option.title === "string" ? <Body>{option.title}</Body> : option.title}
+                  {typeof option.content === "string" ? <Body2>{option.content}</Body2> : option.title}
                 </Grid>
               );
             })}
