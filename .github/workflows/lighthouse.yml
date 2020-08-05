@@ -11,9 +11,9 @@ defaults:
 # events but only for the master branch
 on:
   push:
-    branches: [performance/lighthouse-ci]
+    branches: [performance/lighthouse-ci, master]
   pull_request:
-    branches: [performance/lighthouse-ci]
+    branches: [performance/lighthouse-ci, master]
 jobs:
   lhci:
     name: Lighthouse
