@@ -535,7 +535,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 				{
 					ContainerPort: 3002,
 					ServicePort:   80,
-					Protocol:      corev1alpha1.PortProtocolHTTP,
+					Protocol:      corev1alpha1.PortProtocolHTTP2,
 				},
 			},
 			Env: []corev1alpha1.EnvVar{
