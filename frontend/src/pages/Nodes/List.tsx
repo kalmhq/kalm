@@ -501,7 +501,7 @@ export class NodeListRaw extends React.Component<Props, States> {
           </Grid>
         </Box>
 
-        <Box p={2} pb={0}>
+        <Box p={2} pt={0} pb={0}>
           {nodes.map((node, index) => (
             <Box pb={index === nodes.size ? 0 : 1} key={node.get("name")}>
               {this.renderNodePanel(node)}
