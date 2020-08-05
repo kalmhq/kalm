@@ -1,14 +1,14 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { setSuccessNotificationAction } from "actions/notification";
 import { updateRouteAction } from "actions/routes";
 import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
+import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import React from "react";
 import { AllHttpMethods, HttpRoute, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
 import { Loading } from "widgets/Loading";
-import { BasePage } from "../BasePage";
-import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
-import { setSuccessNotificationAction } from "actions/notification";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
+import { BasePage } from "../BasePage";
 
 const styles = (theme: Theme) =>
   createStyles({
