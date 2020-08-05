@@ -1,10 +1,11 @@
 package handler
 
 import (
+	"github.com/go-logr/logr"
 	"github.com/kalmhq/kalm/api/client"
+	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
-	"github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
@@ -20,7 +21,7 @@ var (
 
 type ApiHandler struct {
 	clientManager *client.ClientManager
-	logger        *logrus.Logger
+	logger        logr.Logger
 }
 
 type H map[string]interface{}
@@ -131,7 +132,7 @@ func (h *ApiHandler) KalmBuilder() *resources.Builder {
 	k8sClient, err := kubernetes.NewForConfig(cfg)
 
 	if err != nil {
-		h.logger.Error("Can't get k8s Client")
+		h.logger.Error(err, "Can't get k8s Client")
 		return nil
 	}
 
@@ -141,6 +142,6 @@ func (h *ApiHandler) KalmBuilder() *resources.Builder {
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {
 	return &ApiHandler{
 		clientManager: clientManager,
-		logger:        logrus.New(),
+		logger:        log.DefaultLogger(),
 	}
 }

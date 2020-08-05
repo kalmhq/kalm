@@ -9,10 +9,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/coreos/go-oidc"
+	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/server"
 	"github.com/kalmhq/kalm/api/utils"
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 	"net/http"
 	"net/url"
@@ -59,7 +59,7 @@ func getOauth2Config() *oauth2.Config {
 	authProxyURL = os.Getenv("KALM_OIDC_AUTH_PROXY_URL")
 
 	if clientID == "" || clientSecret == "" || oidcProviderUrl == "" || authProxyURL == "" {
-		log.Error("KALM OIDC ENVs are not configured.")
+		log.Error(nil, "KALM OIDC ENVs are not configured")
 		return nil
 	}
 
@@ -67,7 +67,7 @@ func getOauth2Config() *oauth2.Config {
 	provider, err := oidc.NewProvider(context.Background(), oidcProviderUrl)
 
 	if err != nil {
-		log.Error("KALM new provider failed.")
+		log.Error(err,"KALM new provider failed.")
 		return nil
 	}
 
@@ -117,7 +117,7 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 	uri, err := url.Parse(authProxyURL + "/oidc/login")
 
 	if err != nil {
-		log.Error("parse auth proxy url error.", err)
+		log.Error(err, "parse auth proxy url error.")
 		return err
 	}
 
@@ -152,19 +152,19 @@ func handleExtAuthz(c echo.Context) error {
 	cookie, err := c.Cookie(ID_TOKEN_COOKIE_NAME)
 
 	if err != nil {
-		log.Println(c.RealIP(), c.Path(), "No auth cookie, redirect to auth proxy")
+		log.Info("No auth cookie, redirect to auth proxy", "ip", c.RealIP(), "path", c.Path())
 		return redirectToAuthProxyUrl(c)
 	}
 
 	if cookie.Value == "" {
-		log.Println(c.RealIP(), c.Path(), "Auth cookie value empty, redirect to auth proxy")
+		log.Info("Auth cookie value empty, redirect to auth proxy", "ip", c.RealIP(), "path", c.Path())
 		return redirectToAuthProxyUrl(c)
 	}
 
 	_, err = oidcVerifier.Verify(context.Background(), cookie.Value)
 
 	if err != nil {
-		log.Error("jwt verify failed", err)
+		log.Error(err, "jwt verify failed")
 		cookie.Value = ""
 		c.SetCookie(cookie)
 		return redirectToAuthProxyUrl(c)
@@ -179,7 +179,7 @@ func handleSetIDToken(c echo.Context) error {
 	idToken, err := oidcVerifier.Verify(context.Background(), rawIDToken)
 
 	if err != nil {
-		log.Error("jwt verify failed", err)
+		log.Error(err, "jwt verify failed")
 		return c.String(400, "jwt verify failed")
 	}
 
@@ -224,7 +224,7 @@ func handleOIDCLogin(c echo.Context) error {
 	}
 
 	if sign != getStringSignature(originalURL) {
-		log.Errorf("Wrong Sign, receive: %s, expected: %s", sign, getStringSignature(originalURL))
+		log.Error(nil, "wrong sign", "receive", sign, "expected", getStringSignature(originalURL))
 		return c.String(400, "Wrong sign")
 	}
 
@@ -265,21 +265,21 @@ func handleOIDCCallback(c echo.Context) error {
 	stateStr := c.QueryParam("state")
 
 	if stateStr == "" {
-		log.Error("Missing state")
+		log.Error(nil,"missing state")
 		return c.String(400, "Missing state")
 	}
 
 	stateBytes, err := base64.RawStdEncoding.DecodeString(stateStr)
 
 	if err != nil {
-		log.Error("Base64 decode state failed", err)
+		log.Error(err,"Base64 decode state failed")
 		return c.String(400, "Base64 decode state failed")
 	}
 
 	stateJsonBytes, err := utils.AesDecrypt(stateBytes, stateEncryptKey[:])
 
 	if err != nil {
-		log.Error("Aes decrypted state failed", err)
+		log.Error(err, "Aes decrypted state failed")
 		return c.String(400, "State mismatch")
 	}
 
@@ -287,7 +287,7 @@ func handleOIDCCallback(c echo.Context) error {
 	err = json.Unmarshal(stateJsonBytes, &state)
 
 	if err != nil {
-		log.Errorf("json decode state failed")
+		log.Error(err, "json decode state failed")
 		return c.String(400, "json decode state failed")
 	}
 
@@ -297,28 +297,28 @@ func handleOIDCCallback(c echo.Context) error {
 	)
 
 	if err != nil {
-		log.Error("Exchange oauth2Token error", err)
+		log.Error(err, "Exchange oauth2Token error")
 		return c.String(400, "Exchange oauth2Token error")
 	}
 
 	rawIDToken, ok := oauth2Token.Extra(ID_TOKEN_COOKIE_NAME).(string)
 
 	if !ok {
-		log.Error("no id_token in token response")
+		log.Error(nil,"no id_token in token response")
 		return c.String(400, "no id_token in token resonse")
 	}
 
 	_, err = oidcVerifier.Verify(context.Background(), rawIDToken)
 
 	if err != nil {
-		log.Error("jwt verify failed", err)
+		log.Error(err, "jwt verify failed")
 		return c.String(400, "jwt verify failed")
 	}
 
 	uri, err := url.Parse(state.OriginalURL)
 
 	if err != nil {
-		log.Error("parse original url failed. ", state.OriginalURL, err)
+		log.Error(err, "parse original url failed. ", "OriginalURL", state.OriginalURL)
 		return c.String(400, "parse original url failed.")
 	}
 
@@ -340,5 +340,8 @@ func main() {
 	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX+"/*", handleExtAuthz)
 	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX, handleExtAuthz)
 
-	e.Logger.Fatal(e.Start("0.0.0.0:3002"))
+	err := e.Start("0.0.0.0:3002")
+	if err != nil {
+		panic(err)
+	}
 }

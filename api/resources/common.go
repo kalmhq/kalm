@@ -3,8 +3,8 @@ package resources
 import (
 	"context"
 	"fmt"
+	"github.com/go-logr/logr"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
-	"github.com/sirupsen/logrus"
 	appV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
@@ -241,10 +241,10 @@ type Builder struct {
 	ctx       context.Context
 	K8sClient *kubernetes.Clientset
 	Client    client.Client
-	Logger    *logrus.Logger
+	Logger    logr.Logger
 }
 
-func NewBuilder(k8sClient *kubernetes.Clientset, cfg *rest.Config, logger *logrus.Logger) *Builder {
+func NewBuilder(k8sClient *kubernetes.Clientset, cfg *rest.Config, logger logr.Logger) *Builder {
 	c, err := client.New(cfg, client.Options{Scheme: scheme.Scheme})
 	if err != nil {
 		return nil

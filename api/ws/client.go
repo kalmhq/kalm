@@ -5,9 +5,10 @@ import (
 
 	"github.com/kalmhq/kalm/api/resources"
 
+	"github.com/go-logr/logr"
 	"github.com/gorilla/websocket"
 	"github.com/kalmhq/kalm/api/client"
-	log "github.com/sirupsen/logrus"
+	"github.com/kalmhq/kalm/api/log"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd/api"
@@ -42,7 +43,7 @@ type Client struct {
 
 	K8sClientset *kubernetes.Clientset
 
-	logger *log.Logger
+	logger logr.Logger
 
 	IsWatching bool
 }
@@ -88,7 +89,7 @@ func (c *Client) read() {
 	for {
 		_, messageBytes, err := c.conn.ReadMessage()
 		if err != nil {
-			log.Error(err)
+			log.Error(err, "read message error")
 			return
 		}
 
@@ -104,13 +105,13 @@ func (c *Client) read() {
 
 			k8sClientConfig, err := c.K8sClientManager.GetClientConfigWithAuthInfo(authInfo)
 			if err != nil {
-				log.Error(err)
+				log.Error(err, "get client config error")
 			}
 			c.K8SClientConfig = k8sClientConfig
 
 			k8sClientset, err := kubernetes.NewForConfig(k8sClientConfig)
 			if err != nil {
-				log.Error(err)
+				log.Error(err, "new config error")
 			}
 			c.K8sClientset = k8sClientset
 		}
@@ -141,7 +142,7 @@ func (c *Client) write() {
 
 			err := c.conn.WriteMessage(websocket.TextMessage, message)
 			if err != nil {
-				log.Error(err)
+				log.Error(err, "write message error")
 				break
 			}
 			continue
@@ -158,7 +159,7 @@ func (c *Client) sendWatchResMessage(resMessage *ResMessage) {
 
 	bts, err := json.Marshal(resMessage)
 	if err != nil {
-		log.Error(err)
+		log.Error(err, "parse message error")
 		return
 	}
 	c.Send <- bts

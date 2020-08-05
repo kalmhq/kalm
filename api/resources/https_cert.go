@@ -143,7 +143,7 @@ func (builder *Builder) UpdateAutoManagedCert(cert HttpsCert) (HttpsCert, error)
 func (builder *Builder) UpdateSelfManagedCert(cert HttpsCert) (HttpsCert, error) {
 	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
 	if err != nil {
-		builder.Logger.WithError(err).Errorf("fail to parse SelfManagedCertContent as cert")
+		builder.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
 		return HttpsCert{}, err
 	}
 
@@ -207,7 +207,7 @@ func (builder *Builder) UpdateSelfManagedCert(cert HttpsCert) (HttpsCert, error)
 func (builder *Builder) CreateSelfManagedHttpsCert(cert HttpsCert) (HttpsCert, error) {
 	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
 	if err != nil {
-		builder.Logger.WithError(err).Errorf("fail to parse SelfManagedCertContent as cert")
+		builder.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
 		return HttpsCert{}, err
 	}
 

@@ -120,7 +120,7 @@ func (r *ProtectedEndpointReconcilerTask) Run(req ctrl.Request) error {
 	var ssoList corev1alpha1.SingleSignOnConfigList
 
 	if err := r.Reader.List(r.ctx, &ssoList); err != nil {
-		r.Log.Error(err, fmt.Sprintf("List sso error."))
+		r.Log.Error(err, "List sso error.")
 		return err
 	}
 

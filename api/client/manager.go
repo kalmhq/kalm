@@ -1,8 +1,6 @@
 package client
 
 import (
-	"log"
-
 	"github.com/kalmhq/kalm/api/auth"
 	"github.com/kalmhq/kalm/api/config"
 	"github.com/kalmhq/kalm/api/errors"
@@ -138,7 +136,7 @@ func NewClientManager(config *config.Config) *ClientManager {
 	err := m.initClusterClientConfiguration()
 
 	if err != nil {
-		log.Fatal("[Fatal] initClusterClientConfiguration failed: ", err)
+		panic(err)
 	}
 
 	return m
