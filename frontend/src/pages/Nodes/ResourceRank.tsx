@@ -4,6 +4,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
+import { humanFileSize } from "utils/sizeConv";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -21,7 +22,7 @@ const mapStateToProps = (state: RootState) => {
 interface Option {
   name: string;
   value: number;
-  unit: string;
+  unit?: string; // if not pass unit, will use humanFileSize
 }
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
@@ -60,7 +61,7 @@ class ResourceRankRaw extends React.PureComponent<Props, State> {
                 </Box>
               </Box>
               <Box width="50px" textAlign="right">
-                {a.value + " " + a.unit}
+                {a.unit ? a.value + " " + a.unit : humanFileSize(a.value)}
               </Box>
             </Box>
           );

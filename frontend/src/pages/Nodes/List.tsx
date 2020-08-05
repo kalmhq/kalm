@@ -24,6 +24,7 @@ import { TDispatchProp } from "types";
 import { Node } from "types/node";
 import { formatTimeDistance, TimestampFilter } from "utils/date";
 import { customBindHover, customBindPopover } from "utils/popper";
+import { sizeStringToNumber } from "utils/sizeConv";
 import sc from "utils/stringConstants";
 import { InfoBox } from "widgets/InfoBox";
 import { Subtitle1 } from "widgets/Label";
@@ -409,6 +410,9 @@ export class NodeListRaw extends React.Component<Props, States> {
 
   render() {
     const { metrics, nodes } = this.props;
+
+    const { cpuRankData, memoryRankData } = this.getNodesResourceRankData();
+
     return (
       <BasePage>
         <Box p={2}>
@@ -461,7 +465,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank title="Applications" allocateds={fakePopperData} />
+                                <ResourceRank title="Applications" allocateds={cpuRankData} />
                               </Paper>
                             </Fade>
                           )}
@@ -489,7 +493,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank title="Applications" allocateds={fakePopperData} />
+                                <ResourceRank title="Applications" allocateds={memoryRankData} />
                               </Paper>
                             </Fade>
                           )}
@@ -513,6 +517,68 @@ export class NodeListRaw extends React.Component<Props, States> {
         <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>
     );
+  }
+
+  private getNodesResourceRankData() {
+    const { applications, componentsMap } = this.props;
+
+    const cpuRankData: {
+      name: string;
+      value: number;
+      unit: string;
+    }[] = [];
+
+    const memoryRankData: {
+      name: string;
+      value: number;
+      unit: string;
+    }[] = [];
+
+    applications.forEach((application) => {
+      let cpuValue = 0;
+      let memoryValue = 0;
+
+      const components = componentsMap.get(application.get("name"));
+
+      components?.forEach((component) => {
+        if (component.get("cpuRequest")) {
+          cpuValue =
+            cpuValue + sizeStringToNumber(component.get("cpuRequest") as string) * component.get("pods").size * 1000;
+
+          memoryValue =
+            memoryValue + sizeStringToNumber(component.get("cpuRequest") as string) * component.get("pods").size;
+        }
+      });
+
+      if (cpuValue !== 0) {
+        cpuRankData.push({
+          name: application.get("name"),
+          value: cpuValue,
+          unit: "m",
+        });
+      }
+
+      if (memoryValue !== 0) {
+        memoryRankData.push({
+          name: application.get("name"),
+          value: memoryValue,
+          unit: "m",
+        });
+      }
+    });
+
+    cpuRankData.sort(function (a, b) {
+      return a.value - b.value;
+    });
+
+    memoryRankData.sort(function (a, b) {
+      return a.value - b.value;
+    });
+
+    return {
+      cpuRankData,
+      memoryRankData,
+    };
   }
 }
 
