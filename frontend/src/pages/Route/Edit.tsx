@@ -8,6 +8,7 @@ import { Loading } from "widgets/Loading";
 import { BasePage } from "../BasePage";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { setSuccessNotificationAction } from "actions/notification";
+import { ResourceNotFound } from "widgets/ResourceNotFound";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -49,7 +50,17 @@ class RouteEditRaw extends React.PureComponent<Props> {
     }
 
     if (!httpRoute) {
-      return "No route found";
+      return (
+        <BasePage>
+          <Box p={2}>
+            <ResourceNotFound
+              text="Route not found"
+              redirect={`/routes`}
+              redirectText="Go back to Routes List"
+            ></ResourceNotFound>
+          </Box>
+        </BasePage>
+      );
     }
 
     let routeForm = httpRoute as HttpRouteForm;
