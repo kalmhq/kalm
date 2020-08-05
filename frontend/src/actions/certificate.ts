@@ -14,21 +14,10 @@ import {
   LOAD_CERTIFICATES_FULFILLED,
   LOAD_CERTIFICATES_PENDING,
   selfManaged,
-  SET_EDIT_CERTIFICATE_MODAL,
   SET_IS_SUBMITTING_CERTIFICATE,
-  SetEditCertificateModal,
   SetIsSubmittingCertificate,
 } from "types/certificate";
 import { ThunkResult } from "types";
-
-export const setEditCertificateModalAction = (certificate: Certificate | null): SetEditCertificateModal => {
-  return {
-    type: SET_EDIT_CERTIFICATE_MODAL,
-    payload: {
-      certificate,
-    },
-  };
-};
 
 export const deleteCertificateAction = (name: string): ThunkResult<Promise<void>> => {
   return async (dispatch) => {

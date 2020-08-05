@@ -34,7 +34,7 @@ import { NodeCPU, NodesCPU } from "./CPU";
 import { NodeMemory, NodesMemory } from "./Memory";
 import { NodePods } from "./Pods";
 import { ResourceRank } from "./ResourceRank";
-import { customBindHover } from "utils/popper";
+import { customBindHover, customBindPopover } from "utils/popper";
 import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
@@ -484,7 +484,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                         <div {...customBindHover(popupState)}>
                           <NodesMemory nodes={nodes} />
                         </div>
-                        <Popper {...bindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
+                        <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>

@@ -30,6 +30,10 @@ import { CIPage } from "pages/CI";
 import { DeployKeyNewPage } from "pages/CI/New";
 import { NewEndpointPage } from "pages/SSO/NewEndpoint";
 import { EditEndpointPage } from "pages/SSO/EditEndpoint";
+import { CertificateNewPage } from "pages/Certificate/New";
+import { CertificateEditPage } from "pages/Certificate/Edit";
+import { RegistryNewPage } from "pages/Registry/New";
+import { RegistryEditPage } from "pages/Registry/Edit";
 import { DeployKeyDetailPage } from "pages/CI/Detail";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
@@ -52,6 +56,8 @@ export const KalmRoutes = (
           <Route exact path="/cluster/loadbalancer" component={LoadBalancerInfoPage} />
           <Route exact path="/cluster/disks" component={DiskListPage} />
           <Route exact path="/cluster/registries" component={RegistryListPage} />
+          <Route exact path="/cluster/registries/new" component={RegistryNewPage} />
+          <Route exact path="/cluster/registries/:name/edit" component={RegistryEditPage} />
 
           <Route exact path="/ci" component={CIPage} />
           <Redirect exact path="/ci/keys" to="/ci" />
@@ -80,6 +86,8 @@ export const KalmRoutes = (
           <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(Log)} />
 
           <Route exact path="/certificates" component={CertificateListPage} />
+          <Route exact path="/certificates/new" component={CertificateNewPage} />
+          <Route exact path="/certificates/:name/edit" component={CertificateEditPage} />
           <Route component={NoMatch} />
         </Switch>
       </RequireAuthorizatedDashboard>
