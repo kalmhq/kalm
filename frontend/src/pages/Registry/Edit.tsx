@@ -1,14 +1,15 @@
-import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
+import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { updateRegistryAction } from "actions/registries";
+import { push } from "connected-react-router";
+import { RegistryForm } from "forms/Registry";
+import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { updateRegistryAction } from "actions/registries";
-import { RegistryForm } from "forms/Registry";
 import { RegistryType } from "types/registry";
-import { BasePage } from "pages/BasePage";
 import { H6 } from "widgets/Label";
-import { push } from "connected-react-router";
+import { ResourceNotFound } from "widgets/ResourceNotFound";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -40,6 +41,20 @@ class RegistryEditPageRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { initialValues } = this.props;
+    if (!initialValues) {
+      return (
+        <BasePage>
+          <Box p={2}>
+            <ResourceNotFound
+              text="Registry not found"
+              redirect={`/cluster/registries`}
+              redirectText="Go back to Registries List"
+            ></ResourceNotFound>
+          </Box>
+        </BasePage>
+      );
+    }
+
     return (
       <BasePage secondHeaderRight={<H6>Edit Registry</H6>}>
         <Grid container spacing={2}>
