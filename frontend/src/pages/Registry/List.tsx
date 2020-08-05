@@ -1,16 +1,16 @@
-import { Box, createStyles, Theme, withStyles, WithStyles, Typography, Button } from "@material-ui/core";
+import { Box, createStyles, Theme, withStyles, WithStyles, Typography, Button, Tooltip } from "@material-ui/core";
 import { deleteRegistryAction } from "actions/registries";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { RegistryType } from "types/registry";
-import { ErrorBadge, SuccessBadge } from "widgets/Badge";
+import { SuccessBadge } from "widgets/Badge";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { KTable } from "widgets/Table";
 import { setErrorNotificationAction } from "actions/notification";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
-import { DeleteIcon, EditIcon, KalmRegistryIcon } from "widgets/Icon";
+import { DeleteIcon, EditIcon, KalmRegistryIcon, ErrorIcon } from "widgets/Icon";
 import { Loading } from "widgets/Loading";
 import { BasePage } from "../BasePage";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
@@ -114,7 +114,13 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     if (row.get("authenticationVerified")) {
       return <SuccessBadge />;
     } else {
-      return <ErrorBadge />;
+      return (
+        <Tooltip title={sc.REGISTRY_VERIFIED_ERROR} placement="left" arrow>
+          <div>
+            <ErrorIcon />
+          </div>
+        </Tooltip>
+      );
     }
   }
 
