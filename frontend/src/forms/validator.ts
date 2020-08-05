@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { HttpRouteDestination } from "types/route";
+import { HttpRoute, HttpRouteDestination } from "types/route";
 import sc from "utils/stringConstants";
 
 export const validator = () => {
@@ -16,9 +16,9 @@ export const ValidatorListNotEmpty = (value: Immutable.List<any>, _allValues?: a
   return undefined;
 };
 
-export const ValidatorAtLeastOneHttpRouteDestination = (
+export const ValidatorHttpRouteDestinations = (
   value: Immutable.List<HttpRouteDestination>,
-  _allValues?: any,
+  _allValues?: HttpRoute,
   _props?: any,
   _name?: any,
 ) => {
@@ -73,6 +73,21 @@ export const ValidatorNumberOrAlphabet = (value: any, _allValues?: any, _props?:
     }
   }
   return "Not a valid port value";
+};
+
+export const ValidatorNaturalNumber = (value: string) => {
+  if (!value) return undefined;
+
+  const integerValue = parseInt(value, 10);
+  if (isNaN(integerValue)) {
+    return undefined;
+  }
+
+  if (integerValue < 0) {
+    return 'Number can\'t be negative';
+  }
+
+  return undefined;
 };
 
 export const ValidatorOneof = (...options: (string | RegExp)[]) => {

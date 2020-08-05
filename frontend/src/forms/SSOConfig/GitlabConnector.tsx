@@ -1,6 +1,6 @@
 import { Grid } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
-import { KFreeSoloAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
+import { KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { Field } from "redux-form/immutable";
@@ -93,7 +93,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
               {/*  </Body2>*/}
               {/*</Box>*/}
               <Box mt={1}>
-                <KFreeSoloAutoCompleteMultipleSelectField
+                <KFreeSoloAutoCompleteMultipleSelectStringField
                   label="Groups"
                   name={`${field}.config.groups`}
                   validate={ValidatorRequired}

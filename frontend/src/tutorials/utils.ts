@@ -140,8 +140,4 @@ export const isUnderPath = (state: RootState, ...paths: string[]) => {
   return paths.includes(pathname);
 };
 
-export const isDialogOpened = (state: RootState, dialogID: string) => {
-  return !!state.get("dialogs").get(dialogID)?.get("open");
-};
-
 export const popupTitle = "Click Here";

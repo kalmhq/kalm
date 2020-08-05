@@ -25,9 +25,6 @@ export const EnvTypeExternal = "external";
 export const EnvTypeStatic = "static";
 export const EnvTypeLinked = "linked";
 
-export const portTypeTCP = "TCP";
-export const portTypeUDP = "UDP";
-
 export type ControlledDialogParams<T> = ImmutableMap<{
   open: boolean;
   data: T;

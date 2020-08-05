@@ -1,4 +1,4 @@
-import { Box, Button, Fade, Grid, Icon, MenuItem, Paper, Popper } from "@material-ui/core";
+import { Box, Button, Fade, Grid, Icon, Paper, Popper } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
 import Immutable from "immutable";
 import React from "react";
@@ -7,12 +7,18 @@ import { arrayPush, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { portTypeTCP, portTypeUDP } from "types/common";
-import { ComponentLikePort } from "types/componentTemplate";
+import {
+  ComponentLikePort,
+  PortProtocolGRPC,
+  PortProtocolHTTP,
+  PortProtocolHTTP2,
+  PortProtocolTCP,
+  PortProtocolUDP,
+} from "types/componentTemplate";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderDebounceTextField } from "../Basic/textfield";
 import { NormalizePort } from "../normalizer";
-import { ValidatorRequired, ValidatorServiceName } from "../validator";
+import { ValidatorRequired } from "../validator";
 import PopupState, { anchorRef, bindPopper, InjectedProps } from "material-ui-popup-state";
 import { PortChart } from "widgets/PortChart";
 import { POPPER_ZINDEX } from "layout/Constants";
@@ -29,21 +35,12 @@ interface Props extends WrappedFieldArrayProps<ComponentLikePort>, FieldArrayCom
 
 const ValidatorPorts = (values: Immutable.List<ComponentLikePort>, _allValues?: any, _props?: any, _name?: any) => {
   if (!values) return undefined;
-  const names = new Set<string>();
   const protocolServicePorts = new Set<string>();
+
   for (let i = 0; i < values.size; i++) {
     const port = values.get(i)!;
-    const name = port.get("name");
-
-    if (name !== "") {
-      if (!names.has(name)) {
-        names.add(name);
-      } else {
-        return "Port names should be unique.  " + name + "";
-      }
-    }
-
     const servicePort = port.get("servicePort") || port.get("containerPort");
+
     if (servicePort) {
       const protocol = port.get("protocol");
       const protocolServicePort = protocol + "-" + servicePort;
@@ -56,8 +53,6 @@ const ValidatorPorts = (values: Immutable.List<ComponentLikePort>, _allValues?: 
     }
   }
 };
-
-const nameValidators = [ValidatorRequired, ValidatorServiceName];
 
 class RenderPorts extends React.PureComponent<Props> {
   public render() {
@@ -81,8 +76,7 @@ class RenderPorts extends React.PureComponent<Props> {
                     form,
                     fields.name,
                     Immutable.Map({
-                      name: "",
-                      protocol: portTypeTCP,
+                      protocol: PortProtocolHTTP,
                       containerPort: null,
                     }),
                   ),
@@ -106,28 +100,19 @@ class RenderPorts extends React.PureComponent<Props> {
             <Grid container spacing={2} key={field}>
               <Grid item xs>
                 <Field
-                  component={KRenderDebounceTextField}
-                  name={`${field}.name`}
-                  label="Name"
-                  placeholder="Port Name"
-                  validate={nameValidators}
-                  required
-                />
-              </Grid>
-              <Grid item xs>
-                <Field
                   name={`${field}.protocol`}
                   component={RenderSelectField}
+                  required
                   label="Protocol"
                   validate={ValidatorRequired}
                   options={[
-                    { value: portTypeTCP, text: portTypeTCP },
-                    { value: portTypeUDP, text: portTypeUDP },
+                    { value: PortProtocolHTTP, text: PortProtocolHTTP },
+                    { value: PortProtocolHTTP2, text: PortProtocolHTTP2 },
+                    { value: PortProtocolGRPC, text: PortProtocolGRPC },
+                    { value: PortProtocolTCP, text: PortProtocolTCP },
+                    { value: PortProtocolUDP, text: PortProtocolUDP },
                   ]}
-                >
-                  <MenuItem value={portTypeUDP}>{portTypeUDP}</MenuItem>
-                  <MenuItem value={portTypeTCP}>{portTypeTCP}</MenuItem>
-                </Field>
+                />
               </Grid>
               <PopupState variant="popover" popupId={`container-port-${index}`} disableAutoFocus>
                 {(popupState: InjectedProps) => {

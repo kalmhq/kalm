@@ -52,7 +52,7 @@ spec:
   workloadType: server
   command: ./kalm-api-server
   ports:
-    - name: http
+    - protocol: http
       containerPort: 3001
       servicePort: 80
 ---

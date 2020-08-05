@@ -2,7 +2,7 @@ import { Grid } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
 import { Alert } from "@material-ui/lab";
-import { KFreeSoloAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
+import { KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
@@ -54,7 +54,7 @@ class RenderGithubConnectorOrganizations extends React.Component<any> {
               </Grid>
 
               <Grid item xs={8}>
-                <KFreeSoloAutoCompleteMultipleSelectField
+                <KFreeSoloAutoCompleteMultipleSelectStringField
                   label="Teams"
                   name={`${field}.teams`}
                   placeholder="Please type a team name"

@@ -17,11 +17,11 @@ import { connect, DispatchProp } from "react-redux";
 import { RootState } from "reducers";
 import { change, WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
 import { Field, formValueSelector } from "redux-form/immutable";
-import { portTypeTCP } from "types/common";
-import { ComponentLikePort, Probe } from "types/componentTemplate";
-import { SelectField, makeSelectOption } from "../Basic/select";
+import { ComponentLikePort, PortProtocolHTTP, PortProtocolTCP, Probe } from "types/componentTemplate";
+import { makeSelectOption, SelectField } from "../Basic/select";
 import { ValidatorOneof, ValidatorRequired } from "../validator";
 import sc from "../../utils/stringConstants";
+
 interface FieldComponentHackType {
   name: any;
   component: any;
@@ -340,7 +340,7 @@ class RenderProbe extends React.PureComponent<Props> {
 
     if (type === "httpGet") {
       const potentialPort = ports
-        ? ports.find((x) => x.get("protocol") === portTypeTCP && !!x.get("containerPort"))
+        ? ports.find((x) => x.get("protocol") === PortProtocolHTTP && !!x.get("containerPort"))
         : null;
       dispatch(
         change(
@@ -380,7 +380,7 @@ class RenderProbe extends React.PureComponent<Props> {
       );
     } else if (type === "tcpSocket") {
       const potentialPort = ports
-        ? ports.find((x) => x.get("protocol") === portTypeTCP && !!x.get("containerPort"))
+        ? ports.find((x) => x.get("protocol") === PortProtocolTCP && !!x.get("containerPort"))
         : null;
       dispatch(
         change(

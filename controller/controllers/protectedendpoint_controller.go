@@ -34,6 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strconv"
+	"strings"
 )
 
 // ProtectedEndpointReconciler reconciles a SingleSignOnConfig object
@@ -218,13 +219,176 @@ func GetOIDCProviderInfo(ssoConfig *corev1alpha1.SingleSignOnConfig) *OIDCProvid
 	return info
 }
 
-func (r *ProtectedEndpointReconcilerTask) ReconcileResources(req ctrl.Request) error {
+func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilter(req ctrl.Request) *v1alpha3.EnvoyFilter {
 	name := fmt.Sprintf("kalm-sso-%s", req.Name)
 	namespace := req.Namespace
-
 	oidcProviderInfo := GetOIDCProviderInfo(r.ssoConfig)
 
-	requestAuthentication := v1beta1.RequestAuthentication{
+	var grantedGroups string
+	if len(r.endpoint.Spec.Groups) > 0 {
+		grantedGroups = strings.Join(r.endpoint.Spec.Groups, "|")
+	}
+
+	patch := &v1alpha32.EnvoyFilter_Patch{
+		Operation: v1alpha32.EnvoyFilter_Patch_INSERT_BEFORE,
+		Value: golangMapToProtoStruct(map[string]interface{}{
+			"name": "envoy.ext_authz",
+			"config": map[string]interface{}{
+				"httpService": map[string]interface{}{
+					"serverUri": map[string]interface{}{
+						"uri":     oidcProviderInfo.AuthProxyInternalUrl + "/ext_authz",
+						"cluster": oidcProviderInfo.AuthProxyInternalEnvoyClusterName,
+						"timeout": "1s",
+					},
+					"path_prefix": "/ext_authz",
+					"authorizationRequest": map[string]interface{}{
+						"allowedHeaders": map[string]interface{}{
+							"patterns": []interface{}{
+								map[string]interface{}{
+									"exact": "cookie",
+								},
+								map[string]interface{}{
+									"exact": "x-envoy-original-path",
+								},
+							},
+						},
+						"headersToAdd": []interface{}{
+							map[string]interface{}{
+								"key":   "kalm-sso-granted-groups",
+								"value": grantedGroups,
+							},
+						},
+					},
+					"authorizationResponse": map[string]interface{}{
+						"allowedUpstreamHeaders": map[string]interface{}{
+							"patterns": []interface{}{
+								map[string]interface{}{
+									"exact": "cookie",
+								},
+								map[string]interface{}{
+									"exact": "kalm-sso-userinfo",
+								},
+							},
+						},
+					},
+				},
+			},
+		}),
+	}
+
+	var matches []*v1alpha32.EnvoyFilter_EnvoyConfigObjectMatch
+
+	baseMatch := &v1alpha32.EnvoyFilter_EnvoyConfigObjectMatch{
+		Context: v1alpha32.EnvoyFilter_SIDECAR_INBOUND,
+		ObjectTypes: &v1alpha32.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
+			Listener: &v1alpha32.EnvoyFilter_ListenerMatch{
+				//Name: "virtualInbound",
+				FilterChain: &v1alpha32.EnvoyFilter_ListenerMatch_FilterChainMatch{
+					Filter: &v1alpha32.EnvoyFilter_ListenerMatch_FilterMatch{
+						Name: "envoy.http_connection_manager",
+						SubFilter: &v1alpha32.EnvoyFilter_ListenerMatch_SubFilterMatch{
+							Name: "envoy.filters.http.jwt_authn",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	if len(r.endpoint.Spec.Ports) > 0 {
+		for _, port := range r.endpoint.Spec.Ports {
+			match := baseMatch.DeepCopy()
+			match.ObjectTypes.(*v1alpha32.EnvoyFilter_EnvoyConfigObjectMatch_Listener).Listener.PortNumber = uint32(port)
+			matches = append(matches, match)
+		}
+	} else {
+		matches = append(matches, baseMatch.DeepCopy())
+	}
+
+	configPatches := make([]*v1alpha32.EnvoyFilter_EnvoyConfigObjectPatch, len(matches))
+
+	for i := range matches {
+		configPatches[i] = &v1alpha32.EnvoyFilter_EnvoyConfigObjectPatch{
+			ApplyTo: v1alpha32.EnvoyFilter_HTTP_FILTER,
+			Match:   matches[i],
+			Patch:   patch,
+		}
+	}
+
+	return &v1alpha3.EnvoyFilter{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: v1alpha32.EnvoyFilter{
+			WorkloadSelector: &v1alpha32.WorkloadSelector{
+				Labels: map[string]string{
+					KalmLabelComponentKey: r.endpoint.Spec.EndpointName,
+				},
+			},
+			ConfigPatches: configPatches,
+		},
+	}
+}
+
+func (r *ProtectedEndpointReconcilerTask) BuildAuthorizationPolicy(req ctrl.Request) *v1beta1.AuthorizationPolicy {
+	name := fmt.Sprintf("kalm-sso-%s", req.Name)
+	namespace := req.Namespace
+	oidcProviderInfo := GetOIDCProviderInfo(r.ssoConfig)
+
+	policy := &v1beta1.AuthorizationPolicy{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: v1beta12.AuthorizationPolicy{
+			Selector: &v1beta13.WorkloadSelector{
+				MatchLabels: map[string]string{
+					KalmLabelComponentKey: r.endpoint.Spec.EndpointName,
+				},
+			},
+			Action: v1beta12.AuthorizationPolicy_DENY,
+			Rules: []*v1beta12.Rule{
+				{
+
+					When: []*v1beta12.Condition{
+						{
+							Key: "request.auth.claims[iss]",
+							NotValues: []string{
+								oidcProviderInfo.Issuer,
+							},
+						},
+						// Check group here
+					},
+				},
+			},
+		},
+	}
+
+	if len(r.endpoint.Spec.Ports) > 0 {
+		ports := make([]string, len(r.endpoint.Spec.Ports))
+
+		for i := range r.endpoint.Spec.Ports {
+			ports[i] = strconv.Itoa(int(r.endpoint.Spec.Ports[i]))
+		}
+
+		policy.Spec.Rules[0].To = []*v1beta12.Rule_To{
+			{
+				Operation: &v1beta12.Operation{
+					Ports: ports,
+				},
+			},
+		}
+	}
+
+	return policy
+}
+
+func (r *ProtectedEndpointReconcilerTask) BuildRequestAuthentication(req ctrl.Request) *v1beta1.RequestAuthentication {
+	name := fmt.Sprintf("kalm-sso-%s", req.Name)
+	namespace := req.Namespace
+	oidcProviderInfo := GetOIDCProviderInfo(r.ssoConfig)
+	requestAuthentication := &v1beta1.RequestAuthentication{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
@@ -237,109 +401,17 @@ func (r *ProtectedEndpointReconcilerTask) ReconcileResources(req ctrl.Request) e
 			},
 			JwtRules: []*v1beta12.JWTRule{
 				{
-					Issuer:                oidcProviderInfo.Issuer,
-					JwksUri:               oidcProviderInfo.JwksURI,
-					OutputPayloadToHeader: "kalm-sso-userinfo",
+					Issuer: oidcProviderInfo.Issuer,
 				},
 			},
 		},
 	}
 
-	if r.requestAuthentication != nil {
-		copied := r.requestAuthentication.DeepCopy()
-		copied.Spec = requestAuthentication.Spec
+	return requestAuthentication
+}
 
-		if err := ctrl.SetControllerReference(r.endpoint, copied, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.endpoint, err, "unable to set owner for requestAuthentication")
-			return err
-		}
-
-		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.requestAuthentication)); err != nil {
-			r.Log.Error(err, "Patch requestAuthentication failed.")
-			return err
-		}
-	} else {
-		if err := ctrl.SetControllerReference(r.endpoint, &requestAuthentication, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.endpoint, err, "unable to set owner for requestAuthentication")
-			return err
-		}
-
-		if err := r.Create(r.ctx, &requestAuthentication); err != nil {
-			r.Log.Error(err, "Create requestAuthentication failed.")
-			return err
-		}
-	}
-
-	envoyFilter := v1alpha3.EnvoyFilter{
-		ObjectMeta: metaV1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: v1alpha32.EnvoyFilter{
-			WorkloadSelector: &v1alpha32.WorkloadSelector{
-				Labels: map[string]string{
-					KalmLabelComponentKey: r.endpoint.Spec.EndpointName,
-				},
-			},
-			ConfigPatches: []*v1alpha32.EnvoyFilter_EnvoyConfigObjectPatch{
-				{
-					ApplyTo: v1alpha32.EnvoyFilter_HTTP_FILTER,
-					Match: &v1alpha32.EnvoyFilter_EnvoyConfigObjectMatch{
-						Context: v1alpha32.EnvoyFilter_SIDECAR_INBOUND,
-						ObjectTypes: &v1alpha32.EnvoyFilter_EnvoyConfigObjectMatch_Listener{
-							Listener: &v1alpha32.EnvoyFilter_ListenerMatch{
-								FilterChain: &v1alpha32.EnvoyFilter_ListenerMatch_FilterChainMatch{
-									Filter: &v1alpha32.EnvoyFilter_ListenerMatch_FilterMatch{
-										Name: "envoy.http_connection_manager",
-										SubFilter: &v1alpha32.EnvoyFilter_ListenerMatch_SubFilterMatch{
-											Name: "envoy.filters.http.jwt_authn",
-										},
-									},
-								},
-							},
-						},
-					},
-					Patch: &v1alpha32.EnvoyFilter_Patch{
-						Operation: v1alpha32.EnvoyFilter_Patch_INSERT_BEFORE,
-						Value: golangMapToProtoStruct(map[string]interface{}{
-							"name": "envoy.ext_authz",
-							"config": map[string]interface{}{
-								"httpService": map[string]interface{}{
-									"serverUri": map[string]interface{}{
-										"uri":     oidcProviderInfo.AuthProxyInternalUrl + "/ext_authz",
-										"cluster": oidcProviderInfo.AuthProxyInternalEnvoyClusterName,
-										"timeout": "1s",
-									},
-									"path_prefix": "/ext_authz",
-									"authorizationRequest": map[string]interface{}{
-										"allowedHeaders": map[string]interface{}{
-											"patterns": []interface{}{
-												map[string]interface{}{
-													"exact": "cookie",
-												},
-											},
-										},
-									},
-									"authorizationResponse": map[string]interface{}{
-										"allowedUpstreamHeaders": map[string]interface{}{
-											"patterns": []interface{}{
-												map[string]interface{}{
-													"exact": "cookie",
-												},
-												map[string]interface{}{
-													"exact": "authorization",
-												},
-											},
-										},
-									},
-								},
-							},
-						}),
-					},
-				},
-			},
-		},
-	}
+func (r *ProtectedEndpointReconcilerTask) ReconcileResources(req ctrl.Request) error {
+	envoyFilter := r.BuildEnvoyFilter(req)
 
 	if r.envoyFilter != nil {
 		copied := r.envoyFilter.DeepCopy()
@@ -355,67 +427,49 @@ func (r *ProtectedEndpointReconcilerTask) ReconcileResources(req ctrl.Request) e
 			return err
 		}
 	} else {
-		if err := ctrl.SetControllerReference(r.endpoint, &envoyFilter, r.Scheme); err != nil {
+		if err := ctrl.SetControllerReference(r.endpoint, envoyFilter, r.Scheme); err != nil {
 			r.EmitWarningEvent(r.endpoint, err, "unable to set owner for envoyFilter")
 			return err
 		}
 
-		if err := r.Create(r.ctx, &envoyFilter); err != nil {
+		if err := r.Create(r.ctx, envoyFilter); err != nil {
 			r.Log.Error(err, "Create envoyFilter failed.")
 			return err
 		}
 	}
 
-	authorizationPolicy := v1beta1.AuthorizationPolicy{
-		ObjectMeta: metaV1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: v1beta12.AuthorizationPolicy{
-			Selector: &v1beta13.WorkloadSelector{
-				MatchLabels: map[string]string{
-					KalmLabelComponentKey: r.endpoint.Spec.EndpointName,
-				},
-			},
-			Action: v1beta12.AuthorizationPolicy_ALLOW,
-			Rules: []*v1beta12.Rule{
-				{
-					When: []*v1beta12.Condition{
-						{
-							Key: "request.auth.claims[iss]",
-							Values: []string{
-								oidcProviderInfo.Issuer,
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	if r.authorizationPolicy != nil {
-		copied := r.authorizationPolicy.DeepCopy()
-		copied.Spec = authorizationPolicy.Spec
+	// requestAuthentication didn't do actually job in the protected endpoint.
+	// It's an anchor of the ext_authz envoy filter. Without it, I didn't find a way to set envoy filter into the correct places.
+	requestAuthentication := r.BuildRequestAuthentication(req)
+	if r.requestAuthentication != nil {
+		copied := r.requestAuthentication.DeepCopy()
+		copied.Spec = requestAuthentication.Spec
 
 		if err := ctrl.SetControllerReference(r.endpoint, copied, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.endpoint, err, "unable to set owner for authorizationPolicy")
+			r.EmitWarningEvent(r.endpoint, err, "unable to set owner for requestAuthentication")
 			return err
 		}
 
-		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.authorizationPolicy)); err != nil {
-			r.Log.Error(err, "Patch authorizationPolicy failed.")
+		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.requestAuthentication)); err != nil {
+			r.Log.Error(err, "Patch requestAuthentication failed.")
 			return err
 		}
 	} else {
-		if err := ctrl.SetControllerReference(r.endpoint, &authorizationPolicy, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.endpoint, err, "unable to set owner for authorizationPolicy")
+		if err := ctrl.SetControllerReference(r.endpoint, requestAuthentication, r.Scheme); err != nil {
+			r.EmitWarningEvent(r.endpoint, err, "unable to set owner for requestAuthentication")
 			return err
 		}
 
-		if err := r.Create(r.ctx, &authorizationPolicy); err != nil {
-			r.Log.Error(err, "Create authorizationPolicy failed.")
+		if err := r.Create(r.ctx, requestAuthentication); err != nil {
+			r.Log.Error(err, "Create requestAuthentication failed.")
 			return err
 		}
+	}
+
+	// authorization policy can't satisfy our demands
+	// Clean old resources created by old logic
+	if r.authorizationPolicy != nil {
+		r.Delete(r.ctx, r.authorizationPolicy)
 	}
 
 	return nil

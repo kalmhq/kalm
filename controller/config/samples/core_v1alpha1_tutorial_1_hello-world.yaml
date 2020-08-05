@@ -12,11 +12,16 @@ metadata:
   name: hello-world
   namespace: kalm-hello-world
 spec:
-  image: k8s.gcr.io/echoserver:1.10
+  image: kalmhq/echoserver:latest
   ports:
-    - name: http
-      containerPort: 8080
-      servicePort: 80
+    - protocol: http
+      containerPort: 8001
+    - protocol: http2
+      containerPort: 8002
+    - protocol: https
+      containerPort: 8003
+    - protocol: grpc
+      containerPort: 8004
 ---
 apiVersion: core.kalm.dev/v1alpha1
 kind: HttpRoute
@@ -34,6 +39,6 @@ spec:
   paths:
     - /
   destinations:
-    - host: hello-world
+    - host: hello-world.kalm-hello-world.svc.cluster.local:8001
       weight: 1
   stripPath: true
