@@ -205,6 +205,8 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.Nil(NewSingleSignOnConfigReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewProtectedEndpointReconciler(mgr).SetupWithManager(mgr))
 
+	suite.Nil(NewDeployKeyReconciler(mgr).SetupWithManager(mgr))
+
 	mgrStopChannel := make(chan struct{})
 	suite.MgrStopChannel = mgrStopChannel
 
@@ -219,8 +221,6 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.TestEnv = testEnv
 	suite.K8sClient = k8sClient
 	suite.Cfg = cfg
-
-	suite.ensureNsExists("cert-manager")
 }
 
 func (suite *BasicSuite) TearDownSuite() {

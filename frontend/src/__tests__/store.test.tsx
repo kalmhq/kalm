@@ -59,9 +59,11 @@ test("add certificate", () => {
   };
   const component = mount(
     <Provider store={store}>
-      <ConnectedRouter history={history}>
-        <Route component={WrappedCertificateForm} initialValues={initialValues} onSubmit={onSubmit} />
-      </ConnectedRouter>
+      <ThemeProvider theme={theme}>
+        <ConnectedRouter history={history}>
+          <Route component={WrappedCertificateForm} initialValues={initialValues} onSubmit={onSubmit} />
+        </ConnectedRouter>
+      </ThemeProvider>
     </Provider>,
   );
 
@@ -77,7 +79,7 @@ test("add certificate", () => {
   expect(onSubmit).toHaveBeenCalledTimes(0);
 
   // When a valid form is submitted, onSubmit is executed once
-  store.dispatch(change(CERTIFICATE_FORM_ID, "domains", ["test.io"]));
+  store.dispatch(change(CERTIFICATE_FORM_ID, "domains", Immutable.List(["test.io"])));
   clickSubmitButton();
   expect(onSubmit).toHaveBeenCalledTimes(1);
 

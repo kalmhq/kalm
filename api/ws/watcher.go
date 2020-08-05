@@ -23,6 +23,7 @@ func StartWatching(c *Client) {
 
 	registerWatchHandler(c, &informerCache, &coreV1.Namespace{}, buildNamespaceResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.Component{}, buildComponentResMessage)
+	registerWatchHandler(c, &informerCache, &coreV1.Service{}, buildComponentResMessageCausedByService)
 	registerWatchHandler(c, &informerCache, &coreV1.Service{}, buildServiceResMessage)
 	registerWatchHandler(c, &informerCache, &coreV1.Pod{}, buildPodResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.HttpRoute{}, buildHttpRouteResMessage)
@@ -129,7 +130,7 @@ func buildComponentResMessage(c *Client, action string, objWatched interface{}) 
 	return componentToResMessage(c, action, component)
 }
 
-func buildServiceResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
+func buildComponentResMessageCausedByService(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
 	service, ok := objWatched.(*coreV1.Service)
 	if !ok {
 		return nil, errors.New("convert watch obj to Service failed")
@@ -146,6 +147,19 @@ func buildServiceResMessage(c *Client, action string, objWatched interface{}) (*
 	}
 
 	return componentToResMessage(c, "Update", component)
+}
+
+func buildServiceResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	service, ok := objWatched.(*coreV1.Service)
+	if !ok {
+		return nil, errors.New("convert watch obj to Service failed")
+	}
+
+	return &ResMessage{
+		Kind:   "Service",
+		Action: action,
+		Data:   resources.BuildServiceResponse(service),
+	}, nil
 }
 
 func buildPodResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {

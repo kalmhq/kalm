@@ -158,7 +158,7 @@ func (suite *SSOConfigControllerSuite) TestSSOBasicCRUD() {
 
 		return len(route.Spec.Hosts) == 1 &&
 			route.Spec.Hosts[0] == domain &&
-			route.Spec.Schemes[0] == "https" &&
+			route.Spec.HttpRedirectToHttps &&
 			route.Spec.Paths[0] == "/dex" &&
 			route.Spec.Destinations[0].Host == "dex.kalm-system.svc.cluster.local:5556"
 	})
@@ -180,7 +180,7 @@ func (suite *SSOConfigControllerSuite) TestSSOBasicCRUD() {
 		}
 
 		return len(route.Spec.Hosts) == 1 &&
-			route.Spec.Schemes[0] == "http"
+			!route.Spec.HttpRedirectToHttps
 	})
 
 	suite.Eventually(func() bool {

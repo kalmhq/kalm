@@ -333,9 +333,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 			Command:      "/usr/local/bin/dex serve /etc/dex/cfg/config.yaml",
 			Ports: []corev1alpha1.Port{
 				{
-					Name:          "http",
 					ContainerPort: 5556,
-					Protocol:      coreV1.ProtocolTCP,
+					Protocol:      corev1alpha1.PortProtocolHTTP,
 				},
 			},
 			PreInjectedFiles: []corev1alpha1.PreInjectFile{
@@ -393,14 +392,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 	timeout := 5
 
-	var scheme string
-
-	if r.ssoConfig.Spec.UseHttp {
-		scheme = "http"
-	} else {
-		scheme = "https"
-	}
-
 	dexRoute := corev1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      KALM_DEX_NAME,
@@ -421,8 +412,9 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 				"CONNECT",
 				"TRACE",
 			},
-			Paths:   []string{"/dex"},
-			Schemes: []string{scheme},
+			Paths:               []string{"/dex"},
+			Schemes:             []string{"http", "https"},
+			HttpRedirectToHttps: !r.ssoConfig.Spec.UseHttp,
 			Destinations: []corev1alpha1.HttpRouteDestination{
 				{
 					Host:   fmt.Sprintf("%s.%s.svc.cluster.local:%d", KALM_DEX_NAME, KALM_DEX_NAMESPACE, 5556),
@@ -539,10 +531,9 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 			Command:      "./auth-proxy",
 			Ports: []corev1alpha1.Port{
 				{
-					Name:          "http",
 					ContainerPort: 3002,
 					ServicePort:   80,
-					Protocol:      coreV1.ProtocolTCP,
+					Protocol:      corev1alpha1.PortProtocolHTTP2,
 				},
 			},
 			Env: []corev1alpha1.EnvVar{
@@ -601,14 +592,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() error {
 	timeout := 5
 
-	var scheme string
-
-	if r.ssoConfig.Spec.UseHttp {
-		scheme = "http"
-	} else {
-		scheme = "https"
-	}
-
 	authProxyRoute := corev1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      KALM_AUTH_PROXY_NAME,
@@ -621,8 +604,9 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() err
 			Methods: []corev1alpha1.HttpRouteMethod{
 				"GET",
 			},
-			Paths:   []string{"/oidc/login", "/oidc/callback"},
-			Schemes: []string{scheme},
+			Paths:               []string{"/oidc/login", "/oidc/callback"},
+			Schemes:             []string{"http", "https"},
+			HttpRedirectToHttps: !r.ssoConfig.Spec.UseHttp,
 			Destinations: []corev1alpha1.HttpRouteDestination{
 				{
 					Host:   fmt.Sprintf("%s.%s.svc.cluster.local", KALM_AUTH_PROXY_NAME, KALM_DEX_NAMESPACE),

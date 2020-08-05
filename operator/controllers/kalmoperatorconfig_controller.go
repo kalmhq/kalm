@@ -55,7 +55,7 @@ type KalmOperatorConfigReconciler struct {
 }
 
 //go:generate mkdir -p tmp
-//go:generate sh -c "make -C ../../controller manifests" # make sure CRD & RBAC is up to date
+//go:generate sh -c "make -C ../../controller manifests-for-operator" # make sure CRD & RBAC is up to date
 //go:generate sh -c "kustomize build ../../controller/config/default > tmp/kalm.yaml"
 //go:generate sh -c "kustomize build ../resources/istio > tmp/istio.yaml"
 //go:generate sh -c "cp ../resources/cert-manager/cert-manager.yaml tmp/cert-manager.yaml"
@@ -289,7 +289,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 				Command: "./kalm-api-server",
 				Ports: []corev1alpha1.Port{
 					{
-						Name:          "http",
+						Protocol:      corev1alpha1.PortProtocolHTTP,
 						ContainerPort: 3001,
 						ServicePort:   80,
 					},

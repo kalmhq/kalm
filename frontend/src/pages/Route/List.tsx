@@ -4,7 +4,6 @@ import { deleteRouteAction } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
-import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { BasePage } from "pages/BasePage";
 import { Methods } from "pages/Route/Methods";
 import React from "react";
@@ -18,8 +17,7 @@ import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { DeleteIcon, EditIcon, ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { Loading } from "widgets/Loading";
-import { Namespaces } from "widgets/Namespaces";
-import { OpenInBrowser, getRouteUrl } from "widgets/OpenInBrowser";
+import { getRouteUrl, OpenInBrowser } from "widgets/OpenInBrowser";
 import { KTable } from "widgets/Table";
 import { Targets } from "widgets/Targets";
 import CheckIcon from "@material-ui/icons/Check";
@@ -54,7 +52,7 @@ const HostCellRaw = ({ row, clusterInfo }: HostCellProps) => {
         const url = getRouteUrl(row as HttpRoute, clusterInfo, h);
         return (
           <FlexRowItemCenterBox key={h}>
-            <DomainStatus domain={h} />
+            <DomainStatus mr={1} domain={h} />
             <KMLink href={url} target="_blank">
               {h}
             </KMLink>
@@ -122,9 +120,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderTargets = (row: RowData) => {
-    const { activeNamespaceName } = this.props;
-
-    return <Targets activeNamespaceName={activeNamespaceName} destinations={row.get("destinations")} />;
+    return <Targets destinations={row.get("destinations")} />;
   };
 
   private renderAdvanced(row: RowData) {
@@ -162,7 +158,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions = (row: RowData) => {
-    const { activeNamespaceName, dispatch } = this.props;
+    const { dispatch } = this.props;
     return (
       <>
         <OpenInBrowser route={row as HttpRoute} showIconButton={true} />
@@ -173,7 +169,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           }}
           // size="small"
           tooltipTitle="Edit"
-          to={`/applications/${activeNamespaceName}/routes/${row.get("name")}/edit`}
+          to={`/routes/${row.get("name")}/edit`}
         >
           <EditIcon />
         </IconLinkWithToolTip>
@@ -182,7 +178,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           aria-label="delete"
           onClick={() => {
             blinkTopProgressAction();
-            dispatch(deleteRouteAction(row.get("name"), row.get("namespace")));
+            dispatch(deleteRouteAction(row));
           }}
         >
           <DeleteIcon />
@@ -215,7 +211,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderEmpty() {
-    const { dispatch, activeNamespaceName } = this.props;
+    const { dispatch } = this.props;
 
     return (
       <EmptyInfoBox
@@ -228,7 +224,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
             color="primary"
             onClick={() => {
               blinkTopProgressAction();
-              dispatch(push(`/applications/${activeNamespaceName}/routes/new`));
+              dispatch(push(`/routes/new`));
             }}
           >
             Add Route
@@ -239,26 +235,21 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isRoutesFirstLoaded, isRoutesLoading, activeNamespaceName, httpRoutes } = this.props;
+    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes } = this.props;
     const tableData = this.getData();
     return (
       <BasePage
-        leftDrawer={<ApplicationSidebar />}
-        secondHeaderLeft={<Namespaces />}
         secondHeaderRight={
-          <>
-            {/* <H6>Routes</H6> */}
-            <Button
-              tutorial-anchor-id="add-route"
-              component={Link}
-              color="primary"
-              size="small"
-              variant="outlined"
-              to={`/applications/${activeNamespaceName}/routes/new`}
-            >
-              Add Route
-            </Button>
-          </>
+          <Button
+            tutorial-anchor-id="add-route"
+            component={Link}
+            color="primary"
+            size="small"
+            variant="outlined"
+            to={`/routes/new`}
+          >
+            Add Route
+          </Button>
         }
       >
         <Box p={2}>

@@ -125,6 +125,8 @@ type HttpRouteStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Hosts",type="string",JSONPath=".spec.hosts"
+// +kubebuilder:printcolumn:name="Paths",type="string",JSONPath=".spec.paths"
 
 // HttpRoute is the Schema for the httproutes API
 type HttpRoute struct {

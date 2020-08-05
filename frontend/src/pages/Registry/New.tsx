@@ -1,82 +1,48 @@
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
-import { submit } from "redux-form";
 import { TDispatchProp } from "types";
-import { closeDialogAction } from "actions/dialog";
-import { createRegistryAction, updateRegistryAction } from "actions/registries";
+import { createRegistryAction } from "actions/registries";
 import { RegistryForm } from "forms/Registry";
 import { newEmptyRegistry, RegistryType } from "types/registry";
-import { CustomizedButton } from "widgets/Button";
-import { ControlledDialog } from "widgets/ControlledDialog";
-import { REGISTRY_FORM_ID } from "forms/formIDs";
-
-export const RegistryNewModalID = "RegistryNewModalID";
+import { BasePage } from "pages/BasePage";
+import { H6 } from "widgets/Label";
+import { push } from "connected-react-router";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
   });
 
-const mapStateToProps = (state: RootState) => {
-  return {
-    isSubmittingRegistry: state.get("registries").get("isSubmittingRegistry"),
-  };
-};
-
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
-  isEdit: boolean;
-  registry?: RegistryType;
-}
+interface Props extends WithStyles<typeof styles>, TDispatchProp {}
 
 interface State {}
 
-class RegistryNewModalRaw extends React.PureComponent<Props, State> {
+class RegistryNewPageRaw extends React.PureComponent<Props, State> {
   private submit = async (registryValue: RegistryType) => {
-    const { dispatch, isEdit } = this.props;
-    if (isEdit) {
-      await dispatch(updateRegistryAction(registryValue));
-    } else {
-      await dispatch(createRegistryAction(registryValue));
-    }
-    dispatch(closeDialogAction(RegistryNewModalID));
+    const { dispatch } = this.props;
+    await dispatch(createRegistryAction(registryValue));
   };
 
-  private renderActions() {
-    const { dispatch, isSubmittingRegistry } = this.props;
-    return (
-      <>
-        <CustomizedButton onClick={() => dispatch(closeDialogAction(RegistryNewModalID))} color="primary">
-          Cancel
-        </CustomizedButton>
-        <CustomizedButton
-          disabled={isSubmittingRegistry}
-          onClick={() => dispatch(submit(REGISTRY_FORM_ID))}
-          color="primary"
-        >
-          Save
-        </CustomizedButton>
-      </>
-    );
-  }
+  private onSubmitSuccess = () => {
+    this.props.dispatch(push("/cluster/registries"));
+  };
 
   public render() {
-    const { isEdit, registry } = this.props;
     return (
-      <ControlledDialog
-        dialogID={RegistryNewModalID}
-        title={isEdit ? "Edit Registry" : "Add Registry"}
-        actions={this.renderActions()}
-        dialogProps={{
-          fullWidth: true,
-          maxWidth: "sm",
-        }}
-      >
-        <RegistryForm isEdit={isEdit} onSubmit={this.submit} initialValues={registry || newEmptyRegistry()} />
-      </ControlledDialog>
+      <BasePage secondHeaderRight={<H6>{"Add Registry"}</H6>}>
+        <Grid container spacing={2}>
+          <Grid item xs={8} sm={8} md={8}>
+            <RegistryForm
+              onSubmit={this.submit}
+              onSubmitSuccess={this.onSubmitSuccess}
+              initialValues={newEmptyRegistry()}
+            />
+          </Grid>
+        </Grid>
+      </BasePage>
     );
   }
 }
 
-export const RegistryNewModal = withStyles(styles)(connect(mapStateToProps)(RegistryNewModalRaw));
+export const RegistryNewPage = withStyles(styles)(connect()(RegistryNewPageRaw));
