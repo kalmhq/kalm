@@ -40,6 +40,8 @@ const mapStateToProps = (state: RootState) => {
   return {
     nodes: state.get("nodes").get("nodes"),
     metrics: state.get("nodes").get("metrics"),
+    applications: state.get("applications").get("applications"),
+    componentsMap: state.get("components").get("components"),
   };
 };
 
@@ -153,7 +155,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank allocateds={fakePopperData} />
+                                <ResourceRank title="Pods" allocateds={fakePopperData} />
                               </Paper>
                             </Fade>
                           )}
@@ -178,7 +180,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank allocateds={fakePopperData} />
+                                <ResourceRank title="Pods" allocateds={fakePopperData} />
                               </Paper>
                             </Fade>
                           )}
@@ -246,7 +248,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank allocateds={fakePopperData} />
+                                <ResourceRank title="Pods" allocateds={fakePopperData} />
                               </Paper>
                             </Fade>
                           )}
@@ -276,7 +278,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank allocateds={fakePopperData} />
+                                <ResourceRank title="Pods" allocateds={fakePopperData} />
                               </Paper>
                             </Fade>
                           )}
@@ -459,7 +461,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank allocateds={fakePopperData} />
+                                <ResourceRank title="Applications" allocateds={fakePopperData} />
                               </Paper>
                             </Fade>
                           )}
@@ -487,7 +489,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank allocateds={fakePopperData} />
+                                <ResourceRank title="Applications" allocateds={fakePopperData} />
                               </Paper>
                             </Fade>
                           )}

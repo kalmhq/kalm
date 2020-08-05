@@ -25,6 +25,7 @@ interface Option {
 }
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
+  title: string;
   allocateds: Option[];
 }
 
@@ -37,7 +38,7 @@ class ResourceRankRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { classes, allocateds } = this.props;
+    const { classes, allocateds, title } = this.props;
 
     const maxBarWidth = 200;
     let maxValue = 0;
@@ -49,7 +50,7 @@ class ResourceRankRaw extends React.PureComponent<Props, State> {
 
     return (
       <Box p={2}>
-        <Box pb={2}>Applications (TODO: fake data now)</Box>
+        <Box pb={2}>{title}</Box>
         {allocateds.map((a, index) => {
           return (
             <Box display="flex" pb={1} key={index}>
