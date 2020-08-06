@@ -11,7 +11,7 @@ import (
 )
 
 type PodRequests struct {
-	Namespace string              `json:"namespace`
+	Namespace string              `json:"namespace"`
 	PodName   string              `json:"podName"`
 	Requests  coreV1.ResourceList `json:"requests"`
 }
