@@ -54,6 +54,7 @@ interface ConfirmPopoverProps {
   confirmedAction: any;
   popupTitle: string;
   useText?: boolean;
+  iconSize?: "medium" | "small";
 }
 
 const styles = (theme: Theme) =>
@@ -66,7 +67,7 @@ const styles = (theme: Theme) =>
 
 class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopoverProps & WithStyles<typeof styles>> {
   render() {
-    const { popupId, popupTitle, confirmedAction, classes, useText } = this.props;
+    const { popupId, popupTitle, confirmedAction, classes, useText, iconSize } = this.props;
     return (
       <PopupState variant="popover" popupId={popupId}>
         {(popupState) => {
@@ -79,7 +80,7 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                   Delete
                 </Button>
               ) : (
-                <IconButtonWithTooltip tooltipTitle="Delete" aria-label="delete" {...trigger}>
+                <IconButtonWithTooltip size={iconSize} tooltipTitle="Delete" aria-label="delete" {...trigger}>
                   <DeleteIcon />
                 </IconButtonWithTooltip>
               )}
@@ -94,6 +95,7 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                         <Button
                           className={classes.deleteButton}
                           fullWidth
+                          size="small"
                           onClick={() => {
                             blinkTopProgressAction();
                             confirmedAction();
@@ -103,7 +105,7 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                         </Button>
                       </Grid>
                       <Grid item xs={6}>
-                        <Button fullWidth variant="outlined" color="default" onClick={popover.onClose}>
+                        <Button fullWidth size="small" variant="outlined" color="default" onClick={popover.onClose}>
                           Cancel
                         </Button>
                       </Grid>

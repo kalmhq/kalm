@@ -119,6 +119,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
         ) : null}
         {hasWriterRole ? (
           <DeleteButtonWithConfirmPopover
+            iconSize="small"
             popupId="delete-pod-popup"
             popupTitle="DELETE POD?"
             confirmedAction={async () => {
