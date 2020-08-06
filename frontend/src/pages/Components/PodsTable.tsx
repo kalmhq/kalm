@@ -13,14 +13,13 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { PodStatus } from "types/application";
-import { WorkloadType, workloadTypeCronjob } from "types/componentTemplate";
+import { WorkloadType } from "types/componentTemplate";
 import { formatTimeDistance } from "utils/date";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { KalmConsoleIcon, KalmLogIcon } from "widgets/Icon";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
-import { isCronjobCompleted } from "utils/application";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -143,11 +142,6 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
   };
 
   private renderPodStatus = (pod: PodStatus) => {
-    const { workloadType } = this.props;
-    if (workloadType === workloadTypeCronjob && isCronjobCompleted(pod)) {
-      return <SuccessBadge />;
-    }
-
     if (pod.get("isTerminating")) {
       return <PendingBadge />;
     }
