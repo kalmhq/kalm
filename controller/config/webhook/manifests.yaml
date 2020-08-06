@@ -29,6 +29,42 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-core-kalm-dev-v1alpha1-deploykey
+  failurePolicy: Fail
+  name: mdeploykey.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - deploykeys
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-core-kalm-dev-v1alpha1-httproute
+  failurePolicy: Fail
+  name: mhttproute.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - httproutes
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-core-kalm-dev-v1alpha1-singlesignonconfig
   failurePolicy: Fail
   name: msinglesignonconfig.kb.io
@@ -68,6 +104,96 @@ webhooks:
     - UPDATE
     resources:
     - components
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-core-kalm-dev-v1alpha1-deploykey
+  failurePolicy: Fail
+  name: vdeploykey.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - deploykeys
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-core-kalm-dev-v1alpha1-dockerregistry
+  failurePolicy: Fail
+  name: vdockerregistry.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - dockerregistries
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-core-kalm-dev-v1alpha1-httproute
+  failurePolicy: Fail
+  name: vhttproute.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - httproutes
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-core-kalm-dev-v1alpha1-httpscert
+  failurePolicy: Fail
+  name: vhttpscert.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - httpscerts
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-core-kalm-dev-v1alpha1-httpscertissuer
+  failurePolicy: Fail
+  name: vhttpscertissuer.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - httpscertissuers
 - clientConfig:
     caBundle: Cg==
     service:

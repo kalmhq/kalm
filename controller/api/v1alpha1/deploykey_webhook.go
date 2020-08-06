@@ -19,7 +19,6 @@ import (
 	"fmt"
 	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/validation"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -97,8 +96,7 @@ func (r *DeployKey) validate() (rst KalmValidateErrorList) {
 			}
 
 			component := pair[1]
-			errs = validation.IsDNS1035Label(component)
-			if len(errs) != 0 {
+			if !isValidResourceName(component) {
 				rst = append(rst, KalmValidateError{
 					Err:  fmt.Sprintf("invalid component name: %s", component),
 					Path: fmt.Sprintf("spec.resources[%d]", i),

@@ -39,34 +39,46 @@ const (
 )
 
 type HttpRouteCondition struct {
-	Type     HttpRouteConditionType     `json:"type"`
-	Name     string                     `json:"name"`
-	Value    string                     `json:"value"`
+	// +kubebuilder:validation:Enum=query;header
+	Type HttpRouteConditionType `json:"type"`
+
+	Name  string `json:"name"`
+	Value string `json:"value"`
+
+	// +kubebuilder:validation:Enum=equal;withPrefix;matchRegexp
 	Operator HttpRouteConditionOperator `json:"operator"`
 }
 
 type HttpRouteDestination struct {
-	Host   string `json:"host"`
-	Weight int    `json:"weight"`
+	// +kubebuilder:validation:MinLength=1
+	Host string `json:"host"`
+	// +kubebuilder:validation:Minimum=0
+	Weight int `json:"weight"`
 }
 
 type HttpRouteRetries struct {
-	Attempts             int      `json:"attempts"`
+	// +kubebuilder:validation:Minimum=0
+	Attempts int `json:"attempts"`
+	// +kubebuilder:validation:Minimum=1
 	PerTtyTimeoutSeconds int      `json:"perTtyTimeoutSeconds"`
 	RetryOn              []string `json:"retryOn"`
 }
 
 type HttpRouteMirror struct {
+	// +kubebuilder:validation:Minimum=0
 	Percentage  int                  `json:"percentage"`
 	Destination HttpRouteDestination `json:"destination"`
 }
 
 type HttpRouteDelay struct {
-	Percentage   int `json:"percentage"`
+	// +kubebuilder:validation:Minimum=0
+	Percentage int `json:"percentage"`
+	// +kubebuilder:validation:Minimum=1
 	DelaySeconds int `json:"delaySeconds"`
 }
 
 type HttpRouteFault struct {
+	// +kubebuilder:validation:Minimum=0
 	Percentage  int `json:"percentage"`
 	ErrorStatus int `json:"errorStatus"`
 }
@@ -86,7 +98,7 @@ type HttpRouteMethod string
 type HttpRouteScheme string
 
 // +kubebuilder:validation:MinItems=1
-type HttpRouteSchemes []string
+type HttpRouteSchemes []HttpRouteScheme
 
 // HttpRouteSpec defines the desired state of HttpRoute
 type HttpRouteSpec struct {

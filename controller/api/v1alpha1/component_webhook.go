@@ -18,7 +18,6 @@ package v1alpha1
 import (
 	"fmt"
 	"github.com/robfig/cron"
-	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -167,18 +166,11 @@ func (r *Component) validateScheduleOfComponentIfIsCronJob() (rst KalmValidateEr
 }
 
 func validateLabels(labels map[string]string, fieldPath string) (rst KalmValidateErrorList) {
-
-	for _, label := range labels {
-		errs := apimachineryvalidation.NameIsDNSLabel(label, false)
-		for _, err := range errs {
-			rst = append(rst, KalmValidateError{
-				Err:  err,
-				Path: fieldPath,
-			})
-		}
+	if valid, errList := isValidLabels(labels, field.NewPath(fieldPath)); !valid {
+		return toKalmValidateErrors(errList)
 	}
 
-	return
+	return rst
 }
 
 func (r *Component) validateProbes() (rst KalmValidateErrorList) {

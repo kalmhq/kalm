@@ -49,8 +49,15 @@ spec:
                   name:
                     type: string
                   operator:
+                    enum:
+                    - equal
+                    - withPrefix
+                    - matchRegexp
                     type: string
                   type:
+                    enum:
+                    - query
+                    - header
                     type: string
                   value:
                     type: string
@@ -79,8 +86,15 @@ spec:
                       name:
                         type: string
                       operator:
+                        enum:
+                        - equal
+                        - withPrefix
+                        - matchRegexp
                         type: string
                       type:
+                        enum:
+                        - query
+                        - header
                         type: string
                       value:
                         type: string
@@ -103,8 +117,10 @@ spec:
             delay:
               properties:
                 delaySeconds:
+                  minimum: 1
                   type: integer
                 percentage:
+                  minimum: 0
                   type: integer
               required:
               - delaySeconds
@@ -114,8 +130,10 @@ spec:
               items:
                 properties:
                   host:
+                    minLength: 1
                     type: string
                   weight:
+                    minimum: 0
                     type: integer
                 required:
                 - host
@@ -128,6 +146,7 @@ spec:
                 errorStatus:
                   type: integer
                 percentage:
+                  minimum: 0
                   type: integer
               required:
               - errorStatus
@@ -160,14 +179,17 @@ spec:
                 destination:
                   properties:
                     host:
+                      minLength: 1
                       type: string
                     weight:
+                      minimum: 0
                       type: integer
                   required:
                   - host
                   - weight
                   type: object
                 percentage:
+                  minimum: 0
                   type: integer
               required:
               - destination
@@ -181,8 +203,10 @@ spec:
             retries:
               properties:
                 attempts:
+                  minimum: 0
                   type: integer
                 perTtyTimeoutSeconds:
+                  minimum: 1
                   type: integer
                 retryOn:
                   items:
@@ -195,6 +219,9 @@ spec:
               type: object
             schemes:
               items:
+                enum:
+                - http
+                - https
                 type: string
               minItems: 1
               type: array

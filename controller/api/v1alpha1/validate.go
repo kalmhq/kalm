@@ -169,17 +169,14 @@ func validateTCPSocketAction(tcp *corev1.TCPSocketAction, fldPath *field.Path) f
 	return ValidatePortNumOrName(tcp.Port, fldPath.Child("port"))
 }
 
-//func intoKalmValidateError(err field.Error) KalmValidateError {
-//	return KalmValidateError{
-//		Err:  err.Error(),
-//		Path: err.Field,
-//	}
-//}
+func toKalmValidateErrors(errList field.ErrorList) (rst []KalmValidateError) {
+	for _, err := range errList {
+		rst = append(rst, KalmValidateError{
+			Err: err.Error(),
+			//Err:  fmt.Sprintf("invalid value: %v, %s", err.BadValue, err.Detail),
+			Path: err.Field,
+		})
+	}
 
-//func intoKalmValidateErrorList(errList field.ErrorList) KalmValidateErrorList {
-//	rst := KalmValidateErrorList{}
-//	for _, err := range errList {
-//		rst = append(rst, intoKalmValidateError(*err))
-//	}
-//	return rst
-//}
+	return rst
+}

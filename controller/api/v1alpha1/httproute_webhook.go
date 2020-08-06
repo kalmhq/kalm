@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -40,11 +41,8 @@ var _ webhook.Defaulter = &HttpRoute{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *HttpRoute) Default() {
 	httproutelog.Info("default", "name", r.Name)
-
-	// TODO(user): fill in your defaulting logic.
 }
 
-// TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-httproute,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=httproutes,versions=v1alpha1,name=vhttproute.kb.io
 
 var _ webhook.Validator = &HttpRoute{}
@@ -52,23 +50,61 @@ var _ webhook.Validator = &HttpRoute{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *HttpRoute) ValidateCreate() error {
 	httproutelog.Info("validate create", "name", r.Name)
-
-	// TODO(user): fill in your validation logic upon object creation.
-	return nil
+	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *HttpRoute) ValidateUpdate(old runtime.Object) error {
 	httproutelog.Info("validate update", "name", r.Name)
-
-	// TODO(user): fill in your validation logic upon object update.
-	return nil
+	return r.validate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *HttpRoute) ValidateDelete() error {
 	httproutelog.Info("validate delete", "name", r.Name)
-
-	// TODO(user): fill in your validation logic upon object deletion.
 	return nil
+}
+
+func (r *HttpRoute) validate() (rst KalmValidateErrorList) {
+	for i, cond := range r.Spec.Conditions {
+		if cond.Name != "" {
+			continue
+		}
+
+		rst = append(rst, KalmValidateError{
+			Err:  "should not be empty",
+			Path: fmt.Sprintf("spec.conditions[%d].name", i),
+		})
+	}
+
+	for i, host := range r.Spec.Hosts {
+		if !isValidHost(host) {
+			rst = append(rst, KalmValidateError{
+				Err:  "invalid host",
+				Path: fmt.Sprintf("spec.hosts[%d]", i),
+			})
+		}
+	}
+
+	for i, dest := range r.Spec.Destinations {
+		if !isValidHost(dest.Host) {
+			rst = append(rst, KalmValidateError{
+				Err:  "invalid host",
+				Path: fmt.Sprintf("spec.destinations[%d].host", i),
+			})
+		}
+	}
+
+	mirror := r.Spec.Mirror
+	if mirror != nil {
+		mirrorHost := mirror.Destination.Host
+		if !isValidHost(mirrorHost) {
+			rst = append(rst, KalmValidateError{
+				Err:  "invalid host",
+				Path: "spec.mirror.destination.host",
+			})
+		}
+	}
+
+	return rst
 }

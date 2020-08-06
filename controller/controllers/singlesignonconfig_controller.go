@@ -422,8 +422,10 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 				"CONNECT",
 				"TRACE",
 			},
-			Paths:   []string{"/dex"},
-			Schemes: []string{scheme},
+			Paths: []string{"/dex"},
+			Schemes: []corev1alpha1.HttpRouteScheme{
+				corev1alpha1.HttpRouteScheme(scheme),
+			},
 			Destinations: []corev1alpha1.HttpRouteDestination{
 				{
 					Host:   fmt.Sprintf("%s.%s.svc.cluster.local:%d", KALM_DEX_NAME, KALM_DEX_NAMESPACE, 5556),
@@ -621,8 +623,10 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() err
 			Methods: []corev1alpha1.HttpRouteMethod{
 				"GET",
 			},
-			Paths:   []string{"/oidc/login", "/oidc/callback"},
-			Schemes: []string{scheme},
+			Paths: []string{"/oidc/login", "/oidc/callback"},
+			Schemes: []corev1alpha1.HttpRouteScheme{
+				corev1alpha1.HttpRouteScheme(scheme),
+			},
 			Destinations: []corev1alpha1.HttpRouteDestination{
 				{
 					Host:   fmt.Sprintf("%s.%s.svc.cluster.local", KALM_AUTH_PROXY_NAME, KALM_DEX_NAMESPACE),
