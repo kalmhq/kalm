@@ -520,52 +520,102 @@ export class NodeListRaw extends React.Component<Props, States> {
   }
 
   private getNodesResourceRankData() {
-    const { applications, componentsMap } = this.props;
+    const { applications, componentsMap, nodes } = this.props;
 
     const cpuRankData: {
       name: string;
       value: number;
-      unit: string;
+      unit?: string;
     }[] = [];
 
     const memoryRankData: {
       name: string;
       value: number;
-      unit: string;
+      unit?: string;
     }[] = [];
 
-    applications.forEach((application) => {
-      let cpuValue = 0;
-      let memoryValue = 0;
+    const cpuRankMap: { [key: string]: number } = {};
 
-      const components = componentsMap.get(application.get("name"));
+    const memoryRankMap: { [key: string]: number } = {};
 
-      components?.forEach((component) => {
-        if (component.get("cpuRequest")) {
-          cpuValue =
-            cpuValue + sizeStringToNumber(component.get("cpuRequest") as string) * component.get("pods").size * 1000;
+    nodes.forEach((node) => {
+      node
+        .get("allocatedResources")
+        .get("podsRequests")
+        .forEach((podRequest) => {
+          const namespace = podRequest.get("namespace");
 
-          memoryValue =
-            memoryValue + sizeStringToNumber(component.get("cpuRequest") as string) * component.get("pods").size;
-        }
-      });
+          const cpuData = podRequest.get("requests").get("cpu");
 
-      if (cpuValue !== 0) {
-        cpuRankData.push({
-          name: application.get("name"),
-          value: cpuValue,
-          unit: "m",
+          if (cpuData) {
+            if (cpuRankMap[namespace]) {
+              cpuRankMap[namespace] = cpuRankMap[namespace] + sizeStringToNumber(cpuData) * 1000;
+            } else {
+              cpuRankMap[namespace] = sizeStringToNumber(cpuData) * 1000;
+            }
+          }
+
+          const memoryData = podRequest.get("requests").get("memory");
+
+          if (memoryData) {
+            if (memoryRankMap[namespace]) {
+              memoryRankMap[namespace] = memoryRankMap[namespace] + sizeStringToNumber(memoryData);
+            } else {
+              memoryRankMap[namespace] = sizeStringToNumber(memoryData);
+            }
+          }
         });
-      }
-
-      if (memoryValue !== 0) {
-        memoryRankData.push({
-          name: application.get("name"),
-          value: memoryValue,
-          unit: "m",
-        });
-      }
     });
+
+    console.log("cpuRankMap", cpuRankMap);
+
+    for (let namespace in cpuRankMap) {
+      console.log("namespace", namespace);
+      cpuRankData.push({
+        name: namespace,
+        value: cpuRankMap[namespace],
+        unit: "m",
+      });
+    }
+
+    for (let namespace in memoryRankMap) {
+      memoryRankData.push({
+        name: namespace,
+        value: memoryRankMap[namespace],
+      });
+    }
+
+    // applications.forEach((application) => {
+    //   let cpuValue = 0;
+    //   let memoryValue = 0;
+
+    //   const components = componentsMap.get(application.get("name"));
+
+    //   components?.forEach((component) => {
+    //     if (component.get("cpuRequest")) {
+    //       cpuValue =
+    //         cpuValue + sizeStringToNumber(component.get("cpuRequest") as string) * component.get("pods").size * 1000;
+
+    //       memoryValue =
+    //         memoryValue + sizeStringToNumber(component.get("cpuRequest") as string) * component.get("pods").size;
+    //     }
+    //   });
+
+    //   if (cpuValue !== 0) {
+    //     cpuRankData.push({
+    //       name: application.get("name"),
+    //       value: cpuValue,
+    //       unit: "m",
+    //     });
+    //   }
+
+    //   if (memoryValue !== 0) {
+    //     memoryRankData.push({
+    //       name: application.get("name"),
+    //       value: memoryValue,
+    //     });
+    //   }
+    // });
 
     // cpuRankData.sort(function (a, b) {
     //   return a.value - b.value;
