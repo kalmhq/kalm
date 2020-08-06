@@ -520,7 +520,7 @@ export class NodeListRaw extends React.Component<Props, States> {
   }
 
   private getNodesResourceRankData() {
-    const { applications, componentsMap, nodes } = this.props;
+    const { nodes } = this.props;
 
     const cpuRankData: {
       name: string;
