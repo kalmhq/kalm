@@ -74,15 +74,15 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
           const popover = customBindPopover(popupState);
           return (
             <>
-              <IconButtonWithTooltip size="small" tooltipTitle="Delete" aria-label="delete" {...trigger}>
-                {useText ? (
-                  <Button variant="outlined" size="small" color="primary">
-                    Delete
-                  </Button>
-                ) : (
+              {useText ? (
+                <Button className={classes.deleteButton} variant="outlined" component="span" size="small" {...trigger}>
+                  Delete
+                </Button>
+              ) : (
+                <IconButtonWithTooltip tooltipTitle="Delete" aria-label="delete" {...trigger}>
                   <DeleteIcon />
-                )}
-              </IconButtonWithTooltip>
+                </IconButtonWithTooltip>
+              )}
               <Popover style={{ zIndex: POPPER_ZINDEX }} {...popover}>
                 <Paper>
                   <Box p={2}>
