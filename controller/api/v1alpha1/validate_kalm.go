@@ -68,3 +68,8 @@ func isValidLabels(labels map[string]string, path *field.Path) (bool, field.Erro
 	errs := v1validation.ValidateLabels(labels, path)
 	return len(errs) == 0, errs
 }
+
+func isValidLabelValue(labelVal string) bool {
+	errs := apimachineryval.IsValidLabelValue(labelVal)
+	return len(errs) == 0
+}

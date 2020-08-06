@@ -37,7 +37,9 @@ import (
 
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
+
 	//corekalmdevv1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
+	corev1alpha1 "k8s.io/api/core/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
