@@ -123,7 +123,7 @@ func (c *Client) read() {
 	}
 }
 func (c *Client) Builder() *resources.Builder {
-	return resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, c.logger)
+	return resources.NewBuilder(c.K8SClientConfig, c.logger)
 }
 
 func (c *Client) write() {

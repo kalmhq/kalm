@@ -62,7 +62,7 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		},
 	}
 
-	builder := resources.NewBuilder(k8sClient, clientConfig, h.logger)
+	builder := resources.NewBuilder(clientConfig, h.logger)
 
 	// If the user can create clusterrolebinding, the user is an admin.
 	err = builder.Create(review)

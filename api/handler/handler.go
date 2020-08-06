@@ -8,7 +8,6 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/kubernetes"
 )
 
 var (
@@ -120,23 +119,14 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 
 // use user token and permission
 func (h *ApiHandler) Builder(c echo.Context) *resources.Builder {
-	k8sClient := getK8sClient(c)
 	k8sClientConfig := getK8sClientConfig(c)
-	return resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
+	return resources.NewBuilder(k8sClientConfig, h.logger)
 }
 
 // use server account name permission
 func (h *ApiHandler) KalmBuilder() *resources.Builder {
 	cfg := h.clientManager.ClusterConfig
-
-	k8sClient, err := kubernetes.NewForConfig(cfg)
-
-	if err != nil {
-		h.logger.Error("Can't get k8s Client")
-		return nil
-	}
-
-	return resources.NewBuilder(k8sClient, cfg, h.logger)
+	return resources.NewBuilder(cfg, h.logger)
 }
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {

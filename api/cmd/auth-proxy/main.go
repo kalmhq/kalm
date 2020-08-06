@@ -295,8 +295,11 @@ func handleSetIDToken(c echo.Context, idToken *oidc.IDToken, rawIDToken string) 
 
 	requestURI := c.Request().Header.Get("X-Envoy-Original-Path")
 
+	log.Debugf("[Set ID Token] X-Envoy-Original-Path: %s", requestURI)
+
 	if requestURI == "" {
 		requestURI = removeExtAuthPathPrefix(c.Request().RequestURI)
+		log.Debugf("[Set ID Token] RawRequestURI: %s,  removeExtAuthPathPrefix: %s", c.Request().RequestURI, requestURI)
 	}
 
 	uri, err := url.Parse(requestURI)
@@ -447,6 +450,10 @@ func handleOIDCCallback(c echo.Context) error {
 
 func main() {
 	e := server.NewEchoInstance()
+
+	if os.Getenv("DEBUG") != "" {
+		log.SetLevel(log.DebugLevel)
+	}
 
 	// oidc auth proxy handlers
 	e.GET("/oidc/login", handleOIDCLogin)
