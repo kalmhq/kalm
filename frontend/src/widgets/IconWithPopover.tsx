@@ -72,11 +72,22 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
       <PopupState variant="popover" popupId={popupId}>
         {(popupState) => {
           const trigger = bindTrigger(popupState);
+          const { onClick } = trigger;
           const popover = customBindPopover(popupState);
           return (
             <>
               {useText ? (
-                <Button className={classes.deleteButton} variant="outlined" component="span" size="small" {...trigger}>
+                <Button
+                  className={classes.deleteButton}
+                  variant="outlined"
+                  component="span"
+                  size="small"
+                  {...trigger}
+                  onClick={(event: React.SyntheticEvent<any, Event>) => {
+                    onClick(event);
+                    event.stopPropagation();
+                  }}
+                >
                   Delete
                 </Button>
               ) : (
@@ -96,7 +107,8 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                           className={classes.deleteButton}
                           fullWidth
                           size="small"
-                          onClick={() => {
+                          onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                            event.stopPropagation();
                             blinkTopProgressAction();
                             confirmedAction();
                           }}
@@ -105,7 +117,16 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                         </Button>
                       </Grid>
                       <Grid item xs={6}>
-                        <Button fullWidth size="small" variant="outlined" color="default" onClick={popover.onClose}>
+                        <Button
+                          fullWidth
+                          size="small"
+                          variant="outlined"
+                          color="default"
+                          onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                            event.stopPropagation();
+                            popover.onClose();
+                          }}
+                        >
                           Cancel
                         </Button>
                       </Grid>
