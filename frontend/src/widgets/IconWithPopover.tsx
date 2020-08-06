@@ -72,7 +72,6 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
       <PopupState variant="popover" popupId={popupId}>
         {(popupState) => {
           const trigger = bindTrigger(popupState);
-          const { onClick } = trigger;
           const popover = customBindPopover(popupState);
           return (
             <>
@@ -83,9 +82,9 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                   component="span"
                   size="small"
                   {...trigger}
-                  onClick={(event: React.SyntheticEvent<any, Event>) => {
-                    onClick(event);
-                    event.stopPropagation();
+                  onClick={(e: React.SyntheticEvent<any, Event>) => {
+                    e.stopPropagation();
+                    trigger.onClick(e);
                   }}
                 >
                   Delete
@@ -108,8 +107,8 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                           variant="outlined"
                           fullWidth
                           size="small"
-                          onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                            event.stopPropagation();
+                          onClick={(e) => {
+                            e.stopPropagation();
                             blinkTopProgressAction();
                             confirmedAction();
                           }}
@@ -123,8 +122,8 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                           size="small"
                           variant="outlined"
                           color="default"
-                          onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                            event.stopPropagation();
+                          onClick={(e) => {
+                            e.stopPropagation();
                             popover.onClose();
                           }}
                         >
