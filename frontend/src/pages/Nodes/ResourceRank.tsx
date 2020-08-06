@@ -49,6 +49,10 @@ class ResourceRankRaw extends React.PureComponent<Props, State> {
       }
     });
 
+    allocateds.sort(function (a, b) {
+      return a.value - b.value;
+    });
+
     return (
       <Box p={2}>
         <Box pb={2}>{title}</Box>

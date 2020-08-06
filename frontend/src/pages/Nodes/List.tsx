@@ -567,13 +567,13 @@ export class NodeListRaw extends React.Component<Props, States> {
       }
     });
 
-    cpuRankData.sort(function (a, b) {
-      return a.value - b.value;
-    });
+    // cpuRankData.sort(function (a, b) {
+    //   return a.value - b.value;
+    // });
 
-    memoryRankData.sort(function (a, b) {
-      return a.value - b.value;
-    });
+    // memoryRankData.sort(function (a, b) {
+    //   return a.value - b.value;
+    // });
 
     return {
       cpuRankData,
