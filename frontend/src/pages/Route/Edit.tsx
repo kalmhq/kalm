@@ -1,13 +1,14 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { setSuccessNotificationAction } from "actions/notification";
 import { updateRouteAction } from "actions/routes";
 import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
+import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import React from "react";
 import { AllHttpMethods, HttpRoute, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
 import { Loading } from "widgets/Loading";
+import { ResourceNotFound } from "widgets/ResourceNotFound";
 import { BasePage } from "../BasePage";
-import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
-import { setSuccessNotificationAction } from "actions/notification";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -49,7 +50,17 @@ class RouteEditRaw extends React.PureComponent<Props> {
     }
 
     if (!httpRoute) {
-      return "No route found";
+      return (
+        <BasePage>
+          <Box p={2}>
+            <ResourceNotFound
+              text="Route not found"
+              redirect={`/routes`}
+              redirectText="Go back to Routes List"
+            ></ResourceNotFound>
+          </Box>
+        </BasePage>
+      );
     }
 
     let routeForm = httpRoute as HttpRouteForm;
