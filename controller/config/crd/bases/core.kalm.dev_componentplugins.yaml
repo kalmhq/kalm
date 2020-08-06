@@ -49,6 +49,11 @@ spec:
                 If Not empty, this plugin can only be used on components with workload
                 type exists in this array.
               items:
+                enum:
+                - server
+                - cronjob
+                - daemonset
+                - statefulset
                 type: string
               type: array
             configSchema:

@@ -515,11 +515,17 @@ spec:
                 type: object
               type: array
             workloadType:
-              enum:
-              - server
-              - cronjob
-              - statefulset
-              - daemonset
+              allOf:
+              - enum:
+                - server
+                - cronjob
+                - daemonset
+                - statefulset
+              - enum:
+                - server
+                - cronjob
+                - statefulset
+                - daemonset
               type: string
           required:
           - image
