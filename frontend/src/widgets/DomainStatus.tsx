@@ -81,7 +81,7 @@ class DomainStatus extends React.PureComponent<Props> {
               tooltipTitle="Copy"
               aria-label="copy"
               size="small"
-              onClick={() => {
+              onClick={(e) => {
                 copy(ingressIP);
                 dispatch(setSuccessNotificationAction("Copied successful!"));
               }}

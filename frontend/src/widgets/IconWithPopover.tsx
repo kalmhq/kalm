@@ -76,7 +76,17 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
           return (
             <>
               {useText ? (
-                <Button className={classes.deleteButton} variant="outlined" component="span" size="small" {...trigger}>
+                <Button
+                  className={classes.deleteButton}
+                  variant="outlined"
+                  component="span"
+                  size="small"
+                  {...trigger}
+                  onClick={(e: React.SyntheticEvent<any, Event>) => {
+                    e.stopPropagation();
+                    trigger.onClick(e);
+                  }}
+                >
                   Delete
                 </Button>
               ) : (
@@ -96,7 +106,8 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                           className={classes.deleteButton}
                           fullWidth
                           size="small"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             blinkTopProgressAction();
                             confirmedAction();
                           }}
@@ -105,7 +116,16 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                         </Button>
                       </Grid>
                       <Grid item xs={6}>
-                        <Button fullWidth size="small" variant="outlined" color="default" onClick={popover.onClose}>
+                        <Button
+                          fullWidth
+                          size="small"
+                          variant="outlined"
+                          color="default"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            popover.onClose();
+                          }}
+                        >
                           Cancel
                         </Button>
                       </Grid>
