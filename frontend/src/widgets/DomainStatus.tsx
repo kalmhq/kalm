@@ -93,7 +93,7 @@ class DomainStatus extends React.PureComponent<Props> {
       };
     } else if (isLoading) {
       return {
-        icon: <CircularProgress size={20} style={{ marginLeft: 2, marginRight: 2 }} />,
+        icon: <CircularProgress size={18} style={{ marginLeft: 2, marginRight: 2 }} />,
         body: <Box p={2}>checking domain status</Box>,
       };
     } else {
