@@ -17,7 +17,7 @@ import { POPPER_ZINDEX } from "layout/Constants";
 import { customBindHover, customBindPopover } from "utils/popper";
 import { DeleteIcon } from "./Icon";
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
-import { H6 } from "./Label";
+import { Subtitle2 } from "./Label";
 import { blinkTopProgressAction } from "actions/settings";
 
 interface Props {
@@ -60,7 +60,7 @@ interface ConfirmPopoverProps {
 const styles = (theme: Theme) =>
   createStyles({
     deleteButton: {
-      border: `1px solid ${theme.palette.error.main}`,
+      borderColor: theme.palette.error.main,
       color: theme.palette.error.main,
     },
   });
@@ -98,13 +98,14 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
               <Popover style={{ zIndex: POPPER_ZINDEX }} {...popover}>
                 <Paper>
                   <Box p={2}>
-                    <H6>{popupTitle}</H6>
+                    <Subtitle2>{popupTitle}</Subtitle2>
                   </Box>
                   <Box p={2}>
                     <Grid container spacing={2}>
                       <Grid item xs={6}>
                         <Button
                           className={classes.deleteButton}
+                          variant="outlined"
                           fullWidth
                           size="small"
                           onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
