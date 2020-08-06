@@ -96,10 +96,6 @@ func removeExtAuthPathPrefix(path string) string {
 		path = path[len(ENVOY_EXT_AUTH_PATH_PREFIX)+1:]
 	}
 
-	if path == "" {
-		path = "/"
-	}
-
 	return path
 }
 
@@ -109,6 +105,10 @@ func getOriginalURL(c echo.Context) string {
 
 	if requestURI == "" {
 		requestURI = removeExtAuthPathPrefix(c.Request().RequestURI)
+	}
+
+	if requestURI == "" {
+		requestURI = "/"
 	}
 
 	ur := fmt.Sprintf("%s://%s%s", c.Scheme(), c.Request().Host, requestURI)
@@ -311,6 +311,10 @@ func handleSetIDToken(c echo.Context, idToken *oidc.IDToken, rawIDToken string) 
 	params := uri.Query()
 	params.Del(ID_TOKEN_QUERY_NAME)
 	uri.RawQuery = params.Encode()
+
+	if uri.Path == "" {
+		uri.Path = "/"
+	}
 
 	return c.Redirect(302, uri.String())
 }
