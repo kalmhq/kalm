@@ -448,12 +448,21 @@ func handleOIDCCallback(c echo.Context) error {
 	return c.Redirect(302, uri.String())
 }
 
+func handleLog(c echo.Context) error {
+	level := c.QueryParam("level")
+
+	switch level {
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+	default:
+		log.SetLevel(log.InfoLevel)
+	}
+
+	return c.NoContent(200)
+}
+
 func main() {
 	e := server.NewEchoInstance()
-
-	if os.Getenv("DEBUG") != "" {
-		log.SetLevel(log.DebugLevel)
-	}
 
 	// oidc auth proxy handlers
 	e.GET("/oidc/login", handleOIDCLogin)
@@ -462,6 +471,8 @@ func main() {
 	// envoy ext_authz handlers
 	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX+"/*", handleExtAuthz)
 	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX, handleExtAuthz)
+
+	e.POST("/log", handleLog)
 
 	e.Logger.Fatal(e.StartH2CServer("0.0.0.0:3002", &http2.Server{
 		MaxConcurrentStreams: 250,
