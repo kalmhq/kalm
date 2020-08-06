@@ -168,3 +168,18 @@ func ValidatePortNumOrName(port intstr.IntOrString, fldPath *field.Path) field.E
 func validateTCPSocketAction(tcp *corev1.TCPSocketAction, fldPath *field.Path) field.ErrorList {
 	return ValidatePortNumOrName(tcp.Port, fldPath.Child("port"))
 }
+
+//func intoKalmValidateError(err field.Error) KalmValidateError {
+//	return KalmValidateError{
+//		Err:  err.Error(),
+//		Path: err.Field,
+//	}
+//}
+
+//func intoKalmValidateErrorList(errList field.ErrorList) KalmValidateErrorList {
+//	rst := KalmValidateErrorList{}
+//	for _, err := range errList {
+//		rst = append(rst, intoKalmValidateError(*err))
+//	}
+//	return rst
+//}

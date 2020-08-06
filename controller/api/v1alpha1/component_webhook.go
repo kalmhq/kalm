@@ -17,6 +17,8 @@ package v1alpha1
 
 import (
 	"fmt"
+	"github.com/robfig/cron"
+	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -41,6 +43,15 @@ var _ webhook.Defaulter = &Component{}
 func (r *Component) Default() {
 	componentlog.Info("default", "name", r.Name)
 
+	if r.Spec.WorkloadType == "" {
+		r.Spec.WorkloadType = WorkloadTypeServer
+	}
+
+	if r.Spec.Replicas == nil {
+		zeroReplicas := int32(0)
+		r.Spec.Replicas = &zeroReplicas
+	}
+
 	// set service port
 	if r.Spec.Ports != nil {
 		for i, port := range r.Spec.Ports {
@@ -63,6 +74,18 @@ func (r *Component) ValidateCreate() error {
 		return err
 	}
 
+	if err := r.validateScheduleOfComponentIfIsCronJob(); err != nil {
+		return err
+	}
+
+	if err := validateLabels(r.Spec.NodeSelectorLabels, ".spec.nodeSelectorLabels"); err != nil {
+		return err
+	}
+
+	if err := r.validateProbes(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -71,6 +94,18 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 	componentlog.Info("validate update", "name", r.Name)
 
 	if err := r.validateVolumeOfComponent(); err != nil {
+		return err
+	}
+
+	if err := r.validateScheduleOfComponentIfIsCronJob(); err != nil {
+		return err
+	}
+
+	if err := validateLabels(r.Spec.NodeSelectorLabels, ".spec.nodeSelectorLabels"); err != nil {
+		return err
+	}
+
+	if err := r.validateProbes(); err != nil {
 		return err
 	}
 
@@ -112,5 +147,54 @@ func (r *Component) validateVolumeOfComponent() (rst KalmValidateErrorList) {
 		rst = append(rst, toKalmValidateErrors(errList)...)
 	}
 
-	return nil
+	return
+}
+
+func (r *Component) validateScheduleOfComponentIfIsCronJob() (rst KalmValidateErrorList) {
+	if r.Spec.WorkloadType != WorkloadTypeCronjob {
+		return nil
+	}
+
+	_, err := cron.ParseStandard(r.Spec.Schedule)
+	if err != nil {
+		rst = append(rst, KalmValidateError{
+			Err:  err.Error(),
+			Path: ".spec.schedule",
+		})
+	}
+
+	return
+}
+
+func validateLabels(labels map[string]string, fieldPath string) (rst KalmValidateErrorList) {
+
+	for _, label := range labels {
+		errs := apimachineryvalidation.NameIsDNSLabel(label, false)
+		for _, err := range errs {
+			rst = append(rst, KalmValidateError{
+				Err:  err,
+				Path: fieldPath,
+			})
+		}
+	}
+
+	return
+}
+
+func (r *Component) validateProbes() (rst KalmValidateErrorList) {
+	livenessProbe := r.Spec.LivenessProbe
+	if livenessProbe != nil {
+		errs := validateProbe(livenessProbe, field.NewPath(".spec.livenessProbe"))
+
+		rst = append(rst, toKalmValidateErrors(errs)...)
+	}
+
+	readinessProbe := r.Spec.ReadinessProbe
+	if readinessProbe != nil {
+		errs := validateProbe(readinessProbe, field.NewPath(".spec.readinessProbe"))
+
+		rst = append(rst, toKalmValidateErrors(errs)...)
+	}
+
+	return
 }

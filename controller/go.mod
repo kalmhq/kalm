@@ -4,7 +4,6 @@ go 1.13
 
 require (
 	github.com/coreos/prometheus-operator v0.29.0
-	github.com/davecgh/go-spew v1.1.1
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/dop251/goja v0.0.0-20200721192441-a695b0cdd498
 	github.com/elastic/cloud-on-k8s v0.0.0-20200721161711-b12a39f14ab1
@@ -16,6 +15,7 @@ require (
 	github.com/jetstack/cert-manager v0.13.1
 	github.com/joho/godotenv v1.3.0
 	github.com/onsi/ginkgo v1.12.1
+	github.com/robfig/cron v1.2.0
 	github.com/stretchr/testify v1.6.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
