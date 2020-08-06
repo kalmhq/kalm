@@ -72,7 +72,6 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
       <PopupState variant="popover" popupId={popupId}>
         {(popupState) => {
           const trigger = bindTrigger(popupState);
-          const { onClick } = trigger;
           const popover = customBindPopover(popupState);
           return (
             <>
@@ -83,15 +82,9 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                   component="span"
                   size="small"
                   {...trigger}
-<<<<<<< HEAD
                   onClick={(e: React.SyntheticEvent<any, Event>) => {
                     e.stopPropagation();
                     trigger.onClick(e);
-=======
-                  onClick={(event: React.SyntheticEvent<any, Event>) => {
-                    onClick(event);
-                    event.stopPropagation();
->>>>>>> master
                   }}
                 >
                   Delete
@@ -114,13 +107,8 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                           variant="outlined"
                           fullWidth
                           size="small"
-<<<<<<< HEAD
                           onClick={(e) => {
                             e.stopPropagation();
-=======
-                          onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                            event.stopPropagation();
->>>>>>> master
                             blinkTopProgressAction();
                             confirmedAction();
                           }}
@@ -134,13 +122,8 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                           size="small"
                           variant="outlined"
                           color="default"
-<<<<<<< HEAD
                           onClick={(e) => {
                             e.stopPropagation();
-=======
-                          onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                            event.stopPropagation();
->>>>>>> master
                             popover.onClose();
                           }}
                         >
