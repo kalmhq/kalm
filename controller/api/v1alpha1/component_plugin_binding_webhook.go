@@ -54,11 +54,15 @@ func (r *ComponentPluginBinding) ValidateDelete() error {
 }
 
 func (r *ComponentPluginBinding) validate() (rst KalmValidateErrorList) {
-	if r.Spec.PluginName == "" {
-		rst = append(rst, KalmValidateError{
-			Err:  "pluginName should not be empty",
-			Path: "spec.pluginName",
-		})
+
+	if r.Spec.ComponentName != "" {
+		isValid := isValidResourceName(r.Spec.ComponentName)
+		if !isValid {
+			rst = append(rst, KalmValidateError{
+				Err:  "invalid componentName",
+				Path: "spec.componentName",
+			})
+		}
 	}
 
 	return rst

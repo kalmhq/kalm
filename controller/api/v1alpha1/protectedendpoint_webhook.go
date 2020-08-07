@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -59,6 +60,15 @@ func (r *ProtectedEndpoint) validate() (rst KalmValidateErrorList) {
 			Err:  "invalid endpointName",
 			Path: "spec.endpointName",
 		})
+	}
+
+	for i, port := range r.Spec.Ports {
+		if port == 0 {
+			rst = append(rst, KalmValidateError{
+				Err:  "port should not be 0",
+				Path: fmt.Sprintf("spec.ports[%d]", i),
+			})
+		}
 	}
 
 	return rst

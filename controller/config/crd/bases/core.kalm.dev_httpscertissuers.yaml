@@ -39,8 +39,10 @@ spec:
             acmeCloudFlare:
               properties:
                 apiTokenSecretName:
+                  minLength: 1
                   type: string
                 email:
+                  minLength: 1
                   type: string
               required:
               - apiTokenSecretName

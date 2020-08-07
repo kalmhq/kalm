@@ -47,17 +47,27 @@ spec:
               items:
                 properties:
                   name:
+                    minLength: 1
                     type: string
                   operator:
-                    enum:
-                    - equal
-                    - withPrefix
-                    - matchRegexp
+                    allOf:
+                    - enum:
+                      - equal
+                      - withPrefix
+                      - matchRegexp
+                    - enum:
+                      - equal
+                      - withPrefix
+                      - matchRegexp
                     type: string
                   type:
-                    enum:
-                    - query
-                    - header
+                    allOf:
+                    - enum:
+                      - query
+                      - header
+                    - enum:
+                      - query
+                      - header
                     type: string
                   value:
                     type: string
@@ -78,23 +88,43 @@ spec:
                   type: array
                 allowMethods:
                   items:
+                    enum:
+                    - GET
+                    - HEAD
+                    - POST
+                    - PUT
+                    - PATCH
+                    - DELETE
+                    - OPTIONS
+                    - TRACE
+                    - CONNECT
                     type: string
                   type: array
                 allowOrigin:
                   items:
                     properties:
                       name:
+                        minLength: 1
                         type: string
                       operator:
-                        enum:
-                        - equal
-                        - withPrefix
-                        - matchRegexp
+                        allOf:
+                        - enum:
+                          - equal
+                          - withPrefix
+                          - matchRegexp
+                        - enum:
+                          - equal
+                          - withPrefix
+                          - matchRegexp
                         type: string
                       type:
-                        enum:
-                        - query
-                        - header
+                        allOf:
+                        - enum:
+                          - query
+                          - header
+                        - enum:
+                          - query
+                          - header
                         type: string
                       value:
                         type: string

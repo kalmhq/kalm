@@ -63,7 +63,7 @@ spec:
                 properties:
                   name:
                     description: Name of the environment variable. Must be a C_IDENTIFIER.
-                    minLength: 2
+                    minLength: 1
                     type: string
                   prefix:
                     type: string

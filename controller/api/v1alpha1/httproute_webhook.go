@@ -21,6 +21,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"strings"
 )
 
 // log is for logging in this package.
@@ -66,19 +67,8 @@ func (r *HttpRoute) ValidateDelete() error {
 }
 
 func (r *HttpRoute) validate() (rst KalmValidateErrorList) {
-	for i, cond := range r.Spec.Conditions {
-		if cond.Name != "" {
-			continue
-		}
-
-		rst = append(rst, KalmValidateError{
-			Err:  "should not be empty",
-			Path: fmt.Sprintf("spec.conditions[%d].name", i),
-		})
-	}
-
 	for i, host := range r.Spec.Hosts {
-		if !isValidHost(host) {
+		if !isValidK8sHost(host) {
 			rst = append(rst, KalmValidateError{
 				Err:  "invalid host",
 				Path: fmt.Sprintf("spec.hosts[%d]", i),
@@ -86,8 +76,17 @@ func (r *HttpRoute) validate() (rst KalmValidateErrorList) {
 		}
 	}
 
+	for i, path := range r.Spec.Paths {
+		if !strings.HasPrefix(path, "/") {
+			rst = append(rst, KalmValidateError{
+				Err:  "invalid path, should start with: /",
+				Path: fmt.Sprintf("spec.paths[%d]", i),
+			})
+		}
+	}
+
 	for i, dest := range r.Spec.Destinations {
-		if !isValidHost(dest.Host) {
+		if !isValidK8sHost(dest.Host) {
 			rst = append(rst, KalmValidateError{
 				Err:  "invalid host",
 				Path: fmt.Sprintf("spec.destinations[%d].host", i),
@@ -95,10 +94,20 @@ func (r *HttpRoute) validate() (rst KalmValidateErrorList) {
 		}
 	}
 
+	timeout := r.Spec.Timeout
+	if timeout != nil {
+		if *timeout <= 0 {
+			rst = append(rst, KalmValidateError{
+				Err:  "should be positive",
+				Path: fmt.Sprintf("spec.timeout"),
+			})
+		}
+	}
+
 	mirror := r.Spec.Mirror
 	if mirror != nil {
 		mirrorHost := mirror.Destination.Host
-		if !isValidHost(mirrorHost) {
+		if !isValidK8sHost(mirrorHost) {
 			rst = append(rst, KalmValidateError{
 				Err:  "invalid host",
 				Path: "spec.mirror.destination.host",

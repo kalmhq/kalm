@@ -31,8 +31,6 @@ func (r *HttpsCertIssuer) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-httpscertissuer,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=httpscertissuers,versions=v1alpha1,name=vhttpscertissuer.kb.io
 
 var _ webhook.Validator = &HttpsCertIssuer{}
@@ -64,21 +62,30 @@ func (r *HttpsCertIssuer) validate() (rst KalmValidateErrorList) {
 			Err:  "should provide at least 1 among: acmeCloudFlare, caForTest and http01",
 			Path: "spec",
 		})
+	}
 
+	http01 := r.Spec.HTTP01
+	if http01 != nil && http01.Email != "" {
+		if !isValidEmail(http01.Email) {
+			rst = append(rst, KalmValidateError{
+				Err:  "invalid email:" + http01.Email,
+				Path: "spec.http01.email",
+			})
+		}
 	}
 
 	acmeCloudFlare := r.Spec.ACMECloudFlare
 	if acmeCloudFlare != nil {
-		if acmeCloudFlare.APITokenSecretName == "" {
+		if !isValidResourceName(acmeCloudFlare.APITokenSecretName) {
 			rst = append(rst, KalmValidateError{
-				Err:  "should not be empty",
+				Err:  "invalid secret name",
 				Path: "spec.acmeCloudFlare.apiTokenSecretName",
 			})
 		}
 
-		if acmeCloudFlare.Email == "" {
+		if !isValidEmail(acmeCloudFlare.Email) {
 			rst = append(rst, KalmValidateError{
-				Err:  "should not be empty",
+				Err:  "invalid email:" + acmeCloudFlare.Email,
 				Path: "spec.acmeCloudFlare.email",
 			})
 		}

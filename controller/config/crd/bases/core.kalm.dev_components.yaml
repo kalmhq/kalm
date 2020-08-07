@@ -89,6 +89,11 @@ spec:
               type: array
             dnsPolicy:
               description: DNSPolicy defines how a pod's DNS will be configured.
+              enum:
+              - ClusterFirstWithHostNet
+              - ClusterFirst
+              - Default
+              - None
               type: string
             enableHeadlessService:
               type: boolean
@@ -99,7 +104,7 @@ spec:
                 properties:
                   name:
                     description: Name of the environment variable. Must be a C_IDENTIFIER.
-                    minLength: 2
+                    minLength: 1
                     type: string
                   prefix:
                     type: string
@@ -284,8 +289,10 @@ spec:
                     type: boolean
                   content:
                     description: the content of the file
+                    minLength: 1
                     type: string
                   mountPath:
+                    minLength: 1
                     type: string
                   readonly:
                     type: boolean
@@ -433,8 +440,15 @@ spec:
               description: RestartPolicy describes how the container should be restarted.
                 Only one of the following restart policies may be specified. If none
                 of the following policies is specified, the default one is RestartPolicyAlways.
+              enum:
+              - Always
+              - OnFailure
+              - Never
               type: string
             restartStrategy:
+              enum:
+              - Recreate
+              - RollingUpdate
               type: string
             runnerPermission:
               properties:
@@ -495,6 +509,10 @@ spec:
               type: object
             schedule:
               type: string
+            startAfterComponents:
+              items:
+                type: string
+              type: array
             terminationGracePeriodSeconds:
               format: int64
               type: integer

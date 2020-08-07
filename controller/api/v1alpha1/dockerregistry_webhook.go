@@ -54,11 +54,22 @@ func (r *DockerRegistry) ValidateDelete() error {
 }
 
 func (r *DockerRegistry) validate() (rst KalmValidateErrorList) {
-	if r.Spec.Host == "" {
+	isValid := isValidURL(r.Spec.Host)
+	if !isValid {
 		rst = append(rst, KalmValidateError{
-			Err:  "should not be empty",
+			Err:  "invalid url",
 			Path: "spec.host",
 		})
+	}
+
+	intervalSec := r.Spec.PoolingIntervalSeconds
+	if intervalSec != nil {
+		if *intervalSec <= 0 {
+			rst = append(rst, KalmValidateError{
+				Err:  "should be positive int",
+				Path: "spec.poolingIntervalSeconds",
+			})
+		}
 	}
 
 	return rst

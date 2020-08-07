@@ -63,6 +63,7 @@ spec:
               type: string
             src:
               description: source code of the plugin
+              minLength: 1
               type: string
           required:
           - src

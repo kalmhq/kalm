@@ -19,9 +19,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// +kubebuilder:validation:Enum=query;header
 type HttpRouteConditionType string
+
+// +kubebuilder:validation:Enum=equal;withPrefix;matchRegexp
 type HttpRouteConditionOperator string
-type HttpRouteCertValue string
+
+//type HttpRouteCertValue string
 
 const (
 	HttpRouteConditionTypeQuery  HttpRouteConditionType = "query"
@@ -34,15 +38,17 @@ const (
 	//HRCOWithoutPrefix  HttpRouteConditionOperator = "withoutPrefix"
 	//HRCONotMatchRegexp HttpRouteConditionOperator = "notMatchRegexp"
 
-	HttpCertAuto    HttpRouteCertValue = "Auto"
-	HttpCertDefault HttpRouteCertValue = "Default"
+	//HttpCertAuto    HttpRouteCertValue = "Auto"
+	//HttpCertDefault HttpRouteCertValue = "Default"
 )
 
 type HttpRouteCondition struct {
 	// +kubebuilder:validation:Enum=query;header
 	Type HttpRouteConditionType `json:"type"`
 
-	Name  string `json:"name"`
+	// +kubebuilder:validation:MinLength=1
+	Name string `json:"name"`
+
 	Value string `json:"value"`
 
 	// +kubebuilder:validation:Enum=equal;withPrefix;matchRegexp
@@ -85,11 +91,14 @@ type HttpRouteFault struct {
 
 type HttpRouteCORS struct {
 	AllowOrigins     []HttpRouteCondition `json:"allowOrigin"`
-	AllowMethods     []string             `json:"allowMethods"`
+	AllowMethods     []AllowMethod        `json:"allowMethods"`
 	AllowCredentials bool                 `json:"allowCredentials"`
 	AllowHeaders     []string             `json:"allowHeaders"`
 	MaxAgeSeconds    int                  `json:"maxAgeSeconds"`
 }
+
+// +kubebuilder:validation:Enum=GET;HEAD;POST;PUT;PATCH;DELETE;OPTIONS;TRACE;CONNECT
+type AllowMethod string
 
 // +kubebuilder:validation:Enum=GET;HEAD;POST;PUT;PATCH;DELETE;OPTIONS;TRACE;CONNECT
 type HttpRouteMethod string
@@ -97,8 +106,7 @@ type HttpRouteMethod string
 // +kubebuilder:validation:Enum=http;https
 type HttpRouteScheme string
 
-// +kubebuilder:validation:MinItems=1
-type HttpRouteSchemes []HttpRouteScheme
+//type HttpRouteSchemes []HttpRouteScheme
 
 // HttpRouteSpec defines the desired state of HttpRoute
 type HttpRouteSpec struct {
@@ -111,8 +119,10 @@ type HttpRouteSpec struct {
 	// +kubebuilder:validation:MinItems=1
 	Methods []HttpRouteMethod `json:"methods"`
 
-	Schemes   HttpRouteSchemes `json:"schemes"`
-	StripPath bool             `json:"stripPath,omitempty"`
+	// +kubebuilder:validation:MinItems=1
+	Schemes []HttpRouteScheme `json:"schemes"`
+
+	StripPath bool `json:"stripPath,omitempty"`
 
 	Conditions []HttpRouteCondition `json:"conditions,omitempty"`
 

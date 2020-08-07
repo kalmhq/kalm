@@ -8,6 +8,9 @@ import (
 	"k8s.io/apiextensions-apiserver/pkg/apiserver/validation"
 	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
 	v1validation "k8s.io/apimachinery/pkg/apis/meta/v1/validation"
+	"net/url"
+	"regexp"
+
 	//"k8s.io/utils/field"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
@@ -53,9 +56,25 @@ func getValidatorForKalmSpec(crdDefinition []byte) (*validate.SchemaValidator, e
 }
 
 // abc-def.xyz
-func isValidHost(host string) bool {
+func isValidK8sHost(host string) bool {
 	errs := apimachineryval.IsDNS1123Subdomain(host)
 	return len(errs) == 0
+}
+
+func isValidURL(s string) bool {
+	u, err := url.Parse(s)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return false
+	}
+
+	return true
+}
+
+// https://regex101.com/r/SEg6KL/4
+var domainReg = regexp.MustCompile(`^(?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9]\.)|(?:[0-9]+/[0-9]{2})\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?$`)
+
+func isValidDomain(s string) bool {
+	return domainReg.MatchString(s)
 }
 
 // abc-123-xyz
@@ -72,4 +91,15 @@ func isValidLabels(labels map[string]string, path *field.Path) (bool, field.Erro
 func isValidLabelValue(labelVal string) bool {
 	errs := apimachineryval.IsValidLabelValue(labelVal)
 	return len(errs) == 0
+}
+
+//https://golangcode.com/validate-an-email-address/
+var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+func isValidEmail(e string) bool {
+	if len(e) < 3 && len(e) > 254 {
+		return false
+	}
+
+	return emailRegex.MatchString(e)
 }

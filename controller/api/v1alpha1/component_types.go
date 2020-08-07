@@ -51,7 +51,7 @@ type ComponentSpec struct {
 	NodeSelectorLabels map[string]string `json:"nodeSelectorLabels,omitempty"`
 	PreferNotCoLocated bool              `json:"preferNotCoLocated,omitempty"`
 
-	//StartAfterComponents []string `json:"startAfterComponents,omitempty"`
+	StartAfterComponents []string `json:"startAfterComponents,omitempty"`
 
 	Command string `json:"command,omitempty"`
 
@@ -142,4 +142,3 @@ type ComponentList struct {
 func init() {
 	SchemeBuilder.Register(&Component{}, &ComponentList{})
 }
-

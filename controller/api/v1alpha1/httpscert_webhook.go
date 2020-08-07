@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -54,11 +55,17 @@ func (r *HttpsCert) ValidateDelete() error {
 }
 
 func (r *HttpsCert) validate() (rst KalmValidateErrorList) {
-	if len(r.Spec.Domains) == 0 {
+
+	for i, domain := range r.Spec.Domains {
+		if isValidDomain(domain) {
+			continue
+		}
+
 		rst = append(rst, KalmValidateError{
-			Err:  "at least 1 domain",
-			Path: "spec.domains",
+			Err:  "invalid domain:" + domain,
+			Path: fmt.Sprintf("spec.domains[%d]", i),
 		})
+
 	}
 
 	if r.Spec.IsSelfManaged {
