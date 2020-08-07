@@ -14,8 +14,8 @@ import { CustomizedButton } from "widgets/Button";
 import { CopyAsCurl } from "widgets/CopyAsCurl";
 import DomainStatus from "widgets/DomainStatus";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { DeleteIcon, EditIcon, ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
-import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { EditIcon, ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { Loading } from "widgets/Loading";
 import { getRouteUrl, OpenInBrowser } from "widgets/OpenInBrowser";
 import { KTable } from "widgets/Table";
@@ -25,6 +25,7 @@ import sc from "utils/stringConstants";
 import { withClusterInfo } from "hoc/withClusterInfo";
 import { ClusterInfo } from "types/cluster";
 import { KMLink } from "widgets/Link";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -173,17 +174,11 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         >
           <EditIcon />
         </IconLinkWithToolTip>
-        <IconButtonWithTooltip
-          tooltipTitle="Delete"
-          aria-label="delete"
-          onClick={() => {
-            blinkTopProgressAction();
-            dispatch(deleteRouteAction(row));
-          }}
-        >
-          <DeleteIcon />
-        </IconButtonWithTooltip>
-
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-route-popup"
+          popupTitle="DELETE ROUTE?"
+          confirmedAction={() => dispatch(deleteRouteAction(row))}
+        />
         {/* <Button
           size="small"
           variant="outlined"

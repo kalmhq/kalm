@@ -96,10 +96,6 @@ func removeExtAuthPathPrefix(path string) string {
 		path = path[len(ENVOY_EXT_AUTH_PATH_PREFIX)+1:]
 	}
 
-	if path == "" {
-		path = "/"
-	}
-
 	return path
 }
 
@@ -109,6 +105,10 @@ func getOriginalURL(c echo.Context) string {
 
 	if requestURI == "" {
 		requestURI = removeExtAuthPathPrefix(c.Request().RequestURI)
+	}
+
+	if requestURI == "" {
+		requestURI = "/"
 	}
 
 	ur := fmt.Sprintf("%s://%s%s", c.Scheme(), c.Request().Host, requestURI)
@@ -289,8 +289,11 @@ func handleSetIDToken(c echo.Context, idToken *oidc.IDToken, rawIDToken string) 
 
 	requestURI := c.Request().Header.Get("X-Envoy-Original-Path")
 
+	log.Debug("[Set ID Token]", "X-Envoy-Original-Path", requestURI)
+
 	if requestURI == "" {
 		requestURI = removeExtAuthPathPrefix(c.Request().RequestURI)
+		log.Debug("[Set ID Token]", "RawRequestURI", c.Request().RequestURI, "removeExtAuthPathPrefix", requestURI)
 	}
 
 	uri, err := url.Parse(requestURI)
@@ -302,6 +305,10 @@ func handleSetIDToken(c echo.Context, idToken *oidc.IDToken, rawIDToken string) 
 	params := uri.Query()
 	params.Del(ID_TOKEN_QUERY_NAME)
 	uri.RawQuery = params.Encode()
+
+	if uri.Path == "" {
+		uri.Path = "/"
+	}
 
 	return c.Redirect(302, uri.String())
 }
@@ -439,6 +446,19 @@ func handleOIDCCallback(c echo.Context) error {
 	return c.Redirect(302, uri.String())
 }
 
+func handleLog(c echo.Context) error {
+	level := c.QueryParam("level")
+
+	switch level {
+	case "debug":
+		log.InitDefaultLogger("debug")
+	default:
+		log.InitDefaultLogger("info")
+	}
+
+	return c.NoContent(200)
+}
+
 func main() {
 	e := server.NewEchoInstance()
 
@@ -449,6 +469,8 @@ func main() {
 	// envoy ext_authz handlers
 	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX+"/*", handleExtAuthz)
 	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX, handleExtAuthz)
+
+	e.POST("/log", handleLog)
 
 	err := e.StartH2CServer("0.0.0.0:3002", &http2.Server{
 		MaxConcurrentStreams: 250,

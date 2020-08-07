@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"golang.org/x/net/http2"
+	"time"
+
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/config"
@@ -110,7 +113,11 @@ func run(runningConfig *config.Config) {
 	// watcher.StartWatching(clientManager)
 
 	go resources.StartMetricScraper(context.Background(), clientManager)
-	err := e.Start(runningConfig.GetServerAddress())
+	err := e.StartH2CServer(runningConfig.GetServerAddress(), &http2.Server{
+		MaxConcurrentStreams: 250,
+		MaxReadFrameSize:     1048576,
+		IdleTimeout:          60 * time.Second,
+	})
 	if err != nil {
 		panic(err)
 	}

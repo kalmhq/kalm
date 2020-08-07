@@ -9,9 +9,8 @@ import (
 )
 
 func (h *ApiHandler) handleGetHttpsCertIssuer(c echo.Context) error {
-	k8sClient := getK8sClient(c)
 	k8sClientConfig := getK8sClientConfig(c)
-	builder := resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
+	builder := resources.NewBuilder(k8sClientConfig, h.logger)
 
 	httpsCertIssuers, err := builder.GetHttpsCertIssuerList()
 	if err != nil {
@@ -40,9 +39,8 @@ func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
 
 	if httpsCertIssuer.ACMECloudFlare != nil {
 		// reconcile secret for this issuer
-		k8sClient := getK8sClient(c)
 		k8sClientConfig := getK8sClientConfig(c)
-		builder := resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
+		builder := resources.NewBuilder(k8sClientConfig, h.logger)
 
 		acmeSecretName := resources.GenerateSecretNameForACME(httpsCertIssuer)
 		err := builder.ReconcileSecretForIssuer(
@@ -68,7 +66,6 @@ func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
 
 	return c.JSON(201, httpsCertIssuer)
 }
-
 
 func (h *ApiHandler) handleUpdateHttpsCertIssuer(c echo.Context) error {
 	httpsCertIssuer, err := getHttpsCertIssuerFromContext(c)

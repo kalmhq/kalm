@@ -92,7 +92,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 		return &ResMessage{}, nil
 	}
 
-	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.DefaultLogger())
+	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
 	applicationDetails, err := builder.BuildApplicationDetails(namespace)
 	if err != nil {
 		return nil, err
@@ -107,7 +107,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 }
 
 func componentToResMessage(c *Client, action string, component *v1alpha1.Component) (*ResMessage, error) {
-	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.DefaultLogger())
+	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
 	componentDetails, err := builder.BuildComponentDetails(component, nil)
 	if err != nil {
 		return nil, err
@@ -229,7 +229,7 @@ func buildRegistryResMessage(c *Client, action string, objWatched interface{}) (
 		return nil, errors.New("convert watch obj to Registry failed")
 	}
 
-	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.DefaultLogger())
+	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
 	registryRes, err := builder.GetDockerRegistry(registry.Name)
 	if err != nil {
 		return nil, err
@@ -253,7 +253,7 @@ func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*R
 		return &ResMessage{}, nil
 	}
 
-	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.DefaultLogger())
+	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
 
 	var pv coreV1.PersistentVolume
 	if action == "Delete" {
@@ -288,7 +288,7 @@ func buildSSOConfigResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, nil
 	}
 
-	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.DefaultLogger())
+	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
 	ssoConfigRes, err := builder.GetSSOConfig()
 	if err != nil {
 		return nil, err

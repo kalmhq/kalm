@@ -185,6 +185,24 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
       case "applications":
       case "":
         return "Apps";
+      case "routes":
+        return "Routes";
+      case "components":
+        return "Components";
+      case "certificates":
+        return "Certificates";
+      case "nodes":
+        return "Nodes";
+      case "loadbalancer":
+        return "Load Balancer";
+      case "disks":
+        return "Disks";
+      case "registries":
+        return "Registries";
+      case "new":
+        return "New";
+      case "edit":
+        return "Edit";
       case "sso":
         return "SSO";
       case "ci":
@@ -192,7 +210,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
       case "metrics":
         return stringConstants.APP_DASHBOARD_PAGE_NAME;
       default:
-        return path[0].toUpperCase() + path.slice(1);
+        return path;
     }
   };
 

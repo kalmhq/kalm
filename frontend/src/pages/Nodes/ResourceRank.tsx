@@ -4,6 +4,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
+import { humanFileSize } from "utils/sizeConv";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -21,10 +22,11 @@ const mapStateToProps = (state: RootState) => {
 interface Option {
   name: string;
   value: number;
-  unit: string;
+  unit?: string; // if not pass unit, will use humanFileSize
 }
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
+  title: string;
   allocateds: Option[];
 }
 
@@ -37,7 +39,7 @@ class ResourceRankRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { classes, allocateds } = this.props;
+    const { classes, allocateds, title } = this.props;
 
     const maxBarWidth = 200;
     let maxValue = 0;
@@ -49,7 +51,7 @@ class ResourceRankRaw extends React.PureComponent<Props, State> {
 
     return (
       <Box p={2}>
-        <Box pb={2}>Applications (TODO: fake data now)</Box>
+        <Box pb={2}>{title}</Box>
         {allocateds.map((a, index) => {
           return (
             <Box display="flex" pb={1} key={index}>
@@ -59,7 +61,7 @@ class ResourceRankRaw extends React.PureComponent<Props, State> {
                 </Box>
               </Box>
               <Box width="50px" textAlign="right">
-                {a.value + " " + a.unit}
+                {a.unit ? a.value + " " + a.unit : humanFileSize(a.value)}
               </Box>
             </Box>
           );

@@ -13,8 +13,8 @@ const ErrorHandler = (e: any) => {
     )();
   } else {
     throttle(e.message, () => store.dispatch(setErrorNotificationAction(e.message)), 10000)();
-    console.log(e);
   }
+  throw e;
 };
 
 export const errorHandlerMiddleware = createThunkErrorHandlerMiddleware({ onError: ErrorHandler });

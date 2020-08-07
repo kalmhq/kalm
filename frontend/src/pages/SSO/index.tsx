@@ -14,7 +14,7 @@ import {
   SSOGithubConnector,
   SSOGitlabConnector,
 } from "types/sso";
-import { DeleteIcon, EditIcon, GithubIcon } from "widgets/Icon";
+import { EditIcon, GithubIcon } from "widgets/Icon";
 import Immutable from "immutable";
 import { KTable } from "widgets/Table";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
@@ -22,6 +22,7 @@ import { deleteProtectedEndpointAction } from "actions/sso";
 import { KMLink } from "widgets/Link";
 import { CustomizedButton } from "widgets/Button";
 import { Link } from "react-router-dom";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -160,15 +161,11 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
         >
           <EditIcon />
         </IconButtonWithTooltip>
-        <IconButtonWithTooltip
-          size="small"
-          tooltipPlacement="top"
-          tooltipTitle="Delete"
-          aria-label="delete"
-          onClick={() => dispatch(deleteProtectedEndpointAction(rowData))}
-        >
-          <DeleteIcon />
-        </IconButtonWithTooltip>
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-sso-popup"
+          popupTitle="DELETE SSO?"
+          confirmedAction={() => dispatch(deleteProtectedEndpointAction(rowData))}
+        />
       </>
     );
   };
