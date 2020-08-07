@@ -78,7 +78,9 @@ class ResourceRankRaw extends React.PureComponent<Props, State> {
                 <Paper variant="elevation" square>
                   <Box className={classes.barWrapper}>
                     <Box width={(a.value / maxValue) * maxBarWidth} className={classes.bar}></Box>
-                    <Box className={classes.barText}>{a.name}</Box>
+                    <Box pl={1} pr={1} className={classes.barText}>
+                      {a.name}
+                    </Box>
                   </Box>
                 </Paper>
               </Box>
