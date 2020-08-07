@@ -55,35 +55,6 @@ interface States {
   chartDateFilter: string;
 }
 
-// TODO remove this and use real
-const fakePopperData = [
-  {
-    name: "application1",
-    value: 1000,
-    unit: "m",
-  },
-  {
-    name: "application2",
-    value: 800,
-    unit: "m",
-  },
-  {
-    name: "application3",
-    value: 700,
-    unit: "m",
-  },
-  {
-    name: "application4",
-    value: 500,
-    unit: "m",
-  },
-  {
-    name: "application5",
-    value: 300,
-    unit: "m",
-  },
-];
-
 type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
 export class NodeListRaw extends React.Component<Props, States> {
@@ -129,6 +100,8 @@ export class NodeListRaw extends React.Component<Props, States> {
       );
     });
 
+    const { cpuRankData, memoryRankData } = this.getNodeResourceRankData(node);
+
     return (
       <Expansion
         title={
@@ -156,7 +129,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank title="Pods" allocateds={fakePopperData} />
+                                <ResourceRank title="Pods" allocateds={cpuRankData} />
                               </Paper>
                             </Fade>
                           )}
@@ -181,7 +154,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank title="Pods" allocateds={fakePopperData} />
+                                <ResourceRank title="Pods" allocateds={memoryRankData} />
                               </Paper>
                             </Fade>
                           )}
@@ -249,7 +222,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank title="Pods" allocateds={fakePopperData} />
+                                <ResourceRank title="Pods" allocateds={cpuRankData} />
                               </Paper>
                             </Fade>
                           )}
@@ -279,7 +252,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank title="Pods" allocateds={fakePopperData} />
+                                <ResourceRank title="Pods" allocateds={memoryRankData} />
                               </Paper>
                             </Fade>
                           )}
@@ -567,10 +540,7 @@ export class NodeListRaw extends React.Component<Props, States> {
         });
     });
 
-    console.log("cpuRankMap", cpuRankMap);
-
     for (let namespace in cpuRankMap) {
-      console.log("namespace", namespace);
       cpuRankData.push({
         name: namespace,
         value: cpuRankMap[namespace],
@@ -624,6 +594,71 @@ export class NodeListRaw extends React.Component<Props, States> {
     // memoryRankData.sort(function (a, b) {
     //   return a.value - b.value;
     // });
+
+    return {
+      cpuRankData,
+      memoryRankData,
+    };
+  }
+
+  private getNodeResourceRankData(node: Node) {
+    const cpuRankData: {
+      name: string;
+      value: number;
+      unit?: string;
+    }[] = [];
+
+    const memoryRankData: {
+      name: string;
+      value: number;
+      unit?: string;
+    }[] = [];
+
+    const cpuRankMap: { [key: string]: number } = {};
+
+    const memoryRankMap: { [key: string]: number } = {};
+
+    node
+      .get("allocatedResources")
+      .get("podsRequests")
+      .forEach((podRequest) => {
+        const podName = podRequest.get("podName");
+
+        const cpuData = podRequest.get("requests").get("cpu");
+
+        if (cpuData) {
+          if (cpuRankMap[podName]) {
+            cpuRankMap[podName] = cpuRankMap[podName] + sizeStringToNumber(cpuData) * 1000;
+          } else {
+            cpuRankMap[podName] = sizeStringToNumber(cpuData) * 1000;
+          }
+        }
+
+        const memoryData = podRequest.get("requests").get("memory");
+
+        if (memoryData) {
+          if (memoryRankMap[podName]) {
+            memoryRankMap[podName] = memoryRankMap[podName] + sizeStringToNumber(memoryData);
+          } else {
+            memoryRankMap[podName] = sizeStringToNumber(memoryData);
+          }
+        }
+      });
+
+    for (let podName in cpuRankMap) {
+      cpuRankData.push({
+        name: podName,
+        value: cpuRankMap[podName],
+        unit: "m",
+      });
+    }
+
+    for (let podName in memoryRankMap) {
+      memoryRankData.push({
+        name: podName,
+        value: memoryRankMap[podName],
+      });
+    }
 
     return {
       cpuRankData,

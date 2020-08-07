@@ -9,9 +9,24 @@ import { humanFileSize } from "utils/sizeConv";
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
+    barWrapper: {
+      position: "relative",
+      height: 22,
+      width: "100%",
+    },
     bar: {
       height: 22,
       backgroundColor: theme.palette.type === "light" ? indigo[200] : indigo[400],
+    },
+    barText: {
+      height: 22,
+      width: "100%",
+      position: "absolute",
+      left: "0",
+      top: "0",
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
     },
   });
 
@@ -61,8 +76,9 @@ class ResourceRankRaw extends React.PureComponent<Props, State> {
             <Box display="flex" pb={1} key={index}>
               <Box width={maxBarWidth} mr={0.5}>
                 <Paper variant="elevation" square>
-                  <Box width={(a.value / maxValue) * maxBarWidth} className={classes.bar} pl={1} whiteSpace="nowrap">
-                    {a.name}
+                  <Box className={classes.barWrapper}>
+                    <Box width={(a.value / maxValue) * maxBarWidth} className={classes.bar}></Box>
+                    <Box className={classes.barText}>{a.name}</Box>
                   </Box>
                 </Paper>
               </Box>
