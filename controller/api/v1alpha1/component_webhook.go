@@ -236,7 +236,10 @@ func (r *Component) validatePreInjectedFiles() (rst KalmValidateErrorList) {
 		}
 	}
 
-	apivalidation
-
 	return rst
+}
+
+//todo https://github.com/kubernetes/kubernetes/blob/v1.18.6/pkg/apis/rbac/validation/validation.go#L97
+func (r *Component) validateRunnerPermission() (rst KalmValidateErrorList) {
+	return nil
 }
