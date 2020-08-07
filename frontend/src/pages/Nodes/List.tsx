@@ -15,7 +15,7 @@ import {
 import { api } from "api";
 import { Expansion } from "forms/Route/expansion";
 import { POPPER_ZINDEX } from "layout/Constants";
-import PopupState, { bindToggle, bindTrigger } from "material-ui-popup-state";
+import PopupState, { bindTrigger } from "material-ui-popup-state";
 import { NodeStatus } from "pages/Nodes/NodeStatus";
 import React from "react";
 import { connect } from "react-redux";
@@ -458,7 +458,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                   {(popupState) => {
                     return (
                       <div>
-                        <div {...bindToggle(popupState)}>
+                        <div {...customBindHover(popupState)}>
                           <NodesCPU nodes={nodes} />
                         </div>
                         <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
