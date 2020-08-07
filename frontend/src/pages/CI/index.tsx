@@ -3,9 +3,9 @@ import { Box, Button, createStyles, Theme, Typography, WithStyles, withStyles } 
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { BasePage } from "pages/BasePage";
-import { CIIcon } from "widgets/Icon";
+import { CIIcon, KalmDetailsIcon } from "widgets/Icon";
 import { indigo } from "@material-ui/core/colors";
-import { CustomizedButton, DangerButton } from "widgets/Button";
+import { CustomizedButton } from "widgets/Button";
 import { Link } from "react-router-dom";
 import { withDeployKeys, WithDeployKeysProps } from "hoc/withDeployKeys";
 import { KTable } from "widgets/Table";
@@ -16,6 +16,9 @@ import { InfoBox } from "widgets/InfoBox";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import sc from "utils/stringConstants";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { blinkTopProgressAction } from "actions/settings";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -89,25 +92,21 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
     return (
       <>
-        <Button
-          component={Link}
-          style={{ marginRight: 20 }}
-          color="primary"
-          size="small"
-          variant="outlined"
+        <IconLinkWithToolTip
+          onClick={() => {
+            blinkTopProgressAction();
+          }}
+          // size="small"
+          tooltipTitle="Details"
           to={`/ci/keys/${rowData.get("name")}`}
         >
-          Use
-        </Button>
-        <DangerButton
-          variant="outlined"
-          size="small"
-          onClick={() => {
-            dispatch(deleteDeployKeyAction(rowData));
-          }}
-        >
-          Delete
-        </DangerButton>
+          <KalmDetailsIcon />
+        </IconLinkWithToolTip>
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-ci-popup"
+          popupTitle="DELETE CI?"
+          confirmedAction={() => dispatch(deleteDeployKeyAction(rowData))}
+        />
       </>
     );
   };

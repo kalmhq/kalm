@@ -24,9 +24,8 @@ import { ApplicationCard } from "widgets/ApplicationCard";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
-import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { DeleteIcon, KalmApplicationIcon, KalmDetailsIcon, KalmGridViewIcon, KalmListViewIcon } from "widgets/Icon";
+import { KalmApplicationIcon, KalmDetailsIcon, KalmGridViewIcon, KalmListViewIcon } from "widgets/Icon";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { Caption } from "widgets/Label";
 import { KLink, KMLink } from "widgets/Link";
@@ -36,6 +35,7 @@ import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
 import { Link } from "react-router-dom";
 import sc from "utils/stringConstants";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -69,61 +69,18 @@ const mapStateToProps = (state: RootState) => {
 
 interface Props extends WithStyles<typeof styles>, WithNamespaceProps, ReturnType<typeof mapStateToProps> {}
 
-interface State {
-  isDeleteConfirmDialogOpen: boolean;
-  deletingApplicationListItem?: ApplicationDetails;
-}
-
 interface RowData extends ApplicationDetails {
   index: number;
 }
 
-class ApplicationListRaw extends React.PureComponent<Props, State> {
+class ApplicationListRaw extends React.PureComponent<Props> {
   private tableRef: React.RefObject<MaterialTable<ApplicationDetails>> = React.createRef();
 
-  private defaultState = {
-    isDeleteConfirmDialogOpen: false,
-    deletingApplicationListItem: undefined,
-  };
-
-  constructor(props: Props) {
-    super(props);
-    this.state = this.defaultState;
-  }
-
-  private showDeleteConfirmDialog = (deletingApplicationListItem: ApplicationDetails) => {
-    this.setState({
-      isDeleteConfirmDialogOpen: true,
-      deletingApplicationListItem,
-    });
-  };
-
-  private closeDeleteConfirmDialog = () => {
-    this.setState({ isDeleteConfirmDialogOpen: false });
-  };
-
-  private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen, deletingApplicationListItem } = this.state;
-
-    return (
-      <ConfirmDialog
-        open={isDeleteConfirmDialogOpen}
-        onClose={this.closeDeleteConfirmDialog}
-        title={`${sc.ARE_YOU_SURE_PREFIX} this Application(${deletingApplicationListItem?.get("name")})?`}
-        content={sc.DELETE_APP_SUBTITLE}
-        onAgree={this.confirmDelete}
-      />
-    );
-  };
-
-  private confirmDelete = async () => {
+  private confirmDelete = async (rowData: ApplicationDetails) => {
     const { dispatch } = this.props;
     try {
-      const { deletingApplicationListItem } = this.state;
-      if (deletingApplicationListItem) {
-        await dispatch(deleteApplicationAction(deletingApplicationListItem.get("name")));
-        await dispatch(setSuccessNotificationAction("Successfully delete an application"));
-      }
+      await dispatch(deleteApplicationAction(rowData.get("name")));
+      await dispatch(setSuccessNotificationAction("Successfully delete an application"));
     } catch {
       dispatch(setErrorNotificationAction());
     }
@@ -295,16 +252,11 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         >
           <KalmDetailsIcon />
         </IconLinkWithToolTip>
-        <IconButtonWithTooltip
-          tooltipTitle="Delete"
-          aria-label="delete"
-          onClick={() => {
-            blinkTopProgressAction();
-            this.showDeleteConfirmDialog(rowData);
-          }}
-        >
-          <DeleteIcon />
-        </IconButtonWithTooltip>
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-application-popup"
+          popupTitle="DELETE APPLICATION?"
+          confirmedAction={() => this.confirmDelete(rowData)}
+        />
       </>
     );
   };
@@ -468,7 +420,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             componentsMap={componentsMap}
             httpRoutes={applicationRoutes}
             activeNamespaceName={activeNamespaceName}
-            showDeleteConfirmDialog={this.showDeleteConfirmDialog}
+            confirmDelete={this.confirmDelete}
           />
         </Grid>
       );
@@ -487,7 +439,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const { isNamespaceLoading, isNamespaceFirstLoaded, applications, usingApplicationCard } = this.props;
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
-        {this.renderDeleteConfirmDialog()}
         <Box p={2}>
           {isNamespaceLoading && !isNamespaceFirstLoaded ? (
             <Loading />

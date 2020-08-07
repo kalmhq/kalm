@@ -7,7 +7,6 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/clientcmd/api"
 	"net/http"
@@ -51,13 +50,7 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 		return err
 	}
 
-	deployKeyClient, err := kubernetes.NewForConfig(deployKeyConfig)
-
-	if err != nil {
-		return err
-	}
-
-	builder := resources.NewBuilder(deployKeyClient, deployKeyConfig, h.logger)
+	builder := resources.NewBuilder(deployKeyConfig, h.logger)
 
 	if builder == nil {
 		return fmt.Errorf("invalid deploy key")
