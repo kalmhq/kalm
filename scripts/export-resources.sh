@@ -6,46 +6,41 @@
 # arg2: target file path, such as "/tmp/my_application.yaml"
 # arg3: input "with-cluster" means export all dockerregistries, deploykeys, httpscerts.
 
+function export_namespace () {
+  cmd="kubectl get ns $1 "
+  patch_cmd="kubectl patch ns $1 "
+  export_resource "$cmd" "$patch_cmd"
+  echo "$1 exported"
+}
+
+function export_namespace_crd () {
+  cmd="kubectl get -n $1 $2 $3 "
+  patch_cmd="kubectl patch -n $1 $2 $3 "
+  export_resource "$cmd" "$patch_cmd"
+  echo "$1 $2 $3 exported"
+}
+
+function export_cluster_crd () {
+  cmd="kubectl get $1 $2 "
+  patch_cmd="kubectl patch $1 $2 "
+  export_resource "$cmd" "$patch_cmd"
+  echo "$1 $2 exported"
+}
+
 function export_resource () {
-  ns=$1
-  crd=$2
-  item=$3
-
-  cmd="kubectl get "
-  patch_cmd="kubectl patch "
-  if [ "$1" = "-" ]; then
-    if [ -n "$2" ] && [ "$2" != "-" ] && [ -n "$3" ] && [ "$3" != "-" ]; then
-      cmd=$cmd"$2 $3 "
-      patch_cmd=$patch_cmd"$2 $3 "
-    else
-      return 0
-    fi
-  else
-    if [ "$2" = "-" ] && [ "$3" = "-" ]; then
-      cmd=$cmd"ns $1 "
-      patch_cmd=$patch_cmd"ns $1 "
-    elif [ -n "$2" ] && [ "$2" != "-" ] && [ -n "$3" ] && [ "$3" != "-" ]; then
-      cmd=$cmd"-n $1 $2 $3 "
-      patch_cmd=$patch_cmd"-n $1 $2 $3 "
-    else
-      return 0
-    fi
-  fi
-
   ops='{"op": "remove", "path": "/metadata/creationTimestamp"},{"op": "remove", "path": "/metadata/resourceVersion"},{"op": "remove", "path": "/metadata/selfLink"},{"op": "remove", "path": "/metadata/uid"}'
-  item_status=$(eval "$cmd -o=jsonpath={.status}")
+  item_status=$(eval "$1 -o=jsonpath={.status}")
   if [ -n "$item_status" ]; then
     ops=$ops',{"op": "remove", "path": "/status"}'
   fi
-  last_applied_configuration=$(eval "$cmd -o=jsonpath={.metadata.annotations}{.'kubectl.kubernetes.io/last-applied-configuration'}")
+  last_applied_configuration=$(eval "$1 -o=jsonpath={.metadata.annotations}{.'kubectl.kubernetes.io/last-applied-configuration'}")
   if [ -n "$last_applied_configuration" ]; then
     ops=$ops',{"op": "remove", "path": "/metadata/annotations/kubectl.kubernetes.io~1last-applied-configuration"}'
   fi
 
   c="'"
-  eval "$patch_cmd --type json -p=$c[$ops]$c --dry-run -o yaml >> $file_path"
+  eval "$2 --type json -p=$c[$ops]$c --dry-run -o yaml >> $file_path"
   echo "---" >> $file_path
-  echo "$ns $crd $item exported"
 }
 
 file_path=$2
@@ -82,12 +77,16 @@ echo ""
 echo "---" > $2
 for ns in $apps
 do
-  export_resource $ns "-" "-"
+  if [ "$ns" = "kalm-system" ]; then
+    continue
+  fi
+
+  export_namespace $ns
   for crd in "httproutes" "singlesignonconfigs" "protectedendpoints" "components" "componentplugins" "componentpluginbindings"
   do
     for item in $(kubectl -n $ns get $crd -o=jsonpath={.items[*].metadata.name})
     do
-      export_resource $ns $crd $item
+      export_namespace_crd $ns $crd $item
     done
   done
 done
@@ -97,7 +96,7 @@ if [ "$3" = "with-cluster" ]; then
   do
     for item in $(kubectl get $crd -o=jsonpath={.items[*].metadata.name})
     do
-      export_resource "-" $crd $item
+      export_cluster_crd $crd $item
     done
   done
 fi
