@@ -26,12 +26,12 @@ import { getApplicationCreatedAtString } from "utils/application";
 import { stringToColor } from "utils/color";
 import { pluralize } from "utils/string";
 import { DoughnutChart } from "widgets/DoughnutChart";
-import { FoldButtonGroup } from "widgets/FoldButtonGroup";
-import { DeleteIcon, KalmApplicationIcon, KalmComponentsIcon, KalmDetailsIcon, KalmRoutesIcon } from "widgets/Icon";
-import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { KalmApplicationIcon, KalmComponentsIcon, KalmDetailsIcon, KalmRoutesIcon } from "widgets/Icon";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { Caption, H6 } from "widgets/Label";
 import { KLink, KMLink } from "widgets/Link";
 import { CardCPULineChart, CardMemoryLineChart } from "widgets/SmallLineChart";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const ApplicationCardStyles = (theme: Theme) =>
   createStyles({
@@ -56,7 +56,7 @@ type ApplicationCardProps = {
   componentsMap: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>;
   httpRoutes: Immutable.List<HttpRoute>;
   activeNamespaceName: string;
-  showDeleteConfirmDialog: (deletingApplicationListItem: ApplicationDetails) => void;
+  confirmDelete: (application: ApplicationDetails) => void;
 } & CardProps &
   WithStyles<typeof ApplicationCardStyles>;
 
@@ -214,28 +214,8 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
     );
   };
 
-  private renderMoreActions = () => {
-    const { application, showDeleteConfirmDialog } = this.props;
-    let options = [
-      {
-        text: "Details",
-        to: `/applications/${application.get("name")}/components`,
-        icon: <KalmDetailsIcon />,
-      },
-      {
-        text: "Delete",
-        onClick: () => {
-          showDeleteConfirmDialog(application);
-        },
-        icon: <DeleteIcon />,
-        requiredRole: "writer",
-      },
-    ];
-    return <FoldButtonGroup options={options} />;
-  };
-
   private renderActions = () => {
-    const { application, showDeleteConfirmDialog } = this.props;
+    const { application, confirmDelete } = this.props;
     return (
       <>
         <IconLinkWithToolTip
@@ -248,16 +228,11 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
         >
           <KalmDetailsIcon />
         </IconLinkWithToolTip>
-        <IconButtonWithTooltip
-          tooltipTitle="Delete"
-          aria-label="delete"
-          onClick={() => {
-            blinkTopProgressAction();
-            showDeleteConfirmDialog(application);
-          }}
-        >
-          <DeleteIcon />
-        </IconButtonWithTooltip>
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-application-popup"
+          popupTitle="DELETE APPLICATION?"
+          confirmedAction={() => confirmDelete(application)}
+        />
       </>
     );
   };

@@ -109,6 +109,7 @@ const stringConstants = {
   PROTECTED_ENDPOINT_SPECIFIC_GROUPS:
     "Select the groups you want to grant access permissions for the selected component. Leave blank to allow any sso member.",
   CANT_NOT_EDIT: "Can NOT edit this field",
+  REGISTRY_VERIFIED_ERROR: "Error",
 };
 
 export default stringConstants;

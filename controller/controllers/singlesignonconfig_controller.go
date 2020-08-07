@@ -394,14 +394,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 	timeout := 5
 
-	var scheme string
-
-	if r.ssoConfig.Spec.UseHttp {
-		scheme = "http"
-	} else {
-		scheme = "https"
-	}
-
 	dexRoute := corev1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      KALM_DEX_NAME,
@@ -424,8 +416,10 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 			},
 			Paths: []string{"/dex"},
 			Schemes: []corev1alpha1.HttpRouteScheme{
-				corev1alpha1.HttpRouteScheme(scheme),
+				corev1alpha1.HttpRouteScheme("http"),
+				corev1alpha1.HttpRouteScheme("https"),
 			},
+			HttpRedirectToHttps: !r.ssoConfig.Spec.UseHttp,
 			Destinations: []corev1alpha1.HttpRouteDestination{
 				{
 					Host:   fmt.Sprintf("%s.%s.svc.cluster.local:%d", KALM_DEX_NAME, KALM_DEX_NAMESPACE, 5556),
@@ -544,7 +538,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 				{
 					ContainerPort: 3002,
 					ServicePort:   80,
-					Protocol:      corev1alpha1.PortProtocolHTTP,
+					Protocol:      corev1alpha1.PortProtocolHTTP2,
 				},
 			},
 			Env: []corev1alpha1.EnvVar{
@@ -603,14 +597,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() error {
 	timeout := 5
 
-	var scheme string
-
-	if r.ssoConfig.Spec.UseHttp {
-		scheme = "http"
-	} else {
-		scheme = "https"
-	}
-
 	authProxyRoute := corev1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      KALM_AUTH_PROXY_NAME,
@@ -625,8 +611,10 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() err
 			},
 			Paths: []string{"/oidc/login", "/oidc/callback"},
 			Schemes: []corev1alpha1.HttpRouteScheme{
-				corev1alpha1.HttpRouteScheme(scheme),
+				corev1alpha1.HttpRouteScheme("http"),
+				corev1alpha1.HttpRouteScheme("https"),
 			},
+			HttpRedirectToHttps: !r.ssoConfig.Spec.UseHttp,
 			Destinations: []corev1alpha1.HttpRouteDestination{
 				{
 					Host:   fmt.Sprintf("%s.%s.svc.cluster.local", KALM_AUTH_PROXY_NAME, KALM_DEX_NAMESPACE),

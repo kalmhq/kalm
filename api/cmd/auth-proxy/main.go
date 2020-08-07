@@ -13,6 +13,7 @@ import (
 	"github.com/kalmhq/kalm/api/utils"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/net/http2"
 	"golang.org/x/oauth2"
 	"net/http"
 	"net/url"
@@ -95,10 +96,6 @@ func removeExtAuthPathPrefix(path string) string {
 		path = path[len(ENVOY_EXT_AUTH_PATH_PREFIX)+1:]
 	}
 
-	if path == "" {
-		path = "/"
-	}
-
 	return path
 }
 
@@ -108,6 +105,10 @@ func getOriginalURL(c echo.Context) string {
 
 	if requestURI == "" {
 		requestURI = removeExtAuthPathPrefix(c.Request().RequestURI)
+	}
+
+	if requestURI == "" {
+		requestURI = "/"
 	}
 
 	ur := fmt.Sprintf("%s://%s%s", c.Scheme(), c.Request().Host, requestURI)
@@ -294,8 +295,11 @@ func handleSetIDToken(c echo.Context, idToken *oidc.IDToken, rawIDToken string) 
 
 	requestURI := c.Request().Header.Get("X-Envoy-Original-Path")
 
+	log.Debugf("[Set ID Token] X-Envoy-Original-Path: %s", requestURI)
+
 	if requestURI == "" {
 		requestURI = removeExtAuthPathPrefix(c.Request().RequestURI)
+		log.Debugf("[Set ID Token] RawRequestURI: %s,  removeExtAuthPathPrefix: %s", c.Request().RequestURI, requestURI)
 	}
 
 	uri, err := url.Parse(requestURI)
@@ -307,6 +311,10 @@ func handleSetIDToken(c echo.Context, idToken *oidc.IDToken, rawIDToken string) 
 	params := uri.Query()
 	params.Del(ID_TOKEN_QUERY_NAME)
 	uri.RawQuery = params.Encode()
+
+	if uri.Path == "" {
+		uri.Path = "/"
+	}
 
 	return c.Redirect(302, uri.String())
 }
@@ -444,6 +452,19 @@ func handleOIDCCallback(c echo.Context) error {
 	return c.Redirect(302, uri.String())
 }
 
+func handleLog(c echo.Context) error {
+	level := c.QueryParam("level")
+
+	switch level {
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+	default:
+		log.SetLevel(log.InfoLevel)
+	}
+
+	return c.NoContent(200)
+}
+
 func main() {
 	e := server.NewEchoInstance()
 
@@ -455,5 +476,11 @@ func main() {
 	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX+"/*", handleExtAuthz)
 	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX, handleExtAuthz)
 
-	e.Logger.Fatal(e.Start("0.0.0.0:3002"))
+	e.POST("/log", handleLog)
+
+	e.Logger.Fatal(e.StartH2CServer("0.0.0.0:3002", &http2.Server{
+		MaxConcurrentStreams: 250,
+		MaxReadFrameSize:     1048576,
+		IdleTimeout:          60 * time.Second,
+	}))
 }

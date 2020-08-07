@@ -1,5 +1,4 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import DeleteIcon from "@material-ui/icons/Delete";
 import { loadApplicationAction } from "actions/application";
 import { loadComponentsAction } from "actions/component";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -17,10 +16,11 @@ import { WorkloadType, workloadTypeCronjob } from "types/componentTemplate";
 import { formatTimeDistance } from "utils/date";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { KalmConsoleIcon, KalmLogIcon } from "widgets/Icon";
-import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
 import { isCronjobCompleted } from "utils/application";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -118,10 +118,11 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
           </IconLinkWithToolTip>
         ) : null}
         {hasWriterRole ? (
-          <IconButtonWithTooltip
-            tooltipTitle="Delete"
-            size="small"
-            onClick={async () => {
+          <DeleteButtonWithConfirmPopover
+            iconSize="small"
+            popupId="delete-pod-popup"
+            popupTitle="DELETE POD?"
+            confirmedAction={async () => {
               blinkTopProgressAction();
 
               try {
@@ -134,10 +135,27 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
                 dispatch(setErrorNotificationAction(e.response.data.message));
               }
             }}
-          >
-            <DeleteIcon />
-          </IconButtonWithTooltip>
-        ) : null}
+          />
+        ) : // <IconButtonWithTooltip
+        //   tooltipTitle="Delete"
+        //   size="small"
+        //   onClick={async () => {
+        //     blinkTopProgressAction();
+
+        //     try {
+        //       await api.deletePod(activeNamespaceName, pod.get("name"));
+        //       dispatch(setSuccessNotificationAction(`Delete pod ${pod.get("name")} successfully`));
+        //       // reload
+        //       dispatch(loadComponentsAction(activeNamespaceName));
+        //       dispatch(loadApplicationAction(activeNamespaceName));
+        //     } catch (e) {
+        //       dispatch(setErrorNotificationAction(e.response.data.message));
+        //     }
+        //   }}
+        // >
+        //   <DeleteIcon />
+        // </IconButtonWithTooltip>
+        null}
       </>
     );
   };
