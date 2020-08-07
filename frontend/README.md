@@ -9,6 +9,13 @@ npm install
 npm run start
 ```
 
+# how to run local mock server
+
+```
+npm install -g json-server
+json-server --watch .mock/mock.json --routes .mock/routes.json --port 3004
+```
+
 # Storybook Design System
 
 We will use storybook as a tool for designing assets for the KALM system. With storybook, we can integrate the design into the product faster and the frontend development process(design and engineering realization) can be organized according to components.
