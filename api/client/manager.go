@@ -1,6 +1,9 @@
 package client
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"github.com/dgrijalva/jwt-go"
 	"log"
 
 	"github.com/kalmhq/kalm/api/auth"
@@ -49,7 +52,7 @@ func BuildCmdConfig(authInfo *api.AuthInfo, cfg *rest.Config) clientcmd.ClientCo
 }
 
 func (m *ClientManager) IsAuthInfoWorking(authInfo *api.AuthInfo) error {
-	cfg, err := m.GetClientConfigWithAuthInfo(authInfo)
+	cfg, err := m.BuildClientConfigWithAuthInfo(authInfo)
 	if err != nil {
 		return err
 	}
@@ -95,7 +98,7 @@ func (m *ClientManager) initClusterClientConfiguration() (err error) {
 	return nil
 }
 
-func (m *ClientManager) GetClientConfigWithAuthInfo(authInfo *api.AuthInfo) (*rest.Config, error) {
+func (m *ClientManager) BuildClientConfigWithAuthInfo(authInfo *api.AuthInfo) (*rest.Config, error) {
 	clientConfig := BuildCmdConfig(authInfo, m.ClusterConfig)
 
 	cfg, err := clientConfig.ClientConfig()
@@ -106,28 +109,90 @@ func (m *ClientManager) GetClientConfigWithAuthInfo(authInfo *api.AuthInfo) (*re
 	return cfg, nil
 }
 
-func ExtractAuthInfo(c echo.Context) *api.AuthInfo {
+func ExtractAuthInfoFromClientRequestContext(c echo.Context) *api.AuthInfo {
 	req := c.Request()
 	authHeader := req.Header.Get(echo.HeaderAuthorization)
 	token := auth.ExtractTokenFromHeader(authHeader)
-
-	// TODO Impersonate
-
 	if token != "" {
 		return &api.AuthInfo{Token: token}
 	}
-
 	return nil
 }
 
-func (m *ClientManager) GetClientConfig(c echo.Context) (*rest.Config, error) {
-	authInfo := ExtractAuthInfo(c)
+type ClientInfo struct {
+	Cfg               *rest.Config `json:"-"`
+	Name              string       `json:"name"`
+	PreferredUsername string       `json:"preferred_username"`
+	Email             string       `json:"email"`
+	EmailVerified     bool         `json:"email_verified"`
+	Groups            []string     `json:"groups"`
+}
 
-	if authInfo == nil {
-		return nil, errors.NewUnauthorized("")
+func (m *ClientManager) GetConfigForClientRequestContext(c echo.Context) (*ClientInfo, error) {
+	// TODO Impersonate
+
+	// if the Authorizated Header not empty, use the bearer token as k8s token.
+	authInfo := ExtractAuthInfoFromClientRequestContext(c)
+	if authInfo != nil {
+		cfg, err := m.BuildClientConfigWithAuthInfo(authInfo)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return &ClientInfo{
+			Cfg:           cfg,
+			Name:          tryToParseEntityFromToken(authInfo.Token),
+			Email:         "Unknown",
+			EmailVerified: false,
+			Groups:        []string{},
+		}, nil
 	}
 
-	return m.GetClientConfigWithAuthInfo(authInfo)
+	// The request comes from internal envoy proxy. adn the kalm-sso-userinfo not empty, use the identity corresponding role.
+	if c.Request().Header.Get("X-Envoy-Internal") == "true" && c.Request().Header.Get("Kalm-Sso-Userinfo") != "" {
+		// TODO permissions based on group and email
+		// For current version, anyone that is verified through sso is treated as an admin.
+		claimsBytes, err := base64.RawStdEncoding.DecodeString(c.Request().Header.Get("Kalm-Sso-Userinfo"))
+
+		if err != nil {
+			return nil, err
+		}
+
+		var clientInfo ClientInfo
+
+		err = json.Unmarshal(claimsBytes, &clientInfo)
+
+		if err != nil {
+			return nil, err
+		}
+
+		// Give the cluster config to this client.
+		clientInfo.Cfg = m.ClusterConfig
+
+		return &clientInfo, nil
+	}
+
+	return nil, errors.NewUnauthorized("")
+}
+
+// Since the token is validated by api server, so we don't need to valid the token again here.
+func tryToParseEntityFromToken(tokenString string) string {
+	if tokenString == "" {
+		return "unknown"
+	}
+
+	token, _, err := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
+
+	if err != nil {
+		return "token"
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok {
+		return claims["sub"].(string)
+	}
+
+	return "token"
 }
 
 func NewClientManager(config *config.Config) *ClientManager {
