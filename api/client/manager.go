@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
 	"log"
+	"strings"
 
 	"github.com/kalmhq/kalm/api/auth"
 	"github.com/kalmhq/kalm/api/config"
@@ -131,7 +132,7 @@ type ClientInfo struct {
 func (m *ClientManager) GetConfigForClientRequestContext(c echo.Context) (*ClientInfo, error) {
 	// TODO Impersonate
 
-	// if the Authorizated Header not empty, use the bearer token as k8s token.
+	// If the Authorization Header is not empty, use the bearer token as k8s token.
 	authInfo := ExtractAuthInfoFromClientRequestContext(c)
 	if authInfo != nil {
 		cfg, err := m.BuildClientConfigWithAuthInfo(authInfo)
@@ -149,10 +150,9 @@ func (m *ClientManager) GetConfigForClientRequestContext(c echo.Context) (*Clien
 		}, nil
 	}
 
-	// The request comes from internal envoy proxy. adn the kalm-sso-userinfo not empty, use the identity corresponding role.
+	// The request comes from internal envoy proxy (more precise, from ingress gateway).
+	// And the kalm-sso-userinfo header is not empty.
 	if c.Request().Header.Get("X-Envoy-Internal") == "true" && c.Request().Header.Get("Kalm-Sso-Userinfo") != "" {
-		// TODO permissions based on group and email
-		// For current version, anyone that is verified through sso is treated as an admin.
 		claimsBytes, err := base64.RawStdEncoding.DecodeString(c.Request().Header.Get("Kalm-Sso-Userinfo"))
 
 		if err != nil {
@@ -167,12 +167,38 @@ func (m *ClientManager) GetConfigForClientRequestContext(c echo.Context) (*Clien
 			return nil, err
 		}
 
-		// Give the cluster config to this client.
+		// Use cluster config permission
+		// TODO permissions based on group and email
+		// For current version, anyone that is verified through sso is treated as an admin.
 		clientInfo.Cfg = m.ClusterConfig
 
 		return &clientInfo, nil
 	}
 
+	// If the request is from localhost
+	// 	 Case #1: localhost development
+	//   Case #2: kubectl port-forwrd (https://github.com/kubernetes/kubernetes/blob/6ce9e71cd57d4aa6c932aabddf4129f173b9d710/pkg/kubelet/dockershim/docker_streaming_others.go#L31-L86)
+	// Use cluster config permission
+
+	if strings.HasPrefix(c.Request().RemoteAddr, "127.0.0.1") {
+		var name string
+
+		if m.isInCluster() {
+			name = "localhost(InCluster)"
+		} else {
+			name = "localhost"
+		}
+
+		return &ClientInfo{
+			Cfg:           m.ClusterConfig,
+			Name:          name,
+			Email:         "Unknown",
+			EmailVerified: false,
+			Groups:        []string{},
+		}, nil
+	}
+
+	// Shouldn't be able to reach here
 	return nil, errors.NewUnauthorized("")
 }
 
