@@ -1,7 +1,6 @@
 import { Box, createStyles, Theme, WithStyles, withStyles, Button, Typography } from "@material-ui/core";
 import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { blinkTopProgressAction } from "actions/settings";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
@@ -11,9 +10,8 @@ import { Certificate } from "types/certificate";
 import { customSearchForImmutable } from "utils/tableSearch";
 import { PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { ConfirmDialog } from "widgets/ConfirmDialog";
-import { DeleteIcon, EditIcon, KalmCertificatesIcon } from "widgets/Icon";
-import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { EditIcon, KalmCertificatesIcon } from "widgets/Icon";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { Loading } from "widgets/Loading";
 import { KTable } from "widgets/Table";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
@@ -25,6 +23,7 @@ import { InfoBox } from "widgets/InfoBox";
 import DomainStatus from "widgets/DomainStatus";
 import sc from "utils/stringConstants";
 import { Link } from "react-router-dom";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
@@ -89,7 +88,12 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
             <EditIcon />
           </IconLinkWithToolTip>
         )}
-        <IconButtonWithTooltip
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-certificate-popup"
+          popupTitle="DELETE CERTIFICATE?"
+          confirmedAction={() => this.confirmDelete(rowData)}
+        />
+        {/* <IconButtonWithTooltip
           tooltipTitle="Delete"
           aria-label="delete"
           onClick={() => {
@@ -98,24 +102,24 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
           }}
         >
           <DeleteIcon />
-        </IconButtonWithTooltip>
+        </IconButtonWithTooltip> */}
       </>
     );
   };
 
-  private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen, deletingCertificate } = this.state;
-    const certName = deletingCertificate ? ` '${deletingCertificate.get("name")}'` : "";
-    return (
-      <ConfirmDialog
-        open={isDeleteConfirmDialogOpen}
-        onClose={this.closeDeleteConfirmDialog}
-        title={`Are you sure you want to delete the certificate${certName}?`}
-        content=""
-        onAgree={this.confirmDelete}
-      />
-    );
-  };
+  // private renderDeleteConfirmDialog = () => {
+  //   const { isDeleteConfirmDialogOpen, deletingCertificate } = this.state;
+  //   const certName = deletingCertificate ? ` '${deletingCertificate.get("name")}'` : "";
+  //   return (
+  //     <ConfirmDialog
+  //       open={isDeleteConfirmDialogOpen}
+  //       onClose={this.closeDeleteConfirmDialog}
+  //       title={`Are you sure you want to delete the certificate${certName}?`}
+  //       content=""
+  //       onAgree={this.confirmDelete}
+  //     />
+  //   );
+  // };
 
   private closeDeleteConfirmDialog = () => {
     this.setState({
@@ -130,15 +134,12 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     });
   };
 
-  private confirmDelete = async () => {
+  private confirmDelete = async (rowData: RowData) => {
     const { dispatch } = this.props;
     try {
-      const { deletingCertificate } = this.state;
-      if (deletingCertificate) {
-        const certName = deletingCertificate.get("name");
-        await dispatch(deleteCertificateAction(certName));
-        await dispatch(setSuccessNotificationAction(`Successfully deleted certificate '${certName}'`));
-      }
+      const certName = rowData.get("name");
+      await dispatch(deleteCertificateAction(certName));
+      await dispatch(setSuccessNotificationAction(`Successfully deleted certificate '${certName}'`));
     } catch {
       dispatch(setErrorNotificationAction());
     }
@@ -289,7 +290,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
           </>
         }
       >
-        {this.renderDeleteConfirmDialog()}
+        {/* {this.renderDeleteConfirmDialog()} */}
         <Box p={2}>
           {isLoading && !isFirstLoaded ? (
             <Loading />

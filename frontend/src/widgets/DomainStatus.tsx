@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import IconWithPopover from "./IconWithPopover";
+import { IconWithPopover } from "./IconWithPopover";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { loadDomainDNSInfo } from "actions/domain";
@@ -81,7 +81,7 @@ class DomainStatus extends React.PureComponent<Props> {
               tooltipTitle="Copy"
               aria-label="copy"
               size="small"
-              onClick={() => {
+              onClick={(e) => {
                 copy(ingressIP);
                 dispatch(setSuccessNotificationAction("Copied successful!"));
               }}
@@ -93,7 +93,7 @@ class DomainStatus extends React.PureComponent<Props> {
       };
     } else if (isLoading) {
       return {
-        icon: <CircularProgress size={20} style={{ marginLeft: 2, marginRight: 2 }} />,
+        icon: <CircularProgress size={18} style={{ marginLeft: 2, marginRight: 2 }} />,
         body: <Box p={2}>checking domain status</Box>,
       };
     } else {

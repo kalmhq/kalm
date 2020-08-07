@@ -1,16 +1,15 @@
-import { Box, createStyles, Theme, withStyles, WithStyles, Typography, Button } from "@material-ui/core";
+import { Box, createStyles, Theme, withStyles, WithStyles, Typography, Button, Tooltip } from "@material-ui/core";
 import { deleteRegistryAction } from "actions/registries";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { RegistryType } from "types/registry";
-import { ErrorBadge, SuccessBadge } from "widgets/Badge";
-import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { SuccessBadge } from "widgets/Badge";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { KTable } from "widgets/Table";
 import { setErrorNotificationAction } from "actions/notification";
-import { ConfirmDialog } from "widgets/ConfirmDialog";
-import { DeleteIcon, EditIcon, KalmRegistryIcon } from "widgets/Icon";
+import { EditIcon, KalmRegistryIcon, ErrorIcon } from "widgets/Icon";
 import { Loading } from "widgets/Loading";
 import { BasePage } from "../BasePage";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
@@ -18,6 +17,7 @@ import { indigo } from "@material-ui/core/colors";
 import { InfoBox } from "widgets/InfoBox";
 import sc from "utils/stringConstants";
 import { Link } from "react-router-dom";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -68,27 +68,24 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     });
   };
 
-  private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen, deletingItemName } = this.state;
+  // private renderDeleteConfirmDialog = () => {
+  //   const { isDeleteConfirmDialogOpen, deletingItemName } = this.state;
 
-    return (
-      <ConfirmDialog
-        open={isDeleteConfirmDialogOpen}
-        onClose={this.closeDeleteConfirmDialog}
-        title={`${sc.ARE_YOU_SURE_PREFIX} this registry(${deletingItemName})?`}
-        content="You will lost this registry, and this action is irrevocable."
-        onAgree={this.confirmDelete}
-      />
-    );
-  };
+  //   return (
+  //     <ConfirmDialog
+  //       open={isDeleteConfirmDialogOpen}
+  //       onClose={this.closeDeleteConfirmDialog}
+  //       title={`${sc.ARE_YOU_SURE_PREFIX} this registry(${deletingItemName})?`}
+  //       content="You will lost this registry, and this action is irrevocable."
+  //       onAgree={this.confirmDelete}
+  //     />
+  //   );
+  // };
 
-  private confirmDelete = async () => {
+  private confirmDelete = async (rowData: RowData) => {
     const { dispatch } = this.props;
     try {
-      const { deletingItemName } = this.state;
-      if (deletingItemName) {
-        await dispatch(deleteRegistryAction(deletingItemName));
-      }
+      await dispatch(deleteRegistryAction(rowData.get("name")));
     } catch {
       dispatch(setErrorNotificationAction());
     }
@@ -114,7 +111,13 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     if (row.get("authenticationVerified")) {
       return <SuccessBadge />;
     } else {
-      return <ErrorBadge />;
+      return (
+        <Tooltip title={sc.REGISTRY_VERIFIED_ERROR} placement="left" arrow>
+          <div>
+            <ErrorIcon />
+          </div>
+        </Tooltip>
+      );
     }
   }
 
@@ -131,14 +134,19 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
         <IconLinkWithToolTip tooltipTitle={"Edit"} to={`/cluster/registries/${row.get("name")}/edit`}>
           <EditIcon />
         </IconLinkWithToolTip>
-        <IconButtonWithTooltip
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-registry-popup"
+          popupTitle="DELETE REGISTRY?"
+          confirmedAction={() => this.confirmDelete(row)}
+        />
+        {/* <IconButtonWithTooltip
           tooltipTitle={"Delete"}
           onClick={() => {
             this.showDeleteConfirmDialog(row.get("name"));
           }}
         >
           <DeleteIcon />
-        </IconButtonWithTooltip>
+        </IconButtonWithTooltip> */}
       </>
     );
   }
@@ -206,7 +214,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
 
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
-        {this.renderDeleteConfirmDialog()}
+        {/* {this.renderDeleteConfirmDialog()} */}
         <Box p={2}>
           {isLoading && !isFirstLoaded ? (
             <Loading />

@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  hello-orb:  kalmhq-ns1/hello-orb@dev:0.0.1
+  hello-orb: kalmhq-ns1/hello-orb@dev:0.0.1
   deploy-orb: kalmhq-ns1/deploy-orb@dev:0.0.2
 jobs:
   test-dashboard:
@@ -148,6 +148,15 @@ jobs:
           KALM_APP: kalm-system
           KALM_COMPONENT: kalm
           KALM_COMPONENT_IMG_TAG: latest
+  deploy-auth-proxy:
+    executor: deploy-orb/default
+    steps:
+      - deploy-orb/deploy:
+          KALM_API_ADDRESS: https://dashboard.kapp.live
+          KALM_DEPLOY_KEY: $DEPLOY_KEY
+          KALM_APP: kalm-system
+          KALM_COMPONENT: auth-proxy
+          KALM_COMPONENT_IMG_TAG: latest
   deploy-controller:
     environment:
       IMAGE_NAME: quay.io/kalmhq/kalm-controller:latest
@@ -192,9 +201,9 @@ workflows:
       - build-dashboard-image:
           filters:
             branches:
-              only: 
-              - master
-              - orb
+              only:
+                - master
+                - orb
       - push-dashboard-image:
           context: kalm-ci
           requires:
@@ -202,17 +211,25 @@ workflows:
             - build-dashboard-image
           filters:
             branches:
-              only: 
-              - master
-              - orb
+              only:
+                - master
+                - orb
       - deploy-dashboard:
           context: deploy-demo-cluster
           requires:
             - push-dashboard-image
           filters:
             branches:
-              only: 
-              - master
+              only:
+                - master
+      - deploy-auth-proxy:
+          context: deploy-demo-cluster
+          requires:
+            - push-dashboard-image
+          filters:
+            branches:
+              only:
+                - master
   controller:
     jobs:
       - test-controller
