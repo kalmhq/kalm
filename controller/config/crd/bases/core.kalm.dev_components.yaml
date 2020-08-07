@@ -99,6 +99,7 @@ spec:
                 properties:
                   name:
                     description: Name of the environment variable. Must be a C_IDENTIFIER.
+                    minLength: 2
                     type: string
                   prefix:
                     type: string
@@ -118,6 +119,7 @@ spec:
                 type: object
               type: array
             image:
+              minLength: 1
               type: string
             livenessProbe:
               description: Probe describes a health check to be performed against
@@ -237,19 +239,35 @@ spec:
                 properties:
                   containerPort:
                     format: int32
+                    maximum: 65535
+                    minimum: 1
                     type: integer
                   protocol:
-                    enum:
-                    - http
-                    - http2
-                    - grpc
-                    - https
-                    - tcp
-                    - udp
+                    allOf:
+                    - enum:
+                      - http
+                      - https
+                      - http2
+                      - grpc
+                      - grpc-web
+                      - tcp
+                      - udp
+                      - unknown
+                    - enum:
+                      - http
+                      - https
+                      - http2
+                      - grpc
+                      - grpc-web
+                      - tcp
+                      - udp
+                      - unknown
                     type: string
                   servicePort:
                     description: port for service
                     format: int32
+                    maximum: 65535
+                    minimum: 1
                     type: integer
                 required:
                 - containerPort
@@ -477,10 +495,6 @@ spec:
               type: object
             schedule:
               type: string
-            startAfterComponents:
-              items:
-                type: string
-              type: array
             terminationGracePeriodSeconds:
               format: int64
               type: integer

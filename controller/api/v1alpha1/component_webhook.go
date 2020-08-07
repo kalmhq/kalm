@@ -16,13 +16,17 @@ limitations under the License.
 package v1alpha1
 
 import (
+	//rbacvalidation "k8s.io/kubernetes/pkg/apis/rbac/validation"
 	"fmt"
 	"github.com/robfig/cron"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	apimachineryval "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"strings"
 )
 
 // log is for logging in this package.
@@ -47,8 +51,8 @@ func (r *Component) Default() {
 	}
 
 	if r.Spec.Replicas == nil {
-		zeroReplicas := int32(0)
-		r.Spec.Replicas = &zeroReplicas
+		defaultReplicas := int32(1)
+		r.Spec.Replicas = &defaultReplicas
 	}
 
 	// set service port
@@ -59,6 +63,11 @@ func (r *Component) Default() {
 			}
 		}
 	}
+
+	if r.Spec.TerminationGracePeriodSeconds == nil {
+		x := int64(30)
+		r.Spec.TerminationGracePeriodSeconds = &x
+	}
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-component,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=components,versions=v1alpha1,name=vcomponent.kb.io
@@ -68,47 +77,27 @@ var _ webhook.Validator = &Component{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateCreate() error {
 	componentlog.Info("validate create", "name", r.Name)
-
-	if err := r.validateVolumeOfComponent(); err != nil {
-		return err
-	}
-
-	if err := r.validateScheduleOfComponentIfIsCronJob(); err != nil {
-		return err
-	}
-
-	if err := validateLabels(r.Spec.NodeSelectorLabels, ".spec.nodeSelectorLabels"); err != nil {
-		return err
-	}
-
-	if err := r.validateProbes(); err != nil {
-		return err
-	}
-
-	return nil
+	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateUpdate(old runtime.Object) error {
 	componentlog.Info("validate update", "name", r.Name)
+	return r.validate()
+}
 
-	if err := r.validateVolumeOfComponent(); err != nil {
-		return err
-	}
+func (r *Component) validate() KalmValidateErrorList {
+	var rst KalmValidateErrorList
 
-	if err := r.validateScheduleOfComponentIfIsCronJob(); err != nil {
-		return err
-	}
+	rst = append(rst, r.validateEnvVarList()...)
+	rst = append(rst, validateLabels(r.Spec.NodeSelectorLabels, ".spec.nodeSelectorLabels")...)
+	rst = append(r.validateScheduleOfComponentIfIsCronJob())
+	rst = append(rst, r.validateProbes()...)
+	rst = append(rst, r.validateVolumeOfComponent()...)
+	rst = append(rst, r.validateResRequirement()...)
+	rst = append(rst, r.validatePreInjectedFiles()...)
 
-	if err := validateLabels(r.Spec.NodeSelectorLabels, ".spec.nodeSelectorLabels"); err != nil {
-		return err
-	}
-
-	if err := r.validateProbes(); err != nil {
-		return err
-	}
-
-	return nil
+	return rst
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
@@ -142,7 +131,7 @@ func (r *Component) validateVolumeOfComponent() (rst KalmValidateErrorList) {
 		//}
 
 		fld := field.NewPath(fmt.Sprintf(".spec.volumes[%d].size", i))
-		errList := ValidateResourceQuantityValue(vol.Size, fld)
+		errList := ValidateResourceQuantityValue(vol.Size, fld, true)
 		rst = append(rst, toKalmValidateErrors(errList)...)
 	}
 
@@ -189,4 +178,65 @@ func (r *Component) validateProbes() (rst KalmValidateErrorList) {
 	}
 
 	return
+}
+
+func (r *Component) validateEnvVarList() (rst KalmValidateErrorList) {
+	if len(r.Spec.Env) == 0 {
+		return nil
+	}
+
+	for i, env := range r.Spec.Env {
+		errs := apimachineryval.IsCIdentifier(env.Name)
+		for _, err := range errs {
+			rst = append(rst, KalmValidateError{
+				Err:  err,
+				Path: fmt.Sprintf(".spec.env[%d]", i),
+			})
+		}
+	}
+
+	return rst
+}
+
+func (r *Component) validateResRequirement() (rst KalmValidateErrorList) {
+	resRequirement := r.Spec.ResourceRequirements
+	if resRequirement == nil {
+		return nil
+	}
+
+	resList := []v1.ResourceName{v1.ResourceCPU, v1.ResourceMemory}
+	for _, resName := range resList {
+		isIntegerRes := resName == v1.ResourceMemory
+
+		if limit, exist := resRequirement.Limits[resName]; exist {
+
+			fldPath := field.NewPath("spec.resourceRequirements.limits." + string(resName))
+			errList := ValidateResourceQuantityValue(limit, fldPath, isIntegerRes)
+			rst = append(rst, toKalmValidateErrors(errList)...)
+		}
+
+		if request, exist := resRequirement.Requests[resName]; exist {
+			fldPath := field.NewPath("spec.resourceRequirements.requests." + string(resName))
+			errList := ValidateResourceQuantityValue(request, fldPath, isIntegerRes)
+			rst = append(rst, toKalmValidateErrors(errList)...)
+		}
+	}
+
+	return rst
+}
+
+func (r *Component) validatePreInjectedFiles() (rst KalmValidateErrorList) {
+	for i, preInjectFile := range r.Spec.PreInjectedFiles {
+		isPrefixOK := strings.HasPrefix(preInjectFile.MountPath, "/")
+		if !isPrefixOK {
+			rst = append(rst, KalmValidateError{
+				Err:  "should start with: /",
+				Path: fmt.Sprintf(".spec.preInjectedFiles[%d]", i),
+			})
+		}
+	}
+
+	apivalidation
+
+	return rst
 }
