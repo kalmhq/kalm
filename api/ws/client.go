@@ -102,7 +102,7 @@ func (c *Client) read() {
 				c.conn.WriteJSON(&ResMessage{Kind: "error", Data: "Invalid Auth Token"})
 			}
 
-			k8sClientConfig, err := c.K8sClientManager.GetClientConfigWithAuthInfo(authInfo)
+			k8sClientConfig, err := c.K8sClientManager.BuildClientConfigWithAuthInfo(authInfo)
 			if err != nil {
 				log.Error(err)
 			}
