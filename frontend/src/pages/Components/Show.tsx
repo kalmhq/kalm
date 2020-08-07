@@ -93,6 +93,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
 
     const routes = httpRoutes.filter(
       (route) =>
+        route.get("namespace") === activeNamespaceName &&
         route.get("destinations").filter((destination) => destination.get("host").startsWith(serviceName)).size > 0,
     );
 
