@@ -66,7 +66,7 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
 	body := `{
   "name": "my-foobar-issuer",
   "acmeCloudFlare": {
-    "account": "foo@bar.com",
+    "email": "foo@bar.com",
     "secret": "foobar"
   }
 }`

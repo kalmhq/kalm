@@ -70,7 +70,7 @@ func (suite *PluginControllerSuite) reloadPlugin(plugin *v1alpha1.ComponentPlugi
 func (suite *PluginControllerSuite) TestPluginBasicCRUD() {
 	// Create
 	plugin := generateEmptyComponentPlugin()
-	plugin.Spec.Src = ""
+	plugin.Spec.Src = "fake-code"
 	suite.createComponentPlugin(plugin)
 
 	// Get
