@@ -94,7 +94,11 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                   <DeleteIcon />
                 </IconButtonWithTooltip>
               )}
-              <Popover style={{ zIndex: POPPER_ZINDEX }} {...popover}>
+              <Popover
+                style={{ zIndex: POPPER_ZINDEX }}
+                onClick={(e: React.SyntheticEvent<any, Event>) => e.stopPropagation()}
+                {...popover}
+              >
                 <Paper>
                   <Box p={2}>
                     <Subtitle2>{popupTitle}</Subtitle2>
