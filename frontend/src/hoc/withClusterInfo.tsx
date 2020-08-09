@@ -6,6 +6,8 @@ import { TDispatchProp } from "types";
 const mapStateToProps = (state: RootState) => {
   return {
     clusterInfo: state.get("cluster").get("info"),
+    isClusterInfoLoading: state.get("cluster").get("isLoading"),
+    isClusterInfoLoaded: state.get("cluster").get("isFirstLoaded"),
   };
 };
 

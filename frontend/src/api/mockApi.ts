@@ -8,6 +8,7 @@ import { RoleBindingsRequestBody } from "types/user";
 import MockStore from "./mockStore";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { DeployKey } from "types/deployKey";
+import { InitializeClusterResponse } from "types/cluster";
 
 export const mockStore = new MockStore();
 
@@ -262,4 +263,16 @@ export default class MockApi extends Api {
   };
 
   public deleteDeployKey = async (protectedEndpoint: DeployKey): Promise<void> => {};
+
+  public resolveDomain = async (domain: string, type: "A" | "CNAME"): Promise<string[]> => {
+    return ["1.1.1.1"];
+  };
+
+  public initializeCluster = async (domain: string): Promise<InitializeClusterResponse> => {
+    return Immutable.Map({});
+  };
+
+  public resetCluster = async (): Promise<any> => {
+    return {};
+  };
 }

@@ -32,6 +32,7 @@ import Button from "@material-ui/core/Button";
 import { Prompt } from "widgets/Prompt";
 import { Connectors } from "forms/SSOConfig/Connectors";
 import sc from "utils/stringConstants";
+import Immutable from "immutable";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -67,7 +68,7 @@ const fieldValidators = [ValidatorRequired, ValidateHost];
 class SSOConfigFormRaw extends React.PureComponent<Props> {
   private renderButtons() {
     const { handleSubmit, initialValues, submitting } = this.props;
-    const isEdit = initialValues.get!("connectors").size! > 0;
+    const isEdit = initialValues.get!("connectors", Immutable.List())!.size! > 0;
 
     return (
       <>

@@ -11,8 +11,8 @@ import { ImmutableMap } from "typings";
 
 export interface DependencyStateContent {
   info: ClusterInfo;
-  isListLoading: boolean;
-  isListFirstLoaded: boolean;
+  isLoading: boolean;
+  isFirstLoaded: boolean;
 }
 
 export type State = ImmutableMap<DependencyStateContent>;
@@ -20,7 +20,7 @@ export type State = ImmutableMap<DependencyStateContent>;
 const initialState: State = Immutable.Map({
   info: Immutable.Map(),
   isListLoading: false,
-  isListFirstLoaded: false,
+  isFirstLoaded: false,
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -29,15 +29,15 @@ const reducer = (state: State = initialState, action: Actions): State => {
       return initialState;
     }
     case LOAD_CLUSTER_INFO_PENDING: {
-      state = state.set("isListLoading", true);
+      state = state.set("isLoading", true);
       break;
     }
     case LOAD_CLUSTER_INFO_FAILED: {
-      state = state.set("isListLoading", false);
+      state = state.set("isLoading", false);
       break;
     }
     case LOAD_CLUSTER_INFO_FULFILlED: {
-      state = state.set("isListFirstLoaded", true).set("isListLoading", false);
+      state = state.set("isFirstLoaded", true).set("isLoading", false);
       state = state.set("info", action.payload);
       break;
     }

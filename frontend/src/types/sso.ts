@@ -160,7 +160,7 @@ export type SSOGitlabConnector = ImmutableMap<{
 
 export type SSOConfig = ImmutableMap<{
   domain: string;
-  connectors: Immutable.List<SSOGithubConnector | SSOGitlabConnector>;
+  connectors?: Immutable.List<SSOGithubConnector | SSOGitlabConnector>;
 }>;
 
 export const newEmptyGithubConnector = (): SSOGithubConnector => {

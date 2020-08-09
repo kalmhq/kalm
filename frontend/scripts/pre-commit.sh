@@ -1,11 +1,13 @@
 #!/bin/bash
 set -e
 
-SRC_DIR=$(pwd)/../src
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+SRC_DIR=$CURRENT_DIR/../src
 
 if [[ $(git status -s $SRC_DIR) != "" ]]
 then
-    npm run lint && react-scripts test --watchAll=false
+    cd $CURRENT_DIR/..
+    npm run lint && ./node_modules/.bin/react-scripts test --watchAll=false
 else
     echo "frontend src dir is clean. Skip pre commit hook."
 fi

@@ -1,5 +1,4 @@
 import { Box } from "@material-ui/core";
-import { withComponents, WithComponentsProps } from "hoc/withComponents";
 import hoistNonReactStatics from "hoist-non-react-statics";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { BasePage } from "pages/BasePage";
@@ -11,7 +10,7 @@ import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "types";
 import { Namespaces } from "widgets/Namespaces";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
-import { WithNamespaceProps } from "./withNamespace";
+import { withNamespace, WithNamespaceProps } from "./withNamespace";
 
 const mapStateToProps = (
   state: RootState,
@@ -20,7 +19,7 @@ const mapStateToProps = (
     match: {
       params: { applicationName, name },
     },
-  }: WithComponentsProps & WithNamespaceProps & RouteComponentProps<{ applicationName: string; name: string }>,
+  }: WithNamespaceProps & RouteComponentProps<{ applicationName: string; name: string }>,
 ) => {
   return {
     applicationName,
@@ -28,7 +27,7 @@ const mapStateToProps = (
   };
 };
 
-export interface WithComponentProp extends ReturnType<typeof mapStateToProps>, WithComponentsProps {
+export interface WithComponentProp extends ReturnType<typeof mapStateToProps>, WithNamespaceProps {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
@@ -43,7 +42,7 @@ export const withComponent = (WrappedComponent: React.ComponentType<any>) => {
                 text="Component not found"
                 redirect={`/applications/${this.props.applicationName}/components`}
                 redirectText="Go back to Components List"
-              ></ResourceNotFound>
+              />
             </Box>
           </BasePage>
         );
@@ -55,7 +54,7 @@ export const withComponent = (WrappedComponent: React.ComponentType<any>) => {
 
   withComponent.displayName = `withComponent(${getDisplayName(WrappedComponent)})`;
   hoistNonReactStatics(withComponent, WrappedComponent);
-  return withComponents(connect(mapStateToProps)(withComponent));
+  return withNamespace(connect(mapStateToProps)(withComponent));
 };
 
 function getDisplayName(WrappedComponent: React.ComponentType) {
