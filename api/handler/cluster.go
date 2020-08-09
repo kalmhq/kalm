@@ -156,6 +156,7 @@ type SetupClusterBody struct {
 
 type TemporaryAdmin struct {
 	Username string `json:"username"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
@@ -207,9 +208,10 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 	temporaryAdmin := &TemporaryAdmin{
 		Username: "admin",
 		Password: utils.RandPassword(64),
+		Email:    fmt.Sprintf("admin@%s", body.Domain),
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(temporaryAdmin.Password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(temporaryAdmin.Password), 12)
 
 	if err != nil {
 		return err
@@ -222,7 +224,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 				Username:     temporaryAdmin.Username,
 				PasswordHash: string(hashedPassword),
 				UserID:       uuid.New().String(),
-				Email:        "temporary-admin@temporary.admin",
+				Email:        temporaryAdmin.Email,
 			},
 		},
 	}

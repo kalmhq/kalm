@@ -258,7 +258,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
     const temporaryAdmin = initializeResponse!.get("temporaryAdmin");
     const clusterInfo = initializeResponse!.get("clusterInfo");
 
-    const username = temporaryAdmin.get("username");
+    const email = temporaryAdmin.get("email");
     const password = temporaryAdmin.get("password");
     const scheme = clusterInfo.get("isProduction") ? "https" : "http";
     const domain = initializeResponse!.get("sso").get("domain");
@@ -268,12 +268,12 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
     return (
       <Box>
         Your kalm dashboard is ready to access from url <BlankTargetLink href={url}>{url}</BlankTargetLink>. <br />
-        Temporary administrator username and password have been generated for you. You will not be able to get this
-        account through the dashboard again. Please save this account safely.
+        Temporary administrator email(can only be used to login) and password have been generated for you. You will not
+        be able to get this account through the dashboard again. Please save this account safely.
         <Box mt={2} mb={2}>
           <KPanel>
             <Box p={2}>
-              <pre>{`Username: ${username}
+              <pre>{`Email: ${email}
 Password: ${password}`}</pre>
             </Box>
           </KPanel>
