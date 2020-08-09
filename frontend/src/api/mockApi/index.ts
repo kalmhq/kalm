@@ -1,4 +1,4 @@
-import { Api } from "./base";
+import { Api } from "../base";
 import Immutable from "immutable";
 import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";

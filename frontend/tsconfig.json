@@ -15,7 +15,10 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react",
-    "baseUrl": "./src"
+    "baseUrl": "./src",
+    "paths": {
+      "@apiType/*": ["api/mockApi/*", "api/realApi/*"]
+    }
   },
   "include": ["src"]
 }

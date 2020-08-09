@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { Api } from "./base";
+import { Api } from "../base";
 import { store } from "store";
 import Axios, { AxiosRequestConfig } from "axios";
 import { RegistryType } from "types/registry";
