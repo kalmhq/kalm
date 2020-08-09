@@ -34,21 +34,30 @@ func NewWsHandler(k8sClientManager *client.ClientManager) *WsHandler {
 }
 
 func (h *WsHandler) Serve(c echo.Context) error {
-	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-
 	client := &Client{
 		clientPool:       h.clientPool,
-		conn:             conn,
 		Send:             make(chan []byte, 256),
 		Done:             make(chan struct{}),
 		StopWatcher:      make(chan struct{}),
 		K8sClientManager: h.k8sClientManager,
 		logger:           h.logger,
 	}
+
+	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
+
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	client.conn = conn
+
+	clientInfo, err := h.k8sClientManager.GetConfigForClientRequestContext(c)
+
+	if err == nil {
+		client.K8SClientConfig = clientInfo.Cfg
+	}
+
 	client.clientPool.register <- client
 
 	go client.write()

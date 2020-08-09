@@ -180,7 +180,7 @@ func (m *ClientManager) GetConfigForClientRequestContext(c echo.Context) (*Clien
 	//   Case #2: kubectl port-forwrd (https://github.com/kubernetes/kubernetes/blob/6ce9e71cd57d4aa6c932aabddf4129f173b9d710/pkg/kubelet/dockershim/docker_streaming_others.go#L31-L86)
 	// Use cluster config permission
 
-	if strings.HasPrefix(c.Request().RemoteAddr, "127.0.0.1") {
+	if strings.HasPrefix(c.Request().RemoteAddr, "127.0.0.1") || strings.HasPrefix(c.Request().RemoteAddr, "[::1]") {
 		var name string
 
 		if m.isInCluster() {
