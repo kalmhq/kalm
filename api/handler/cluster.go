@@ -11,6 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"regexp"
 	"strconv"
 	"strings"
@@ -166,8 +167,9 @@ func (h *ApiHandler) handleClusterInfo(c echo.Context) error {
 }
 
 const (
-	KalmRouteCertName = "kalm-cert"
-	KalmRouteName     = "kalm-route"
+	KalmRouteCertName         = "kalm-cert"
+	KalmRouteName             = "kalm-route"
+	KalmProtectedEndpointName = "kalm"
 )
 
 type SetupClusterBody struct {
@@ -253,6 +255,12 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 		Domains:         []string{body.Domain},
 	}
 
+	protectedEndpoint := &resources.ProtectedEndpoint{
+		Name:         KalmProtectedEndpointName,
+		Namespace:    controllers.NamespaceKalmSystem,
+		EndpointName: "kalm",
+	}
+
 	if !clusterInfo.IsProduction {
 		ssoConfig.SingleSignOnConfigSpec.UseHttp = true
 		ssoConfig.SingleSignOnConfigSpec.Port = clusterInfo.HttpPort
@@ -267,6 +275,12 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 	}
 
 	_, err = builder.CreateHttpRoute(route)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = h.Builder(c).CreateProtectedEndpoint(protectedEndpoint)
 
 	if err != nil {
 		return err
@@ -292,5 +306,6 @@ func (h *ApiHandler) handleResetCluster(c echo.Context) error {
 	_ = builder.DeleteHttpRoute(controllers.NamespaceKalmSystem, KalmRouteName)
 	_ = builder.DeleteHttpsCert(KalmRouteCertName)
 	_ = builder.DeleteSSOConfig()
+	_ = builder.Delete(&v1alpha1.ProtectedEndpoint{ObjectMeta: metaV1.ObjectMeta{Namespace: controllers.NamespaceKalmSystem, Name: KalmProtectedEndpointName}})
 	return c.NoContent(200)
 }
