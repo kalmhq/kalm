@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	rbac "k8s.io/api/rbac/v1"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -179,4 +180,31 @@ func toKalmValidateErrors(errList field.ErrorList) (rst []KalmValidateError) {
 	}
 
 	return rst
+}
+
+// https://github.com/kubernetes/kubernetes/blob/v1.18.6/pkg/apis/rbac/validation/validation.go#L97
+// ValidatePolicyRule is exported to allow types outside of the RBAC API group to embed a rbac.PolicyRule and reuse this validation logic
+func validatePolicyRule(rule rbac.PolicyRule, isNamespaced bool, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if len(rule.Verbs) == 0 {
+		allErrs = append(allErrs, field.Required(fldPath.Child("verbs"), "verbs must contain at least one value"))
+	}
+
+	if len(rule.NonResourceURLs) > 0 {
+		if isNamespaced {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("nonResourceURLs"), rule.NonResourceURLs, "namespaced rules cannot apply to non-resource URLs"))
+		}
+		if len(rule.APIGroups) > 0 || len(rule.Resources) > 0 || len(rule.ResourceNames) > 0 {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("nonResourceURLs"), rule.NonResourceURLs, "rules cannot apply to both regular resources and non-resource URLs"))
+		}
+		return allErrs
+	}
+
+	if len(rule.APIGroups) == 0 {
+		allErrs = append(allErrs, field.Required(fldPath.Child("apiGroups"), "resource rules must supply at least one api group"))
+	}
+	if len(rule.Resources) == 0 {
+		allErrs = append(allErrs, field.Required(fldPath.Child("resources"), "resource rules must supply at least one resource"))
+	}
+	return allErrs
 }

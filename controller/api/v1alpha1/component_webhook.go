@@ -91,10 +91,11 @@ func (r *Component) validate() KalmValidateErrorList {
 
 	rst = append(rst, r.validateEnvVarList()...)
 	rst = append(rst, validateLabels(r.Spec.NodeSelectorLabels, ".spec.nodeSelectorLabels")...)
-	rst = append(r.validateScheduleOfComponentIfIsCronJob())
+	rst = append(rst, r.validateScheduleOfComponentIfIsCronJob()...)
 	rst = append(rst, r.validateProbes()...)
 	rst = append(rst, r.validateVolumeOfComponent()...)
 	rst = append(rst, r.validateResRequirement()...)
+	rst = append(rst, r.validateRunnerPermission()...)
 	rst = append(rst, r.validatePreInjectedFiles()...)
 
 	return rst
@@ -239,7 +240,20 @@ func (r *Component) validatePreInjectedFiles() (rst KalmValidateErrorList) {
 	return rst
 }
 
-//todo https://github.com/kubernetes/kubernetes/blob/v1.18.6/pkg/apis/rbac/validation/validation.go#L97
 func (r *Component) validateRunnerPermission() (rst KalmValidateErrorList) {
-	return nil
+	runnerPermission := r.Spec.RunnerPermission
+	if runnerPermission == nil {
+		return nil
+	}
+
+	isNamespaced := runnerPermission.RoleType != "clusterRole"
+
+	for i, rule := range runnerPermission.Rules {
+		path := field.NewPath(fmt.Sprintf(".spec.runnerPermission.rules[%d]", i))
+
+		errList := validatePolicyRule(rule, isNamespaced, path)
+		rst = append(rst, toKalmValidateErrors(errList)...)
+	}
+
+	return rst
 }
