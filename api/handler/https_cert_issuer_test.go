@@ -66,7 +66,7 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
 	body := `{
   "name": "my-foobar-issuer",
   "acmeCloudFlare": {
-    "email": "foo@bar.com",
+    "account": "foo@bar.com",
     "secret": "foobar"
   }
 }`
@@ -133,7 +133,7 @@ func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCertIssuer() {
 	body := `{
   "name": "my-foobar-issuer",
   "acmeCloudFlare": {
-    "email": "foo@bar.com",
+    "account": "foo@bar.com",
     "apiTokenSecretName": "foobar"
   }
 }`
