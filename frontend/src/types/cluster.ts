@@ -19,6 +19,7 @@ export interface ClusterInfoContent {
 export type TemporaryAdmin = ImmutableMap<{
   username: string;
   password: string;
+  email: string;
 }>;
 
 export type InitializeClusterResponse = ImmutableMap<{
