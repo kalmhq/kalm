@@ -221,7 +221,7 @@ workflows:
           filters:
             branches:
               only:
-                - kalm-sso-authentication
+                - master
       - deploy-auth-proxy:
           context: deploy-demo-cluster
           requires:
@@ -229,7 +229,7 @@ workflows:
           filters:
             branches:
               only:
-                - kalm-sso-authentication
+                - master
   controller:
     jobs:
       - test-controller
@@ -246,7 +246,7 @@ workflows:
             - build-push-controller-image
           filters:
             branches:
-              only: kalm-sso-authentication
+              only: master
   operator:
     jobs:
       - build-push-operator-image:
@@ -260,4 +260,4 @@ workflows:
             - build-push-operator-image
           filters:
             branches:
-              only: kalm-sso-authentication
+              only: master
