@@ -262,9 +262,8 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
     const password = temporaryAdmin.get("password");
     const scheme = clusterInfo.get("isProduction") ? "https" : "http";
     const domain = initializeResponse!.get("sso").get("domain");
-    const port = clusterInfo.get("isProduction") ? "" : ":" + clusterInfo.get("httpPort");
 
-    const url = `${scheme}://${domain}${port}`;
+    const url = `${scheme}://${domain}`;
 
     return (
       <Box>
