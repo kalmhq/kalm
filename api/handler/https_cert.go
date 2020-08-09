@@ -80,12 +80,12 @@ func (h *ApiHandler) handleDeleteHttpsCert(c echo.Context) error {
 	return c.NoContent(200)
 }
 
-func getHttpsCertFromContext(c echo.Context) (resources.HttpsCert, error) {
+func getHttpsCertFromContext(c echo.Context) (*resources.HttpsCert, error) {
 	var httpsCert resources.HttpsCert
 
 	if err := c.Bind(&httpsCert); err != nil {
-		return resources.HttpsCert{}, err
+		return nil, err
 	}
 
-	return httpsCert, nil
+	return &httpsCert, nil
 }
