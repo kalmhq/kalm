@@ -97,7 +97,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 		}
 	}
 
-	if info.IngressIP == "" && info.IngressHostname == "" && !h.clientManager.IsInCluster() {
+	if info.IngressIP == "" && info.IngressHostname == "" {
 		r := regexp.MustCompile(`(\d+)\.(\d+)\.(\d+)\.(\d+)`)
 		cfg := getK8sClientConfig(c)
 		matches := r.FindStringSubmatch(cfg.Host)
