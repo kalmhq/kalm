@@ -70,23 +70,6 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	err := builder.Get("istio-system", "istio-ingressgateway", &ingressService)
 
 	if err == nil {
-		for _, port := range ingressService.Spec.Ports {
-			if port.Name == "http2" || port.Name == "http" {
-				p := int(port.NodePort)
-				info.HttpPort = &p
-			}
-
-			if port.Name == "https" {
-				p := int(port.NodePort)
-				info.HttpsPort = &p
-			}
-
-			if port.Name == "tls" {
-				p := int(port.NodePort)
-				info.TLSPort = &p
-			}
-		}
-
 		if len(ingressService.Status.LoadBalancer.Ingress) > 0 {
 			info.IngressIP = ingressService.Status.LoadBalancer.Ingress[0].IP
 			info.IngressHostname = ingressService.Status.LoadBalancer.Ingress[0].Hostname
@@ -97,7 +80,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 		}
 	}
 
-	if info.IngressIP == "" && info.IngressHostname == "" {
+	if info.IngressIP == "" && info.IngressHostname == "" && !h.clientManager.IsInCluster() {
 		r := regexp.MustCompile(`(\d+)\.(\d+)\.(\d+)\.(\d+)`)
 		cfg := getK8sClientConfig(c)
 		matches := r.FindStringSubmatch(cfg.Host)
@@ -126,7 +109,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 		routeNotFound = errors.IsNotFound(builder.Get(
 			controllers.KALM_DEX_NAMESPACE,
 			KalmRouteName,
-			&v1alpha1.HttpsCert{},
+			&v1alpha1.HttpRoute{},
 		))
 	}()
 
