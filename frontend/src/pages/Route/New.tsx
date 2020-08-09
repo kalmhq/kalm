@@ -47,7 +47,7 @@ class RouteNewRaw extends React.PureComponent<Props> {
           <RouteForm
             onSubmit={this.onSubmit}
             onSubmitSuccess={this.onSubmitSuccess}
-            initialValues={newEmptyRouteForm}
+            initialValues={newEmptyRouteForm()}
           />
         </Box>
       </BasePage>

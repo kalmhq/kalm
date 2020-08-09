@@ -213,7 +213,7 @@ test("add route", async (done) => {
   };
   const WrappedRouteForm = class extends React.Component {
     public render() {
-      return <RouteForm onSubmit={onSubmit} onSubmitSuccess={onSubmitSuccess} initialValues={newEmptyRouteForm} />;
+      return <RouteForm onSubmit={onSubmit} onSubmitSuccess={onSubmitSuccess} initialValues={newEmptyRouteForm()} />;
     }
   };
   const component = mount(
