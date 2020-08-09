@@ -27,7 +27,7 @@ type ClientManager struct {
 	ClusterConfig *rest.Config
 }
 
-func (m *ClientManager) isInCluster() bool {
+func (m *ClientManager) IsInCluster() bool {
 	return m.Config.KubernetesApiServerAddress == "" && m.Config.KubeConfigPath == ""
 }
 
@@ -70,7 +70,7 @@ func (m *ClientManager) IsAuthInfoWorking(authInfo *api.AuthInfo) error {
 func (m *ClientManager) initClusterClientConfiguration() (err error) {
 	var cfg *rest.Config
 
-	if m.isInCluster() {
+	if m.IsInCluster() {
 		cfg, err = rest.InClusterConfig()
 	} else {
 		if m.Config.KubernetesApiServerAddress != "" {
@@ -183,7 +183,7 @@ func (m *ClientManager) GetConfigForClientRequestContext(c echo.Context) (*Clien
 	if strings.HasPrefix(c.Request().RemoteAddr, "127.0.0.1") || strings.HasPrefix(c.Request().RemoteAddr, "[::1]") {
 		var name string
 
-		if m.isInCluster() {
+		if m.IsInCluster() {
 			name = "localhost(InCluster)"
 		} else {
 			name = "localhost"

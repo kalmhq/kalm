@@ -11,7 +11,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"regexp"
 	"strconv"
 	"strings"
@@ -58,58 +57,54 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 
 	info := &ClusterInfo{}
 
+	httpPort := 80
+	info.HttpPort = &httpPort
+
+	httpsPort := 443
+	info.HttpsPort = &httpsPort
+
+	tlsPort := 15443
+	info.TLSPort = &tlsPort
+
 	var ingressService coreV1.Service
 	err := builder.Get("istio-system", "istio-ingressgateway", &ingressService)
 
 	if err == nil {
-		if len(ingressService.Status.LoadBalancer.Ingress) > 0 {
+		for _, port := range ingressService.Spec.Ports {
+			if port.Name == "http2" || port.Name == "http" {
+				p := int(port.NodePort)
+				info.HttpPort = &p
+			}
 
-			info.IngressIP = ingressService.Status.LoadBalancer.Ingress[0].IP
-			info.IngressHostname = ingressService.Status.LoadBalancer.Ingress[0].Hostname
+			if port.Name == "https" {
+				p := int(port.NodePort)
+				info.HttpsPort = &p
+			}
 
-			httpPort := 80
-			info.HttpPort = &httpPort
-
-			httpsPort := 443
-			info.HttpsPort = &httpsPort
-
-			tlsPort := 15443
-			info.TLSPort = &tlsPort
-
-			info.IsProduction = true
-		}
-
-		// For development and test env.
-		// If the cluster is in a private network, we assume it's a development env.
-		// Use the api server host as the cluster ingress ip
-
-		if info.IngressIP == "" {
-			r := regexp.MustCompile(`(\d+)\.(\d+)\.(\d+)\.(\d+)`)
-			cfg := getK8sClientConfig(c)
-			matches := r.FindStringSubmatch(cfg.Host)
-
-			if len(matches) > 0 && isPrivateIP(matches[0]) {
-				info.IngressIP = matches[0]
-
-				for _, port := range ingressService.Spec.Ports {
-					if port.Name == "http2" || port.Name == "http" {
-						p := int(port.NodePort)
-						info.HttpPort = &p
-					}
-
-					if port.Name == "https" {
-						p := int(port.NodePort)
-						info.HttpsPort = &p
-					}
-
-					if port.Name == "tls" {
-						p := int(port.NodePort)
-						info.TLSPort = &p
-					}
-				}
+			if port.Name == "tls" {
+				p := int(port.NodePort)
+				info.TLSPort = &p
 			}
 		}
 
+		if len(ingressService.Status.LoadBalancer.Ingress) > 0 {
+			info.IngressIP = ingressService.Status.LoadBalancer.Ingress[0].IP
+			info.IngressHostname = ingressService.Status.LoadBalancer.Ingress[0].Hostname
+		}
+
+		if info.IngressIP != "" && !isPrivateIP(info.IngressIP) {
+			info.IsProduction = true
+		}
+	}
+
+	if info.IngressIP == "" && info.IngressHostname == "" && !h.clientManager.IsInCluster() {
+		r := regexp.MustCompile(`(\d+)\.(\d+)\.(\d+)\.(\d+)`)
+		cfg := getK8sClientConfig(c)
+		matches := r.FindStringSubmatch(cfg.Host)
+
+		if len(matches) > 0 && isPrivateIP(matches[0]) {
+			info.IngressIP = matches[0]
+		}
 	}
 
 	var certNotFound, routeNotFound, ssoNotFound bool
@@ -256,7 +251,6 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 	}
 
 	protectedEndpoint := &resources.ProtectedEndpoint{
-		Name:         KalmProtectedEndpointName,
 		Namespace:    controllers.NamespaceKalmSystem,
 		EndpointName: "kalm",
 	}
@@ -306,6 +300,9 @@ func (h *ApiHandler) handleResetCluster(c echo.Context) error {
 	_ = builder.DeleteHttpRoute(controllers.NamespaceKalmSystem, KalmRouteName)
 	_ = builder.DeleteHttpsCert(KalmRouteCertName)
 	_ = builder.DeleteSSOConfig()
-	_ = builder.Delete(&v1alpha1.ProtectedEndpoint{ObjectMeta: metaV1.ObjectMeta{Namespace: controllers.NamespaceKalmSystem, Name: KalmProtectedEndpointName}})
+	_ = builder.DeleteProtectedEndpoints(&resources.ProtectedEndpoint{
+		Namespace:    controllers.NamespaceKalmSystem,
+		EndpointName: "kalm",
+	})
 	return c.NoContent(200)
 }

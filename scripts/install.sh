@@ -34,13 +34,13 @@ sleep 1
 finish=False
 
 function printCompletedItems() {
-  Green='\033[0;32m' 
-  OFF='\033[0m' 
+  Green='\033[0;32m'
+  OFF='\033[0m'
 
   clear
   echo "Initializing Kalm - ${#installed[@]}/${#ns_array[@]} modules ready:"
   echo ""
-  
+
   for i in "${installed[@]}"
   do
     echo -e "${Green}✔${OFF} $i"
@@ -65,32 +65,32 @@ do
 
         # kubectl get deployments.apps -n $ns
         # echo ""
-    
+
         dp_status_output=$(kubectl get deployments.apps -n $ns -ojsonpath='{.items[*].status.conditions[?(@.type=="Available")].status}')
         dp_status_list=($dp_status_output)
-    
+
         status_list_size=${#dp_status_list[@]}
-    
+
         #echo $dp_status_output, ${dp_status_list[@]} $status_list_size
-    
+
         if [ $status_list_size -lt $dp_cnt ]
         then
             installing+=($ns)
         else
-            for status in $dp_status_list 
+            for status in $dp_status_list
             do
                 if [ $status == "True" ]
                 then
                     installed+=($ns)
                     continue
                 fi
-    
+
                 installing+=($ns)
                 break
             done
         fi
     done
-    
+
     installing_list_size=${#installing[@]}
 
     printCompletedItems "${installed[@]}"
