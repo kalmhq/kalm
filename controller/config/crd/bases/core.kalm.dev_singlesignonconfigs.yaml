@@ -59,7 +59,6 @@ spec:
                 - name
                 - type
                 type: object
-              minItems: 1
               type: array
             domain:
               description: The following are for kalm dex oidc provider
@@ -88,11 +87,26 @@ spec:
               type: integer
             showApproveScreen:
               type: boolean
+            temporaryUser:
+              properties:
+                email:
+                  type: string
+                passwordHash:
+                  description: bcrypt hash of the password
+                  type: string
+                userId:
+                  type: string
+                username:
+                  type: string
+              required:
+              - email
+              - passwordHash
+              - userId
+              - username
+              type: object
             useHttp:
               description: Default scheme is https, this flag is to change it to http
               type: boolean
-          required:
-          - connectors
           type: object
         status:
           description: SingleSignOnConfigStatus defines the observed state of SingleSignOnConfig
