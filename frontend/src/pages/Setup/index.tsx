@@ -152,11 +152,11 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
               if (!values.domain) {
                 errors.domain = "Required";
               } else {
-                // const result = await api.resolveDomain(values.domain, "A");
-                // if (result.length <= 0 || result.indexOf(clusterInfo.get("ingressIP")) < 0) {
-                //   errors.domain =
-                //     "DNS check failed. After the DNS record is modified, it takes some time to take effect. Please try again later";
-                // }
+                const result = await api.resolveDomain(values.domain, "A");
+                if (result.length <= 0 || result.indexOf(clusterInfo.get("ingressIP")) < 0) {
+                  errors.domain =
+                    "DNS check failed. After the DNS record is modified, it takes some time to take effect. Please try again later";
+                }
               }
               return errors;
             }}
