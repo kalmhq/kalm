@@ -41,6 +41,7 @@
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
     "flowpoints": "git+https://github.com/iAladdin/flowpoints.js.git#23d517320c12eb7077ba8b5d8fdda3bfc1eeabd4",
+    "formik": "^2.1.5",
     "hoist-non-react-statics": "^3.3.2",
     "immutable": "^4.0.0-rc.12",
     "install": "^0.13.0",
@@ -84,8 +85,16 @@
     "build-storybook": "NODE_ENV=test build-storybook --docs -s public"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^5.3.19",

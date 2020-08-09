@@ -1,4 +1,4 @@
-import { Box, createStyles, Theme, WithStyles, withStyles, Button, Typography } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
 import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { blinkTopProgressAction } from "actions/settings";
@@ -25,6 +25,7 @@ import { InfoBox } from "widgets/InfoBox";
 import DomainStatus from "widgets/DomainStatus";
 import sc from "utils/stringConstants";
 import { Link } from "react-router-dom";
+
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
@@ -148,6 +149,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     const ready = rowData.get("ready");
 
     if (ready === "True") {
+      // why the ready field is a string value ?????
       return (
         <FlexRowItemCenterBox>
           <FlexRowItemCenterBox mr={1}>
