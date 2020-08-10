@@ -55,7 +55,7 @@ func (r *ProtectedEndpoint) ValidateDelete() error {
 }
 
 func (r *ProtectedEndpoint) validate() (rst KalmValidateErrorList) {
-	if isValidLabelValue(r.Spec.EndpointName) {
+	if !isValidLabelValue(r.Spec.EndpointName) {
 		rst = append(rst, KalmValidateError{
 			Err:  "invalid endpointName",
 			Path: "spec.endpointName",

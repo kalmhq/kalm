@@ -8,6 +8,7 @@ import (
 	"k8s.io/apiextensions-apiserver/pkg/apiserver/validation"
 	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
 	v1validation "k8s.io/apimachinery/pkg/apis/meta/v1/validation"
+	"net"
 	"net/url"
 	"regexp"
 	"strings"
@@ -60,6 +61,10 @@ func getValidatorForKalmSpec(crdDefinition []byte) (*validate.SchemaValidator, e
 func isValidK8sHost(host string) bool {
 	errs := apimachineryval.IsDNS1123Subdomain(host)
 	return len(errs) == 0
+}
+
+func isValidIP(ip string) bool {
+	return net.ParseIP(ip) != nil
 }
 
 func isValidURL(s string) bool {

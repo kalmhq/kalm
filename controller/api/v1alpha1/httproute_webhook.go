@@ -21,7 +21,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
-	"strings"
 )
 
 // log is for logging in this package.
@@ -68,7 +67,7 @@ func (r *HttpRoute) ValidateDelete() error {
 
 func (r *HttpRoute) validate() (rst KalmValidateErrorList) {
 	for i, host := range r.Spec.Hosts {
-		if !isValidK8sHost(host) {
+		if !isValidK8sHost(host) && !isValidIP(host) {
 			rst = append(rst, KalmValidateError{
 				Err:  "invalid host",
 				Path: fmt.Sprintf("spec.hosts[%d]", i),
@@ -77,7 +76,7 @@ func (r *HttpRoute) validate() (rst KalmValidateErrorList) {
 	}
 
 	for i, path := range r.Spec.Paths {
-		if !strings.HasPrefix(path, "/") {
+		if !isValidPath(path) {
 			rst = append(rst, KalmValidateError{
 				Err:  "invalid path, should start with: /",
 				Path: fmt.Sprintf("spec.paths[%d]", i),

@@ -31,6 +31,17 @@ func (r *DockerRegistry) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
+// +kubebuilder:webhook:path=/mutate-core-kalm-dev-v1alpha1-dockerregistry,mutating=true,failurePolicy=fail,groups=core.kalm.dev,resources=dockerregistries,verbs=create;update,versions=v1alpha1,name=mdockerregistry.kb.io
+
+var _ webhook.Defaulter = &DockerRegistry{}
+
+// Default implements webhook.Defaulter so a webhook will be registered for the type
+func (r *DockerRegistry) Default() {
+	if r.Spec.Host == "" {
+		r.Spec.Host = "https://registry-1.docker.io"
+	}
+}
+
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-dockerregistry,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=dockerregistries,versions=v1alpha1,name=vdockerregistry.kb.io
 
 var _ webhook.Validator = &DockerRegistry{}
