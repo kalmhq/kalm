@@ -14,11 +14,3 @@ func (h *ApiHandler) handleGetPVs(c echo.Context) error {
 	return c.JSON(200, pvList)
 }
 
-func (h *ApiHandler) handleGetNodes(c echo.Context) error {
-	var list coreV1.NodeList
-	err := h.Builder(c).List(&list)
-	if err != nil {
-		return err
-	}
-	return c.JSON(200, list)
-}
