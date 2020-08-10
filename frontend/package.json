@@ -61,6 +61,7 @@
     "react-scripts": "3.3.0",
     "react-spring": "^8.0.27",
     "react-syntax-highlighter": "^12.2.1",
+    "react-table": "^7.5.0",
     "reconnecting-websocket": "^4.4.0",
     "redux-form": "^8.2.6",
     "redux-immutable": "^4.0.0",
