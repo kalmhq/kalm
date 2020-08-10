@@ -10,10 +10,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type AllocatedResources struct {
-	PodsCount int                 `json:"podsCount"`
+type PodRequests struct {
+	Namespace string              `json:"namespace"`
+	PodName   string              `json:"podName"`
 	Requests  coreV1.ResourceList `json:"requests"`
-	Limits    coreV1.ResourceList `json:"limits"`
+}
+
+type AllocatedResources struct {
+	PodsCount    int                 `json:"podsCount"`
+	PodsRequests []PodRequests       `json:"podsRequests"`
+	Requests     coreV1.ResourceList `json:"requests"`
+	Limits       coreV1.ResourceList `json:"limits"`
 }
 
 type Node struct {
@@ -198,11 +205,35 @@ func (builder *Builder) getAllocatedResources(node *coreV1.Node) *AllocatedResou
 		return &AllocatedResources{}
 	}
 
-	return &AllocatedResources{
-		PodsCount: len(nodeNonTerminatedPodsList.Items),
-		Requests:  reqs,
-		Limits:    limits,
+	podsRequests, err := getPodsRequests(nodeNonTerminatedPodsList)
+	if err != nil {
+		return &AllocatedResources{}
 	}
+
+	return &AllocatedResources{
+		PodsCount:    len(nodeNonTerminatedPodsList.Items),
+		Requests:     reqs,
+		Limits:       limits,
+		PodsRequests: podsRequests,
+	}
+}
+
+func getPodsRequests(podList *coreV1.PodList) (podsRequests []PodRequests, err error) {
+	podsRequests = []PodRequests{}
+	for _, pod := range podList.Items {
+		podReqs, _ := PodRequestsAndLimits(&pod)
+		if err != nil {
+			return nil, err
+		}
+		podName := pod.Name
+		namespace := pod.Namespace
+		podsRequests = append(podsRequests, PodRequests{
+			PodName:   podName,
+			Namespace: namespace,
+			Requests:  podReqs,
+		})
+	}
+	return
 }
 
 func getPodsTotalRequestsAndLimits(podList *coreV1.PodList) (reqs coreV1.ResourceList, limits coreV1.ResourceList, err error) {

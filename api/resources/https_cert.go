@@ -97,7 +97,7 @@ func (builder *Builder) GetHttpsCerts() ([]HttpsCertResp, error) {
 	return httpsCerts, nil
 }
 
-func (builder *Builder) CreateAutoManagedHttpsCert(cert HttpsCert) (HttpsCert, error) {
+func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert, error) {
 	// by default, cert use our default http01Issuer
 	if cert.HttpsCertIssuer == "" {
 		cert.HttpsCertIssuer = controllers.DefaultHTTP01IssuerName
@@ -114,19 +114,20 @@ func (builder *Builder) CreateAutoManagedHttpsCert(cert HttpsCert) (HttpsCert, e
 	}
 
 	err := builder.Create(&res)
+
 	if err != nil {
-		return HttpsCert{}, err
+		return nil, err
 	}
 
 	return cert, nil
 }
 
-func (builder *Builder) UpdateAutoManagedCert(cert HttpsCert) (HttpsCert, error) {
+func (builder *Builder) UpdateAutoManagedCert(cert *HttpsCert) (*HttpsCert, error) {
 	var res v1alpha1.HttpsCert
 
 	err := builder.Get("", cert.Name, &res)
 	if err != nil {
-		return HttpsCert{}, err
+		return nil, err
 	}
 
 	res.Spec.Domains = cert.Domains
@@ -134,17 +135,17 @@ func (builder *Builder) UpdateAutoManagedCert(cert HttpsCert) (HttpsCert, error)
 
 	err = builder.Update(&res)
 	if err != nil {
-		return HttpsCert{}, err
+		return nil, err
 	}
 
 	return cert, nil
 }
 
-func (builder *Builder) UpdateSelfManagedCert(cert HttpsCert) (HttpsCert, error) {
+func (builder *Builder) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, error) {
 	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
 	if err != nil {
 		builder.Logger.WithError(err).Errorf("fail to parse SelfManagedCertContent as cert")
-		return HttpsCert{}, err
+		return nil, err
 	}
 
 	var err1 error
@@ -196,19 +197,19 @@ func (builder *Builder) UpdateSelfManagedCert(cert HttpsCert) (HttpsCert, error)
 	wg2.Wait()
 
 	if err1 != nil {
-		return HttpsCert{}, err1
+		return nil, err1
 	} else if err2 != nil {
-		return HttpsCert{}, err2
+		return nil, err2
 	}
 
 	return cert, nil
 }
 
-func (builder *Builder) CreateSelfManagedHttpsCert(cert HttpsCert) (HttpsCert, error) {
+func (builder *Builder) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCert, error) {
 	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
 	if err != nil {
 		builder.Logger.WithError(err).Errorf("fail to parse SelfManagedCertContent as cert")
-		return HttpsCert{}, err
+		return nil, err
 	}
 
 	var domains []string
@@ -217,18 +218,18 @@ func (builder *Builder) CreateSelfManagedHttpsCert(cert HttpsCert) (HttpsCert, e
 	} else if x509Cert.Subject.CommonName != "" {
 		domains = []string{x509Cert.Subject.CommonName}
 	} else {
-		return HttpsCert{}, fmt.Errorf("fail to find domain name in cert")
+		return nil, fmt.Errorf("fail to find domain name in cert")
 	}
 
 	ok := checkPrivateKey(x509Cert, cert.SelfManagedCertPrvKey)
 	if !ok {
-		return HttpsCert{}, fmt.Errorf("privateKey and cert not match")
+		return nil, fmt.Errorf("privateKey and cert not match")
 	}
 
 	// create secret in istio-system
 	certSecretName, err := builder.createCertSecretInNSIstioSystem(cert)
 	if err != nil {
-		return HttpsCert{}, err
+		return nil, err
 	}
 
 	res := v1alpha1.HttpsCert{
@@ -244,7 +245,7 @@ func (builder *Builder) CreateSelfManagedHttpsCert(cert HttpsCert) (HttpsCert, e
 
 	err = builder.Create(&res)
 	if err != nil {
-		return HttpsCert{}, err
+		return nil, err
 	}
 
 	cert.Domains = x509Cert.DNSNames
@@ -276,12 +277,12 @@ func (builder *Builder) DeleteHttpsCert(name string) error {
 
 const nsIstioSystem = "istio-system"
 
-func getSecNameForSelfManagedCert(cert HttpsCert) string {
+func getSecNameForSelfManagedCert(cert *HttpsCert) string {
 	certSecName := "kalm-self-managed-" + cert.Name
 	return certSecName
 }
 
-func (builder *Builder) createCertSecretInNSIstioSystem(cert HttpsCert) (string, error) {
+func (builder *Builder) createCertSecretInNSIstioSystem(cert *HttpsCert) (string, error) {
 
 	certSecName := getSecNameForSelfManagedCert(cert)
 
