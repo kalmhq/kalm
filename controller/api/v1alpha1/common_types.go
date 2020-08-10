@@ -58,6 +58,7 @@ type Port struct {
 	Protocol PortProtocol `json:"protocol"`
 }
 
+// +kubebuilder:validation:Enum=emptyDirMemory;emptyDir;pvc
 type VolumeType string
 
 const (

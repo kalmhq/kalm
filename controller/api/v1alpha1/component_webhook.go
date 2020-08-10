@@ -93,8 +93,8 @@ func (r *Component) validate() KalmValidateErrorList {
 	rst = append(rst, validateLabels(r.Spec.NodeSelectorLabels, ".spec.nodeSelectorLabels")...)
 	rst = append(rst, r.validateScheduleOfComponentIfIsCronJob()...)
 	rst = append(rst, r.validateProbes()...)
-	rst = append(rst, r.validateVolumeOfComponent()...)
 	rst = append(rst, r.validateResRequirement()...)
+	rst = append(rst, r.validateVolumeOfComponent()...)
 	rst = append(rst, r.validateRunnerPermission()...)
 	rst = append(rst, r.validatePreInjectedFiles()...)
 
@@ -111,32 +111,31 @@ func (r *Component) validateVolumeOfComponent() (rst KalmValidateErrorList) {
 	vols := r.Spec.Volumes
 
 	for i, vol := range vols {
-		if vol.Type != VolumeTypePersistentVolumeClaim {
-			continue
+		if !isValidPath(vol.Path) {
+			rst = append(rst, KalmValidateError{
+				Err:  "invalid path:" + vol.Path,
+				Path: fmt.Sprintf(".spec.volumes[%d].path", i),
+			})
 		}
 
-		// for pvc vol
+		// size
+		fld := field.NewPath(fmt.Sprintf(".spec.volumes[%d].size", i))
+		errList := ValidateResourceQuantityValue(vol.Size, fld, true)
+		rst = append(rst, toKalmValidateErrors(errList)...)
 
-		// 1. field: pvc must be set
-		if vol.PVC == "" {
+		// for pvc vol, field: pvc must be set
+		if vol.Type == VolumeTypePersistentVolumeClaim &&
+			vol.PVC == "" {
+
 			rst = append(rst, KalmValidateError{
 				Err:  "must set pvc for this volume",
 				Path: fmt.Sprintf(".spec.volumes[%d]", i),
 			})
+
 		}
-
-		//// 2. if pvToMatch is set, pv must exist
-		// todo no idea how to call k8s api in validator
-		//if vol.PVToMatch != "" {
-		//
-		//}
-
-		fld := field.NewPath(fmt.Sprintf(".spec.volumes[%d].size", i))
-		errList := ValidateResourceQuantityValue(vol.Size, fld, true)
-		rst = append(rst, toKalmValidateErrors(errList)...)
 	}
 
-	return
+	return rst
 }
 
 func (r *Component) validateScheduleOfComponentIfIsCronJob() (rst KalmValidateErrorList) {

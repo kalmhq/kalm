@@ -10,6 +10,7 @@ import (
 	v1validation "k8s.io/apimachinery/pkg/apis/meta/v1/validation"
 	"net/url"
 	"regexp"
+	"strings"
 
 	//"k8s.io/utils/field"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -102,4 +103,8 @@ func isValidEmail(e string) bool {
 	}
 
 	return emailRegex.MatchString(e)
+}
+
+func isValidPath(s string) bool {
+	return strings.HasPrefix(s, "/")
 }
