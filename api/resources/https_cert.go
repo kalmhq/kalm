@@ -6,7 +6,9 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	coreV1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/rand"
 	"strings"
 	"sync"
 )
@@ -103,6 +105,25 @@ func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 		cert.HttpsCertIssuer = controllers.DefaultHTTP01IssuerName
 	}
 
+	if cert.Name == "" {
+		cnt := 0
+		maxCnt := 5
+		for cnt < maxCnt {
+			name := autoGenCertName(cert)
+
+			// check if exist
+			existCert := v1alpha1.HttpsCert{}
+			err := builder.Get("", name, &existCert)
+			if errors.IsNotFound(err) {
+				cert.Name = name
+				break
+			}
+
+			// otherwise retry
+			cnt += 1
+		}
+	}
+
 	res := v1alpha1.HttpsCert{
 		ObjectMeta: v1.ObjectMeta{
 			Name: cert.Name,
@@ -120,6 +141,24 @@ func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 	}
 
 	return cert, nil
+}
+
+func autoGenCertName(cert *HttpsCert) string {
+	var name string
+	if len(cert.Domains) >= 1 {
+		name = cert.Domains[0]
+	}
+	name += "-" + rand.String(6)
+
+	name = cleanToResName(name)
+
+	return name
+}
+
+func cleanToResName(s string) string {
+	s = strings.ToLower(s)
+	s = strings.ReplaceAll(s, ".", "-")
+	return s
 }
 
 func (builder *Builder) UpdateAutoManagedCert(cert *HttpsCert) (*HttpsCert, error) {
