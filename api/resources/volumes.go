@@ -30,7 +30,11 @@ type Volume struct {
 	PV                 string `json:"pvToMatch"`
 }
 
-func (builder *Builder) BuildVolumeResponse(pvc coreV1.PersistentVolumeClaim, pv coreV1.PersistentVolume) (*Volume, error) {
+func (builder *Builder) BuildVolumeResponse(
+	pvc coreV1.PersistentVolumeClaim,
+	pv coreV1.PersistentVolume,
+) (*Volume, error) {
+
 	isInUse, err := builder.IsPVCInUse(pvc)
 	if err != nil {
 		return nil, err
@@ -402,7 +406,6 @@ func findPVCByClaimRef(
 }
 
 func (builder *Builder) IsPVCInUse(pvc coreV1.PersistentVolumeClaim) (bool, error) {
-
 	var podList coreV1.PodList
 	err := builder.List(&podList, client.InNamespace(pvc.Namespace))
 	if errors.IsNotFound(err) {
