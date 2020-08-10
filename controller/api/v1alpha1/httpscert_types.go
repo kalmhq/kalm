@@ -28,10 +28,12 @@ type HttpsCertSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	IsSelfManaged             bool     `json:"isSelfManaged,omitempty"`
-	SelfManagedCertSecretName string   `json:"selfManagedCertSecretName,omitempty"`
-	HttpsCertIssuer           string   `json:"httpsCertIssuer,omitempty"`
-	Domains                   []string `json:"domains"`
+	IsSelfManaged             bool   `json:"isSelfManaged,omitempty"`
+	SelfManagedCertSecretName string `json:"selfManagedCertSecretName,omitempty"`
+	HttpsCertIssuer           string `json:"httpsCertIssuer,omitempty"`
+
+	// +kubebuilder:validation:MinItems=1
+	Domains []string `json:"domains"`
 }
 
 // HttpsCertStatus defines the observed state of HttpsCert
