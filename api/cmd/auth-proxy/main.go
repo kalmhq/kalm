@@ -70,7 +70,7 @@ func getOauth2Config() *oauth2.Config {
 	provider, err := oidc.NewProvider(context.Background(), oidcProviderUrl)
 
 	if err != nil {
-		log.Error(err,"KALM new provider failed.")
+		log.Error(err, "KALM new provider failed.")
 		return nil
 	}
 
@@ -382,14 +382,14 @@ func handleOIDCCallback(c echo.Context) error {
 	stateStr := c.QueryParam("state")
 
 	if stateStr == "" {
-		log.Error(nil,"missing state")
+		log.Error(nil, "missing state")
 		return c.String(400, "Missing state")
 	}
 
 	stateBytes, err := base64.RawStdEncoding.DecodeString(stateStr)
 
 	if err != nil {
-		log.Error(err,"Base64 decode state failed")
+		log.Error(err, "Base64 decode state failed")
 		return c.String(400, "Base64 decode state failed")
 	}
 
@@ -421,7 +421,7 @@ func handleOIDCCallback(c echo.Context) error {
 	rawIDToken, ok := oauth2Token.Extra(ID_TOKEN_COOKIE_NAME).(string)
 
 	if !ok {
-		log.Error(nil,"no id_token in token response")
+		log.Error(nil, "no id_token in token response")
 		return c.String(400, "no id_token in token resonse")
 	}
 
