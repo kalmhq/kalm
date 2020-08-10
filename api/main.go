@@ -3,9 +3,6 @@ package main
 import (
 	"context"
 	"golang.org/x/net/http2"
-	"log"
-	"os"
-	"sort"
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -18,6 +15,8 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/urfave/cli/v2"
 	"k8s.io/client-go/kubernetes/scheme"
+	"os"
+	"sort"
 )
 
 func main() {
@@ -81,7 +80,7 @@ func main() {
 			&cli.StringFlag{
 				Name:        "log-level",
 				Value:       "INFO",
-				Usage:       "DEBUG, INFO, WARN, ERROR",
+				Usage:       "DEBUG, INFO, ERROR",
 				Destination: &runningConfig.LogLevel,
 				EnvVars:     []string{"LOG_LEVEL"},
 			},
@@ -95,13 +94,12 @@ func main() {
 	err := app.Run(os.Args)
 
 	if err != nil {
-		log.Fatal("[Fatal] app.Run Failed:", err)
+		panic(err)
 	}
 }
 
 func run(runningConfig *config.Config) {
 	v1alpha1.AddToScheme(scheme.Scheme)
-
 	e := server.NewEchoServer(runningConfig)
 
 	clientManager := client.NewClientManager(runningConfig)
@@ -115,10 +113,12 @@ func run(runningConfig *config.Config) {
 	// watcher.StartWatching(clientManager)
 
 	go resources.StartMetricScraper(context.Background(), clientManager)
-
-	e.Logger.Fatal(e.StartH2CServer(runningConfig.GetServerAddress(), &http2.Server{
+	err := e.StartH2CServer(runningConfig.GetServerAddress(), &http2.Server{
 		MaxConcurrentStreams: 250,
 		MaxReadFrameSize:     1048576,
 		IdleTimeout:          60 * time.Second,
-	}))
+	})
+	if err != nil {
+		panic(err)
+	}
 }

@@ -71,10 +71,7 @@ func (r *SingleSignOnConfigReconcilerTask) Run(req ctrl.Request) error {
 	}
 
 	if len(ssoList.Items) > 1 {
-		r.Log.Error(
-			fmt.Errorf("Only one SSO config is allowed."),
-			"Found more than one SSO configs, Please keep single one and delete the others.",
-		)
+		r.Log.Error(nil, "Only one SSO config is allowed. Found more than one SSO configs, Please keep single one and delete the others.")
 		return nil
 	}
 
