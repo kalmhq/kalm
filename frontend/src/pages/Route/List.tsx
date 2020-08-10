@@ -26,6 +26,7 @@ import { withClusterInfo } from "hoc/withClusterInfo";
 import { ClusterInfo } from "types/cluster";
 import { KMLink } from "widgets/Link";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { KRTable } from "widgets/KRTable";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -247,6 +248,9 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           </Button>
         }
       >
+        <Box p={2}>
+          <KRTable columns={[]} data={[]} />
+        </Box>
         <Box p={2}>
           {isRoutesLoading && !isRoutesFirstLoaded ? (
             <Loading />
