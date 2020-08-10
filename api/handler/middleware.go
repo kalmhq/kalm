@@ -13,15 +13,15 @@ const (
 
 func (h *ApiHandler) AuthClientMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		clientConfig, err := h.clientManager.GetClientConfig(c)
+		clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
 
 		if err != nil {
 			return err
 		}
 
-		c.Set(KUBERNETES_CLIENT_CONFIG_KEY, clientConfig)
+		c.Set(KUBERNETES_CLIENT_CONFIG_KEY, clientInfo.Cfg)
 
-		k8sClient, err := kubernetes.NewForConfig(clientConfig)
+		k8sClient, err := kubernetes.NewForConfig(clientInfo.Cfg)
 		if err != nil {
 			return err
 		}

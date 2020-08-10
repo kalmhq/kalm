@@ -26,6 +26,13 @@ export interface NodeContent {
     podsCount: number;
     requests: ResourceList;
     limits: ResourceList;
+    podsRequests: Immutable.List<
+      ImmutableMap<{
+        podName: string;
+        namespace: string;
+        requests: ResourceList;
+      }>
+    >;
   }>;
   status: ImmutableMap<{
     capacity: ResourceList;

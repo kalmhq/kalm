@@ -165,6 +165,11 @@ const sideBarData = [
         text: "Single Sign-on",
         to: "/sso",
       },
+      // {
+      //   icon: SettingIcon,
+      //   text: "System",
+      //   to: "/system",
+      // },
     ],
   },
 ];

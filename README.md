@@ -1,6 +1,6 @@
 # Kalm - Kubernetes Application Manager
 
-[![codecov](https://codecov.io/gh/kalmhq/kalm/branch/master/graph/badge.svg)](https://codecov.io/gh/kalmhq/kalm) [![CircleCI](https://circleci.com/gh/kalmhq/kalm.svg?style=svg)](https://circleci.com/gh/kalmhq/kalm) [![Go Report](https://goreportcard.com/badge/github.com/kalmhq/kalm)](https://goreportcard.com/badge/github.com/kalmhq/kalm)
+[![CircleCI](https://circleci.com/gh/kalmhq/kalm.svg?style=svg)](https://circleci.com/gh/kalmhq/kalm) [![Go Report](https://goreportcard.com/badge/github.com/kalmhq/kalm)](https://goreportcard.com/badge/github.com/kalmhq/kalm)
 
 Kalm is an easy way to manage applications on Kubernetes. Kalm provides a web UI for common workflows including creating and updating applications, scaling, routing, scheduling jobs, auto-healing, and setting up HTTPS certificates.
 

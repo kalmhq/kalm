@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/utils"
 	"gopkg.in/yaml.v3"
@@ -224,32 +225,6 @@ func (r *SingleSignOnConfigReconcilerTask) DeleteResources() error {
 func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *corev1alpha1.SingleSignOnConfig) (string, error) {
 	oidcProviderInfo := GetOIDCProviderInfo(ssoConfig)
 
-	var connectors []interface{}
-
-	for _, connector := range ssoConfig.Spec.Connectors {
-		rawConnector := map[string]interface{}{
-			"id":   connector.ID,
-			"type": connector.Type,
-			"name": connector.Name,
-		}
-
-		if connector.Config != nil {
-			var config map[string]interface{}
-			err := json.Unmarshal(connector.Config.Raw, &config)
-
-			if err != nil {
-				r.Log.Error(err, "Unmarshal connector config failed")
-				return "", err
-			}
-
-			config["redirectURI"] = oidcProviderInfo.Issuer + "/callback"
-
-			rawConnector["config"] = config
-		}
-
-		connectors = append(connectors, rawConnector)
-	}
-
 	config := map[string]interface{}{
 		"issuer": oidcProviderInfo.Issuer,
 		"storage": map[string]interface{}{
@@ -265,7 +240,6 @@ func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *corev1a
 			"issuer": "kalm",
 			"theme":  "tectonic",
 		},
-		"connectors": connectors,
 		"oauth2": map[string]interface{}{
 			"skipApprovalScreen": true,
 		},
@@ -279,6 +253,48 @@ func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *corev1a
 				},
 			},
 		},
+	}
+
+	if len(ssoConfig.Spec.Connectors) > 0 {
+		var connectors []interface{}
+
+		for _, connector := range ssoConfig.Spec.Connectors {
+			rawConnector := map[string]interface{}{
+				"id":   connector.ID,
+				"type": connector.Type,
+				"name": connector.Name,
+			}
+
+			if connector.Config != nil {
+				var config map[string]interface{}
+				err := json.Unmarshal(connector.Config.Raw, &config)
+
+				if err != nil {
+					r.Log.Error(err, "Unmarshal connector config failed")
+					return "", err
+				}
+
+				config["redirectURI"] = oidcProviderInfo.Issuer + "/callback"
+
+				rawConnector["config"] = config
+			}
+
+			connectors = append(connectors, rawConnector)
+		}
+
+		config["connectors"] = connectors
+	}
+
+	if ssoConfig.Spec.TemporaryUser != nil {
+		config["enablePasswordDB"] = true
+		config["staticPasswords"] = []interface{}{
+			map[string]interface{}{
+				"email":    ssoConfig.Spec.TemporaryUser.Email,
+				"hash":     ssoConfig.Spec.TemporaryUser.PasswordHash,
+				"username": ssoConfig.Spec.TemporaryUser.Username,
+				"userID":   ssoConfig.Spec.TemporaryUser.UserID,
+			},
+		}
 	}
 
 	configBytes, _ := yaml.Marshal(config)
@@ -323,6 +339,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 		r.Log.Error(err, "get dex config file error")
 		return err
 	}
+
+	spew.Dump(configFileContent)
 
 	dexComponent := corev1alpha1.Component{
 		ObjectMeta: metaV1.ObjectMeta{
@@ -371,6 +389,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex component")
 			return err
 		}
+
+		spew.Dump(client.MergeFrom(r.dexComponent).Data(copied))
 
 		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.dexComponent)); err != nil {
 			r.Log.Error(err, "Patch dex component failed.")

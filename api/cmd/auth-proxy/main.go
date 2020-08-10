@@ -156,6 +156,11 @@ func handleExtAuthz(c echo.Context) error {
 		"path":     c.Request().URL.Path,
 	})
 
+	logger.Debugf("tls: %t", c.Request().TLS != nil)
+	for k, v := range c.Request().Header {
+		logger.Debugf("header: %s, value: %+v", k, v)
+	}
+
 	if getOauth2Config() == nil {
 		return c.String(503, "Please configure KALM OIDC environments.")
 	}

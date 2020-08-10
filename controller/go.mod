@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/coreos/prometheus-operator v0.29.0
+	github.com/davecgh/go-spew v1.1.1
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/dop251/goja v0.0.0-20200721192441-a695b0cdd498
 	github.com/elastic/cloud-on-k8s v0.0.0-20200721161711-b12a39f14ab1
@@ -11,6 +12,7 @@ require (
 	github.com/go-openapi/validate v0.19.10
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/gogo/protobuf v1.3.1
+	github.com/google/uuid v1.1.1
 	github.com/heroku/docker-registry-client v0.0.0-20190909225348-afc9e1acc3d5
 	github.com/jetstack/cert-manager v0.13.1
 	github.com/joho/godotenv v1.3.0

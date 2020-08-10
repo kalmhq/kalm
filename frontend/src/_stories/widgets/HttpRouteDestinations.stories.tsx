@@ -73,7 +73,7 @@ storiesOf("Widgets/HttpRouteDestinations", module)
 
         // TODO should we ignore the system namespaces??
         return (
-          ns !== "kalm-system" &&
+          ns !== "default" &&
           ns !== "kalm-system" &&
           ns !== "kube-system" &&
           ns !== "istio-system" &&
