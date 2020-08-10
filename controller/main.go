@@ -177,6 +177,41 @@ func main() {
 			os.Exit(1)
 		}
 
+		if err = (&corev1alpha1.ComponentPluginBinding{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "ComponentPluginBinding")
+			os.Exit(1)
+		}
+
+		if err = (&corev1alpha1.DeployKey{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "DeployKey")
+			os.Exit(1)
+		}
+
+		if err = (&corev1alpha1.DockerRegistry{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "DockerRegistry")
+			os.Exit(1)
+		}
+
+		if err = (&corev1alpha1.HttpRoute{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "HttpRoute")
+			os.Exit(1)
+		}
+
+		if err = (&corev1alpha1.HttpsCert{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "HttpsCert")
+			os.Exit(1)
+		}
+
+		if err = (&corev1alpha1.HttpsCertIssuer{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "HttpsCertIssuer")
+			os.Exit(1)
+		}
+
+		if err = (&corev1alpha1.ProtectedEndpoint{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "ProtectedEndpoint")
+			os.Exit(1)
+		}
+
 		if err = (&corev1alpha1.SingleSignOnConfig{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "SingleSignOnConfig")
 			os.Exit(1)
