@@ -230,6 +230,60 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private getKRTableColumns() {
+    return [
+      {
+        Header: "Domain",
+        accessor: "host",
+      },
+      {
+        Header: "Urls",
+        accessor: "urls",
+      },
+      {
+        Header: "Http",
+        accessor: "http",
+      },
+      {
+        Header: "Https",
+        accessor: "https",
+      },
+      {
+        Header: "Methods",
+        accessor: "methods",
+      },
+      {
+        Header: "Targets",
+        accessor: "targets",
+      },
+      {
+        Header: "Actions",
+        accessor: "actions",
+      },
+    ];
+  }
+
+  private getKRTableData() {
+    const { httpRoutes } = this.props;
+    const data: any[] = [];
+
+    httpRoutes &&
+      httpRoutes.forEach((httpRoute, index) => {
+        const rowData = httpRoute as RowData;
+        data.push({
+          host: this.renderHosts(rowData),
+          urls: this.renderUrls(rowData),
+          http: this.renderSupportHttp(rowData),
+          https: this.renderSupportHttps(rowData),
+          methods: this.renderMethods(rowData),
+          targets: this.renderTargets(rowData),
+          actions: this.renderActions(rowData),
+        });
+      });
+
+    return data;
+  }
+
   public render() {
     const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes } = this.props;
     const tableData = this.getData();
@@ -249,7 +303,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         }
       >
         <Box p={2}>
-          <KRTable columns={[]} data={[]} />
+          <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />
         </Box>
         <Box p={2}>
           {isRoutesLoading && !isRoutesFirstLoaded ? (

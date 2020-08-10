@@ -9,43 +9,14 @@ import React from "react";
 import { useTable } from "react-table";
 
 export const KRTable = ({ columns, data }: { columns: { Header: string; accessor: string }[]; data: any[] }) => {
-  const columnsMemo = React.useMemo(
-    () =>
-      [
-        {
-          Header: "First Name",
-          accessor: "firstName",
-        },
-        {
-          Header: "Last Name",
-          accessor: "lastName",
-        },
-        {
-          Header: "Age",
-          accessor: "age",
-        },
-      ] as any[],
-    [],
-  );
+  // https://reactjs.org/docs/hooks-faq.html#is-it-safe-to-omit-functions-from-the-list-of-dependencies
+  const columnsMemo = React.useMemo(() => {
+    return columns;
+  }, [columns]);
 
-  const dataMemo = React.useMemo(
-    () => [
-      {
-        firstName: "aaa frist",
-        lastName: (
-          <div
-            onClick={() => {
-              alert("ok");
-            }}
-          >
-            aaaa
-          </div>
-        ),
-        age: 10,
-      },
-    ],
-    [],
-  );
+  const dataMemo = React.useMemo(() => {
+    return data;
+  }, [data]);
 
   const { getTableProps, headerGroups, rows, prepareRow } = useTable({
     columns: columnsMemo,
