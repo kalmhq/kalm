@@ -8,6 +8,9 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: kalm-operator
+  labels:
+    istio-injection: enabled
+    kalm-enabled: "true"
 ---
 apiVersion: install.kalm.dev/v1alpha1
 kind: KalmOperatorConfig
