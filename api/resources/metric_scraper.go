@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/kalmhq/kalm/api/client"
+	"github.com/kalmhq/kalm/api/log"
 	_ "github.com/mattn/go-sqlite3"
-	log "github.com/sirupsen/logrus"
 	v12 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -24,18 +24,18 @@ var metricDuration = 15 * time.Minute
 func StartMetricScraper(ctx context.Context, manager *client.ClientManager) error {
 	metricClient, err := mclientv1beta1.NewForConfig(manager.ClusterConfig)
 	if err != nil {
-		log.Errorf("Init metric client error: %s", err)
+		log.Error(err, "Init metric client error")
 		return err
 	}
 	restClient, err := kubernetes.NewForConfig(manager.ClusterConfig)
 	if err != nil {
-		log.Errorf("Init rest client error: %s", err)
+		log.Error(err, "Init rest client error")
 		return err
 	}
 
 	metricDb, err = sql.Open("sqlite3", "/tmp/metric_scraper.db")
 	if err != nil {
-		log.Errorf("Unable to open Sqlite database: %s", err)
+		log.Error(err, "Unable to open Sqlite database")
 		return err
 	}
 	defer metricDb.Close()
@@ -43,7 +43,7 @@ func StartMetricScraper(ctx context.Context, manager *client.ClientManager) erro
 	// Populate tables
 	err = CreateDatabase(metricDb)
 	if err != nil {
-		log.Errorf("Unable to initialize database tables: %s", err)
+		log.Error(err, "Unable to initialize database tables")
 		return err
 	}
 
@@ -61,7 +61,7 @@ func StartMetricScraper(ctx context.Context, manager *client.ClientManager) erro
 		case <-ticker.C:
 			err = update(metricClient, restClient, metricDb, &metricDuration)
 			if err != nil {
-				log.Errorf("Error updating metrics: %s", err)
+				log.Error(err, "Error updating metrics")
 			}
 		}
 	}
@@ -70,38 +70,38 @@ func StartMetricScraper(ctx context.Context, manager *client.ClientManager) erro
 func update(client *mclientv1beta1.MetricsV1beta1Client, restClient *kubernetes.Clientset, db *sql.DB, metricDuration *time.Duration) error {
 	podMetrics, err := client.PodMetricses("").List(context.Background(), v1.ListOptions{})
 	if err != nil {
-		log.Errorf("Error scraping pod metrics: %s", err)
+		log.Error(err, "Error scraping pod metrics")
 		return err
 	}
 
 	podDetails, err := restClient.CoreV1().Pods("").List(context.Background(), v1.ListOptions{})
 	if err != nil {
-		log.Errorf("Error scraping pod details: %s", err)
+		log.Error(err, "Error scraping pod details")
 		return err
 	}
 	completePodMetrics(podMetrics, podDetails)
 
 	nodeMetrics, err := client.NodeMetricses().List(context.Background(), v1.ListOptions{})
 	if err != nil {
-		log.Errorf("Error scraping node metrics: %s", err)
+		log.Error(err, "Error scraping node metrics")
 		return err
 	}
 
 	// Insert scrapes into DB
 	err = UpdateDatabase(db, nodeMetrics, podMetrics)
 	if err != nil {
-		log.Errorf("Error updating database: %s", err)
+		log.Error(err, "Error updating database")
 		return err
 	}
 
 	// Delete rows outside of the metricDuration time
 	err = CullDatabase(db, metricDuration)
 	if err != nil {
-		log.Errorf("Error culling database: %s", err)
+		log.Error(err, "Error culling database")
 		return err
 	}
 
-	log.Debugf("Database updated: %d nodes, %d pods", len(nodeMetrics.Items), len(podMetrics.Items))
+	log.Debug("Database updated: %d nodes, %d pods", len(nodeMetrics.Items), len(podMetrics.Items))
 	return nil
 }
 
@@ -161,13 +161,13 @@ func GetFilteredNodeMetrics(nodes []string) NodesMetricHistories {
 func getMetricHistories(sql string, args ...interface{}) MetricHistories {
 	metricHistories := MetricHistories{}
 	if metricDb == nil {
-		log.Errorf("Error metric DB nil")
+		log.Error(nil, "error metric DB nil")
 		return metricHistories
 	}
 
 	rows, err := metricDb.Query(sql, args...)
 	if err != nil {
-		log.Errorf("Error getting metrics: %v", err)
+		log.Error(err, "Error getting metrics")
 		return metricHistories
 	}
 
@@ -240,7 +240,7 @@ func UpdateDatabase(db *sql.DB, nodeMetrics *v1beta1.NodeMetricsList, podMetrics
 	defer stmt.Close()
 
 	for _, v := range nodeMetrics.Items {
-		_, err = stmt.Exec(v.UID, v.Name, v.Usage.Cpu().MilliValue(), v.Usage.Memory().MilliValue() / 1000, v.Usage.StorageEphemeral().MilliValue()/1000)
+		_, err = stmt.Exec(v.UID, v.Name, v.Usage.Cpu().MilliValue(), v.Usage.Memory().MilliValue()/1000, v.Usage.StorageEphemeral().MilliValue()/1000)
 		if err != nil {
 			return err
 		}
@@ -259,7 +259,7 @@ func UpdateDatabase(db *sql.DB, nodeMetrics *v1beta1.NodeMetricsList, podMetrics
 			component = v.ObjectMeta.Labels["kalm-component"]
 		}
 		for _, u := range v.Containers {
-			_, err = stmt.Exec(v.UID, v.Name, v.Namespace, u.Name, component, u.Usage.Cpu().MilliValue(), u.Usage.Memory().MilliValue() / 1000, u.Usage.StorageEphemeral().MilliValue()/1000)
+			_, err = stmt.Exec(v.UID, v.Name, v.Namespace, u.Name, component, u.Usage.Cpu().MilliValue(), u.Usage.Memory().MilliValue()/1000, u.Usage.StorageEphemeral().MilliValue()/1000)
 			if err != nil {
 				return err
 			}
@@ -299,7 +299,7 @@ func CullDatabase(db *sql.DB, window *time.Duration) error {
 	}
 
 	affected, _ := res.RowsAffected()
-	log.Debugf("Cleaning up nodes: %d rows removed", affected)
+	log.Debug("Cleaning up nodes", "rows", affected)
 
 	podstmt, err := tx.Prepare("delete from pods where time <= datetime('now', ?);")
 
@@ -310,7 +310,7 @@ func CullDatabase(db *sql.DB, window *time.Duration) error {
 	}
 
 	affected, _ = res.RowsAffected()
-	log.Debugf("Cleaning up pods: %d rows removed", affected)
+	log.Debug("Cleaning up pods: %d rows removed", affected)
 	err = tx.Commit()
 
 	if err != nil {

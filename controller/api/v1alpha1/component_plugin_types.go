@@ -23,6 +23,7 @@ import (
 // ComponentPluginSpec defines the desired state of ComponentPlugin
 type ComponentPluginSpec struct {
 	// source code of the plugin
+	// +kubebuilder:validation:MinLength=1
 	Src string `json:"src"`
 
 	// This array is only useful when subject is component.

@@ -56,7 +56,7 @@ func (builder *Builder) GetComponentPlugins() ([]ComponentPlugin, error) {
 	resources, err := resourceChannels.ToResources()
 
 	if err != nil {
-		builder.Logger.Error(err)
+		builder.Logger.Error(err, "channels to resources error")
 		return nil, err
 	}
 

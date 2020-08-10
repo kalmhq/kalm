@@ -133,7 +133,7 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 	if spec.CORS != nil {
 		httpRoute.CorsPolicy = &istioNetworkingV1Beta1.CorsPolicy{
 			AllowOrigins: make([]*istioNetworkingV1Beta1.StringMatch, 0, len(spec.CORS.AllowOrigins)),
-			AllowMethods: spec.CORS.AllowMethods,
+			AllowMethods: toStringSlice(spec.CORS.AllowMethods),
 			AllowHeaders: spec.CORS.AllowHeaders,
 			MaxAge: &protoTypes.Duration{
 				Seconds: int64(spec.CORS.MaxAgeSeconds),
@@ -145,6 +145,14 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 		}
 	}
 	return httpRoute
+
+}
+
+func toStringSlice(list []corev1alpha1.AllowMethod) (rst []string) {
+	for _, one := range list {
+		rst = append(rst, string(one))
+	}
+	return
 }
 
 // Kalm route level http to https redirect is achieved by adding envoy filter for istio ingress gateway

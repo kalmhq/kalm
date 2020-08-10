@@ -32,7 +32,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"log"
 	"math/big"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -397,20 +396,20 @@ func (r *HttpsCertIssuerReconciler) generateRandomPrvKeyAndCrtForCA() (prvKey []
 
 	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, caPrivKey.Public(), caPrivKey)
 	if err != nil {
-		log.Fatalf("Failed to create certificate: %v", err)
+		r.Log.Error(err, "Failed to create certificate")
 		return nil, nil, err
 	}
 
 	var certOutBuf bytes.Buffer
 	if err := pem.Encode(&certOutBuf, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes}); err != nil {
-		log.Fatalf("Failed to write data to cert.pem: %v", err)
+		r.Log.Error(err, "Failed to write data to cert.pem")
 		return nil, nil, err
 	}
 
 	var keyOutBuf bytes.Buffer
 	privBytes := x509.MarshalPKCS1PrivateKey(caPrivKey)
 	if err := pem.Encode(&keyOutBuf, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: privBytes}); err != nil {
-		log.Fatalf("Failed to write data to key.pem: %v", err)
+		r.Log.Error(err, "Failed to write data to key.pem")
 		return nil, nil, err
 	}
 

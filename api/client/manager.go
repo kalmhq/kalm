@@ -4,9 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
-	"log"
-	"strings"
-
 	"github.com/kalmhq/kalm/api/auth"
 	"github.com/kalmhq/kalm/api/config"
 	"github.com/kalmhq/kalm/api/errors"
@@ -15,6 +12,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
+	"strings"
 )
 
 const (
@@ -229,7 +227,7 @@ func NewClientManager(config *config.Config) *ClientManager {
 	err := m.initClusterClientConfiguration()
 
 	if err != nil {
-		log.Fatal("[Fatal] initClusterClientConfiguration failed: ", err)
+		panic(err)
 	}
 
 	return m
