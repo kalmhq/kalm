@@ -145,6 +145,7 @@ func (r *KalmPVReconciler) SetupWithManager(mgr ctrl.Manager) error {
 //    2. pvc is gone
 // then delete this pv
 func (r *KalmPVReconciler) reconcileCleanOfPV() (ctrl.Result, error) {
+	r.Log.Info("reconcileCleanOfPV")
 
 	var pvList corev1.PersistentVolumeList
 
@@ -158,6 +159,7 @@ func (r *KalmPVReconciler) reconcileCleanOfPV() (ctrl.Result, error) {
 	}
 
 	for _, pv := range pvList.Items {
+
 		pvcNsAndName, exist := pv.Labels[KalmLabelCleanIfPVCGone]
 		if !exist {
 			continue
@@ -179,6 +181,7 @@ func (r *KalmPVReconciler) reconcileCleanOfPV() (ctrl.Result, error) {
 		//check pvc
 		var pvc corev1.PersistentVolumeClaim
 		err := r.Get(r.ctx, client.ObjectKey{Namespace: ns, Name: name}, &pvc)
+
 		if err != nil {
 			if !errors.IsNotFound(err) {
 				return ctrl.Result{}, err
@@ -186,9 +189,7 @@ func (r *KalmPVReconciler) reconcileCleanOfPV() (ctrl.Result, error) {
 
 			// PVC is gone, this pv need to be cleaned too
 			err := r.Delete(r.ctx, &pv)
-			if err != nil {
-				return ctrl.Result{}, nil
-			}
+			return ctrl.Result{}, err
 		}
 	}
 
