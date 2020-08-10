@@ -2,14 +2,11 @@ package ws
 
 import (
 	"encoding/json"
-
-	"github.com/kalmhq/kalm/api/resources"
-
 	"github.com/go-logr/logr"
 	"github.com/gorilla/websocket"
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/log"
-	"k8s.io/client-go/kubernetes"
+	"github.com/kalmhq/kalm/api/resources"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd/api"
 )
@@ -41,10 +38,7 @@ type Client struct {
 
 	K8SClientConfig *rest.Config
 
-	K8sClientset *kubernetes.Clientset
-
-	logger logr.Logger
-
+	logger     logr.Logger
 	IsWatching bool
 }
 
@@ -99,25 +93,22 @@ func (c *Client) read() {
 		if c.K8SClientConfig == nil {
 			authInfo := &api.AuthInfo{Token: reqMessage.Token}
 			err := c.K8sClientManager.IsAuthInfoWorking(authInfo)
+
 			if err != nil {
 				c.conn.WriteJSON(&ResMessage{Kind: "error", Data: "Invalid Auth Token"})
 			}
 
-			k8sClientConfig, err := c.K8sClientManager.GetClientConfigWithAuthInfo(authInfo)
-			if err != nil {
-				log.Error(err, "get client config error")
-			}
-			c.K8SClientConfig = k8sClientConfig
-
-			k8sClientset, err := kubernetes.NewForConfig(k8sClientConfig)
+			k8sClientConfig, err := c.K8sClientManager.BuildClientConfigWithAuthInfo(authInfo)
 			if err != nil {
 				log.Error(err, "new config error")
 			}
-			c.K8sClientset = k8sClientset
+
+			c.K8SClientConfig = k8sClientConfig
 		}
 
 		if reqMessage.Method == "StartWatching" && !c.IsWatching {
 			c.IsWatching = true
+			c.sendWatchResMessage(&ResMessage{Kind: "PlainMessage", Data: "Started"})
 			go StartWatching(c)
 		}
 

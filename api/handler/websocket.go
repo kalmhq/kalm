@@ -230,7 +230,7 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 			authInfo := &api.AuthInfo{Token: m.AuthToken}
 
 			if clientManager.IsAuthInfoWorking(authInfo) == nil {
-				cfg, err := clientManager.GetClientConfigWithAuthInfo(authInfo)
+				cfg, err := clientManager.BuildClientConfigWithAuthInfo(authInfo)
 
 				if err != nil {
 					log.Error(err, "get client config error")
@@ -560,11 +560,11 @@ func (h *ApiHandler) prepareWSConnection(c echo.Context) (*WSConn, error) {
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 
 	if err != nil {
-		log.Error(err, "upgrade:")
+		log.Error(err, "upgrade")
 		return nil, err
 	}
 
-	authInfo := client.ExtractAuthInfo(c)
+	authInfo := client.ExtractAuthInfoFromClientRequestContext(c)
 	ctx, stop := context.WithCancel(context.Background())
 
 	conn := &WSConn{
@@ -577,20 +577,20 @@ func (h *ApiHandler) prepareWSConnection(c echo.Context) (*WSConn, error) {
 	}
 
 	if conn.IsAuthorized {
-		clientConfig, err := h.clientManager.GetClientConfig(c)
+		clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
 
 		if err != nil {
 			return nil, err
 		}
 
-		k8sClient, err := kubernetes.NewForConfig(clientConfig)
+		k8sClient, err := kubernetes.NewForConfig(clientInfo.Cfg)
 
 		if err != nil {
 			return nil, err
 		}
 
 		conn.K8sClient = k8sClient
-		conn.K8sConfig = clientConfig
+		conn.K8sConfig = clientInfo.Cfg
 	}
 
 	return conn, nil

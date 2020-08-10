@@ -150,6 +150,11 @@ type ClaimsWithGroups struct {
 }
 
 func handleExtAuthz(c echo.Context) error {
+	log.Debug("handleExtAuthz", "tls", c.Request().TLS != nil)
+	for k, v := range c.Request().Header {
+		log.Debug("handleExtAuthz", "header", k, "value", v)
+	}
+
 	if getOauth2Config() == nil {
 		return c.String(503, "Please configure KALM OIDC environments.")
 	}

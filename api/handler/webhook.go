@@ -42,7 +42,7 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 		return fmt.Errorf("componentName can't be blank")
 	}
 
-	deployKeyConfig, err := h.clientManager.GetClientConfigWithAuthInfo(
+	deployKeyConfig, err := h.clientManager.BuildClientConfigWithAuthInfo(
 		&api.AuthInfo{Token: callParams.DeployKey},
 	)
 
@@ -77,7 +77,7 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 	copiedComp.Annotations[controllers.AnnoLastUpdatedByWebhook] = strconv.Itoa(updateTs)
 
 	if err := builder.Patch(copiedComp, client.MergeFrom(crdComp)); err != nil {
-		h.logger.Info("fail updating component","name", copiedComp.Name, "time", updateTs)
+		h.logger.Info("fail updating component", "name", copiedComp.Name, "time", updateTs)
 		return err
 	}
 
@@ -89,7 +89,7 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 		ctx := context.Background()
 
 		if err := kClient.List(ctx, &deployKeyList); err != nil {
-			h.logger.Error(err,"fail to list deployKeys")
+			h.logger.Error(err, "fail to list deployKeys")
 		}
 
 		for _, key := range deployKeyList.Items {
@@ -108,7 +108,7 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 		}
 	}
 
-	h.logger.Info("updating component","name", copiedComp.Name, "time", updateTs)
+	h.logger.Info("updating component", "name", copiedComp.Name, "time", updateTs)
 
 	return c.JSON(http.StatusOK, map[string]string{
 		"status": "Success",

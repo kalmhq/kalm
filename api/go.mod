@@ -11,6 +11,7 @@ require (
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/google/go-cmp v0.5.1 // indirect
+	github.com/google/uuid v1.1.1
 	github.com/gorilla/websocket v1.4.2
 	github.com/imdario/mergo v0.3.10 // indirect
 	github.com/jetstack/cert-manager v0.15.2 // indirect
@@ -21,7 +22,6 @@ require (
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
-	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.6.1
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/valyala/fasttemplate v1.2.0 // indirect
@@ -36,7 +36,7 @@ require (
 	gomodules.xyz/jsonpatch/v2 v2.1.0 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
-	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
+	gopkg.in/square/go-jose.v2 v2.5.1
 	gotest.tools v2.2.0+incompatible
 	istio.io/api v0.0.0-20200722065756-9d7f2a3afc5b // indirect
 	istio.io/gogo-genproto v0.0.0-20200720193312-b523a30fe746 // indirect

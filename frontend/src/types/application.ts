@@ -67,6 +67,7 @@ export type PodStatus = ImmutableMap<{
   message: string;
   podIps: string[];
   hostIp: string;
+  phase: string;
   createTimestamp: number;
   startTimestamp: number;
   isTerminating: boolean;

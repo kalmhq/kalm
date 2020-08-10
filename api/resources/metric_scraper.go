@@ -29,13 +29,13 @@ func StartMetricScraper(ctx context.Context, manager *client.ClientManager) erro
 	}
 	restClient, err := kubernetes.NewForConfig(manager.ClusterConfig)
 	if err != nil {
-		log.Error(err,"Init rest client error")
+		log.Error(err, "Init rest client error")
 		return err
 	}
 
 	metricDb, err = sql.Open("sqlite3", "/tmp/metric_scraper.db")
 	if err != nil {
-		log.Error(err,"Unable to open Sqlite database")
+		log.Error(err, "Unable to open Sqlite database")
 		return err
 	}
 	defer metricDb.Close()
@@ -61,7 +61,7 @@ func StartMetricScraper(ctx context.Context, manager *client.ClientManager) erro
 		case <-ticker.C:
 			err = update(metricClient, restClient, metricDb, &metricDuration)
 			if err != nil {
-				log.Error(err,"Error updating metrics")
+				log.Error(err, "Error updating metrics")
 			}
 		}
 	}
@@ -70,7 +70,7 @@ func StartMetricScraper(ctx context.Context, manager *client.ClientManager) erro
 func update(client *mclientv1beta1.MetricsV1beta1Client, restClient *kubernetes.Clientset, db *sql.DB, metricDuration *time.Duration) error {
 	podMetrics, err := client.PodMetricses("").List(context.Background(), v1.ListOptions{})
 	if err != nil {
-		log.Error(err,"Error scraping pod metrics")
+		log.Error(err, "Error scraping pod metrics")
 		return err
 	}
 
@@ -167,7 +167,7 @@ func getMetricHistories(sql string, args ...interface{}) MetricHistories {
 
 	rows, err := metricDb.Query(sql, args...)
 	if err != nil {
-		log.Error(err,"Error getting metrics")
+		log.Error(err, "Error getting metrics")
 		return metricHistories
 	}
 
@@ -240,7 +240,7 @@ func UpdateDatabase(db *sql.DB, nodeMetrics *v1beta1.NodeMetricsList, podMetrics
 	defer stmt.Close()
 
 	for _, v := range nodeMetrics.Items {
-		_, err = stmt.Exec(v.UID, v.Name, v.Usage.Cpu().MilliValue(), v.Usage.Memory().MilliValue() / 1000, v.Usage.StorageEphemeral().MilliValue()/1000)
+		_, err = stmt.Exec(v.UID, v.Name, v.Usage.Cpu().MilliValue(), v.Usage.Memory().MilliValue()/1000, v.Usage.StorageEphemeral().MilliValue()/1000)
 		if err != nil {
 			return err
 		}
@@ -259,7 +259,7 @@ func UpdateDatabase(db *sql.DB, nodeMetrics *v1beta1.NodeMetricsList, podMetrics
 			component = v.ObjectMeta.Labels["kalm-component"]
 		}
 		for _, u := range v.Containers {
-			_, err = stmt.Exec(v.UID, v.Name, v.Namespace, u.Name, component, u.Usage.Cpu().MilliValue(), u.Usage.Memory().MilliValue() / 1000, u.Usage.StorageEphemeral().MilliValue()/1000)
+			_, err = stmt.Exec(v.UID, v.Name, v.Namespace, u.Name, component, u.Usage.Cpu().MilliValue(), u.Usage.Memory().MilliValue()/1000, u.Usage.StorageEphemeral().MilliValue()/1000)
 			if err != nil {
 				return err
 			}
@@ -299,7 +299,7 @@ func CullDatabase(db *sql.DB, window *time.Duration) error {
 	}
 
 	affected, _ := res.RowsAffected()
-	log.Debug("Cleaning up nodes","rows", affected)
+	log.Debug("Cleaning up nodes", "rows", affected)
 
 	podstmt, err := tx.Prepare("delete from pods where time <= datetime('now', ?);")
 

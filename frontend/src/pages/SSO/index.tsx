@@ -117,7 +117,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
         <KPanel title={"Single Sign-on configuration Details"}>
           <Box p={2}>
             <pre>Dex OIDC Issuer: https://{ssoConfig.get("domain")}/dex</pre>
-            {ssoConfig.get("connectors").map(this.renderConnectorDetails)}
+            {ssoConfig.get("connectors") && ssoConfig.get("connectors")!.map(this.renderConnectorDetails)}
           </Box>
           <Box p={2} display="inline-block">
             <CustomizedButton component={Link} size="small" to="/sso/config" variant="outlined" color="primary">

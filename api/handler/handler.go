@@ -6,16 +6,6 @@ import (
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
-	"k8s.io/apimachinery/pkg/labels"
-)
-
-var (
-	ListAll = v1.ListOptions{
-		LabelSelector: labels.Everything().String(),
-		FieldSelector: fields.Everything().String(),
-	}
 )
 
 type ApiHandler struct {
@@ -44,6 +34,11 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1.GET("/exec", h.execWebsocketHandler)
 
 	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.AuthClientMiddleware)
+
+	// initialize the cluster
+	gv1Alpha1WithAuth.POST("/initialize", h.handleInitializeCluster)
+	gv1Alpha1WithAuth.POST("/reset", h.handleResetCluster)
+
 	gv1Alpha1WithAuth.GET("/cluster", h.handleClusterInfo)
 	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
 	gv1Alpha1WithAuth.POST("/applications", h.handleCreateApplication)

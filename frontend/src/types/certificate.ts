@@ -120,7 +120,7 @@ export interface CertificateContent {
   selfManagedCertPrivateKey: string;
   httpsCertIssuer: string;
   domains: Immutable.List<string>;
-  ready: string;
+  ready: string; // why is a string??
   reason: string;
 }
 
