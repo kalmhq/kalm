@@ -28,8 +28,9 @@ type WSConn struct {
 	ctx      context.Context
 	stopFunc context.CancelFunc
 
-	K8sClient *kubernetes.Clientset
-	K8sConfig *rest.Config
+	K8sClient     *kubernetes.Clientset
+	K8sConfig     *rest.Config
+	clientManager *client.ClientManager
 
 	IsAuthorized       bool
 	podResourceRequest chan *WSPodResourceRequest
@@ -564,7 +565,6 @@ func (h *ApiHandler) prepareWSConnection(c echo.Context) (*WSConn, error) {
 		return nil, err
 	}
 
-	authInfo := client.ExtractAuthInfoFromClientRequestContext(c)
 	ctx, stop := context.WithCancel(context.Background())
 
 	conn := &WSConn{
@@ -572,23 +572,18 @@ func (h *ApiHandler) prepareWSConnection(c echo.Context) (*WSConn, error) {
 		ctx:                ctx,
 		stopFunc:           stop,
 		podResourceRequest: make(chan *WSPodResourceRequest),
-		IsAuthorized:       authInfo != nil && h.clientManager.IsAuthInfoWorking(authInfo) == nil,
 		writeLock:          &sync.Mutex{},
+		clientManager:      h.clientManager,
 	}
 
-	if conn.IsAuthorized {
-		clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
+	clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
 
-		if err != nil {
-			return nil, err
-		}
-
+	if err == nil {
+		conn.IsAuthorized = true
 		k8sClient, err := kubernetes.NewForConfig(clientInfo.Cfg)
-
 		if err != nil {
 			return nil, err
 		}
-
 		conn.K8sClient = k8sClient
 		conn.K8sConfig = clientInfo.Cfg
 	}
