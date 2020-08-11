@@ -281,7 +281,8 @@ func handleSetIDToken(c echo.Context, idToken *oidc.IDToken, rawIDToken string) 
 	cookie.Name = ID_TOKEN_COOKIE_NAME
 	cookie.Value = rawIDToken
 
-	cookie.Expires = time.Now().Add(5 * time.Minute)
+	// TODO: change this to a smaller value and use refresh token to auto update id_token
+	cookie.Expires = time.Now().Add(24 * time.Hour)
 
 	if idToken.Expiry.Before(cookie.Expires) {
 		cookie.Expires = idToken.Expiry
