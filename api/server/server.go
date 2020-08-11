@@ -35,11 +35,10 @@ func getClientIP(req *http.Request) string {
 func NewEchoInstance() *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
-	e.Use(middleware.Gzip())
-	e.Use(middlewareLogging)
-
 	e.IPExtractor = getClientIP
 
+	e.Use(middleware.Gzip())
+	e.Use(middlewareLogging)
 	e.Pre(middleware.RemoveTrailingSlash())
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
