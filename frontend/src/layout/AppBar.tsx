@@ -10,7 +10,7 @@ import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
-import { HelpIcon, KalmUserIcon, MenuIcon, MenuOpenIcon } from "widgets/Icon";
+import { HelpIcon, KalmUserIcon, MenuIcon, MenuOpenIcon, KalmLogo2Icon, KalmTextLogoIcon } from "widgets/Icon";
 import { ThemeToggle } from "theme/ThemeToggle";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import stringConstants from "utils/stringConstants";
@@ -246,7 +246,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                   } else if (index === 0) {
                     return (
                       <Link key={index} className={classes.barTitle} to="/" onClick={() => blinkTopProgressAction()}>
-                        Kalm
+                        <KalmLogo2Icon />
+                        <KalmTextLogoIcon />
                       </Link>
                     );
                   } else if (index + 1 === pathArray.length) {

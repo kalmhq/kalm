@@ -5,14 +5,15 @@ import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "types";
 import { validateTokenAction } from "actions/auth";
 import { RootState } from "reducers";
-import { Box, Link, Button, createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import sc from "utils/stringConstants";
+import { KMLink } from "widgets/Link";
+import { KalmLogo2Icon, KalmTextLogoIcon } from "widgets/Icon";
 
 const styles = (theme: Theme) =>
   createStyles({
     loginPaper: {
-      backgroundColor: theme.palette.primary.main,
+      backgroundColor: theme.palette.type === "light" ? theme.palette.primary.main : "#110460",
       height: "286px",
       width: "100%",
       position: "fixed",
@@ -105,9 +106,9 @@ export class LoginRaw extends React.PureComponent<Props, State> {
     const { error } = this.state;
     const instructions = (
       <Box>
-        <Link target="_blank" href="https://kalm.dev/docs/install#step-4-admin-service-account">
+        <KMLink target="_blank" href="https://kalm.dev/docs/install#step-4-admin-service-account">
           View instructions
-        </Link>{" "}
+        </KMLink>{" "}
         for token geneneration
       </Box>
     );
@@ -115,7 +116,10 @@ export class LoginRaw extends React.PureComponent<Props, State> {
       <div>
         <Paper className={classes.loginPaper} square>
           <div className={classes.paperContainer}>
-            <div className={classes.portalText}>{sc.APP_NAME}</div>
+            <div className={classes.portalText}>
+              <KalmLogo2Icon style={{ width: 64, height: 64 }} />
+              <KalmTextLogoIcon style={{ paddingLeft: 12, width: 100, height: 64 }} />
+            </div>
             <div className={classes.loginTriangle}></div>
             <div className={classes.loginArea}>
               <TextField
