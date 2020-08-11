@@ -42,21 +42,12 @@ func NewEchoInstance() *echo.Echo {
 
 	e.Pre(middleware.RemoveTrailingSlash())
 
-	// TODO, only enabled cors on dev env
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"http://localhost:3000", "*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
 		AllowCredentials: true,
 		MaxAge:           86400,
 	}))
-
-	if !isTest() {
-		// TODO is our safe to ignore CSRF protection?
-		//e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
-		//	CookiePath:     "/",
-		//	CookieHTTPOnly: true,
-		//}))
-	}
 
 	e.HTTPErrorHandler = errors.CustomHTTPErrorHandler
 

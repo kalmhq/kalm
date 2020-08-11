@@ -84,7 +84,7 @@ func (suite *WithControllerTestSuite) SetupSuite() {
 		KubernetesApiServerAddress: cfg.Host,
 	}
 
-	e := server.NewEchoServer(runningConfig)
+	e := server.NewEchoInstance()
 	clientManager := client2.NewClientManager(runningConfig)
 	apiHandler := NewApiHandler(clientManager)
 	apiHandler.InstallMainRoutes(e)
