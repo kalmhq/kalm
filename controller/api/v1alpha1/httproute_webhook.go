@@ -21,6 +21,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"strconv"
+	"strings"
 )
 
 // log is for logging in this package.
@@ -124,8 +126,24 @@ func (r *HttpRoute) validate() error {
 }
 
 func isValidRouteHost(host string) bool {
+	host = stripIfHasPort(host)
+
 	return isValidK8sHost(host) ||
 		isValidIP(host) ||
 		isValidDomain(host) ||
 		isValidWildcardDomain(host)
+}
+
+func stripIfHasPort(host string) string {
+	parts := strings.Split(host, ":")
+	if len(parts) == 2 {
+		portStr := parts[1]
+		port, err := strconv.Atoi(portStr)
+
+		if err == nil && port > 0 && port <= 65535 {
+			host = parts[0]
+		}
+	}
+
+	return host
 }

@@ -37,6 +37,8 @@ func TestHttpRoute_isValidRouteHost(t *testing.T) {
 		"google.com",
 		"1.2.3.4",
 		"internal-k8s-host",
+		"abc.def:3000",
+		"google.com:8080",
 	}
 
 	for _, h := range validRouteHosts {
