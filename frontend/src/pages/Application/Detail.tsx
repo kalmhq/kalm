@@ -11,6 +11,7 @@ import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { HttpBytesSizeChart } from "widgets/charts/httpBytesSizeChart";
 import { HttpStatusCodeLineChart } from "widgets/charts/httpStatusCodeChart";
 import { DoughnutChart } from "widgets/DoughnutChart";
+import { KRTable } from "widgets/KRTable";
 import { BigCPULineChart, BigMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
 
@@ -242,6 +243,51 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     };
   }
 
+  private getWarningsKRTableColumns() {
+    return [
+      { accessor: "componentName", Header: "Component" },
+      { accessor: "podName", Header: "Pod" },
+      {
+        accessor: "message",
+        Header: "Message",
+      },
+    ];
+  }
+
+  private getWarningsKRTableData() {
+    const { components, activeNamespace } = this.props;
+    let warnings: { componentName: ReactElement; podName: ReactElement; message: ReactElement }[] = [];
+
+    if (components) {
+      components.forEach((c) => {
+        c.get("pods").forEach((p) => {
+          p.get("warnings").forEach((w) => {
+            warnings.push({
+              componentName: (
+                <Link href={`/applications/${activeNamespace?.get("name")}/components/${c.get("name")}`}>
+                  {c.get("name")}
+                </Link>
+              ),
+              podName: (
+                <Link href={`/applications/${activeNamespace?.get("name")}/components/${c.get("name")}`}>
+                  {p.get("name")}
+                </Link>
+              ),
+              message: <Typography color="error">{w.get("message")}</Typography>,
+            });
+          });
+        });
+      });
+    }
+
+    return warnings;
+  }
+
+  private renderWarningsKRTable() {
+    return <KRTable columns={this.getWarningsKRTableColumns()} data={this.getWarningsKRTableData()} />;
+  }
+
+  // TODO rm this table
   private renderWarnings() {
     const { components, activeNamespace } = this.props;
     let warnings: { componentName: ReactElement; podName: ReactElement; message: string }[] = [];
@@ -407,7 +453,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
         </Expansion>
 
         <Expansion title="Warnings" defaultUnfold>
-          {this.renderWarnings()}
+          {this.renderWarningsKRTable()}
         </Expansion>
       </>
     );

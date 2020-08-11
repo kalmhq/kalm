@@ -2,6 +2,7 @@ import { Paper } from "@material-ui/core";
 import MaterialTable, { MaterialTableProps } from "material-table";
 import React from "react";
 
+// TODO remove this KTable and use KRTable
 export class KTable<RowData extends object> extends React.PureComponent<MaterialTableProps<RowData>> {
   render() {
     return (

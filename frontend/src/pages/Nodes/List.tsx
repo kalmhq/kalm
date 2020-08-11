@@ -555,46 +555,6 @@ export class NodeListRaw extends React.Component<Props, States> {
       });
     }
 
-    // applications.forEach((application) => {
-    //   let cpuValue = 0;
-    //   let memoryValue = 0;
-
-    //   const components = componentsMap.get(application.get("name"));
-
-    //   components?.forEach((component) => {
-    //     if (component.get("cpuRequest")) {
-    //       cpuValue =
-    //         cpuValue + sizeStringToNumber(component.get("cpuRequest") as string) * component.get("pods").size * 1000;
-
-    //       memoryValue =
-    //         memoryValue + sizeStringToNumber(component.get("cpuRequest") as string) * component.get("pods").size;
-    //     }
-    //   });
-
-    //   if (cpuValue !== 0) {
-    //     cpuRankData.push({
-    //       name: application.get("name"),
-    //       value: cpuValue,
-    //       unit: "m",
-    //     });
-    //   }
-
-    //   if (memoryValue !== 0) {
-    //     memoryRankData.push({
-    //       name: application.get("name"),
-    //       value: memoryValue,
-    //     });
-    //   }
-    // });
-
-    // cpuRankData.sort(function (a, b) {
-    //   return a.value - b.value;
-    // });
-
-    // memoryRankData.sort(function (a, b) {
-    //   return a.value - b.value;
-    // });
-
     return {
       cpuRankData,
       memoryRankData,
