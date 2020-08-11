@@ -19,7 +19,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/utils"
 	"gopkg.in/yaml.v3"
@@ -337,8 +336,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 		return err
 	}
 
-	spew.Dump(configFileContent)
-
 	dexComponent := corev1alpha1.Component{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      KALM_DEX_NAME,
@@ -386,8 +383,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex component")
 			return err
 		}
-
-		spew.Dump(client.MergeFrom(r.dexComponent).Data(copied))
 
 		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.dexComponent)); err != nil {
 			r.Log.Error(err, "Patch dex component failed.")
