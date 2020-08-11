@@ -8,7 +8,13 @@ import TableRow from "@material-ui/core/TableRow";
 import React from "react";
 import { useTable } from "react-table";
 
-export const KRTable = ({ columns, data }: { columns: { Header: string; accessor: string }[]; data: any[] }) => {
+export const KRTable = ({
+  columns,
+  data,
+}: {
+  columns: { Header: any; accessor: string; Cell?: any }[];
+  data: any[];
+}) => {
   // https://reactjs.org/docs/hooks-faq.html#is-it-safe-to-omit-functions-from-the-list-of-dependencies
   const columnsMemo = React.useMemo(() => {
     return columns;
@@ -18,10 +24,20 @@ export const KRTable = ({ columns, data }: { columns: { Header: string; accessor
     return data;
   }, [data]);
 
-  const { getTableProps, headerGroups, rows, prepareRow } = useTable({
-    columns: columnsMemo,
-    data: dataMemo,
-  });
+  const {
+    getTableProps,
+    headerGroups,
+    rows,
+    prepareRow,
+    // @ts-ignore
+    // state: { expanded },
+  } = useTable(
+    {
+      columns: columnsMemo,
+      data: dataMemo,
+    },
+    // useExpanded,
+  );
 
   return (
     <TableContainer component={Paper} variant="outlined" square>
