@@ -207,7 +207,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 			HttpRedirectToHttps: true,
 			Destinations: []v1alpha1.HttpRouteDestination{
 				{
-					Host:   "kalm.kalm-system.svc.cluster.local",
+					Host:   "kalm.kalm-system.svc.cluster.local:80",
 					Weight: 1,
 				},
 			},
