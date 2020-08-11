@@ -124,6 +124,11 @@ func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 		}
 	}
 
+	// if cert name still empty
+	if cert.Name == "" {
+		return nil, fmt.Errorf("fail to generate name for HttpsCert, please retry")
+	}
+
 	res := v1alpha1.HttpsCert{
 		ObjectMeta: v1.ObjectMeta{
 			Name: cert.Name,
@@ -144,12 +149,14 @@ func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 }
 
 func autoGenCertName(cert *HttpsCert) string {
-	var name string
+	var prefix string
 	if len(cert.Domains) >= 1 {
-		name = cert.Domains[0]
+		prefix = cert.Domains[0]
+	} else {
+		prefix = "cert"
 	}
-	name += "-" + rand.String(6)
 
+	name := fmt.Sprintf("%s-%s", prefix, rand.String(6))
 	name = cleanToResName(name)
 
 	return name
@@ -157,6 +164,8 @@ func autoGenCertName(cert *HttpsCert) string {
 
 func cleanToResName(s string) string {
 	s = strings.ToLower(s)
+
+	s = strings.ReplaceAll(s, "*", "wildcard")
 	s = strings.ReplaceAll(s, ".", "-")
 	return s
 }
