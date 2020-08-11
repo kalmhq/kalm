@@ -114,7 +114,7 @@ type PVCMapper struct {
 }
 
 const (
-	NSForPVCChanged = "special-ns-for-pvc-changed"
+	NSForPVCChanged = "special-ns-as-signal-for-pvc-changed"
 )
 
 func (m PVCMapper) Map(obj handler.MapObject) []reconcile.Request {
@@ -151,7 +151,6 @@ func (r *KalmPVReconciler) reconcileCleanOfPV() (ctrl.Result, error) {
 
 	matchingLabels := client.MatchingLabels{
 		KalmLabelManaged: "true",
-		//KalmLabelCleanIfPVCGone: "true",
 	}
 
 	if err := r.List(r.ctx, &pvList, matchingLabels); err != nil {

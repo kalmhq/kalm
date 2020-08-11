@@ -178,19 +178,12 @@ func (suite *KalmPVControllerSuite) TestPVIsLabeledForKalm() {
 	err = suite.K8sClient.Create(suite.ctx, &pv)
 	suite.Nil(err)
 
-	var pvList coreV1.PersistentVolumeList
 	suite.Eventually(func() bool {
-		err := suite.K8sClient.List(suite.ctx, &pvList)
-		suite.Nil(err)
-
-		suite.Equal(1, len(pvList.Items))
 
 		err = suite.K8sClient.Get(suite.ctx, client.ObjectKey{
 			Name: pv.Name,
 		}, &pv)
 		suite.Nil(err)
-
-		//fmt.Println("pvLabels:", pv.Labels, pv)
 
 		return pv.Labels[KalmLabelNamespaceKey] == pvc.Namespace &&
 			pv.Labels[KalmLabelManaged] == "true" &&
