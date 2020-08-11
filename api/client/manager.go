@@ -7,6 +7,7 @@ import (
 	"github.com/kalmhq/kalm/api/auth"
 	"github.com/kalmhq/kalm/api/config"
 	"github.com/kalmhq/kalm/api/errors"
+	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -170,6 +171,11 @@ func (m *ClientManager) GetConfigForClientRequestContext(c echo.Context) (*Clien
 		clientInfo.Cfg = m.ClusterConfig
 
 		return &clientInfo, nil
+	}
+
+	// reject traffic from route without valid authentication info
+	if c.Request().Header.Get(controllers.KALM_ROUTE_HEADER) == "true" {
+		return nil, errors.NewUnauthorized("")
 	}
 
 	// If the request is from localhost
