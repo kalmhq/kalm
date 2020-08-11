@@ -68,7 +68,13 @@ class DomainStatus extends React.PureComponent<Props> {
           ),
       };
     }
-    const isLoading = !domainStatus?.get("cname");
+    if (!domainStatus || !domainStatus?.get("cname")) {
+      return {
+        icon: <CircularProgress size={24} style={{ padding: 2 }} />,
+        body: <Box p={2}>checking domain status</Box>,
+      };
+    }
+
     const aRecords = domainStatus?.get("aRecords");
     const isError = (!aRecords || !aRecords.includes(ingressIP)) && domain !== ingressIP;
     if (isError) {
@@ -90,11 +96,6 @@ class DomainStatus extends React.PureComponent<Props> {
             </IconButtonWithTooltip>
           </Box>
         ),
-      };
-    } else if (isLoading) {
-      return {
-        icon: <CircularProgress size={18} style={{ marginLeft: 2, marginRight: 2 }} />,
-        body: <Box p={2}>checking domain status</Box>,
       };
     } else {
       return {
