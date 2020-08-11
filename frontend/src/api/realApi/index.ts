@@ -13,6 +13,8 @@ import { DeployKey } from "types/deployKey";
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
 import { InitializeClusterResponse } from "types/cluster";
 
+export const mockStore = null;
+
 export default class RealApi extends Api {
   public getClusterInfo = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/cluster` });

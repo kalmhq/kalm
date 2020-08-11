@@ -1,5 +1,5 @@
 import { getWebsocketInstance } from "actions/websocket";
-// import { mockStore } from "api/mockApi";
+import { mockStore } from "@apiType/index";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
@@ -81,7 +81,7 @@ class WithDataRaw extends React.PureComponent<Props> {
     const { dispatch, token } = this.props;
     let rws: any;
     if (process.env.REACT_APP_USE_MOCK_API === "true" || process.env.NODE_ENV === "test") {
-      rws = require("api/mockApi").mockStore;
+      rws = mockStore;
     } else {
       rws = getWebsocketInstance();
       rws.addEventListener("open", () => {
