@@ -2,11 +2,11 @@ package server
 
 import (
 	"flag"
+	"github.com/go-playground/validator/v10"
 	"github.com/kalmhq/kalm/api/log"
+	"net"
 	"net/http"
 	"os"
-
-	"github.com/go-playground/validator/v10"
 
 	"github.com/kalmhq/kalm/api/config"
 	"github.com/kalmhq/kalm/api/errors"
@@ -24,11 +24,24 @@ func isTest() bool {
 	return testFlag.Value.String() == "true"
 }
 
+// Only trust envoy external address or tcp remote address
+func getClientIP(req *http.Request) string {
+	if req.Header.Get("X-Envoy-External-Address") != "" {
+		return req.Header.Get("X-Envoy-External-Address")
+	}
+
+	ra, _, _ := net.SplitHostPort(req.RemoteAddr)
+
+	return ra
+}
+
 func NewEchoInstance() *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 	e.Use(middleware.Gzip())
 	e.Use(middlewareLogging)
+
+	e.IPExtractor = getClientIP
 
 	e.Pre(middleware.RemoveTrailingSlash())
 
@@ -84,7 +97,7 @@ func NewEchoServer(runningConfig *config.Config) *echo.Echo {
 func middlewareLogging(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		if c != nil {
-			log.Info("receive request", "method", c.Request().Method, "uri", c.Request().URL.String(), "ip", c.Request().RemoteAddr)
+			log.Info("receive request", "method", c.Request().Method, "uri", c.Request().URL.String(), "ip", c.RealIP())
 		} else {
 			log.Info("receive request bad request")
 		}
