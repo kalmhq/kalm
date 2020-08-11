@@ -292,10 +292,17 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 				Image:   fmt.Sprintf("%s:%s", KalmImgRepo, dashboardVersion),
 				Command: "./kalm-api-server",
 				Ports: []corev1alpha1.Port{
+					// Main service port
 					{
 						Protocol:      corev1alpha1.PortProtocolHTTP,
 						ContainerPort: 3001,
 						ServicePort:   80,
+					},
+					// Webhook service port
+					{
+						Protocol:      corev1alpha1.PortProtocolHTTP,
+						ContainerPort: 3002,
+						ServicePort:   3002,
 					},
 				},
 			},
