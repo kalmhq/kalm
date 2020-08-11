@@ -277,7 +277,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             {clusterInfo.get("canBeInitialized") && (
               <Box mr={2}>
                 <Button to="/setup" component={Link} onClick={console.log} variant="outlined" color="secondary">
-                  Finish the steup steps
+                  Finish the setup steps
                 </Button>
               </Box>
             )}
