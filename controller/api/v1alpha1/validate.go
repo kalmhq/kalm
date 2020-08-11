@@ -51,11 +51,11 @@ func ValidateResourceQuantityValue(value resource.Quantity, fldPath *field.Path,
 	allErrs := field.ErrorList{}
 	allErrs = append(allErrs, ValidateNonnegativeQuantity(value, fldPath)...)
 
-	if isIntegerResource {
-		if value.MilliValue()%int64(1000) != int64(0) {
-			allErrs = append(allErrs, field.Invalid(fldPath, value, isNotIntegerErrorMsg))
-		}
-	}
+	//if isIntegerResource {
+	//	if value.MilliValue()%int64(1000) != int64(0) {
+	//		allErrs = append(allErrs, field.Invalid(fldPath, value, isNotIntegerErrorMsg))
+	//	}
+	//}
 
 	return allErrs
 }
