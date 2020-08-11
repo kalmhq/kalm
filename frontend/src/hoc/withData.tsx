@@ -1,5 +1,5 @@
 import { getWebsocketInstance } from "actions/websocket";
-import { mockStore } from "api/mockApi";
+import { mockStore } from "@apiType/index";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
