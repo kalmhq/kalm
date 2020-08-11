@@ -13,12 +13,14 @@ import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { RouteWidgets } from "pages/Route/Widget";
 import React from "react";
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { primaryColor } from "theme/theme";
 import { ApplicationDetails } from "types/application";
 import { HttpRoute } from "types/route";
 import { getApplicationCreatedAtString } from "utils/application";
 import { pluralize } from "utils/string";
+import sc from "utils/stringConstants";
 import { customSearchForImmutable } from "utils/tableSearch";
 import { ApplicationCard } from "widgets/ApplicationCard";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
@@ -27,15 +29,14 @@ import { CustomizedButton } from "widgets/Button";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { KalmApplicationIcon, KalmDetailsIcon, KalmGridViewIcon, KalmListViewIcon } from "widgets/Icon";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { KRTable } from "widgets/KRTable";
 import { Caption } from "widgets/Label";
 import { KLink, KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
-import { Link } from "react-router-dom";
-import sc from "utils/stringConstants";
-import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -384,6 +385,61 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     );
   }
 
+  private getKRTableColumns() {
+    return [
+      {
+        Header: "Name",
+        accessor: "name",
+      },
+      { Header: "Pod Status", accessor: "status" },
+      {
+        Header: "CPU",
+        accessor: "cpu",
+      },
+      {
+        Header: "Memory",
+        accessor: "memory",
+      },
+      {
+        Header: "Created At",
+        accessor: "createdAt",
+      },
+      {
+        Header: "Routes",
+        accessor: "routes",
+      },
+      {
+        Header: "Actions",
+        accessor: "actions",
+      },
+    ];
+  }
+
+  private getKRTableData() {
+    const { applications } = this.props;
+    const data: any[] = [];
+
+    applications &&
+      applications.forEach((application, index) => {
+        const rowData = application as RowData;
+        data.push({
+          name: this.renderName(rowData),
+          status: this.renderStatus(rowData),
+          cpu: this.renderCPU(rowData),
+          memory: this.renderMemory(rowData),
+          createdAt: this.renderCreatedAt(rowData),
+          routes: this.renderExternalAccesses(rowData),
+          actions: this.renderActions(rowData),
+        });
+      });
+
+    return data;
+  }
+
+  private renderKRtable() {
+    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+  }
+
   private renderList = () => {
     const { applications } = this.props;
     return (
@@ -447,7 +503,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
           ) : usingApplicationCard ? (
             this.renderGrid()
           ) : (
-            this.renderList()
+            this.renderKRtable()
           )}
         </Box>
       </BasePage>
