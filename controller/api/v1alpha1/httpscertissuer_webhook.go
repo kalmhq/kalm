@@ -56,12 +56,27 @@ func (r *HttpsCertIssuer) ValidateDelete() error {
 func (r *HttpsCertIssuer) validate() error {
 	var rst KalmValidateErrorList
 
-	if r.Spec.ACMECloudFlare == nil &&
-		r.Spec.CAForTest == nil &&
-		r.Spec.HTTP01 == nil {
+	setConfigCnt := 0
+	if r.Spec.ACMECloudFlare != nil {
+		setConfigCnt += 1
+	}
+	if r.Spec.CAForTest != nil {
+		setConfigCnt += 1
+	}
+	if r.Spec.HTTP01 != nil {
+		setConfigCnt += 1
+	}
 
+	if setConfigCnt == 0 {
 		rst = append(rst, KalmValidateError{
 			Err:  "should provide at least 1 among: acmeCloudFlare, caForTest and http01",
+			Path: "spec",
+		})
+	}
+
+	if setConfigCnt > 1 {
+		rst = append(rst, KalmValidateError{
+			Err:  "should provide at most 1 among: acmeCloudFlare, caForTest and http01",
 			Path: "spec",
 		})
 	}
