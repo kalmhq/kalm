@@ -76,11 +76,39 @@ func isValidURL(s string) bool {
 	return true
 }
 
-// https://regex101.com/r/SEg6KL/4
-var domainReg = regexp.MustCompile(`^(?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9]\.)|(?:[0-9]+/[0-9]{2})\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?$`)
+var domainReg = regexp.MustCompile(`^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$`)
 
 func isValidDomain(s string) bool {
 	return domainReg.MatchString(s)
+}
+
+// true:  *
+// true:  *.example.com
+// false: *.com
+// false: a*.example.com
+// false: a*b.example.com
+func isValidWildcardDomain(s string) bool {
+	if s == "*" {
+		return true
+	}
+
+	parts := strings.Split(s, ".")
+	if len(parts) < 3 {
+		return false
+	}
+
+	first := parts[0]
+	rest := strings.Join(parts[1:], ".")
+
+	return first == "*" && isValidDomain(rest)
+}
+
+func isValidDomainInCert(s string) bool {
+	if isValidDomain(s) || isValidWildcardDomain(s) {
+		return true
+	}
+
+	return false
 }
 
 // abc-123-xyz

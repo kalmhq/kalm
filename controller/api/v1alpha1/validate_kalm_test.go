@@ -203,11 +203,14 @@ metadata: foobar`
 func TestIsValidDomain(t *testing.T) {
 	domains := []string{
 		"google.com",
+		"map.google.com",
 		"stackoverflow.co.uk",
+		"x.y.com",
+		"10.0.0.1.xip.io",
 	}
 
 	for _, d := range domains {
-		assert.True(t, isValidDomain(d))
+		assert.True(t, isValidDomain(d), "fail test on "+d)
 	}
 }
 
@@ -219,5 +222,27 @@ func TestIsValidEmail(t *testing.T) {
 
 	for _, d := range emails {
 		assert.True(t, isValidEmail(d))
+	}
+}
+
+func TestIsValidDomainInCert(t *testing.T) {
+	type pair struct {
+		domain string
+		valid  bool
+	}
+
+	domains := []pair{
+		{"*", true},
+		{"*.example.com", true},
+		{"*.com", false},
+		{"a*.example.com", false},
+		{"*b.example.com", false},
+		{"a*b.example.com", false},
+	}
+
+	for _, pair := range domains {
+		assert.Equal(t, pair.valid, isValidDomainInCert(pair.domain),
+			"wrong for:"+pair.domain,
+			"should be:", pair.valid)
 	}
 }
