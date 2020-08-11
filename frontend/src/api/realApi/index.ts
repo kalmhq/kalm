@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { Api } from "./base";
+import { Api } from "../base";
 import { store } from "store";
 import Axios, { AxiosRequestConfig } from "axios";
 import { RegistryType } from "types/registry";
@@ -12,6 +12,8 @@ import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { DeployKey } from "types/deployKey";
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
 import { InitializeClusterResponse } from "types/cluster";
+
+export const mockStore = null;
 
 export default class RealApi extends Api {
   public getClusterInfo = async () => {
