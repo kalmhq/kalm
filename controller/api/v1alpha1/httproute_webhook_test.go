@@ -19,8 +19,15 @@ func TestHttpRoute_Validate(t *testing.T) {
 			Schemes: []HttpRouteScheme{"http", "https"},
 			Paths:   []string{"/"},
 			Destinations: []HttpRouteDestination{
-				{Host: "server-v2", Weight: 1},
+				{Host: "server-v2:8080", Weight: 1},
 				{Host: "server-v1", Weight: 1},
+			},
+			Mirror: &HttpRouteMirror{
+				Percentage: 1,
+				Destination: HttpRouteDestination{
+					Host:   "server-v2:8080",
+					Weight: 1,
+				},
 			},
 			StripPath: true,
 		},
@@ -37,11 +44,22 @@ func TestHttpRoute_isValidRouteHost(t *testing.T) {
 		"google.com",
 		"1.2.3.4",
 		"internal-k8s-host",
-		"abc.def:3000",
-		"google.com:8080",
 	}
 
 	for _, h := range validRouteHosts {
 		assert.True(t, isValidRouteHost(h))
+	}
+}
+
+func TestHttpRoute_isValidDestinationHost(t *testing.T) {
+	validRouteHosts := []string{
+		"abc.xyz",
+		"abc-def.xyz",
+		"abc.xyz:9000",
+		"abc-def.xyz:9000",
+	}
+
+	for _, h := range validRouteHosts {
+		assert.True(t, isValidDestinationHost(h))
 	}
 }

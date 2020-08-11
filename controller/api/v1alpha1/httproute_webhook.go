@@ -73,7 +73,7 @@ func (r *HttpRoute) validate() error {
 	for i, host := range r.Spec.Hosts {
 		if !isValidRouteHost(host) {
 			rst = append(rst, KalmValidateError{
-				Err:  "invalid host:" + host,
+				Err:  "invalid route host:" + host,
 				Path: fmt.Sprintf("spec.hosts[%d]", i),
 			})
 		}
@@ -89,9 +89,9 @@ func (r *HttpRoute) validate() error {
 	}
 
 	for i, dest := range r.Spec.Destinations {
-		if !isValidK8sHost(dest.Host) {
+		if !isValidDestinationHost(dest.Host) {
 			rst = append(rst, KalmValidateError{
-				Err:  "invalid host",
+				Err:  "invalid destination host:" + dest.Host,
 				Path: fmt.Sprintf("spec.destinations[%d].host", i),
 			})
 		}
@@ -109,10 +109,10 @@ func (r *HttpRoute) validate() error {
 
 	mirror := r.Spec.Mirror
 	if mirror != nil {
-		mirrorHost := mirror.Destination.Host
-		if !isValidK8sHost(mirrorHost) {
+		mirrorDestinationHost := mirror.Destination.Host
+		if !isValidDestinationHost(mirrorDestinationHost) {
 			rst = append(rst, KalmValidateError{
-				Err:  "invalid host",
+				Err:  "invalid mirror destination host:" + mirrorDestinationHost,
 				Path: "spec.mirror.destination.host",
 			})
 		}
@@ -125,9 +125,12 @@ func (r *HttpRoute) validate() error {
 	return rst
 }
 
-func isValidRouteHost(host string) bool {
+func isValidDestinationHost(host string) bool {
 	host = stripIfHasPort(host)
+	return isValidK8sHost(host)
+}
 
+func isValidRouteHost(host string) bool {
 	return isValidK8sHost(host) ||
 		isValidIP(host) ||
 		isValidDomain(host) ||
