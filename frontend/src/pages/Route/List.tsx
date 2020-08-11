@@ -283,7 +283,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     return data;
   }
 
-  private renderKRtable() {
+  private renderKRTable() {
     return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
   }
 
@@ -308,7 +308,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           {isRoutesLoading && !isRoutesFirstLoaded ? (
             <Loading />
           ) : httpRoutes && httpRoutes.size > 0 ? (
-            this.renderKRtable()
+            this.renderKRTable()
           ) : (
             this.renderEmpty()
           )}

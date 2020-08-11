@@ -436,10 +436,11 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     return data;
   }
 
-  private renderKRtable() {
+  private renderKRTable() {
     return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
   }
 
+  // TODO rm old tables
   private renderList = () => {
     const { applications } = this.props;
     return (
@@ -503,7 +504,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
           ) : usingApplicationCard ? (
             this.renderGrid()
           ) : (
-            this.renderKRtable()
+            this.renderKRTable()
           )}
         </Box>
       </BasePage>
