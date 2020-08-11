@@ -264,7 +264,7 @@ export default class MockApi extends Api {
 
   public deleteDeployKey = async (protectedEndpoint: DeployKey): Promise<void> => {};
 
-  public resolveDomain = async (domain: string, type: "A" | "CNAME"): Promise<string[]> => {
+  public resolveDomain = async (domain: string, type: "A" | "CNAME", timeout: number = 5000): Promise<string[]> => {
     return ["1.1.1.1"];
   };
 

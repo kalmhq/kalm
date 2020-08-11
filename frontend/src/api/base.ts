@@ -154,7 +154,7 @@ export abstract class Api {
 
   public abstract deleteDeployKey(protectedEndpoint: DeployKey): Promise<void>;
 
-  public abstract resolveDomain(domain: string, type: "A" | "CNAME"): Promise<string[]>;
+  public abstract resolveDomain(domain: string, type: "A" | "CNAME", timeout?: number): Promise<string[]>;
 
   public abstract initializeCluster(domain: string): Promise<InitializeClusterResponse>;
 

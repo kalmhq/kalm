@@ -8,8 +8,6 @@ import StepContent from "@material-ui/core/StepContent";
 import { KPanel } from "widgets/KPanel";
 import { Body, H5 } from "widgets/Label";
 import { CustomizedButton, DangerButton } from "widgets/Button";
-import TextField from "@material-ui/core/TextField";
-import { Formik } from "formik";
 import { api } from "api";
 import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
 import { PendingBadge, SuccessBadge } from "widgets/Badge";
@@ -20,11 +18,16 @@ import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { withCerts, WithCertsProps } from "hoc/withCerts";
 import { withComponents, WithComponentsProps } from "hoc/withComponents";
 import { InitializeClusterResponse } from "types/cluster";
+import { Form, Formik } from "formik";
+import TextField from "@material-ui/core/TextField";
+import { Alert } from "@material-ui/lab";
 
 interface Props extends WithClusterInfoProps, WithRoutesDataProps, WithCertsProps, WithComponentsProps {}
 
 interface State {
   activeStep: number;
+  showDNSWarning: boolean;
+  ignoreDNSResult: boolean;
   kalmCertReady: boolean;
   kalmRouteReady: boolean;
   KalmDexReady: boolean;
@@ -32,18 +35,54 @@ interface State {
   initializeResponse?: InitializeClusterResponse;
 }
 
+const initialValues = { domain: "" };
+
+const dnsCheckError = "DNS check failed";
+
 class SetupPageRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
 
     this.state = {
       activeStep: 0,
+      showDNSWarning: false,
+      ignoreDNSResult: false,
       kalmCertReady: false,
       kalmRouteReady: false,
       KalmDexReady: false,
       KalmAuthProxyReady: false,
     };
   }
+
+  private validate = async (values: any) => {
+    const { clusterInfo } = this.props;
+    const { ignoreDNSResult } = this.state;
+
+    let errors: { domain?: string } = {};
+
+    if (!values.domain) {
+      errors.domain = "Required";
+      return errors;
+    }
+
+    if (!ignoreDNSResult) {
+      try {
+        const result = await api.resolveDomain(values.domain, "A");
+        if (result.length <= 0 || result.indexOf(clusterInfo.get("ingressIP")) < 0) {
+          this.setState({ showDNSWarning: true });
+          errors.domain = dnsCheckError;
+          return errors;
+        }
+      } catch (e) {
+        this.setState({ showDNSWarning: true });
+
+        errors.domain = dnsCheckError;
+        return errors;
+      }
+    }
+
+    return errors;
+  };
 
   private submit = async (values: { domain: string }) => {
     const { dispatch } = this.props;
@@ -133,6 +172,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
 
   private renderStep0 = () => {
     const { clusterInfo } = this.props;
+    const { showDNSWarning } = this.state;
     return (
       <Box>
         Please enter your domain name, and configure this domain name an <strong>A record</strong> that points to your
@@ -143,32 +183,22 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
           </H5>
         </Box>
         . This domain name will be your address to access the kalm dashboard in the future.
-        <Box mt={2} width={400}>
+        <Box mt={2}>
           <Formik
-            initialValues={{ domain: "" }}
-            validate={async (values) => {
-              let errors: { domain?: string } = {};
-
-              if (!values.domain) {
-                errors.domain = "Required";
-              } else {
-                const result = await api.resolveDomain(values.domain, "A");
-                if (result.length <= 0 || result.indexOf(clusterInfo.get("ingressIP")) < 0) {
-                  errors.domain =
-                    "DNS check failed. After the DNS record is modified, it takes some time to take effect. Please try again later";
-                }
-              }
-              return errors;
-            }}
+            initialValues={initialValues}
+            validate={this.validate}
             validateOnChange={false}
             validateOnBlur={false}
             onSubmit={this.submit}
+            enableReinitialize={false}
+            handleReset={console.log}
           >
-            {({ values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting }) => (
-              <form onSubmit={handleSubmit}>
+            {({ values, errors, touched, handleChange, handleBlur, isSubmitting, submitForm }) => (
+              <Form>
                 <TextField
+                  key={"abc"}
                   fullWidth
-                  error={!!errors.domain && touched.domain}
+                  error={!!errors.domain && errors.domain !== dnsCheckError && touched.domain}
                   label="Domain"
                   variant="outlined"
                   size="small"
@@ -178,21 +208,51 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
                   value={values.domain}
                   InputLabelProps={{ shrink: true }}
                   placeholder="e.g. mydomain.org kalm.mydomain.com"
-                  helperText={errors.domain && touched.domain && errors.domain}
+                  helperText={errors.domain && errors.domain !== dnsCheckError && touched.domain && errors.domain}
                 />
 
+                {showDNSWarning && (
+                  <Box mt={2}>
+                    <Alert severity="warning">
+                      DNS check failed. After the DNS record is modified, it takes some time to take effect. <br />
+                      If your load balancer is behind another proxy (such as cloudflare), your DNS records will not
+                      resolve to the address of the load balancer. In this case, you can ignore this warning and
+                      continue.
+                    </Alert>
+                  </Box>
+                )}
+
                 <Box mt={2}>
-                  <CustomizedButton
-                    variant="contained"
-                    color="primary"
-                    type="submit"
-                    disabled={isSubmitting}
-                    pending={isSubmitting}
-                  >
-                    Check and continue
-                  </CustomizedButton>
+                  <Box display={"inline-block"} mr={2}>
+                    <CustomizedButton
+                      variant="contained"
+                      color="primary"
+                      type="submit"
+                      disabled={isSubmitting}
+                      pending={isSubmitting}
+                    >
+                      Check and continue
+                    </CustomizedButton>
+                  </Box>
+
+                  {showDNSWarning && (
+                    <Box display={"inline-block"} mr={2}>
+                      <CustomizedButton
+                        variant="contained"
+                        color="default"
+                        disabled={isSubmitting}
+                        pending={isSubmitting}
+                        onClick={async () => {
+                          await this.setState({ ignoreDNSResult: true });
+                          submitForm();
+                        }}
+                      >
+                        Continue anyway
+                      </CustomizedButton>
+                    </Box>
+                  )}
                 </Box>
-              </form>
+              </Form>
             )}
           </Formik>
         </Box>
@@ -327,41 +387,36 @@ Password: ${password}`}</pre>
 
     return (
       <BasePage>
-        <Box p={2}>
-          <Stepper
-            activeStep={activeStep}
-            orientation="vertical"
-            component={(props) => (
-              <KPanel>
-                <Box p={2}>
-                  <H5>Congratulations! you have successfully deployed kalm. Last few steps.</H5>
-                  <Box mt={2}>
-                    <Body>
-                      Your cluster is currently not accessible from outside, and can only be used by yourself through
-                      port-forward. Don't worry, complete the following steps and you can use kalm conveniently with
-                      your colleagues.
-                    </Body>
-                  </Box>
-                  <Box mt={2}>{props.children}</Box>
-                </Box>
-              </KPanel>
-            )}
-          >
-            <Step>
-              <StepLabel>Domain Configuration</StepLabel>
-              <StepContent>{this.renderStep0()}</StepContent>
-            </Step>
+        <Box p={2} key="page">
+          <KPanel>
+            <Box p={2}>
+              <H5>Congratulations! you have successfully deployed kalm. Last few steps.</H5>
+              <Box mt={2}>
+                <Body>
+                  Your cluster is currently not accessible from outside, and can only be used by yourself through
+                  port-forward. Don't worry, complete the following steps and you can use kalm conveniently with your
+                  colleagues.
+                </Body>
+              </Box>
 
-            <Step>
-              <StepLabel>Wait for the configuration to take effect</StepLabel>
-              <StepContent>{this.renderStep1()}</StepContent>
-            </Step>
+              <Stepper activeStep={activeStep} orientation="vertical">
+                <Step>
+                  <StepLabel>Domain Configuration</StepLabel>
+                  <StepContent>{this.renderStep0()}</StepContent>
+                </Step>
 
-            <Step>
-              <StepLabel>Kalm is ready</StepLabel>
-              <StepContent>{this.renderStep2()}</StepContent>
-            </Step>
-          </Stepper>
+                <Step>
+                  <StepLabel>Wait for the configuration to take effect</StepLabel>
+                  <StepContent>{this.renderStep1()}</StepContent>
+                </Step>
+
+                <Step>
+                  <StepLabel>Kalm is ready</StepLabel>
+                  <StepContent>{this.renderStep2()}</StepContent>
+                </Step>
+              </Stepper>
+            </Box>
+          </KPanel>
         </Box>
       </BasePage>
     );

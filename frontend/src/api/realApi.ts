@@ -373,8 +373,8 @@ export default class RealApi extends Api {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/deploykeys`, data: deployKey });
   };
 
-  public resolveDomain = async (domain: string, type: "A" | "CNAME"): Promise<string[]> => {
-    const res = await Axios.get(`https://dns.google.com/resolve?name=${domain}&type=${type}`);
+  public resolveDomain = async (domain: string, type: "A" | "CNAME", timeout: number = 5000): Promise<string[]> => {
+    const res = await Axios.get(`https://dns.google.com/resolve?name=${domain}&type=${type}`, { timeout });
 
     if (res.data.Answer) {
       return (res.data.Answer as GoogleDNSARecordResponse[]).map((aRecord) => aRecord.data);
