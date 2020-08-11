@@ -69,9 +69,9 @@ func (r *HttpRoute) validate() error {
 	var rst KalmValidateErrorList
 
 	for i, host := range r.Spec.Hosts {
-		if !isValidK8sHost(host) && !isValidIP(host) {
+		if !isValidRouteHost(host) {
 			rst = append(rst, KalmValidateError{
-				Err:  "invalid host",
+				Err:  "invalid host:" + host,
 				Path: fmt.Sprintf("spec.hosts[%d]", i),
 			})
 		}
@@ -121,4 +121,11 @@ func (r *HttpRoute) validate() error {
 	}
 
 	return rst
+}
+
+func isValidRouteHost(host string) bool {
+	return isValidK8sHost(host) ||
+		isValidIP(host) ||
+		isValidDomain(host) ||
+		isValidWildcardDomain(host)
 }
