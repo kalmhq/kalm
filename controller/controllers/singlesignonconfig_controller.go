@@ -71,10 +71,7 @@ func (r *SingleSignOnConfigReconcilerTask) Run(req ctrl.Request) error {
 	}
 
 	if len(ssoList.Items) > 1 {
-		r.Log.Error(
-			fmt.Errorf("Only one SSO config is allowed."),
-			"Found more than one SSO configs, Please keep single one and delete the others.",
-		)
+		r.Log.Error(nil, "Only one SSO config is allowed. Found more than one SSO configs, Please keep single one and delete the others.")
 		return nil
 	}
 
@@ -434,8 +431,11 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 				"CONNECT",
 				"TRACE",
 			},
-			Paths:               []string{"/dex"},
-			Schemes:             []string{"http", "https"},
+			Paths: []string{"/dex"},
+			Schemes: []corev1alpha1.HttpRouteScheme{
+				corev1alpha1.HttpRouteScheme("http"),
+				corev1alpha1.HttpRouteScheme("https"),
+			},
 			HttpRedirectToHttps: !r.ssoConfig.Spec.UseHttp,
 			Destinations: []corev1alpha1.HttpRouteDestination{
 				{
@@ -626,8 +626,11 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() err
 			Methods: []corev1alpha1.HttpRouteMethod{
 				"GET",
 			},
-			Paths:               []string{"/oidc/login", "/oidc/callback"},
-			Schemes:             []string{"http", "https"},
+			Paths: []string{"/oidc/login", "/oidc/callback"},
+			Schemes: []corev1alpha1.HttpRouteScheme{
+				corev1alpha1.HttpRouteScheme("http"),
+				corev1alpha1.HttpRouteScheme("https"),
+			},
 			HttpRedirectToHttps: !r.ssoConfig.Spec.UseHttp,
 			Destinations: []corev1alpha1.HttpRouteDestination{
 				{

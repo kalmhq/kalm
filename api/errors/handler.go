@@ -1,12 +1,12 @@
 package errors
 
 import (
+	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
-	"net/http"
-
 	"github.com/labstack/echo/v4"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"net/http"
 )
 
 type ErrorRes struct {
@@ -21,7 +21,7 @@ type ErrDetail struct {
 }
 
 func CustomHTTPErrorHandler(err error, c echo.Context) {
-	c.Logger().Error(err)
+	log.Error(err, "request error")
 
 	statusError, ok := err.(*errors.StatusError)
 	if ok && statusError.Status().Code > 0 {

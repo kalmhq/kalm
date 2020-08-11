@@ -29,6 +29,7 @@ type ComponentPluginBindingSpec struct {
 	ComponentName string `json:"componentName,omitempty"`
 
 	// which plugin to use
+	// +kubebuilder:validation:MinLength=1
 	PluginName string `json:"pluginName"`
 
 	// configuration of this binding
