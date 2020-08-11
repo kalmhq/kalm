@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"github.com/kalmhq/kalm/controller/controllers"
 
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
@@ -71,10 +72,6 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 		}
 	}
 
-	if err := builder.Delete(&pvc); err != nil {
-		return err
-	}
-
 	var underlyingPV *v1.PersistentVolume
 	for i := 0; i < len(pvList.Items); i++ {
 		pv := pvList.Items[i]
@@ -94,9 +91,22 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 	}
 
 	if underlyingPV != nil {
-		if err := builder.Delete(underlyingPV); err != nil {
+		copy := underlyingPV.DeepCopy()
+		if copy.Labels == nil {
+			copy.Labels = make(map[string]string)
+		}
+
+		// instead of delete, mark pv with label
+		// clean will be triggered once pvc is deleted
+		copy.Labels[controllers.KalmLabelCleanIfPVCGone] = fmt.Sprintf("%s-%s", pvc.Namespace, pvc.Name)
+
+		if err := builder.Update(copy); err != nil {
 			return err
 		}
+	}
+
+	if err := builder.Delete(&pvc); err != nil {
+		return err
 	}
 
 	return c.NoContent(200)
