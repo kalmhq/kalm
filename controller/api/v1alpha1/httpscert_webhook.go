@@ -62,6 +62,10 @@ func (r *HttpsCert) validate() error {
 			continue
 		}
 
+		if domain == "*" {
+			continue
+		}
+
 		rst = append(rst, KalmValidateError{
 			Err:  "invalid domain:" + domain,
 			Path: fmt.Sprintf("spec.domains[%d]", i),
