@@ -67,7 +67,8 @@ func (r *DeployKey) ValidateDelete() error {
 	return nil
 }
 
-func (r *DeployKey) validate() (rst KalmValidateErrorList) {
+func (r *DeployKey) validate() error {
+	var rst KalmValidateErrorList
 	switch r.Spec.Scope {
 	case DeployKeyTypeComponent:
 		if len(r.Spec.Resources) == 0 {
@@ -127,6 +128,10 @@ func (r *DeployKey) validate() (rst KalmValidateErrorList) {
 			Err:  fmt.Sprintf("unknown scope: %s", r.Spec.Scope),
 			Path: "spec.scope",
 		})
+	}
+
+	if len(rst) == 0 {
+		return nil
 	}
 
 	return rst

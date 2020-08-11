@@ -54,7 +54,9 @@ func (r *ProtectedEndpoint) ValidateDelete() error {
 	return nil
 }
 
-func (r *ProtectedEndpoint) validate() (rst KalmValidateErrorList) {
+func (r *ProtectedEndpoint) validate() error {
+	var rst KalmValidateErrorList
+
 	if !isValidLabelValue(r.Spec.EndpointName) {
 		rst = append(rst, KalmValidateError{
 			Err:  "invalid endpointName",
@@ -69,6 +71,10 @@ func (r *ProtectedEndpoint) validate() (rst KalmValidateErrorList) {
 				Path: fmt.Sprintf("spec.ports[%d]", i),
 			})
 		}
+	}
+
+	if len(rst) == 0 {
+		return nil
 	}
 
 	return rst

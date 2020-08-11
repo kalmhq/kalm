@@ -65,7 +65,9 @@ func (r *HttpRoute) ValidateDelete() error {
 	return nil
 }
 
-func (r *HttpRoute) validate() (rst KalmValidateErrorList) {
+func (r *HttpRoute) validate() error {
+	var rst KalmValidateErrorList
+
 	for i, host := range r.Spec.Hosts {
 		if !isValidK8sHost(host) && !isValidIP(host) {
 			rst = append(rst, KalmValidateError{
@@ -112,6 +114,10 @@ func (r *HttpRoute) validate() (rst KalmValidateErrorList) {
 				Path: "spec.mirror.destination.host",
 			})
 		}
+	}
+
+	if len(rst) == 0 {
+		return nil
 	}
 
 	return rst

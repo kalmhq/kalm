@@ -54,7 +54,8 @@ func (r *HttpsCert) ValidateDelete() error {
 	return nil
 }
 
-func (r *HttpsCert) validate() (rst KalmValidateErrorList) {
+func (r *HttpsCert) validate() error {
+	var rst KalmValidateErrorList
 
 	for i, domain := range r.Spec.Domains {
 		if isValidDomain(domain) {
@@ -82,6 +83,10 @@ func (r *HttpsCert) validate() (rst KalmValidateErrorList) {
 				Path: "spec.httpsCertIssuer",
 			})
 		}
+	}
+
+	if len(rst) == 0 {
+		return nil
 	}
 
 	return rst

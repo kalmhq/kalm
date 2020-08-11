@@ -53,7 +53,8 @@ func (r *ComponentPluginBinding) ValidateDelete() error {
 	return nil
 }
 
-func (r *ComponentPluginBinding) validate() (rst KalmValidateErrorList) {
+func (r *ComponentPluginBinding) validate() error {
+	var rst KalmValidateErrorList
 
 	if r.Spec.ComponentName != "" {
 		isValid := isValidResourceName(r.Spec.ComponentName)
@@ -63,6 +64,10 @@ func (r *ComponentPluginBinding) validate() (rst KalmValidateErrorList) {
 				Path: "spec.componentName",
 			})
 		}
+	}
+
+	if len(rst) == 0 {
+		return nil
 	}
 
 	return rst

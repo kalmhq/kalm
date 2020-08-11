@@ -53,7 +53,9 @@ func (r *HttpsCertIssuer) ValidateDelete() error {
 	return nil
 }
 
-func (r *HttpsCertIssuer) validate() (rst KalmValidateErrorList) {
+func (r *HttpsCertIssuer) validate() error {
+	var rst KalmValidateErrorList
+
 	if r.Spec.ACMECloudFlare == nil &&
 		r.Spec.CAForTest == nil &&
 		r.Spec.HTTP01 == nil {
@@ -89,6 +91,10 @@ func (r *HttpsCertIssuer) validate() (rst KalmValidateErrorList) {
 				Path: "spec.acmeCloudFlare.email",
 			})
 		}
+	}
+
+	if len(rst) == 0 {
+		return nil
 	}
 
 	return rst

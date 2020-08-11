@@ -64,7 +64,9 @@ func (r *DockerRegistry) ValidateDelete() error {
 	return nil
 }
 
-func (r *DockerRegistry) validate() (rst KalmValidateErrorList) {
+func (r *DockerRegistry) validate() error {
+	var rst KalmValidateErrorList
+
 	isValid := isValidURL(r.Spec.Host)
 	if !isValid {
 		rst = append(rst, KalmValidateError{
@@ -81,6 +83,10 @@ func (r *DockerRegistry) validate() (rst KalmValidateErrorList) {
 				Path: "spec.poolingIntervalSeconds",
 			})
 		}
+	}
+
+	if len(rst) == 0 {
+		return nil
 	}
 
 	return rst
