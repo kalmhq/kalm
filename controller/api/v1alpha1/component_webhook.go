@@ -86,7 +86,7 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 	return r.validate()
 }
 
-func (r *Component) validate() KalmValidateErrorList {
+func (r *Component) validate() error {
 	var rst KalmValidateErrorList
 
 	rst = append(rst, r.validateEnvVarList()...)
@@ -97,6 +97,10 @@ func (r *Component) validate() KalmValidateErrorList {
 	rst = append(rst, r.validateVolumeOfComponent()...)
 	rst = append(rst, r.validateRunnerPermission()...)
 	rst = append(rst, r.validatePreInjectedFiles()...)
+
+	if len(rst) == 0 {
+		return nil
+	}
 
 	return rst
 }
