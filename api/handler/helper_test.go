@@ -87,7 +87,7 @@ func (suite *WithControllerTestSuite) SetupSuite() {
 	e := server.NewEchoServer(runningConfig)
 	clientManager := client2.NewClientManager(runningConfig)
 	apiHandler := NewApiHandler(clientManager)
-	apiHandler.Install(e)
+	apiHandler.InstallMainRoutes(e)
 
 	suite.apiServer = e
 }

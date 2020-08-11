@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"k8s.io/client-go/rest"
 	"strconv"
 	"time"
 
-	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/log"
 	_ "github.com/mattn/go-sqlite3"
 	v12 "k8s.io/api/core/v1"
@@ -21,13 +21,13 @@ var metricDb *sql.DB
 var metricResolution = 5 * time.Second
 var metricDuration = 15 * time.Minute
 
-func StartMetricScraper(ctx context.Context, manager *client.ClientManager) error {
-	metricClient, err := mclientv1beta1.NewForConfig(manager.ClusterConfig)
+func StartMetricScraper(ctx context.Context, cfg *rest.Config) error {
+	metricClient, err := mclientv1beta1.NewForConfig(cfg)
 	if err != nil {
 		log.Error(err, "Init metric client error")
 		return err
 	}
-	restClient, err := kubernetes.NewForConfig(manager.ClusterConfig)
+	restClient, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		log.Error(err, "Init rest client error")
 		return err
