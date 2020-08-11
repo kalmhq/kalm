@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
@@ -77,6 +78,34 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
 	suite.Equal(1, len(resList))
 	suite.Equal(string(coreV1.ConditionUnknown), resList[0].Ready)
 	suite.Equal(resources.ReasonForNoReadyConditions, resList[0].Reason)
+}
+
+func (suite *HttpsCertTestSuite) TestCreateHttpsCertWithoutName() {
+	body := `{
+  "httpsCertIssuer":  "foobar-issuer",
+  "domains": ["example.com"]
+}`
+
+	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/httpscerts", body)
+
+	var httpsCert resources.HttpsCert
+	rec.BodyAsJSON(&httpsCert)
+
+	suite.Equal(201, rec.Code)
+	suite.NotEqual("", httpsCert.Name)
+
+	var res v1alpha1.HttpsCertList
+	err := suite.List(&res)
+	suite.Nil(err)
+
+	suite.Equal(1, len(res.Items))
+	fmt.Println(res.Items[0].Name)
+	suite.True(strings.HasPrefix(res.Items[0].Name, "example-com-"))
+	suite.Equal("foobar-issuer", res.Items[0].Spec.HttpsCertIssuer)
+	suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
+
+	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/httpscerts/"+httpsCert.Name, nil)
+	suite.Equal(200, rec.Code)
 }
 
 func (suite *HttpsCertTestSuite) TestCreateHttpsCertWithoutSetIssuer() {
