@@ -12,9 +12,9 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/kalmhq/kalm/api/client"
+	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/utils"
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -28,8 +28,9 @@ type WSConn struct {
 	ctx      context.Context
 	stopFunc context.CancelFunc
 
-	K8sClient *kubernetes.Clientset
-	K8sConfig *rest.Config
+	K8sClient     *kubernetes.Clientset
+	K8sConfig     *rest.Config
+	clientManager *client.ClientManager
 
 	IsAuthorized       bool
 	podResourceRequest chan *WSPodResourceRequest
@@ -199,7 +200,7 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 			if isNormalWebsocketCloseError(err) {
 				return nil
 			}
-			log.Error(err)
+			log.Error(err, "read message error")
 			return err
 		}
 
@@ -207,7 +208,7 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 		err = json.Unmarshal(message, &basicMessage)
 
 		if err != nil {
-			log.Error(err)
+			log.Error(err, "parse message error")
 			continue
 		}
 
@@ -223,7 +224,7 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 			err = json.Unmarshal(message, &m)
 
 			if err != nil {
-				log.Error(err)
+				log.Error(err, "parse message error")
 				continue
 			}
 
@@ -233,14 +234,14 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 				cfg, err := clientManager.BuildClientConfigWithAuthInfo(authInfo)
 
 				if err != nil {
-					log.Error(err)
+					log.Error(err, "get client config error")
 					continue
 				}
 
 				k8sClient, err := kubernetes.NewForConfig(cfg)
 
 				if err != nil {
-					log.Error(err)
+					log.Error(err, "new config error")
 					continue
 				}
 
@@ -265,7 +266,7 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 			err = json.Unmarshal(message, &m)
 
 			if err != nil {
-				log.Error(err)
+				log.Error(err, "parse message error")
 				continue
 			}
 
@@ -292,7 +293,7 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 
 		if err != nil {
 			if !isNormalWebsocketCloseError(err) {
-				log.Error(err)
+				log.Error(err, "write message error")
 			}
 			return err
 		}
@@ -330,7 +331,7 @@ func handleLogRequests(conn *WSConn) {
 				podLogs, err := req.Stream(conn.ctx)
 
 				if err != nil {
-					log.Error(err)
+					log.Error(err, "stream error")
 					_ = conn.WriteJSON(&WSPodDataResponse{
 						Type:      WSResponseTypeLogStreamDisconnected,
 						Namespace: m.Namespace,
@@ -385,7 +386,7 @@ func copyPodLogStreamToWS(ctx context.Context, namespace, podName string, conn *
 
 			if err != nil {
 				if !strings.Contains(err.Error(), "body closed") {
-					log.Error(err)
+					log.Error(err, "read error")
 				}
 				close(bufChan)
 				return
@@ -414,7 +415,7 @@ func copyPodLogStreamToWS(ctx context.Context, namespace, podName string, conn *
 			if err != nil {
 
 				if !isNormalWebsocketCloseError(err) {
-					log.Error(err)
+					log.Error(err, "write message error")
 				}
 				return
 			}
@@ -509,7 +510,7 @@ func handleExecRequests(conn *WSConn) {
 					var data string
 
 					if err != nil {
-						log.Error("Start Exec Terminal Session Error:", err)
+						log.Error(err, "Start Exec Terminal Session Error")
 						data = err.Error()
 					}
 
@@ -532,7 +533,7 @@ func handleExecRequests(conn *WSConn) {
 				session, existing := terminalSessions[key]
 
 				if !existing {
-					log.Error("can't find terminal session", key)
+					log.Error(nil, "can't find terminal session", "key", key)
 					continue
 				}
 
@@ -541,7 +542,7 @@ func handleExecRequests(conn *WSConn) {
 				session, existing := terminalSessions[key]
 
 				if !existing {
-					log.Error("can't find terminal session", key)
+					log.Error(nil, "can't find terminal session", "key", key)
 					continue
 				}
 
@@ -560,11 +561,10 @@ func (h *ApiHandler) prepareWSConnection(c echo.Context) (*WSConn, error) {
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 
 	if err != nil {
-		log.Error("upgrade:", err)
+		log.Error(err, "upgrade")
 		return nil, err
 	}
 
-	authInfo := client.ExtractAuthInfoFromClientRequestContext(c)
 	ctx, stop := context.WithCancel(context.Background())
 
 	conn := &WSConn{
@@ -572,23 +572,18 @@ func (h *ApiHandler) prepareWSConnection(c echo.Context) (*WSConn, error) {
 		ctx:                ctx,
 		stopFunc:           stop,
 		podResourceRequest: make(chan *WSPodResourceRequest),
-		IsAuthorized:       authInfo != nil && h.clientManager.IsAuthInfoWorking(authInfo) == nil,
 		writeLock:          &sync.Mutex{},
+		clientManager:      h.clientManager,
 	}
 
-	if conn.IsAuthorized {
-		clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
+	clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
 
-		if err != nil {
-			return nil, err
-		}
-
+	if err == nil {
+		conn.IsAuthorized = true
 		k8sClient, err := kubernetes.NewForConfig(clientInfo.Cfg)
-
 		if err != nil {
 			return nil, err
 		}
-
 		conn.K8sClient = k8sClient
 		conn.K8sConfig = clientInfo.Cfg
 	}

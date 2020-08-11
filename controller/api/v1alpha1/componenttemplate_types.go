@@ -21,9 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
+// +kubebuilder:validation:Enum=server;cronjob;daemonset;statefulset
 type WorkloadType string
 
 const (
@@ -53,7 +51,7 @@ type ComponentTemplateSpec struct {
 	// +optional
 	// ReadinessProbe *v1.Probe `json:"readinessProbe,omitempty"`
 
-	// +kubebuilder:validation:Enum=server;cronjob
+	// +kubebuilder:validation:Enum=server;cronjob;daemonset;statefulset
 	WorkLoadType WorkloadType `json:"workloadType,omitempty"`
 
 	Schedule string `json:"schedule,omitempty"`

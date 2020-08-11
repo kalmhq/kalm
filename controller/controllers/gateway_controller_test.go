@@ -38,7 +38,7 @@ func (suite *GatewayControllerSuite) TestBasicHttpRoute() {
 			Methods:   []v1alpha1.HttpRouteMethod{"GET", "POST"},
 			Hosts:     []string{"example.com", "example.io"},
 			Paths:     []string{"/", "/api"},
-			Schemes:   []string{"http", "https"},
+			Schemes:   []v1alpha1.HttpRouteScheme{"http", "https"},
 			StripPath: true,
 			Destinations: []v1alpha1.HttpRouteDestination{
 				{

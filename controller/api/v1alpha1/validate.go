@@ -3,6 +3,7 @@ package v1alpha1
 import (
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
+	rbac "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -46,15 +47,15 @@ const isNotIntegerErrorMsg string = `must be an integer`
 const isNotPositiveErrorMsg string = `must be greater than zero`
 
 // ValidateResourceQuantityValue enforces that specified quantity is valid for specified resource
-func ValidateResourceQuantityValue( /*resource string, */ value resource.Quantity, fldPath *field.Path) field.ErrorList {
+func ValidateResourceQuantityValue(value resource.Quantity, fldPath *field.Path, isIntegerResource bool) field.ErrorList {
 	allErrs := field.ErrorList{}
 	allErrs = append(allErrs, ValidateNonnegativeQuantity(value, fldPath)...)
 
-	//if helper.IsIntegerResourceName(resource) {
-	if value.MilliValue()%int64(1000) != int64(0) {
-		allErrs = append(allErrs, field.Invalid(fldPath, value, isNotIntegerErrorMsg))
+	if isIntegerResource {
+		if value.MilliValue()%int64(1000) != int64(0) {
+			allErrs = append(allErrs, field.Invalid(fldPath, value, isNotIntegerErrorMsg))
+		}
 	}
-	//}
 
 	return allErrs
 }
@@ -167,4 +168,43 @@ func ValidatePortNumOrName(port intstr.IntOrString, fldPath *field.Path) field.E
 
 func validateTCPSocketAction(tcp *corev1.TCPSocketAction, fldPath *field.Path) field.ErrorList {
 	return ValidatePortNumOrName(tcp.Port, fldPath.Child("port"))
+}
+
+func toKalmValidateErrors(errList field.ErrorList) (rst []KalmValidateError) {
+	for _, err := range errList {
+		rst = append(rst, KalmValidateError{
+			Err: err.Error(),
+			//Err:  fmt.Sprintf("invalid value: %v, %s", err.BadValue, err.Detail),
+			Path: err.Field,
+		})
+	}
+
+	return rst
+}
+
+// https://github.com/kubernetes/kubernetes/blob/v1.18.6/pkg/apis/rbac/validation/validation.go#L97
+// ValidatePolicyRule is exported to allow types outside of the RBAC API group to embed a rbac.PolicyRule and reuse this validation logic
+func validatePolicyRule(rule rbac.PolicyRule, isNamespaced bool, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if len(rule.Verbs) == 0 {
+		allErrs = append(allErrs, field.Required(fldPath.Child("verbs"), "verbs must contain at least one value"))
+	}
+
+	if len(rule.NonResourceURLs) > 0 {
+		if isNamespaced {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("nonResourceURLs"), rule.NonResourceURLs, "namespaced rules cannot apply to non-resource URLs"))
+		}
+		if len(rule.APIGroups) > 0 || len(rule.Resources) > 0 || len(rule.ResourceNames) > 0 {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("nonResourceURLs"), rule.NonResourceURLs, "rules cannot apply to both regular resources and non-resource URLs"))
+		}
+		return allErrs
+	}
+
+	if len(rule.APIGroups) == 0 {
+		allErrs = append(allErrs, field.Required(fldPath.Child("apiGroups"), "resource rules must supply at least one api group"))
+	}
+	if len(rule.Resources) == 0 {
+		allErrs = append(allErrs, field.Required(fldPath.Child("resources"), "resource rules must supply at least one resource"))
+	}
+	return allErrs
 }

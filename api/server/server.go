@@ -2,6 +2,7 @@ package server
 
 import (
 	"flag"
+	"github.com/kalmhq/kalm/api/log"
 	"net/http"
 	"os"
 
@@ -27,9 +28,7 @@ func NewEchoInstance() *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 	e.Use(middleware.Gzip())
-	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Format: "method=${method}, uri=${uri}, status=${status}\n",
-	}))
+	e.Use(middlewareLogging)
 
 	e.Pre(middleware.RemoveTrailingSlash())
 
@@ -80,4 +79,16 @@ func NewEchoServer(runningConfig *config.Config) *echo.Echo {
 	e.Validator = &CustomValidator{validator: validator.New()}
 
 	return e
+}
+
+func middlewareLogging(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if c != nil {
+			log.Info("receive request", "method", c.Request().Method, "uri", c.Request().URL.String(), "ip", c.Request().RemoteAddr)
+		} else {
+			log.Info("receive request bad request")
+		}
+
+		return next(c)
+	}
 }

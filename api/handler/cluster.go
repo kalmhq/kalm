@@ -187,7 +187,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 		HttpRouteSpec: &v1alpha1.HttpRouteSpec{
 			Hosts: []string{body.Domain},
 			Paths: []string{"/"},
-			Schemes: v1alpha1.HttpRouteSchemes{
+			Schemes: []v1alpha1.HttpRouteScheme{
 				"https", "http",
 			},
 			Methods: []v1alpha1.HttpRouteMethod{
@@ -245,7 +245,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 		ssoConfig.SingleSignOnConfigSpec.Port = clusterInfo.HttpPort
 
 		route.HttpRouteSpec.HttpRedirectToHttps = false
-		route.HttpRouteSpec.Schemes = []string{"http"}
+		route.HttpRouteSpec.Schemes = []v1alpha1.HttpRouteScheme{"http"}
 	} else {
 		_, err := builder.CreateAutoManagedHttpsCert(httpsCertForKalm)
 		if err != nil {

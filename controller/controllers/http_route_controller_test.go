@@ -61,7 +61,7 @@ func (suite *HttpRouteControllerSuite) TestBasicHttpRoute() {
 			Methods: []v1alpha1.HttpRouteMethod{"GET", "POST"},
 			Hosts:   []string{"example.com", "example.io"},
 			Paths:   []string{"/", "/api"},
-			Schemes: []string{"http", "https"},
+			Schemes: []v1alpha1.HttpRouteScheme{"http", "https"},
 			Conditions: []v1alpha1.HttpRouteCondition{
 				{
 					Type:     v1alpha1.HttpRouteConditionTypeHeader,

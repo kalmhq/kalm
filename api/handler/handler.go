@@ -1,15 +1,16 @@
 package handler
 
 import (
+	"github.com/go-logr/logr"
 	"github.com/kalmhq/kalm/api/client"
+	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
-	"github.com/sirupsen/logrus"
 )
 
 type ApiHandler struct {
 	clientManager *client.ClientManager
-	logger        *logrus.Logger
+	logger        logr.Logger
 }
 
 type H map[string]interface{}
@@ -127,6 +128,6 @@ func (h *ApiHandler) KalmBuilder() *resources.Builder {
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {
 	return &ApiHandler{
 		clientManager: clientManager,
-		logger:        logrus.New(),
+		logger:        log.DefaultLogger(),
 	}
 }

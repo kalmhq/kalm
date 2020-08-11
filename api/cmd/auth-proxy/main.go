@@ -9,10 +9,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/coreos/go-oidc"
+	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/server"
 	"github.com/kalmhq/kalm/api/utils"
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/http2"
 	"golang.org/x/oauth2"
 	"net/http"
@@ -62,7 +62,7 @@ func getOauth2Config() *oauth2.Config {
 	authProxyURL = os.Getenv("KALM_OIDC_AUTH_PROXY_URL")
 
 	if clientID == "" || clientSecret == "" || oidcProviderUrl == "" || authProxyURL == "" {
-		log.Error("KALM OIDC ENVs are not configured.")
+		log.Error(nil, "KALM OIDC ENVs are not configured")
 		return nil
 	}
 
@@ -70,7 +70,7 @@ func getOauth2Config() *oauth2.Config {
 	provider, err := oidc.NewProvider(context.Background(), oidcProviderUrl)
 
 	if err != nil {
-		log.Error("KALM new provider failed.")
+		log.Error(err, "KALM new provider failed.")
 		return nil
 	}
 
@@ -126,7 +126,7 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 	uri, err := url.Parse(authProxyURL + "/oidc/login")
 
 	if err != nil {
-		log.Error("parse auth proxy url error.", err)
+		log.Error(err, "parse auth proxy url error.")
 		return err
 	}
 
@@ -150,15 +150,9 @@ type ClaimsWithGroups struct {
 }
 
 func handleExtAuthz(c echo.Context) error {
-	logger := log.WithFields(log.Fields{
-		"clientIP": c.RealIP(),
-		"host":     c.Request().Host,
-		"path":     c.Request().URL.Path,
-	})
-
-	logger.Debugf("tls: %t", c.Request().TLS != nil)
+	log.Debug("handleExtAuthz", "tls", c.Request().TLS != nil)
 	for k, v := range c.Request().Header {
-		logger.Debugf("header: %s, value: %+v", k, v)
+		log.Debug("handleExtAuthz", "header", k, "value", v)
 	}
 
 	if getOauth2Config() == nil {
@@ -167,10 +161,10 @@ func handleExtAuthz(c echo.Context) error {
 
 	if c.QueryParam(ID_TOKEN_QUERY_NAME) != "" {
 		if idToken, err := checkJwtToken(c, c.QueryParam(ID_TOKEN_QUERY_NAME)); err != nil {
-			logger.Info(err.Error())
+			log.Info(err.Error(), "clientIP", c.RealIP(), "host", c.Request().Host, "path", c.Request().URL.Path)
 			return c.String(401, err.Error())
 		} else {
-			logger.Info("valid jwt token")
+			log.Info("valid jwt token", "clientIP", c.RealIP(), "host", c.Request().Host, "path", c.Request().URL.Path)
 			return handleSetIDToken(c, idToken, c.QueryParam(ID_TOKEN_QUERY_NAME))
 		}
 	}
@@ -178,7 +172,7 @@ func handleExtAuthz(c echo.Context) error {
 	token, err := getTokenFromRequest(c)
 
 	if err != nil {
-		logger.Info(err.Error())
+		log.Info("No auth cookie, redirect to auth proxy", "ip", c.RealIP(), "path", c.Path())
 		return redirectToAuthProxyUrl(c)
 	}
 
@@ -300,11 +294,11 @@ func handleSetIDToken(c echo.Context, idToken *oidc.IDToken, rawIDToken string) 
 
 	requestURI := c.Request().Header.Get("X-Envoy-Original-Path")
 
-	log.Debugf("[Set ID Token] X-Envoy-Original-Path: %s", requestURI)
+	log.Debug("[Set ID Token]", "X-Envoy-Original-Path", requestURI)
 
 	if requestURI == "" {
 		requestURI = removeExtAuthPathPrefix(c.Request().RequestURI)
-		log.Debugf("[Set ID Token] RawRequestURI: %s,  removeExtAuthPathPrefix: %s", c.Request().RequestURI, requestURI)
+		log.Debug("[Set ID Token]", "RawRequestURI", c.Request().RequestURI, "removeExtAuthPathPrefix", requestURI)
 	}
 
 	uri, err := url.Parse(requestURI)
@@ -352,7 +346,7 @@ func handleOIDCLogin(c echo.Context) error {
 	}
 
 	if sign != getStringSignature(originalURL+now) {
-		log.Errorf("Wrong Sign, receive: %s, expected: %s", sign, getStringSignature(originalURL+now))
+		log.Error(nil, "wrong sign", "receive", sign, "expected", getStringSignature(originalURL+now))
 		return c.String(400, "Wrong sign")
 	}
 
@@ -393,21 +387,21 @@ func handleOIDCCallback(c echo.Context) error {
 	stateStr := c.QueryParam("state")
 
 	if stateStr == "" {
-		log.Error("Missing state")
+		log.Error(nil, "missing state")
 		return c.String(400, "Missing state")
 	}
 
 	stateBytes, err := base64.RawStdEncoding.DecodeString(stateStr)
 
 	if err != nil {
-		log.Error("Base64 decode state failed", err)
+		log.Error(err, "Base64 decode state failed")
 		return c.String(400, "Base64 decode state failed")
 	}
 
 	stateJsonBytes, err := utils.AesDecrypt(stateBytes, stateEncryptKey[:])
 
 	if err != nil {
-		log.Error("Aes decrypted state failed", err)
+		log.Error(err, "Aes decrypted state failed")
 		return c.String(400, "State mismatch")
 	}
 
@@ -415,7 +409,7 @@ func handleOIDCCallback(c echo.Context) error {
 	err = json.Unmarshal(stateJsonBytes, &state)
 
 	if err != nil {
-		log.Errorf("json decode state failed")
+		log.Error(err, "json decode state failed")
 		return c.String(400, "json decode state failed")
 	}
 
@@ -425,28 +419,28 @@ func handleOIDCCallback(c echo.Context) error {
 	)
 
 	if err != nil {
-		log.Error("Exchange oauth2Token error", err)
+		log.Error(err, "Exchange oauth2Token error")
 		return c.String(400, "Exchange oauth2Token error")
 	}
 
 	rawIDToken, ok := oauth2Token.Extra(ID_TOKEN_COOKIE_NAME).(string)
 
 	if !ok {
-		log.Error("no id_token in token response")
+		log.Error(nil, "no id_token in token response")
 		return c.String(400, "no id_token in token resonse")
 	}
 
 	_, err = oidcVerifier.Verify(context.Background(), rawIDToken)
 
 	if err != nil {
-		log.Error("jwt verify failed", err)
+		log.Error(err, "jwt verify failed")
 		return c.String(400, "jwt verify failed")
 	}
 
 	uri, err := url.Parse(state.OriginalURL)
 
 	if err != nil {
-		log.Error("parse original url failed. ", state.OriginalURL, err)
+		log.Error(err, "parse original url failed. ", "OriginalURL", state.OriginalURL)
 		return c.String(400, "parse original url failed.")
 	}
 
@@ -462,9 +456,9 @@ func handleLog(c echo.Context) error {
 
 	switch level {
 	case "debug":
-		log.SetLevel(log.DebugLevel)
+		log.InitDefaultLogger("debug")
 	default:
-		log.SetLevel(log.InfoLevel)
+		log.InitDefaultLogger("info")
 	}
 
 	return c.NoContent(200)
@@ -483,9 +477,13 @@ func main() {
 
 	e.POST("/log", handleLog)
 
-	e.Logger.Fatal(e.StartH2CServer("0.0.0.0:3002", &http2.Server{
+	err := e.StartH2CServer("0.0.0.0:3002", &http2.Server{
 		MaxConcurrentStreams: 250,
 		MaxReadFrameSize:     1048576,
 		IdleTimeout:          60 * time.Second,
-	}))
+	})
+
+	if err != nil {
+		panic(err)
+	}
 }

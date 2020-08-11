@@ -199,3 +199,25 @@ metadata: foobar`
 //	assert.Equal(t, 1, len(errs))
 //	assert.Equal(t, "spec.components.spec.components.image: Required value", errs[0].Error())
 //}
+
+func TestIsValidDomain(t *testing.T) {
+	domains := []string{
+		"google.com",
+		"stackoverflow.co.uk",
+	}
+
+	for _, d := range domains {
+		assert.True(t, isValidDomain(d))
+	}
+}
+
+func TestIsValidEmail(t *testing.T) {
+	emails := []string{
+		"test@golangcode.com",
+		"foobar@stackoverflow.co.uk",
+	}
+
+	for _, d := range emails {
+		assert.True(t, isValidEmail(d))
+	}
+}

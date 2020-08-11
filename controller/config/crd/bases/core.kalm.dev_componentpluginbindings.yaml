@@ -67,6 +67,7 @@ spec:
               type: boolean
             pluginName:
               description: which plugin to use
+              minLength: 1
               type: string
           required:
           - pluginName

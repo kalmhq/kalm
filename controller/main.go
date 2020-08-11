@@ -17,12 +17,13 @@ package main
 
 import (
 	"flag"
+	"os"
+
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	elkv1 "github.com/elastic/cloud-on-k8s/pkg/apis/elasticsearch/v1"
 	kibanav1 "github.com/elastic/cloud-on-k8s/pkg/apis/kibana/v1"
 	_ "github.com/joho/godotenv/autoload"
 	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
-	"os"
 
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -36,7 +37,6 @@ import (
 
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
-	//corekalmdevv1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -100,17 +100,6 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "KalmNS")
 		os.Exit(1)
 	}
-
-	//if err = (&controllers.KalmNamespacesReconciler{
-	//	BaseReconciler: &controllers.BaseReconciler{
-	//		Client: mgr.GetClient(),
-	//		Log:    ctrl.Log.WithName("controllers").WithName("KalmNamespace"),
-	//		Scheme: mgr.GetScheme(),
-	//	},
-	//}).SetupWithManager(mgr); err != nil {
-	//	setupLog.Error(err, "unable to create controller", "controller", "KalmNamespaces")
-	//	os.Exit(1)
-	//}
 
 	if err = controllers.NewComponentPluginReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ComponentPlugin")
@@ -185,6 +174,41 @@ func main() {
 	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
 		if err = (&corev1alpha1.Component{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Component")
+			os.Exit(1)
+		}
+
+		if err = (&corev1alpha1.ComponentPluginBinding{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "ComponentPluginBinding")
+			os.Exit(1)
+		}
+
+		if err = (&corev1alpha1.DeployKey{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "DeployKey")
+			os.Exit(1)
+		}
+
+		if err = (&corev1alpha1.DockerRegistry{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "DockerRegistry")
+			os.Exit(1)
+		}
+
+		if err = (&corev1alpha1.HttpRoute{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "HttpRoute")
+			os.Exit(1)
+		}
+
+		if err = (&corev1alpha1.HttpsCert{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "HttpsCert")
+			os.Exit(1)
+		}
+
+		if err = (&corev1alpha1.HttpsCertIssuer{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "HttpsCertIssuer")
+			os.Exit(1)
+		}
+
+		if err = (&corev1alpha1.ProtectedEndpoint{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "ProtectedEndpoint")
 			os.Exit(1)
 		}
 
