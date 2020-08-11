@@ -26,7 +26,6 @@ func TestKalmVolumeControllerSuite(t *testing.T) {
 
 func (suite *KalmVolumeControllerSuite) SetupSuite() {
 	suite.BasicSuite.SetupSuite()
-
 }
 
 func (suite *KalmVolumeControllerSuite) TearDownSuite() {
