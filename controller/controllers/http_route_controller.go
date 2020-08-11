@@ -43,6 +43,13 @@ const (
 	KALM_ROUTE_LABEL = "kalm-route"
 )
 
+const KALM_SSO_USERINFO_HEADER = "kalm-sso-userinfo"
+const KALM_ROUTE_HEADER = "kalm-route"
+
+var DANGEROUS_HEADERS = []string{
+	KALM_SSO_USERINFO_HEADER,
+}
+
 type HttpRouteReconcilerTask struct {
 	*HttpRouteReconciler
 	ctx                       context.Context
@@ -66,6 +73,14 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 	httpRoute := &istioNetworkingV1Beta1.HTTPRoute{
 		Name:  getIstioHttpRouteName(route),
 		Route: r.BuildDestinations(route),
+		Headers: &istioNetworkingV1Beta1.Headers{
+			Request: &istioNetworkingV1Beta1.Headers_HeaderOperations{
+				Remove: DANGEROUS_HEADERS,
+				Set: map[string]string{
+					KALM_ROUTE_HEADER: "true",
+				},
+			},
+		},
 	}
 
 	if spec.StripPath {

@@ -472,8 +472,8 @@ func main() {
 	e.GET("/oidc/callback", handleOIDCCallback)
 
 	// envoy ext_authz handlers
-	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX+"/*", handleExtAuthz)
-	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX, handleExtAuthz)
+	e.Any("/"+ENVOY_EXT_AUTH_PATH_PREFIX+"/*", handleExtAuthz)
+	e.Any("/"+ENVOY_EXT_AUTH_PATH_PREFIX, handleExtAuthz)
 
 	e.POST("/log", handleLog)
 

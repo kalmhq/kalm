@@ -7,6 +7,7 @@ import (
 	"github.com/kalmhq/kalm/api/auth"
 	"github.com/kalmhq/kalm/api/config"
 	"github.com/kalmhq/kalm/api/errors"
+	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -147,9 +148,9 @@ func (m *ClientManager) GetConfigForClientRequestContext(c echo.Context) (*Clien
 		}, nil
 	}
 
-	// The request comes from internal envoy proxy (more precise, from ingress gateway).
 	// And the kalm-sso-userinfo header is not empty.
-	if c.Request().Header.Get("X-Envoy-Internal") == "true" && c.Request().Header.Get("Kalm-Sso-Userinfo") != "" {
+	// This header will be removed at ingress route level. Only auth proxy can set this header, So it's safe to trust this value.
+	if c.Request().Header.Get("Kalm-Sso-Userinfo") != "" {
 		claimsBytes, err := base64.RawStdEncoding.DecodeString(c.Request().Header.Get("Kalm-Sso-Userinfo"))
 
 		if err != nil {
@@ -172,12 +173,18 @@ func (m *ClientManager) GetConfigForClientRequestContext(c echo.Context) (*Clien
 		return &clientInfo, nil
 	}
 
+	// reject traffic from route without valid authentication info
+	if c.Request().Header.Get(controllers.KALM_ROUTE_HEADER) == "true" {
+		return nil, errors.NewUnauthorized("")
+	}
+
 	// If the request is from localhost
 	// 	 Case #1: localhost development
 	//   Case #2: kubectl port-forwrd (https://github.com/kubernetes/kubernetes/blob/6ce9e71cd57d4aa6c932aabddf4129f173b9d710/pkg/kubelet/dockershim/docker_streaming_others.go#L31-L86)
 	// Use cluster config permission
 
-	if c.RealIP() == "127.0.0.1" || c.RealIP() == "::1" {
+	realIP := c.RealIP()
+	if realIP == "127.0.0.1" || realIP == "::1" {
 		var name string
 
 		if m.IsInCluster() {

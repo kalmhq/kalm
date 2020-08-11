@@ -266,7 +266,7 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilter(req ctrl.Request) *v1
 									"exact": "cookie",
 								},
 								map[string]interface{}{
-									"exact": "kalm-sso-userinfo",
+									"exact": KALM_SSO_USERINFO_HEADER,
 								},
 							},
 						},
