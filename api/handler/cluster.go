@@ -270,7 +270,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 
 	protectedEndpoint := &resources.ProtectedEndpoint{
 		Namespace:    controllers.NamespaceKalmSystem,
-		EndpointName: "kalm",
+		EndpointName: KalmProtectedEndpointName,
 		Ports:        []uint32{3001},
 	}
 
@@ -357,7 +357,7 @@ func (h *ApiHandler) handleResetCluster(c echo.Context) error {
 		defer wg.Done()
 		_ = builder.DeleteProtectedEndpoints(&resources.ProtectedEndpoint{
 			Namespace:    controllers.NamespaceKalmSystem,
-			EndpointName: "kalm",
+			EndpointName: KalmProtectedEndpointName,
 		})
 	}()
 
