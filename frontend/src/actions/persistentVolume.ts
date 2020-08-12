@@ -61,7 +61,7 @@ export const loadStatefulSetOptionsAction = (namespace?: string): ThunkResult<Pr
       namespace = getState().get("namespaces").get("active");
     }
 
-    const statefulSetOptions = await api.getSimpleOptions(namespace);
+    const statefulSetOptions = await api.getStatefulSetOptions(namespace);
 
     dispatch({
       type: LOAD_STATEFULSET_OPTIONS,
