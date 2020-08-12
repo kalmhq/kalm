@@ -330,17 +330,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    return (
-      <>
-        {this.renderKRTable()}
-        {/* <KTable
-          options={{ padding: "dense", paging: pods.size > 20 }}
-          columns={this.getColumns()}
-          data={this.getData()}
-          detailPanel={this.renderPodWarnings}
-        /> */}
-      </>
-    );
+    return <>{this.renderKRTable()}</>;
   }
 }
 
