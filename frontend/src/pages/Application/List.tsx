@@ -8,7 +8,6 @@ import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import Immutable from "immutable";
 import { POPPER_ZINDEX } from "layout/Constants";
-import MaterialTable from "material-table";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { RouteWidgets } from "pages/Route/Widget";
 import React from "react";
@@ -73,8 +72,6 @@ interface RowData extends ApplicationDetails {
 }
 
 class ApplicationListRaw extends React.PureComponent<Props> {
-  private tableRef: React.RefObject<MaterialTable<ApplicationDetails>> = React.createRef();
-
   private confirmDelete = async (rowData: ApplicationDetails) => {
     const { dispatch } = this.props;
     try {
