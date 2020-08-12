@@ -54,11 +54,11 @@ func (builder *Builder) BuildVolumeResponse(
 	if v, exist := pvc.Labels[controllers.KalmLabelComponentKey]; exist {
 		compName = v
 	}
-	if compName == "" {
-		if v, exist := pv.Labels[controllers.KalmLabelComponentKey]; exist {
-			compName = v
-		}
-	}
+	//if compName == "" {
+	//	if v, exist := pv.Labels[controllers.KalmLabelComponentKey]; exist {
+	//		compName = v
+	//	}
+	//}
 
 	return &Volume{
 		Name:               pvc.Name,
@@ -161,9 +161,7 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 	rst := []Volume{}
 	for _, sameNsFreePair := range sameNsFreePairs {
 		pvc := sameNsFreePair.pvc
-		pv := sameNsFreePair.pv
-
-		compName, compNs := GetNameAndNsOfPVOwnerComponent(pv)
+		compName, compNs := GetComponentNameAndNsFromObjLabels(&pvc)
 
 		// re-use pvc
 		rst = append(rst, Volume{
@@ -183,7 +181,7 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 		pvc := diffNsFreePair.pvc
 		pv := diffNsFreePair.pv
 
-		compName, compNs := GetNameAndNsOfPVOwnerComponent(pv)
+		compName, compNs := GetComponentNameAndNsFromObjLabels(&pvc)
 
 		// re-use pvc
 		rst = append(rst, Volume{
@@ -199,7 +197,7 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 	}
 
 	for _, unboundPV := range unboundPVs {
-		compName, compNs := GetNameAndNsOfPVOwnerComponent(unboundPV)
+		compName, compNs := GetComponentNameAndNsFromObjLabels(&unboundPV)
 
 		// re-use pvc
 		rst = append(rst, Volume{
@@ -216,10 +214,9 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 
 	// for frontend convenient, also append curNs in use PVC in response
 	for _, curNsInUsePair := range curNsInUsePairs {
-		pv := curNsInUsePair.pv
 		pvc := curNsInUsePair.pvc
 
-		compNs, compName := GetComponentNameAndNs(&pvc)
+		compNs, compName := GetComponentNameAndNsFromObjLabels(&pvc)
 
 		rst = append(rst, Volume{
 			Name:               pvc.Name,
@@ -227,7 +224,7 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 			ComponentNamespace: compNs,
 			ComponentName:      compName,
 			StorageClassName:   getValOfString(pvc.Spec.StorageClassName),
-			Capacity:           GetCapacityOfPV(pv),
+			Capacity:           GetCapacityOfPVC(pvc),
 			PVC:                pvc.Name,
 			PV:                 "",
 		})
@@ -247,7 +244,7 @@ func (builder *Builder) FindAvailableVolsForSts(ns string) ([]Volume, error) {
 
 	//format of pvc generated from volClaimTemplate is: <volClaimTplName>-<stsName>-{0,1,2}
 	for _, pvc := range pvcList {
-		componentName, _ := GetComponentNameAndNs(&pvc)
+		componentName, _ := GetComponentNameAndNsFromObjLabels(&pvc)
 		if componentName == "" {
 			continue
 		}
@@ -278,16 +275,11 @@ func (builder *Builder) FindAvailableVolsForSts(ns string) ([]Volume, error) {
 		pvcNamePrefix2PVCsMap[pvcNamePrefix] = append(pvcNamePrefix2PVCsMap[pvcNamePrefix], pvc)
 	}
 
-	// rm volClaimTmpl if any pvc belonging to it is in use
-	//for volClaimTpl := range pvcNamePrefixHasInUsePVC {
-	//	delete(pvcNamePrefix2PVCsMap, volClaimTpl)
-	//}
-
 	rst := []Volume{}
 	for pvcNamePrefix, pvcs := range pvcNamePrefix2PVCsMap {
 		pvc := pvcs[0]
 		capacity := GetCapacityOfPVC(pvc)
-		compName, compNs := GetComponentNameAndNs(&pvc)
+		compName, compNs := GetComponentNameAndNsFromObjLabels(&pvc)
 
 		isInUse := false
 		if pvcNamePrefixHasInUsePVC[pvcNamePrefix] == true {
@@ -316,11 +308,7 @@ func (builder *Builder) FindAvailableVolsForSts(ns string) ([]Volume, error) {
 	sort.Slice(rst, func(i, j int) bool {
 		// free vol comes first
 		if rst[i].IsInUse != rst[j].IsInUse {
-			if !rst[i].IsInUse {
-				return true
-			} else {
-				return false
-			}
+			return !rst[i].IsInUse
 		}
 
 		return false
@@ -356,24 +344,9 @@ func GetCapacityOfPV(pv coreV1.PersistentVolume) string {
 	return capInStr
 }
 
-func GetNameAndNsOfPVOwnerComponent(pv coreV1.PersistentVolume) (compName, compNamespace string) {
-	if v, exist := pv.Labels[controllers.KalmLabelComponentKey]; exist {
-		compName = v
-	}
-	if v, exist := pv.Labels[controllers.KalmLabelNamespaceKey]; exist {
-		compNamespace = v
-	}
-
-	return
-}
-
-func GetComponentNameAndNs(metaObj metav1.Object) (compName, compNamespace string) {
-	if v, exist := metaObj.GetLabels()[controllers.KalmLabelComponentKey]; exist {
-		compName = v
-	}
-	if v, exist := metaObj.GetLabels()[controllers.KalmLabelNamespaceKey]; exist {
-		compNamespace = v
-	}
+func GetComponentNameAndNsFromObjLabels(metaObj metav1.Object) (compName, compNamespace string) {
+	compName = metaObj.GetLabels()[controllers.KalmLabelComponentKey]
+	compNamespace = metaObj.GetLabels()[controllers.KalmLabelNamespaceKey]
 
 	return
 }

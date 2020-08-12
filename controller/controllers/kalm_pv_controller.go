@@ -52,8 +52,6 @@ func NewKalmPVReconciler(mgr ctrl.Manager) *KalmPVReconciler {
 func (r *KalmPVReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	r.Log.Info("reconciling kalmPV", "req", req)
 
-	log := r.Log.WithValues("kalmPV", req.NamespacedName)
-
 	// special ns triggers check of pv need to be cleaned
 	if req.Namespace == NSForPVCChanged {
 		return r.reconcileCleanOfPV()
@@ -66,15 +64,19 @@ func (r *KalmPVReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	var kalmPVCList corev1.PersistentVolumeClaimList
-	err := r.List(r.ctx, &kalmPVCList, client.MatchingLabels{KalmLabelManaged: "true"})
-	if client.IgnoreNotFound(err) != nil {
+	claimRef := pv.Spec.ClaimRef
+	if claimRef == nil {
+		return ctrl.Result{}, nil
+	}
+
+	var pvc corev1.PersistentVolumeClaim
+	err := r.Get(r.ctx, client.ObjectKey{Namespace: claimRef.Namespace, Name: claimRef.Name}, &pvc)
+	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	kalmPV, isRefed := isReferencedByKalmPVC(pv, kalmPVCList)
-	if !isRefed {
-		log.Info("pv is not refed, skipped", "pv:", pv.Name)
+	// ignore if pvc is not kalm managed
+	if v, exist := pvc.Labels[KalmLabelManaged]; !exist || v != "true" {
 		return ctrl.Result{}, nil
 	}
 
@@ -83,8 +85,9 @@ func (r *KalmPVReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	pv.Labels[KalmLabelManaged] = "true"
-	pv.Labels[KalmLabelComponentKey] = kalmPV.Labels[KalmLabelComponentKey]
-	pv.Labels[KalmLabelNamespaceKey] = kalmPV.Labels[KalmLabelNamespaceKey]
+	// descriptive information
+	pv.Labels[KalmLabelComponentKey] = pvc.Labels[KalmLabelComponentKey]
+	pv.Labels[KalmLabelNamespaceKey] = pvc.Namespace
 	// to be selectable by PV
 	pv.Labels[KalmLabelPV] = pv.Name
 

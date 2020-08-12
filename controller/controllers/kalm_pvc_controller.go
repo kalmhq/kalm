@@ -19,8 +19,11 @@ import (
 	"context"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 const (
@@ -53,15 +56,17 @@ func (r *KalmPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		if !errors.IsNotFound(err) {
 			return ctrl.Result{}, err
 		}
+
+		return r.reconcileForPVCDeletion(req)
 	}
 
-	// ignore if pvc is not deleted
-	pvcIsDeleted := errors.IsNotFound(err)
-	if !pvcIsDeleted {
-		return ctrl.Result{}, nil
-	}
+	// check if owner of pvc has changed
+	return ctrl.Result{}, r.reconcileForPVCOwnerChange(pvc)
+}
 
-	// for every deletion of pvc, loop to make unbounded pv available again
+// for every deletion of pvc
+// loop to make unbounded pv available again
+func (r *KalmPVCReconciler) reconcileForPVCDeletion(req ctrl.Request) (ctrl.Result, error) {
 
 	var kalmPVList corev1.PersistentVolumeList
 	if err := r.List(r.ctx, &kalmPVList, client.MatchingLabels{KalmLabelManaged: "true"}); err != nil {
@@ -72,7 +77,6 @@ func (r *KalmPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	for _, pv := range kalmPVList.Items {
 
 		claimRef := pv.Spec.ClaimRef
-
 		if claimRef == nil {
 			continue
 		}
@@ -92,8 +96,87 @@ func (r *KalmPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
+// if owner component changed, update PVC label
+func (r *KalmPVCReconciler) reconcileForPVCOwnerChange(pvc corev1.PersistentVolumeClaim) error {
+
+	// list pods in current ns, check if any is using this pvc
+	var podList corev1.PodList
+	err := r.List(r.ctx, &podList, client.MatchingLabels{KalmLabelManaged: "true"})
+	if err != nil {
+		return err
+	}
+
+	for _, pod := range podList.Items {
+		for _, vol := range pod.Spec.Volumes {
+			volClaim := vol.PersistentVolumeClaim
+			if volClaim == nil {
+				continue
+			}
+
+			if volClaim.ClaimName != pvc.Name {
+				continue
+			}
+
+			expectedNS := pod.Namespace
+			expectedComp := pod.Labels[KalmLabelComponentKey]
+
+			copiedPVC := pvc.DeepCopy()
+			if copiedPVC.Labels == nil {
+				copiedPVC.Labels = make(map[string]string)
+			}
+
+			copiedPVC.Labels[KalmLabelComponentKey] = expectedComp
+			copiedPVC.Labels[KalmLabelNamespaceKey] = expectedNS
+			copiedPVC.Labels[KalmLabelManaged] = "true"
+
+			err := r.Update(r.ctx, copiedPVC)
+			return err
+		}
+	}
+
+	return nil
+}
+
+type ComponentMapperForPVC struct {
+	*BaseReconciler
+}
+
+func (c ComponentMapperForPVC) Map(object handler.MapObject) []reconcile.Request {
+
+	if v, exist := object.Meta.GetLabels()[KalmLabelManaged]; !exist || v != "true" {
+		return nil
+	}
+
+	var pod corev1.Pod
+	podKey := client.ObjectKey{
+		Namespace: object.Meta.GetNamespace(),
+		Name:      object.Meta.GetName(),
+	}
+	err := c.Get(context.Background(), podKey, &pod)
+	if err != nil {
+		return nil
+	}
+
+	var rst []reconcile.Request
+	for _, vol := range pod.Spec.Volumes {
+		if vol.PersistentVolumeClaim == nil {
+			continue
+		}
+
+		rst = append(rst, reconcile.Request{NamespacedName: types.NamespacedName{
+			Namespace: pod.Namespace,
+			Name:      vol.PersistentVolumeClaim.ClaimName,
+		}})
+	}
+
+	return rst
+}
+
 func (r *KalmPVCReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1.PersistentVolumeClaim{}).
+		Watches(genSourceForObject(&corev1.Pod{}), &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: ComponentMapperForPVC{r.BaseReconciler},
+		}).
 		Complete(r)
 }
