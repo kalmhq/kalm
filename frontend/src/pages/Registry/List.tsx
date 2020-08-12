@@ -1,23 +1,23 @@
-import { Box, createStyles, Theme, withStyles, WithStyles, Typography, Button, Tooltip } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, Tooltip, Typography, withStyles, WithStyles } from "@material-ui/core";
+import { indigo } from "@material-ui/core/colors";
+import { setErrorNotificationAction } from "actions/notification";
 import { deleteRegistryAction } from "actions/registries";
 import React from "react";
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { RegistryType } from "types/registry";
+import sc from "utils/stringConstants";
 import { SuccessBadge } from "widgets/Badge";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
+import { EditIcon, ErrorIcon, KalmRegistryIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
-import { KTable } from "widgets/Table";
-import { setErrorNotificationAction } from "actions/notification";
-import { EditIcon, KalmRegistryIcon, ErrorIcon } from "widgets/Icon";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { InfoBox } from "widgets/InfoBox";
+import { KRTable } from "widgets/KRTable";
 import { Loading } from "widgets/Loading";
 import { BasePage } from "../BasePage";
-import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { indigo } from "@material-ui/core/colors";
-import { InfoBox } from "widgets/InfoBox";
-import sc from "utils/stringConstants";
-import { Link } from "react-router-dom";
-import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -151,18 +151,59 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private getData = () => {
-    const { registries } = this.props;
-    const data: RowData[] = [];
+  private getKRTableColumns() {
+    return [
+      {
+        Header: "Name",
+        accessor: "name",
+      },
+      {
+        Header: "Host",
+        accessor: "host",
+      },
+      {
+        Header: "Username",
+        accessor: "username",
+      },
+      {
+        Header: "Password",
+        accessor: "password",
+      },
+      {
+        Header: "Verified",
+        accessor: "verified",
+      },
 
-    registries.forEach((registry, index) => {
-      const rowData = registry as RowData;
-      rowData.index = index;
-      data.push(rowData);
-    });
+      {
+        Header: "Actions",
+        accessor: "action",
+      },
+    ];
+  }
+
+  private getKRTableData() {
+    const { registries } = this.props;
+    const data: any[] = [];
+
+    registries &&
+      registries.forEach((registry, index) => {
+        const rowData = registry as RowData;
+        data.push({
+          name: this.renderName(rowData),
+          host: this.renderHost(rowData),
+          username: this.renderUsername(rowData),
+          password: this.renderPassword(rowData),
+          verified: this.renderVerified(rowData),
+          actions: this.renderActions(rowData),
+        });
+      });
 
     return data;
-  };
+  }
+
+  private renderKRTable() {
+    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+  }
 
   private renderSecondHeaderRight() {
     return (
@@ -210,65 +251,11 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { isLoading, isFirstLoaded, registries } = this.props;
-    const tableData = this.getData();
 
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
-        {/* {this.renderDeleteConfirmDialog()} */}
         <Box p={2}>
-          {isLoading && !isFirstLoaded ? (
-            <Loading />
-          ) : registries.size > 0 ? (
-            <KTable
-              options={{
-                paging: tableData.length > 20,
-              }}
-              columns={[
-                {
-                  title: "Name",
-                  field: "name",
-                  sorting: false,
-                  render: this.renderName,
-                },
-                {
-                  title: "Host",
-                  field: "host",
-                  sorting: false,
-                  render: this.renderHost,
-                },
-                {
-                  title: "Username",
-                  field: "username",
-                  sorting: false,
-                  render: this.renderUsername,
-                },
-                {
-                  title: "Password",
-                  field: "password",
-                  sorting: false,
-                  render: this.renderPassword,
-                },
-                {
-                  title: "Verified",
-                  field: "verified",
-                  sorting: false,
-                  render: this.renderVerified,
-                },
-
-                {
-                  title: "Actions",
-                  field: "action",
-                  sorting: false,
-                  searchable: false,
-                  render: (row) => this.renderActions(row),
-                },
-              ]}
-              data={tableData}
-              title=""
-            />
-          ) : (
-            this.renderEmpty()
-          )}
+          {isLoading && !isFirstLoaded ? <Loading /> : registries.size > 0 ? this.renderKRTable() : this.renderEmpty()}
         </Box>
         <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>
