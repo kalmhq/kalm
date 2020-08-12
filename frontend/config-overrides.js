@@ -14,5 +14,5 @@ module.exports = override(
       }`,
     ),
   }),
-  // addWebpackPlugin(new BundleAnalyzerPlugin()),
+  addWebpackPlugin(new BundleAnalyzerPlugin()),
 );
