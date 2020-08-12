@@ -50,18 +50,20 @@ func (builder *Builder) BuildVolumeResponse(
 		allocatedQuantity = formatQuantity(*storage)
 	}
 
-	var compName, compNamespace string
-	if v, exist := pv.Labels[controllers.KalmLabelComponentKey]; exist {
+	var compName string
+	if v, exist := pvc.Labels[controllers.KalmLabelComponentKey]; exist {
 		compName = v
 	}
-	if v, exist := pv.Labels[controllers.KalmLabelNamespaceKey]; exist {
-		compNamespace = v
+	if compName == "" {
+		if v, exist := pv.Labels[controllers.KalmLabelComponentKey]; exist {
+			compName = v
+		}
 	}
 
 	return &Volume{
 		Name:               pvc.Name,
 		ComponentName:      compName,
-		ComponentNamespace: compNamespace,
+		ComponentNamespace: pvc.Namespace,
 		IsInUse:            isInUse,
 		Capacity:           capInStr,
 		RequestedCapacity:  capInStr,
