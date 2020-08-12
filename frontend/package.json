@@ -88,16 +88,8 @@
     "build-storybook": "NODE_ENV=test build-storybook --docs -s public"
   },
   "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "production": [">0.2%", "not dead", "not op_mini all"],
+    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
   },
   "jest": {
     "moduleNameMapper": {
@@ -134,9 +126,5 @@
     "ts-loader": "^7.0.5",
     "webpack-bundle-analyzer": "^3.8.0"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "./scripts/pre-commit.sh"
-    }
-  }
+  "husky": {}
 }

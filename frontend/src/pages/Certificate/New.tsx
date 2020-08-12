@@ -1,13 +1,13 @@
+import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createCertificateAction } from "actions/certificate";
+import { push } from "connected-react-router";
+import { CertificateForm } from "forms/Certificate";
+import { BasePage } from "pages/BasePage";
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { CertificateFormType, newEmptyCertificateForm } from "types/certificate";
-import { createCertificateAction } from "actions/certificate";
-import { CertificateForm } from "forms/Certificate";
-import { BasePage } from "pages/BasePage";
 import { H6 } from "widgets/Label";
-import { push } from "connected-react-router";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -37,11 +37,7 @@ class CertificateNewRaw extends React.PureComponent<Props> {
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>
-              <CertificateForm
-                onSubmitSuccess={this.onSubmitSuccess}
-                onSubmit={this.submit}
-                initialValues={newEmptyCertificateForm}
-              />
+              <CertificateForm onSubmit={this.submit} initialValues={newEmptyCertificateForm} />
             </Grid>
           </Grid>
         </div>

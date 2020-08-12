@@ -182,7 +182,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderExpireTimestamp = (rowData: RowData) => {
-    return rowData.get("expireTimestamp") ? formatDate(new Date(rowData.get("expireTimestamp") * 1000)) : "-";
+    return rowData.get("expireTimestamp") ? formatDate(new Date(rowData.get("expireTimestamp")! * 1000)) : "-";
   };
 
   private getColumns() {

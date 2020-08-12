@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { CertificateFormType, selfManaged } from "types/certificate";
 import { createCertificateAction } from "actions/certificate";
-import { CertificateForm } from "forms/Certificate";
+// import { CertificateForm } from "forms/Certificate";
 import { RootState } from "reducers";
 import { BasePage } from "pages/BasePage";
 import { H6 } from "widgets/Label";
@@ -52,12 +52,12 @@ class CertificateEditRaw extends React.PureComponent<Props> {
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>
-              <CertificateForm
+              {/* <CertificateForm
                 isEdit
                 onSubmitSuccess={this.onSubmitSuccess}
                 onSubmit={this.submit}
                 initialValues={initialValues}
-              />
+              /> */}
             </Grid>
           </Grid>
         </div>
