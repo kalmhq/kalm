@@ -46,6 +46,7 @@ func NewKalmPVCReconciler(mgr ctrl.Manager) *KalmPVCReconciler {
 
 // +kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=persistentvolumes,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch
 
 func (r *KalmPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	r.Log.Info("reconciling kalmPvc volumes", "req", req)
@@ -137,11 +138,11 @@ func (r *KalmPVCReconciler) reconcileForPVCOwnerChange(pvc corev1.PersistentVolu
 	return nil
 }
 
-type ComponentMapperForPVC struct {
+type PodMapperForPVC struct {
 	*BaseReconciler
 }
 
-func (c ComponentMapperForPVC) Map(object handler.MapObject) []reconcile.Request {
+func (c PodMapperForPVC) Map(object handler.MapObject) []reconcile.Request {
 
 	if v, exist := object.Meta.GetLabels()[KalmLabelManaged]; !exist || v != "true" {
 		return nil
@@ -176,7 +177,7 @@ func (r *KalmPVCReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1.PersistentVolumeClaim{}).
 		Watches(genSourceForObject(&corev1.Pod{}), &handler.EnqueueRequestsFromMapFunc{
-			ToRequests: ComponentMapperForPVC{r.BaseReconciler},
+			ToRequests: PodMapperForPVC{r.BaseReconciler},
 		}).
 		Complete(r)
 }
