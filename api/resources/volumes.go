@@ -54,11 +54,6 @@ func (builder *Builder) BuildVolumeResponse(
 	if v, exist := pvc.Labels[controllers.KalmLabelComponentKey]; exist {
 		compName = v
 	}
-	//if compName == "" {
-	//	if v, exist := pv.Labels[controllers.KalmLabelComponentKey]; exist {
-	//		compName = v
-	//	}
-	//}
 
 	return &Volume{
 		Name:               pvc.Name,
