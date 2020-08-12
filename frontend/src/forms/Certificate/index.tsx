@@ -312,7 +312,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                     name="name"
                     id="certificate-name"
                     margin="normal"
-                    validate={ValidatorRequired}
                   />
                 </Grid>
                 <Grid item md={12}>
