@@ -46,7 +46,7 @@ func NewKalmPVReconciler(mgr ctrl.Manager) *KalmPVReconciler {
 	}
 }
 
-// +kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list
+// +kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=persistentvolumes,verbs=get;list;watch;create;update;patch;delete
 
 func (r *KalmPVReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
@@ -54,7 +54,7 @@ func (r *KalmPVReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	// special ns triggers check of pv need to be cleaned
 	if req.Namespace == NSForPVCChanged {
-		return r.reconcileCleanOfPV()
+		return r.reconcileDeleteOfPVWithSpecialCleanLabel()
 	}
 
 	// make sure for each active kalmPVC, underlying kalmPV is labeled with its name
@@ -147,8 +147,8 @@ func (r *KalmPVReconciler) SetupWithManager(mgr ctrl.Manager) error {
 // if 1. labeled with: clean-if-pvc-deleted
 //    2. pvc is gone
 // then delete this pv
-func (r *KalmPVReconciler) reconcileCleanOfPV() (ctrl.Result, error) {
-	r.Log.Info("reconcileCleanOfPV")
+func (r *KalmPVReconciler) reconcileDeleteOfPVWithSpecialCleanLabel() (ctrl.Result, error) {
+	r.Log.Info("reconcileDeleteOfPVWithSpecialCleanLabel")
 
 	var pvList corev1.PersistentVolumeList
 
@@ -183,15 +183,17 @@ func (r *KalmPVReconciler) reconcileCleanOfPV() (ctrl.Result, error) {
 		//check pvc
 		var pvc corev1.PersistentVolumeClaim
 		err := r.Get(r.ctx, client.ObjectKey{Namespace: ns, Name: name}, &pvc)
-
 		if err != nil {
 			if !errors.IsNotFound(err) {
 				return ctrl.Result{}, err
 			}
 
 			// PVC is gone, this pv need to be cleaned too
-			err := r.Delete(r.ctx, &pv)
-			return ctrl.Result{}, err
+			if err := r.Delete(r.ctx, &pv); err != nil {
+				return ctrl.Result{}, err
+			}
+
+			r.Log.Info("deleted pv with clean mark:"+pv.Name, KalmLabelCleanIfPVCGone, pvcNsAndName)
 		}
 	}
 
