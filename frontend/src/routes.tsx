@@ -35,6 +35,9 @@ import { CertificateEditPage } from "pages/Certificate/Edit";
 import { RegistryNewPage } from "pages/Registry/New";
 import { RegistryEditPage } from "pages/Registry/Edit";
 import { DeployKeyDetailPage } from "pages/CI/Detail";
+import { RouteRedirectList } from "pages/Route/Redirect";
+import { SystemPage } from "pages/System";
+import { SetupPage } from "pages/Setup";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -45,6 +48,9 @@ export const KalmRoutes = (
     <Route path="/">
       <RequireAuthorizatedDashboard>
         <Switch>
+          <Route exact path="/system" component={SystemPage} />
+          <Route exact path="/setup" component={SetupPage} />
+
           <Route exact path="/sso" component={SSOPage} />
           <Route exact path="/sso/config" component={SSOConfigPage} />
           <Redirect exact path="/sso/endpoints" to="/sso" />
@@ -76,6 +82,7 @@ export const KalmRoutes = (
           <Route exact path="/routes" component={RequireNamespaceReader(RouteListPage)} />
           <Route exact path="/routes/new" component={RequireNamespaceReader(RouteNewPage)} />
           <Route exact path="/routes/:name/edit" component={RouteEditPage} />
+          <Route exact path="/routes/:name" component={RouteRedirectList} />
 
           <Route exact path="/applications/:applicationName/components" component={ComponentListPage} />
           <Route exact path="/applications/:applicationName/components/new" component={ComponentNewPage} />

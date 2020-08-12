@@ -44,6 +44,7 @@ spec:
                 type: string
               type: array
             name:
+              minLength: 1
               type: string
             ports:
               items:
@@ -51,6 +52,10 @@ spec:
                 type: integer
               type: array
             type:
+              enum:
+              - Port
+              - Component
+              - HttpRoute
               type: string
           required:
           - name

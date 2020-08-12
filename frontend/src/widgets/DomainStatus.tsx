@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import IconWithPopover from "./IconWithPopover";
+import { IconWithPopover } from "./IconWithPopover";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { loadDomainDNSInfo } from "actions/domain";
@@ -68,7 +68,13 @@ class DomainStatus extends React.PureComponent<Props> {
           ),
       };
     }
-    const isLoading = !domainStatus?.get("cname");
+    if (!domainStatus || !domainStatus?.get("cname")) {
+      return {
+        icon: <CircularProgress size={24} style={{ padding: 2 }} />,
+        body: <Box p={2}>checking domain status</Box>,
+      };
+    }
+
     const aRecords = domainStatus?.get("aRecords");
     const isError = (!aRecords || !aRecords.includes(ingressIP)) && domain !== ingressIP;
     if (isError) {
@@ -81,7 +87,7 @@ class DomainStatus extends React.PureComponent<Props> {
               tooltipTitle="Copy"
               aria-label="copy"
               size="small"
-              onClick={() => {
+              onClick={(e) => {
                 copy(ingressIP);
                 dispatch(setSuccessNotificationAction("Copied successful!"));
               }}
@@ -90,11 +96,6 @@ class DomainStatus extends React.PureComponent<Props> {
             </IconButtonWithTooltip>
           </Box>
         ),
-      };
-    } else if (isLoading) {
-      return {
-        icon: <CircularProgress size={20} style={{ marginLeft: 2, marginRight: 2 }} />,
-        body: <Box p={2}>checking domain status</Box>,
       };
     } else {
       return {

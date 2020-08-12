@@ -18,7 +18,7 @@ import { KPanel } from "widgets/KPanel";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: 20,
+      padding: theme.spacing(2),
     },
   });
 

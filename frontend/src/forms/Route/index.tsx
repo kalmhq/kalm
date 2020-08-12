@@ -26,7 +26,14 @@ import { arrayPush, change, InjectedFormProps } from "redux-form";
 import { Field, FieldArray, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
 import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
-import { httpMethods, HttpRouteDestination, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
+import {
+  httpMethods,
+  HttpRouteDestination,
+  HttpRouteForm,
+  methodsModeAll,
+  methodsModeSpecific,
+  newEmptyRouteForm,
+} from "types/route";
 import { isArray } from "util";
 import { arraysMatch } from "utils";
 import { includesForceHttpsDomain } from "utils/domain";
@@ -612,6 +619,7 @@ const form = reduxForm<HttpRouteForm, TutorialStateProps & OwnProps>({
   onSubmitFail: console.log,
   form: ROUTE_FORM_ID,
   enableReinitialize: true,
+  initialValues: newEmptyRouteForm(),
   touchOnChange: true,
   shouldError: shouldError,
   validate: formValidateOrNotBlockByTutorial,

@@ -121,7 +121,7 @@ func (r *ProtectedEndpointReconcilerTask) Run(req ctrl.Request) error {
 	var ssoList corev1alpha1.SingleSignOnConfigList
 
 	if err := r.Reader.List(r.ctx, &ssoList); err != nil {
-		r.Log.Error(err, fmt.Sprintf("List sso error."))
+		r.Log.Error(err, "List sso error.")
 		return err
 	}
 
@@ -266,7 +266,7 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilter(req ctrl.Request) *v1
 									"exact": "cookie",
 								},
 								map[string]interface{}{
-									"exact": "kalm-sso-userinfo",
+									"exact": KALM_SSO_USERINFO_HEADER,
 								},
 							},
 						},
@@ -287,7 +287,7 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilter(req ctrl.Request) *v1
 					Filter: &v1alpha32.EnvoyFilter_ListenerMatch_FilterMatch{
 						Name: "envoy.http_connection_manager",
 						SubFilter: &v1alpha32.EnvoyFilter_ListenerMatch_SubFilterMatch{
-							Name: "envoy.filters.http.jwt_authn",
+							Name: "envoy.router",
 						},
 					},
 				},
@@ -438,32 +438,10 @@ func (r *ProtectedEndpointReconcilerTask) ReconcileResources(req ctrl.Request) e
 		}
 	}
 
-	// requestAuthentication didn't do actually job in the protected endpoint.
-	// It's an anchor of the ext_authz envoy filter. Without it, I didn't find a way to set envoy filter into the correct places.
-	requestAuthentication := r.BuildRequestAuthentication(req)
+	// requestAuthentication policy can't satisfy our demands
+	// Clean old resources created by old logic
 	if r.requestAuthentication != nil {
-		copied := r.requestAuthentication.DeepCopy()
-		copied.Spec = requestAuthentication.Spec
-
-		if err := ctrl.SetControllerReference(r.endpoint, copied, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.endpoint, err, "unable to set owner for requestAuthentication")
-			return err
-		}
-
-		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.requestAuthentication)); err != nil {
-			r.Log.Error(err, "Patch requestAuthentication failed.")
-			return err
-		}
-	} else {
-		if err := ctrl.SetControllerReference(r.endpoint, requestAuthentication, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.endpoint, err, "unable to set owner for requestAuthentication")
-			return err
-		}
-
-		if err := r.Create(r.ctx, requestAuthentication); err != nil {
-			r.Log.Error(err, "Create requestAuthentication failed.")
-			return err
-		}
+		r.Delete(r.ctx, r.requestAuthentication)
 	}
 
 	// authorization policy can't satisfy our demands

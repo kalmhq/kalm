@@ -24,9 +24,13 @@ import (
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
 	"github.com/kalmhq/kalm/operator/utils"
 	promconfig "github.com/prometheus/prometheus/config"
+	"istio.io/api/security/v1beta1"
+	v1beta13 "istio.io/api/type/v1beta1"
+	v1beta12 "istio.io/client-go/pkg/apis/security/v1beta1"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/types"
@@ -288,10 +292,17 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 				Image:   fmt.Sprintf("%s:%s", KalmImgRepo, dashboardVersion),
 				Command: "./kalm-api-server",
 				Ports: []corev1alpha1.Port{
+					// Main service port
 					{
 						Protocol:      corev1alpha1.PortProtocolHTTP,
 						ContainerPort: 3001,
 						ServicePort:   80,
+					},
+					// Webhook service port
+					{
+						Protocol:      corev1alpha1.PortProtocolHTTP,
+						ContainerPort: 3002,
+						ServicePort:   3002,
 					},
 				},
 			},
@@ -310,6 +321,54 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		} else {
 			dashboard.Spec = expectedDashboard.Spec
 			if err := r.Client.Update(ctx, &dashboard); err != nil {
+				return err
+			}
+		}
+
+		// Create policy, only allow traffic from istio-ingressgateway to reach kalm api/dashboard
+		policy := &v1beta12.AuthorizationPolicy{
+			ObjectMeta: metaV1.ObjectMeta{
+				Namespace: NamespaceKalmSystem,
+				Name:      dashboardName,
+			},
+			Spec: v1beta1.AuthorizationPolicy{
+				Selector: &v1beta13.WorkloadSelector{
+					MatchLabels: map[string]string{
+						"app": dashboardName,
+					},
+				},
+				Action: v1beta1.AuthorizationPolicy_ALLOW,
+				Rules: []*v1beta1.Rule{
+					{
+						When: []*v1beta1.Condition{
+							{
+								Key: "source.namespace",
+								Values: []string{
+									"istio-system",
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		var fetchedPolicy v1beta12.AuthorizationPolicy
+		err = r.Get(ctx, types.NamespacedName{Name: policy.Name, Namespace: policy.Namespace}, &fetchedPolicy)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				return err
+			}
+
+			if err := r.Client.Create(ctx, policy); err != nil {
+				return err
+			}
+		} else {
+			dashboard.Spec = expectedDashboard.Spec
+			copied := fetchedPolicy.DeepCopy()
+			copied.Spec = policy.Spec
+
+			if err := r.Client.Patch(ctx, copied, client.MergeFrom(&fetchedPolicy)); err != nil {
 				return err
 			}
 		}

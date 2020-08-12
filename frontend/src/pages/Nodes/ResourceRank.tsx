@@ -1,16 +1,32 @@
-import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
+import { humanFileSize } from "utils/sizeConv";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
+    barWrapper: {
+      position: "relative",
+      height: 22,
+      width: "100%",
+    },
     bar: {
       height: 22,
-      backgroundColor: indigo[100],
+      backgroundColor: theme.palette.type === "light" ? indigo[200] : indigo[400],
+    },
+    barText: {
+      height: 22,
+      width: "100%",
+      position: "absolute",
+      left: "0",
+      top: "0",
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
     },
   });
 
@@ -21,10 +37,11 @@ const mapStateToProps = (state: RootState) => {
 interface Option {
   name: string;
   value: number;
-  unit: string;
+  unit?: string; // if not pass unit, will use humanFileSize
 }
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
+  title: string;
   allocateds: Option[];
 }
 
@@ -37,7 +54,7 @@ class ResourceRankRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { classes, allocateds } = this.props;
+    const { classes, allocateds, title } = this.props;
 
     const maxBarWidth = 200;
     let maxValue = 0;
@@ -47,19 +64,28 @@ class ResourceRankRaw extends React.PureComponent<Props, State> {
       }
     });
 
+    allocateds.sort(function (a, b) {
+      return b.value - a.value;
+    });
+
     return (
       <Box p={2}>
-        <Box pb={2}>Applications (TODO: fake data now)</Box>
+        <Box pb={2}>{title}</Box>
         {allocateds.map((a, index) => {
           return (
             <Box display="flex" pb={1} key={index}>
-              <Box width={maxBarWidth} mr={1}>
-                <Box width={(a.value / maxValue) * maxBarWidth} className={classes.bar} pl={1}>
-                  {a.name}
-                </Box>
+              <Box width={maxBarWidth} mr={0.5}>
+                <Paper variant="elevation" square>
+                  <Box className={classes.barWrapper}>
+                    <Box width={(a.value / maxValue) * maxBarWidth} className={classes.bar}></Box>
+                    <Box pl={1} pr={1} className={classes.barText}>
+                      {a.name}
+                    </Box>
+                  </Box>
+                </Paper>
               </Box>
-              <Box width="50px" textAlign="right">
-                {a.value + " " + a.unit}
+              <Box minWidth="70px" textAlign="right">
+                {a.unit ? a.value + " " + a.unit : humanFileSize(a.value)}
               </Box>
             </Box>
           );

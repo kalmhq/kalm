@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
+	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
-	log "github.com/sirupsen/logrus"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	toolscache "k8s.io/client-go/tools/cache"
@@ -17,7 +17,7 @@ import (
 func StartWatching(c *Client) {
 	informerCache, err := cache.New(c.K8SClientConfig, cache.Options{})
 	if err != nil {
-		log.Error(err)
+		log.Error(err, "new cache error")
 		return
 	}
 
@@ -45,7 +45,7 @@ func registerWatchHandler(c *Client,
 
 	informer, err := (*informerCache).GetInformer(context.Background(), runtimeObj)
 	if err != nil {
-		log.Error(err)
+		log.Error(err, "get informer error")
 		return
 	}
 
@@ -53,7 +53,7 @@ func registerWatchHandler(c *Client,
 		AddFunc: func(obj interface{}) {
 			resMessage, err := buildResMessage(c, "Add", obj)
 			if err != nil {
-				log.Warn(err)
+				log.Error(err, "build res message error")
 				return
 			}
 			c.sendWatchResMessage(resMessage)
@@ -61,7 +61,7 @@ func registerWatchHandler(c *Client,
 		DeleteFunc: func(obj interface{}) {
 			resMessage, err := buildResMessage(c, "Delete", obj)
 			if err != nil {
-				log.Warn(err)
+				log.Error(err, "build res message error")
 				return
 			}
 			c.sendWatchResMessage(resMessage)
@@ -69,7 +69,7 @@ func registerWatchHandler(c *Client,
 		UpdateFunc: func(oldObj, obj interface{}) {
 			resMessage, err := buildResMessage(c, "Update", obj)
 			if err != nil {
-				log.Warn(err)
+				log.Error(err, "build res message error")
 				return
 			}
 			c.sendWatchResMessage(resMessage)
@@ -92,7 +92,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 		return &ResMessage{}, nil
 	}
 
-	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
+	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
 	applicationDetails, err := builder.BuildApplicationDetails(namespace)
 	if err != nil {
 		return nil, err
@@ -107,7 +107,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 }
 
 func componentToResMessage(c *Client, action string, component *v1alpha1.Component) (*ResMessage, error) {
-	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
+	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
 	componentDetails, err := builder.BuildComponentDetails(component, nil)
 	if err != nil {
 		return nil, err
@@ -229,7 +229,7 @@ func buildRegistryResMessage(c *Client, action string, objWatched interface{}) (
 		return nil, errors.New("convert watch obj to Registry failed")
 	}
 
-	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
+	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
 	registryRes, err := builder.GetDockerRegistry(registry.Name)
 	if err != nil {
 		return nil, err
@@ -253,7 +253,7 @@ func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*R
 		return &ResMessage{}, nil
 	}
 
-	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
+	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
 
 	var pv coreV1.PersistentVolume
 	if action == "Delete" {
@@ -288,7 +288,7 @@ func buildSSOConfigResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, nil
 	}
 
-	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
+	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
 	ssoConfigRes, err := builder.GetSSOConfig()
 	if err != nil {
 		return nil, err

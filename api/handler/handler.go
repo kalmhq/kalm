@@ -1,35 +1,32 @@
 package handler
 
 import (
+	"github.com/go-logr/logr"
 	"github.com/kalmhq/kalm/api/client"
+	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
+	"github.com/kalmhq/kalm/api/ws"
 	"github.com/labstack/echo/v4"
-	"github.com/sirupsen/logrus"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/kubernetes"
-)
-
-var (
-	ListAll = v1.ListOptions{
-		LabelSelector: labels.Everything().String(),
-		FieldSelector: fields.Everything().String(),
-	}
 )
 
 type ApiHandler struct {
 	clientManager *client.ClientManager
-	logger        *logrus.Logger
+	logger        logr.Logger
 }
 
 type H map[string]interface{}
 
-func (h *ApiHandler) Install(e *echo.Echo) {
-	// liveness readiness probes
+func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
+	e.GET("/ping", handlePing)
+	e.POST("/webhook/components", h.handleDeployWebhookCall)
+}
+
+func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	e.GET("/ping", handlePing)
 
-	e.POST("/webhook/components", h.handleDeployWebhookCall)
+	// watch
+	wsHandler := ws.NewWsHandler(h.clientManager)
+	e.GET("/ws", wsHandler.Serve)
 
 	// login
 	e.POST("/login/token", h.handleValidateToken)
@@ -44,6 +41,11 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1.GET("/exec", h.execWebsocketHandler)
 
 	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.AuthClientMiddleware)
+
+	// initialize the cluster
+	gv1Alpha1WithAuth.POST("/initialize", h.handleInitializeCluster)
+	gv1Alpha1WithAuth.POST("/reset", h.handleResetCluster)
+
 	gv1Alpha1WithAuth.GET("/cluster", h.handleClusterInfo)
 	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
 	gv1Alpha1WithAuth.POST("/applications", h.handleCreateApplication)
@@ -120,28 +122,19 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 
 // use user token and permission
 func (h *ApiHandler) Builder(c echo.Context) *resources.Builder {
-	k8sClient := getK8sClient(c)
 	k8sClientConfig := getK8sClientConfig(c)
-	return resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
+	return resources.NewBuilder(k8sClientConfig, h.logger)
 }
 
 // use server account name permission
 func (h *ApiHandler) KalmBuilder() *resources.Builder {
 	cfg := h.clientManager.ClusterConfig
-
-	k8sClient, err := kubernetes.NewForConfig(cfg)
-
-	if err != nil {
-		h.logger.Error("Can't get k8s Client")
-		return nil
-	}
-
-	return resources.NewBuilder(k8sClient, cfg, h.logger)
+	return resources.NewBuilder(cfg, h.logger)
 }
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {
 	return &ApiHandler{
 		clientManager: clientManager,
-		logger:        logrus.New(),
+		logger:        log.DefaultLogger(),
 	}
 }

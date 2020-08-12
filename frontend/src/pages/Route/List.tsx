@@ -1,30 +1,31 @@
 import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
+import CheckIcon from "@material-ui/icons/Check";
 import { deleteRouteAction } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
+import { withClusterInfo } from "hoc/withClusterInfo";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { BasePage } from "pages/BasePage";
 import { Methods } from "pages/Route/Methods";
 import React from "react";
 import { Link } from "react-router-dom";
+import { ClusterInfo } from "types/cluster";
 import { HttpRoute } from "types/route";
+import sc from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { CopyAsCurl } from "widgets/CopyAsCurl";
 import DomainStatus from "widgets/DomainStatus";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { DeleteIcon, EditIcon, ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
-import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { EditIcon, ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { KRTable } from "widgets/KRTable";
+import { KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
 import { getRouteUrl, OpenInBrowser } from "widgets/OpenInBrowser";
-import { KTable } from "widgets/Table";
 import { Targets } from "widgets/Targets";
-import CheckIcon from "@material-ui/icons/Check";
-import sc from "utils/stringConstants";
-import { withClusterInfo } from "hoc/withClusterInfo";
-import { ClusterInfo } from "types/cluster";
-import { KMLink } from "widgets/Link";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -173,17 +174,11 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         >
           <EditIcon />
         </IconLinkWithToolTip>
-        <IconButtonWithTooltip
-          tooltipTitle="Delete"
-          aria-label="delete"
-          onClick={() => {
-            blinkTopProgressAction();
-            dispatch(deleteRouteAction(row));
-          }}
-        >
-          <DeleteIcon />
-        </IconButtonWithTooltip>
-
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-route-popup"
+          popupTitle="DELETE ROUTE?"
+          confirmedAction={() => dispatch(deleteRouteAction(row))}
+        />
         {/* <Button
           size="small"
           variant="outlined"
@@ -234,9 +229,66 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private getKRTableColumns() {
+    return [
+      {
+        Header: "Domain",
+        accessor: "host",
+      },
+      {
+        Header: "Urls",
+        accessor: "urls",
+      },
+      {
+        Header: "Http",
+        accessor: "http",
+      },
+      {
+        Header: "Https",
+        accessor: "https",
+      },
+      {
+        Header: "Methods",
+        accessor: "methods",
+      },
+      {
+        Header: "Targets",
+        accessor: "targets",
+      },
+      {
+        Header: "Actions",
+        accessor: "actions",
+      },
+    ];
+  }
+
+  private getKRTableData() {
+    const { httpRoutes } = this.props;
+    const data: any[] = [];
+
+    httpRoutes &&
+      httpRoutes.forEach((httpRoute, index) => {
+        const rowData = httpRoute as RowData;
+        data.push({
+          host: this.renderHosts(rowData),
+          urls: this.renderUrls(rowData),
+          http: this.renderSupportHttp(rowData),
+          https: this.renderSupportHttps(rowData),
+          methods: this.renderMethods(rowData),
+          targets: this.renderTargets(rowData),
+          actions: this.renderActions(rowData),
+        });
+      });
+
+    return data;
+  }
+
+  private renderKRTable() {
+    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+  }
+
   public render() {
     const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes } = this.props;
-    const tableData = this.getData();
     return (
       <BasePage
         secondHeaderRight={
@@ -256,59 +308,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           {isRoutesLoading && !isRoutesFirstLoaded ? (
             <Loading />
           ) : httpRoutes && httpRoutes.size > 0 ? (
-            <KTable
-              options={{
-                paging: tableData.length > 20,
-              }}
-              columns={[
-                {
-                  title: "Domain",
-                  field: "host",
-                  sorting: false,
-                  render: this.renderHosts,
-                },
-                {
-                  title: "Urls",
-                  field: "urls",
-                  sorting: false,
-                  render: this.renderUrls,
-                },
-                {
-                  title: "Http",
-                  field: "http",
-                  sorting: false,
-                  render: this.renderSupportHttp,
-                },
-                {
-                  title: "Https",
-                  field: "https",
-                  sorting: false,
-                  render: this.renderSupportHttps,
-                },
-                {
-                  title: "Methods",
-                  field: "methods",
-                  sorting: false,
-                  render: this.renderMethods,
-                },
-                {
-                  title: "Targets",
-                  field: "targets",
-                  sorting: false,
-                  render: this.renderTargets,
-                },
-                {
-                  title: "Actions",
-                  field: "action",
-                  sorting: false,
-                  searchable: false,
-                  render: this.renderActions,
-                  cellStyle: { minWidth: 226 },
-                },
-              ]}
-              data={tableData}
-              title=""
-            />
+            this.renderKRTable()
           ) : (
             this.renderEmpty()
           )}

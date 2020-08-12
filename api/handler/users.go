@@ -3,8 +3,8 @@ package handler
 import (
 	"fmt"
 	"github.com/kalmhq/kalm/api/errors"
+	"github.com/kalmhq/kalm/api/log"
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
 	rbacV1 "k8s.io/api/rbac/v1"
 	"net/http"
 	"strings"
@@ -55,7 +55,7 @@ func (h *ApiHandler) handleListRoleBindings(c echo.Context) error {
 	bindings, err := h.Builder(c).ListRoleBindings("")
 
 	if err != nil {
-		log.Error("list role bindings error", err)
+		log.Error(err, "list role bindings error")
 		return err
 	}
 

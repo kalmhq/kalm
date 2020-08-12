@@ -16,7 +16,7 @@ import {
   CertificateIssuerList,
   CertificateList,
 } from "types/certificate";
-import { ClusterInfo } from "types/cluster";
+import { ClusterInfo, InitializeClusterResponse } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import { Node, NodesListResponse } from "types/node";
 import { RegistryType } from "types/registry";
@@ -153,4 +153,10 @@ export abstract class Api {
   public abstract createDeployKey(protectedEndpoint: DeployKey): Promise<DeployKey>;
 
   public abstract deleteDeployKey(protectedEndpoint: DeployKey): Promise<void>;
+
+  public abstract resolveDomain(domain: string, type: "A" | "CNAME", timeout?: number): Promise<string[]>;
+
+  public abstract initializeCluster(domain: string): Promise<InitializeClusterResponse>;
+
+  public abstract resetCluster(): Promise<any>;
 }

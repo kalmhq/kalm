@@ -5,7 +5,6 @@ import { Link, RouteComponentProps, withRouter } from "react-router-dom";
 import { Loading } from "widgets/Loading";
 import Box from "@material-ui/core/Box";
 import { BasePage } from "pages/BasePage";
-import { DangerButton } from "widgets/Button";
 import { deleteDeployKeyAction } from "actions/deployKey";
 import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle2 } from "widgets/Label";
@@ -18,6 +17,7 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import copy from "copy-to-clipboard";
 import { setSuccessNotificationAction } from "actions/notification";
 import { CopyIcon } from "widgets/Icon";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const TAB_CURL = "curl";
 const TAB_GITHUB_ACTION = "Github Action";
@@ -123,7 +123,7 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
                 <Box mt={2} ml={2}>
                   <pre>{`200 Success.      The component is successfully restart.`}</pre>
                   <pre>{`401 Unauthorized. Wrong key or the key is not granted for the component.`}</pre>
-                  <pre>{`404 Not Found.    The application or component is not exist.`}</pre>
+                  <pre>{`404 Not Found.    The application or component doesn't exist.`}</pre>
                 </Box>
               </Box>
             </Box>
@@ -373,9 +373,12 @@ workflows:
             >
               Edit
             </Button>
-            <DangerButton variant="outlined" size="small" onClick={this.handleDelete}>
-              Delete
-            </DangerButton>
+            <DeleteButtonWithConfirmPopover
+              useText
+              popupId="delete-ci-popup"
+              popupTitle="DELETE CI?"
+              confirmedAction={this.handleDelete}
+            />
           </>
         }
       >
