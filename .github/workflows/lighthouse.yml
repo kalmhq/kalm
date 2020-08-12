@@ -11,9 +11,9 @@ defaults:
 # events but only for the master branch
 on:
   push:
-    branches: [performance/lighthouse-ci, master]
+    branches: [performance/lighthouse-ci, master, develop]
   pull_request:
-    branches: [performance/lighthouse-ci, master]
+    branches: [performance/lighthouse-ci, master, develop]
 jobs:
   lhci:
     name: Lighthouse
@@ -32,6 +32,6 @@ jobs:
       - name: run Lighthouse CI
         run: |
           npm install -g @lhci/cli@0.4.x
-          lhci collect --settings.chromeFlags="--headless" --settings.extraHeaders="{\"authorization\":\"Bearer ${{secrets.KALM_AUTH_HEADER}}\"}" 
-          lhci collect --settings.extraHeaders="{\"authorization\":\"Bearer ${{secrets.KALM_AUTH_HEADER}}\"}" --settings.chromeFlags="--no-sandbox" --settings.emulatedFormFactor="desktop"
+          lhci collect --settings.chromeFlags="--headless" --settings.extraHeaders="{\"authorization\":\"${{secrets.KALM_AUTH_HEADER}}\",\"cookie\":\"${{secrets.KALM_AUTH_COOKIES_TOKEN}}\"}"
+          lhci collect --settings.extraHeaders="{\"authorization\":\"${{secrets.KALM_AUTH_HEADER}}\",\"cookie\":\"${{secrets.KALM_AUTH_COOKIES_TOKEN}}\"}" --settings.chromeFlags="--no-sandbox" --settings.emulatedFormFactor="desktop"
           lhci upload
