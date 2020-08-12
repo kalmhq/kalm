@@ -873,8 +873,11 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(
 					MatchLabels: labelMap,
 				},
 				VolumeClaimTemplates: volClaimTemplates,
-				ServiceName:          r.headlessService.Name,
 			},
+		}
+
+		if r.headlessService != nil {
+			sts.Spec.ServiceName = r.headlessService.Name
 		}
 	} else {
 		// for sts, only 'replicas', 'template', and 'updateStrategy' are mutable
