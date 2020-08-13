@@ -1,14 +1,13 @@
-import React from "react";
-import Immutable from "immutable";
-import { select } from "@storybook/addon-knobs";
-import { MTableBodyRow } from "material-table";
-import { KTable } from "widgets/Table";
-import { ImmutableMap } from "typings";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { FlexRowItemCenterBox } from "widgets/Box";
-import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
-import { DeleteIcon, EditIcon } from "widgets/Icon";
 import { action } from "@storybook/addon-actions";
+import { select } from "@storybook/addon-knobs";
+import Immutable from "immutable";
+import React from "react";
+import { ImmutableMap } from "typings";
+import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
+import { FlexRowItemCenterBox } from "widgets/Box";
+import { DeleteIcon, EditIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { KRTable } from "widgets/KRTable";
 
 export default {
   title: "Widgets/Box",
@@ -93,44 +92,6 @@ const renderMoreActions = (rowData: RowData) => {
   );
 };
 
-const getColumns = () => {
-  const columns = [
-    // @ts-ignore
-    {
-      title: "Name",
-      field: "name",
-      sorting: false,
-      render: renderName,
-    },
-    {
-      title: "Domains",
-      field: "domains",
-      sorting: false,
-      render: renderDomains,
-    },
-    {
-      title: "Status",
-      field: "status",
-      sorting: false,
-      render: renderStatus,
-    },
-    {
-      title: "Type",
-      field: "isSelfManaged",
-      sorting: false,
-      render: renderType,
-    },
-    {
-      title: "Actions",
-      field: "moreAction",
-      sorting: false,
-      searchable: false,
-      render: renderMoreActions,
-    },
-  ];
-
-  return columns;
-};
 const renderType = (rowData: RowData) => {
   return rowData.get("isSelfManaged") ? "UPLOADED" : "MANAGED";
 };
@@ -146,27 +107,47 @@ const getCertifiate = () => {
   }) as Certificate;
 };
 
-const getData = () => {
-  const data: RowData[] = [];
-  data.push(getCertifiate() as RowData);
+const getKRTableColumns = () => {
+  return [
+    {
+      Header: "Name",
+      accessor: "name",
+    },
+    {
+      Header: "Domains",
+      accessor: "domains",
+    },
+    {
+      Header: "Status",
+      accessor: "status",
+    },
+    {
+      Header: "Type",
+      accessor: "isSelfManaged",
+    },
+    {
+      Header: "Actions",
+      accessor: "moreAction",
+    },
+  ];
+};
+
+const getKRTableData = () => {
+  const data: any[] = [];
+
+  const rowData = getCertifiate() as RowData;
+
+  data.push({
+    name: renderName(rowData),
+    domains: renderDomains(rowData),
+    status: renderStatus(rowData),
+    isSelfManaged: renderType(rowData),
+    moreAction: renderMoreActions(rowData),
+  });
+
   return data;
 };
 
 export const FlexRowItemCenterBoxWithTable = () => {
-  return (
-    <KTable
-      options={{
-        paging: false,
-      }}
-      components={{
-        Row: (props: any) => (
-          <MTableBodyRow tutorial-anchor-id={"applications-list-item-" + props.data.get("name")} {...props} />
-        ),
-      }}
-      // @ts-ignore
-      columns={getColumns()}
-      data={getData()}
-      title=""
-    />
-  );
+  return <KRTable columns={getKRTableColumns()} data={getKRTableData()} />;
 };

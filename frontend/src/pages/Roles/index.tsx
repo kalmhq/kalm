@@ -1,12 +1,11 @@
 import { Box, Chip, createStyles, IconButton, Theme, withStyles, WithStyles } from "@material-ui/core";
-import DeleteIcon from "@material-ui/icons/Delete";
 import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
+import { blinkTopProgressAction } from "actions/settings";
 import { createRoleBindingsAction, deleteRoleBindingsAction } from "actions/user";
 import { RoleBindingForm } from "forms/RoleBinding";
 import Immutable from "immutable";
-import MaterialTable from "material-table";
-import React, { forwardRef } from "react";
+import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { submit } from "redux-form";
@@ -15,11 +14,10 @@ import { RoleBindingsRequestBody } from "types/user";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
-import { ServiceAccountSecret } from "widgets/ServiceAccountSecret";
-import { KTable } from "widgets/Table";
-import { blinkTopProgressAction } from "actions/settings";
-import { AdminDrawer } from "../../layout/AdminDrawer";
+import { KRTable } from "widgets/KRTable";
 import { H6 } from "widgets/Label";
+import { ServiceAccountSecret } from "widgets/ServiceAccountSecret";
+import { AdminDrawer } from "../../layout/AdminDrawer";
 import { BasePage } from "../BasePage";
 
 const dialogID = "rolebinding/add";
@@ -68,18 +66,10 @@ interface RowData {
 }
 
 class RolesPageRaw extends React.PureComponent<Props, State> {
-  private tableRef: React.RefObject<MaterialTable<RowData>> = React.createRef();
-
   constructor(props: Props) {
     super(props);
     this.state = {};
   }
-
-  private getData = (): RowData[] => {
-    return (this.props.roleBindings.map((x) => x.toJS()).toArray() as RowData[]).sort((a, b) =>
-      a.kind > b.kind ? 1 : a.kind === b.kind ? (a.name > b.name ? 1 : -1) : -1,
-    );
-  };
 
   private renderEntity = (rowData: RowData): React.ReactNode => {
     return (
@@ -163,46 +153,44 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
     this.props.dispatch(openDialogAction(dialogID, data));
   };
 
-  private columnRenderGeneator = (namespace: string) => {
-    return (rowData: RowData) => {
-      const bindings = rowData.bindings.filter((binding) => binding.namespace === namespace);
-      return (
-        <div className={this.props.classes.roleChell}>
-          {bindings.map((binding) => {
-            return (
-              <Box mr={1} display="inline-block" key={binding.name}>
-                <Chip
-                  color="primary"
-                  label={binding.roleName}
-                  key={binding.roleName}
-                  size="small"
-                  onDelete={() => {
-                    this.props.dispatch(deleteRoleBindingsAction(binding.namespace, binding.name));
-                  }}
-                />
-              </Box>
-            );
-          })}
+  private columnRenderGeneator = (namespace: string, rowData: RowData) => {
+    const bindings = rowData.bindings.filter((binding) => binding.namespace === namespace);
+    return (
+      <div className={this.props.classes.roleChell}>
+        {bindings.map((binding) => {
+          return (
+            <Box mr={1} display="inline-block" key={binding.name}>
+              <Chip
+                color="primary"
+                label={binding.roleName}
+                key={binding.roleName}
+                size="small"
+                onDelete={() => {
+                  this.props.dispatch(deleteRoleBindingsAction(binding.namespace, binding.name));
+                }}
+              />
+            </Box>
+          );
+        })}
 
-          {bindings.length < 2 ? (
-            <Chip
-              color="primary"
-              variant="outlined"
-              label="Add"
-              size="small"
-              clickable
-              onClick={() => {
-                this.openAddModal({
-                  kind: rowData.kind,
-                  name: rowData.name,
-                  namespace: namespace,
-                });
-              }}
-            />
-          ) : null}
-        </div>
-      );
-    };
+        {bindings.length < 2 ? (
+          <Chip
+            color="primary"
+            variant="outlined"
+            label="Add"
+            size="small"
+            clickable
+            onClick={() => {
+              this.openAddModal({
+                kind: rowData.kind,
+                name: rowData.name,
+                namespace: namespace,
+              });
+            }}
+          />
+        ) : null}
+      </div>
+    );
   };
 
   private renderShowServiceAccountSecretDialog() {
@@ -253,9 +241,56 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  public render() {
+  private getKRTableColumns() {
     const { namespaces } = this.props;
-    const tableData = this.getData();
+
+    return ([
+      {
+        Header: "Entity",
+        accessor: "entity",
+      },
+    ] as any).concat(
+      namespaces
+        .map((namespace) => ({
+          Header: namespace,
+          accessor: namespace,
+        }))
+        .toArray(),
+    );
+  }
+
+  private getKRTableData() {
+    const { namespaces } = this.props;
+
+    const rowDatas = (this.props.roleBindings.map((x) => x.toJS()).toArray() as RowData[]).sort((a, b) =>
+      a.kind > b.kind ? 1 : a.kind === b.kind ? (a.name > b.name ? 1 : -1) : -1,
+    );
+    const data: any[] = [];
+
+    rowDatas.forEach((rowData, index) => {
+      const item: any = {
+        entity: this.renderEntity(rowData),
+      };
+      namespaces.forEach((namespace) => {
+        item[namespace] = this.columnRenderGeneator(namespace, rowData);
+      });
+      data.push();
+    });
+
+    return data;
+  }
+
+  private renderKRTable() {
+    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+  }
+
+  private getData = (): RowData[] => {
+    return (this.props.roleBindings.map((x) => x.toJS()).toArray() as RowData[]).sort((a, b) =>
+      a.kind > b.kind ? 1 : a.kind === b.kind ? (a.name > b.name ? 1 : -1) : -1,
+    );
+  };
+
+  public render() {
     return (
       <BasePage
         leftDrawer={<AdminDrawer />}
@@ -265,54 +300,7 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           {this.renderAddForm()}
           {this.renderShowServiceAccountSecretDialog()}
-          <KTable
-            options={{
-              paging: tableData.length > 20,
-              actionsColumnIndex: -1,
-              addRowPosition: "first",
-            }}
-            tableRef={this.tableRef}
-            icons={{
-              Delete: forwardRef((props, ref) => <DeleteIcon ref={ref} {...props} color="secondary" />),
-            }}
-            localization={{
-              body: {
-                editRow: {
-                  saveTooltip: "Save",
-                  cancelTooltip: "Cancel",
-                  deleteText: "Are you sure you want to revoke all roles for this user/group/service account?",
-                },
-              },
-            }}
-            columns={([
-              {
-                title: "Entity",
-                field: "entity",
-                render: this.renderEntity,
-                cellStyle: {
-                  // backgroundColor: "#039be5",
-                },
-              },
-            ] as any).concat(
-              namespaces
-                .map((namespace) => ({
-                  title: namespace,
-                  field: namespace,
-                  render: this.columnRenderGeneator(namespace),
-                  cellStyle: {
-                    // backgroundColor: "white",
-                    // color: "black"
-                    border: "1px solid rgba(224, 224, 224, 1)",
-                  },
-                }))
-                .toArray(),
-            )}
-            data={tableData}
-            title=""
-            editable={{
-              onRowDelete: this.handleDelete,
-            }}
-          />
+          {this.renderKRTable()}
         </Box>
       </BasePage>
     );

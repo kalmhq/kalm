@@ -1,20 +1,20 @@
-import { Box, createStyles, Theme, WithStyles, withStyles, Link } from "@material-ui/core";
+import { Box, createStyles, Link, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { K8sApiPrefix } from "api/realApi";
+import copy from "copy-to-clipboard";
 import React from "react";
 import { connect } from "react-redux";
-import { KTable } from "widgets/Table";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { BasePage } from "../BasePage";
 import { ClusterInfo } from "types/cluster";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { CopyIcon } from "widgets/Icon";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { InfoBox } from "widgets/InfoBox";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
-import copy from "copy-to-clipboard";
+import { KRTable } from "widgets/KRTable";
+import { BasePage } from "../BasePage";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -142,17 +142,29 @@ export class LoadBalancerInfoRaw extends React.Component<Props, States> {
     return <FlexRowItemCenterBox>{coms}</FlexRowItemCenterBox>;
   };
 
-  getTableData = () => {
-    const { ingressInfo } = this.props;
+  private getKRTableColumns() {
+    return [
+      { Header: "Hostname / IP", accessor: "ingressHostname" },
+      { Header: "Ports", accessor: "ports" },
+    ];
+  }
 
-    const data: RowData[] = [];
+  private getKRTableData() {
+    const { ingressInfo } = this.props;
+    const data: any[] = [];
 
     const rowData = ingressInfo as RowData;
-    rowData.index = 1;
-    data.push(rowData);
+    data.push({
+      ingressHostname: this.renderHostName(rowData),
+      ports: this.renderPorts(rowData),
+    });
 
     return data;
-  };
+  }
+
+  private renderKRTable() {
+    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+  }
 
   private renderInfoBox() {
     const title = "Load Balancer References";
@@ -181,7 +193,6 @@ export class LoadBalancerInfoRaw extends React.Component<Props, States> {
 
   render() {
     const { loadLoadBalancerInfoError } = this.state;
-    const tableData = this.getTableData();
 
     return (
       <BasePage>
@@ -195,17 +206,7 @@ export class LoadBalancerInfoRaw extends React.Component<Props, States> {
             </Alert>
           ) : null}
 
-          <KTable
-            options={{
-              paging: tableData.length > 20,
-            }}
-            columns={[
-              { title: "Hostname / IP", field: "ingressHostname", sorting: false, render: this.renderHostName },
-              { title: "Ports", field: "ports", sorting: false, render: this.renderPorts },
-            ]}
-            data={tableData}
-            title=""
-          />
+          {this.renderKRTable()}
         </Box>
         <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>

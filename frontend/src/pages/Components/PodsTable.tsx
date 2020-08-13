@@ -5,7 +5,6 @@ import { setErrorNotificationAction, setSuccessNotificationAction } from "action
 import { blinkTopProgressAction } from "actions/settings";
 import { api } from "api";
 import Immutable from "immutable";
-import { MaterialTableProps } from "material-table";
 import { getPodLogQuery } from "pages/Application/Log";
 import React from "react";
 import { connect } from "react-redux";
@@ -211,49 +210,6 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
     return this.renderPodStatus(pod);
   };
 
-  private renderPodWarnings: MaterialTableProps<RowData>["detailPanel"] = [
-    (pod: RowData) => {
-      const hasWarning = !pod.get("isTerminating") && pod.get("warnings").size > 0;
-      return {
-        disabled: !hasWarning,
-        icon: () => (
-          <Box p={1} fontSize={0}>
-            {this.renderPodStatus(pod)}
-          </Box>
-        ),
-        render: (podRowData: RowData) => {
-          return (
-            <Box p={2}>
-              {podRowData
-                .get("warnings")
-                .map((w, index) => {
-                  return (
-                    <Box color="error.main" key={index}>
-                      {index + 1}. {w.get("message")}
-                    </Box>
-                  );
-                })
-                .toArray()}
-            </Box>
-          );
-        },
-      };
-    },
-  ];
-
-  private getColumns = (): MaterialTableProps<RowData>["columns"] => {
-    return [
-      { title: "Pod Name", sorting: false, render: this.renderPodName },
-      { title: "Node", sorting: false, render: this.renderPodNode },
-      { title: "Restarts", sorting: false, render: this.renderPodRestarts },
-      { title: "Status", sorting: false, render: this.renderPodStatusText },
-      { title: "Age", sorting: false, render: this.renderPodAGE },
-      { title: "CPU", sorting: false, render: this.renderPodCPU },
-      { title: "Memory", sorting: false, render: this.renderPodMemory },
-      { title: "", sorting: false, render: this.renderPodActions, cellStyle: { minWidth: 122 } },
-    ];
-  };
-
   private getKRTableColumns() {
     return [
       // {
@@ -330,17 +286,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    return (
-      <>
-        {this.renderKRTable()}
-        {/* <KTable
-          options={{ padding: "dense", paging: pods.size > 20 }}
-          columns={this.getColumns()}
-          data={this.getData()}
-          detailPanel={this.renderPodWarnings}
-        /> */}
-      </>
-    );
+    return <>{this.renderKRTable()}</>;
   }
 }
 

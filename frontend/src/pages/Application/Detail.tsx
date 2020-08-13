@@ -13,7 +13,6 @@ import { HttpStatusCodeLineChart } from "widgets/charts/httpStatusCodeChart";
 import { DoughnutChart } from "widgets/DoughnutChart";
 import { KRTable } from "widgets/KRTable";
 import { BigCPULineChart, BigMemoryLineChart } from "widgets/SmallLineChart";
-import { KTable } from "widgets/Table";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -285,52 +284,6 @@ class DetailsRaw extends React.PureComponent<Props, State> {
 
   private renderWarningsKRTable() {
     return <KRTable columns={this.getWarningsKRTableColumns()} data={this.getWarningsKRTableData()} />;
-  }
-
-  // TODO rm this table
-  private renderWarnings() {
-    const { components, activeNamespace } = this.props;
-    let warnings: { componentName: ReactElement; podName: ReactElement; message: string }[] = [];
-
-    if (components) {
-      components.forEach((c) => {
-        c.get("pods").forEach((p) => {
-          p.get("warnings").forEach((w) => {
-            warnings.push({
-              componentName: (
-                <Link href={`/applications/${activeNamespace?.get("name")}/components/${c.get("name")}`}>
-                  {c.get("name")}
-                </Link>
-              ),
-              podName: (
-                <Link href={`/applications/${activeNamespace?.get("name")}/components/${c.get("name")}`}>
-                  {p.get("name")}
-                </Link>
-              ),
-              message: w.get("message"),
-            });
-          });
-        });
-      });
-    }
-
-    return (
-      <KTable
-        columns={[
-          { field: "componentName", title: "Component" },
-          { field: "podName", title: "Pod" },
-          {
-            field: "message",
-            title: "Message",
-            render: ({ message }: { message: string }) => <Typography color="error">{message}</Typography>,
-          },
-        ]}
-        options={{
-          paging: warnings.length > 20,
-        }}
-        data={warnings}
-      />
-    );
   }
 
   private formatYAxesValue = (value: number, label: string) => {
