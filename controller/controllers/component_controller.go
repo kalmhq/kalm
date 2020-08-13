@@ -873,8 +873,11 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(
 					MatchLabels: labelMap,
 				},
 				VolumeClaimTemplates: volClaimTemplates,
-				ServiceName:          r.headlessService.Name,
 			},
+		}
+
+		if r.headlessService != nil {
+			sts.Spec.ServiceName = r.headlessService.Name
 		}
 	} else {
 		// for sts, only 'replicas', 'template', and 'updateStrategy' are mutable
@@ -1964,8 +1967,8 @@ func (r *ComponentReconcilerTask) reconcilePVForReUse(ctx context.Context, pvc c
 	err := r.Get(ctx, types.NamespacedName{Name: ownerName, Namespace: ownerNs}, &ownerPVC)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// clean claimRef for this pv
-			pv.Spec.ClaimRef = nil
+			cleanPVToBeAvailable(&pv)
+
 			if err := r.Update(ctx, &pv); err != nil {
 				return nil
 			}
@@ -1999,8 +2002,7 @@ func (r *ComponentReconcilerTask) reconcilePVForReUse(ctx context.Context, pvc c
 					return err
 				}
 
-				// clean claimRef on PV
-				pv.Spec.ClaimRef = nil
+				cleanPVToBeAvailable(&pv)
 				if err := r.Update(ctx, &pv); err != nil {
 					return nil
 				}
@@ -2009,6 +2011,13 @@ func (r *ComponentReconcilerTask) reconcilePVForReUse(ctx context.Context, pvc c
 	}
 
 	return nil
+}
+
+func cleanPVToBeAvailable(pv *coreV1.PersistentVolume) {
+	pv.Spec.ClaimRef = nil
+
+	// to be bound by new pvc, reset clean label
+	delete(pv.Labels, KalmLabelCleanIfPVCGone)
 }
 
 func (r *ComponentReconcilerTask) pvcIsInUsed(ctx context.Context, pvc coreV1.PersistentVolumeClaim) (bool, error) {
