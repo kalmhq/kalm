@@ -4,7 +4,7 @@ import { DashboardLayout } from "layout/DashboardLayout";
 import { Login } from "layout/Login";
 
 import { ApplicationListPage } from "pages/Application/List";
-import { Log } from "pages/Application/Log";
+import { LogPage } from "pages/Application/LogPage";
 import { ApplicationNewPage } from "pages/Application/New";
 import { ApplicationShowPage } from "pages/Application/Show";
 import { CertificateListPage } from "pages/Certificate/List";
@@ -89,8 +89,8 @@ export const KalmRoutes = (
           <Route exact path="/applications/:applicationName/components/:name" component={ComponentShowPage} />
           <Route exact path="/applications/:applicationName/components/:name/edit" component={ComponentEditPage} />
 
-          <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(Log)} />
-          <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(Log)} />
+          <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(LogPage)} />
+          <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(LogPage)} />
 
           <Route exact path="/certificates" component={CertificateListPage} />
           <Route exact path="/certificates/new" component={CertificateNewPage} />
