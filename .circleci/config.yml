@@ -74,8 +74,10 @@ jobs:
           name: use Tag for img if exist 
           command: |     
             TAG=$(git tag --points-at HEAD)
-            if [ $TAG != "" ]
+            
+            if [ "$TAG" != "" ]
             then 
+              docker tag $IMAGE_NAME:latest $IMAGE_NAME:$TAG
               docker push $IMAGE_NAME:$TAG
             fi
   test-controller:
@@ -129,9 +131,10 @@ jobs:
 
             TAG=$(git tag --points-at HEAD)
             echo "tag: $TAG"
-            
-            if [ $TAG != "" ]
+
+            if [ "$TAG" != "" ]
             then 
+              docker tag $IMAGE_NAME:latest $IMAGE_NAME:$TAG
               docker push $IMAGE_NAME:$TAG
             fi
   build-push-operator-image:
@@ -158,8 +161,9 @@ jobs:
             docker push $IMAGE_NAME:latest
 
             TAG=$(git tag --points-at HEAD)
-            if [ $TAG != "" ]
+            if [ "$TAG" != "" ]
             then 
+              docker tag $IMAGE_NAME:latest $IMAGE_NAME:$TAG
               docker push $IMAGE_NAME:$TAG
             fi
   deploy-dashboard:
