@@ -69,7 +69,10 @@ jobs:
           command: |
             echo "$QUAYIO_PASS" | docker login -u "$QUAYIO_USERNAME" --password-stdin quay.io
             docker push $IMAGE_NAME:latest
-            
+      - checkout
+      - run:
+          name: use Tag for img if exist 
+          command: |     
             TAG=$(git tag --points-at HEAD)
             if [ $TAG != "" ]
             then 
