@@ -35,9 +35,6 @@ import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 
-const externalEndpointsModalID = "externalEndpointsModalID";
-const internalEndpointsModalID = "internalEndpointsModalID";
-
 const styles = (theme: Theme) =>
   createStyles({
     emptyWrapper: {
@@ -49,16 +46,12 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const internalEndpointsDialog = state.get("dialogs").get(internalEndpointsModalID);
-  const externalEndpointsDialog = state.get("dialogs").get(externalEndpointsModalID);
   const httpRoutes = state.get("routes").get("httpRoutes");
   const componentsMap = state.get("components").get("components");
   const clusterInfo = state.get("cluster").get("info");
   const usingApplicationCard = state.get("settings").get("usingApplicationCard");
   return {
     clusterInfo,
-    internalEndpointsDialogData: internalEndpointsDialog ? internalEndpointsDialog.get("data") : {},
-    externalEndpointsDialogData: externalEndpointsDialog ? externalEndpointsDialog.get("data") : {},
     httpRoutes,
     componentsMap,
     usingApplicationCard,
