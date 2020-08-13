@@ -126,6 +126,12 @@ jobs:
           command: |
             echo "$QUAYIO_PASS" | docker login -u "$QUAYIO_USERNAME" --password-stdin quay.io
             docker push $IMAGE_NAME:latest
+
+            TAG=$(git tag --points-at HEAD)
+            if [ $TAG != "" ]
+            then 
+              docker push $IMAGE_NAME:$TAG
+            fi
   build-push-operator-image:
     environment:
       IMAGE_NAME: quay.io/kalmhq/kalm-operator
@@ -148,6 +154,12 @@ jobs:
           command: |
             echo "$QUAYIO_PASS" | docker login -u "$QUAYIO_USERNAME" --password-stdin quay.io
             docker push $IMAGE_NAME:latest
+
+            TAG=$(git tag --points-at HEAD)
+            if [ $TAG != "" ]
+            then 
+              docker push $IMAGE_NAME:$TAG
+            fi
   deploy-dashboard:
     executor: deploy-orb/default
     steps:
