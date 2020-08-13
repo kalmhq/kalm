@@ -128,6 +128,8 @@ jobs:
             docker push $IMAGE_NAME:latest
 
             TAG=$(git tag --points-at HEAD)
+            echo "tag: $TAG"
+            
             if [ $TAG != "" ]
             then 
               docker push $IMAGE_NAME:$TAG
