@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
@@ -532,10 +533,25 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileExternalAuthProxyServiceEntr
 	return nil
 }
 
+func getKalmVersionFromEnv() string {
+	return os.Getenv("KALM_VERSION")
+}
+
+const DefaultAuthProxyImgTag = "latest"
+
 func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent() error {
 	clientID := string(r.secret.Data["client_id"])
 	clientSecret := string(r.secret.Data["client_secret"])
 	oidcProviderInfo := GetOIDCProviderInfo(r.ssoConfig)
+
+	kalmVersion := getKalmVersionFromEnv()
+
+	var authProxyImgTag string
+	if kalmVersion != "" {
+		authProxyImgTag = kalmVersion
+	} else {
+		authProxyImgTag = DefaultAuthProxyImgTag
+	}
 
 	authProxyComponent := corev1alpha1.Component{
 		ObjectMeta: metaV1.ObjectMeta{
@@ -544,7 +560,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			WorkloadType: corev1alpha1.WorkloadTypeServer,
-			Image:        "quay.io/kalmhq/kalm:latest",
+			Image:        fmt.Sprintf("quay.io/kalmhq/kalm:%s", authProxyImgTag),
 			Command:      "./auth-proxy",
 			Ports: []corev1alpha1.Port{
 				{
