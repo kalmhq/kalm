@@ -2,13 +2,13 @@
 
 name: Lighthouse
 env:
-  LHCI_TOKEN: ${{ secrets.LHCI_TOKEN }}
-  SKIP_PREFLIGHT_CHECK:true
-  EXTEND_ESLINT:true
-  REACT_APP_K8S_API_PERFIX=http://localhost:3001
-  REACT_APP_K8S_API_VERSION=v1alpha1
-  REACT_APP_USE_MOCK_API=true
-  REACT_APP_DEBUG=false
+  LHCI_TOKEN: ${{ secrets.LHCI_TOKEN }},
+  SKIP_PREFLIGHT_CHECK: true
+  EXTEND_ESLINT: true
+  REACT_APP_K8S_API_PERFIX: http://localhost:3001
+  REACT_APP_K8S_API_VERSION: v1alpha1
+  REACT_APP_USE_MOCK_API: true
+  REACT_APP_DEBUG: false
 defaults:
   run:
     working-directory: frontend
