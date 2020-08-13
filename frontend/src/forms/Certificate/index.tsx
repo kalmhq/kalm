@@ -231,8 +231,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   private validate = async (values: any) => {
     let errors: any = {};
 
-    if (!values.name) {
-      errors.name = "Required";
+    if (!values.domains) {
+      errors.domains = "Required";
       return errors;
     }
 
@@ -320,7 +320,9 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                           // onFocus={input.onFocus}
                           onBlur={handleBlur}
                           value={values.domains.toJS()}
-                          onChange={handleChange}
+                          onChange={(e, value) => {
+                            setFieldValue("domains", Immutable.List(value));
+                          }}
                           // inputValue={inputText}
                           // onInputChange={(event, value, reason) => {
                           //   if (reason === "input") {
