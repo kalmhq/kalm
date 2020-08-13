@@ -14,7 +14,7 @@ defaults:
     working-directory: frontend
 
 # Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch update
+# events but only for the master branch update ci
 on:
   push:
     branches: [performance/lighthouse-ci, master, develop]
