@@ -58,43 +58,11 @@ func (r *KalmPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			return ctrl.Result{}, err
 		}
 
-		return r.reconcileForPVCDeletion(req)
+		return ctrl.Result{}, nil
 	}
 
 	// check if owner of pvc has changed
 	return ctrl.Result{}, r.reconcileForPVCOwnerChange(pvc)
-}
-
-// for every deletion of pvc
-// loop to make unbounded pv available again
-func (r *KalmPVCReconciler) reconcileForPVCDeletion(req ctrl.Request) (ctrl.Result, error) {
-
-	var kalmPVList corev1.PersistentVolumeList
-	if err := r.List(r.ctx, &kalmPVList, client.MatchingLabels{KalmLabelManaged: "true"}); err != nil {
-		return ctrl.Result{}, client.IgnoreNotFound(err)
-	}
-
-	// clean claimRef to make it available again
-	for _, pv := range kalmPVList.Items {
-
-		claimRef := pv.Spec.ClaimRef
-		if claimRef == nil {
-			continue
-		}
-
-		// ignore if claimRef is not this deleted PVC
-		if claimRef.Namespace != req.Namespace ||
-			claimRef.Name != req.Name {
-			continue
-		}
-
-		pv.Spec.ClaimRef = nil
-		if err := r.Update(r.ctx, &pv); err != nil {
-			return ctrl.Result{}, nil
-		}
-	}
-
-	return ctrl.Result{}, nil
 }
 
 // if owner component changed, update PVC label

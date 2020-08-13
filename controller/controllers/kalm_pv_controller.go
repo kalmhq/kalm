@@ -55,92 +55,13 @@ func (r *KalmPVReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	// special ns triggers check of pv need to be cleaned
 	if req.Namespace == NSForPVCChanged {
 		return r.reconcileDeleteOfPVWithSpecialCleanLabel()
+	} else {
+		return r.reconcilePVLabel(req.Name)
 	}
-
-	// make sure for each active kalmPVC, underlying kalmPV is labeled with its name
-	// (to be selected using selector)
-	var pv corev1.PersistentVolume
-	if err := r.Get(r.ctx, client.ObjectKey{Name: req.Name}, &pv); err != nil {
-		return ctrl.Result{}, client.IgnoreNotFound(err)
-	}
-
-	claimRef := pv.Spec.ClaimRef
-	if claimRef == nil {
-		return ctrl.Result{}, nil
-	}
-
-	var pvc corev1.PersistentVolumeClaim
-	err := r.Get(r.ctx, client.ObjectKey{Namespace: claimRef.Namespace, Name: claimRef.Name}, &pvc)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-
-	// ignore if pvc is not kalm managed
-	if v, exist := pvc.Labels[KalmLabelManaged]; !exist || v != "true" {
-		return ctrl.Result{}, nil
-	}
-
-	if pv.Labels == nil {
-		pv.Labels = make(map[string]string)
-	}
-
-	pv.Labels[KalmLabelManaged] = "true"
-	// descriptive information
-	pv.Labels[KalmLabelComponentKey] = pvc.Labels[KalmLabelComponentKey]
-	pv.Labels[KalmLabelNamespaceKey] = pvc.Namespace
-	// to be selectable by PV
-	pv.Labels[KalmLabelPV] = pv.Name
-
-	if err := r.Update(r.ctx, &pv); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	return ctrl.Result{}, nil
-}
-
-func isReferencedByKalmPVC(
-	pv corev1.PersistentVolume,
-	list corev1.PersistentVolumeClaimList,
-) (pvc corev1.PersistentVolumeClaim, isRefed bool) {
-
-	for _, item := range list.Items {
-		if item.Spec.VolumeName == pv.Name {
-			return item, true
-		}
-	}
-
-	return
 }
 
 type PVCMapper struct {
 	*BaseReconciler
-}
-
-const (
-	NSForPVCChanged = "special-ns-as-signal-for-pvc-changed"
-)
-
-func (m PVCMapper) Map(obj handler.MapObject) []reconcile.Request {
-	if v, exist := obj.Meta.GetLabels()[KalmLabelManaged]; !exist || v != "true" {
-		return nil
-	}
-
-	return []reconcile.Request{
-		{
-			NamespacedName: types.NamespacedName{
-				Namespace: NSForPVCChanged,
-			},
-		},
-	}
-}
-
-func (r *KalmPVReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1.PersistentVolume{}).
-		Watches(genSourceForObject(&corev1.PersistentVolumeClaim{}), &handler.EnqueueRequestsFromMapFunc{
-			ToRequests: &PVCMapper{r.BaseReconciler},
-		}).
-		Complete(r)
 }
 
 // list all kalm-managed pv
@@ -198,4 +119,74 @@ func (r *KalmPVReconciler) reconcileDeleteOfPVWithSpecialCleanLabel() (ctrl.Resu
 	}
 
 	return ctrl.Result{}, nil
+}
+
+// make sure for each active kalmPVC, underlying kalmPV is labeled with its name
+// (to be selected using selector)
+func (r *KalmPVReconciler) reconcilePVLabel(pvName string) (ctrl.Result, error) {
+
+	var pv corev1.PersistentVolume
+	if err := r.Get(r.ctx, client.ObjectKey{Name: pvName}, &pv); err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	claimRef := pv.Spec.ClaimRef
+	if claimRef == nil {
+		return ctrl.Result{}, nil
+	}
+
+	var pvc corev1.PersistentVolumeClaim
+	err := r.Get(r.ctx, client.ObjectKey{Namespace: claimRef.Namespace, Name: claimRef.Name}, &pvc)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// ignore if pvc is not kalm managed
+	if v, exist := pvc.Labels[KalmLabelManaged]; !exist || v != "true" {
+		return ctrl.Result{}, nil
+	}
+
+	if pv.Labels == nil {
+		pv.Labels = make(map[string]string)
+	}
+
+	pv.Labels[KalmLabelManaged] = "true"
+	// descriptive information
+	pv.Labels[KalmLabelComponentKey] = pvc.Labels[KalmLabelComponentKey]
+	pv.Labels[KalmLabelNamespaceKey] = pvc.Namespace
+	// to be selectable by PV
+	pv.Labels[KalmLabelPV] = pv.Name
+
+	if err := r.Update(r.ctx, &pv); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	return ctrl.Result{}, nil
+}
+
+const (
+	NSForPVCChanged = "special-ns-as-signal-for-pvc-changed"
+)
+
+func (m PVCMapper) Map(obj handler.MapObject) []reconcile.Request {
+	if v, exist := obj.Meta.GetLabels()[KalmLabelManaged]; !exist || v != "true" {
+		return nil
+	}
+
+	return []reconcile.Request{
+		{
+			NamespacedName: types.NamespacedName{
+				Namespace: NSForPVCChanged,
+			},
+		},
+	}
+}
+
+func (r *KalmPVReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&corev1.PersistentVolume{}).
+		Watches(genSourceForObject(&corev1.PersistentVolumeClaim{}), &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: &PVCMapper{r.BaseReconciler},
+		}).
+		Complete(r)
 }

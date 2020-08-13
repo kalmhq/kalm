@@ -172,6 +172,11 @@ func (suite *KalmPVControllerSuite) TestPVIsLabeledForKalm() {
 			PersistentVolumeSource: coreV1.PersistentVolumeSource{
 				HostPath: &hostPath,
 			},
+			// fake cliamRef to bound with PVC
+			ClaimRef: &coreV1.ObjectReference{
+				Namespace: pvc.Namespace,
+				Name:      pvc.Name,
+			},
 		},
 	}
 
