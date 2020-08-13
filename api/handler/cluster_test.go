@@ -35,8 +35,9 @@ func (suite *ClusterHandlerTestSuite) TestClusterInfo() {
 	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/httproutes/kalm-system", `{}`)
 	rec.BodyAsJSON(&routes)
 	suite.NotNil(routes)
-	suite.Equal(1, len(routes))
+	suite.Equal(2, len(routes))
 	suite.Equal("kalm-route", routes[0].Name)
+	suite.Equal("kalm-webhook-route", routes[1].Name)
 
 	// reset cluster info
 	rec = suite.NewRequest(http.MethodPost, "/v1alpha1/reset", `{}`)
