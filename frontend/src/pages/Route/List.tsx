@@ -144,20 +144,6 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     return res.join(",");
   }
 
-  private getData() {
-    const { httpRoutes } = this.props;
-    const data: RowData[] = [];
-
-    httpRoutes &&
-      httpRoutes.forEach((httpRoute, index) => {
-        const rowData = httpRoute as RowData;
-        rowData.index = index;
-        data.push(rowData);
-      });
-
-    return data;
-  }
-
   private renderActions = (row: RowData) => {
     const { dispatch } = this.props;
     return (
