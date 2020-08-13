@@ -38,6 +38,79 @@ func (suite *KalmPVControllerSuite) SetupTest() {
 	suite.ctx = context.Background()
 }
 
+func (suite *KalmPVControllerSuite) TestPVCleanLabelWorks() {
+
+	// create pv
+	pvName := fmt.Sprintf("pv-foobar-%s", randomName())
+	hostPath := coreV1.HostPathVolumeSource{
+		Path: "/tmp",
+	}
+	pv := coreV1.PersistentVolume{
+		ObjectMeta: v1.ObjectMeta{
+			Name: pvName,
+			Labels: map[string]string{
+				KalmLabelManaged:        "true",
+				KalmLabelCleanIfPVCGone: "default-fake-name",
+			},
+		},
+		Spec: coreV1.PersistentVolumeSpec{
+			PersistentVolumeReclaimPolicy: coreV1.PersistentVolumeReclaimRetain,
+			Capacity: coreV1.ResourceList(map[coreV1.ResourceName]resource.Quantity{
+				coreV1.ResourceStorage: resource.MustParse("1Mi"),
+			}),
+			AccessModes: []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
+			PersistentVolumeSource: coreV1.PersistentVolumeSource{
+				HostPath: &hostPath,
+			},
+			ClaimRef: &coreV1.ObjectReference{
+				Namespace: "default",
+				Name:      "fake-name",
+			},
+		},
+	}
+
+	err := suite.K8sClient.Create(suite.ctx, &pv)
+	suite.Nil(err)
+
+	//create and delete pvc
+	pvcName := "pvc-" + randomName()
+	sc := "fake-storage-class"
+
+	pvc := coreV1.PersistentVolumeClaim{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      pvcName,
+			Namespace: suite.ns.Name,
+			Labels: map[string]string{
+				KalmLabelNamespaceKey: suite.ns.Namespace,
+				KalmLabelComponentKey: "comp-not-exist",
+				KalmLabelManaged:      "true",
+			},
+		},
+		Spec: coreV1.PersistentVolumeClaimSpec{
+			StorageClassName: &sc,
+			VolumeName:       pvcName,
+			AccessModes:      []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
+			Resources: coreV1.ResourceRequirements{
+				Requests: map[coreV1.ResourceName]resource.Quantity{
+					coreV1.ResourceStorage: resource.MustParse("1Mi"),
+				},
+			},
+		},
+	}
+
+	err = suite.K8sClient.Create(suite.ctx, &pvc)
+	suite.Nil(err)
+
+	suite.Eventually(func() bool {
+		err = suite.K8sClient.Get(suite.ctx, client.ObjectKey{
+			Name: pvName,
+		}, &pv)
+
+		return pv.ObjectMeta.DeletionTimestamp != nil &&
+			!pv.ObjectMeta.DeletionTimestamp.IsZero()
+	})
+}
+
 func (suite *KalmPVControllerSuite) TestPVIsLabeledForKalm() {
 
 	sc := "fake-storage-class"
@@ -99,25 +172,23 @@ func (suite *KalmPVControllerSuite) TestPVIsLabeledForKalm() {
 			PersistentVolumeSource: coreV1.PersistentVolumeSource{
 				HostPath: &hostPath,
 			},
+			// fake cliamRef to bound with PVC
+			ClaimRef: &coreV1.ObjectReference{
+				Namespace: pvc.Namespace,
+				Name:      pvc.Name,
+			},
 		},
 	}
 
 	err = suite.K8sClient.Create(suite.ctx, &pv)
 	suite.Nil(err)
 
-	var pvList coreV1.PersistentVolumeList
 	suite.Eventually(func() bool {
-		err := suite.K8sClient.List(suite.ctx, &pvList)
-		suite.Nil(err)
-
-		suite.Equal(1, len(pvList.Items))
 
 		err = suite.K8sClient.Get(suite.ctx, client.ObjectKey{
 			Name: pv.Name,
 		}, &pv)
 		suite.Nil(err)
-
-		//fmt.Println("pvLabels:", pv.Labels, pv)
 
 		return pv.Labels[KalmLabelNamespaceKey] == pvc.Namespace &&
 			pv.Labels[KalmLabelManaged] == "true" &&

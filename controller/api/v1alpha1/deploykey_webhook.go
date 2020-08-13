@@ -85,6 +85,7 @@ func (r *DeployKey) validate() error {
 					Err:  fmt.Sprintf("invalid namespace/component: %s", res),
 					Path: fmt.Sprintf("spec.resources[%d]", i),
 				})
+				continue
 			}
 
 			ns := pair[0]

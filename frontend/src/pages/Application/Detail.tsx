@@ -11,8 +11,8 @@ import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { HttpBytesSizeChart } from "widgets/charts/httpBytesSizeChart";
 import { HttpStatusCodeLineChart } from "widgets/charts/httpStatusCodeChart";
 import { DoughnutChart } from "widgets/DoughnutChart";
+import { KRTable } from "widgets/KRTable";
 import { BigCPULineChart, BigMemoryLineChart } from "widgets/SmallLineChart";
-import { KTable } from "widgets/Table";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -242,9 +242,20 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  private renderWarnings() {
+  private getWarningsKRTableColumns() {
+    return [
+      { accessor: "componentName", Header: "Component" },
+      { accessor: "podName", Header: "Pod" },
+      {
+        accessor: "message",
+        Header: "Message",
+      },
+    ];
+  }
+
+  private getWarningsKRTableData() {
     const { components, activeNamespace } = this.props;
-    let warnings: { componentName: ReactElement; podName: ReactElement; message: string }[] = [];
+    let warnings: { componentName: ReactElement; podName: ReactElement; message: ReactElement }[] = [];
 
     if (components) {
       components.forEach((c) => {
@@ -261,30 +272,18 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                   {p.get("name")}
                 </Link>
               ),
-              message: w.get("message"),
+              message: <Typography color="error">{w.get("message")}</Typography>,
             });
           });
         });
       });
     }
 
-    return (
-      <KTable
-        columns={[
-          { field: "componentName", title: "Component" },
-          { field: "podName", title: "Pod" },
-          {
-            field: "message",
-            title: "Message",
-            render: ({ message }: { message: string }) => <Typography color="error">{message}</Typography>,
-          },
-        ]}
-        options={{
-          paging: warnings.length > 20,
-        }}
-        data={warnings}
-      />
-    );
+    return warnings;
+  }
+
+  private renderWarningsKRTable() {
+    return <KRTable columns={this.getWarningsKRTableColumns()} data={this.getWarningsKRTableData()} />;
   }
 
   private formatYAxesValue = (value: number, label: string) => {
@@ -407,7 +406,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
         </Expansion>
 
         <Expansion title="Warnings" defaultUnfold>
-          {this.renderWarnings()}
+          {this.renderWarningsKRTable()}
         </Expansion>
       </>
     );

@@ -83,6 +83,10 @@ func (c *Client) read() {
 	for {
 		_, messageBytes, err := c.conn.ReadMessage()
 		if err != nil {
+			if websocket.IsCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived) {
+				return
+			}
+
 			log.Error(err, "read message error")
 			return
 		}

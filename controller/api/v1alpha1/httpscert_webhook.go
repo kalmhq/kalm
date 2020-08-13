@@ -58,7 +58,11 @@ func (r *HttpsCert) validate() error {
 	var rst KalmValidateErrorList
 
 	for i, domain := range r.Spec.Domains {
-		if isValidDomain(domain) {
+		if isValidDomainInCert(domain) {
+			continue
+		}
+
+		if domain == "*" {
 			continue
 		}
 

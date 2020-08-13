@@ -1,29 +1,28 @@
 import { Box, Button, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
+import { indigo } from "@material-ui/core/colors";
 import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Certificate } from "types/certificate";
-import { customSearchForImmutable } from "utils/tableSearch";
+import { formatDate } from "utils/date";
+import sc from "utils/stringConstants";
 import { PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
+import { CustomizedButton } from "widgets/Button";
+import DomainStatus from "widgets/DomainStatus";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { EditIcon, KalmCertificatesIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
-import { Loading } from "widgets/Loading";
-import { KTable } from "widgets/Table";
-import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
-import { formatDate } from "utils/date";
-import { CustomizedButton } from "widgets/Button";
-import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { indigo } from "@material-ui/core/colors";
-import { InfoBox } from "widgets/InfoBox";
-import DomainStatus from "widgets/DomainStatus";
-import sc from "utils/stringConstants";
-import { Link } from "react-router-dom";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { InfoBox } from "widgets/InfoBox";
+import { KRTable } from "widgets/KRTable";
+import { Loading } from "widgets/Loading";
+import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -185,70 +184,64 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     return rowData.get("expireTimestamp") ? formatDate(new Date(rowData.get("expireTimestamp") * 1000)) : "-";
   };
 
-  private getColumns() {
-    const columns = [
-      // @ts-ignore
+  private getKRTableColumns() {
+    return [
       {
-        title: "Cert Name",
-        field: "name",
-        sorting: false,
-        render: this.renderName,
-        customFilterAndSearch: customSearchForImmutable,
+        Header: "Cert Name",
+        accessor: "name",
       },
       {
-        title: "Domains",
-        field: "domains",
+        Header: "Domains",
+        accessor: "domains",
         sorting: false,
-        render: this.renderDomains,
       },
       {
-        title: "Status",
-        field: "status",
-        sorting: false,
-        render: this.renderStatus,
+        Header: "Status",
+        accessor: "status",
       },
       {
-        title: "Type",
-        field: "isSelfManaged",
-        sorting: false,
-        render: this.renderType,
+        Header: "Type",
+        accessor: "isSelfManaged",
       },
       {
-        title: "Signed by Trusted CA",
-        field: "isSignedByTrustedCA",
-        sorting: false,
-        render: this.renderIsSignedByTrustedCA,
+        Header: "Signed by Trusted CA",
+        accessor: "isSignedByTrustedCA",
       },
       {
-        title: "Expiration Time",
-        field: "expireTimestamp",
-        sorting: false,
-        render: this.renderExpireTimestamp,
+        Header: "Expiration Time",
+        accessor: "expireTimestamp",
       },
       {
-        title: "Actions",
-        field: "moreAction",
-        sorting: false,
-        searchable: false,
-        render: this.renderMoreActions,
+        Header: "Actions",
+        accessor: "actions",
       },
     ];
-
-    return columns;
   }
 
-  private getData = () => {
+  private getKRTableData() {
     const { certificates } = this.props;
-    const data: RowData[] = [];
+    const data: any[] = [];
 
-    certificates.forEach((certificate, index) => {
-      const rowData = certificate as RowData;
-      rowData.index = index;
-      data.push(rowData);
-    });
+    certificates &&
+      certificates.forEach((certificate, index) => {
+        const rowData = certificate as RowData;
+        data.push({
+          name: this.renderName(rowData),
+          domains: this.renderDomains(rowData),
+          status: this.renderStatus(rowData),
+          isSelfManaged: this.renderType(rowData),
+          isSignedByTrustedCA: this.renderIsSignedByTrustedCA(rowData),
+          expireTimestamp: this.renderExpireTimestamp(rowData),
+          actions: this.renderMoreActions(rowData),
+        });
+      });
 
     return data;
-  };
+  }
+
+  private renderKRTable() {
+    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+  }
 
   private renderEmpty() {
     return (
@@ -273,7 +266,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { isFirstLoaded, isLoading, certificates } = this.props;
-    const tableData = this.getData();
     return (
       <BasePage
         secondHeaderRight={
@@ -297,14 +289,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
           {isLoading && !isFirstLoaded ? (
             <Loading />
           ) : certificates && certificates.size > 0 ? (
-            <KTable
-              options={{
-                paging: tableData.length > 20,
-              }}
-              columns={this.getColumns()}
-              data={tableData}
-              title=""
-            />
+            this.renderKRTable()
           ) : (
             this.renderEmpty()
           )}

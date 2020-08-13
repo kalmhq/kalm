@@ -5,6 +5,7 @@ import (
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
+	"github.com/kalmhq/kalm/api/ws"
 	"github.com/labstack/echo/v4"
 )
 
@@ -15,11 +16,17 @@ type ApiHandler struct {
 
 type H map[string]interface{}
 
-func (h *ApiHandler) Install(e *echo.Echo) {
-	// liveness readiness probes
+func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
+	e.GET("/ping", handlePing)
+	e.POST("/webhook/components", h.handleDeployWebhookCall)
+}
+
+func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	e.GET("/ping", handlePing)
 
-	e.POST("/webhook/components", h.handleDeployWebhookCall)
+	// watch
+	wsHandler := ws.NewWsHandler(h.clientManager)
+	e.GET("/ws", wsHandler.Serve)
 
 	// login
 	e.POST("/login/token", h.handleValidateToken)

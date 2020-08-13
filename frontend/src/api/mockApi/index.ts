@@ -1,11 +1,11 @@
-import { Api } from "./base";
+import { Api } from "../base";
 import Immutable from "immutable";
 import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import { HttpRoute } from "types/route";
 import { RegistryType } from "types/registry";
 import { RoleBindingsRequestBody } from "types/user";
-import MockStore from "./mockStore";
+import MockStore from "../mockStore";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { DeployKey } from "types/deployKey";
 import { InitializeClusterResponse } from "types/cluster";
@@ -264,7 +264,7 @@ export default class MockApi extends Api {
 
   public deleteDeployKey = async (protectedEndpoint: DeployKey): Promise<void> => {};
 
-  public resolveDomain = async (domain: string, type: "A" | "CNAME"): Promise<string[]> => {
+  public resolveDomain = async (domain: string, type: "A" | "CNAME", timeout: number = 5000): Promise<string[]> => {
     return ["1.1.1.1"];
   };
 

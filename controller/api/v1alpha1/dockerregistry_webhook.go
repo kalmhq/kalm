@@ -35,12 +35,8 @@ func (r *DockerRegistry) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 var _ webhook.Defaulter = &DockerRegistry{}
 
-// Default implements webhook.Defaulter so a webhook will be registered for the type
-func (r *DockerRegistry) Default() {
-	if r.Spec.Host == "" {
-		r.Spec.Host = "https://registry-1.docker.io"
-	}
-}
+// The empty host is a special value for docker hub. Do not change it
+func (r *DockerRegistry) Default() {}
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-dockerregistry,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=dockerregistries,versions=v1alpha1,name=vdockerregistry.kb.io
 
@@ -67,12 +63,13 @@ func (r *DockerRegistry) ValidateDelete() error {
 func (r *DockerRegistry) validate() error {
 	var rst KalmValidateErrorList
 
-	isValid := isValidURL(r.Spec.Host)
-	if !isValid {
-		rst = append(rst, KalmValidateError{
-			Err:  "invalid url",
-			Path: "spec.host",
-		})
+	if r.Spec.Host != "" {
+		if isValid := isValidURL(r.Spec.Host); !isValid {
+			rst = append(rst, KalmValidateError{
+				Err:  "invalid url",
+				Path: "spec.host",
+			})
+		}
 	}
 
 	intervalSec := r.Spec.PoolingIntervalSeconds
