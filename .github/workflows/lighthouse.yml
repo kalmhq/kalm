@@ -3,6 +3,12 @@
 name: Lighthouse
 env:
   LHCI_TOKEN: ${{ secrets.LHCI_TOKEN }}
+  SKIP_PREFLIGHT_CHECK:true
+  EXTEND_ESLINT:true
+  REACT_APP_K8S_API_PERFIX=http://localhost:3001
+  REACT_APP_K8S_API_VERSION=v1alpha1
+  REACT_APP_USE_MOCK_API=true
+  REACT_APP_DEBUG=false
 defaults:
   run:
     working-directory: frontend
@@ -24,10 +30,12 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10.x
-      # - name: npm install, build
-      #   run: |
-      #     npm install
-      #     npm run build
+      - name: npm install, build
+        run: |
+          npm install -g serve
+          npm install
+          npm run start
+          serve -s build -p 3000
       # lhci assert
       - name: run Lighthouse CI
         run: |
