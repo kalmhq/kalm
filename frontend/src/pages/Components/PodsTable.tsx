@@ -47,18 +47,6 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
     this.state = {};
   }
 
-  private getData = () => {
-    const data: RowData[] = [];
-
-    this.props.pods.forEach((pod, index) => {
-      const rowData = pod as RowData;
-      rowData.index = index;
-      data.push(rowData);
-    });
-
-    return data;
-  };
-
   private renderPodName = (pod: RowData) => {
     return pod.get("name");
   };
