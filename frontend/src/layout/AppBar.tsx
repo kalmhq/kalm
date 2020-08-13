@@ -1,4 +1,4 @@
-import { AppBar, Breadcrumbs, createStyles, Divider, IconButton, Menu, MenuItem, Theme, Box } from "@material-ui/core";
+import { AppBar, Box, Breadcrumbs, createStyles, Divider, IconButton, Menu, MenuItem, Theme } from "@material-ui/core";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { logoutAction } from "actions/auth";
 import { closeTutorialDrawerAction, openTutorialDrawerAction } from "actions/tutorial";
@@ -10,8 +10,12 @@ import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
-import { HelpIcon, KalmUserIcon, MenuOpenIcon, MenuIcon } from "widgets/Icon";
+import { HelpIcon, KalmUserIcon, MenuIcon, MenuOpenIcon, KalmLogo2Icon, KalmTextLogoIcon } from "widgets/Icon";
 import { ThemeToggle } from "theme/ThemeToggle";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import stringConstants from "utils/stringConstants";
+import Button from "@material-ui/core/Button";
+import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
 
 const mapStateToProps = (state: RootState) => {
   const activeNamespace = state.get("namespaces").get("active");
@@ -94,7 +98,11 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, RouteComponentProps {
+interface Props
+  extends WithStyles<typeof styles>,
+    ReturnType<typeof mapStateToProps>,
+    RouteComponentProps,
+    WithClusterInfoProps {
   dispatch: TDispatch;
 }
 
@@ -118,9 +126,9 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     const { authMenuAnchorElement } = this.state;
     return (
       <div>
-        <IconButton
-          aria-label="account of current user"
-          aria-controls="menu-appbar"
+        <IconButtonWithTooltip
+          tooltipTitle={stringConstants.APP_AUTH_TOOLTIPS}
+          aria-label={stringConstants.APP_AUTH_TOOLTIPS}
           aria-haspopup="true"
           onClick={(event: React.MouseEvent<HTMLElement>) => {
             this.setState({ authMenuAnchorElement: event.currentTarget });
@@ -128,7 +136,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           color="inherit"
         >
           <KalmUserIcon />
-        </IconButton>
+        </IconButtonWithTooltip>
         <Menu
           id="menu-appbar"
           anchorEl={authMenuAnchorElement}
@@ -147,14 +155,18 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           }}
         >
           <MenuItem disabled>Auth as {entity}</MenuItem>
-          <Divider />
-          <MenuItem
-            onClick={() => {
-              this.props.dispatch(logoutAction());
-            }}
-          >
-            Logout
-          </MenuItem>
+          {entity.indexOf("localhost") < 0 ? (
+            <>
+              <Divider />
+              <MenuItem
+                onClick={() => {
+                  this.props.dispatch(logoutAction());
+                }}
+              >
+                Logout
+              </MenuItem>
+            </>
+          ) : null}
         </Menu>
       </div>
     );
@@ -166,16 +178,15 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   renderTutorialIcon = () => {
     const { tutorialDrawerOpen, dispatch } = this.props;
     return (
-      <IconButton
-        aria-label="Switch Tutorial"
-        aria-haspopup="true"
+      <IconButtonWithTooltip
+        tooltipTitle={stringConstants.APP_TUTORIAL_TOOLTIPS}
+        aria-label={stringConstants.APP_TUTORIAL_TOOLTIPS}
         onClick={(event: React.MouseEvent<HTMLElement>) => {
           tutorialDrawerOpen ? dispatch(closeTutorialDrawerAction()) : dispatch(openTutorialDrawerAction());
         }}
-        color="inherit"
       >
         <HelpIcon style={{ fill: "white" }} />
-      </IconButton>
+      </IconButtonWithTooltip>
     );
   };
 
@@ -183,18 +194,38 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     switch (path) {
       case "applications":
       case "":
-        return "Applications";
+        return "Apps";
+      case "routes":
+        return "Routes";
+      case "components":
+        return "Components";
+      case "certificates":
+        return "Certificates";
+      case "nodes":
+        return "Nodes";
+      case "loadbalancer":
+        return "Load Balancer";
+      case "disks":
+        return "Disks";
+      case "registries":
+        return "Registries";
+      case "new":
+        return "New";
+      case "edit":
+        return "Edit";
       case "sso":
         return "SSO";
       case "ci":
         return "CI";
+      case "metrics":
+        return stringConstants.APP_DASHBOARD_PAGE_NAME;
       default:
-        return path[0].toUpperCase() + path.slice(1);
+        return path;
     }
   };
 
   render() {
-    const { classes, dispatch, isOpenRootDrawer, location } = this.props;
+    const { classes, dispatch, isOpenRootDrawer, location, clusterInfo } = this.props;
     const pathArray = location.pathname.split("/");
     return (
       <AppBar ref={this.headerRef} id="header" position="relative" className={classes.appBar}>
@@ -215,7 +246,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                   } else if (index === 0) {
                     return (
                       <Link key={index} className={classes.barTitle} to="/" onClick={() => blinkTopProgressAction()}>
-                        Kalm
+                        <KalmLogo2Icon />
+                        <KalmTextLogoIcon />
                       </Link>
                     );
                   } else if (index + 1 === pathArray.length) {
@@ -242,9 +274,13 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           </div>
 
           <div className={classes.barRight}>
-            {/* <IconButtonWithTooltip tooltipTitle="Settings" style={{ color: "#fff" }} component={NavLink} to={"/roles"}>
-              <SettingsIcon />
-            </IconButtonWithTooltip> */}
+            {clusterInfo.get("canBeInitialized") && (
+              <Box mr={2}>
+                <Button to="/setup" component={Link} onClick={console.log} variant="outlined" color="secondary">
+                  Finish the setup steps
+                </Button>
+              </Box>
+            )}
             <Divider orientation="vertical" flexItem color="inherit" />
             <Box className={classes.barAvatar}>{this.renderThemeIcon()}</Box>
             <Divider orientation="vertical" flexItem color="inherit" />
@@ -258,4 +294,6 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const AppBarComponent = connect(mapStateToProps)(withStyles(styles)(withRouter(AppBarComponentRaw)));
+export const AppBarComponent = connect(mapStateToProps)(
+  withStyles(styles)(withClusterInfo(withRouter(AppBarComponentRaw))),
+);

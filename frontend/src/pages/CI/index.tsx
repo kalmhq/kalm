@@ -1,24 +1,25 @@
-import React from "react";
-import { Box, Button, createStyles, Theme, withStyles, WithStyles, Typography } from "@material-ui/core";
-import { connect } from "react-redux";
-import { RootState } from "reducers";
-import { BasePage } from "pages/BasePage";
-import { CIIcon, CopyIcon } from "widgets/Icon";
+import { Box, Button, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
-import { CustomizedButton, DangerButton } from "widgets/Button";
-import { Link } from "react-router-dom";
-import { withDeployKeys, WithDeployKeysProps } from "hoc/withDeployKeys";
-import { KTable } from "widgets/Table";
-import { DeployKey, DeployKeyScopeCluster, DeployKeyScopeComponent, DeployKeyScopeNamespace } from "types/deployKey";
-import { Loading } from "widgets/Loading";
 import { deleteDeployKeyAction } from "actions/deployKey";
-import copy from "copy-to-clipboard";
-import { setSuccessNotificationAction } from "actions/notification";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { InfoBox } from "widgets/InfoBox";
-import { BlankTargetLink } from "widgets/BlankTargetLink";
-import { EmptyInfoBox } from "widgets/EmptyInfoBox";
+import { blinkTopProgressAction } from "actions/settings";
+import { withDeployKeys, WithDeployKeysProps } from "hoc/withDeployKeys";
+import { BasePage } from "pages/BasePage";
+import React from "react";
+import { connect } from "react-redux";
+import { Link } from "react-router-dom";
+import { RootState } from "reducers";
+import { DeployKey, DeployKeyScopeCluster, DeployKeyScopeComponent, DeployKeyScopeNamespace } from "types/deployKey";
 import sc from "utils/stringConstants";
+import { BlankTargetLink } from "widgets/BlankTargetLink";
+import { CustomizedButton } from "widgets/Button";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
+import { CIIcon, KalmDetailsIcon } from "widgets/Icon";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { InfoBox } from "widgets/InfoBox";
+import { KRTable } from "widgets/KRTable";
+import { Loading } from "widgets/Loading";
+
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
@@ -79,10 +80,10 @@ class CIPageRaw extends React.PureComponent<Props, State> {
         return "-";
       }
       case DeployKeyScopeNamespace: {
-        return resoureces.map((r) => <Box>{r}</Box>).toArray();
+        return resoureces.map((r) => <Box key={r}>{r}</Box>).toArray();
       }
       case DeployKeyScopeComponent: {
-        return resoureces.map((r) => <Box>{r}</Box>).toArray();
+        return resoureces.map((r) => <Box key={r}>{r}</Box>).toArray();
       }
     }
   };
@@ -90,41 +91,23 @@ class CIPageRaw extends React.PureComponent<Props, State> {
   private renderActions = (rowData: DeployKey) => {
     const { dispatch } = this.props;
     return (
-      <DangerButton
-        variant="outlined"
-        size="small"
-        onClick={() => {
-          dispatch(deleteDeployKeyAction(rowData));
-        }}
-      >
-        Delete
-      </DangerButton>
-    );
-  };
-
-  private renderKey = (rowData: DeployKey) => {
-    if (rowData.get("key") === "") {
-      return <Loading />;
-    }
-
-    const key = rowData.get("key");
-    return (
-      <Box>
-        {"****" + key.slice(key.length - 4)}
-        <Box ml={1} display="inline-block">
-          <IconButtonWithTooltip
-            tooltipTitle="Copy"
-            size="small"
-            aria-label="copy"
-            onClick={() => {
-              copy(key);
-              this.props.dispatch(setSuccessNotificationAction("Copied successful!"));
-            }}
-          >
-            <CopyIcon fontSize="small" />
-          </IconButtonWithTooltip>
-        </Box>
-      </Box>
+      <>
+        <IconLinkWithToolTip
+          onClick={() => {
+            blinkTopProgressAction();
+          }}
+          // size="small"
+          tooltipTitle="Details"
+          to={`/ci/keys/${rowData.get("name")}`}
+        >
+          <KalmDetailsIcon />
+        </IconLinkWithToolTip>
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-ci-popup"
+          popupTitle="DELETE CI?"
+          confirmedAction={() => dispatch(deleteDeployKeyAction(rowData))}
+        />
+      </>
     );
   };
 
@@ -156,52 +139,49 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderDataTable = () => {
+  private getKRTableColumns() {
+    return [
+      {
+        Header: "Name",
+        accessor: "name",
+      },
+      {
+        Header: "Scope",
+        accessor: "scope",
+      },
+      {
+        Header: "Resources",
+        accessor: "resources",
+      },
+
+      {
+        Header: "Action",
+        accessor: "action",
+      },
+    ];
+  }
+
+  private getKRTableData() {
     const { deployKeys } = this.props;
-    return (
-      <>
-        <KTable
-          options={{
-            paging: deployKeys.size > 20,
-          }}
-          columns={[
-            {
-              title: "Name",
-              field: "name",
-              sorting: false,
-              render: this.renderName,
-            },
-            {
-              title: "Scope",
-              field: "scope",
-              sorting: false,
-              render: this.renderScope,
-            },
-            {
-              title: "Resources",
-              field: "resources",
-              sorting: false,
-              render: this.renderResources,
-            },
-            {
-              title: "Key",
-              field: "key",
-              sorting: false,
-              render: this.renderKey,
-            },
-            {
-              title: "Action",
-              field: "action",
-              sorting: false,
-              render: this.renderActions,
-            },
-          ]}
-          data={deployKeys.toArray()}
-        />
-        {this.renderInfoBox()}
-      </>
-    );
-  };
+    const data: any[] = [];
+
+    deployKeys &&
+      deployKeys.forEach((deployKey, index) => {
+        const rowData = deployKey;
+        data.push({
+          name: this.renderName(rowData),
+          scope: this.renderScope(rowData),
+          resources: this.renderResources(rowData),
+          actions: this.renderActions(rowData),
+        });
+      });
+
+    return data;
+  }
+
+  private renderKRTable() {
+    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+  }
 
   private renderContent = () => {
     const { deployKeys, isLoading, loaded } = this.props;
@@ -214,7 +194,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
       );
     }
 
-    return <Box p={2}>{deployKeys.size === 0 ? this.renderEmpty() : this.renderDataTable()}</Box>;
+    return <Box p={2}>{deployKeys.size === 0 ? this.renderEmpty() : this.renderKRTable()}</Box>;
   };
 
   public render() {

@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
+	"github.com/kalmhq/kalm/api/log"
 	"github.com/urfave/cli/v2"
 	"os"
 	"path/filepath"
@@ -11,6 +11,7 @@ import (
 type Config struct {
 	BindAddress                   string
 	Port                          int
+	WebhookPort                   int
 	LogLevel                      string
 	KubernetesApiServerAddress    string
 	KubernetesApiServerCAFilePath string
@@ -36,7 +37,7 @@ func (c *Config) Normalize() {
 		// This is convenient for development.
 		c.KubeConfigPath = defaultKubeConfigPath
 
-		log.Debugf("Using cluster of current context defined in %s", defaultKubeConfigPath)
+		log.Debug("Using cluster of current context", "definedIn", defaultKubeConfigPath)
 	}
 }
 
@@ -44,26 +45,10 @@ func (c *Config) Validate() {
 
 }
 
-func setLogLevel(level string) {
-	switch level {
-	case "INFO":
-	case "":
-		log.SetLevel(log.InfoLevel)
-	case "DEBUG":
-		log.SetLevel(log.DebugLevel)
-	case "WARN":
-		log.SetLevel(log.WarnLevel)
-	case "ERROR":
-		log.SetLevel(log.ErrorLevel)
-	default:
-		log.SetLevel(log.InfoLevel)
-	}
-}
-
 func (c *Config) Install() {
-	setLogLevel(c.LogLevel)
+	log.InitDefaultLogger(c.LogLevel)
 	c.Normalize()
-	log.Debugf("%#v\n", c)
+	log.Debug("config", "config", c)
 	c.Validate()
 }
 
@@ -75,4 +60,14 @@ func (c *Config) GetServerAddress() string {
 	}
 
 	return fmt.Sprintf("%s:%d", address, c.Port)
+}
+
+func (c *Config) GetWebhookServerAddress() string {
+	var address string
+
+	if c.BindAddress != "0.0.0.0" {
+		address = c.BindAddress
+	}
+
+	return fmt.Sprintf("%s:%d", address, c.WebhookPort)
 }

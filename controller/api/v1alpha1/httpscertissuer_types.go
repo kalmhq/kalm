@@ -38,7 +38,9 @@ type HttpsCertIssuerSpec struct {
 type CAForTestIssuer struct{}
 
 type ACMECloudFlareIssuer struct {
-	Email              string `json:"email"`
+	// +kubebuilder:validation:MinLength=1
+	Email string `json:"email"`
+	// +kubebuilder:validation:MinLength=1
 	APITokenSecretName string `json:"apiTokenSecretName"`
 }
 
@@ -70,6 +72,7 @@ type HttpsCertIssuer struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="ok",type="bool",JSONPath=".status.ok"
 
 // HttpsCertIssuerList contains a list of HttpsCertIssuer
 type HttpsCertIssuerList struct {

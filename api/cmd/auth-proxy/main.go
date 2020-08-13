@@ -9,16 +9,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/coreos/go-oidc"
+	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/server"
 	"github.com/kalmhq/kalm/api/utils"
 	"github.com/labstack/echo/v4"
-	log "github.com/sirupsen/logrus"
+	"golang.org/x/net/http2"
 	"golang.org/x/oauth2"
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 var oauth2Config *oauth2.Config
@@ -59,7 +62,7 @@ func getOauth2Config() *oauth2.Config {
 	authProxyURL = os.Getenv("KALM_OIDC_AUTH_PROXY_URL")
 
 	if clientID == "" || clientSecret == "" || oidcProviderUrl == "" || authProxyURL == "" {
-		log.Error("KALM OIDC ENVs are not configured.")
+		log.Error(nil, "KALM OIDC ENVs are not configured")
 		return nil
 	}
 
@@ -67,7 +70,7 @@ func getOauth2Config() *oauth2.Config {
 	provider, err := oidc.NewProvider(context.Background(), oidcProviderUrl)
 
 	if err != nil {
-		log.Error("KALM new provider failed.")
+		log.Error(err, "KALM new provider failed.")
 		return nil
 	}
 
@@ -93,15 +96,21 @@ func removeExtAuthPathPrefix(path string) string {
 		path = path[len(ENVOY_EXT_AUTH_PATH_PREFIX)+1:]
 	}
 
-	if path == "" {
-		path = "/"
-	}
-
 	return path
 }
 
 func getOriginalURL(c echo.Context) string {
-	requestURI := removeExtAuthPathPrefix(c.Request().RequestURI)
+	// If the request is rewrite at route level, use the original path
+	requestURI := c.Request().Header.Get("X-Envoy-Original-Path")
+
+	if requestURI == "" {
+		requestURI = removeExtAuthPathPrefix(c.Request().RequestURI)
+	}
+
+	if requestURI == "" {
+		requestURI = "/"
+	}
+
 	ur := fmt.Sprintf("%s://%s%s", c.Scheme(), c.Request().Host, requestURI)
 	log.Debug("original url ", ur)
 	return ur
@@ -117,13 +126,15 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 	uri, err := url.Parse(authProxyURL + "/oidc/login")
 
 	if err != nil {
-		log.Error("parse auth proxy url error.", err)
+		log.Error(err, "parse auth proxy url error.")
 		return err
 	}
 
+	now := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
 	params := uri.Query()
 	params.Add("original_url", originalURL)
-	params.Add("sign", getStringSignature(originalURL))
+	params.Add("now", now)
+	params.Add("sign", getStringSignature(originalURL+now))
 
 	uri.RawQuery = params.Encode()
 
@@ -134,69 +145,176 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 // Run as Envoy ext_authz filter //
 ///////////////////////////////////
 
+type ClaimsWithGroups struct {
+	Groups []string `json:"groups"`
+}
+
 func handleExtAuthz(c echo.Context) error {
+	log.Debug("handleExtAuthz", "tls", c.Request().TLS != nil)
+	for k, v := range c.Request().Header {
+		log.Debug("handleExtAuthz", "header", k, "value", v)
+	}
+
 	if getOauth2Config() == nil {
 		return c.String(503, "Please configure KALM OIDC environments.")
 	}
 
-	// if there is authorization header, skip the ext authz
-	// envoy jwt_authn will handle the reset logic
-	if c.Request().Header.Get(echo.HeaderAuthorization) != "" {
-		return c.NoContent(200)
-	}
-
 	if c.QueryParam(ID_TOKEN_QUERY_NAME) != "" {
-		return handleSetIDToken(c)
+		if idToken, err := checkJwtToken(c, c.QueryParam(ID_TOKEN_QUERY_NAME)); err != nil {
+			log.Info(err.Error(), "clientIP", c.RealIP(), "host", c.Request().Host, "path", c.Request().URL.Path)
+			return c.String(401, err.Error())
+		} else {
+			log.Info("valid jwt token", "clientIP", c.RealIP(), "host", c.Request().Host, "path", c.Request().URL.Path)
+			return handleSetIDToken(c, idToken, c.QueryParam(ID_TOKEN_QUERY_NAME))
+		}
 	}
 
-	cookie, err := c.Cookie(ID_TOKEN_COOKIE_NAME)
+	token, err := getTokenFromRequest(c)
 
 	if err != nil {
-		log.Println(c.RealIP(), c.Path(), "No auth cookie, redirect to auth proxy")
+		log.Info("No auth cookie, redirect to auth proxy", "ip", c.RealIP(), "path", c.Path())
 		return redirectToAuthProxyUrl(c)
 	}
 
-	if cookie.Value == "" {
-		log.Println(c.RealIP(), c.Path(), "Auth cookie value empty, redirect to auth proxy")
+	if token == "" {
 		return redirectToAuthProxyUrl(c)
 	}
 
-	_, err = oidcVerifier.Verify(context.Background(), cookie.Value)
+	_, err = checkJwtToken(c, token)
 
 	if err != nil {
-		log.Error("jwt verify failed", err)
-		cookie.Value = ""
-		c.SetCookie(cookie)
-		return redirectToAuthProxyUrl(c)
+		return c.String(401, err.Error())
 	}
 
-	c.Response().Header().Set(echo.HeaderAuthorization, "Bearer "+cookie.Value)
+	// if the verify returns no error. It's safe to get claims in this way
+	parts := strings.Split(token, ".")
+	c.Response().Header().Set("kalm-sso-userinfo", parts[1])
+
 	return c.NoContent(200)
 }
 
-func handleSetIDToken(c echo.Context) error {
-	rawIDToken := c.QueryParam(ID_TOKEN_QUERY_NAME)
-	idToken, err := oidcVerifier.Verify(context.Background(), rawIDToken)
+func getTokenFromRequest(c echo.Context) (string, error) {
+	var token string
 
-	if err != nil {
-		log.Error("jwt verify failed", err)
-		return c.String(400, "jwt verify failed")
+	const prefix = "Bearer "
+
+	if strings.HasPrefix(c.Request().Header.Get(echo.HeaderAuthorization), prefix) {
+		token = c.Request().Header.Get(echo.HeaderAuthorization)[len(prefix):]
 	}
 
+	if token == "" {
+		cookie, err := c.Cookie(ID_TOKEN_COOKIE_NAME)
+
+		if err != nil {
+			return "", fmt.Errorf("No auth cookie, redirect to auth proxy")
+		}
+
+		if cookie.Value == "" {
+			return "", fmt.Errorf("Auth cookie value empty, redirect to auth proxy")
+		}
+
+		token = cookie.Value
+	}
+
+	return token, nil
+}
+
+func checkJwtToken(c echo.Context, token string) (*oidc.IDToken, error) {
+	idToken, err := oidcVerifier.Verify(context.Background(), token)
+
+	if err != nil {
+		// clear cookie
+		c.SetCookie(&http.Cookie{
+			Name:     ID_TOKEN_COOKIE_NAME,
+			Value:    "",
+			Path:     "/",
+			Expires:  time.Unix(0, 0),
+			HttpOnly: true,
+		})
+
+		return nil, fmt.Errorf("The jwt token is invalid, expired, revoked, or was issued to another client.")
+	}
+
+	if !inGrantedGroups(c, idToken) {
+		// clear cookie
+		c.SetCookie(&http.Cookie{
+			Name:     ID_TOKEN_COOKIE_NAME,
+			Value:    "",
+			Path:     "/",
+			Expires:  time.Unix(0, 0),
+			HttpOnly: true,
+		})
+
+		return nil, fmt.Errorf("You don't in any granted groups. Contact you admin please.")
+	}
+
+	return idToken, nil
+}
+
+func inGrantedGroups(c echo.Context, idToken *oidc.IDToken) bool {
+	grantedGroups := c.Request().Header.Get("Kalm-Sso-Granted-Groups")
+
+	if grantedGroups == "" {
+		return true
+	}
+
+	groups := strings.Split(grantedGroups, "|")
+	var claim ClaimsWithGroups
+	_ = idToken.Claims(&claim)
+
+	gm := make(map[string]struct{}, len(groups))
+	for _, g := range groups {
+		gm[g] = struct{}{}
+	}
+
+	for _, g := range claim.Groups {
+		if _, ok := gm[g]; ok {
+			return true
+		}
+	}
+
+	return false
+}
+
+func handleSetIDToken(c echo.Context, idToken *oidc.IDToken, rawIDToken string) error {
 	cookie := new(http.Cookie)
 	cookie.Name = ID_TOKEN_COOKIE_NAME
 	cookie.Value = rawIDToken
-	cookie.Expires = idToken.Expiry
+
+	// TODO: change this to a smaller value and use refresh token to auto update id_token
+	cookie.Expires = time.Now().Add(24 * time.Hour)
+
+	if idToken.Expiry.Before(cookie.Expires) {
+		cookie.Expires = idToken.Expiry
+	}
+
 	cookie.HttpOnly = true
 	cookie.SameSite = http.SameSiteLaxMode
 	cookie.Path = "/"
 	c.SetCookie(cookie)
 
-	uri := c.Request().URL
+	requestURI := c.Request().Header.Get("X-Envoy-Original-Path")
+
+	log.Debug("[Set ID Token]", "X-Envoy-Original-Path", requestURI)
+
+	if requestURI == "" {
+		requestURI = removeExtAuthPathPrefix(c.Request().RequestURI)
+		log.Debug("[Set ID Token]", "RawRequestURI", c.Request().RequestURI, "removeExtAuthPathPrefix", requestURI)
+	}
+
+	uri, err := url.Parse(requestURI)
+
+	if err != nil {
+		return err
+	}
+
 	params := uri.Query()
 	params.Del(ID_TOKEN_QUERY_NAME)
 	uri.RawQuery = params.Encode()
-	uri.Path = removeExtAuthPathPrefix(uri.Path)
+
+	if uri.Path == "" {
+		uri.Path = "/"
+	}
 
 	return c.Redirect(302, uri.String())
 }
@@ -212,9 +330,14 @@ func handleOIDCLogin(c echo.Context) error {
 
 	// verify request
 	originalURL := c.QueryParam("original_url")
+	now := c.QueryParam("now")
 
 	if originalURL == "" {
-		return c.String(400, "Require original_url.")
+		return c.String(400, "Require param original_url.")
+	}
+
+	if now == "" {
+		return c.String(400, "Require param original_url.")
 	}
 
 	sign := c.QueryParam("sign")
@@ -223,8 +346,8 @@ func handleOIDCLogin(c echo.Context) error {
 		return c.String(400, "Require sign.")
 	}
 
-	if sign != getStringSignature(originalURL) {
-		log.Errorf("Wrong Sign, receive: %s, expected: %s", sign, getStringSignature(originalURL))
+	if sign != getStringSignature(originalURL+now) {
+		log.Error(nil, "wrong sign", "receive", sign, "expected", getStringSignature(originalURL+now))
 		return c.String(400, "Wrong sign")
 	}
 
@@ -265,21 +388,21 @@ func handleOIDCCallback(c echo.Context) error {
 	stateStr := c.QueryParam("state")
 
 	if stateStr == "" {
-		log.Error("Missing state")
+		log.Error(nil, "missing state")
 		return c.String(400, "Missing state")
 	}
 
 	stateBytes, err := base64.RawStdEncoding.DecodeString(stateStr)
 
 	if err != nil {
-		log.Error("Base64 decode state failed", err)
+		log.Error(err, "Base64 decode state failed")
 		return c.String(400, "Base64 decode state failed")
 	}
 
 	stateJsonBytes, err := utils.AesDecrypt(stateBytes, stateEncryptKey[:])
 
 	if err != nil {
-		log.Error("Aes decrypted state failed", err)
+		log.Error(err, "Aes decrypted state failed")
 		return c.String(400, "State mismatch")
 	}
 
@@ -287,7 +410,7 @@ func handleOIDCCallback(c echo.Context) error {
 	err = json.Unmarshal(stateJsonBytes, &state)
 
 	if err != nil {
-		log.Errorf("json decode state failed")
+		log.Error(err, "json decode state failed")
 		return c.String(400, "json decode state failed")
 	}
 
@@ -297,28 +420,28 @@ func handleOIDCCallback(c echo.Context) error {
 	)
 
 	if err != nil {
-		log.Error("Exchange oauth2Token error", err)
+		log.Error(err, "Exchange oauth2Token error")
 		return c.String(400, "Exchange oauth2Token error")
 	}
 
 	rawIDToken, ok := oauth2Token.Extra(ID_TOKEN_COOKIE_NAME).(string)
 
 	if !ok {
-		log.Error("no id_token in token response")
+		log.Error(nil, "no id_token in token response")
 		return c.String(400, "no id_token in token resonse")
 	}
 
 	_, err = oidcVerifier.Verify(context.Background(), rawIDToken)
 
 	if err != nil {
-		log.Error("jwt verify failed", err)
+		log.Error(err, "jwt verify failed")
 		return c.String(400, "jwt verify failed")
 	}
 
 	uri, err := url.Parse(state.OriginalURL)
 
 	if err != nil {
-		log.Error("parse original url failed. ", state.OriginalURL, err)
+		log.Error(err, "parse original url failed. ", "OriginalURL", state.OriginalURL)
 		return c.String(400, "parse original url failed.")
 	}
 
@@ -329,6 +452,19 @@ func handleOIDCCallback(c echo.Context) error {
 	return c.Redirect(302, uri.String())
 }
 
+func handleLog(c echo.Context) error {
+	level := c.QueryParam("level")
+
+	switch level {
+	case "debug":
+		log.InitDefaultLogger("debug")
+	default:
+		log.InitDefaultLogger("info")
+	}
+
+	return c.NoContent(200)
+}
+
 func main() {
 	e := server.NewEchoInstance()
 
@@ -337,8 +473,18 @@ func main() {
 	e.GET("/oidc/callback", handleOIDCCallback)
 
 	// envoy ext_authz handlers
-	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX+"/*", handleExtAuthz)
-	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX, handleExtAuthz)
+	e.Any("/"+ENVOY_EXT_AUTH_PATH_PREFIX+"/*", handleExtAuthz)
+	e.Any("/"+ENVOY_EXT_AUTH_PATH_PREFIX, handleExtAuthz)
 
-	e.Logger.Fatal(e.Start("0.0.0.0:3002"))
+	e.POST("/log", handleLog)
+
+	err := e.StartH2CServer("0.0.0.0:3002", &http2.Server{
+		MaxConcurrentStreams: 250,
+		MaxReadFrameSize:     1048576,
+		IdleTimeout:          60 * time.Second,
+	})
+
+	if err != nil {
+		panic(err)
+	}
 }

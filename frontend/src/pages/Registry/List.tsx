@@ -1,26 +1,23 @@
-import { Box, createStyles, Theme, withStyles, WithStyles, Typography } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, Tooltip, Typography, withStyles, WithStyles } from "@material-ui/core";
+import { indigo } from "@material-ui/core/colors";
+import { setErrorNotificationAction } from "actions/notification";
 import { deleteRegistryAction } from "actions/registries";
 import React from "react";
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { RegistryType } from "types/registry";
-import { ErrorBadge, SuccessBadge } from "widgets/Badge";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { KTable } from "widgets/Table";
-import { openDialogAction } from "actions/dialog";
-import { setErrorNotificationAction } from "actions/notification";
-import { blinkTopProgressAction } from "actions/settings";
-import { CustomizedButton } from "widgets/Button";
-import { ConfirmDialog } from "widgets/ConfirmDialog";
-import { DeleteIcon, EditIcon, KalmRegistryIcon } from "widgets/Icon";
+import sc from "utils/stringConstants";
+import { SuccessBadge } from "widgets/Badge";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
+import { EditIcon, ErrorIcon, KalmRegistryIcon } from "widgets/Icon";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { InfoBox } from "widgets/InfoBox";
+import { KRTable } from "widgets/KRTable";
 import { Loading } from "widgets/Loading";
 import { BasePage } from "../BasePage";
-import { RegistryNewModal, RegistryNewModalID } from "./New";
-import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { indigo } from "@material-ui/core/colors";
-import { InfoBox } from "widgets/InfoBox";
-import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -43,7 +40,6 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 interface State {
   isDeleteConfirmDialogOpen: boolean;
   deletingItemName?: string;
-  editingRegistry?: RegistryType;
 }
 
 interface RowData extends RegistryType {
@@ -56,7 +52,6 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     this.state = {
       isDeleteConfirmDialogOpen: false,
       deletingItemName: undefined,
-      editingRegistry: undefined,
     };
   }
 
@@ -73,27 +68,24 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     });
   };
 
-  private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen, deletingItemName } = this.state;
+  // private renderDeleteConfirmDialog = () => {
+  //   const { isDeleteConfirmDialogOpen, deletingItemName } = this.state;
 
-    return (
-      <ConfirmDialog
-        open={isDeleteConfirmDialogOpen}
-        onClose={this.closeDeleteConfirmDialog}
-        title={`${sc.ARE_YOU_SURE_PREFIX} this registry(${deletingItemName})?`}
-        content="You will lost this registry, and this action is irrevocable."
-        onAgree={this.confirmDelete}
-      />
-    );
-  };
+  //   return (
+  //     <ConfirmDialog
+  //       open={isDeleteConfirmDialogOpen}
+  //       onClose={this.closeDeleteConfirmDialog}
+  //       title={`${sc.ARE_YOU_SURE_PREFIX} this registry(${deletingItemName})?`}
+  //       content="You will lost this registry, and this action is irrevocable."
+  //       onAgree={this.confirmDelete}
+  //     />
+  //   );
+  // };
 
-  private confirmDelete = async () => {
+  private confirmDelete = async (rowData: RowData) => {
     const { dispatch } = this.props;
     try {
-      const { deletingItemName } = this.state;
-      if (deletingItemName) {
-        await dispatch(deleteRegistryAction(deletingItemName));
-      }
+      await dispatch(deleteRegistryAction(rowData.get("name")));
     } catch {
       dispatch(setErrorNotificationAction());
     }
@@ -119,7 +111,13 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     if (row.get("authenticationVerified")) {
       return <SuccessBadge />;
     } else {
-      return <ErrorBadge />;
+      return (
+        <Tooltip title={sc.REGISTRY_VERIFIED_ERROR} placement="left" arrow>
+          <div>
+            <ErrorIcon />
+          </div>
+        </Tooltip>
+      );
     }
   }
 
@@ -131,91 +129,117 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions(row: RowData) {
-    const { registries, dispatch } = this.props;
     return (
       <>
-        <IconButtonWithTooltip
-          tooltipTitle={"Edit"}
-          onClick={() => {
-            const registry = registries.find((r) => r.get("name") === row.get("name"));
-            this.setState({
-              editingRegistry: registry,
-            });
-            dispatch(openDialogAction(RegistryNewModalID));
-          }}
-        >
+        <IconLinkWithToolTip tooltipTitle={"Edit"} to={`/cluster/registries/${row.get("name")}/edit`}>
           <EditIcon />
-        </IconButtonWithTooltip>
-        <IconButtonWithTooltip
+        </IconLinkWithToolTip>
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-registry-popup"
+          popupTitle="DELETE REGISTRY?"
+          confirmedAction={() => this.confirmDelete(row)}
+        />
+        {/* <IconButtonWithTooltip
           tooltipTitle={"Delete"}
           onClick={() => {
             this.showDeleteConfirmDialog(row.get("name"));
           }}
         >
           <DeleteIcon />
-        </IconButtonWithTooltip>
+        </IconButtonWithTooltip> */}
       </>
     );
   }
 
-  private getData = () => {
-    const { registries } = this.props;
-    const data: RowData[] = [];
+  private getKRTableColumns() {
+    return [
+      {
+        Header: "Name",
+        accessor: "name",
+      },
+      {
+        Header: "Host",
+        accessor: "host",
+      },
+      {
+        Header: "Username",
+        accessor: "username",
+      },
+      {
+        Header: "Password",
+        accessor: "password",
+      },
+      {
+        Header: "Verified",
+        accessor: "verified",
+      },
 
-    registries.forEach((registry, index) => {
-      const rowData = registry as RowData;
-      rowData.index = index;
-      data.push(rowData);
-    });
+      {
+        Header: "Actions",
+        accessor: "action",
+      },
+    ];
+  }
+
+  private getKRTableData() {
+    const { registries } = this.props;
+    const data: any[] = [];
+
+    registries &&
+      registries.forEach((registry, index) => {
+        const rowData = registry as RowData;
+        data.push({
+          name: this.renderName(rowData),
+          host: this.renderHost(rowData),
+          username: this.renderUsername(rowData),
+          password: this.renderPassword(rowData),
+          verified: this.renderVerified(rowData),
+          actions: this.renderActions(rowData),
+        });
+      });
 
     return data;
-  };
+  }
+
+  private renderKRTable() {
+    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+  }
 
   private renderSecondHeaderRight() {
-    const { dispatch } = this.props;
     return (
       <>
         {/* <H6>Private Docker Registries</H6> */}
-        <CustomizedButton
+        <Button
           color="primary"
           variant="outlined"
           size="small"
-          onClick={() => {
-            this.setState({
-              editingRegistry: undefined,
-            });
-            blinkTopProgressAction();
-            dispatch(openDialogAction(RegistryNewModalID));
-          }}
+          component={Link}
+          tutorial-anchor-id="add-certificate"
+          to="/cluster/registries/new"
         >
           New {pageObjectName}
-        </CustomizedButton>
+        </Button>
       </>
     );
   }
 
   private renderEmpty() {
-    const { dispatch } = this.props;
-
     return (
       <EmptyInfoBox
         image={<KalmRegistryIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={sc.EMPTY_REGISTRY_TITLE}
         content={sc.EMPTY_REGISTRY_SUBTITLE}
         button={
-          <CustomizedButton
-            variant="contained"
+          <Button
             color="primary"
-            onClick={() => {
-              this.setState({
-                editingRegistry: undefined,
-              });
-              blinkTopProgressAction();
-              dispatch(openDialogAction(RegistryNewModalID));
-            }}
+            variant="contained"
+            size="small"
+            component={Link}
+            tutorial-anchor-id="add-certificate"
+            to="/cluster/registries/new"
           >
             New {pageObjectName}
-          </CustomizedButton>
+          </Button>
         }
       />
     );
@@ -227,67 +251,11 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { isLoading, isFirstLoaded, registries } = this.props;
-    const { editingRegistry } = this.state;
-    const tableData = this.getData();
 
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
-        {this.renderDeleteConfirmDialog()}
-        <RegistryNewModal isEdit={!!editingRegistry} registry={editingRegistry} />
         <Box p={2}>
-          {isLoading && !isFirstLoaded ? (
-            <Loading />
-          ) : registries.size > 0 ? (
-            <KTable
-              options={{
-                paging: tableData.length > 20,
-              }}
-              columns={[
-                {
-                  title: "Name",
-                  field: "name",
-                  sorting: false,
-                  render: this.renderName,
-                },
-                {
-                  title: "Host",
-                  field: "host",
-                  sorting: false,
-                  render: this.renderHost,
-                },
-                {
-                  title: "Username",
-                  field: "username",
-                  sorting: false,
-                  render: this.renderUsername,
-                },
-                {
-                  title: "Password",
-                  field: "password",
-                  sorting: false,
-                  render: this.renderPassword,
-                },
-                {
-                  title: "Verified",
-                  field: "verified",
-                  sorting: false,
-                  render: this.renderVerified,
-                },
-
-                {
-                  title: "Actions",
-                  field: "action",
-                  sorting: false,
-                  searchable: false,
-                  render: (row) => this.renderActions(row),
-                },
-              ]}
-              data={tableData}
-              title=""
-            />
-          ) : (
-            this.renderEmpty()
-          )}
+          {isLoading && !isFirstLoaded ? <Loading /> : registries.size > 0 ? this.renderKRTable() : this.renderEmpty()}
         </Box>
         <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>

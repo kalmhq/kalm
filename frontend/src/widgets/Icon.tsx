@@ -383,6 +383,46 @@ export const KalmGridViewIcon = withStyles(styles)((props: ColorIconsProps) => {
   );
 });
 
+export const KalmLogo2Icon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return (
+    <SvgIcon
+      className={className}
+      fontSize={fontSize}
+      style={style ?? { paddingTop: 4 }}
+      width="139"
+      height="143"
+      viewBox="0 0 139 143"
+    >
+      <path
+        d="M119.4 85C114.9 110.6 92.7001 129.2 66.6001 129.2C39.3001 129.2 16.6 108.6 13.4 82.1H27.2001V91.4C27.2001 100.5 34.5001 107.8 43.6001 107.8H83.8C93.5 107.8 102.3 102.8 107.1 94.3C111.9 85.8 111.8 75.7 106.8 67.4L62.3 0H51.7001V85.3H64.8V27.5L95.6001 74.2C98.1001 78.5 98.1001 83.6 95.7001 87.9C93.2001 92.3 88.8 94.8 83.8 94.8H43.6001C41.8001 94.8 40.3 93.3 40.3 91.5V69H0V75.5C0 112.2 29.9001 142.2 66.7001 142.2C99.1001 142.2 126.7 119 132.4 87.2C132.9 84.2 135.5 82.1 138.5 82.1V69.1C129 69 121 75.7 119.4 85Z"
+        fill="#2CA5FF"
+      />
+    </SvgIcon>
+  );
+});
+
+export const KalmTextLogoIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return (
+    <SvgIcon
+      className={className}
+      fontSize={fontSize}
+      style={style ?? { width: 54, height: 22, paddingLeft: 8, paddingTop: 4 }}
+      width="285"
+      height="88"
+      viewBox="0 0 285 88"
+    >
+      <path d="M139.7 85.9V22.2H125.1V28.5L124.4 27.9C119.1 23.2 112.2 20.8 104.5 20.8C86.1999 20.8 71.8999 35.4 71.8999 54.1C71.8999 72.8 86.1999 87.4 104.5 87.4C112.2 87.4 119 84.9 124.4 80.3L125.1 79.7V86H139.7V85.9ZM125.1 63.4C121.7 70.2 114.8 74.3 107 74.3C95.5999 74.3 86.7 65.4 86.7 54C86.7 42.6 95.5999 33.7 107 33.7C114.8 33.7 121.8 38 125.2 44.8V45L125.1 63.4Z" />
+      <path d="M269.7 47.9V86H284.3V47.2C284.3 31.7 273.9 20.8 259.1 20.8C251 20.8 242.9 24.8 237.9 31.3L237.5 31.8L237.2 31.3C232.8 24.6 225.2 20.8 216.5 20.8C210.5 20.8 204.5 23.5 199.8 28.2L199 29V22.3H184.4V86.1H199V44.3L199.1 44.2C203.4 37.9 209.2 34.1 214.4 34.1C222 34.1 227.1 39.7 227.1 48.1V86.2H241.7V47.4C241.7 46.5 241.7 45.7 241.6 44.8V44.5L241.7 44.4C246 37.9 251.7 34.1 257.1 34.1C264.6 33.8 269.7 39.5 269.7 47.9Z" />
+      <path d="M169.4 0H154.8V85.9H169.4V0Z" />
+      <path d="M70.1 0H53.2001L30.6 36.2H15V0H0V85.9H15V50H30.6L52.9 85.9H69.9L43.4 43.1L70.1 0Z" />
+    </SvgIcon>
+  );
+});
+
 export const KalmListViewIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);

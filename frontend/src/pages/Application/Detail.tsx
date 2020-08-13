@@ -1,18 +1,18 @@
 import { Box, createStyles, Grid, Link, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { Expansion } from "forms/Route/expansion";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import Immutable from "immutable";
 import React, { ReactElement } from "react";
 import { ApplicationComponentDetails, PodStatus } from "types/application";
+import { TimestampFilter } from "utils/date";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { HttpBytesSizeChart } from "widgets/charts/httpBytesSizeChart";
 import { HttpStatusCodeLineChart } from "widgets/charts/httpStatusCodeChart";
 import { DoughnutChart } from "widgets/DoughnutChart";
-import { KSelect } from "widgets/KSelect";
+import { KRTable } from "widgets/KRTable";
 import { BigCPULineChart, BigMemoryLineChart } from "widgets/SmallLineChart";
-import { KTable } from "widgets/Table";
-import { TimestampFilter } from "utils/date";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -120,7 +120,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof styles>, WithRoutesDataProps {}
+interface Props extends WithStyles<typeof styles>, WithNamespaceProps, WithRoutesDataProps {}
 
 interface State {
   chartDateFilter: string;
@@ -242,9 +242,20 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  private renderWarnings() {
+  private getWarningsKRTableColumns() {
+    return [
+      { accessor: "componentName", Header: "Component" },
+      { accessor: "podName", Header: "Pod" },
+      {
+        accessor: "message",
+        Header: "Message",
+      },
+    ];
+  }
+
+  private getWarningsKRTableData() {
     const { components, activeNamespace } = this.props;
-    let warnings: { componentName: ReactElement; podName: ReactElement; message: string }[] = [];
+    let warnings: { componentName: ReactElement; podName: ReactElement; message: ReactElement }[] = [];
 
     if (components) {
       components.forEach((c) => {
@@ -261,30 +272,18 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                   {p.get("name")}
                 </Link>
               ),
-              message: w.get("message"),
+              message: <Typography color="error">{w.get("message")}</Typography>,
             });
           });
         });
       });
     }
 
-    return (
-      <KTable
-        columns={[
-          { field: "componentName", title: "Component" },
-          { field: "podName", title: "Pod" },
-          {
-            field: "message",
-            title: "Message",
-            render: ({ message }: { message: string }) => <Typography color="error">{message}</Typography>,
-          },
-        ]}
-        options={{
-          paging: warnings.length > 20,
-        }}
-        data={warnings}
-      />
-    );
+    return warnings;
+  }
+
+  private renderWarningsKRTable() {
+    return <KRTable columns={this.getWarningsKRTableColumns()} data={this.getWarningsKRTableData()} />;
   }
 
   private formatYAxesValue = (value: number, label: string) => {
@@ -314,7 +313,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           </Box>
         </Expansion>
         <Expansion title="Metrics" defaultUnfold>
-          <Grid container spacing={2}>
+          {/* <Grid container spacing={2}>
             <Grid item xs={10}></Grid>
             <Grid item xs={2}>
               <KSelect
@@ -347,7 +346,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                 }}
               />
             </Grid>
-          </Grid>
+          </Grid> */}
           <Grid container spacing={2}>
             <Grid item xs>
               <HttpStatusCodeLineChart
@@ -407,11 +406,11 @@ class DetailsRaw extends React.PureComponent<Props, State> {
         </Expansion>
 
         <Expansion title="Warnings" defaultUnfold>
-          {this.renderWarnings()}
+          {this.renderWarningsKRTable()}
         </Expansion>
       </>
     );
   }
 }
 
-export const ApplicationOverview = withStyles(styles)(withRoutesData(DetailsRaw));
+export const ApplicationOverview = withStyles(styles)(withNamespace(withRoutesData(DetailsRaw)));

@@ -1,0 +1,45 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Lighthouse
+env:
+  LHCI_TOKEN: ${{ secrets.LHCI_TOKEN }}
+  SKIP_PREFLIGHT_CHECK:true
+  EXTEND_ESLINT:true
+  REACT_APP_K8S_API_PERFIX=http://localhost:3001
+  REACT_APP_K8S_API_VERSION=v1alpha1
+  REACT_APP_USE_MOCK_API=true
+  REACT_APP_DEBUG=false
+defaults:
+  run:
+    working-directory: frontend
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [performance/lighthouse-ci, master, develop]
+  pull_request:
+    branches: [performance/lighthouse-ci, master, develop]
+jobs:
+  lhci:
+    name: Lighthouse
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 10.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - name: npm install, build
+        run: |
+          npm install -g serve
+          npm install
+          npm run start
+          serve -s build -p 3000
+      # lhci assert
+      - name: run Lighthouse CI
+        run: |
+          npm install -g @lhci/cli@0.4.x
+          lhci collect --settings.chromeFlags="--headless" --settings.extraHeaders="{\"authorization\":\"${{secrets.KALM_AUTH_HEADER}}\",\"cookie\":\"${{secrets.KALM_AUTH_COOKIES_TOKEN}}\"}"
+          lhci collect --settings.extraHeaders="{\"authorization\":\"${{secrets.KALM_AUTH_HEADER}}\",\"cookie\":\"${{secrets.KALM_AUTH_COOKIES_TOKEN}}\"}" --settings.chromeFlags="--no-sandbox" --settings.emulatedFormFactor="desktop"
+          lhci upload

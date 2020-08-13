@@ -8,34 +8,32 @@ import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import Immutable from "immutable";
 import { POPPER_ZINDEX } from "layout/Constants";
-import MaterialTable, { MTableBodyRow } from "material-table";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { RouteWidgets } from "pages/Route/Widget";
 import React from "react";
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { primaryColor } from "theme/theme";
 import { ApplicationDetails } from "types/application";
 import { HttpRoute } from "types/route";
 import { getApplicationCreatedAtString } from "utils/application";
 import { pluralize } from "utils/string";
-import { customSearchForImmutable } from "utils/tableSearch";
+import sc from "utils/stringConstants";
 import { ApplicationCard } from "widgets/ApplicationCard";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
-import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { DeleteIcon, KalmApplicationIcon, KalmDetailsIcon, KalmGridViewIcon, KalmListViewIcon } from "widgets/Icon";
+import { KalmApplicationIcon, KalmDetailsIcon, KalmGridViewIcon, KalmListViewIcon } from "widgets/Icon";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { KRTable } from "widgets/KRTable";
 import { Caption } from "widgets/Label";
 import { KLink, KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
-import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
-import { Link } from "react-router-dom";
-import sc from "utils/stringConstants";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -53,7 +51,7 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   const internalEndpointsDialog = state.get("dialogs").get(internalEndpointsModalID);
   const externalEndpointsDialog = state.get("dialogs").get(externalEndpointsModalID);
-  const routesMap = state.get("routes").get("httpRoutes");
+  const httpRoutes = state.get("routes").get("httpRoutes");
   const componentsMap = state.get("components").get("components");
   const clusterInfo = state.get("cluster").get("info");
   const usingApplicationCard = state.get("settings").get("usingApplicationCard");
@@ -61,7 +59,7 @@ const mapStateToProps = (state: RootState) => {
     clusterInfo,
     internalEndpointsDialogData: internalEndpointsDialog ? internalEndpointsDialog.get("data") : {},
     externalEndpointsDialogData: externalEndpointsDialog ? externalEndpointsDialog.get("data") : {},
-    routesMap,
+    httpRoutes,
     componentsMap,
     usingApplicationCard,
   };
@@ -69,61 +67,16 @@ const mapStateToProps = (state: RootState) => {
 
 interface Props extends WithStyles<typeof styles>, WithNamespaceProps, ReturnType<typeof mapStateToProps> {}
 
-interface State {
-  isDeleteConfirmDialogOpen: boolean;
-  deletingApplicationListItem?: ApplicationDetails;
-}
-
 interface RowData extends ApplicationDetails {
   index: number;
 }
 
-class ApplicationListRaw extends React.PureComponent<Props, State> {
-  private tableRef: React.RefObject<MaterialTable<ApplicationDetails>> = React.createRef();
-
-  private defaultState = {
-    isDeleteConfirmDialogOpen: false,
-    deletingApplicationListItem: undefined,
-  };
-
-  constructor(props: Props) {
-    super(props);
-    this.state = this.defaultState;
-  }
-
-  private showDeleteConfirmDialog = (deletingApplicationListItem: ApplicationDetails) => {
-    this.setState({
-      isDeleteConfirmDialogOpen: true,
-      deletingApplicationListItem,
-    });
-  };
-
-  private closeDeleteConfirmDialog = () => {
-    this.setState({ isDeleteConfirmDialogOpen: false });
-  };
-
-  private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen, deletingApplicationListItem } = this.state;
-
-    return (
-      <ConfirmDialog
-        open={isDeleteConfirmDialogOpen}
-        onClose={this.closeDeleteConfirmDialog}
-        title={`${sc.ARE_YOU_SURE_PREFIX} this Application(${deletingApplicationListItem?.get("name")})?`}
-        content={sc.DELETE_APP_SUBTITLE}
-        onAgree={this.confirmDelete}
-      />
-    );
-  };
-
-  private confirmDelete = async () => {
+class ApplicationListRaw extends React.PureComponent<Props> {
+  private confirmDelete = async (rowData: ApplicationDetails) => {
     const { dispatch } = this.props;
     try {
-      const { deletingApplicationListItem } = this.state;
-      if (deletingApplicationListItem) {
-        await dispatch(deleteApplicationAction(deletingApplicationListItem.get("name")));
-        await dispatch(setSuccessNotificationAction("Successfully delete an application"));
-      }
+      await dispatch(deleteApplicationAction(rowData.get("name")));
+      await dispatch(setSuccessNotificationAction("Successfully delete an application"));
     } catch {
       dispatch(setErrorNotificationAction());
     }
@@ -245,12 +198,9 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderExternalAccesses = (applicationDetails: RowData) => {
-    const { routesMap, activeNamespaceName } = this.props;
+    const { httpRoutes, activeNamespaceName } = this.props;
 
-    const applicationRoutes: Immutable.List<HttpRoute> = routesMap.get(
-      applicationDetails.get("name"),
-      Immutable.List(),
-    );
+    const applicationRoutes = httpRoutes.filter((x) => x.get("namespace") === activeNamespaceName);
 
     if (applicationRoutes && applicationRoutes.size > 0) {
       return (
@@ -298,31 +248,13 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         >
           <KalmDetailsIcon />
         </IconLinkWithToolTip>
-        <IconButtonWithTooltip
-          tooltipTitle="Delete"
-          aria-label="delete"
-          onClick={() => {
-            blinkTopProgressAction();
-            this.showDeleteConfirmDialog(rowData);
-          }}
-        >
-          <DeleteIcon />
-        </IconButtonWithTooltip>
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-application-popup"
+          popupTitle="DELETE APPLICATION?"
+          confirmedAction={() => this.confirmDelete(rowData)}
+        />
       </>
     );
-  };
-
-  private getData = () => {
-    const { applications } = this.props;
-    const data: RowData[] = [];
-
-    applications.forEach((application, index) => {
-      const rowData = application as RowData;
-      rowData.index = index;
-      data.push(rowData);
-    });
-
-    return data;
   };
 
   private renderSecondHeaderRight() {
@@ -358,59 +290,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private getColumns() {
-    const columns = [
-      // @ts-ignore
-      {
-        title: "Name",
-        field: "name",
-        sorting: false,
-        render: this.renderName,
-        customFilterAndSearch: customSearchForImmutable,
-      },
-      { title: "Pod Status", field: "status", sorting: false, render: this.renderStatus },
-      {
-        title: "CPU",
-        field: "cpu",
-        render: this.renderCPU,
-        sorting: false,
-        headerStyle: {
-          textAlign: "center",
-        },
-      },
-      {
-        title: "Memory",
-        field: "memory",
-        render: this.renderMemory,
-        sorting: false,
-        headerStyle: {
-          textAlign: "center",
-        },
-      },
-      {
-        title: "Created At",
-        field: "active",
-        sorting: false,
-        render: this.renderCreatedAt,
-        // hidden: !hasWriterRole,
-      },
-      {
-        title: "Routes",
-        sorting: false,
-        render: this.renderExternalAccesses,
-      },
-      {
-        title: "Actions",
-        field: "moreAction",
-        sorting: false,
-        searchable: false,
-        render: this.renderActions,
-      },
-    ];
-
-    return columns;
-  }
-
   private renderEmpty() {
     const { dispatch } = this.props;
 
@@ -435,40 +314,75 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderList = () => {
-    const { applications } = this.props;
-    return (
-      <KTable
-        tableRef={this.tableRef}
-        options={{
-          paging: applications.size > 20,
-        }}
-        components={{
-          Row: (props: any) => (
-            // <ApplicationCard application={props.data} />
+  private getKRTableColumns() {
+    return [
+      {
+        Header: "Name",
+        accessor: "name",
+      },
+      { Header: "Pod Status", accessor: "status" },
+      {
+        Header: "CPU",
+        accessor: "cpu",
+      },
+      {
+        Header: "Memory",
+        accessor: "memory",
+      },
+      {
+        Header: "Created At",
+        accessor: "createdAt",
+      },
+      {
+        Header: "Routes",
+        accessor: "routes",
+      },
+      {
+        Header: "Actions",
+        accessor: "actions",
+      },
+    ];
+  }
 
-            <MTableBodyRow tutorial-anchor-id={"applications-list-item-" + props.data.get("name")} {...props} />
-          ),
-        }}
-        // @ts-ignore
-        columns={this.getColumns()}
-        data={this.getData()}
-        title=""
-      />
-    );
-  };
+  private getKRTableData() {
+    const { applications } = this.props;
+    const data: any[] = [];
+
+    applications &&
+      applications.forEach((application, index) => {
+        const rowData = application as RowData;
+        data.push({
+          name: this.renderName(rowData),
+          status: this.renderStatus(rowData),
+          cpu: this.renderCPU(rowData),
+          memory: this.renderMemory(rowData),
+          createdAt: this.renderCreatedAt(rowData),
+          routes: this.renderExternalAccesses(rowData),
+          actions: this.renderActions(rowData),
+        });
+      });
+
+    return data;
+  }
+
+  private renderKRTable() {
+    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+  }
 
   private renderGrid = () => {
-    const { applications, componentsMap, routesMap, activeNamespaceName } = this.props;
+    const { applications, componentsMap, httpRoutes, activeNamespaceName } = this.props;
+    const applicationRoutes: Immutable.List<HttpRoute> = httpRoutes.filter(
+      (x) => x.get("namespace") === activeNamespaceName,
+    );
     const GridRow = (app: ApplicationDetails, index: number) => {
       return (
         <Grid key={index} item sm={6} md={4} lg={3}>
           <ApplicationCard
             application={app}
             componentsMap={componentsMap}
-            routesMap={routesMap}
+            httpRoutes={applicationRoutes}
             activeNamespaceName={activeNamespaceName}
-            showDeleteConfirmDialog={this.showDeleteConfirmDialog}
+            confirmDelete={this.confirmDelete}
           />
         </Grid>
       );
@@ -487,7 +401,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const { isNamespaceLoading, isNamespaceFirstLoaded, applications, usingApplicationCard } = this.props;
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
-        {this.renderDeleteConfirmDialog()}
         <Box p={2}>
           {isNamespaceLoading && !isNamespaceFirstLoaded ? (
             <Loading />
@@ -496,7 +409,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           ) : usingApplicationCard ? (
             this.renderGrid()
           ) : (
-            this.renderList()
+            this.renderKRTable()
           )}
         </Box>
       </BasePage>

@@ -19,9 +19,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// +kubebuilder:validation:Enum=query;header
 type HttpRouteConditionType string
+
+// +kubebuilder:validation:Enum=equal;withPrefix;matchRegexp
 type HttpRouteConditionOperator string
-type HttpRouteCertValue string
+
+//type HttpRouteCertValue string
 
 const (
 	HttpRouteConditionTypeQuery  HttpRouteConditionType = "query"
@@ -34,50 +38,67 @@ const (
 	//HRCOWithoutPrefix  HttpRouteConditionOperator = "withoutPrefix"
 	//HRCONotMatchRegexp HttpRouteConditionOperator = "notMatchRegexp"
 
-	HttpCertAuto    HttpRouteCertValue = "Auto"
-	HttpCertDefault HttpRouteCertValue = "Default"
+	//HttpCertAuto    HttpRouteCertValue = "Auto"
+	//HttpCertDefault HttpRouteCertValue = "Default"
 )
 
 type HttpRouteCondition struct {
-	Type     HttpRouteConditionType     `json:"type"`
-	Name     string                     `json:"name"`
-	Value    string                     `json:"value"`
+	// +kubebuilder:validation:Enum=query;header
+	Type HttpRouteConditionType `json:"type"`
+
+	// +kubebuilder:validation:MinLength=1
+	Name string `json:"name"`
+
+	Value string `json:"value"`
+
+	// +kubebuilder:validation:Enum=equal;withPrefix;matchRegexp
 	Operator HttpRouteConditionOperator `json:"operator"`
 }
 
 type HttpRouteDestination struct {
-	Host   string `json:"host"`
-	Weight int    `json:"weight"`
+	// +kubebuilder:validation:MinLength=1
+	Host string `json:"host"`
+	// +kubebuilder:validation:Minimum=0
+	Weight int `json:"weight"`
 }
 
 type HttpRouteRetries struct {
-	Attempts             int      `json:"attempts"`
+	// +kubebuilder:validation:Minimum=0
+	Attempts int `json:"attempts"`
+	// +kubebuilder:validation:Minimum=1
 	PerTtyTimeoutSeconds int      `json:"perTtyTimeoutSeconds"`
 	RetryOn              []string `json:"retryOn"`
 }
 
 type HttpRouteMirror struct {
+	// +kubebuilder:validation:Minimum=0
 	Percentage  int                  `json:"percentage"`
 	Destination HttpRouteDestination `json:"destination"`
 }
 
 type HttpRouteDelay struct {
-	Percentage   int `json:"percentage"`
+	// +kubebuilder:validation:Minimum=0
+	Percentage int `json:"percentage"`
+	// +kubebuilder:validation:Minimum=1
 	DelaySeconds int `json:"delaySeconds"`
 }
 
 type HttpRouteFault struct {
+	// +kubebuilder:validation:Minimum=0
 	Percentage  int `json:"percentage"`
 	ErrorStatus int `json:"errorStatus"`
 }
 
 type HttpRouteCORS struct {
 	AllowOrigins     []HttpRouteCondition `json:"allowOrigin"`
-	AllowMethods     []string             `json:"allowMethods"`
+	AllowMethods     []AllowMethod        `json:"allowMethods"`
 	AllowCredentials bool                 `json:"allowCredentials"`
 	AllowHeaders     []string             `json:"allowHeaders"`
 	MaxAgeSeconds    int                  `json:"maxAgeSeconds"`
 }
+
+// +kubebuilder:validation:Enum=GET;HEAD;POST;PUT;PATCH;DELETE;OPTIONS;TRACE;CONNECT
+type AllowMethod string
 
 // +kubebuilder:validation:Enum=GET;HEAD;POST;PUT;PATCH;DELETE;OPTIONS;TRACE;CONNECT
 type HttpRouteMethod string
@@ -85,8 +106,7 @@ type HttpRouteMethod string
 // +kubebuilder:validation:Enum=http;https
 type HttpRouteScheme string
 
-// +kubebuilder:validation:MinItems=1
-type HttpRouteSchemes []string
+//type HttpRouteSchemes []HttpRouteScheme
 
 // HttpRouteSpec defines the desired state of HttpRoute
 type HttpRouteSpec struct {
@@ -99,8 +119,10 @@ type HttpRouteSpec struct {
 	// +kubebuilder:validation:MinItems=1
 	Methods []HttpRouteMethod `json:"methods"`
 
-	Schemes   HttpRouteSchemes `json:"schemes"`
-	StripPath bool             `json:"stripPath,omitempty"`
+	// +kubebuilder:validation:MinItems=1
+	Schemes []HttpRouteScheme `json:"schemes"`
+
+	StripPath bool `json:"stripPath,omitempty"`
 
 	Conditions []HttpRouteCondition `json:"conditions,omitempty"`
 
@@ -125,6 +147,8 @@ type HttpRouteStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Hosts",type="string",JSONPath=".spec.hosts"
+// +kubebuilder:printcolumn:name="Paths",type="string",JSONPath=".spec.paths"
 
 // HttpRoute is the Schema for the httproutes API
 type HttpRoute struct {

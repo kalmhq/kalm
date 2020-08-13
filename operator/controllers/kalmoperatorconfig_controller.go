@@ -24,6 +24,9 @@ import (
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
 	"github.com/kalmhq/kalm/operator/utils"
 	promconfig "github.com/prometheus/prometheus/config"
+	"istio.io/api/security/v1beta1"
+	v1beta13 "istio.io/api/type/v1beta1"
+	v1beta12 "istio.io/client-go/pkg/apis/security/v1beta1"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -32,6 +35,7 @@ import (
 	//apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	//apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/types"
@@ -63,7 +67,7 @@ type KalmOperatorConfigReconciler struct {
 }
 
 //go:generate mkdir -p tmp
-//go:generate sh -c "make -C ../../controller manifests" # make sure CRD & RBAC is up to date
+//go:generate sh -c "make -C ../../controller manifests-for-operator" # make sure CRD & RBAC is up to date
 //go:generate sh -c "kustomize build ../../controller/config/default > tmp/kalm.yaml"
 //go:generate sh -c "kustomize build ../resources/istio > tmp/istio.yaml"
 //go:generate sh -c "cp ../resources/cert-manager/cert-manager.yaml tmp/cert-manager.yaml"
@@ -271,10 +275,17 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 				Image:   fmt.Sprintf("%s:%s", KalmImgRepo, dashboardVersion),
 				Command: "./kalm-api-server",
 				Ports: []corev1alpha1.Port{
+					// Main service port
 					{
-						Name:          "http",
+						Protocol:      corev1alpha1.PortProtocolHTTP,
 						ContainerPort: 3001,
 						ServicePort:   80,
+					},
+					// Webhook service port
+					{
+						Protocol:      corev1alpha1.PortProtocolHTTP,
+						ContainerPort: 3002,
+						ServicePort:   3002,
 					},
 				},
 			},
@@ -295,6 +306,54 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 			r.Log.Info("updating dashboard component in kalm-system")
 			if err := r.Client.Update(ctx, &dashboard); err != nil {
 				r.Log.Error(err, "fail updating dashboard component in kalm-system")
+				return err
+			}
+		}
+
+		// Create policy, only allow traffic from istio-ingressgateway to reach kalm api/dashboard
+		policy := &v1beta12.AuthorizationPolicy{
+			ObjectMeta: metaV1.ObjectMeta{
+				Namespace: NamespaceKalmSystem,
+				Name:      dashboardName,
+			},
+			Spec: v1beta1.AuthorizationPolicy{
+				Selector: &v1beta13.WorkloadSelector{
+					MatchLabels: map[string]string{
+						"app": dashboardName,
+					},
+				},
+				Action: v1beta1.AuthorizationPolicy_ALLOW,
+				Rules: []*v1beta1.Rule{
+					{
+						When: []*v1beta1.Condition{
+							{
+								Key: "source.namespace",
+								Values: []string{
+									"istio-system",
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		var fetchedPolicy v1beta12.AuthorizationPolicy
+		err = r.Get(ctx, types.NamespacedName{Name: policy.Name, Namespace: policy.Namespace}, &fetchedPolicy)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				return err
+			}
+
+			if err := r.Client.Create(ctx, policy); err != nil {
+				return err
+			}
+		} else {
+			dashboard.Spec = expectedDashboard.Spec
+			copied := fetchedPolicy.DeepCopy()
+			copied.Spec = policy.Spec
+
+			if err := r.Client.Patch(ctx, copied, client.MergeFrom(&fetchedPolicy)); err != nil {
 				return err
 			}
 		}

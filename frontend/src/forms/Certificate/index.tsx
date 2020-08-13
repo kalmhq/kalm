@@ -1,21 +1,19 @@
-import { Button, Grid } from "@material-ui/core";
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { createCertificateIssuerAction } from "actions/certificate";
-import { closeDialogAction } from "actions/dialog";
-import { KAutoCompleteSingleValue, KFreeSoloAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
+import { Button, Grid, Box } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
+import { KAutoCompleteSingleValue, KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { KRenderDebounceTextField } from "forms/Basic/textfield";
 import { Uploader } from "forms/Basic/uploader";
-import { ValidatorRequired } from "forms/validator";
+import { ValidatorRequired, KValidatorHostsWithWildcardPrefix } from "forms/validator";
 import Immutable from "immutable";
-import { addCertificateDialogId } from "pages/Certificate/New";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
-import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
 import { TDispatchProp } from "types";
+import sc from "../../utils/stringConstants";
 import {
   caForTest,
   CertificateFormType,
@@ -27,11 +25,14 @@ import {
   newEmptyCertificateIssuerForm,
   selfManaged,
 } from "types/certificate";
-import sc from "utils/stringConstants";
+import { CertificateIssuerForm } from "forms/Certificate/issuerForm";
 import DomainStatus from "widgets/DomainStatus";
+import { connect } from "react-redux";
 import { Prompt } from "widgets/Prompt";
 import { CERTIFICATE_FORM_ID, ISSUER_FORM_ID } from "../formIDs";
-import { CertificateIssuerForm } from "./issuerForm";
+import { Caption } from "widgets/Label";
+import { Link } from "react-router-dom";
+import { KPanel } from "widgets/KPanel";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   const selector = formValueSelector(form || CERTIFICATE_FORM_ID);
@@ -45,6 +46,7 @@ const mapStateToProps = (state: RootState, { form }: OwnProps) => {
     httpsCertIssuer: selector(state, "httpsCertIssuer") as string,
     certificateIssuers: state.get("certificates").get("certificateIssuers") as CertificateIssuerList,
     domains: selector(state, "domains") as Immutable.List<string>,
+    ingressIP: state.get("cluster").get("info").get("ingressIP"),
   };
 };
 
@@ -55,7 +57,9 @@ interface OwnProps {
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {},
+    root: {
+      padding: theme.spacing(2),
+    },
     fileInput: {},
     label: {
       fontSize: 12,
@@ -88,6 +92,7 @@ const ValidatorCertificateValid = (value: any, _allValues?: any, _props?: any, _
 };
 
 const selfManagedCertContentValidators = [ValidatorRequired, ValidatorCertificateValid];
+const domainsValidators = [ValidatorRequired, KValidatorHostsWithWildcardPrefix];
 
 class CertificateFormRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
@@ -254,81 +259,106 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, domains, dispatch, handleSubmit, managedType, isEdit, dirty, submitSucceeded } = this.props;
-    const icons = domains.map((domain) => <DomainStatus domain={domain} />);
+    const {
+      classes,
+      domains,
+      handleSubmit,
+      managedType,
+      isEdit,
+      dirty,
+      submitSucceeded,
+      change,
+      ingressIP,
+    } = this.props;
+    const icons = Immutable.List(domains.map((domain) => <DomainStatus domain={domain} />));
+
     return (
-      <div className={classes.root}>
+      <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="certificate-form">
         <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
-        <Grid container spacing={2}>
-          {isEdit ? null : (
-            <Grid item md={12}>
-              <Field
-                title=""
-                component={KRadioGroupRender}
-                name="managedType"
-                options={[
-                  {
-                    value: issuerManaged,
-                    label: sc.CERT_AUTO,
-                    explain: sc.CERT_AUTO_DESC,
-                  },
-                  {
-                    value: selfManaged,
-                    label: sc.CERT_UPLOAD,
-                    explain: sc.CERT_UPLOAD_DESC,
-                  },
-                ]}
-              />
-            </Grid>
-          )}
-          <Grid item md={12}>
-            <Field
-              InputLabelProps={{
-                shrink: true,
-              }}
-              disabled={isEdit}
-              placeholder="Please type a certificate name"
-              label="Certificate name"
-              component={KRenderDebounceTextField}
-              name="name"
-              id="certificate-name"
-              margin="normal"
-              validate={ValidatorRequired}
-            />
-          </Grid>
-          <Grid item md={12}>
-            <KFreeSoloAutoCompleteMultipleSelectField
-              disabled={managedType === selfManaged}
-              placeholder={
-                managedType === selfManaged
-                  ? "Extract domains information when you upload a certificate file"
-                  : "Please type domains"
-              }
-              label="Domains"
-              icons={icons}
-              multiline={true}
-              className={classes.fileInput}
-              rows={12}
-              name="domains"
-              validate={managedType === selfManaged ? [] : ValidatorRequired}
-            />
-          </Grid>
-          {managedType === selfManaged ? this.renderSelfManagedFields() : null}
-          <Grid container spacing={2}>
-            <Grid item md={8}></Grid>
-            <Grid item md={2}>
-              <Button onClick={() => dispatch(closeDialogAction(addCertificateDialogId))} color="primary">
-                Cancel
-              </Button>
-            </Grid>
-            <Grid item md={2}>
-              <Button id="save-certificate-button" type="submit" onClick={handleSubmit} color="primary">
-                {isEdit ? "Update" : "Create"}
-              </Button>
-            </Grid>
-          </Grid>
-        </Grid>
-      </div>
+        <KPanel
+          content={
+            <Box p={2}>
+              <Grid container spacing={2}>
+                {isEdit ? null : (
+                  <Grid item md={12}>
+                    <Field
+                      title=""
+                      component={KRadioGroupRender}
+                      name="managedType"
+                      options={[
+                        {
+                          value: issuerManaged,
+                          label: sc.CERT_AUTO,
+                          explain: sc.CERT_AUTO_DESC,
+                        },
+                        {
+                          value: selfManaged,
+                          label: sc.CERT_UPLOAD,
+                          explain: sc.CERT_UPLOAD_DESC,
+                        },
+                      ]}
+                    />
+                  </Grid>
+                )}
+                <Grid item md={12}>
+                  <Field
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    disabled={isEdit}
+                    placeholder="Please type a certificate name"
+                    label="Certificate name"
+                    component={KRenderDebounceTextField}
+                    name="name"
+                    id="certificate-name"
+                    margin="normal"
+                  />
+                </Grid>
+                <Grid item md={12}>
+                  <KFreeSoloAutoCompleteMultipleSelectStringField
+                    disabled={managedType === selfManaged}
+                    helperText={
+                      <Caption color="textSecondary">
+                        Your cluster ip is{" "}
+                        <Link
+                          to="#"
+                          onClick={() => {
+                            const isDomainsIncludeIngressIP = !!domains.find((domain) => domain === ingressIP);
+                            if (!isDomainsIncludeIngressIP) {
+                              change("domains", domains.push(ingressIP));
+                            }
+                          }}
+                        >
+                          {ingressIP}
+                        </Link>
+                        . {sc.ROUTE_HOSTS_INPUT_HELPER}
+                      </Caption>
+                    }
+                    placeholder={
+                      managedType === selfManaged
+                        ? "Extract domains information when you upload a certificate file"
+                        : "Please type domains"
+                    }
+                    label="Domains"
+                    icons={icons}
+                    multiline={true}
+                    className={classes.fileInput}
+                    rows={12}
+                    name="domains"
+                    validate={managedType === selfManaged ? [] : domainsValidators}
+                  />
+                </Grid>
+              </Grid>
+              {managedType === selfManaged ? this.renderSelfManagedFields() : null}
+            </Box>
+          }
+        />
+        <Box pt={2}>
+          <Button id="save-certificate-button" type="submit" onClick={handleSubmit} color="primary" variant="contained">
+            {isEdit ? "Update" : "Create"}
+          </Button>
+        </Box>
+      </form>
     );
   }
 }

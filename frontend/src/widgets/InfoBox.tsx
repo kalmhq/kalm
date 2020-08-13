@@ -13,7 +13,7 @@ interface InfoBoxOption {
 }
 
 interface Props extends WithStyles<typeof styles> {
-  title: string;
+  title: string | React.ReactNode;
   options: InfoBoxOption[];
   guideLink?: string;
 }
@@ -27,15 +27,15 @@ class InfoBoxRaw extends React.PureComponent<Props> {
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item md={12}>
-              <Body>{title}</Body>
+              {typeof title === "string" ? <Body>{title}</Body> : title}
             </Grid>
           </Grid>
           <Grid container spacing={2}>
             {gridItems.map((option, index) => {
               return (
                 <Grid item md={4} key={index}>
-                  <Body>{option.title}</Body>
-                  <Body2>{option.content}</Body2>
+                  {typeof option.title === "string" ? <Body>{option.title}</Body> : option.title}
+                  {typeof option.content === "string" ? <Body2>{option.content}</Body2> : option.title}
                 </Grid>
               );
             })}
@@ -52,7 +52,7 @@ export const InfoBox = withStyles(styles)(InfoBoxRaw);
  * helper method to wrap url into an InfoBox grid object
  * @param url
  */
-function wrapGuideLink(url: string, title: string) {
+function wrapGuideLink(url: string, title: string | React.ReactNode) {
   return [
     {
       title: (

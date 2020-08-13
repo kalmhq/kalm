@@ -3,7 +3,7 @@ package resources
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
+	"github.com/kalmhq/kalm/api/log"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -129,7 +129,7 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 		go func(k, api string) {
 			promResp, err := queryPrometheusAPI(api)
 			if err != nil {
-				log.Warnf("err when queryPrometheusAPI(%s), err: %s, ignored\n", api, err)
+				log.Error(err, "err when queryPrometheusAPI, ignored", "api", api)
 			}
 
 			respContentChan <- respContent{
@@ -186,7 +186,7 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 			case "tcpReceiveBytes":
 				svc2MetricHistoriesMap[svc].TCPReceivedBytesTotal = metricPoints
 			default:
-				log.Warnln("unknown query key:", k)
+				log.Info("unknown query key", "key", k)
 			}
 		}
 
@@ -259,11 +259,11 @@ func queryPrometheusAPI(api string) (PromResponse, error) {
 		return PromResponse{}, err
 	}
 
-	log.Debugf("prom api: %s, resp: %s\n", api, body)
+	log.Debug("prom api", "api", api, "resp", body)
 
 	err = json.Unmarshal(body, &promResp)
 	if err != nil {
-		log.Warnf("fail to parse resp from prometheus, val: %s, err: %s\n", body, err)
+		log.Error(err, "fail to parse resp from prometheus", "val", body)
 		return PromResponse{}, err
 	}
 

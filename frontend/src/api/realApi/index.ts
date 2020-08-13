@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { Api } from "./base";
+import { Api } from "../base";
 import { store } from "store";
 import Axios, { AxiosRequestConfig } from "axios";
 import { RegistryType } from "types/registry";
@@ -10,6 +10,10 @@ import { CertificateFormType, CertificateIssuerFormType } from "types/certificat
 import { Node } from "types/node";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { DeployKey } from "types/deployKey";
+import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
+import { InitializeClusterResponse } from "types/cluster";
+
+export const mockStore = null;
 
 export default class RealApi extends Api {
   public getClusterInfo = async () => {
@@ -187,34 +191,37 @@ export default class RealApi extends Api {
 
   // routes
 
-  public getHttpRoutes = async (namespace: string) => {
+  public getHttpRoutes = async () => {
     const res = await axiosRequest({
       method: "get",
-      url: !!namespace ? `/${K8sApiVersion}/httproutes/${namespace}` : `/${K8sApiVersion}/httproutes`,
+      url: `/${K8sApiVersion}/httproutes`,
     });
     return Immutable.fromJS(res.data);
   };
 
-  public updateHttpRoute = async (namespace: string, name: string, httpRoute: HttpRoute) => {
+  public updateHttpRoute = async (httpRoute: HttpRoute) => {
     const res = await axiosRequest({
       method: "put",
-      url: `/${K8sApiVersion}/httproutes/${namespace}/${name}`,
+      url: `/${K8sApiVersion}/httproutes/${httpRoute.get("namespace")}/${httpRoute.get("name")}`,
       data: httpRoute,
     });
     return Immutable.fromJS(res.data);
   };
 
-  public createHttpRoute = async (namespace: string, httpRoute: HttpRoute) => {
+  public createHttpRoute = async (httpRoute: HttpRoute) => {
     const res = await axiosRequest({
       method: "post",
-      url: `/${K8sApiVersion}/httproutes/${namespace}`,
+      url: `/${K8sApiVersion}/httproutes/${httpRoute.get("namespace")}`,
       data: httpRoute,
     });
     return Immutable.fromJS(res.data);
   };
 
-  public deleteHttpRoute = async (namespace: string, name: string) => {
-    const res = await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/httproutes/${namespace}/${name}` });
+  public deleteHttpRoute = async (httpRoute: HttpRoute) => {
+    const res = await axiosRequest({
+      method: "delete",
+      url: `/${K8sApiVersion}/httproutes/${httpRoute.get("namespace")}/${httpRoute.get("name")}`,
+    });
     return res.status === 200;
   };
 
@@ -335,6 +342,16 @@ export default class RealApi extends Api {
     return Immutable.fromJS(res.data);
   };
 
+  public updateProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint> => {
+    const res = await axiosRequest({
+      method: "put",
+      url: `/${K8sApiVersion}/protectedendpoints`,
+      data: protectedEndpoint,
+    });
+
+    return Immutable.fromJS(res.data);
+  };
+
   public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/protectedendpoints`, data: protectedEndpoint });
   };
@@ -357,6 +374,35 @@ export default class RealApi extends Api {
   public deleteDeployKey = async (deployKey: DeployKey): Promise<void> => {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/deploykeys`, data: deployKey });
   };
+
+  public resolveDomain = async (domain: string, type: "A" | "CNAME", timeout: number = 5000): Promise<string[]> => {
+    const res = await Axios.get(`https://dns.google.com/resolve?name=${domain}&type=${type}`, { timeout });
+
+    if (res.data.Answer) {
+      return (res.data.Answer as GoogleDNSARecordResponse[]).map((aRecord) => aRecord.data);
+    } else if (res.data.Authority) {
+      return [(res.data.Authority as GoogleDNSCNAMEResponse[])[0].data];
+    }
+
+    return [];
+  };
+
+  public initializeCluster = async (domain: string): Promise<InitializeClusterResponse> => {
+    const res = await axiosRequest({
+      method: "post",
+      url: `/${K8sApiVersion}/initialize`,
+      data: { domain },
+    });
+
+    return Immutable.fromJS(res.data);
+  };
+
+  public resetCluster = async (): Promise<any> => {
+    await axiosRequest({
+      method: "post",
+      url: `/${K8sApiVersion}/reset`,
+    });
+  };
 }
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
@@ -367,17 +413,17 @@ export const k8sWsPrefix = !K8sApiPrefix
 
 const getAxiosClient = (withHeaderToken: boolean) => {
   const token = store.getState().get("auth").get("token");
-  const instance =
-    withHeaderToken && token
-      ? Axios.create({
-          timeout: 10000,
-          withCredentials: true,
-          headers: {
-            "X-CSRF-Token": store.getState().get("auth").get("csrf"),
-            Authorization: `Bearer ${store.getState().get("auth").get("token")}`,
-          },
-        })
-      : Axios;
+  const headers: { [key: string]: string } = {};
+
+  if (withHeaderToken && token) {
+    headers.Authorization = token;
+  }
+
+  const instance = Axios.create({
+    timeout: 10000,
+    withCredentials: true,
+    headers: headers,
+  });
 
   instance.interceptors.response.use(
     (response) => {

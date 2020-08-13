@@ -23,12 +23,14 @@ import (
 
 type PreInjectFile struct {
 	// the content of the file
+	// +kubebuilder:validation:MinLength=1
 	Content string `json:"content"`
 
 	// To support binary content, it allows set base64 encoded data into `Content` field
 	// and set this flag to `true`. Binary data will be restored instead of plain string in `Content`.
 	Base64 bool `json:"base64,omitempty"`
 
+	// +kubebuilder:validation:MinLength=1
 	MountPath string `json:"mountPath"`
 
 	Readonly bool `json:"readonly,omitempty"`
@@ -41,6 +43,7 @@ type ComponentSpec struct {
 	Env []EnvVar `json:"env,omitempty"`
 
 	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
 	Image string `json:"image"`
 
 	Replicas *int32 `json:"replicas,omitempty"`
@@ -83,10 +86,13 @@ type ComponentSpec struct {
 	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 
 	// +optional
+	// +kubebuilder:validation:Enum=ClusterFirstWithHostNet;ClusterFirst;Default;None
 	DnsPolicy v1.DNSPolicy `json:"dnsPolicy,omitempty"`
 
+	// +kubebuilder:validation:Enum=Always;OnFailure;Never
 	RestartPolicy v1.RestartPolicy `json:"restartPolicy,omitempty"`
 
+	// +kubebuilder:validation:Enum=Recreate;RollingUpdate
 	RestartStrategy apps1.DeploymentStrategyType `json:"restartStrategy,omitempty"`
 
 	// +optional

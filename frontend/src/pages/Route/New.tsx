@@ -3,10 +3,8 @@ import { createRouteAction } from "actions/routes";
 import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import React from "react";
-import { AllHttpMethods, HttpRouteForm, methodsModeAll, newEmptyRouteForm } from "types/route";
-import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
+import { AllHttpMethods, HttpRouteForm, methodsModeAll } from "types/route";
 import { BasePage } from "../BasePage";
-import { Namespaces } from "widgets/Namespaces";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { setSuccessNotificationAction } from "actions/notification";
 
@@ -25,9 +23,9 @@ class RouteNewRaw extends React.PureComponent<Props> {
       if (route.get("methodsMode") === methodsModeAll) {
         route = route.set("methods", AllHttpMethods);
       }
-
       route = route.set("namespace", activeNamespaceName);
-      await dispatch(createRouteAction(route.get("name"), activeNamespaceName, route));
+
+      await dispatch(createRouteAction(route));
       await dispatch(setSuccessNotificationAction("Create route successfully"));
     } catch (e) {
       console.log(e);
@@ -35,22 +33,18 @@ class RouteNewRaw extends React.PureComponent<Props> {
   };
 
   private onSubmitSuccess = () => {
-    const { dispatch, activeNamespaceName } = this.props;
+    const { dispatch } = this.props;
 
     window.setTimeout(() => {
-      dispatch(push("/applications/" + activeNamespaceName + "/routes"));
+      dispatch(push("/routes"));
     }, 100);
   };
 
   public render() {
     return (
-      <BasePage leftDrawer={<ApplicationSidebar />} secondHeaderLeft={<Namespaces />} secondHeaderRight="Create Route">
+      <BasePage>
         <Box p={2}>
-          <RouteForm
-            onSubmit={this.onSubmit}
-            onSubmitSuccess={this.onSubmitSuccess}
-            initialValues={newEmptyRouteForm}
-          />
+          <RouteForm onSubmit={this.onSubmit} onSubmitSuccess={this.onSubmitSuccess} />
         </Box>
       </BasePage>
     );

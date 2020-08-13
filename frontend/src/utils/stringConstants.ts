@@ -1,3 +1,9 @@
+/**
+ * Put UI strings in this file either to avoid inconsistencies
+ * or if you would like for a piece of copy to be reviewed.
+ * This flat strings map is probably sufficient for now, but we should
+ * replace this with a sophisticated solution if Localization is ever needed.
+ */
 const stringConstants = {
   APP_NAME: "Kalm",
   LIMIT_NOT_SET: "Limit Not Set",
@@ -77,18 +83,33 @@ const stringConstants = {
     "Data and metrics regarding nodes in the cluster is displayed here. For cluster administration operations, please see platform specific instructions.",
   ROUTE_HOSTS_INPUT_HELPER:
     "If you don't have any DNS record point to this ip, you can use the ip directly in this field.",
-  ROUTE_PATHS_INPUT_HELPER: 'Allow to configure multiple paths. Each path must begin with "/".',
-  ROUTE_STRIP_PATH_LABEL: "Path Prefix should be stripped",
-  ROUTE_STRIP_PATH_HELPER: 'If enabled, Path prefixes will be rewrite to "/" when request reaches targets.',
+  ROUTE_PATHS_INPUT_HELPER: 'Add paths to be handled. Root("/") added by default. Each path must begin with "/".',
+  ROUTE_STRIP_PATH_LABEL: "Strip Path Prefix from request",
+  ROUTE_STRIP_PATH_HELPER:
+    'Rewrite request so the path is "/". Useful for targets which expects to get requests to root path.',
   ROUTE_HTTP_METHOD_ALL: "All http methods are allowed in this route.",
   ROUTE_HTTP_METHOD_CUSTOM: "Choose allowed methods manually.",
   ROUTE_HTTP_CUSTOM_TITLE: "Choose methods you need",
   ROUTE_HTTPS_ALERT:
     "You choosed https. Please note that the TLS termination will be happened in this route level, which means the targets will receive http requests instead.",
+  ROUTE_MULTIPLE_TARGETS_HELPER: "You can add more than one targets, click here to learn more.",
+  ROUTE_MULTIPLE_TARGETS_DESC:
+    "If you wanna process a A/B test, you can add extra targets and assign weights to them, KALM will automatic distribute requets to different target.",
   CI_INFO_BOX_TEXT:
     "You can call webhook directly. In addition, we also provide some out-of-the-box tools to help you connect with commonly used CI tools.",
   DISKS_INFOBOX_BOX1:
     "You don't need to apply disk manually. Disk will be created when you declare authentic disks in component form.",
+  HSTS_DOMAINS_REQUIRED_HTTPS: "domains is included on the HSTS preload list, HTTPS is required.",
+  APP_THEME_TOOLTIPS: "Toggle light/dark theme",
+  APP_TUTORIAL_TOOLTIPS: "Toggle tutorial",
+  APP_AUTH_TOOLTIPS: "Auth menu",
+  APP_DASHBOARD_PAGE_NAME: "Dashboard",
+  PROTECTED_ENDPOINT_PORT:
+    "Select the ports you want to protect. Leave blank to protected any ports of the selected component.",
+  PROTECTED_ENDPOINT_SPECIFIC_GROUPS:
+    "Select the groups you want to grant access permissions for the selected component. Leave blank to allow any sso member.",
+  CANT_NOT_EDIT: "Can NOT edit this field",
+  REGISTRY_VERIFIED_ERROR: "Error",
 };
 
 export default stringConstants;

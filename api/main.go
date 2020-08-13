@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
-	"log"
-	"os"
-	"sort"
+	"github.com/go-playground/validator/v10"
+	"github.com/labstack/echo/v4/middleware"
+	"golang.org/x/net/http2"
+	"time"
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/kalmhq/kalm/api/client"
@@ -12,10 +13,11 @@ import (
 	"github.com/kalmhq/kalm/api/handler"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/api/server"
-	"github.com/kalmhq/kalm/api/ws"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/urfave/cli/v2"
 	"k8s.io/client-go/kubernetes/scheme"
+	"os"
+	"sort"
 )
 
 func main() {
@@ -48,6 +50,14 @@ func main() {
 				Aliases:     []string{"p"},
 				EnvVars:     []string{"PORT"},
 			},
+			&cli.IntFlag{
+				Name:        "webhook server port",
+				Usage:       "The port on which to webhook server serve.",
+				Value:       3002,
+				Destination: &runningConfig.WebhookPort,
+				Aliases:     []string{"wp"},
+				EnvVars:     []string{"WEBHOOK_PORT"},
+			},
 			&cli.StringSliceFlag{
 				Name:        "cors-allowed-origins",
 				Usage:       "List of allowed origins for CORS, comma separated. An allowed origin can be a regular expression to support subdomain matching. If this list is empty CORS will not be enabled.",
@@ -79,7 +89,7 @@ func main() {
 			&cli.StringFlag{
 				Name:        "log-level",
 				Value:       "INFO",
-				Usage:       "DEBUG, INFO, WARN, ERROR",
+				Usage:       "DEBUG, INFO, ERROR",
 				Destination: &runningConfig.LogLevel,
 				EnvVars:     []string{"LOG_LEVEL"},
 			},
@@ -93,25 +103,71 @@ func main() {
 	err := app.Run(os.Args)
 
 	if err != nil {
-		log.Fatal("[Fatal] app.Run Failed:", err)
+		panic(err)
 	}
 }
 
-func run(runningConfig *config.Config) {
-	v1alpha1.AddToScheme(scheme.Scheme)
+func startMainServer(runningConfig *config.Config) {
+	e := server.NewEchoInstance()
 
-	e := server.NewEchoServer(runningConfig)
+	// in production docker build, all things are in a single docker
+	// golang api server is charge of return frontend files to users
+	// If the STATIC_FILE_ROOT is set, add extra routes to handle static files
+	staticFileRoot := os.Getenv("STATIC_FILE_ROOT")
+
+	if staticFileRoot != "" {
+		e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
+			Root:  staticFileRoot,
+			HTML5: true,
+		}))
+	}
+
+	e.Validator = &server.CustomValidator{Validator: validator.New()}
 
 	clientManager := client.NewClientManager(runningConfig)
-
-	wsHandler := ws.NewWsHandler(clientManager)
-	e.GET("/ws", wsHandler.Serve)
-
 	apiHandler := handler.NewApiHandler(clientManager)
-	apiHandler.Install(e)
+	apiHandler.InstallMainRoutes(e)
 
-	// watcher.StartWatching(clientManager)
+	err := e.StartH2CServer(runningConfig.GetServerAddress(), &http2.Server{
+		MaxConcurrentStreams: 250,
+		MaxReadFrameSize:     1048576,
+		IdleTimeout:          60 * time.Second,
+	})
 
-	go resources.StartMetricScraper(context.Background(), clientManager)
-	e.Logger.Fatal(e.Start(runningConfig.GetServerAddress()))
+	if err != nil {
+		panic(err)
+	}
+}
+
+func startWebhookServer(runningConfig *config.Config) {
+	e := server.NewEchoInstance()
+
+	clientManager := client.NewClientManager(runningConfig)
+	apiHandler := handler.NewApiHandler(clientManager)
+	apiHandler.InstallWebhookRoutes(e)
+
+	err := e.StartH2CServer(runningConfig.GetWebhookServerAddress(), &http2.Server{
+		MaxConcurrentStreams: 250,
+		MaxReadFrameSize:     1048576,
+		IdleTimeout:          60 * time.Second,
+	})
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+func startMetricServer(runningConfig *config.Config) {
+	clientManager := client.NewClientManager(runningConfig)
+	resources.StartMetricScraper(context.Background(), clientManager.ClusterConfig)
+}
+
+func run(runningConfig *config.Config) {
+	if err := v1alpha1.AddToScheme(scheme.Scheme); err != nil {
+		panic(err)
+	}
+
+	go startWebhookServer(runningConfig)
+	go startMetricServer(runningConfig)
+	startMainServer(runningConfig)
 }

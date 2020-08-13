@@ -16,7 +16,7 @@ import {
   CertificateIssuerList,
   CertificateList,
 } from "types/certificate";
-import { ClusterInfo } from "types/cluster";
+import { ClusterInfo, InitializeClusterResponse } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import { Node, NodesListResponse } from "types/node";
 import { RegistryType } from "types/registry";
@@ -95,13 +95,13 @@ export abstract class Api {
   public abstract getComponentPlugins(): Promise<ComponentPlugin[]>;
 
   // routes
-  public abstract getHttpRoutes(namespace: string): Promise<Immutable.List<HttpRoute>>;
+  public abstract getHttpRoutes(): Promise<Immutable.List<HttpRoute>>;
 
-  public abstract updateHttpRoute(namespace: string, name: string, httpRoute: HttpRoute): Promise<HttpRoute>;
+  public abstract updateHttpRoute(httpRoute: HttpRoute): Promise<HttpRoute>;
 
-  public abstract createHttpRoute(namespace: string, httpRoute: HttpRoute): Promise<HttpRoute>;
+  public abstract createHttpRoute(httpRoute: HttpRoute): Promise<HttpRoute>;
 
-  public abstract deleteHttpRoute(namespace: string, name: string): Promise<boolean>;
+  public abstract deleteHttpRoute(httpRoute: HttpRoute): Promise<boolean>;
 
   public abstract deletePod(namespace: string, name: string): Promise<any>;
 
@@ -144,6 +144,8 @@ export abstract class Api {
 
   public abstract createProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint>;
 
+  public abstract updateProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint>;
+
   public abstract deleteProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<void>;
 
   public abstract listDeployKeys(): Promise<Immutable.List<DeployKey>>;
@@ -151,4 +153,10 @@ export abstract class Api {
   public abstract createDeployKey(protectedEndpoint: DeployKey): Promise<DeployKey>;
 
   public abstract deleteDeployKey(protectedEndpoint: DeployKey): Promise<void>;
+
+  public abstract resolveDomain(domain: string, type: "A" | "CNAME", timeout?: number): Promise<string[]>;
+
+  public abstract initializeCluster(domain: string): Promise<InitializeClusterResponse>;
+
+  public abstract resetCluster(): Promise<any>;
 }

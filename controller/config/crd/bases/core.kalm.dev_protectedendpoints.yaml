@@ -8,6 +8,10 @@ metadata:
   creationTimestamp: null
   name: protectedendpoints.core.kalm.dev
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.type
+    name: Type
+    type: string
   group: core.kalm.dev
   names:
     kind: ProtectedEndpoint
@@ -15,6 +19,7 @@ spec:
     plural: protectedendpoints
     singular: protectedendpoint
   scope: Namespaced
+  subresources: {}
   validation:
     openAPIV3Schema:
       description: ProtectedEndpoint is the Schema for the protectedendpoints API
@@ -34,11 +39,23 @@ spec:
         spec:
           description: ProtectedEndpointSpec defines the desired state of ProtectedEndpoint
           properties:
+            groups:
+              items:
+                type: string
+              type: array
             name:
+              minLength: 1
               type: string
-            portNumber:
-              type: integer
+            ports:
+              items:
+                format: int32
+                type: integer
+              type: array
             type:
+              enum:
+              - Port
+              - Component
+              - HttpRoute
               type: string
           required:
           - name

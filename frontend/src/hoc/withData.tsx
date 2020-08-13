@@ -1,5 +1,5 @@
 import { getWebsocketInstance } from "actions/websocket";
-import { mockStore } from "api/mockApi";
+import { mockStore } from "@apiType/index";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
@@ -14,6 +14,7 @@ import {
   RESOURCE_TYPE_NODE,
   RESOURCE_TYPE_PROTECTED_ENDPOINT,
   RESOURCE_TYPE_REGISTRY,
+  RESOURCE_TYPE_SERVICE,
   RESOURCE_TYPE_SSO,
   RESOURCE_TYPE_VOLUME,
   ResourceActionType,
@@ -51,13 +52,14 @@ interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 class WithDataRaw extends React.PureComponent<Props> {
   public componentDidMount() {
     this.loadData();
+
     this.connectWebsocket();
   }
 
   private loadData() {
     const { dispatch } = this.props;
 
-    dispatch(loadRoutesAction("")); // all namespaces
+    dispatch(loadRoutesAction()); // all namespaces
     dispatch(loadApplicationsAction());
     dispatch(loadNodesAction());
     dispatch(loadCertificatesAction());
@@ -210,6 +212,17 @@ class WithDataRaw extends React.PureComponent<Props> {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
             kind: RESOURCE_TYPE_DEPLOY_KEY,
+            payload: {
+              action: data.action,
+              data: Immutable.fromJS(data.data),
+            },
+          });
+          break;
+        }
+        case RESOURCE_TYPE_SERVICE: {
+          dispatch({
+            type: WATCHED_RESOURCE_CHANGE,
+            kind: RESOURCE_TYPE_SERVICE,
             payload: {
               action: data.action,
               data: Immutable.fromJS(data.data),

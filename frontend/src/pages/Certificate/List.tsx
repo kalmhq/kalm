@@ -1,31 +1,29 @@
-import { Box, createStyles, Theme, WithStyles, withStyles, Button, Typography } from "@material-ui/core";
-import { deleteCertificateAction, setEditCertificateModalAction } from "actions/certificate";
-import { openDialogAction } from "actions/dialog";
+import { Box, Button, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
+import { indigo } from "@material-ui/core/colors";
+import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { blinkTopProgressAction } from "actions/settings";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Certificate } from "types/certificate";
-import { customSearchForImmutable } from "utils/tableSearch";
+import { formatDate } from "utils/date";
+import sc from "utils/stringConstants";
 import { PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { ConfirmDialog } from "widgets/ConfirmDialog";
-import { DeleteIcon, EditIcon, KalmCertificatesIcon } from "widgets/Icon";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { Loading } from "widgets/Loading";
-import { KTable } from "widgets/Table";
-import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
-import { addCertificateDialogId, NewModal } from "./New";
-import { formatDate } from "utils/date";
 import { CustomizedButton } from "widgets/Button";
-import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { indigo } from "@material-ui/core/colors";
-import { InfoBox } from "widgets/InfoBox";
 import DomainStatus from "widgets/DomainStatus";
-import sc from "utils/stringConstants";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
+import { EditIcon, KalmCertificatesIcon } from "widgets/Icon";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { InfoBox } from "widgets/InfoBox";
+import { KRTable } from "widgets/KRTable";
+import { Loading } from "widgets/Loading";
+import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
+
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
@@ -73,7 +71,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         {rowData.get("domains")?.map((domain) => {
           return (
             <FlexRowItemCenterBox key={domain}>
-              <DomainStatus domain={domain} />
+              <DomainStatus mr={1} domain={domain} />
               {domain}
             </FlexRowItemCenterBox>
           );
@@ -83,23 +81,19 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderMoreActions = (rowData: RowData) => {
-    const { dispatch } = this.props;
     return (
       <>
         {rowData.get("isSelfManaged") && (
-          <IconButtonWithTooltip
-            tooltipTitle="Edit"
-            aria-label="edit"
-            onClick={() => {
-              blinkTopProgressAction();
-              dispatch(openDialogAction(addCertificateDialogId));
-              dispatch(setEditCertificateModalAction(rowData));
-            }}
-          >
+          <IconLinkWithToolTip tooltipTitle="Edit" aria-label="edit" to={`/certificates/${rowData.get("name")}/edit`}>
             <EditIcon />
-          </IconButtonWithTooltip>
+          </IconLinkWithToolTip>
         )}
-        <IconButtonWithTooltip
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-certificate-popup"
+          popupTitle="DELETE CERTIFICATE?"
+          confirmedAction={() => this.confirmDelete(rowData)}
+        />
+        {/* <IconButtonWithTooltip
           tooltipTitle="Delete"
           aria-label="delete"
           onClick={() => {
@@ -108,24 +102,24 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
           }}
         >
           <DeleteIcon />
-        </IconButtonWithTooltip>
+        </IconButtonWithTooltip> */}
       </>
     );
   };
 
-  private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen, deletingCertificate } = this.state;
-    const certName = deletingCertificate ? ` '${deletingCertificate.get("name")}'` : "";
-    return (
-      <ConfirmDialog
-        open={isDeleteConfirmDialogOpen}
-        onClose={this.closeDeleteConfirmDialog}
-        title={`Are you sure you want to delete the certificate${certName}?`}
-        content=""
-        onAgree={this.confirmDelete}
-      />
-    );
-  };
+  // private renderDeleteConfirmDialog = () => {
+  //   const { isDeleteConfirmDialogOpen, deletingCertificate } = this.state;
+  //   const certName = deletingCertificate ? ` '${deletingCertificate.get("name")}'` : "";
+  //   return (
+  //     <ConfirmDialog
+  //       open={isDeleteConfirmDialogOpen}
+  //       onClose={this.closeDeleteConfirmDialog}
+  //       title={`Are you sure you want to delete the certificate${certName}?`}
+  //       content=""
+  //       onAgree={this.confirmDelete}
+  //     />
+  //   );
+  // };
 
   private closeDeleteConfirmDialog = () => {
     this.setState({
@@ -140,15 +134,12 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     });
   };
 
-  private confirmDelete = async () => {
+  private confirmDelete = async (rowData: RowData) => {
     const { dispatch } = this.props;
     try {
-      const { deletingCertificate } = this.state;
-      if (deletingCertificate) {
-        const certName = deletingCertificate.get("name");
-        await dispatch(deleteCertificateAction(certName));
-        await dispatch(setSuccessNotificationAction(`Successfully deleted certificate '${certName}'`));
-      }
+      const certName = rowData.get("name");
+      await dispatch(deleteCertificateAction(certName));
+      await dispatch(setSuccessNotificationAction(`Successfully deleted certificate '${certName}'`));
     } catch {
       dispatch(setErrorNotificationAction());
     }
@@ -158,6 +149,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     const ready = rowData.get("ready");
 
     if (ready === "True") {
+      // why the ready field is a string value ?????
       return (
         <FlexRowItemCenterBox>
           <FlexRowItemCenterBox mr={1}>
@@ -192,89 +184,73 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     return rowData.get("expireTimestamp") ? formatDate(new Date(rowData.get("expireTimestamp") * 1000)) : "-";
   };
 
-  private getColumns() {
-    const columns = [
-      // @ts-ignore
+  private getKRTableColumns() {
+    return [
       {
-        title: "Cert Name",
-        field: "name",
-        sorting: false,
-        render: this.renderName,
-        customFilterAndSearch: customSearchForImmutable,
+        Header: "Cert Name",
+        accessor: "name",
       },
       {
-        title: "Domains",
-        field: "domains",
+        Header: "Domains",
+        accessor: "domains",
         sorting: false,
-        render: this.renderDomains,
       },
       {
-        title: "Status",
-        field: "status",
-        sorting: false,
-        render: this.renderStatus,
+        Header: "Status",
+        accessor: "status",
       },
       {
-        title: "Type",
-        field: "isSelfManaged",
-        sorting: false,
-        render: this.renderType,
+        Header: "Type",
+        accessor: "isSelfManaged",
       },
       {
-        title: "Signed by Trusted CA",
-        field: "isSignedByTrustedCA",
-        sorting: false,
-        render: this.renderIsSignedByTrustedCA,
+        Header: "Signed by Trusted CA",
+        accessor: "isSignedByTrustedCA",
       },
       {
-        title: "Expiration Time",
-        field: "expireTimestamp",
-        sorting: false,
-        render: this.renderExpireTimestamp,
+        Header: "Expiration Time",
+        accessor: "expireTimestamp",
       },
       {
-        title: "Actions",
-        field: "moreAction",
-        sorting: false,
-        searchable: false,
-        render: this.renderMoreActions,
+        Header: "Actions",
+        accessor: "actions",
       },
     ];
-
-    return columns;
   }
 
-  private getData = () => {
+  private getKRTableData() {
     const { certificates } = this.props;
-    const data: RowData[] = [];
+    const data: any[] = [];
 
-    certificates.forEach((certificate, index) => {
-      const rowData = certificate as RowData;
-      rowData.index = index;
-      data.push(rowData);
-    });
+    certificates &&
+      certificates.forEach((certificate, index) => {
+        const rowData = certificate as RowData;
+        data.push({
+          name: this.renderName(rowData),
+          domains: this.renderDomains(rowData),
+          status: this.renderStatus(rowData),
+          isSelfManaged: this.renderType(rowData),
+          isSignedByTrustedCA: this.renderIsSignedByTrustedCA(rowData),
+          expireTimestamp: this.renderExpireTimestamp(rowData),
+          actions: this.renderMoreActions(rowData),
+        });
+      });
 
     return data;
-  };
+  }
+
+  private renderKRTable() {
+    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+  }
 
   private renderEmpty() {
-    const { dispatch } = this.props;
-
     return (
       <EmptyInfoBox
         image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={sc.EMPTY_CERT_TITLE}
         content={sc.EMPTY_CERT_SUBTITLE}
         button={
-          <CustomizedButton
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              blinkTopProgressAction();
-              dispatch(openDialogAction(addCertificateDialogId));
-              dispatch(setEditCertificateModalAction(null));
-            }}
-          >
+          <CustomizedButton variant="contained" color="primary" component={Link} to="/certificates/new">
             New Certificate
           </CustomizedButton>
         }
@@ -289,8 +265,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { dispatch, isFirstLoaded, isLoading, certificates } = this.props;
-    const tableData = this.getData();
+    const { isFirstLoaded, isLoading, certificates } = this.props;
     return (
       <BasePage
         secondHeaderRight={
@@ -300,32 +275,21 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               color="primary"
               variant="outlined"
               size="small"
+              component={Link}
               tutorial-anchor-id="add-certificate"
-              onClick={() => {
-                blinkTopProgressAction();
-                dispatch(openDialogAction(addCertificateDialogId));
-                dispatch(setEditCertificateModalAction(null));
-              }}
+              to="/certificates/new"
             >
               New Certificate
             </Button>
           </>
         }
       >
-        <NewModal />
-        {this.renderDeleteConfirmDialog()}
+        {/* {this.renderDeleteConfirmDialog()} */}
         <Box p={2}>
           {isLoading && !isFirstLoaded ? (
             <Loading />
           ) : certificates && certificates.size > 0 ? (
-            <KTable
-              options={{
-                paging: tableData.length > 20,
-              }}
-              columns={this.getColumns()}
-              data={tableData}
-              title=""
-            />
+            this.renderKRTable()
           ) : (
             this.renderEmpty()
           )}

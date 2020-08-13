@@ -28,6 +28,7 @@ const styles = (theme: Theme) =>
       width: "100%",
       justifyContent: "space-between",
       paddingLeft: 24,
+      textTransform: "lowercase",
       border: 0,
       borderRadius: 0,
     },

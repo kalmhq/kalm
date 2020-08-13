@@ -96,24 +96,26 @@ export const methodsModeAll = "all";
 export const methodsModeSpecific = "specific";
 export const httpMethods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT"];
 
-export const newEmptyRouteForm: HttpRouteForm = Immutable.fromJS({
-  namespace: "default",
-  name: "http-route-" + ID(),
-  hosts: [],
-  paths: ["/"],
-  conditions: [],
-  destinations: [],
-  httpRedirectToHttps: false,
-  schemes: ["http"],
-  methods: ["GET"],
-  timeout: 5,
-  retries: {
-    attempts: 3,
-    perTtyTimeoutSeconds: 2,
-    retryOn: ["gateway-error", "connect-failure", "refused-stream"],
-  },
-  methodsMode: methodsModeAll,
-});
+export const newEmptyRouteForm = (): HttpRouteForm => {
+  return Immutable.fromJS({
+    namespace: "default",
+    name: "http-route-" + ID(),
+    hosts: [],
+    paths: ["/"],
+    conditions: [],
+    destinations: [],
+    httpRedirectToHttps: false,
+    schemes: ["http"],
+    methods: ["GET"],
+    timeout: 5,
+    retries: {
+      attempts: 3,
+      perTtyTimeoutSeconds: 2,
+      retryOn: ["gateway-error", "connect-failure", "refused-stream"],
+    },
+    methodsMode: methodsModeAll,
+  });
+};
 
 export interface HttpRouteFormContent extends HttpRouteContent {
   methodsMode: string;
@@ -125,23 +127,19 @@ export interface LoadHttpRoutesAction {
   type: typeof LOAD_ROUTES_FULFILLED;
   payload: {
     httpRoutes: Immutable.List<HttpRoute>;
-    namespace: string;
   };
 }
 
 export interface DeleteRouteAction {
   type: typeof DELETE_ROUTE_FULFILLED;
   payload: {
-    name: string;
-    namespace: string;
+    route: HttpRoute;
   };
 }
 
 export interface CreateRouteAction {
   type: typeof CREATE_ROUTE_FULFILLED;
   payload: {
-    name: string;
-    namespace: string;
     route: HttpRoute;
   };
 }
@@ -149,8 +147,6 @@ export interface CreateRouteAction {
 export interface UpdateRouteAction {
   type: typeof UPDATE_ROUTE_FULFILLED;
   payload: {
-    name: string;
-    namespace: string;
     route: HttpRoute;
   };
 }

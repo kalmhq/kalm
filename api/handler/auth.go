@@ -4,7 +4,6 @@ import (
 	"github.com/kalmhq/kalm/api/resources"
 	"net/http"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/kalmhq/kalm/api/auth"
 	"github.com/labstack/echo/v4"
 	authorizationV1 "k8s.io/api/authorization/v1"
@@ -30,8 +29,10 @@ func (h *ApiHandler) handleValidateToken(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
+// This handler is for frontend to know if it's authorized.
+// The kalm api server may be behind some proxies that will provide auth info for the client.
 func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
-	clientConfig, err := h.clientManager.GetClientConfig(c)
+	clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
 
 	var res LoginStatusResponse
 
@@ -39,7 +40,7 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		return c.JSON(http.StatusOK, res)
 	}
 
-	k8sClient, err := kubernetes.NewForConfig(clientConfig)
+	k8sClient, err := kubernetes.NewForConfig(clientInfo.Cfg)
 	if err != nil {
 		return c.JSON(http.StatusOK, res)
 	}
@@ -50,8 +51,7 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		return c.JSON(http.StatusOK, res)
 	}
 
-	res.Authorized = true
-
+	// Check if current user is an admin. Any better solution?
 	review := &authorizationV1.SelfSubjectAccessReview{
 		Spec: authorizationV1.SelfSubjectAccessReviewSpec{
 			ResourceAttributes: &authorizationV1.ResourceAttributes{
@@ -62,38 +62,16 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		},
 	}
 
-	builder := resources.NewBuilder(k8sClient, clientConfig, h.logger)
-
-	// If the user can create clusterrolebinding, the user is an admin.
+	builder := resources.NewBuilder(clientInfo.Cfg, h.logger)
 	err = builder.Create(review)
 
 	if err != nil {
 		return err
 	}
 
-	entity := tryToParseEntityFromToken(auth.ExtractTokenFromHeader(c.Request().Header.Get(echo.HeaderAuthorization)))
+	res.Entity = clientInfo.Name
 	res.IsAdmin = review.Status.Allowed
-	res.Entity = entity
-	//res.CSRF = c.Get(middleware.DefaultCSRFConfig.ContextKey).(string)
+	res.Authorized = review.Status.Allowed
 
 	return c.JSON(http.StatusOK, res)
-}
-
-// Since the token is validated by api server, so we don't need to valid the token again here.
-func tryToParseEntityFromToken(tokenString string) string {
-	if tokenString == "" {
-		return "unknown"
-	}
-
-	token, _, err := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
-
-	if err != nil {
-		return "token"
-	}
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		return claims["sub"].(string)
-	}
-
-	return "token"
 }

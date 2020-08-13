@@ -1,26 +1,24 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import DeleteIcon from "@material-ui/icons/Delete";
 import { loadApplicationAction } from "actions/application";
 import { loadComponentsAction } from "actions/component";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { blinkTopProgressAction } from "actions/settings";
 import { api } from "api";
 import Immutable from "immutable";
-import { MaterialTableProps } from "material-table";
 import { getPodLogQuery } from "pages/Application/Log";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { PodStatus } from "types/application";
-import { WorkloadType, workloadTypeCronjob } from "types/componentTemplate";
+import { WorkloadType } from "types/componentTemplate";
 import { formatTimeDistance } from "utils/date";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { KalmConsoleIcon, KalmLogIcon } from "widgets/Icon";
-import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { DeleteButtonWithConfirmPopover, IconWithPopover } from "widgets/IconWithPopover";
+import { KRTable } from "widgets/KRTable";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
-import { KTable } from "widgets/Table";
-import { isCronjobCompleted } from "utils/application";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -39,7 +37,7 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 
 interface State {}
 
-interface PodRowData extends PodStatus {
+interface RowData extends PodStatus {
   index: number;
 }
 
@@ -50,10 +48,10 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
   }
 
   private getData = () => {
-    const data: PodRowData[] = [];
+    const data: RowData[] = [];
 
     this.props.pods.forEach((pod, index) => {
-      const rowData = pod as PodRowData;
+      const rowData = pod as RowData;
       rowData.index = index;
       data.push(rowData);
     });
@@ -61,35 +59,35 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
     return data;
   };
 
-  private renderPodName = (pod: PodRowData) => {
+  private renderPodName = (pod: RowData) => {
     return pod.get("name");
   };
 
-  private renderPodNode = (pod: PodRowData) => {
+  private renderPodNode = (pod: RowData) => {
     return pod.get("node");
   };
 
-  private renderPodRestarts = (pod: PodRowData) => {
+  private renderPodRestarts = (pod: RowData) => {
     return pod.get("restarts");
   };
 
-  private renderPodStatusText = (pod: PodRowData) => {
+  private renderPodStatusText = (pod: RowData) => {
     return pod.get("statusText");
   };
 
-  private renderPodAGE = (pod: PodRowData) => {
+  private renderPodAGE = (pod: RowData) => {
     return formatTimeDistance(pod.get("createTimestamp"));
   };
 
-  private renderPodCPU = (pod: PodRowData) => {
+  private renderPodCPU = (pod: RowData) => {
     return <SmallCPULineChart data={pod.get("metrics").get("cpu")!} />;
   };
 
-  private renderPodMemory = (pod: PodRowData) => {
+  private renderPodMemory = (pod: RowData) => {
     return <SmallMemoryLineChart data={pod.get("metrics").get("memory")!} />;
   };
 
-  private renderPodActions = (pod: PodRowData) => {
+  private renderPodActions = (pod: RowData) => {
     const { activeNamespaceName, dispatch } = this.props;
     const hasWriterRole = true;
 
@@ -118,10 +116,11 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
           </IconLinkWithToolTip>
         ) : null}
         {hasWriterRole ? (
-          <IconButtonWithTooltip
-            tooltipTitle="Delete"
-            size="small"
-            onClick={async () => {
+          <DeleteButtonWithConfirmPopover
+            iconSize="small"
+            popupId="delete-pod-popup"
+            popupTitle="DELETE POD?"
+            confirmedAction={async () => {
               blinkTopProgressAction();
 
               try {
@@ -134,20 +133,32 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
                 dispatch(setErrorNotificationAction(e.response.data.message));
               }
             }}
-          >
-            <DeleteIcon />
-          </IconButtonWithTooltip>
-        ) : null}
+          />
+        ) : // <IconButtonWithTooltip
+        //   tooltipTitle="Delete"
+        //   size="small"
+        //   onClick={async () => {
+        //     blinkTopProgressAction();
+
+        //     try {
+        //       await api.deletePod(activeNamespaceName, pod.get("name"));
+        //       dispatch(setSuccessNotificationAction(`Delete pod ${pod.get("name")} successfully`));
+        //       // reload
+        //       dispatch(loadComponentsAction(activeNamespaceName));
+        //       dispatch(loadApplicationAction(activeNamespaceName));
+        //     } catch (e) {
+        //       dispatch(setErrorNotificationAction(e.response.data.message));
+        //     }
+        //   }}
+        // >
+        //   <DeleteIcon />
+        // </IconButtonWithTooltip>
+        null}
       </>
     );
   };
 
   private renderPodStatus = (pod: PodStatus) => {
-    const { workloadType } = this.props;
-    if (workloadType === workloadTypeCronjob && isCronjobCompleted(pod)) {
-      return <SuccessBadge />;
-    }
-
     if (pod.get("isTerminating")) {
       return <PendingBadge />;
     }
@@ -170,59 +181,112 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
     return <SuccessBadge />;
   };
 
-  private renderPodWarnings: MaterialTableProps<PodRowData>["detailPanel"] = [
-    (pod: PodRowData) => {
-      const hasWarning = !pod.get("isTerminating") && pod.get("warnings").size > 0;
-      return {
-        disabled: !hasWarning,
-        icon: () => (
-          <Box p={1} fontSize={0}>
-            {this.renderPodStatus(pod)}
-          </Box>
-        ),
-        render: (podRowData: PodRowData) => {
-          return (
-            <Box p={2}>
-              {podRowData
-                .get("warnings")
-                .map((w, index) => {
-                  return (
-                    <Box color="error.main" key={index}>
-                      {index + 1}. {w.get("message")}
-                    </Box>
-                  );
-                })
-                .toArray()}
-            </Box>
-          );
-        },
-      };
-    },
-  ];
+  private renderPodStatusIcon = (pod: RowData) => {
+    if (pod.get("status") === "Failed") {
+      const popoverBody = (
+        <Box p={2} maxWidth={800}>
+          {pod
+            .get("warnings")
+            .map((w, index) => {
+              return (
+                <Box color="error.main" key={index}>
+                  {index + 1}. {w.get("message")}
+                </Box>
+              );
+            })
+            .toArray()}
+        </Box>
+      );
 
-  private getColumns = (): MaterialTableProps<PodRowData>["columns"] => {
-    return [
-      { title: "Pod Name", sorting: false, render: this.renderPodName },
-      { title: "Node", sorting: false, render: this.renderPodNode },
-      { title: "Restarts", sorting: false, render: this.renderPodRestarts },
-      { title: "Status", sorting: false, render: this.renderPodStatusText },
-      { title: "Age", sorting: false, render: this.renderPodAGE },
-      { title: "CPU", sorting: false, render: this.renderPodCPU },
-      { title: "Memory", sorting: false, render: this.renderPodMemory },
-      { title: "", sorting: false, render: this.renderPodActions, cellStyle: { minWidth: 122 } },
-    ];
+      return (
+        <IconWithPopover
+          icon={this.renderPodStatus(pod)}
+          popoverBody={popoverBody}
+          popupId={`pod-${pod.get("name")}-popover`}
+        />
+      );
+    }
+
+    return this.renderPodStatus(pod);
   };
 
-  public render() {
+  private getKRTableColumns() {
+    return [
+      // {
+      //   // Build our expander column
+      //   id: "expander", // Make sure it has an ID
+      //   accessor: "expander",
+      //   Header: ({ getToggleAllRowsExpandedProps, isAllRowsExpanded }: any) => (
+      //     <span {...getToggleAllRowsExpandedProps()}>{isAllRowsExpanded ? "👇" : "👉"}</span>
+      //   ),
+      //   Cell: ({ row }: any) => {
+      //     console.log("row", row);
+      //     // Use the row.canExpand and row.getToggleRowExpandedProps prop getter
+      //     // to build the toggle for expanding a row
+      //     return row.canExpand ? (
+      //       <span
+      //         {...row.getToggleRowExpandedProps({
+      //           style: {
+      //             // We can even use the row.depth property
+      //             // and paddingLeft to indicate the depth
+      //             // of the row
+      //             paddingLeft: `${row.depth * 2}rem`,
+      //           },
+      //         })}
+      //       >
+      //         {row.isExpanded ? "👇" : "👉"}
+      //       </span>
+      //     ) : (
+      //       <div>{row.expandContent || "test-col"}</div>
+      //     );
+      //   },
+      // },
+      { Header: "", accessor: "statusIcon" },
+      { Header: "Pod Name", accessor: "name" },
+      { Header: "Node", accessor: "node" },
+      { Header: "Restarts", accessor: "restarts" },
+      { Header: "Status", accessor: "status" },
+      { Header: "Age", accessor: "age" },
+      { Header: "CPU", accessor: "cpu" },
+      { Header: "Memory", accessor: "memory" },
+      { Header: "Actions", accessor: "actions" },
+    ];
+  }
+
+  private getKRTableData() {
     const { pods } = this.props;
-    return (
-      <KTable
-        options={{ padding: "dense", paging: pods.size > 20 }}
-        columns={this.getColumns()}
-        data={this.getData()}
-        detailPanel={this.renderPodWarnings}
-      />
-    );
+    const data: any[] = [];
+
+    pods &&
+      pods.forEach((pod, index) => {
+        const rowData = pod as RowData;
+        data.push({
+          statusIcon: this.renderPodStatusIcon(rowData),
+          name: this.renderPodName(rowData),
+          node: this.renderPodNode(rowData),
+          restarts: this.renderPodRestarts(rowData),
+          status: this.renderPodStatusText(rowData),
+          age: this.renderPodAGE(rowData),
+          cpu: this.renderPodCPU(rowData),
+          memory: this.renderPodMemory(rowData),
+          actions: this.renderPodActions(rowData),
+          // subRows: [
+          //   {
+          //     expandContent: <div style={{ width: "100%", height: "10px", background: "red" }}>dfsfdsf</div>,
+          //   },
+          // ],
+        });
+      });
+
+    return data;
+  }
+
+  private renderKRTable() {
+    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+  }
+
+  public render() {
+    return <>{this.renderKRTable()}</>;
   }
 }
 

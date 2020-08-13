@@ -37,6 +37,14 @@ type DexConnector struct {
 	Config *runtime.RawExtension `json:"config"`
 }
 
+type TemporaryDexUser struct {
+	Username string `json:"username"`
+	// bcrypt hash of the password
+	PasswordHash string `json:"passwordHash"`
+	UserID       string `json:"userId"`
+	Email        string `json:"email"`
+}
+
 // SingleSignOnConfigSpec defines the desired state of SingleSignOnConfig
 type SingleSignOnConfigSpec struct {
 	// These two are for arbitrary oidc provider
@@ -52,8 +60,8 @@ type SingleSignOnConfigSpec struct {
 	ShowApproveScreen     bool `json:"showApproveScreen,omitempty"`
 	AlwaysShowLoginScreen bool `json:"alwaysShowLoginScreen,omitempty"`
 
-	// +kubebuilder:validation:MinItems=1
-	Connectors []DexConnector `json:"connectors"`
+	Connectors    []DexConnector    `json:"connectors,omitempty"`
+	TemporaryUser *TemporaryDexUser `json:"temporaryUser,omitempty"`
 
 	// Create service entry if the ext_authz service is running out of istio mesh
 	ExternalEnvoyExtAuthz *ExtAuthzEndpoint `json:"externalEnvoyExtAuthz,omitempty"`

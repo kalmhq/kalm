@@ -1,6 +1,5 @@
 import { Box, Button, Container, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteComponentAction } from "actions/component";
-import { blinkTopProgressAction } from "actions/settings";
 import { Expansion, ExpansionProps } from "forms/Route/expansion";
 import { PodsTable } from "pages/Components/PodsTable";
 import React from "react";
@@ -10,18 +9,19 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Application, ApplicationComponentDetails } from "types/application";
 import { WorkloadType } from "types/componentTemplate";
-import { DangerButton } from "widgets/Button";
-import { Subtitle1, H6, Caption } from "widgets/Label";
+import { Subtitle1, Caption } from "widgets/Label";
 import { KalmComponentsIcon } from "widgets/Icon";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const styles = (theme: Theme) =>
   createStyles({
     componentTitleRow: {
-      "padding-top": "8px",
+      paddingTop: 8,
+      alignItems: "center",
     },
     componentIcon: {
       height: "1.25rem",
-      color: theme.palette.primary.light,
+      color: theme.palette.type === "light" ? theme.palette.primary.light : "#FFFFFF",
     },
   });
 
@@ -54,26 +54,30 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     return (
       <Container>
         <Grid container className={classes.componentTitleRow} spacing={2}>
-          <Grid item className={classes.componentIcon}>
-            <KalmComponentsIcon fontSize={"large"} />
-          </Grid>
-          <Grid item xs={2}>
-            <Box display="flex" minWidth={200}>
-              <H6>{component.get("name")}</H6>
+          <Grid item xs={3}>
+            <Box display={"flex"}>
+              <Box className={classes.componentIcon} pr={2}>
+                <KalmComponentsIcon fontSize={"default"} />
+              </Box>
+              <Box display="flex" minWidth={200}>
+                <Subtitle1>{component.get("name")}</Subtitle1>
+              </Box>
             </Box>
           </Grid>
-          <Grid container xs={8} spacing={10} justify={"flex-start"}>
-            <Grid item>
-              <Caption>Pods</Caption>
-              <Subtitle1>{this.getPodsNumber()}</Subtitle1>
-            </Grid>
-            <Grid item>
-              <Caption>Type</Caption>
-              <Subtitle1>{component.get("workloadType")}</Subtitle1>
-            </Grid>
-            <Grid item>
-              <Caption>Image</Caption>
-              <Subtitle1>{component.get("image")}</Subtitle1>
+          <Grid item xs={8}>
+            <Grid container spacing={10} justify={"flex-start"}>
+              <Grid item>
+                <Caption>Pods</Caption>
+                <Subtitle1>{this.getPodsNumber()}</Subtitle1>
+              </Grid>
+              <Grid item>
+                <Caption>Type</Caption>
+                <Subtitle1>{component.get("workloadType")}</Subtitle1>
+              </Grid>
+              <Grid item>
+                <Caption>Image</Caption>
+                <Subtitle1>{component.get("image")}</Subtitle1>
+              </Grid>
             </Grid>
           </Grid>
         </Grid>
@@ -132,18 +136,12 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
         >
           Edit
         </Button>
-
-        <DangerButton
-          variant="outlined"
-          style={{ marginRight: 20 }}
-          size="small"
-          onClick={() => {
-            blinkTopProgressAction();
-            dispatch(deleteComponentAction(component.get("name"), application.get("name")));
-          }}
-        >
-          Delete
-        </DangerButton>
+        <DeleteButtonWithConfirmPopover
+          useText
+          popupId="delete-component-popup"
+          popupTitle="DELETE COMPONENT?"
+          confirmedAction={() => dispatch(deleteComponentAction(component.get("name"), application.get("name")))}
+        />
       </Box>
     );
   };

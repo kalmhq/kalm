@@ -55,6 +55,8 @@ type DeployKeyStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Scope",type="string",JSONPath=".spec.scope"
+// +kubebuilder:printcolumn:name="Resources",type="string",JSONPath=".spec.resources"
 
 // DeployKey is the Schema for the deploykeys API
 type DeployKey struct {

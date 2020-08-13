@@ -2,7 +2,6 @@ import { Box, Button, createStyles, Theme, WithStyles } from "@material-ui/core"
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { withComponents, WithComponentsProps } from "hoc/withComponents";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { ComponentPanel } from "pages/Components/ComponentPanel";
 import React from "react";
@@ -20,6 +19,7 @@ import { push } from "connected-react-router";
 import { KalmComponentsIcon } from "widgets/Icon";
 import { indigo } from "@material-ui/core/colors";
 import sc from "utils/stringConstants";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -47,7 +47,7 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface Props extends WithStyles<typeof styles>, WithComponentsProps, ReturnType<typeof mapStateToProps> {}
+interface Props extends WithStyles<typeof styles>, WithNamespaceProps, ReturnType<typeof mapStateToProps> {}
 
 interface State {
   isDeleteConfirmDialogOpen: boolean;
@@ -166,4 +166,4 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ComponentListPage = withStyles(styles)(withComponents(connect(mapStateToProps)(ComponentRaw)));
+export const ComponentListPage = withStyles(styles)(withNamespace(connect(mapStateToProps)(ComponentRaw)));

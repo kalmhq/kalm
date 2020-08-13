@@ -15,16 +15,16 @@ import { primaryColor } from "theme/theme";
 import { TDispatchProp } from "types";
 import { Disk } from "types/disk";
 import { sizeStringToGi } from "utils/sizeConv";
+import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
-import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { DeleteIcon, KalmVolumeIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
+import { KRTable } from "widgets/KRTable";
 import { KLink } from "widgets/Link";
-import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
-import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -75,32 +75,24 @@ export class VolumesRaw extends React.Component<Props, States> {
     });
   };
 
-  private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen, deletingPersistentVolume } = this.state;
+  // private renderDeleteConfirmDialog = () => {
+  //   const { isDeleteConfirmDialogOpen, deletingPersistentVolume } = this.state;
 
-    return (
-      <ConfirmDialog
-        open={isDeleteConfirmDialogOpen}
-        onClose={this.closeDeleteConfirmDialog}
-        title={`${sc.ARE_YOU_SURE_PREFIX} this Persistent Volume(${deletingPersistentVolume?.get("name")})?`}
-        content="You will lost this Persistent Volume, and this action is irrevocable."
-        onAgree={this.confirmDelete}
-      />
-    );
-  };
+  //   return (
+  //     <ConfirmDialog
+  //       open={isDeleteConfirmDialogOpen}
+  //       onClose={this.closeDeleteConfirmDialog}
+  //       title={`${sc.ARE_YOU_SURE_PREFIX} this Persistent Volume(${deletingPersistentVolume?.get("name")})?`}
+  //       content="You will lost this Persistent Volume, and this action is irrevocable."
+  //       onAgree={this.confirmDelete}
+  //     />
+  //   );
+  // };
 
-  private confirmDelete = async () => {
+  private confirmDelete = async (rowData: RowData) => {
     const { dispatch } = this.props;
     try {
-      const { deletingPersistentVolume } = this.state;
-      if (deletingPersistentVolume) {
-        await dispatch(
-          deletePersistentVolumeAction(
-            deletingPersistentVolume.get("componentNamespace") as string,
-            deletingPersistentVolume.get("name"),
-          ),
-        );
-      }
+      await dispatch(deletePersistentVolumeAction(rowData.get("componentNamespace") as string, rowData.get("name")));
     } catch {
       dispatch(setErrorNotificationAction());
     }
@@ -122,19 +114,20 @@ export class VolumesRaw extends React.Component<Props, States> {
   private renderActions = (rowData: RowData) => {
     return (
       <>
-        <IconButtonWithTooltip
-          disabled={rowData.get("isInUse")}
-          tooltipTitle={
-            rowData.get("isInUse")
-              ? "The disk must be unmounted(removed) from all associated components before it can be deleted"
-              : "Delete"
-          }
-          onClick={() => {
-            this.showDeleteConfirmDialog(rowData);
-          }}
-        >
-          <DeleteIcon />
-        </IconButtonWithTooltip>
+        {rowData.get("isInUse") ? (
+          <IconButtonWithTooltip
+            disabled
+            tooltipTitle={"The disk must be unmounted(removed) from all associated components before it can be deleted"}
+          >
+            <DeleteIcon />
+          </IconButtonWithTooltip>
+        ) : (
+          <DeleteButtonWithConfirmPopover
+            popupId="delete-disk-popup"
+            popupTitle="DELETE DISK?"
+            confirmedAction={() => this.confirmDelete(rowData)}
+          />
+        )}
       </>
     );
   };
@@ -195,6 +188,44 @@ export class VolumesRaw extends React.Component<Props, States> {
     return sizeStringToGi(rowData.get("capacity")) + " Gi";
   };
 
+  private getKRTableColumns() {
+    return [
+      { Header: "Volume Name", accessor: "name" },
+      { Header: "Mounted", accessor: "isInUse" },
+      { Header: "App", accessor: "componentNamespace" },
+      { Header: "Component", accessor: "componentName" },
+      { Header: "Size", accessor: "capacity" },
+      {
+        Header: "Actions",
+        accessor: "action",
+      },
+    ];
+  }
+
+  private getKRTableData() {
+    const { persistentVolumes } = this.props;
+    const data: any[] = [];
+
+    persistentVolumes &&
+      persistentVolumes.forEach((persistentVolume, index) => {
+        const rowData = persistentVolume as RowData;
+        data.push({
+          name: this.renderName(rowData),
+          isInUse: this.renderUse(rowData),
+          componentNamespace: this.renderApplication(rowData),
+          componentName: this.renderComponent(rowData),
+          capacity: this.renderCapacity(rowData),
+          actions: this.renderActions(rowData),
+        });
+      });
+
+    return data;
+  }
+
+  private renderKRTable() {
+    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+  }
+
   private renderEmpty() {
     const { dispatch } = this.props;
     return (
@@ -240,11 +271,10 @@ export class VolumesRaw extends React.Component<Props, States> {
   render() {
     const { persistentVolumes } = this.props;
     const { loadPersistentVolumesError } = this.state;
-    const tableData = this.getTableData();
 
     return (
-      <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
-        {this.renderDeleteConfirmDialog()}
+      <BasePage>
+        {/* {this.renderDeleteConfirmDialog()} */}
         <Box p={2}>
           {loadPersistentVolumesError ? (
             <Alert severity="error">
@@ -255,31 +285,7 @@ export class VolumesRaw extends React.Component<Props, States> {
             </Alert>
           ) : null}
 
-          {persistentVolumes.size > 0 ? (
-            <KTable
-              options={{
-                paging: tableData.length > 20,
-              }}
-              columns={[
-                { title: "Volume Name", field: "name", sorting: false, render: this.renderName },
-                { title: "Mounted", field: "isInUse", sorting: false, render: this.renderUse },
-                { title: "App", field: "componentNamespace", sorting: false, render: this.renderApplication },
-                { title: "Component", field: "componentName", sorting: false, render: this.renderComponent },
-                { title: "Size", field: "capacity", sorting: false, render: this.renderCapacity },
-                {
-                  title: "Actions",
-                  field: "action",
-                  sorting: false,
-                  searchable: false,
-                  render: this.renderActions,
-                },
-              ]}
-              data={tableData}
-              title=""
-            />
-          ) : (
-            this.renderEmpty()
-          )}
+          {persistentVolumes.size > 0 ? this.renderKRTable() : this.renderEmpty()}
         </Box>
         <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>

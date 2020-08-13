@@ -1,29 +1,31 @@
-import { Box, Button, createStyles, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
+import CheckIcon from "@material-ui/icons/Check";
 import { deleteRouteAction } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
+import { withClusterInfo } from "hoc/withClusterInfo";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
-import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { BasePage } from "pages/BasePage";
 import { Methods } from "pages/Route/Methods";
 import React from "react";
 import { Link } from "react-router-dom";
+import { ClusterInfo } from "types/cluster";
 import { HttpRoute } from "types/route";
-import { SuccessBadge } from "widgets/Badge";
+import sc from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { CopyAsCurl } from "widgets/CopyAsCurl";
 import DomainStatus from "widgets/DomainStatus";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { DeleteIcon, EditIcon, ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
-import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { EditIcon, ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { KRTable } from "widgets/KRTable";
+import { KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
-import { Namespaces } from "widgets/Namespaces";
-import { OpenInBrowser } from "widgets/OpenInBrowser";
-import { KTable } from "widgets/Table";
+import { getRouteUrl, OpenInBrowser } from "widgets/OpenInBrowser";
 import { Targets } from "widgets/Targets";
-import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -38,6 +40,32 @@ interface RowData extends HttpRoute {
   index: number;
 }
 
+type HostCellProps = { row: RowData; clusterInfo: ClusterInfo };
+
+/**
+ * A component that renders a cell for the "Domain" column of the Routes table
+ * Note: currently handle multiple hosts, but not multiple paths, which should probably be changed.
+ */
+const HostCellRaw = ({ row, clusterInfo }: HostCellProps) => {
+  return (
+    <Box>
+      {row.get("hosts").map((h) => {
+        const url = getRouteUrl(row as HttpRoute, clusterInfo, h);
+        return (
+          <FlexRowItemCenterBox key={h}>
+            <DomainStatus mr={1} domain={h} />
+            <KMLink href={url} target="_blank">
+              {h}
+            </KMLink>
+          </FlexRowItemCenterBox>
+        );
+      })}
+    </Box>
+  );
+};
+
+const HostCell = withClusterInfo(HostCellRaw);
+
 class RouteListPageRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -45,18 +73,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderHosts(row: RowData) {
-    return (
-      <Box>
-        {row.get("hosts").map((h) => {
-          return (
-            <FlexRowItemCenterBox key={h}>
-              <DomainStatus domain={h} />
-              <Typography>{h}</Typography>
-            </FlexRowItemCenterBox>
-          );
-        })}
-      </Box>
-    );
+    return <HostCell row={row} />;
   }
 
   private renderUrls(row: RowData) {
@@ -93,20 +110,18 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     }
 
     if (row.get("schemes").find((x) => x === "http")) {
-      return <SuccessBadge />;
+      return <CheckIcon />;
     }
   }
 
   private renderSupportHttps(row: RowData) {
     if (row.get("schemes").find((x) => x === "https")) {
-      return <SuccessBadge />;
+      return <CheckIcon />;
     }
   }
 
   private renderTargets = (row: RowData) => {
-    const { activeNamespaceName } = this.props;
-
-    return <Targets activeNamespaceName={activeNamespaceName} destinations={row.get("destinations")} />;
+    return <Targets destinations={row.get("destinations")} />;
   };
 
   private renderAdvanced(row: RowData) {
@@ -144,7 +159,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions = (row: RowData) => {
-    const { activeNamespaceName, dispatch } = this.props;
+    const { dispatch } = this.props;
     return (
       <>
         <OpenInBrowser route={row as HttpRoute} showIconButton={true} />
@@ -155,21 +170,15 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           }}
           // size="small"
           tooltipTitle="Edit"
-          to={`/applications/${activeNamespaceName}/routes/${row.get("name")}/edit`}
+          to={`/routes/${row.get("name")}/edit`}
         >
           <EditIcon />
         </IconLinkWithToolTip>
-        <IconButtonWithTooltip
-          tooltipTitle="Delete"
-          aria-label="delete"
-          onClick={() => {
-            blinkTopProgressAction();
-            dispatch(deleteRouteAction(row.get("name"), row.get("namespace")));
-          }}
-        >
-          <DeleteIcon />
-        </IconButtonWithTooltip>
-
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-route-popup"
+          popupTitle="DELETE ROUTE?"
+          confirmedAction={() => dispatch(deleteRouteAction(row))}
+        />
         {/* <Button
           size="small"
           variant="outlined"
@@ -197,7 +206,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderEmpty() {
-    const { dispatch, activeNamespaceName } = this.props;
+    const { dispatch } = this.props;
 
     return (
       <EmptyInfoBox
@@ -210,7 +219,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
             color="primary"
             onClick={() => {
               blinkTopProgressAction();
-              dispatch(push(`/applications/${activeNamespaceName}/routes/new`));
+              dispatch(push(`/routes/new`));
             }}
           >
             Add Route
@@ -220,86 +229,86 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private getKRTableColumns() {
+    return [
+      {
+        Header: "Domain",
+        accessor: "host",
+      },
+      {
+        Header: "Urls",
+        accessor: "urls",
+      },
+      {
+        Header: "Http",
+        accessor: "http",
+      },
+      {
+        Header: "Https",
+        accessor: "https",
+      },
+      {
+        Header: "Methods",
+        accessor: "methods",
+      },
+      {
+        Header: "Targets",
+        accessor: "targets",
+      },
+      {
+        Header: "Actions",
+        accessor: "actions",
+      },
+    ];
+  }
+
+  private getKRTableData() {
+    const { httpRoutes } = this.props;
+    const data: any[] = [];
+
+    httpRoutes &&
+      httpRoutes.forEach((httpRoute, index) => {
+        const rowData = httpRoute as RowData;
+        data.push({
+          host: this.renderHosts(rowData),
+          urls: this.renderUrls(rowData),
+          http: this.renderSupportHttp(rowData),
+          https: this.renderSupportHttps(rowData),
+          methods: this.renderMethods(rowData),
+          targets: this.renderTargets(rowData),
+          actions: this.renderActions(rowData),
+        });
+      });
+
+    return data;
+  }
+
+  private renderKRTable() {
+    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+  }
+
   public render() {
-    const { isRoutesFirstLoaded, isRoutesLoading, activeNamespaceName, httpRoutes } = this.props;
-    const tableData = this.getData();
+    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes } = this.props;
     return (
       <BasePage
-        leftDrawer={<ApplicationSidebar />}
-        secondHeaderLeft={<Namespaces />}
         secondHeaderRight={
-          <>
-            {/* <H6>Routes</H6> */}
-            <Button
-              tutorial-anchor-id="add-route"
-              component={Link}
-              color="primary"
-              size="small"
-              variant="outlined"
-              to={`/applications/${activeNamespaceName}/routes/new`}
-            >
-              Add Route
-            </Button>
-          </>
+          <Button
+            tutorial-anchor-id="add-route"
+            component={Link}
+            color="primary"
+            size="small"
+            variant="outlined"
+            to={`/routes/new`}
+          >
+            Add Route
+          </Button>
         }
       >
         <Box p={2}>
           {isRoutesLoading && !isRoutesFirstLoaded ? (
             <Loading />
           ) : httpRoutes && httpRoutes.size > 0 ? (
-            <KTable
-              options={{
-                paging: tableData.length > 20,
-              }}
-              columns={[
-                {
-                  title: "Methods",
-                  field: "methods",
-                  sorting: false,
-                  render: this.renderMethods,
-                },
-                {
-                  title: "Http",
-                  field: "http",
-                  sorting: false,
-                  render: this.renderSupportHttp,
-                },
-                {
-                  title: "Https",
-                  field: "https",
-                  sorting: false,
-                  render: this.renderSupportHttps,
-                },
-                {
-                  title: "Domain",
-                  field: "host",
-                  sorting: false,
-                  render: this.renderHosts,
-                },
-                {
-                  title: "Urls",
-                  field: "urls",
-                  sorting: false,
-                  render: this.renderUrls,
-                },
-                {
-                  title: "Targets",
-                  field: "targets",
-                  sorting: false,
-                  render: this.renderTargets,
-                },
-                {
-                  title: "Actions",
-                  field: "action",
-                  sorting: false,
-                  searchable: false,
-                  render: this.renderActions,
-                  cellStyle: { minWidth: 226 },
-                },
-              ]}
-              data={tableData}
-              title=""
-            />
+            this.renderKRTable()
           ) : (
             this.renderEmpty()
           )}
@@ -308,5 +317,4 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     );
   }
 }
-
 export const RouteListPage = withRoutesData(withStyles(styles)(RouteListPageRaw));

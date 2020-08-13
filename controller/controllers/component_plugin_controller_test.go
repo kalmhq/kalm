@@ -70,14 +70,14 @@ func (suite *PluginControllerSuite) reloadPlugin(plugin *v1alpha1.ComponentPlugi
 func (suite *PluginControllerSuite) TestPluginBasicCRUD() {
 	// Create
 	plugin := generateEmptyComponentPlugin()
-	plugin.Spec.Src = ""
+	plugin.Spec.Src = "fake-code"
 	suite.createComponentPlugin(plugin)
 
 	// Get
 	suite.Eventually(func() bool {
 		return suite.K8sClient.Get(context.Background(), getComponentPluginNamespacedName(plugin), plugin) == nil
 	})
-	suite.False(plugin.Status.CompiledSuccessfully)
+	suite.True(plugin.Status.CompiledSuccessfully)
 
 	// Update
 	plugin.Spec.Src = "console.log(\"hello world!\");"

@@ -6,13 +6,15 @@ import { TDispatchProp } from "types";
 const mapStateToProps = (state: RootState) => {
   return {
     clusterInfo: state.get("cluster").get("info"),
+    isClusterInfoLoading: state.get("cluster").get("isLoading"),
+    isClusterInfoLoaded: state.get("cluster").get("isFirstLoaded"),
   };
 };
 
 export interface WithClusterInfoProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
 export const withClusterInfo = (WrappedComponent: React.ComponentType<any>) => {
-  const HOC: React.ComponentType<WithClusterInfoProps> = class extends React.Component<WithClusterInfoProps> {
+  const HOC: React.ComponentType<WithClusterInfoProps & any> = class extends React.Component<WithClusterInfoProps> {
     render() {
       return <WrappedComponent {...this.props} />;
     }

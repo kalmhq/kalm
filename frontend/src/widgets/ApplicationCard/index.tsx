@@ -1,37 +1,37 @@
-import React from "react";
-import Immutable from "immutable";
 import {
-  WithStyles,
-  CardProps,
-  Theme,
-  createStyles,
-  withStyles,
-  Card,
-  IconButton,
-  CardHeader,
   Avatar,
-  CardContent,
-  Popover,
   Box,
+  Card,
   CardActions,
+  CardContent,
+  CardHeader,
+  CardProps,
+  createStyles,
   Grid,
+  IconButton,
+  Popover,
+  Theme,
+  WithStyles,
+  withStyles,
 } from "@material-ui/core";
-import { ApplicationDetails, ApplicationComponentDetails } from "types/application";
-import { stringToColor } from "utils/color";
-import { Body, H6, Caption } from "widgets/Label";
-import { getApplicationCreatedAtString } from "utils/application";
-import { CardCPULineChart, CardMemoryLineChart } from "widgets/SmallLineChart";
-import { HttpRoute } from "types/route";
-import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
-import { RouteWidgets } from "pages/Route/Widget";
-import { POPPER_ZINDEX } from "layout/Constants";
 import { blinkTopProgressAction } from "actions/settings";
-import { DeleteIcon, KalmDetailsIcon, KalmComponentsIcon, KalmApplicationIcon, KalmRoutesIcon } from "widgets/Icon";
-import { FoldButtonGroup } from "widgets/FoldButtonGroup";
-import { DoughnutChart } from "widgets/DoughnutChart";
+import Immutable from "immutable";
+import { POPPER_ZINDEX } from "layout/Constants";
+import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
+import { RouteWidgets } from "pages/Route/Widget";
+import React from "react";
+import { ApplicationComponentDetails, ApplicationDetails } from "types/application";
+import { HttpRoute } from "types/route";
+import { getApplicationCreatedAtString } from "utils/application";
+import { stringToColor } from "utils/color";
 import { pluralize } from "utils/string";
-import { KMLink, KLink } from "widgets/Link";
-import { IconLinkWithToolTip, IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { DoughnutChart } from "widgets/DoughnutChart";
+import { KalmApplicationIcon, KalmComponentsIcon, KalmDetailsIcon, KalmRoutesIcon } from "widgets/Icon";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { Caption, H6 } from "widgets/Label";
+import { KLink, KMLink } from "widgets/Link";
+import { CardCPULineChart, CardMemoryLineChart } from "widgets/SmallLineChart";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const ApplicationCardStyles = (theme: Theme) =>
   createStyles({
@@ -54,9 +54,9 @@ const ApplicationCardStyles = (theme: Theme) =>
 type ApplicationCardProps = {
   application: ApplicationDetails;
   componentsMap: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>;
-  routesMap: Immutable.Map<string, Immutable.List<HttpRoute>>;
+  httpRoutes: Immutable.List<HttpRoute>;
   activeNamespaceName: string;
-  showDeleteConfirmDialog: (deletingApplicationListItem: ApplicationDetails) => void;
+  confirmDelete: (application: ApplicationDetails) => void;
 } & CardProps &
   WithStyles<typeof ApplicationCardStyles>;
 
@@ -100,17 +100,15 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
   };
 
   private renderExternalAccesses = () => {
-    const { routesMap, activeNamespaceName, application } = this.props;
+    const { httpRoutes, activeNamespaceName, application } = this.props;
 
-    const applicationRoutes: Immutable.List<HttpRoute> = routesMap.get(application.get("name"), Immutable.List());
-
-    if (applicationRoutes && applicationRoutes.size > 0) {
+    if (httpRoutes && httpRoutes.size > 0) {
       return (
         <PopupState variant="popover" popupId={application.get("name")}>
           {(popupState) => (
             <>
               <KMLink component="button" variant="body2" {...bindTrigger(popupState)}>
-                {pluralize("route", applicationRoutes.size)}
+                {pluralize("route", httpRoutes.size)}
               </KMLink>
               <Popover
                 style={{ zIndex: POPPER_ZINDEX }}
@@ -125,7 +123,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
                 }}
               >
                 <Box p={2}>
-                  <RouteWidgets routes={applicationRoutes} activeNamespaceName={activeNamespaceName} />
+                  <RouteWidgets routes={httpRoutes} activeNamespaceName={activeNamespaceName} />
                 </Box>
               </Popover>
             </>
@@ -191,8 +189,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
 
   private renderDoughnutChartStatus = () => {
     const pieChartData = this.getPieChartData();
-    const { routesMap, application } = this.props;
-    const applicationRoutes: Immutable.List<HttpRoute> = routesMap.get(application.get("name"), Immutable.List());
+    const { httpRoutes } = this.props;
     return (
       <Box display="flex" justifyContent={"space-around"}>
         <DoughnutChart
@@ -208,37 +205,17 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
           icon={<KalmApplicationIcon />}
         />
         <DoughnutChart
-          title={pluralize("Route", applicationRoutes.size)}
+          title={pluralize("Route", httpRoutes.size)}
           labels={["Running"]}
-          data={[applicationRoutes.size]}
+          data={[httpRoutes.size]}
           icon={<KalmRoutesIcon />}
         />
       </Box>
     );
   };
 
-  private renderMoreActions = () => {
-    const { application, showDeleteConfirmDialog } = this.props;
-    let options = [
-      {
-        text: "Details",
-        to: `/applications/${application.get("name")}/components`,
-        icon: <KalmDetailsIcon />,
-      },
-      {
-        text: "Delete",
-        onClick: () => {
-          showDeleteConfirmDialog(application);
-        },
-        icon: <DeleteIcon />,
-        requiredRole: "writer",
-      },
-    ];
-    return <FoldButtonGroup options={options} />;
-  };
-
   private renderActions = () => {
-    const { application, showDeleteConfirmDialog } = this.props;
+    const { application, confirmDelete } = this.props;
     return (
       <>
         <IconLinkWithToolTip
@@ -251,16 +228,11 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
         >
           <KalmDetailsIcon />
         </IconLinkWithToolTip>
-        <IconButtonWithTooltip
-          tooltipTitle="Delete"
-          aria-label="delete"
-          onClick={() => {
-            blinkTopProgressAction();
-            showDeleteConfirmDialog(application);
-          }}
-        >
-          <DeleteIcon />
-        </IconButtonWithTooltip>
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-application-popup"
+          popupTitle="DELETE APPLICATION?"
+          confirmedAction={() => confirmDelete(application)}
+        />
       </>
     );
   };

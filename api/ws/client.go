@@ -2,13 +2,11 @@ package ws
 
 import (
 	"encoding/json"
-
-	"github.com/kalmhq/kalm/api/resources"
-
+	"github.com/go-logr/logr"
 	"github.com/gorilla/websocket"
 	"github.com/kalmhq/kalm/api/client"
-	log "github.com/sirupsen/logrus"
-	"k8s.io/client-go/kubernetes"
+	"github.com/kalmhq/kalm/api/log"
+	"github.com/kalmhq/kalm/api/resources"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd/api"
 )
@@ -40,10 +38,7 @@ type Client struct {
 
 	K8SClientConfig *rest.Config
 
-	K8sClientset *kubernetes.Clientset
-
-	logger *log.Logger
-
+	logger     logr.Logger
 	IsWatching bool
 }
 
@@ -88,7 +83,11 @@ func (c *Client) read() {
 	for {
 		_, messageBytes, err := c.conn.ReadMessage()
 		if err != nil {
-			log.Error(err)
+			if websocket.IsCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived) {
+				return
+			}
+
+			log.Error(err, "read message error")
 			return
 		}
 
@@ -98,32 +97,29 @@ func (c *Client) read() {
 		if c.K8SClientConfig == nil {
 			authInfo := &api.AuthInfo{Token: reqMessage.Token}
 			err := c.K8sClientManager.IsAuthInfoWorking(authInfo)
+
 			if err != nil {
 				c.conn.WriteJSON(&ResMessage{Kind: "error", Data: "Invalid Auth Token"})
 			}
 
-			k8sClientConfig, err := c.K8sClientManager.GetClientConfigWithAuthInfo(authInfo)
+			k8sClientConfig, err := c.K8sClientManager.BuildClientConfigWithAuthInfo(authInfo)
 			if err != nil {
-				log.Error(err)
+				log.Error(err, "new config error")
 			}
-			c.K8SClientConfig = k8sClientConfig
 
-			k8sClientset, err := kubernetes.NewForConfig(k8sClientConfig)
-			if err != nil {
-				log.Error(err)
-			}
-			c.K8sClientset = k8sClientset
+			c.K8SClientConfig = k8sClientConfig
 		}
 
 		if reqMessage.Method == "StartWatching" && !c.IsWatching {
 			c.IsWatching = true
+			c.sendWatchResMessage(&ResMessage{Kind: "PlainMessage", Data: "Started"})
 			go StartWatching(c)
 		}
 
 	}
 }
 func (c *Client) Builder() *resources.Builder {
-	return resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, c.logger)
+	return resources.NewBuilder(c.K8SClientConfig, c.logger)
 }
 
 func (c *Client) write() {
@@ -141,7 +137,7 @@ func (c *Client) write() {
 
 			err := c.conn.WriteMessage(websocket.TextMessage, message)
 			if err != nil {
-				log.Error(err)
+				log.Error(err, "write message error")
 				break
 			}
 			continue
@@ -158,7 +154,7 @@ func (c *Client) sendWatchResMessage(resMessage *ResMessage) {
 
 	bts, err := json.Marshal(resMessage)
 	if err != nil {
-		log.Error(err)
+		log.Error(err, "parse message error")
 		return
 	}
 	c.Send <- bts

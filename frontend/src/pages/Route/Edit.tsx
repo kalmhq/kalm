@@ -1,16 +1,14 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { setSuccessNotificationAction } from "actions/notification";
 import { updateRouteAction } from "actions/routes";
 import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
+import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import React from "react";
 import { AllHttpMethods, HttpRoute, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
-import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { Loading } from "widgets/Loading";
+import { ResourceNotFound } from "widgets/ResourceNotFound";
 import { BasePage } from "../BasePage";
-import { Namespaces } from "widgets/Namespaces";
-import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
-import { setSuccessNotificationAction } from "actions/notification";
-import { H6 } from "widgets/Label";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -29,15 +27,15 @@ class RouteEditRaw extends React.PureComponent<Props> {
         route = route.set("methods", AllHttpMethods);
       }
 
-      await dispatch(updateRouteAction(route.get("name"), route.get("namespace"), route));
+      await dispatch(updateRouteAction(route));
       await dispatch(setSuccessNotificationAction("Update route successfully"));
     } catch (e) {
       console.log(e);
     }
   };
 
-  private onSubmitSuccess = async (route: HttpRoute) => {
-    this.props.dispatch(push("/applications/" + this.props.activeNamespaceName + "/routes"));
+  private onSubmitSuccess = async (_route: HttpRoute) => {
+    this.props.dispatch(push("/routes"));
   };
 
   private renderContent() {
@@ -52,7 +50,17 @@ class RouteEditRaw extends React.PureComponent<Props> {
     }
 
     if (!httpRoute) {
-      return "No route found";
+      return (
+        <BasePage>
+          <Box p={2}>
+            <ResourceNotFound
+              text="Route not found"
+              redirect={`/routes`}
+              redirectText="Go back to Routes List"
+            ></ResourceNotFound>
+          </Box>
+        </BasePage>
+      );
     }
 
     let routeForm = httpRoute as HttpRouteForm;
@@ -65,11 +73,7 @@ class RouteEditRaw extends React.PureComponent<Props> {
 
   public render() {
     return (
-      <BasePage
-        leftDrawer={<ApplicationSidebar />}
-        secondHeaderLeft={<Namespaces />}
-        secondHeaderRight={<H6>Edit Route</H6>}
-      >
+      <BasePage>
         <div className={this.props.classes.root}>{this.renderContent()}</div>
       </BasePage>
     );

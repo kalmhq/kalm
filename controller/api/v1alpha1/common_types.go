@@ -1,7 +1,6 @@
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -15,9 +14,24 @@ const (
 	EnvVarTypeFieldRef EnvVarType = "fieldref"
 )
 
+// +kubebuilder:validation:Enum=http;https;http2;grpc;grpc-web;tcp;udp;unknown
+type PortProtocol string
+
+const (
+	PortProtocolHTTP    PortProtocol = "http"
+	PortProtocolHTTPS   PortProtocol = "https"
+	PortProtocolHTTP2   PortProtocol = "http2"
+	PortProtocolGRPC    PortProtocol = "grpc"
+	PortProtocolGRPCWEB PortProtocol = "grpc-web"
+	PortProtocolTCP     PortProtocol = "tcp"
+	PortProtocolUDP     PortProtocol = "udp"
+	PortProtocolUnknown PortProtocol = "unknown"
+)
+
 // EnvVar represents an environment variable present in a Container.
 type EnvVar struct {
 	// Name of the environment variable. Must be a C_IDENTIFIER.
+	// +kubebuilder:validation:MinLength=1
 	Name string `json:"name"`
 
 	Value string `json:"value,omitempty"`
@@ -31,19 +45,20 @@ type EnvVar struct {
 }
 
 type Port struct {
-	Name string `json:"name"`
-
-	// +kubebuilder:validation:Maximum:65535
+	// +kubebuilder:validation:Maximum=65535
+	// +kubebuilder:validation:Minimum=1
 	ContainerPort uint32 `json:"containerPort"`
 
 	// port for service
-	// +kubebuilder:validation:Maximum:65535
+	// +kubebuilder:validation:Maximum=65535
+	// +kubebuilder:validation:Minimum=1
 	ServicePort uint32 `json:"servicePort,omitempty"`
 
-	// +kubebuilder:validation:Enum=TCP;UDP;SCTP
-	Protocol corev1.Protocol `json:"protocol,omitempty"`
+	// +kubebuilder:validation:Enum=http;https;http2;grpc;grpc-web;tcp;udp;unknown
+	Protocol PortProtocol `json:"protocol"`
 }
 
+// +kubebuilder:validation:Enum=emptyDirMemory;emptyDir;pvc
 type VolumeType string
 
 const (

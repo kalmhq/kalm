@@ -19,6 +19,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// +kubebuilder:validation:Enum=Port;Component;HttpRoute
 type ProtectedEndpointType string
 
 const (
@@ -34,9 +35,12 @@ const (
 
 // ProtectedEndpointSpec defines the desired state of ProtectedEndpoint
 type ProtectedEndpointSpec struct {
+	// +kubebuilder:validation:MinLength=1
 	EndpointName string                `json:"name"`
 	Type         ProtectedEndpointType `json:"type,omitempty"`
-	PortNumber   *int                  `json:"portNumber,omitempty"`
+
+	Ports  []uint32 `json:"ports,omitempty"`
+	Groups []string `json:"groups,omitempty"`
 }
 
 // ProtectedEndpointStatus defines the observed state of ProtectedEndpoint
@@ -44,6 +48,7 @@ type ProtectedEndpointStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:printcolumn:name="Type",type="string",JSONPath=".spec.type"
 
 // ProtectedEndpoint is the Schema for the protectedendpoints API
 type ProtectedEndpoint struct {

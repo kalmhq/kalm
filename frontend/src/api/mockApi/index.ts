@@ -1,13 +1,14 @@
-import { Api } from "./base";
+import { Api } from "../base";
 import Immutable from "immutable";
 import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import { HttpRoute } from "types/route";
 import { RegistryType } from "types/registry";
 import { RoleBindingsRequestBody } from "types/user";
-import MockStore from "./mockStore";
+import MockStore from "../mockStore";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { DeployKey } from "types/deployKey";
+import { InitializeClusterResponse } from "types/cluster";
 
 export const mockStore = new MockStore();
 
@@ -45,11 +46,11 @@ export default class MockApi extends Api {
   };
 
   public getSimpleOptions = async (namespace: string) => {
-    return await mockStore.data.get("mockSimpleOptions");
+    return mockStore.data.get("mockSimpleOptions");
   };
 
   public getStatefulSetOptions = async (namespace: string) => {
-    return await mockStore.data.get("mockStatefulSetOptions");
+    return mockStore.data.get("mockStatefulSetOptions");
   };
 
   public getRegistries = async () => {
@@ -75,8 +76,23 @@ export default class MockApi extends Api {
       ?.find((component) => component.get("name") === name)!;
   };
 
-  public getHttpRoutes = async (namespace: string) => {
+  public getHttpRoutes = async () => {
     return mockStore.data.get("mockHttpRoutes");
+  };
+
+  public createHttpRoute = async (httpRoute: HttpRoute) => {
+    await mockStore.updateHttpRoute(httpRoute.get("namespace"), httpRoute);
+    return httpRoute;
+  };
+
+  public updateHttpRoute = async (httpRoute: HttpRoute) => {
+    await mockStore.updateHttpRoute(httpRoute.get("namespace"), httpRoute);
+    return Immutable.fromJS(httpRoute);
+  };
+
+  public deleteHttpRoute = async (httpRoute: HttpRoute) => {
+    await mockStore.deleteHttpRoute(httpRoute.get("namespace"), httpRoute.get("name"));
+    return true;
   };
 
   public mockLoadRolebindings = async () => {
@@ -99,11 +115,6 @@ export default class MockApi extends Api {
   public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormType, isEdit?: boolean) => {
     await mockStore.updateCertificateIssuer(certificateIssuer);
     return certificateIssuer;
-  };
-
-  public createHttpRoute = async (namespace: string, httpRoute: HttpRoute) => {
-    await mockStore.updateHttpRoute(namespace, httpRoute);
-    return httpRoute;
   };
 
   public createApplication = async (application: Application) => {
@@ -147,11 +158,6 @@ export default class MockApi extends Api {
 
   public deleteCertificate = async (name: string) => {
     await mockStore.deleteCertificate(name);
-  };
-
-  public deleteHttpRoute = async (namespace: string, name: string) => {
-    await mockStore.deleteHttpRoute(namespace, name);
-    return true;
   };
 
   public deleteApplication = async (name: string): Promise<void> => {
@@ -204,11 +210,6 @@ export default class MockApi extends Api {
     return Immutable.fromJS([]);
   };
 
-  public updateHttpRoute = async (namespace: string, name: string, httpRoute: HttpRoute) => {
-    await mockStore.updateHttpRoute(namespace, httpRoute);
-    return Immutable.fromJS(httpRoute);
-  };
-
   public updateApplication = async (application: Application) => {
     await mockStore.updateApplication(application as ApplicationDetails);
     return Immutable.fromJS(application);
@@ -226,7 +227,7 @@ export default class MockApi extends Api {
 
   // TODO
   public getSSOConfig = async (): Promise<SSOConfig> => {
-    return Immutable.Map();
+    return mockStore.data.get("mockSSO");
   };
 
   public createSSOConfig = async (ssoConfig: SSOConfig): Promise<SSOConfig> => {
@@ -247,6 +248,10 @@ export default class MockApi extends Api {
     return Immutable.Map();
   };
 
+  public updateProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint> => {
+    return Immutable.Map();
+  };
+
   public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {};
 
   public listDeployKeys = async (): Promise<Immutable.List<DeployKey>> => {
@@ -258,4 +263,16 @@ export default class MockApi extends Api {
   };
 
   public deleteDeployKey = async (protectedEndpoint: DeployKey): Promise<void> => {};
+
+  public resolveDomain = async (domain: string, type: "A" | "CNAME", timeout: number = 5000): Promise<string[]> => {
+    return ["1.1.1.1"];
+  };
+
+  public initializeCluster = async (domain: string): Promise<InitializeClusterResponse> => {
+    return Immutable.Map({});
+  };
+
+  public resetCluster = async (): Promise<any> => {
+    return {};
+  };
 }

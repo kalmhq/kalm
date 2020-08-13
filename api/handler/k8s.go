@@ -2,20 +2,21 @@ package handler
 
 import (
 	"github.com/labstack/echo/v4"
+	coreV1 "k8s.io/api/core/v1"
 )
 
 func (h *ApiHandler) handleGetPVs(c echo.Context) error {
-	k8sClient := getK8sClient(c)
-	list, err := k8sClient.CoreV1().PersistentVolumes().List(c.Request().Context(), ListAll)
+	var pvList coreV1.PersistentVolumeList
+	err := h.Builder(c).List(&pvList)
 	if err != nil {
 		return err
 	}
-	return c.JSON(200, list)
+	return c.JSON(200, pvList)
 }
 
 func (h *ApiHandler) handleGetNodes(c echo.Context) error {
-	k8sClient := getK8sClient(c)
-	list, err := k8sClient.CoreV1().Nodes().List(c.Request().Context(), ListAll)
+	var list coreV1.NodeList
+	err := h.Builder(c).List(&list)
 	if err != nil {
 		return err
 	}

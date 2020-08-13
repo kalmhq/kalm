@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { HttpRouteDestination } from "types/route";
+import { HttpRoute, HttpRouteDestination } from "types/route";
 import sc from "utils/stringConstants";
 
 export const validator = () => {
@@ -16,9 +16,9 @@ export const ValidatorListNotEmpty = (value: Immutable.List<any>, _allValues?: a
   return undefined;
 };
 
-export const ValidatorAtLeastOneHttpRouteDestination = (
+export const ValidatorHttpRouteDestinations = (
   value: Immutable.List<HttpRouteDestination>,
-  _allValues?: any,
+  _allValues?: HttpRoute,
   _props?: any,
   _name?: any,
 ) => {
@@ -73,6 +73,21 @@ export const ValidatorNumberOrAlphabet = (value: any, _allValues?: any, _props?:
     }
   }
   return "Not a valid port value";
+};
+
+export const ValidatorNaturalNumber = (value: string) => {
+  if (!value) return undefined;
+
+  const integerValue = parseInt(value, 10);
+  if (isNaN(integerValue)) {
+    return undefined;
+  }
+
+  if (integerValue < 0) {
+    return 'Number can\'t be negative';
+  }
+
+  return undefined;
 };
 
 export const ValidatorOneof = (...options: (string | RegExp)[]) => {
@@ -179,10 +194,6 @@ export const ValidateHost = (value: string) => {
     return "Host length must be between 1 and 511 characters.";
   }
 
-  var regExpHostname = new RegExp(
-    /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/,
-  ); // RFC 1123
-
   var regResultHostname = regExpHostname.exec(value);
   if (regResultHostname === null) {
     return "Domain is invalid.";
@@ -195,15 +206,16 @@ export const regExpIp = new RegExp(
   "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
 );
 
+export const regExpHostname = new RegExp(
+  /^([a-z0-9*])(([a-z0-9-]{1,61})?[a-z0-9]{1})?(\.[a-z0-9](([a-z0-9-]{1,61})?[a-z0-9]{1})?)?(\.[a-zA-Z]{2,4})+$/,
+);
+
 const validateHostWithWildcardPrefix = (value: string) => {
   if (value.length === 0 || value.length > 511) {
     return "Host length must be between 1 and 511 characters.";
   }
 
   var regResultIp = regExpIp.exec(value);
-  var regExpHostname = new RegExp(
-    /^(\*\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/,
-  ); // RFC 1123 but allow "*." prefix
 
   var regResultHostname = regExpHostname.exec(value);
   if (regResultIp === null && regResultHostname === null) {

@@ -1,0 +1,943 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: loki
+spec:
+  finalizers:
+    - kubernetes
+---
+apiVersion: v1
+items:
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      labels:
+        app: grafana
+        chart: grafana-3.8.19
+        heritage: Tiller
+        release: loki
+      name: loki-grafana-clusterrole
+    rules:
+      - apiGroups:
+          - ""
+        resources:
+          - configmaps
+          - secrets
+        verbs:
+          - get
+          - watch
+          - list
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      labels:
+        app: promtail
+        chart: promtail-0.23.4
+        heritage: Tiller
+        release: loki
+      name: loki-promtail-clusterrole
+    rules:
+      - apiGroups:
+          - ""
+        resources:
+          - nodes
+          - nodes/proxy
+          - services
+          - endpoints
+          - pods
+        verbs:
+          - get
+          - watch
+          - list
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+---
+apiVersion: v1
+items:
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      labels:
+        app: grafana
+        chart: grafana-3.8.19
+        heritage: Tiller
+        release: loki
+      name: loki-grafana-clusterrolebinding
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: loki-grafana-clusterrole
+    subjects:
+      - kind: ServiceAccount
+        name: loki-grafana
+        namespace: loki
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      labels:
+        app: promtail
+        chart: promtail-0.23.4
+        heritage: Tiller
+        release: loki
+      name: loki-promtail-clusterrolebinding
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: loki-promtail-clusterrole
+    subjects:
+      - kind: ServiceAccount
+        name: loki-promtail
+        namespace: loki
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+---
+apiVersion: v1
+items:
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      labels:
+        app: loki
+        chart: loki-0.30.2
+        heritage: Tiller
+        release: loki
+      name: loki
+      namespace: loki
+    rules:
+      - apiGroups:
+          - extensions
+        resourceNames:
+          - loki
+        resources:
+          - podsecuritypolicies
+        verbs:
+          - use
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: Role
+    metadata:
+      labels:
+        app: promtail
+        chart: promtail-0.23.4
+        heritage: Tiller
+        release: loki
+      name: loki-promtail
+      namespace: loki
+    rules:
+      - apiGroups:
+          - extensions
+        resourceNames:
+          - loki-promtail
+        resources:
+          - podsecuritypolicies
+        verbs:
+          - use
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+---
+apiVersion: v1
+items:
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    metadata:
+      labels:
+        app: loki
+        chart: loki-0.30.2
+        heritage: Tiller
+        release: loki
+      name: loki
+      namespace: loki
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: Role
+      name: loki
+    subjects:
+      - kind: ServiceAccount
+        name: loki
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: RoleBinding
+    metadata:
+      labels:
+        app: promtail
+        chart: promtail-0.23.4
+        heritage: Tiller
+        release: loki
+      name: loki-promtail
+      namespace: loki
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: Role
+      name: loki-promtail
+    subjects:
+      - kind: ServiceAccount
+        name: loki-promtail
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+---
+apiVersion: v1
+items:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      labels:
+        app: loki
+        chart: loki-0.30.2
+        heritage: Tiller
+        release: loki
+      name: loki
+      namespace: loki
+    secrets:
+      - name: loki-token-cwp5d
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      labels:
+        app: grafana
+        chart: grafana-3.8.19
+        heritage: Tiller
+        release: loki
+      name: loki-grafana
+      namespace: loki
+    secrets:
+      - name: loki-grafana-token-txkd2
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      labels:
+        app: promtail
+        chart: promtail-0.23.4
+        heritage: Tiller
+        release: loki
+      name: loki-promtail
+      namespace: loki
+    secrets:
+      - name: loki-promtail-token-nrwbp
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+---
+apiVersion: v1
+items:
+  - apiVersion: v1
+    data:
+      loki.yaml: YXV0aF9lbmFibGVkOiBmYWxzZQpjaHVua19zdG9yZV9jb25maWc6CiAgbWF4X2xvb2tfYmFja19wZXJpb2Q6IDBzCmluZ2VzdGVyOgogIGNodW5rX2Jsb2NrX3NpemU6IDI2MjE0NAogIGNodW5rX2lkbGVfcGVyaW9kOiAzbQogIGNodW5rX3JldGFpbl9wZXJpb2Q6IDFtCiAgbGlmZWN5Y2xlcjoKICAgIHJpbmc6CiAgICAgIGt2c3RvcmU6CiAgICAgICAgc3RvcmU6IGlubWVtb3J5CiAgICAgIHJlcGxpY2F0aW9uX2ZhY3RvcjogMQogIG1heF90cmFuc2Zlcl9yZXRyaWVzOiAwCmxpbWl0c19jb25maWc6CiAgZW5mb3JjZV9tZXRyaWNfbmFtZTogZmFsc2UKICByZWplY3Rfb2xkX3NhbXBsZXM6IHRydWUKICByZWplY3Rfb2xkX3NhbXBsZXNfbWF4X2FnZTogMTY4aApzY2hlbWFfY29uZmlnOgogIGNvbmZpZ3M6CiAgLSBmcm9tOiAiMjAxOC0wNC0xNSIKICAgIGluZGV4OgogICAgICBwZXJpb2Q6IDE2OGgKICAgICAgcHJlZml4OiBpbmRleF8KICAgIG9iamVjdF9zdG9yZTogZmlsZXN5c3RlbQogICAgc2NoZW1hOiB2OQogICAgc3RvcmU6IGJvbHRkYgpzZXJ2ZXI6CiAgaHR0cF9saXN0ZW5fcG9ydDogMzEwMApzdG9yYWdlX2NvbmZpZzoKICBib2x0ZGI6CiAgICBkaXJlY3Rvcnk6IC9kYXRhL2xva2kvaW5kZXgKICBmaWxlc3lzdGVtOgogICAgZGlyZWN0b3J5OiAvZGF0YS9sb2tpL2NodW5rcwp0YWJsZV9tYW5hZ2VyOgogIHJldGVudGlvbl9kZWxldGVzX2VuYWJsZWQ6IGZhbHNlCiAgcmV0ZW50aW9uX3BlcmlvZDogMHMK
+    kind: Secret
+    metadata:
+      labels:
+        app: loki
+        chart: loki-0.30.2
+        heritage: Tiller
+        release: loki
+      name: loki
+      namespace: loki
+    type: Opaque
+  - apiVersion: v1
+    data:
+      admin-password: cGFzc3dvcmQ=
+      admin-user: YWRtaW4=
+      ldap-toml: ""
+    kind: Secret
+    metadata:
+      labels:
+        app: grafana
+        chart: grafana-3.8.19
+        heritage: Tiller
+        release: loki
+      name: loki-grafana
+      namespace: loki
+    type: Opaque
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+---
+apiVersion: v1
+items:
+  - apiVersion: v1
+    data:
+      grafana.ini: |
+        [analytics]
+        check_for_updates = true
+        [grafana_net]
+        url = https://grafana.net
+        [log]
+        mode = console
+        [paths]
+        data = /var/lib/grafana/data
+        logs = /var/log/grafana
+        plugins = /var/lib/grafana/plugins
+        provisioning = /etc/grafana/provisioning
+    kind: ConfigMap
+    metadata:
+      labels:
+        app: grafana
+        chart: grafana-3.8.19
+        heritage: Tiller
+        release: loki
+      name: loki-grafana
+      namespace: loki
+  - apiVersion: v1
+    data:
+      loki-stack-datasource.yaml: |-
+        apiVersion: 1
+        datasources:
+        - name: Loki
+          type: loki
+          access: proxy
+          url: http://loki:3100
+          version: 1
+    kind: ConfigMap
+    metadata:
+      labels:
+        app: loki-stack
+        chart: loki-stack-0.38.2
+        grafana_datasource: "1"
+        heritage: Tiller
+        release: loki
+      name: loki-loki-stack
+      namespace: loki
+  - apiVersion: v1
+    data:
+      promtail.yaml: "client:\n  backoff_config:\n    max_period: 5s\n    max_retries:
+      20\n    min_period: 100ms\n  batchsize: 102400\n  batchwait: 1s\n  external_labels:
+      {}\n  timeout: 10s\npositions:\n  filename: /run/promtail/positions.yaml\nserver:\n
+      \ http_listen_port: 3101\ntarget_config:\n  sync_period: 10s\n\nscrape_configs:\n-
+      job_name: kubernetes-pods-name\n  pipeline_stages:\n    - docker: {}\n    \n
+      \ kubernetes_sd_configs:\n  - role: pod\n  relabel_configs:\n  - source_labels:\n
+      \   - __meta_kubernetes_pod_label_name\n    target_label: __service__\n  - source_labels:\n
+      \   - __meta_kubernetes_pod_node_name\n    target_label: __host__\n  - action:
+      drop\n    regex: ''\n    source_labels:\n    - __service__\n  - action: labelmap\n
+      \   regex: __meta_kubernetes_pod_label_(.+)\n  - action: replace\n    replacement:
+      $1\n    separator: /\n    source_labels:\n    - __meta_kubernetes_namespace\n
+      \   - __service__\n    target_label: job\n  - action: replace\n    source_labels:\n
+      \   - __meta_kubernetes_namespace\n    target_label: namespace\n  - action:
+      replace\n    source_labels:\n    - __meta_kubernetes_pod_name\n    target_label:
+      pod\n  - action: replace\n    source_labels:\n    - __meta_kubernetes_pod_container_name\n
+      \   target_label: container\n  - replacement: /var/log/pods/*$1/*.log\n    separator:
+      /\n    source_labels:\n    - __meta_kubernetes_pod_uid\n    - __meta_kubernetes_pod_container_name\n
+      \   target_label: __path__\n- job_name: kubernetes-pods-app\n  pipeline_stages:\n
+      \   - docker: {}\n    \n  kubernetes_sd_configs:\n  - role: pod\n  relabel_configs:\n
+      \ - action: drop\n    regex: .+\n    source_labels:\n    - __meta_kubernetes_pod_label_name\n
+      \ - source_labels:\n    - __meta_kubernetes_pod_label_app\n    target_label:
+      __service__\n  - source_labels:\n    - __meta_kubernetes_pod_node_name\n    target_label:
+      __host__\n  - action: drop\n    regex: ''\n    source_labels:\n    - __service__\n
+      \ - action: labelmap\n    regex: __meta_kubernetes_pod_label_(.+)\n  - action:
+      replace\n    replacement: $1\n    separator: /\n    source_labels:\n    - __meta_kubernetes_namespace\n
+      \   - __service__\n    target_label: job\n  - action: replace\n    source_labels:\n
+      \   - __meta_kubernetes_namespace\n    target_label: namespace\n  - action:
+      replace\n    source_labels:\n    - __meta_kubernetes_pod_name\n    target_label:
+      pod\n  - action: replace\n    source_labels:\n    - __meta_kubernetes_pod_container_name\n
+      \   target_label: container\n  - replacement: /var/log/pods/*$1/*.log\n    separator:
+      /\n    source_labels:\n    - __meta_kubernetes_pod_uid\n    - __meta_kubernetes_pod_container_name\n
+      \   target_label: __path__\n- job_name: kubernetes-pods-direct-controllers\n
+      \ pipeline_stages:\n    - docker: {}\n    \n  kubernetes_sd_configs:\n  - role:
+      pod\n  relabel_configs:\n  - action: drop\n    regex: .+\n    separator: ''\n
+      \   source_labels:\n    - __meta_kubernetes_pod_label_name\n    - __meta_kubernetes_pod_label_app\n
+      \ - action: drop\n    regex: '[0-9a-z-.]+-[0-9a-f]{8,10}'\n    source_labels:\n
+      \   - __meta_kubernetes_pod_controller_name\n  - source_labels:\n    - __meta_kubernetes_pod_controller_name\n
+      \   target_label: __service__\n  - source_labels:\n    - __meta_kubernetes_pod_node_name\n
+      \   target_label: __host__\n  - action: drop\n    regex: ''\n    source_labels:\n
+      \   - __service__\n  - action: labelmap\n    regex: __meta_kubernetes_pod_label_(.+)\n
+      \ - action: replace\n    replacement: $1\n    separator: /\n    source_labels:\n
+      \   - __meta_kubernetes_namespace\n    - __service__\n    target_label: job\n
+      \ - action: replace\n    source_labels:\n    - __meta_kubernetes_namespace\n
+      \   target_label: namespace\n  - action: replace\n    source_labels:\n    -
+      __meta_kubernetes_pod_name\n    target_label: pod\n  - action: replace\n    source_labels:\n
+      \   - __meta_kubernetes_pod_container_name\n    target_label: container\n  -
+      replacement: /var/log/pods/*$1/*.log\n    separator: /\n    source_labels:\n
+      \   - __meta_kubernetes_pod_uid\n    - __meta_kubernetes_pod_container_name\n
+      \   target_label: __path__\n- job_name: kubernetes-pods-indirect-controller\n
+      \ pipeline_stages:\n    - docker: {}\n    \n  kubernetes_sd_configs:\n  - role:
+      pod\n  relabel_configs:\n  - action: drop\n    regex: .+\n    separator: ''\n
+      \   source_labels:\n    - __meta_kubernetes_pod_label_name\n    - __meta_kubernetes_pod_label_app\n
+      \ - action: keep\n    regex: '[0-9a-z-.]+-[0-9a-f]{8,10}'\n    source_labels:\n
+      \   - __meta_kubernetes_pod_controller_name\n  - action: replace\n    regex:
+      '([0-9a-z-.]+)-[0-9a-f]{8,10}'\n    source_labels:\n    - __meta_kubernetes_pod_controller_name\n
+      \   target_label: __service__\n  - source_labels:\n    - __meta_kubernetes_pod_node_name\n
+      \   target_label: __host__\n  - action: drop\n    regex: ''\n    source_labels:\n
+      \   - __service__\n  - action: labelmap\n    regex: __meta_kubernetes_pod_label_(.+)\n
+      \ - action: replace\n    replacement: $1\n    separator: /\n    source_labels:\n
+      \   - __meta_kubernetes_namespace\n    - __service__\n    target_label: job\n
+      \ - action: replace\n    source_labels:\n    - __meta_kubernetes_namespace\n
+      \   target_label: namespace\n  - action: replace\n    source_labels:\n    -
+      __meta_kubernetes_pod_name\n    target_label: pod\n  - action: replace\n    source_labels:\n
+      \   - __meta_kubernetes_pod_container_name\n    target_label: container\n  -
+      replacement: /var/log/pods/*$1/*.log\n    separator: /\n    source_labels:\n
+      \   - __meta_kubernetes_pod_uid\n    - __meta_kubernetes_pod_container_name\n
+      \   target_label: __path__\n- job_name: kubernetes-pods-static\n  pipeline_stages:\n
+      \   - docker: {}\n    \n  kubernetes_sd_configs:\n  - role: pod\n  relabel_configs:\n
+      \ - action: drop\n    regex: ''\n    source_labels:\n    - __meta_kubernetes_pod_annotation_kubernetes_io_config_mirror\n
+      \ - action: replace\n    source_labels:\n    - __meta_kubernetes_pod_label_component\n
+      \   target_label: __service__\n  - source_labels:\n    - __meta_kubernetes_pod_node_name\n
+      \   target_label: __host__\n  - action: drop\n    regex: ''\n    source_labels:\n
+      \   - __service__\n  - action: labelmap\n    regex: __meta_kubernetes_pod_label_(.+)\n
+      \ - action: replace\n    replacement: $1\n    separator: /\n    source_labels:\n
+      \   - __meta_kubernetes_namespace\n    - __service__\n    target_label: job\n
+      \ - action: replace\n    source_labels:\n    - __meta_kubernetes_namespace\n
+      \   target_label: namespace\n  - action: replace\n    source_labels:\n    -
+      __meta_kubernetes_pod_name\n    target_label: pod\n  - action: replace\n    source_labels:\n
+      \   - __meta_kubernetes_pod_container_name\n    target_label: container\n  -
+      replacement: /var/log/pods/*$1/*.log\n    separator: /\n    source_labels:\n
+      \   - __meta_kubernetes_pod_annotation_kubernetes_io_config_mirror\n    - __meta_kubernetes_pod_container_name\n
+      \   target_label: __path__\n"
+    kind: ConfigMap
+    metadata:
+      labels:
+        app: promtail
+        chart: promtail-0.23.4
+        heritage: Tiller
+        release: loki
+      name: loki-promtail
+      namespace: loki
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+---
+apiVersion: v1
+items:
+  - apiVersion: policy/v1beta1
+    kind: PodSecurityPolicy
+    metadata:
+      labels:
+        app: loki
+        chart: loki-0.30.2
+        heritage: Tiller
+        release: loki
+      name: loki
+    spec:
+      allowPrivilegeEscalation: false
+      fsGroup:
+        ranges:
+          - max: 65535
+            min: 1
+        rule: MustRunAs
+      readOnlyRootFilesystem: true
+      requiredDropCapabilities:
+        - ALL
+      runAsUser:
+        rule: MustRunAsNonRoot
+      seLinux:
+        rule: RunAsAny
+      supplementalGroups:
+        ranges:
+          - max: 65535
+            min: 1
+        rule: MustRunAs
+      volumes:
+        - configMap
+        - emptyDir
+        - persistentVolumeClaim
+        - secret
+        - projected
+        - downwardAPI
+  - apiVersion: policy/v1beta1
+    kind: PodSecurityPolicy
+    metadata:
+      annotations:
+        apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
+        apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
+        seccomp.security.alpha.kubernetes.io/allowedProfileNames: docker/default
+        seccomp.security.alpha.kubernetes.io/defaultProfileName: docker/default
+      labels:
+        app: grafana
+        chart: grafana-3.8.19
+        heritage: Tiller
+        release: loki
+      name: loki-grafana
+    spec:
+      allowPrivilegeEscalation: false
+      fsGroup:
+        rule: RunAsAny
+      requiredDropCapabilities:
+        - FOWNER
+        - FSETID
+        - KILL
+        - SETGID
+        - SETUID
+        - SETPCAP
+        - NET_BIND_SERVICE
+        - NET_RAW
+        - SYS_CHROOT
+        - MKNOD
+        - AUDIT_WRITE
+        - SETFCAP
+      runAsUser:
+        rule: RunAsAny
+      seLinux:
+        rule: RunAsAny
+      supplementalGroups:
+        rule: RunAsAny
+      volumes:
+        - configMap
+        - emptyDir
+        - projected
+        - secret
+        - downwardAPI
+        - persistentVolumeClaim
+  - apiVersion: policy/v1beta1
+    kind: PodSecurityPolicy
+    metadata:
+      labels:
+        app: promtail
+        chart: promtail-0.23.4
+        heritage: Tiller
+        release: loki
+      name: loki-promtail
+    spec:
+      allowPrivilegeEscalation: false
+      fsGroup:
+        rule: RunAsAny
+      readOnlyRootFilesystem: true
+      requiredDropCapabilities:
+        - ALL
+      runAsUser:
+        rule: RunAsAny
+      seLinux:
+        rule: RunAsAny
+      supplementalGroups:
+        rule: RunAsAny
+      volumes:
+        - secret
+        - configMap
+        - hostPath
+        - projected
+        - downwardAPI
+        - emptyDir
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  generation: 1
+  labels:
+    app: loki
+    chart: loki-0.30.2
+    heritage: Tiller
+    release: loki
+  name: loki
+  namespace: loki
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: loki
+      release: loki
+  serviceName: loki-headless
+  template:
+    metadata:
+      annotations:
+        checksum/config: 5215721a74d229b906b4daa1ac67fcbd4741ee9bbd30536690fafc5a5746f771
+        prometheus.io/port: http-metrics
+        prometheus.io/scrape: "true"
+      creationTimestamp: null
+      labels:
+        app: loki
+        name: loki
+        release: loki
+    spec:
+      affinity: {}
+      containers:
+        - args:
+            - -config.file=/etc/loki/loki.yaml
+          image: grafana/loki:1.5.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /ready
+              port: http-metrics
+              scheme: HTTP
+            initialDelaySeconds: 45
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: loki
+          ports:
+            - containerPort: 3100
+              name: http-metrics
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /ready
+              port: http-metrics
+              scheme: HTTP
+            initialDelaySeconds: 45
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          securityContext:
+            readOnlyRootFilesystem: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /etc/loki
+              name: config
+            - mountPath: /data
+              name: storage
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        runAsUser: 10001
+      serviceAccount: loki
+      serviceAccountName: loki
+      terminationGracePeriodSeconds: 4800
+      volumes:
+        - name: config
+          secret:
+            defaultMode: 420
+            secretName: loki
+  volumeClaimTemplates:
+    - metadata:
+        name: storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        volumeMode: Filesystem
+  updateStrategy:
+    type: RollingUpdate
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+    deprecated.daemonset.template.generation: "1"
+  generation: 1
+  labels:
+    app: promtail
+    chart: promtail-0.23.4
+    heritage: Tiller
+    release: loki
+  name: loki-promtail
+  namespace: loki
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: promtail
+      release: loki
+  template:
+    metadata:
+      annotations:
+        checksum/config: 9266581a17bf5c1c79a19c96b62603b96b68ccd101cab1b035304af5b06b5535
+        prometheus.io/port: http-metrics
+        prometheus.io/scrape: "true"
+      creationTimestamp: null
+      labels:
+        app: promtail
+        release: loki
+    spec:
+      affinity: {}
+      containers:
+        - args:
+            - -config.file=/etc/promtail/promtail.yaml
+            - -client.url=http://loki:3100/loki/api/v1/push
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          image: grafana/promtail:1.5.0
+          imagePullPolicy: IfNotPresent
+          name: promtail
+          ports:
+            - containerPort: 3101
+              name: http-metrics
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /ready
+              port: http-metrics
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsGroup: 0
+            runAsUser: 0
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /etc/promtail
+              name: config
+            - mountPath: /run/promtail
+              name: run
+            - mountPath: /var/lib/docker/containers
+              name: docker
+              readOnly: true
+            - mountPath: /var/log/pods
+              name: pods
+              readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: loki-promtail
+      serviceAccountName: loki-promtail
+      terminationGracePeriodSeconds: 30
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+          operator: Exists
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: loki-promtail
+          name: config
+        - hostPath:
+            path: /run/promtail
+            type: ""
+          name: run
+        - hostPath:
+            path: /var/lib/docker/containers
+            type: ""
+          name: docker
+        - hostPath:
+            path: /var/log/pods
+            type: ""
+          name: pods
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  generation: 1
+  labels:
+    app: grafana
+    chart: grafana-3.8.19
+    heritage: Tiller
+    release: loki
+  name: loki-grafana
+  namespace: loki
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: grafana
+      release: loki
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/config: 5718319f8bec4f87dd50e11caca9a5093df7131b8332e70c3f02091704c9381b
+        checksum/dashboards-json-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+        checksum/sc-dashboard-provider-config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+        checksum/secret: fe33fe5ffcfb727ad2d7f92aba65891e795bd233a27e1e4bff8a4ed996463c86
+      creationTimestamp: null
+      labels:
+        app: grafana
+        release: loki
+    spec:
+      containers:
+        - env:
+            - name: GF_SECURITY_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  key: admin-user
+                  name: loki-grafana
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: admin-password
+                  name: loki-grafana
+          image: grafana/grafana:6.7.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 10
+            httpGet:
+              path: /api/health
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 30
+          name: grafana
+          ports:
+            - containerPort: 80
+              name: service
+              protocol: TCP
+            - containerPort: 3000
+              name: grafana
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /api/health
+              port: 3000
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /etc/grafana/grafana.ini
+              name: config
+              subPath: grafana.ini
+            - mountPath: /etc/grafana/ldap.toml
+              name: ldap
+              subPath: ldap.toml
+            - mountPath: /var/lib/grafana
+              name: storage
+            - mountPath: /etc/grafana/provisioning/datasources
+              name: sc-datasources-volume
+      dnsPolicy: ClusterFirst
+      initContainers:
+        - env:
+            - name: METHOD
+              value: LIST
+            - name: LABEL
+              value: grafana_datasource
+            - name: FOLDER
+              value: /etc/grafana/provisioning/datasources
+            - name: RESOURCE
+              value: both
+          image: kiwigrid/k8s-sidecar:0.1.20
+          imagePullPolicy: IfNotPresent
+          name: grafana-sc-datasources
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /etc/grafana/provisioning/datasources
+              name: sc-datasources-volume
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 472
+        runAsUser: 472
+      serviceAccount: loki-grafana
+      serviceAccountName: loki-grafana
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: loki-grafana
+          name: config
+        - name: ldap
+          secret:
+            defaultMode: 420
+            items:
+              - key: ldap-toml
+                path: ldap.toml
+            secretName: loki-grafana
+        - emptyDir: {}
+          name: storage
+        - emptyDir: {}
+          name: sc-datasources-volume
+---
+apiVersion: v1
+items:
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app: loki
+        chart: loki-0.30.2
+        heritage: Tiller
+        release: loki
+      name: loki
+      namespace: loki
+    spec:
+      ports:
+        - name: http-metrics
+          port: 3100
+          protocol: TCP
+          targetPort: http-metrics
+      selector:
+        app: loki
+        release: loki
+      sessionAffinity: None
+      type: ClusterIP
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app: grafana
+        chart: grafana-3.8.19
+        heritage: Tiller
+        release: loki
+      name: loki-grafana
+      namespace: loki
+    spec:
+      ports:
+        - name: service
+          port: 80
+          protocol: TCP
+          targetPort: 3000
+      selector:
+        app: grafana
+        release: loki
+      sessionAffinity: None
+      type: ClusterIP
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app: loki
+        chart: loki-0.30.2
+        heritage: Tiller
+        release: loki
+        variant: headless
+      name: loki-headless
+      namespace: loki
+    spec:
+      clusterIP: None
+      ports:
+        - name: http-metrics
+          port: 3100
+          protocol: TCP
+          targetPort: http-metrics
+      selector:
+        app: loki
+        release: loki
+      sessionAffinity: None
+      type: ClusterIP
+    status:
+      loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+---

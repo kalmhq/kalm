@@ -15,7 +15,7 @@ import {
 import { api } from "api";
 import { Expansion } from "forms/Route/expansion";
 import { POPPER_ZINDEX } from "layout/Constants";
-import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
+import PopupState, { bindTrigger } from "material-ui-popup-state";
 import { NodeStatus } from "pages/Nodes/NodeStatus";
 import React from "react";
 import { connect } from "react-redux";
@@ -23,8 +23,10 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Node } from "types/node";
 import { formatTimeDistance, TimestampFilter } from "utils/date";
+import { customBindHover, customBindPopover } from "utils/popper";
+import { sizeStringToNumber } from "utils/sizeConv";
+import sc from "utils/stringConstants";
 import { InfoBox } from "widgets/InfoBox";
-import { KSelect } from "widgets/KSelect";
 import { Subtitle1 } from "widgets/Label";
 import { InfoPaper } from "widgets/Paper";
 import { BigCPULineChart, BigMemoryLineChart, SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
@@ -34,13 +36,13 @@ import { NodeCPU, NodesCPU } from "./CPU";
 import { NodeMemory, NodesMemory } from "./Memory";
 import { NodePods } from "./Pods";
 import { ResourceRank } from "./ResourceRank";
-import { customBindHover } from "utils/popper";
-import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   return {
     nodes: state.get("nodes").get("nodes"),
     metrics: state.get("nodes").get("metrics"),
+    applications: state.get("applications").get("applications"),
+    componentsMap: state.get("components").get("components"),
   };
 };
 
@@ -52,35 +54,6 @@ const styles = (theme: Theme) =>
 interface States {
   chartDateFilter: string;
 }
-
-// TODO remove this and use real
-const fakePopperData = [
-  {
-    name: "application1",
-    value: 1000,
-    unit: "m",
-  },
-  {
-    name: "application2",
-    value: 800,
-    unit: "m",
-  },
-  {
-    name: "application3",
-    value: 700,
-    unit: "m",
-  },
-  {
-    name: "application4",
-    value: 500,
-    unit: "m",
-  },
-  {
-    name: "application5",
-    value: 300,
-    unit: "m",
-  },
-];
 
 type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
@@ -127,6 +100,8 @@ export class NodeListRaw extends React.Component<Props, States> {
       );
     });
 
+    const { cpuRankData, memoryRankData } = this.getNodeResourceRankData(node);
+
     return (
       <Expansion
         title={
@@ -150,11 +125,11 @@ export class NodeListRaw extends React.Component<Props, States> {
                         <div {...customBindHover(popupState)}>
                           <NodeCPU node={node} />
                         </div>
-                        <Popper {...bindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
+                        <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank allocateds={fakePopperData} />
+                                <ResourceRank title="Pods" allocateds={cpuRankData} />
                               </Paper>
                             </Fade>
                           )}
@@ -175,11 +150,11 @@ export class NodeListRaw extends React.Component<Props, States> {
                         <div {...customBindHover(popupState)}>
                           <NodeMemory node={node} />
                         </div>
-                        <Popper {...bindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
+                        <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank allocateds={fakePopperData} />
+                                <ResourceRank title="Pods" allocateds={memoryRankData} />
                               </Paper>
                             </Fade>
                           )}
@@ -239,7 +214,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           <NodeCPU node={node} showDetails={true} />
                         </div>
                         <Popper
-                          {...bindPopover(popupState)}
+                          {...customBindPopover(popupState)}
                           style={{ zIndex: POPPER_ZINDEX }}
                           placement={"bottom-start"}
                           transition
@@ -247,7 +222,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank allocateds={fakePopperData} />
+                                <ResourceRank title="Pods" allocateds={cpuRankData} />
                               </Paper>
                             </Fade>
                           )}
@@ -269,7 +244,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           <NodeMemory node={node} showDetails={true} />
                         </div>
                         <Popper
-                          {...bindPopover(popupState)}
+                          {...customBindPopover(popupState)}
                           style={{ zIndex: POPPER_ZINDEX }}
                           placement={"bottom-start"}
                           transition
@@ -277,7 +252,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank allocateds={fakePopperData} />
+                                <ResourceRank title="Pods" allocateds={memoryRankData} />
                               </Paper>
                             </Fade>
                           )}
@@ -339,11 +314,11 @@ export class NodeListRaw extends React.Component<Props, States> {
         <PopupState variant="popover" popupId={"nodes"}>
           {(popupState) => (
             <>
-              <Button color="primary" size="small" variant="text" {...bindTrigger(popupState)}>
+              <Button style={{ padding: 0 }} color="primary" size="small" variant="text" {...bindTrigger(popupState)}>
                 How to add a new node?
               </Button>
               <Popover
-                {...bindPopover(popupState)}
+                {...customBindPopover(popupState)}
                 anchorOrigin={{
                   vertical: "bottom",
                   horizontal: "center",
@@ -393,15 +368,28 @@ export class NodeListRaw extends React.Component<Props, States> {
       },
     ];
 
-    return <InfoBox title={sc.NODES_INFO_BOX_TEXT} options={options}></InfoBox>;
+    return (
+      <InfoBox
+        title={
+          <Box>
+            <Box mb={2}>{this.renderSecondHeaderRight()}</Box>
+            {sc.NODES_INFO_BOX_TEXT}
+          </Box>
+        }
+        options={options}
+      ></InfoBox>
+    );
   }
 
   render() {
     const { metrics, nodes } = this.props;
+
+    const { cpuRankData, memoryRankData } = this.getNodesResourceRankData();
+
     return (
-      <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
+      <BasePage>
         <Box p={2}>
-          <Grid container spacing={2}>
+          {/* <Grid container spacing={2}>
             <Grid item xs={10}></Grid>
             <Grid item xs={2}>
               <KSelect
@@ -434,7 +422,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                 }}
               />
             </Grid>
-          </Grid>
+          </Grid> */}
           <Grid container spacing={2}>
             <Grid item md={6}>
               <InfoPaper elevation={0} style={{ overflow: "hidden" }}>
@@ -446,11 +434,11 @@ export class NodeListRaw extends React.Component<Props, States> {
                         <div {...customBindHover(popupState)}>
                           <NodesCPU nodes={nodes} />
                         </div>
-                        <Popper {...bindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
+                        <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank allocateds={fakePopperData} />
+                                <ResourceRank title="Applications" allocateds={cpuRankData} />
                               </Paper>
                             </Fade>
                           )}
@@ -474,11 +462,11 @@ export class NodeListRaw extends React.Component<Props, States> {
                         <div {...customBindHover(popupState)}>
                           <NodesMemory nodes={nodes} />
                         </div>
-                        <Popper {...bindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
+                        <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
                               <Paper>
-                                <ResourceRank allocateds={fakePopperData} />
+                                <ResourceRank title="Applications" allocateds={memoryRankData} />
                               </Paper>
                             </Fade>
                           )}
@@ -492,7 +480,7 @@ export class NodeListRaw extends React.Component<Props, States> {
           </Grid>
         </Box>
 
-        <Box p={2} pb={0}>
+        <Box p={2} pt={0} pb={0}>
           {nodes.map((node, index) => (
             <Box pb={index === nodes.size ? 0 : 1} key={node.get("name")}>
               {this.renderNodePanel(node)}
@@ -502,6 +490,140 @@ export class NodeListRaw extends React.Component<Props, States> {
         <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>
     );
+  }
+
+  private getNodesResourceRankData() {
+    const { nodes } = this.props;
+
+    const cpuRankData: {
+      name: string;
+      value: number;
+      unit?: string;
+    }[] = [];
+
+    const memoryRankData: {
+      name: string;
+      value: number;
+      unit?: string;
+    }[] = [];
+
+    const cpuRankMap: { [key: string]: number } = {};
+
+    const memoryRankMap: { [key: string]: number } = {};
+
+    nodes.forEach((node) => {
+      node
+        .get("allocatedResources")
+        .get("podsRequests")
+        .forEach((podRequest) => {
+          const namespace = podRequest.get("namespace");
+
+          const cpuData = podRequest.get("requests").get("cpu");
+
+          if (cpuData) {
+            if (cpuRankMap[namespace]) {
+              cpuRankMap[namespace] = cpuRankMap[namespace] + sizeStringToNumber(cpuData) * 1000;
+            } else {
+              cpuRankMap[namespace] = sizeStringToNumber(cpuData) * 1000;
+            }
+          }
+
+          const memoryData = podRequest.get("requests").get("memory");
+
+          if (memoryData) {
+            if (memoryRankMap[namespace]) {
+              memoryRankMap[namespace] = memoryRankMap[namespace] + sizeStringToNumber(memoryData);
+            } else {
+              memoryRankMap[namespace] = sizeStringToNumber(memoryData);
+            }
+          }
+        });
+    });
+
+    for (let namespace in cpuRankMap) {
+      cpuRankData.push({
+        name: namespace,
+        value: cpuRankMap[namespace],
+        unit: "m",
+      });
+    }
+
+    for (let namespace in memoryRankMap) {
+      memoryRankData.push({
+        name: namespace,
+        value: memoryRankMap[namespace],
+      });
+    }
+
+    return {
+      cpuRankData,
+      memoryRankData,
+    };
+  }
+
+  private getNodeResourceRankData(node: Node) {
+    const cpuRankData: {
+      name: string;
+      value: number;
+      unit?: string;
+    }[] = [];
+
+    const memoryRankData: {
+      name: string;
+      value: number;
+      unit?: string;
+    }[] = [];
+
+    const cpuRankMap: { [key: string]: number } = {};
+
+    const memoryRankMap: { [key: string]: number } = {};
+
+    node
+      .get("allocatedResources")
+      .get("podsRequests")
+      .forEach((podRequest) => {
+        const podName = podRequest.get("podName");
+
+        const cpuData = podRequest.get("requests").get("cpu");
+
+        if (cpuData) {
+          if (cpuRankMap[podName]) {
+            cpuRankMap[podName] = cpuRankMap[podName] + sizeStringToNumber(cpuData) * 1000;
+          } else {
+            cpuRankMap[podName] = sizeStringToNumber(cpuData) * 1000;
+          }
+        }
+
+        const memoryData = podRequest.get("requests").get("memory");
+
+        if (memoryData) {
+          if (memoryRankMap[podName]) {
+            memoryRankMap[podName] = memoryRankMap[podName] + sizeStringToNumber(memoryData);
+          } else {
+            memoryRankMap[podName] = sizeStringToNumber(memoryData);
+          }
+        }
+      });
+
+    for (let podName in cpuRankMap) {
+      cpuRankData.push({
+        name: podName,
+        value: cpuRankMap[podName],
+        unit: "m",
+      });
+    }
+
+    for (let podName in memoryRankMap) {
+      memoryRankData.push({
+        name: podName,
+        value: memoryRankMap[podName],
+      });
+    }
+
+    return {
+      cpuRankData,
+      memoryRankData,
+    };
   }
 }
 

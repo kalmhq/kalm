@@ -33,7 +33,7 @@ spec:
             - /manager
           args:
             - --enable-leader-election
-          image: quay.io/kalmhq/kalm-controller:latest
+          image: controller:latest
           imagePullPolicy: Always
           name: manager
           env:

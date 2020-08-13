@@ -19,13 +19,13 @@ const threeDestinationList: Immutable.List<HttpRouteDestination> = Immutable.Lis
 ]);
 
 export const OneDestinationTarget = () => {
-  return <Targets activeNamespaceName={"activeNamespaceName"} destinations={oneDestinationList} />;
+  return <Targets destinations={oneDestinationList} />;
 };
 
 export const TwoDestinationsTarget = () => {
-  return <Targets activeNamespaceName={"activeNamespaceName"} destinations={twoDestinationList} />;
+  return <Targets destinations={twoDestinationList} />;
 };
 
 export const ThreeDestinationsTarget = () => {
-  return <Targets activeNamespaceName={"activeNamespaceName"} destinations={threeDestinationList} />;
+  return <Targets destinations={threeDestinationList} />;
 };

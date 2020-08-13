@@ -441,6 +441,12 @@ rules:
 - apiGroups:
   - networking.istio.io
   resources:
+  - destinationrules
+  verbs:
+  - '*'
+- apiGroups:
+  - networking.istio.io
+  resources:
   - envoyfilters
   verbs:
   - create

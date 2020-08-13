@@ -63,6 +63,7 @@ spec:
                 properties:
                   name:
                     description: Name of the environment variable. Must be a C_IDENTIFIER.
+                    minLength: 1
                     type: string
                   prefix:
                     type: string
@@ -92,24 +93,39 @@ spec:
                 properties:
                   containerPort:
                     format: int32
+                    maximum: 65535
+                    minimum: 1
                     type: integer
-                  name:
-                    type: string
                   protocol:
-                    description: Protocol defines network protocols supported for
-                      things like container ports.
-                    enum:
-                    - TCP
-                    - UDP
-                    - SCTP
+                    allOf:
+                    - enum:
+                      - http
+                      - https
+                      - http2
+                      - grpc
+                      - grpc-web
+                      - tcp
+                      - udp
+                      - unknown
+                    - enum:
+                      - http
+                      - https
+                      - http2
+                      - grpc
+                      - grpc-web
+                      - tcp
+                      - udp
+                      - unknown
                     type: string
                   servicePort:
                     description: port for service
                     format: int32
+                    maximum: 65535
+                    minimum: 1
                     type: integer
                 required:
                 - containerPort
-                - name
+                - protocol
                 type: object
               type: array
             schedule:
@@ -152,9 +168,17 @@ spec:
                 type: object
               type: array
             workloadType:
-              enum:
-              - server
-              - cronjob
+              allOf:
+              - enum:
+                - server
+                - cronjob
+                - daemonset
+                - statefulset
+              - enum:
+                - server
+                - cronjob
+                - daemonset
+                - statefulset
               type: string
           required:
           - image

@@ -70,10 +70,7 @@ func (r *SingleSignOnConfigReconcilerTask) Run(req ctrl.Request) error {
 	}
 
 	if len(ssoList.Items) > 1 {
-		r.Log.Error(
-			fmt.Errorf("Only one SSO config is allowed."),
-			"Found more than one SSO configs, Please keep single one and delete the others.",
-		)
+		r.Log.Error(nil, "Only one SSO config is allowed. Found more than one SSO configs, Please keep single one and delete the others.")
 		return nil
 	}
 
@@ -224,32 +221,6 @@ func (r *SingleSignOnConfigReconcilerTask) DeleteResources() error {
 func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *corev1alpha1.SingleSignOnConfig) (string, error) {
 	oidcProviderInfo := GetOIDCProviderInfo(ssoConfig)
 
-	var connectors []interface{}
-
-	for _, connector := range ssoConfig.Spec.Connectors {
-		rawConnector := map[string]interface{}{
-			"id":   connector.ID,
-			"type": connector.Type,
-			"name": connector.Name,
-		}
-
-		if connector.Config != nil {
-			var config map[string]interface{}
-			err := json.Unmarshal(connector.Config.Raw, &config)
-
-			if err != nil {
-				r.Log.Error(err, "Unmarshal connector config failed")
-				return "", err
-			}
-
-			config["redirectURI"] = oidcProviderInfo.Issuer + "/callback"
-
-			rawConnector["config"] = config
-		}
-
-		connectors = append(connectors, rawConnector)
-	}
-
 	config := map[string]interface{}{
 		"issuer": oidcProviderInfo.Issuer,
 		"storage": map[string]interface{}{
@@ -265,7 +236,6 @@ func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *corev1a
 			"issuer": "kalm",
 			"theme":  "tectonic",
 		},
-		"connectors": connectors,
 		"oauth2": map[string]interface{}{
 			"skipApprovalScreen": true,
 		},
@@ -279,6 +249,48 @@ func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *corev1a
 				},
 			},
 		},
+	}
+
+	if len(ssoConfig.Spec.Connectors) > 0 {
+		var connectors []interface{}
+
+		for _, connector := range ssoConfig.Spec.Connectors {
+			rawConnector := map[string]interface{}{
+				"id":   connector.ID,
+				"type": connector.Type,
+				"name": connector.Name,
+			}
+
+			if connector.Config != nil {
+				var config map[string]interface{}
+				err := json.Unmarshal(connector.Config.Raw, &config)
+
+				if err != nil {
+					r.Log.Error(err, "Unmarshal connector config failed")
+					return "", err
+				}
+
+				config["redirectURI"] = oidcProviderInfo.Issuer + "/callback"
+
+				rawConnector["config"] = config
+			}
+
+			connectors = append(connectors, rawConnector)
+		}
+
+		config["connectors"] = connectors
+	}
+
+	if ssoConfig.Spec.TemporaryUser != nil {
+		config["enablePasswordDB"] = true
+		config["staticPasswords"] = []interface{}{
+			map[string]interface{}{
+				"email":    ssoConfig.Spec.TemporaryUser.Email,
+				"hash":     ssoConfig.Spec.TemporaryUser.PasswordHash,
+				"username": ssoConfig.Spec.TemporaryUser.Username,
+				"userID":   ssoConfig.Spec.TemporaryUser.UserID,
+			},
+		}
 	}
 
 	configBytes, _ := yaml.Marshal(config)
@@ -335,9 +347,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 			Command:      "/usr/local/bin/dex serve /etc/dex/cfg/config.yaml",
 			Ports: []corev1alpha1.Port{
 				{
-					Name:          "http",
 					ContainerPort: 5556,
-					Protocol:      coreV1.ProtocolTCP,
+					Protocol:      corev1alpha1.PortProtocolHTTP,
 				},
 			},
 			PreInjectedFiles: []corev1alpha1.PreInjectFile{
@@ -395,14 +406,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 	timeout := 5
 
-	var scheme string
-
-	if r.ssoConfig.Spec.UseHttp {
-		scheme = "http"
-	} else {
-		scheme = "https"
-	}
-
 	dexRoute := corev1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      KALM_DEX_NAME,
@@ -423,8 +426,12 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 				"CONNECT",
 				"TRACE",
 			},
-			Paths:   []string{"/dex"},
-			Schemes: []string{scheme},
+			Paths: []string{"/dex"},
+			Schemes: []corev1alpha1.HttpRouteScheme{
+				corev1alpha1.HttpRouteScheme("http"),
+				corev1alpha1.HttpRouteScheme("https"),
+			},
+			HttpRedirectToHttps: !r.ssoConfig.Spec.UseHttp,
 			Destinations: []corev1alpha1.HttpRouteDestination{
 				{
 					Host:   fmt.Sprintf("%s.%s.svc.cluster.local:%d", KALM_DEX_NAME, KALM_DEX_NAMESPACE, 5556),
@@ -541,10 +548,9 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 			Command:      "./auth-proxy",
 			Ports: []corev1alpha1.Port{
 				{
-					Name:          "http",
 					ContainerPort: 3002,
 					ServicePort:   80,
-					Protocol:      coreV1.ProtocolTCP,
+					Protocol:      corev1alpha1.PortProtocolHTTP2,
 				},
 			},
 			Env: []corev1alpha1.EnvVar{
@@ -603,14 +609,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() error {
 	timeout := 5
 
-	var scheme string
-
-	if r.ssoConfig.Spec.UseHttp {
-		scheme = "http"
-	} else {
-		scheme = "https"
-	}
-
 	authProxyRoute := corev1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      KALM_AUTH_PROXY_NAME,
@@ -623,8 +621,12 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() err
 			Methods: []corev1alpha1.HttpRouteMethod{
 				"GET",
 			},
-			Paths:   []string{"/oidc/login", "/oidc/callback"},
-			Schemes: []string{scheme},
+			Paths: []string{"/oidc/login", "/oidc/callback"},
+			Schemes: []corev1alpha1.HttpRouteScheme{
+				corev1alpha1.HttpRouteScheme("http"),
+				corev1alpha1.HttpRouteScheme("https"),
+			},
+			HttpRedirectToHttps: !r.ssoConfig.Spec.UseHttp,
 			Destinations: []corev1alpha1.HttpRouteDestination{
 				{
 					Host:   fmt.Sprintf("%s.%s.svc.cluster.local", KALM_AUTH_PROXY_NAME, KALM_DEX_NAMESPACE),

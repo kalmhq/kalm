@@ -2,9 +2,10 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/go-logr/logr"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
-	"github.com/sirupsen/logrus"
 	appV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
@@ -14,9 +15,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -238,23 +239,22 @@ func labelsBelongsToApplication(name string) metaV1.ListOptions {
 }
 
 type Builder struct {
-	ctx       context.Context
-	K8sClient *kubernetes.Clientset
-	Client    client.Client
-	Logger    *logrus.Logger
+	ctx    context.Context
+	Client client.Client
+	Logger logr.Logger
 }
 
-func NewBuilder(k8sClient *kubernetes.Clientset, cfg *rest.Config, logger *logrus.Logger) *Builder {
+func NewBuilder(cfg *rest.Config, logger logr.Logger) *Builder {
 	c, err := client.New(cfg, client.Options{Scheme: scheme.Scheme})
+
 	if err != nil {
 		return nil
 	}
 
 	return &Builder{
-		ctx:       context.Background(), // TODO
-		K8sClient: k8sClient,
-		Client:    c,
-		Logger:    logger,
+		ctx:    context.Background(), // TODO
+		Client: c,
+		Logger: logger,
 	}
 }
 
@@ -284,21 +284,65 @@ func (builder *Builder) Patch(obj runtime.Object, patch client.Patch, opts ...cl
 
 // client Side apply
 func (builder *Builder) Apply(obj runtime.Object) error {
-	//newObject, err := scheme.Scheme.New(obj.GetObjectKind().GroupVersionKind())
+	fetched, err := scheme.Scheme.New(obj.GetObjectKind().GroupVersionKind())
 
-	//if err != nil {
-	//	return err
-	//}
+	if err != nil {
+		return err
+	}
 
-	//objectKey, err := client.ObjectKeyFromObject(obj)
+	objectKey, err := client.ObjectKeyFromObject(obj)
 
-	//if err != nil {
-	//	return err
-	//}
+	if err != nil {
+		return err
+	}
 
-	//if err := builder.Get(objectKey.Namespace, objectKey.Name, newObject); err != nil {
-	//	return err
-	//}
+	if err := builder.Get(objectKey.Namespace, objectKey.Name, fetched); err != nil {
+		return err
+	}
 
-	return builder.Patch(obj, client.Merge)
+	fetchedCopy := fetched.DeepCopyObject()
+
+	setSpec(obj, fetchedCopy)
+	obj = fetchedCopy
+
+	return builder.Patch(obj, client.MergeFrom(fetched))
+}
+
+// setField sets field of v with given name to given value.
+func setSpec(fromObject interface{}, toObject interface{}) interface{} {
+	// fromObject must be a pointer to a struct
+	rv := reflect.ValueOf(fromObject)
+	if rv.Kind() != reflect.Ptr || rv.Elem().Kind() != reflect.Struct {
+		return errors.New("fromObject must be pointer to obj.runtime")
+	}
+
+	rv2 := reflect.ValueOf(toObject)
+	if rv2.Kind() != reflect.Ptr || rv2.Elem().Kind() != reflect.Struct {
+		return errors.New("toObject must be pointer to obj.runtime")
+	}
+
+	if reflect.TypeOf(fromObject) != reflect.TypeOf(toObject) {
+		return errors.New("fromObject and toObject must be the same CRD type")
+	}
+
+	// Dereference pointer
+	rv = rv.Elem()
+	rv2 = rv2.Elem()
+
+	// Lookup field by name
+	fv := rv.FieldByName("Spec")
+
+	if !fv.IsValid() {
+		return fmt.Errorf("not a field name: Spec")
+	}
+
+	fv2 := rv2.FieldByName("Spec")
+
+	if !fv2.IsValid() {
+		return fmt.Errorf("not a field name: Spec")
+	}
+
+	fv2.Set(fv)
+
+	return nil
 }

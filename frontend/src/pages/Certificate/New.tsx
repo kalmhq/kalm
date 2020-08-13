@@ -1,65 +1,53 @@
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { CertificateFormType, newEmptyCertificateForm, selfManaged } from "types/certificate";
-import { createCertificateAction, setEditCertificateModalAction } from "actions/certificate";
+import { CertificateFormType, newEmptyCertificateForm } from "types/certificate";
+import { createCertificateAction } from "actions/certificate";
 import { CertificateForm } from "forms/Certificate";
-import { ControlledDialog } from "widgets/ControlledDialog";
-import { closeDialogAction } from "actions/dialog";
-import { RootState } from "reducers";
-import Immutable from "immutable";
-
-export const addCertificateDialogId = "certificate-dialog-id";
-const mapStateToProps = (state: RootState) => {
-  const editingCertificate = state.get("certificates").get("editingCertificate");
-  const isEdit = !!editingCertificate;
-  return {
-    isEdit,
-    editingCertificate,
-    initialValues: editingCertificate
-      ? Immutable.fromJS({
-          name: editingCertificate.get("name"),
-          managedType: selfManaged,
-        })
-      : newEmptyCertificateForm,
-  };
-};
+import { BasePage } from "pages/BasePage";
+import { H6 } from "widgets/Label";
+import { push } from "connected-react-router";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
   });
 
-export interface Props extends WithStyles<typeof styles>, TDispatchProp, ReturnType<typeof mapStateToProps> {}
+export interface Props extends WithStyles<typeof styles>, TDispatchProp {}
 
 class CertificateNewRaw extends React.PureComponent<Props> {
   private submit = async (certificate: CertificateFormType) => {
     try {
-      const { isEdit, dispatch } = this.props;
-      await dispatch(createCertificateAction(certificate, isEdit));
-      dispatch(closeDialogAction(addCertificateDialogId));
-      dispatch(setEditCertificateModalAction(null));
+      const { dispatch } = this.props;
+      await dispatch(createCertificateAction(certificate, false));
     } catch (e) {
       console.log(e);
     }
   };
 
+  private onSubmitSuccess = () => {
+    this.props.dispatch(push("/certificates"));
+  };
+
   public render() {
-    const { isEdit, initialValues } = this.props;
+    const { classes } = this.props;
     return (
-      <ControlledDialog
-        dialogID={addCertificateDialogId}
-        title={isEdit ? "Edit Certificate" : "Add Certificate"}
-        dialogProps={{
-          fullWidth: true,
-          maxWidth: "sm",
-        }}
-      >
-        <CertificateForm isEdit={isEdit} onSubmit={this.submit} initialValues={initialValues} />
-      </ControlledDialog>
+      <BasePage secondHeaderRight={<H6>New Certificate</H6>}>
+        <div className={classes.root}>
+          <Grid container spacing={2}>
+            <Grid item xs={8} sm={8} md={8}>
+              <CertificateForm
+                onSubmitSuccess={this.onSubmitSuccess}
+                onSubmit={this.submit}
+                initialValues={newEmptyCertificateForm}
+              />
+            </Grid>
+          </Grid>
+        </div>
+      </BasePage>
     );
   }
 }
 
-export const NewModal = withStyles(styles)(connect(mapStateToProps)(CertificateNewRaw));
+export const CertificateNewPage = withStyles(styles)(connect()(CertificateNewRaw));
