@@ -234,7 +234,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
         description: (
           <span>
             Try open{" "}
-            <KMLink href={finialLink} target="_blank" rel="noreferer">
+            <KMLink href={finialLink} target="_blank" rel="noreferrer">
               {finialLink}
             </KMLink>{" "}
             in your browser.
