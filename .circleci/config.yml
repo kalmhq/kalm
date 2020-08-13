@@ -266,21 +266,25 @@ workflows:
             - test-controller
           filters:
             branches:
-              only: master
+              only: 
+                - master
+                - kalm-tag
       - deploy-controller:
           context: deploy-demo-cluster
           requires:
             - build-push-controller-image
           filters:
             branches:
-              only: master
+              only: master  
   operator:
     jobs:
       - build-push-operator-image:
           context: kalm-ci
           filters:
             branches:
-              only: master
+              only: 
+                - master
+                - kalm-tag
       - deploy-operator:
           context: deploy-demo-cluster
           requires:
