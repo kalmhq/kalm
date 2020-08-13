@@ -19,14 +19,10 @@ func (suite *K8sHandlerTestSuite) SetupSuite() {
 }
 
 func (suite *K8sHandlerTestSuite) TestHandleGetPVs() {
-	pvNameToReuse := "exist-available-pv"
-	hostPath := coreV1.HostPathVolumeSource{
-		Path: "/data",
-	}
-	// prepare pv
+	// create pv
 	pv := coreV1.PersistentVolume{
 		ObjectMeta: v1.ObjectMeta{
-			Name: pvNameToReuse,
+			Name: "exist-available-pv",
 		},
 		Spec: coreV1.PersistentVolumeSpec{
 			PersistentVolumeReclaimPolicy: coreV1.PersistentVolumeReclaimRetain,
@@ -35,7 +31,9 @@ func (suite *K8sHandlerTestSuite) TestHandleGetPVs() {
 			}),
 			AccessModes: []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
 			PersistentVolumeSource: coreV1.PersistentVolumeSource{
-				HostPath: &hostPath,
+				HostPath: &coreV1.HostPathVolumeSource{
+					Path: "/data",
+				},
 			},
 		},
 	}

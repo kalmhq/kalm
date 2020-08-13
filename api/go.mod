@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
+	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-logr/logr v0.1.0
 	github.com/go-openapi/runtime v0.19.20 // indirect
