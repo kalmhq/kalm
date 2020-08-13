@@ -6,7 +6,7 @@ import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { CertificateFormType, newEmptyCertificateForm } from "types/certificate";
+import { CertificateFormTypeContent, newEmptyCertificateForm } from "types/certificate";
 import { H6 } from "widgets/Label";
 
 const styles = (theme: Theme) =>
@@ -17,7 +17,7 @@ const styles = (theme: Theme) =>
 export interface Props extends WithStyles<typeof styles>, TDispatchProp {}
 
 class CertificateNewRaw extends React.PureComponent<Props> {
-  private submit = async (certificate: CertificateFormType) => {
+  private submit = async (certificate: CertificateFormTypeContent) => {
     try {
       const { dispatch } = this.props;
       await dispatch(createCertificateAction(certificate, false));

@@ -1,7 +1,7 @@
 import { Box, Button, Chip, Grid, TextField } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Autocomplete } from "@material-ui/lab";
-import { Form, Formik } from "formik";
+import { Form, Formik, FormikProps } from "formik";
 import { KFormikRadioGroupRender } from "forms/Basic/radio";
 // import { KValidatorHostsWithWildcardPrefix, ValidatorRequired } from "forms/validator";
 import Immutable from "immutable";
@@ -17,6 +17,8 @@ import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import sc from "../../utils/stringConstants";
+import { FormikUploader } from "forms/Basic/uploader";
+import { extractDomainsFromCertificateContent } from "permission/utils";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -94,39 +96,50 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   //   }
   // };
 
-  // private renderSelfManagedFields = () => {
-  //   const { classes } = this.props;
-  //   return (
-  //     <>
-  //       <Grid item md={12}>
-  //         <Field
-  //           inputlabel="Certificate file"
-  //           inputid="upload-certificate"
-  //           multiline={true}
-  //           className={classes.fileInput}
-  //           component={Uploader}
-  //           rows={12}
-  //           name="selfManagedCertContent"
-  //           margin="normal"
-  //           validate={selfManagedCertContentValidators}
-  //         />
-  //       </Grid>
-  //       <Grid item md={12}>
-  //         <Field
-  //           inputlabel="Private Key"
-  //           inputid="upload-private-key"
-  //           multiline={true}
-  //           className={classes.fileInput}
-  //           component={Uploader}
-  //           rows={12}
-  //           name="selfManagedCertPrivateKey"
-  //           margin="normal"
-  //           validate={ValidatorRequired}
-  //         />
-  //       </Grid>
-  //     </>
-  //   );
-  // };
+  private renderSelfManagedFields = (formikProps: FormikProps<CertificateFormTypeContent>) => {
+    const { classes } = this.props;
+    const { setFieldValue, values } = formikProps;
+    if (values.selfManagedCertContent && values.domains.size <= 0) {
+      const domains = extractDomainsFromCertificateContent(values.selfManagedCertContent);
+      setFieldValue("domains", domains);
+    }
+    return (
+      <>
+        <Grid item md={12}>
+          <FormikUploader
+            inputlabel="Certificate file"
+            inputid="upload-certificate"
+            className={classes.fileInput}
+            name="selfManagedCertContent"
+            margin="normal"
+            handleChange={(value: string) => {
+              setFieldValue("selfManagedCertContent", value);
+              const domains = extractDomainsFromCertificateContent(values.selfManagedCertContent);
+              setFieldValue("domains", domains);
+            }}
+            multiline={true}
+            rows={12}
+            value={values.selfManagedCertContent}
+          />
+        </Grid>
+        <Grid item md={12}>
+          <FormikUploader
+            inputlabel="Private Key"
+            inputid="upload-private-key"
+            multiline={true}
+            className={classes.fileInput}
+            rows={12}
+            name="selfManagedCertPrivateKey"
+            margin="normal"
+            handleChange={(value: string) => {
+              setFieldValue("selfManagedCertPrivateKey", value);
+            }}
+            value={values.selfManagedCertPrivateKey}
+          />
+        </Grid>
+      </>
+    );
+  };
 
   // private generateHttpsCertIssuerOptions = () => {
   //   const { certificateIssuers } = this.props;
@@ -251,7 +264,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
         enableReinitialize={false}
         handleReset={console.log}
       >
-        {({ values, dirty, handleChange, touched, errors, handleBlur, setFieldValue }) => {
+        {(formikProps) => {
+          const { values, dirty, handleChange, touched, errors, handleBlur, setFieldValue } = formikProps;
           const icons = Immutable.List(values.domains.map((domain) => <DomainStatus domain={domain} />));
           const domainsFieldID = ID();
           return (
@@ -316,19 +330,11 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                           size="small"
                           options={[]}
                           id={domainsFieldID}
-                          // name="domains"
-                          // onFocus={input.onFocus}
                           onBlur={handleBlur}
                           value={values.domains.toJS()}
                           onChange={(e, value) => {
                             setFieldValue("domains", Immutable.List(value));
                           }}
-                          // inputValue={inputText}
-                          // onInputChange={(event, value, reason) => {
-                          //   if (reason === "input") {
-                          //     setInputText(value);
-                          //   }
-                          // }}
                           renderTags={(value: string[], getTagProps) => {
                             return value.map((option: string, index: number) => {
                               return (
@@ -381,43 +387,9 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                             );
                           }}
                         />
-                        {/* <KFreeSoloAutoCompleteMultipleSelectStringField
-                          disabled={values.managedType === selfManaged}
-                          helperText={
-                            <Caption color="textSecondary">
-                              Your cluster ip is{" "}
-                              <Link
-                                to="#"
-                                onClick={() => {
-                                  const isDomainsIncludeIngressIP = !!values.domains.find(
-                                    (domain) => domain === ingressIP,
-                                  );
-                                  if (!isDomainsIncludeIngressIP) {
-                                    setFieldValue("domains", values.domains.push(ingressIP));
-                                  }
-                                }}
-                              >
-                                {ingressIP}
-                              </Link>
-                              . {sc.ROUTE_HOSTS_INPUT_HELPER}
-                            </Caption>
-                          }
-                          placeholder={
-                            values.managedType === selfManaged
-                              ? "Extract domains information when you upload a certificate file"
-                              : "Please type domains"
-                          }
-                          label="Domains"
-                          icons={icons}
-                          multiline={true}
-                          className={classes.fileInput}
-                          rows={12}
-                          name="domains"
-                          validate={values.managedType === selfManaged ? [] : domainsValidators}
-                        /> */}
                       </Grid>
                     </Grid>
-                    {/* {managedType === selfManaged ? this.renderSelfManagedFields() : null} */}
+                    {values.managedType === selfManaged ? this.renderSelfManagedFields(formikProps) : null}
                   </Box>
                 }
               />

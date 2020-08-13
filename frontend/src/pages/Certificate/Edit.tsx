@@ -1,14 +1,14 @@
-import React from "react";
-import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
-import { connect } from "react-redux";
-import { TDispatchProp } from "types";
-import { CertificateFormType, selfManaged } from "types/certificate";
+import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { createCertificateAction } from "actions/certificate";
+import { push } from "connected-react-router";
+import { BasePage } from "pages/BasePage";
+import React from "react";
+import { connect } from "react-redux";
 // import { CertificateForm } from "forms/Certificate";
 import { RootState } from "reducers";
-import { BasePage } from "pages/BasePage";
+import { TDispatchProp } from "types";
+import { CertificateFormTypeContent, selfManaged } from "types/certificate";
 import { H6 } from "widgets/Label";
-import { push } from "connected-react-router";
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
   const certificate = state
@@ -28,7 +28,7 @@ const styles = (theme: Theme) =>
 export interface Props extends WithStyles<typeof styles>, TDispatchProp, ReturnType<typeof mapStateToProps> {}
 
 class CertificateEditRaw extends React.PureComponent<Props> {
-  private submit = async (certificate: CertificateFormType) => {
+  private submit = async (certificate: CertificateFormTypeContent) => {
     try {
       const { dispatch } = this.props;
       await dispatch(createCertificateAction(certificate, true));

@@ -1,14 +1,14 @@
-import { Api } from "../base";
 import Immutable from "immutable";
-import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
-import { HttpRoute } from "types/route";
-import { RegistryType } from "types/registry";
-import { RoleBindingsRequestBody } from "types/user";
-import MockStore from "../mockStore";
-import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { DeployKey } from "types/deployKey";
+import { CertificateFormTypeContent, CertificateIssuerFormType } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
+import { DeployKey } from "types/deployKey";
+import { RegistryType } from "types/registry";
+import { HttpRoute } from "types/route";
+import { ProtectedEndpoint, SSOConfig } from "types/sso";
+import { RoleBindingsRequestBody } from "types/user";
+import { Api } from "../base";
+import MockStore from "../mockStore";
 
 export const mockStore = new MockStore();
 
@@ -107,7 +107,7 @@ export default class MockApi extends Api {
     return mockStore.data.get("mockCertificateIssuers");
   };
 
-  public createCertificate = async (certificate: CertificateFormType, isEdit?: boolean) => {
+  public createCertificate = async (certificate: CertificateFormTypeContent, isEdit?: boolean) => {
     await mockStore.updateCertificate(certificate);
     return certificate as any;
   };

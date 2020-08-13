@@ -10,21 +10,21 @@ import {
 import { LoginStatus } from "types/authorization";
 import {
   Certificate,
-  CertificateFormType,
+  CertificateFormTypeContent,
   CertificateIssuer,
   CertificateIssuerFormType,
   CertificateIssuerList,
   CertificateList,
 } from "types/certificate";
 import { ClusterInfo, InitializeClusterResponse } from "types/cluster";
+import { DeployKey } from "types/deployKey";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import { Node, NodesListResponse } from "types/node";
 import { RegistryType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
-import { RoleBinding, RoleBindingsRequestBody } from "types/user";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { DeployKey } from "types/deployKey";
+import { RoleBinding, RoleBindingsRequestBody } from "types/user";
 
 export abstract class Api {
   public abstract getClusterInfo(): Promise<ClusterInfo>;
@@ -119,7 +119,7 @@ export abstract class Api {
 
   public abstract getCertificateIssuerList(): Promise<CertificateIssuerList>;
 
-  public abstract createCertificate(certificate: CertificateFormType, isEdit?: boolean): Promise<Certificate>;
+  public abstract createCertificate(certificate: CertificateFormTypeContent, isEdit?: boolean): Promise<Certificate>;
 
   public abstract createCertificateIssuer(
     certificateIssuer: CertificateIssuerFormType,
