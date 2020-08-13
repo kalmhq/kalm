@@ -83,7 +83,7 @@ export const Uploader = ({
 export const FormikUploader = ({
   handleChange,
   touched,
-  error,
+  errorText,
   value,
   ...textFieldProps
 }: {
@@ -91,8 +91,8 @@ export const FormikUploader = ({
   inputlabel: string;
   handleChange: any;
   touched?: boolean;
-  error?: string;
   value: any;
+  errorText?: string;
   helperText?: string;
 } & Partial<OutlinedTextFieldProps>) => {
   const onChange = (target: any) => {
@@ -153,8 +153,8 @@ export const FormikUploader = ({
           className: classes.fileInput,
         }}
         autoComplete="off"
-        error={touched && !!error}
-        helperText={(touched && error) || textFieldProps.helperText}
+        error={touched && !!errorText}
+        helperText={(touched && errorText) || textFieldProps.helperText}
         fullWidth
         type="file"
         size="small"

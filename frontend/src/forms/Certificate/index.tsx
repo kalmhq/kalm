@@ -55,17 +55,6 @@ interface State {
   isEditCertificateIssuer: boolean;
 }
 
-// const ValidatorCertificateValid = (value: any, _allValues?: any, _props?: any, _name?: any) => {
-//   const domains = _props.values.get("domains");
-//   if (!domains || domains.size < 1) {
-//     return "Invalid Certificate";
-//   }
-//   return undefined;
-// };
-
-// const selfManagedCertContentValidators = [ValidatorRequired, ValidatorCertificateValid];
-// const domainsValidators = [ValidatorRequired, KValidatorHostsWithWildcardPrefix];
-
 class CertificateFormRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -73,14 +62,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
       isEditCertificateIssuer: false,
     };
   }
-
-  // public componentDidUpdate = (prevProps: Props) => {
-  //   const { selfManagedCertContent, setFieldValue } = this.props;
-  //   if (selfManagedCertContent && selfManagedCertContent !== prevProps.selfManagedCertContent) {
-  //     const domains = extractDomainsFromCertificateContent(selfManagedCertContent);
-  //     setFieldValue("domains", domains);
-  //   }
-  // };
 
   // private submitCreateIssuer = async (certificateIssuer: CertificateIssuerFormType) => {
   //   const { dispatch, setFieldValue } = this.props;
@@ -98,15 +79,14 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
 
   private renderSelfManagedFields = (formikProps: FormikProps<CertificateFormTypeContent>) => {
     const { classes } = this.props;
-    const { setFieldValue, values } = formikProps;
-    if (values.selfManagedCertContent && values.domains.size <= 0) {
-      const domains = extractDomainsFromCertificateContent(values.selfManagedCertContent);
-      setFieldValue("domains", domains);
-    }
+    const { setFieldValue, values, errors, touched } = formikProps;
+
     return (
       <>
         <Grid item md={12}>
           <FormikUploader
+            touched={touched.selfManagedCertContent}
+            errorText={errors.selfManagedCertContent}
             inputlabel="Certificate file"
             inputid="upload-certificate"
             className={classes.fileInput}
@@ -124,6 +104,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item md={12}>
           <FormikUploader
+            touched={touched.selfManagedCertPrivateKey}
+            errorText={errors.selfManagedCertPrivateKey}
             inputlabel="Private Key"
             inputid="upload-private-key"
             multiline={true}
@@ -241,10 +223,15 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   //   }
   // };
 
-  private validate = async (values: any) => {
+  private validate = async (values: CertificateFormTypeContent) => {
     let errors: any = {};
 
-    if (!values.domains) {
+    if (values.managedType === selfManaged && (!values.domains || values.domains.size < 1)) {
+      errors.selfManagedCertContent = "Invalid Certificate";
+      return errors;
+    }
+
+    if (!values.domains || values.domains.size < 1) {
       errors.domains = "Required";
       return errors;
     }
@@ -268,6 +255,10 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
           const { values, dirty, handleChange, touched, errors, handleBlur, setFieldValue } = formikProps;
           const icons = Immutable.List(values.domains.map((domain) => <DomainStatus domain={domain} />));
           const domainsFieldID = ID();
+          if (!dirty && values.selfManagedCertContent && values.domains.size <= 0) {
+            const domains = extractDomainsFromCertificateContent(values.selfManagedCertContent);
+            setFieldValue("domains", domains);
+          }
           return (
             <Form className={classes.root} tutorial-anchor-id="certificate-form">
               <Prompt when={dirty} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
@@ -323,6 +314,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                       </Grid>
                       <Grid item md={12}>
                         <Autocomplete
+                          disabled={values.managedType === selfManaged}
                           multiple
                           autoSelect
                           clearOnEscape
@@ -372,7 +364,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                                           const isDomainsIncludeIngressIP = !!values.domains.find(
                                             (domain) => domain === ingressIP,
                                           );
-                                          if (!isDomainsIncludeIngressIP) {
+                                          if (!isDomainsIncludeIngressIP && values.managedType === issuerManaged) {
                                             setFieldValue("domains", values.domains.push(ingressIP));
                                           }
                                         }}
