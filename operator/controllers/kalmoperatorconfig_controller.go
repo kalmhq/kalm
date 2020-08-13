@@ -578,6 +578,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 	// reconcile deployment: controller
 	replica := int32(1)
 	terminationGracePeriodSeconds := int64(10)
+	secVolSourceDefaultMode := int32(420)
 
 	var controllerImgTag string
 	if config.Spec.KalmVersion != "" {
@@ -618,14 +619,37 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 					},
 					Containers: []corev1.Container{
 						{
-							Command:         []string{"/manager"},
-							Args:            []string{"--enable-leader-election"},
+							Name:  "kube-rbac-proxy",
+							Image: "gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1",
+							Ports: []corev1.ContainerPort{
+								{ContainerPort: 8443, Name: "https"},
+							},
+							Args: []string{
+								"--secure-listen-address=0.0.0.0:8443",
+								"--upstream=http://127.0.0.1:8080/",
+								"--logtostderr=true",
+								"--v=10",
+							},
+						},
+						{
+							Command: []string{"/manager"},
+							Args: []string{
+								"--enable-leader-election",
+								"--metrics-addr=127.0.0.1:8080",
+							},
 							Image:           img,
 							ImagePullPolicy: "Always",
 							Name:            "manager",
 							Env: []corev1.EnvVar{
 								{Name: "ENABLE_WEBHOOKS", Value: "true"},
 								{Name: "KALM_VERSION", Value: controllerImgTag},
+							},
+							Ports: []corev1.ContainerPort{
+								{
+									Name:          "webhook-server",
+									ContainerPort: 9443,
+									Protocol:      "TCP",
+								},
 							},
 							Resources: corev1.ResourceRequirements{
 								Limits: map[corev1.ResourceName]resource.Quantity{
@@ -637,9 +661,27 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 									corev1.ResourceMemory: resource.MustParse("128Mi"),
 								},
 							},
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      "cert",
+									MountPath: "/tmp/k8s-webhook-server/serving-certs",
+									ReadOnly:  true,
+								},
+							},
 						},
 					},
 					TerminationGracePeriodSeconds: &terminationGracePeriodSeconds,
+					Volumes: []corev1.Volume{
+						{
+							Name: "cert",
+							VolumeSource: corev1.VolumeSource{
+								Secret: &corev1.SecretVolumeSource{
+									DefaultMode: &secVolSourceDefaultMode,
+									SecretName:  "webhook-server-cert",
+								},
+							},
+						},
+					},
 				},
 			},
 		},
