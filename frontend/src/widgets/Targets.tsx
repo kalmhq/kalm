@@ -60,6 +60,7 @@ class TargetsRaw extends React.PureComponent<Props> {
           outputs={outputs}
           width={12}
           height={leftPoinitHeight}
+          onClick={() => {}}
         />
 
         {destinations.map((x, index) => {
@@ -83,6 +84,7 @@ class TargetsRaw extends React.PureComponent<Props> {
               startPosition={{ x: 80, y: index * (pointHeight + pointMargin) }}
               dragX={false}
               dragY={false}
+              onClick={() => {}}
             >
               <Box>
                 {x

@@ -197,7 +197,7 @@ export class VolumesRaw extends React.Component<Props, States> {
       { Header: "Size", accessor: "capacity" },
       {
         Header: "Actions",
-        accessor: "action",
+        accessor: "actions",
       },
     ];
   }

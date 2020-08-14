@@ -156,7 +156,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
 
       {
         Header: "Action",
-        accessor: "action",
+        accessor: "actions",
       },
     ];
   }
