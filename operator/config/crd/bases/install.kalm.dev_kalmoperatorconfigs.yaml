@@ -34,7 +34,8 @@ spec:
         spec:
           description: KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
           properties:
-            dashboardVersion:
+            kalmVersion:
+              description: DashboardVersion               string `json:"dashboardVersion,omitempty"`
               type: string
             skipCertManagerInstallation:
               type: boolean

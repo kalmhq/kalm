@@ -41,6 +41,9 @@ import { SetupPage } from "pages/Setup";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
+// import { Log } from "pages/Application/Log";
+// const Log = lazy(() => import("pages/Application/Log"));
+
 export const KalmRoutes = (
   <Switch>
     <Route path="/404" component={Page404} />

@@ -238,7 +238,7 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilter(req ctrl.Request) *v1
 					"serverUri": map[string]interface{}{
 						"uri":     oidcProviderInfo.AuthProxyInternalUrl + "/ext_authz",
 						"cluster": oidcProviderInfo.AuthProxyInternalEnvoyClusterName,
-						"timeout": "1s",
+						"timeout": "5s",
 					},
 					"path_prefix": "/ext_authz",
 					"authorizationRequest": map[string]interface{}{
