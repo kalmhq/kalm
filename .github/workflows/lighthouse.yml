@@ -2,13 +2,19 @@
 
 name: Lighthouse
 env:
-  LHCI_TOKEN: ${{ secrets.LHCI_TOKEN }}
+  LHCI_TOKEN: ${{ secrets.LHCI_TOKEN }},
+  SKIP_PREFLIGHT_CHECK: true
+  EXTEND_ESLINT: true
+  REACT_APP_K8S_API_PERFIX: http://localhost:3001
+  REACT_APP_K8S_API_VERSION: v1alpha1
+  REACT_APP_USE_MOCK_API: true
+  REACT_APP_DEBUG: false
 defaults:
   run:
     working-directory: frontend
 
 # Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
+# events but only for the master branch update ci
 on:
   push:
     branches: [performance/lighthouse-ci, master, develop]
@@ -24,14 +30,18 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 10.x
-      # - name: npm install, build
-      #   run: |
-      #     npm install
-      #     npm run build
-      # lhci assert
+      - name: npm install, build
+        run: |
+          npm install
+          npm run build
       - name: run Lighthouse CI
         run: |
           npm install -g @lhci/cli@0.4.x
+          npm install -g serve
+          serve -s build -p 3000 &
+          pid=$!
+          echo ${{secrets.LHCI_TOKEN}}
           lhci collect --settings.chromeFlags="--headless" --settings.extraHeaders="{\"authorization\":\"${{secrets.KALM_AUTH_HEADER}}\",\"cookie\":\"${{secrets.KALM_AUTH_COOKIES_TOKEN}}\"}"
           lhci collect --settings.extraHeaders="{\"authorization\":\"${{secrets.KALM_AUTH_HEADER}}\",\"cookie\":\"${{secrets.KALM_AUTH_COOKIES_TOKEN}}\"}" --settings.chromeFlags="--no-sandbox" --settings.emulatedFormFactor="desktop"
-          lhci upload
+          lhci upload --token ${{secrets.LHCI_TOKEN}}
+          kill $pid
