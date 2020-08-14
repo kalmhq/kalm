@@ -93,7 +93,7 @@ func (r *StorageClassReconciler) reconcileDefaultStorageClass(cloudProvider stri
 	case "gcp":
 		hdd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "kalm-hdd",
+				Name:        "Standard persistent disks(pd-standard)",
 				Annotations: docInfoOnStorageClass["gcp"],
 			},
 			Provisioner:   "kubernetes.io/gce-pd",
@@ -106,7 +106,7 @@ func (r *StorageClassReconciler) reconcileDefaultStorageClass(cloudProvider stri
 		}
 		ssd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "kalm-ssd",
+				Name:        "SSD persistent disks(pd-ssd)",
 				Annotations: docInfoOnStorageClass["gcp"],
 			},
 			Provisioner:   "kubernetes.io/gce-pd",
@@ -122,7 +122,7 @@ func (r *StorageClassReconciler) reconcileDefaultStorageClass(cloudProvider stri
 	case "minikube":
 		std := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "kalm-standard",
+				Name:        "standard",
 				Annotations: docInfoOnStorageClass["minikube"],
 			},
 			Provisioner:   "k8s.io/minikube-hostpath",
