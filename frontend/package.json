@@ -122,5 +122,9 @@
     "ts-loader": "^7.0.5",
     "webpack-bundle-analyzer": "^3.8.0"
   },
-  "husky": {}
+  "husky": {
+    "hooks": {
+      "pre-commit": "./scripts/pre-commit.sh"
+    }
+  }
 }
