@@ -24,26 +24,33 @@ module.exports = override(
   ),
   setWebpackOptimizationSplitChunks({
     cacheGroups: {
+      xtermVendor: {
+        // 异步加载echarts包
+        chunks: "all",
+        test: /xterm/,
+        priority: 1000, // 高于async-commons优先级
+        name: "xtermVendor",
+      },
+      chartjsVendor: {
+        // 异步加载echarts包
+        chunks: "all",
+        test: /chart/,
+        priority: 900, // 高于async-commons优先级
+        name: "chartjsVendor",
+      },
+      chartjsVendor: {
+        // 异步加载echarts包
+        chunks: "all",
+        test: /(ace-builds|react-ace)/,
+        priority: 800, // 高于async-commons优先级
+        name: "aceBuildsVendor",
+      },
       vendors: {
         // 基本框架
         chunks: "all",
         test: /(react|react-dom|react-dom-router|@material|immutable|src)/,
         priority: 100,
         name: "vendors",
-      },
-      chartjsVendor: {
-        // 异步加载echarts包
-        test: /chart/,
-        priority: 100, // 高于async-commons优先级
-        name: "chartjsVendor",
-        chunks: "async",
-      },
-      xtermVendor: {
-        // 异步加载echarts包
-        test: /xterm/,
-        priority: 100, // 高于async-commons优先级
-        name: "xtermVendor",
-        chunks: "async",
       },
       asyncCommons: {
         // 其余异步加载包
