@@ -22,12 +22,6 @@ If you already have access to a cluster via kubectl, deploy Kalm via:
 curl -sL https://get.kalm.dev | bash
 ```
 
-To check the installation status:
-
-```
-curl -sL https://raw.githubusercontent.com/kalmhq/kalm/master/scripts/check-kalm-install-status.sh | bash
-```
-
 The whole process typically takes up to 1-5 minutes. Relax or check out the <a href="https://kalm.dev/docs/intro." target="_blank">docs</a> in the mean time.
 
 Once the installation is complete, open a port to the web server.
