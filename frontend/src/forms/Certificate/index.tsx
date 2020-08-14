@@ -299,7 +299,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                           label="Certificate name"
                           name="name"
                           id="certificate-name"
-                          margin="normal"
+                          margin="dense"
                           fullWidth
                           onBlur={handleBlur}
                           error={!!errors.name && touched.name}
