@@ -231,9 +231,8 @@ workflows:
               only:
                 - master
                 - kalm-tag
-            filters:
-              tags:
-                only: /^v.*/
+            tags:
+              only: /^v.*/
       - push-dashboard-image:
           context: kalm-ci
           requires:
@@ -244,9 +243,8 @@ workflows:
               only:
                 - master
                 - kalm-tag
-            filters:
-              tags:
-                only: /^v.*/
+            tags:
+              only: /^v.*/
       - deploy-dashboard:
           context: deploy-demo-cluster
           requires:
