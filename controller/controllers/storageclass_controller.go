@@ -55,10 +55,14 @@ func (r *StorageClassReconciler) guessCurrentCloudProvider() (string, bool) {
 			return "gcp", true
 		}
 
+		if isAzureNode(node) {
+			return "azure", true
+		}
+
 		if isMinikube(node) {
 			return "minikube", true
 		}
-		// todo, more for minikube & aws & azure
+		// todo, more for minikube & aws
 	}
 
 	return "", false
@@ -190,6 +194,29 @@ func isGoogleNode(node corev1.Node) bool {
 
 	for _, gkeLabel := range gkeLabels {
 		if _, exist := node.Labels[gkeLabel]; exist {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isAzureNode(node corev1.Node) bool {
+	if strings.HasPrefix(node.Name, "aks") {
+		return true
+	}
+
+	if strings.Contains(node.Status.NodeInfo.KernelVersion, "azure") {
+		return true
+	}
+
+	labels := []string{
+		"kubernetes.azure.com/cluster",
+		"kubernetes.azure.com/role",
+	}
+
+	for _, label := range labels {
+		if _, exist := node.Labels[label]; exist {
 			return true
 		}
 	}
