@@ -207,13 +207,14 @@ workflows:
   dashboard:
     jobs:
       - test-dashboard
+          filters:
+            tags:
+              only: /^v.*/
       - build-dashboard-image:
           filters:
             branches:
               only:
                 - master
-                - kalm-tag
-                - switch-from-quay-to-docker-hub
             tags:
               only: /^v.*/
       - push-dashboard-image:
@@ -225,8 +226,6 @@ workflows:
             branches:
               only:
                 - master
-                - kalm-tag
-                - switch-from-quay-to-docker-hub
             tags:
               only: /^v.*/
       - deploy-dashboard:
@@ -248,6 +247,9 @@ workflows:
   controller:
     jobs:
       - test-controller
+          filters:
+            tags:
+              only: /^v.*/
       - build-push-controller-image:
           context: kalm-ci
           requires:
@@ -256,8 +258,6 @@ workflows:
             branches:
               only:
                 - master
-                - kalm-tag
-                - switch-from-quay-to-docker-hub
             tags:
               only: /^v.*/
       - deploy-controller:
@@ -275,8 +275,6 @@ workflows:
             branches:
               only:
                 - master
-                - kalm-tag
-                - switch-from-quay-to-docker-hub
             tags:
               only: /^v.*/
       - deploy-operator:
