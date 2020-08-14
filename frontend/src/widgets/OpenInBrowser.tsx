@@ -35,7 +35,7 @@ class OpenInBrowserRaw extends React.PureComponent<Props> {
           href={getRouteUrl(route, clusterInfo)}
           // @ts-ignore
           target="_blank"
-          rel="noreferer"
+          rel="noreferrer"
         >
           <OpenInBrowserIcon />
         </IconButtonWithTooltip>
@@ -49,7 +49,7 @@ class OpenInBrowserRaw extends React.PureComponent<Props> {
         disabled={!route.get("methods").includes("GET")}
         href={getRouteUrl(route, clusterInfo)}
         target="_blank"
-        rel="noreferer"
+        rel="noreferrer"
       >
         Open in browser
       </Button>

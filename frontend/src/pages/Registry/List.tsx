@@ -176,7 +176,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
 
       {
         Header: "Actions",
-        accessor: "action",
+        accessor: "actions",
       },
     ];
   }
