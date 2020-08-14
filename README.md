@@ -10,6 +10,12 @@ In addition, Kalm defines a set of CRDs that simplifies the underlying configura
 
 Kalm is designed for developers and teams who want a simple and friendly interface for kubernetes without having to build and maintain internal tools.
 
+## Project Status
+
+- [X] Alpha
+- [X] Closed Beta
+- [ ] Open Beta, CRD schema frozen
+
 ## Install
 
 Kalm is packaged as a [Kubernetes Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/), and can be used with any Kubernetes cluster(minikube, GKE, EKS etc..)
