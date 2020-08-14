@@ -828,3 +828,5 @@ export class LogStream extends React.PureComponent<Props, State> {
 }
 
 export const Log = withStyles(styles)(ApplicationItemDataWrapper({ autoReload: false })(LogStream));
+
+export default Log;

@@ -1,10 +1,9 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 
 import { DashboardLayout } from "layout/DashboardLayout";
 import { Login } from "layout/Login";
 
 import { ApplicationListPage } from "pages/Application/List";
-import { Log } from "pages/Application/Log";
 import { ApplicationNewPage } from "pages/Application/New";
 import { ApplicationShowPage } from "pages/Application/Show";
 import { CertificateListPage } from "pages/Certificate/List";
@@ -41,62 +40,67 @@ import { SetupPage } from "pages/Setup";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
+// import { Log } from "pages/Application/Log";
+const Log = lazy(() => import("pages/Application/Log"));
+
 export const KalmRoutes = (
   <Switch>
     <Route path="/404" component={Page404} />
     <Route path="/login" component={RequireNotAuthorizated(Login)} />
     <Route path="/">
       <RequireAuthorizatedDashboard>
-        <Switch>
-          <Route exact path="/system" component={SystemPage} />
-          <Route exact path="/setup" component={SetupPage} />
+        <Suspense fallback={<div>Loading...</div>}>
+          <Switch>
+            <Route exact path="/system" component={SystemPage} />
+            <Route exact path="/setup" component={SetupPage} />
 
-          <Route exact path="/sso" component={SSOPage} />
-          <Route exact path="/sso/config" component={SSOConfigPage} />
-          <Redirect exact path="/sso/endpoints" to="/sso" />
-          <Route exact path="/sso/endpoints/new" component={NewEndpointPage} />
-          <Route exact path="/sso/endpoints/:name/edit" component={EditEndpointPage} />
+            <Route exact path="/sso" component={SSOPage} />
+            <Route exact path="/sso/config" component={SSOConfigPage} />
+            <Redirect exact path="/sso/endpoints" to="/sso" />
+            <Route exact path="/sso/endpoints/new" component={NewEndpointPage} />
+            <Route exact path="/sso/endpoints/:name/edit" component={EditEndpointPage} />
 
-          <Redirect exact path="/cluster" to="/" />
-          <Route exact path="/cluster/nodes" component={NodeListPage} />
-          <Route exact path="/cluster/loadbalancer" component={LoadBalancerInfoPage} />
-          <Route exact path="/cluster/disks" component={DiskListPage} />
-          <Route exact path="/cluster/registries" component={RegistryListPage} />
-          <Route exact path="/cluster/registries/new" component={RegistryNewPage} />
-          <Route exact path="/cluster/registries/:name/edit" component={RegistryEditPage} />
+            <Redirect exact path="/cluster" to="/" />
+            <Route exact path="/cluster/nodes" component={NodeListPage} />
+            <Route exact path="/cluster/loadbalancer" component={LoadBalancerInfoPage} />
+            <Route exact path="/cluster/disks" component={DiskListPage} />
+            <Route exact path="/cluster/registries" component={RegistryListPage} />
+            <Route exact path="/cluster/registries/new" component={RegistryNewPage} />
+            <Route exact path="/cluster/registries/:name/edit" component={RegistryEditPage} />
 
-          <Route exact path="/ci" component={CIPage} />
-          <Redirect exact path="/ci/keys" to="/ci" />
-          <Route exact path="/ci/keys/new" component={DeployKeyNewPage} />
-          <Route exact path="/ci/keys/:name" component={DeployKeyDetailPage} />
+            <Route exact path="/ci" component={CIPage} />
+            <Redirect exact path="/ci/keys" to="/ci" />
+            <Route exact path="/ci/keys/new" component={DeployKeyNewPage} />
+            <Route exact path="/ci/keys/:name" component={DeployKeyDetailPage} />
 
-          <Route exact path="/applications" component={RequireAdmin(ApplicationListPage)} />
-          <Route exact path="/applications/new" component={RequireAdmin(ApplicationNewPage)} />
-          <Route exact path="/applications/:applicationName/" component={ComponentListPage} />
-          <Route
-            exact
-            path="/applications/:applicationName/metrics"
-            component={RequireNamespaceReader(ApplicationShowPage)}
-          />
+            <Route exact path="/applications" component={RequireAdmin(ApplicationListPage)} />
+            <Route exact path="/applications/new" component={RequireAdmin(ApplicationNewPage)} />
+            <Route exact path="/applications/:applicationName/" component={ComponentListPage} />
+            <Route
+              exact
+              path="/applications/:applicationName/metrics"
+              component={RequireNamespaceReader(ApplicationShowPage)}
+            />
 
-          <Route exact path="/routes" component={RequireNamespaceReader(RouteListPage)} />
-          <Route exact path="/routes/new" component={RequireNamespaceReader(RouteNewPage)} />
-          <Route exact path="/routes/:name/edit" component={RouteEditPage} />
-          <Route exact path="/routes/:name" component={RouteRedirectList} />
+            <Route exact path="/routes" component={RequireNamespaceReader(RouteListPage)} />
+            <Route exact path="/routes/new" component={RequireNamespaceReader(RouteNewPage)} />
+            <Route exact path="/routes/:name/edit" component={RouteEditPage} />
+            <Route exact path="/routes/:name" component={RouteRedirectList} />
 
-          <Route exact path="/applications/:applicationName/components" component={ComponentListPage} />
-          <Route exact path="/applications/:applicationName/components/new" component={ComponentNewPage} />
-          <Route exact path="/applications/:applicationName/components/:name" component={ComponentShowPage} />
-          <Route exact path="/applications/:applicationName/components/:name/edit" component={ComponentEditPage} />
+            <Route exact path="/applications/:applicationName/components" component={ComponentListPage} />
+            <Route exact path="/applications/:applicationName/components/new" component={ComponentNewPage} />
+            <Route exact path="/applications/:applicationName/components/:name" component={ComponentShowPage} />
+            <Route exact path="/applications/:applicationName/components/:name/edit" component={ComponentEditPage} />
 
-          <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(Log)} />
-          <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(Log)} />
+            <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(Log)} />
+            <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(Log)} />
 
-          <Route exact path="/certificates" component={CertificateListPage} />
-          <Route exact path="/certificates/new" component={CertificateNewPage} />
-          <Route exact path="/certificates/:name/edit" component={CertificateEditPage} />
-          <Route component={NoMatch} />
-        </Switch>
+            <Route exact path="/certificates" component={CertificateListPage} />
+            <Route exact path="/certificates/new" component={CertificateNewPage} />
+            <Route exact path="/certificates/:name/edit" component={CertificateEditPage} />
+            <Route component={NoMatch} />
+          </Switch>
+        </Suspense>
       </RequireAuthorizatedDashboard>
     </Route>
   </Switch>
