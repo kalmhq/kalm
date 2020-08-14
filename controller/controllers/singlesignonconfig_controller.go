@@ -232,6 +232,9 @@ func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *corev1a
 		"web": map[string]interface{}{
 			"http": "0.0.0.0:5556",
 		},
+		"expiry": map[string]interface{}{
+			"idTokens": "300s", // 5min
+		},
 		"frontend": map[string]interface{}{
 			"issuer": "kalm",
 			"theme":  "tectonic",
