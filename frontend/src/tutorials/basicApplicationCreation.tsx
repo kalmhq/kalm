@@ -133,7 +133,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           {
             title: (
               <span>
-                Use <strong>k8s.gcr.io/echoserver:1.10</strong> image
+                Use <strong>kalmhq/echoserver</strong> image
               </span>
             ),
             formValidator: [
@@ -141,11 +141,11 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
                 form: COMPONENT_FORM_ID,
                 field: "image",
                 validate: (value) =>
-                  value === "k8s.gcr.io/echoserver:1.10" ? undefined : `Please use "k8s.gcr.io/echoserver:1.10"`,
+                  value === "k8s.gcr.io/echoserver:1.10" ? undefined : `Please use "kalmhq/echoserver"`,
               },
             ],
             shouldCompleteByState: (state: RootState) =>
-              isComponentFormFieldValueEqualTo(state, "image", "k8s.gcr.io/echoserver:1.10"),
+              isComponentFormFieldValueEqualTo(state, "image", "kalmhq/echoserver"),
           },
           {
             title: (
@@ -181,21 +181,21 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           {
             title: (
               <span>
-                Set <strong>container port</strong> to <strong>8080</strong>
+                Set <strong>container port</strong> to <strong>8001</strong>
               </span>
             ),
             formValidator: [
               {
                 form: COMPONENT_FORM_ID,
                 field: "ports[0].containerPort",
-                validate: (value) => (value === 8080 ? undefined : `Please use "8080"`),
+                validate: (value) => (value === 8001 ? undefined : `Please use "8001"`),
               },
             ],
             shouldCompleteByState: (state: RootState) => {
               const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as
                 | Immutable.List<ComponentLikePort>
                 | undefined;
-              return !!ports && ports.size > 0 && ports.get(0)!.get("containerPort") === 8080;
+              return !!ports && ports.size > 0 && ports.get(0)!.get("containerPort") === 8001;
             },
           },
           {

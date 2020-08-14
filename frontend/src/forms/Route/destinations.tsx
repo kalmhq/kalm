@@ -53,6 +53,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
         return (
           ns !== "default" &&
           ns !== "kalm-system" &&
+          ns !== "kalm-operator" &&
           ns !== "kube-system" &&
           ns !== "istio-system" &&
           ns !== "cert-manager" &&

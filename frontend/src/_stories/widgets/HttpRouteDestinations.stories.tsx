@@ -75,6 +75,7 @@ storiesOf("Widgets/HttpRouteDestinations", module)
         return (
           ns !== "default" &&
           ns !== "kalm-system" &&
+          ns !== "kalm-operator" &&
           ns !== "kube-system" &&
           ns !== "istio-system" &&
           ns !== "cert-manager" &&
