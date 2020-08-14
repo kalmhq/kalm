@@ -143,7 +143,7 @@ jobs:
           name: Publish Docker Image to Docker Hub
           working_directory: ./operator
           command: |
-            echo "$QUAYIO_PASS" | docker login -u "$QUAYIO_USERNAME" --password-stdin quay.io
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             docker push kalmhq/kalm-operator:latest
 
             TAG=$(git tag --points-at HEAD)
@@ -171,8 +171,6 @@ jobs:
           KALM_COMPONENT: auth-proxy
           KALM_COMPONENT_IMG_TAG: latest
   deploy-controller:
-    environment:
-      IMAGE_NAME: quay.io/kalmhq/kalm-controller:latest
     docker:
       - image: circleci/golang:1.13.11
     steps:
@@ -186,11 +184,9 @@ jobs:
             sudo mv ./kubectl /usr/local/bin/kubectl
             mkdir ${HOME}/.kube
             echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
-            IMG=$IMAGE_NAME make deploy
+            IMG=kalmhq/kalm-controller:latest make deploy
             kubectl -n kalm-system patch deployment kalm-controller -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
   deploy-operator:
-    environment:
-      IMAGE_NAME: quay.io/kalmhq/kalm-operator:latest
     docker:
       - image: circleci/golang:1.13.11
     steps:
@@ -204,7 +200,7 @@ jobs:
             sudo mv ./kubectl /usr/local/bin/kubectl
             mkdir ${HOME}/.kube
             echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
-            IMG=$IMAGE_NAME make deploy
+            IMG=kalmhq/kalm-operator:latest make deploy
             kubectl -n kalm-operator patch deployment kalm-operator -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
 workflows:
   version: 2
