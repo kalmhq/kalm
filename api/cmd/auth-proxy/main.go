@@ -35,7 +35,7 @@ var clientSecret string
 const KALM_TOKEN_KEY_NAME = "kalm-sso"
 const ENVOY_EXT_AUTH_PATH_PREFIX = "ext_authz"
 
-const LET_PASS_HEADER_NAME = "let-pass-if-has-bearer-toke"
+const LET_PASS_HEADER_NAME = "let-pass-if-has-bearer-token"
 const GRANTED_GROUPS_HEADER_NAME = "kalm-sso-granted-groups"
 const KALM_SSO_USER_INFO_HEADER_NAME = "kalm-sso-userinfo"
 
