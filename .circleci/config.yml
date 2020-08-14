@@ -273,6 +273,8 @@ workflows:
               only: 
                 - master
                 - kalm-tag
+            tags:
+              only: /^v.*/
       - deploy-controller:
           context: deploy-demo-cluster
           requires:
@@ -289,6 +291,8 @@ workflows:
               only: 
                 - master
                 - kalm-tag
+            tags:
+              only: /^v.*/
       - deploy-operator:
           context: deploy-demo-cluster
           requires:
