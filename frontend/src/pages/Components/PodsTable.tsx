@@ -5,7 +5,6 @@ import { setErrorNotificationAction, setSuccessNotificationAction } from "action
 import { blinkTopProgressAction } from "actions/settings";
 import { api } from "api";
 import Immutable from "immutable";
-import { getPodLogQuery } from "pages/Application/Log";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -19,6 +18,28 @@ import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { DeleteButtonWithConfirmPopover, IconWithPopover } from "widgets/IconWithPopover";
 import { KRTable } from "widgets/KRTable";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
+import queryString from "qs";
+
+const generateQueryForPods = (namespace: string, podNames: [string, string][], active?: [string, string]) => {
+  const search = {
+    pods: podNames.length > 0 ? podNames : undefined,
+    active: active || undefined,
+    namespace,
+  };
+  return queryString.stringify(search);
+};
+
+const getPodLogQuery = (namespace: string, pod: PodStatus): string => {
+  const containerNames = pod
+    .get("containers")
+    .map((container) => container.get("name"))
+    .toArray();
+
+  const containerName =
+    containerNames[0] === "istio-proxy" ? containerNames[1] || containerNames[0] : containerNames[0];
+
+  return generateQueryForPods(namespace, [[pod.get("name"), containerName]], [pod.get("name"), containerName]);
+};
 
 const styles = (theme: Theme) =>
   createStyles({
