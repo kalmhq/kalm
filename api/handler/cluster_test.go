@@ -28,8 +28,7 @@ func (suite *ClusterHandlerTestSuite) TestClusterInfo() {
 	var clusterInfo ClusterInfo
 	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/cluster", `{}`)
 	rec.BodyAsJSON(&clusterInfo)
-	suite.NotNil(clusterInfo)
-	suite.Equal("v1.13.1", clusterInfo.Version)
+	suite.NotNil(&clusterInfo)
 
   var routes []*resources.HttpRoute
 	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/httproutes/kalm-system", `{}`)
