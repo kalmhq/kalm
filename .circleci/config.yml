@@ -206,7 +206,7 @@ workflows:
   version: 2
   dashboard:
     jobs:
-      - test-dashboard
+      - test-dashboard:
           filters:
             tags:
               only: /^v.*/
@@ -246,7 +246,7 @@ workflows:
                 - master
   controller:
     jobs:
-      - test-controller
+      - test-controller:
           filters:
             tags:
               only: /^v.*/
