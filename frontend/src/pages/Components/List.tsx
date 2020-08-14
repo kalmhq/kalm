@@ -21,9 +21,6 @@ import { indigo } from "@material-ui/core/colors";
 import sc from "utils/stringConstants";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 
-const externalEndpointsModalID = "externalEndpointsModalID";
-const internalEndpointsModalID = "internalEndpointsModalID";
-
 const styles = (theme: Theme) =>
   createStyles({
     emptyWrapper: {
@@ -35,14 +32,10 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const internalEndpointsDialog = state.get("dialogs").get(internalEndpointsModalID);
-  const externalEndpointsDialog = state.get("dialogs").get(externalEndpointsModalID);
   const routesMap = state.get("routes").get("httpRoutes");
   const clusterInfo = state.get("cluster").get("info");
   return {
     clusterInfo,
-    internalEndpointsDialogData: internalEndpointsDialog ? internalEndpointsDialog.get("data") : {},
-    externalEndpointsDialogData: externalEndpointsDialog ? externalEndpointsDialog.get("data") : {},
     routesMap,
   };
 };

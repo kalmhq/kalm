@@ -110,7 +110,7 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             color="textSecondary"
             href="https://github.com/kalmHQ/kalm/issues/new"
             target="_blank"
-            rel="noreferer"
+            rel="noreferrer"
           >
             Still have questions? Tell us!
           </KMLink>

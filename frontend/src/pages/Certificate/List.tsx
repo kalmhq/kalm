@@ -11,7 +11,6 @@ import { TDispatchProp } from "types";
 import { Certificate } from "types/certificate";
 import { formatDate } from "utils/date";
 import sc from "utils/stringConstants";
-import { customSearchForImmutable } from "utils/tableSearch";
 import { PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
@@ -183,71 +182,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
 
   private renderExpireTimestamp = (rowData: RowData) => {
     return rowData.get("expireTimestamp") ? formatDate(new Date(rowData.get("expireTimestamp") * 1000)) : "-";
-  };
-
-  private getColumns() {
-    const columns = [
-      // @ts-ignore
-      {
-        title: "Cert Name",
-        field: "name",
-        sorting: false,
-        render: this.renderName,
-        customFilterAndSearch: customSearchForImmutable,
-      },
-      {
-        title: "Domains",
-        field: "domains",
-        sorting: false,
-        render: this.renderDomains,
-      },
-      {
-        title: "Status",
-        field: "status",
-        sorting: false,
-        render: this.renderStatus,
-      },
-      {
-        title: "Type",
-        field: "isSelfManaged",
-        sorting: false,
-        render: this.renderType,
-      },
-      {
-        title: "Signed by Trusted CA",
-        field: "isSignedByTrustedCA",
-        sorting: false,
-        render: this.renderIsSignedByTrustedCA,
-      },
-      {
-        title: "Expiration Time",
-        field: "expireTimestamp",
-        sorting: false,
-        render: this.renderExpireTimestamp,
-      },
-      {
-        title: "Actions",
-        field: "moreAction",
-        sorting: false,
-        searchable: false,
-        render: this.renderMoreActions,
-      },
-    ];
-
-    return columns;
-  }
-
-  private getData = () => {
-    const { certificates } = this.props;
-    const data: RowData[] = [];
-
-    certificates.forEach((certificate, index) => {
-      const rowData = certificate as RowData;
-      rowData.index = index;
-      data.push(rowData);
-    });
-
-    return data;
   };
 
   private getKRTableColumns() {

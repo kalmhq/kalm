@@ -8,7 +8,6 @@ import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import Immutable from "immutable";
 import { POPPER_ZINDEX } from "layout/Constants";
-import MaterialTable, { MTableBodyRow } from "material-table";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { RouteWidgets } from "pages/Route/Widget";
 import React from "react";
@@ -21,7 +20,6 @@ import { HttpRoute } from "types/route";
 import { getApplicationCreatedAtString } from "utils/application";
 import { pluralize } from "utils/string";
 import sc from "utils/stringConstants";
-import { customSearchForImmutable } from "utils/tableSearch";
 import { ApplicationCard } from "widgets/ApplicationCard";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
@@ -35,11 +33,7 @@ import { Caption } from "widgets/Label";
 import { KLink, KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
-import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
-
-const externalEndpointsModalID = "externalEndpointsModalID";
-const internalEndpointsModalID = "internalEndpointsModalID";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -52,16 +46,12 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const internalEndpointsDialog = state.get("dialogs").get(internalEndpointsModalID);
-  const externalEndpointsDialog = state.get("dialogs").get(externalEndpointsModalID);
   const httpRoutes = state.get("routes").get("httpRoutes");
   const componentsMap = state.get("components").get("components");
   const clusterInfo = state.get("cluster").get("info");
   const usingApplicationCard = state.get("settings").get("usingApplicationCard");
   return {
     clusterInfo,
-    internalEndpointsDialogData: internalEndpointsDialog ? internalEndpointsDialog.get("data") : {},
-    externalEndpointsDialogData: externalEndpointsDialog ? externalEndpointsDialog.get("data") : {},
     httpRoutes,
     componentsMap,
     usingApplicationCard,
@@ -75,8 +65,6 @@ interface RowData extends ApplicationDetails {
 }
 
 class ApplicationListRaw extends React.PureComponent<Props> {
-  private tableRef: React.RefObject<MaterialTable<ApplicationDetails>> = React.createRef();
-
   private confirmDelete = async (rowData: ApplicationDetails) => {
     const { dispatch } = this.props;
     try {
@@ -262,19 +250,6 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     );
   };
 
-  private getData = () => {
-    const { applications } = this.props;
-    const data: RowData[] = [];
-
-    applications.forEach((application, index) => {
-      const rowData = application as RowData;
-      rowData.index = index;
-      data.push(rowData);
-    });
-
-    return data;
-  };
-
   private renderSecondHeaderRight() {
     const { usingApplicationCard, dispatch } = this.props;
     return (
@@ -306,59 +281,6 @@ class ApplicationListRaw extends React.PureComponent<Props> {
         </IconButtonWithTooltip>
       </>
     );
-  }
-
-  private getColumns() {
-    const columns = [
-      // @ts-ignore
-      {
-        title: "Name",
-        field: "name",
-        sorting: false,
-        render: this.renderName,
-        customFilterAndSearch: customSearchForImmutable,
-      },
-      { title: "Pod Status", field: "status", sorting: false, render: this.renderStatus },
-      {
-        title: "CPU",
-        field: "cpu",
-        render: this.renderCPU,
-        sorting: false,
-        headerStyle: {
-          textAlign: "center",
-        },
-      },
-      {
-        title: "Memory",
-        field: "memory",
-        render: this.renderMemory,
-        sorting: false,
-        headerStyle: {
-          textAlign: "center",
-        },
-      },
-      {
-        title: "Created At",
-        field: "active",
-        sorting: false,
-        render: this.renderCreatedAt,
-        // hidden: !hasWriterRole,
-      },
-      {
-        title: "Routes",
-        sorting: false,
-        render: this.renderExternalAccesses,
-      },
-      {
-        title: "Actions",
-        field: "moreAction",
-        sorting: false,
-        searchable: false,
-        render: this.renderActions,
-      },
-    ];
-
-    return columns;
   }
 
   private renderEmpty() {
@@ -439,30 +361,6 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   private renderKRTable() {
     return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
   }
-
-  // TODO rm old tables
-  private renderList = () => {
-    const { applications } = this.props;
-    return (
-      <KTable
-        tableRef={this.tableRef}
-        options={{
-          paging: applications.size > 20,
-        }}
-        components={{
-          Row: (props: any) => (
-            // <ApplicationCard application={props.data} />
-
-            <MTableBodyRow tutorial-anchor-id={"applications-list-item-" + props.data.get("name")} {...props} />
-          ),
-        }}
-        // @ts-ignore
-        columns={this.getColumns()}
-        data={this.getData()}
-        title=""
-      />
-    );
-  };
 
   private renderGrid = () => {
     const { applications, componentsMap, httpRoutes, activeNamespaceName } = this.props;

@@ -69,6 +69,17 @@ jobs:
           command: |
             echo "$QUAYIO_PASS" | docker login -u "$QUAYIO_USERNAME" --password-stdin quay.io
             docker push $IMAGE_NAME:latest
+      - checkout
+      - run:
+          name: use Tag for img if exist 
+          command: |     
+            TAG=$(git tag --points-at HEAD)
+            
+            if [ "$TAG" != "" ]
+            then 
+              docker tag $IMAGE_NAME:latest $IMAGE_NAME:$TAG
+              docker push $IMAGE_NAME:$TAG
+            fi
   test-controller:
     docker:
       - image: circleci/golang:1.13.11
@@ -117,6 +128,15 @@ jobs:
           command: |
             echo "$QUAYIO_PASS" | docker login -u "$QUAYIO_USERNAME" --password-stdin quay.io
             docker push $IMAGE_NAME:latest
+
+            TAG=$(git tag --points-at HEAD)
+            echo "tag: $TAG"
+
+            if [ "$TAG" != "" ]
+            then 
+              docker tag $IMAGE_NAME:latest $IMAGE_NAME:$TAG
+              docker push $IMAGE_NAME:$TAG
+            fi
   build-push-operator-image:
     environment:
       IMAGE_NAME: quay.io/kalmhq/kalm-operator
@@ -139,6 +159,13 @@ jobs:
           command: |
             echo "$QUAYIO_PASS" | docker login -u "$QUAYIO_USERNAME" --password-stdin quay.io
             docker push $IMAGE_NAME:latest
+
+            TAG=$(git tag --points-at HEAD)
+            if [ "$TAG" != "" ]
+            then 
+              docker tag $IMAGE_NAME:latest $IMAGE_NAME:$TAG
+              docker push $IMAGE_NAME:$TAG
+            fi
   deploy-dashboard:
     executor: deploy-orb/default
     steps:
@@ -203,7 +230,9 @@ workflows:
             branches:
               only:
                 - master
-                - orb
+                - kalm-tag
+            tags:
+              only: /^v.*/
       - push-dashboard-image:
           context: kalm-ci
           requires:
@@ -213,7 +242,9 @@ workflows:
             branches:
               only:
                 - master
-                - orb
+                - kalm-tag
+            tags:
+              only: /^v.*/
       - deploy-dashboard:
           context: deploy-demo-cluster
           requires:
@@ -239,21 +270,29 @@ workflows:
             - test-controller
           filters:
             branches:
-              only: master
+              only: 
+                - master
+                - kalm-tag
+            tags:
+              only: /^v.*/
       - deploy-controller:
           context: deploy-demo-cluster
           requires:
             - build-push-controller-image
           filters:
             branches:
-              only: master
+              only: master  
   operator:
     jobs:
       - build-push-operator-image:
           context: kalm-ci
           filters:
             branches:
-              only: master
+              only: 
+                - master
+                - kalm-tag
+            tags:
+              only: /^v.*/
       - deploy-operator:
           context: deploy-demo-cluster
           requires:

@@ -1,28 +1,28 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import React from "react";
-import { BasePage } from "pages/BasePage";
-import { Body, Subtitle1 } from "widgets/Label";
-import { SSOImplementDetails } from "pages/SSO/Details";
+import { deleteProtectedEndpointAction } from "actions/sso";
 import { withSSO, WithSSOProps } from "hoc/withSSO";
-import { Loading } from "widgets/Loading";
-import { KPanel } from "widgets/KPanel";
+import Immutable from "immutable";
+import { BasePage } from "pages/BasePage";
+import { SSOImplementDetails } from "pages/SSO/Details";
+import React from "react";
+import { Link } from "react-router-dom";
 import {
   ProtectedEndpoint,
+  SSOGithubConnector,
+  SSOGitlabConnector,
   SSO_CONNECTOR_TYPE,
   SSO_CONNECTOR_TYPE_GITHUB,
   SSO_CONNECTOR_TYPE_GITLAB,
-  SSOGithubConnector,
-  SSOGitlabConnector,
 } from "types/sso";
-import { EditIcon, GithubIcon } from "widgets/Icon";
-import Immutable from "immutable";
-import { KTable } from "widgets/Table";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { deleteProtectedEndpointAction } from "actions/sso";
-import { KMLink } from "widgets/Link";
 import { CustomizedButton } from "widgets/Button";
-import { Link } from "react-router-dom";
+import { EditIcon, GithubIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { KPanel } from "widgets/KPanel";
+import { KRTable } from "widgets/KRTable";
+import { Body, Subtitle1 } from "widgets/Label";
+import { KMLink } from "widgets/Link";
+import { Loading } from "widgets/Loading";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -170,8 +170,50 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderProtectedComponents() {
+  private getKRTableColumns() {
+    return [
+      {
+        Header: "Namespace",
+        accessor: "namespace",
+      },
+      {
+        Header: "Component",
+        accessor: "component",
+      },
+      {
+        Header: "Ports",
+        accessor: "ports",
+      },
+      {
+        Header: "Granted groups",
+        accessor: "grantedGroups",
+      },
+      { Header: "Actions", accessor: "actions" },
+    ];
+  }
+
+  private getKRTableData() {
     const { protectedEndpoints } = this.props;
+    const data: any[] = [];
+
+    protectedEndpoints.forEach((rowData, index) => {
+      data.push({
+        namespace: this.renderNamespace(rowData),
+        component: this.renderComponentName(rowData),
+        ports: this.renderComponentPorts(rowData),
+        grantedGroups: this.renderGrantedGroups(rowData),
+        actions: this.renderProtectedComponentActions(rowData),
+      });
+    });
+
+    return data;
+  }
+
+  private renderKRTable() {
+    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+  }
+
+  private renderProtectedComponents() {
     return (
       <Box mt={2}>
         <KPanel title="Protected Component">
@@ -187,39 +229,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
                 New Protected Endpoint
               </CustomizedButton>
             </Box>
-            <KTable
-              options={{
-                paging: protectedEndpoints.size > 20,
-              }}
-              columns={[
-                {
-                  title: "Namespace",
-                  field: "namespace",
-                  sorting: false,
-                  render: this.renderNamespace,
-                },
-                {
-                  title: "Component",
-                  field: "component",
-                  sorting: false,
-                  render: this.renderComponentName,
-                },
-                {
-                  title: "Ports",
-                  field: "ports",
-                  sorting: false,
-                  render: this.renderComponentPorts,
-                },
-                {
-                  title: "Granted groups",
-                  field: "grantedGroups",
-                  sorting: false,
-                  render: this.renderGrantedGroups,
-                },
-                { title: "Actions", field: "actions", sorting: false, render: this.renderProtectedComponentActions },
-              ]}
-              data={protectedEndpoints.toArray()}
-            />
+            {this.renderKRTable()}
           </Box>
         </KPanel>
       </Box>

@@ -19,7 +19,6 @@ import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { Loading } from "widgets/Loading";
-import { KTable } from "widgets/Table";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -140,48 +139,6 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderDataTable = () => {
-    const { deployKeys } = this.props;
-    return (
-      <>
-        <KTable
-          options={{
-            paging: deployKeys.size > 20,
-          }}
-          columns={[
-            {
-              title: "Name",
-              field: "name",
-              sorting: false,
-              render: this.renderName,
-            },
-            {
-              title: "Scope",
-              field: "scope",
-              sorting: false,
-              render: this.renderScope,
-            },
-            {
-              title: "Resources",
-              field: "resources",
-              sorting: false,
-              render: this.renderResources,
-            },
-
-            {
-              title: "Action",
-              field: "action",
-              sorting: false,
-              render: this.renderActions,
-            },
-          ]}
-          data={deployKeys.toArray()}
-        />
-        {this.renderInfoBox()}
-      </>
-    );
-  };
-
   private getKRTableColumns() {
     return [
       {
@@ -199,7 +156,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
 
       {
         Header: "Action",
-        accessor: "action",
+        accessor: "actions",
       },
     ];
   }
