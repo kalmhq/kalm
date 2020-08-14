@@ -145,27 +145,6 @@ const styles = (theme: Theme) =>
     },
   });
 
-export const generateQueryForPods = (namespace: string, podNames: [string, string][], active?: [string, string]) => {
-  const search = {
-    pods: podNames.length > 0 ? podNames : undefined,
-    active: active || undefined,
-    namespace,
-  };
-  return queryString.stringify(search);
-};
-
-export const getPodLogQuery = (namespace: string, pod: PodStatus): string => {
-  const containerNames = pod
-    .get("containers")
-    .map((container) => container.get("name"))
-    .toArray();
-
-  const containerName =
-    containerNames[0] === "istio-proxy" ? containerNames[1] || containerNames[0] : containerNames[0];
-
-  return generateQueryForPods(namespace, [[pod.get("name"), containerName]], [pod.get("name"), containerName]);
-};
-
 export class LogStream extends React.PureComponent<Props, State> {
   private ws: ReconnectingWebSocket;
   private wsQueueMessages: any[] = [];
