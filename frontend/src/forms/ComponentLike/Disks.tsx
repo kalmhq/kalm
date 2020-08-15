@@ -1,4 +1,7 @@
-import { Box, Button, Grid, Icon, TextField } from "@material-ui/core";
+import { Box, Button, Grid, TextField } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
+import HelpIcon from "@material-ui/icons/Help";
+import { KTooltip } from "forms/Application/KTooltip";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
@@ -6,15 +9,6 @@ import { RootState } from "reducers";
 import { arrayPush, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { getComponentFormVolumeOptions } from "selectors/component";
-import { DeleteIcon } from "widgets/Icon";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { RenderSelectField } from "../Basic/select";
-import { KRenderDebounceTextField, RenderComplexValueTextDebounceField } from "../Basic/textfield";
-import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
-import { KTooltip } from "forms/Application/KTooltip";
-import HelpIcon from "@material-ui/icons/Help";
-import { grey } from "@material-ui/core/colors";
-import { sizeStringToGi } from "utils/sizeConv";
 import {
   Volume,
   VolumeTypePersistentVolumeClaim,
@@ -22,7 +16,13 @@ import {
   VolumeTypeTemporaryDisk,
   VolumeTypeTemporaryMemory,
 } from "types/componentTemplate";
-import { H6, Caption } from "widgets/Label";
+import { sizeStringToGi } from "utils/sizeConv";
+import { AddIcon, DeleteIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { Caption, H6 } from "widgets/Label";
+import { RenderSelectField } from "../Basic/select";
+import { KRenderDebounceTextField, RenderComplexValueTextDebounceField } from "../Basic/textfield";
+import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -257,7 +257,7 @@ class RenderVolumes extends React.PureComponent<Props> {
             <Button
               variant="outlined"
               color="primary"
-              startIcon={<Icon>add</Icon>}
+              startIcon={<AddIcon />}
               size="small"
               onClick={() => {
                 dispatch(
