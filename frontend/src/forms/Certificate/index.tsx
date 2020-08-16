@@ -3,22 +3,21 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import { Autocomplete } from "@material-ui/lab";
 import { Form, Formik, FormikProps } from "formik";
 import { KFormikRadioGroupRender } from "forms/Basic/radio";
+import { FormikUploader } from "forms/Basic/uploader";
 // import { KValidatorHostsWithWildcardPrefix, ValidatorRequired } from "forms/validator";
 import Immutable from "immutable";
+import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { CertificateFormTypeContent, issuerManaged, selfManaged } from "types/certificate";
-import { ID } from "utils";
 import DomainStatus from "widgets/DomainStatus";
 import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import sc from "../../utils/stringConstants";
-import { FormikUploader } from "forms/Basic/uploader";
-import { extractDomainsFromCertificateContent } from "permission/utils";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -80,6 +79,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   private renderSelfManagedFields = (formikProps: FormikProps<CertificateFormTypeContent>) => {
     const { classes } = this.props;
     const { setFieldValue, values, errors, touched } = formikProps;
+    console.log("render self managed");
 
     return (
       <>
@@ -92,6 +92,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             className={classes.fileInput}
             name="selfManagedCertContent"
             margin="normal"
+            id="certificate-selfManagedCertContent"
             handleChange={(value: string) => {
               setFieldValue("selfManagedCertContent", value);
               const domains = extractDomainsFromCertificateContent(values.selfManagedCertContent);
@@ -111,6 +112,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             multiline={true}
             className={classes.fileInput}
             rows={12}
+            id="certificate-selfManagedCertPrivateKey"
             name="selfManagedCertPrivateKey"
             margin="normal"
             handleChange={(value: string) => {
@@ -254,13 +256,12 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
         {(formikProps) => {
           const { values, dirty, handleChange, touched, errors, handleBlur, setFieldValue } = formikProps;
           const icons = Immutable.List(values.domains.map((domain) => <DomainStatus domain={domain} />));
-          const domainsFieldID = ID();
           if (!dirty && values.selfManagedCertContent && values.domains.size <= 0) {
             const domains = extractDomainsFromCertificateContent(values.selfManagedCertContent);
             setFieldValue("domains", domains);
           }
           return (
-            <Form className={classes.root} tutorial-anchor-id="certificate-form">
+            <Form className={classes.root} tutorial-anchor-id="certificate-form" id="certificate-form">
               <Prompt when={dirty} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
               <KPanel
                 content={
@@ -321,7 +322,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                           freeSolo
                           size="small"
                           options={[]}
-                          id={domainsFieldID}
+                          id="certificate-domains"
                           onBlur={handleBlur}
                           value={values.domains.toJS()}
                           onChange={(e, value) => {

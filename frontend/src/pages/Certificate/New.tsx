@@ -21,13 +21,10 @@ class CertificateNewRaw extends React.PureComponent<Props> {
     try {
       const { dispatch } = this.props;
       await dispatch(createCertificateAction(certificate, false));
+      dispatch(push("/certificates"));
     } catch (e) {
       console.log(e);
     }
-  };
-
-  private onSubmitSuccess = () => {
-    this.props.dispatch(push("/certificates"));
   };
 
   public render() {

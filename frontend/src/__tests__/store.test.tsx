@@ -1,5 +1,9 @@
+import { ThemeProvider } from "@material-ui/core";
 import { createApplicationAction, loadApplicationsAction } from "actions/application";
 import { loadCertificatesAction } from "actions/certificate";
+import { createComponentAction } from "actions/component";
+import { createRouteAction } from "actions/routes";
+import { loadServicesAction } from "actions/service";
 import MockStore from "api/mockStore";
 import configureStore from "configureStore";
 import { ConnectedRouter } from "connected-react-router/immutable";
@@ -8,27 +12,23 @@ import Adapter from "enzyme-adapter-react-16";
 import ApplicationForm, { applicationInitialValues } from "forms/Application";
 import { CertificateForm } from "forms/Certificate";
 import { ComponentLikeForm } from "forms/ComponentLike";
-import { APPLICATION_FORM_ID, CERTIFICATE_FORM_ID, COMPONENT_FORM_ID, ROUTE_FORM_ID } from "forms/formIDs";
-import { readFileSync } from "fs";
+import { APPLICATION_FORM_ID, COMPONENT_FORM_ID, ROUTE_FORM_ID } from "forms/formIDs";
+import { RouteForm } from "forms/Route";
 import { createBrowserHistory } from "history";
+import Immutable from "immutable";
 import React from "react";
+import { act } from "react-dom/test-utils";
 import { Provider } from "react-redux";
 import { Route } from "react-router";
 import { RootState } from "reducers";
 import { Store } from "redux";
 import { change } from "redux-form";
-import { Application } from "types/application";
-import { ComponentLike, newEmptyComponentLike } from "types/componentTemplate";
-import { newEmptyCertificateForm, selfManaged } from "types/certificate";
-import { getTestFormSyncErrors } from "utils/testUtils";
-import { ThemeProvider } from "@material-ui/core";
 import { theme } from "theme/theme";
-import { createComponentAction } from "actions/component";
+import { Application } from "types/application";
+import { newEmptyCertificateForm } from "types/certificate";
+import { ComponentLike, newEmptyComponentLike } from "types/componentTemplate";
 import { HttpRouteForm, newEmptyRouteForm } from "types/route";
-import { createRouteAction } from "actions/routes";
-import { RouteForm } from "forms/Route";
-import { loadServicesAction } from "actions/service";
-import Immutable from "immutable";
+import { getTestFormSyncErrors } from "utils/testUtils";
 
 configure({ adapter: new Adapter() });
 
@@ -49,59 +49,53 @@ test("load certificate list", async () => {
   expect(store.getState().get("certificates").get("certificates")).toEqual(mockStore.data.get("mockCertificates"));
 });
 
-test("add certificate", () => {
+describe("add certificate", () => {
   const onSubmit = jest.fn();
-  const initialValues = newEmptyCertificateForm;
-  const WrappedCertificateForm = class extends React.Component {
-    public render() {
-      return <CertificateForm isEdit={false} onSubmit={onSubmit} initialValues={initialValues} />;
-    }
-  };
-  const component = mount(
-    <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <ConnectedRouter history={history}>
-          <Route component={WrappedCertificateForm} initialValues={initialValues} onSubmit={onSubmit} />
-        </ConnectedRouter>
-      </ThemeProvider>
-    </Provider>,
-  );
 
-  const clickSubmitButton = () => {
-    component.find("button#save-certificate-button").simulate("click");
-  };
+  test("test domains validate", async () => {
+    const initialValues = newEmptyCertificateForm;
+    const WrappedCertificateForm = class extends React.Component {
+      public render() {
+        return <CertificateForm isEdit={false} onSubmit={onSubmit} initialValues={initialValues} />;
+      }
+    };
+    const component = mount(
+      <Provider store={store}>
+        <ThemeProvider theme={theme}>
+          <ConnectedRouter history={history}>
+            <Route component={WrappedCertificateForm} />
+          </ConnectedRouter>
+        </ThemeProvider>
+      </Provider>,
+    );
+    await act(async () => {
+      component.find("form#certificate-form").simulate("submit");
+    });
+    expect(component.find("p#certificate-domains-helper-text").getDOMNode().textContent).toBe(requiredError);
+    expect(onSubmit).toHaveBeenCalledTimes(0);
+  });
 
-  // When domains is not typed, validation will not pass and onSubmit will not be executed
-  component.find("input#certificate-name").getDOMNode().setAttribute("value", "123");
-  component.find("input#certificate-name").simulate("change");
-  clickSubmitButton();
-  expect(getTestFormSyncErrors(store, CERTIFICATE_FORM_ID).domains).toBe(requiredError);
-  expect(onSubmit).toHaveBeenCalledTimes(0);
-
-  // When a valid form is submitted, onSubmit is executed once
-  store.dispatch(change(CERTIFICATE_FORM_ID, "domains", Immutable.List(["test.io"])));
-  clickSubmitButton();
-  expect(onSubmit).toHaveBeenCalledTimes(1);
-
-  // To change the managedType as selfManaged, need to upload the certificate file
-  store.dispatch(change(CERTIFICATE_FORM_ID, "managedType", selfManaged));
-  clickSubmitButton();
-  expect(getTestFormSyncErrors(store, CERTIFICATE_FORM_ID).selfManagedCertContent).toBe(requiredError);
-  expect(getTestFormSyncErrors(store, CERTIFICATE_FORM_ID).selfManagedCertPrivateKey).toBe(requiredError);
-
-  // invalid certificate
-  const invalidCert = "just for test invalid certificate";
-  store.dispatch(change(CERTIFICATE_FORM_ID, "selfManagedCertContent", invalidCert));
-  clickSubmitButton();
-  expect(getTestFormSyncErrors(store, CERTIFICATE_FORM_ID).selfManagedCertContent).toBe("Invalid Certificate");
-
-  // valid certificate
-  const validCert = readFileSync("src/certs/server.crt", "utf8");
-  const validPrivateKey = readFileSync("src/certs/server_private.key", "utf8");
-  store.dispatch(change(CERTIFICATE_FORM_ID, "selfManagedCertContent", validCert));
-  store.dispatch(change(CERTIFICATE_FORM_ID, "selfManagedCertPrivateKey", validPrivateKey));
-  clickSubmitButton();
-  expect(onSubmit).toHaveBeenCalledTimes(2);
+  test("test submit", async () => {
+    const initialValues = { ...newEmptyCertificateForm, domains: Immutable.List(["tesxt.io"]) };
+    const WrappedCertificateForm = class extends React.Component {
+      public render() {
+        return <CertificateForm isEdit={false} onSubmit={onSubmit} initialValues={initialValues} />;
+      }
+    };
+    const component = mount(
+      <Provider store={store}>
+        <ThemeProvider theme={theme}>
+          <ConnectedRouter history={history}>
+            <Route component={WrappedCertificateForm} />
+          </ConnectedRouter>
+        </ThemeProvider>
+      </Provider>,
+    );
+    await act(async () => {
+      component.find("form#certificate-form").simulate("submit");
+    });
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
 });
 
 test("add application", async (done) => {
