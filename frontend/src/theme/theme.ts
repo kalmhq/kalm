@@ -9,7 +9,12 @@ let themeRaw = createMuiTheme({});
 const lightTheme = createMuiTheme({
   palette: {
     primary: indigo,
-    secondary: amber,
+    secondary: {
+      light: indigo[100],
+      main: indigo[200],
+      dark: indigo[300],
+      contrastText: "#FFFFFF",
+    },
     type: "light",
   },
 });
@@ -22,7 +27,13 @@ const darkTheme = createMuiTheme({
       dark: indigo[400],
       contrastText: "#FFFFFF",
     },
-    secondary: amber,
+    // secondary: amber,
+    secondary: {
+      light: indigo[100],
+      main: indigo[200],
+      dark: indigo[300],
+      contrastText: "#FFFFFF",
+    },
     background: {
       paper: "#212121",
       default: "#121212",
