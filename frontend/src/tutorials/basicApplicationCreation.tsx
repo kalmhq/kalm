@@ -140,8 +140,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
               {
                 form: COMPONENT_FORM_ID,
                 field: "image",
-                validate: (value) =>
-                  value === "k8s.gcr.io/echoserver:1.10" ? undefined : `Please use "kalmhq/echoserver"`,
+                validate: (value) => (value === "kalmhq/echoserver" ? undefined : `Please use "kalmhq/echoserver"`),
               },
             ],
             shouldCompleteByState: (state: RootState) =>
