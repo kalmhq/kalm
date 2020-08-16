@@ -1,5 +1,5 @@
 import { createMuiTheme, PaletteType } from "@material-ui/core";
-import { indigo, amber } from "@material-ui/core/colors";
+import { indigo } from "@material-ui/core/colors";
 
 export const primaryBackgroud = indigo[50];
 export const primaryColor = indigo[700];
