@@ -208,7 +208,7 @@ export class LoadBalancerInfoRaw extends React.Component<Props, States> {
 
           {this.renderKRTable()}
         </Box>
-        <Box p={2}>{this.renderInfoBox()}</Box>
+        {/*<Box p={2}>{this.renderInfoBox()}</Box>*/}
       </BasePage>
     );
   }

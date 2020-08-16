@@ -48,8 +48,8 @@ import (
 
 const (
 	NamespaceKalmSystem   = "kalm-system"
-	KalmDashboardImgRepo  = "quay.io/kalmhq/kalm"
-	KalmControllerImgRepo = "quay.io/kalmhq/kalm-controller"
+	KalmDashboardImgRepo  = "kalmhq/kalm"
+	KalmControllerImgRepo = "kalmhq/kalm-controller"
 	FallbackImgVersion    = "latest"
 )
 

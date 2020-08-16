@@ -563,7 +563,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			WorkloadType: corev1alpha1.WorkloadTypeServer,
-			Image:        fmt.Sprintf("quay.io/kalmhq/kalm:%s", authProxyImgTag),
+			Image:        fmt.Sprintf("kalmhq/kalm:%s", authProxyImgTag),
 			Command:      "./auth-proxy",
 			Ports: []corev1alpha1.Port{
 				{

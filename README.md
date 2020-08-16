@@ -10,6 +10,12 @@ In addition, Kalm defines a set of CRDs that simplifies the underlying configura
 
 Kalm is designed for developers and teams who want a simple and friendly interface for kubernetes without having to build and maintain internal tools.
 
+## Project Status
+
+- [X] Alpha
+- [X] Closed Beta
+- [ ] Open Beta, CRD schema frozen
+
 ## Install
 
 Kalm is packaged as a [Kubernetes Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/), and can be used with any Kubernetes cluster(minikube, GKE, EKS etc..)
@@ -20,12 +26,6 @@ If you already have access to a cluster via kubectl, deploy Kalm via:
 
 ```shell
 curl -sL https://get.kalm.dev | bash
-```
-
-To check the installation status:
-
-```
-curl -sL https://raw.githubusercontent.com/kalmhq/kalm/master/scripts/check-kalm-install-status.sh | bash
 ```
 
 The whole process typically takes up to 1-5 minutes. Relax or check out the <a href="https://kalm.dev/docs/intro." target="_blank">docs</a> in the mean time.
