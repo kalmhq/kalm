@@ -1,4 +1,4 @@
-import { Box, Button, Icon } from "@material-ui/core";
+import { Box, Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
 import { Alert } from "@material-ui/lab";
@@ -7,17 +7,17 @@ import { KBoolCheckboxRender } from "forms/Basic/checkbox";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { arrayPush, arrayRemove, change, WrappedFieldArrayProps, WrappedFieldProps, arrayPop } from "redux-form";
+import { RootState } from "reducers";
+import { arrayPop, arrayPush, arrayRemove, change, WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { PreInjectedFile } from "types/componentTemplate";
 import { ControlledDialog } from "widgets/ControlledDialog";
-import { DeleteIcon } from "widgets/Icon";
+import { DeleteIcon, AddIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { Label } from "widgets/Label";
 import { RichEdtor } from "widgets/RichEditor";
 import { KRenderDebounceTextField } from "../Basic/textfield";
 import { KValidatorInjectedFilePath, ValidatorRequired } from "../validator";
-import { RootState } from "reducers";
-import { Label } from "widgets/Label";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -200,7 +200,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
           <Button
             variant="outlined"
             color="primary"
-            startIcon={<Icon>add</Icon>}
+            startIcon={<AddIcon />}
             size="small"
             onClick={() => {
               const initFile = Immutable.Map({
