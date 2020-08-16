@@ -25,42 +25,36 @@ module.exports = override(
   setWebpackOptimizationSplitChunks({
     cacheGroups: {
       xtermVendor: {
-        // 异步加载echarts包
         chunks: "all",
         test: /xterm/,
-        priority: 1000, // 高于async-commons优先级
+        priority: 1000,
         name: "xtermVendor",
       },
       chartjsVendor: {
-        // 异步加载echarts包
         chunks: "all",
         test: /chart/,
-        priority: 900, // 高于async-commons优先级
+        priority: 900,
         name: "chartjsVendor",
       },
       chartjsVendor: {
-        // 异步加载echarts包
         chunks: "all",
         test: /(ace-builds|react-ace)/,
-        priority: 800, // 高于async-commons优先级
+        priority: 800,
         name: "aceBuildsVendor",
       },
       vendors: {
-        // 基本框架
         chunks: "all",
         test: /(react|react-dom|react-dom-router|@material|immutable|src)/,
         priority: 100,
         name: "vendors",
       },
       asyncCommons: {
-        // 其余异步加载包
         chunks: "async",
         minChunks: 2,
         name: "async-commons",
         priority: 90,
       },
       commons: {
-        // 其余同步加载包
         chunks: "all",
         minChunks: 2,
         name: "commons",
@@ -68,7 +62,7 @@ module.exports = override(
       },
     },
   }),
-  addWebpackPlugin(new BundleAnalyzerPlugin()),
+  // addWebpackPlugin(new BundleAnalyzerPlugin()),
   ...addBabelPlugins("date-fns"),
   useBabelRc(),
 );

@@ -37,10 +37,10 @@ import { DeployKeyDetailPage } from "pages/CI/Detail";
 import { RouteRedirectList } from "pages/Route/Redirect";
 import { SystemPage } from "pages/System";
 import { SetupPage } from "pages/Setup";
+import { Loading } from "widgets/Loading";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
-// import { Log } from "pages/Application/Log";
 const Log = lazy(() => import("pages/Application/Log"));
 
 export const KalmRoutes = (
@@ -49,7 +49,7 @@ export const KalmRoutes = (
     <Route path="/login" component={RequireNotAuthorizated(Login)} />
     <Route path="/">
       <RequireAuthorizatedDashboard>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<Loading />}>
           <Switch>
             <Route exact path="/system" component={SystemPage} />
             <Route exact path="/setup" component={SetupPage} />
