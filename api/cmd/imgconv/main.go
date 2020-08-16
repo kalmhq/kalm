@@ -97,6 +97,10 @@ func handleWebhook(c echo.Context) (err error) {
 		podCopy.Spec.Containers[i].Image = imgconv.Convert(container.Image, cloudName)
 	}
 
+	for i, container := range podCopy.Spec.InitContainers {
+		podCopy.Spec.InitContainers[i].Image = imgconv.Convert(container.Image, cloudName)
+	}
+
 	patchType := v1beta1.PatchTypeJSONPatch
 
 	operations, err := getJsonpatch(&pod, podCopy)
