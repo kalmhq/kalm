@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/go-logr/logr v0.1.0
 	github.com/go-openapi/runtime v0.19.20 // indirect
 	github.com/go-openapi/spec v0.19.9 // indirect
@@ -33,7 +34,7 @@ require (
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sys v0.0.0-20200720211630-cb9d2d5c5666 // indirect
 	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
-	gomodules.xyz/jsonpatch/v2 v2.1.0 // indirect
+	gomodules.xyz/jsonpatch/v2 v2.1.0
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1

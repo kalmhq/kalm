@@ -37,6 +37,7 @@ COPY api/ .
 # Build
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -installsuffix 'static' -ldflags '-extldflags "-static"' -o kalm-api-server main.go
 RUN GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o auth-proxy ./cmd/auth-proxy
+RUN GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o imgconv ./cmd/imgconv
 
 # ============== Finial ==============
 FROM alpine
@@ -49,5 +50,6 @@ COPY --from=api-builder /workspace/api/kalm-api-server .
 
 RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
 COPY --from=api-builder /workspace/api/auth-proxy .
+COPY --from=imgconv /workspace/api/imgconv .
 
 COPY --from=frontend-builder /workspace/build/ build/
