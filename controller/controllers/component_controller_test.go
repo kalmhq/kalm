@@ -116,6 +116,10 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 	}, "component delete is not working")
 }
 
+func (suite *ComponentControllerSuite) TestDaemonSetCRUD() {}
+
+func (suite *ComponentControllerSuite) TestCronJobCRUD() {}
+
 func (suite *ComponentControllerSuite) TestComponentSetControllerRef() {
 	plugin := generateEmptyComponentPlugin()
 	suite.createComponentPlugin(plugin)
