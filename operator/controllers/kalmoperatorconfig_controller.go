@@ -27,9 +27,12 @@ import (
 	"istio.io/api/security/v1beta1"
 	v1beta13 "istio.io/api/type/v1beta1"
 	v1beta12 "istio.io/client-go/pkg/apis/security/v1beta1"
+	appsV1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -44,8 +47,10 @@ import (
 )
 
 const (
-	NamespaceKalmSystem = "kalm-system"
-	KalmImgRepo         = "quay.io/kalmhq/kalm"
+	NamespaceKalmSystem   = "kalm-system"
+	KalmDashboardImgRepo  = "kalmhq/kalm"
+	KalmControllerImgRepo = "kalmhq/kalm-controller"
+	FallbackImgVersion    = "latest"
 )
 
 //var finalizerName = "install.finalizers.kalm.dev"
@@ -268,18 +273,23 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 			return err
 		}
 
-		kalmNS := "kalm-system"
-		if !r.checkIfDPReady(ctx, kalmNS, "kalm-controller") {
+		if !r.isKalmCRDReady(ctx) {
 			return retryLaterErr
+		}
+
+		if err := r.reconcileKalmController(ctx, config); err != nil {
+			return err
 		}
 	}
 
 	if !config.Spec.SkipKalmDashboardInstallation {
 		//r.Log.Info("installing kalm-dashboard")
 
-		dashboardVersion := "latest"
-		if config.Spec.DashboardVersion != "" {
-			dashboardVersion = config.Spec.DashboardVersion
+		var dashboardVersion string
+		if config.Spec.KalmVersion != "" {
+			dashboardVersion = config.Spec.KalmVersion
+		} else {
+			dashboardVersion = FallbackImgVersion
 		}
 
 		dashboardName := "kalm"
@@ -289,7 +299,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 				Name:      dashboardName,
 			},
 			Spec: corev1alpha1.ComponentSpec{
-				Image:   fmt.Sprintf("%s:%s", KalmImgRepo, dashboardVersion),
+				Image:   fmt.Sprintf("%s:%s", KalmDashboardImgRepo, dashboardVersion),
 				Command: "./kalm-api-server",
 				Ports: []corev1alpha1.Port{
 					// Main service port
@@ -375,6 +385,37 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 	}
 
 	return nil
+}
+
+func (r *KalmOperatorConfigReconciler) checkIfCRDReady(ctx context.Context, crdNameOpt []string) bool {
+	for _, crdName := range crdNameOpt {
+		var crd apiextv1beta1.CustomResourceDefinition
+		err := r.Get(ctx, client.ObjectKey{Name: crdName}, &crd)
+		if err != nil {
+			r.Log.Info("CRD not ready", "crd", crdName, "err", err)
+			return false
+		}
+	}
+
+	return true
+}
+
+func (r *KalmOperatorConfigReconciler) isKalmCRDReady(ctx context.Context) bool {
+	crds := []string{
+		"componentpluginbindings.core.kalm.dev",
+		"componentplugins.core.kalm.dev",
+		"components.core.kalm.dev",
+		"deploykeys.core.kalm.dev",
+		"dockerregistries.core.kalm.dev",
+		"httproutes.core.kalm.dev",
+		"httpscertissuers.core.kalm.dev",
+		"httpscerts.core.kalm.dev",
+		"kalmoperatorconfigs.install.kalm.dev",
+		"protectedendpoints.core.kalm.dev",
+		"singlesignonconfigs.core.kalm.dev",
+	}
+
+	return r.checkIfCRDReady(ctx, crds)
 }
 
 func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx context.Context) error {
@@ -487,4 +528,186 @@ func (r *KalmOperatorConfigReconciler) SetupWithManager(mgr ctrl.Manager) error 
 			ToRequests: &KalmIstioPrometheusWather{},
 		}).
 		Complete(r)
+}
+
+func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Context, config *installv1alpha1.KalmOperatorConfig) error {
+	// ensure existence of ns: NamespaceKalmSystem
+	expectedNs := corev1.Namespace{
+		ObjectMeta: ctrl.ObjectMeta{
+			Name: NamespaceKalmSystem,
+			Labels: map[string]string{
+				"control-plane":   "controller",
+				"kalm-enabled":    "true",
+				"istio-injection": "enabled",
+			},
+		},
+	}
+
+	ns := corev1.Namespace{}
+	nsIsNew := false
+
+	err := r.Get(ctx, client.ObjectKey{Name: NamespaceKalmSystem}, &ns)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			nsIsNew = true
+		} else {
+			return err
+		}
+	}
+
+	if nsIsNew {
+		ns = expectedNs
+		if err := r.Create(ctx, &ns); err != nil {
+			return err
+		}
+	} else {
+		copiedNS := ns.DeepCopy()
+		if copiedNS.Labels == nil {
+			copiedNS.Labels = make(map[string]string)
+		}
+
+		for k, v := range expectedNs.Labels {
+			copiedNS.Labels[k] = v
+		}
+
+		if err := r.Update(ctx, copiedNS); err != nil {
+			return err
+		}
+	}
+
+	// reconcile deployment: controller
+	replica := int32(1)
+	terminationGracePeriodSeconds := int64(10)
+	secVolSourceDefaultMode := int32(420)
+
+	var controllerImgTag string
+	if config.Spec.KalmVersion != "" {
+		controllerImgTag = config.Spec.KalmVersion
+	} else {
+		controllerImgTag = FallbackImgVersion
+	}
+
+	img := fmt.Sprintf("%s:%s", KalmControllerImgRepo, controllerImgTag)
+
+	dpName := "kalm-controller"
+	expectedKalmController := appsV1.Deployment{
+		ObjectMeta: ctrl.ObjectMeta{
+			Namespace: NamespaceKalmSystem,
+			Name:      dpName,
+			Labels: map[string]string{
+				"control-plane": "controller",
+			},
+		},
+		Spec: v1.DeploymentSpec{
+			Selector: &metaV1.LabelSelector{
+				MatchLabels: map[string]string{
+					"control-plane": "controller",
+				},
+			},
+			Replicas: &replica,
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: ctrl.ObjectMeta{
+					Labels: map[string]string{
+						"control-plane":                "controller",
+						"sidecar.istio.io/proxyCPU":    "10m",
+						"sidecar.istio.io/proxyMemory": "50m",
+					},
+				},
+				Spec: corev1.PodSpec{
+					ImagePullSecrets: []corev1.LocalObjectReference{
+						{Name: "docker-registry-secret"},
+					},
+					Containers: []corev1.Container{
+						{
+							Name:  "kube-rbac-proxy",
+							Image: "gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1",
+							Ports: []corev1.ContainerPort{
+								{ContainerPort: 8443, Name: "https"},
+							},
+							Args: []string{
+								"--secure-listen-address=0.0.0.0:8443",
+								"--upstream=http://127.0.0.1:8080/",
+								"--logtostderr=true",
+								"--v=10",
+							},
+						},
+						{
+							Command: []string{"/manager"},
+							Args: []string{
+								"--enable-leader-election",
+								"--metrics-addr=127.0.0.1:8080",
+							},
+							Image:           img,
+							ImagePullPolicy: "Always",
+							Name:            "manager",
+							Env: []corev1.EnvVar{
+								{Name: "ENABLE_WEBHOOKS", Value: "true"},
+								{Name: "KALM_VERSION", Value: controllerImgTag},
+							},
+							Ports: []corev1.ContainerPort{
+								{
+									Name:          "webhook-server",
+									ContainerPort: 9443,
+									Protocol:      "TCP",
+								},
+							},
+							Resources: corev1.ResourceRequirements{
+								Limits: map[corev1.ResourceName]resource.Quantity{
+									corev1.ResourceCPU:    resource.MustParse("100m"),
+									corev1.ResourceMemory: resource.MustParse("256Mi"),
+								},
+								Requests: map[corev1.ResourceName]resource.Quantity{
+									corev1.ResourceCPU:    resource.MustParse("10m"),
+									corev1.ResourceMemory: resource.MustParse("128Mi"),
+								},
+							},
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      "cert",
+									MountPath: "/tmp/k8s-webhook-server/serving-certs",
+									ReadOnly:  true,
+								},
+							},
+						},
+					},
+					TerminationGracePeriodSeconds: &terminationGracePeriodSeconds,
+					Volumes: []corev1.Volume{
+						{
+							Name: "cert",
+							VolumeSource: corev1.VolumeSource{
+								Secret: &corev1.SecretVolumeSource{
+									DefaultMode: &secVolSourceDefaultMode,
+									SecretName:  "webhook-server-cert",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	var dp appsV1.Deployment
+	var isNew bool
+
+	err = r.Get(ctx, client.ObjectKey{Namespace: NamespaceKalmSystem, Name: dpName}, &dp)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			isNew = true
+		} else {
+			return err
+		}
+	}
+
+	if isNew {
+		dp = expectedKalmController
+		err = r.Create(ctx, &dp)
+	} else {
+		copiedDP := dp.DeepCopy()
+		copiedDP.Spec = expectedKalmController.Spec
+
+		err = r.Update(ctx, copiedDP)
+	}
+
+	return err
 }

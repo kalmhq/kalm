@@ -1,4 +1,4 @@
-import { Box, Button, Collapse, Grid, Icon, Link } from "@material-ui/core";
+import { Box, Button, Collapse, Grid, Link } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
@@ -40,6 +40,7 @@ import { includesForceHttpsDomain } from "utils/domain";
 import { default as sc, default as stringConstants } from "utils/stringConstants";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
 import DomainStatus from "widgets/DomainStatus";
+import { AddIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
@@ -296,7 +297,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
               <Button
                 variant="outlined"
                 color="primary"
-                startIcon={<Icon>add</Icon>}
+                startIcon={<AddIcon />}
                 size="small"
                 id="add-target-button"
                 onClick={() =>
@@ -518,7 +519,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         <Button
                           variant="outlined"
                           color="primary"
-                          startIcon={<Icon>add</Icon>}
+                          startIcon={<AddIcon />}
                           size="small"
                           onClick={() =>
                             dispatch(
@@ -542,7 +543,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         <Button
                           variant="outlined"
                           color="primary"
-                          startIcon={<Icon>add</Icon>}
+                          startIcon={<AddIcon />}
                           size="small"
                           onClick={() =>
                             dispatch(

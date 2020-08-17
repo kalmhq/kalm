@@ -2,9 +2,9 @@ module.exports = {
   ci: {
     collect: {
       url: [
-        "https://dashboard.kapp.live/",
-        "https://dashboard.kapp.live/applications/lighthouse-ci/components",
-        "https://dashboard.kapp.live/applications",
+        "http://localhost:3000/",
+        "http://localhost:3000/applications/kalm-bookinfo/components",
+        "http://localhost:3000/applications",
       ],
     },
     assert: {

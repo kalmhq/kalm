@@ -53,17 +53,16 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   }
 
   const applicationName = application.get("name");
-  const applicationsPath = "/applications";
-  const applicationDetailPath = "/applications/" + applicationName + "/components";
-  const applicationRoutesPath = "/applications/" + applicationName + "/routes";
-  const applicationNewRoutePath = "/routes/new";
+  const routesPath = "/routes";
+  const newRoutePath = "/routes/new";
 
   const clusterInfo = state.get("cluster").get("info");
   const clusterIngressIP = clusterInfo.get("ingressIP") || "10.0.0.1"; // TODO
 
   const domain = clusterIngressIP.replace(/\./g, "-") + ".nip.io";
 
-  let finialLink = "http://" + domain;
+  const path = "/echoserver";
+  let finialLink = "http://" + domain + path;
 
   if (clusterInfo.get("httpPort") !== 80) {
     finialLink = finialLink + ":" + clusterInfo.get("httpPort");
@@ -75,69 +74,32 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
       {
         name: "Go to routes page",
         description:
-          "Route is a rule that describes how to introduce external traffic into the cluster. Route is a sub-resource under an application. Let's find out how to navigate to routes page.",
+          "Route is a rule that describes how to introduce external traffic into the cluster. Let's find out how to navigate to routes page.",
         highlights: [
           {
             title: popupTitle,
-            description: "Go to applications page",
-            anchor: "[tutorial-anchor-id=first-level-sidebar-item-applications]",
-            triggeredByState: (state: RootState) => requireSubStepNotCompleted(state, 0),
-          },
-          {
-            title: "Click the Name",
-            description: "Go to applications details page",
-            anchor: `[tutorial-anchor-id=applications-list-item-${application.get("name")}]`,
-            triggeredByState: (state: RootState) =>
-              requireSubStepCompleted(state, 0) && requireSubStepNotCompleted(state, 1),
-          },
-          {
-            title: popupTitle,
             description: "Go to routes page",
-            anchor: `[href="/applications/${applicationName}/routes"]`,
-            triggeredByState: (state: RootState) =>
-              requireSubStepCompleted(state, 0, 1) && requireSubStepNotCompleted(state, 2),
+            anchor: `[href="/routes"]`,
+            triggeredByState: (state: RootState) => requireSubStepNotCompleted(state, 0),
           },
           {
             title: popupTitle,
             description: "Go to add route page",
             anchor: "[tutorial-anchor-id=add-route]",
             triggeredByState: (state: RootState) =>
-              requireSubStepCompleted(state, 0, 1, 2) && requireSubStepNotCompleted(state, 3),
+              requireSubStepCompleted(state, 0) && requireSubStepNotCompleted(state, 1),
           },
         ],
         subSteps: [
           {
-            title: "Go to applications page",
-            irrevocable: true,
-            shouldCompleteByState: (state: RootState) =>
-              isUnderPath(
-                state,
-                applicationsPath,
-                applicationDetailPath,
-                applicationRoutesPath,
-                applicationNewRoutePath,
-              ),
-          },
-          {
-            title: (
-              <span>
-                View <strong>{application.get("name")}</strong> details page
-              </span>
-            ),
-            irrevocable: true,
-            shouldCompleteByState: (state: RootState) =>
-              isUnderPath(state, applicationDetailPath, applicationRoutesPath, applicationNewRoutePath),
-          },
-          {
             title: <span>Go to routes page</span>,
             irrevocable: true,
-            shouldCompleteByState: (state: RootState) =>
-              isUnderPath(state, applicationRoutesPath, applicationNewRoutePath),
+            shouldCompleteByState: (state: RootState) => isUnderPath(state, routesPath, newRoutePath),
           },
           {
             title: "Go to add route page",
             irrevocable: true,
-            shouldCompleteByState: (state: RootState) => isUnderPath(state, applicationNewRoutePath),
+            shouldCompleteByState: (state: RootState) => isUnderPath(state, newRoutePath),
           },
         ],
       },
@@ -159,6 +121,22 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
               },
             ],
             shouldCompleteByState: (state: RootState) => isFormFieldValueEqualTo(state, "route", "hosts[0]", domain),
+          },
+          {
+            title: (
+              <span>
+                Use <strong>/echoserver</strong> as path prefixes
+              </span>
+            ),
+            formValidator: [
+              {
+                form: "route",
+                field: "paths",
+                validate: (paths) =>
+                  paths.size === 1 && paths.get(0) === path ? undefined : `Please keep only one path "${path}"`,
+              },
+            ],
+            shouldCompleteByState: (state: RootState) => isFormFieldValueEqualTo(state, "route", "paths[0]", path),
           },
           {
             title: (
@@ -234,7 +212,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
         description: (
           <span>
             Try open{" "}
-            <KMLink href={finialLink} target="_blank" rel="noreferer">
+            <KMLink href={finialLink} target="_blank" rel="noreferrer">
               {finialLink}
             </KMLink>{" "}
             in your browser.

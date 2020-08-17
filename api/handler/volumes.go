@@ -67,9 +67,7 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 
 	var pvList v1.PersistentVolumeList
 	if err := builder.List(&pvList); err != nil {
-		if errors.IsNotFound(err) {
-			return err
-		}
+		return err
 	}
 
 	var underlyingPV *v1.PersistentVolume

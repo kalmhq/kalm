@@ -61,7 +61,7 @@ make docker-build
 # wait the build process finished
 docker images
 
-# You should see a image called quay.io/kalmhq/kalm-controller:latest
+# You should see a image called kalmhq/kalm-controller:latest
 # This step won't happen in production because we will publish a controller image on docker hub.
 ```
 

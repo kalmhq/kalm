@@ -7,6 +7,7 @@ import Clear from "@material-ui/icons/Clear";
 import SettingsIcon from "@material-ui/icons/Settings";
 import CreateNewFolder from "@material-ui/icons/CreateNewFolder";
 import OpenInBrowser from "@material-ui/icons/OpenInBrowser";
+import Add from "@material-ui/icons/Add";
 import Delete from "@material-ui/icons/Delete";
 import Edit from "@material-ui/icons/Edit";
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
@@ -169,6 +170,12 @@ export const OpenInBrowserIcon = withStyles(styles)((props: ColorIconsProps) => 
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
   return <OpenInBrowser className={className} fontSize={fontSize} style={style} />;
+});
+
+export const AddIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <Add className={className} fontSize={fontSize} style={style} />;
 });
 
 export const DeleteIcon = withStyles(styles)((props: ColorIconsProps) => {
