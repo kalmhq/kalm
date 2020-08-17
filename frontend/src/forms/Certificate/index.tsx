@@ -18,6 +18,7 @@ import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import sc from "../../utils/stringConstants";
+import { object, array } from "yup";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -50,6 +51,10 @@ const styles = (theme: Theme) =>
 
 export interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp, OwnProps {}
 
+const schema = object().shape({
+  domains: array().min(1, "Required"),
+});
+
 interface State {
   isEditCertificateIssuer: boolean;
 }
@@ -79,7 +84,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   private renderSelfManagedFields = (formikProps: FormikProps<CertificateFormTypeContent>) => {
     const { classes } = this.props;
     const { setFieldValue, values, errors, touched } = formikProps;
-    console.log("render self managed");
 
     return (
       <>
@@ -228,13 +232,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   private validate = async (values: CertificateFormTypeContent) => {
     let errors: any = {};
 
-    if (values.managedType === selfManaged && (!values.domains || values.domains.size < 1)) {
+    if (values.managedType === selfManaged && (!values.domains || values.domains.length < 1)) {
       errors.selfManagedCertContent = "Invalid Certificate";
-      return errors;
-    }
-
-    if (!values.domains || values.domains.size < 1) {
-      errors.domains = "Required";
       return errors;
     }
 
@@ -250,19 +249,20 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
         validate={this.validate}
         validateOnChange={false}
         validateOnBlur={false}
+        validationSchema={schema}
         enableReinitialize={false}
         handleReset={console.log}
       >
         {(formikProps) => {
-          const { values, dirty, handleChange, touched, errors, handleBlur, setFieldValue } = formikProps;
+          const { values, dirty, handleChange, touched, errors, handleBlur, setFieldValue, isSubmitting } = formikProps;
           const icons = Immutable.List(values.domains.map((domain) => <DomainStatus domain={domain} />));
-          if (!dirty && values.selfManagedCertContent && values.domains.size <= 0) {
+          if (!dirty && values.selfManagedCertContent && values.domains.length <= 0) {
             const domains = extractDomainsFromCertificateContent(values.selfManagedCertContent);
             setFieldValue("domains", domains);
           }
           return (
             <Form className={classes.root} tutorial-anchor-id="certificate-form" id="certificate-form">
-              <Prompt when={dirty} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+              <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
               <KPanel
                 content={
                   <Box p={2}>
@@ -324,10 +324,11 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                           options={[]}
                           id="certificate-domains"
                           onBlur={handleBlur}
-                          value={values.domains.toJS()}
+                          value={values.domains}
                           onChange={(e, value) => {
-                            setFieldValue("domains", Immutable.List(value));
+                            setFieldValue("domains", value);
                           }}
+                          // @ts-ignore
                           renderTags={(value: string[], getTagProps) => {
                             return value.map((option: string, index: number) => {
                               return (
@@ -362,11 +363,10 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                                       <Link
                                         to="#"
                                         onClick={() => {
-                                          const isDomainsIncludeIngressIP = !!values.domains.find(
-                                            (domain) => domain === ingressIP,
-                                          );
+                                          const isDomainsIncludeIngressIP =
+                                            !!values.domains && !!values.domains.find((domain) => domain === ingressIP);
                                           if (!isDomainsIncludeIngressIP && values.managedType === issuerManaged) {
-                                            setFieldValue("domains", values.domains.push(ingressIP));
+                                            setFieldValue("domains", (values.domains || []).concat(ingressIP));
                                           }
                                         }}
                                       >

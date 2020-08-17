@@ -74,8 +74,9 @@ export type CertificateList = Immutable.List<Certificate>;
 
 export type CertificateIssuerList = Immutable.List<CertificateIssuer>;
 
-export interface CertificateFormTypeContent extends CertificateContent {
+export interface CertificateFormTypeContent extends Omit<CertificateContent, "domains"> {
   managedType: typeof selfManaged | typeof issuerManaged;
+  domains: string[];
 }
 
 export interface CertificateIssuerFormTypeContent extends CertificateIssuerContent {
@@ -101,7 +102,7 @@ export const newEmptyCertificateForm: CertificateFormTypeContent = {
   managedType: issuerManaged,
   selfManagedCertContent: "",
   selfManagedCertPrivateKey: "",
-  domains: Immutable.List(),
+  domains: [],
 };
 
 export const newEmptyCertificateIssuerForm = (): CertificateIssuerFormType => {

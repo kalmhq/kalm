@@ -16,9 +16,9 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
     .get("certificates")
     .find((certificate) => certificate.get("name") === ownProps.match.params.name);
   return {
-    initialValues: (certificate
-      ? Object.assign(certificate.toJS(), { managedType: selfManaged, domains: certificate.get("domains") })
-      : undefined) as CertificateFormTypeContent | undefined,
+    initialValues: (certificate ? certificate.merge({ managedType: selfManaged }).toJS() : undefined) as
+      | CertificateFormTypeContent
+      | undefined,
   };
 };
 

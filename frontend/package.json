@@ -30,6 +30,7 @@
     "@types/storybook__addon-actions": "^5.2.1",
     "@types/storybook__addon-links": "^5.2.1",
     "@types/storybook__react": "^5.2.1",
+    "@types/yup": "^0.29.5",
     "ace-builds": "^1.4.8",
     "axios": "^0.19.2",
     "chart.js": "^2.9.3",
@@ -71,7 +72,8 @@
     "xterm": "^4.4.0",
     "xterm-addon-fit": "^0.3.0",
     "xterm-addon-search": "^0.5.0",
-    "yaml": "^1.7.2"
+    "yaml": "^1.7.2",
+    "yup": "^0.29.3"
   },
   "scripts": {
     "start": "react-app-rewired start",
@@ -84,8 +86,16 @@
     "build-storybook": "NODE_ENV=test build-storybook --docs -s public"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "jest": {
     "moduleNameMapper": {

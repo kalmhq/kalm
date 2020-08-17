@@ -1,5 +1,4 @@
 import { pki } from "node-forge";
-import Immutable from "immutable";
 
 export const getDisplayName = (WrappedComponent: React.ComponentType) => {
   return WrappedComponent.displayName || WrappedComponent.name || "Component";
@@ -20,14 +19,12 @@ export const formatBytes = (bytes: number, decimals = 2): string => {
 export const extractDomainsFromCertificateContent = (certificateContent: string) => {
   try {
     const cert = pki.certificateFromPem(certificateContent);
-    return Immutable.List(
-      cert.subject.attributes.map((attribute) => {
-        return attribute.value;
-      }),
-    );
+    return cert.subject.attributes.map((attribute) => {
+      return attribute.value;
+    });
   } catch (e) {
     console.log(e);
-    return Immutable.List([]);
+    return [];
   }
 };
 

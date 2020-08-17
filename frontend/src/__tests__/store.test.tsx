@@ -76,7 +76,7 @@ describe("add certificate", () => {
   });
 
   test("test submit", async () => {
-    const initialValues = { ...newEmptyCertificateForm, domains: Immutable.List(["tesxt.io"]) };
+    const initialValues = { ...newEmptyCertificateForm, domains: ["tesxt.io"] };
     const WrappedCertificateForm = class extends React.Component {
       public render() {
         return <CertificateForm isEdit={false} onSubmit={onSubmit} initialValues={initialValues} />;

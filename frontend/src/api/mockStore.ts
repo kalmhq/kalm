@@ -1,7 +1,12 @@
 import Immutable from "immutable";
 import { ApplicationComponentDetails, ApplicationDetails, ComponentPlugin, PodStatus } from "types/application";
 import { LoginStatus } from "types/authorization";
-import { CertificateContent, CertificateIssuer, CertificateIssuerList, CertificateList } from "types/certificate";
+import {
+  CertificateFormTypeContent,
+  CertificateIssuer,
+  CertificateIssuerList,
+  CertificateList,
+} from "types/certificate";
 import { ClusterInfo } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import { NodesListResponse } from "types/node";
@@ -117,7 +122,7 @@ export default class MockStore {
     });
   };
 
-  public updateCertificate = async (certificate: CertificateContent) => {
+  public updateCertificate = async (certificate: CertificateFormTypeContent) => {
     const index = this.data.get("mockCertificates").findIndex((c) => c.get("name") === certificate.name);
     if (index >= 0) {
       this.data = this.data.setIn(["mockCertificates", index], Immutable.fromJS(certificate));
