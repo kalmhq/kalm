@@ -68,7 +68,7 @@ const fieldValidators = [ValidatorRequired, ValidateHost];
 class SSOConfigFormRaw extends React.PureComponent<Props> {
   private renderButtons() {
     const { handleSubmit, initialValues, submitting } = this.props;
-    const isEdit = initialValues.get!("connectors", Immutable.List())!.size! > 0;
+    const isEdit = initialValues.get!("connectors", Immutable.List())!.size! > 0 || initialValues.get!("domain") !== "";
 
     return (
       <>
@@ -193,6 +193,13 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
             <Alert severity="error">{error}</Alert>
           </Box>
         ) : null}
+
+        <Box mt={2}>
+          <Alert severity="info">
+            After modifying the Single Sign-on configuration, kalm takes a few minutes to restart the corresponding
+            components.
+          </Alert>
+        </Box>
 
         <Box pt={2} display="flex">
           {this.renderButtons()}

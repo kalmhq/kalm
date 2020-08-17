@@ -22,3 +22,5 @@ kind: KalmOperatorConfig
 metadata:
   namespace: kalm-operator
   name: kalmoperatorconfig-sample
+spec:
+  kalmVersion: v0.1.0-alpha.3

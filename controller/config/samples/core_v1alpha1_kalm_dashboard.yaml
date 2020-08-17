@@ -48,7 +48,7 @@ metadata:
   name: kalm-dashboard
   namespace: kalm-system
 spec:
-  image: quay.io/kalmhq/kalm:latest
+  image: kalmhq/kalm:latest
   workloadType: server
   command: ./kalm-api-server
   ports:

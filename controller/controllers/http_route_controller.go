@@ -45,9 +45,11 @@ const (
 
 const KALM_SSO_USERINFO_HEADER = "kalm-sso-userinfo"
 const KALM_ROUTE_HEADER = "kalm-route"
+const LET_PASS_HEADER_NAME = "let-pass-if-has-bearer-token"
 
 var DANGEROUS_HEADERS = []string{
 	KALM_SSO_USERINFO_HEADER,
+	LET_PASS_HEADER_NAME,
 }
 
 type HttpRouteReconcilerTask struct {

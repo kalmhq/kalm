@@ -1,15 +1,15 @@
-import { Box, Button, Fade, Grid, Icon } from "@material-ui/core";
+import { Box, Button, Fade, Grid } from "@material-ui/core";
+import { Alert } from "@material-ui/lab";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { arrayPush, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
-import { DeleteIcon } from "widgets/Icon";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { EnvItem, SharedEnv } from "types/application";
+import { AddIcon, DeleteIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { KRenderDebounceTextField } from "../Basic/textfield";
 import { ValidatorEnvName, ValidatorRequired } from "../validator";
-import { Alert } from "@material-ui/lab";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -34,7 +34,7 @@ class RenderEnvs extends React.PureComponent<Props> {
         <Button
           variant="outlined"
           color="primary"
-          startIcon={<Icon>add</Icon>}
+          startIcon={<AddIcon />}
           size="small"
           onClick={() =>
             dispatch(
