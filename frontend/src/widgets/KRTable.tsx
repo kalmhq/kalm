@@ -4,9 +4,16 @@ import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
+import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
-import React from "react";
-import { useTable } from "react-table";
+import React, { useCallback } from "react";
+import { usePagination, useTable } from "react-table";
+
+interface RowData {
+  [key: string]: any;
+}
+
+const DefaultPageSize = 20;
 
 export const KRTable = ({
   columns,
@@ -27,16 +34,43 @@ export const KRTable = ({
   const {
     getTableProps,
     headerGroups,
-    rows,
     prepareRow,
-    // @ts-ignore
-    // state: { expanded },
-  } = useTable(
+    rows,
+    // Instead of using 'rows', we'll use page,
+    page,
+    gotoPage,
+    nextPage,
+    previousPage,
+    setPageSize,
+    state: { pageIndex, pageSize },
+  } = useTable<RowData>(
     {
       columns: columnsMemo,
       data: dataMemo,
+      initialState: { pageIndex: 0, pageSize: DefaultPageSize },
     },
-    // useExpanded,
+    usePagination,
+  );
+
+  // https://codesandbox.io/s/github/ggascoigne/react-table-example?file=/src/Table/TablePagination.tsx
+  const handleChangePage = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement, MouseEvent> | null, newPage: number) => {
+      if (newPage === pageIndex + 1) {
+        nextPage();
+      } else if (newPage === pageIndex - 1) {
+        previousPage();
+      } else {
+        gotoPage(newPage);
+      }
+    },
+    [gotoPage, nextPage, pageIndex, previousPage],
+  );
+
+  const onChangeRowsPerPage = useCallback(
+    (e) => {
+      setPageSize(Number(e.target.value));
+    },
+    [setPageSize],
   );
 
   return (
@@ -52,13 +86,16 @@ export const KRTable = ({
           ))}
         </TableHead>
         <TableBody>
-          {rows.map((row, i) => {
+          {page.map((row, i) => {
             prepareRow(row);
             return (
               <TableRow {...row.getRowProps()}>
                 {row.cells.map((cell) => {
                   return (
-                    <TableCell {...cell.getCellProps()} style={i === rows.length - 1 ? { borderBottom: "none" } : {}}>
+                    <TableCell
+                      {...cell.getCellProps()}
+                      style={rows.length <= DefaultPageSize && i === rows.length - 1 ? { borderBottom: "none" } : {}}
+                    >
                       {cell.render("Cell")}
                     </TableCell>
                   );
@@ -68,6 +105,17 @@ export const KRTable = ({
           })}
         </TableBody>
       </MuiTable>
+      {rows.length > DefaultPageSize ? (
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 20, 50]}
+          component="div"
+          count={rows.length}
+          rowsPerPage={pageSize}
+          page={pageIndex}
+          onChangePage={handleChangePage}
+          onChangeRowsPerPage={onChangeRowsPerPage}
+        />
+      ) : null}
     </TableContainer>
   );
 };
