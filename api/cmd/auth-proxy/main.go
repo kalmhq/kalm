@@ -157,7 +157,7 @@ type ClaimsWithGroups struct {
 }
 
 func handleExtAuthz(c echo.Context) error {
-	contextLog :=logger.WithValues("clientIP", c.RealIP(), "host", c.Request().Host, "path", c.Request().URL.Path)
+	contextLog := logger.WithValues("clientIP", c.RealIP(), "host", c.Request().Host, "path", c.Request().URL.Path)
 	contextLog.V(1).Info("handleExtAuthz", "tls", c.Request().TLS != nil)
 
 	for k, v := range c.Request().Header {
