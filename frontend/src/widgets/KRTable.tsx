@@ -7,7 +7,7 @@ import TableHead from "@material-ui/core/TableHead";
 import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
 import React, { useCallback } from "react";
-import { usePagination, useTable } from "react-table";
+import { usePagination, useTable, useGlobalFilter, useAsyncDebounce } from "react-table";
 
 interface RowData {
   [key: string]: any;
@@ -42,13 +42,16 @@ export const KRTable = ({
     nextPage,
     previousPage,
     setPageSize,
-    state: { pageIndex, pageSize },
+    preGlobalFilteredRows,
+    setGlobalFilter,
+    state: { pageIndex, pageSize, globalFilter },
   } = useTable<RowData>(
     {
       columns: columnsMemo,
       data: dataMemo,
       initialState: { pageIndex: 0, pageSize: DefaultPageSize },
     },
+    useGlobalFilter,
     usePagination,
   );
 
@@ -75,6 +78,11 @@ export const KRTable = ({
 
   return (
     <TableContainer component={Paper} variant="outlined" square>
+      <GlobalFilter
+        preGlobalFilteredRows={preGlobalFilteredRows}
+        globalFilter={globalFilter}
+        setGlobalFilter={setGlobalFilter}
+      />
       <MuiTable {...getTableProps()}>
         <TableHead>
           {headerGroups.map((headerGroup) => (
@@ -117,5 +125,32 @@ export const KRTable = ({
         />
       ) : null}
     </TableContainer>
+  );
+};
+
+// https://codesandbox.io/s/github/tannerlinsley/react-table/tree/master/examples/filtering?file=/src/App.js
+const GlobalFilter = ({ preGlobalFilteredRows, globalFilter, setGlobalFilter }: any) => {
+  const count = preGlobalFilteredRows.length;
+  const [value, setValue] = React.useState(globalFilter);
+  const onChange = useAsyncDebounce((value) => {
+    setGlobalFilter(value || undefined);
+  }, 200);
+
+  return (
+    <span>
+      Search:{" "}
+      <input
+        value={value || ""}
+        onChange={(e) => {
+          setValue(e.target.value);
+          onChange(e.target.value);
+        }}
+        placeholder={`${count} records...`}
+        style={{
+          fontSize: "1.1rem",
+          border: "0",
+        }}
+      />
+    </span>
   );
 };
