@@ -95,13 +95,12 @@ export const correctComponentFormValuesForInit = (
   if (volumes) {
     const volumeOptions = getComponentFormVolumeOptions(state, component.get("name"), component.get("workloadType"));
 
-    const findClaimName = (pvc?: string, pvToMatch?: string) => {
+    const findClaimName = (pvc?: string) => {
       pvc = pvc || "";
-      pvToMatch = pvToMatch || "";
       let claimName = "";
 
       volumeOptions.forEach((vo) => {
-        if (vo.get("pvc") === pvc && vo.get("pvToMatch") === pvToMatch) {
+        if (vo.get("pvc") === pvc) {
           claimName = vo.get("name");
         }
       });
@@ -110,9 +109,9 @@ export const correctComponentFormValuesForInit = (
     };
 
     const correctedVolumes = volumes?.map((v) => {
-      // set pvc and pvToMatch
+      // set claimName according to pvc
       if (v.get("type") === VolumeTypePersistentVolumeClaim) {
-        const claimName = findClaimName(v.get("pvc"), v.get("pvToMatch"));
+        const claimName = findClaimName(v.get("pvc"));
         v = v.set("claimName", claimName);
       }
 
