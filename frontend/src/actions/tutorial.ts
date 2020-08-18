@@ -11,7 +11,18 @@ import {
   SetTutorialStepCompletionStatusAction,
   Tutorial,
   TutorialDrawerAction,
+  SET_TUTORIAL_FORM_VALUES,
+  SetTutorialFormValuesAction,
 } from "types/tutorial";
+
+export const setTutorialFormValues = (values: any): SetTutorialFormValuesAction => {
+  return {
+    type: SET_TUTORIAL_FORM_VALUES,
+    payload: {
+      values,
+    },
+  };
+};
 
 export const setTutorialAction = (tutorial: Tutorial): SetTutorialAction => {
   return {

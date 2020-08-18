@@ -1,6 +1,7 @@
 import Immutable from "immutable";
 import { HttpRoute, HttpRouteDestination } from "types/route";
 import sc from "utils/stringConstants";
+import { string, array } from "yup";
 
 export const validator = () => {
   const errors = {};
@@ -297,3 +298,7 @@ export const RequireNoSuffix = (suffix: string) => (value: string) => {
   if (value.endsWith(suffix)) return `Require no suffix "${suffix}"`;
   return undefined;
 };
+
+export const RequireString = string().min(1, "Required");
+
+export const RequireArray = array().min(1, "Required");

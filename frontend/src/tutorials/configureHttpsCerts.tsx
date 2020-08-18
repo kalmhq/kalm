@@ -96,8 +96,7 @@ export const ConfigureHttpsCertsTutorialFactory: TutorialFactory = (title): Tuto
                   domains === Immutable.List([domain]) ? undefined : `Please follow the tutorial, use ${domain}.`,
               },
             ],
-            shouldCompleteByState: (state: RootState) =>
-              isCertificateFormFieldValueEqualTo(state, "domains", Immutable.List([domain])),
+            shouldCompleteByState: (state: RootState) => isCertificateFormFieldValueEqualTo(state, "domains", [domain]),
           },
           {
             title: "Submit form",

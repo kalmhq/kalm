@@ -1,8 +1,8 @@
-import Immutable, { isImmutable } from "immutable";
-import { State as TutorialState } from "reducers/tutorial";
+import { APPLICATION_FORM_ID, CERTIFICATE_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
+import Immutable from "immutable";
 import { RootState } from "reducers";
+import { State as TutorialState } from "reducers/tutorial";
 import { formValueSelector } from "redux-form/immutable";
-import { APPLICATION_FORM_ID, COMPONENT_FORM_ID, CERTIFICATE_FORM_ID } from "forms/formIDs";
 
 export const formValidateOrNotBlockByTutorial = (
   values: Immutable.Map<string, any>,
@@ -113,8 +113,12 @@ export const getFormValue = (rootState: RootState, form: string, field: string) 
 };
 
 export const isFormFieldValueEqualTo = (rootState: RootState, form: string, field: string, value: any) => {
-  const formValue = getFormValue(rootState, form, field);
-  return isImmutable(formValue) ? formValue.equals(value) : formValue === value;
+  const formValues = rootState.get("tutorial").get("formValues");
+  if (!formValues) {
+    return false;
+  }
+
+  return Array.isArray(formValues[field]) ? formValues[field][0] === value[0] : formValues[field] === value;
 };
 
 export const isFormFieldMeet = (rootState: RootState, form: string, field: string, cb: (value: any) => boolean) => {

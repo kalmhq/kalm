@@ -44,6 +44,7 @@
     "enzyme-adapter-react-16": "^1.15.2",
     "flowpoints": "git+https://github.com/iAladdin/flowpoints.js.git#23d517320c12eb7077ba8b5d8fdda3bfc1eeabd4",
     "formik": "^2.1.5",
+    "formik-material-ui": "^3.0.0-alpha.0",
     "hoist-non-react-statics": "^3.3.2",
     "immutable": "^4.0.0-rc.12",
     "material-table": "^1.57.2",

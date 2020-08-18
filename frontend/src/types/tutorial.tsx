@@ -11,6 +11,8 @@ export const RESET_TUTORIAL_ACTION = "RESET_TUTORIAL_ACTION";
 export const SET_TUTORIAL_STEP_COMPLETION_STATUS = "SET_TUTORIAL_STEP_COMPLETION_STATUS";
 export const SET_TUTORIAL_HIGHLIGHT_STATUS = "SET_TUTORIAL_HIGHLIGHT_STATUS";
 
+export const SET_TUTORIAL_FORM_VALUES = "SET_TUTORIAL_FORM_VALUES";
+
 export type TutorialFactory = (title: string) => Tutorial;
 
 interface TutorialConfigItem {
@@ -96,9 +98,17 @@ export interface TutorialDrawerAction {
   type: typeof OPEN_TUTORIAL_DRAWER | typeof CLOSE_TUTORIAL_DRAWER;
 }
 
+export interface SetTutorialFormValuesAction {
+  type: typeof SET_TUTORIAL_FORM_VALUES;
+  payload: {
+    values: any;
+  };
+}
+
 export type TutorialActions =
   | SetTutorialAction
   | SetTutorialStepCompletionStatusAction
   | SetTutorialHighlightStatusAction
   | TutorialDrawerAction
-  | ResetTutorialAction;
+  | ResetTutorialAction
+  | SetTutorialFormValuesAction;

@@ -59,7 +59,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
       break;
     }
     case CREATE_CERTIFICATE: {
-      state = state.update("certificates", (x) => addOrUpdateInList(x, action.payload.certificate));
+      state = state.update("certificates", (x) => addOrUpdateInList(x, Immutable.fromJS(action.payload.certificate)));
 
       break;
     }
@@ -86,16 +86,16 @@ const reducer = (state: State = initialState, action: Actions): State => {
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
           if (!isInList(state.get("certificates"), action.payload.data)) {
-            state = state.update("certificates", (x) => addOrUpdateInList(x, action.payload.data));
+            state = state.update("certificates", (x) => addOrUpdateInList(x, Immutable.fromJS(action.payload.data)));
           }
           break;
         }
         case RESOURCE_ACTION_DELETE: {
-          state = state.update("certificates", (x) => removeInList(x, action.payload.data));
+          state = state.update("certificates", (x) => removeInList(x, Immutable.fromJS(action.payload.data)));
           break;
         }
         case RESOURCE_ACTION_UPDATE: {
-          state = state.update("certificates", (x) => addOrUpdateInList(x, action.payload.data));
+          state = state.update("certificates", (x) => addOrUpdateInList(x, Immutable.fromJS(action.payload.data)));
           break;
         }
       }

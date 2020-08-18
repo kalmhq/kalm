@@ -18,7 +18,9 @@ import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import sc from "../../utils/stringConstants";
-import { object, array } from "yup";
+import { object } from "yup";
+import { RequireString } from "forms/validator";
+import { FormMidware } from "tutorials/formMidware";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -52,7 +54,7 @@ const styles = (theme: Theme) =>
 export interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp, OwnProps {}
 
 const schema = object().shape({
-  domains: array().min(1, "Required"),
+  domains: RequireString,
 });
 
 interface State {
@@ -262,6 +264,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
           }
           return (
             <Form className={classes.root} tutorial-anchor-id="certificate-form" id="certificate-form">
+              {/* <Tutorial formikProps={values}/> */}
+              <FormMidware values={values} />
               <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
               <KPanel
                 content={
