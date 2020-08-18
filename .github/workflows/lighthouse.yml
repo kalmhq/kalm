@@ -36,16 +36,18 @@ jobs:
           npm run build
       - name: run Lighthouse CI
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libappindicator1 fonts-liberation
-          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo dpkg -i google-chrome*.deb
+          # sudo apt-get update
+          # sudo apt-get install -y libappindicator1 fonts-liberation
+          # wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          # sudo dpkg -i google-chrome*.deb
           npm install -g @lhci/cli@0.4.x
           npm install -g serve
           serve -s build -p 3000 &
           pid=$!
           echo ${{secrets.LHCI_TOKEN}}
-          lhci collect --settings.chromeFlags="--headless" --settings.extraHeaders="{\"authorization\":\"${{secrets.KALM_AUTH_HEADER}}\",\"cookie\":\"${{secrets.KALM_AUTH_COOKIES_TOKEN}}\"}"
-          lhci collect --settings.extraHeaders="{\"authorization\":\"${{secrets.KALM_AUTH_HEADER}}\",\"cookie\":\"${{secrets.KALM_AUTH_COOKIES_TOKEN}}\"}" --settings.chromeFlags="--no-sandbox" --settings.emulatedFormFactor="desktop"
+          lhci collect --settings.chromeFlags="--headless" 
+          # --settings.extraHeaders="{\"authorization\":\"${{secrets.KALM_AUTH_HEADER}}\",\"cookie\":\"${{secrets.KALM_AUTH_COOKIES_TOKEN}}\"}"
+          lhci collect --settings.chromeFlags="--no-sandbox" --settings.emulatedFormFactor="desktop"
+          # --settings.extraHeaders="{\"authorization\":\"${{secrets.KALM_AUTH_HEADER}}\",\"cookie\":\"${{secrets.KALM_AUTH_COOKIES_TOKEN}}\"}" --settings.chromeFlags="--no-sandbox" --settings.emulatedFormFactor="desktop"
           lhci upload --token ${{secrets.LHCI_TOKEN}}
           kill $pid
