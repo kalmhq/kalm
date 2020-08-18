@@ -253,7 +253,7 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 
   private renderKRTable() {
-    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+    return <KRTable title="Disks" columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
   }
 
   private renderEmpty() {

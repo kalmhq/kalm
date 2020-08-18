@@ -8,6 +8,9 @@ import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
 import React, { useCallback } from "react";
 import { usePagination, useTable, useGlobalFilter, useAsyncDebounce } from "react-table";
+import { TextField, Grid, Box } from "@material-ui/core";
+import { FilterListIcon } from "./Icon";
+import { Body } from "./Label";
 
 interface RowData {
   [key: string]: any;
@@ -16,9 +19,11 @@ interface RowData {
 const DefaultPageSize = 20;
 
 export const KRTable = ({
+  title,
   columns,
   data,
 }: {
+  title?: string;
   columns: { Header: any; accessor: string; Cell?: any }[];
   data: any[];
 }) => {
@@ -78,11 +83,22 @@ export const KRTable = ({
 
   return (
     <TableContainer component={Paper} variant="outlined" square>
-      <GlobalFilter
-        preGlobalFilteredRows={preGlobalFilteredRows}
-        globalFilter={globalFilter}
-        setGlobalFilter={setGlobalFilter}
-      />
+      <Grid container spacing={2}>
+        <Grid item md={9}>
+          <Body>
+            <Box display="flex" alignItems="center" padding="8px 16px">
+              {title || ""}
+            </Box>
+          </Body>
+        </Grid>
+        <Grid item md={3}>
+          <GlobalFilter
+            preGlobalFilteredRows={preGlobalFilteredRows}
+            globalFilter={globalFilter}
+            setGlobalFilter={setGlobalFilter}
+          />
+        </Grid>
+      </Grid>
       <MuiTable {...getTableProps()}>
         <TableHead>
           {headerGroups.map((headerGroup) => (
@@ -130,27 +146,23 @@ export const KRTable = ({
 
 // https://codesandbox.io/s/github/tannerlinsley/react-table/tree/master/examples/filtering?file=/src/App.js
 const GlobalFilter = ({ preGlobalFilteredRows, globalFilter, setGlobalFilter }: any) => {
-  const count = preGlobalFilteredRows.length;
   const [value, setValue] = React.useState(globalFilter);
   const onChange = useAsyncDebounce((value) => {
     setGlobalFilter(value || undefined);
   }, 200);
 
   return (
-    <span>
-      Search:{" "}
-      <input
+    <Box display="flex" alignItems="center" justifyContent="flex-end" padding="8px 16px">
+      <TextField
+        label=""
         value={value || ""}
         onChange={(e) => {
           setValue(e.target.value);
           onChange(e.target.value);
         }}
-        placeholder={`${count} records...`}
-        style={{
-          fontSize: "1.1rem",
-          border: "0",
-        }}
+        placeholder={`Filter`}
       />
-    </span>
+      <FilterListIcon />
+    </Box>
   );
 };
