@@ -192,9 +192,19 @@ class ApplicationListRaw extends React.PureComponent<Props> {
 
   private renderExternalAccesses = (applicationDetails: RowData) => {
     const { httpRoutes, activeNamespaceName } = this.props;
-
-    const applicationRoutes = httpRoutes.filter((x) => x.get("namespace") === activeNamespaceName);
-
+    console.log(applicationDetails.get("name"), httpRoutes);
+    const applicationRoutes = httpRoutes.filter((x) => {
+      let isCurrent = false;
+      x.get("destinations").map((target) => {
+        const hostInfos = target.get("host").split(".");
+        if (hostInfos[1].startsWith(applicationDetails.get("name"))) {
+          isCurrent = true;
+        }
+        return target;
+      });
+      return isCurrent;
+    });
+    console.log(applicationRoutes);
     if (applicationRoutes && applicationRoutes.size > 0) {
       return (
         <PopupState variant="popover" popupId={applicationDetails.get("name")}>

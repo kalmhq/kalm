@@ -8239,7 +8239,7 @@ export default class MockStore {
           methods: ["GET", "POST"],
           schemes: ["http"],
           stripPath: true,
-          destinations: [{ host: "productpage", weight: 1 }],
+          destinations: [{ host: "productpage.kalm-bookinfo.svc.cluster.local:3000", weight: 1 }],
           name: "bookinfo",
           namespace: "kalm-bookinfo",
         },
