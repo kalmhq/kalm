@@ -36,6 +36,7 @@ jobs:
           npm run build
       - name: run Lighthouse CI
         run: |
+          sudo apt-get update
           sudo apt-get install chromium
           npm install -g @lhci/cli@0.4.x
           npm install -g serve
