@@ -10,7 +10,6 @@ import {
   TableHead,
   TableRow,
   Theme,
-  Typography,
   withStyles,
   WithStyles,
 } from "@material-ui/core";
@@ -22,11 +21,16 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { HttpRoute } from "types/route";
 import { CopyAsCurl } from "widgets/CopyAsCurl";
-import { OpenInBrowser } from "widgets/OpenInBrowser";
+import { getRouteUrl } from "widgets/OpenInBrowser";
 import { Targets } from "widgets/Targets";
 import { CenterTypography } from "widgets/Label";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import DomainStatus from "widgets/DomainStatus";
+import { KMLink } from "widgets/Link";
+import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
+import { blinkTopProgressAction } from "actions/settings";
+import { EditIcon } from "widgets/Icon";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -34,7 +38,9 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  return {};
+  return {
+    clusterInfo: state.get("cluster").get("info"),
+  };
 };
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
@@ -51,6 +57,7 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
   }
 
   private renderRouteItem = (route: HttpRoute, index: number) => {
+    const { clusterInfo } = this.props;
     const scheme = route.get("schemes").size > 1 ? "http(s)" : route.get("schemes").get(0);
     const hosts = route.get("hosts");
     const paths = route.get("paths");
@@ -61,12 +68,19 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
         </TableCell>
         <TableCell>{scheme + "://"}</TableCell>
         <TableCell>
-          {hosts.map((x) => (
-            <FlexRowItemCenterBox key={x}>
-              <DomainStatus mr={1} domain={x} />
-              <Typography>{x}</Typography>
-            </FlexRowItemCenterBox>
-          ))}
+          {hosts.map((h) => {
+            const url = getRouteUrl(route, clusterInfo, h);
+            return (
+              <FlexRowItemCenterBox key={h}>
+                <DomainStatus mr={1} domain={h} />
+                <ItemWithHoverIcon icon={<CopyAsCurl route={route} host={h} showIconButton />}>
+                  <KMLink href={url} target="_blank" rel="noopener noreferrer">
+                    {h}
+                  </KMLink>
+                </ItemWithHoverIcon>
+              </FlexRowItemCenterBox>
+            );
+          })}
         </TableCell>
         <TableCell>
           {paths.map((x) => (
@@ -77,8 +91,15 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
           <Targets destinations={route.get("destinations")} />
         </TableCell>
         <TableCell>
-          <OpenInBrowser route={route} />
-          <CopyAsCurl route={route} />
+          <IconLinkWithToolTip
+            onClick={() => {
+              blinkTopProgressAction();
+            }}
+            tooltipTitle="Edit"
+            to={`/routes/${route.get("name")}/edit`}
+          >
+            <EditIcon />
+          </IconLinkWithToolTip>
         </TableCell>
       </TableRow>
     );
