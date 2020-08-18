@@ -24,6 +24,7 @@ const mapStateToProps = (state: RootState) => {
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   route: HttpRoute;
   showIconButton?: boolean;
+  host?: string;
 }
 
 class CopyAsCurlRaw extends React.PureComponent<Props> {
@@ -49,15 +50,15 @@ class CopyAsCurlRaw extends React.PureComponent<Props> {
   };
 
   private copyAsCurl = () => {
-    const { dispatch, route } = this.props;
+    const { dispatch, route, host } = this.props;
 
     const scheme = route.get("schemes").first("http");
-    const host = route.get("hosts").first("");
+    const hostValue = host ?? route.get("hosts").first("");
 
     const path = route.get("paths").first("/");
     const method = route.get("methods").first("GET");
 
-    copy(this.buildCurlCommand(scheme, host, path, method));
+    copy(this.buildCurlCommand(scheme, hostValue, path, method));
     dispatch(setSuccessNotificationAction("Copied successful!"));
   };
 
@@ -65,8 +66,13 @@ class CopyAsCurlRaw extends React.PureComponent<Props> {
     const { showIconButton } = this.props;
     if (showIconButton) {
       return (
-        <IconButtonWithTooltip tooltipTitle="Copy As Curl" onClick={this.copyAsCurl}>
-          <CopyIcon />
+        <IconButtonWithTooltip
+          size={"small"}
+          tooltipTitle="Copy As Curl"
+          onClick={this.copyAsCurl}
+          style={{ marginLeft: 8 }}
+        >
+          <CopyIcon fontSize={"small"} />
         </IconButtonWithTooltip>
       );
     }
