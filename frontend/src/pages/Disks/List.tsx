@@ -189,15 +189,42 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private getKRTableColumns() {
+    // for data filter:
+    // simple string field, should render in data.
+    // react Element field, should render in columns.
     return [
-      { Header: "Volume Name", accessor: "name" },
-      { Header: "Mounted", accessor: "isInUse" },
-      { Header: "App", accessor: "componentNamespace" },
-      { Header: "Component", accessor: "componentName" },
-      { Header: "Size", accessor: "capacity" },
+      {
+        Header: "Volume Name",
+        accessor: "name",
+      },
+      {
+        Header: "Mounted",
+        accessor: "isInUse",
+      },
+      {
+        Header: "App",
+        accessor: "componentNamespace",
+        Cell: ({ value }: any) => {
+          return this.renderApplication(value);
+        },
+      },
+      {
+        Header: "Component",
+        accessor: "componentName",
+        Cell: ({ value }: any) => {
+          return this.renderComponent(value);
+        },
+      },
+      {
+        Header: "Size",
+        accessor: "capacity",
+      },
       {
         Header: "Actions",
         accessor: "actions",
+        Cell: ({ value }: any) => {
+          return this.renderActions(value);
+        },
       },
     ];
   }
@@ -209,13 +236,16 @@ export class VolumesRaw extends React.Component<Props, States> {
     persistentVolumes &&
       persistentVolumes.forEach((persistentVolume, index) => {
         const rowData = persistentVolume as RowData;
+        // for data filter:
+        // simple string field, should render in data.
+        // react Element field, should render in columns.
         data.push({
           name: this.renderName(rowData),
           isInUse: this.renderUse(rowData),
-          componentNamespace: this.renderApplication(rowData),
-          componentName: this.renderComponent(rowData),
+          componentNamespace: rowData,
+          componentName: rowData,
           capacity: this.renderCapacity(rowData),
-          actions: this.renderActions(rowData),
+          actions: rowData,
         });
       });
 
