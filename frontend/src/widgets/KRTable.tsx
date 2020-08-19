@@ -85,11 +85,9 @@ export const KRTable = ({
     <TableContainer component={Paper} variant="outlined" square>
       <Grid container spacing={2}>
         <Grid item md={9}>
-          <Body>
-            <Box display="flex" alignItems="center" padding="8px 16px">
-              {title || ""}
-            </Box>
-          </Body>
+          <Box display="flex" alignItems="center" padding="8px 16px">
+            <Body>{title || ""}</Body>
+          </Box>
         </Grid>
         <Grid item md={3}>
           <GlobalFilter
