@@ -48,10 +48,6 @@ interface State {
   deletingCertificate: Certificate | null;
 }
 
-interface RowData extends Certificate {
-  index: number;
-}
-
 class CertificateListPageRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -61,14 +57,14 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  private renderName = (rowData: RowData) => {
-    return <Typography variant={"subtitle2"}>{rowData.get("name")}</Typography>;
+  private renderName = (name: string) => {
+    return <Typography variant={"subtitle2"}>{name}</Typography>;
   };
 
-  private renderDomains = (rowData: RowData) => {
+  private renderDomains = (cert: Certificate) => {
     return (
       <>
-        {rowData.get("domains")?.map((domain) => {
+        {cert.get("domains")?.map((domain) => {
           return (
             <FlexRowItemCenterBox key={domain}>
               <DomainStatus mr={1} domain={domain} />
@@ -80,25 +76,25 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderMoreActions = (rowData: RowData) => {
+  private renderMoreActions = (cert: Certificate) => {
     return (
       <>
-        {rowData.get("isSelfManaged") && (
-          <IconLinkWithToolTip tooltipTitle="Edit" aria-label="edit" to={`/certificates/${rowData.get("name")}/edit`}>
+        {cert.get("isSelfManaged") && (
+          <IconLinkWithToolTip tooltipTitle="Edit" aria-label="edit" to={`/certificates/${cert.get("name")}/edit`}>
             <EditIcon />
           </IconLinkWithToolTip>
         )}
         <DeleteButtonWithConfirmPopover
           popupId="delete-certificate-popup"
           popupTitle="DELETE CERTIFICATE?"
-          confirmedAction={() => this.confirmDelete(rowData)}
+          confirmedAction={() => this.confirmDelete(cert)}
         />
         {/* <IconButtonWithTooltip
           tooltipTitle="Delete"
           aria-label="delete"
           onClick={() => {
             blinkTopProgressAction();
-            this.showDeleteConfirmDialog(rowData);
+            this.showDeleteConfirmDialog(cert);
           }}
         >
           <DeleteIcon />
@@ -134,10 +130,10 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     });
   };
 
-  private confirmDelete = async (rowData: RowData) => {
+  private confirmDelete = async (cert: Certificate) => {
     const { dispatch } = this.props;
     try {
-      const certName = rowData.get("name");
+      const certName = cert.get("name");
       await dispatch(deleteCertificateAction(certName));
       await dispatch(setSuccessNotificationAction(`Successfully deleted certificate '${certName}'`));
     } catch {
@@ -145,8 +141,8 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderStatus = (rowData: RowData) => {
-    const ready = rowData.get("ready");
+  private renderStatus = (cert: Certificate) => {
+    const ready = cert.get("ready");
 
     if (ready === "True") {
       // why the ready field is a string value ?????
@@ -158,13 +154,13 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
           <FlexRowItemCenterBox>Normal</FlexRowItemCenterBox>
         </FlexRowItemCenterBox>
       );
-    } else if (!!rowData.get("reason")) {
+    } else if (!!cert.get("reason")) {
       return (
         <FlexRowItemCenterBox>
           <FlexRowItemCenterBox mr={1}>
             <PendingBadge />
           </FlexRowItemCenterBox>
-          <FlexRowItemCenterBox>{rowData.get("reason")}</FlexRowItemCenterBox>
+          <FlexRowItemCenterBox>{cert.get("reason")}</FlexRowItemCenterBox>
         </FlexRowItemCenterBox>
       );
     } else {
@@ -172,16 +168,16 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderType = (rowData: RowData) => {
-    return rowData.get("isSelfManaged") ? "Externally Uploaded" : "Let's Encrypt";
+  private renderType = (cert: Certificate) => {
+    return cert.get("isSelfManaged") ? "Externally Uploaded" : "Let's Encrypt";
   };
 
-  private renderIsSignedByTrustedCA = (rowData: RowData) => {
-    return rowData.get("isSignedByTrustedCA") ? "Yes" : "No";
+  private renderIsSignedByTrustedCA = (cert: Certificate) => {
+    return cert.get("isSignedByTrustedCA") ? "Yes" : "No";
   };
 
-  private renderExpireTimestamp = (rowData: RowData) => {
-    return rowData.get("expireTimestamp") ? formatDate(new Date(rowData.get("expireTimestamp") * 1000)) : "-";
+  private renderExpireTimestamp = (cert: Certificate) => {
+    return cert.get("expireTimestamp") ? formatDate(new Date(cert.get("expireTimestamp") * 1000)) : "-";
   };
 
   private getKRTableColumns() {
@@ -189,15 +185,23 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       {
         Header: "Cert Name",
         accessor: "name",
+        Cell: ({ value }: { value: string }) => {
+          return this.renderName(value);
+        },
       },
       {
         Header: "Domains",
         accessor: "domains",
-        sorting: false,
+        Cell: ({ value }: { value: Certificate }) => {
+          return this.renderDomains(value);
+        },
       },
       {
         Header: "Status",
         accessor: "status",
+        Cell: ({ value }: { value: Certificate }) => {
+          return this.renderStatus(value);
+        },
       },
       {
         Header: "Type",
@@ -214,6 +218,9 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       {
         Header: "Actions",
         accessor: "actions",
+        Cell: ({ value }: { value: Certificate }) => {
+          return this.renderMoreActions(value);
+        },
       },
     ];
   }
@@ -222,25 +229,28 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     const { certificates } = this.props;
     const data: any[] = [];
 
-    certificates &&
-      certificates.forEach((certificate, index) => {
-        const rowData = certificate as RowData;
-        data.push({
-          name: this.renderName(rowData),
-          domains: this.renderDomains(rowData),
-          status: this.renderStatus(rowData),
-          isSelfManaged: this.renderType(rowData),
-          isSignedByTrustedCA: this.renderIsSignedByTrustedCA(rowData),
-          expireTimestamp: this.renderExpireTimestamp(rowData),
-          actions: this.renderMoreActions(rowData),
-        });
+    certificates.forEach((cert, index) => {
+      // for data filter:
+      // simple string field, should render in data.
+      // react Element field, should render in columns.
+      data.push({
+        name: cert.get("name"),
+        domains: cert,
+        status: cert,
+        isSelfManaged: this.renderType(cert),
+        isSignedByTrustedCA: this.renderIsSignedByTrustedCA(cert),
+        expireTimestamp: this.renderExpireTimestamp(cert),
+        actions: cert,
       });
+    });
 
     return data;
   }
 
   private renderKRTable() {
-    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+    return (
+      <KRTable showTitle={true} title="Certificates" columns={this.getKRTableColumns()} data={this.getKRTableData()} />
+    );
   }
 
   private renderEmpty() {

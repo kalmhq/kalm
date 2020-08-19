@@ -381,7 +381,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   }
 
   private renderKRTable() {
-    return <KRTable title="Apps" columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+    return <KRTable showTitle={true} title="Apps" columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
   }
 
   private renderGrid = () => {

@@ -19,10 +19,12 @@ interface RowData {
 const DefaultPageSize = 20;
 
 export const KRTable = ({
+  showTitle,
   title,
   columns,
   data,
 }: {
+  showTitle?: boolean;
   title?: string;
   columns: { Header: any; accessor: string; Cell?: any }[];
   data: any[];
@@ -83,20 +85,22 @@ export const KRTable = ({
 
   return (
     <TableContainer component={Paper} variant="outlined" square>
-      <Grid container spacing={2}>
-        <Grid item md={9}>
-          <Box display="flex" alignItems="center" padding="8px 16px">
-            <Body>{title || ""}</Body>
-          </Box>
+      {showTitle ? (
+        <Grid container spacing={2}>
+          <Grid item md={9}>
+            <Box display="flex" alignItems="center" padding="8px 16px">
+              <Body>{title || ""}</Body>
+            </Box>
+          </Grid>
+          <Grid item md={3}>
+            <GlobalFilter
+              preGlobalFilteredRows={preGlobalFilteredRows}
+              globalFilter={globalFilter}
+              setGlobalFilter={setGlobalFilter}
+            />
+          </Grid>
         </Grid>
-        <Grid item md={3}>
-          <GlobalFilter
-            preGlobalFilteredRows={preGlobalFilteredRows}
-            globalFilter={globalFilter}
-            setGlobalFilter={setGlobalFilter}
-          />
-        </Grid>
-      </Grid>
+      ) : null}
       <MuiTable {...getTableProps()}>
         <TableHead>
           {headerGroups.map((headerGroup) => (
