@@ -108,16 +108,12 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     if (row.get("schemes").find((x) => x === "http")) {
       return <CheckIcon />;
     }
-
-    return "-";
   }
 
   private renderSupportHttps(row: HttpRoute) {
     if (row.get("schemes").find((x) => x === "https")) {
       return <CheckIcon />;
     }
-
-    return "-";
   }
 
   private renderTargets = (row: HttpRoute) => {
@@ -220,51 +216,30 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
       {
         Header: "Domain",
         accessor: "host",
-        Cell: ({ value }: { value: HttpRoute }) => {
-          return this.renderHosts(value);
-        },
       },
       {
         Header: "Urls",
         accessor: "urls",
-        Cell: ({ value }: { value: HttpRoute }) => {
-          return this.renderUrls(value);
-        },
       },
       {
         Header: "Http",
         accessor: "http",
-        Cell: ({ value }: { value: HttpRoute }) => {
-          return this.renderSupportHttp(value);
-        },
       },
       {
         Header: "Https",
         accessor: "https",
-        Cell: ({ value }: { value: HttpRoute }) => {
-          return this.renderSupportHttps(value);
-        },
       },
       {
         Header: "Methods",
         accessor: "methods",
-        Cell: ({ value }: { value: HttpRoute }) => {
-          return this.renderMethods(value);
-        },
       },
       {
         Header: "Targets",
         accessor: "targets",
-        Cell: ({ value }: { value: HttpRoute }) => {
-          return this.renderTargets(value);
-        },
       },
       {
         Header: "Actions",
         accessor: "actions",
-        Cell: ({ value }: { value: HttpRoute }) => {
-          return this.renderActions(value);
-        },
       },
     ];
   }
@@ -276,13 +251,13 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     httpRoutes &&
       httpRoutes.forEach((httpRoute, index) => {
         data.push({
-          host: httpRoute,
-          urls: httpRoute,
-          http: httpRoute,
-          https: httpRoute,
-          methods: httpRoute,
-          targets: httpRoute,
-          actions: httpRoute,
+          host: this.renderHosts(httpRoute),
+          urls: this.renderUrls(httpRoute),
+          http: this.renderSupportHttp(httpRoute),
+          https: this.renderSupportHttps(httpRoute),
+          methods: this.renderMethods(httpRoute),
+          targets: this.renderTargets(httpRoute),
+          actions: this.renderActions(httpRoute),
         });
       });
 
