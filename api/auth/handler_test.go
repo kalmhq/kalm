@@ -29,7 +29,7 @@ func Test_GetAuthInfo(t *testing.T) {
 	bodyWithToken := bytes.NewBufferString("{\n\t\"username\":\"kevin\",\n\t\"password\":\"password\",\n\t\"token\":\"token\",\n\t\"kubeconfig\":\"kubeconfig\"\n}")
 	req1, _ := http.NewRequest("GET", "/url", bodyWithToken)
 	req1.Header = map[string][]string{
-		echo.HeaderContentType: []string{echo.MIMEApplicationJSON},
+		echo.HeaderContentType:   []string{echo.MIMEApplicationJSON},
 		echo.HeaderAuthorization: []string{"Bearer hToken"},
 	}
 	ctx1 := echoServer.NewContext(req1, nil)

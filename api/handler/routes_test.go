@@ -21,10 +21,10 @@ func (suite *RoutesHandlerTestSuite) SetupSuite() {
 func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 	route := resources.HttpRoute{
 		HttpRouteSpec: &v1alpha1.HttpRouteSpec{
-			Hosts: []string{"test-routes.test"},
-			Paths: []string{"/"},
-			Methods: []v1alpha1.HttpRouteMethod{"GET"},
-			Schemes: []v1alpha1.HttpRouteScheme{"https"},
+			Hosts:     []string{"test-routes.test"},
+			Paths:     []string{"/"},
+			Methods:   []v1alpha1.HttpRouteMethod{"GET"},
+			Schemes:   []v1alpha1.HttpRouteScheme{"https"},
 			StripPath: false,
 			Destinations: []v1alpha1.HttpRouteDestination{
 				{
@@ -33,7 +33,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 				},
 			},
 		},
-		Name: "test-routes",
+		Name:      "test-routes",
 		Namespace: "test-routes",
 	}
 	req, err := json.Marshal(route)
@@ -49,7 +49,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 	rec.BodyAsJSON(&routesRes)
 	suite.NotNil(rec)
 	suite.EqualValues(1, len(routesRes))
-	suite.EqualValues("test-routes",routesRes[0].Name)
+	suite.EqualValues("test-routes", routesRes[0].Name)
 
 	// list all routes
 	var allRoutesRes []*resources.HttpRoute
@@ -57,15 +57,15 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 	rec.BodyAsJSON(&allRoutesRes)
 	suite.NotNil(rec)
 	suite.EqualValues(1, len(allRoutesRes))
-	suite.EqualValues("test-routes",allRoutesRes[0].Name)
+	suite.EqualValues("test-routes", allRoutesRes[0].Name)
 
 	// update a route
 	routeForUpdate := resources.HttpRoute{
 		HttpRouteSpec: &v1alpha1.HttpRouteSpec{
-			Hosts: []string{"test-routes2.test"},
-			Paths: []string{"/"},
-			Methods: []v1alpha1.HttpRouteMethod{"GET"},
-			Schemes: []v1alpha1.HttpRouteScheme{"https"},
+			Hosts:     []string{"test-routes2.test"},
+			Paths:     []string{"/"},
+			Methods:   []v1alpha1.HttpRouteMethod{"GET"},
+			Schemes:   []v1alpha1.HttpRouteScheme{"https"},
 			StripPath: false,
 			Destinations: []v1alpha1.HttpRouteDestination{
 				{
@@ -74,7 +74,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 				},
 			},
 		},
-		Name: "test-routes",
+		Name:      "test-routes",
 		Namespace: "test-routes",
 	}
 	reqForUpdate, err := json.Marshal(routeForUpdate)
@@ -89,7 +89,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 	rec.BodyAsJSON(&routesResForUpdate)
 	suite.NotNil(rec)
 	suite.EqualValues(1, len(routesResForUpdate))
-	suite.EqualValues("test-routes2.test",routesResForUpdate[0].HttpRouteSpec.Hosts[0])
+	suite.EqualValues("test-routes2.test", routesResForUpdate[0].HttpRouteSpec.Hosts[0])
 
 	// delete a route
 	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/httproutes/test-routes/test-routes", "")

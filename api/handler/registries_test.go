@@ -20,11 +20,11 @@ func (suite *RegistriesHandlerTestSuite) SetupSuite() {
 
 func (suite *RegistriesHandlerTestSuite) TestRegistriesHandler() {
 	// create a registry
-  registry := resources.DockerRegistry{
-  	DockerRegistrySpec: &v1alpha1.DockerRegistrySpec{
-  		Host: "docker.registry.host",
+	registry := resources.DockerRegistry{
+		DockerRegistrySpec: &v1alpha1.DockerRegistrySpec{
+			Host: "docker.registry.host",
 		},
-		Name: "test-registry",
+		Name:     "test-registry",
 		Username: "admin",
 		Password: "password",
 	}
@@ -56,7 +56,7 @@ func (suite *RegistriesHandlerTestSuite) TestRegistriesHandler() {
 		DockerRegistrySpec: &v1alpha1.DockerRegistrySpec{
 			Host: "docker.registry.host",
 		},
-		Name: "test-registry",
+		Name:     "test-registry",
 		Username: "admin2",
 		Password: "password",
 	}

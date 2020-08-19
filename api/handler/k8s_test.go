@@ -50,6 +50,6 @@ func (suite *K8sHandlerTestSuite) TestHandleGetPVs() {
 
 }
 
-func TestK8sHandlerTestSuite (t *testing.T){
+func TestK8sHandlerTestSuite(t *testing.T) {
 	suite.Run(t, new(K8sHandlerTestSuite))
 }

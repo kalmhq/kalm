@@ -21,7 +21,7 @@ func (suite *WebhookHandlerTestSuite) SetupSuite() {
 }
 
 func (suite *WebhookHandlerTestSuite) TestWebhookHandler() {
-  // create component
+	// create component
 	component := v1alpha1.Component{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      "test-webhook",
@@ -42,7 +42,7 @@ func (suite *WebhookHandlerTestSuite) TestWebhookHandler() {
 		},
 		Spec: v1alpha1.DeployKeySpec{
 			Resources: []string{"test-token"},
-			Scope: v1alpha1.DeployKeyTypeCluster,
+			Scope:     v1alpha1.DeployKeyTypeCluster,
 		},
 	}
 	err = suite.Create(&deployKey)
@@ -54,7 +54,7 @@ func (suite *WebhookHandlerTestSuite) TestWebhookHandler() {
 		ComponentName: "test-webhook",
 		ImageTag:      "image-tag",
 	}
-	req,err:=json.Marshal(&deployWebhookCallParams)
+	req, err := json.Marshal(&deployWebhookCallParams)
 	suite.Nil(err)
 	rec := suite.NewRequest(http.MethodPost, "/webhook/components", string(req))
 	suite.EqualValues(200, rec.Code)

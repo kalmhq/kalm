@@ -25,8 +25,8 @@ func (suite *NodesHandlerTestSuite) TestNodesHandler() {
 			Name: "test-node",
 		},
 		Spec: v1.NodeSpec{
-			PodCIDR: "10.56.2.0/24",
-			PodCIDRs: []string{"10.56.2.0/24"},
+			PodCIDR:    "10.56.2.0/24",
+			PodCIDRs:   []string{"10.56.2.0/24"},
 			ProviderID: "test-node-provider-id",
 		},
 	}
@@ -50,6 +50,6 @@ func (suite *NodesHandlerTestSuite) TestNodesHandler() {
 	suite.EqualValues(200, rec.Code)
 }
 
-func TestNodesHandlerTestSuite (t *testing.T){
+func TestNodesHandlerTestSuite(t *testing.T) {
 	suite.Run(t, new(NodesHandlerTestSuite))
 }

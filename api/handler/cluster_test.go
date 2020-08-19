@@ -30,7 +30,7 @@ func (suite *ClusterHandlerTestSuite) TestClusterInfo() {
 	rec.BodyAsJSON(&clusterInfo)
 	suite.NotNil(&clusterInfo)
 
-  var routes []*resources.HttpRoute
+	var routes []*resources.HttpRoute
 	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/httproutes/kalm-system", `{}`)
 	rec.BodyAsJSON(&routes)
 	suite.NotNil(routes)
@@ -49,6 +49,6 @@ func (suite *ClusterHandlerTestSuite) TestClusterInfo() {
 	suite.Equal(0, len(routes))
 }
 
-func TestClusterHandler(t *testing.T){
+func TestClusterHandler(t *testing.T) {
 	suite.Run(t, new(ClusterHandlerTestSuite))
 }

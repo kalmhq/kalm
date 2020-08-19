@@ -46,6 +46,6 @@ func (suite *PodsHandlerTestSuite) TestPodsHandler() {
 	suite.Equal(200, rec.Code)
 }
 
-func TestPodsHandlerTestSuite (t *testing.T){
+func TestPodsHandlerTestSuite(t *testing.T) {
 	suite.Run(t, new(PodsHandlerTestSuite))
 }

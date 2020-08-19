@@ -34,7 +34,7 @@ func (suite *StorageclassesHandlerTestSuite) TestStorageclassesHandler() {
 			},
 			Name: "test-storage-class",
 			Annotations: map[string]string{
-				"kalm-annotation-sc-doc-link": "https://cloud.google.com/compute/docs/disks#pdspecs",
+				"kalm-annotation-sc-doc-link":   "https://cloud.google.com/compute/docs/disks#pdspecs",
 				"kalm-annotation-sc-price-link": "https://cloud.google.com/compute/disks-image-pricing#disk",
 			},
 		},

@@ -30,8 +30,8 @@ func (suite *ServicesHandlerTestSuite) TestServicesHandler() {
 		Spec: v1.ServiceSpec{
 			Ports: []v1.ServicePort{
 				{
-					Port:       80,
-					Protocol:   v1.ProtocolTCP,
+					Port:     80,
+					Protocol: v1.ProtocolTCP,
 				},
 			},
 		},

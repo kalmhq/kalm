@@ -13,4 +13,3 @@ func (h *ApiHandler) handleGetPVs(c echo.Context) error {
 	}
 	return c.JSON(200, pvList)
 }
-
