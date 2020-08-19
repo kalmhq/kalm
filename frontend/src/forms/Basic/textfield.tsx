@@ -1,9 +1,11 @@
 import { InputAdornment, OutlinedInputProps, useTheme } from "@material-ui/core";
-import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
+import TextField, { FilledTextFieldProps, TextFieldProps } from "@material-ui/core/TextField";
 import React, { ChangeEvent } from "react";
 import { WrappedFieldProps } from "redux-form";
 import { KalmConsoleIcon } from "widgets/Icon";
 import { withDebounceField, withDebounceProps, inputOnChangeWithDebounce } from "./debounce";
+import { TextField as FormikTextField } from "formik-material-ui";
+import { FieldProps } from "formik";
 
 interface Props {
   endAdornment?: React.ReactNode;
@@ -70,6 +72,23 @@ export class KRenderTextField extends React.PureComponent<withDebounceProps & Pr
 }
 
 export const KRenderDebounceTextField = withDebounceField(KRenderTextField);
+
+export const KRenderFormikTextField = (props: TextFieldProps & FieldProps) => {
+  return (
+    <FormikTextField
+      InputLabelProps={{
+        shrink: true,
+      }}
+      margin="dense"
+      fullWidth
+      variant="outlined"
+      inputProps={{
+        required: false, // bypass html5 required feature
+      }}
+      {...props}
+    />
+  );
+};
 
 export const KRenderTextareaField = ({
   input,

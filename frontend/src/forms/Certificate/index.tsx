@@ -21,8 +21,8 @@ import sc from "../../utils/stringConstants";
 import { object } from "yup";
 import { RequireString } from "forms/validator";
 import { FormMidware } from "tutorials/formMidware";
-import { TextField as FormikTextField } from "formik-material-ui";
 import { CERTIFICATE_FORM_ID } from "forms/formIDs";
+import { KRenderFormikTextField } from "forms/Basic/textfield";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -297,22 +297,13 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                       )}
                       <Grid item md={12}>
                         <Field
-                          component={FormikTextField}
+                          component={KRenderFormikTextField}
                           label="Certificate name"
                           name="name"
-                          InputLabelProps={{
-                            shrink: true,
-                          }}
                           disabled={isEdit}
                           placeholder="Please type a certificate name"
                           id="certificate-name"
-                          margin="dense"
-                          fullWidth
                           helperText={!!errors.name && touched.name ? errors.name : " "}
-                          variant="outlined"
-                          inputProps={{
-                            required: false, // bypass html5 required feature
-                          }}
                         />
                       </Grid>
                       <Grid item md={12}>
