@@ -6,7 +6,6 @@ import { setErrorNotificationAction, setSuccessNotificationAction } from "action
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import Immutable from "immutable";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { RouteWidgets } from "pages/Route/Widget";
@@ -16,7 +15,6 @@ import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { primaryColor } from "theme/theme";
 import { ApplicationDetails } from "types/application";
-import { HttpRoute } from "types/route";
 import { getApplicationCreatedAtString } from "utils/application";
 import { pluralize } from "utils/string";
 import sc from "utils/stringConstants";
@@ -190,24 +188,29 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     );
   };
 
-  private renderExternalAccesses = (applicationDetails: RowData) => {
-    const { httpRoutes, activeNamespaceName } = this.props;
-    console.log(applicationDetails.get("name"), httpRoutes);
+  private getRoutes = (applicationName: string) => {
+    const { httpRoutes } = this.props;
     const applicationRoutes = httpRoutes.filter((x) => {
       let isCurrent = false;
       x.get("destinations").map((target) => {
         const hostInfos = target.get("host").split(".");
-        if (hostInfos[1].startsWith(applicationDetails.get("name"))) {
+        if (hostInfos[1].startsWith(applicationName)) {
           isCurrent = true;
         }
         return target;
       });
       return isCurrent;
     });
-    console.log(applicationRoutes);
+    return applicationRoutes;
+  };
+
+  private renderExternalAccesses = (applicationDetails: RowData) => {
+    const applicationName = applicationDetails.get("name");
+    const applicationRoutes = this.getRoutes(applicationName);
+
     if (applicationRoutes && applicationRoutes.size > 0) {
       return (
-        <PopupState variant="popover" popupId={applicationDetails.get("name")}>
+        <PopupState variant="popover" popupId={applicationName}>
           {(popupState) => (
             <>
               <KMLink component="button" variant="body2" color={"inherit"} {...bindTrigger(popupState)}>
@@ -226,7 +229,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
                 }}
               >
                 <Box p={2}>
-                  <RouteWidgets routes={applicationRoutes} activeNamespaceName={activeNamespaceName} />
+                  <RouteWidgets routes={applicationRoutes} />
                 </Box>
               </Popover>
             </>
@@ -373,18 +376,17 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   }
 
   private renderGrid = () => {
-    const { applications, componentsMap, httpRoutes, activeNamespaceName } = this.props;
-    const applicationRoutes: Immutable.List<HttpRoute> = httpRoutes.filter(
-      (x) => x.get("namespace") === activeNamespaceName,
-    );
+    const { applications, componentsMap } = this.props;
+
     const GridRow = (app: ApplicationDetails, index: number) => {
+      const applicationName = app.get("name");
+      const applicationRoutes = this.getRoutes(applicationName);
       return (
         <Grid key={index} item sm={6} md={4} lg={3}>
           <ApplicationCard
             application={app}
             componentsMap={componentsMap}
             httpRoutes={applicationRoutes}
-            activeNamespaceName={activeNamespaceName}
             confirmDelete={this.confirmDelete}
           />
         </Grid>

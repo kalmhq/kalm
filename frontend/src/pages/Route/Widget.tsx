@@ -44,7 +44,6 @@ const mapStateToProps = (state: RootState) => {
 };
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
-  activeNamespaceName: string;
   routes: Immutable.List<HttpRoute>;
 }
 
@@ -138,20 +137,6 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
 
 export const RouteWidget = withStyles(styles)(connect(mapStateToProps)(RouteWidgetRaw));
 
-export const RouteWidgets = ({
-  routes,
-  activeNamespaceName,
-}: {
-  routes: Immutable.List<HttpRoute>;
-  activeNamespaceName: string;
-}) => {
-  return (
-    <>
-      {routes.size > 0 ? (
-        <RouteWidget routes={routes} activeNamespaceName={activeNamespaceName} />
-      ) : (
-        <CenterTypography>No Routes</CenterTypography>
-      )}
-    </>
-  );
+export const RouteWidgets = ({ routes }: { routes: Immutable.List<HttpRoute> }) => {
+  return <>{routes.size > 0 ? <RouteWidget routes={routes} /> : <CenterTypography>No Routes</CenterTypography>}</>;
 };
