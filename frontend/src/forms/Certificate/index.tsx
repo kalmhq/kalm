@@ -1,9 +1,12 @@
-import { Box, Button, Chip, Grid, TextField } from "@material-ui/core";
+import { Box, Button, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
-import { Autocomplete } from "@material-ui/lab";
-import { Form, Formik, FormikProps, Field } from "formik";
+import { Field, Form, Formik, FormikProps } from "formik";
+import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KFormikRadioGroupRender } from "forms/Basic/radio";
+import { KRenderFormikTextField } from "forms/Basic/textfield";
 import { FormikUploader } from "forms/Basic/uploader";
+import { CERTIFICATE_FORM_ID } from "forms/formIDs";
+import { RequireString } from "forms/validator";
 // import { KValidatorHostsWithWildcardPrefix, ValidatorRequired } from "forms/validator";
 import Immutable from "immutable";
 import { extractDomainsFromCertificateContent } from "permission/utils";
@@ -11,18 +14,15 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
+import { FormMidware } from "tutorials/formMidware";
 import { TDispatchProp } from "types";
 import { CertificateFormTypeContent, issuerManaged, selfManaged } from "types/certificate";
 import DomainStatus from "widgets/DomainStatus";
 import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
-import sc from "../../utils/stringConstants";
 import { object } from "yup";
-import { RequireString } from "forms/validator";
-import { FormMidware } from "tutorials/formMidware";
-import { CERTIFICATE_FORM_ID } from "forms/formIDs";
-import { KRenderFormikTextField } from "forms/Basic/textfield";
+import sc from "../../utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -258,7 +258,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
         handleReset={console.log}
       >
         {(formikProps) => {
-          const { values, dirty, handleChange, touched, errors, handleBlur, setFieldValue, isSubmitting } = formikProps;
+          const { values, dirty, handleChange, touched, errors, setFieldValue, isSubmitting } = formikProps;
           const icons = Immutable.List(values.domains.map((domain) => <DomainStatus domain={domain} />));
           if (!dirty && values.selfManagedCertContent && values.domains.length <= 0) {
             const domains = extractDomainsFromCertificateContent(values.selfManagedCertContent);
@@ -307,71 +307,37 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                         />
                       </Grid>
                       <Grid item md={12}>
-                        <Autocomplete
+                        <Field
+                          component={KFreeSoloFormikAutoCompleteMultiValues}
                           disabled={values.managedType === selfManaged}
-                          multiple
-                          autoSelect
-                          clearOnEscape
-                          freeSolo
-                          size="small"
-                          options={[]}
+                          name="domains"
+                          icons={icons}
                           id="certificate-domains"
-                          onBlur={handleBlur}
-                          value={values.domains}
-                          onChange={(e, value) => {
-                            setFieldValue("domains", value);
-                          }}
-                          // @ts-ignore
-                          renderTags={(value: string[], getTagProps) => {
-                            return value.map((option: string, index: number) => {
-                              return (
-                                <Chip
-                                  icon={icons ? icons.get(index) : undefined}
-                                  variant="outlined"
-                                  label={option}
-                                  // classes={{ root: clsx({ [classes.error]: errorsIsArray && errorsArray[index] }) }}
-                                  size="small"
-                                  {...getTagProps({ index })}
-                                />
-                              );
-                            });
-                          }}
-                          renderInput={(params) => {
-                            return (
-                              <TextField
-                                {...params}
-                                margin="dense"
-                                variant="outlined"
-                                error={!!touched.domains && !!errors.domains}
-                                label="Domains"
-                                placeholder={
-                                  values.managedType === selfManaged
-                                    ? "Extract domains information when you upload a certificate file"
-                                    : "Please type domains"
-                                }
-                                helperText={
-                                  (!!touched.domains && !!errors.domains && errors.domains) || (
-                                    <Caption color="textSecondary">
-                                      Your cluster ip is{" "}
-                                      <Link
-                                        to="#"
-                                        onClick={() => {
-                                          const isDomainsIncludeIngressIP =
-                                            !!values.domains && !!values.domains.find((domain) => domain === ingressIP);
-                                          if (!isDomainsIncludeIngressIP && values.managedType === issuerManaged) {
-                                            setFieldValue("domains", (values.domains || []).concat(ingressIP));
-                                          }
-                                        }}
-                                      >
-                                        {ingressIP}
-                                      </Link>
-                                      . {sc.ROUTE_HOSTS_INPUT_HELPER}
-                                    </Caption>
-                                  )
-                                }
-                              />
-                            );
-                          }}
+                          placeholder={
+                            values.managedType === selfManaged
+                              ? "Extract domains information when you upload a certificate file"
+                              : "Please type domains"
+                          }
+                          helperText={
+                            (!!touched.domains && !!errors.domains && errors.domains) || (
+                              <Caption color="textSecondary">
+                                Your cluster ip is{" "}
+                                <Link
+                                  to="#"
+                                  onClick={() => {
+                                    const isDomainsIncludeIngressIP =
+                                      !!values.domains && !!values.domains.find((domain) => domain === ingressIP);
+                                    if (!isDomainsIncludeIngressIP && values.managedType === issuerManaged) {
+                                      setFieldValue("domains", (values.domains || []).concat(ingressIP));
+                                    }
+                                  }}
+                                >
+                                  {ingressIP}
+                                </Link>
+                                . {sc.ROUTE_HOSTS_INPUT_HELPER}
+                              </Caption>
+                            )
+                          }
                         />
                       </Grid>
                     </Grid>

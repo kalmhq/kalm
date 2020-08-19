@@ -18,6 +18,7 @@ import {
 import { AutocompleteProps, RenderGroupParams } from "@material-ui/lab/Autocomplete/Autocomplete";
 import { WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
+import { FieldProps } from "formik";
 import Immutable from "immutable";
 import React, { useState } from "react";
 import { BaseFieldProps, WrappedFieldProps } from "redux-form";
@@ -514,6 +515,74 @@ export const KFreeSoloAutoCompleteMultipleSelectStringField = (
       format={KFreeSoloAutoCompleteMultipleSelectFieldFormat}
       parse={KFreeSoloAutoCompleteMultipleSelectFieldParse}
       {...props}
+    />
+  );
+};
+
+export interface KFreeSoloFormikAutoCompleteMultiValuesProps<T>
+  extends FieldProps,
+    UseAutocompleteMultipleProps<T>,
+    Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
+  InputLabelProps?: {};
+  disabled?: boolean;
+  icons?: Immutable.List<any>;
+}
+
+export const KFreeSoloFormikAutoCompleteMultiValues = (props: KFreeSoloFormikAutoCompleteMultiValuesProps<string>) => {
+  const {
+    id,
+    label,
+    options,
+    icons,
+    field: { name },
+    form: { touched, errors, setFieldValue, handleBlur, values },
+    placeholder,
+    helperText,
+  } = props;
+
+  return (
+    <Autocomplete
+      {...props}
+      options={options || []}
+      multiple
+      autoSelect
+      clearOnEscape
+      freeSolo
+      size="small"
+      id={id}
+      onBlur={handleBlur}
+      value={values[name]}
+      onChange={(e, value) => {
+        setFieldValue(name, value);
+      }}
+      // @ts-ignore
+      renderTags={(value: string[], getTagProps) => {
+        return value.map((option: string, index: number) => {
+          return (
+            <Chip
+              icon={icons ? icons.get(index) : undefined}
+              variant="outlined"
+              label={option}
+              // classes={{ root: clsx({ [classes.error]: errorsIsArray && errorsArray[index] }) }}
+              size="small"
+              {...getTagProps({ index })}
+            />
+          );
+        });
+      }}
+      renderInput={(params) => {
+        return (
+          <TextField
+            {...params}
+            margin="dense"
+            variant="outlined"
+            error={!!touched[name] && !!errors[name]}
+            label={label}
+            placeholder={placeholder}
+            helperText={helperText}
+          />
+        );
+      }}
     />
   );
 };
