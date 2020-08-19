@@ -101,7 +101,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
 
     return (
       <Expansion title={"Routes"} defaultUnfold>
-        <RouteWidgets routes={routes} activeNamespaceName={activeNamespaceName} />
+        <RouteWidgets routes={routes} />
       </Expansion>
     );
   }
