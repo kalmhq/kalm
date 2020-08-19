@@ -76,7 +76,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderMoreActions = (cert: Certificate) => {
+  private renderActions = (cert: Certificate) => {
     return (
       <>
         {cert.get("isSelfManaged") && (
@@ -219,7 +219,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         Header: "Actions",
         accessor: "actions",
         Cell: ({ value }: { value: Certificate }) => {
-          return this.renderMoreActions(value);
+          return this.renderActions(value);
         },
       },
     ];

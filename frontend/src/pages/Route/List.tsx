@@ -36,11 +36,7 @@ interface Props extends WithStyles<typeof styles>, WithRoutesDataProps {}
 
 interface State {}
 
-interface RowData extends HttpRoute {
-  index: number;
-}
-
-type HostCellProps = { row: RowData; clusterInfo: ClusterInfo };
+type HostCellProps = { row: HttpRoute; clusterInfo: ClusterInfo };
 
 /**
  * A component that renders a cell for the "Domain" column of the Routes table
@@ -72,11 +68,11 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     this.state = {};
   }
 
-  private renderHosts(row: RowData) {
+  private renderHosts(row: HttpRoute) {
     return <HostCell row={row} />;
   }
 
-  private renderUrls(row: RowData) {
+  private renderUrls(row: HttpRoute) {
     return (
       <Box>
         {row.get("paths").map((h) => {
@@ -86,7 +82,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderRules(row: RowData) {
+  private renderRules(row: HttpRoute) {
     if (!row.get("conditions")) {
       return null;
     }
@@ -100,11 +96,11 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     });
   }
 
-  private renderMethods(row: RowData) {
+  private renderMethods(row: HttpRoute) {
     return <Methods methods={row.get("methods")} />;
   }
 
-  private renderSupportHttp(row: RowData) {
+  private renderSupportHttp(row: HttpRoute) {
     if (row.get("httpRedirectToHttps") && row.get("schemes").includes("http") && row.get("schemes").includes("https")) {
       return <ForwardIcon />;
     }
@@ -112,19 +108,23 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     if (row.get("schemes").find((x) => x === "http")) {
       return <CheckIcon />;
     }
+
+    return "-";
   }
 
-  private renderSupportHttps(row: RowData) {
+  private renderSupportHttps(row: HttpRoute) {
     if (row.get("schemes").find((x) => x === "https")) {
       return <CheckIcon />;
     }
+
+    return "-";
   }
 
-  private renderTargets = (row: RowData) => {
+  private renderTargets = (row: HttpRoute) => {
     return <Targets destinations={row.get("destinations")} />;
   };
 
-  private renderAdvanced(row: RowData) {
+  private renderAdvanced(row: HttpRoute) {
     let res: string[] = [];
     if (row.get("mirror")) {
       res.push("mirror");
@@ -144,7 +144,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     return res.join(",");
   }
 
-  private renderActions = (row: RowData) => {
+  private renderActions = (row: HttpRoute) => {
     const { dispatch } = this.props;
     return (
       <>
@@ -220,30 +220,51 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
       {
         Header: "Domain",
         accessor: "host",
+        Cell: ({ value }: { value: HttpRoute }) => {
+          return this.renderHosts(value);
+        },
       },
       {
         Header: "Urls",
         accessor: "urls",
+        Cell: ({ value }: { value: HttpRoute }) => {
+          return this.renderUrls(value);
+        },
       },
       {
         Header: "Http",
         accessor: "http",
+        Cell: ({ value }: { value: HttpRoute }) => {
+          return this.renderSupportHttp(value);
+        },
       },
       {
         Header: "Https",
         accessor: "https",
+        Cell: ({ value }: { value: HttpRoute }) => {
+          return this.renderSupportHttps(value);
+        },
       },
       {
         Header: "Methods",
         accessor: "methods",
+        Cell: ({ value }: { value: HttpRoute }) => {
+          return this.renderMethods(value);
+        },
       },
       {
         Header: "Targets",
         accessor: "targets",
+        Cell: ({ value }: { value: HttpRoute }) => {
+          return this.renderTargets(value);
+        },
       },
       {
         Header: "Actions",
         accessor: "actions",
+        Cell: ({ value }: { value: HttpRoute }) => {
+          return this.renderActions(value);
+        },
       },
     ];
   }
@@ -254,15 +275,14 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
 
     httpRoutes &&
       httpRoutes.forEach((httpRoute, index) => {
-        const rowData = httpRoute as RowData;
         data.push({
-          host: this.renderHosts(rowData),
-          urls: this.renderUrls(rowData),
-          http: this.renderSupportHttp(rowData),
-          https: this.renderSupportHttps(rowData),
-          methods: this.renderMethods(rowData),
-          targets: this.renderTargets(rowData),
-          actions: this.renderActions(rowData),
+          host: httpRoute,
+          urls: httpRoute,
+          http: httpRoute,
+          https: httpRoute,
+          methods: httpRoute,
+          targets: httpRoute,
+          actions: httpRoute,
         });
       });
 
@@ -270,7 +290,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderKRTable() {
-    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+    return <KRTable showTitle={true} title="Routes" columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
   }
 
   public render() {
