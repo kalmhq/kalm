@@ -60,29 +60,25 @@ const mapStateToProps = (state: RootState) => {
 
 interface Props extends WithStyles<typeof styles>, WithNamespaceProps, ReturnType<typeof mapStateToProps> {}
 
-interface RowData extends ApplicationDetails {
-  index: number;
-}
-
 class ApplicationListRaw extends React.PureComponent<Props> {
-  private confirmDelete = async (rowData: ApplicationDetails) => {
+  private confirmDelete = async (applicationDetails: ApplicationDetails) => {
     const { dispatch } = this.props;
     try {
-      await dispatch(deleteApplicationAction(rowData.get("name")));
+      await dispatch(deleteApplicationAction(applicationDetails.get("name")));
       await dispatch(setSuccessNotificationAction("Successfully delete an application"));
     } catch {
       dispatch(setErrorNotificationAction());
     }
   };
 
-  private renderCPU = (applicationListItem: RowData) => {
+  private renderCPU = (applicationListItem: ApplicationDetails) => {
     const metrics = applicationListItem.get("metrics");
     return (
       <SmallCPULineChart data={metrics.get("cpu")} hoverText={this.hasPods(applicationListItem) ? "" : "No data"} />
     );
   };
 
-  private renderMemory = (applicationListItem: RowData) => {
+  private renderMemory = (applicationListItem: ApplicationDetails) => {
     const metrics = applicationListItem.get("metrics");
     return (
       <SmallMemoryLineChart
@@ -92,22 +88,19 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     );
   };
 
-  private renderName = (rowData: RowData) => {
+  private renderName = (name: string) => {
     return (
-      <KLink to={`/applications/${rowData.get("name")}/components`} onClick={() => blinkTopProgressAction()}>
-        {rowData.get("name")}
+      <KLink to={`/applications/${name}/components`} onClick={() => blinkTopProgressAction()}>
+        {name}
       </KLink>
     );
   };
 
-  private renderCreatedAt = (applicationDetails: RowData) => {
-    const { componentsMap } = this.props;
-    const components = componentsMap.get(applicationDetails.get("name"));
-
-    return <Caption>{components ? getApplicationCreatedAtString(components) : "-"}</Caption>;
+  private renderCreatedAt = (createdAtFormatted: string) => {
+    return <Caption>{createdAtFormatted}</Caption>;
   };
 
-  private hasPods = (applicationDetails: RowData) => {
+  private hasPods = (applicationDetails: ApplicationDetails) => {
     const { componentsMap } = this.props;
     let count = 0;
     componentsMap.get(applicationDetails.get("name"))?.forEach((component) => {
@@ -119,7 +112,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     return count !== 0;
   };
 
-  private renderStatus = (applicationDetails: RowData) => {
+  private renderStatus = (applicationDetails: ApplicationDetails) => {
     const { componentsMap } = this.props;
 
     let podCount = 0;
@@ -190,7 +183,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     );
   };
 
-  private renderExternalAccesses = (applicationDetails: RowData) => {
+  private renderExternalAccesses = (applicationDetails: ApplicationDetails) => {
     const { httpRoutes, activeNamespaceName } = this.props;
 
     const applicationRoutes = httpRoutes.filter((x) => x.get("namespace") === activeNamespaceName);
@@ -228,7 +221,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     }
   };
 
-  private renderActions = (rowData: RowData) => {
+  private renderActions = (applicationDetails: ApplicationDetails) => {
     return (
       <>
         <IconLinkWithToolTip
@@ -237,14 +230,14 @@ class ApplicationListRaw extends React.PureComponent<Props> {
           }}
           // size="small"
           tooltipTitle="Details"
-          to={`/applications/${rowData.get("name")}/components`}
+          to={`/applications/${applicationDetails.get("name")}/components`}
         >
           <KalmDetailsIcon />
         </IconLinkWithToolTip>
         <DeleteButtonWithConfirmPopover
           popupId="delete-application-popup"
           popupTitle="DELETE APPLICATION?"
-          confirmedAction={() => this.confirmDelete(rowData)}
+          confirmedAction={() => this.confirmDelete(applicationDetails)}
         />
       </>
     );
@@ -312,27 +305,51 @@ class ApplicationListRaw extends React.PureComponent<Props> {
       {
         Header: "Name",
         accessor: "name",
+        Cell: ({ value }: { value: string }) => {
+          return this.renderName(value);
+        },
       },
-      { Header: "Pod Status", accessor: "status" },
+      {
+        Header: "Pod Status",
+        accessor: "status",
+        Cell: ({ value }: { value: ApplicationDetails }) => {
+          return this.renderStatus(value);
+        },
+      },
       {
         Header: "CPU",
         accessor: "cpu",
+        Cell: ({ value }: { value: ApplicationDetails }) => {
+          return this.renderCPU(value);
+        },
       },
       {
         Header: "Memory",
         accessor: "memory",
+        Cell: ({ value }: { value: ApplicationDetails }) => {
+          return this.renderMemory(value);
+        },
       },
       {
         Header: "Created At",
         accessor: "createdAt",
+        Cell: ({ value }: { value: string }) => {
+          return this.renderCreatedAt(value);
+        },
       },
       {
         Header: "Routes",
         accessor: "routes",
+        Cell: ({ value }: { value: ApplicationDetails }) => {
+          return this.renderExternalAccesses(value);
+        },
       },
       {
         Header: "Actions",
         accessor: "actions",
+        Cell: ({ value }: { value: ApplicationDetails }) => {
+          return this.renderActions(value);
+        },
       },
     ];
   }
@@ -341,17 +358,22 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     const { applications } = this.props;
     const data: any[] = [];
 
+    const { componentsMap } = this.props;
+
     applications &&
       applications.forEach((application, index) => {
-        const rowData = application as RowData;
+        const applicationDetails = application as ApplicationDetails;
+        const components = componentsMap.get(applicationDetails.get("name"));
+        const createdAtFormatted = components ? getApplicationCreatedAtString(components) : "-";
+
         data.push({
-          name: this.renderName(rowData),
-          status: this.renderStatus(rowData),
-          cpu: this.renderCPU(rowData),
-          memory: this.renderMemory(rowData),
-          createdAt: this.renderCreatedAt(rowData),
-          routes: this.renderExternalAccesses(rowData),
-          actions: this.renderActions(rowData),
+          name: applicationDetails.get("name"),
+          status: applicationDetails,
+          cpu: applicationDetails,
+          memory: applicationDetails,
+          createdAt: createdAtFormatted,
+          routes: applicationDetails,
+          actions: applicationDetails,
         });
       });
 
@@ -359,7 +381,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   }
 
   private renderKRTable() {
-    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+    return <KRTable title="Apps" columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
   }
 
   private renderGrid = () => {
