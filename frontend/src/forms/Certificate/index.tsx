@@ -1,7 +1,7 @@
 import { Box, Button, Chip, Grid, TextField } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Autocomplete } from "@material-ui/lab";
-import { Form, Formik, FormikProps } from "formik";
+import { Form, Formik, FormikProps, Field } from "formik";
 import { KFormikRadioGroupRender } from "forms/Basic/radio";
 import { FormikUploader } from "forms/Basic/uploader";
 // import { KValidatorHostsWithWildcardPrefix, ValidatorRequired } from "forms/validator";
@@ -21,6 +21,8 @@ import sc from "../../utils/stringConstants";
 import { object } from "yup";
 import { RequireString } from "forms/validator";
 import { FormMidware } from "tutorials/formMidware";
+import { TextField as FormikTextField } from "formik-material-ui";
+import { CERTIFICATE_FORM_ID } from "forms/formIDs";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -264,8 +266,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
           }
           return (
             <Form className={classes.root} tutorial-anchor-id="certificate-form" id="certificate-form">
-              {/* <Tutorial formikProps={values}/> */}
-              <FormMidware values={values} />
+              <FormMidware values={values} form={CERTIFICATE_FORM_ID} />
               <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
               <KPanel
                 content={
@@ -295,26 +296,23 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                         </Grid>
                       )}
                       <Grid item md={12}>
-                        <TextField
+                        <Field
+                          component={FormikTextField}
+                          label="Certificate name"
+                          name="name"
                           InputLabelProps={{
                             shrink: true,
                           }}
                           disabled={isEdit}
                           placeholder="Please type a certificate name"
-                          label="Certificate name"
-                          name="name"
                           id="certificate-name"
                           margin="dense"
                           fullWidth
-                          onBlur={handleBlur}
-                          error={!!errors.name && touched.name}
                           helperText={!!errors.name && touched.name ? errors.name : " "}
                           variant="outlined"
                           inputProps={{
                             required: false, // bypass html5 required feature
                           }}
-                          value={values.name}
-                          onChange={handleChange}
                         />
                       </Grid>
                       <Grid item md={12}>

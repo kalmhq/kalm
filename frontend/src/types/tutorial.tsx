@@ -101,6 +101,7 @@ export interface TutorialDrawerAction {
 export interface SetTutorialFormValuesAction {
   type: typeof SET_TUTORIAL_FORM_VALUES;
   payload: {
+    form: string;
     values: any;
   };
 }

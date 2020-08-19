@@ -11,20 +11,21 @@ const mapStateToProps = (state: RootState) => {
 };
 
 export interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp {
+  form: string;
   values: any;
 }
 
 class FormMidwareRaw extends React.PureComponent<Props> {
   componentDidMount() {
-    const { dispatch, tutorialDrawerOpen, values } = this.props;
+    const { dispatch, tutorialDrawerOpen, values, form } = this.props;
     if (tutorialDrawerOpen) {
-      dispatch(setTutorialFormValues(values));
+      dispatch(setTutorialFormValues(form, values));
     }
   }
   componentDidUpdate(prevProps: Props) {
-    const { dispatch, tutorialDrawerOpen, values } = this.props;
+    const { dispatch, tutorialDrawerOpen, values, form } = this.props;
     if (tutorialDrawerOpen && prevProps.values !== values) {
-      dispatch(setTutorialFormValues(values));
+      dispatch(setTutorialFormValues(form, values));
     }
   }
 

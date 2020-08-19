@@ -15,10 +15,11 @@ import {
   SetTutorialFormValuesAction,
 } from "types/tutorial";
 
-export const setTutorialFormValues = (values: any): SetTutorialFormValuesAction => {
+export const setTutorialFormValues = (form: string, values: any): SetTutorialFormValuesAction => {
   return {
     type: SET_TUTORIAL_FORM_VALUES,
     payload: {
+      form,
       values,
     },
   };

@@ -18,7 +18,7 @@ export type State = ImmutableMap<{
   tutorialStepStatus: Immutable.Map<string, boolean>;
   latestHighlight?: string;
   currentStepIndex: number;
-  formValues?: any;
+  formValues?: ImmutableMap<any>;
 }>;
 
 const DISABLE_TUTORIAL_AUTO_OPEN = "DISABLE_TUTORIAL_AUTO_OPEN";
@@ -68,7 +68,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
   }
 
   if (action.type === SET_TUTORIAL_FORM_VALUES) {
-    return state.set("formValues", action.payload.values);
+    return state.setIn(["formValues", action.payload.form], action.payload.values);
   }
 
   const tutorial = state.get("tutorial");

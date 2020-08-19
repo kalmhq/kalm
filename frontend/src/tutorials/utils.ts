@@ -113,7 +113,7 @@ export const getFormValue = (rootState: RootState, form: string, field: string) 
 };
 
 export const isFormFieldValueEqualTo = (rootState: RootState, form: string, field: string, value: any) => {
-  const formValues = rootState.get("tutorial").get("formValues");
+  const formValues = rootState.get("tutorial").get("formValues")?.get(form);
   if (!formValues) {
     return false;
   }
