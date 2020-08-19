@@ -26,7 +26,7 @@ export const KRTable = ({
 }: {
   showTitle?: boolean;
   title?: string;
-  columns: { Header: any; accessor: string; Cell?: any }[];
+  columns: { Header: any; accessor: any; Cell?: any }[];
   data: any[];
 }) => {
   // https://reactjs.org/docs/hooks-faq.html#is-it-safe-to-omit-functions-from-the-list-of-dependencies
@@ -37,6 +37,13 @@ export const KRTable = ({
   const dataMemo = React.useMemo(() => {
     return data;
   }, [data]);
+
+  const filterTypes = React.useMemo(
+    () => ({
+      kFilter: kFilter,
+    }),
+    [],
+  );
 
   const {
     getTableProps,
@@ -56,6 +63,8 @@ export const KRTable = ({
     {
       columns: columnsMemo,
       data: dataMemo,
+      filterTypes,
+      globalFilter: "kFilter",
       initialState: { pageIndex: 0, pageSize: DefaultPageSize },
     },
     useGlobalFilter,
@@ -167,4 +176,67 @@ const GlobalFilter = ({ preGlobalFilteredRows, globalFilter, setGlobalFilter }: 
       <FilterListIcon />
     </Box>
   );
+};
+
+const kFilter = (rows: any[], ids: any[], filterValue: string) => {
+  console.log("ids", ids);
+  console.log("rows", rows);
+  console.log("filter", filterValue);
+  return rows.filter((row) => {
+    if (!filterValue) {
+      return true;
+    }
+
+    for (let id of ids) {
+      const cellValue = row.values[id];
+      console.log("cell", cellValue);
+      console.log("type", typeof cellValue);
+
+      if (cellIncludes(cellValue, filterValue)) {
+        return true;
+      }
+    }
+
+    return false;
+  });
+};
+
+const cellIncludes = (cellValue: any, filterValue: string): boolean => {
+  if (!cellValue) {
+    return true;
+  }
+
+  if (typeof cellValue === "string") {
+    if (String(cellValue).toLowerCase().includes(String(filterValue).toLowerCase())) {
+      return true;
+    }
+  }
+
+  if (Array.isArray(cellValue)) {
+    for (let child of cellValue) {
+      if (cellIncludes(child, filterValue)) {
+        return true;
+      }
+    }
+  }
+
+  if (typeof cellValue === "object") {
+    if (cellValue.props) {
+      if (cellValue.props.children) {
+        if (typeof cellValue.props.children === "string") {
+          return cellIncludes(cellValue.props.children, filterValue);
+        }
+
+        if (Array.isArray(cellValue.props.children)) {
+          for (let child of cellValue.props.children) {
+            if (cellIncludes(child, filterValue)) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return false;
 };
