@@ -88,16 +88,19 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     );
   };
 
-  private renderName = (name: string) => {
+  private renderName = (applicationDetails: ApplicationDetails) => {
     return (
-      <KLink to={`/applications/${name}/components`} onClick={() => blinkTopProgressAction()}>
-        {name}
+      <KLink to={`/applications/${applicationDetails.get("name")}/components`} onClick={() => blinkTopProgressAction()}>
+        {applicationDetails.get("name")}
       </KLink>
     );
   };
 
-  private renderCreatedAt = (createdAtFormatted: string) => {
-    return <Caption>{createdAtFormatted}</Caption>;
+  private renderCreatedAt = (applicationDetails: ApplicationDetails) => {
+    const { componentsMap } = this.props;
+    const components = componentsMap.get(applicationDetails.get("name"));
+
+    return <Caption>{components ? getApplicationCreatedAtString(components) : "-"}</Caption>;
   };
 
   private hasPods = (applicationDetails: ApplicationDetails) => {
@@ -305,51 +308,27 @@ class ApplicationListRaw extends React.PureComponent<Props> {
       {
         Header: "Name",
         accessor: "name",
-        Cell: ({ value }: { value: string }) => {
-          return this.renderName(value);
-        },
       },
-      {
-        Header: "Pod Status",
-        accessor: "status",
-        Cell: ({ value }: { value: ApplicationDetails }) => {
-          return this.renderStatus(value);
-        },
-      },
+      { Header: "Pod Status", accessor: "status" },
       {
         Header: "CPU",
         accessor: "cpu",
-        Cell: ({ value }: { value: ApplicationDetails }) => {
-          return this.renderCPU(value);
-        },
       },
       {
         Header: "Memory",
         accessor: "memory",
-        Cell: ({ value }: { value: ApplicationDetails }) => {
-          return this.renderMemory(value);
-        },
       },
       {
         Header: "Created At",
         accessor: "createdAt",
-        Cell: ({ value }: { value: string }) => {
-          return this.renderCreatedAt(value);
-        },
       },
       {
         Header: "Routes",
         accessor: "routes",
-        Cell: ({ value }: { value: ApplicationDetails }) => {
-          return this.renderExternalAccesses(value);
-        },
       },
       {
         Header: "Actions",
         accessor: "actions",
-        Cell: ({ value }: { value: ApplicationDetails }) => {
-          return this.renderActions(value);
-        },
       },
     ];
   }
@@ -358,22 +337,17 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     const { applications } = this.props;
     const data: any[] = [];
 
-    const { componentsMap } = this.props;
-
     applications &&
       applications.forEach((application, index) => {
         const applicationDetails = application as ApplicationDetails;
-        const components = componentsMap.get(applicationDetails.get("name"));
-        const createdAtFormatted = components ? getApplicationCreatedAtString(components) : "-";
-
         data.push({
-          name: applicationDetails.get("name"),
-          status: applicationDetails,
-          cpu: applicationDetails,
-          memory: applicationDetails,
-          createdAt: createdAtFormatted,
-          routes: applicationDetails,
-          actions: applicationDetails,
+          name: this.renderName(applicationDetails),
+          status: this.renderStatus(applicationDetails),
+          cpu: this.renderCPU(applicationDetails),
+          memory: this.renderMemory(applicationDetails),
+          createdAt: this.renderCreatedAt(applicationDetails),
+          routes: this.renderExternalAccesses(applicationDetails),
+          actions: this.renderActions(applicationDetails),
         });
       });
 
