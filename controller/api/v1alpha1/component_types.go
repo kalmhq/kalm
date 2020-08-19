@@ -40,6 +40,12 @@ type PreInjectFile struct {
 
 // ComponentSpec defines the desired state of Component
 type ComponentSpec struct {
+	// labels will add to pods
+	Labels map[string]string `json:"Labels,omitempty"`
+
+	// labels will add to pods
+	Annotations map[string]string `json:"Annotations,omitempty"`
+
 	Env []EnvVar `json:"env,omitempty"`
 
 	// +kubebuilder:validation:Required

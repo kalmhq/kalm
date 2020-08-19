@@ -254,11 +254,30 @@ const (
 )
 
 func (r *ComponentReconcilerTask) GetLabels() map[string]string {
-	return map[string]string{
+	res := map[string]string{
 		KalmLabelNamespaceKey: r.namespace.Name,
 		KalmLabelComponentKey: r.component.Name,
 		KalmLabelManaged:      "true",
 	}
+
+	if r.component.Spec.Labels != nil {
+		for k, v := range r.component.Spec.Labels {
+			res[k] = v
+		}
+	}
+	return res
+}
+
+func (r *ComponentReconcilerTask) GetAnnotations() map[string]string {
+	res := make(map[string]string)
+
+	if r.component.Spec.Annotations != nil {
+		for k, v := range r.component.Spec.Annotations {
+			res[k] = v
+		}
+	}
+
+	return res
 }
 
 func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
@@ -622,6 +641,7 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 	deployment := r.deployment
 	isNewDeployment := false
 	labelMap := r.GetLabels()
+	annotations := r.GetAnnotations()
 
 	if deployment == nil {
 		isNewDeployment = true
@@ -629,7 +649,7 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 		deployment = &appsV1.Deployment{
 			ObjectMeta: metaV1.ObjectMeta{
 				Labels:      labelMap,
-				Annotations: make(map[string]string),
+				Annotations: annotations,
 				Name:        component.Name,
 				Namespace:   r.namespace.Name,
 			},
@@ -728,6 +748,7 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 
 func (r *ComponentReconcilerTask) ReconcileDaemonSet(podTemplateSpec *coreV1.PodTemplateSpec) error {
 	labelMap := r.GetLabels()
+	annotations := r.GetAnnotations()
 
 	daemonSet := r.daemonSet
 	isNewDs := false
@@ -738,7 +759,7 @@ func (r *ComponentReconcilerTask) ReconcileDaemonSet(podTemplateSpec *coreV1.Pod
 		daemonSet = &appsV1.DaemonSet{
 			ObjectMeta: metaV1.ObjectMeta{
 				Labels:      labelMap,
-				Annotations: make(map[string]string),
+				Annotations: annotations,
 				Name:        r.component.Name,
 				Namespace:   r.component.Namespace,
 			},
@@ -783,6 +804,7 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 	cj := r.cronJob
 	component := r.component
 	labelMap := r.GetLabels()
+	annotations := r.GetAnnotations()
 
 	// restartPolicy
 	if podTemplateSpec.Spec.RestartPolicy == coreV1.RestartPolicyAlways ||
@@ -812,9 +834,10 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 
 		cj = &batchV1Beta1.CronJob{
 			ObjectMeta: metaV1.ObjectMeta{
-				Name:      component.Name,
-				Namespace: r.namespace.Name,
-				Labels:    labelMap,
+				Name:        component.Name,
+				Namespace:   r.namespace.Name,
+				Labels:      labelMap,
+				Annotations: annotations,
 			},
 			Spec: desiredCJSpec,
 		}
@@ -853,6 +876,7 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(
 
 	log := r.Log
 	labelMap := r.GetLabels()
+	annotations := r.GetAnnotations()
 
 	sts := r.statefulSet
 
@@ -863,7 +887,7 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(
 		sts = &appsV1.StatefulSet{
 			ObjectMeta: metaV1.ObjectMeta{
 				Labels:      labelMap,
-				Annotations: make(map[string]string),
+				Annotations: annotations,
 				Name:        r.component.Name,
 				Namespace:   r.component.Namespace,
 			},
@@ -934,17 +958,14 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	labels["app"] = component.Name
 	labels["version"] = "v1" // TODO
 
+	annotations := r.GetAnnotations()
+
 	template = &coreV1.PodTemplateSpec{
 		ObjectMeta: metaV1.ObjectMeta{
 			Labels: labels,
 
 			// The following is for set sidecar resources.
-			Annotations: map[string]string{
-				//"sidecar.istio.io/proxyCPU":         "100m",
-				//"sidecar.istio.io/proxyMemory":      "50Mi",
-				//"sidecar.istio.io/proxyCPULimit":    "100m",
-				//"sidecar.istio.io/proxyMemoryLimit": "50Mi",
-			},
+			Annotations: annotations,
 		},
 		Spec: coreV1.PodSpec{
 			Containers: []coreV1.Container{
