@@ -179,9 +179,6 @@ const GlobalFilter = ({ preGlobalFilteredRows, globalFilter, setGlobalFilter }: 
 };
 
 const kFilter = (rows: any[], ids: any[], filterValue: string) => {
-  console.log("ids", ids);
-  console.log("rows", rows);
-  console.log("filter", filterValue);
   return rows.filter((row) => {
     if (!filterValue) {
       return true;
@@ -189,8 +186,6 @@ const kFilter = (rows: any[], ids: any[], filterValue: string) => {
 
     for (let id of ids) {
       const cellValue = row.values[id];
-      console.log("cell", cellValue);
-      console.log("type", typeof cellValue);
 
       if (cellIncludes(cellValue, filterValue)) {
         return true;
@@ -224,7 +219,9 @@ const cellIncludes = (cellValue: any, filterValue: string): boolean => {
     if (cellValue.props) {
       if (cellValue.props.children) {
         if (typeof cellValue.props.children === "string") {
-          return cellIncludes(cellValue.props.children, filterValue);
+          if (cellIncludes(cellValue.props.children, filterValue)) {
+            return true;
+          }
         }
 
         if (Array.isArray(cellValue.props.children)) {
