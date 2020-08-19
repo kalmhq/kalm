@@ -57,8 +57,8 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  private renderName = (name: string) => {
-    return <Typography variant={"subtitle2"}>{name}</Typography>;
+  private renderName = (cert: Certificate) => {
+    return <Typography variant={"subtitle2"}>{cert.get("name")}</Typography>;
   };
 
   private renderDomains = (cert: Certificate) => {
@@ -76,7 +76,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderActions = (cert: Certificate) => {
+  private renderMoreActions = (cert: Certificate) => {
     return (
       <>
         {cert.get("isSelfManaged") && (
@@ -185,23 +185,15 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       {
         Header: "Cert Name",
         accessor: "name",
-        Cell: ({ value }: { value: string }) => {
-          return this.renderName(value);
-        },
       },
       {
         Header: "Domains",
         accessor: "domains",
-        Cell: ({ value }: { value: Certificate }) => {
-          return this.renderDomains(value);
-        },
+        sorting: false,
       },
       {
         Header: "Status",
         accessor: "status",
-        Cell: ({ value }: { value: Certificate }) => {
-          return this.renderStatus(value);
-        },
       },
       {
         Header: "Type",
@@ -218,9 +210,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       {
         Header: "Actions",
         accessor: "actions",
-        Cell: ({ value }: { value: Certificate }) => {
-          return this.renderActions(value);
-        },
       },
     ];
   }
@@ -230,17 +219,14 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     const data: any[] = [];
 
     certificates.forEach((cert, index) => {
-      // for data filter:
-      // simple string field, should render in data.
-      // react Element field, should render in columns.
       data.push({
-        name: cert.get("name"),
-        domains: cert,
-        status: cert,
+        name: this.renderName(cert),
+        domains: this.renderDomains(cert),
+        status: this.renderStatus(cert),
         isSelfManaged: this.renderType(cert),
         isSignedByTrustedCA: this.renderIsSignedByTrustedCA(cert),
         expireTimestamp: this.renderExpireTimestamp(cert),
-        actions: cert,
+        actions: this.renderMoreActions(cert),
       });
     });
 
