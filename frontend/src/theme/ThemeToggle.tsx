@@ -12,7 +12,16 @@ const Styles = (theme: Theme) =>
     root: {},
     switchBase: {
       padding: 8,
-      color: theme.palette.primary.light,
+      color: theme.palette.text.primary,
+    },
+    colorSecondary: {
+      color: theme.palette.text.primary,
+    },
+    checked: {
+      color: theme.palette.text.primary,
+    },
+    track: {
+      color: theme.palette.text.primary,
     },
     error: {
       color: theme.palette.error.main,
@@ -37,6 +46,9 @@ class ThemeToggleRaw extends React.PureComponent<Props, State> {
           classes={{
             root: classes.root,
             switchBase: classes.switchBase,
+            colorSecondary: classes.colorSecondary,
+            checked: classes.checked,
+            track: classes.track,
           }}
           icon={<BrightnessDarkIcon />}
           checkedIcon={<BrightnessLightIcon />}
