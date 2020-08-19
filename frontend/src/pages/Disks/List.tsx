@@ -94,18 +94,6 @@ export class VolumesRaw extends React.Component<Props, States> {
     }
   };
 
-  getTableData = () => {
-    const { persistentVolumes } = this.props;
-
-    const dataList: Disk[] = [];
-    persistentVolumes.forEach((pv, index) => {
-      const data = pv as Disk;
-      dataList.push(data);
-    });
-
-    return dataList;
-  };
-
   private renderActions = (disk: Disk) => {
     return (
       <>
@@ -184,42 +172,15 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private getKRTableColumns() {
-    // for data filter:
-    // simple string field, should render in data.
-    // react Element field, should render in columns.
     return [
-      {
-        Header: "Volume Name",
-        accessor: "name",
-      },
-      {
-        Header: "Mounted",
-        accessor: "isInUse",
-      },
-      {
-        Header: "App",
-        accessor: "componentNamespace",
-        Cell: ({ value }: { value: Disk }) => {
-          return this.renderApplication(value);
-        },
-      },
-      {
-        Header: "Component",
-        accessor: "componentName",
-        Cell: ({ value }: { value: Disk }) => {
-          return this.renderComponent(value);
-        },
-      },
-      {
-        Header: "Size",
-        accessor: "capacity",
-      },
+      { Header: "Volume Name", accessor: "name" },
+      { Header: "Mounted", accessor: "isInUse" },
+      { Header: "App", accessor: "componentNamespace" },
+      { Header: "Component", accessor: "componentName" },
+      { Header: "Size", accessor: "capacity" },
       {
         Header: "Actions",
         accessor: "actions",
-        Cell: ({ value }: { value: Disk }) => {
-          return this.renderActions(value);
-        },
       },
     ];
   }
@@ -228,19 +189,17 @@ export class VolumesRaw extends React.Component<Props, States> {
     const { persistentVolumes } = this.props;
     const data: any[] = [];
 
-    persistentVolumes.forEach((disk, index) => {
-      // for data filter:
-      // simple string field, should render in data.
-      // react Element field, should render in columns.
-      data.push({
-        name: this.renderName(disk),
-        isInUse: this.renderUse(disk),
-        componentNamespace: disk,
-        componentName: disk,
-        capacity: this.renderCapacity(disk),
-        actions: disk,
+    persistentVolumes &&
+      persistentVolumes.forEach((disk, index) => {
+        data.push({
+          name: this.renderName(disk),
+          isInUse: this.renderUse(disk),
+          componentNamespace: this.renderApplication(disk),
+          componentName: this.renderComponent(disk),
+          capacity: this.renderCapacity(disk),
+          actions: this.renderActions(disk),
+        });
       });
-    });
 
     return data;
   }
