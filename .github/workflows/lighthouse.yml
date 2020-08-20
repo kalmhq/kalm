@@ -36,12 +36,13 @@ jobs:
           npm run build
       - name: run Lighthouse CI
         run: |
-          npm install -g @lhci/cli@0.4.x
+          npm install -g @lhci/cli@0.4.*
           npm install -g serve
           serve -s build -p 3000 &
           pid=$!
+          echo $pid
           echo ${{secrets.LHCI_TOKEN}}
           lhci collect --settings.chromeFlags="--headless" --settings.extraHeaders="{\"authorization\":\"${{secrets.KALM_AUTH_HEADER}}\",\"cookie\":\"${{secrets.KALM_AUTH_COOKIES_TOKEN}}\"}"
-          lhci collect --settings.extraHeaders="{\"authorization\":\"${{secrets.KALM_AUTH_HEADER}}\",\"cookie\":\"${{secrets.KALM_AUTH_COOKIES_TOKEN}}\"}" --settings.chromeFlags="--no-sandbox" --settings.emulatedFormFactor="desktop"
+          lhci collect --settings.chromeFlags="--no-sandbox" --settings.emulatedFormFactor="desktop" --settings.extraHeaders="{\"authorization\":\"${{secrets.KALM_AUTH_HEADER}}\",\"cookie\":\"${{secrets.KALM_AUTH_COOKIES_TOKEN}}\"}"
           lhci upload --token ${{secrets.LHCI_TOKEN}}
           kill $pid

@@ -33,6 +33,8 @@ import { CERTIFICATE_FORM_ID, ISSUER_FORM_ID } from "../formIDs";
 import { Caption } from "widgets/Label";
 import { Link } from "react-router-dom";
 import { KPanel } from "widgets/KPanel";
+import copy from "copy-to-clipboard";
+import { setSuccessNotificationAction } from "actions/notification";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   const selector = formValueSelector(form || CERTIFICATE_FORM_ID);
@@ -46,7 +48,7 @@ const mapStateToProps = (state: RootState, { form }: OwnProps) => {
     httpsCertIssuer: selector(state, "httpsCertIssuer") as string,
     certificateIssuers: state.get("certificates").get("certificateIssuers") as CertificateIssuerList,
     domains: selector(state, "domains") as Immutable.List<string>,
-    ingressIP: state.get("cluster").get("info").get("ingressIP"),
+    ingressIP: state.get("cluster").get("info").get("ingressIP", "---.---.---.---"),
   };
 };
 
@@ -267,8 +269,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
       isEdit,
       dirty,
       submitSucceeded,
-      change,
       ingressIP,
+      dispatch,
     } = this.props;
     const icons = Immutable.List(domains.map((domain) => <DomainStatus domain={domain} />));
 
@@ -323,10 +325,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                         <Link
                           to="#"
                           onClick={() => {
-                            const isDomainsIncludeIngressIP = !!domains.find((domain) => domain === ingressIP);
-                            if (!isDomainsIncludeIngressIP) {
-                              change("domains", domains.push(ingressIP));
-                            }
+                            copy(ingressIP);
+                            dispatch(setSuccessNotificationAction("Copied successful!"));
                           }}
                         >
                           {ingressIP}

@@ -24,8 +24,9 @@ import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { KRTable } from "widgets/KRTable";
 import { KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
-import { getRouteUrl, OpenInBrowser } from "widgets/OpenInBrowser";
+import { getRouteUrl } from "widgets/OpenInBrowser";
 import { Targets } from "widgets/Targets";
+import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -52,9 +53,11 @@ const HostCellRaw = ({ row, clusterInfo }: HostCellProps) => {
           return (
             <FlexRowItemCenterBox key={h}>
               <DomainStatus mr={1} domain={h} />
-              <KMLink href={url} target="_blank">
-                {h}
-              </KMLink>
+              <ItemWithHoverIcon icon={<CopyAsCurl route={row as HttpRoute} showIconButton={true} host={h} />}>
+                <KMLink href={url} target="_blank" rel="noopener noreferrer">
+                  {h}
+                </KMLink>
+              </ItemWithHoverIcon>
             </FlexRowItemCenterBox>
           );
         })
@@ -153,8 +156,6 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
     return (
       <>
-        <OpenInBrowser route={row as HttpRoute} showIconButton={true} />
-        <CopyAsCurl route={row as HttpRoute} showIconButton={true} />
         <IconLinkWithToolTip
           onClick={() => {
             blinkTopProgressAction();
