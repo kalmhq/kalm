@@ -45,17 +45,20 @@ type HostCellProps = { row: HttpRoute; clusterInfo: ClusterInfo };
 const HostCellRaw = ({ row, clusterInfo }: HostCellProps) => {
   return (
     <Box>
-      {row.get("hosts").map((h) => {
-        const url = getRouteUrl(row as HttpRoute, clusterInfo, h);
-        return (
-          <FlexRowItemCenterBox key={h}>
-            <DomainStatus mr={1} domain={h} />
-            <KMLink href={url} target="_blank">
-              {h}
-            </KMLink>
-          </FlexRowItemCenterBox>
-        );
-      })}
+      {row
+        .get("hosts")
+        .map((h) => {
+          const url = getRouteUrl(row as HttpRoute, clusterInfo, h);
+          return (
+            <FlexRowItemCenterBox key={h}>
+              <DomainStatus mr={1} domain={h} />
+              <KMLink href={url} target="_blank">
+                {h}
+              </KMLink>
+            </FlexRowItemCenterBox>
+          );
+        })
+        .toArray()}
     </Box>
   );
 };
@@ -75,9 +78,12 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   private renderUrls(row: HttpRoute) {
     return (
       <Box>
-        {row.get("paths").map((h) => {
-          return <Box key={h}>{h}</Box>;
-        })}
+        {row
+          .get("paths")
+          .map((h) => {
+            return <Box key={h}>{h}</Box>;
+          })
+          .toArray()}
       </Box>
     );
   }
@@ -87,13 +93,16 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
       return null;
     }
 
-    return row.get("conditions")!.map((x) => {
-      return (
-        <div>
-          {x.get("type")} {x.get("name")} {x.get("operator")} {x.get("value")}{" "}
-        </div>
-      );
-    });
+    return row
+      .get("conditions")!
+      .map((x) => {
+        return (
+          <div>
+            {x.get("type")} {x.get("name")} {x.get("operator")} {x.get("value")}{" "}
+          </div>
+        );
+      })
+      .toArray();
   }
 
   private renderMethods(row: HttpRoute) {

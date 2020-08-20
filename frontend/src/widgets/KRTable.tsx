@@ -11,6 +11,7 @@ import { usePagination, useTable, useGlobalFilter, useAsyncDebounce } from "reac
 import { TextField, Grid, Box } from "@material-ui/core";
 import { FilterListIcon } from "./Icon";
 import { Body } from "./Label";
+import Immutable from "immutable";
 
 interface RowData {
   [key: string]: any;
@@ -91,7 +92,7 @@ export const KRTable = ({
     },
     [setPageSize],
   );
-
+  // console.log("globalFilter:", globalFilter);
   return (
     <TableContainer component={Paper} variant="outlined" square>
       {showTitle ? (
@@ -186,8 +187,7 @@ const kFilter = (rows: any[], ids: any[], filterValue: string) => {
 
     for (let id of ids) {
       const cellValue = row.values[id];
-      console.log("id", id);
-      console.log("cellValue", cellValue);
+
       if (cellIncludes(cellValue, filterValue)) {
         return true;
       }
@@ -228,6 +228,18 @@ const cellIncludes = (cellValue: any, filterValue: string): boolean => {
         if (Array.isArray(cellValue.props.children)) {
           for (let child of cellValue.props.children) {
             if (cellIncludes(child, filterValue)) {
+              return true;
+            }
+          }
+        }
+      } else {
+        for (let key in cellValue.props) {
+          if (typeof cellValue.props[key] === "string") {
+            if (cellIncludes(cellValue.props[key], filterValue)) {
+              return true;
+            }
+          } else if (Immutable.isImmutable(cellValue.props[key])) {
+            if (cellIncludes(JSON.stringify(cellValue.props[key].toJS()), filterValue)) {
               return true;
             }
           }
