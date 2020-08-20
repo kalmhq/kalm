@@ -522,67 +522,83 @@ export const KFreeSoloAutoCompleteMultipleSelectStringField = (
 export interface KFreeSoloFormikAutoCompleteMultiValuesProps<T>
   extends FieldProps,
     UseAutocompleteMultipleProps<T>,
+    WithStyles<typeof KFreeSoloAutoCompleteMultiValuesStyles>,
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
   InputLabelProps?: {};
   disabled?: boolean;
   icons?: Immutable.List<any>;
 }
 
-export const KFreeSoloFormikAutoCompleteMultiValues = (props: KFreeSoloFormikAutoCompleteMultiValuesProps<string>) => {
-  const {
-    id,
-    label,
-    options,
-    icons,
-    field: { name },
-    form: { touched, errors, setFieldValue, handleBlur, values },
-    placeholder,
-    helperText,
-  } = props;
+export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCompleteMultiValuesStyles)(
+  (props: KFreeSoloFormikAutoCompleteMultiValuesProps<string>) => {
+    const {
+      id,
+      label,
+      options,
+      icons,
+      field: { name },
+      form: { touched, errors, setFieldValue, handleBlur, values },
+      placeholder,
+      helperText,
+      classes,
+    } = props;
 
-  return (
-    <Autocomplete
-      {...props}
-      options={options || []}
-      multiple
-      autoSelect
-      clearOnEscape
-      freeSolo
-      size="small"
-      id={id}
-      onBlur={handleBlur}
-      value={values[name]}
-      onChange={(e, value) => {
-        setFieldValue(name, value);
-      }}
-      // @ts-ignore
-      renderTags={(value: string[], getTagProps) => {
-        return value.map((option: string, index: number) => {
+    const errorsIsArray = Array.isArray(errors[name]);
+    const errorsArray = errors[name] as (string | undefined)[];
+    let errorText: string | undefined = undefined;
+
+    if (touched[name] && errorsIsArray) {
+      errorText = errorsArray.find((x) => x !== undefined);
+    }
+
+    if (typeof errors[name] === "string") {
+      errorText = errors[name] as string;
+    }
+
+    return (
+      <Autocomplete
+        {...props}
+        options={options || []}
+        multiple
+        autoSelect
+        clearOnEscape
+        freeSolo
+        size="small"
+        id={id}
+        onBlur={handleBlur}
+        value={values[name]}
+        onChange={(e, value) => {
+          setFieldValue(name, value);
+        }}
+        // @ts-ignore
+        renderTags={(value: string[], getTagProps) => {
+          return value.map((option: string, index: number) => {
+            return (
+              <Chip
+                icon={icons ? icons.get(index) : undefined}
+                variant="outlined"
+                label={option}
+                classes={{ root: clsx({ [classes.error]: errorsIsArray && errorsArray[index] }) }}
+                size="small"
+                {...getTagProps({ index })}
+              />
+            );
+          });
+        }}
+        renderInput={(params) => {
           return (
-            <Chip
-              icon={icons ? icons.get(index) : undefined}
+            <TextField
+              {...params}
+              margin="dense"
               variant="outlined"
-              label={option}
-              // classes={{ root: clsx({ [classes.error]: errorsIsArray && errorsArray[index] }) }}
-              size="small"
-              {...getTagProps({ index })}
+              error={!!touched[name] && !!errorText}
+              label={label}
+              placeholder={placeholder}
+              helperText={(touched[name] && errorText) || helperText}
             />
           );
-        });
-      }}
-      renderInput={(params) => {
-        return (
-          <TextField
-            {...params}
-            margin="dense"
-            variant="outlined"
-            error={!!touched[name] && !!errors[name]}
-            label={label}
-            placeholder={placeholder}
-            helperText={helperText}
-          />
-        );
-      }}
-    />
-  );
-};
+        }}
+      />
+    );
+  },
+);

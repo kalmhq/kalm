@@ -1,13 +1,14 @@
 import { Box, Button, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
+import { setSuccessNotificationAction } from "actions/notification";
+import copy from "copy-to-clipboard";
 import { Field, Form, Formik, FormikProps } from "formik";
 import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KFormikRadioGroupRender } from "forms/Basic/radio";
 import { KRenderFormikTextField } from "forms/Basic/textfield";
 import { FormikUploader } from "forms/Basic/uploader";
 import { CERTIFICATE_FORM_ID } from "forms/formIDs";
-import { RequireString } from "forms/validator";
-// import { KValidatorHostsWithWildcardPrefix, ValidatorRequired } from "forms/validator";
+import { ValidateHost } from "forms/validator";
 import Immutable from "immutable";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
@@ -21,10 +22,7 @@ import DomainStatus from "widgets/DomainStatus";
 import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
-import { object } from "yup";
 import sc from "../../utils/stringConstants";
-import copy from "copy-to-clipboard";
-import { setSuccessNotificationAction } from "actions/notification";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -56,10 +54,6 @@ const styles = (theme: Theme) =>
   });
 
 export interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp, OwnProps {}
-
-const schema = object().shape({
-  domains: RequireString,
-});
 
 interface State {
   isEditCertificateIssuer: boolean;
@@ -243,6 +237,16 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
       return errors;
     }
 
+    errors.domains = values.domains.map(ValidateHost);
+    if (errors.domains.filter((e: string | undefined) => e).length < 1) {
+      delete errors.domains;
+    }
+
+    if (values.domains.length < 1) {
+      errors.domains = "Required";
+      return errors;
+    }
+
     return errors;
   };
 
@@ -253,15 +257,16 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
         onSubmit={onSubmit}
         initialValues={initialValues}
         validate={this.validate}
-        validateOnChange={false}
-        validateOnBlur={false}
-        validationSchema={schema}
         enableReinitialize={false}
         handleReset={console.log}
       >
         {(formikProps) => {
           const { values, dirty, handleChange, touched, errors, setFieldValue, isSubmitting } = formikProps;
-          const icons = Immutable.List(values.domains.map((domain) => <DomainStatus domain={domain} />));
+          const icons = Immutable.List(
+            values.domains.map((domain, index) =>
+              Array.isArray(errors.domains) && errors.domains[index] ? undefined : <DomainStatus domain={domain} />,
+            ),
+          );
           if (!dirty && values.selfManagedCertContent && values.domains.length <= 0) {
             const domains = extractDomainsFromCertificateContent(values.selfManagedCertContent);
             setFieldValue("domains", domains);
@@ -321,21 +326,19 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                               : "Please type domains"
                           }
                           helperText={
-                            (!!touched.domains && !!errors.domains && errors.domains) || (
-                              <Caption color="textSecondary">
-                                Your cluster ip is{" "}
-                                <Link
-                                  to="#"
-                                  onClick={() => {
-                                    copy(ingressIP);
-                                    dispatch(setSuccessNotificationAction("Copied successful!"));
-                                  }}
-                                >
-                                  {ingressIP}
-                                </Link>
-                                . {sc.ROUTE_HOSTS_INPUT_HELPER}
-                              </Caption>
-                            )
+                            <Caption color="textSecondary">
+                              Your cluster ip is{" "}
+                              <Link
+                                to="#"
+                                onClick={() => {
+                                  copy(ingressIP);
+                                  dispatch(setSuccessNotificationAction("Copied successful!"));
+                                }}
+                              >
+                                {ingressIP}
+                              </Link>
+                              . {sc.ROUTE_HOSTS_INPUT_HELPER}
+                            </Caption>
                           }
                         />
                       </Grid>

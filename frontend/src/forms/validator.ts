@@ -322,6 +322,6 @@ export const RequireNoSuffix = (suffix: string) => (value: string) => {
   return undefined;
 };
 
-export const RequireString = string().min(1, "Required");
+export const RequireString = string().required("Required");
 
 export const RequireArray = array().min(1, "Required");

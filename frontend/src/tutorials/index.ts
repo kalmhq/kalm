@@ -1,6 +1,5 @@
 import { BasicApplicationCreationTutorialFactory } from "./basicApplicationCreation";
 import { AccessYourApplicationTutorialFactory } from "tutorials/accessYourApplication";
-import { ConfigureHttpsCertsTutorialFactory } from "./configureHttpsCerts";
 
 export const tutorialConfigs = [
   {
@@ -16,15 +15,15 @@ export const tutorialConfigs = [
       },
     ],
   },
-  {
-    name: "Advanced",
-    items: [
-      {
-        name: "Configure https certs",
-        factory: ConfigureHttpsCertsTutorialFactory,
-      },
-    ],
-  },
+  // {
+  //   name: "Advanced",
+  //   items: [
+  //     {
+  //       name: "Configure https certs",
+  //       factory: ConfigureHttpsCertsTutorialFactory,
+  //     },
+  //   ],
+  // },
   // {
   //   name: "Connect to private image registry",
   //   factory: BasicApplicationCreationTutorialFactory,
