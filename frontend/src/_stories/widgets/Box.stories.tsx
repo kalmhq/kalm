@@ -33,11 +33,7 @@ interface CertificateContent {
 
 type Certificate = ImmutableMap<CertificateContent>;
 
-interface RowData extends Certificate {
-  ready: boolean;
-}
-
-const renderStatus = (rowData: RowData) => {
+const renderStatus = (rowData: Certificate) => {
   const ready = rowData.get("ready");
 
   if (ready === "True") {
@@ -63,11 +59,11 @@ const renderStatus = (rowData: RowData) => {
   }
 };
 
-const renderName = (rowData: RowData) => {
+const renderName = (rowData: Certificate) => {
   return rowData.get("name");
 };
 
-const renderDomains = (rowData: RowData) => {
+const renderDomains = (rowData: Certificate) => {
   return (
     <>
       {rowData.get("domains")?.map((domain) => {
@@ -77,7 +73,7 @@ const renderDomains = (rowData: RowData) => {
   );
 };
 
-const renderMoreActions = (rowData: RowData) => {
+const renderMoreActions = (rowData: Certificate) => {
   return (
     <>
       {rowData.get("isSelfManaged") && (
@@ -92,7 +88,7 @@ const renderMoreActions = (rowData: RowData) => {
   );
 };
 
-const renderType = (rowData: RowData) => {
+const renderType = (rowData: Certificate) => {
   return rowData.get("isSelfManaged") ? "UPLOADED" : "MANAGED";
 };
 
@@ -135,7 +131,7 @@ const getKRTableColumns = () => {
 const getKRTableData = () => {
   const data: any[] = [];
 
-  const rowData = getCertifiate() as RowData;
+  const rowData = getCertifiate() as Certificate;
 
   data.push({
     name: renderName(rowData),
