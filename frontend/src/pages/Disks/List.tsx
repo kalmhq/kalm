@@ -45,10 +45,6 @@ interface States {
   deletingPersistentVolume?: Disk;
 }
 
-interface RowData extends Disk {
-  index: number;
-}
-
 type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
 export class VolumesRaw extends React.Component<Props, States> {
@@ -89,32 +85,19 @@ export class VolumesRaw extends React.Component<Props, States> {
   //   );
   // };
 
-  private confirmDelete = async (rowData: RowData) => {
+  private confirmDelete = async (disk: Disk) => {
     const { dispatch } = this.props;
     try {
-      await dispatch(deletePersistentVolumeAction(rowData.get("componentNamespace") as string, rowData.get("name")));
+      await dispatch(deletePersistentVolumeAction(disk.get("componentNamespace") as string, disk.get("name")));
     } catch {
       dispatch(setErrorNotificationAction());
     }
   };
 
-  getTableData = () => {
-    const { persistentVolumes } = this.props;
-
-    const dataList: RowData[] = [];
-    persistentVolumes.forEach((pv, index) => {
-      const data = pv as RowData;
-      data.index = index;
-      dataList.push(data);
-    });
-
-    return dataList;
-  };
-
-  private renderActions = (rowData: RowData) => {
+  private renderActions = (disk: Disk) => {
     return (
       <>
-        {rowData.get("isInUse") ? (
+        {disk.get("isInUse") ? (
           <IconButtonWithTooltip
             disabled
             tooltipTitle={"The disk must be unmounted(removed) from all associated components before it can be deleted"}
@@ -125,7 +108,7 @@ export class VolumesRaw extends React.Component<Props, States> {
           <DeleteButtonWithConfirmPopover
             popupId="delete-disk-popup"
             popupTitle="DELETE DISK?"
-            confirmedAction={() => this.confirmDelete(rowData)}
+            confirmedAction={() => this.confirmDelete(disk)}
           />
         )}
       </>
@@ -138,54 +121,54 @@ export class VolumesRaw extends React.Component<Props, States> {
         <StorageType /> */}</>;
   }
 
-  private renderApplication = (rowData: RowData) => {
-    if (!rowData.get("isInUse")) {
+  private renderApplication = (disk: Disk) => {
+    if (!disk.get("isInUse")) {
       return (
         <KTooltip title={"Last used by"}>
-          <Box>{rowData.get("componentNamespace")}</Box>
+          <Box>{disk.get("componentNamespace")}</Box>
         </KTooltip>
       );
     }
     return (
       <KLink
         style={{ color: primaryColor }}
-        to={`/applications/${rowData.get("componentNamespace")}/components`}
+        to={`/applications/${disk.get("componentNamespace")}/components`}
         onClick={() => blinkTopProgressAction()}
       >
-        {rowData.get("componentNamespace")}
+        {disk.get("componentNamespace")}
       </KLink>
     );
   };
 
-  private renderComponent = (rowData: RowData) => {
-    if (!rowData.get("isInUse")) {
+  private renderComponent = (disk: Disk) => {
+    if (!disk.get("isInUse")) {
       return (
         <KTooltip title={"Last used by"}>
-          <Box> {rowData.get("componentName")}</Box>
+          <Box> {disk.get("componentName")}</Box>
         </KTooltip>
       );
     }
     return (
       <KLink
         style={{ color: primaryColor }}
-        to={`/applications/${rowData.get("componentNamespace")}/components/${rowData.get("componentName")}`}
+        to={`/applications/${disk.get("componentNamespace")}/components/${disk.get("componentName")}`}
         onClick={() => blinkTopProgressAction()}
       >
-        {rowData.get("componentName")}
+        {disk.get("componentName")}
       </KLink>
     );
   };
 
-  private renderName = (rowData: RowData) => {
-    return rowData.get("name");
+  private renderName = (disk: Disk) => {
+    return disk.get("name");
   };
 
-  private renderUse = (rowData: RowData) => {
-    return rowData.get("isInUse") ? "Yes" : "No";
+  private renderUse = (disk: Disk) => {
+    return disk.get("isInUse") ? "Yes" : "No";
   };
 
-  private renderCapacity = (rowData: RowData) => {
-    return sizeStringToGi(rowData.get("capacity")) + " Gi";
+  private renderCapacity = (disk: Disk) => {
+    return sizeStringToGi(disk.get("capacity")) + " Gi";
   };
 
   private getKRTableColumns() {
@@ -207,15 +190,14 @@ export class VolumesRaw extends React.Component<Props, States> {
     const data: any[] = [];
 
     persistentVolumes &&
-      persistentVolumes.forEach((persistentVolume, index) => {
-        const rowData = persistentVolume as RowData;
+      persistentVolumes.forEach((disk, index) => {
         data.push({
-          name: this.renderName(rowData),
-          isInUse: this.renderUse(rowData),
-          componentNamespace: this.renderApplication(rowData),
-          componentName: this.renderComponent(rowData),
-          capacity: this.renderCapacity(rowData),
-          actions: this.renderActions(rowData),
+          name: this.renderName(disk),
+          isInUse: this.renderUse(disk),
+          componentNamespace: this.renderApplication(disk),
+          componentName: this.renderComponent(disk),
+          capacity: this.renderCapacity(disk),
+          actions: this.renderActions(disk),
         });
       });
 
@@ -223,7 +205,7 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 
   private renderKRTable() {
-    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+    return <KRTable showTitle={true} title="Disks" columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
   }
 
   private renderEmpty() {

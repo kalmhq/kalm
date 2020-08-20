@@ -23,6 +23,8 @@ import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { object } from "yup";
 import sc from "../../utils/stringConstants";
+import copy from "copy-to-clipboard";
+import { setSuccessNotificationAction } from "actions/notification";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -245,7 +247,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { onSubmit, initialValues, classes, isEdit, ingressIP } = this.props;
+    const { onSubmit, initialValues, classes, isEdit, ingressIP, dispatch } = this.props;
     return (
       <Formik
         onSubmit={onSubmit}
@@ -325,11 +327,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                                 <Link
                                   to="#"
                                   onClick={() => {
-                                    const isDomainsIncludeIngressIP =
-                                      !!values.domains && !!values.domains.find((domain) => domain === ingressIP);
-                                    if (!isDomainsIncludeIngressIP && values.managedType === issuerManaged) {
-                                      setFieldValue("domains", (values.domains || []).concat(ingressIP));
-                                    }
+                                    copy(ingressIP);
+                                    dispatch(setSuccessNotificationAction("Copied successful!"));
                                   }}
                                 >
                                   {ingressIP}
