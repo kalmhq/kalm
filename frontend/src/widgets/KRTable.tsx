@@ -7,7 +7,11 @@ import TableHead from "@material-ui/core/TableHead";
 import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
 import React, { useCallback } from "react";
-import { usePagination, useTable } from "react-table";
+import { usePagination, useTable, useGlobalFilter, useAsyncDebounce } from "react-table";
+import { TextField, Grid, Box } from "@material-ui/core";
+import { FilterListIcon } from "./Icon";
+import { Body } from "./Label";
+import Immutable from "immutable";
 
 interface RowData {
   [key: string]: any;
@@ -16,10 +20,14 @@ interface RowData {
 const DefaultPageSize = 20;
 
 export const KRTable = ({
+  showTitle,
+  title,
   columns,
   data,
 }: {
-  columns: { Header: any; accessor: string; Cell?: any }[];
+  showTitle?: boolean;
+  title?: string;
+  columns: { Header: any; accessor: any; Cell?: any }[];
   data: any[];
 }) => {
   // https://reactjs.org/docs/hooks-faq.html#is-it-safe-to-omit-functions-from-the-list-of-dependencies
@@ -30,6 +38,13 @@ export const KRTable = ({
   const dataMemo = React.useMemo(() => {
     return data;
   }, [data]);
+
+  const filterTypes = React.useMemo(
+    () => ({
+      kFilter: kFilter,
+    }),
+    [],
+  );
 
   const {
     getTableProps,
@@ -42,13 +57,18 @@ export const KRTable = ({
     nextPage,
     previousPage,
     setPageSize,
-    state: { pageIndex, pageSize },
+    preGlobalFilteredRows,
+    setGlobalFilter,
+    state: { pageIndex, pageSize, globalFilter },
   } = useTable<RowData>(
     {
       columns: columnsMemo,
       data: dataMemo,
+      filterTypes,
+      globalFilter: "kFilter",
       initialState: { pageIndex: 0, pageSize: DefaultPageSize },
     },
+    useGlobalFilter,
     usePagination,
   );
 
@@ -75,6 +95,22 @@ export const KRTable = ({
 
   return (
     <TableContainer component={Paper} variant="outlined" square>
+      {showTitle ? (
+        <Grid container spacing={2}>
+          <Grid item md={9}>
+            <Box display="flex" alignItems="center" padding="8px 16px">
+              <Body>{title || ""}</Body>
+            </Box>
+          </Grid>
+          <Grid item md={3}>
+            <GlobalFilter
+              preGlobalFilteredRows={preGlobalFilteredRows}
+              globalFilter={globalFilter}
+              setGlobalFilter={setGlobalFilter}
+            />
+          </Grid>
+        </Grid>
+      ) : null}
       <MuiTable {...getTableProps()}>
         <TableHead>
           {headerGroups.map((headerGroup) => (
@@ -118,4 +154,104 @@ export const KRTable = ({
       ) : null}
     </TableContainer>
   );
+};
+
+// https://codesandbox.io/s/github/tannerlinsley/react-table/tree/master/examples/filtering?file=/src/App.js
+const GlobalFilter = ({ preGlobalFilteredRows, globalFilter, setGlobalFilter }: any) => {
+  const [value, setValue] = React.useState(globalFilter);
+
+  if (!globalFilter && value) {
+    setGlobalFilter(value);
+  }
+
+  const onChange = useAsyncDebounce((value) => {
+    setGlobalFilter(value || undefined);
+  }, 200);
+
+  return (
+    <Box display="flex" alignItems="center" justifyContent="flex-end" padding="8px 16px">
+      <TextField
+        label=""
+        value={value || ""}
+        onChange={(e) => {
+          setValue(e.target.value);
+          onChange(e.target.value);
+        }}
+        placeholder={`Filter`}
+      />
+      <FilterListIcon />
+    </Box>
+  );
+};
+
+const kFilter = (rows: any[], ids: any[], filterValue: string) => {
+  return rows.filter((row) => {
+    if (!filterValue) {
+      return true;
+    }
+
+    for (let id of ids) {
+      const cellValue = row.values[id];
+
+      if (cellIncludes(cellValue, filterValue)) {
+        return true;
+      }
+    }
+
+    return false;
+  });
+};
+
+const cellIncludes = (cellValue: any, filterValue: string): boolean => {
+  if (!cellValue) {
+    return false;
+  }
+
+  if (typeof cellValue === "string") {
+    if (String(cellValue).toLowerCase().includes(String(filterValue).toLowerCase())) {
+      return true;
+    }
+  }
+
+  if (Array.isArray(cellValue)) {
+    for (let child of cellValue) {
+      if (cellIncludes(child, filterValue)) {
+        return true;
+      }
+    }
+  }
+
+  if (typeof cellValue === "object") {
+    if (cellValue.props) {
+      if (cellValue.props.children) {
+        if (typeof cellValue.props.children === "string") {
+          if (cellIncludes(cellValue.props.children, filterValue)) {
+            return true;
+          }
+        }
+
+        if (Array.isArray(cellValue.props.children)) {
+          for (let child of cellValue.props.children) {
+            if (cellIncludes(child, filterValue)) {
+              return true;
+            }
+          }
+        }
+      } else {
+        for (let key in cellValue.props) {
+          if (typeof cellValue.props[key] === "string") {
+            if (cellIncludes(cellValue.props[key], filterValue)) {
+              return true;
+            }
+          } else if (Immutable.isImmutable(cellValue.props[key])) {
+            if (cellIncludes(JSON.stringify(cellValue.props[key].toJS()), filterValue)) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return false;
 };
