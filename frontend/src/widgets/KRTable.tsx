@@ -92,7 +92,7 @@ export const KRTable = ({
     },
     [setPageSize],
   );
-  // console.log("globalFilter:", globalFilter);
+
   return (
     <TableContainer component={Paper} variant="outlined" square>
       {showTitle ? (
@@ -159,6 +159,11 @@ export const KRTable = ({
 // https://codesandbox.io/s/github/tannerlinsley/react-table/tree/master/examples/filtering?file=/src/App.js
 const GlobalFilter = ({ preGlobalFilteredRows, globalFilter, setGlobalFilter }: any) => {
   const [value, setValue] = React.useState(globalFilter);
+
+  if (!globalFilter && value) {
+    setGlobalFilter(value);
+  }
+
   const onChange = useAsyncDebounce((value) => {
     setGlobalFilter(value || undefined);
   }, 200);
