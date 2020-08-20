@@ -774,9 +774,3 @@ func (r *HttpRouteReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		).
 		Complete(r)
 }
-
-func NewDeployKeyReconciler(mgr ctrl.Manager) *DeployKeyReconciler {
-	return &DeployKeyReconciler{
-		BaseReconciler: NewBaseReconciler(mgr, "DeployKey"),
-	}
-}
