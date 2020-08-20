@@ -64,14 +64,17 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   private renderDomains = (cert: Certificate) => {
     return (
       <>
-        {cert.get("domains")?.map((domain) => {
-          return (
-            <FlexRowItemCenterBox key={domain}>
-              <DomainStatus mr={1} domain={domain} />
-              {domain}
-            </FlexRowItemCenterBox>
-          );
-        })}
+        {cert
+          .get("domains")
+          ?.map((domain) => {
+            return (
+              <FlexRowItemCenterBox key={domain}>
+                <DomainStatus mr={1} domain={domain} />
+                {domain}
+              </FlexRowItemCenterBox>
+            );
+          })
+          .toArray()}
       </>
     );
   };
@@ -189,7 +192,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       {
         Header: "Domains",
         accessor: "domains",
-        sorting: false,
       },
       {
         Header: "Status",

@@ -186,7 +186,8 @@ const kFilter = (rows: any[], ids: any[], filterValue: string) => {
 
     for (let id of ids) {
       const cellValue = row.values[id];
-
+      console.log("id", id);
+      console.log("cellValue", cellValue);
       if (cellIncludes(cellValue, filterValue)) {
         return true;
       }
@@ -198,7 +199,7 @@ const kFilter = (rows: any[], ids: any[], filterValue: string) => {
 
 const cellIncludes = (cellValue: any, filterValue: string): boolean => {
   if (!cellValue) {
-    return true;
+    return false;
   }
 
   if (typeof cellValue === "string") {
