@@ -5,7 +5,14 @@ import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import React from "react";
-import { AllHttpMethods, HttpRoute, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
+import {
+  AllHttpMethods,
+  HttpRoute,
+  HttpRouteForm,
+  methodsModeAll,
+  methodsModeSpecific,
+  HttpRouteFormContent,
+} from "types/route";
 import { Loading } from "widgets/Loading";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
 import { BasePage } from "../BasePage";
@@ -66,9 +73,7 @@ class RouteEditRaw extends React.PureComponent<Props> {
     let routeForm = httpRoute as HttpRouteForm;
     routeForm = routeForm.set("methodsMode", httpRoute.get("methods").size >= 7 ? methodsModeAll : methodsModeSpecific);
 
-    return (
-      <RouteForm isEdit onSubmit={this.onSubmit} onSubmitSuccess={this.onSubmitSuccess} initialValues={routeForm} />
-    );
+    return <RouteForm isEdit onSubmit={this.onSubmit} initialValues={routeForm.toObject() as HttpRouteFormContent} />;
   }
 
   public render() {

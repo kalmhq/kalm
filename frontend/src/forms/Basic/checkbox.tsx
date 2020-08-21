@@ -82,6 +82,44 @@ export const KBoolCheckboxRender = ({ input, meta, title, helperText, label }: K
   );
 };
 
+interface KFormikBoolCheckboxRenderProps {
+  value: any;
+  label: React.ReactNode;
+  title?: string;
+  helperText?: string;
+  onChange: any;
+  error: any;
+  touched: boolean;
+}
+
+// For bool
+export const KFormikBoolCheckboxRender = ({
+  value,
+  onChange,
+  error,
+  touched,
+  title,
+  helperText,
+  label,
+}: KFormikBoolCheckboxRenderProps) => {
+  const checked: boolean = !!value;
+  const showError = !!error && touched;
+
+  return (
+    <FormControl fullWidth error={showError} style={{ marginTop: 8 }}>
+      {title ? <FormLabel component="legend">{title}</FormLabel> : null}
+      <FormGroup row>
+        <FormControlLabel control={<Checkbox checked={checked} onChange={onChange} />} label={label} />
+      </FormGroup>
+      {showError ? (
+        <FormHelperText>{error}</FormHelperText>
+      ) : helperText ? (
+        <FormHelperText>{helperText}</FormHelperText>
+      ) : null}
+    </FormControl>
+  );
+};
+
 interface KCheckboxGroupRenderOption {
   value: string;
   label: string;

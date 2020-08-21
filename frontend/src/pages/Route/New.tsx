@@ -3,7 +3,7 @@ import { createRouteAction } from "actions/routes";
 import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import React from "react";
-import { AllHttpMethods, HttpRouteForm, methodsModeAll } from "types/route";
+import { AllHttpMethods, HttpRouteForm, methodsModeAll, newEmptyRouteForm, HttpRouteFormContent } from "types/route";
 import { BasePage } from "../BasePage";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { setSuccessNotificationAction } from "actions/notification";
@@ -44,7 +44,7 @@ class RouteNewRaw extends React.PureComponent<Props> {
     return (
       <BasePage>
         <Box p={2}>
-          <RouteForm onSubmit={this.onSubmit} onSubmitSuccess={this.onSubmitSuccess} />
+          <RouteForm onSubmit={this.onSubmit} initialValues={newEmptyRouteForm().toObject() as HttpRouteFormContent} />
         </Box>
       </BasePage>
     );
