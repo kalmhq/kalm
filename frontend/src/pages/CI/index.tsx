@@ -153,7 +153,6 @@ class CIPageRaw extends React.PureComponent<Props, State> {
         Header: "Resources",
         accessor: "resources",
       },
-
       {
         Header: "Action",
         accessor: "actions",
@@ -180,7 +179,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderKRTable() {
-    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+    return <KRTable showTitle={true} title="CI/CD" columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
   }
 
   private renderContent = () => {

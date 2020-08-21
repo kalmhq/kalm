@@ -61,6 +61,29 @@ export const ValidatorRequired = (value: any, _allValues?: any, _props?: any, _n
   return !!value ? undefined : `Required`;
 };
 
+export const ValidatorContainerPortRequired = (value: any, _allValues?: any, _props?: any, _name?: any) => {
+  if (!!value !== undefined) {
+    const portInteger = parseInt(value, 10);
+
+    if (portInteger === 443) {
+      return `Can't use 443 port`;
+    }
+  }
+
+  return !!value ? undefined : `Required`;
+};
+
+export const ValidatorPort = (value: any, _allValues?: any, _props?: any, _name?: any) => {
+  if (!!value !== undefined) {
+    const portInteger = parseInt(value, 10);
+
+    if (portInteger === 443) {
+      return `Can't use 443 port`;
+    }
+  }
+  return undefined;
+};
+
 export const ValidatorNumberOrAlphabet = (value: any, _allValues?: any, _props?: any, _name?: any) => {
   const portInteger = parseInt(value, 10);
   if (isNaN(portInteger) && portInteger > 0) {
@@ -299,6 +322,6 @@ export const RequireNoSuffix = (suffix: string) => (value: string) => {
   return undefined;
 };
 
-export const RequireString = string().min(1, "Required");
+export const RequireString = string().required("Required");
 
 export const RequireArray = array().min(1, "Required");

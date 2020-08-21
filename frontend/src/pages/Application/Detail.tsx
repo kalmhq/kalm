@@ -283,7 +283,9 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   }
 
   private renderWarningsKRTable() {
-    return <KRTable columns={this.getWarningsKRTableColumns()} data={this.getWarningsKRTableData()} />;
+    return (
+      <KRTable showTitle={false} columns={this.getWarningsKRTableColumns()} data={this.getWarningsKRTableData()} />
+    );
   }
 
   private formatYAxesValue = (value: number, label: string) => {

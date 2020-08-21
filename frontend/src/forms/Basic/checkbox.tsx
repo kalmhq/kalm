@@ -120,6 +120,80 @@ export const KFormikBoolCheckboxRender = ({
   );
 };
 
+interface KFormikCheckboxGroupRenderOption {
+  value: string;
+  label: string;
+  htmlColor?: string;
+}
+
+interface KFormikCheckboxGroupRenderProps {
+  title?: string;
+  helperText?: string;
+  options: KFormikCheckboxGroupRenderOption[];
+  componentType?: "Checkbox" | "Chip";
+  value: Immutable.List<string>;
+  onChange: any;
+  error: any;
+  touched: boolean;
+}
+
+// For value type is Immutable.List<string>
+export const KFormikCheckboxGroupRender = ({
+  title,
+  options,
+  helperText,
+  componentType,
+  value,
+  error,
+  touched,
+  onChange,
+}: KFormikCheckboxGroupRenderProps) => {
+  const showError = !!error && touched;
+
+  return (
+    <FormControl fullWidth error={showError}>
+      {title ? <FormLabel component="legend">{title}</FormLabel> : null}
+      {showError ? <FormHelperText>{error}</FormHelperText> : null}
+      <FormGroup row>
+        {options.map((x) => {
+          const onCheckChange = (_: any, checked: boolean) => {
+            if (checked) {
+              onChange(value.push(x.value));
+            } else {
+              onChange(value.remove(value.indexOf(x.value)));
+            }
+          };
+
+          if (componentType === "Chip") {
+            return (
+              <Box mt={1} mr={1} mb={1} key={x.value}>
+                <KChip
+                  clickable
+                  disabledStyle={!value.includes(x.value)}
+                  htmlColor={x.htmlColor}
+                  label={x.value}
+                  onClick={() => {
+                    onCheckChange(null, !value.includes(x.value));
+                  }}
+                />
+              </Box>
+            );
+          }
+
+          return (
+            <FormControlLabel
+              key={x.value}
+              control={<Checkbox checked={value.includes(x.value)} onChange={onCheckChange} name={x.value} />}
+              label={x.label}
+            />
+          );
+        })}
+      </FormGroup>
+      {helperText ? <FormHelperText>{helperText}</FormHelperText> : null}
+    </FormControl>
+  );
+};
+
 interface KCheckboxGroupRenderOption {
   value: string;
   label: string;

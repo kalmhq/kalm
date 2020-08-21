@@ -24,8 +24,9 @@ import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { KRTable } from "widgets/KRTable";
 import { KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
-import { getRouteUrl, OpenInBrowser } from "widgets/OpenInBrowser";
+import { getRouteUrl } from "widgets/OpenInBrowser";
 import { Targets } from "widgets/Targets";
+import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -36,11 +37,7 @@ interface Props extends WithStyles<typeof styles>, WithRoutesDataProps {}
 
 interface State {}
 
-interface RowData extends HttpRoute {
-  index: number;
-}
-
-type HostCellProps = { row: RowData; clusterInfo: ClusterInfo };
+type HostCellProps = { row: HttpRoute; clusterInfo: ClusterInfo };
 
 /**
  * A component that renders a cell for the "Domain" column of the Routes table
@@ -49,17 +46,22 @@ type HostCellProps = { row: RowData; clusterInfo: ClusterInfo };
 const HostCellRaw = ({ row, clusterInfo }: HostCellProps) => {
   return (
     <Box>
-      {row.get("hosts").map((h) => {
-        const url = getRouteUrl(row as HttpRoute, clusterInfo, h);
-        return (
-          <FlexRowItemCenterBox key={h}>
-            <DomainStatus mr={1} domain={h} />
-            <KMLink href={url} target="_blank">
-              {h}
-            </KMLink>
-          </FlexRowItemCenterBox>
-        );
-      })}
+      {row
+        .get("hosts")
+        .map((h) => {
+          const url = getRouteUrl(row as HttpRoute, clusterInfo, h);
+          return (
+            <FlexRowItemCenterBox key={h}>
+              <DomainStatus mr={1} domain={h} />
+              <ItemWithHoverIcon icon={<CopyAsCurl route={row as HttpRoute} showIconButton={true} host={h} />}>
+                <KMLink href={url} target="_blank" rel="noopener noreferrer">
+                  {h}
+                </KMLink>
+              </ItemWithHoverIcon>
+            </FlexRowItemCenterBox>
+          );
+        })
+        .toArray()}
     </Box>
   );
 };
@@ -72,39 +74,45 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     this.state = {};
   }
 
-  private renderHosts(row: RowData) {
+  private renderHosts(row: HttpRoute) {
     return <HostCell row={row} />;
   }
 
-  private renderUrls(row: RowData) {
+  private renderUrls(row: HttpRoute) {
     return (
       <Box>
-        {row.get("paths").map((h) => {
-          return <Box key={h}>{h}</Box>;
-        })}
+        {row
+          .get("paths")
+          .map((h) => {
+            return <Box key={h}>{h}</Box>;
+          })
+          .toArray()}
       </Box>
     );
   }
 
-  private renderRules(row: RowData) {
+  private renderRules(row: HttpRoute) {
     if (!row.get("conditions")) {
       return null;
     }
 
-    return row.get("conditions")!.map((x) => {
-      return (
-        <div>
-          {x.get("type")} {x.get("name")} {x.get("operator")} {x.get("value")}{" "}
-        </div>
-      );
-    });
+    return row
+      .get("conditions")!
+      .map((x) => {
+        return (
+          <div>
+            {x.get("type")} {x.get("name")} {x.get("operator")} {x.get("value")}{" "}
+          </div>
+        );
+      })
+      .toArray();
   }
 
-  private renderMethods(row: RowData) {
+  private renderMethods(row: HttpRoute) {
     return <Methods methods={row.get("methods")} />;
   }
 
-  private renderSupportHttp(row: RowData) {
+  private renderSupportHttp(row: HttpRoute) {
     if (row.get("httpRedirectToHttps") && row.get("schemes").includes("http") && row.get("schemes").includes("https")) {
       return <ForwardIcon />;
     }
@@ -114,17 +122,17 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     }
   }
 
-  private renderSupportHttps(row: RowData) {
+  private renderSupportHttps(row: HttpRoute) {
     if (row.get("schemes").find((x) => x === "https")) {
       return <CheckIcon />;
     }
   }
 
-  private renderTargets = (row: RowData) => {
+  private renderTargets = (row: HttpRoute) => {
     return <Targets destinations={row.get("destinations")} />;
   };
 
-  private renderAdvanced(row: RowData) {
+  private renderAdvanced(row: HttpRoute) {
     let res: string[] = [];
     if (row.get("mirror")) {
       res.push("mirror");
@@ -144,12 +152,10 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     return res.join(",");
   }
 
-  private renderActions = (row: RowData) => {
+  private renderActions = (row: HttpRoute) => {
     const { dispatch } = this.props;
     return (
       <>
-        <OpenInBrowser route={row as HttpRoute} showIconButton={true} />
-        <CopyAsCurl route={row as HttpRoute} showIconButton={true} />
         <IconLinkWithToolTip
           onClick={() => {
             blinkTopProgressAction();
@@ -254,15 +260,14 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
 
     httpRoutes &&
       httpRoutes.forEach((httpRoute, index) => {
-        const rowData = httpRoute as RowData;
         data.push({
-          host: this.renderHosts(rowData),
-          urls: this.renderUrls(rowData),
-          http: this.renderSupportHttp(rowData),
-          https: this.renderSupportHttps(rowData),
-          methods: this.renderMethods(rowData),
-          targets: this.renderTargets(rowData),
-          actions: this.renderActions(rowData),
+          host: this.renderHosts(httpRoute),
+          urls: this.renderUrls(httpRoute),
+          http: this.renderSupportHttp(httpRoute),
+          https: this.renderSupportHttps(httpRoute),
+          methods: this.renderMethods(httpRoute),
+          targets: this.renderTargets(httpRoute),
+          actions: this.renderActions(httpRoute),
         });
       });
 
@@ -270,11 +275,12 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderKRTable() {
-    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+    return <KRTable showTitle={true} title="Routes" columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
   }
 
   public render() {
     const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes } = this.props;
+
     return (
       <BasePage
         secondHeaderRight={

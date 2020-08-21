@@ -37,45 +37,41 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 
 interface State {}
 
-interface RowData extends PodStatus {
-  index: number;
-}
-
 class PodsTableRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {};
   }
 
-  private renderPodName = (pod: RowData) => {
+  private renderPodName = (pod: PodStatus) => {
     return pod.get("name");
   };
 
-  private renderPodNode = (pod: RowData) => {
+  private renderPodNode = (pod: PodStatus) => {
     return pod.get("node");
   };
 
-  private renderPodRestarts = (pod: RowData) => {
+  private renderPodRestarts = (pod: PodStatus) => {
     return pod.get("restarts");
   };
 
-  private renderPodStatusText = (pod: RowData) => {
+  private renderPodStatusText = (pod: PodStatus) => {
     return pod.get("statusText");
   };
 
-  private renderPodAGE = (pod: RowData) => {
+  private renderPodAGE = (pod: PodStatus) => {
     return formatTimeDistance(pod.get("createTimestamp"));
   };
 
-  private renderPodCPU = (pod: RowData) => {
+  private renderPodCPU = (pod: PodStatus) => {
     return <SmallCPULineChart data={pod.get("metrics").get("cpu")!} />;
   };
 
-  private renderPodMemory = (pod: RowData) => {
+  private renderPodMemory = (pod: PodStatus) => {
     return <SmallMemoryLineChart data={pod.get("metrics").get("memory")!} />;
   };
 
-  private renderPodActions = (pod: RowData) => {
+  private renderPodActions = (pod: PodStatus) => {
     const { activeNamespaceName, dispatch } = this.props;
     const hasWriterRole = true;
 
@@ -169,7 +165,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
     return <SuccessBadge />;
   };
 
-  private renderPodStatusIcon = (pod: RowData) => {
+  private renderPodStatusIcon = (pod: PodStatus) => {
     if (pod.get("status") === "Failed") {
       const popoverBody = (
         <Box p={2} maxWidth={800}>
@@ -247,7 +243,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
 
     pods &&
       pods.forEach((pod, index) => {
-        const rowData = pod as RowData;
+        const rowData = pod as PodStatus;
         data.push({
           statusIcon: this.renderPodStatusIcon(rowData),
           name: this.renderPodName(rowData),

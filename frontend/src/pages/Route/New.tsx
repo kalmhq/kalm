@@ -44,7 +44,7 @@ class RouteNewRaw extends React.PureComponent<Props> {
     return (
       <BasePage>
         <Box p={2}>
-          <RouteForm onSubmit={this.onSubmit} initialValues={newEmptyRouteForm().toObject() as HttpRouteFormContent} />
+          <RouteForm onSubmit={this.onSubmit} initial={newEmptyRouteForm().toObject() as HttpRouteFormContent} />
         </Box>
       </BasePage>
     );

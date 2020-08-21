@@ -310,7 +310,7 @@ func CullDatabase(db *sql.DB, window *time.Duration) error {
 	}
 
 	affected, _ = res.RowsAffected()
-	log.Debug("Cleaning up pods: %d rows removed", affected)
+	log.Debug(fmt.Sprintf("Cleaning up pods: %d rows removed", affected))
 	err = tx.Commit()
 
 	if err != nil {
