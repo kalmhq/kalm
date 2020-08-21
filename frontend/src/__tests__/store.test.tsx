@@ -1,5 +1,5 @@
 import { ThemeProvider } from "@material-ui/core";
-import { createApplicationAction, loadApplicationsAction } from "actions/application";
+import { loadApplicationsAction } from "actions/application";
 import { loadCertificatesAction } from "actions/certificate";
 import { createComponentAction } from "actions/component";
 import { createRouteAction } from "actions/routes";
@@ -9,10 +9,10 @@ import configureStore from "configureStore";
 import { ConnectedRouter } from "connected-react-router/immutable";
 import { configure, mount } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
-import ApplicationForm, { applicationInitialValues } from "forms/Application";
+import ApplicationForm from "forms/Application";
 import { CertificateForm } from "forms/Certificate";
 import { ComponentLikeForm } from "forms/ComponentLike";
-import { APPLICATION_FORM_ID, COMPONENT_FORM_ID, ROUTE_FORM_ID } from "forms/formIDs";
+import { COMPONENT_FORM_ID, ROUTE_FORM_ID } from "forms/formIDs";
 import { RouteForm } from "forms/Route";
 import { createBrowserHistory } from "history";
 import Immutable from "immutable";
@@ -24,7 +24,6 @@ import { RootState } from "reducers";
 import { Store } from "redux";
 import { change } from "redux-form";
 import { theme } from "theme/theme";
-import { Application } from "types/application";
 import { newEmptyCertificateForm } from "types/certificate";
 import { ComponentLike, newEmptyComponentLike } from "types/componentTemplate";
 import { HttpRouteForm, newEmptyRouteForm } from "types/route";
@@ -98,31 +97,10 @@ describe("add certificate", () => {
   });
 });
 
-test("add application", async (done) => {
-  const onSubmit = async (applicationFormValue: Application) => {
-    return await store.dispatch(createApplicationAction(applicationFormValue));
-  };
-
-  const onSubmitSuccess = (app: Application) => {
-    try {
-      expect(app.get("name")).toBe(applicationName);
-      done();
-    } catch (error) {
-      done(error);
-    }
-  };
-
+test("add application", () => {
   const WrappedApplicationForm = class extends React.Component {
     public render() {
-      return (
-        <ApplicationForm
-          currentTab={"basic"}
-          isEdit={false}
-          initialValues={applicationInitialValues}
-          onSubmit={onSubmit}
-          onSubmitSuccess={onSubmitSuccess}
-        />
-      );
+      return <ApplicationForm currentTab={"basic"} />;
     }
   };
   const component = mount(
@@ -132,9 +110,9 @@ test("add application", async (done) => {
       </ConnectedRouter>
     </Provider>,
   );
-  store.dispatch(change(APPLICATION_FORM_ID, "name", applicationName));
+  component.find("input#application-name").getDOMNode().setAttribute("value", applicationName);
+  component.find("input#application-name").simulate("change");
   expect(component.find("code#application-name-code").text()).toContain(applicationName);
-  component.find("button#add-application-submit-button").simulate("click");
 });
 
 test("add component", async (done) => {
@@ -195,7 +173,7 @@ test("add route", async (done) => {
   const testService = store.getState().get("services").get("services").get(0);
   const onSubmit = async (route: HttpRouteForm) => {
     route = route.set("namespace", testApplication?.get("name"));
-    await store.dispatch(createRouteAction(route.get("name"), testApplication?.get("name")!, route));
+    await store.dispatch(createRouteAction(route));
   };
   const onSubmitSuccess = () => {
     try {

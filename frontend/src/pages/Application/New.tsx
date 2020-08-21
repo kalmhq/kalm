@@ -3,7 +3,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { createApplicationAction } from "actions/application";
-import ApplicationForm, { applicationInitialValues } from "../../forms/Application";
+import ApplicationForm from "../../forms/Application";
 import { RootState } from "reducers";
 import { Actions } from "types";
 import { Application } from "types/application";
@@ -41,13 +41,7 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>
-              <ApplicationForm
-                currentTab={"basic"}
-                isEdit={false}
-                initialValues={applicationInitialValues}
-                onSubmit={this.submit}
-                onSubmitSuccess={this.onSubmitSuccess}
-              />
+              <ApplicationForm currentTab={"basic"} />
             </Grid>
           </Grid>
         </div>
