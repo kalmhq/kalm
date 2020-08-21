@@ -3,7 +3,7 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { loadDomainDNSInfo } from "actions/domain";
-import { Field, FormikProps, withFormik } from "formik";
+import { Field, FormikProps, withFormik, FieldArray } from "formik";
 import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KBoolCheckboxRender, KFormikCheckboxGroupRender, KFormikBoolCheckboxRender } from "forms/Basic/checkbox";
 import { KFormikRadioGroupRender } from "forms/Basic/radio";
@@ -22,9 +22,8 @@ import { connect } from "react-redux";
 import { Link as RouteLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { arrayPush, change } from "redux-form";
-import { FieldArray } from "redux-form/immutable";
 import { TDispatchProp } from "types";
-import { httpMethods, HttpRouteFormContent, methodsModeAll, methodsModeSpecific } from "types/route";
+import { httpMethods, methodsModeAll, methodsModeSpecific } from "types/route";
 import { isArray } from "util";
 import { arraysMatch } from "utils";
 import { includesForceHttpsDomain } from "utils/domain";
@@ -95,12 +94,12 @@ const styles = (theme: Theme) =>
 interface OwnProps {
   isEdit?: boolean;
   onSubmit: any;
-  initial: HttpRouteFormContent;
+  initial: any;
 }
 
 export interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props extends ConnectedProps, OwnProps, FormikProps<HttpRouteFormContent>, WithStyles<typeof styles> {}
+export interface Props extends ConnectedProps, OwnProps, FormikProps<any>, WithStyles<typeof styles> {}
 
 interface State {
   isAdvancedPartUnfolded: boolean;
@@ -123,7 +122,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     const { values, dispatch } = this.props;
     const { hosts, schemes, httpRedirectToHttps } = values;
     if (!hosts.equals(prevProps.values.hosts)) {
-      hosts.forEach((host) => {
+      hosts.forEach((host: any) => {
         dispatch(loadDomainDNSInfo(host));
       });
     }
@@ -590,11 +589,11 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
 const connectedForm = connect(mapStateToProps)(withStyles(styles)(RouteFormRaw));
 
-export const RouteForm = withFormik<OwnProps, HttpRouteFormContent>({
+export const RouteForm = withFormik<OwnProps, any>({
   mapPropsToValues: (props) => {
     return props.initial;
   },
-  validate: (values: HttpRouteFormContent) => {
+  validate: (values: any) => {
     let errors = {};
     return errors;
   },
