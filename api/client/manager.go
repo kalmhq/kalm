@@ -7,12 +7,12 @@ import (
 	"github.com/kalmhq/kalm/api/auth"
 	"github.com/kalmhq/kalm/api/config"
 	"github.com/kalmhq/kalm/api/errors"
-	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
+	"net"
 )
 
 const (
@@ -173,33 +173,31 @@ func (m *ClientManager) GetConfigForClientRequestContext(c echo.Context) (*Clien
 		return &clientInfo, nil
 	}
 
-	// reject traffic from route without valid authentication info
-	if c.Request().Header.Get(controllers.KALM_ROUTE_HEADER) == "true" {
-		return nil, errors.NewUnauthorized("")
-	}
+	if m.Config.PrivilegedLocalhostAccess {
+		// If the request is from localhost
+		// 	 Case #1: localhost development
+		//   Case #2: kubectl port-forwrd (https://github.com/kubernetes/kubernetes/blob/6ce9e71cd57d4aa6c932aabddf4129f173b9d710/pkg/kubelet/dockershim/docker_streaming_others.go#L31-L86)
+		// Use cluster config permission
 
-	// If the request is from localhost
-	// 	 Case #1: localhost development
-	//   Case #2: kubectl port-forwrd (https://github.com/kubernetes/kubernetes/blob/6ce9e71cd57d4aa6c932aabddf4129f173b9d710/pkg/kubelet/dockershim/docker_streaming_others.go#L31-L86)
-	// Use cluster config permission
+		remoteAddr, _, _ := net.SplitHostPort(c.Request().RemoteAddr)
 
-	realIP := c.RealIP()
-	if realIP == "127.0.0.1" || realIP == "::1" {
-		var name string
+		if remoteAddr == "127.0.0.1" || remoteAddr == "::1" {
+			var name string
 
-		if m.IsInCluster() {
-			name = "localhost(InCluster)"
-		} else {
-			name = "localhost"
+			if m.IsInCluster() {
+				name = "localhost(InCluster)"
+			} else {
+				name = "localhost"
+			}
+
+			return &ClientInfo{
+				Cfg:           m.ClusterConfig,
+				Name:          name,
+				Email:         "Unknown",
+				EmailVerified: false,
+				Groups:        []string{},
+			}, nil
 		}
-
-		return &ClientInfo{
-			Cfg:           m.ClusterConfig,
-			Name:          name,
-			Email:         "Unknown",
-			EmailVerified: false,
-			Groups:        []string{},
-		}, nil
 	}
 
 	// Shouldn't be able to reach here

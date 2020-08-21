@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/urfave/cli/v2"
@@ -11,6 +12,7 @@ import (
 type Config struct {
 	BindAddress                   string
 	Port                          int
+	PrivilegedLocalhostAccess     bool
 	WebhookPort                   int
 	LogLevel                      string
 	KubernetesApiServerAddress    string
@@ -39,6 +41,13 @@ func (c *Config) Normalize() {
 
 		log.Debug("Using cluster of current context", "definedIn", defaultKubeConfigPath)
 	}
+}
+
+func (c *Config) DeepCopy() *Config {
+	bs, _ := json.Marshal(c)
+	var res Config
+	_ = json.Unmarshal(bs, &res)
+	return &res
 }
 
 func (c *Config) Validate() {
