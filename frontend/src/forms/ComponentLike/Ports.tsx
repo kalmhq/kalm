@@ -21,7 +21,7 @@ import { PortChart } from "widgets/PortChart";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderDebounceTextField } from "../Basic/textfield";
 import { NormalizePort } from "../normalizer";
-import { ValidatorRequired } from "../validator";
+import { ValidatorRequired, ValidatorContainerPortRequired, ValidatorPort } from "../validator";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -131,9 +131,9 @@ class RenderPorts extends React.PureComponent<Props> {
                           onBlur={popupState.close}
                           name={`${field}.containerPort`}
                           label="Container port"
-                          placeholder="Port number between 1-65535"
+                          placeholder="1~65535,not 443"
                           required
-                          validate={ValidatorRequired}
+                          validate={ValidatorContainerPortRequired}
                           normalize={NormalizePort}
                         />
                       </Grid>
@@ -170,6 +170,7 @@ class RenderPorts extends React.PureComponent<Props> {
                           name={`${field}.servicePort`}
                           label="Service Port"
                           placeholder="Default to equal publish port"
+                          validate={ValidatorPort}
                           normalize={NormalizePort}
                         />
                       </Grid>

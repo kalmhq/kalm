@@ -169,5 +169,15 @@ func run(runningConfig *config.Config) {
 
 	go startWebhookServer(runningConfig)
 	go startMetricServer(runningConfig)
+
+	// run localhost server with privilege
+	clonedConfig := runningConfig.DeepCopy()
+	clonedConfig.PrivilegedLocalhostAccess = true
+	clonedConfig.BindAddress = "127.0.0.1"
+	clonedConfig.Port = 3010
+	go startMainServer(clonedConfig)
+
+	// real server serve
+	runningConfig.PrivilegedLocalhostAccess = false
 	startMainServer(runningConfig)
 }

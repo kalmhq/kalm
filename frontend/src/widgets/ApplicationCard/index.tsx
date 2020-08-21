@@ -55,7 +55,6 @@ type ApplicationCardProps = {
   application: ApplicationDetails;
   componentsMap: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>;
   httpRoutes: Immutable.List<HttpRoute>;
-  activeNamespaceName: string;
   confirmDelete: (application: ApplicationDetails) => void;
 } & CardProps &
   WithStyles<typeof ApplicationCardStyles>;
@@ -100,11 +99,11 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
   };
 
   private renderExternalAccesses = () => {
-    const { httpRoutes, activeNamespaceName, application } = this.props;
-
+    const { httpRoutes, application } = this.props;
+    const applicationName = application.get("name");
     if (httpRoutes && httpRoutes.size > 0) {
       return (
-        <PopupState variant="popover" popupId={application.get("name")}>
+        <PopupState variant="popover" popupId={applicationName}>
           {(popupState) => (
             <>
               <KMLink component="button" variant="body2" {...bindTrigger(popupState)}>
@@ -123,7 +122,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
                 }}
               >
                 <Box p={2}>
-                  <RouteWidgets routes={httpRoutes} activeNamespaceName={activeNamespaceName} />
+                  <RouteWidgets routes={httpRoutes} />
                 </Box>
               </Popover>
             </>
