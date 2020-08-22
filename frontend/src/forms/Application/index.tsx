@@ -17,6 +17,9 @@ import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
 import { KRenderFormikTextField } from "../Basic/textfield";
 import { ValidatorName, ValidatorRequired } from "../validator";
+import { APPLICATION_FORM_ID } from "forms/formIDs";
+import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { FormMidware } from "tutorials/formMidware";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -41,6 +44,7 @@ const mapStateToProps = (state: RootState) => {
   return {
     tutorialState: state.get("tutorial"),
     isSubmittingApplication: state.get("applications").get("isSubmittingApplication"),
+    form: APPLICATION_FORM_ID,
   };
 };
 
@@ -109,10 +113,11 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
   }
 
   public render() {
-    const { handleSubmit, classes, errors, touched } = this.props;
+    const { handleSubmit, classes, errors, touched, values, form } = this.props;
 
     return (
       <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">
+        <FormMidware values={values} form={form} />
         <KPanel
           content={
             <Box p={2} tutorial-anchor-id="application-form-name-field">
@@ -141,6 +146,7 @@ const form = withFormik<ConnectedProps & OwnProps & WithStyles<typeof styles>, A
     await dispatch(createApplicationAction(Immutable.fromJS(applicationFormValue)));
     dispatch(push(`/applications/${applicationFormValue.name}/components/new`));
   },
+  validate: formikValidateOrNotBlockByTutorial,
 })(ApplicationFormRaw);
 
 export default connect(mapStateToProps)(withStyles(styles)(form));

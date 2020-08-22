@@ -45,6 +45,48 @@ export const formValidateOrNotBlockByTutorial = (
   return errors;
 };
 
+export const formikValidateOrNotBlockByTutorial = (
+  values: { [key: string]: any },
+  props: { tutorialState: TutorialState; form: string },
+) => {
+  const { tutorialState, form } = props;
+  const errors: { [key: string]: any } = {};
+  const state = tutorialState;
+
+  if (!tutorialState) {
+    return errors;
+  }
+
+  const tutorial = tutorialState.get("tutorial");
+  if (!tutorial) {
+    return errors;
+  }
+
+  const currentStep = tutorial.steps[state.get("currentStepIndex")];
+  if (!currentStep) {
+    return errors;
+  }
+
+  for (let i = 0; i < currentStep.subSteps.length; i++) {
+    const subStep = currentStep.subSteps[i];
+
+    if (subStep.formValidator) {
+      for (let j = 0; j < subStep.formValidator.length; j++) {
+        const rule = subStep.formValidator[j];
+        if (rule.form === form) {
+          const error = rule.validate(values[rule.field]);
+
+          if (error) {
+            errors[rule.field] = error;
+          }
+        }
+      }
+    }
+  }
+
+  return errors;
+};
+
 const setValueInPath = (obj: { [key: string]: any }, attrPaths: string[], value: string) => {
   for (let i = 0; i < attrPaths.length; i++) {
     const currentAttr = attrPaths[i];
