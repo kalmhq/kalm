@@ -205,6 +205,7 @@ func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 }
 
 var DefaultHTTP01IssuerName = "default-http01-issuer"
+var DefaultDNS01IssuerName = "default-dns01-issuer"
 
 func (r *KalmNSReconciler) reconcileDefaultHTTP01Issuer() error {
 
