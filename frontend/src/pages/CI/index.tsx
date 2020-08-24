@@ -8,7 +8,12 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
-import { DeployKey, DeployKeyScopeCluster, DeployKeyScopeComponent, DeployKeyScopeNamespace } from "types/deployKey";
+import {
+  DeployKeyFormType,
+  DeployKeyScopeCluster,
+  DeployKeyScopeComponent,
+  DeployKeyScopeNamespace,
+} from "types/deployKey";
 import sc from "utils/stringConstants";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
 import { CustomizedButton } from "widgets/Button";
@@ -54,11 +59,11 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderName = (rowData: DeployKey) => {
+  private renderName = (rowData: DeployKeyFormType) => {
     return <Typography variant="subtitle2">{rowData.get("name")}</Typography>;
   };
 
-  private renderScope = (rowData: DeployKey) => {
+  private renderScope = (rowData: DeployKeyFormType) => {
     switch (rowData.get("scope")) {
       case DeployKeyScopeCluster: {
         return "Cluster";
@@ -72,7 +77,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderResources = (rowData: DeployKey) => {
+  private renderResources = (rowData: DeployKeyFormType) => {
     const resoureces = rowData.get("resources");
 
     switch (rowData.get("scope")) {
@@ -80,15 +85,15 @@ class CIPageRaw extends React.PureComponent<Props, State> {
         return "-";
       }
       case DeployKeyScopeNamespace: {
-        return resoureces.map((r) => <Box key={r}>{r}</Box>).toArray();
+        return resoureces.map((r) => <Box key={r}>{r}</Box>);
       }
       case DeployKeyScopeComponent: {
-        return resoureces.map((r) => <Box key={r}>{r}</Box>).toArray();
+        return resoureces.map((r) => <Box key={r}>{r}</Box>);
       }
     }
   };
 
-  private renderActions = (rowData: DeployKey) => {
+  private renderActions = (rowData: DeployKeyFormType) => {
     const { dispatch } = this.props;
     return (
       <>
