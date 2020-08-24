@@ -177,7 +177,7 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 	}
 
 	if err := r.updateConfigsForIssuer(ctx, &issuer); err != nil {
-		return ctrl.Result{}, nil
+		return ctrl.Result{}, err
 	}
 
 	if isNew {
@@ -422,7 +422,11 @@ func (r *ACMEServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *ACMEServerReconciler) updateConfigsForIssuer(ctx context.Context, issuer *corev1alpha1.HttpsCertIssuer) interface{} {
+func (r *ACMEServerReconciler) updateConfigsForIssuer(
+	ctx context.Context,
+	issuer *corev1alpha1.HttpsCertIssuer,
+) error {
+
 	dns01Certs, err := r.getCertsUsingDNSIssuer(ctx)
 	if err != nil {
 		return err
@@ -435,12 +439,9 @@ func (r *ACMEServerReconciler) updateConfigsForIssuer(ctx context.Context, issue
 			continue
 		}
 
-		// todo ok to only take first?
+		// todo add check in webhook
+		// for dns cert, only 1 domain is permitted (and without: *)
 		domain := domains[0]
-		if !strings.HasPrefix(domain, "*.") {
-			domain = "*." + domain
-		}
-
 		if _, exist := issuer.Spec.DNS01.Configs[domain]; !exist {
 			needRegisterDomains = append(needRegisterDomains, domain)
 		}
@@ -459,7 +460,9 @@ func (r *ACMEServerReconciler) updateConfigsForIssuer(ctx context.Context, issue
 	}
 
 	for domain, config := range domainConfigMap {
+		// both example.com & *.example.com is needed
 		issuer.Spec.DNS01.Configs[domain] = config
+		issuer.Spec.DNS01.Configs["*."+domain] = config
 	}
 
 	return nil

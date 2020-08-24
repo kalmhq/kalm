@@ -128,6 +128,9 @@ func (r *HttpsCertReconciler) SetupWithManager(mgr ctrl.Manager) error {
 func (r *HttpsCertReconciler) reconcileForAutoManagedHttpsCert(ctx context.Context, httpsCert corev1alpha1.HttpsCert) error {
 	certName, certSecretName := getCertAndCertSecretName(httpsCert)
 
+	dnsNames := getDNSNames(httpsCert)
+	commonName := pickCommonName(dnsNames)
+
 	desiredCert := cmv1alpha2.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: istioNamespace,
@@ -135,7 +138,8 @@ func (r *HttpsCertReconciler) reconcileForAutoManagedHttpsCert(ctx context.Conte
 		},
 		Spec: cmv1alpha2.CertificateSpec{
 			SecretName: certSecretName,
-			DNSNames:   httpsCert.Spec.Domains,
+			CommonName: commonName,
+			DNSNames:   dnsNames,
 			IssuerRef: cmmeta.ObjectReference{
 				Name: httpsCert.Spec.HttpsCertIssuer,
 				Kind: "ClusterIssuer",
@@ -222,6 +226,39 @@ func (r *HttpsCertReconciler) reconcileForAutoManagedHttpsCert(ctx context.Conte
 	r.Status().Update(ctx, &httpsCert)
 
 	return err
+}
+
+func pickCommonName(names []string) string {
+	for _, n := range names {
+		if strings.HasPrefix(n, "*.") {
+			continue
+		}
+
+		return n
+	}
+
+	return ""
+}
+
+func getDNSNames(httpsCert corev1alpha1.HttpsCert) (dnsNames []string) {
+	dnsNameMap := make(map[string]interface{})
+	if httpsCert.Spec.HttpsCertIssuer == DefaultDNS01IssuerName {
+		for _, domain := range httpsCert.Spec.Domains {
+			if !strings.HasPrefix(domain, "*.") {
+				dnsNameMap["*."+domain] = true
+			}
+
+			dnsNameMap[domain] = true
+		}
+
+		for k := range dnsNameMap {
+			dnsNames = append(dnsNames, k)
+		}
+	} else {
+		dnsNames = httpsCert.Spec.Domains
+	}
+
+	return dnsNames
 }
 
 // todo a buggy way to tell is issuer is trusted

@@ -515,7 +515,7 @@ func (r *HttpsCertIssuerReconciler) ReconcileDNS01(
 						{
 							DNS01: &v1alpha2.ACMEChallengeSolverDNS01{
 								AcmeDNS: &v1alpha2.ACMEIssuerDNS01ProviderAcmeDNS{
-									Host: getSVCNameForACMEDNS(),
+									Host: fmt.Sprintf("http://%s", getSVCNameForACMEDNS()),
 									AccountSecret: cmmetav1.SecretKeySelector{
 										LocalObjectReference: cmmetav1.LocalObjectReference{
 											Name: "cert-manager-acme-secret",
