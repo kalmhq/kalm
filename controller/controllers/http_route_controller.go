@@ -337,7 +337,8 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 
 	httpsRedirectFilterMap := make(map[string]*v1alpha32.EnvoyFilter)
 
-	for _, filter := range r.httpsRedirectEnvoyFilters {
+	for i := range r.httpsRedirectEnvoyFilters {
+		filter := r.httpsRedirectEnvoyFilters[i]
 		httpsRedirectFilterMap[filter.Name] = &filter
 	}
 
