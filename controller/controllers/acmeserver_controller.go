@@ -19,17 +19,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-logr/logr"
 	"io/ioutil"
+	v1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"net/http"
+	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sort"
 	"strings"
 
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -37,13 +38,14 @@ import (
 
 // ACMEServerReconciler reconciles a ACMEServer object
 type ACMEServerReconciler struct {
-	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	*BaseReconciler
+	ctx context.Context
 }
 
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=acmeservers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=acmeservers/status,verbs=get;update;patch
+
+const DefaultACMEComponentName = "acme"
 
 func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
@@ -69,10 +71,22 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 
 	acmeServerConfigContent := genContentForACMEServerConfig(acmeDomain)
 
+	var scList v1.StorageClassList
+	err := r.List(r.ctx, &scList)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	if len(scList.Items) <= 0 {
+		return ctrl.Result{}, fmt.Errorf("no available storage class")
+	}
+
+	sc := pickStorageClass(scList)
+
 	expectedComp := corev1alpha1.Component{
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: NamespaceKalmSystem,
-			Name:      acmeServer.Name,
+			Name:      DefaultACMEComponentName,
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			Image: "joohoi/acme-dns:v0.8",
@@ -90,10 +104,11 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			},
 			Volumes: []corev1alpha1.Volume{
 				{
-					Path: "/var/lib/acme-dns/",
-					Size: resource.MustParse("128Mi"),
-					Type: corev1alpha1.VolumeTypePersistentVolumeClaim,
-					PVC:  "acmedns-sqlitedisk",
+					Path:             "/var/lib/acme-dns/",
+					Size:             resource.MustParse("128Mi"),
+					Type:             corev1alpha1.VolumeTypePersistentVolumeClaim,
+					PVC:              "acmedns-sqlitedisk",
+					StorageClassName: &sc.Name,
 				},
 			},
 			PreInjectedFiles: []corev1alpha1.PreInjectFile{
@@ -109,7 +124,7 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 	isNew := false
 	comp := corev1alpha1.Component{}
 
-	err := r.Get(ctx, client.ObjectKey{Namespace: expectedComp.Namespace, Name: expectedComp.Name}, &comp)
+	err = r.Get(ctx, client.ObjectKey{Namespace: expectedComp.Namespace, Name: expectedComp.Name}, &comp)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			isNew = true
@@ -147,6 +162,15 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			issuer.ObjectMeta = ctrl.ObjectMeta{
 				Name: DefaultDNS01IssuerName,
 			}
+
+			issuer = corev1alpha1.HttpsCertIssuer{
+				ObjectMeta: ctrl.ObjectMeta{
+					Name: DefaultDNS01IssuerName,
+				},
+				Spec: corev1alpha1.HttpsCertIssuerSpec{
+					DNS01: &corev1alpha1.DNS01Issuer{},
+				},
+			}
 		} else {
 			return ctrl.Result{}, err
 		}
@@ -167,6 +191,27 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 	}
 
 	return ctrl.Result{}, err
+}
+
+func pickStorageClass(list v1.StorageClassList) v1.StorageClass {
+	scList := list.Items
+	sort.Slice(scList, func(i, j int) bool {
+		a := scList[i]
+		b := scList[j]
+
+		managedA := a.Labels["kalm-managed"]
+		managedB := b.Labels["kalm-managed"]
+
+		if managedA == "true" && managedB == "true" {
+			return strings.Compare(a.Name, b.Name) < 0
+		} else if managedA == "true" {
+			return true
+		} else {
+			return false
+		}
+	})
+
+	return scList[0]
 }
 
 func genContentForACMEServerConfig(domain string) string {
@@ -260,7 +305,13 @@ func (r *ACMEServerReconciler) getCertsUsingDNSIssuer(
 }
 
 func getSVCNameForACMEDNS() string {
-	host := "acme." + NamespaceKalmSystem
+	var host string
+	if os.Getenv("ACME_DNS_HOST") != "" {
+		host = os.Getenv("ACME_DNS_HOST")
+	} else {
+		host = fmt.Sprintf("%s.%s.svc.cluster.local", DefaultACMEComponentName, NamespaceKalmSystem)
+	}
+
 	return host
 }
 
@@ -270,7 +321,7 @@ func (r *ACMEServerReconciler) registerACMEDNS(domains []string) (
 ) {
 	configs = make(map[string]corev1alpha1.DNS01IssuerConfig)
 
-	url := fmt.Sprintf("%s/register", getSVCNameForACMEDNS())
+	url := fmt.Sprintf("http://%s/register", getSVCNameForACMEDNS())
 
 	for _, domain := range domains {
 		resp, err := http.Post(url, "", nil)
@@ -334,6 +385,28 @@ func (h HttpsCertIssuerMapper) Map(object handler.MapObject) []reconcile.Request
 	}
 }
 
+func NewACMEServerReconciler(mgr ctrl.Manager) *ACMEServerReconciler {
+	return &ACMEServerReconciler{
+		BaseReconciler: NewBaseReconciler(mgr, "ACMEServer"),
+		ctx:            context.Background(),
+	}
+}
+
+type ACMEDNSComponentMapper struct {
+}
+
+func (A ACMEDNSComponentMapper) Map(object handler.MapObject) []reconcile.Request {
+	if object.Meta.GetName() != DefaultACMEComponentName {
+		return nil
+	}
+
+	return []reconcile.Request{
+		{NamespacedName: types.NamespacedName{
+			Name: fmt.Sprintf("trigger-by-component-change-%s", object.Meta.GetName()),
+		}},
+	}
+}
+
 func (r *ACMEServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.ACMEServer{}).
@@ -342,6 +415,9 @@ func (r *ACMEServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}).
 		Watches(genSourceForObject(&corev1alpha1.HttpsCertIssuer{}), &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &HttpsCertIssuerMapper{},
+		}).
+		Watches(genSourceForObject(&corev1alpha1.Component{}), &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: &ACMEDNSComponentMapper{},
 		}).
 		Complete(r)
 }
@@ -370,8 +446,11 @@ func (r *ACMEServerReconciler) updateConfigsForIssuer(ctx context.Context, issue
 		}
 	}
 
+	r.Log.Info("updateConfigsForIssuer", "needRegisterDomains", needRegisterDomains)
+
 	domainConfigMap, err := r.registerACMEDNS(needRegisterDomains)
 	if err != nil {
+		r.Log.Error(err, "fail to registerACMEDNS")
 		return err
 	}
 
