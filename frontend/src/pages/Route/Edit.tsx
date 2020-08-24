@@ -73,7 +73,7 @@ class RouteEditRaw extends React.PureComponent<Props> {
     let routeForm = httpRoute as HttpRouteForm;
     routeForm = routeForm.set("methodsMode", httpRoute.get("methods").size >= 7 ? methodsModeAll : methodsModeSpecific);
 
-    return <RouteForm isEdit onSubmit={this.onSubmit} initial={routeForm.toJS()} />;
+    return <RouteForm isEdit onSubmit={this.onSubmit} initial={routeForm.toObject() as HttpRouteFormContent} />;
   }
 
   public render() {

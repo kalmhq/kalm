@@ -3,15 +3,14 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { loadDomainDNSInfo } from "actions/domain";
-import { Field, FormikProps, withFormik, FieldArray } from "formik";
+import { Field, FormikProps, withFormik } from "formik";
 import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
-import { KBoolCheckboxRender, KFormikCheckboxGroupRender, KFormikBoolCheckboxRender } from "forms/Basic/checkbox";
+import { KFormikBoolCheckboxRender, KFormikCheckboxGroupRender } from "forms/Basic/checkbox";
 import { KFormikRadioGroupRender } from "forms/Basic/radio";
 import { ROUTE_FORM_ID } from "forms/formIDs";
 import {
   KValidatorHostsWithWildcardPrefix,
   KValidatorPaths,
-  ValidatorHttpRouteDestinations,
   ValidatorListNotEmpty,
   ValidatorRequired,
 } from "forms/validator";
@@ -23,7 +22,7 @@ import { Link as RouteLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { arrayPush, change } from "redux-form";
 import { TDispatchProp } from "types";
-import { httpMethods, methodsModeAll, methodsModeSpecific } from "types/route";
+import { httpMethods, HttpRouteFormContent, methodsModeAll, methodsModeSpecific } from "types/route";
 import { isArray } from "util";
 import { arraysMatch } from "utils";
 import { includesForceHttpsDomain } from "utils/domain";
@@ -94,12 +93,12 @@ const styles = (theme: Theme) =>
 interface OwnProps {
   isEdit?: boolean;
   onSubmit: any;
-  initial: any;
+  initial: HttpRouteFormContent;
 }
 
 export interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props extends ConnectedProps, OwnProps, FormikProps<any>, WithStyles<typeof styles> {}
+export interface Props extends ConnectedProps, OwnProps, FormikProps<HttpRouteFormContent>, WithStyles<typeof styles> {}
 
 interface State {
   isAdvancedPartUnfolded: boolean;
@@ -305,12 +304,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                 There are more than one target, traffic will be forwarded to each target by weight.
               </Alert>
             </Collapse>
-            <FieldArray
-              name="destinations"
-              component={RenderHttpRouteDestinations}
-              rerenderOnEveryChange
-              validate={ValidatorHttpRouteDestinations}
-            />
+            <RenderHttpRouteDestinations destinations={values.destinations} />
           </Grid>
           <Grid item xs={8} sm={8} md={8}>
             <CollapseWrapper title={stringConstants.ROUTE_MULTIPLE_TARGETS_HELPER}>
@@ -327,8 +321,18 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     );
   };
   public render() {
-    const { onSubmit, initialValues, classes, ingressIP, dispatch, isEdit } = this.props;
-    const { values, dirty, handleChange, touched, errors, setFieldValue, isSubmitting } = this.props;
+    const {
+      classes,
+      ingressIP,
+      isEdit,
+      values,
+      dirty,
+      handleChange,
+      touched,
+      errors,
+      setFieldValue,
+      isSubmitting,
+    } = this.props;
     const { hosts, methodsMode } = values;
 
     const hstsDomains = includesForceHttpsDomain(hosts);
@@ -553,7 +557,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         </Button>
                       </Box>
                     </Box>
-                    <FieldArray name="conditions" component={RenderHttpRouteConditions} />
+                    <RenderHttpRouteConditions conditions={values.conditions} />
                   </Box>
                 }
               />
@@ -589,11 +593,11 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
 const connectedForm = connect(mapStateToProps)(withStyles(styles)(RouteFormRaw));
 
-export const RouteForm = withFormik<OwnProps, any>({
+export const RouteForm = withFormik<OwnProps, HttpRouteFormContent>({
   mapPropsToValues: (props) => {
     return props.initial;
   },
-  validate: (values: any) => {
+  validate: (values: HttpRouteFormContent) => {
     let errors = {};
     return errors;
   },
