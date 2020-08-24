@@ -103,9 +103,9 @@ do
         echo ""
         echo "To start using Kalm, open a port via:"
         echo ""
-        echo "kubectl port-forward -n kalm-system \$(kubectl get pod -n kalm-system -l app=kalm -ojsonpath=\"{.items[0].metadata.name}\") 3001:3001"
+        echo "kubectl port-forward -n kalm-system \$(kubectl get pod -n kalm-system -l app=kalm -ojsonpath=\"{.items[0].metadata.name}\") 3010:3010"
         echo ""
-        echo "Then visit http://localhost:3001 in your browser"
+        echo "Then visit http://localhost:3010 in your browser"
         echo ""
         finish="True"
     fi

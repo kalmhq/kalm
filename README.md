@@ -33,10 +33,10 @@ The whole process typically takes up to 1-5 minutes. Relax or check out the <a h
 Once the installation is complete, open a port to the web server.
 
 ```
-kubectl port-forward -n kalm-system $(kubectl get pod -n kalm-system -l app=kalm -ojsonpath="{.items[0].metadata.name}") 3001:3001
+kubectl port-forward -n kalm-system $(kubectl get pod -n kalm-system -l app=kalm -ojsonpath="{.items[0].metadata.name}") 3010:3010
 ```
 
-Kalm should now be accessible at [http://localhost:3001](http://localhost:3001). Refer to [these instructions](https://kalm.dev/docs/install#step-4-admin-service-account) on provisoning an access token and next steps.
+Kalm should now be accessible at [http://localhost:3010](http://localhost:3010). Refer to [these instructions](https://kalm.dev/docs/install#step-4-admin-service-account) on provisoning an access token and next steps.
 
 ## Docs & Guides
 
