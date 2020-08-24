@@ -14,6 +14,7 @@ resources:
 - bases/core.kalm.dev_singlesignonconfigs.yaml
 - bases/core.kalm.dev_protectedendpoints.yaml
 - bases/core.kalm.dev_deploykeys.yaml
+- bases/core.kalm.dev_logsystems.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:

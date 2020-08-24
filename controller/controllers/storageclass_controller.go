@@ -123,17 +123,6 @@ func (r *StorageClassReconciler) reconcileDefaultStorageClass(cloudProvider stri
 		}
 
 		expectedStorageClasses = []v1.StorageClass{hdd, ssd}
-	case "minikube":
-		std := v1.StorageClass{
-			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "standard",
-				Annotations: docInfoOnStorageClass["minikube"],
-			},
-			Provisioner:   "k8s.io/minikube-hostpath",
-			ReclaimPolicy: &reclaimPolicy,
-		}
-
-		expectedStorageClasses = []v1.StorageClass{std}
 	default:
 		r.Log.Info("unknown cloudProvider", "cloudProvider:", cloudProvider)
 		return nil

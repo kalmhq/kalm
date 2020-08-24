@@ -1,0 +1,26 @@
+apiVersion:  v1
+kind: Namespace
+metadata:
+  name: log
+  labels:
+    istio-injection: enabled
+    kalm-enabled: "true"
+---
+apiVersion: core.kalm.dev/v1alpha1
+kind: LogSystem
+metadata:
+  name: test
+  namespace: log
+spec:
+  stack: plg-monolithic
+  plgConfig:
+    loki:
+      retentionDays: 7
+      diskSize: 1Gi
+      storageClass: standard
+      image: grafana/loki:1.6.0
+    grafana:
+      image: grafana/grafana:6.7.0
+    promtail:
+      image: grafana/promtail:1.6.0
+

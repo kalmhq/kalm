@@ -126,6 +126,7 @@ spec:
                     - external
                     - linked
                     - fieldref
+                    - builtin
                     type: string
                   value:
                     type: string
@@ -554,6 +555,8 @@ spec:
                     - emptyDirMemory
                     - emptyDir
                     - pvc
+                    - pvcTemplate
+                    - hostpath
                     type: string
                 required:
                 - path

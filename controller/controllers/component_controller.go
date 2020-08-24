@@ -1055,25 +1055,50 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 		var value string
 		var valueFrom *coreV1.EnvVarSource
 
-		if env.Type == "" || env.Type == corev1alpha1.EnvVarTypeStatic {
+		switch env.Type {
+		case "", corev1alpha1.EnvVarTypeStatic:
 			value = env.Value
-		} else if env.Type == corev1alpha1.EnvVarTypeExternal {
+		case corev1alpha1.EnvVarTypeExternal:
 			//value, err = r.FindShareEnvValue(env.Value)
 			//
 			////  if the env can't be found in sharedEnv, ignore it
 			//if err != nil {
 			//	continue
 			//}
-		} else if env.Type == corev1alpha1.EnvVarTypeLinked {
+		case corev1alpha1.EnvVarTypeLinked:
 			value, err = r.getValueOfLinkedEnv(env)
 			if err != nil {
 				return nil, err
 			}
-		} else if env.Type == corev1alpha1.EnvVarTypeFieldRef {
+		case corev1alpha1.EnvVarTypeFieldRef:
 			valueFrom = &coreV1.EnvVarSource{
 				FieldRef: &coreV1.ObjectFieldSelector{
 					FieldPath: env.Value,
 				},
+			}
+		case corev1alpha1.EnvVarTypeBuiltin:
+			switch env.Value {
+			case corev1alpha1.EnvVarBuiltinHost:
+				valueFrom = &coreV1.EnvVarSource{
+					FieldRef: &coreV1.ObjectFieldSelector{
+						APIVersion: "v1",
+						FieldPath:  "spec.nodeName",
+					},
+				}
+			case corev1alpha1.EnvVarBuiltinNamespace:
+				valueFrom = &coreV1.EnvVarSource{
+					FieldRef: &coreV1.ObjectFieldSelector{
+						APIVersion: "v1",
+						FieldPath:  "metadata.namespace",
+					},
+				}
+			case corev1alpha1.EnvVarBuiltinPodName:
+				valueFrom = &coreV1.EnvVarSource{
+					FieldRef: &coreV1.ObjectFieldSelector{
+						APIVersion: "v1",
+						FieldPath:  "metadata.name",
+					},
+				}
 			}
 		}
 
@@ -1778,7 +1803,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSTS(template *coreV1.PodTemplate
 					},
 				},
 			})
-		} else if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim {
+		} else if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim || disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaimTemplate {
 
 			pvcName := disk.PVC
 
@@ -1855,7 +1880,8 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 		// used in volumeMount, correspond to volume's name or volClaimTemplate's name
 		volName := getVolName(component.Name, disk.Path)
 
-		if disk.Type == corev1alpha1.VolumeTypeTemporaryDisk {
+		switch disk.Type {
+		case corev1alpha1.VolumeTypeTemporaryDisk:
 			volumes = append(volumes, coreV1.Volume{
 				Name: volName,
 				VolumeSource: coreV1.VolumeSource{
@@ -1864,7 +1890,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 					},
 				},
 			})
-		} else if disk.Type == corev1alpha1.VolumeTypeTemporaryMemory {
+		case corev1alpha1.VolumeTypeTemporaryMemory:
 			volumes = append(volumes, coreV1.Volume{
 				Name: volName,
 				VolumeSource: coreV1.VolumeSource{
@@ -1873,8 +1899,16 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 					},
 				},
 			})
-		} else if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim {
-
+		case corev1alpha1.VolumeTypeHostPath:
+			volumes = append(volumes, coreV1.Volume{
+				Name: volName,
+				VolumeSource: coreV1.VolumeSource{
+					HostPath: &coreV1.HostPathVolumeSource{
+						Path: disk.Path,
+					},
+				},
+			})
+		case corev1alpha1.VolumeTypePersistentVolumeClaim:
 			pvcName := disk.PVC
 			volName = pvcName
 
@@ -1944,7 +1978,8 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 					},
 				},
 			})
-		} else {
+
+		default:
 			return fmt.Errorf("unknown disk type: %s", disk.Type)
 		}
 

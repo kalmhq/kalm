@@ -42,18 +42,48 @@ func (r *LogSystem) Default() {
 	logsystemlog.Info("default", "name", r.Name)
 
 	switch r.Spec.Stack {
-	case LogSystemStackPKGMonolithic:
-		if r.Spec.PLGConfig != nil {
-			if r.Spec.PLGConfig.Loki != nil {
-				if r.Spec.PLGConfig.Loki.Image == "" {
-					r.Spec.PLGConfig.Loki.Image = LokiImage
-				}
+	case LogSystemStackPLGMonolithic:
+		if r.Spec.PLGConfig == nil {
+			r.Spec.PLGConfig = &PLGConfig{}
+		}
 
-				if r.Spec.PLGConfig.Loki.DiskSize == nil {
-					quantity := resource.MustParse(DefaultLokiDiskSize)
-					r.Spec.PLGConfig.Loki.DiskSize = &quantity
-				}
-			}
+		if r.Spec.PLGConfig.Grafana == nil {
+			r.Spec.PLGConfig.Grafana = &GrafanaConfig{}
+		}
+
+		if r.Spec.PLGConfig.Promtail == nil {
+			r.Spec.PLGConfig.Promtail = &PromtailConfig{}
+		}
+
+		if r.Spec.PLGConfig.Loki == nil {
+			r.Spec.PLGConfig.Loki = &LokiConfig{}
+		}
+
+		if r.Spec.PLGConfig.Loki.Image == "" {
+			r.Spec.PLGConfig.Loki.Image = LokiImage
+		}
+
+		if r.Spec.PLGConfig.Loki.DiskSize == nil {
+			quantity := resource.MustParse(DefaultLokiDiskSize)
+			r.Spec.PLGConfig.Loki.DiskSize = &quantity
+		}
+
+		if r.Spec.PLGConfig.Loki.DiskSize == nil {
+			quantity := resource.MustParse(DefaultLokiDiskSize)
+			r.Spec.PLGConfig.Loki.DiskSize = &quantity
+		}
+
+		if r.Spec.PLGConfig.Loki.StorageClass == nil && r.Spec.StorageClass == nil {
+			standard := "standard"
+			r.Spec.PLGConfig.Loki.StorageClass = &standard
+		}
+
+		if r.Spec.PLGConfig.Grafana.Image == "" {
+			r.Spec.PLGConfig.Grafana.Image = GrafanaImage
+		}
+
+		if r.Spec.PLGConfig.Promtail.Image == "" {
+			r.Spec.PLGConfig.Promtail.Image = PromtailImage
 		}
 	}
 }
@@ -86,7 +116,7 @@ func (r *LogSystem) validate() error {
 	var rst KalmValidateErrorList
 
 	switch r.Spec.Stack {
-	case LogSystemStackPKGMonolithic:
+	case LogSystemStackPLGMonolithic:
 		if r.Spec.PLGConfig == nil {
 			rst = append(rst, KalmValidateError{
 				Err:  fmt.Sprintf("plg config can't be blank when using %s stack", r.Spec.Stack),
@@ -103,6 +133,30 @@ func (r *LogSystem) validate() error {
 			break
 		}
 
+		if r.Spec.StorageClass == nil && r.Spec.PLGConfig.Loki.StorageClass == nil {
+			rst = append(rst, KalmValidateError{
+				Err:  fmt.Sprintf("can't find storageClass for loki. Set either in spec.storageClass or spec.plgConfig.loki.storageClass"),
+				Path: "spec.plgConfig.loki.storageClass",
+			})
+			break
+		}
+
+		if r.Spec.PLGConfig.Grafana == nil {
+			rst = append(rst, KalmValidateError{
+				Err:  fmt.Sprintf("grafana config can't be blank when using %s stack", r.Spec.Stack),
+				Path: "spec.plgConfig.grafana",
+			})
+			break
+		}
+
+		if r.Spec.PLGConfig.Promtail == nil {
+			rst = append(rst, KalmValidateError{
+				Err:  fmt.Sprintf("promtail config can't be blank when using %s stack", r.Spec.Stack),
+				Path: "spec.plgConfig.promtail",
+			})
+			break
+		}
+
 		if r.Spec.PLGConfig.Loki.Image == "" {
 			rst = append(rst, KalmValidateError{
 				Err:  "loki image can't be blank",
@@ -111,10 +165,18 @@ func (r *LogSystem) validate() error {
 			break
 		}
 
-		if r.Spec.StorageClass == nil && r.Spec.PLGConfig.Loki.StorageClass == nil {
+		if r.Spec.PLGConfig.Grafana.Image == "" {
 			rst = append(rst, KalmValidateError{
-				Err:  fmt.Sprintf("can't find storageClass for loki. Set either in spec.storageClass or spec.plgConfig.loki.storageClass"),
-				Path: "spec.plgConfig.loki.storageClass",
+				Err:  "grafana image can't be blank",
+				Path: "spec.plgConfig.grafana.image",
+			})
+			break
+		}
+
+		if r.Spec.PLGConfig.Promtail.Image == "" {
+			rst = append(rst, KalmValidateError{
+				Err:  "promtail image can't be blank",
+				Path: "spec.plgConfig.promtail.image",
 			})
 			break
 		}

@@ -23,9 +23,11 @@ import (
 type LogSystemStack string
 
 const (
-	LogSystemStackPKGMonolithic LogSystemStack = "plg-monolithic"
+	LogSystemStackPLGMonolithic LogSystemStack = "plg-monolithic"
 
-	LokiImage string = "grafana/loki:1.6.0"
+	LokiImage     string = "grafana/loki:1.6.0"
+	GrafanaImage  string = "grafana/grafana:6.7.0"
+	PromtailImage string = "grafana/promtail:1.6.0"
 
 	DefaultLokiDiskSize = "10Gi"
 )
@@ -40,7 +42,7 @@ type LokiConfig struct {
 	// Read more:
 	//   https://grafana.com/docs/loki/latest/operations/storage/table-manager/
 	//   https://grafana.com/docs/loki/latest/operations/storage/retention/
-	RetentionDays uint32 `json:"retentionHours"`
+	RetentionDays uint32 `json:"retentionDays"`
 
 	// only works when stack is plg-monolithic
 	DiskSize *resource.Quantity `json:"diskSize,omitempty"`
@@ -52,9 +54,21 @@ type LokiConfig struct {
 	Image string `json:"image"`
 }
 
+type GrafanaConfig struct {
+	// lock the image, which make the image will not update unexpectedly after kalm is upgraded.
+	Image string `json:"image"`
+}
+
+type PromtailConfig struct {
+	// lock the image, which make the image will not update unexpectedly after kalm is upgraded.
+	Image string `json:"image"`
+}
+
 // This is a high level config of plg. The real plg config is generated based on this struct
 type PLGConfig struct {
-	Loki *LokiConfig `json:"loki"`
+	Loki     *LokiConfig     `json:"loki"`
+	Grafana  *GrafanaConfig  `json:"grafana"`
+	Promtail *PromtailConfig `json:"promtail"`
 }
 
 // LogSystemSpec defines the desired state oLogSystemf

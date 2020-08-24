@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
-	"strings"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func TestGetPKGMonolithicLokiConfig(t *testing.T) {
+func TestGetPLGMonolithicLokiConfig(t *testing.T) {
 	// build a mock reconciler task
 	r := &LogSystemReconcilerTask{
 		logSystem: &v1alpha1.LogSystem{
@@ -58,11 +58,9 @@ table_manager:
   retention_deletes_enabled: false
   retention_period: 0s
 `
-	res := r.GetPKGMonolithicLokiConfig()
+	res := r.GetPLGMonolithicLokiConfig()
 
-	if strings.TrimSpace(res) != strings.TrimSpace(expected) {
-		t.Fatalf("result not match")
-	}
+	assert.Equal(t, expected, res)
 
 	r.logSystem.Spec.PLGConfig.Loki.RetentionDays = 6
 	expected = `auth_enabled: false
@@ -104,8 +102,6 @@ table_manager:
   retention_period: 144h
 `
 
-	res = r.GetPKGMonolithicLokiConfig()
-	if strings.TrimSpace(res) != strings.TrimSpace(expected) {
-		t.Fatalf("result not match")
-	}
+	res = r.GetPLGMonolithicLokiConfig()
+	assert.Equal(t, expected, res)
 }

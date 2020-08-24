@@ -20,6 +20,7 @@ import (
 	"fmt"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	v1 "k8s.io/api/core/v1"
+	rbacV1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -41,15 +42,21 @@ type LogSystemReconcilerTask struct {
 	ctx       context.Context
 	logSystem *corev1alpha1.LogSystem
 	loki      *corev1alpha1.Component
+	grafana   *corev1alpha1.Component
+	promtail  *corev1alpha1.Component
 }
 
 type LogSystemComponentNames struct {
-	Loki string `json:"loki"`
+	Loki     string `json:"loki"`
+	Grafana  string `json:"grafana"`
+	Promtail string `json:"promtail"`
 }
 
 func (r *LogSystemReconcilerTask) getComponentNames() *LogSystemComponentNames {
 	return &LogSystemComponentNames{
-		Loki: fmt.Sprintf("%s-loki", r.req.Name),
+		Loki:     fmt.Sprintf("%s-loki", r.req.Name),
+		Grafana:  fmt.Sprintf("%s-grafana", r.req.Name),
+		Promtail: fmt.Sprintf("%s-promtail", r.req.Name),
 	}
 }
 
@@ -92,14 +99,14 @@ func (r *LogSystemReconcilerTask) Run(req ctrl.Request) error {
 
 func (r *LogSystemReconcilerTask) ReconcileResources() error {
 	switch r.logSystem.Spec.Stack {
-	case corev1alpha1.LogSystemStackPKGMonolithic:
-		return r.ReconcilePKGMonolithic()
+	case corev1alpha1.LogSystemStackPLGMonolithic:
+		return r.ReconcilePLGMonolithic()
 	default:
 		return fmt.Errorf("This stack is not yet implemented")
 	}
 }
 
-func (r *LogSystemReconcilerTask) LoadPKGMonolithicResources() error {
+func (r *LogSystemReconcilerTask) LoadPLGMonolithicResources() error {
 	names := r.getComponentNames()
 
 	var loki corev1alpha1.Component
@@ -107,23 +114,59 @@ func (r *LogSystemReconcilerTask) LoadPKGMonolithicResources() error {
 		if errors.IsNotFound(err) {
 			return nil
 		}
-
 		return err
 	}
-
 	r.loki = &loki
+
+	var grafana corev1alpha1.Component
+	if err := r.Get(r.ctx, r.NameToNamespacedName(names.Grafana), &grafana); err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+	r.grafana = &grafana
+
+	var promtail corev1alpha1.Component
+	if err := r.Get(r.ctx, r.NameToNamespacedName(names.Promtail), &promtail); err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+	r.promtail = &promtail
 
 	return nil
 }
 
-func (r *LogSystemReconcilerTask) ReconcilePKGMonolithic() error {
-	if err := r.LoadPKGMonolithicResources(); err != nil {
+func (r *LogSystemReconcilerTask) ReconcilePLGMonolithic() error {
+	if err := r.LoadPLGMonolithicResources(); err != nil {
 		return err
 	}
 
+	if err := r.ReconcilePLGMonolithicLoki(); err != nil {
+		return err
+	}
+
+	if err := r.ReconcilePLGMonolithicGrafana(); err != nil {
+		return err
+	}
+
+	if err := r.ReconcilePLGMonolithicPromtail(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicLoki() error {
 	names := r.getComponentNames()
 
-	lokiImage := corev1alpha1.LokiImage
+	lokiImage := r.logSystem.Spec.PLGConfig.Loki.Image
+
+	if lokiImage == "" {
+		lokiImage = corev1alpha1.LokiImage
+	}
 
 	if r.loki != nil {
 		// Use the old image if exists
@@ -133,7 +176,7 @@ func (r *LogSystemReconcilerTask) ReconcilePKGMonolithic() error {
 
 	replicas := int32(1)
 
-	lokiConfig := r.GetPKGMonolithicLokiConfig()
+	lokiConfig := r.GetPLGMonolithicLokiConfig()
 
 	loki := &corev1alpha1.Component{
 		ObjectMeta: metav1.ObjectMeta{
@@ -141,10 +184,13 @@ func (r *LogSystemReconcilerTask) ReconcilePKGMonolithic() error {
 			Name:      names.Loki,
 		},
 		Spec: corev1alpha1.ComponentSpec{
+			Annotations: map[string]string{
+				"sidecar.istio.io/inject": "false",
+			},
 			Image:        lokiImage,
 			WorkloadType: corev1alpha1.WorkloadTypeStatefulSet,
 			Replicas:     &replicas,
-			Command:      "loki /etc/loki/loki.yaml",
+			Command:      "loki -config.file=/etc/loki/loki.yaml",
 			Ports: []corev1alpha1.Port{
 				{
 					ContainerPort: 3100,
@@ -152,9 +198,8 @@ func (r *LogSystemReconcilerTask) ReconcilePKGMonolithic() error {
 					Protocol:      corev1alpha1.PortProtocolHTTP,
 				},
 			},
-			// TODO Why the two probe is the same ??
 			ReadinessProbe: &v1.Probe{
-				InitialDelaySeconds: 45,
+				InitialDelaySeconds: 15,
 				PeriodSeconds:       10,
 				SuccessThreshold:    1,
 				TimeoutSeconds:      1,
@@ -192,8 +237,9 @@ func (r *LogSystemReconcilerTask) ReconcilePKGMonolithic() error {
 				{
 					Size:             *r.logSystem.Spec.PLGConfig.Loki.DiskSize,
 					StorageClassName: r.logSystem.Spec.PLGConfig.Loki.StorageClass,
-					Type:             corev1alpha1.VolumeTypePersistentVolumeClaim,
+					Type:             corev1alpha1.VolumeTypePersistentVolumeClaimTemplate,
 					Path:             "/data",
+					PVC:              "storage",
 				},
 			},
 		},
@@ -222,7 +268,520 @@ func (r *LogSystemReconcilerTask) ReconcilePKGMonolithic() error {
 	return nil
 }
 
-func (r *LogSystemReconcilerTask) GetPKGMonolithicLokiConfig() string {
+func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
+	names := r.getComponentNames()
+
+	grafanaImage := r.logSystem.Spec.PLGConfig.Grafana.Image
+
+	if grafanaImage == "" {
+		grafanaImage = corev1alpha1.GrafanaImage
+	}
+
+	if r.grafana != nil {
+		// Use the old image if exists
+		// make sure we won't update grafana image implicitly
+		grafanaImage = r.grafana.Spec.Image
+	}
+
+	replicas := int32(1)
+
+	grafana := &corev1alpha1.Component{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: r.req.Namespace,
+			Name:      names.Grafana,
+		},
+		Spec: corev1alpha1.ComponentSpec{
+			Image:        grafanaImage,
+			WorkloadType: corev1alpha1.WorkloadTypeServer,
+			Replicas:     &replicas,
+
+			// Use anonymous in this version
+			// Will integrate kalm permission later.
+			// Don't open port to avoid grafana access from outside.
+
+			//Ports: []corev1alpha1.Port{
+			//
+			//	{
+			//		ContainerPort: 3000,
+			//		ServicePort:   3000,
+			//		Protocol:      corev1alpha1.PortProtocolHTTP,
+			//	},
+			//},
+			Env: []corev1alpha1.EnvVar{
+				{
+					Name:  "GF_AUTH_ANONYMOUS_ENABLED",
+					Value: "true",
+				},
+				{
+					Name:  "GF_AUTH_ANONYMOUS_ORG_ROLE",
+					Value: "Admin",
+				},
+			},
+			ReadinessProbe: &v1.Probe{
+				PeriodSeconds:    10,
+				SuccessThreshold: 1,
+				TimeoutSeconds:   1,
+				FailureThreshold: 3,
+				Handler: v1.Handler{
+					HTTPGet: &v1.HTTPGetAction{
+						Path:   "/api/health",
+						Port:   intstr.FromInt(3000),
+						Scheme: v1.URISchemeHTTP,
+					},
+				},
+			},
+			LivenessProbe: &v1.Probe{
+				InitialDelaySeconds: 60,
+				PeriodSeconds:       10,
+				SuccessThreshold:    1,
+				TimeoutSeconds:      30,
+				FailureThreshold:    10,
+				Handler: v1.Handler{
+					HTTPGet: &v1.HTTPGetAction{
+						Path:   "/api/health",
+						Port:   intstr.FromInt(3000),
+						Scheme: v1.URISchemeHTTP,
+					},
+				},
+			},
+			PreInjectedFiles: []corev1alpha1.PreInjectFile{
+				{
+					MountPath: "/etc/grafana/provisioning/datasources/loki.yaml",
+					Content: fmt.Sprintf(`
+apiVersion: 1
+datasources:
+  - name: Loki
+    type: loki
+    access: proxy
+    isDefault: true
+    url: http://%s:3100
+`, names.Loki),
+					Runnable: false,
+				},
+			},
+		},
+	}
+
+	if r.grafana == nil {
+		if err := ctrl.SetControllerReference(r.logSystem, grafana, r.Scheme); err != nil {
+			r.EmitWarningEvent(r.logSystem, err, "unable to set owner for grafana")
+			return err
+		}
+
+		if err := r.Create(r.ctx, grafana); err != nil {
+			r.EmitWarningEvent(r.logSystem, err, "unable to create grafana component")
+			return err
+		}
+	} else {
+		copied := r.grafana.DeepCopy()
+		copied.Spec = grafana.Spec
+
+		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.grafana)); err != nil {
+			r.Log.Error(err, "Patch grafana component failed.")
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicPromtail() error {
+	names := r.getComponentNames()
+
+	promtailImage := r.logSystem.Spec.PLGConfig.Promtail.Image
+
+	if promtailImage == "" {
+		promtailImage = corev1alpha1.PromtailImage
+	}
+
+	if r.promtail != nil {
+		// Use the old image if exists
+		// make sure we won't update promtail image implicitly
+		promtailImage = r.promtail.Spec.Image
+	}
+
+	promtailConfig := r.GetPLGMonolithicPromtailConfig()
+
+	promtail := &corev1alpha1.Component{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: r.req.Namespace,
+			Name:      names.Promtail,
+		},
+		Spec: corev1alpha1.ComponentSpec{
+			Annotations: map[string]string{
+				"sidecar.istio.io/inject": "false",
+			},
+			Image:        promtailImage,
+			WorkloadType: corev1alpha1.WorkloadTypeDaemonSet,
+			Command:      fmt.Sprintf("promtail -log.level=debug -print-config-stderr -config.file=/etc/promtail/promtail.yaml -client.url=http://%s:3100/loki/api/v1/push", names.Loki),
+			Ports: []corev1alpha1.Port{
+				{
+					ContainerPort: 3101,
+					ServicePort:   3101,
+					Protocol:      corev1alpha1.PortProtocolHTTP,
+				},
+			},
+			Env: []corev1alpha1.EnvVar{
+				{
+					Name:  "HOSTNAME",
+					Type:  corev1alpha1.EnvVarTypeBuiltin,
+					Value: corev1alpha1.EnvVarBuiltinHost,
+				},
+			},
+			ReadinessProbe: &v1.Probe{
+				PeriodSeconds:       10,
+				SuccessThreshold:    1,
+				TimeoutSeconds:      1,
+				FailureThreshold:    5,
+				InitialDelaySeconds: 10,
+				Handler: v1.Handler{
+					HTTPGet: &v1.HTTPGetAction{
+						Path:   "/ready",
+						Port:   intstr.FromInt(3101),
+						Scheme: v1.URISchemeHTTP,
+					},
+				},
+			},
+			PreInjectedFiles: []corev1alpha1.PreInjectFile{
+				{
+					MountPath: "/etc/promtail/promtail.yaml",
+					Content:   promtailConfig,
+					Runnable:  false,
+				},
+			},
+			Volumes: []corev1alpha1.Volume{
+				{
+					Path: "/var/lib/docker/containers",
+					Type: corev1alpha1.VolumeTypeHostPath,
+				},
+				{
+					Path: "/var/log/pods",
+					Type: corev1alpha1.VolumeTypeHostPath,
+				},
+				{
+					Path: "/run/promtail",
+					Type: corev1alpha1.VolumeTypeHostPath,
+				},
+			},
+			RunnerPermission: &corev1alpha1.RunnerPermission{
+				RoleType: "clusterRole",
+				Rules: []rbacV1.PolicyRule{
+					{
+						APIGroups: []string{""},
+						Resources: []string{"nodes", "nodes/proxy", "services", "endpoints", "pods"},
+						Verbs:     []string{"get", "list", "watch"},
+					},
+				},
+			},
+		},
+	}
+
+	if r.promtail == nil {
+		if err := ctrl.SetControllerReference(r.logSystem, promtail, r.Scheme); err != nil {
+			r.EmitWarningEvent(r.logSystem, err, "unable to set owner for promtail")
+			return err
+		}
+
+		if err := r.Create(r.ctx, promtail); err != nil {
+			r.EmitWarningEvent(r.logSystem, err, "unable to create promtail component")
+			return err
+		}
+	} else {
+		copied := r.promtail.DeepCopy()
+		copied.Spec = promtail.Spec
+
+		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.promtail)); err != nil {
+			r.Log.Error(err, "Patch promtail component failed.")
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *LogSystemReconcilerTask) GetPLGMonolithicPromtailConfig() string {
+	return `
+client:
+  backoff_config:
+    max_period: 5s
+    max_retries: 20
+    min_period: 100ms
+  batchsize: 102400
+  batchwait: 1s
+  external_labels: {}
+  timeout: 10s
+positions:
+  filename: /run/promtail/positions.yaml
+server:
+  http_listen_port: 3101
+target_config:
+  sync_period: 10s
+
+scrape_configs:
+- job_name: kubernetes-pods-name
+  pipeline_stages:
+    - docker: {}
+    - tenant:
+        source: namespace
+  kubernetes_sd_configs:
+  - role: pod
+  relabel_configs:
+  - source_labels:
+    - __meta_kubernetes_pod_label_name
+    target_label: __service__
+  - source_labels:
+    - __meta_kubernetes_pod_node_name
+    target_label: __host__
+  - action: drop
+    regex: ''
+    source_labels:
+    - __service__
+  - action: labelmap
+    regex: __meta_kubernetes_pod_label_(.+)
+  - action: replace
+    replacement: $1
+    separator: /
+    source_labels:
+    - __meta_kubernetes_namespace
+    - __service__
+    target_label: job
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_namespace
+    target_label: namespace
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_pod_name
+    target_label: pod
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_pod_container_name
+    target_label: container
+  - replacement: /var/log/pods/*$1/*.log
+    separator: /
+    source_labels:
+    - __meta_kubernetes_pod_uid
+    - __meta_kubernetes_pod_container_name
+    target_label: __path__
+- job_name: kubernetes-pods-app
+  pipeline_stages:
+    - docker: {}
+    - tenant:
+        source: namespace
+
+  kubernetes_sd_configs:
+  - role: pod
+  relabel_configs:
+  - action: drop
+    regex: .+
+    source_labels:
+    - __meta_kubernetes_pod_label_name
+  - source_labels:
+    - __meta_kubernetes_pod_label_app
+    target_label: __service__
+  - source_labels:
+    - __meta_kubernetes_pod_node_name
+    target_label: __host__
+  - action: drop
+    regex: ''
+    source_labels:
+    - __service__
+  - action: labelmap
+    regex: __meta_kubernetes_pod_label_(.+)
+  - action: replace
+    replacement: $1
+    separator: /
+    source_labels:
+    - __meta_kubernetes_namespace
+    - __service__
+    target_label: job
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_namespace
+    target_label: namespace
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_pod_name
+    target_label: pod
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_pod_container_name
+    target_label: container
+  - replacement: /var/log/pods/*$1/*.log
+    separator: /
+    source_labels:
+    - __meta_kubernetes_pod_uid
+    - __meta_kubernetes_pod_container_name
+    target_label: __path__
+- job_name: kubernetes-pods-direct-controllers
+  pipeline_stages:
+    - docker: {}
+    - tenant:
+        source: namespace
+
+  kubernetes_sd_configs:
+  - role: pod
+  relabel_configs:
+  - action: drop
+    regex: .+
+    separator: ''
+    source_labels:
+    - __meta_kubernetes_pod_label_name
+    - __meta_kubernetes_pod_label_app
+  - action: drop
+    regex: '[0-9a-z-.]+-[0-9a-f]{8,10}'
+    source_labels:
+    - __meta_kubernetes_pod_controller_name
+  - source_labels:
+    - __meta_kubernetes_pod_controller_name
+    target_label: __service__
+  - source_labels:
+    - __meta_kubernetes_pod_node_name
+    target_label: __host__
+  - action: drop
+    regex: ''
+    source_labels:
+    - __service__
+  - action: labelmap
+    regex: __meta_kubernetes_pod_label_(.+)
+  - action: replace
+    replacement: $1
+    separator: /
+    source_labels:
+    - __meta_kubernetes_namespace
+    - __service__
+    target_label: job
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_namespace
+    target_label: namespace
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_pod_name
+    target_label: pod
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_pod_container_name
+    target_label: container
+  - replacement: /var/log/pods/*$1/*.log
+    separator: /
+    source_labels:
+    - __meta_kubernetes_pod_uid
+    - __meta_kubernetes_pod_container_name
+    target_label: __path__
+- job_name: kubernetes-pods-indirect-controller
+  pipeline_stages:
+    - docker: {}
+    - tenant:
+        source: namespace
+
+  kubernetes_sd_configs:
+  - role: pod
+  relabel_configs:
+  - action: drop
+    regex: .+
+    separator: ''
+    source_labels:
+    - __meta_kubernetes_pod_label_name
+    - __meta_kubernetes_pod_label_app
+  - action: keep
+    regex: '[0-9a-z-.]+-[0-9a-f]{8,10}'
+    source_labels:
+    - __meta_kubernetes_pod_controller_name
+  - action: replace
+    regex: '([0-9a-z-.]+)-[0-9a-f]{8,10}'
+    source_labels:
+    - __meta_kubernetes_pod_controller_name
+    target_label: __service__
+  - source_labels:
+    - __meta_kubernetes_pod_node_name
+    target_label: __host__
+  - action: drop
+    regex: ''
+    source_labels:
+    - __service__
+  - action: labelmap
+    regex: __meta_kubernetes_pod_label_(.+)
+  - action: replace
+    replacement: $1
+    separator: /
+    source_labels:
+    - __meta_kubernetes_namespace
+    - __service__
+    target_label: job
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_namespace
+    target_label: namespace
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_pod_name
+    target_label: pod
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_pod_container_name
+    target_label: container
+  - replacement: /var/log/pods/*$1/*.log
+    separator: /
+    source_labels:
+    - __meta_kubernetes_pod_uid
+    - __meta_kubernetes_pod_container_name
+    target_label: __path__
+- job_name: kubernetes-pods-static
+  pipeline_stages:
+    - docker: {}
+    - tenant:
+        source: namespace
+  kubernetes_sd_configs:
+  - role: pod
+  relabel_configs:
+  - action: drop
+    regex: ''
+    source_labels:
+    - __meta_kubernetes_pod_annotation_kubernetes_io_config_mirror
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_pod_label_component
+    target_label: __service__
+  - source_labels:
+    - __meta_kubernetes_pod_node_name
+    target_label: __host__
+  - action: drop
+    regex: ''
+    source_labels:
+    - __service__
+  - action: labelmap
+    regex: __meta_kubernetes_pod_label_(.+)
+  - action: replace
+    replacement: $1
+    separator: /
+    source_labels:
+    - __meta_kubernetes_namespace
+    - __service__
+    target_label: job
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_namespace
+    target_label: namespace
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_pod_name
+    target_label: pod
+  - action: replace
+    source_labels:
+    - __meta_kubernetes_pod_container_name
+    target_label: container
+  - replacement: /var/log/pods/*$1/*.log
+    separator: /
+    source_labels:
+    - __meta_kubernetes_pod_annotation_kubernetes_io_config_mirror
+    - __meta_kubernetes_pod_container_name
+    target_label: __path__
+`
+
+}
+
+func (r *LogSystemReconcilerTask) GetPLGMonolithicLokiConfig() string {
 	var retention_deletes_enabled bool
 	var retention_period, max_look_back_period, reject_old_samples_max_age, period string
 
@@ -306,6 +865,22 @@ func (r *LogSystemReconcilerTask) CleanResources() error {
 		}
 	}
 
+	if r.grafana != nil {
+		if err := r.Delete(r.ctx, &corev1alpha1.Component{
+			ObjectMeta: metav1.ObjectMeta{Name: names.Grafana, Namespace: r.req.Namespace},
+		}); err != nil {
+			return err
+		}
+	}
+
+	if r.promtail != nil {
+		if err := r.Delete(r.ctx, &corev1alpha1.Component{
+			ObjectMeta: metav1.ObjectMeta{Name: names.Promtail, Namespace: r.req.Namespace},
+		}); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -326,6 +901,7 @@ func (r *LogSystemReconcilerTask) LoadResources(req ctrl.Request) error {
 func (r *LogSystemReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.LogSystem{}).
+		Owns(&corev1alpha1.Component{}).
 		Complete(r)
 }
 
