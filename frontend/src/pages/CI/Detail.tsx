@@ -204,8 +204,8 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
 
     const curl = `curl -X POST \\
     -H "Content-Type: application/json" \\
+    -H "Authorization: Bearer ${deployKey.get("key")}" \\
     -d '{
-      "deployKey":     "${deployKey.get("key")}",
       "application":   "<application-name>",
       "componentName": "<component-name>",
       "imageTag":      "<image-tag>"
