@@ -6,7 +6,7 @@ executors:
     description: |
       Docker image with curl
     docker:
-    - image: tutum/curl:alpine
+      - image: tutum/curl:alpine
 commands: # a reusable command with parameters
   deploy:
     parameters:
@@ -21,29 +21,29 @@ commands: # a reusable command with parameters
       KALM_COMPONENT_IMG_TAG:
         type: string
     steps:
-    - run: |
-        cat \<<EOF > data.json
-        {
-            "deployKey":     "<< parameters.KALM_DEPLOY_KEY >>",
-            "application":   "<< parameters.KALM_APP >>",
-            "componentName": "<< parameters.KALM_COMPONENT >>",
-            "imageTag":      "<< parameters.KALM_COMPONENT_IMG_TAG >>"
-        }
-        EOF
+      - run: |
+          cat \<<EOF > data.json
+          {
+              "deployKey":     "<< parameters.KALM_DEPLOY_KEY >>",
+              "application":   "<< parameters.KALM_APP >>",
+              "componentName": "<< parameters.KALM_COMPONENT >>",
+              "imageTag":      "<< parameters.KALM_COMPONENT_IMG_TAG >>"
+          }
+          EOF
 
-        resp_code=$(curl -s -o resp.log -w "%{http_code}" -XPOST -H "Content-Type: application/json" -d "@data.json" << parameters.KALM_API_ADDRESS >>/webhook/components)
+          resp_code=$(curl -s -o resp.log -w "%{http_code}" -XPOST -H "Content-Type: application/json" -H "Authorization: Bearer << parameters.KALM_DEPLOY_KEY >>" -d "@data.json" << parameters.KALM_API_ADDRESS >>/webhook/components)
 
-        rm data.json
+          rm data.json
 
-        resp=$(cat resp.log)
-        echo "response from webhook: $resp"
+          resp=$(cat resp.log)
+          echo "response from webhook: $resp"
 
-        if [ $resp_code == 200 ] 
-        then
-          exit 0
-        else
-          exit 1
-        fi
+          if [ $resp_code == 200 ]
+          then
+            exit 0
+          else
+            exit 1
+          fi
 jobs:
   run:
     description: |
@@ -61,9 +61,9 @@ jobs:
       KALM_COMPONENT_IMG_TAG:
         type: string
     steps:
-    - deploy:
-        KALM_API_ADDRESS: << parameters.KALM_API_ADDRESS >>
-        KALM_DEPLOY_KEY: << parameters.KALM_DEPLOY_KEY >>
-        KALM_APP: << parameters.KALM_APP >>
-        KALM_COMPONENT: << parameters.KALM_COMPONENT >>
-        KALM_COMPONENT_IMG_TAG: << parameters.KALM_COMPONENT_IMG_TAG >>
+      - deploy:
+          KALM_API_ADDRESS: << parameters.KALM_API_ADDRESS >>
+          KALM_DEPLOY_KEY: << parameters.KALM_DEPLOY_KEY >>
+          KALM_APP: << parameters.KALM_APP >>
+          KALM_COMPONENT: << parameters.KALM_COMPONENT >>
+          KALM_COMPONENT_IMG_TAG: << parameters.KALM_COMPONENT_IMG_TAG >>
