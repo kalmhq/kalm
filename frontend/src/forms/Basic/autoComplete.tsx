@@ -586,3 +586,70 @@ export const KFreeSoloFormikAutoCompleteMultiValues = (props: KFreeSoloFormikAut
     />
   );
 };
+
+interface KFormikAutoCompleteMultipleSelectFieldProps<T>
+  extends FieldProps,
+    UseAutocompleteMultipleProps<T>,
+    Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
+  InputLabelProps?: {};
+  disabled?: boolean;
+  icons?: Immutable.List<any>;
+  formValueToEditValue?: (v: any) => any;
+  editValueToFormValue?: (v: any) => any;
+}
+export const KFormikAutoCompleteMultipleSelectField = (props: KFormikAutoCompleteMultipleSelectFieldProps<string>) => {
+  const {
+    placeholder,
+    label,
+    helperText,
+    options,
+    field: { name },
+    form: { touched, errors, setFieldValue, handleBlur, values },
+    formValueToEditValue,
+    editValueToFormValue,
+  } = props;
+
+  return (
+    <Autocomplete
+      multiple
+      size="small"
+      options={options}
+      filterSelectedOptions
+      openOnFocus
+      groupBy={(option): string => option.group}
+      filterOptions={createFilterOptions({
+        ignoreCase: true,
+        matchFrom: "any",
+        stringify: (option): string => {
+          return option.value;
+        },
+      })}
+      getOptionLabel={(option): string => {
+        return option.label;
+      }}
+      renderTags={(value, getTagProps) => {
+        return value.map((option, index: number) => {
+          return <Chip variant="outlined" label={option.label} size="small" {...getTagProps({ index })} />;
+        });
+      }}
+      onBlur={handleBlur}
+      value={formValueToEditValue ? formValueToEditValue(values[name]) : values[name]}
+      onChange={(e, value) => {
+        editValueToFormValue ? setFieldValue(name, editValueToFormValue(value)) : setFieldValue(name, value);
+      }}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          label={label}
+          variant="outlined"
+          placeholder={placeholder}
+          error={!!touched[name] && !!errors[name]}
+          helperText={helperText}
+        />
+      )}
+    />
+  );
+};
