@@ -4,8 +4,8 @@ import { BasePage } from "pages/BasePage";
 import { push } from "connected-react-router";
 import { setSuccessNotificationAction } from "actions/notification";
 import { withDeployKeys, WithDeployKeysProps } from "hoc/withDeployKeys";
-import { DeployKeyForm } from "forms/DeployKey";
-import { DeployKey } from "types/deployKey";
+import { DeployKeyFormik } from "forms/DeployKey";
+import { DeployKeyFormTypeContent } from "types/deployKey";
 import { createDeployKeyAction } from "actions/deployKey";
 
 const styles = (theme: Theme) =>
@@ -18,15 +18,15 @@ interface Props extends WithStyles<typeof styles>, WithDeployKeysProps {}
 interface State {}
 
 class DeployKeyNewPageRaw extends React.PureComponent<Props, State> {
-  private submit = async (config: DeployKey) => {
-    const { dispatch } = this.props;
-    return await dispatch(createDeployKeyAction(config));
-  };
-
-  private onSubmitSuccess = async () => {
-    const { dispatch } = this.props;
-    dispatch(setSuccessNotificationAction("Create Deploy key Successfully"));
-    dispatch(push("/ci"));
+  private submitFormik = async (config: DeployKeyFormTypeContent) => {
+    try {
+      const { dispatch } = this.props;
+      await dispatch(createDeployKeyAction(config));
+      dispatch(setSuccessNotificationAction("Create Deploy key Successfully"));
+      dispatch(push("/ci"));
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   public render() {
@@ -35,7 +35,10 @@ class DeployKeyNewPageRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item md={8}>
-              <DeployKeyForm onSubmit={this.submit} onSubmitSuccess={this.onSubmitSuccess} />
+              <DeployKeyFormik
+                // @ts-ignore
+                onSubmit={this.submitFormik}
+              />
             </Grid>
           </Grid>
         </Box>
