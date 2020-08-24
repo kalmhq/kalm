@@ -54,11 +54,6 @@ interface PortsInfo {
   tlsPort: number;
 }
 
-interface RowData extends ClusterInfo {
-  index: number;
-  // ports: ImmutableMap<PortsInfo>;
-}
-
 type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
 export class LoadBalancerInfoRaw extends React.Component<Props, States> {
@@ -80,7 +75,7 @@ export class LoadBalancerInfoRaw extends React.Component<Props, States> {
     );
   };
 
-  private renderPorts = (row: RowData) => {
+  private renderPorts = (row: ClusterInfo) => {
     const { classes } = this.props;
     const httpPort = row.get("httpPort");
     const httpsPort = row.get("httpsPort");
@@ -128,7 +123,7 @@ export class LoadBalancerInfoRaw extends React.Component<Props, States> {
     );
   };
 
-  private renderHostName = (row: RowData) => {
+  private renderHostName = (row: ClusterInfo) => {
     const ipContent = row.get("ingressIP");
     const hostName = row.get("ingressHostname");
     const coms = [];
@@ -153,7 +148,7 @@ export class LoadBalancerInfoRaw extends React.Component<Props, States> {
     const { ingressInfo } = this.props;
     const data: any[] = [];
 
-    const rowData = ingressInfo as RowData;
+    const rowData = ingressInfo as ClusterInfo;
     data.push({
       ingressHostname: this.renderHostName(rowData),
       ports: this.renderPorts(rowData),
