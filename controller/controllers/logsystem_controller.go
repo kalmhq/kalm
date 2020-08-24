@@ -409,7 +409,9 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicPromtail() error {
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			Annotations: map[string]string{
-				"sidecar.istio.io/inject": "false",
+				"sidecar.istio.io/inject":                         "false",
+				"core.kalm.dev/podExt/securityContext/runAsGroup": "0",
+				"core.kalm.dev/podExt/securityContext/runAsUser":  "0",
 			},
 			Image:        promtailImage,
 			WorkloadType: corev1alpha1.WorkloadTypeDaemonSet,

@@ -43,6 +43,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"strconv"
 	"strings"
 
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -278,6 +279,46 @@ func (r *ComponentReconcilerTask) GetAnnotations() map[string]string {
 	}
 
 	return res
+}
+
+func GetPodSecurityContextFromAnnotation(annotations map[string]string) *coreV1.PodSecurityContext {
+	securityContext := new(coreV1.PodSecurityContext)
+	annotationFound := false
+
+	for k, v := range annotations {
+		if !strings.HasPrefix(k, "core.kalm.dev/podExt/securityContext") {
+			continue
+		}
+
+		annotationFound = true
+
+		rest := strings.TrimPrefix(k, "core.kalm.dev/podExt/securityContext")
+
+		switch rest {
+		case "runAsGroup":
+			n, err := strconv.ParseInt(v, 0, 64)
+
+			if err != nil {
+				continue
+			}
+
+			securityContext.RunAsGroup = &n
+		case "runAsUser":
+			n, err := strconv.ParseInt(v, 0, 64)
+
+			if err != nil {
+				continue
+			}
+
+			securityContext.RunAsUser = &n
+		}
+	}
+
+	if !annotationFound {
+		return nil
+	}
+
+	return securityContext
 }
 
 func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
@@ -981,6 +1022,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 					LivenessProbe:  r.FixProbe(component.Spec.LivenessProbe),
 				},
 			},
+			SecurityContext: GetPodSecurityContextFromAnnotation(annotations),
 		},
 	}
 
