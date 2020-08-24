@@ -50,14 +50,6 @@ func main() {
 				Aliases:     []string{"p"},
 				EnvVars:     []string{"PORT"},
 			},
-			&cli.IntFlag{
-				Name:        "webhook server port",
-				Usage:       "The port on which to webhook server serve.",
-				Value:       3002,
-				Destination: &runningConfig.WebhookPort,
-				Aliases:     []string{"wp"},
-				EnvVars:     []string{"WEBHOOK_PORT"},
-			},
 			&cli.StringSliceFlag{
 				Name:        "cors-allowed-origins",
 				Usage:       "List of allowed origins for CORS, comma separated. An allowed origin can be a regular expression to support subdomain matching. If this list is empty CORS will not be enabled.",
@@ -127,26 +119,9 @@ func startMainServer(runningConfig *config.Config) {
 	clientManager := client.NewClientManager(runningConfig)
 	apiHandler := handler.NewApiHandler(clientManager)
 	apiHandler.InstallMainRoutes(e)
-
-	err := e.StartH2CServer(runningConfig.GetServerAddress(), &http2.Server{
-		MaxConcurrentStreams: 250,
-		MaxReadFrameSize:     1048576,
-		IdleTimeout:          60 * time.Second,
-	})
-
-	if err != nil {
-		panic(err)
-	}
-}
-
-func startWebhookServer(runningConfig *config.Config) {
-	e := server.NewEchoInstance()
-
-	clientManager := client.NewClientManager(runningConfig)
-	apiHandler := handler.NewApiHandler(clientManager)
 	apiHandler.InstallWebhookRoutes(e)
 
-	err := e.StartH2CServer(runningConfig.GetWebhookServerAddress(), &http2.Server{
+	err := e.StartH2CServer(runningConfig.GetServerAddress(), &http2.Server{
 		MaxConcurrentStreams: 250,
 		MaxReadFrameSize:     1048576,
 		IdleTimeout:          60 * time.Second,
@@ -167,7 +142,6 @@ func run(runningConfig *config.Config) {
 		panic(err)
 	}
 
-	go startWebhookServer(runningConfig)
 	go startMetricServer(runningConfig)
 
 	// run localhost server with privilege

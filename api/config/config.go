@@ -13,7 +13,6 @@ type Config struct {
 	BindAddress                   string
 	Port                          int
 	PrivilegedLocalhostAccess     bool
-	WebhookPort                   int
 	LogLevel                      string
 	KubernetesApiServerAddress    string
 	KubernetesApiServerCAFilePath string
@@ -69,14 +68,4 @@ func (c *Config) GetServerAddress() string {
 	}
 
 	return fmt.Sprintf("%s:%d", address, c.Port)
-}
-
-func (c *Config) GetWebhookServerAddress() string {
-	var address string
-
-	if c.BindAddress != "0.0.0.0" {
-		address = c.BindAddress
-	}
-
-	return fmt.Sprintf("%s:%d", address, c.WebhookPort)
 }

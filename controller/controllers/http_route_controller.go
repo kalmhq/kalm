@@ -43,13 +43,15 @@ const (
 	KALM_ROUTE_LABEL = "kalm-route"
 )
 
+const KALM_SSO_GRANTED_GROUPS_HEADER = "kalm-sso-granted-groups"
 const KALM_SSO_USERINFO_HEADER = "kalm-sso-userinfo"
 const KALM_ROUTE_HEADER = "kalm-route"
-const LET_PASS_HEADER_NAME = "let-pass-if-has-bearer-token"
+const KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER = "allow-to-pass-if-has-bearer-token"
 
 var DANGEROUS_HEADERS = []string{
 	KALM_SSO_USERINFO_HEADER,
-	LET_PASS_HEADER_NAME,
+	KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER,
+	KALM_ROUTE_HEADER,
 }
 
 type HttpRouteReconcilerTask struct {
