@@ -225,7 +225,7 @@ jobs:
     name: A job to deploy new Kalm Component
     steps:
       - name: Use Deploy Action
-        uses: kalmhq/kalm-deploy-action@v0.0.2
+        uses: kalmhq/kalm-deploy-action@v0.0.3
         id: deploy
         with:
           KALM_API_ADDRESS: \${{ secrets.KALM_API_ADDRESS }}
@@ -238,7 +238,7 @@ jobs:
 `;
 
     const circleCIOrb = `orbs:
-  deploy-orb: kalmhq-ns1/deploy-orb@dev:0.0.2
+  deploy-orb: kalmhq-ns1/deploy-orb@dev:0.0.3
 jobs:
   # ... other jobs
   deploy:
