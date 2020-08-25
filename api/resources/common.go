@@ -308,6 +308,7 @@ func (builder *Builder) Apply(obj runtime.Object) error {
 	return builder.Patch(obj, client.MergeFrom(fetched))
 }
 
+
 // setField sets field of v with given name to given value.
 func setSpec(fromObject interface{}, toObject interface{}) interface{} {
 	// fromObject must be a pointer to a struct

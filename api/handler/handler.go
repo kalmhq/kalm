@@ -118,6 +118,10 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.DELETE("/protectedendpoints", h.handleDeleteProtectedEndpoints)
 	gv1Alpha1WithAuth.POST("/protectedendpoints", h.handleCreateProtectedEndpoints)
 	gv1Alpha1WithAuth.PUT("/protectedendpoints", h.handleUpdateProtectedEndpoints)
+
+	gv1Alpha1WithAuth.POST("/acmeserver", h.handleCreateACMEServer)
+	gv1Alpha1WithAuth.GET("/acmeserver", h.handleGetACMEServer)
+	gv1Alpha1WithAuth.DELETE("/acmeserver", h.handleDeleteACMEServer)
 }
 
 // use user token and permission
@@ -131,6 +135,7 @@ func (h *ApiHandler) KalmBuilder() *resources.Builder {
 	cfg := h.clientManager.ClusterConfig
 	return resources.NewBuilder(cfg, h.logger)
 }
+
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {
 	return &ApiHandler{

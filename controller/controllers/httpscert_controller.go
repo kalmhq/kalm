@@ -182,7 +182,8 @@ func (r *HttpsCertReconciler) reconcileForAutoManagedHttpsCert(ctx context.Conte
 		}
 	} else {
 		// check status of underlining cert
-		if err := r.Get(ctx, types.NamespacedName{Namespace: istioNamespace, Name: certName}, &cert); err != nil {
+		err := r.Get(ctx, types.NamespacedName{Namespace: istioNamespace, Name: certName}, &cert)
+		if err != nil {
 			httpsCert.Status.Conditions = []corev1alpha1.HttpsCertCondition{
 				genConditionWithErr(err),
 			}

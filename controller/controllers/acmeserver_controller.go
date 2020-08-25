@@ -46,6 +46,7 @@ type ACMEServerReconciler struct {
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=acmeservers/status,verbs=get;update;patch
 
 const DefaultACMEComponentName = "acme"
+const ACMEServerName = "acme-server"
 
 func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
@@ -140,6 +141,8 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			return ctrl.Result{}, err
 		}
 
+		// todo acquire a lock here to avoid multi-acme-server
+
 		err = r.Create(ctx, &comp)
 	} else {
 		comp.Spec = expectedComp.Spec
@@ -176,7 +179,7 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 		}
 	}
 
-	if err := r.updateConfigsForIssuer(ctx, &issuer); err != nil {
+	if err := r.updateConfigsForIssuer(&issuer); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -423,11 +426,10 @@ func (r *ACMEServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *ACMEServerReconciler) updateConfigsForIssuer(
-	ctx context.Context,
 	issuer *corev1alpha1.HttpsCertIssuer,
 ) error {
 
-	dns01Certs, err := r.getCertsUsingDNSIssuer(ctx)
+	dns01Certs, err := r.getCertsUsingDNSIssuer(r.ctx)
 	if err != nil {
 		return err
 	}
@@ -463,6 +465,24 @@ func (r *ACMEServerReconciler) updateConfigsForIssuer(
 		// both example.com & *.example.com is needed
 		issuer.Spec.DNS01.Configs[domain] = config
 		issuer.Spec.DNS01.Configs["*."+domain] = config
+	}
+
+	// update status of certs using dns01Issuer
+	for _, cert := range dns01Certs {
+		if len(cert.Spec.Domains) <= 0 {
+			continue
+		}
+
+		domain := cert.Spec.Domains[0]
+		config, exist := issuer.Spec.DNS01.Configs[domain]
+		if !exist {
+			continue
+		}
+
+		cert.Status.WildcardCertDNSChallengeDomain = config.FullDomain
+		if err := r.Status().Update(r.ctx, &cert); err != nil {
+			return err
+		}
 	}
 
 	return nil
