@@ -88,6 +88,7 @@ func (suite *WithControllerTestSuite) SetupSuite() {
 	clientManager := client2.NewClientManager(runningConfig)
 	apiHandler := NewApiHandler(clientManager)
 	apiHandler.InstallMainRoutes(e)
+	apiHandler.InstallWebhookRoutes(e)
 
 	suite.apiServer = e
 }

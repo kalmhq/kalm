@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
@@ -63,30 +62,6 @@ func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, res)
-}
-
-func (h *ApiHandler) handleUpdateApplication(c echo.Context) error {
-	ns, err := getKalmNamespaceFromContext(c)
-
-	if err != nil {
-		return err
-	}
-
-	if ns.Name != c.Param("name") {
-		return fmt.Errorf("Url name doesn't equal to name in body")
-	}
-
-	if err := h.Builder(c).Apply(ns); err != nil {
-		return err
-	}
-
-	res, err := h.Builder(c).BuildApplicationDetails(ns)
-
-	if err != nil {
-		return err
-	}
-
-	return c.JSON(200, res)
 }
 
 func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
