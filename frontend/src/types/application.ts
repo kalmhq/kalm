@@ -110,7 +110,7 @@ export type ApplicationComponentDetails = ImmutableMap<ApplicationComponentDetai
 
 export interface ApplicationContent {
   name: string;
-  istioMetricHistories: IstioMetricHistories;
+  istioMetricHistories?: IstioMetricHistories;
 }
 
 export type Application = ImmutableMap<ApplicationContent>;
