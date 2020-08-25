@@ -78,11 +78,12 @@ func (builder *Builder) GetProtectedEndpointsChannel(listOptions ...client.ListO
 }
 
 type ProtectedEndpoint struct {
-	Name         string   `json:"name"`
-	Namespace    string   `json:"namespace"`
-	EndpointName string   `json:"endpointName"`
-	Ports        []uint32 `json:"ports"`
-	Groups       []string `json:"groups"`
+	Name                        string   `json:"name"`
+	Namespace                   string   `json:"namespace"`
+	EndpointName                string   `json:"endpointName"`
+	Ports                       []uint32 `json:"ports"`
+	Groups                      []string `json:"groups"`
+	AllowToPassIfHasBearerToken bool     `json:"allowToPassIfHasBearerToken,omitempty"`
 }
 
 type SSOConfig struct {
@@ -143,11 +144,12 @@ func (builder *Builder) DeleteSSOConfig() error {
 
 func ProtectedEndpointCRDToProtectedEndpoint(endpoint *v1alpha1.ProtectedEndpoint) *ProtectedEndpoint {
 	ep := &ProtectedEndpoint{
-		Name:         endpoint.Name,
-		Namespace:    endpoint.Namespace,
-		EndpointName: endpoint.Spec.EndpointName,
-		Ports:        endpoint.Spec.Ports,
-		Groups:       endpoint.Spec.Groups,
+		Name:                        endpoint.Name,
+		Namespace:                   endpoint.Namespace,
+		EndpointName:                endpoint.Spec.EndpointName,
+		Ports:                       endpoint.Spec.Ports,
+		Groups:                      endpoint.Spec.Groups,
+		AllowToPassIfHasBearerToken: endpoint.Spec.AllowToPassIfHasBearerToken,
 	}
 
 	// import for frontend
@@ -193,9 +195,10 @@ func (builder *Builder) CreateProtectedEndpoint(ep *ProtectedEndpoint) (*Protect
 			Name:      getProtectedEndpointCRDNameFromEndpointName(ep.EndpointName),
 		},
 		Spec: v1alpha1.ProtectedEndpointSpec{
-			EndpointName: ep.EndpointName,
-			Ports:        ep.Ports,
-			Groups:       ep.Groups,
+			EndpointName:                ep.EndpointName,
+			Ports:                       ep.Ports,
+			Groups:                      ep.Groups,
+			AllowToPassIfHasBearerToken: ep.AllowToPassIfHasBearerToken,
 		},
 	}
 
@@ -219,9 +222,10 @@ func (builder *Builder) UpdateProtectedEndpoint(ep *ProtectedEndpoint) (*Protect
 			Name:      getProtectedEndpointCRDNameFromEndpointName(ep.EndpointName),
 		},
 		Spec: v1alpha1.ProtectedEndpointSpec{
-			EndpointName: ep.EndpointName,
-			Ports:        ep.Ports,
-			Groups:       ep.Groups,
+			EndpointName:                ep.EndpointName,
+			Ports:                       ep.Ports,
+			Groups:                      ep.Groups,
+			AllowToPassIfHasBearerToken: ep.AllowToPassIfHasBearerToken,
 		},
 	}
 

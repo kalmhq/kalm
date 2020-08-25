@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
   hello-orb: kalmhq-ns1/hello-orb@dev:0.0.1
-  deploy-orb: kalmhq-ns1/deploy-orb@dev:0.0.2
+  deploy-orb: kalmhq-ns1/deploy-orb@dev:0.0.3
 jobs:
   test-dashboard:
     docker:

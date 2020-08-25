@@ -13,6 +13,7 @@ import (
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/server"
 	"github.com/kalmhq/kalm/api/utils"
+	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/net/http2"
 	"golang.org/x/oauth2"
@@ -36,10 +37,6 @@ var clientSecret string
 
 const KALM_TOKEN_KEY_NAME = "kalm-sso"
 const ENVOY_EXT_AUTH_PATH_PREFIX = "ext_authz"
-
-const LET_PASS_HEADER_NAME = "let-pass-if-has-bearer-token"
-const GRANTED_GROUPS_HEADER_NAME = "kalm-sso-granted-groups"
-const KALM_SSO_USER_INFO_HEADER_NAME = "kalm-sso-userinfo"
 
 // CSRF protection and pass payload
 type OauthState struct {
@@ -231,7 +228,7 @@ func handleExtAuthz(c echo.Context) error {
 	// Set user info in meta header
 	// if the verify returns no error. It's safe to get claims in this way
 	parts := strings.Split(token.IDTokenString, ".")
-	c.Response().Header().Set(KALM_SSO_USER_INFO_HEADER_NAME, parts[1])
+	c.Response().Header().Set(controllers.KALM_SSO_USERINFO_HEADER, parts[1])
 
 	return c.NoContent(200)
 }
@@ -359,12 +356,12 @@ func getTokenFromRequest(c echo.Context) (*auth_proxy.ThinToken, error) {
 }
 
 func shouldLetPass(c echo.Context) bool {
-	return c.Request().Header.Get(LET_PASS_HEADER_NAME) == "true" &&
+	return c.Request().Header.Get(controllers.KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER) == "true" &&
 		strings.HasPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 }
 
 func inGrantedGroups(c echo.Context, idToken *oidc.IDToken) bool {
-	grantedGroups := c.Request().Header.Get(GRANTED_GROUPS_HEADER_NAME)
+	grantedGroups := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_GROUPS_HEADER)
 
 	if grantedGroups == "" {
 		return true

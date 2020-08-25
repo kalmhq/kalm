@@ -160,8 +160,9 @@ func GetFilteredNodeMetrics(nodes []string) NodesMetricHistories {
 
 func getMetricHistories(sql string, args ...interface{}) MetricHistories {
 	metricHistories := MetricHistories{}
+
 	if metricDb == nil {
-		log.Error(nil, "error metric DB nil")
+		log.Info("Metric is not available.")
 		return metricHistories
 	}
 

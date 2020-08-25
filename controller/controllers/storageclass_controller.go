@@ -76,7 +76,7 @@ func (r *StorageClassReconciler) reconcileDefaultStorageClass(cloudProvider stri
 	case "aws":
 		hdd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "kalm-hdd",
+				Name:        "gp2",
 				Annotations: docInfoOnStorageClass["aws"],
 			},
 			Provisioner:   "kubernetes.io/aws-ebs",
@@ -97,7 +97,7 @@ func (r *StorageClassReconciler) reconcileDefaultStorageClass(cloudProvider stri
 	case "gcp":
 		hdd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "Standard persistent disks(pd-standard)",
+				Name:        "pd-standard",
 				Annotations: docInfoOnStorageClass["gcp"],
 			},
 			Provisioner:   "kubernetes.io/gce-pd",
@@ -110,7 +110,7 @@ func (r *StorageClassReconciler) reconcileDefaultStorageClass(cloudProvider stri
 		}
 		ssd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "SSD persistent disks(pd-ssd)",
+				Name:        "pd-ssd",
 				Annotations: docInfoOnStorageClass["gcp"],
 			},
 			Provisioner:   "kubernetes.io/gce-pd",
@@ -123,17 +123,6 @@ func (r *StorageClassReconciler) reconcileDefaultStorageClass(cloudProvider stri
 		}
 
 		expectedStorageClasses = []v1.StorageClass{hdd, ssd}
-	case "minikube":
-		std := v1.StorageClass{
-			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "standard",
-				Annotations: docInfoOnStorageClass["minikube"],
-			},
-			Provisioner:   "k8s.io/minikube-hostpath",
-			ReclaimPolicy: &reclaimPolicy,
-		}
-
-		expectedStorageClasses = []v1.StorageClass{std}
 	default:
 		r.Log.Info("unknown cloudProvider", "cloudProvider:", cloudProvider)
 		return nil

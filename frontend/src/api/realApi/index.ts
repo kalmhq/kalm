@@ -416,7 +416,7 @@ const getAxiosClient = (withHeaderToken: boolean) => {
   const headers: { [key: string]: string } = {};
 
   if (withHeaderToken && token) {
-    headers.Authorization = token;
+    headers.Authorization = `Bearer ${token}`;
   }
 
   const instance = Axios.create({

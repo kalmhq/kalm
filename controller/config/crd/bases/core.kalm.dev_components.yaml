@@ -45,6 +45,16 @@ spec:
         spec:
           description: ComponentSpec defines the desired state of Component
           properties:
+            Annotations:
+              additionalProperties:
+                type: string
+              description: labels will add to pods
+              type: object
+            Labels:
+              additionalProperties:
+                type: string
+              description: labels will add to pods
+              type: object
             afterStart:
               items:
                 type: string
@@ -116,6 +126,7 @@ spec:
                     - external
                     - linked
                     - fieldref
+                    - builtin
                     type: string
                   value:
                     type: string
@@ -544,6 +555,8 @@ spec:
                     - emptyDirMemory
                     - emptyDir
                     - pvc
+                    - pvcTemplate
+                    - hostpath
                     type: string
                 required:
                 - path

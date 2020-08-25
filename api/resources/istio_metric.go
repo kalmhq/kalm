@@ -128,8 +128,9 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 
 		go func(k, api string) {
 			promResp, err := queryPrometheusAPI(api)
+
 			if err != nil {
-				log.Error(err, "err when queryPrometheusAPI, ignored", "api", api)
+				log.Debug("err when queryPrometheusAPI, ignored", "api", api, "err", err)
 			}
 
 			respContentChan <- respContent{

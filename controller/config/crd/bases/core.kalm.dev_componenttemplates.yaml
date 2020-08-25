@@ -75,6 +75,7 @@ spec:
                     - external
                     - linked
                     - fieldref
+                    - builtin
                     type: string
                   value:
                     type: string

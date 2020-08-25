@@ -39,6 +39,12 @@ spec:
         spec:
           description: ProtectedEndpointSpec defines the desired state of ProtectedEndpoint
           properties:
+            allowToPassIfHasBearerToken:
+              description: Allow auth proxy to let the request pass if it has bearer
+                token. This flag should be set carefully. Please make sure that the
+                upstream can handle the token correctly. Otherwise, client can bypass
+                kalm sso by sending a not empty bearer token.
+              type: boolean
             groups:
               items:
                 type: string

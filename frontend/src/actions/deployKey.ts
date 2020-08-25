@@ -33,7 +33,7 @@ export const loadDeployKeyAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const createDeployKeyAction = (key: DeployKeyFormTypeContent): ThunkResult<Promise<void>> => {
+export const createDeployKeyAction = (key: DeployKeyFormTypeContent): ThunkResult<Promise<DeployKeyFormType>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: CREATE_DEPLOY_KEY_PENDING });
@@ -42,6 +42,7 @@ export const createDeployKeyAction = (key: DeployKeyFormTypeContent): ThunkResul
         type: CREATE_DEPLOY_KEY_FULFILLED,
         payload: Map(keyRes),
       });
+      return keyRes;
     } catch (e) {
       dispatch({ type: CREATE_DEPLOY_KEY_FAILED });
       throw e;

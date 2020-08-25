@@ -41,6 +41,11 @@ type ProtectedEndpointSpec struct {
 
 	Ports  []uint32 `json:"ports,omitempty"`
 	Groups []string `json:"groups,omitempty"`
+
+	// Allow auth proxy to let the request pass if it has bearer token.
+	// This flag should be set carefully. Please make sure that the upstream can handle the token correctly.
+	// Otherwise, client can bypass kalm sso by sending a not empty bearer token.
+	AllowToPassIfHasBearerToken bool `json:"allowToPassIfHasBearerToken,omitempty"`
 }
 
 // ProtectedEndpointStatus defines the observed state of ProtectedEndpoint

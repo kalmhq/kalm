@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"github.com/kalmhq/kalm/api/auth"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
@@ -28,6 +29,12 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 
 	if err := c.Bind(&callParams); err != nil {
 		return err
+	}
+
+	bearerToken := auth.ExtractTokenFromHeader(c.Request().Header.Get(echo.HeaderAuthorization))
+
+	if bearerToken != "" {
+		callParams.DeployKey = bearerToken
 	}
 
 	if callParams.DeployKey == "" {
