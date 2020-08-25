@@ -3,9 +3,9 @@ import Typography from "@material-ui/core/Typography";
 import Warning from "@material-ui/icons/Warning";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { Field } from "formik";
-import { KAutoCompleteOption, KAutoCompleteSingleValue } from "forms/Basic/autoComplete";
+import { KAutoCompleteOption, KFormikAutoCompleteSingleValue } from "forms/Basic/autoComplete";
 import { ImmutableFieldArray } from "forms/Basic/kFieldArray";
-import { KRenderSlider } from "forms/Basic/slider";
+import { KFormikRenderSlider } from "forms/Basic/slider";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
@@ -90,7 +90,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
                   <Grid item xs={8} sm={8} md={6} lg={4} xl={4}>
                     <Field
                       name={`destinations.${index}.host`}
-                      component={KAutoCompleteSingleValue}
+                      component={KFormikAutoCompleteSingleValue}
                       label="Choose a target"
                       validate={ValidatorRequired}
                       options={options}
@@ -109,7 +109,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
                     <Grid item md={2}>
                       <Field
                         name={`destinations.${index}.weight`}
-                        component={KRenderSlider}
+                        component={KFormikRenderSlider}
                         label="Weight"
                         step={1}
                         min={0}

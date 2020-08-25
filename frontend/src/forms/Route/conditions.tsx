@@ -6,8 +6,8 @@ import React from "react";
 import { HttpRouteCondition } from "types/route";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { RenderSelectField } from "../Basic/select";
-import { KRenderDebounceTextField } from "../Basic/textfield";
+import { RenderFormikSelectField } from "../Basic/select";
+import { KRenderFormikTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
 
 export interface Props {
@@ -32,7 +32,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                   <Grid item md={2}>
                     <Field
                       name={`conditions.${index}.name`}
-                      component={KRenderDebounceTextField}
+                      component={KRenderFormikTextField}
                       label="Name"
                       validate={ValidatorRequired}
                     />
@@ -40,7 +40,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                   <Grid item md={2}>
                     <Field
                       name={`conditions.${index}.operator`}
-                      component={RenderSelectField}
+                      component={RenderFormikSelectField}
                       label="operator"
                       validate={ValidatorRequired}
                       options={[
@@ -53,7 +53,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                   <Grid item md={2}>
                     <Field
                       name={`conditions.${index}.value`}
-                      component={KRenderDebounceTextField}
+                      component={KRenderFormikTextField}
                       label="Value"
                       validate={ValidatorRequired}
                     />

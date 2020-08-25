@@ -606,3 +606,108 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
     );
   },
 );
+
+// formik single value
+export interface KFormikAutoCompleteSingleValueProps<T>
+  extends FieldProps,
+    WithStyles<typeof KAutoCompleteSingleValueStyles>,
+    Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText">,
+    Pick<AutocompleteProps<T>, "noOptionsText">,
+    UseAutocompleteSingleProps<T> {}
+
+function KFormikAutoCompleteSingleValueRaw<T>(
+  props: KFormikAutoCompleteSingleValueProps<KAutoCompleteOption>,
+): JSX.Element {
+  const {
+    label,
+    helperText,
+    field: { name },
+    form: { touched, errors, setFieldValue, handleBlur, values },
+    classes,
+    options,
+    placeholder,
+    noOptionsText,
+  } = props;
+
+  const value = options.find((x) => x.value === values[name]) || null;
+
+  const { groupLabelDefault, groupIcon, logoIcon, groupLabelCurrent, ...autocompleteClasses } = classes;
+
+  return (
+    <Autocomplete
+      classes={autocompleteClasses}
+      openOnFocus
+      noOptionsText={noOptionsText}
+      groupBy={(option) => option.group}
+      options={options}
+      size="small"
+      filterOptions={createFilterOptions({
+        ignoreCase: true,
+        matchFrom: "any",
+        stringify: (option) => {
+          return option.label;
+        },
+      })}
+      renderGroup={(group: RenderGroupParams) => {
+        if (group.key === "default") {
+          return (
+            <div key={group.key}>
+              <div className={groupLabelDefault}>
+                <KalmLogoIcon className={clsx(groupIcon, logoIcon)} />
+                <Caption>{group.key}</Caption>
+              </div>
+              {group.children}
+              <Divider />
+            </div>
+          );
+        } else {
+          return (
+            <div key={group.key}>
+              <div className={classes.groupLabel}>
+                <KalmApplicationIcon className={groupIcon} />
+                <Caption className={clsx(group.key.includes("Current") ? groupLabelCurrent : {})}>{group.key}</Caption>
+              </div>
+              {group.children}
+              <Divider />
+            </div>
+          );
+        }
+      }}
+      renderOption={(option: KAutoCompleteOption) => {
+        return (
+          <div className={classes.groupUl}>
+            <Typography>{option.label}</Typography>
+          </div>
+        );
+      }}
+      value={value}
+      getOptionLabel={(option: KAutoCompleteOption) => option.label}
+      onBlur={handleBlur}
+      forcePopupIcon={true}
+      onChange={(_event: any, value: KAutoCompleteOption | null) => {
+        if (value) {
+          setFieldValue(name, value.value);
+        } else {
+          setFieldValue(name, "");
+        }
+      }}
+      renderInput={(params) => {
+        return (
+          <TextField
+            {...params}
+            fullWidth
+            variant="outlined"
+            error={!!(touched[name] && errors[name])}
+            label={label}
+            placeholder={placeholder}
+            helperText={(touched[name] && errors[name]) || helperText}
+          />
+        );
+      }}
+    />
+  );
+}
+
+export const KFormikAutoCompleteSingleValue = withStyles(KAutoCompleteSingleValueStyles)(
+  KFormikAutoCompleteSingleValueRaw,
+);
