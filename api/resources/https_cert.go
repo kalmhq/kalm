@@ -25,11 +25,12 @@ type HttpsCert struct {
 }
 
 type HttpsCertResp struct {
-	HttpsCert                 `json:",inline"`
-	Ready                     string `json:"ready"`
-	Reason                    string `json:"reason"`
-	IsSignedByPublicTrustedCA bool   `json:"isSignedByTrustedCA,omitempty"`
-	ExpireTimestamp           int64  `json:"expireTimestamp,omitempty"`
+	HttpsCert                      `json:",inline"`
+	Ready                          string `json:"ready"`
+	Reason                         string `json:"reason"`
+	IsSignedByPublicTrustedCA      bool   `json:"isSignedByTrustedCA,omitempty"`
+	ExpireTimestamp                int64  `json:"expireTimestamp,omitempty"`
+	WildcardCertDNSChallengeDomain string `json:"wildcardCertDNSChallengeDomain,omitempty"`
 }
 
 var ReasonForNoReadyConditions = "no feedback on cert status yet"
@@ -80,6 +81,8 @@ func BuildHttpsCertResponse(httpsCert v1alpha1.HttpsCert) *HttpsCertResp {
 		//todo show content of cert?
 	}
 
+	resp.WildcardCertDNSChallengeDomain = httpsCert.Status.WildcardCertDNSChallengeDomain
+
 	return &resp
 }
 
@@ -129,6 +132,15 @@ func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 		return nil, fmt.Errorf("fail to generate name for HttpsCert, please retry")
 	}
 
+	// for wildcard cert, 1 domain & no prefix: '*.' is needed
+	if cert.HttpsCertIssuer == controllers.DefaultDNS01IssuerName {
+		if len(cert.Domains) != 1 {
+			return nil, fmt.Errorf("only 1 domain is permitted for wildcard cert")
+		} else if strings.HasPrefix(cert.Domains[0], "*.") {
+			return nil, fmt.Errorf("no prefix: '*.' is needed for wildcard cert")
+		}
+	}
+
 	res := v1alpha1.HttpsCert{
 		ObjectMeta: v1.ObjectMeta{
 			Name: cert.Name,
@@ -140,7 +152,6 @@ func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 	}
 
 	err := builder.Create(&res)
-
 	if err != nil {
 		return nil, err
 	}
@@ -150,10 +161,15 @@ func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 
 func autoGenCertName(cert *HttpsCert) string {
 	var prefix string
+
+	if cert.HttpsCertIssuer == controllers.DefaultDNS01IssuerName {
+		prefix = "wildcard-"
+	}
+
 	if len(cert.Domains) >= 1 {
-		prefix = cert.Domains[0]
+		prefix += cert.Domains[0]
 	} else {
-		prefix = "cert"
+		prefix += "cert"
 	}
 
 	name := fmt.Sprintf("%s-%s", prefix, rand.String(6))

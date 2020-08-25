@@ -47,6 +47,8 @@ type HttpsCertStatus struct {
 	ExpireTimestamp int64 `json:"expireTimestamp"`
 	// +optional
 	IsSignedByPublicTrustedCA bool `json:"isSignedByTrustedCA"`
+	// +optional
+	WildcardCertDNSChallengeDomain string `json:"wildcardCertDNSChallengeDomain,omitempty"`
 }
 
 type HttpsCertConditionType string
