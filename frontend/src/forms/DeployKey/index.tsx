@@ -3,6 +3,7 @@ import { Theme } from "@material-ui/core/styles";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
+import { TDispatchProp } from "types";
 import { RootState } from "reducers";
 import { ValidatorRequired, RequireString } from "forms/validator";
 import { Prompt } from "widgets/Prompt";
@@ -21,7 +22,7 @@ import { KFormikRadioGroupRender } from "forms/Basic/radio";
 import { ApplicationComponentDetails } from "types/application";
 import { Loading } from "widgets/Loading";
 import sc from "utils/stringConstants";
-import { Field, Form, Formik, FormikProps } from "formik";
+import { Field, Form, FormikProps, withFormik } from "formik";
 import { object } from "yup";
 
 const styles = (theme: Theme) =>
@@ -40,11 +41,14 @@ interface OwnProps {
   onSubmit: any;
 }
 
+export interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
+
 export interface Props
-  extends WithNamespaceProps,
-    ReturnType<typeof mapStateToProps>,
-    WithStyles<typeof styles>,
-    OwnProps {}
+  extends ConnectedProps,
+    OwnProps,
+    WithNamespaceProps,
+    FormikProps<DeployKeyFormTypeContent>,
+    WithStyles<typeof styles> {}
 
 const schema = object().shape({
   name: RequireString,
@@ -52,7 +56,7 @@ const schema = object().shape({
 
 class DeployKeyFormikRaw extends React.PureComponent<Props> {
   public render() {
-    const { onSubmit, classes, isNamespaceLoading, isNamespaceFirstLoaded, applications, allComponents } = this.props;
+    const { classes, isNamespaceLoading, isNamespaceFirstLoaded, applications, allComponents } = this.props;
 
     if (isNamespaceLoading && !isNamespaceFirstLoaded) {
       return (
@@ -88,113 +92,106 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
       });
     });
 
+    const { values, dirty, setFieldValue, isSubmitting } = this.props;
     return (
-      <Formik
-        onSubmit={onSubmit}
-        initialValues={newEmptyDeployKeyForm}
-        validateOnChange={false}
-        validateOnBlur={false}
-        validationSchema={schema}
-        enableReinitialize={false}
-        handleReset={console.log}
-        handle
-      >
-        {(formikProps: FormikProps<DeployKeyFormTypeContent>) => {
-          const { values, dirty, setFieldValue, isSubmitting } = formikProps;
-          return (
-            <Form className={classes.root} id="deployKey-form">
-              <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
-              <KPanel>
-                <Box p={2}>
-                  <Field
-                    name="name"
-                    label="Name"
-                    autoFocus
-                    autoComplete="off"
-                    component={KRenderFormikTextField}
-                    id="deployKey-name"
-                    validate={ValidatorRequired}
-                  />
+      <Form className={classes.root} id="deployKey-form">
+        <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+        <KPanel>
+          <Box p={2}>
+            <Field
+              name="name"
+              label="Name"
+              autoFocus
+              autoComplete="off"
+              component={KRenderFormikTextField}
+              id="deployKey-name"
+              validate={ValidatorRequired}
+            />
 
-                  <KFormikRadioGroupRender
-                    title="Permission Scope"
-                    name="scope"
-                    value={values.scope}
-                    onChange={(event: any, value: string) => {
-                      setFieldValue("scope", value);
-                      setFieldValue("resources", []);
-                    }}
-                    options={[
-                      {
-                        value: DeployKeyScopeCluster,
-                        label: "Cluster - Can update all components on this cluster",
-                      },
-                      {
-                        value: DeployKeyScopeNamespace,
-                        label: "Specific Applications - Can update all components in selected applications",
-                      },
+            <KFormikRadioGroupRender
+              title="Permission Scope"
+              name="scope"
+              value={values.scope}
+              onChange={(event: any, value: string) => {
+                setFieldValue("scope", value);
+                setFieldValue("resources", []);
+              }}
+              options={[
+                {
+                  value: DeployKeyScopeCluster,
+                  label: "Cluster - Can update all components on this cluster",
+                },
+                {
+                  value: DeployKeyScopeNamespace,
+                  label: "Specific Applications - Can update all components in selected applications",
+                },
 
-                      {
-                        value: DeployKeyScopeComponent,
-                        label: "Specific Components - Can only update selected components",
-                      },
-                    ]}
-                  />
+                {
+                  value: DeployKeyScopeComponent,
+                  label: "Specific Components - Can only update selected components",
+                },
+              ]}
+            />
 
-                  <Box mt={2}>
-                    {values.scope === DeployKeyScopeNamespace ? (
-                      <Field
-                        component={KFormikAutoCompleteMultipleSelectField}
-                        name="resources"
-                        label="Applications"
-                        options={applicationOptions}
-                        id="certificate-resources"
-                        placeholder={"Select an application"}
-                        helperText={""}
-                        meta
-                        formValueToEditValue={(v: any) =>
-                          v.map((item: any) => applicationOptions.find((a) => a.value === item))
-                        }
-                        editValueToFormValue={(v: any) => v.map((item: any) => item["value"])}
-                      />
-                    ) : null}
-
-                    {values.scope === DeployKeyScopeComponent ? (
-                      <Field
-                        component={KFormikAutoCompleteMultipleSelectField}
-                        name="resources"
-                        label="Component"
-                        options={componentOptions}
-                        id="certificate-resources"
-                        placeholder={"Select a component"}
-                        helperText={""}
-                        meta
-                        formValueToEditValue={(v: any) =>
-                          v.map((item: any) => componentOptions.find((a) => `${a.value}` === item))
-                        }
-                        editValueToFormValue={(v: any) => v.map((item: any) => item["value"])}
-                      />
-                    ) : null}
-                  </Box>
-                </Box>
-              </KPanel>
-
-              <Box mt={2}>
-                <Button id="save-deployKey-button" color="primary" variant="contained" type="submit">
-                  Create Deploy Key
-                </Button>
-              </Box>
-              {process.env.REACT_APP_DEBUG === "true" ? (
-                <Box mt={2}>
-                  <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
-                </Box>
+            <Box mt={2}>
+              {values.scope === DeployKeyScopeNamespace ? (
+                <Field
+                  component={KFormikAutoCompleteMultipleSelectField}
+                  name="resources"
+                  label="Applications"
+                  options={applicationOptions}
+                  id="certificate-resources"
+                  placeholder={"Select an application"}
+                  helperText={""}
+                  meta
+                  formValueToEditValue={(v: any) =>
+                    v.map((item: any) => applicationOptions.find((a) => a.value === item))
+                  }
+                  editValueToFormValue={(v: any) => v.map((item: any) => item["value"])}
+                />
               ) : null}
-            </Form>
-          );
-        }}
-      </Formik>
+
+              {values.scope === DeployKeyScopeComponent ? (
+                <Field
+                  component={KFormikAutoCompleteMultipleSelectField}
+                  name="resources"
+                  label="Component"
+                  options={componentOptions}
+                  id="certificate-resources"
+                  placeholder={"Select a component"}
+                  helperText={""}
+                  meta
+                  formValueToEditValue={(v: any) =>
+                    v.map((item: any) => componentOptions.find((a) => `${a.value}` === item))
+                  }
+                  editValueToFormValue={(v: any) => v.map((item: any) => item["value"])}
+                />
+              ) : null}
+            </Box>
+          </Box>
+        </KPanel>
+
+        <Box mt={2}>
+          <Button id="save-deployKey-button" color="primary" variant="contained" type="submit">
+            Create Deploy Key
+          </Button>
+        </Box>
+        {process.env.REACT_APP_DEBUG === "true" ? (
+          <Box mt={2}>
+            <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
+          </Box>
+        ) : null}
+      </Form>
     );
   }
 }
 
-export const DeployKeyFormik = withStyles(styles)(withNamespace(connect(mapStateToProps)(DeployKeyFormikRaw)));
+const DeployKeyForm = withNamespace(connect(mapStateToProps)(withStyles(styles)(DeployKeyFormikRaw)));
+export const DeployKeyFormik = withFormik<OwnProps, DeployKeyFormTypeContent>({
+  mapPropsToValues: () => newEmptyDeployKeyForm,
+  validationSchema: schema,
+  handleSubmit: (values, bag) => {
+    bag.props.onSubmit(values);
+  },
+  // @ts-ignore
+})(DeployKeyForm);

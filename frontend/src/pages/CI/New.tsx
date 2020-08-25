@@ -35,10 +35,7 @@ class DeployKeyNewPageRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item md={8}>
-              <DeployKeyFormik
-                // @ts-ignore
-                onSubmit={this.submitFormik}
-              />
+              <DeployKeyFormik onSubmit={this.submitFormik} />
             </Grid>
           </Grid>
         </Box>
