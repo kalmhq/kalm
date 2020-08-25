@@ -7,3 +7,6 @@ go run ./cmd/auth-proxy
 
 run:
 	go run .
+
+test:
+	go test ./... -v 

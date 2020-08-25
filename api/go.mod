@@ -4,9 +4,7 @@ go 1.13
 
 require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
-	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/go-logr/logr v0.1.0
 	github.com/go-openapi/runtime v0.19.20 // indirect
 	github.com/go-openapi/spec v0.19.9 // indirect
@@ -38,14 +36,14 @@ require (
 	gomodules.xyz/jsonpatch/v2 v2.1.0
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
-	gopkg.in/square/go-jose.v2 v2.5.1
+	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 	gotest.tools v2.2.0+incompatible
 	istio.io/api v0.0.0-20200722065756-9d7f2a3afc5b // indirect
 	istio.io/gogo-genproto v0.0.0-20200720193312-b523a30fe746 // indirect
 	k8s.io/api v0.18.6
 	k8s.io/apimachinery v0.18.6
 	k8s.io/client-go v0.18.4
-	k8s.io/klog/v2 v2.1.0
+	k8s.io/klog/v2 v2.1.0 // indirect
 	k8s.io/metrics v0.18.4
 	k8s.io/utils v0.0.0-20200720150651-0bdb4ca86cbc // indirect
 	sigs.k8s.io/controller-runtime v0.6.1

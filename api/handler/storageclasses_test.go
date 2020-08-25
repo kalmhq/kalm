@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"github.com/davecgh/go-spew/spew"
 	"github.com/stretchr/testify/suite"
 	v1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,7 +49,6 @@ func (suite *StorageclassesHandlerTestSuite) TestStorageclassesHandler() {
 	rec := suite.NewRequest(http.MethodGet, "/v1alpha1/storageclasses", "")
 	rec.BodyAsJSON(&storageClasses)
 
-	spew.Dump(storageClasses)
 	suite.EqualValues(200, rec.Code)
 	suite.EqualValues(2, len(storageClasses))
 	suite.EqualValues("test-storage-class", storageClasses[0].Name)
