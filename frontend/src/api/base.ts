@@ -128,6 +128,11 @@ export abstract class Api {
 
   public abstract deleteCertificate(name: string): Promise<void>;
 
+  // certificate acme server
+  public abstract createACMEServer(): Promise<CertificateList>;
+
+  public abstract getACMEServer(): Promise<CertificateList>;
+
   // services
   public abstract loadServices(name: string): Promise<Immutable.List<Service>>;
 
