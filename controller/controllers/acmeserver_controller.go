@@ -166,6 +166,10 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 		return ctrl.Result{}, err
 	}
 
+	if err := r.reconcileStatus(acmeServer); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	return ctrl.Result{}, err
 }
 
@@ -383,6 +387,22 @@ func (A ACMEDNSComponentMapper) Map(object handler.MapObject) []reconcile.Reques
 	}
 }
 
+type ACMEDNSServiceMapper struct {
+}
+
+func (A ACMEDNSServiceMapper) Map(object handler.MapObject) []reconcile.Request {
+	if object.Meta.GetNamespace() != NamespaceKalmSystem ||
+		object.Meta.GetName() != getNameForLoadBalanceServiceForNSDomain() {
+		return nil
+	}
+
+	return []reconcile.Request{
+		{NamespacedName: types.NamespacedName{
+			Name: fmt.Sprintf("trigger-by-lb-svc-change-%s", object.Meta.GetName()),
+		}},
+	}
+}
+
 func (r *ACMEServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.ACMEServer{}).
@@ -394,6 +414,9 @@ func (r *ACMEServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		}).
 		Watches(genSourceForObject(&corev1alpha1.Component{}), &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &ACMEDNSComponentMapper{},
+		}).
+		Watches(genSourceForObject(&corev1.Service{}), &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: &ACMEDNSServiceMapper{},
 		}).
 		Complete(r)
 }
@@ -560,4 +583,30 @@ func (r *ACMEServerReconciler) reconcileIssuer(acmeServer corev1alpha1.ACMEServe
 	}
 
 	return err
+}
+
+func (r *ACMEServerReconciler) reconcileStatus(server corev1alpha1.ACMEServer) error {
+	// check if lb-svc is assigned loadBalancer ip
+	var svc corev1.Service
+	err := r.Get(r.ctx, client.ObjectKey{
+		Namespace: NamespaceKalmSystem,
+		Name:      getNameForLoadBalanceServiceForNSDomain(),
+	}, &svc)
+	if err != nil {
+		r.Log.Error(err, "fail to get lb-svc:"+getNameForLoadBalanceServiceForNSDomain())
+	}
+
+	ingList := svc.Status.LoadBalancer.Ingress
+	if len(ingList) <= 0 || ingList[0].IP == "" {
+		r.Log.Info("loadBalancer IP for lb-svc not ready yet")
+
+		server.Status.IPForNameServer = ""
+		server.Status.Ready = false
+	} else {
+		server.Status.IPForNameServer = ingList[0].IP
+		// todo more strict check
+		server.Status.Ready = true
+	}
+
+	return r.Status().Update(r.ctx, &server)
 }
