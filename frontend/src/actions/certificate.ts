@@ -13,9 +13,17 @@ import {
   LOAD_CERTIFICATES_FAILED,
   LOAD_CERTIFICATES_FULFILLED,
   LOAD_CERTIFICATES_PENDING,
+  LOAD_ACME_SERVER_PENDING,
+  LOAD_ACME_SERVER_FULFILLED,
+  LOAD_ACME_SERVER_FAILED,
+  CREATE_ACME_SERVER,
+  SET_IS_SUBMITTING_ACME_SERVER,
   selfManaged,
   SET_IS_SUBMITTING_CERTIFICATE,
   SetIsSubmittingCertificate,
+  AcmeServerInfo,
+  AcmeServerFormType,
+  SetIsSubmittingAcmeServer,
 } from "types/certificate";
 import { ThunkResult } from "types";
 
@@ -66,6 +74,24 @@ export const loadCertificateIssuersAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
+export const loadCertificateAcmeServerAction = (): ThunkResult<Promise<void>> => {
+  return async (dispatch) => {
+    dispatch({ type: LOAD_ACME_SERVER_PENDING });
+    try {
+      const acmeServer = await api.getAcmeServer();
+      dispatch({
+        type: LOAD_ACME_SERVER_FULFILLED,
+        payload: {
+          acmeServer,
+        },
+      });
+    } catch (e) {
+      dispatch({ type: LOAD_ACME_SERVER_FAILED });
+      throw e;
+    }
+  };
+};
+
 export const createCertificateAction = (
   certificateContent: CertificateFormType,
   isEdit?: boolean,
@@ -109,11 +135,37 @@ export const createCertificateIssuerAction = (
   };
 };
 
+export const createAcmeServerAction = (acmeServerContent: AcmeServerFormType): ThunkResult<Promise<void>> => {
+  return async (dispatch) => {
+    dispatch(setIsSubmittingAcmeServer(true));
+
+    let acmeServer: AcmeServerInfo;
+    try {
+      acmeServer = await api.createAcmeServer(acmeServerContent);
+    } catch (e) {
+      dispatch(setIsSubmittingAcmeServer(false));
+      throw e;
+    }
+    dispatch(setIsSubmittingAcmeServer(false));
+
+    dispatch({ type: CREATE_ACME_SERVER, payload: { acmeServer } });
+  };
+};
+
 export const setIsSubmittingCertificateAction = (isSubmittingCertificate: boolean): SetIsSubmittingCertificate => {
   return {
     type: SET_IS_SUBMITTING_CERTIFICATE,
     payload: {
       isSubmittingCertificate,
+    },
+  };
+};
+
+export const setIsSubmittingAcmeServer = (isSubmittingAcme: boolean): SetIsSubmittingAcmeServer => {
+  return {
+    type: SET_IS_SUBMITTING_ACME_SERVER,
+    payload: {
+      isSubmittingAcmeServer: isSubmittingAcme,
     },
   };
 };

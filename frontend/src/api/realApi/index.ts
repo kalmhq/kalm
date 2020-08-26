@@ -6,7 +6,7 @@ import { RegistryType } from "types/registry";
 import { Application, ApplicationComponent } from "types/application";
 import { HttpRoute } from "types/route";
 import { RoleBindingsRequestBody } from "types/user";
-import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
+import { CertificateFormType, CertificateIssuerFormType, AcmeServerInfo, AcmeServerFormType } from "types/certificate";
 import { Node } from "types/node";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { DeployKey } from "types/deployKey";
@@ -298,6 +298,18 @@ export default class RealApi extends Api {
 
   public deleteCertificate = async (name: string) => {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/httpscerts/${name}` });
+  };
+
+  // certificate acme server
+  public createAcmeServer = async (acmeServer: AcmeServerFormType): Promise<AcmeServerInfo> => {
+    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
+
+    return Immutable.fromJS(res.data);
+  };
+
+  public getAcmeServer = async (): Promise<AcmeServerInfo> => {
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/acmeserver` });
+    return Immutable.fromJS(res.data);
   };
 
   // services

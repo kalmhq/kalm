@@ -11,6 +11,11 @@ export const LOAD_CERTIFICATE_ISSUERS_PENDING = "LOAD_CERTIFICATE_ISSUERS_PENDIN
 export const LOAD_CERTIFICATE_ISSUERS_FAILED = "LOAD_CERTIFICATE_ISSUERS_FAILED";
 export const CREATE_CERTIFICATE = "CREATE_CERTIFICATE";
 export const CREATE_CERTIFICATE_ISSUER = "CREATE_CERTIFICATE_ISSUER";
+export const LOAD_ACME_SERVER_FULFILLED = "LOAD_ACME_SERVER_FULFILLED";
+export const LOAD_ACME_SERVER_PENDING = "LOAD_ACME_SERVER_PENDING";
+export const LOAD_ACME_SERVER_FAILED = "LOAD_ACME_SERVER_FAILED";
+export const SET_IS_SUBMITTING_ACME_SERVER = "SET_IS_SUBMITTING_ACME_SERVER";
+export const CREATE_ACME_SERVER = "CREATE_ACME_SERVER";
 
 export interface CreateCertificateAction {
   type: typeof CREATE_CERTIFICATE;
@@ -26,6 +31,13 @@ export interface CreateCertificateIssuerAction {
   };
 }
 
+export interface CreateAcmeServerAction {
+  type: typeof CREATE_ACME_SERVER;
+  payload: {
+    acmeServer: AcmeServerInfo;
+  };
+}
+
 export interface LoadCertificatesPendingAction {
   type: typeof LOAD_CERTIFICATES_PENDING;
 }
@@ -38,6 +50,21 @@ export interface LoadCertificatesAction {
   type: typeof LOAD_CERTIFICATES_FULFILLED;
   payload: {
     certificates: Immutable.List<Certificate>;
+  };
+}
+
+export interface LoadAcmeServerPendingAction {
+  type: typeof LOAD_ACME_SERVER_PENDING;
+}
+
+export interface LoadAcmeServerFailedAction {
+  type: typeof LOAD_ACME_SERVER_FAILED;
+}
+
+export interface LoadAcmeServerAction {
+  type: typeof LOAD_ACME_SERVER_FULFILLED;
+  payload: {
+    acmeServer: AcmeServerInfo;
   };
 }
 
@@ -60,6 +87,13 @@ export interface SetIsSubmittingCertificate {
   type: typeof SET_IS_SUBMITTING_CERTIFICATE;
   payload: {
     isSubmittingCertificate: boolean;
+  };
+}
+
+export interface SetIsSubmittingAcmeServer {
+  type: typeof SET_IS_SUBMITTING_ACME_SERVER;
+  payload: {
+    isSubmittingAcmeServer: boolean;
   };
 }
 
@@ -145,10 +179,30 @@ export type CertificateActions =
   | LoadCertificatesPendingAction
   | LoadCertificatesFailedAction
   | LoadCertificatesAction
+  | LoadAcmeServerPendingAction
+  | LoadAcmeServerFailedAction
+  | LoadAcmeServerAction
+  | SetIsSubmittingAcmeServer
   | SetIsSubmittingCertificate
   | DeleteCertificate
   | LoadCertificateIssuersPendingAction
   | LoadCertificateIssuersFailedAction
   | LoadCertificateIssuersAction
   | CreateCertificateAction
+  | CreateAcmeServerAction
   | CreateCertificateIssuerAction;
+
+export interface AcmeServerInfoContent {
+  acmeDomain: string;
+  nsDomain: string;
+  ipForNameServer: string;
+  ready: boolean;
+}
+export type AcmeServerInfo = ImmutableMap<AcmeServerInfoContent>;
+
+export interface AcmeServerFormTypeContent {
+  acmeDomain: string;
+  nsDomain: string;
+}
+
+export type AcmeServerFormType = ImmutableMap<AcmeServerFormTypeContent>;
