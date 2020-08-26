@@ -20,10 +20,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"net/http"
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -45,7 +47,6 @@ type ACMEServerReconciler struct {
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=acmeservers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=acmeservers/status,verbs=get;update;patch
 
-const DefaultACMEComponentName = "acme"
 const ACMEServerName = "acme-server"
 
 func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
@@ -87,7 +88,10 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 	expectedComp := corev1alpha1.Component{
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: NamespaceKalmSystem,
-			Name:      DefaultACMEComponentName,
+			Name:      ACMEServerName,
+			Labels: map[string]string{
+				"app": ACMEServerName,
+			},
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			Image: "joohoi/acme-dns:v0.8",
@@ -153,44 +157,13 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 		return ctrl.Result{}, err
 	}
 
-	// reconcile companion issuer
-	issuer := corev1alpha1.HttpsCertIssuer{}
-	isNew = false
-
-	err = r.Get(ctx, client.ObjectKey{Name: DefaultDNS01IssuerName}, &issuer)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			isNew = true
-
-			issuer.ObjectMeta = ctrl.ObjectMeta{
-				Name: DefaultDNS01IssuerName,
-			}
-
-			issuer = corev1alpha1.HttpsCertIssuer{
-				ObjectMeta: ctrl.ObjectMeta{
-					Name: DefaultDNS01IssuerName,
-				},
-				Spec: corev1alpha1.HttpsCertIssuerSpec{
-					DNS01: &corev1alpha1.DNS01Issuer{},
-				},
-			}
-		} else {
-			return ctrl.Result{}, err
-		}
-	}
-
-	if err := r.updateConfigsForIssuer(&issuer); err != nil {
+	// reconcile LoadBalancer Service for NSDomain
+	if err := r.reconcileLoadBalanceServiceForNSDomain(acmeServer); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	if isNew {
-		if err := ctrl.SetControllerReference(&acmeServer, &issuer, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-
-		err = r.Create(ctx, &issuer)
-	} else {
-		err = r.Update(ctx, &issuer)
+	if err := r.reconcileIssuer(acmeServer); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	return ctrl.Result{}, err
@@ -312,7 +285,7 @@ func getSVCNameForACMEDNS() string {
 	if os.Getenv("ACME_DNS_HOST") != "" {
 		host = os.Getenv("ACME_DNS_HOST")
 	} else {
-		host = fmt.Sprintf("%s.%s.svc.cluster.local", DefaultACMEComponentName, NamespaceKalmSystem)
+		host = fmt.Sprintf("%s.%s.svc.cluster.local", ACMEServerName, NamespaceKalmSystem)
 	}
 
 	return host
@@ -399,7 +372,7 @@ type ACMEDNSComponentMapper struct {
 }
 
 func (A ACMEDNSComponentMapper) Map(object handler.MapObject) []reconcile.Request {
-	if object.Meta.GetName() != DefaultACMEComponentName {
+	if object.Meta.GetName() != ACMEServerName {
 		return nil
 	}
 
@@ -486,4 +459,105 @@ func (r *ACMEServerReconciler) updateConfigsForIssuer(
 	}
 
 	return nil
+}
+
+func getNameForLoadBalanceServiceForNSDomain() string {
+	return "lb-svc-" + ACMEServerName
+}
+
+func (r *ACMEServerReconciler) reconcileLoadBalanceServiceForNSDomain(acmeServer corev1alpha1.ACMEServer) error {
+	expectedLBService := corev1.Service{
+		ObjectMeta: ctrl.ObjectMeta{
+			Namespace: NamespaceKalmSystem,
+			Name:      getNameForLoadBalanceServiceForNSDomain(),
+		},
+		Spec: corev1.ServiceSpec{
+			Type: corev1.ServiceTypeLoadBalancer,
+			Ports: []corev1.ServicePort{
+				{
+					Name:       "dns",
+					Port:       53,
+					TargetPort: intstr.FromInt(53),
+					Protocol:   corev1.ProtocolUDP,
+				},
+			},
+			Selector: map[string]string{
+				"app": ACMEServerName,
+			},
+		},
+	}
+
+	svc := corev1.Service{}
+	isNew := false
+
+	err := r.Get(r.ctx, client.ObjectKey{
+		Namespace: expectedLBService.Namespace,
+		Name:      expectedLBService.Name,
+	}, &svc)
+
+	if err != nil {
+		if errors.IsNotFound(err) {
+			isNew = true
+		} else {
+			return err
+		}
+	}
+
+	if isNew {
+		if err := ctrl.SetControllerReference(&acmeServer, &svc, r.Scheme); err != nil {
+			return err
+		}
+
+		svc = expectedLBService
+		err = r.Create(r.ctx, &svc)
+	} else {
+		svc.Spec = expectedLBService.Spec
+		err = r.Update(r.ctx, &svc)
+	}
+
+	return err
+}
+
+func (r *ACMEServerReconciler) reconcileIssuer(acmeServer corev1alpha1.ACMEServer) error {
+	// reconcile companion issuer
+	issuer := corev1alpha1.HttpsCertIssuer{}
+	isNew := false
+
+	err := r.Get(r.ctx, client.ObjectKey{Name: DefaultDNS01IssuerName}, &issuer)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			isNew = true
+
+			issuer.ObjectMeta = ctrl.ObjectMeta{
+				Name: DefaultDNS01IssuerName,
+			}
+
+			issuer = corev1alpha1.HttpsCertIssuer{
+				ObjectMeta: ctrl.ObjectMeta{
+					Name: DefaultDNS01IssuerName,
+				},
+				Spec: corev1alpha1.HttpsCertIssuerSpec{
+					DNS01: &corev1alpha1.DNS01Issuer{},
+				},
+			}
+		} else {
+			return err
+		}
+	}
+
+	if err := r.updateConfigsForIssuer(&issuer); err != nil {
+		return err
+	}
+
+	if isNew {
+		if err := ctrl.SetControllerReference(&acmeServer, &issuer, r.Scheme); err != nil {
+			return err
+		}
+
+		err = r.Create(r.ctx, &issuer)
+	} else {
+		err = r.Update(r.ctx, &issuer)
+	}
+
+	return err
 }
