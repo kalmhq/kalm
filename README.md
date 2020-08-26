@@ -40,7 +40,7 @@ Kalm should now be accessible at [http://localhost:3010](http://localhost:3010).
 
 ## Docs & Guides
 
-Detailed Documentation and Guides can be found at https://kalm.dev/docs/intro.
+Detailed Documentation and Guides can be found at https://kalm.dev/docs.
 
 ## License
 
