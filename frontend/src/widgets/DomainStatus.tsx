@@ -22,6 +22,7 @@ const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
 
 interface OwnProps {
   domain: string;
+  cnameDomain?: string;
   mr?: number;
 }
 
@@ -42,8 +43,32 @@ class DomainStatus extends React.PureComponent<Props> {
     }
   }
 
+  private getHelperText = (cnameDomain: string | undefined, cnameRecords: string): React.ReactElement => {
+    const { ingressIP } = this.props;
+    const helper =
+      cnameDomain !== undefined ? (
+        cnameRecords.length > 0 ? (
+          <>
+            <Box>
+              current cname records is <strong>{cnameRecords}</strong>
+            </Box>
+            please add an CNAME record with your dns provider, point to <strong>{cnameDomain}</strong>{" "}
+          </>
+        ) : (
+          <>
+            please add an CNAME record with your dns provider, point to <strong>{cnameDomain}</strong>{" "}
+          </>
+        )
+      ) : (
+        <>
+          please add an A record with your dns provider, point to <strong>{ingressIP}</strong>{" "}
+        </>
+      );
+    return helper;
+  };
+
   private getIconAndBody = () => {
-    const { domainStatus, ingressIP, domain, dispatch, isIPDomain } = this.props;
+    const { domainStatus, ingressIP, domain, dispatch, isIPDomain, cnameDomain } = this.props;
     if (isIPDomain) {
       return {
         icon: domain === ingressIP ? <CheckCircleIcon /> : <WarningIcon color="action" />,
@@ -76,19 +101,26 @@ class DomainStatus extends React.PureComponent<Props> {
     }
 
     const aRecords = domainStatus?.get("aRecords");
-    const isError = (!aRecords || !aRecords.includes(ingressIP)) && domain !== ingressIP;
+    let isError = (!aRecords || !aRecords.includes(ingressIP)) && domain !== ingressIP;
+    const cnameRecords = domainStatus?.get("cname");
+    if (isError && cnameDomain !== undefined) {
+      isError = cnameDomain !== cnameRecords;
+    }
+    console.log(cnameDomain, cnameRecords);
+
     if (isError) {
+      const copyContent = cnameRecords !== undefined ? cnameDomain! : ingressIP;
       return {
         icon: <WarningIcon color="action" />,
         body: (
           <Box p={2}>
-            please add an A record with your dns provider, point to <strong>{ingressIP}</strong>{" "}
+            {this.getHelperText(cnameDomain, cnameRecords)}
             <IconButtonWithTooltip
               tooltipTitle="Copy"
               aria-label="copy"
               size="small"
               onClick={(e) => {
-                copy(ingressIP);
+                copy(copyContent);
                 dispatch(setSuccessNotificationAction("Copied successful!"));
               }}
             >

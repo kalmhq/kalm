@@ -88,6 +88,9 @@ export const issuerManaged = "issuerManaged";
 export const cloudFlare = "cloudFlare";
 export const caForTest = "caForTest";
 
+// wildcard support httpsCertIssuser type
+export const dns01Issuer = "default-dns01-issuer";
+
 export type CertificateFormType = ImmutableMap<CertificateFormTypeContent>;
 
 export type CertificateIssuerFormType = ImmutableMap<CertificateIssuerFormTypeContent>;
@@ -122,6 +125,7 @@ export interface CertificateContent {
   domains: Immutable.List<string>;
   ready: string; // why is a string??
   reason: string;
+  wildcardCertDNSChallengeDomain?: string;
 }
 
 export interface CertificateIssuerContent {
