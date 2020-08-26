@@ -3,10 +3,11 @@ import { createRouteAction } from "actions/routes";
 import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import React from "react";
-import { AllHttpMethods, HttpRouteForm, methodsModeAll, newEmptyRouteForm, HttpRouteFormContent } from "types/route";
+import { AllHttpMethods, HttpRouteForm, methodsModeAll, newEmptyRouteForm, HttpRoute } from "types/route";
 import { BasePage } from "../BasePage";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { setSuccessNotificationAction } from "actions/notification";
+import Immutable from "immutable";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -16,9 +17,9 @@ const styles = (theme: Theme) =>
 interface Props extends WithStyles<typeof styles>, WithNamespaceProps {}
 
 class RouteNewRaw extends React.PureComponent<Props> {
-  private onSubmit = async (route: HttpRouteForm) => {
+  private onSubmit = async (routeArg: HttpRouteForm) => {
     const { activeNamespaceName, dispatch } = this.props;
-
+    let route = Immutable.fromJS(routeArg) as HttpRoute;
     try {
       if (route.get("methodsMode") === methodsModeAll) {
         route = route.set("methods", AllHttpMethods);
@@ -44,7 +45,7 @@ class RouteNewRaw extends React.PureComponent<Props> {
     return (
       <BasePage>
         <Box p={2}>
-          <RouteForm onSubmit={this.onSubmit} initial={newEmptyRouteForm().toJS() as HttpRouteFormContent} />
+          <RouteForm onSubmit={this.onSubmit} initial={newEmptyRouteForm()} />
         </Box>
       </BasePage>
     );

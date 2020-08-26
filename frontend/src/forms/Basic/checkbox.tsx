@@ -109,7 +109,10 @@ export const KFormikBoolCheckboxRender = ({
     <FormControl fullWidth error={showError} style={{ marginTop: 8 }}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}
       <FormGroup row>
-        <FormControlLabel control={<Checkbox checked={checked} onChange={onChange} />} label={label} />
+        <FormControlLabel
+          control={<Checkbox checked={checked} onChange={(e) => onChange(e.target.checked)} />}
+          label={label}
+        />
       </FormGroup>
       {showError ? (
         <FormHelperText>{error}</FormHelperText>
@@ -131,13 +134,13 @@ interface KFormikCheckboxGroupRenderProps {
   helperText?: string;
   options: KFormikCheckboxGroupRenderOption[];
   componentType?: "Checkbox" | "Chip";
-  value: Immutable.List<string>;
+  value: string[];
   onChange: any;
   error: any;
   touched: boolean;
 }
 
-// For value type is Immutable.List<string>
+// For value type is string[]
 export const KFormikCheckboxGroupRender = ({
   title,
   options,
@@ -158,9 +161,14 @@ export const KFormikCheckboxGroupRender = ({
         {options.map((x) => {
           const onCheckChange = (_: any, checked: boolean) => {
             if (checked) {
-              onChange(value.push(x.value));
+              value.push(x.value);
+              onChange(value);
             } else {
-              onChange(value.remove(value.indexOf(x.value)));
+              const index = value.indexOf(x.value);
+              if (index > -1) {
+                value.splice(index, 1);
+              }
+              onChange(value);
             }
           };
 
@@ -169,21 +177,23 @@ export const KFormikCheckboxGroupRender = ({
               <Box mt={1} mr={1} mb={1} key={x.value}>
                 <KChip
                   clickable
-                  disabledStyle={!value.includes(x.value)}
+                  disabledStyle={value.indexOf(x.value) === -1}
                   htmlColor={x.htmlColor}
                   label={x.value}
                   onClick={() => {
-                    onCheckChange(null, !value.includes(x.value));
+                    onCheckChange(null, value.indexOf(x.value) === -1);
                   }}
                 />
               </Box>
             );
           }
-
+          console.log("value", value);
           return (
             <FormControlLabel
               key={x.value}
-              control={<Checkbox checked={value.includes(x.value)} onChange={onCheckChange} name={x.value} />}
+              control={
+                <Checkbox checked={value && value.indexOf(x.value) > -1} onChange={onCheckChange} name={x.value} />
+              }
               label={x.label}
             />
           );

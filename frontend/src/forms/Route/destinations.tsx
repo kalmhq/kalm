@@ -1,12 +1,10 @@
-import { Grid } from "@material-ui/core";
+import { Box, Button, Collapse, Grid } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import Warning from "@material-ui/icons/Warning";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import { Field } from "formik";
+import { Field, FieldArray } from "formik";
 import { KAutoCompleteOption, KFormikAutoCompleteSingleValue } from "forms/Basic/autoComplete";
-import { ImmutableFieldArray } from "forms/Basic/kFieldArray";
 import { KFormikRenderSlider } from "forms/Basic/slider";
-import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -17,13 +15,13 @@ import {
   PortProtocolHTTP2,
   PortProtocolHTTPS,
 } from "types/componentTemplate";
-import { HttpRouteDestination } from "types/route";
-import { DeleteIcon } from "widgets/Icon";
+import { HttpRouteDestinationContent } from "types/route";
+import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorRequired } from "../validator";
 
 interface FieldArrayComponentHackType {
-  destinations: Immutable.List<HttpRouteDestination>;
+  destinations: HttpRouteDestinationContent[];
 }
 
 const mapStateToProps = (state: RootState) => {
@@ -80,10 +78,32 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
       });
 
     return (
-      <ImmutableFieldArray
+      <FieldArray
         name="destinations"
         render={(arrayHelpers) => (
           <div>
+            <Box mt={2} mr={2} mb={2}>
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={<AddIcon />}
+                size="small"
+                id="add-target-button"
+                onClick={() =>
+                  arrayHelpers.push({
+                    host: "",
+                    weight: 1,
+                  })
+                }
+              >
+                Add a target
+              </Button>
+            </Box>
+            <Collapse in={destinations.length > 1}>
+              <Alert className="alert" severity="info">
+                There are more than one target, traffic will be forwarded to each target by weight.
+              </Alert>
+            </Collapse>
             {destinations &&
               destinations.map((destination, index) => (
                 <Grid container spacing={2} key={index} alignItems="center">
@@ -105,7 +125,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
                       }
                     />
                   </Grid>
-                  {destinations.size > 1 ? (
+                  {destinations.length > 1 ? (
                     <Grid item md={2}>
                       <Field
                         name={`destinations.${index}.weight`}
@@ -114,7 +134,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
                         step={1}
                         min={0}
                         max={10}
-                        disabled={destinations.size <= 1}
+                        disabled={destinations.length <= 1}
                       />
                     </Grid>
                   ) : null}
@@ -128,7 +148,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
                       <DeleteIcon />
                     </IconButtonWithTooltip>
                   </Grid>
-                  {destination.get("weight") === 0 ? (
+                  {destination.weight === 0 ? (
                     <Grid item md={3}>
                       <Warning /> Requests won't go into this target since it has 0 weight.
                     </Grid>

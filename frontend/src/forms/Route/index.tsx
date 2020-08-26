@@ -3,7 +3,7 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { loadDomainDNSInfo } from "actions/domain";
-import { Field, FormikProps, withFormik } from "formik";
+import { Field, Form, FormikProps, withFormik } from "formik";
 import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KFormikBoolCheckboxRender, KFormikCheckboxGroupRender } from "forms/Basic/checkbox";
 import { KFormikRadioGroupRender } from "forms/Basic/radio";
@@ -22,14 +22,13 @@ import { Link as RouteLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { arrayPush, change } from "redux-form";
 import { TDispatchProp } from "types";
-import { httpMethods, HttpRouteFormContent, methodsModeAll, methodsModeSpecific } from "types/route";
+import { httpMethods, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
 import { isArray } from "util";
 import { arraysMatch } from "utils";
 import { includesForceHttpsDomain } from "utils/domain";
 import { default as sc, default as stringConstants } from "utils/stringConstants";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
 import DomainStatus from "widgets/DomainStatus";
-import { AddIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
@@ -93,12 +92,12 @@ const styles = (theme: Theme) =>
 interface OwnProps {
   isEdit?: boolean;
   onSubmit: any;
-  initial: HttpRouteFormContent;
+  initial: HttpRouteForm;
 }
 
 export interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props extends ConnectedProps, OwnProps, FormikProps<HttpRouteFormContent>, WithStyles<typeof styles> {}
+export interface Props extends ConnectedProps, OwnProps, FormikProps<HttpRouteForm>, WithStyles<typeof styles> {}
 
 interface State {
   isAdvancedPartUnfolded: boolean;
@@ -120,8 +119,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
   componentDidUpdate(prevProps: Props) {
     const { values, dispatch } = this.props;
     const { hosts, schemes, httpRedirectToHttps } = values;
-    if (!hosts.equals(prevProps.values.hosts)) {
-      hosts.forEach((host: any) => {
+    if (hosts !== prevProps.values.hosts) {
+      hosts.forEach((host) => {
         dispatch(loadDomainDNSInfo(host));
       });
     }
@@ -174,7 +173,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     const { isValidCertificationUnfolded } = this.state;
     const { hosts } = values;
 
-    if (hosts.size === 0) {
+    if (hosts.length === 0) {
       return null;
     }
 
@@ -260,7 +259,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
   private renderTargets = () => {
     const { dispatch, values } = this.props;
     const { destinations } = values;
-    if (destinations.size === 0) {
+    if (destinations.length === 0) {
       dispatch(
         arrayPush(
           ROUTE_FORM_ID,
@@ -276,34 +275,6 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       <Box p={2}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={12} md={12}>
-            <Box mt={2} mr={2} mb={2}>
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<AddIcon />}
-                size="small"
-                id="add-target-button"
-                onClick={() =>
-                  dispatch(
-                    arrayPush(
-                      ROUTE_FORM_ID,
-                      "destinations",
-                      Immutable.Map({
-                        host: "",
-                        weight: 1,
-                      }),
-                    ),
-                  )
-                }
-              >
-                Add a target
-              </Button>
-            </Box>
-            <Collapse in={destinations.size > 1}>
-              <Alert className="alert" severity="info">
-                There are more than one target, traffic will be forwarded to each target by weight.
-              </Alert>
-            </Collapse>
             <RenderHttpRouteDestinations destinations={values.destinations} />
           </Grid>
           <Grid item xs={8} sm={8} md={8}>
@@ -344,230 +315,199 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
         return <DomainStatus domain={host} />;
       }
     });
-
+    console.log("schemes", values.schemes);
     return (
       <div className={classes.root}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
-            <Box mb={2}>
-              <KPanel
-                title="Hosts and paths"
-                content={
-                  <Box p={2}>
-                    <Field
-                      component={KFreeSoloFormikAutoCompleteMultiValues}
-                      icons={icons}
-                      label="Hosts"
-                      name="hosts"
-                      formValueToEditValue={(hosts: Immutable.List<string>) => hosts.toArray()}
-                      editValueToFormValue={(value: string[]) => Immutable.List(value)}
-                      validate={hostsValidators}
-                      placeholder="e.g. www.example.com"
-                      helperText={
-                        <Caption color="textSecondary">
-                          Your cluster ip is{" "}
-                          <Link
-                            href="#"
-                            onClick={() => {
-                              const isHostsIncludeIngressIP = !!hosts.find((host) => host === ingressIP);
-                              if (!isHostsIncludeIngressIP) {
-                                setFieldValue("hosts", hosts.push(ingressIP));
-                              }
-                            }}
-                          >
-                            {ingressIP}
-                          </Link>
-                          . {sc.ROUTE_HOSTS_INPUT_HELPER}
-                        </Caption>
-                      }
-                    />
-                    <Field
-                      component={KFreeSoloFormikAutoCompleteMultiValues}
-                      formValueToEditValue={(hosts: Immutable.List<string>) => hosts.toArray()}
-                      editValueToFormValue={(value: string[]) => Immutable.List(value)}
-                      label="Path Prefixes"
-                      name="paths"
-                      validate={pathsValidators}
-                      placeholder="e.g. /some/path/to/app"
-                      helperText={sc.ROUTE_PATHS_INPUT_HELPER}
-                    />
-                    <Field
-                      component={KFormikBoolCheckboxRender}
-                      name="stripPath"
-                      label={sc.ROUTE_STRIP_PATH_LABEL}
-                      helperText={sc.ROUTE_STRIP_PATH_HELPER}
-                      value={values.stripPath}
-                      error={errors.stripPath}
-                      touched={touched.stripPath}
-                      onChange={(v: boolean) => setFieldValue("stripPath", v)}
-                    />
-                  </Box>
-                }
-              />
-            </Box>
-
-            <Box mb={2}>
-              <KPanel
-                title="Schemes and Methods"
-                content={
-                  <Box p={2}>
-                    <KFormikRadioGroupRender
-                      title="Http Methods"
-                      name="methodsMode"
-                      error={!!errors.methodsMode && touched.methodsMode}
-                      value={values.methodsMode}
-                      onChange={handleChange}
-                      options={[
-                        {
-                          value: methodsModeAll,
-                          label: sc.ROUTE_HTTP_METHOD_ALL,
-                        },
-                        {
-                          value: methodsModeSpecific,
-                          label: sc.ROUTE_HTTP_METHOD_CUSTOM,
-                        },
-                      ]}
-                    />
-                    <Collapse in={methodsMode === methodsModeSpecific}>
+        <Form>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+              <Box mb={2}>
+                <KPanel
+                  title="Hosts and paths"
+                  content={
+                    <Box p={2}>
                       <Field
-                        component={KFormikCheckboxGroupRender}
-                        componentType={"Checkbox"}
-                        validate={methodsMode === methodsModeSpecific ? ValidatorListNotEmpty : []}
-                        name="methods"
-                        value={values.methods}
-                        error={errors.methods}
-                        touched={touched.methods}
-                        onChange={(v: Immutable.List<string>) => setFieldValue("methods", v)}
-                        options={httpMethods.map((m) => {
-                          return { value: m, label: m };
-                        })}
-                      />
-                    </Collapse>
-                    <Field
-                      title="Allow traffic through"
-                      component={KFormikCheckboxGroupRender}
-                      componentType={"Checkbox"}
-                      validate={ValidatorListNotEmpty}
-                      name="schemes"
-                      value={values.schemes}
-                      onChange={(v: Immutable.List<string>) => setFieldValue("schemes", v)}
-                      options={[
-                        {
-                          value: "http",
-                          label: "http",
-                        },
-                        {
-                          value: "https",
-                          label: "https",
-                          htmlColor: "#9CCC65",
-                        },
-                      ]}
-                    />
-                    <Collapse in={values.schemes.includes("http") && values.schemes.includes("https")}>
-                      <Field
-                        component={KFormikBoolCheckboxRender}
-                        name="httpRedirectToHttps"
-                        value={values.httpRedirectToHttps}
-                        error={errors.httpRedirectToHttps}
-                        touched={touched.httpRedirectToHttps}
-                        onChange={(v: boolean) => setFieldValue("httpRedirectToHttps", v)}
-                        label={
-                          <span>
-                            Redirect all <strong>http</strong> request to <strong>https</strong> with 301 status code.
-                          </span>
+                        component={KFreeSoloFormikAutoCompleteMultiValues}
+                        icons={Immutable.List(icons)}
+                        label="Hosts"
+                        name="hosts"
+                        // formValueToEditValue={(hosts: Immutable.List<string>) => hosts.toArray()}
+                        // editValueToFormValue={(value: string[]) => Immutable.List(value)}
+                        validate={hostsValidators}
+                        placeholder="e.g. www.example.com"
+                        helperText={
+                          <Caption color="textSecondary">
+                            Your cluster ip is{" "}
+                            <Link
+                              href="#"
+                              onClick={() => {
+                                const isHostsIncludeIngressIP = !!hosts.find((host) => host === ingressIP);
+                                if (!isHostsIncludeIngressIP) {
+                                  setFieldValue("hosts", hosts.push(ingressIP));
+                                }
+                              }}
+                            >
+                              {ingressIP}
+                            </Link>
+                            . {sc.ROUTE_HOSTS_INPUT_HELPER}
+                          </Caption>
                         }
                       />
-                    </Collapse>
-                    <Collapse in={values.schemes.includes("https")}>
-                      <Alert className="alert" severity="info">
-                        {sc.ROUTE_HTTPS_ALERT}
-                      </Alert>
-                      {hstsDomains.length > 0 ? (
-                        <Alert className="alert" severity="warning">
-                          <Box display="flex">
-                            The
-                            <Box ml="4px" mr="4px">
-                              <strong>{hstsDomains.join(", ")}</strong>
-                            </Box>
-                            {stringConstants.HSTS_DOMAINS_REQUIRED_HTTPS}
-                          </Box>
-                        </Alert>
-                      ) : null}
-                      {this.renderCertificationStatus()}
-                    </Collapse>
-                  </Box>
-                }
-              />
-            </Box>
-
-            <Box mb={2}>
-              <KPanel title="Targets" content={this.renderTargets()} />
-            </Box>
-
-            <Box mb={2}>
-              <KPanel
-                title="Rules"
-                content={
-                  <Box p={2}>
-                    <Caption>
-                      Set specific rules for this ingress. Only requests that match these conditions will be accepted.
-                    </Caption>
-                    <Box display="flex">
-                      <Box mt={2} mr={2} mb={2}>
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          startIcon={<AddIcon />}
-                          size="small"
-                          onClick={() => {
-                            setFieldValue(
-                              "conditions",
-                              Immutable.Map({
-                                type: "header",
-                                operator: "equal",
-                                name: "",
-                                value: "",
-                              }),
-                            );
-                          }}
-                        >
-                          Add Header Rule
-                        </Button>
-                      </Box>
-                      <Box mt={2} mr={2} mb={2}>
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          startIcon={<AddIcon />}
-                          size="small"
-                          onClick={() => {
-                            setFieldValue(
-                              "conditions",
-                              Immutable.Map({
-                                type: "header",
-                                operator: "equal",
-                                name: "",
-                                value: "",
-                              }),
-                            );
-                          }}
-                        >
-                          Add Query Rule
-                        </Button>
-                      </Box>
+                      <Field
+                        component={KFreeSoloFormikAutoCompleteMultiValues}
+                        // formValueToEditValue={(hosts: Immutable.List<string>) => hosts.toArray()}
+                        // editValueToFormValue={(value: string[]) => Immutable.List(value)}
+                        label="Path Prefixes"
+                        name="paths"
+                        validate={pathsValidators}
+                        placeholder="e.g. /some/path/to/app"
+                        helperText={sc.ROUTE_PATHS_INPUT_HELPER}
+                      />
+                      <Field
+                        component={KFormikBoolCheckboxRender}
+                        name="stripPath"
+                        label={sc.ROUTE_STRIP_PATH_LABEL}
+                        helperText={sc.ROUTE_STRIP_PATH_HELPER}
+                        value={values.stripPath}
+                        error={errors.stripPath}
+                        touched={touched.stripPath}
+                        onChange={(v: boolean) => {
+                          console.log("v----", v);
+                          setFieldValue("stripPath", v);
+                        }}
+                      />
                     </Box>
-                    <RenderHttpRouteConditions conditions={values.conditions} />
-                  </Box>
-                }
-              />
-            </Box>
+                  }
+                />
+              </Box>
 
-            <Button id="add-route-submit-button" type="submit" color="primary" variant="contained">
-              {isEdit ? "Update" : "Create"} Route
-            </Button>
+              <Box mb={2}>
+                <KPanel
+                  title="Schemes and Methods"
+                  content={
+                    <Box p={2}>
+                      <KFormikRadioGroupRender
+                        title="Http Methods"
+                        name="methodsMode"
+                        error={!!errors.methodsMode && touched.methodsMode}
+                        value={values.methodsMode}
+                        onChange={handleChange}
+                        options={[
+                          {
+                            value: methodsModeAll,
+                            label: sc.ROUTE_HTTP_METHOD_ALL,
+                          },
+                          {
+                            value: methodsModeSpecific,
+                            label: sc.ROUTE_HTTP_METHOD_CUSTOM,
+                          },
+                        ]}
+                      />
+                      <Collapse in={methodsMode === methodsModeSpecific}>
+                        <Field
+                          component={KFormikCheckboxGroupRender}
+                          componentType={"Checkbox"}
+                          validate={methodsMode === methodsModeSpecific ? ValidatorListNotEmpty : []}
+                          name="methods"
+                          value={values.methods}
+                          error={errors.methods}
+                          touched={touched.methods}
+                          onChange={(v: string[]) => setFieldValue("methods", v)}
+                          options={httpMethods.map((m) => {
+                            return { value: m, label: m };
+                          })}
+                        />
+                      </Collapse>
+                      <Field
+                        title="Allow traffic through"
+                        component={KFormikCheckboxGroupRender}
+                        componentType={"Checkbox"}
+                        validate={ValidatorListNotEmpty}
+                        name="schemes"
+                        value={values.schemes}
+                        onChange={(v: string[]) => {
+                          console.log("v---", v);
+                          setFieldValue("schemes", v);
+                        }}
+                        options={[
+                          {
+                            value: "http",
+                            label: "http",
+                          },
+                          {
+                            value: "https",
+                            label: "https",
+                            htmlColor: "#9CCC65",
+                          },
+                        ]}
+                      />
+                      <Collapse
+                        in={
+                          values.schemes && values.schemes.indexOf("http") > -1 && values.schemes.indexOf("https") > -1
+                        }
+                      >
+                        <Field
+                          component={KFormikBoolCheckboxRender}
+                          name="httpRedirectToHttps"
+                          value={values.httpRedirectToHttps}
+                          error={errors.httpRedirectToHttps}
+                          touched={touched.httpRedirectToHttps}
+                          onChange={(v: boolean) => setFieldValue("httpRedirectToHttps", v)}
+                          label={
+                            <span>
+                              Redirect all <strong>http</strong> request to <strong>https</strong> with 301 status code.
+                            </span>
+                          }
+                        />
+                      </Collapse>
+                      <Collapse in={values.schemes.includes("https")}>
+                        <Alert className="alert" severity="info">
+                          {sc.ROUTE_HTTPS_ALERT}
+                        </Alert>
+                        {hstsDomains.length > 0 ? (
+                          <Alert className="alert" severity="warning">
+                            <Box display="flex">
+                              The
+                              <Box ml="4px" mr="4px">
+                                <strong>{hstsDomains.join(", ")}</strong>
+                              </Box>
+                              {stringConstants.HSTS_DOMAINS_REQUIRED_HTTPS}
+                            </Box>
+                          </Alert>
+                        ) : null}
+                        {this.renderCertificationStatus()}
+                      </Collapse>
+                    </Box>
+                  }
+                />
+              </Box>
+
+              <Box mb={2}>
+                <KPanel title="Targets" content={this.renderTargets()} />
+              </Box>
+
+              <Box mb={2}>
+                <KPanel
+                  title="Rules"
+                  content={
+                    <Box p={2}>
+                      <Caption>
+                        Set specific rules for this ingress. Only requests that match these conditions will be accepted.
+                      </Caption>
+
+                      <RenderHttpRouteConditions conditions={values.conditions} />
+                    </Box>
+                  }
+                />
+              </Box>
+
+              <Button id="add-route-submit-button" type="submit" color="primary" variant="contained">
+                {isEdit ? "Update" : "Create"} Route
+              </Button>
+            </Grid>
           </Grid>
-        </Grid>
+        </Form>
       </div>
     );
   }
@@ -593,11 +533,11 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
 const connectedForm = connect(mapStateToProps)(withStyles(styles)(RouteFormRaw));
 
-export const RouteForm = withFormik<OwnProps, HttpRouteFormContent>({
+export const RouteForm = withFormik<OwnProps, HttpRouteForm>({
   mapPropsToValues: (props) => {
     return props.initial;
   },
-  validate: (values: HttpRouteFormContent) => {
+  validate: (values: HttpRouteForm) => {
     let errors = {};
     return errors;
   },

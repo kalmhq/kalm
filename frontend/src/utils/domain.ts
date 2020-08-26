@@ -1,5 +1,3 @@
-import Immutable from "immutable";
-
 // https://source.chromium.org/chromium/chromium/src/+/master:net/http/transport_security_state_static.json
 export const forceHttpsDomainSuffixes = [
   "android",
@@ -26,7 +24,7 @@ export const forceHttpsDomainSuffixes = [
   "gentapps.com",
 ];
 
-export const includesForceHttpsDomain = (hosts: Immutable.List<string>): string[] => {
+export const includesForceHttpsDomain = (hosts: string[]): string[] => {
   const includedSuffixes: string[] = [];
 
   forceHttpsDomainSuffixes.forEach((suffix) => {

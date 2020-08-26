@@ -5,17 +5,11 @@ import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import React from "react";
-import {
-  AllHttpMethods,
-  HttpRoute,
-  HttpRouteForm,
-  methodsModeAll,
-  methodsModeSpecific,
-  HttpRouteFormContent,
-} from "types/route";
+import { AllHttpMethods, HttpRoute, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
 import { Loading } from "widgets/Loading";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
 import { BasePage } from "../BasePage";
+import Immutable from "immutable";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -27,8 +21,9 @@ const styles = (theme: Theme) =>
 interface Props extends WithStyles<typeof styles>, WithRoutesDataProps {}
 
 class RouteEditRaw extends React.PureComponent<Props> {
-  private onSubmit = async (route: HttpRouteForm) => {
+  private onSubmit = async (routeArg: HttpRouteForm) => {
     const { dispatch } = this.props;
+    let route = Immutable.fromJS(routeArg) as HttpRoute;
     try {
       if (route.get("methodsMode") === methodsModeAll) {
         route = route.set("methods", AllHttpMethods);
@@ -70,10 +65,10 @@ class RouteEditRaw extends React.PureComponent<Props> {
       );
     }
 
-    let routeForm = httpRoute as HttpRouteForm;
+    let routeForm = httpRoute as HttpRoute;
     routeForm = routeForm.set("methodsMode", httpRoute.get("methods").size >= 7 ? methodsModeAll : methodsModeSpecific);
 
-    return <RouteForm isEdit onSubmit={this.onSubmit} initial={routeForm.toObject() as HttpRouteFormContent} />;
+    return <RouteForm isEdit onSubmit={this.onSubmit} initial={routeForm.toJS() as HttpRouteForm} />;
   }
 
   public render() {
