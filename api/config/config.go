@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/urfave/cli/v2"
@@ -11,7 +12,7 @@ import (
 type Config struct {
 	BindAddress                   string
 	Port                          int
-	WebhookPort                   int
+	PrivilegedLocalhostAccess     bool
 	LogLevel                      string
 	KubernetesApiServerAddress    string
 	KubernetesApiServerCAFilePath string
@@ -41,6 +42,13 @@ func (c *Config) Normalize() {
 	}
 }
 
+func (c *Config) DeepCopy() *Config {
+	bs, _ := json.Marshal(c)
+	var res Config
+	_ = json.Unmarshal(bs, &res)
+	return &res
+}
+
 func (c *Config) Validate() {
 
 }
@@ -60,14 +68,4 @@ func (c *Config) GetServerAddress() string {
 	}
 
 	return fmt.Sprintf("%s:%d", address, c.Port)
-}
-
-func (c *Config) GetWebhookServerAddress() string {
-	var address string
-
-	if c.BindAddress != "0.0.0.0" {
-		address = c.BindAddress
-	}
-
-	return fmt.Sprintf("%s:%d", address, c.WebhookPort)
 }

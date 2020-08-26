@@ -65,7 +65,11 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 		}
 
 		return len(deployment.Spec.Template.Spec.Containers[0].Env) == 1 &&
-			len(service.Spec.Ports) == 1
+			len(service.Spec.Ports) == 1 &&
+			deployment.Labels["foo"] == "bar" && // label should be set correctly
+			deployment.Spec.Template.Labels["foo"] == "bar" && // pod template label should be set correctly
+			deployment.Annotations["foo"] == "bar" && // annotation should be set correctly
+			deployment.Spec.Template.Annotations["foo"] == "bar" // pod template annotation should be set correctly
 	}, "can't get deployment")
 
 	// update deployment env and add a new port
@@ -115,6 +119,10 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 
 	}, "component delete is not working")
 }
+
+func (suite *ComponentControllerSuite) TestDaemonSetCRUD() {}
+
+func (suite *ComponentControllerSuite) TestCronJobCRUD() {}
 
 func (suite *ComponentControllerSuite) TestComponentSetControllerRef() {
 	plugin := generateEmptyComponentPlugin()
@@ -349,6 +357,12 @@ func generateEmptyComponent(namespace string, workloadTypeOpt ...v1alpha1.Worklo
 			Namespace: namespace,
 		},
 		Spec: v1alpha1.ComponentSpec{
+			Labels: map[string]string{
+				"foo": "bar",
+			},
+			Annotations: map[string]string{
+				"foo": "bar",
+			},
 			WorkloadType: workloadType, // TODo test default value
 			Image:        "nginx:latest",
 			Env: []v1alpha1.EnvVar{

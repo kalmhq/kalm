@@ -346,6 +346,9 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 			Namespace: KALM_DEX_NAMESPACE,
 		},
 		Spec: corev1alpha1.ComponentSpec{
+			Annotations: map[string]string{
+				"sidecar.istio.io/inject": "false",
+			},
 			WorkloadType: corev1alpha1.WorkloadTypeServer,
 			Image:        "quay.io/dexidp/dex:v2.24.0",
 			Command:      "/usr/local/bin/dex serve /etc/dex/cfg/config.yaml",

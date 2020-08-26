@@ -1,0 +1,117 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: logsystems.core.kalm.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.stack
+    name: Stack
+    type: string
+  group: core.kalm.dev
+  names:
+    kind: LogSystem
+    listKind: LogSystemList
+    plural: logsystems
+    singular: logsystem
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: LogSystem is the Schema for the deploykeys API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: LogSystemSpec defines the desired state oLogSystemf
+          properties:
+            plgConfig:
+              description: Need to exist if the stack is plg-*
+              properties:
+                grafana:
+                  properties:
+                    image:
+                      description: lock the image, which make the image will not update
+                        unexpectedly after kalm is upgraded.
+                      type: string
+                  required:
+                  - image
+                  type: object
+                loki:
+                  properties:
+                    diskSize:
+                      description: only works when stack is plg-monolithic
+                      type: string
+                    image:
+                      description: lock the image, which make loki will not update
+                        unexpectedly after kalm is upgraded.
+                      type: string
+                    retentionDays:
+                      description: 'Zero means disable retention. If it''s not zero,
+                        this value will affect   table_manager.retention_deletes_enabled
+                        to be true   table_manager.retention_period   chunk_store_config.max_look_back_period   period_config.index.period
+                        Read more:   https://grafana.com/docs/loki/latest/operations/storage/table-manager/   https://grafana.com/docs/loki/latest/operations/storage/retention/'
+                      format: int32
+                      type: integer
+                    storageClass:
+                      description: only works when stack is plg-monolithic
+                      type: string
+                  required:
+                  - image
+                  - retentionDays
+                  type: object
+                promtail:
+                  properties:
+                    image:
+                      description: lock the image, which make the image will not update
+                        unexpectedly after kalm is upgraded.
+                      type: string
+                  required:
+                  - image
+                  type: object
+              required:
+              - grafana
+              - loki
+              - promtail
+              type: object
+            stack:
+              enum:
+              - plg-monolithic
+              type: string
+            storageClass:
+              description: This sc will be used in pvc template if a disk is required.
+                This value can be overwrite from deeper struct attribute.
+              type: string
+          required:
+          - stack
+          type: object
+        status:
+          description: LogSystemStatus defines the observed state oLogSystemf
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

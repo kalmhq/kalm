@@ -181,7 +181,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
                 validate: (destinations: Immutable.List<HttpRouteDestination>) =>
                   destinations.size === 1 &&
                   destinations.find(
-                    (destination) => destination.get("host") === "echoserver.tutorial.svc.cluster.local:8080",
+                    (destination) => destination.get("host") === "echoserver.tutorial.svc.cluster.local:8001",
                   )
                     ? undefined
                     : `Please use echoserver as the only target`,
@@ -195,7 +195,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
                 (destinations: Immutable.List<HttpRouteDestination>) =>
                   destinations.size === 1 &&
                   !!destinations.find(
-                    (destination) => destination.get("host") === "echoserver.tutorial.svc.cluster.local:8080",
+                    (destination) => destination.get("host") === "echoserver.tutorial.svc.cluster.local:8001",
                   ),
               ),
           },

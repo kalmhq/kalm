@@ -3,7 +3,7 @@
 echo "Installing Kalm"
 echo ""
 
-kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/master/kalm-install-operator.yaml
+kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/v0.1.0-alpha.4/kalm-install-operator.yaml
 ## same as running this in code repo:
 #kubectl apply -f kalm-install-operator.yaml
 
@@ -25,7 +25,7 @@ while [ "$OPERATOR_CONFIG_APPLY_STATUS" -ne 0 ]
 do
   ## same as running this in code repo:
   #kubectl apply -f kalm-install-kalmoperatorconfig.yaml
-  kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/master/kalm-install-kalmoperatorconfig.yaml
+  kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/v0.1.0-alpha.4/kalm-install-kalmoperatorconfig.yaml
   OPERATOR_CONFIG_APPLY_STATUS=$?
 done
 
@@ -103,9 +103,9 @@ do
         echo ""
         echo "To start using Kalm, open a port via:"
         echo ""
-        echo "kubectl port-forward -n kalm-system \$(kubectl get pod -n kalm-system -l app=kalm -ojsonpath=\"{.items[0].metadata.name}\") 3001:3001"
+        echo "kubectl port-forward -n kalm-system \$(kubectl get pod -n kalm-system -l app=kalm -ojsonpath=\"{.items[0].metadata.name}\") 3010:3010"
         echo ""
-        echo "Then visit http://localhost:3001 in your browser"
+        echo "Then visit http://localhost:3010 in your browser"
         echo ""
         finish="True"
     fi

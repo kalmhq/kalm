@@ -200,14 +200,14 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           {
             title: (
               <span>
-                Set <strong>service port</strong> to <strong>8080</strong> or leave it blank
+                Set <strong>service port</strong> to <strong>8001</strong> or leave it blank
               </span>
             ),
             formValidator: [
               {
                 form: COMPONENT_FORM_ID,
                 field: "ports[0].servicePort",
-                validate: (value) => (value === 8080 || !value ? undefined : `Please use "8080"`),
+                validate: (value) => (value === 8001 || !value ? undefined : `Please use "8001"`),
               },
             ],
             shouldCompleteByState: (state: RootState) => {
@@ -217,7 +217,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
               return (
                 !!ports &&
                 ports.size > 0 &&
-                (ports.get(0)!.get("servicePort") === 8080 || !ports.get(0)!.get("servicePort"))
+                (ports.get(0)!.get("servicePort") === 8001 || !ports.get(0)!.get("servicePort"))
               );
             },
           },

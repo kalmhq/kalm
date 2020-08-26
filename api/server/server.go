@@ -23,13 +23,13 @@ func isTest() bool {
 
 // Only trust envoy external address or tcp remote address
 func getClientIP(req *http.Request) string {
-	if req.Header.Get("X-Envoy-External-Address") != "" {
-		return req.Header.Get("X-Envoy-External-Address")
+	host := req.Header.Get("X-Envoy-External-Address")
+
+	if host == "" {
+		host, _, _ = net.SplitHostPort(req.RemoteAddr)
 	}
 
-	ra, _, _ := net.SplitHostPort(req.RemoteAddr)
-
-	return ra
+	return host
 }
 
 func NewEchoInstance() *echo.Echo {

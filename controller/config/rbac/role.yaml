@@ -383,6 +383,26 @@ rules:
 - apiGroups:
   - core.kalm.dev
   resources:
+  - logsystems
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - logsystems/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
   - protectedendpoints
   verbs:
   - create

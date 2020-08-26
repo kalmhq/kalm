@@ -90,7 +90,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 		}
 	}
 
-	var webhookRouteNotFound, certNotFound, routeNotFound, ssoNotFound bool
+	var certNotFound, routeNotFound, ssoNotFound bool
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
@@ -116,16 +116,6 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		webhookRouteNotFound = errors.IsNotFound(builder.Get(
-			controllers.KALM_DEX_NAMESPACE,
-			KalmWebhookRouteName,
-			&v1alpha1.HttpRoute{},
-		))
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
 		ssoNotFound = errors.IsNotFound(builder.Get(
 			controllers.KALM_DEX_NAMESPACE,
 			resources.SSO_NAME,
@@ -136,9 +126,9 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	wg.Wait()
 
 	if info.IsProduction {
-		info.CanBeInitialized = certNotFound && webhookRouteNotFound && routeNotFound && ssoNotFound
+		info.CanBeInitialized = certNotFound && routeNotFound && ssoNotFound
 	} else {
-		info.CanBeInitialized = webhookRouteNotFound && routeNotFound && ssoNotFound
+		info.CanBeInitialized = routeNotFound && ssoNotFound
 	}
 
 	version, err := getK8sClient(c).ServerVersion()
@@ -157,7 +147,6 @@ func (h *ApiHandler) handleClusterInfo(c echo.Context) error {
 const (
 	KalmRouteCertName         = "kalm-cert"
 	KalmRouteName             = "kalm-route"
-	KalmWebhookRouteName      = "kalm-webhook-route"
 	KalmProtectedEndpointName = "kalm"
 )
 
@@ -216,28 +205,6 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 		Namespace: controllers.NamespaceKalmSystem,
 	}
 
-	webhookRoute := &resources.HttpRoute{
-		HttpRouteSpec: &v1alpha1.HttpRouteSpec{
-			Hosts: []string{body.Domain},
-			Paths: []string{"/webhook/components"},
-			Schemes: []v1alpha1.HttpRouteScheme{
-				"https", "http",
-			},
-			Methods: []v1alpha1.HttpRouteMethod{
-				"GET", "POST", "PUT",
-			},
-			HttpRedirectToHttps: true,
-			Destinations: []v1alpha1.HttpRouteDestination{
-				{
-					Host:   "kalm.kalm-system.svc.cluster.local:3002",
-					Weight: 1,
-				},
-			},
-		},
-		Name:      KalmWebhookRouteName,
-		Namespace: controllers.NamespaceKalmSystem,
-	}
-
 	temporaryAdmin := &TemporaryAdmin{
 		Username: "admin",
 		Password: utils.RandPassword(64),
@@ -269,9 +236,10 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 	}
 
 	protectedEndpoint := &resources.ProtectedEndpoint{
-		Namespace:    controllers.NamespaceKalmSystem,
-		EndpointName: KalmProtectedEndpointName,
-		Ports:        []uint32{3001},
+		Namespace:                   controllers.NamespaceKalmSystem,
+		EndpointName:                KalmProtectedEndpointName,
+		Ports:                       []uint32{3001},
+		AllowToPassIfHasBearerToken: true,
 	}
 
 	if !clusterInfo.IsProduction {
@@ -280,9 +248,6 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 
 		route.HttpRouteSpec.HttpRedirectToHttps = false
 		route.HttpRouteSpec.Schemes = []v1alpha1.HttpRouteScheme{"http"}
-
-		webhookRoute.HttpRouteSpec.HttpRedirectToHttps = false
-		webhookRoute.HttpRouteSpec.Schemes = []v1alpha1.HttpRouteScheme{"http"}
 	} else {
 		_, err := builder.CreateAutoManagedHttpsCert(httpsCertForKalm)
 		if err != nil {
@@ -291,12 +256,6 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 	}
 
 	_, err = builder.CreateHttpRoute(route)
-
-	if err != nil {
-		return err
-	}
-
-	_, err = builder.CreateHttpRoute(webhookRoute)
 
 	if err != nil {
 		return err
@@ -332,12 +291,6 @@ func (h *ApiHandler) handleResetCluster(c echo.Context) error {
 	go func() {
 		defer wg.Done()
 		_ = builder.DeleteHttpRoute(controllers.NamespaceKalmSystem, KalmRouteName)
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		_ = builder.DeleteHttpRoute(controllers.NamespaceKalmSystem, KalmWebhookRouteName)
 	}()
 
 	wg.Add(1)

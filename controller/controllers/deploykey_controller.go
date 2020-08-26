@@ -449,3 +449,9 @@ func mapTypeAllDeployKeyToReqs(b *BaseReconciler) []reconcile.Request {
 
 	return rst
 }
+
+func NewDeployKeyReconciler(mgr ctrl.Manager) *DeployKeyReconciler {
+	return &DeployKeyReconciler{
+		BaseReconciler: NewBaseReconciler(mgr, "DeployKey"),
+	}
+}

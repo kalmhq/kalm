@@ -83,6 +83,24 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-core-kalm-dev-v1alpha1-logsystem
+  failurePolicy: Fail
+  name: mlogsystem.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - logsystems
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-core-kalm-dev-v1alpha1-singlesignonconfig
   failurePolicy: Fail
   name: msinglesignonconfig.kb.io
@@ -230,6 +248,24 @@ webhooks:
     - UPDATE
     resources:
     - httpscertissuers
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-core-kalm-dev-v1alpha1-logsystem
+  failurePolicy: Fail
+  name: vlogsystem.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - logsystems
 - clientConfig:
     caBundle: Cg==
     service:

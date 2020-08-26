@@ -254,8 +254,13 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilter(req ctrl.Request) *v1
 						},
 						"headersToAdd": []interface{}{
 							map[string]interface{}{
-								"key":   "kalm-sso-granted-groups",
+								"key":   KALM_SSO_GRANTED_GROUPS_HEADER,
 								"value": grantedGroups,
+							},
+
+							map[string]interface{}{
+								"key":   KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER,
+								"value": strconv.FormatBool(r.endpoint.Spec.AllowToPassIfHasBearerToken),
 							},
 						},
 					},

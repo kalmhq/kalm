@@ -50,7 +50,6 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
 	gv1Alpha1WithAuth.POST("/applications", h.handleCreateApplication)
 	gv1Alpha1WithAuth.GET("/applications/:name", h.handleGetApplicationDetails)
-	gv1Alpha1WithAuth.PUT("/applications/:name", h.handleUpdateApplication)
 	gv1Alpha1WithAuth.DELETE("/applications/:name", h.handleDeleteApplication)
 
 	gv1Alpha1WithAuth.GET("/services", h.handleListClusterServices)
