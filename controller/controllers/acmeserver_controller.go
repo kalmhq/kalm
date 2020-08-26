@@ -181,8 +181,8 @@ logtype = "stdout"
 logformat = "text"`
 
 	rst := strings.ReplaceAll(template, "ACME_DOMAIN_PLACEHOLDER", acmeDomain)
-	rst = strings.ReplaceAll(template, "NS_DOMAIN_PLACEHOLDER", nsDomain)
-	rst = strings.ReplaceAll(template, "NS_DOMAIN_IP_PLACEHOLDER", nsDomainIP)
+	rst = strings.ReplaceAll(rst, "NS_DOMAIN_PLACEHOLDER", nsDomain)
+	rst = strings.ReplaceAll(rst, "NS_DOMAIN_IP_PLACEHOLDER", nsDomainIP)
 
 	return rst
 }
@@ -354,11 +354,11 @@ func (r *ACMEServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *ACMEServerReconciler) updateConfigsForIssuer(
 	issuer *corev1alpha1.HttpsCertIssuer,
-) error {
+) (bool, error) {
 
 	dns01Certs, err := r.getCertsUsingDNSIssuer(r.ctx)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	var needRegisterDomains []string
@@ -381,7 +381,7 @@ func (r *ACMEServerReconciler) updateConfigsForIssuer(
 	domainConfigMap, err := r.registerACMEDNS(needRegisterDomains)
 	if err != nil {
 		r.Log.Error(err, "fail to registerACMEDNS")
-		return err
+		return false, err
 	}
 
 	if issuer.Spec.DNS01.Configs == nil {
@@ -408,11 +408,11 @@ func (r *ACMEServerReconciler) updateConfigsForIssuer(
 
 		cert.Status.WildcardCertDNSChallengeDomain = config.FullDomain
 		if err := r.Status().Update(r.ctx, &cert); err != nil {
-			return err
+			return false, err
 		}
 	}
 
-	return nil
+	return len(needRegisterDomains) > 0, nil
 }
 
 func getNameForLoadBalanceServiceForNSDomain() string {
@@ -499,7 +499,8 @@ func (r *ACMEServerReconciler) reconcileIssuer(acmeServer corev1alpha1.ACMEServe
 		}
 	}
 
-	if err := r.updateConfigsForIssuer(&issuer); err != nil {
+	updated, err := r.updateConfigsForIssuer(&issuer)
+	if err != nil {
 		r.Log.Error(err, "")
 		return err
 	}
@@ -512,7 +513,9 @@ func (r *ACMEServerReconciler) reconcileIssuer(acmeServer corev1alpha1.ACMEServe
 
 		err = r.Create(r.ctx, &issuer)
 	} else {
-		err = r.Update(r.ctx, &issuer)
+		if updated {
+			err = r.Update(r.ctx, &issuer)
+		}
 	}
 
 	return err
