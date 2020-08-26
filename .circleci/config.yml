@@ -28,7 +28,7 @@ jobs:
       - run:
           name: run test
           working_directory: ./api
-          command: go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+          command: go test -coverprofile=coverage.txt -covermode=atomic -v ./...
       - run:
           name: upload coverage
           working_directory: ./api
