@@ -45,6 +45,7 @@ type ACMEServerStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
+// +kubebuilder:subresource:status
 
 // ACMEServer is the Schema for the acmeservers API
 type ACMEServer struct {

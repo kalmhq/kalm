@@ -67,110 +67,29 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 
 	acmeServer := acmeServerList.Items[0]
 
-	acmeDomain := acmeServer.Spec.ACMEDomain
-	//todo setup route for this domain
-	//nsDomain := acmeServer.Spec.NSDomain
-
-	acmeServerConfigContent := genContentForACMEServerConfig(acmeDomain)
-
-	var scList v1.StorageClassList
-	err := r.List(r.ctx, &scList)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-
-	if len(scList.Items) <= 0 {
-		return ctrl.Result{}, fmt.Errorf("no available storage class")
-	}
-
-	sc := pickStorageClass(scList)
-
-	expectedComp := corev1alpha1.Component{
-		ObjectMeta: ctrl.ObjectMeta{
-			Namespace: NamespaceKalmSystem,
-			Name:      ACMEServerName,
-			Labels: map[string]string{
-				"app": ACMEServerName,
-			},
-		},
-		Spec: corev1alpha1.ComponentSpec{
-			Image: "joohoi/acme-dns:v0.8",
-			Ports: []corev1alpha1.Port{
-				{
-					Protocol:      "udp",
-					ContainerPort: 53,
-					ServicePort:   53,
-				},
-				{
-					Protocol:      "tcp",
-					ContainerPort: 80,
-					ServicePort:   80,
-				},
-			},
-			Volumes: []corev1alpha1.Volume{
-				{
-					Path:             "/var/lib/acme-dns/",
-					Size:             resource.MustParse("128Mi"),
-					Type:             corev1alpha1.VolumeTypePersistentVolumeClaim,
-					PVC:              "acmedns-sqlitedisk",
-					StorageClassName: &sc.Name,
-				},
-			},
-			PreInjectedFiles: []corev1alpha1.PreInjectFile{
-				{
-					Content:   acmeServerConfigContent,
-					MountPath: "/etc/acme-dns/config.cfg",
-					Readonly:  true,
-				},
-			},
-		},
-	}
-
-	isNew := false
-	comp := corev1alpha1.Component{}
-
-	err = r.Get(ctx, client.ObjectKey{Namespace: expectedComp.Namespace, Name: expectedComp.Name}, &comp)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			isNew = true
-		} else {
-			return ctrl.Result{}, err
-		}
-	}
-
-	if isNew {
-		comp := expectedComp
-		err = ctrl.SetControllerReference(&acmeServer, &comp, r.Scheme)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-
-		// todo acquire a lock here to avoid multi-acme-server
-
-		err = r.Create(ctx, &comp)
-	} else {
-		comp.Spec = expectedComp.Spec
-		err = r.Update(ctx, &comp)
-	}
-
-	if err != nil {
+	// reconcile LoadBalancer Service for NSDomain
+	if err := r.reconcileACMEComponent(acmeServer); err != nil {
+		r.Log.Error(err, "")
 		return ctrl.Result{}, err
 	}
 
 	// reconcile LoadBalancer Service for NSDomain
 	if err := r.reconcileLoadBalanceServiceForNSDomain(acmeServer); err != nil {
+		r.Log.Error(err, "")
 		return ctrl.Result{}, err
 	}
 
 	if err := r.reconcileIssuer(acmeServer); err != nil {
+		r.Log.Error(err, "")
 		return ctrl.Result{}, err
 	}
 
 	if err := r.reconcileStatus(acmeServer); err != nil {
+		r.Log.Error(err, "")
 		return ctrl.Result{}, err
 	}
 
-	return ctrl.Result{}, err
+	return ctrl.Result{}, nil
 }
 
 func pickStorageClass(list v1.StorageClassList) v1.StorageClass {
@@ -306,6 +225,7 @@ func (r *ACMEServerReconciler) registerACMEDNS(domains []string) (
 	for _, domain := range domains {
 		resp, err := http.Post(url, "", nil)
 		if err != nil {
+			r.Log.Error(err, fmt.Sprintf("POST %s fail", url))
 			return nil, err
 		}
 
@@ -316,6 +236,7 @@ func (r *ACMEServerReconciler) registerACMEDNS(domains []string) (
 
 		config := corev1alpha1.DNS01IssuerConfig{}
 		if err := json.Unmarshal(bytes, &config); err != nil {
+			r.Log.Error(err, fmt.Sprintf("err unmarshal resp: %s from %s", string(bytes), url))
 			return nil, err
 		}
 
@@ -393,6 +314,12 @@ type ACMEDNSServiceMapper struct {
 func (A ACMEDNSServiceMapper) Map(object handler.MapObject) []reconcile.Request {
 	if object.Meta.GetNamespace() != NamespaceKalmSystem ||
 		object.Meta.GetName() != getNameForLoadBalanceServiceForNSDomain() {
+		return nil
+	}
+
+	svc := object.Object.(*corev1.Service)
+	if len(svc.Status.LoadBalancer.Ingress) <= 0 ||
+		svc.Status.LoadBalancer.Ingress[0].IP == "" {
 		return nil
 	}
 
@@ -534,7 +461,10 @@ func (r *ACMEServerReconciler) reconcileLoadBalanceServiceForNSDomain(acmeServer
 		svc = expectedLBService
 		err = r.Create(r.ctx, &svc)
 	} else {
-		svc.Spec = expectedLBService.Spec
+		svc.Spec.Selector = expectedLBService.Spec.Selector
+		svc.Spec.Ports = expectedLBService.Spec.Ports
+		svc.Spec.Type = expectedLBService.Spec.Type
+
 		err = r.Update(r.ctx, &svc)
 	}
 
@@ -551,10 +481,6 @@ func (r *ACMEServerReconciler) reconcileIssuer(acmeServer corev1alpha1.ACMEServe
 		if errors.IsNotFound(err) {
 			isNew = true
 
-			issuer.ObjectMeta = ctrl.ObjectMeta{
-				Name: DefaultDNS01IssuerName,
-			}
-
 			issuer = corev1alpha1.HttpsCertIssuer{
 				ObjectMeta: ctrl.ObjectMeta{
 					Name: DefaultDNS01IssuerName,
@@ -564,16 +490,19 @@ func (r *ACMEServerReconciler) reconcileIssuer(acmeServer corev1alpha1.ACMEServe
 				},
 			}
 		} else {
+			r.Log.Error(err, "")
 			return err
 		}
 	}
 
 	if err := r.updateConfigsForIssuer(&issuer); err != nil {
+		r.Log.Error(err, "")
 		return err
 	}
 
 	if isNew {
 		if err := ctrl.SetControllerReference(&acmeServer, &issuer, r.Scheme); err != nil {
+			r.Log.Error(err, "")
 			return err
 		}
 
@@ -594,6 +523,7 @@ func (r *ACMEServerReconciler) reconcileStatus(server corev1alpha1.ACMEServer) e
 	}, &svc)
 	if err != nil {
 		r.Log.Error(err, "fail to get lb-svc:"+getNameForLoadBalanceServiceForNSDomain())
+		return nil
 	}
 
 	ingList := svc.Status.LoadBalancer.Ingress
@@ -609,4 +539,95 @@ func (r *ACMEServerReconciler) reconcileStatus(server corev1alpha1.ACMEServer) e
 	}
 
 	return r.Status().Update(r.ctx, &server)
+}
+
+func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.ACMEServer) error {
+
+	acmeDomain := acmeServer.Spec.ACMEDomain
+	//todo setup route for this domain
+	//nsDomain := acmeServer.Spec.NSDomain
+
+	acmeServerConfigContent := genContentForACMEServerConfig(acmeDomain)
+
+	var scList v1.StorageClassList
+	err := r.List(r.ctx, &scList)
+	if err != nil {
+		return err
+	}
+
+	if len(scList.Items) <= 0 {
+		return fmt.Errorf("no available storage class")
+	}
+
+	sc := pickStorageClass(scList)
+
+	expectedComp := corev1alpha1.Component{
+		ObjectMeta: ctrl.ObjectMeta{
+			Namespace: NamespaceKalmSystem,
+			Name:      ACMEServerName,
+			Labels: map[string]string{
+				"app": ACMEServerName,
+			},
+		},
+		Spec: corev1alpha1.ComponentSpec{
+			Image: "joohoi/acme-dns:v0.8",
+			Ports: []corev1alpha1.Port{
+				{
+					Protocol:      "udp",
+					ContainerPort: 53,
+					ServicePort:   53,
+				},
+				{
+					Protocol:      "tcp",
+					ContainerPort: 80,
+					ServicePort:   80,
+				},
+			},
+			Volumes: []corev1alpha1.Volume{
+				{
+					Path:             "/var/lib/acme-dns/",
+					Size:             resource.MustParse("128Mi"),
+					Type:             corev1alpha1.VolumeTypePersistentVolumeClaim,
+					PVC:              "acmedns-sqlitedisk",
+					StorageClassName: &sc.Name,
+				},
+			},
+			PreInjectedFiles: []corev1alpha1.PreInjectFile{
+				{
+					Content:   acmeServerConfigContent,
+					MountPath: "/etc/acme-dns/config.cfg",
+					Readonly:  true,
+				},
+			},
+		},
+	}
+
+	isNew := false
+	comp := corev1alpha1.Component{}
+
+	err = r.Get(r.ctx, client.ObjectKey{Namespace: expectedComp.Namespace, Name: expectedComp.Name}, &comp)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			isNew = true
+		} else {
+			return err
+		}
+	}
+
+	if isNew {
+		comp := expectedComp
+		err = ctrl.SetControllerReference(&acmeServer, &comp, r.Scheme)
+		if err != nil {
+			return err
+		}
+
+		// todo acquire a lock here to avoid multi-acme-server
+
+		err = r.Create(r.ctx, &comp)
+	} else {
+		comp.Spec = expectedComp.Spec
+		err = r.Update(r.ctx, &comp)
+	}
+
+	return err
 }
