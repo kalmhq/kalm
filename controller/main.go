@@ -231,6 +231,12 @@ func main() {
 			setupLog.Error(err, "unable to create webhook", "webhook", "LogSystem")
 			os.Exit(1)
 		}
+
+		if err = (&corev1alpha1.ACMEServer{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "ACMEServer")
+			os.Exit(1)
+		}
+
 		setupLog.Info("WEBHOOK enabled")
 	} else {
 		setupLog.Info("WEBHOOK not enabled")

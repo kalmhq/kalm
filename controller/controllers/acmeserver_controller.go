@@ -68,13 +68,13 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 	acmeServer := acmeServerList.Items[0]
 
 	// reconcile LoadBalancer Service for NSDomain
-	if err := r.reconcileACMEComponent(acmeServer); err != nil {
+	if err := r.reconcileLoadBalanceServiceForNSDomain(acmeServer); err != nil {
 		r.Log.Error(err, "")
 		return ctrl.Result{}, err
 	}
 
 	// reconcile LoadBalancer Service for NSDomain
-	if err := r.reconcileLoadBalanceServiceForNSDomain(acmeServer); err != nil {
+	if err := r.reconcileACMEComponent(acmeServer); err != nil {
 		r.Log.Error(err, "")
 		return ctrl.Result{}, err
 	}
@@ -113,7 +113,7 @@ func pickStorageClass(list v1.StorageClassList) v1.StorageClass {
 	return scList[0]
 }
 
-func genContentForACMEServerConfig(domain string) string {
+func genContentForACMEServerConfig(acmeDomain, nsDomain, nsDomainIP string) string {
 	template := `
 [general]
 # DNS interface. Note that systemd-resolved may reserve port 53 on 127.0.0.53
@@ -123,18 +123,18 @@ listen = "0.0.0.0:53"
 # protocol, "both", "both4", "both6", "udp", "udp4", "udp6" or "tcp", "tcp4", "tcp6"
 protocol = "both"
 # domain name to serve the requests off of
-domain = "DOMAIN_PLACEHOLDER"
+domain = "ACME_DOMAIN_PLACEHOLDER"
 # zone name server
-nsname = "DOMAIN_PLACEHOLDER"
+nsname = "ACME_DOMAIN_PLACEHOLDER"
 # admin email address, where @ is substituted with .
 #nsadmin = "admin.example.org"
 # predefined records served in addition to the TXT
-#records = [
-#    # domain pointing to the public IP of your acme-dns server 
-#    "acme.example.xyz. A 1.2.3.4",
-#    # specify that acme.example.xyz will resolve any *.acme.example.xyz records
-#    "acme.example.xyz. NS acme.example.xyz.",
-#]
+records = [
+    # domain pointing to the public IP of your acme-dns server 
+    "ACME_DOMAIN_PLACEHOLDER. A  NS_DOMAIN_IP_PLACEHOLDER",
+    # specify that acme.example.xyz will resolve any *.acme.example.xyz records
+    "ACME_DOMAIN_PLACEHOLDER. NS NS_DOMAIN_PLACEHOLDER.",
+]
 # debug messages from CORS etc
 debug = true
 
@@ -180,7 +180,11 @@ logtype = "stdout"
 # format, either "json" or "text"
 logformat = "text"`
 
-	return strings.ReplaceAll(template, "DOMAIN_PLACEHOLDER", domain)
+	rst := strings.ReplaceAll(template, "ACME_DOMAIN_PLACEHOLDER", acmeDomain)
+	rst = strings.ReplaceAll(template, "NS_DOMAIN_PLACEHOLDER", nsDomain)
+	rst = strings.ReplaceAll(template, "NS_DOMAIN_IP_PLACEHOLDER", nsDomainIP)
+
+	return rst
 }
 
 func (r *ACMEServerReconciler) getCertsUsingDNSIssuer(
@@ -542,16 +546,32 @@ func (r *ACMEServerReconciler) reconcileStatus(server corev1alpha1.ACMEServer) e
 }
 
 func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.ACMEServer) error {
+	// find if lb-svc IP is ready
+	var lbSvc corev1.Service
+	err := r.Get(r.ctx, client.ObjectKey{
+		Namespace: NamespaceKalmSystem,
+		Name:      getNameForLoadBalanceServiceForNSDomain(),
+	}, &lbSvc)
+	if err != nil {
+		return err
+	}
+
+	if len(lbSvc.Status.LoadBalancer.Ingress) <= 0 ||
+		lbSvc.Status.LoadBalancer.Ingress[0].IP == "" {
+
+		r.Log.Info("loadBalancer for ACME DNS not ready yet")
+		return nil
+	}
+
+	ip := lbSvc.Status.LoadBalancer.Ingress[0].IP
 
 	acmeDomain := acmeServer.Spec.ACMEDomain
-	//todo setup route for this domain
-	//nsDomain := acmeServer.Spec.NSDomain
+	nsDomain := acmeServer.Spec.NSDomain
 
-	acmeServerConfigContent := genContentForACMEServerConfig(acmeDomain)
+	acmeServerConfigContent := genContentForACMEServerConfig(acmeDomain, nsDomain, ip)
 
 	var scList v1.StorageClassList
-	err := r.List(r.ctx, &scList)
-	if err != nil {
+	if err := r.List(r.ctx, &scList); err != nil {
 		return err
 	}
 
