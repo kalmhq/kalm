@@ -6,7 +6,7 @@ Kalm is an easy way to manage applications on Kubernetes. Kalm provides a web UI
 
 In addition, Kalm defines a set of CRDs that simplifies the underlying configuration and drastically reduces copy-pasting and boilerplate, as well as hooking up useful operators such as [cert-manager](https://cert-manager.io/docs/) and [istio](https://istio.io/).
 
-![Kalm](https://kalm.dev/docs/assets/kalm.png)
+![Kalm](https://kalm.dev/assets/images/kalm-a2c8a59e81a6674e606c57034bad461e.png)
 
 Kalm is designed for developers and teams who want a simple and friendly interface for kubernetes without having to build and maintain internal tools.
 
@@ -28,7 +28,7 @@ If you already have access to a cluster via kubectl, deploy Kalm via:
 curl -sL https://get.kalm.dev | bash
 ```
 
-The whole process typically takes up to 1-5 minutes. Relax or check out the <a href="https://kalm.dev/docs/intro." target="_blank">docs</a> in the mean time.
+The whole process typically takes up to 1-5 minutes. Relax or check out the <a href="https://kalm.dev/docs" target="_blank">docs</a> in the mean time.
 
 Once the installation is complete, open a port to the web server.
 
