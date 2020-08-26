@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 )
@@ -9,6 +10,14 @@ func (h *ApiHandler) handleCreateACMEServer(c echo.Context) error {
 	acmeServer, err := getACMEServerFromContext(c)
 	if err != nil {
 		return err
+	}
+
+	if acmeServer.NSDomain == "" {
+		return fmt.Errorf("must set nsDomain")
+	}
+
+	if acmeServer.ACMEDomain == "" {
+		return fmt.Errorf("must set acmeDomain")
 	}
 
 	acmeServer, err = h.Builder(c).CreateACMEServer(acmeServer)
