@@ -138,6 +138,8 @@ interface ComplexValueTextFieldProps {
   endAdornment?: React.ReactNode;
   min?: string;
   pattern?: string;
+  format?: (value: any) => any;
+  parse?: (value: any) => any;
 }
 
 // value type is complex like array or json, like "command" is array, but using textfield input
@@ -243,11 +245,18 @@ export class RenderFormikComplexValueTextField extends React.PureComponent<
 > {
   render() {
     const {
+      label,
+      helperText,
+      placeholder,
+      required,
+      disabled,
+      type,
       min,
       endAdornment,
       field: { name },
-      form: { errors, touched },
-      helperText,
+      form: { touched, errors, values, setFieldValue },
+      format,
+      parse,
     } = this.props;
     const inputProps: Partial<OutlinedInputProps> = {
       inputProps: {
@@ -258,17 +267,31 @@ export class RenderFormikComplexValueTextField extends React.PureComponent<
       inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
     }
 
+    const error = errors[name];
+    const showError = !!errors[name] && !!touched[name];
+
     return (
-      <FormikTextField
-        {...this.props}
+      <TextField
+        type={type}
         InputProps={inputProps}
         fullWidth
-        helperText={!!touched[name] && !!errors[name] ? errors[name] : helperText ? helperText : " "}
+        label={label}
+        placeholder={placeholder}
+        disabled={disabled}
+        required={required}
+        error={showError}
+        helperText={showError ? error : helperText ? helperText : ""}
         InputLabelProps={{
           shrink: true,
         }}
         margin="dense"
         variant="outlined"
+        defaultValue={format ? format(values[name]) : values[name]}
+        value={format ? format(values[name]) : values[name]}
+        onChange={(e) => {
+          const value = e.target.value;
+          return parse ? setFieldValue(name, parse(value)) : setFieldValue(name, value);
+        }}
       />
     );
   }

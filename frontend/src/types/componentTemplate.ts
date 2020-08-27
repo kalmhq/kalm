@@ -16,9 +16,11 @@ export const newEmptyComponentLike: ComponentLikeFormContent = {
   schedule: "* * * * *",
 };
 
-export interface ComponentLikeFormContent extends Omit<ComponentLikeContent, "env" | "preInjectedFiles"> {
+export interface ComponentLikeFormContent
+  extends Omit<ComponentLikeContent, "env" | "preInjectedFiles" | "nodeSelectorLabels"> {
   env?: ComponentLikeEnv[];
   preInjectedFiles?: PreInjectedFile[];
+  nodeSelectorLabels?: NodeSelectorLabelsContent;
 }
 
 export type ComponentLikeEnv = ImmutableMap<{
@@ -43,9 +45,11 @@ export type ComponentLikePort = ImmutableMap<{
   servicePort: number;
 }>;
 
-export type NodeSelectorLabels = ImmutableMap<{
+export interface NodeSelectorLabelsContent {
   [key: string]: string;
-}>;
+}
+
+export type NodeSelectorLabels = ImmutableMap<NodeSelectorLabelsContent>;
 
 export type PodAffinityType = string;
 export const PodAffinityTypePreferFanout: PodAffinityType = "prefer-fanout"; // multi host
@@ -155,6 +159,7 @@ export interface ComponentLikeContent {
   livenessProbe?: Probe;
   readinessProbe?: Probe;
   nodeSelectorLabels?: NodeSelectorLabels;
+  preferNotCoLocated?: boolean;
   podAffinityType?: PodAffinityType;
 }
 
