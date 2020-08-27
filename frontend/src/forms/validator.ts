@@ -17,6 +17,16 @@ export const ValidatorListNotEmpty = (value: Immutable.List<any>, _allValues?: a
   return undefined;
 };
 
+export const ValidatorArrayNotEmpty = (value: any[], _allValues?: any, _props?: any, _name?: any) => {
+  console.log("ValidatorArrayNotEmpty", value);
+  if (!value || value.length <= 0) {
+    console.log("------------validate error");
+    return "Select at least one option";
+  }
+
+  return undefined;
+};
+
 export const ValidatorHttpRouteDestinations = (
   value: Immutable.List<HttpRouteDestination>,
   _allValues?: HttpRoute,

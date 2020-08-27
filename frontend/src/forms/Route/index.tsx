@@ -11,7 +11,7 @@ import { ROUTE_FORM_ID } from "forms/formIDs";
 import {
   KValidatorHostsWithWildcardPrefix,
   KValidatorPaths,
-  ValidatorListNotEmpty,
+  ValidatorArrayNotEmpty,
   ValidatorRequired,
 } from "forms/validator";
 import routesGif from "images/routes.gif";
@@ -20,7 +20,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link as RouteLink } from "react-router-dom";
 import { RootState } from "reducers";
-import { arrayPush, change } from "redux-form";
+import { arrayPush } from "redux-form";
 import { TDispatchProp } from "types";
 import { httpMethods, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
 import { isArray } from "util";
@@ -117,7 +117,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props) {
-    const { values, dispatch } = this.props;
+    const { values, dispatch, setFieldValue } = this.props;
     const { hosts, schemes, httpRedirectToHttps } = values;
     if (hosts !== prevProps.values.hosts) {
       hosts.forEach((host) => {
@@ -129,16 +129,16 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     if (!schemes.includes("https")) {
       if (includesForceHttpsDomain(hosts).length > 0) {
         if (schemes.includes("http")) {
-          dispatch(change(ROUTE_FORM_ID, "schemes", Immutable.List(["http", "https"])));
+          setFieldValue("schemes", ["http", "https"]);
         } else {
-          dispatch(change(ROUTE_FORM_ID, "schemes", Immutable.List(["https"])));
+          setFieldValue("schemes", ["https"]);
         }
       }
     }
 
     // set httpRedirectToHttps to false if http or https is not in schemes
     if (!(schemes.includes("http") && schemes.includes("https")) && httpRedirectToHttps) {
-      dispatch(change(ROUTE_FORM_ID, "httpRedirectToHttps", false));
+      setFieldValue("httpRedirectToHttps", false);
     }
   }
 
@@ -315,7 +315,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
         return <DomainStatus domain={host} />;
       }
     });
-    console.log("schemes", values.schemes);
+
     return (
       <div className={classes.root}>
         <Form>
@@ -403,12 +403,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         <Field
                           component={KFormikCheckboxGroupRender}
                           componentType={"Checkbox"}
-                          validate={methodsMode === methodsModeSpecific ? ValidatorListNotEmpty : []}
+                          validate={methodsMode === methodsModeSpecific ? ValidatorArrayNotEmpty : []}
                           name="methods"
-                          value={values.methods}
-                          error={errors.methods}
-                          touched={touched.methods}
-                          onChange={(v: string[]) => setFieldValue("methods", v)}
                           options={httpMethods.map((m) => {
                             return { value: m, label: m };
                           })}
@@ -418,13 +414,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         title="Allow traffic through"
                         component={KFormikCheckboxGroupRender}
                         componentType={"Checkbox"}
-                        validate={ValidatorListNotEmpty}
+                        validate={ValidatorArrayNotEmpty}
                         name="schemes"
-                        value={values.schemes}
-                        onChange={(v: string[]) => {
-                          console.log("v---", v);
-                          setFieldValue("schemes", v);
-                        }}
                         options={[
                           {
                             value: "http",
@@ -532,11 +523,12 @@ export const RouteForm = withFormik<OwnProps, HttpRouteForm>({
   mapPropsToValues: (props) => {
     return props.initial;
   },
+  enableReinitialize: true,
   validate: (values: HttpRouteForm) => {
     let errors = {};
     return errors;
   },
-  handleSubmit: (values) => {
-    // do submitting things
+  handleSubmit: async (formValues, { props: { onSubmit } }) => {
+    await onSubmit(formValues);
   },
 })(connectedForm);
