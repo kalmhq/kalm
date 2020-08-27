@@ -332,8 +332,6 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         icons={Immutable.List(icons)}
                         label="Hosts"
                         name="hosts"
-                        // formValueToEditValue={(hosts: Immutable.List<string>) => hosts.toArray()}
-                        // editValueToFormValue={(value: string[]) => Immutable.List(value)}
                         validate={hostsValidators}
                         placeholder="e.g. www.example.com"
                         helperText={
@@ -356,8 +354,6 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       />
                       <Field
                         component={KFreeSoloFormikAutoCompleteMultiValues}
-                        // formValueToEditValue={(hosts: Immutable.List<string>) => hosts.toArray()}
-                        // editValueToFormValue={(value: string[]) => Immutable.List(value)}
                         label="Path Prefixes"
                         name="paths"
                         validate={pathsValidators}
@@ -373,7 +369,6 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         error={errors.stripPath}
                         touched={touched.stripPath}
                         onChange={(v: boolean) => {
-                          console.log("v----", v);
                           setFieldValue("stripPath", v);
                         }}
                       />

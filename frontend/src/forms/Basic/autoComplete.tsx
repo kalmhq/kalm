@@ -527,8 +527,6 @@ export interface KFreeSoloFormikAutoCompleteMultiValuesProps<T>
   InputLabelProps?: {};
   disabled?: boolean;
   icons?: Immutable.List<any>;
-  formValueToEditValue?: (v: any) => any;
-  editValueToFormValue?: (v: any) => any;
 }
 
 export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCompleteMultiValuesStyles)(
@@ -543,8 +541,6 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
       placeholder,
       helperText,
       classes,
-      formValueToEditValue,
-      editValueToFormValue,
     } = props;
 
     const errorsIsArray = Array.isArray(errors[name]);
@@ -570,9 +566,9 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
         size="small"
         id={id}
         onBlur={handleBlur}
-        value={formValueToEditValue ? formValueToEditValue(values[name]) : values[name]}
+        value={values[name]}
         onChange={(e, value) => {
-          editValueToFormValue ? setFieldValue(name, editValueToFormValue(value)) : setFieldValue(name, value);
+          setFieldValue(name, value);
         }}
         // @ts-ignore
         renderTags={(value: string[], getTagProps) => {
