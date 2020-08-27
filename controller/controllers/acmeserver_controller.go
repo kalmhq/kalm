@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	apps1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -352,13 +353,13 @@ func (r *ACMEServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *ACMEServerReconciler) updateConfigsForIssuer(
-	issuer *corev1alpha1.HttpsCertIssuer,
-) (bool, error) {
+func (r *ACMEServerReconciler) registerDomainsInACMEServer(
+	httpsCertIssuer corev1alpha1.HttpsCertIssuer,
+) (map[string]corev1alpha1.DNS01IssuerConfig, error) {
 
 	dns01Certs, err := r.getCertsUsingDNSIssuer(r.ctx)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	var needRegisterDomains []string
@@ -371,7 +372,7 @@ func (r *ACMEServerReconciler) updateConfigsForIssuer(
 		// todo add check in webhook
 		// for dns cert, only 1 domain is permitted (and without: *)
 		domain := domains[0]
-		if _, exist := issuer.Spec.DNS01.Configs[domain]; !exist {
+		if _, exist := httpsCertIssuer.Spec.DNS01.Configs[domain]; !exist {
 			needRegisterDomains = append(needRegisterDomains, domain)
 		}
 	}
@@ -381,17 +382,11 @@ func (r *ACMEServerReconciler) updateConfigsForIssuer(
 	domainConfigMap, err := r.registerACMEDNS(needRegisterDomains)
 	if err != nil {
 		r.Log.Error(err, "fail to registerACMEDNS")
-		return false, err
+		return nil, err
 	}
 
-	if issuer.Spec.DNS01.Configs == nil {
-		issuer.Spec.DNS01.Configs = make(map[string]corev1alpha1.DNS01IssuerConfig)
-	}
-
-	for domain, config := range domainConfigMap {
-		// both example.com & *.example.com is needed
-		issuer.Spec.DNS01.Configs[domain] = config
-		issuer.Spec.DNS01.Configs["*."+domain] = config
+	if httpsCertIssuer.Spec.DNS01.Configs == nil {
+		httpsCertIssuer.Spec.DNS01.Configs = make(map[string]corev1alpha1.DNS01IssuerConfig)
 	}
 
 	// update status of certs using dns01Issuer
@@ -401,18 +396,18 @@ func (r *ACMEServerReconciler) updateConfigsForIssuer(
 		}
 
 		domain := cert.Spec.Domains[0]
-		config, exist := issuer.Spec.DNS01.Configs[domain]
+		config, exist := httpsCertIssuer.Spec.DNS01.Configs[domain]
 		if !exist {
 			continue
 		}
 
 		cert.Status.WildcardCertDNSChallengeDomain = config.FullDomain
 		if err := r.Status().Update(r.ctx, &cert); err != nil {
-			return false, err
+			return nil, err
 		}
 	}
 
-	return len(needRegisterDomains) > 0, nil
+	return domainConfigMap, nil
 }
 
 func getNameForLoadBalanceServiceForNSDomain() string {
@@ -465,11 +460,13 @@ func (r *ACMEServerReconciler) reconcileLoadBalanceServiceForNSDomain(acmeServer
 		svc = expectedLBService
 		err = r.Create(r.ctx, &svc)
 	} else {
-		svc.Spec.Selector = expectedLBService.Spec.Selector
-		svc.Spec.Ports = expectedLBService.Spec.Ports
-		svc.Spec.Type = expectedLBService.Spec.Type
+		copied := svc.DeepCopy()
 
-		err = r.Update(r.ctx, &svc)
+		copied.Spec.Type = expectedLBService.Spec.Type
+		copied.Spec.Ports = expectedLBService.Spec.Ports
+		copied.Spec.Selector = expectedLBService.Spec.Selector
+
+		err = r.Patch(r.ctx, copied, client.MergeFrom(&svc))
 	}
 
 	return err
@@ -499,9 +496,9 @@ func (r *ACMEServerReconciler) reconcileIssuer(acmeServer corev1alpha1.ACMEServe
 		}
 	}
 
-	updated, err := r.updateConfigsForIssuer(&issuer)
+	domainConfigMap, err := r.registerDomainsInACMEServer(issuer)
 	if err != nil {
-		r.Log.Error(err, "")
+		r.Log.Error(err, "registerDomainsInACMEServer fail")
 		return err
 	}
 
@@ -511,11 +508,18 @@ func (r *ACMEServerReconciler) reconcileIssuer(acmeServer corev1alpha1.ACMEServe
 			return err
 		}
 
+		issuer.Spec.DNS01.Configs = domainConfigMap
+
 		err = r.Create(r.ctx, &issuer)
 	} else {
-		if updated {
-			err = r.Update(r.ctx, &issuer)
+		copied := issuer.DeepCopy()
+		for domain, config := range domainConfigMap {
+			// both example.com & *.example.com is needed
+			copied.Spec.DNS01.Configs[domain] = config
+			copied.Spec.DNS01.Configs["*."+domain] = config
 		}
+
+		err = r.Patch(r.ctx, copied, client.MergeFrom(&issuer))
 	}
 
 	return err
@@ -622,6 +626,7 @@ func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.AC
 					Readonly:  true,
 				},
 			},
+			RestartStrategy: apps1.RecreateDeploymentStrategyType,
 		},
 	}
 
@@ -648,8 +653,10 @@ func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.AC
 
 		err = r.Create(r.ctx, &comp)
 	} else {
-		comp.Spec = expectedComp.Spec
-		err = r.Update(r.ctx, &comp)
+		copied := comp.DeepCopy()
+		copied.Spec = expectedComp.Spec
+
+		err = r.Patch(r.ctx, copied, client.MergeFrom(&comp))
 	}
 
 	return err

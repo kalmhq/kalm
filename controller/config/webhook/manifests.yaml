@@ -127,6 +127,24 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /validate-core-kalm-dev-v1alpha1-acmeserver
+  failurePolicy: Fail
+  name: vacmeserver.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - acmeservers
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
       path: /validate-core-kalm-dev-v1alpha1-componentpluginbinding
   failurePolicy: Fail
   name: vcomponentpluginbinding.kb.io
