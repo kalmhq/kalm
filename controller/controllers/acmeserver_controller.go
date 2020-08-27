@@ -462,9 +462,10 @@ func (r *ACMEServerReconciler) reconcileLoadBalanceServiceForNSDomain(acmeServer
 	} else {
 		copied := svc.DeepCopy()
 
-		copied.Spec.Type = expectedLBService.Spec.Type
-		copied.Spec.Ports = expectedLBService.Spec.Ports
 		copied.Spec.Selector = expectedLBService.Spec.Selector
+		copied.Spec.Type = expectedLBService.Spec.Type
+		//nodePort is auto set
+		//copied.Spec.Ports = expectedLBService.Spec.Ports
 
 		err = r.Patch(r.ctx, copied, client.MergeFrom(&svc))
 	}
