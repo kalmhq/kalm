@@ -19,12 +19,35 @@ export const formatBytes = (bytes: number, decimals = 2): string => {
 
 export const extractDomainsFromCertificateContent = (certificateContent: string) => {
   try {
+    // 1. wildcard multiple domains
+    // 2. alt name multiple domains
+    // https://medium.com/@pubudu538/how-to-create-a-self-signed-ssl-certificate-for-multiple-domains-25284c91142b
+    // https://www.rpkamp.com/2014/08/25/setting-up-a-multi-domain-self-signed-ssl-certificate/
     const cert = pki.certificateFromPem(certificateContent);
-    return Immutable.List(
-      cert.subject.attributes.map((attribute) => {
-        return attribute.value;
-      }),
-    );
+
+    let domains = Immutable.List<string>([]);
+
+    // multiple domains
+    if (cert.extensions.length > 0) {
+      cert.extensions.map((attribute) => {
+        if (attribute.altNames && attribute.altNames.length > 0) {
+          attribute.altNames.map((altName: any) => {
+            domains = domains.push(altName.value);
+            return altName;
+          });
+        }
+        return attribute;
+      });
+    }
+
+    // signle domain
+    cert.subject.attributes.map((attribute) => {
+      if (attribute.name === "commonName") {
+        domains = domains.push(attribute.value);
+      }
+      return attribute;
+    });
+    return domains;
   } catch (e) {
     console.log(e);
     return Immutable.List([]);
