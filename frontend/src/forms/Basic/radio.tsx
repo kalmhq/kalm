@@ -66,13 +66,13 @@ export const KFormikRadioGroupRender = ({
   return (
     <FormControl component="fieldset" fullWidth margin="dense" error={error}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}
-      <RadioGroup aria-label="gender" name={name || "gender1"} value={value} onChange={onChange}>
+      <RadioGroup aria-label="gender" name={name || "gender1"} value={value || options[0].value} onChange={onChange}>
         {options.map((option) => {
           return (
-            <React.Fragment key={option.value}>
+            <span key={option.value}>
               <FormControlLabel key={option.value} value={option.value} control={<Radio />} label={option.label} />
               {option.explain ? <Body2 style={{ padding: "0 16px 0 32px" }}>{option.explain}</Body2> : null}
-            </React.Fragment>
+            </span>
           );
         })}
       </RadioGroup>

@@ -74,14 +74,22 @@ export class KRenderTextField extends React.PureComponent<withDebounceProps & Pr
 export const KRenderDebounceTextField = withDebounceField(KRenderTextField);
 
 export const KRenderFormikTextField = (props: TextFieldProps & FieldProps) => {
+  const {
+    helperText,
+    field: { name },
+    form: { touched, errors },
+  } = props;
+  const showError = !!errors[name] && !!touched[name];
   return (
     <FormikTextField
       InputLabelProps={{
         shrink: true,
       }}
+      error={showError}
       margin="dense"
       fullWidth
       variant="outlined"
+      helperText={showError ? errors[name] : helperText ? helperText : " "}
       inputProps={{
         required: false, // bypass html5 required feature
       }}
@@ -226,6 +234,75 @@ export const KRenderCommandTextField = ({
       }}
       value={input.value}
       // {...custom}
+    />
+  );
+};
+
+export class RenderFormikComplexValueTextField extends React.PureComponent<
+  TextFieldProps & FieldProps & ComplexValueTextFieldProps
+> {
+  render() {
+    const {
+      min,
+      endAdornment,
+      field: { name },
+      form: { errors, touched },
+      helperText,
+    } = this.props;
+    const inputProps: Partial<OutlinedInputProps> = {
+      inputProps: {
+        min,
+      },
+    };
+    if (endAdornment) {
+      inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
+    }
+
+    return (
+      <FormikTextField
+        {...this.props}
+        InputProps={inputProps}
+        fullWidth
+        helperText={!!touched[name] && !!errors[name] ? errors[name] : helperText ? helperText : " "}
+        InputLabelProps={{
+          shrink: true,
+        }}
+        margin="dense"
+        variant="outlined"
+      />
+    );
+  }
+}
+
+export const KRenderFormikCommandTextField = (props: TextFieldProps & FieldProps & ComplexValueTextFieldProps) => {
+  const {
+    helperText,
+    field: { name },
+    form: { touched, errors },
+  } = props;
+  const showError = !!errors[name] && !!touched[name];
+
+  const theme = useTheme();
+
+  return (
+    <FormikTextField
+      fullWidth
+      error={showError}
+      spellCheck={false}
+      helperText={showError ? errors[name] : helperText ? helperText : ""}
+      InputLabelProps={{
+        shrink: true,
+      }}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <KalmConsoleIcon color={theme.palette.type === "light" ? "default" : "inherit"} />
+          </InputAdornment>
+        ),
+      }}
+      margin="dense"
+      variant="outlined"
+      {...props}
     />
   );
 };

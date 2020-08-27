@@ -8,16 +8,19 @@ export const workloadTypeCronjob: WorkloadType = "cronjob";
 export const workloadTypeDaemonSet: WorkloadType = "daemonset";
 export const workloadTypeStatefulSet: WorkloadType = "statefulset";
 
-export const newEmptyComponentLike = (): ComponentLike => {
-  return Immutable.Map({
-    name: "",
-    image: "",
-    replicas: 1,
-    workloadType: "server",
-    dnsPolicy: "ClusterFirst",
-    schedule: "* * * * *",
-  });
+export const newEmptyComponentLike: ComponentLikeFormContent = {
+  name: "",
+  image: "",
+  replicas: 1,
+  workloadType: "server",
+  dnsPolicy: "ClusterFirst",
+  schedule: "* * * * *",
 };
+
+export interface ComponentLikeFormContent extends Omit<ComponentLikeContent, "env" | "preInjectedFiles"> {
+  env?: ComponentLikeEnv[];
+  preInjectedFiles?: PreInjectedFile[];
+}
 
 export type ComponentLikeEnv = ImmutableMap<{
   name: string;

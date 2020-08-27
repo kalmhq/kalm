@@ -327,22 +327,7 @@ export const RenderFormikSelectField = (props: FieldProps & SelectProps & Props)
       fontSize: 13,
     },
   }))();
-
-  const [labelWidth, setLabelWidth] = React.useState(0);
-
-  React.useEffect(() => {
-    setLabelWidth(inputLabel.current!.offsetWidth);
-  }, []);
-
   const inputLabel = React.useRef<HTMLLabelElement>(null);
-
-  // const onChange = (event: React.ChangeEvent<{ name?: string; value: unknown }>, child: React.ReactNode) => {
-  //   input.onChange(event.target.value);
-  // };
-
-  // select doesn't support endAdornment
-  // tooltip doesn't work in FormControl
-  // https://stackoverflow.com/questions/60384230/tooltip-inside-textinput-label-is-not-working-material-ui-react
   return (
     <FormControl
       classes={{ root: classes.root }}
@@ -357,7 +342,6 @@ export const RenderFormikSelectField = (props: FieldProps & SelectProps & Props)
       </InputLabel>
       <FormikSelect
         {...props}
-        labelWidth={labelWidth}
         labelId={labelId}
         renderValue={(value: any) => {
           const option = options.find((x) => x.value === value);
