@@ -3,7 +3,7 @@
 echo "Installing Kalm"
 echo ""
 
-kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/v0.1.0-alpha.4/kalm-install-operator.yaml
+kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/v0.1.0-alpha.5/kalm-install-operator.yaml
 ## same as running this in code repo:
 #kubectl apply -f kalm-install-operator.yaml
 
@@ -25,7 +25,7 @@ while [ "$OPERATOR_CONFIG_APPLY_STATUS" -ne 0 ]
 do
   ## same as running this in code repo:
   #kubectl apply -f kalm-install-kalmoperatorconfig.yaml
-  kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/v0.1.0-alpha.4/kalm-install-kalmoperatorconfig.yaml
+  kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/v0.1.0-alpha.5/kalm-install-kalmoperatorconfig.yaml
   OPERATOR_CONFIG_APPLY_STATUS=$?
 done
 

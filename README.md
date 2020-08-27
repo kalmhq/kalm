@@ -6,7 +6,7 @@ Kalm is an easy way to manage applications on Kubernetes. Kalm provides a web UI
 
 In addition, Kalm defines a set of CRDs that simplifies the underlying configuration and drastically reduces copy-pasting and boilerplate, as well as hooking up useful operators such as [cert-manager](https://cert-manager.io/docs/) and [istio](https://istio.io/).
 
-![Kalm](https://kalm.dev/docs/assets/kalm.png)
+![Kalm](https://kalm.dev/assets/images/kalm-a2c8a59e81a6674e606c57034bad461e.png)
 
 Kalm is designed for developers and teams who want a simple and friendly interface for kubernetes without having to build and maintain internal tools.
 
@@ -28,7 +28,7 @@ If you already have access to a cluster via kubectl, deploy Kalm via:
 curl -sL https://get.kalm.dev | bash
 ```
 
-The whole process typically takes up to 1-5 minutes. Relax or check out the <a href="https://kalm.dev/docs/intro." target="_blank">docs</a> in the mean time.
+The whole process typically takes up to 1-5 minutes. Relax or check out the <a href="https://kalm.dev/docs" target="_blank">docs</a> in the mean time.
 
 Once the installation is complete, open a port to the web server.
 
@@ -36,11 +36,11 @@ Once the installation is complete, open a port to the web server.
 kubectl port-forward -n kalm-system $(kubectl get pod -n kalm-system -l app=kalm -ojsonpath="{.items[0].metadata.name}") 3010:3010
 ```
 
-Kalm should now be accessible at [http://localhost:3010](http://localhost:3010). Refer to [these instructions](https://kalm.dev/docs/install#step-4-admin-service-account) on provisoning an access token and next steps.
+Kalm should now be accessible at [http://localhost:3010](http://localhost:3010). 
 
 ## Docs & Guides
 
-Detailed Documentation and Guides can be found at https://kalm.dev/docs/intro.
+Detailed Documentation and Guides can be found at https://kalm.dev/docs.
 
 ## License
 
