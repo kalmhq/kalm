@@ -15,6 +15,8 @@ import Immutable from "immutable";
 import React from "react";
 import { WrappedFieldProps } from "redux-form";
 import { KChip } from "widgets/Chip";
+import { Checkbox as FormikCheckbox } from "formik-material-ui";
+import { FieldProps } from "formik";
 
 export const CheckboxField = ({
   input,
@@ -113,6 +115,25 @@ export const KFormikBoolCheckboxRender = ({
           control={<Checkbox checked={checked} onChange={(e) => onChange(e.target.checked)} />}
           label={label}
         />
+      </FormGroup>
+      {showError ? (
+        <FormHelperText>{error}</FormHelperText>
+      ) : helperText ? (
+        <FormHelperText>{helperText}</FormHelperText>
+      ) : null}
+    </FormControl>
+  );
+};
+
+export const KFormikCheckbox = (props: KFormikBoolCheckboxRenderProps & FieldProps) => {
+  const { error, touched, title, helperText, label } = props;
+  const showError = !!error && touched;
+
+  return (
+    <FormControl fullWidth error={showError} style={{ marginTop: 8 }}>
+      {title ? <FormLabel component="legend">{title}</FormLabel> : null}
+      <FormGroup row>
+        <FormControlLabel control={<FormikCheckbox type="checkbox" {...props} />} label={label} />
       </FormGroup>
       {showError ? (
         <FormHelperText>{error}</FormHelperText>
