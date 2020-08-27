@@ -141,6 +141,14 @@ export const newEmptyCertificateForm: CertificateFormType = Immutable.fromJS({
   domains: Immutable.List(),
 });
 
+export const newEmptyCertificateUploadForm: CertificateFormType = Immutable.fromJS({
+  name: "",
+  managedType: selfManaged,
+  selfManagedCertContent: "",
+  selfManagedCertPrivateKey: "",
+  domains: Immutable.List(),
+});
+
 export const newEmptyCertificateIssuerForm = (): CertificateIssuerFormType => {
   return Immutable.fromJS({
     name: "",

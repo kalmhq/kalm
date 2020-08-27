@@ -289,6 +289,16 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
             >
               New Certificate
             </Button>
+            <Button
+              color="primary"
+              variant="outlined"
+              size="small"
+              component={Link}
+              tutorial-anchor-id="upload-certificate"
+              to="/certificates/upload"
+            >
+              Upload Certificate
+            </Button>
           </>
         }
       >

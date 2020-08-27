@@ -213,6 +213,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
         return "Registries";
       case "new":
         return "New";
+      case "upload":
+        return "Upload";
       case "edit":
         return "Edit";
       case "sso":
