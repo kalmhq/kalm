@@ -15,6 +15,7 @@ import Immutable from "immutable";
 import React from "react";
 import { WrappedFieldProps } from "redux-form";
 import { KChip } from "widgets/Chip";
+import { FieldProps } from "formik";
 
 export const CheckboxField = ({
   input,
@@ -129,15 +130,11 @@ interface KFormikCheckboxGroupRenderOption {
   htmlColor?: string;
 }
 
-interface KFormikCheckboxGroupRenderProps {
+interface KFormikCheckboxGroupRenderProps extends FieldProps {
   title?: string;
   helperText?: string;
   options: KFormikCheckboxGroupRenderOption[];
   componentType?: "Checkbox" | "Chip";
-  value: string[];
-  onChange: any;
-  error: any;
-  touched: boolean;
 }
 
 // For value type is string[]
@@ -146,30 +143,29 @@ export const KFormikCheckboxGroupRender = ({
   options,
   helperText,
   componentType,
-  value,
-  error,
-  touched,
-  onChange,
+  field: { name },
+  form: { setFieldValue, values, errors },
 }: KFormikCheckboxGroupRenderProps) => {
-  const showError = !!error && touched;
+  const showError = !!errors[name];
 
+  let value = values[name];
   return (
     <FormControl fullWidth error={showError}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}
-      {showError ? <FormHelperText>{error}</FormHelperText> : null}
+      {showError ? <FormHelperText>{errors[name]}</FormHelperText> : null}
       <FormGroup row>
         {options.map((x) => {
           const onCheckChange = (_: any, checked: boolean) => {
             if (checked) {
               value.push(x.value);
-              onChange(value);
             } else {
               const index = value.indexOf(x.value);
               if (index > -1) {
                 value.splice(index, 1);
               }
-              onChange(value);
             }
+            // copy array
+            setFieldValue(name, [...value]);
           };
 
           if (componentType === "Chip") {
@@ -187,7 +183,6 @@ export const KFormikCheckboxGroupRender = ({
               </Box>
             );
           }
-          console.log("value", value);
           return (
             <FormControlLabel
               key={x.value}

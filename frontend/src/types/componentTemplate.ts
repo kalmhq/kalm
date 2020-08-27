@@ -1,6 +1,5 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "typings";
-import { PluginType } from "./plugin";
 
 export type WorkloadType = string;
 export const workloadTypeServer: WorkloadType = "server";
@@ -150,8 +149,8 @@ export interface ComponentLikeContent {
   env?: Immutable.List<ComponentLikeEnv>;
   ports?: Immutable.List<ComponentLikePort>;
   volumes?: Immutable.List<Volume>;
-  configs?: Immutable.List<ConfigMount>;
-  plugins?: Immutable.List<PluginType>;
+  // configs?: Immutable.List<ConfigMount>;
+  // plugins?: Immutable.List<PluginType>;
   preInjectedFiles?: Immutable.List<PreInjectedFile>;
   livenessProbe?: Probe;
   readinessProbe?: Probe;

@@ -26,7 +26,7 @@ import { change } from "redux-form";
 import { theme } from "theme/theme";
 import { newEmptyCertificateForm } from "types/certificate";
 import { ComponentLike, newEmptyComponentLike } from "types/componentTemplate";
-import { HttpRouteForm, newEmptyRouteForm } from "types/route";
+import { HttpRouteForm, newEmptyRouteForm, HttpRoute } from "types/route";
 import { getTestFormSyncErrors } from "utils/testUtils";
 
 configure({ adapter: new Adapter() });
@@ -171,7 +171,8 @@ test("add route", async (done) => {
   await store.dispatch(loadServicesAction(applicationName));
   const testApplication = store.getState().get("applications").get("applications").get(0);
   const testService = store.getState().get("services").get("services").get(0);
-  const onSubmit = async (route: HttpRouteForm) => {
+  const onSubmit = async (routeForm: HttpRouteForm) => {
+    let route = Immutable.fromJS(routeForm) as HttpRoute;
     route = route.set("namespace", testApplication?.get("name"));
     await store.dispatch(createRouteAction(route));
   };
