@@ -102,6 +102,33 @@ func (builder *Builder) GetHttpsCerts() ([]HttpsCertResp, error) {
 	return httpsCerts, nil
 }
 
+func (builder *Builder) genNameForCert(cert *HttpsCert) (string, error) {
+	var name string
+
+	cnt := 0
+	maxCnt := 5
+	for cnt < maxCnt {
+		name = autoGenCertName(cert)
+
+		// check if exist
+		existCert := v1alpha1.HttpsCert{}
+		err := builder.Get("", name, &existCert)
+		if errors.IsNotFound(err) {
+			cert.Name = name
+			break
+		}
+
+		// otherwise retry
+		cnt += 1
+	}
+
+	if name == "" {
+		return "", fmt.Errorf("fail to auot generate name for cert")
+	}
+
+	return name, nil
+}
+
 func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert, error) {
 	// by default, cert use our default http01Issuer
 	if cert.HttpsCertIssuer == "" {
@@ -109,27 +136,12 @@ func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 	}
 
 	if cert.Name == "" {
-		cnt := 0
-		maxCnt := 5
-		for cnt < maxCnt {
-			name := autoGenCertName(cert)
-
-			// check if exist
-			existCert := v1alpha1.HttpsCert{}
-			err := builder.Get("", name, &existCert)
-			if errors.IsNotFound(err) {
-				cert.Name = name
-				break
-			}
-
-			// otherwise retry
-			cnt += 1
+		name, err := builder.genNameForCert(cert)
+		if err != nil {
+			return nil, err
 		}
-	}
 
-	// if cert name still empty
-	if cert.Name == "" {
-		return nil, fmt.Errorf("fail to generate name for HttpsCert, please retry")
+		cert.Name = name
 	}
 
 	// for wildcard cert, 1 domain & no prefix: '*.' is needed
@@ -163,7 +175,11 @@ func autoGenCertName(cert *HttpsCert) string {
 	var prefix string
 
 	if cert.HttpsCertIssuer == controllers.DefaultDNS01IssuerName {
-		prefix = "wildcard-"
+		prefix += "wildcard-"
+	}
+
+	if cert.IsSelfManaged {
+		prefix += "self-managed-"
 	}
 
 	if len(cert.Domains) >= 1 {
@@ -212,6 +228,11 @@ func (builder *Builder) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, erro
 		return nil, err
 	}
 
+	domains := getDomainsInCert(x509Cert)
+	if len(domains) <= 0 {
+		return nil, fmt.Errorf("fail to find domain name in cert")
+	}
+
 	var err1 error
 	wg1 := sync.WaitGroup{}
 	wg1.Add(1)
@@ -248,12 +269,12 @@ func (builder *Builder) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, erro
 			return
 		}
 
-		if strings.Join(res.Spec.Domains, ",") == strings.Join(x509Cert.DNSNames, ",") {
+		if strings.Join(res.Spec.Domains, ",") == strings.Join(domains, ",") {
 			return
 		}
 
 		// ensure domains updated
-		res.Spec.Domains = x509Cert.DNSNames
+		res.Spec.Domains = domains
 		err2 = builder.Update(&res)
 	}()
 
@@ -270,18 +291,23 @@ func (builder *Builder) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, erro
 }
 
 func (builder *Builder) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCert, error) {
+	if cert.Name == "" {
+		name, err := builder.genNameForCert(cert)
+		if err != nil {
+			return nil, err
+		}
+
+		cert.Name = name
+	}
+
 	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
 	if err != nil {
 		builder.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
 		return nil, err
 	}
 
-	var domains []string
-	if len(x509Cert.DNSNames) > 0 {
-		domains = x509Cert.DNSNames
-	} else if x509Cert.Subject.CommonName != "" {
-		domains = []string{x509Cert.Subject.CommonName}
-	} else {
+	domains := getDomainsInCert(x509Cert)
+	if len(domains) <= 0 {
 		return nil, fmt.Errorf("fail to find domain name in cert")
 	}
 
@@ -317,23 +343,21 @@ func (builder *Builder) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 	return cert, nil
 }
 
+func getDomainsInCert(x509Cert *x509.Certificate) []string {
+	var domains []string
+	if len(x509Cert.DNSNames) > 0 {
+		domains = x509Cert.DNSNames
+	} else if x509Cert.Subject.CommonName != "" {
+		domains = []string{x509Cert.Subject.CommonName}
+	}
+
+	return domains
+}
+
 func checkPrivateKey(cert *x509.Certificate, prvKey string) bool {
 	//todo check if cert & prvKey matches
 	return true
 }
-
-//func parseCert(certPEM string) (*x509.Certificate, error) {
-//	block, _ := pem.Decode([]byte(certPEM))
-//	if block == nil {
-//		panic("failed to parse certificate PEM")
-//	}
-//	cert, err := x509.ParseCertificate(block.Bytes)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	return cert, nil
-//}
 
 func (builder *Builder) DeleteHttpsCert(name string) error {
 	return builder.Delete(&v1alpha1.HttpsCert{ObjectMeta: v1.ObjectMeta{Name: name}})
