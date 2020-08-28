@@ -14,7 +14,7 @@ import { Field, FieldProps } from "formik";
 import { NormalizeNumber } from "forms/normalizer";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { PortProtocolHTTP, PortProtocolTCP, ProbeContent } from "types/componentTemplate";
+import { PortProtocolHTTP, PortProtocolTCP, ProbeContent, ComponentLikePortContent } from "types/componentTemplate";
 import sc from "../../utils/stringConstants";
 import { makeSelectOption, SelectField } from "../Basic/select";
 import { ValidatorOneof, ValidatorRequired } from "../validator";
@@ -317,19 +317,16 @@ class RenderProbe extends React.PureComponent<Props> {
       form: { setFieldValue, values },
     } = this.props;
 
-    // TODO
-    const ports = values.ports;
+    const ports: ComponentLikePortContent[] | undefined = values.ports;
 
     if (type === "httpGet") {
-      const potentialPort = ports
-        ? ports.find((x: any) => x.get("protocol") === PortProtocolHTTP && !!x.get("containerPort"))
-        : null;
+      const potentialPort = ports ? ports.find((x) => x.protocol === PortProtocolHTTP && !!x.containerPort) : null;
       setFieldValue(name, {
         httpGet: {
           scheme: "HTTP",
           host: "0.0.0.0",
           path: "/health",
-          port: potentialPort ? potentialPort.get("containerPort") : 8080,
+          port: potentialPort ? potentialPort.containerPort : 8080,
         },
         failureThreshold: 3,
         periodSeconds: 10,
@@ -349,12 +346,10 @@ class RenderProbe extends React.PureComponent<Props> {
         initialDelaySeconds: 10,
       });
     } else if (type === "tcpSocket") {
-      const potentialPort = ports
-        ? ports.find((x: any) => x.get("protocol") === PortProtocolTCP && !!x.get("containerPort"))
-        : null;
+      const potentialPort = ports ? ports.find((x: any) => x.protocol === PortProtocolTCP && !!x.containerPort) : null;
       setFieldValue(name, {
         tcpSocket: {
-          port: potentialPort ? potentialPort.get("containerPort") : 8080,
+          port: potentialPort ? potentialPort.containerPort : 8080,
           host: "0.0.0.0",
         },
         failureThreshold: 3,
