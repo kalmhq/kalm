@@ -1,6 +1,5 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "typings";
-import { PluginType } from "./plugin";
 
 export type WorkloadType = string;
 export const workloadTypeServer: WorkloadType = "server";
@@ -8,16 +7,28 @@ export const workloadTypeCronjob: WorkloadType = "cronjob";
 export const workloadTypeDaemonSet: WorkloadType = "daemonset";
 export const workloadTypeStatefulSet: WorkloadType = "statefulset";
 
-export const newEmptyComponentLike = (): ComponentLike => {
-  return Immutable.Map({
-    name: "",
-    image: "",
-    replicas: 1,
-    workloadType: "server",
-    dnsPolicy: "ClusterFirst",
-    schedule: "* * * * *",
-  });
+export const newEmptyComponentLike: ComponentLikeFormContent = {
+  name: "",
+  image: "",
+  replicas: 1,
+  workloadType: "server",
+  dnsPolicy: "ClusterFirst",
+  schedule: "* * * * *",
 };
+
+export interface ComponentLikeFormContent
+  extends Omit<
+    ComponentLikeContent,
+    "env" | "preInjectedFiles" | "ports" | "volumes" | "nodeSelectorLabels" | "livenessProbe" | "readinessProbe"
+  > {
+  env?: ComponentLikeEnv[];
+  preInjectedFiles?: PreInjectedFile[];
+  ports?: ComponentLikePortContent[];
+  volumes?: VolumeContent[];
+  nodeSelectorLabels?: NodeSelectorLabelsContent;
+  livenessProbe?: ProbeContent;
+  readinessProbe?: ProbeContent;
+}
 
 export type ComponentLikeEnv = ImmutableMap<{
   name: string;
@@ -35,15 +46,19 @@ export const PortProtocolGRPCWEB: PortProtocol = "grpc-web";
 export const PortProtocolTCP: PortProtocol = "tcp";
 export const PortProtocolUDP: PortProtocol = "udp";
 
-export type ComponentLikePort = ImmutableMap<{
+export type ComponentLikePort = ImmutableMap<ComponentLikePortContent>;
+
+export interface ComponentLikePortContent {
   protocol: string;
   containerPort: number;
   servicePort: number;
-}>;
+}
 
-export type NodeSelectorLabels = ImmutableMap<{
+export interface NodeSelectorLabelsContent {
   [key: string]: string;
-}>;
+}
+
+export type NodeSelectorLabels = ImmutableMap<NodeSelectorLabelsContent>;
 
 export type PodAffinityType = string;
 export const PodAffinityTypePreferFanout: PodAffinityType = "prefer-fanout"; // multi host
@@ -85,12 +100,39 @@ export type ConfigMount = ImmutableMap<{
   mountPath: string;
 }>;
 
-export type HttpHeader = ImmutableMap<{
+export interface HttpHeaderContent {
   name: string;
   value: string;
-}>;
+}
+
+export type HttpHeader = ImmutableMap<HttpHeaderContent>;
 
 export type HttpHeaders = Immutable.List<HttpHeader>;
+
+export interface ProbeContent {
+  exec?: {
+    command?: string[];
+  };
+
+  httpGet?: {
+    host?: string;
+    httpHeaders?: HttpHeaderContent[];
+    path?: string;
+    port: number | string;
+    scheme?: string;
+  };
+
+  tcpSocket?: {
+    host?: string;
+    port: number | string;
+  };
+
+  initialDelaySeconds?: number;
+  timeoutSeconds?: number;
+  periodSeconds?: number;
+  successThreshold?: number;
+  failureThreshold?: number;
+}
 
 export type Probe = ImmutableMap<{
   exec?: ImmutableMap<{
@@ -147,12 +189,13 @@ export interface ComponentLikeContent {
   env?: Immutable.List<ComponentLikeEnv>;
   ports?: Immutable.List<ComponentLikePort>;
   volumes?: Immutable.List<Volume>;
-  configs?: Immutable.List<ConfigMount>;
-  plugins?: Immutable.List<PluginType>;
+  // configs?: Immutable.List<ConfigMount>;
+  // plugins?: Immutable.List<PluginType>;
   preInjectedFiles?: Immutable.List<PreInjectedFile>;
   livenessProbe?: Probe;
   readinessProbe?: Probe;
   nodeSelectorLabels?: NodeSelectorLabels;
+  preferNotCoLocated?: boolean;
   podAffinityType?: PodAffinityType;
 }
 

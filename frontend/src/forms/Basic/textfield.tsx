@@ -1,9 +1,11 @@
 import { InputAdornment, OutlinedInputProps, useTheme } from "@material-ui/core";
-import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
+import TextField, { FilledTextFieldProps, TextFieldProps } from "@material-ui/core/TextField";
 import React, { ChangeEvent } from "react";
 import { WrappedFieldProps } from "redux-form";
 import { KalmConsoleIcon } from "widgets/Icon";
 import { withDebounceField, withDebounceProps, inputOnChangeWithDebounce } from "./debounce";
+import { TextField as FormikTextField } from "formik-material-ui";
+import { FieldProps } from "formik";
 
 interface Props {
   endAdornment?: React.ReactNode;
@@ -71,6 +73,30 @@ export class KRenderTextField extends React.PureComponent<withDebounceProps & Pr
 
 export const KRenderDebounceTextField = withDebounceField(KRenderTextField);
 
+export const KRenderFormikTextField = (props: TextFieldProps & FieldProps & { HelperText: React.ReactNode }) => {
+  const {
+    helperText,
+    field: { name },
+    form: { touched, errors },
+  } = props;
+
+  return (
+    <FormikTextField
+      {...props}
+      InputLabelProps={{
+        shrink: true,
+      }}
+      margin="dense"
+      fullWidth
+      variant="outlined"
+      helperText={(touched[name] && errors[name]) || helperText || " "}
+      inputProps={{
+        required: false, // bypass html5 required feature
+      }}
+    />
+  );
+};
+
 export const KRenderTextareaField = ({
   input,
   label,
@@ -111,6 +137,8 @@ interface ComplexValueTextFieldProps {
   endAdornment?: React.ReactNode;
   min?: string;
   pattern?: string;
+  format?: (value: any) => any;
+  parse?: (value: any) => any;
 }
 
 // value type is complex like array or json, like "command" is array, but using textfield input
@@ -207,6 +235,95 @@ export const KRenderCommandTextField = ({
       }}
       value={input.value}
       // {...custom}
+    />
+  );
+};
+
+export class RenderFormikComplexValueTextField extends React.PureComponent<
+  TextFieldProps & FieldProps & ComplexValueTextFieldProps
+> {
+  render() {
+    const {
+      label,
+      helperText,
+      placeholder,
+      required,
+      disabled,
+      type,
+      min,
+      endAdornment,
+      field: { name },
+      form: { touched, errors, values, setFieldValue },
+      format,
+      parse,
+    } = this.props;
+    const inputProps: Partial<OutlinedInputProps> = {
+      inputProps: {
+        min,
+      },
+    };
+    if (endAdornment) {
+      inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
+    }
+
+    const error = errors[name];
+    const showError = !!errors[name] && !!touched[name];
+
+    return (
+      <TextField
+        type={type}
+        InputProps={inputProps}
+        fullWidth
+        label={label}
+        placeholder={placeholder}
+        disabled={disabled}
+        required={required}
+        error={showError}
+        helperText={showError ? error : helperText ? helperText : ""}
+        InputLabelProps={{
+          shrink: true,
+        }}
+        margin="dense"
+        variant="outlined"
+        defaultValue={format ? format(values[name]) : values[name]}
+        value={format ? format(values[name]) : values[name]}
+        onChange={(e) => {
+          const value = e.target.value;
+          return parse ? setFieldValue(name, parse(value)) : setFieldValue(name, value);
+        }}
+      />
+    );
+  }
+}
+
+export const KRenderFormikCommandTextField = (props: TextFieldProps & FieldProps & ComplexValueTextFieldProps) => {
+  const {
+    helperText,
+    field: { name },
+    form: { touched, errors },
+  } = props;
+  const showError = !!errors[name] && !!touched[name];
+
+  const theme = useTheme();
+
+  return (
+    <FormikTextField
+      {...props}
+      fullWidth
+      spellCheck={false}
+      helperText={showError ? errors[name] : helperText ? helperText : ""}
+      InputLabelProps={{
+        shrink: true,
+      }}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <KalmConsoleIcon color={theme.palette.type === "light" ? "default" : "inherit"} />
+          </InputAdornment>
+        ),
+      }}
+      margin="dense"
+      variant="outlined"
     />
   );
 };

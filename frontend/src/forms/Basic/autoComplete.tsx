@@ -18,6 +18,7 @@ import {
 import { AutocompleteProps, RenderGroupParams } from "@material-ui/lab/Autocomplete/Autocomplete";
 import { WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
+import { FieldProps } from "formik";
 import Immutable from "immutable";
 import React, { useState } from "react";
 import { BaseFieldProps, WrappedFieldProps } from "redux-form";
@@ -517,3 +518,191 @@ export const KFreeSoloAutoCompleteMultipleSelectStringField = (
     />
   );
 };
+
+export interface KFreeSoloFormikAutoCompleteMultiValuesProps<T>
+  extends FieldProps,
+    UseAutocompleteMultipleProps<T>,
+    WithStyles<typeof KFreeSoloAutoCompleteMultiValuesStyles>,
+    Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
+  InputLabelProps?: {};
+  disabled?: boolean;
+  icons?: any[];
+}
+
+export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCompleteMultiValuesStyles)(
+  (props: KFreeSoloFormikAutoCompleteMultiValuesProps<string>) => {
+    const {
+      id,
+      label,
+      options,
+      icons,
+      field: { name },
+      form: { touched, errors, setFieldValue, handleBlur, values },
+      placeholder,
+      helperText,
+      classes,
+    } = props;
+
+    const errorsIsArray = Array.isArray(errors[name]);
+    const errorsArray = errors[name] as (string | undefined)[];
+    let errorText: string | undefined = undefined;
+
+    if (touched[name] && errorsIsArray) {
+      errorText = errorsArray.find((x) => x !== undefined);
+    }
+
+    if (typeof errors[name] === "string") {
+      errorText = errors[name] as string;
+    }
+    return (
+      <Autocomplete
+        // {...props}
+        options={options || []}
+        multiple
+        autoSelect
+        clearOnEscape
+        freeSolo
+        size="small"
+        id={id}
+        onBlur={handleBlur}
+        value={values[name]}
+        onChange={(e, value) => {
+          setFieldValue(name, value);
+        }}
+        // @ts-ignore
+        renderTags={(value: string[], getTagProps) => {
+          return value.map((option: string, index: number) => {
+            return (
+              <Chip
+                icon={icons ? icons[index] : undefined}
+                variant="outlined"
+                label={option}
+                classes={{ root: clsx({ [classes.error]: errorsIsArray && errorsArray[index] }) }}
+                size="small"
+                {...getTagProps({ index })}
+              />
+            );
+          });
+        }}
+        renderInput={(params) => {
+          return (
+            <TextField
+              {...params}
+              margin="dense"
+              variant="outlined"
+              error={!!touched[name] && !!errorText}
+              label={label}
+              placeholder={placeholder}
+              helperText={(touched[name] && errorText) || helperText}
+            />
+          );
+        }}
+      />
+    );
+  },
+);
+
+// formik single value
+export interface KFormikAutoCompleteSingleValueProps<T>
+  extends FieldProps,
+    WithStyles<typeof KAutoCompleteSingleValueStyles>,
+    Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText">,
+    Pick<AutocompleteProps<T>, "noOptionsText">,
+    UseAutocompleteSingleProps<T> {}
+
+function KFormikAutoCompleteSingleValueRaw<T>(
+  props: KFormikAutoCompleteSingleValueProps<KAutoCompleteOption>,
+): JSX.Element {
+  const {
+    label,
+    helperText,
+    field: { name },
+    form: { touched, errors, setFieldValue, handleBlur, values },
+    classes,
+    options,
+    placeholder,
+    noOptionsText,
+  } = props;
+
+  const value = options.find((x) => x.value === values[name]) || null;
+
+  const { groupLabelDefault, groupIcon, logoIcon, groupLabelCurrent, ...autocompleteClasses } = classes;
+
+  return (
+    <Autocomplete
+      classes={autocompleteClasses}
+      openOnFocus
+      noOptionsText={noOptionsText}
+      groupBy={(option) => option.group}
+      options={options}
+      size="small"
+      filterOptions={createFilterOptions({
+        ignoreCase: true,
+        matchFrom: "any",
+        stringify: (option) => {
+          return option.label;
+        },
+      })}
+      renderGroup={(group: RenderGroupParams) => {
+        if (group.key === "default") {
+          return (
+            <div key={group.key}>
+              <div className={groupLabelDefault}>
+                <KalmLogoIcon className={clsx(groupIcon, logoIcon)} />
+                <Caption>{group.key}</Caption>
+              </div>
+              {group.children}
+              <Divider />
+            </div>
+          );
+        } else {
+          return (
+            <div key={group.key}>
+              <div className={classes.groupLabel}>
+                <KalmApplicationIcon className={groupIcon} />
+                <Caption className={clsx(group.key.includes("Current") ? groupLabelCurrent : {})}>{group.key}</Caption>
+              </div>
+              {group.children}
+              <Divider />
+            </div>
+          );
+        }
+      }}
+      renderOption={(option: KAutoCompleteOption) => {
+        return (
+          <div className={classes.groupUl}>
+            <Typography>{option.label}</Typography>
+          </div>
+        );
+      }}
+      value={value}
+      getOptionLabel={(option: KAutoCompleteOption) => option.label}
+      onBlur={handleBlur}
+      forcePopupIcon={true}
+      onChange={(_event: any, value: KAutoCompleteOption | null) => {
+        if (value) {
+          setFieldValue(name, value.value);
+        } else {
+          setFieldValue(name, "");
+        }
+      }}
+      renderInput={(params) => {
+        return (
+          <TextField
+            {...params}
+            fullWidth
+            variant="outlined"
+            error={!!(touched[name] && errors[name])}
+            label={label}
+            placeholder={placeholder}
+            helperText={(touched[name] && errors[name]) || helperText}
+          />
+        );
+      }}
+    />
+  );
+}
+
+export const KFormikAutoCompleteSingleValue = withStyles(KAutoCompleteSingleValueStyles)(
+  KFormikAutoCompleteSingleValueRaw,
+);

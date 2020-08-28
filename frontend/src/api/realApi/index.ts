@@ -1,17 +1,17 @@
-import Immutable from "immutable";
-import { Api } from "../base";
-import { store } from "store";
 import Axios, { AxiosRequestConfig } from "axios";
-import { RegistryType } from "types/registry";
+import Immutable from "immutable";
+import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
-import { HttpRoute } from "types/route";
-import { RoleBindingsRequestBody } from "types/user";
-import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
-import { Node } from "types/node";
-import { ProtectedEndpoint, SSOConfig } from "types/sso";
+import { CertificateFormTypeContent, CertificateIssuerFormType } from "types/certificate";
+import { InitializeClusterResponse } from "types/cluster";
 import { DeployKey } from "types/deployKey";
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
-import { InitializeClusterResponse } from "types/cluster";
+import { Node } from "types/node";
+import { RegistryType } from "types/registry";
+import { HttpRoute } from "types/route";
+import { ProtectedEndpoint, SSOConfig } from "types/sso";
+import { RoleBindingsRequestBody } from "types/user";
+import { Api } from "../base";
 
 export const mockStore = null;
 
@@ -261,15 +261,15 @@ export default class RealApi extends Api {
     return Immutable.fromJS(res.data);
   };
 
-  public createCertificate = async (certificate: CertificateFormType, isEdit?: boolean) => {
+  public createCertificate = async (certificate: CertificateFormTypeContent, isEdit?: boolean) => {
     let res;
     if (isEdit) {
       res = await axiosRequest({
         method: "put",
-        url: `/${K8sApiVersion}/httpscerts/${certificate.get("name")}`,
+        url: `/${K8sApiVersion}/httpscerts/${certificate.name}`,
         data: certificate,
       });
-    } else if (certificate.get("isSelfManaged")) {
+    } else if (certificate.isSelfManaged) {
       res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/httpscerts/upload`, data: certificate });
     } else {
       res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/httpscerts`, data: certificate });

@@ -30,6 +30,7 @@
     "@types/storybook__addon-actions": "^5.2.1",
     "@types/storybook__addon-links": "^5.2.1",
     "@types/storybook__react": "^5.2.1",
+    "@types/yup": "^0.29.5",
     "ace-builds": "^1.4.8",
     "axios": "^0.19.2",
     "chart.js": "^2.9.3",
@@ -43,6 +44,7 @@
     "enzyme-adapter-react-16": "^1.15.2",
     "flowpoints": "git+https://github.com/iAladdin/flowpoints.js.git#23d517320c12eb7077ba8b5d8fdda3bfc1eeabd4",
     "formik": "^2.1.5",
+    "formik-material-ui": "^3.0.0-alpha.0",
     "hoist-non-react-statics": "^3.3.2",
     "immutable": "^4.0.0-rc.12",
     "material-table": "^1.57.2",
@@ -71,7 +73,8 @@
     "xterm": "^4.4.0",
     "xterm-addon-fit": "^0.3.0",
     "xterm-addon-search": "^0.5.0",
-    "yaml": "^1.7.2"
+    "yaml": "^1.7.2",
+    "yup": "^0.29.3"
   },
   "scripts": {
     "start": "react-app-rewired start",

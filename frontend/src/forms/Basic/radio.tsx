@@ -45,3 +45,37 @@ export const KRadioGroupRender = ({
     </FormControl>
   );
 };
+
+interface KFormikRadioGroupRenderProps {
+  options: KRadioGroupRenderOption[];
+  title?: string;
+  error?: boolean;
+  name: string;
+  value: any;
+  onChange: any;
+}
+
+export const KFormikRadioGroupRender = ({
+  title,
+  options,
+  error,
+  name,
+  value,
+  onChange,
+}: KFormikRadioGroupRenderProps) => {
+  return (
+    <FormControl component="fieldset" fullWidth margin="dense" error={error}>
+      {title ? <FormLabel component="legend">{title}</FormLabel> : null}
+      <RadioGroup aria-label="gender" name={name || "gender1"} value={value || options[0].value} onChange={onChange}>
+        {options.map((option) => {
+          return (
+            <span key={option.value}>
+              <FormControlLabel key={option.value} value={option.value} control={<Radio />} label={option.label} />
+              {option.explain ? <Body2 style={{ padding: "0 16px 0 32px" }}>{option.explain}</Body2> : null}
+            </span>
+          );
+        })}
+      </RadioGroup>
+    </FormControl>
+  );
+};

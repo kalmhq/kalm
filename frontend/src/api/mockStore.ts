@@ -1,15 +1,20 @@
-import { ClusterInfo } from "types/cluster";
-import { LoginStatus } from "types/authorization";
-import { NodesListResponse } from "types/node";
-import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import Immutable from "immutable";
 import { ApplicationComponentDetails, ApplicationDetails, ComponentPlugin, PodStatus } from "types/application";
-import { HttpRoute } from "types/route";
-import { Certificate, CertificateIssuer, CertificateIssuerList, CertificateList } from "types/certificate";
+import { LoginStatus } from "types/authorization";
+import {
+  CertificateFormTypeContent,
+  CertificateIssuer,
+  CertificateIssuerList,
+  CertificateList,
+} from "types/certificate";
+import { ClusterInfo } from "types/cluster";
+import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
+import { NodesListResponse } from "types/node";
 import { RegistryType } from "types/registry";
-import { ImmutableMap } from "typings";
+import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { SSOConfig } from "types/sso";
+import { ImmutableMap } from "typings";
 
 interface MockStoreData {
   mockClusterInfo: ClusterInfo;
@@ -117,12 +122,12 @@ export default class MockStore {
     });
   };
 
-  public updateCertificate = async (certificate: Certificate) => {
-    const index = this.data.get("mockCertificates").findIndex((c) => c.get("name") === certificate.get("name"));
+  public updateCertificate = async (certificate: CertificateFormTypeContent) => {
+    const index = this.data.get("mockCertificates").findIndex((c) => c.get("name") === certificate.name);
     if (index >= 0) {
-      this.data = this.data.setIn(["mockCertificates", index], certificate);
+      this.data = this.data.setIn(["mockCertificates", index], Immutable.fromJS(certificate));
     } else {
-      this.data = this.data.updateIn(["mockCertificates"], (c) => c.push(certificate));
+      this.data = this.data.updateIn(["mockCertificates"], (c) => c.push(Immutable.fromJS(certificate)));
     }
     await this.saveData();
   };

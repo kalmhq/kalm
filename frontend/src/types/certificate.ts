@@ -74,8 +74,9 @@ export type CertificateList = Immutable.List<Certificate>;
 
 export type CertificateIssuerList = Immutable.List<CertificateIssuer>;
 
-export interface CertificateFormTypeContent extends CertificateContent {
+export interface CertificateFormTypeContent extends Omit<CertificateContent, "domains"> {
   managedType: typeof selfManaged | typeof issuerManaged;
+  domains: string[];
 }
 
 export interface CertificateIssuerFormTypeContent extends CertificateIssuerContent {
@@ -96,13 +97,13 @@ export type Certificate = ImmutableMap<CertificateContent>;
 
 export type CertificateIssuer = ImmutableMap<CertificateIssuerContent>;
 
-export const newEmptyCertificateForm: CertificateFormType = Immutable.fromJS({
+export const newEmptyCertificateForm: CertificateFormTypeContent = {
   name: "",
   managedType: issuerManaged,
   selfManagedCertContent: "",
   selfManagedCertPrivateKey: "",
-  domains: Immutable.List(),
-});
+  domains: [],
+};
 
 export const newEmptyCertificateIssuerForm = (): CertificateIssuerFormType => {
   return Immutable.fromJS({
@@ -113,15 +114,15 @@ export const newEmptyCertificateIssuerForm = (): CertificateIssuerFormType => {
 
 export interface CertificateContent {
   name: string;
-  isSelfManaged: boolean;
-  isSignedByTrustedCA: boolean;
-  expireTimestamp: number;
+  isSelfManaged?: boolean;
+  isSignedByTrustedCA?: boolean;
+  expireTimestamp?: number;
   selfManagedCertContent: string;
   selfManagedCertPrivateKey: string;
-  httpsCertIssuer: string;
+  httpsCertIssuer?: string;
   domains: Immutable.List<string>;
-  ready: string; // why is a string??
-  reason: string;
+  ready?: string; // why is a string??
+  reason?: string;
 }
 
 export interface CertificateIssuerContent {

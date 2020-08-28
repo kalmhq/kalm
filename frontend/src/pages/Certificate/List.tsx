@@ -180,7 +180,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderExpireTimestamp = (cert: Certificate) => {
-    return cert.get("expireTimestamp") ? formatDate(new Date(cert.get("expireTimestamp") * 1000)) : "-";
+    return cert.get("expireTimestamp") ? formatDate(new Date(cert.get("expireTimestamp")! * 1000)) : "-";
   };
 
   private getKRTableColumns() {
