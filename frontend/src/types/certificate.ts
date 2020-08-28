@@ -109,15 +109,16 @@ export type CertificateList = Immutable.List<Certificate>;
 export type CertificateIssuerList = Immutable.List<CertificateIssuer>;
 
 export interface CertificateFormTypeContent extends CertificateContent {
-  managedType: typeof selfManaged | typeof issuerManaged;
+  managedType: typeof selfManaged | typeof issuerManaged | typeof dns01Mananged;
 }
 
 export interface CertificateIssuerFormTypeContent extends CertificateIssuerContent {
   issuerType: typeof cloudFlare | typeof caForTest;
 }
 
-export const selfManaged = "selfManaged";
+export const dns01Mananged = "dns01Mananged";
 export const issuerManaged = "issuerManaged";
+export const selfManaged = "selfManaged";
 
 export const cloudFlare = "cloudFlare";
 export const caForTest = "caForTest";

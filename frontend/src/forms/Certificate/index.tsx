@@ -24,6 +24,7 @@ import {
   issuerManaged,
   newEmptyCertificateIssuerForm,
   selfManaged,
+  dns01Mananged,
 } from "types/certificate";
 import { CertificateIssuerForm } from "forms/Certificate/issuerForm";
 import DomainStatus from "widgets/DomainStatus";
@@ -35,6 +36,8 @@ import { Link } from "react-router-dom";
 import { KPanel } from "widgets/KPanel";
 import copy from "copy-to-clipboard";
 import { setSuccessNotificationAction } from "actions/notification";
+import { Loading } from "widgets/Loading";
+import { KAcmeServerCard, KAcmeServerFormCard } from "widgets/AcmeServerCard";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   const selector = formValueSelector(form || CERTIFICATE_FORM_ID);
@@ -49,6 +52,9 @@ const mapStateToProps = (state: RootState, { form }: OwnProps) => {
     certificateIssuers: state.get("certificates").get("certificateIssuers") as CertificateIssuerList,
     domains: selector(state, "domains") as Immutable.List<string>,
     ingressIP: state.get("cluster").get("info").get("ingressIP", "---.---.---.---"),
+    acmeServer: state.get("certificates").get("acmeServer"),
+    acmeServerIsReady: state.get("certificates").get("acmeServer").get("ready"),
+    isLoadingAcmeServer: state.get("certificates").get("isAcmeServerLoading"),
   };
 };
 
@@ -124,6 +130,15 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     } catch (e) {
       console.log(e);
     }
+  };
+
+  private renderAcmeServerFrom = () => {
+    const { isLoadingAcmeServer, acmeServer } = this.props;
+    return !isLoadingAcmeServer && <KAcmeServerFormCard acmeServer={acmeServer} />;
+  };
+  private renderAcmeServerInfo = () => {
+    const { isLoadingAcmeServer, acmeServer } = this.props;
+    return <>{isLoadingAcmeServer ? <Loading /> : <KAcmeServerCard acmeServer={acmeServer} />}</>;
   };
 
   private renderSelfManagedFields = () => {
@@ -271,94 +286,114 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
       submitSucceeded,
       ingressIP,
       dispatch,
+      acmeServerIsReady,
     } = this.props;
     const icons = Immutable.List(domains.map((domain) => <DomainStatus domain={domain} />));
 
     return (
-      <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="certificate-form">
-        <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
-        <KPanel
-          content={
-            <Box p={2}>
-              <Grid container spacing={2}>
-                {isEdit ? null : (
+      <>
+        <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="certificate-form">
+          <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+          <KPanel
+            content={
+              <Box p={2}>
+                <Grid container spacing={2}>
+                  {isEdit ? null : (
+                    <Grid item md={12}>
+                      <Field
+                        title=""
+                        component={KRadioGroupRender}
+                        name="managedType"
+                        options={[
+                          {
+                            value: issuerManaged,
+                            label: sc.CERT_AUTO,
+                            explain: sc.CERT_AUTO_DESC,
+                          },
+                          {
+                            value: dns01Mananged,
+                            label: sc.CERT_DNS01_WILDCARD,
+                            explain: sc.CERT_DNS01_WILDCARD_DESC,
+                          },
+                        ]}
+                      />
+                    </Grid>
+                  )}
                   <Grid item md={12}>
-                    <Field
-                      title=""
-                      component={KRadioGroupRender}
-                      name="managedType"
-                      options={[
-                        {
-                          value: issuerManaged,
-                          label: sc.CERT_AUTO,
-                          explain: sc.CERT_AUTO_DESC,
-                        },
-                        {
-                          value: selfManaged,
-                          label: sc.CERT_UPLOAD,
-                          explain: sc.CERT_UPLOAD_DESC,
-                        },
-                      ]}
-                    />
+                    {managedType === dns01Mananged ? this.renderAcmeServerInfo() : null}
                   </Grid>
-                )}
-                <Grid item md={12}>
-                  <Field
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                    disabled={isEdit}
-                    placeholder="Please type a certificate name"
-                    label="Certificate name"
-                    component={KRenderDebounceTextField}
-                    name="name"
-                    id="certificate-name"
-                    margin="normal"
-                  />
-                </Grid>
-                <Grid item md={12}>
-                  <KFreeSoloAutoCompleteMultipleSelectStringField
-                    disabled={managedType === selfManaged}
-                    helperText={
-                      <Caption color="textSecondary">
-                        Your cluster ip is{" "}
-                        <Link
-                          to="#"
-                          onClick={() => {
-                            copy(ingressIP);
-                            dispatch(setSuccessNotificationAction("Copied successful!"));
+                  {managedType !== dns01Mananged || acmeServerIsReady ? (
+                    <>
+                      <Grid item md={12}>
+                        <Field
+                          InputLabelProps={{
+                            shrink: true,
                           }}
-                        >
-                          {ingressIP}
-                        </Link>
-                        . {sc.ROUTE_HOSTS_INPUT_HELPER}
-                      </Caption>
-                    }
-                    placeholder={
-                      managedType === selfManaged
-                        ? "Extract domains information when you upload a certificate file"
-                        : "Please type domains"
-                    }
-                    label="Domains"
-                    icons={icons}
-                    multiline={true}
-                    className={classes.fileInput}
-                    rows={12}
-                    name="domains"
-                    validate={managedType === selfManaged ? [] : domainsValidators}
-                  />
+                          disabled={isEdit}
+                          placeholder="Please type a certificate name"
+                          label="Certificate name"
+                          component={KRenderDebounceTextField}
+                          name="name"
+                          id="certificate-name"
+                          margin="normal"
+                        />
+                      </Grid>
+                      <Grid item md={12}>
+                        <KFreeSoloAutoCompleteMultipleSelectStringField
+                          disabled={managedType === selfManaged}
+                          helperText={
+                            <Caption color="textSecondary">
+                              Your cluster ip is{" "}
+                              <Link
+                                to="#"
+                                onClick={() => {
+                                  copy(ingressIP);
+                                  dispatch(setSuccessNotificationAction("Copied successful!"));
+                                }}
+                              >
+                                {ingressIP}
+                              </Link>
+                              . {sc.ROUTE_HOSTS_INPUT_HELPER}
+                            </Caption>
+                          }
+                          placeholder={
+                            managedType === selfManaged
+                              ? "Extract domains information when you upload a certificate file"
+                              : "Please type domains"
+                          }
+                          label="Domains"
+                          icons={icons}
+                          multiline={true}
+                          className={classes.fileInput}
+                          rows={12}
+                          name="domains"
+                          validate={managedType === selfManaged ? [] : domainsValidators}
+                        />
+                      </Grid>
+                    </>
+                  ) : null}
                 </Grid>
-              </Grid>
-              {managedType === selfManaged ? this.renderSelfManagedFields() : null}
+              </Box>
+            }
+          />
+          {managedType !== dns01Mananged || acmeServerIsReady ? (
+            <Box pt={2}>
+              <Button
+                id="save-certificate-button"
+                type="submit"
+                onClick={handleSubmit}
+                color="primary"
+                variant="contained"
+              >
+                {isEdit ? "Update" : "Create"}
+              </Button>
             </Box>
-          }
-        />
-        <Box pt={2}>
-          <Button id="save-certificate-button" type="submit" onClick={handleSubmit} color="primary" variant="contained">
-            {isEdit ? "Update" : "Create"}
-          </Button>
-        </Box>
-      </form>
+          ) : null}
+        </form>
+        <Grid item md={12}>
+          {managedType === dns01Mananged ? this.renderAcmeServerFrom() : null}
+        </Grid>
+      </>
     );
   }
 }

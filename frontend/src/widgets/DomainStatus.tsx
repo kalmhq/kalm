@@ -23,6 +23,7 @@ const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
 interface OwnProps {
   domain: string;
   cnameDomain?: string;
+  ipAddress?: string;
   mr?: number;
 }
 
@@ -42,15 +43,39 @@ class DomainStatus extends React.PureComponent<Props> {
       dispatch(loadDomainDNSInfo(domain));
     }
   }
+  private getIPAddress = () => {
+    const { ingressIP, ipAddress } = this.props;
+    if (ipAddress != null) {
+      return ipAddress;
+    } else {
+      return ingressIP;
+    }
+  };
+
+  private getIPTipsText = () => {
+    const { ingressIP, ipAddress } = this.props;
+    if (ipAddress != null) {
+      return (
+        <>
+          The IP address doesn’t match the IP address: <strong>{ipAddress}</strong>{" "}
+        </>
+      );
+    } else {
+      return (
+        <>
+          The IP address doesn’t match the Ingress IP address: <strong>{ingressIP}</strong>{" "}
+        </>
+      );
+    }
+  };
 
   private getHelperText = (cnameDomain: string | undefined, cnameRecords: string): React.ReactElement => {
-    const { ingressIP } = this.props;
     const helper =
       cnameDomain !== undefined ? (
         cnameRecords.length > 0 ? (
           <>
             <Box>
-              current cname records is <strong>{cnameRecords}</strong>
+              current CNAME record is <strong>{cnameRecords}</strong>
             </Box>
             please add an CNAME record with your dns provider, point to <strong>{cnameDomain}</strong>{" "}
           </>
@@ -61,29 +86,30 @@ class DomainStatus extends React.PureComponent<Props> {
         )
       ) : (
         <>
-          please add an A record with your dns provider, point to <strong>{ingressIP}</strong>{" "}
+          please add an A record with your dns provider, point to <strong>{this.getIPAddress()}</strong>{" "}
         </>
       );
     return helper;
   };
 
   private getIconAndBody = () => {
-    const { domainStatus, ingressIP, domain, dispatch, isIPDomain, cnameDomain } = this.props;
+    const { domainStatus, domain, dispatch, isIPDomain, cnameDomain } = this.props;
+    const ip = this.getIPAddress();
     if (isIPDomain) {
       return {
-        icon: domain === ingressIP ? <CheckCircleIcon /> : <WarningIcon color="action" />,
+        icon: domain === ip ? <CheckCircleIcon /> : <WarningIcon color="action" />,
         body:
-          domain === ingressIP ? (
+          domain === ip ? (
             <Box p={2}>the domain is successfully configured!</Box>
           ) : (
             <Box p={2}>
-              The IP address doesn’t match the ingress IP address: <strong>{ingressIP}</strong>{" "}
+              {this.getIPTipsText()}
               <IconButtonWithTooltip
                 tooltipTitle="Copy"
                 aria-label="copy"
                 size="small"
                 onClick={() => {
-                  copy(ingressIP);
+                  copy(ip);
                   dispatch(setSuccessNotificationAction("Copied successful!"));
                 }}
               >
@@ -101,15 +127,14 @@ class DomainStatus extends React.PureComponent<Props> {
     }
 
     const aRecords = domainStatus?.get("aRecords");
-    let isError = (!aRecords || !aRecords.includes(ingressIP)) && domain !== ingressIP;
+    let isError = (!aRecords || !aRecords.includes(ip)) && domain !== ip;
     const cnameRecords = domainStatus?.get("cname");
     if (isError && cnameDomain !== undefined) {
       isError = cnameDomain !== cnameRecords;
     }
-    console.log(cnameDomain, cnameRecords);
 
     if (isError) {
-      const copyContent = cnameRecords !== undefined ? cnameDomain! : ingressIP;
+      const copyContent = cnameRecords !== undefined ? cnameDomain! : ip;
       return {
         icon: <WarningIcon color="action" />,
         body: (
