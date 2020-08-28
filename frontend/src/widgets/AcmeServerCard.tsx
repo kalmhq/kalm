@@ -100,58 +100,62 @@ export const KAcmeServerCard = connect(mapStateToProps)((props: KAcmeServerCardP
         <Box mt={1} mb={1}>
           <Divider />
         </Box>
-        <Box mt={1} mb={1}>
-          <Body2>Kalm DNS Server Domain</Body2>
-        </Box>
-        <FlexRowItemCenterBox>
-          <DomainStatus domain={acmeDomain} mr={1} nsDomain={nsDomain} />
-          {acmeDomain}
-        </FlexRowItemCenterBox>
-        <Caption>
-          Please make sure this domain's a CNAME record to{" "}
-          <KLink
-            to="#"
-            onClick={async () => {
-              copy(nsDomain);
-              dispatch(setSuccessNotificationAction("Copied successful!"));
-            }}
-          >
-            {nsDomain}
-          </KLink>{" "}
-          with your dns provider.
-        </Caption>
-        <Box mt={1} mb={1}></Box>
-        <Box mt={1} mb={1}>
-          <Body2>Domain NS</Body2>
-        </Box>
-        <FlexRowItemCenterBox>
-          <DomainStatus domain={nsDomain} mr={1} ipAddress={ipForNameServer} />
-          {nsDomain}
-        </FlexRowItemCenterBox>
-        <Caption>
-          Please make sure this domain's A record to{" "}
-          <KLink
-            to="#"
-            onClick={async () => {
-              copy(ipForNameServer);
-              dispatch(setSuccessNotificationAction("Copied successful!"));
-            }}
-          >
-            {ipForNameServer}
-          </KLink>{" "}
-          with your dns provider.
-        </Caption>
-        <Box pt={2} pb={2}>
-          <DangerButton
-            id="delete-acmeServer-button"
-            onClick={async () => {
-              await dispatch(deleteAcmeServerAction(acmeServer));
-              await dispatch(loadCertificateAcmeServerAction());
-            }}
-          >
-            Delete DNS Server
-          </DangerButton>
-        </Box>
+        {isReady ? (
+          <>
+            <Box mt={1} mb={1}>
+              <Body2>Kalm DNS Server Domain</Body2>
+            </Box>
+            <FlexRowItemCenterBox>
+              <DomainStatus domain={acmeDomain} mr={1} nsDomain={nsDomain} />
+              {acmeDomain}
+            </FlexRowItemCenterBox>
+            <Caption>
+              Please make sure this domain's a NS record to{" "}
+              <KLink
+                to="#"
+                onClick={async () => {
+                  copy(nsDomain);
+                  dispatch(setSuccessNotificationAction("Copied successful!"));
+                }}
+              >
+                {nsDomain}
+              </KLink>{" "}
+              with your dns provider.
+            </Caption>
+            <Box mt={1} mb={1}></Box>
+            <Box mt={1} mb={1}>
+              <Body2>Domain NS</Body2>
+            </Box>
+            <FlexRowItemCenterBox>
+              <DomainStatus domain={nsDomain} mr={1} ipAddress={ipForNameServer} />
+              {nsDomain}
+            </FlexRowItemCenterBox>
+            <Caption>
+              Please make sure this domain's A record to{" "}
+              <KLink
+                to="#"
+                onClick={async () => {
+                  copy(ipForNameServer);
+                  dispatch(setSuccessNotificationAction("Copied successful!"));
+                }}
+              >
+                {ipForNameServer}
+              </KLink>{" "}
+              with your dns provider.
+            </Caption>
+            <Box pt={2} pb={2}>
+              <DangerButton
+                id="delete-acmeServer-button"
+                onClick={async () => {
+                  await dispatch(deleteAcmeServerAction(acmeServer));
+                  await dispatch(loadCertificateAcmeServerAction());
+                }}
+              >
+                Delete DNS Server
+              </DangerButton>
+            </Box>
+          </>
+        ) : null}
       </>
     );
   };
