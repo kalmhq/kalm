@@ -22,6 +22,8 @@ import { ValidatorRequired } from "../validator";
 
 interface FieldArrayComponentHackType {
   destinations: HttpRouteDestinationContent[];
+  errors: any;
+  touched: any;
 }
 
 const mapStateToProps = (state: RootState) => {
@@ -162,14 +164,15 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
   }
 
   public render() {
-    // TODO
+    const { errors, touched } = this.props;
+    const error = errors["destinations"];
     return (
       <div>
-        {/* {!!error && (dirty || submitFailed) ? (
+        {!!error && !!touched["destinations"] ? (
           <Alert className={"alert"} severity="error">
             {error}
           </Alert>
-        ) : null} */}
+        ) : null}
         {this.renderRows()}
       </div>
     );

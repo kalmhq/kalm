@@ -17,9 +17,9 @@ const styles = (theme: Theme) =>
 interface Props extends WithStyles<typeof styles>, WithNamespaceProps {}
 
 class RouteNewRaw extends React.PureComponent<Props> {
-  private onSubmit = async (routeArg: HttpRouteForm) => {
+  private onSubmit = async (routeForm: HttpRouteForm) => {
     const { activeNamespaceName, dispatch } = this.props;
-    let route = Immutable.fromJS(routeArg) as HttpRoute;
+    let route = Immutable.fromJS(routeForm) as HttpRoute;
     try {
       if (route.get("methodsMode") === methodsModeAll) {
         route = route.set("methods", AllHttpMethods);
@@ -28,17 +28,10 @@ class RouteNewRaw extends React.PureComponent<Props> {
 
       await dispatch(createRouteAction(route));
       await dispatch(setSuccessNotificationAction("Create route successfully"));
+      dispatch(push("/routes"));
     } catch (e) {
       console.log(e);
     }
-  };
-
-  private onSubmitSuccess = () => {
-    const { dispatch } = this.props;
-
-    window.setTimeout(() => {
-      dispatch(push("/routes"));
-    }, 100);
   };
 
   public render() {

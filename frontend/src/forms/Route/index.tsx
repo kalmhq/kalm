@@ -7,20 +7,13 @@ import { Field, Form, FormikProps, withFormik } from "formik";
 import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KFormikBoolCheckboxRender, KFormikCheckboxGroupRender } from "forms/Basic/checkbox";
 import { KFormikRadioGroupRender } from "forms/Basic/radio";
-import { ROUTE_FORM_ID } from "forms/formIDs";
-import {
-  KValidatorHostsWithWildcardPrefix,
-  KValidatorPaths,
-  ValidatorArrayNotEmpty,
-  ValidatorRequired,
-} from "forms/validator";
+import { KValidatorHostsWithWildcardPrefix, KValidatorPaths, ValidatorArrayNotEmpty } from "forms/validator";
 import routesGif from "images/routes.gif";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { Link as RouteLink } from "react-router-dom";
 import { RootState } from "reducers";
-import { arrayPush } from "redux-form";
 import { TDispatchProp } from "types";
 import { httpMethods, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
 import { isArray } from "util";
@@ -36,11 +29,8 @@ import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
 
 const mapStateToProps = (state: RootState) => {
-  // const selector = formValueSelector(ROUTE_FORM_ID);
-  // const syncErrors = getFormSyncErrors(ROUTE_FORM_ID)(state) as { [key: string]: any };
   const certifications = state.get("certificates").get("certificates");
   const domains: Set<string> = new Set();
-  // const httpRedirectToHttps = !!selector(state, "httpRedirectToHttps") as boolean;
 
   certifications.forEach((x) => {
     x.get("domains")
@@ -50,11 +40,6 @@ const mapStateToProps = (state: RootState) => {
 
   return {
     tutorialState: state.get("tutorial"),
-    // syncErrors,
-    // schemes: selector(state, "schemes") as Immutable.List<string>,
-    // methodsMode: selector(state, "methodsMode") as string,
-    // httpRedirectToHttps,
-    // destinations: selector(state, "destinations") as Immutable.List<HttpRouteDestination>,
     domains: Array.from(domains),
     ingressIP: state.get("cluster").get("info").get("ingressIP"),
     certifications,
@@ -103,9 +88,6 @@ interface State {
   isAdvancedPartUnfolded: boolean;
   isValidCertificationUnfolded: boolean;
 }
-
-const hostsValidators = [ValidatorRequired, KValidatorHostsWithWildcardPrefix];
-const pathsValidators = [ValidatorRequired, KValidatorPaths];
 
 class RouteFormRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
@@ -257,25 +239,14 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderTargets = () => {
-    const { dispatch, values } = this.props;
+    const { values, errors, touched } = this.props;
     const { destinations } = values;
-    if (destinations.length === 0) {
-      dispatch(
-        arrayPush(
-          ROUTE_FORM_ID,
-          "destinations",
-          Immutable.Map({
-            host: "",
-            weight: 1,
-          }),
-        ),
-      );
-    }
+
     return (
       <Box p={2}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={12} md={12}>
-            <RenderHttpRouteDestinations destinations={values.destinations} />
+            <RenderHttpRouteDestinations destinations={destinations} errors={errors} touched={touched} />
           </Grid>
           <Grid item xs={8} sm={8} md={8}>
             <CollapseWrapper title={stringConstants.ROUTE_MULTIPLE_TARGETS_HELPER}>
@@ -318,7 +289,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <div className={classes.root}>
-        <Form>
+        <Form id="route-form">
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
@@ -328,11 +299,12 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                   content={
                     <Box p={2}>
                       <Field
+                        id="route-hosts"
                         component={KFreeSoloFormikAutoCompleteMultiValues}
-                        icons={Immutable.List(icons)}
+                        icons={icons}
                         label="Hosts"
                         name="hosts"
-                        validate={hostsValidators}
+                        validate={KValidatorHostsWithWildcardPrefix}
                         placeholder="e.g. www.example.com"
                         helperText={
                           <Caption color="textSecondary">
@@ -342,11 +314,12 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                               onClick={() => {
                                 const isHostsIncludeIngressIP = !!hosts.find((host) => host === ingressIP);
                                 if (!isHostsIncludeIngressIP) {
-                                  setFieldValue("hosts", hosts.push(ingressIP));
+                                  hosts.push(ingressIP);
+                                  setFieldValue("hosts", hosts);
                                 }
                               }}
                             >
-                              {ingressIP}
+                              {ingressIP || ""}
                             </Link>
                             . {sc.ROUTE_HOSTS_INPUT_HELPER}
                           </Caption>
@@ -356,7 +329,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         component={KFreeSoloFormikAutoCompleteMultiValues}
                         label="Path Prefixes"
                         name="paths"
-                        validate={pathsValidators}
+                        validate={KValidatorPaths}
                         placeholder="e.g. /some/path/to/app"
                         helperText={sc.ROUTE_PATHS_INPUT_HELPER}
                       />
@@ -499,31 +472,12 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
-// use connect twice
-// The one inside reduxForm is normal usage
-// The one outside of reduxForm is to set tutorialState props for the form
-
-// const form = reduxForm<HttpRouteForm, TutorialStateProps & OwnProps>({
-//   onSubmitFail: console.log,
-//   form: ROUTE_FORM_ID,
-//   enableReinitialize: true,
-//   initialValues: newEmptyRouteForm(),
-//   touchOnChange: true,
-//   shouldError: shouldError,
-//   validate: formValidateOrNotBlockByTutorial,
-// })(connect(mapStateToProps)(withStyles(styles)(RouteFormRaw)));
-
-// export const RouteForm = connect((state: RootState) => ({
-//   tutorialState: state.get("tutorial"),
-// }))(form);
-
 const connectedForm = connect(mapStateToProps)(withStyles(styles)(RouteFormRaw));
 
 export const RouteForm = withFormik<OwnProps, HttpRouteForm>({
   mapPropsToValues: (props) => {
     return props.initial;
   },
-  enableReinitialize: true,
   validate: (values: HttpRouteForm) => {
     let errors = {};
     return errors;

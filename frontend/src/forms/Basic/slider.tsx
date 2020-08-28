@@ -22,7 +22,6 @@ export const KFormikRenderSlider = ({
   form: { touched, errors, setFieldValue, handleBlur, values },
 }: SliderProps & FieldProps & Props) => {
   const id = ID();
-
   return (
     <div>
       {label ? (
@@ -31,7 +30,7 @@ export const KFormikRenderSlider = ({
         </Typography>
       ) : null}
       <Slider
-        value={values[name]}
+        value={values[name] || 0}
         onChangeCommitted={(_event: React.ChangeEvent<{}>, value: number | number[]) => setFieldValue(name, value)}
         aria-labelledby={id}
         valueLabelDisplay="auto"

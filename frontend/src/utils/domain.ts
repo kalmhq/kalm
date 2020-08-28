@@ -27,19 +27,19 @@ export const forceHttpsDomainSuffixes = [
 export const includesForceHttpsDomain = (hosts: string[]): string[] => {
   const includedSuffixes: string[] = [];
 
-  forceHttpsDomainSuffixes.forEach((suffix) => {
+  for (let suffix of forceHttpsDomainSuffixes) {
     let includesThisSuffix = false;
 
-    hosts.forEach((host) => {
+    for (let host of hosts) {
       if (host.endsWith(suffix)) {
         includesThisSuffix = true;
       }
-    });
+    }
 
     if (includesThisSuffix) {
       includedSuffixes.push(suffix);
     }
-  });
+  }
 
   return includedSuffixes;
 };

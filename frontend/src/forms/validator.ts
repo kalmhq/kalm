@@ -18,9 +18,7 @@ export const ValidatorListNotEmpty = (value: Immutable.List<any>, _allValues?: a
 };
 
 export const ValidatorArrayNotEmpty = (value: any[], _allValues?: any, _props?: any, _name?: any) => {
-  console.log("ValidatorArrayNotEmpty", value);
   if (!value || value.length <= 0) {
-    console.log("------------validate error");
     return "Select at least one option";
   }
 
@@ -260,16 +258,16 @@ const validateHostWithWildcardPrefix = (value: string) => {
 };
 
 export const KValidatorHostsWithWildcardPrefix = (
-  values: Immutable.List<string>,
+  values: string[],
   _allValues?: any,
   _props?: any,
   _name?: any,
-): (undefined | string)[] | undefined => {
-  if (!values || values.size === 0) {
-    return undefined;
+): string | (undefined | string)[] | undefined => {
+  if (!values || values.length === 0) {
+    return "Required";
   }
 
-  const errors = values.map((host) => (host === "*" ? undefined : validateHostWithWildcardPrefix(host))).toArray();
+  const errors = values.map((host) => (host === "*" ? undefined : validateHostWithWildcardPrefix(host)));
 
   return errors.filter((x) => !!x).length > 0 ? errors : undefined;
 };
@@ -286,16 +284,16 @@ export const KValidatorInjectedFilePath = (value: string, _allValues?: any, _pro
 };
 
 export const KValidatorPaths = (
-  values: Immutable.List<string>,
+  values: string[],
   _allValues?: any,
   _props?: any,
   _name?: any,
-): (undefined | string)[] | undefined => {
-  if (!values) {
-    return undefined;
+): string | (undefined | string)[] | undefined => {
+  if (!values || values.length === 0) {
+    return "Required";
   }
 
-  const errors = values.map((x) => (x.startsWith("/") ? undefined : 'path should start with a "/"')).toArray();
+  const errors = values.map((x) => (x.startsWith("/") ? undefined : 'path should start with a "/"'));
 
   return errors.filter((x) => !!x).length > 0 ? errors : undefined;
 };

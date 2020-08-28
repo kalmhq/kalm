@@ -21,9 +21,9 @@ const styles = (theme: Theme) =>
 interface Props extends WithStyles<typeof styles>, WithRoutesDataProps {}
 
 class RouteEditRaw extends React.PureComponent<Props> {
-  private onSubmit = async (routeArg: HttpRouteForm) => {
+  private onSubmit = async (routeForm: HttpRouteForm) => {
     const { dispatch } = this.props;
-    let route = Immutable.fromJS(routeArg) as HttpRoute;
+    let route = Immutable.fromJS(routeForm) as HttpRoute;
     try {
       if (route.get("methodsMode") === methodsModeAll) {
         route = route.set("methods", AllHttpMethods);
@@ -31,13 +31,10 @@ class RouteEditRaw extends React.PureComponent<Props> {
 
       await dispatch(updateRouteAction(route));
       await dispatch(setSuccessNotificationAction("Update route successfully"));
+      dispatch(push("/routes"));
     } catch (e) {
       console.log(e);
     }
-  };
-
-  private onSubmitSuccess = async (_route: HttpRoute) => {
-    this.props.dispatch(push("/routes"));
   };
 
   private renderContent() {

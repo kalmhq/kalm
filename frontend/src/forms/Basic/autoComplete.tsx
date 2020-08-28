@@ -526,7 +526,7 @@ export interface KFreeSoloFormikAutoCompleteMultiValuesProps<T>
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
   InputLabelProps?: {};
   disabled?: boolean;
-  icons?: Immutable.List<any>;
+  icons?: any[];
 }
 
 export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCompleteMultiValuesStyles)(
@@ -554,10 +554,9 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
     if (typeof errors[name] === "string") {
       errorText = errors[name] as string;
     }
-
     return (
       <Autocomplete
-        {...props}
+        // {...props}
         options={options || []}
         multiple
         autoSelect
@@ -575,7 +574,7 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
           return value.map((option: string, index: number) => {
             return (
               <Chip
-                icon={icons ? icons.get(index) : undefined}
+                icon={icons ? icons[index] : undefined}
                 variant="outlined"
                 label={option}
                 classes={{ root: clsx({ [classes.error]: errorsIsArray && errorsArray[index] }) }}

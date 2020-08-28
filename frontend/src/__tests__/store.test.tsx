@@ -166,52 +166,51 @@ test("add component", async (done) => {
   component.find("button#add-component-submit-button").simulate("click");
 });
 
-test("add route", async (done) => {
-  await store.dispatch(loadApplicationsAction());
-  await store.dispatch(loadServicesAction(applicationName));
-  const testApplication = store.getState().get("applications").get("applications").get(0);
-  const testService = store.getState().get("services").get("services").get(0);
-  const onSubmit = async (routeForm: HttpRouteForm) => {
-    let route = Immutable.fromJS(routeForm) as HttpRoute;
-    route = route.set("namespace", testApplication?.get("name"));
-    await store.dispatch(createRouteAction(route));
-  };
-  const onSubmitSuccess = () => {
-    try {
-      expect(!!store.getState().get("routes").get("httpRoutes")).toBeTruthy();
-      done();
-    } catch (e) {
-      done(e);
-    }
-  };
-  const WrappedRouteForm = class extends React.Component {
-    public render() {
-      return <RouteForm onSubmit={onSubmit} onSubmitSuccess={onSubmitSuccess} initialValues={newEmptyRouteForm()} />;
-    }
-  };
-  const component = mount(
-    <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <ConnectedRouter history={history}>
-          <Route component={WrappedRouteForm} />
-        </ConnectedRouter>
-      </ThemeProvider>
-    </Provider>,
-  );
-  component.find("button#add-route-submit-button").simulate("click");
-  expect(getTestFormSyncErrors(store, ROUTE_FORM_ID).hosts).toBe(requiredError);
-  store.dispatch(change(ROUTE_FORM_ID, "hosts", Immutable.fromJS(["test.io"])));
-  component.find("button#add-target-button").simulate("click");
-  store.dispatch(
-    change(
-      ROUTE_FORM_ID,
-      "destinations[0].host",
-      `${testService?.get("name")}.${testService?.get("namespace")}.svc.cluster.local:${testService
-        ?.get("ports")
-        .get(0)
-        ?.get("port")}`,
-    ),
-  );
-  component.find("button#add-route-submit-button").simulate("click");
-  done();
+describe("add route", () => {
+  const onSubmit = jest.fn();
+
+  test("test hosts validate", async () => {
+    const initial = newEmptyRouteForm();
+    const WrappedRouteForm = class extends React.Component {
+      public render() {
+        return <RouteForm isEdit={false} onSubmit={onSubmit} initial={initial} />;
+      }
+    };
+    const component = mount(
+      <Provider store={store}>
+        <ThemeProvider theme={theme}>
+          <ConnectedRouter history={history}>
+            <Route component={WrappedRouteForm} />
+          </ConnectedRouter>
+        </ThemeProvider>
+      </Provider>,
+    );
+    await act(async () => {
+      component.find("form#route-form").simulate("submit");
+    });
+    expect(component.find("p#route-hosts-helper-text").getDOMNode().textContent).toBe(requiredError);
+    expect(onSubmit).toHaveBeenCalledTimes(0);
+  });
+
+  test("test route submit", async () => {
+    const initial = { ...newEmptyRouteForm(), hosts: ["test.com"] };
+    const WrappedRouteForm = class extends React.Component {
+      public render() {
+        return <RouteForm isEdit={false} onSubmit={onSubmit} initial={initial} />;
+      }
+    };
+    const component = mount(
+      <Provider store={store}>
+        <ThemeProvider theme={theme}>
+          <ConnectedRouter history={history}>
+            <Route component={WrappedRouteForm} />
+          </ConnectedRouter>
+        </ThemeProvider>
+      </Provider>,
+    );
+    await act(async () => {
+      component.find("form#route-form").simulate("submit");
+    });
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
 });
