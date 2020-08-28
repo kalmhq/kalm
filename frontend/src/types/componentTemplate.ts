@@ -17,10 +17,15 @@ export const newEmptyComponentLike: ComponentLikeFormContent = {
 };
 
 export interface ComponentLikeFormContent
-  extends Omit<ComponentLikeContent, "env" | "preInjectedFiles" | "nodeSelectorLabels"> {
+  extends Omit<
+    ComponentLikeContent,
+    "env" | "preInjectedFiles" | "nodeSelectorLabels" | "livenessProbe" | "readinessProbe"
+  > {
   env?: ComponentLikeEnv[];
   preInjectedFiles?: PreInjectedFile[];
   nodeSelectorLabels?: NodeSelectorLabelsContent;
+  livenessProbe?: ProbeContent;
+  readinessProbe?: ProbeContent;
 }
 
 export type ComponentLikeEnv = ImmutableMap<{
@@ -91,12 +96,39 @@ export type ConfigMount = ImmutableMap<{
   mountPath: string;
 }>;
 
-export type HttpHeader = ImmutableMap<{
+export interface HttpHeaderContent {
   name: string;
   value: string;
-}>;
+}
+
+export type HttpHeader = ImmutableMap<HttpHeaderContent>;
 
 export type HttpHeaders = Immutable.List<HttpHeader>;
+
+export interface ProbeContent {
+  exec?: {
+    command?: string[];
+  };
+
+  httpGet?: {
+    host?: string;
+    httpHeaders?: HttpHeaderContent[];
+    path?: string;
+    port: number | string;
+    scheme?: string;
+  };
+
+  tcpSocket?: {
+    host?: string;
+    port: number | string;
+  };
+
+  initialDelaySeconds?: number;
+  timeoutSeconds?: number;
+  periodSeconds?: number;
+  successThreshold?: number;
+  failureThreshold?: number;
+}
 
 export type Probe = ImmutableMap<{
   exec?: ImmutableMap<{
