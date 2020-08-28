@@ -129,10 +129,34 @@ func (builder *Builder) genNameForCert(cert *HttpsCert) (string, error) {
 	return name, nil
 }
 
+func contains(array []string, target string) bool {
+	for _, s := range array {
+		if s != target {
+			continue
+		}
+
+		return true
+	}
+
+	return false
+}
+
 func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert, error) {
 	// by default, cert use our default http01Issuer
 	if cert.HttpsCertIssuer == "" {
-		cert.HttpsCertIssuer = controllers.DefaultHTTP01IssuerName
+		cert.HttpsCertIssuer = v1alpha1.DefaultHTTP01IssuerName
+	}
+
+	validIssuers := []string{
+		v1alpha1.DefaultDNS01IssuerName,
+		v1alpha1.DefaultHTTP01IssuerName,
+	}
+
+	if !contains(validIssuers, cert.HttpsCertIssuer) {
+		return nil, fmt.Errorf("invalid httpsCertIssuer: %s, should be one of: %s",
+			cert.HttpsCertIssuer,
+			validIssuers,
+		)
 	}
 
 	if cert.Name == "" {
@@ -144,11 +168,22 @@ func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 		cert.Name = name
 	}
 
-	// for wildcard cert, 1 domain & no prefix: '*.' is needed
-	if cert.HttpsCertIssuer == controllers.DefaultDNS01IssuerName {
+	if cert.HttpsCertIssuer == v1alpha1.DefaultHTTP01IssuerName {
+		// http01 at least 1 domain
+		if len(cert.Domains) <= 0 {
+			return nil, fmt.Errorf("only 1 domain is permitted for http01 cert")
+		}
+
+		for _, d := range cert.Domains {
+			if strings.Contains(d, "*") {
+				return nil, fmt.Errorf("no wildcard: '*' is allowed in domain for http01 cert")
+			}
+		}
+	} else if cert.HttpsCertIssuer == v1alpha1.DefaultDNS01IssuerName {
+		// for wildcard cert, 1 domain & no prefix: '*.' is needed
 		if len(cert.Domains) != 1 {
 			return nil, fmt.Errorf("only 1 domain is permitted for wildcard cert")
-		} else if strings.HasPrefix(cert.Domains[0], "*.") {
+		} else if strings.HasPrefix(strings.TrimSpace(cert.Domains[0]), "*.") {
 			return nil, fmt.Errorf("no prefix: '*.' is needed for wildcard cert")
 		}
 	}
@@ -174,7 +209,7 @@ func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 func autoGenCertName(cert *HttpsCert) string {
 	var prefix string
 
-	if cert.HttpsCertIssuer == controllers.DefaultDNS01IssuerName {
+	if cert.HttpsCertIssuer == v1alpha1.DefaultDNS01IssuerName {
 		prefix += "wildcard-"
 	}
 

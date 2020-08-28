@@ -755,7 +755,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRouteCert() error {
 					Namespace: KALM_DEX_NAMESPACE,
 				},
 				Spec: corev1alpha1.HttpsCertSpec{
-					HttpsCertIssuer: DefaultHTTP01IssuerName,
+					HttpsCertIssuer: corev1alpha1.DefaultHTTP01IssuerName,
 					Domains:         []string{r.ssoConfig.Spec.Domain},
 				},
 			}

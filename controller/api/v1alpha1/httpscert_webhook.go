@@ -21,6 +21,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"strings"
 )
 
 // log is for logging in this package.
@@ -74,6 +75,13 @@ func (r *HttpsCert) validate() error {
 	}
 
 	if r.Spec.IsSelfManaged {
+		if r.Spec.HttpsCertIssuer != DefaultCAIssuerName {
+			rst = append(rst, KalmValidateError{
+				Err:  "issuer for selfManaged cert must be:" + DefaultCAIssuerName,
+				Path: "spec.httpsCertIssuer",
+			})
+		}
+
 		if r.Spec.SelfManagedCertSecretName == "" {
 			rst = append(rst, KalmValidateError{
 				Err:  "need secretName for selfManaged cert",
@@ -81,9 +89,44 @@ func (r *HttpsCert) validate() error {
 			})
 		}
 	} else {
-		if r.Spec.HttpsCertIssuer == "" {
+		validIssuers := []string{
+			DefaultDNS01IssuerName,
+			DefaultHTTP01IssuerName,
+		}
+
+		if r.Spec.HttpsCertIssuer == DefaultHTTP01IssuerName {
+			if len(r.Spec.Domains) <= 0 {
+				rst = append(rst, KalmValidateError{
+					Err:  "http01 cert should have at lease 1 domain",
+					Path: "spec.domains",
+				})
+			}
+
+			for _, d := range r.Spec.Domains {
+				if strings.Contains(d, "*") {
+					rst = append(rst, KalmValidateError{
+						Err:  fmt.Sprintf("http01 cert should not have '*' in domain: %s", d),
+						Path: "spec.domains",
+					})
+				}
+			}
+		} else if r.Spec.HttpsCertIssuer == DefaultDNS01IssuerName {
+			if len(r.Spec.Domains) != 1 {
+				rst = append(rst, KalmValidateError{
+					Err:  "dns01 cert support only 1 domain",
+					Path: "spec.domains",
+				})
+			}
+
+			if strings.Contains(r.Spec.Domains[0], "*") {
+				rst = append(rst, KalmValidateError{
+					Err:  "dns01 cert no need for prefix: '*.' in domain",
+					Path: "spec.domains",
+				})
+			}
+		} else {
 			rst = append(rst, KalmValidateError{
-				Err:  "need httpsCertIssuer",
+				Err:  fmt.Sprintf("for auto managed cert, httpsCertIssuer should be one of: %s", validIssuers),
 				Path: "spec.httpsCertIssuer",
 			})
 		}
