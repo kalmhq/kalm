@@ -16,6 +16,7 @@ export const LOAD_ACME_SERVER_PENDING = "LOAD_ACME_SERVER_PENDING";
 export const LOAD_ACME_SERVER_FAILED = "LOAD_ACME_SERVER_FAILED";
 export const SET_IS_SUBMITTING_ACME_SERVER = "SET_IS_SUBMITTING_ACME_SERVER";
 export const CREATE_ACME_SERVER = "CREATE_ACME_SERVER";
+export const DELETE_ACME_SERVER = "DELETE_ACME_SERVER";
 
 export interface CreateCertificateAction {
   type: typeof CREATE_CERTIFICATE;
@@ -35,6 +36,13 @@ export interface CreateAcmeServerAction {
   type: typeof CREATE_ACME_SERVER;
   payload: {
     acmeServer: AcmeServerInfo;
+  };
+}
+
+export interface DeleteAcmeServerAction {
+  type: typeof DELETE_ACME_SERVER;
+  payload: {
+    acmeServer: null;
   };
 }
 
@@ -116,7 +124,7 @@ export interface CertificateIssuerFormTypeContent extends CertificateIssuerConte
   issuerType: typeof cloudFlare | typeof caForTest;
 }
 
-export const dns01Mananged = "dns01Mananged";
+export const dns01Mananged = "default-dns01-issuer";
 export const issuerManaged = "issuerManaged";
 export const selfManaged = "selfManaged";
 
@@ -199,6 +207,7 @@ export type CertificateActions =
   | LoadCertificateIssuersAction
   | CreateCertificateAction
   | CreateAcmeServerAction
+  | DeleteAcmeServerAction
   | CreateCertificateIssuerAction;
 
 export interface AcmeServerInfoContent {

@@ -35,7 +35,7 @@ export type State = ImmutableMap<{
   isAcmeServerLoading: boolean;
   certificates: CertificateList;
   certificateIssuers: CertificateIssuerList;
-  acmeServer: AcmeServerInfo;
+  acmeServer: AcmeServerInfo | null;
 }>;
 
 const initialState: State = Immutable.Map({
@@ -46,7 +46,7 @@ const initialState: State = Immutable.Map({
   isAcmeServerLoading: false,
   certificates: Immutable.List(),
   certificateIssuers: Immutable.List(),
-  acmeServer: Immutable.Map<AcmeServerInfo>({}),
+  acmeServer: null,
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -70,7 +70,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case LOAD_ACME_SERVER_FULFILLED: {
       state = state.set("isAcmeServerLoading", false);
-      state = state.set("acmeServer", action.payload.acmeServer || Immutable.Map<AcmeServerInfo>({}));
+      state = state.set("acmeServer", action.payload.acmeServer || null);
       break;
     }
     case LOAD_CERTIFICATE_ISSUERS_FULFILLED: {

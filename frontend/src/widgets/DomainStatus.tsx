@@ -24,6 +24,7 @@ interface OwnProps {
   domain: string;
   cnameDomain?: string;
   ipAddress?: string;
+  nsDomain?: string;
   mr?: number;
 }
 
@@ -72,7 +73,7 @@ class DomainStatus extends React.PureComponent<Props> {
   private getHelperText = (cnameDomain: string | undefined, cnameRecords: string): React.ReactElement => {
     const helper =
       cnameDomain !== undefined ? (
-        cnameRecords.length > 0 ? (
+        cnameRecords && cnameRecords.length > 0 ? (
           <>
             <Box>
               current CNAME record is <strong>{cnameRecords}</strong>
@@ -90,6 +91,31 @@ class DomainStatus extends React.PureComponent<Props> {
         </>
       );
     return helper;
+  };
+
+  private getError = (): boolean => {
+    const { domainStatus, cnameDomain, nsDomain } = this.props;
+    const isLoaded = domainStatus?.get("isLoaded");
+    let isError = true;
+    try {
+      if (domainStatus) {
+        if (isLoaded && cnameDomain && domainStatus.get("cname")) {
+          // console.log("cname check", domain, cnameDomain, domainStatus.get("cname"));
+          isError = !(domainStatus.get("cname") === cnameDomain);
+        } else if (isLoaded && nsDomain && domainStatus.get("ns")) {
+          // console.log("ns check", domain, nsDomain, domainStatus.get("ns"));
+          isError = !domainStatus.get("ns").includes(nsDomain + ".");
+        } else if (isLoaded && domainStatus.get("aRecords")) {
+          // console.log("aRecords", domain, ipAddress, domainStatus.get("aRecords"), this.getIPAddress());
+          isError = !domainStatus.get("aRecords").includes(this.getIPAddress());
+        }
+      }
+    } catch (error) {
+      // console.log("domain status component getError exception:", error);
+      isError = false;
+    }
+
+    return isError;
   };
 
   private getIconAndBody = () => {
@@ -119,21 +145,17 @@ class DomainStatus extends React.PureComponent<Props> {
           ),
       };
     }
-    if (!domainStatus || !domainStatus?.get("cname")) {
+    if (!domainStatus || !domainStatus?.get("isLoaded")) {
       return {
         icon: <CircularProgress size={24} style={{ padding: 2 }} />,
         body: <Box p={2}>checking domain status</Box>,
       };
     }
 
-    const aRecords = domainStatus?.get("aRecords");
-    let isError = (!aRecords || !aRecords.includes(ip)) && domain !== ip;
-    const cnameRecords = domainStatus?.get("cname");
-    if (isError && cnameDomain !== undefined) {
-      isError = cnameDomain !== cnameRecords;
-    }
+    const isError = this.getError();
 
     if (isError) {
+      const cnameRecords = domainStatus?.get("cname");
       const copyContent = cnameRecords !== undefined ? cnameDomain! : ip;
       return {
         icon: <WarningIcon color="action" />,

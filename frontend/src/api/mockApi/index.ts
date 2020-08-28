@@ -280,6 +280,10 @@ export default class MockApi extends Api {
     return mockStore.data.get("mockAcmeServer");
   };
 
+  public deleteAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
+    return;
+  };
+
   public getAcmeServer = async (): Promise<AcmeServerInfo> => {
     return mockStore.data.get("mockAcmeServer");
   };

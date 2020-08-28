@@ -17,6 +17,7 @@ import {
   LOAD_ACME_SERVER_FULFILLED,
   LOAD_ACME_SERVER_FAILED,
   CREATE_ACME_SERVER,
+  DELETE_ACME_SERVER,
   SET_IS_SUBMITTING_ACME_SERVER,
   selfManaged,
   SET_IS_SUBMITTING_CERTIFICATE,
@@ -24,6 +25,7 @@ import {
   AcmeServerInfo,
   AcmeServerFormType,
   SetIsSubmittingAcmeServer,
+  dns01Mananged,
 } from "types/certificate";
 import { ThunkResult } from "types";
 
@@ -101,10 +103,15 @@ export const createCertificateAction = (
 
     let certificate: Certificate;
     try {
-      certificate = await api.createCertificate(
-        certificateContent.set("isSelfManaged", certificateContent.get("managedType") === selfManaged),
-        isEdit,
-      );
+      let certContent = certificateContent.set("isSelfManaged", certificateContent.get("managedType") === selfManaged);
+      if (certificateContent.get("managedType") === dns01Mananged) {
+        certContent = certContent.set("httpsCertIssuer", dns01Mananged);
+        const domains = certContent.get("domains").map((d) => {
+          return d.replace("*.", "");
+        });
+        certContent = certContent.set("domains", domains);
+      }
+      certificate = await api.createCertificate(certContent, isEdit);
     } catch (e) {
       dispatch(setIsSubmittingCertificateAction(false));
       throw e;
@@ -149,6 +156,22 @@ export const createAcmeServerAction = (acmeServerContent: AcmeServerFormType): T
     dispatch(setIsSubmittingAcmeServer(false));
 
     dispatch({ type: CREATE_ACME_SERVER, payload: { acmeServer } });
+  };
+};
+
+export const deleteAcmeServerAction = (acmeServerContent: AcmeServerFormType): ThunkResult<Promise<void>> => {
+  return async (dispatch) => {
+    dispatch(setIsSubmittingAcmeServer(true));
+
+    try {
+      await api.deleteAcmeServer(acmeServerContent);
+    } catch (e) {
+      dispatch(setIsSubmittingAcmeServer(false));
+      throw e;
+    }
+    dispatch(setIsSubmittingAcmeServer(false));
+
+    dispatch({ type: DELETE_ACME_SERVER, payload: { acmeServer: null } });
   };
 };
 

@@ -4,10 +4,8 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import { KAutoCompleteSingleValue, KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { KRenderDebounceTextField } from "forms/Basic/textfield";
-import { Uploader } from "forms/Basic/uploader";
-import { ValidatorRequired, KValidatorHostsWithWildcardPrefix } from "forms/validator";
+import { ValidatorRequired, KValidatorHostsWithWildcardPrefix, KValidatorWildcardHost } from "forms/validator";
 import Immutable from "immutable";
-import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
 import { RootState } from "reducers";
 import { InjectedFormProps } from "redux-form";
@@ -23,7 +21,6 @@ import {
   cloudFlare,
   issuerManaged,
   newEmptyCertificateIssuerForm,
-  selfManaged,
   dns01Mananged,
 } from "types/certificate";
 import { CertificateIssuerForm } from "forms/Certificate/issuerForm";
@@ -46,14 +43,15 @@ const mapStateToProps = (state: RootState, { form }: OwnProps) => {
     syncErrors,
     name: selector(state, "name") as string,
     managedType: selector(state, "managedType") as string,
-    selfManagedCertContent: selector(state, "selfManagedCertContent") as string,
-    selfManagedCertPrivateKey: selector(state, "selfManagedCertPrivateKey") as string,
     httpsCertIssuer: selector(state, "httpsCertIssuer") as string,
     certificateIssuers: state.get("certificates").get("certificateIssuers") as CertificateIssuerList,
     domains: selector(state, "domains") as Immutable.List<string>,
     ingressIP: state.get("cluster").get("info").get("ingressIP", "---.---.---.---"),
     acmeServer: state.get("certificates").get("acmeServer"),
-    acmeServerIsReady: state.get("certificates").get("acmeServer").get("ready"),
+    acmeServerIsReady:
+      state.get("certificates").get("acmeServer") !== null
+        ? state.get("certificates").get("acmeServer")!.get("ready")
+        : null,
     isLoadingAcmeServer: state.get("certificates").get("isAcmeServerLoading"),
   };
 };
@@ -91,16 +89,8 @@ interface State {
   isEditCertificateIssuer: boolean;
 }
 
-const ValidatorCertificateValid = (value: any, _allValues?: any, _props?: any, _name?: any) => {
-  const domains = _props.values.get("domains");
-  if (!domains || domains.size < 1) {
-    return "Invalid Certificate";
-  }
-  return undefined;
-};
-
-const selfManagedCertContentValidators = [ValidatorRequired, ValidatorCertificateValid];
 const domainsValidators = [ValidatorRequired, KValidatorHostsWithWildcardPrefix];
+const wildcardDomainValidators = [ValidatorRequired, KValidatorWildcardHost];
 
 class CertificateFormRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
@@ -110,13 +100,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  public componentDidUpdate = (prevProps: Props) => {
-    const { selfManagedCertContent, change } = this.props;
-    if (selfManagedCertContent && selfManagedCertContent !== prevProps.selfManagedCertContent) {
-      const domains = extractDomainsFromCertificateContent(selfManagedCertContent);
-      change("domains", domains);
-    }
-  };
+  public componentDidUpdate = (prevProps: Props) => {};
 
   private submitCreateIssuer = async (certificateIssuer: CertificateIssuerFormType) => {
     const { dispatch, change } = this.props;
@@ -134,45 +118,17 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
 
   private renderAcmeServerFrom = () => {
     const { isLoadingAcmeServer, acmeServer } = this.props;
-    return !isLoadingAcmeServer && <KAcmeServerFormCard acmeServer={acmeServer} />;
+    if (acmeServer) {
+      return !isLoadingAcmeServer && <KAcmeServerFormCard acmeServer={acmeServer} />;
+    }
+    return null;
   };
   private renderAcmeServerInfo = () => {
     const { isLoadingAcmeServer, acmeServer } = this.props;
-    return <>{isLoadingAcmeServer ? <Loading /> : <KAcmeServerCard acmeServer={acmeServer} />}</>;
-  };
-
-  private renderSelfManagedFields = () => {
-    const { classes } = this.props;
-    return (
-      <>
-        <Grid item md={12}>
-          <Field
-            inputlabel="Certificate file"
-            inputid="upload-certificate"
-            multiline={true}
-            className={classes.fileInput}
-            component={Uploader}
-            rows={12}
-            name="selfManagedCertContent"
-            margin="normal"
-            validate={selfManagedCertContentValidators}
-          />
-        </Grid>
-        <Grid item md={12}>
-          <Field
-            inputlabel="Private Key"
-            inputid="upload-private-key"
-            multiline={true}
-            className={classes.fileInput}
-            component={Uploader}
-            rows={12}
-            name="selfManagedCertPrivateKey"
-            margin="normal"
-            validate={ValidatorRequired}
-          />
-        </Grid>
-      </>
-    );
+    if (acmeServer) {
+      return <>{isLoadingAcmeServer ? <Loading /> : <KAcmeServerCard acmeServer={acmeServer} />}</>;
+    }
+    return null;
   };
 
   private generateHttpsCertIssuerOptions = () => {
@@ -275,6 +231,27 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     }
   };
 
+  private getHelperTextForDomain = (): React.ReactNode => {
+    const { managedType, ingressIP, dispatch } = this.props;
+    return managedType === dns01Mananged ? (
+      <Caption color="textSecondary">please input a wildcard domain,eg *.app.kalm.live </Caption>
+    ) : (
+      <Caption color="textSecondary">
+        Your cluster ip is{" "}
+        <Link
+          to="#"
+          onClick={() => {
+            copy(ingressIP);
+            dispatch(setSuccessNotificationAction("Copied successful!"));
+          }}
+        >
+          {ingressIP}
+        </Link>
+        . {sc.ROUTE_HOSTS_INPUT_HELPER}
+      </Caption>
+    );
+  };
+
   public render() {
     const {
       classes,
@@ -284,8 +261,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
       isEdit,
       dirty,
       submitSucceeded,
-      ingressIP,
-      dispatch,
       acmeServerIsReady,
     } = this.props;
     const icons = Immutable.List(domains.map((domain) => <DomainStatus domain={domain} />));
@@ -340,34 +315,17 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                       </Grid>
                       <Grid item md={12}>
                         <KFreeSoloAutoCompleteMultipleSelectStringField
-                          disabled={managedType === selfManaged}
-                          helperText={
-                            <Caption color="textSecondary">
-                              Your cluster ip is{" "}
-                              <Link
-                                to="#"
-                                onClick={() => {
-                                  copy(ingressIP);
-                                  dispatch(setSuccessNotificationAction("Copied successful!"));
-                                }}
-                              >
-                                {ingressIP}
-                              </Link>
-                              . {sc.ROUTE_HOSTS_INPUT_HELPER}
-                            </Caption>
-                          }
+                          helperText={this.getHelperTextForDomain()}
                           placeholder={
-                            managedType === selfManaged
-                              ? "Extract domains information when you upload a certificate file"
-                              : "Please type domains"
+                            managedType !== dns01Mananged ? "Please type domains" : "Please type a wildcard domain"
                           }
                           label="Domains"
-                          icons={icons}
+                          icons={managedType === dns01Mananged ? undefined : icons}
                           multiline={true}
                           className={classes.fileInput}
                           rows={12}
                           name="domains"
-                          validate={managedType === selfManaged ? [] : domainsValidators}
+                          validate={managedType === dns01Mananged ? wildcardDomainValidators : domainsValidators}
                         />
                       </Grid>
                     </>

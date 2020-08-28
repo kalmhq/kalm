@@ -133,6 +133,8 @@ export abstract class Api {
   // certificate acme server
   public abstract createAcmeServer(acmeServer: AcmeServerFormType): Promise<AcmeServerInfo>;
 
+  public abstract deleteAcmeServer(acmeServer: AcmeServerFormType): Promise<void>;
+
   public abstract getAcmeServer(): Promise<AcmeServerInfo>;
 
   // services

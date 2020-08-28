@@ -12,8 +12,9 @@ import { connect } from "react-redux";
 import { setSuccessNotificationAction } from "actions/notification";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { createAcmeServerAction, loadCertificateAcmeServerAction } from "actions/certificate";
+import { createAcmeServerAction, deleteAcmeServerAction, loadCertificateAcmeServerAction } from "actions/certificate";
 import Immutable from "immutable";
+import { DangerButton } from "./Button";
 
 interface KAcmeServerCardProps extends TDispatchProp {
   acmeServer: AcmeServerInfo;
@@ -103,7 +104,7 @@ export const KAcmeServerCard = connect(mapStateToProps)((props: KAcmeServerCardP
           <Body2>Kalm DNS Server Domain</Body2>
         </Box>
         <FlexRowItemCenterBox>
-          <DomainStatus domain={acmeDomain} mr={1} cnameDomain={nsDomain} />
+          <DomainStatus domain={acmeDomain} mr={1} nsDomain={nsDomain} />
           {acmeDomain}
         </FlexRowItemCenterBox>
         <Caption>
@@ -140,6 +141,17 @@ export const KAcmeServerCard = connect(mapStateToProps)((props: KAcmeServerCardP
           </KLink>{" "}
           with your dns provider.
         </Caption>
+        <Box pt={2} pb={2}>
+          <DangerButton
+            id="delete-acmeServer-button"
+            onClick={async () => {
+              await dispatch(deleteAcmeServerAction(acmeServer));
+              await dispatch(loadCertificateAcmeServerAction());
+            }}
+          >
+            Delete DNS Server
+          </DangerButton>
+        </Box>
       </>
     );
   };

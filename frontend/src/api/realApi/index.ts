@@ -307,6 +307,11 @@ export default class RealApi extends Api {
     return Immutable.fromJS(res.data);
   };
 
+  public deleteAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
+    return;
+  };
+
   public getAcmeServer = async (): Promise<AcmeServerInfo> => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/acmeserver` });
     return Immutable.fromJS(res.data);
