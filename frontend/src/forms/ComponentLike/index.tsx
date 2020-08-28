@@ -693,10 +693,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={8}>
-          <Field
-            defaultValue="RollingUpdate"
-            component={KFormikRadioGroupRender}
+          <KFormikRadioGroupRender
+            onChange={this.props.handleChange}
             name="restartStrategy"
+            value={this.props.values.restartStrategy || "RollingUpdate"}
             options={[
               {
                 value: "RollingUpdate",

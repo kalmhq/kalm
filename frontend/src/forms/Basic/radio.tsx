@@ -9,7 +9,7 @@ import { Body2 } from "widgets/Label";
 
 interface KRadioGroupRenderOption {
   value: string;
-  label: string;
+  label: React.ReactNode;
   explain?: string;
 }
 

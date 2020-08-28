@@ -50,6 +50,7 @@ class RenderPorts extends React.PureComponent<Props> {
       form: { values },
       remove,
     } = this.props;
+
     return (
       <>
         <Box mb={2}>
