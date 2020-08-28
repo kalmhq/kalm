@@ -760,9 +760,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <div className={`${this.tabs[currentTabIndex] === DisksTab ? "" : classes.displayNone}`}>
           {this.renderDisks()}
         </div>
-        {/* <div className={`${this.tabs[currentTabIndex] === HealthTab ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === HealthTab ? "" : classes.displayNone}`}>
           {this.renderHealth()}
-        </div> */}
+        </div>
         <div className={`${this.tabs[currentTabIndex] === Scheduling ? "" : classes.displayNone}`}>
           {this.renderScheduling()}
         </div>
