@@ -1,16 +1,15 @@
 import { Box, Button, Grid, TextField } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import HelpIcon from "@material-ui/icons/Help";
+import { Field, FieldArray } from "formik";
 import { KTooltip } from "forms/Application/KTooltip";
-import Immutable from "immutable";
+import { FieldArrayRenderProps } from "forms/Basic/kFieldArray";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { RootState } from "reducers";
-import { arrayPush, WrappedFieldArrayProps } from "redux-form";
-import { Field, FieldArray } from "redux-form/immutable";
 import { getComponentFormVolumeOptions } from "selectors/component";
 import {
-  Volume,
+  VolumeContent,
   VolumeTypePersistentVolumeClaim,
   VolumeTypePersistentVolumeClaimNew,
   VolumeTypeTemporaryDisk,
@@ -20,8 +19,8 @@ import { sizeStringToGi } from "utils/sizeConv";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Caption, H6 } from "widgets/Label";
-import { RenderSelectField } from "../Basic/select";
-import { KRenderDebounceTextField, RenderComplexValueTextDebounceField } from "../Basic/textfield";
+import { RenderFormikSelectField } from "../Basic/select";
+import { KRenderFormikTextField, RenderFormikComplexValueTextField } from "../Basic/textfield";
 import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
@@ -31,38 +30,37 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface FieldArrayComponentHackType {
-  name: any;
-  component: any;
-}
-
 interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProps> {}
 
-interface Props extends WrappedFieldArrayProps<Volume>, FieldArrayComponentHackType, FieldArrayProps {}
+interface Props extends FieldArrayRenderProps, FieldArrayProps {}
 
 const sizeValidators = [ValidatorRequired, ValidatorVolumeSize];
 
-class RenderVolumes extends React.PureComponent<Props> {
+class RenderVolumesRaw extends React.PureComponent<Props> {
   private getUsingClaimNames() {
-    const { fields } = this.props;
+    const {
+      form: { values },
+      name,
+    } = this.props;
 
     const claimNames: { [key: string]: boolean } = {};
 
-    fields.forEach((member, index) => {
-      const volume = fields.get(index);
-      if (volume.get("type") === VolumeTypePersistentVolumeClaim) {
-        const claimName = volume.get("claimName");
-        claimNames[claimName] = true;
-      }
-    });
+    if (values[name]) {
+      values[name].forEach((volume: VolumeContent, index: number) => {
+        if (volume.type === VolumeTypePersistentVolumeClaim) {
+          const claimName = volume.claimName;
+          claimNames[claimName] = true;
+        }
+      });
+    }
 
     return claimNames;
   }
 
-  private getClaimNameOptions(disk: Volume) {
+  private getClaimNameOptions(disk: VolumeContent) {
     const { volumeOptions } = this.props;
     const usingClaimNames = this.getUsingClaimNames();
-    const currentClaimName = disk.get("claimName");
+    const currentClaimName = disk.claimName;
 
     const options: {
       value: string;
@@ -115,13 +113,13 @@ class RenderVolumes extends React.PureComponent<Props> {
     return options;
   }
 
-  public getFieldComponents(member: string, disk: Volume) {
-    const { volumeOptions } = this.props;
-    const volumeType = disk.get("type");
+  public getFieldComponents(disk: VolumeContent, index: number) {
+    const { volumeOptions, name } = this.props;
+    const volumeType = disk.type;
     const fieldComponents = [
       <Field
-        name={`${member}.type`}
-        component={RenderSelectField}
+        name={`${name}.${index}.type`}
+        component={RenderFormikSelectField}
         label="Type"
         validate={ValidatorRequired}
         placeholder="Select a volume type"
@@ -135,22 +133,21 @@ class RenderVolumes extends React.PureComponent<Props> {
         ]}
       />,
       <Field
-        component={KRenderDebounceTextField}
-        name={`${member}.path`}
+        component={KRenderFormikTextField}
+        name={`${name}.${index}.path`}
         label="Mount Path"
-        margin
         validate={ValidatorRequired}
       />,
     ];
 
     if (volumeType === VolumeTypePersistentVolumeClaim) {
-      const claimName = disk.get("claimName");
+      const claimName = disk.claimName;
       const volumeOption = volumeOptions.find((vo) => vo.get("name") === claimName);
 
       fieldComponents.push(
         <Field
-          name={`${member}.claimName`}
-          component={RenderSelectField}
+          name={`${name}.${index}.claimName`}
+          component={RenderFormikSelectField}
           label="Claim Name"
           // validate={ValidatorRequired}
           placeholder="Select a Claim Name"
@@ -183,43 +180,43 @@ class RenderVolumes extends React.PureComponent<Props> {
       fieldComponents.push(
         <Field
           label="Storage Class"
-          name={`${member}.storageClassName`}
-          component={RenderSelectField}
+          name={`${name}.${index}.storageClassName`}
+          component={RenderFormikSelectField}
           placeholder="Select the type of your disk"
           options={this.getStorageClassesOptions()}
         />,
       );
       fieldComponents.push(
         <Field
-          component={RenderComplexValueTextDebounceField}
-          name={`${member}.size`}
+          component={RenderFormikComplexValueTextField}
+          name={`${name}.${index}.size`}
           label="Size"
           margin
           validate={sizeValidators}
           endAdornment={this.getSizeEndAdornment()}
-          format={(value: any) => {
-            return !value ? "" : sizeStringToGi(value);
-          }}
-          parse={(value: any) => {
-            return !value ? "" : value + "Gi";
-          }}
+          // format={(value: any) => {
+          //   return !value ? "" : sizeStringToGi(value);
+          // }}
+          // parse={(value: any) => {
+          //   return !value ? "" : value + "Gi";
+          // }}
         />,
       );
     } else {
       fieldComponents.push(
         <Field
-          component={RenderComplexValueTextDebounceField}
-          name={`${member}.size`}
+          component={RenderFormikComplexValueTextField}
+          name={`${name}.${index}.size`}
           label="Size"
           margin
           validate={sizeValidators}
           endAdornment={this.getSizeEndAdornment()}
-          format={(value: any) => {
-            return !value ? "" : sizeStringToGi(value);
-          }}
-          parse={(value: any) => {
-            return !value ? "" : value + "Gi";
-          }}
+          // format={(value: any) => {
+          //   return !value ? "" : sizeStringToGi(value);
+          // }}
+          // parse={(value: any) => {
+          //   return !value ? "" : value + "Gi";
+          // }}
         />,
       );
     }
@@ -244,10 +241,11 @@ class RenderVolumes extends React.PureComponent<Props> {
 
   public render() {
     const {
-      fields,
-      dispatch,
+      name,
+      push,
+      remove,
       storageClasses,
-      meta: { submitFailed, error, form },
+      form: { values },
     } = this.props;
 
     return (
@@ -260,56 +258,52 @@ class RenderVolumes extends React.PureComponent<Props> {
               startIcon={<AddIcon />}
               size="small"
               onClick={() => {
-                dispatch(
-                  arrayPush(
-                    form,
-                    fields.name,
-                    Immutable.Map({
-                      type: VolumeTypePersistentVolumeClaimNew,
-                      path: "",
-                      storageClassName: storageClasses.get(0)?.get("name") || "",
-                      size: "",
-                    }),
-                  ),
-                );
+                push({
+                  type: VolumeTypePersistentVolumeClaimNew,
+                  path: "",
+                  storageClassName: storageClasses.get(0)?.get("name") || "",
+                  size: "",
+                });
               }}
             >
               Add
             </Button>
-            {submitFailed && error && <span>{error}</span>}
+            {/* {submitFailed && error && <span>{error}</span>} */}
           </Grid>
         </Box>
 
-        {fields.map((member, index) => {
-          const disk = fields.get(index);
-          return (
-            <Grid container spacing={2} key={member}>
-              {this.getFieldComponents(member, disk).map((fieldComponent, fieldIndex) => {
-                return (
-                  <Grid item xs={fieldIndex === 0 ? 3 : 2} key={`${member}-${fieldIndex}`}>
-                    {fieldComponent}
-                  </Grid>
-                );
-              })}
+        {values[name] &&
+          values[name].map((disk: VolumeContent, index: number) => {
+            return (
+              <Grid container spacing={2} key={index}>
+                {this.getFieldComponents(disk, index).map((fieldComponent, fieldIndex) => {
+                  return (
+                    <Grid item xs={fieldIndex === 0 ? 3 : 2} key={`${name}-${fieldIndex}`}>
+                      {fieldComponent}
+                    </Grid>
+                  );
+                })}
 
-              <Grid item xs={1}>
-                <IconButtonWithTooltip
-                  tooltipPlacement="top"
-                  tooltipTitle="Delete"
-                  aria-label="delete"
-                  onClick={() => fields.remove(index)}
-                >
-                  <DeleteIcon />
-                </IconButtonWithTooltip>
+                <Grid item xs={1}>
+                  <IconButtonWithTooltip
+                    tooltipPlacement="top"
+                    tooltipTitle="Delete"
+                    aria-label="delete"
+                    onClick={() => remove(index)}
+                  >
+                    <DeleteIcon />
+                  </IconButtonWithTooltip>
+                </Grid>
               </Grid>
-            </Grid>
-          );
-        })}
+            );
+          })}
       </Box>
     );
   }
 }
 
-export const Disks = connect(mapStateToProps)((props: FieldArrayProps) => {
+const RenderVolumes = connect(mapStateToProps)(RenderVolumesRaw);
+
+export const Disks = connect(mapStateToProps)((props: any) => {
   return <FieldArray name="volumes" component={RenderVolumes} {...props} />;
 });

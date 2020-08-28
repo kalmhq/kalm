@@ -4,7 +4,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
 import { Field, FieldArray, FieldArrayRenderProps } from "formik";
 import { TextField as FormikTextField } from "formik-material-ui";
-import { KBoolCheckboxRender } from "forms/Basic/checkbox";
+import { KFormikCheckbox } from "forms/Basic/checkbox";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
@@ -106,13 +106,22 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
               label="Mount Path"
               component={FormikTextField}
               validate={validateMountPath}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              margin="dense"
+              fullWidth
+              variant="outlined"
+              inputProps={{
+                required: false, // bypass html5 required feature
+              }}
             />
           </Grid>
           <Grid item xs={1}></Grid>
           <Grid item xs={3}>
             <Field
               name={`preInjectedFiles[${editingFileIndex}].readonly`}
-              component={KBoolCheckboxRender}
+              component={KFormikCheckbox}
               label="Read Only"
             ></Field>
           </Grid>

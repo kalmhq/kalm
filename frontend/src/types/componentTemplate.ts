@@ -19,10 +19,12 @@ export const newEmptyComponentLike: ComponentLikeFormContent = {
 export interface ComponentLikeFormContent
   extends Omit<
     ComponentLikeContent,
-    "env" | "preInjectedFiles" | "nodeSelectorLabels" | "livenessProbe" | "readinessProbe"
+    "env" | "preInjectedFiles" | "ports" | "volumes" | "nodeSelectorLabels" | "livenessProbe" | "readinessProbe"
   > {
   env?: ComponentLikeEnv[];
   preInjectedFiles?: PreInjectedFile[];
+  ports?: ComponentLikePortContent[];
+  volumes?: VolumeContent[];
   nodeSelectorLabels?: NodeSelectorLabelsContent;
   livenessProbe?: ProbeContent;
   readinessProbe?: ProbeContent;
@@ -44,11 +46,13 @@ export const PortProtocolGRPCWEB: PortProtocol = "grpc-web";
 export const PortProtocolTCP: PortProtocol = "tcp";
 export const PortProtocolUDP: PortProtocol = "udp";
 
-export type ComponentLikePort = ImmutableMap<{
+export type ComponentLikePort = ImmutableMap<ComponentLikePortContent>;
+
+export interface ComponentLikePortContent {
   protocol: string;
   containerPort: number;
   servicePort: number;
-}>;
+}
 
 export interface NodeSelectorLabelsContent {
   [key: string]: string;
