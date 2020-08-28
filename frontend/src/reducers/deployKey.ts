@@ -10,7 +10,7 @@ import {
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
 import {
-  DeployKey,
+  DeployKeyFormType,
   LOAD_DEPLOY_KEYS_FAILED,
   LOAD_DEPLOY_KEYS_FULFILLED,
   LOAD_DEPLOY_KEYS_PENDING,
@@ -20,7 +20,7 @@ import { addOrUpdateInList, removeInList } from "reducers/utils";
 export type State = ImmutableMap<{
   isLoading: boolean;
   loaded: boolean;
-  deployKeys: Immutable.List<DeployKey>;
+  deployKeys: Immutable.List<DeployKeyFormType>;
 }>;
 
 const initialState: State = Immutable.Map({

@@ -8,7 +8,12 @@ import { BasePage } from "pages/BasePage";
 import { deleteDeployKeyAction } from "actions/deployKey";
 import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle2 } from "widgets/Label";
-import { DeployKey, DeployKeyScopeCluster, DeployKeyScopeComponent, DeployKeyScopeNamespace } from "types/deployKey";
+import {
+  DeployKeyFormType,
+  DeployKeyScopeCluster,
+  DeployKeyScopeComponent,
+  DeployKeyScopeNamespace,
+} from "types/deployKey";
 import { push } from "connected-react-router";
 import { connect } from "react-redux";
 import clsx from "clsx";
@@ -175,7 +180,7 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
     );
   }
 
-  private renderCopyKey = (deployKey: DeployKey) => {
+  private renderCopyKey = (deployKey: DeployKeyFormType) => {
     const { dispatch } = this.props;
     const key = deployKey.get("key");
     return (
@@ -199,7 +204,7 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
     );
   };
 
-  private renderTabDetails(deployKey: DeployKey) {
+  private renderTabDetails(deployKey: DeployKeyFormType) {
     const { currentTabIndex } = this.props;
 
     const curl = `curl -X POST \\
@@ -297,7 +302,7 @@ workflows:
     );
   }
 
-  private renderDeployKeyScope = (deployKey: DeployKey) => {
+  private renderDeployKeyScope = (deployKey: DeployKeyFormType) => {
     if (deployKey.get("scope") === DeployKeyScopeCluster) {
       return (
         <Body2>
@@ -311,14 +316,11 @@ workflows:
             Its granted scope is <strong>Specific Applications</strong>:
           </Body2>
           <Box pl={2} mt={1}>
-            {deployKey
-              .get("resources")
-              .map((x) => (
-                <Box key={x}>
-                  <strong>{x}</strong>
-                </Box>
-              ))
-              .toArray()}
+            {deployKey.get("resources").map((x) => (
+              <Box key={x}>
+                <strong>{x}</strong>
+              </Box>
+            ))}
           </Box>
         </>
       );
@@ -329,14 +331,11 @@ workflows:
             Its granted scope is <strong>Specific Components</strong>:
           </Body2>
           <Box pl={2} mt={1}>
-            {deployKey
-              .get("resources")
-              .map((x) => (
-                <Box key={x}>
-                  <strong>{x}</strong>
-                </Box>
-              ))
-              .toArray()}
+            {deployKey.get("resources").map((x) => (
+              <Box key={x}>
+                <strong>{x}</strong>
+              </Box>
+            ))}
           </Box>
         </>
       );

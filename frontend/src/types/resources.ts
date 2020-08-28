@@ -5,7 +5,7 @@ import { Certificate } from "./certificate";
 import { RegistryType } from "./registry";
 import { Disk } from "./disk";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { DeployKey } from "types/deployKey";
+import { DeployKeyFormType } from "types/deployKey";
 import { Service } from "types/service";
 
 export const WATCHED_RESOURCE_CHANGE = "WATCHED_RESOURCE_CHANGE";
@@ -119,7 +119,7 @@ export interface DeployKeyResourceAction {
   kind: typeof RESOURCE_TYPE_DEPLOY_KEY;
   payload: {
     action: ResourceActionType;
-    data: DeployKey;
+    data: DeployKeyFormType;
   };
 }
 
