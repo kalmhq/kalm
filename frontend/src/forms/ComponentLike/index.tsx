@@ -20,7 +20,7 @@ import clsx from "clsx";
 import { push } from "connected-react-router";
 import { Field, FormikProps, withFormik } from "formik";
 import { KTooltip } from "forms/Application/KTooltip";
-import { KBoolCheckboxRender } from "forms/Basic/checkbox";
+import { KFormikBoolCheckboxRender } from "forms/Basic/checkbox";
 import { Disks } from "forms/ComponentLike/Disks";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
 import Immutable from "immutable";
@@ -54,7 +54,6 @@ import { makeSelectOption, RenderFormikSelectField } from "../Basic/select";
 import {
   KRenderFormikCommandTextField,
   KRenderFormikTextField,
-  RenderComplexValueTextDebounceField,
   RenderFormikComplexValueTextField,
 } from "../Basic/textfield";
 import { NormalizeNumber } from "../normalizer";
@@ -67,7 +66,7 @@ import {
   ValidatorSchedule,
 } from "../validator";
 import { Envs } from "./Envs";
-import { RenderSelectLabels } from "./NodeSelector";
+import { KFormikRenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
@@ -583,7 +582,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
         <Grid item xs={6}>
           <Field
-            component={RenderComplexValueTextDebounceField}
+            component={RenderFormikComplexValueTextField}
             name="memoryLimit"
             label="Memory Limit"
             margin
@@ -610,7 +609,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
         <Grid item xs={6}>
           <Field
-            component={RenderComplexValueTextDebounceField}
+            component={RenderFormikComplexValueTextField}
             name="cpuRequest"
             label="CPU Request"
             validate={ValidatorCPU}
@@ -636,7 +635,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
         <Grid item xs={6}>
           <Field
-            component={RenderComplexValueTextDebounceField}
+            component={RenderFormikComplexValueTextField}
             name="memoryRequest"
             label="Memory Request"
             margin
@@ -670,10 +669,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
+          <Field name="nodeSelectorLabels" component={KFormikRenderSelectLabels} nodeLabels={nodeLabels} />
         </Grid>
         <Grid item xs={12}>
-          <Field name="preferNotCoLocated" component={KBoolCheckboxRender} label={sc.SCHEDULING_COLOCATE_CHECKBOX} />
+          <Field
+            name="preferNotCoLocated"
+            component={KFormikBoolCheckboxRender}
+            label={sc.SCHEDULING_COLOCATE_CHECKBOX}
+          />
         </Grid>
         {/* <Grid item xs={6}>
           <Field name="podAffinityType" component={KRadioGroupRender} options={this.getPodAffinityOptions()} />
@@ -758,12 +761,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <div className={`${this.tabs[currentTabIndex] === DisksTab ? "" : classes.displayNone}`}>
           {this.renderDisks()}
         </div>
-        {/* <div className={`${this.tabs[currentTabIndex] === HealthTab ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === HealthTab ? "" : classes.displayNone}`}>
           {this.renderHealth()}
-        </div> */}
-        {/* <div className={`${this.tabs[currentTabIndex] === Scheduling ? "" : classes.displayNone}`}>
+        </div>
+        <div className={`${this.tabs[currentTabIndex] === Scheduling ? "" : classes.displayNone}`}>
           {this.renderScheduling()}
-        </div> */}
+        </div>
         <div className={`${this.tabs[currentTabIndex] === Deploy ? "" : classes.displayNone}`}>
           {this.renderUpgradePolicy()}
         </div>
