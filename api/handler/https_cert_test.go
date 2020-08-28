@@ -44,11 +44,11 @@ func (suite *HttpsCertTestSuite) TestGetEmptyHttpsCertList() {
 }
 
 func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
-	body := `{
+	body := fmt.Sprintf(`{
   "name":    "foobar-cert",
-  "httpsCertIssuer":  "foobar-issuer",
+  "httpsCertIssuer":  "%s",
   "domains": ["example.com"]
-}`
+}`, v1alpha1.DefaultHTTP01IssuerName)
 
 	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/httpscerts", body)
 
@@ -65,7 +65,7 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
 	suite.Equal(1, len(res.Items))
 	suite.Equal("foobar-cert", res.Items[0].Name)
 	//fmt.Println("item:", res.Items[0])
-	suite.Equal("foobar-issuer", res.Items[0].Spec.HttpsCertIssuer)
+	suite.Equal(v1alpha1.DefaultHTTP01IssuerName, res.Items[0].Spec.HttpsCertIssuer)
 	suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
 
 	// check size & content of cert list
@@ -81,10 +81,10 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
 }
 
 func (suite *HttpsCertTestSuite) TestCreateHttpsCertWithoutName() {
-	body := `{
-  "httpsCertIssuer":  "foobar-issuer",
+	body := fmt.Sprintf(`{
+  "httpsCertIssuer":  "%s",
   "domains": ["example.com"]
-}`
+}`, v1alpha1.DefaultHTTP01IssuerName)
 
 	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/httpscerts", body)
 
@@ -101,7 +101,7 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCertWithoutName() {
 	suite.Equal(1, len(res.Items))
 	fmt.Println(res.Items[0].Name)
 	suite.True(strings.HasPrefix(res.Items[0].Name, "example-com-"))
-	suite.Equal("foobar-issuer", res.Items[0].Spec.HttpsCertIssuer)
+	suite.Equal(v1alpha1.DefaultHTTP01IssuerName, res.Items[0].Spec.HttpsCertIssuer)
 	suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
 
 	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/httpscerts/"+httpsCert.Name, nil)
@@ -128,7 +128,7 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCertWithoutSetIssuer() {
 
 	suite.Equal(1, len(res.Items))
 	suite.Equal("foobar-cert", res.Items[0].Name)
-	suite.Equal(controllers.DefaultHTTP01IssuerName, res.Items[0].Spec.HttpsCertIssuer)
+	suite.Equal(v1alpha1.DefaultHTTP01IssuerName, res.Items[0].Spec.HttpsCertIssuer)
 	suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
 }
 
@@ -280,11 +280,11 @@ func (suite *HttpsCertTestSuite) TestUpdateSelfManagedHttpsCert() {
 }
 
 func (suite *HttpsCertTestSuite) TestUpdateAutoManagedHttpsCert() {
-	body := `{
+	body := fmt.Sprintf(`{
   "name":    "foobar-cert",
-  "httpsCertIssuer":  "foobar-issuer",
+  "httpsCertIssuer":  "%s",
   "domains": ["example.com"]
-}`
+}`, v1alpha1.DefaultHTTP01IssuerName)
 
 	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/httpscerts", body)
 
@@ -300,14 +300,14 @@ func (suite *HttpsCertTestSuite) TestUpdateAutoManagedHttpsCert() {
 
 	suite.Equal(1, len(res.Items))
 	suite.Equal("foobar-cert", res.Items[0].Name)
-	suite.Equal("foobar-issuer", res.Items[0].Spec.HttpsCertIssuer)
+	suite.Equal(v1alpha1.DefaultHTTP01IssuerName, res.Items[0].Spec.HttpsCertIssuer)
 	suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
 
-	body = `{
+	body = fmt.Sprintf(`{
   "name":    "foobar-cert",
-  "httpsCertIssuer":  "foobar-issuer2",
+  "httpsCertIssuer":  "%s",
   "domains": ["example.com2"]
-}`
+}`, v1alpha1.DefaultDNS01IssuerName)
 	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/httpscerts/foobar-cert", body)
 
 	rec.BodyAsJSON(&httpsCert)
@@ -320,16 +320,16 @@ func (suite *HttpsCertTestSuite) TestUpdateAutoManagedHttpsCert() {
 
 	suite.Equal(1, len(res.Items))
 	suite.Equal("foobar-cert", res.Items[0].Name)
-	suite.Equal("foobar-issuer2", res.Items[0].Spec.HttpsCertIssuer)
+	suite.Equal(v1alpha1.DefaultDNS01IssuerName, res.Items[0].Spec.HttpsCertIssuer)
 	suite.Equal("example.com2", strings.Join(res.Items[0].Spec.Domains, ""))
 }
 
 func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
-	body := `{
+	body := fmt.Sprintf(`{
   "name":    "foobar-cert",
-  "httpsCertIssuer":  "foobar-issuer",
+  "httpsCertIssuer":  "%s",
   "domains": ["example.com"]
-}`
+}`, v1alpha1.DefaultHTTP01IssuerName)
 
 	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/httpscerts", body)
 
@@ -346,7 +346,7 @@ func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
 	suite.Equal(1, len(res.Items))
 	suite.Equal("foobar-cert", res.Items[0].Name)
 	//fmt.Println("item:", res.Items[0])
-	suite.Equal("foobar-issuer", res.Items[0].Spec.HttpsCertIssuer)
+	suite.Equal(v1alpha1.DefaultHTTP01IssuerName, res.Items[0].Spec.HttpsCertIssuer)
 	suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
 
 	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/httpscerts/foobar-cert", nil)

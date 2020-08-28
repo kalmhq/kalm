@@ -63,6 +63,7 @@ func (h *ApiHandler) handleUpdateHttpsCert(context echo.Context) error {
 			return err
 		}
 	} else {
+		//todo disable update of auto managed cert?
 		httpsCert, err = h.Builder(context).UpdateAutoManagedCert(httpsCert)
 		if err != nil {
 			return err
