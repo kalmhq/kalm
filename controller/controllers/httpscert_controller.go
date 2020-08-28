@@ -243,7 +243,7 @@ func pickCommonName(names []string) string {
 
 func getDNSNames(httpsCert corev1alpha1.HttpsCert) (dnsNames []string) {
 	dnsNameMap := make(map[string]interface{})
-	if httpsCert.Spec.HttpsCertIssuer == DefaultDNS01IssuerName {
+	if httpsCert.Spec.HttpsCertIssuer == corev1alpha1.DefaultDNS01IssuerName {
 		for _, domain := range httpsCert.Spec.Domains {
 			if !strings.HasPrefix(domain, "*.") {
 				dnsNameMap["*."+domain] = true

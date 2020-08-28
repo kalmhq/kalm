@@ -231,7 +231,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 
 	httpsCertForKalm := &resources.HttpsCert{
 		Name:            KalmRouteCertName,
-		HttpsCertIssuer: controllers.DefaultHTTP01IssuerName,
+		HttpsCertIssuer: v1alpha1.DefaultHTTP01IssuerName,
 		Domains:         []string{body.Domain},
 	}
 

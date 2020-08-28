@@ -198,7 +198,7 @@ func (r *ACMEServerReconciler) getCertsUsingDNSIssuer(
 	}
 
 	for _, cert := range httpsCertList.Items {
-		if cert.Spec.HttpsCertIssuer != DefaultDNS01IssuerName {
+		if cert.Spec.HttpsCertIssuer != corev1alpha1.DefaultDNS01IssuerName {
 			continue
 		}
 
@@ -260,7 +260,7 @@ func (h HttpsCertMapper) Map(object handler.MapObject) []reconcile.Request {
 		return nil
 	}
 
-	if cert.Spec.HttpsCertIssuer != DefaultDNS01IssuerName {
+	if cert.Spec.HttpsCertIssuer != corev1alpha1.DefaultDNS01IssuerName {
 		return nil
 	}
 
@@ -478,14 +478,14 @@ func (r *ACMEServerReconciler) reconcileIssuer(acmeServer corev1alpha1.ACMEServe
 	issuer := corev1alpha1.HttpsCertIssuer{}
 	isNew := false
 
-	err := r.Get(r.ctx, client.ObjectKey{Name: DefaultDNS01IssuerName}, &issuer)
+	err := r.Get(r.ctx, client.ObjectKey{Name: corev1alpha1.DefaultDNS01IssuerName}, &issuer)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			isNew = true
 
 			issuer = corev1alpha1.HttpsCertIssuer{
 				ObjectMeta: ctrl.ObjectMeta{
-					Name: DefaultDNS01IssuerName,
+					Name: corev1alpha1.DefaultDNS01IssuerName,
 				},
 				Spec: corev1alpha1.HttpsCertIssuerSpec{
 					DNS01: &corev1alpha1.DNS01Issuer{},
