@@ -73,27 +73,26 @@ export class KRenderTextField extends React.PureComponent<withDebounceProps & Pr
 
 export const KRenderDebounceTextField = withDebounceField(KRenderTextField);
 
-export const KRenderFormikTextField = (props: TextFieldProps & FieldProps) => {
+export const KRenderFormikTextField = (props: TextFieldProps & FieldProps & { HelperText: React.ReactNode }) => {
   const {
     helperText,
     field: { name },
     form: { touched, errors },
   } = props;
-  const showError = !!errors[name] && !!touched[name];
+
   return (
     <FormikTextField
+      {...props}
       InputLabelProps={{
         shrink: true,
       }}
-      error={showError}
       margin="dense"
       fullWidth
       variant="outlined"
-      helperText={showError ? errors[name] : helperText ? helperText : " "}
+      helperText={(touched[name] && errors[name]) || helperText || " "}
       inputProps={{
         required: false, // bypass html5 required feature
       }}
-      {...props}
     />
   );
 };
@@ -309,8 +308,8 @@ export const KRenderFormikCommandTextField = (props: TextFieldProps & FieldProps
 
   return (
     <FormikTextField
+      {...props}
       fullWidth
-      error={showError}
       spellCheck={false}
       helperText={showError ? errors[name] : helperText ? helperText : ""}
       InputLabelProps={{
@@ -325,7 +324,6 @@ export const KRenderFormikCommandTextField = (props: TextFieldProps & FieldProps
       }}
       margin="dense"
       variant="outlined"
-      {...props}
     />
   );
 };
