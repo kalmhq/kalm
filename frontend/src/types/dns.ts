@@ -11,3 +11,10 @@ export interface GoogleDNSCNAMEResponse {
   name: string;
   type: number;
 }
+
+export interface GoogleDNSNSResponse {
+  TTL: number;
+  data: string;
+  name: string;
+  type: number;
+}

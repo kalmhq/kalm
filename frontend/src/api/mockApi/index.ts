@@ -1,6 +1,6 @@
 import { Api } from "../base";
 import Immutable from "immutable";
-import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
+import { CertificateFormType, CertificateIssuerFormType, AcmeServerInfo, AcmeServerFormType } from "types/certificate";
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import { HttpRoute } from "types/route";
 import { RegistryType } from "types/registry";
@@ -274,5 +274,17 @@ export default class MockApi extends Api {
 
   public resetCluster = async (): Promise<any> => {
     return {};
+  };
+
+  public createAcmeServer = async (acmeServer: AcmeServerFormType): Promise<AcmeServerInfo> => {
+    return mockStore.data.get("mockAcmeServer");
+  };
+
+  public deleteAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
+    return;
+  };
+
+  public getAcmeServer = async (): Promise<AcmeServerInfo> => {
+    return mockStore.data.get("mockAcmeServer");
   };
 }

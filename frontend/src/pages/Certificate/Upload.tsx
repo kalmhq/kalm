@@ -2,36 +2,25 @@ import React from "react";
 import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { CertificateFormType, selfManaged } from "types/certificate";
+import { newEmptyCertificateUploadForm, CertificateFormType } from "types/certificate";
 import { createCertificateAction } from "actions/certificate";
 import { CertificateUploadForm } from "forms/Certificate/uploadForm";
-import { RootState } from "reducers";
 import { BasePage } from "pages/BasePage";
 import { H6 } from "widgets/Label";
 import { push } from "connected-react-router";
-
-const mapStateToProps = (state: RootState, ownProps: any) => {
-  const certificate = state
-    .get("certificates")
-    .get("certificates")
-    .find((certificate) => certificate.get("name") === ownProps.match.params.name);
-  return {
-    initialValues: certificate ? certificate.merge({ managedType: selfManaged }) : undefined,
-  };
-};
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
   });
 
-export interface Props extends WithStyles<typeof styles>, TDispatchProp, ReturnType<typeof mapStateToProps> {}
+export interface Props extends WithStyles<typeof styles>, TDispatchProp {}
 
-class CertificateEditRaw extends React.PureComponent<Props> {
+class CertificateUploadRaw extends React.PureComponent<Props> {
   private submit = async (certificate: CertificateFormType) => {
     try {
       const { dispatch } = this.props;
-      await dispatch(createCertificateAction(certificate, true));
+      await dispatch(createCertificateAction(certificate, false));
     } catch (e) {
       console.log(e);
     }
@@ -42,21 +31,16 @@ class CertificateEditRaw extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { initialValues, classes } = this.props;
-    if (!initialValues) {
-      return "Certificate not found";
-    }
-
+    const { classes } = this.props;
     return (
-      <BasePage secondHeaderRight={<H6>New Certificate</H6>}>
+      <BasePage secondHeaderRight={<H6>Upload Certificate</H6>}>
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>
               <CertificateUploadForm
-                isEdit
                 onSubmitSuccess={this.onSubmitSuccess}
                 onSubmit={this.submit}
-                initialValues={initialValues}
+                initialValues={newEmptyCertificateUploadForm}
               />
             </Grid>
           </Grid>
@@ -66,4 +50,4 @@ class CertificateEditRaw extends React.PureComponent<Props> {
   }
 }
 
-export const CertificateEditPage = withStyles(styles)(connect(mapStateToProps)(CertificateEditRaw));
+export const CertificateUploadPage = withStyles(styles)(connect()(CertificateUploadRaw));

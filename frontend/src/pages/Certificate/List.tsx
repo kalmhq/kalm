@@ -8,7 +8,7 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { Certificate } from "types/certificate";
+import { Certificate, dns01Issuer } from "types/certificate";
 import { formatDate } from "utils/date";
 import sc from "utils/stringConstants";
 import { PendingBadge, SuccessBadge } from "widgets/Badge";
@@ -62,6 +62,16 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderDomains = (cert: Certificate) => {
+    const isWildcardDomain = cert.get("httpsCertIssuer") === dns01Issuer;
+    const domainStatus = (domain: string) => {
+      const cname = cert.get("wildcardCertDNSChallengeDomain");
+      return isWildcardDomain ? (
+        <DomainStatus mr={1} domain={domain} cnameDomain={cname} />
+      ) : (
+        <DomainStatus mr={1} domain={domain} />
+      );
+    };
+    const prefix = isWildcardDomain ? "*." : "";
     return (
       <>
         {cert
@@ -69,8 +79,8 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
           ?.map((domain) => {
             return (
               <FlexRowItemCenterBox key={domain}>
-                <DomainStatus mr={1} domain={domain} />
-                {domain}
+                {domainStatus(`${domain}`)}
+                {`${prefix}${domain}`}
               </FlexRowItemCenterBox>
             );
           })
@@ -278,6 +288,16 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               to="/certificates/new"
             >
               New Certificate
+            </Button>
+            <Button
+              color="primary"
+              variant="outlined"
+              size="small"
+              component={Link}
+              tutorial-anchor-id="upload-certificate"
+              to="/certificates/upload"
+            >
+              Upload Certificate
             </Button>
           </>
         }
