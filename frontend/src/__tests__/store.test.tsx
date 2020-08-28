@@ -12,7 +12,7 @@ import Adapter from "enzyme-adapter-react-16";
 import ApplicationForm from "forms/Application";
 import { CertificateForm } from "forms/Certificate";
 import { ComponentLikeForm } from "forms/ComponentLike";
-import { COMPONENT_FORM_ID, ROUTE_FORM_ID } from "forms/formIDs";
+import { ROUTE_FORM_ID } from "forms/formIDs";
 import { RouteForm } from "forms/Route";
 import { createBrowserHistory } from "history";
 import Immutable from "immutable";
@@ -25,8 +25,8 @@ import { Store } from "redux";
 import { change } from "redux-form";
 import { theme } from "theme/theme";
 import { newEmptyCertificateForm } from "types/certificate";
-import { ComponentLike, newEmptyComponentLike } from "types/componentTemplate";
-import { HttpRouteForm, newEmptyRouteForm, HttpRoute } from "types/route";
+import { ComponentLikeFormContent, newEmptyComponentLike } from "types/componentTemplate";
+import { HttpRoute, HttpRouteForm, newEmptyRouteForm } from "types/route";
 import { getTestFormSyncErrors } from "utils/testUtils";
 
 configure({ adapter: new Adapter() });
@@ -118,11 +118,8 @@ test("add application", () => {
 test("add component", async (done) => {
   await store.dispatch(loadApplicationsAction());
   const testApplication = store.getState().get("applications").get("applications").get(0);
-  const onSubmit = async (formValues: ComponentLike) => {
-    return await store.dispatch(createComponentAction(formValues, testApplication?.get("name")));
-  };
-
-  const onSubmitSuccess = () => {
+  const onSubmit = async (formValues: ComponentLikeFormContent) => {
+    await store.dispatch(createComponentAction(Immutable.fromJS(formValues), testApplication?.get("name")));
     try {
       const testApplicationComponent = store
         .getState()
@@ -138,13 +135,7 @@ test("add component", async (done) => {
   };
   const WrappedComponentForm = class extends React.Component {
     public render() {
-      return (
-        <ComponentLikeForm
-          initialValues={newEmptyComponentLike()}
-          onSubmit={onSubmit}
-          onSubmitSuccess={onSubmitSuccess}
-        />
-      );
+      return <ComponentLikeForm _initialValues={newEmptyComponentLike} onSubmit={onSubmit} />;
     }
   };
   const component = mount(
@@ -156,14 +147,19 @@ test("add component", async (done) => {
       </ThemeProvider>
     </Provider>,
   );
+  await act(async () => {
+    component.find("form#component-form").simulate("submit");
+  });
+  console.log(component.find("p#component-name-helper-text").text());
+  expect(component.find("p#component-name-helper-text").text()).toContain(requiredError);
 
-  component.find("button#add-component-submit-button").simulate("click");
-  expect(getTestFormSyncErrors(store, COMPONENT_FORM_ID).name).toBe(requiredError);
-  expect(getTestFormSyncErrors(store, COMPONENT_FORM_ID).image).toBe(requiredError);
-
-  store.dispatch(change(COMPONENT_FORM_ID, "name", componentName));
-  store.dispatch(change(COMPONENT_FORM_ID, "image", "test-image"));
-  component.find("button#add-component-submit-button").simulate("click");
+  component.find("input#component-name").getDOMNode().setAttribute("value", componentName);
+  component.find("input#component-name").simulate("change");
+  component.find("input#component-image").getDOMNode().setAttribute("value", "test-image");
+  component.find("input#component-image").simulate("change");
+  await act(async () => {
+    component.find("form#component-form").simulate("submit");
+  });
 });
 
 test("add route", async (done) => {

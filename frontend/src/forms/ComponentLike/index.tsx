@@ -56,7 +56,6 @@ import {
   KRenderFormikTextField,
   RenderFormikComplexValueTextField,
 } from "../Basic/textfield";
-import { NormalizeNumber } from "../normalizer";
 import {
   ValidatorCPU,
   ValidatorMemory,
@@ -221,7 +220,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           helperText={sc.REPLICA_INPUT_HELPER}
           type="number"
           min="0"
-          normalize={NormalizeNumber}
+          // normalize={NormalizeNumber}
         />
       );
     }
@@ -739,7 +738,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="terminationGracePeriodSeconds"
             label="Termination Grace Period (seconds)"
             // validate={ValidatorRequired}
-            normalize={NormalizeNumber}
+            // normalize={NormalizeNumber}
             placeholder={sc.GRACEFUL_TERM_INPUT_PLACEHOLDER}
           />
         </Grid>
@@ -761,9 +760,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <div className={`${this.tabs[currentTabIndex] === DisksTab ? "" : classes.displayNone}`}>
           {this.renderDisks()}
         </div>
-        <div className={`${this.tabs[currentTabIndex] === HealthTab ? "" : classes.displayNone}`}>
+        {/* <div className={`${this.tabs[currentTabIndex] === HealthTab ? "" : classes.displayNone}`}>
           {this.renderHealth()}
-        </div>
+        </div> */}
         <div className={`${this.tabs[currentTabIndex] === Scheduling ? "" : classes.displayNone}`}>
           {this.renderScheduling()}
         </div>
@@ -831,6 +830,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <Field
             component={KRenderFormikTextField}
             autoFocus={true}
+            id="component-name"
             name="name"
             label="Name"
             validate={nameValidators}
@@ -841,6 +841,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={6}>
           <Field
             component={KRenderFormikTextField}
+            id="component-image"
             name="image"
             label="Image"
             placeholder={sc.IMAGE_PLACEHOLDER}
@@ -959,7 +960,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   public render() {
     const { handleSubmit, classes, values } = this.props;
     return (
-      <form onSubmit={handleSubmit} className={classes.root}>
+      <form onSubmit={handleSubmit} className={classes.root} id="component-form">
         {this.renderDirtyPrompt()}
         <KPanel
           content={
