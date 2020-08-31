@@ -47,24 +47,6 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /mutate-core-kalm-dev-v1alpha1-deploykey
-  failurePolicy: Fail
-  name: mdeploykey.kb.io
-  rules:
-  - apiGroups:
-    - core.kalm.dev
-    apiVersions:
-    - v1alpha1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - deploykeys
-- clientConfig:
-    caBundle: Cg==
-    service:
-      name: webhook-service
-      namespace: system
       path: /mutate-core-kalm-dev-v1alpha1-dockerregistry
   failurePolicy: Fail
   name: mdockerregistry.kb.io
@@ -194,24 +176,6 @@ webhooks:
     - UPDATE
     resources:
     - components
-- clientConfig:
-    caBundle: Cg==
-    service:
-      name: webhook-service
-      namespace: system
-      path: /validate-core-kalm-dev-v1alpha1-deploykey
-  failurePolicy: Fail
-  name: vdeploykey.kb.io
-  rules:
-  - apiGroups:
-    - core.kalm.dev
-    apiVersions:
-    - v1alpha1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - deploykeys
 - clientConfig:
     caBundle: Cg==
     service:
