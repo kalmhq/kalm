@@ -118,11 +118,13 @@ func (r *HttpsCert) validate() error {
 			//	})
 			//}
 
-			if strings.Contains(r.Spec.Domains[0], "*") {
-				rst = append(rst, KalmValidateError{
-					Err:  "dns01 cert no need for prefix: '*.' in domain",
-					Path: "spec.domains",
-				})
+			for i, domain := range r.Spec.Domains {
+				if strings.Contains(domain, "*") {
+					rst = append(rst, KalmValidateError{
+						Err:  "dns01 cert no need for prefix: '*.' in domain",
+						Path: fmt.Sprintf("spec.domains[%d]", i),
+					})
+				}
 			}
 		} else {
 			rst = append(rst, KalmValidateError{

@@ -69,11 +69,11 @@ func TestHttpsCertValidateDNS01Cert(t *testing.T) {
 		{"example.com"},
 		{"abc.example.com"},
 		{"x.y.com"},
+		{"abc.example.com", "x.y.com"},
 	}
 	wrongDomainsList := [][]string{
 		{"*.example.com"},
 		{"a.com", "*.abc.example.com"},
-		{"abc.example.com", "x.y.com"},
 	}
 
 	cert := HttpsCert{
