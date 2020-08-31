@@ -17,6 +17,8 @@ package controllers
 
 import (
 	"context"
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -51,17 +53,31 @@ type ACMEServerReconciler struct {
 const ACMEServerName = "acme-server"
 
 func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
-	_ = r.Log.WithValues("acmeserver", req.NamespacedName)
+	log := r.Log.WithValues("acmeserver", req.NamespacedName)
 
 	acmeServerList := corev1alpha1.ACMEServerList{}
-	if err := r.List(ctx, &acmeServerList); err != nil {
+	if err := r.List(r.ctx, &acmeServerList); err != nil {
 		return ctrl.Result{}, err
 	}
 
 	size := len(acmeServerList.Items)
 	if size <= 0 {
-		return ctrl.Result{}, nil
+		// check if wildcard httpsCert exists
+		//   if yes, create a acme-server
+
+		wildcardCerts, err := r.findWildcardCerts()
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		if len(wildcardCerts) <= 0 {
+			log.Info("no wildcardCerts exist yet, skip install of acme-server")
+			return ctrl.Result{}, nil
+		}
+
+		err = r.installACMEServer(wildcardCerts[0])
+
+		return ctrl.Result{}, err
 	} else if size > 1 {
 		return ctrl.Result{}, fmt.Errorf("at most 1 cofig for acmeServer, see: %d", size)
 	}
@@ -665,4 +681,55 @@ func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.AC
 	}
 
 	return err
+}
+
+func (r *ACMEServerReconciler) findWildcardCerts() ([]corev1alpha1.HttpsCert, error) {
+	var httpsCertList corev1alpha1.HttpsCertList
+	if err := r.List(r.ctx, &httpsCertList); err != nil {
+		return nil, err
+	}
+
+	var rst []corev1alpha1.HttpsCert
+	for _, cert := range httpsCertList.Items {
+		if cert.Spec.HttpsCertIssuer != corev1alpha1.DefaultDNS01IssuerName {
+			continue
+		}
+
+		rst = append(rst, cert)
+	}
+
+	return rst, nil
+}
+
+func (r *ACMEServerReconciler) installACMEServer(cert corev1alpha1.HttpsCert) error {
+	domains := cert.Spec.Domains
+	if len(domains) <= 0 {
+		return fmt.Errorf("spec.domains is empty")
+	}
+
+	baseDomain := domains[0]
+	acmeDomain := fmt.Sprintf("acme-%s.%s", sha1String(baseDomain)[:6], baseDomain)
+	nsDomain := fmt.Sprintf("name-server-%s.%s", sha1String(baseDomain)[:6], baseDomain)
+
+	autoGenACMEServerName := "auto-acme-server"
+
+	expectedACMEServer := corev1alpha1.ACMEServer{
+		ObjectMeta: ctrl.ObjectMeta{
+			Name: autoGenACMEServerName,
+		},
+		Spec: corev1alpha1.ACMEServerSpec{
+			ACMEDomain: acmeDomain,
+			NSDomain:   nsDomain,
+		},
+	}
+
+	return r.Create(r.ctx, &expectedACMEServer)
+}
+
+func sha1String(s string) string {
+	h := sha1.New()
+	h.Write([]byte(s))
+	sha1Hash := hex.EncodeToString(h.Sum(nil))
+
+	return sha1Hash
 }
