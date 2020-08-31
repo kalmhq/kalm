@@ -2,7 +2,6 @@ import { APPLICATION_FORM_ID, CERTIFICATE_FORM_ID, COMPONENT_FORM_ID } from "for
 import Immutable from "immutable";
 import { RootState } from "reducers";
 import { State as TutorialState } from "reducers/tutorial";
-import { formValueSelector } from "redux-form/immutable";
 
 export const formValidateOrNotBlockByTutorial = (
   values: Immutable.Map<string, any>,

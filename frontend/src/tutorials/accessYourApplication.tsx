@@ -1,10 +1,10 @@
+import { resetTutorialAction } from "actions/tutorial";
+import { ROUTE_FORM_ID } from "forms/formIDs";
 import Immutable from "immutable";
 import React from "react";
-import { Tutorial, TutorialFactory } from "types/tutorial";
-import { ApplicationDetails } from "types/application";
-import { store } from "store";
-import { resetTutorialAction } from "actions/tutorial";
 import { RootState } from "reducers";
+import { ActionTypes, actionTypes } from "redux-form";
+import { store } from "store";
 import {
   isFormFieldMeet,
   isFormFieldValueEqualTo,
@@ -14,10 +14,10 @@ import {
   requireSubStepNotCompleted,
 } from "tutorials/utils";
 import { Actions } from "types";
-import { ActionTypes, actionTypes } from "redux-form";
-import { HttpRouteDestination, HttpRouteDestinationContent } from "types/route";
+import { ApplicationDetails } from "types/application";
+import { HttpRouteDestinationContent } from "types/route";
+import { Tutorial, TutorialFactory } from "types/tutorial";
 import { KMLink } from "widgets/Link";
-import { ROUTE_FORM_ID } from "forms/formIDs";
 
 const resetTutorial = () => {
   store.dispatch(resetTutorialAction());
