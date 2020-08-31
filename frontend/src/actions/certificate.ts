@@ -104,11 +104,15 @@ export const createCertificateAction = (
     let certificate: Certificate;
     try {
       let certContent = certificateContent.set("isSelfManaged", certificateContent.get("managedType") === selfManaged);
-      if (certificateContent.get("managedType") === dns01Mananged) {
+      let hasWildcardDomains = false;
+      const domains = certContent.get("domains").map((d) => {
+        if (d.startsWith("*.")) {
+          hasWildcardDomains = true;
+        }
+        return d.replace("*.", "");
+      });
+      if (hasWildcardDomains) {
         certContent = certContent.set("httpsCertIssuer", dns01Mananged);
-        const domains = certContent.get("domains").map((d) => {
-          return d.replace("*.", "");
-        });
         certContent = certContent.set("domains", domains);
       }
       certificate = await api.createCertificate(certContent, isEdit);

@@ -2,9 +2,13 @@ import { createCertificateIssuerAction } from "actions/certificate";
 import { Button, Grid, Box } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { KAutoCompleteSingleValue, KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
-import { KRadioGroupRender } from "forms/Basic/radio";
+// import { KRadioGroupRender } from "forms/Basic/radio";
 import { KRenderDebounceTextField } from "forms/Basic/textfield";
-import { ValidatorRequired, KValidatorHostsWithWildcardPrefix, KValidatorWildcardHost } from "forms/validator";
+import {
+  ValidatorRequired,
+  KValidatorHostsWithWildcardPrefix,
+  //  KValidatorWildcardHost
+} from "forms/validator";
 import Immutable from "immutable";
 import React from "react";
 import { RootState } from "reducers";
@@ -19,16 +23,16 @@ import {
   CertificateIssuerFormType,
   CertificateIssuerList,
   cloudFlare,
-  issuerManaged,
+  // issuerManaged,
   newEmptyCertificateIssuerForm,
   dns01Mananged,
 } from "types/certificate";
 import { CertificateIssuerForm } from "forms/Certificate/issuerForm";
-import DomainStatus from "widgets/DomainStatus";
+// import DomainStatus from "widgets/DomainStatus";
 import { connect } from "react-redux";
 import { Prompt } from "widgets/Prompt";
 import { CERTIFICATE_FORM_ID, ISSUER_FORM_ID } from "../formIDs";
-import { Caption } from "widgets/Label";
+import { Caption, Body, H6 } from "widgets/Label";
 import { Link } from "react-router-dom";
 import { KPanel } from "widgets/KPanel";
 import copy from "copy-to-clipboard";
@@ -90,7 +94,7 @@ interface State {
 }
 
 const domainsValidators = [ValidatorRequired, KValidatorHostsWithWildcardPrefix];
-const wildcardDomainValidators = [ValidatorRequired, KValidatorWildcardHost];
+// const wildcardDomainValidators = [ValidatorRequired, KValidatorWildcardHost];
 
 class CertificateFormRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
@@ -255,7 +259,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   public render() {
     const {
       classes,
-      domains,
+      // domains,
       handleSubmit,
       managedType,
       isEdit,
@@ -263,37 +267,43 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
       submitSucceeded,
       acmeServerIsReady,
     } = this.props;
-    const icons = Immutable.List(domains.map((domain) => <DomainStatus domain={domain} />));
+    // const icons = Immutable.List(domains.map((domain) => <DomainStatus domain={domain} />));
 
     return (
       <>
-        <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="certificate-form">
+        <form className={classes.root} tutorial-anchor-id="certificate-form">
           <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
           <KPanel
             content={
               <Box p={2}>
                 <Grid container spacing={2}>
-                  {isEdit ? null : (
-                    <Grid item md={12}>
-                      <Field
-                        title=""
-                        component={KRadioGroupRender}
-                        name="managedType"
-                        options={[
-                          {
-                            value: issuerManaged,
-                            label: sc.CERT_AUTO,
-                            explain: sc.CERT_AUTO_DESC,
-                          },
-                          {
-                            value: dns01Mananged,
-                            label: sc.CERT_DNS01_WILDCARD,
-                            explain: sc.CERT_DNS01_WILDCARD_DESC,
-                          },
-                        ]}
-                      />
-                    </Grid>
-                  )}
+                  {isEdit
+                    ? null
+                    : // <Grid item md={12}>
+                      //   <Field
+                      //     title=""
+                      //     component={KRadioGroupRender}
+                      //     name="managedType"
+                      //     options={[
+                      //       {
+                      //         value: issuerManaged,
+                      //         label: sc.CERT_AUTO,
+                      //         explain: sc.CERT_AUTO_DESC,
+                      //       },
+                      //       {
+                      //         value: dns01Mananged,
+                      //         label: sc.CERT_DNS01_WILDCARD,
+                      //         explain: sc.CERT_DNS01_WILDCARD_DESC,
+                      //       },
+                      //     ]}
+                      //   />
+                      // </Grid>
+                      null}
+                  <Box p={2}>
+                    <H6>{sc.CERT_AUTO}</H6>
+                    <Body>{sc.CERT_AUTO_DESC}</Body>
+                  </Box>
+
                   <Grid item md={12}>
                     {managedType === dns01Mananged ? this.renderAcmeServerInfo() : null}
                   </Grid>
@@ -316,16 +326,14 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                       <Grid item md={12}>
                         <KFreeSoloAutoCompleteMultipleSelectStringField
                           helperText={this.getHelperTextForDomain()}
-                          placeholder={
-                            managedType !== dns01Mananged ? "Please type domains" : "Please type a wildcard domain"
-                          }
+                          placeholder={"Please type domains"}
                           label="Domains"
-                          icons={managedType === dns01Mananged ? undefined : icons}
+                          icons={undefined}
                           multiline={true}
                           className={classes.fileInput}
                           rows={12}
                           name="domains"
-                          validate={managedType === dns01Mananged ? wildcardDomainValidators : domainsValidators}
+                          validate={domainsValidators}
                         />
                       </Grid>
                     </>
