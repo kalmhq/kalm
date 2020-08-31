@@ -160,11 +160,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (controllers.NewDeployKeyReconciler(mgr)).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "DeployKey")
-		os.Exit(1)
-	}
-
 	if err = (controllers.NewStorageClassReconciler(mgr)).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "StorageClass")
 		os.Exit(1)
