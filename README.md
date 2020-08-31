@@ -2,33 +2,46 @@
 
 [![CircleCI](https://circleci.com/gh/kalmhq/kalm.svg?style=svg)](https://circleci.com/gh/kalmhq/kalm) [![Go Report](https://goreportcard.com/badge/github.com/kalmhq/kalm)](https://goreportcard.com/badge/github.com/kalmhq/kalm)
 
-Kalm is an easy way to manage applications on Kubernetes. Kalm provides a web UI for common workflows including creating and updating applications, scaling, routing, scheduling jobs, auto-healing, and setting up HTTPS certificates.
+Kalm provides a web interface which makes it easy to perform common Kubernetes workflows, including:
 
-In addition, Kalm defines a set of CRDs that simplifies the underlying configuration and drastically reduces copy-pasting and boilerplate, as well as hooking up useful operators such as [cert-manager](https://cert-manager.io/docs/) and [istio](https://istio.io/).
+- Creating and updating applications
+- Scaling
+- Handle external traffic
+- Setup probes for auto-healing
+- Attaching and using Volumes
 
-![Kalm](https://kalm.dev/assets/images/kalm-a2c8a59e81a6674e606c57034bad461e.png)
+In addition, Kalm simplifies the process of many common Kubernetes integration point:
 
-Kalm is designed for developers and teams who want a simple and friendly interface for kubernetes without having to build and maintain internal tools.
+- CI/CD webhooks
+- Obtain HTTPS Certificates (via Let's Encrypt)
+- Setup Single Sign On access for any application in your cluster
+- Configure private image registries
+- Plugin log systems such as PLG(Loki) and ELK
+
+![Kalm](https://kalm.dev/gif/kalm_short.gif)
+
+Kalm is intended as an alternative to writing and maintaining scripts and internal tools. Since Kalm is implemented as a Kubernetes operator and a set of Custom Resource Definitions, it can be used alongside existing Kubernetes tooling. Kalm tries to minimize the amount of time you have to spent writing yaml files and executing one off kubectl commands, but doesn't prevent you from doing so if necessary.
 
 ## Project Status
 
-- [X] Alpha
-- [X] Closed Beta
+Kalm is currently in Closed Beta.
+
+- [x] Alpha
+- [x] Closed Beta
 - [ ] Open Beta, CRD schema frozen
+- [ ] Public Release
 
-## Install
+## Installation
 
-Kalm is packaged as a [Kubernetes Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/), and can be used with any Kubernetes cluster(minikube, GKE, EKS etc..)
+Kalm can be used with any Kubernetes cluster. For getting started on localhost, see our [guide](https://kalm.dev/docs/install#step-1-prerequisites) on installing `kubectl` and creating a `minikube` cluster.
 
-See [detailed instructions](https://kalm.dev/docs/install#step-1-prerequisites) for installing `kubectl` and creating a `minikube` cluster on localhost.
-
-If you already have access to a cluster via kubectl, deploy Kalm via:
+If you already have access to an existing cluster via kubectl, deploy Kalm via:
 
 ```shell
 curl -sL https://get.kalm.dev | bash
 ```
 
-The whole process typically takes up to 1-5 minutes. Relax or check out the <a href="https://kalm.dev/docs" target="_blank">docs</a> in the mean time.
+The whole process typically takes up to 5-10 minutes. Relax or check out the <a href="https://kalm.dev/docs" target="_blank">docs</a> in the mean time.
 
 Once the installation is complete, open a port to the web server.
 
@@ -36,7 +49,7 @@ Once the installation is complete, open a port to the web server.
 kubectl port-forward -n kalm-system $(kubectl get pod -n kalm-system -l app=kalm -ojsonpath="{.items[0].metadata.name}") 3010:3010
 ```
 
-Kalm should now be accessible at [http://localhost:3010](http://localhost:3010). 
+Kalm should now be accessible at [http://localhost:3010](http://localhost:3010).
 
 ## Docs & Guides
 
