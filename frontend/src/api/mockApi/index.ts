@@ -1,6 +1,6 @@
 import Immutable from "immutable";
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
-import { CertificateFormTypeContent, CertificateIssuerFormType } from "types/certificate";
+import { CertificateFormTypeContent, CertificateIssuerFormTypeContent } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
 import { RegistryType } from "types/registry";
@@ -112,9 +112,9 @@ export default class MockApi extends Api {
     return certificate as any;
   };
 
-  public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormType, isEdit?: boolean) => {
+  public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormTypeContent, isEdit?: boolean) => {
     await mockStore.updateCertificateIssuer(certificateIssuer);
-    return certificateIssuer;
+    return Immutable.fromJS(certificateIssuer);
   };
 
   public createApplication = async (application: Application) => {

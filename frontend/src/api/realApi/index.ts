@@ -2,7 +2,7 @@ import Axios, { AxiosRequestConfig } from "axios";
 import Immutable from "immutable";
 import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
-import { CertificateFormTypeContent, CertificateIssuerFormType } from "types/certificate";
+import { CertificateFormTypeContent, CertificateIssuerFormTypeContent } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
@@ -278,12 +278,12 @@ export default class RealApi extends Api {
     return Immutable.fromJS(res.data);
   };
 
-  public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormType, isEdit?: boolean) => {
+  public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormTypeContent, isEdit?: boolean) => {
     let res;
     if (isEdit) {
       res = await axiosRequest({
         method: "put",
-        url: `/${K8sApiVersion}/httpscertissuers/${certificateIssuer.get("name")}`,
+        url: `/${K8sApiVersion}/httpscertissuers/${certificateIssuer.name}`,
         data: certificateIssuer,
       });
     } else {

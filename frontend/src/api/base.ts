@@ -12,9 +12,9 @@ import {
   Certificate,
   CertificateFormTypeContent,
   CertificateIssuer,
-  CertificateIssuerFormType,
   CertificateIssuerList,
   CertificateList,
+  CertificateIssuerFormTypeContent,
 } from "types/certificate";
 import { ClusterInfo, InitializeClusterResponse } from "types/cluster";
 import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
@@ -122,7 +122,7 @@ export abstract class Api {
   public abstract createCertificate(certificate: CertificateFormTypeContent, isEdit?: boolean): Promise<Certificate>;
 
   public abstract createCertificateIssuer(
-    certificateIssuer: CertificateIssuerFormType,
+    certificateIssuer: CertificateIssuerFormTypeContent,
     isEdit?: boolean,
   ): Promise<CertificateIssuer>;
 
