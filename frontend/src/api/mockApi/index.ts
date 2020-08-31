@@ -2,7 +2,7 @@ import Immutable from "immutable";
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import { CertificateFormTypeContent, CertificateIssuerFormType } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
-import { DeployKey } from "types/deployKey";
+import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
 import { RegistryType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
@@ -254,15 +254,15 @@ export default class MockApi extends Api {
 
   public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {};
 
-  public listDeployKeys = async (): Promise<Immutable.List<DeployKey>> => {
+  public listDeployKeys = async (): Promise<Immutable.List<DeployKeyFormType>> => {
     return Immutable.List();
   };
 
-  public createDeployKey = async (protectedEndpoint: DeployKey): Promise<DeployKey> => {
+  public createDeployKey = async (protectedEndpoint: DeployKeyFormTypeContent): Promise<DeployKeyFormType> => {
     return Immutable.Map();
   };
 
-  public deleteDeployKey = async (protectedEndpoint: DeployKey): Promise<void> => {};
+  public deleteDeployKey = async (deployKey: DeployKeyFormType): Promise<void> => {};
 
   public resolveDomain = async (domain: string, type: "A" | "CNAME", timeout: number = 5000): Promise<string[]> => {
     return ["1.1.1.1"];

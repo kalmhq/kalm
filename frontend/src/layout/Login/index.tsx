@@ -5,7 +5,7 @@ import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "types";
 import { validateTokenAction } from "actions/auth";
 import { RootState } from "reducers";
-import { Box, Button, createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Button, createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { KMLink } from "widgets/Link";
 import { KalmLogo2Icon, KalmTextLogoIcon } from "widgets/Icon";
@@ -105,12 +105,12 @@ export class LoginRaw extends React.PureComponent<Props, State> {
     const { classes } = this.props;
     const { error } = this.state;
     const instructions = (
-      <Box>
+      <>
         <KMLink target="_blank" href="https://kalm.dev/docs/install#step-4-admin-service-account">
           View instructions
         </KMLink>{" "}
         for token geneneration
-      </Box>
+      </>
     );
     return (
       <div>
