@@ -27,6 +27,9 @@ import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
+import { ROUTE_FORM_ID } from "forms/formIDs";
+import { FormMidware } from "tutorials/formMidware";
+import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 
 const mapStateToProps = (state: RootState) => {
   const certifications = state.get("certificates").get("certificates");
@@ -43,6 +46,7 @@ const mapStateToProps = (state: RootState) => {
     domains: Array.from(domains),
     ingressIP: state.get("cluster").get("info").get("ingressIP"),
     certifications,
+    form: ROUTE_FORM_ID,
   };
 };
 
@@ -290,6 +294,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     return (
       <div className={classes.root}>
         <Form id="route-form">
+          <FormMidware values={values} form={ROUTE_FORM_ID} />
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
@@ -472,17 +477,14 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
-const connectedForm = connect(mapStateToProps)(withStyles(styles)(RouteFormRaw));
-
-export const RouteForm = withFormik<OwnProps, HttpRouteForm>({
+const form = withFormik<OwnProps & ConnectedProps & WithStyles<typeof styles>, HttpRouteForm>({
   mapPropsToValues: (props) => {
     return props.initial;
   },
-  validate: (values: HttpRouteForm) => {
-    let errors = {};
-    return errors;
-  },
+  validate: formikValidateOrNotBlockByTutorial,
   handleSubmit: async (formValues, { props: { onSubmit } }) => {
     await onSubmit(formValues);
   },
-})(connectedForm);
+})(RouteFormRaw);
+
+export const RouteForm = connect(mapStateToProps)(withStyles(styles)(form));

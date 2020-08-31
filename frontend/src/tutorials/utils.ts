@@ -150,8 +150,11 @@ export const requireSubStepCompleted = (state: RootState, ...subStepIndexes: num
 };
 
 export const getFormValue = (rootState: RootState, form: string, field: string) => {
-  const selector = formValueSelector(form);
-  return selector(rootState, field);
+  const formValues = rootState.get("tutorial").get("formValues")?.get(form);
+  if (!formValues) {
+    return undefined;
+  }
+  return formValues[field];
 };
 
 export const isFormFieldValueEqualTo = (rootState: RootState, form: string, field: string, value: any) => {
@@ -159,7 +162,7 @@ export const isFormFieldValueEqualTo = (rootState: RootState, form: string, fiel
   if (!formValues) {
     return false;
   }
-
+  console.log(formValues);
   return Array.isArray(formValues[field]) ? formValues[field][0] === value[0] : formValues[field] === value;
 };
 
