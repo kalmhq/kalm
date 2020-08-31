@@ -25,12 +25,12 @@ type HttpsCert struct {
 }
 
 type HttpsCertResp struct {
-	HttpsCert                      `json:",inline"`
-	Ready                          string `json:"ready"`
-	Reason                         string `json:"reason"`
-	IsSignedByPublicTrustedCA      bool   `json:"isSignedByTrustedCA,omitempty"`
-	ExpireTimestamp                int64  `json:"expireTimestamp,omitempty"`
-	WildcardCertDNSChallengeDomain string `json:"wildcardCertDNSChallengeDomain,omitempty"`
+	HttpsCert                         `json:",inline"`
+	Ready                             string            `json:"ready"`
+	Reason                            string            `json:"reason"`
+	IsSignedByPublicTrustedCA         bool              `json:"isSignedByTrustedCA,omitempty"`
+	ExpireTimestamp                   int64             `json:"expireTimestamp,omitempty"`
+	WildcardCertDNSChallengeDomainMap map[string]string `json:"wildcardCertDNSChallengeDomainMap,omitempty"`
 }
 
 var ReasonForNoReadyConditions = "no feedback on cert status yet"
@@ -81,7 +81,7 @@ func BuildHttpsCertResponse(httpsCert v1alpha1.HttpsCert) *HttpsCertResp {
 		//todo show content of cert?
 	}
 
-	resp.WildcardCertDNSChallengeDomain = httpsCert.Status.WildcardCertDNSChallengeDomain
+	resp.WildcardCertDNSChallengeDomainMap = httpsCert.Status.WildcardCertDNSChallengeDomainMap
 
 	return &resp
 }

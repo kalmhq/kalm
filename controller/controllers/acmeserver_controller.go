@@ -393,13 +393,19 @@ func (r *ACMEServerReconciler) registerDomainsInACMEServer(
 			continue
 		}
 
-		domain := cert.Spec.Domains[0]
-		config, exist := httpsCertIssuer.Spec.DNS01.Configs[domain]
-		if !exist {
-			continue
+		if cert.Status.WildcardCertDNSChallengeDomainMap == nil {
+			cert.Status.WildcardCertDNSChallengeDomainMap = make(map[string]string)
 		}
 
-		cert.Status.WildcardCertDNSChallengeDomain = config.FullDomain
+		for _, domain := range cert.Spec.Domains {
+			config, exist := httpsCertIssuer.Spec.DNS01.Configs[domain]
+			if !exist {
+				continue
+			}
+
+			cert.Status.WildcardCertDNSChallengeDomainMap[domain] = config.FullDomain
+		}
+
 		if err := r.Status().Update(r.ctx, &cert); err != nil {
 			return nil, err
 		}

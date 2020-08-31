@@ -52,7 +52,7 @@ type HttpsCertStatus struct {
 	// +optional
 	IsSignedByPublicTrustedCA bool `json:"isSignedByTrustedCA"`
 	// +optional
-	WildcardCertDNSChallengeDomain string `json:"wildcardCertDNSChallengeDomain,omitempty"`
+	WildcardCertDNSChallengeDomainMap map[string]string `json:"wildcardCertDNSChallengeDomainMap,omitempty"`
 }
 
 type HttpsCertConditionType string
