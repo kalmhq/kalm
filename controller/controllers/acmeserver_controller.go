@@ -365,14 +365,12 @@ func (r *ACMEServerReconciler) registerDomainsInACMEServer(
 	var needRegisterDomains []string
 	for _, dns01Cert := range dns01Certs {
 		domains := dns01Cert.Spec.Domains
-		if len(domains) <= 0 {
-			continue
-		}
 
-		// todo add check in webhook
-		// for dns cert, only 1 domain is permitted (and without: *)
-		domain := domains[0]
-		if _, exist := httpsCertIssuer.Spec.DNS01.Configs[domain]; !exist {
+		for _, domain := range domains {
+			if _, exist := httpsCertIssuer.Spec.DNS01.Configs[domain]; exist {
+				continue
+			}
+
 			needRegisterDomains = append(needRegisterDomains, domain)
 		}
 	}
