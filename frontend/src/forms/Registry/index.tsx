@@ -44,7 +44,7 @@ class RegistryFormRaw extends React.PureComponent<
     const { classes, isEdit, dirty, values, isSubmittingRegistry, isSubmitting } = this.props;
 
     return (
-      <Form className={classes.root}>
+      <Form className={classes.root} id="registry-form">
         <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
         <KPanel
           content={

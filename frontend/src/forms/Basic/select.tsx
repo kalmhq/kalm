@@ -328,6 +328,7 @@ export const RenderFormikSelectField = (props: FieldProps & SelectProps & Props)
     },
   }))();
   const inputLabel = React.useRef<HTMLLabelElement>(null);
+
   return (
     <FormControl
       classes={{ root: classes.root }}

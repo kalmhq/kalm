@@ -61,14 +61,22 @@ export type ProtectedEndpoint = ImmutableMap<{
   groups?: Immutable.List<string>;
 }>;
 
-export const newEmptyProtectedEndpoint = (): ProtectedEndpoint => {
-  return Immutable.Map({
+export interface ProtectedEndpointFormType {
+  name: string;
+  namespace: string;
+  endpointName: string;
+  ports?: number[];
+  groups?: string[];
+}
+
+export const newEmptyProtectedEndpoint = (): ProtectedEndpointFormType => {
+  return {
     name: "",
     namespace: "",
     endpointName: "",
-    groups: Immutable.List(),
-    ports: Immutable.List(),
-  });
+    groups: [],
+    ports: [],
+  };
 };
 
 export interface LoadSSOConfigAction {
