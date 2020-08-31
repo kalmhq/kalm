@@ -45,13 +45,20 @@ export interface Registry {
   repositories: Immutable.List<Repository>;
 }
 
-export const newEmptyRegistry = (): RegistryType => {
-  return Immutable.Map({
+export interface RegistryFormType {
+  name: string;
+  username: string;
+  password: string;
+  host: string;
+}
+
+export const newEmptyRegistry = (): RegistryFormType => {
+  return {
     name: "",
     username: "",
     password: "",
     host: "",
-  });
+  };
 };
 
 export type RegistryType = ImmutableMap<Registry>;

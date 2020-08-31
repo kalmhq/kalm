@@ -156,7 +156,7 @@ export const ValidatorVolumeSize = (value: string) => {
 };
 
 export const ValidatorName = (value: string) => {
-  if (!value) return undefined;
+  if (!value) return "Required";
 
   if (!value.match(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/) || value === "0") {
     return sc.NAME_RULE;
