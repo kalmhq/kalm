@@ -7,13 +7,13 @@ import { FieldArrayRenderProps } from "forms/Basic/kFieldArray";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { RootState } from "reducers";
-import { getComponentFormVolumeOptions } from "selectors/component";
 import {
   VolumeContent,
   VolumeTypePersistentVolumeClaim,
   VolumeTypePersistentVolumeClaimNew,
   VolumeTypeTemporaryDisk,
   VolumeTypeTemporaryMemory,
+  workloadTypeStatefulSet,
 } from "types/componentTemplate";
 import { sizeStringToGi } from "utils/sizeConv";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
@@ -25,7 +25,8 @@ import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    volumeOptions: getComponentFormVolumeOptions(state),
+    statefulSetOptions: state.get("persistentVolumes").get("statefulSetOptions"),
+    simpleOptions: state.get("persistentVolumes").get("simpleOptions"),
     storageClasses: state.get("persistentVolumes").get("storageClasses"),
   };
 };
@@ -57,8 +58,19 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
     return claimNames;
   }
 
+  private getVolumeOptions = () => {
+    const {
+      form: { values },
+      statefulSetOptions,
+      simpleOptions,
+    } = this.props;
+    return values.workloadType === workloadTypeStatefulSet
+      ? statefulSetOptions.filter((statefulSetOption) => statefulSetOption.get("componentName") === values.name)
+      : simpleOptions;
+  };
+
   private getClaimNameOptions(disk: VolumeContent) {
-    const { volumeOptions } = this.props;
+    const volumeOptions = this.getVolumeOptions();
     const usingClaimNames = this.getUsingClaimNames();
     const currentClaimName = disk.claimName;
 
@@ -114,7 +126,8 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
   }
 
   public getFieldComponents(disk: VolumeContent, index: number) {
-    const { volumeOptions, name } = this.props;
+    const { name } = this.props;
+    const volumeOptions = this.getVolumeOptions();
     const volumeType = disk.type;
     const fieldComponents = [
       <Field
@@ -302,8 +315,6 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
   }
 }
 
-const RenderVolumes = connect(mapStateToProps)(RenderVolumesRaw);
-
 export const Disks = connect(mapStateToProps)((props: any) => {
-  return <FieldArray name="volumes" component={RenderVolumes} {...props} />;
+  return <FieldArray name="volumes" component={RenderVolumesRaw} {...props} />;
 });
