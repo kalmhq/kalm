@@ -29,7 +29,6 @@ func fileExists(filename string) bool {
 }
 
 func (c *Config) Normalize() {
-
 	defaultKubeConfigPath := filepath.Join(os.Getenv("HOME"), ".kube", "config")
 
 	if c.KubeConfigPath == "" && fileExists(defaultKubeConfigPath) && c.KubernetesApiServerAddress == "" && os.Getenv("KUBERNETES_SERVICE_HOST") == "" {
@@ -47,6 +46,10 @@ func (c *Config) DeepCopy() *Config {
 	var res Config
 	_ = json.Unmarshal(bs, &res)
 	return &res
+}
+
+func (c *Config) IsInCluster() bool {
+	return c.KubernetesApiServerAddress == "" && c.KubeConfigPath == ""
 }
 
 func (c *Config) Validate() {

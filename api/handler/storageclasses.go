@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	v1 "k8s.io/api/storage/v1"
@@ -21,6 +22,10 @@ type StorageClass struct {
 
 func (h *ApiHandler) handleListStorageClasses(c echo.Context) error {
 	builder := h.Builder(c)
+
+	if !builder.CanViewCluster() {
+		return resources.NoClusterViewerRoleError
+	}
 
 	var storageClassList v1.StorageClassList
 	if err := builder.List(&storageClassList); err != nil {

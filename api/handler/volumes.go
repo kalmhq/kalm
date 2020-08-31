@@ -16,6 +16,10 @@ import (
 func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 	builder := h.Builder(c)
 
+	if !builder.CanViewCluster() {
+		return resources.NoClusterViewerRoleError
+	}
+
 	var kalmPVCList v1.PersistentVolumeClaimList
 	if err := builder.List(&kalmPVCList, client.MatchingLabels{"kalm-managed": "true"}); err != nil {
 		if !errors.IsNotFound(err) {
@@ -53,6 +57,10 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 	pvcName := c.Param("name")
 
 	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
 
 	var pvc v1.PersistentVolumeClaim
 	if err := builder.Get(pvcNamespace, pvcName, &pvc); err != nil {
@@ -114,6 +122,11 @@ func (h *ApiHandler) handleAvailableVolsForSimpleWorkload(c echo.Context) error 
 	ns := c.QueryParam("currentNamespace")
 
 	builder := h.Builder(c)
+
+	if !builder.CanViewNamespace(ns) {
+		return resources.NoNamespaceViewerRoleError(ns)
+	}
+
 	vols, err := builder.FindAvailableVolsForSimpleWorkload(ns)
 	if err != nil {
 		return err
@@ -126,6 +139,11 @@ func (h *ApiHandler) handleAvailableVolsForSts(c echo.Context) error {
 	ns := c.Param("namespace")
 
 	builder := h.Builder(c)
+
+	if !builder.CanViewNamespace(ns) {
+		return resources.NoNamespaceViewerRoleError(ns)
+	}
+
 	vols, err := builder.FindAvailableVolsForSts(ns)
 	if err != nil {
 		return err

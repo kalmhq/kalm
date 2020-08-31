@@ -9,8 +9,11 @@ import (
 )
 
 func (h *ApiHandler) handleGetHttpsCertIssuer(c echo.Context) error {
-	k8sClientConfig := getK8sClientConfig(c)
-	builder := resources.NewBuilder(k8sClientConfig, h.logger)
+	builder := h.Builder(c)
+
+	if !builder.CanViewCluster() {
+		return resources.NoClusterViewerRoleError
+	}
 
 	httpsCertIssuers, err := builder.GetHttpsCertIssuerList()
 	if err != nil {
@@ -21,6 +24,12 @@ func (h *ApiHandler) handleGetHttpsCertIssuer(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
 	httpsCertIssuer, err := getHttpsCertIssuerFromContext(c)
 	if err != nil {
 		return err
@@ -38,10 +47,7 @@ func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
 	}
 
 	if httpsCertIssuer.ACMECloudFlare != nil {
-		// reconcile secret for this issuer
-		k8sClientConfig := getK8sClientConfig(c)
-		builder := resources.NewBuilder(k8sClientConfig, h.logger)
-
+		builder := h.Builder(c)
 		acmeSecretName := resources.GenerateSecretNameForACME(httpsCertIssuer)
 		err := builder.ReconcileSecretForIssuer(
 			controllers.CertManagerNamespace,
@@ -68,12 +74,18 @@ func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
 }
 
 func (h *ApiHandler) handleUpdateHttpsCertIssuer(c echo.Context) error {
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
 	httpsCertIssuer, err := getHttpsCertIssuerFromContext(c)
 	if err != nil {
 		return err
 	}
 
-	httpsCertIssuer, err = h.Builder(c).UpdateHttpsCertIssuer(httpsCertIssuer)
+	httpsCertIssuer, err = builder.UpdateHttpsCertIssuer(httpsCertIssuer)
 	if err != nil {
 		return err
 	}
@@ -82,10 +94,18 @@ func (h *ApiHandler) handleUpdateHttpsCertIssuer(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteHttpsCertIssuer(c echo.Context) error {
-	err := h.Builder(c).DeleteHttpsCertIssuer(c.Param("name"))
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
+	err := builder.DeleteHttpsCertIssuer(c.Param("name"))
+
 	if err != nil {
 		return err
 	}
+
 	return c.NoContent(200)
 }
 

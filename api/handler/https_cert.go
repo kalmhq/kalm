@@ -6,17 +6,30 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *ApiHandler) handleGetHttpsCerts(context echo.Context) error {
-	httpsCerts, err := h.Builder(context).GetHttpsCerts()
+func (h *ApiHandler) handleGetHttpsCerts(c echo.Context) error {
+	builder := h.Builder(c)
+
+	if !builder.CanViewCluster() {
+		return resources.NoClusterViewerRoleError
+	}
+
+	httpsCerts, err := builder.GetHttpsCerts()
 	if err != nil {
 		return err
 	}
 
-	return context.JSON(200, httpsCerts)
+	return c.JSON(200, httpsCerts)
 }
 
-func (h *ApiHandler) handleCreateHttpsCert(context echo.Context) error {
-	httpsCert, err := getHttpsCertFromContext(context)
+func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
+	httpsCert, err := getHttpsCertFromContext(c)
+
 	if err != nil {
 		return err
 	}
@@ -25,16 +38,23 @@ func (h *ApiHandler) handleCreateHttpsCert(context echo.Context) error {
 		return fmt.Errorf("for selfManaged certs, use /upload instead")
 	}
 
-	httpsCert, err = h.Builder(context).CreateAutoManagedHttpsCert(httpsCert)
+	httpsCert, err = builder.CreateAutoManagedHttpsCert(httpsCert)
 	if err != nil {
 		return err
 	}
 
-	return context.JSON(201, httpsCert)
+	return c.JSON(201, httpsCert)
 }
 
-func (h *ApiHandler) handleUploadHttpsCert(context echo.Context) error {
-	httpsCert, err := getHttpsCertFromContext(context)
+func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
+	httpsCert, err := getHttpsCertFromContext(c)
+
 	if err != nil {
 		return err
 	}
@@ -43,40 +63,55 @@ func (h *ApiHandler) handleUploadHttpsCert(context echo.Context) error {
 		return fmt.Errorf("can only upload selfManaged certs")
 	}
 
-	httpsCert, err = h.Builder(context).CreateSelfManagedHttpsCert(httpsCert)
+	httpsCert, err = builder.CreateSelfManagedHttpsCert(httpsCert)
+
 	if err != nil {
 		return err
 	}
 
-	return context.JSON(201, httpsCert)
+	return c.JSON(201, httpsCert)
 }
 
-func (h *ApiHandler) handleUpdateHttpsCert(context echo.Context) error {
-	httpsCert, err := getHttpsCertFromContext(context)
+func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
+	httpsCert, err := getHttpsCertFromContext(c)
 	if err != nil {
 		return err
 	}
 
 	if httpsCert.IsSelfManaged {
-		httpsCert, err = h.Builder(context).UpdateSelfManagedCert(httpsCert)
+		httpsCert, err = builder.UpdateSelfManagedCert(httpsCert)
 		if err != nil {
 			return err
 		}
 	} else {
-		httpsCert, err = h.Builder(context).UpdateAutoManagedCert(httpsCert)
+		httpsCert, err = builder.UpdateAutoManagedCert(httpsCert)
 		if err != nil {
 			return err
 		}
 	}
 
-	return context.JSON(200, httpsCert)
+	return c.JSON(200, httpsCert)
 }
 
 func (h *ApiHandler) handleDeleteHttpsCert(c echo.Context) error {
-	err := h.Builder(c).DeleteHttpsCert(c.Param("name"))
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
+	err := builder.DeleteHttpsCert(c.Param("name"))
+
 	if err != nil {
 		return err
 	}
+
 	return c.NoContent(200)
 }
 

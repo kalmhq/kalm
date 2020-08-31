@@ -11,7 +11,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -80,16 +79,6 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 		}
 	}
 
-	if info.IngressIP == "" && info.IngressHostname == "" && !h.clientManager.IsInCluster() {
-		r := regexp.MustCompile(`(\d+)\.(\d+)\.(\d+)\.(\d+)`)
-		cfg := getK8sClientConfig(c)
-		matches := r.FindStringSubmatch(cfg.Host)
-
-		if len(matches) > 0 && isPrivateIP(matches[0]) {
-			info.IngressIP = matches[0]
-		}
-	}
-
 	var certNotFound, routeNotFound, ssoNotFound bool
 
 	wg := sync.WaitGroup{}
@@ -141,6 +130,12 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 }
 
 func (h *ApiHandler) handleClusterInfo(c echo.Context) error {
+	builder := h.Builder(c)
+
+	if !builder.CanViewCluster() {
+		return resources.NoClusterViewerRoleError
+	}
+
 	return c.JSON(200, h.getClusterInfo(c))
 }
 
@@ -169,6 +164,12 @@ type SetupClusterResponse struct {
 }
 
 func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
 	clusterInfo := h.getClusterInfo(c)
 
 	if !clusterInfo.CanBeInitialized {
@@ -180,8 +181,6 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 	if err := c.Bind(&body); err != nil {
 		return err
 	}
-
-	builder := h.Builder(c)
 
 	route := &resources.HttpRoute{
 		HttpRouteSpec: &v1alpha1.HttpRouteSpec{
@@ -202,7 +201,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 			},
 		},
 		Name:      KalmRouteName,
-		Namespace: controllers.NamespaceKalmSystem,
+		Namespace: controllers.KalmSystemNamespace,
 	}
 
 	temporaryAdmin := &TemporaryAdmin{
@@ -236,7 +235,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 	}
 
 	protectedEndpoint := &resources.ProtectedEndpoint{
-		Namespace:                   controllers.NamespaceKalmSystem,
+		Namespace:                   controllers.KalmSystemNamespace,
 		EndpointName:                KalmProtectedEndpointName,
 		Ports:                       []uint32{3001},
 		AllowToPassIfHasBearerToken: true,
@@ -285,12 +284,16 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 func (h *ApiHandler) handleResetCluster(c echo.Context) error {
 	builder := h.Builder(c)
 
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
 	wg := sync.WaitGroup{}
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_ = builder.DeleteHttpRoute(controllers.NamespaceKalmSystem, KalmRouteName)
+		_ = builder.DeleteHttpRoute(controllers.KalmSystemNamespace, KalmRouteName)
 	}()
 
 	wg.Add(1)
@@ -309,7 +312,7 @@ func (h *ApiHandler) handleResetCluster(c echo.Context) error {
 	go func() {
 		defer wg.Done()
 		_ = builder.DeleteProtectedEndpoints(&resources.ProtectedEndpoint{
-			Namespace:    controllers.NamespaceKalmSystem,
+			Namespace:    controllers.KalmSystemNamespace,
 			EndpointName: KalmProtectedEndpointName,
 		})
 	}()

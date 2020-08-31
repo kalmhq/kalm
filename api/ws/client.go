@@ -6,9 +6,8 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/log"
+	rbac2 "github.com/kalmhq/kalm/api/rbac"
 	"github.com/kalmhq/kalm/api/resources"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd/api"
 )
 
 type ReqMessage struct {
@@ -34,9 +33,11 @@ type Client struct {
 
 	StopWatcher chan struct{}
 
-	K8sClientManager *client.ClientManager
+	K8sClientManager client.ClientManager
 
-	K8SClientConfig *rest.Config
+	RBACEnforcer rbac2.Enforcer
+
+	ClientInfo *client.ClientInfo
 
 	logger     logr.Logger
 	IsWatching bool
@@ -94,20 +95,14 @@ func (c *Client) read() {
 		var reqMessage ReqMessage
 		_ = json.Unmarshal(messageBytes, &reqMessage)
 
-		if c.K8SClientConfig == nil {
-			authInfo := &api.AuthInfo{Token: reqMessage.Token}
-			err := c.K8sClientManager.IsAuthInfoWorking(authInfo)
+		if c.ClientInfo == nil {
+			clientInfo, err := c.K8sClientManager.GetClientInfoFromToken(reqMessage.Token)
 
-			if err != nil {
-				c.conn.WriteJSON(&ResMessage{Kind: "error", Data: "Invalid Auth Token"})
-			}
-
-			k8sClientConfig, err := c.K8sClientManager.BuildClientConfigWithAuthInfo(authInfo)
 			if err != nil {
 				log.Error(err, "new config error")
 			}
 
-			c.K8SClientConfig = k8sClientConfig
+			c.ClientInfo = clientInfo
 		}
 
 		if reqMessage.Method == "StartWatching" && !c.IsWatching {
@@ -119,7 +114,7 @@ func (c *Client) read() {
 	}
 }
 func (c *Client) Builder() *resources.Builder {
-	return resources.NewBuilder(c.K8SClientConfig, c.logger)
+	return resources.NewBuilder(c.ClientInfo, c.logger, c.RBACEnforcer)
 }
 
 func (c *Client) write() {
@@ -157,5 +152,6 @@ func (c *Client) sendWatchResMessage(resMessage *ResMessage) {
 		log.Error(err, "parse message error")
 		return
 	}
+
 	c.Send <- bts
 }

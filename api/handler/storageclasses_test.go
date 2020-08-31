@@ -45,14 +45,27 @@ func (suite *StorageclassesHandlerTestSuite) TestStorageclassesHandler() {
 	err = suite.Create(&storageClassKalm)
 	suite.Nil(err)
 
-	var storageClasses []*StorageClass
-	rec := suite.NewRequest(http.MethodGet, "/v1alpha1/storageclasses", "")
-	rec.BodyAsJSON(&storageClasses)
+	// list sso
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/storageclasses",
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var storageClasses []*StorageClass
+			rec.BodyAsJSON(&storageClasses)
 
-	suite.EqualValues(200, rec.Code)
-	suite.EqualValues(2, len(storageClasses))
-	suite.EqualValues("test-storage-class", storageClasses[0].Name)
-	suite.EqualValues("test-storage-class-default", storageClasses[1].Name)
+			suite.EqualValues(200, rec.Code)
+			suite.EqualValues(2, len(storageClasses))
+			suite.EqualValues("test-storage-class", storageClasses[0].Name)
+			suite.EqualValues("test-storage-class-default", storageClasses[1].Name)
+		},
+	})
+
 }
 
 func TestStorageclassesHandlerTestSuite(t *testing.T) {

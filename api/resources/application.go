@@ -86,6 +86,64 @@ type Application struct {
 	Name string `json:"name"`
 }
 
+func (builder *Builder) GetNamespace(name string) (*coreV1.Namespace, error) {
+	if !builder.CanViewNamespace(name) {
+		return nil, NoNamespaceViewerRoleError(name)
+	}
+
+	namespace := new(coreV1.Namespace)
+
+	err := builder.Get("", name, namespace)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return namespace, nil
+}
+
+func (builder *Builder) GetNamespaces() ([]*coreV1.Namespace, error) {
+	var fetched coreV1.NamespaceList
+
+	if err := builder.List(&fetched); err != nil {
+		return nil, err
+	}
+
+	res := make([]*coreV1.Namespace, 0, len(fetched.Items))
+
+	for i := range fetched.Items {
+		if builder.CanViewNamespace(fetched.Items[i].Name) {
+			res = append(res, &fetched.Items[i])
+		}
+	}
+
+	return res, nil
+}
+
+func (builder *Builder) CreateNamespace(ns *coreV1.Namespace) error {
+	if !builder.CanEditNamespace(ns.Name) {
+		return NoClusterEditorRoleError
+	}
+
+	if err := builder.Create(ns); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (builder *Builder) DeleteNamespace(ns *coreV1.Namespace) error {
+	if !builder.CanEditNamespace(ns.Name) {
+		return NoClusterEditorRoleError
+	}
+
+	if err := builder.Delete(ns); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (builder *Builder) BuildApplicationDetails(namespace *coreV1.Namespace) (*ApplicationDetails, error) {
 	nsName := namespace.Name
 	roles := make([]string, 0, 2)
@@ -175,12 +233,12 @@ func formatEnvs(envs []v1alpha1.EnvVar) {
 	}
 }
 
-func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.NamespaceList) ([]ApplicationDetails, error) {
+func (builder *Builder) BuildApplicationListResponse(namespaces []*coreV1.Namespace) ([]ApplicationDetails, error) {
 	apps := []ApplicationDetails{}
 
 	// TODO concurrent build response items
-	for i := range namespaceList.Items {
-		ns := namespaceList.Items[i]
+	for i := range namespaces {
+		ns := namespaces[i]
 
 		if ns.Name == KALM_SYSTEM_NAMESPACE {
 			continue
@@ -190,7 +248,7 @@ func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.Namesp
 			continue
 		}
 
-		item, err := builder.BuildApplicationDetails(&ns)
+		item, err := builder.BuildApplicationDetails(ns)
 
 		if err != nil {
 			return nil, err

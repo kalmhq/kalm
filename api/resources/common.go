@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-logr/logr"
+	client2 "github.com/kalmhq/kalm/api/client"
+	"github.com/kalmhq/kalm/api/rbac"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	appV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
@@ -16,7 +18,6 @@ import (
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -239,23 +240,189 @@ func labelsBelongsToApplication(name string) metaV1.ListOptions {
 }
 
 type Builder struct {
-	ctx    context.Context
-	Client client.Client
-	Logger logr.Logger
+	ctx          context.Context
+	rbacEnforcer rbac.Enforcer
+	ClientInfo   *client2.ClientInfo
+	Client       client.Client
+	Logger       logr.Logger
 }
 
-func NewBuilder(cfg *rest.Config, logger logr.Logger) *Builder {
-	c, err := client.New(cfg, client.Options{Scheme: scheme.Scheme})
+func NewBuilder(clientInfo *client2.ClientInfo, logger logr.Logger, rbacEnforcer rbac.Enforcer) *Builder {
+	c, err := client.New(clientInfo.Cfg, client.Options{Scheme: scheme.Scheme})
 
 	if err != nil {
 		return nil
 	}
 
 	return &Builder{
-		ctx:    context.Background(), // TODO
-		Client: c,
-		Logger: logger,
+		ctx:          context.Background(), // TODO
+		rbacEnforcer: rbacEnforcer,
+		ClientInfo:   clientInfo,
+		Client:       c,
+		Logger:       logger,
 	}
+}
+
+func (builder *Builder) CanView(scope string, obj string) bool {
+	if builder.rbacEnforcer == nil {
+		return false
+	}
+
+	if builder.rbacEnforcer.CanView(builder.ClientInfo.Email, scope, obj) {
+		return true
+	}
+
+	for i := range builder.ClientInfo.Groups {
+		if builder.rbacEnforcer.CanView(builder.ClientInfo.Groups[i], scope, obj) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (builder *Builder) CanEdit(scope string, obj string) bool {
+	if builder.rbacEnforcer == nil {
+		return false
+	}
+
+	if builder.rbacEnforcer.CanEdit(builder.ClientInfo.Email, scope, obj) {
+		return true
+	}
+
+	for i := range builder.ClientInfo.Groups {
+		if builder.rbacEnforcer.CanEdit(builder.ClientInfo.Groups[i], scope, obj) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (builder *Builder) CanManage(scope string, obj string) bool {
+	if builder.rbacEnforcer == nil {
+		return false
+	}
+
+	if builder.rbacEnforcer.CanManage(builder.ClientInfo.Email, scope, obj) {
+		return true
+	}
+
+	for i := range builder.ClientInfo.Groups {
+		if builder.rbacEnforcer.CanManage(builder.ClientInfo.Groups[i], scope, obj) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (builder *Builder) CanViewNamespace(scope string) bool {
+	if builder.rbacEnforcer == nil {
+		return false
+	}
+
+	if builder.rbacEnforcer.CanViewNamespace(builder.ClientInfo.Email, scope) {
+		return true
+	}
+
+	for i := range builder.ClientInfo.Groups {
+		if builder.rbacEnforcer.CanViewNamespace(builder.ClientInfo.Groups[i], scope) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (builder *Builder) CanEditNamespace(scope string) bool {
+	if builder.rbacEnforcer == nil {
+		return false
+	}
+
+	if builder.rbacEnforcer.CanEditNamespace(builder.ClientInfo.Email, scope) {
+		return true
+	}
+
+	for i := range builder.ClientInfo.Groups {
+		if builder.rbacEnforcer.CanEditNamespace(builder.ClientInfo.Groups[i], scope) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (builder *Builder) CanManageNamespace(scope string) bool {
+	if builder.rbacEnforcer == nil {
+		return false
+	}
+
+	if builder.rbacEnforcer.CanManageNamespace(builder.ClientInfo.Email, scope) {
+		return true
+	}
+
+	for i := range builder.ClientInfo.Groups {
+		if builder.rbacEnforcer.CanManageNamespace(builder.ClientInfo.Groups[i], scope) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (builder *Builder) CanViewCluster() bool {
+	if builder.rbacEnforcer == nil {
+		return false
+	}
+
+	if builder.rbacEnforcer.CanViewCluster(builder.ClientInfo.Email) {
+		return true
+	}
+
+	for i := range builder.ClientInfo.Groups {
+		if builder.rbacEnforcer.CanViewCluster(builder.ClientInfo.Groups[i]) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (builder *Builder) CanEditCluster() bool {
+	if builder.rbacEnforcer == nil {
+		return false
+	}
+
+	if builder.rbacEnforcer.CanEditCluster(builder.ClientInfo.Email) {
+		return true
+	}
+
+	for i := range builder.ClientInfo.Groups {
+		if builder.rbacEnforcer.CanEditCluster(builder.ClientInfo.Groups[i]) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (builder *Builder) CanManageCluster() bool {
+	if builder.rbacEnforcer == nil {
+		return false
+	}
+
+	if builder.rbacEnforcer.CanManageCluster(builder.ClientInfo.Email) {
+		return true
+	}
+
+	for i := range builder.ClientInfo.Groups {
+		if builder.rbacEnforcer.CanManageCluster(builder.ClientInfo.Groups[i]) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (builder *Builder) Get(namespace, name string, obj runtime.Object) error {

@@ -10,15 +10,15 @@ import (
 )
 
 func (h *ApiHandler) handleGetApplications(c echo.Context) error {
-	var fetched coreV1.NamespaceList
+	builder := h.Builder(c)
 
-	err := h.Builder(c).List(&fetched)
+	namespaces, err := builder.GetNamespaces()
 
 	if err != nil {
 		return err
 	}
 
-	res, err := h.Builder(c).BuildApplicationListResponse(fetched)
+	res, err := builder.BuildApplicationListResponse(namespaces)
 
 	if err != nil {
 		return err
@@ -28,14 +28,14 @@ func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
-	var fetched coreV1.Namespace
-	err := h.Builder(c).Get("", c.Param("name"), &fetched)
+	builder := h.Builder(c)
+	namespace, err := builder.GetNamespace(c.Param("name"))
 
 	if err != nil {
 		return err
 	}
 
-	res, err := h.Builder(c).BuildApplicationDetails(&fetched)
+	res, err := builder.BuildApplicationDetails(namespace)
 
 	if err != nil {
 		return err
@@ -51,11 +51,13 @@ func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
 		return err
 	}
 
-	if err := h.Builder(c).Create(ns); err != nil {
+	builder := h.Builder(c)
+
+	if err := builder.CreateNamespace(ns); err != nil {
 		return err
 	}
 
-	res, err := h.Builder(c).BuildApplicationDetails(ns)
+	res, err := builder.BuildApplicationDetails(ns)
 
 	if err != nil {
 		return err
@@ -65,7 +67,7 @@ func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
-	if err := h.Builder(c).Delete(&coreV1.Namespace{ObjectMeta: metaV1.ObjectMeta{Name: c.Param("name")}}); err != nil {
+	if err := h.Builder(c).DeleteNamespace(&coreV1.Namespace{ObjectMeta: metaV1.ObjectMeta{Name: c.Param("name")}}); err != nil {
 		return err
 	}
 

@@ -18,14 +18,14 @@ type LoginStatusResponse struct {
 }
 
 func (h *ApiHandler) handleValidateToken(c echo.Context) error {
-	authInfo, err := auth.GetAuthInfo(c)
+	token := auth.ExtractTokenFromHeader(c.Request().Header.Get(echo.HeaderAuthorization))
+
+	_, err := h.clientManager.GetClientInfoFromToken(token)
+
 	if err != nil {
 		return err
 	}
-	err = h.clientManager.IsAuthInfoWorking(authInfo)
-	if err != nil {
-		return err
-	}
+
 	return c.NoContent(http.StatusOK)
 }
 
@@ -62,7 +62,7 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		},
 	}
 
-	builder := resources.NewBuilder(clientInfo.Cfg, h.logger)
+	builder := resources.NewBuilder(clientInfo, h.logger, h.rbacEnforcer)
 	err = builder.Create(review)
 
 	if err != nil {

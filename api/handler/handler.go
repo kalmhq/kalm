@@ -4,13 +4,15 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/log"
+	"github.com/kalmhq/kalm/api/rbac"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/api/ws"
 	"github.com/labstack/echo/v4"
 )
 
 type ApiHandler struct {
-	clientManager *client.ClientManager
+	clientManager client.ClientManager
+	rbacEnforcer  rbac.Enforcer
 	logger        logr.Logger
 }
 
@@ -25,7 +27,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	e.GET("/ping", handlePing)
 
 	// watch
-	wsHandler := ws.NewWsHandler(h.clientManager)
+	wsHandler := ws.NewWsHandler(h.clientManager, h.rbacEnforcer)
 	e.GET("/ws", wsHandler.Serve)
 
 	// login
@@ -104,9 +106,9 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload", h.handleAvailableVolsForSimpleWorkload)
 	gv1Alpha1WithAuth.GET("/volumes/available/sts/:namespace", h.handleAvailableVolsForSts)
 
-	gv1Alpha1WithAuth.GET("/deploykeys", h.handleListDeployKeys)
-	gv1Alpha1WithAuth.POST("/deploykeys", h.handleCreateDeployKey)
-	gv1Alpha1WithAuth.DELETE("/deploykeys", h.handleDeleteDeployKey)
+	gv1Alpha1WithAuth.GET("/access_tokens", h.handleListAccessTokens)
+	gv1Alpha1WithAuth.POST("/access_tokens", h.handleCreateAccessToken)
+	gv1Alpha1WithAuth.DELETE("/access_tokens", h.handleDeleteAccessToken)
 
 	gv1Alpha1WithAuth.GET("/sso", h.handleListSSOConfig)
 	gv1Alpha1WithAuth.DELETE("/sso", h.handleDeleteSSOConfig)
@@ -121,19 +123,14 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 // use user token and permission
 func (h *ApiHandler) Builder(c echo.Context) *resources.Builder {
-	k8sClientConfig := getK8sClientConfig(c)
-	return resources.NewBuilder(k8sClientConfig, h.logger)
+	clientInfo := getK8sClientInfo(c)
+	return resources.NewBuilder(clientInfo, h.logger, h.rbacEnforcer)
 }
 
-// use server account name permission
-func (h *ApiHandler) KalmBuilder() *resources.Builder {
-	cfg := h.clientManager.ClusterConfig
-	return resources.NewBuilder(cfg, h.logger)
-}
-
-func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {
+func NewApiHandler(clientManager client.ClientManager, rbacEnforcer rbac.Enforcer) *ApiHandler {
 	return &ApiHandler{
 		clientManager: clientManager,
+		rbacEnforcer:  rbacEnforcer,
 		logger:        log.DefaultLogger(),
 	}
 }

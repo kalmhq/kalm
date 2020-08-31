@@ -19,7 +19,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/client-go/tools/remotecommand"
 )
 
@@ -30,7 +29,7 @@ type WSConn struct {
 
 	K8sClient     *kubernetes.Clientset
 	K8sConfig     *rest.Config
-	clientManager *client.ClientManager
+	clientManager client.ClientManager
 
 	IsAuthorized       bool
 	podResourceRequest chan *WSPodResourceRequest
@@ -192,7 +191,7 @@ func isNormalWebsocketCloseError(err error) bool {
 	return websocket.IsCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived)
 }
 
-func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
+func wsReadLoop(conn *WSConn, clientManager client.ClientManager) (err error) {
 	for {
 		_, message, err := conn.ReadMessage()
 
@@ -228,17 +227,8 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 				continue
 			}
 
-			authInfo := &api.AuthInfo{Token: m.AuthToken}
-
-			if clientManager.IsAuthInfoWorking(authInfo) == nil {
-				cfg, err := clientManager.BuildClientConfigWithAuthInfo(authInfo)
-
-				if err != nil {
-					log.Error(err, "get client config error")
-					continue
-				}
-
-				k8sClient, err := kubernetes.NewForConfig(cfg)
+			if clientInfo, err := clientManager.GetClientInfoFromToken(m.AuthToken); err != nil {
+				k8sClient, err := kubernetes.NewForConfig(clientInfo.Cfg)
 
 				if err != nil {
 					log.Error(err, "new config error")
@@ -246,7 +236,7 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 				}
 
 				conn.K8sClient = k8sClient
-				conn.K8sConfig = cfg
+				conn.K8sConfig = clientInfo.Cfg
 				conn.IsAuthorized = true
 
 				res.Status = StatusOK

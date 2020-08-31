@@ -15,7 +15,8 @@ import (
 )
 
 func StartWatching(c *Client) {
-	informerCache, err := cache.New(c.K8SClientConfig, cache.Options{})
+	informerCache, err := cache.New(c.ClientInfo.Cfg, cache.Options{})
+
 	if err != nil {
 		log.Error(err, "new cache error")
 		return
@@ -33,7 +34,7 @@ func StartWatching(c *Client) {
 	registerWatchHandler(c, &informerCache, &coreV1.PersistentVolumeClaim{}, buildVolumeResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.SingleSignOnConfig{}, buildSSOConfigResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.ProtectedEndpoint{}, buildProtectEndpointResMessage)
-	registerWatchHandler(c, &informerCache, &v1alpha1.DeployKey{}, buildDeployKeyResMessage)
+	registerWatchHandler(c, &informerCache, &v1alpha1.AccessToken{}, buildDeployKeyResMessage)
 
 	informerCache.Start(c.StopWatcher)
 }
@@ -92,7 +93,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 		return &ResMessage{}, nil
 	}
 
-	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
+	builder := c.Builder()
 	applicationDetails, err := builder.BuildApplicationDetails(namespace)
 	if err != nil {
 		return nil, err
@@ -107,7 +108,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 }
 
 func componentToResMessage(c *Client, action string, component *v1alpha1.Component) (*ResMessage, error) {
-	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
+	builder := c.Builder()
 	componentDetails, err := builder.BuildComponentDetails(component, nil)
 	if err != nil {
 		return nil, err
@@ -225,12 +226,14 @@ func buildHttpsCertResMessage(c *Client, action string, objWatched interface{}) 
 
 func buildRegistryResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
 	registry, ok := objWatched.(*v1alpha1.DockerRegistry)
+
 	if !ok {
 		return nil, errors.New("convert watch obj to Registry failed")
 	}
 
-	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
+	builder := c.Builder()
 	registryRes, err := builder.GetDockerRegistry(registry.Name)
+
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +256,7 @@ func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*R
 		return &ResMessage{}, nil
 	}
 
-	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
+	builder := c.Builder()
 
 	var pv coreV1.PersistentVolume
 	if action == "Delete" {
@@ -288,7 +291,7 @@ func buildSSOConfigResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, nil
 	}
 
-	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
+	builder := c.Builder()
 	ssoConfigRes, err := builder.GetSSOConfig()
 	if err != nil {
 		return nil, err
@@ -316,7 +319,7 @@ func buildProtectEndpointResMessage(_ *Client, action string, objWatched interfa
 }
 
 func buildDeployKeyResMessage(_ *Client, action string, objWatched interface{}) (*ResMessage, error) {
-	deployKey, ok := objWatched.(*v1alpha1.DeployKey)
+	deployKey, ok := objWatched.(*v1alpha1.AccessToken)
 
 	if !ok {
 		return nil, errors.New("convert watch obj to DeployKey failed")
@@ -325,6 +328,6 @@ func buildDeployKeyResMessage(_ *Client, action string, objWatched interface{}) 
 	return &ResMessage{
 		Kind:   "DeployKey",
 		Action: action,
-		Data:   resources.BuildDeployKeyFromResource(deployKey),
+		Data:   resources.BuildAccessTokenFromResource(deployKey),
 	}, nil
 }

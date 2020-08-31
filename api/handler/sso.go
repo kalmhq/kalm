@@ -6,7 +6,13 @@ import (
 )
 
 func (h *ApiHandler) handleListSSOConfig(c echo.Context) error {
-	ssoConfig, err := h.Builder(c).GetSSOConfig()
+	builder := h.Builder(c)
+
+	if !builder.CanViewCluster() {
+		return resources.NoClusterViewerRoleError
+	}
+
+	ssoConfig, err := builder.GetSSOConfig()
 
 	if err != nil {
 		return err
@@ -16,7 +22,13 @@ func (h *ApiHandler) handleListSSOConfig(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteSSOConfig(c echo.Context) error {
-	err := h.Builder(c).DeleteSSOConfig()
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
+	err := builder.DeleteSSOConfig()
 
 	if err != nil {
 		return err
@@ -26,13 +38,19 @@ func (h *ApiHandler) handleDeleteSSOConfig(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUpdateSSOConfig(c echo.Context) error {
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
 	ssoConfig := &resources.SSOConfig{}
 
 	if err := c.Bind(ssoConfig); err != nil {
 		return err
 	}
 
-	ssoConfig, err := h.Builder(c).UpdateSSOConfig(ssoConfig)
+	ssoConfig, err := builder.UpdateSSOConfig(ssoConfig)
 
 	if err != nil {
 		return err
@@ -42,13 +60,19 @@ func (h *ApiHandler) handleUpdateSSOConfig(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateSSOConfig(c echo.Context) error {
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
 	ssoConfig := &resources.SSOConfig{}
 
 	if err := c.Bind(ssoConfig); err != nil {
 		return err
 	}
 
-	ssoConfig, err := h.Builder(c).CreateSSOConfig(ssoConfig)
+	ssoConfig, err := builder.CreateSSOConfig(ssoConfig)
 
 	if err != nil {
 		return err
@@ -58,7 +82,13 @@ func (h *ApiHandler) handleCreateSSOConfig(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleListProtectedEndpoints(c echo.Context) error {
-	endpoints, err := h.Builder(c).ListProtectedEndpoints()
+	builder := h.Builder(c)
+
+	if !builder.CanViewCluster() {
+		return resources.NoClusterViewerRoleError
+	}
+
+	endpoints, err := builder.ListProtectedEndpoints()
 
 	if err != nil {
 		return err
@@ -68,13 +98,19 @@ func (h *ApiHandler) handleListProtectedEndpoints(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteProtectedEndpoints(c echo.Context) error {
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
 	protectedEndpoint := &resources.ProtectedEndpoint{}
 
 	if err := c.Bind(protectedEndpoint); err != nil {
 		return err
 	}
 
-	err := h.Builder(c).DeleteProtectedEndpoints(protectedEndpoint)
+	err := builder.DeleteProtectedEndpoints(protectedEndpoint)
 
 	if err != nil {
 		return err
@@ -84,13 +120,19 @@ func (h *ApiHandler) handleDeleteProtectedEndpoints(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateProtectedEndpoints(c echo.Context) error {
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
 	protectedEndpoint := &resources.ProtectedEndpoint{}
 
 	if err := c.Bind(protectedEndpoint); err != nil {
 		return err
 	}
 
-	protectedEndpoint, err := h.Builder(c).CreateProtectedEndpoint(protectedEndpoint)
+	protectedEndpoint, err := builder.CreateProtectedEndpoint(protectedEndpoint)
 
 	if err != nil {
 		return err
@@ -100,17 +142,23 @@ func (h *ApiHandler) handleCreateProtectedEndpoints(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUpdateProtectedEndpoints(c echo.Context) error {
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
 	protectedEndpoint := &resources.ProtectedEndpoint{}
 
 	if err := c.Bind(protectedEndpoint); err != nil {
 		return err
 	}
 
-	protectedEndpoint, err := h.Builder(c).UpdateProtectedEndpoint(protectedEndpoint)
+	protectedEndpoint, err := builder.UpdateProtectedEndpoint(protectedEndpoint)
 
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(201, protectedEndpoint)
+	return c.JSON(200, protectedEndpoint)
 }

@@ -3,7 +3,6 @@ package resources
 import (
 	authorizationV1 "k8s.io/api/authorization/v1"
 	coreV1 "k8s.io/api/core/v1"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
 )
 
@@ -131,26 +130,6 @@ func (builder *Builder) ListNamespaces() ([]Namespace, error) {
 	}
 
 	return resources.Namespaces, nil
-}
-
-func (builder *Builder) CreateNamespace(name string) error {
-	namespace := &coreV1.Namespace{
-		ObjectMeta: metaV1.ObjectMeta{
-			Name: formatNamespaceName(name),
-		},
-	}
-
-	err := builder.Create(namespace)
-
-	if err != nil {
-		return err
-	}
-
-	return builder.createDefaultKalmRoles(namespace.Name)
-}
-
-func (builder *Builder) DeleteNamespace(name string) error {
-	return builder.Delete(&coreV1.Namespace{ObjectMeta: metaV1.ObjectMeta{Name: formatNamespaceName(name)}})
 }
 
 func formatNamespaceName(name string) string {

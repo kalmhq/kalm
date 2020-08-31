@@ -6,7 +6,13 @@ import (
 )
 
 func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
-	list, err := h.Builder(c).GetHttpRoutes("")
+	builder := h.Builder(c)
+
+	if !builder.CanViewCluster() {
+		return resources.NoClusterViewerRoleError
+	}
+
+	list, err := builder.GetHttpRoutes("")
 
 	if err != nil {
 		return err
@@ -16,7 +22,17 @@ func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleListRoutes(c echo.Context) error {
-	list, err := h.Builder(c).GetHttpRoutes(c.Param("namespace"))
+	builder := h.Builder(c)
+
+	if !builder.CanViewCluster() {
+		return resources.NoClusterViewerRoleError
+	}
+
+	if !builder.CanViewCluster() {
+		return resources.NoClusterViewerRoleError
+	}
+
+	list, err := builder.GetHttpRoutes(c.Param("namespace"))
 
 	if err != nil {
 		return err
@@ -26,13 +42,19 @@ func (h *ApiHandler) handleListRoutes(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
 	var route *resources.HttpRoute
 
 	if route, err = getHttpRouteFromContext(c); err != nil {
 		return err
 	}
 
-	if route, err = h.Builder(c).CreateHttpRoute(route); err != nil {
+	if route, err = builder.CreateHttpRoute(route); err != nil {
 		return err
 	}
 
@@ -40,13 +62,19 @@ func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
 }
 
 func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
 	var route *resources.HttpRoute
 
 	if route, err = getHttpRouteFromContext(c); err != nil {
 		return err
 	}
 
-	if route, err = h.Builder(c).UpdateHttpRoute(route); err != nil {
+	if route, err = builder.UpdateHttpRoute(route); err != nil {
 		return err
 	}
 
@@ -54,7 +82,13 @@ func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
 }
 
 func (h *ApiHandler) handleDeleteRoute(c echo.Context) (err error) {
-	if err = h.Builder(c).DeleteHttpRoute(c.Param("namespace"), c.Param("name")); err != nil {
+	builder := h.Builder(c)
+
+	if !builder.CanEditCluster() {
+		return resources.NoClusterEditorRoleError
+	}
+
+	if err = builder.DeleteHttpRoute(c.Param("namespace"), c.Param("name")); err != nil {
 		return err
 	}
 

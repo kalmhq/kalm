@@ -38,16 +38,24 @@ func (suite *K8sHandlerTestSuite) TestHandleGetPVs() {
 		},
 	}
 
-	err := suite.Create(&pv)
-	suite.Nil(err)
+	suite.Nil(suite.Create(&pv))
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterViewerRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1/persistentvolumes",
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var pvList coreV1.PersistentVolumeList
+			rec.BodyAsJSON(&pvList)
 
-	rec := suite.NewRequest(http.MethodGet, "/v1/persistentvolumes", "{}")
-	var pvList coreV1.PersistentVolumeList
-	rec.BodyAsJSON(&pvList)
-
-	suite.NotNil(rec)
-	suite.Equal(1, len(pvList.Items))
-
+			suite.NotNil(rec)
+			suite.Equal(1, len(pvList.Items))
+		},
+	})
 }
 
 func TestK8sHandlerTestSuite(t *testing.T) {
