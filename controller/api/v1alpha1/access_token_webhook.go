@@ -70,6 +70,11 @@ func (r *AccessToken) ValidateUpdate(old runtime.Object) error {
 	return r.validate()
 }
 
+func GetAccessTokenNameFromToken(token string) string {
+	tokenHash := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(tokenHash[:])
+}
+
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *AccessToken) ValidateDelete() error {
 	accesstokenlog.Info("validate delete", "name", r.Name)
@@ -79,8 +84,7 @@ func (r *AccessToken) ValidateDelete() error {
 func (r *AccessToken) validate() error {
 	var rst KalmValidateErrorList
 
-	tokenHash := sha256.Sum256([]byte(r.Spec.Token))
-	expectedName := hex.EncodeToString(tokenHash[:])
+	expectedName := GetAccessTokenNameFromToken(r.Spec.Token)
 
 	if expectedName != r.Name {
 		rst = append(rst, KalmValidateError{
