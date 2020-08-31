@@ -111,12 +111,12 @@ func (r *HttpsCert) validate() error {
 				}
 			}
 		} else if r.Spec.HttpsCertIssuer == DefaultDNS01IssuerName {
-			if len(r.Spec.Domains) != 1 {
-				rst = append(rst, KalmValidateError{
-					Err:  "dns01 cert support only 1 domain",
-					Path: "spec.domains",
-				})
-			}
+			//if len(r.Spec.Domains) != 1 {
+			//	rst = append(rst, KalmValidateError{
+			//		Err:  "dns01 cert support only 1 domain",
+			//		Path: "spec.domains",
+			//	})
+			//}
 
 			if strings.Contains(r.Spec.Domains[0], "*") {
 				rst = append(rst, KalmValidateError{
