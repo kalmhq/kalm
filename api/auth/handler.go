@@ -30,7 +30,6 @@ func GetAuthInfo(c echo.Context) (*api.AuthInfo, error) {
 	var loginData LoginData
 
 	if err := c.Bind(&loginData); err != nil {
-		return nil, err
 	}
 
 	authInfo := api.AuthInfo{}
