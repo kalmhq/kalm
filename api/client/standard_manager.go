@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/kalmhq/kalm/api/auth"
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/rbac"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -17,8 +16,6 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	toolscache "k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/tools/clientcmd/api"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"strings"
 	"sync"
@@ -171,52 +168,6 @@ func (m *StandardClientManager) GetConfigForClientRequestContext(c echo.Context)
 	return nil, errors.NewUnauthorized("")
 }
 
-func (m *StandardClientManager) buildClientConfigWithAuthInfo(authInfo *api.AuthInfo) (*rest.Config, error) {
-	clientConfig := buildCmdConfig(authInfo, m.ClusterConfig)
-
-	cfg, err := clientConfig.ClientConfig()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return cfg, nil
-}
-
-func buildCmdConfig(authInfo *api.AuthInfo, cfg *rest.Config) clientcmd.ClientConfig {
-	cmdCfg := api.NewConfig()
-	cmdCfg.Clusters[DefaultCmdConfigName] = &api.Cluster{
-		Server:                   cfg.Host,
-		CertificateAuthority:     cfg.TLSClientConfig.CAFile,
-		CertificateAuthorityData: cfg.TLSClientConfig.CAData,
-		InsecureSkipTLSVerify:    cfg.TLSClientConfig.Insecure,
-	}
-	cmdCfg.AuthInfos[DefaultCmdConfigName] = authInfo
-	cmdCfg.Contexts[DefaultCmdConfigName] = &api.Context{
-		Cluster:  DefaultCmdConfigName,
-		AuthInfo: DefaultCmdConfigName,
-	}
-	cmdCfg.CurrentContext = DefaultCmdConfigName
-
-	return clientcmd.NewDefaultClientConfig(
-		*cmdCfg,
-		&clientcmd.ConfigOverrides{},
-	)
-}
-
-func extractAuthTokenFromClientRequestContext(c echo.Context) string {
-	req := c.Request()
-
-	authHeader := req.Header.Get(echo.HeaderAuthorization)
-	token := auth.ExtractTokenFromHeader(authHeader)
-
-	if token != "" {
-		return token
-	}
-
-	return ""
-}
-
 // Since the token is validated by api server, so we don't need to valid the token again here.
 func tryToParseEntityFromToken(tokenString string) string {
 	if tokenString == "" {
@@ -249,12 +200,12 @@ func NewStandardClientManager(cfg *rest.Config) *StandardClientManager {
 		RoleBindings:      make(map[string]*v1alpha1.RoleBinding),
 	}
 
-	newResourcesWatcher(cfg, manager)
+	setupResourcesWatcher(cfg, manager)
 
 	return manager
 }
 
-func newResourcesWatcher(cfg *rest.Config, manager *StandardClientManager) {
+func setupResourcesWatcher(cfg *rest.Config, manager *StandardClientManager) {
 	informerCache, err := cache.New(cfg, cache.Options{})
 
 	if err != nil {

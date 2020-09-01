@@ -2,6 +2,7 @@ package client
 
 import (
 	"github.com/casbin/casbin/v2/persist"
+	"github.com/kalmhq/kalm/api/auth"
 	"github.com/kalmhq/kalm/api/rbac"
 	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/rest"
@@ -221,4 +222,17 @@ func (m *BaseClientManager) CanManageCluster(client *ClientInfo) bool {
 	}
 
 	return false
+}
+
+func extractAuthTokenFromClientRequestContext(c echo.Context) string {
+	req := c.Request()
+
+	authHeader := req.Header.Get(echo.HeaderAuthorization)
+	token := auth.ExtractTokenFromHeader(authHeader)
+
+	if token != "" {
+		return token
+	}
+
+	return ""
 }
