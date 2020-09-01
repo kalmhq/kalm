@@ -52,7 +52,7 @@ type RoleBindingResponse struct {
 }
 
 func (h *ApiHandler) handleListRoleBindings(c echo.Context) error {
-	bindings, err := h.Builder(c).ListRoleBindings("")
+	bindings, err := h.builder.ListRoleBindings("")
 
 	if err != nil {
 		log.Error(err, "list role bindings error")
@@ -130,13 +130,13 @@ func (h *ApiHandler) handleCreateRoleBinding(c echo.Context) (err error) {
 			subject.Namespace = "kalm-system"
 			subject.APIGroup = ""
 
-			err = h.Builder(c).CreateKalmServiceAccount(subject.Name)
+			err = h.builder.CreateKalmServiceAccount(subject.Name)
 			if err != nil && !errors.IsAlreadyExists(err) {
 				return err
 			}
 		}
 
-		err := h.Builder(c).CreateRoleBinding(body.Namespace, subject, string(role))
+		err := h.builder.CreateRoleBinding(body.Namespace, subject, string(role))
 
 		if err != nil && errors.IsAlreadyExists(err) {
 			continue
@@ -151,7 +151,7 @@ func (h *ApiHandler) handleCreateRoleBinding(c echo.Context) (err error) {
 }
 
 func (h *ApiHandler) handleDeleteRoleBinding(c echo.Context) error {
-	err := h.Builder(c).DeleteRoleBinding(c.Param("namespace"), c.Param("name"))
+	err := h.builder.DeleteRoleBinding(c.Param("namespace"), c.Param("name"))
 
 	if err != nil {
 		return err
@@ -165,7 +165,7 @@ func (h *ApiHandler) resolveClusterRole() error {
 }
 
 func (h *ApiHandler) handleGetServiceAccount(c echo.Context) error {
-	token, crt, err := h.Builder(c).GetServiceAccountSecrets(c.Param("name"))
+	token, crt, err := h.builder.GetServiceAccountSecrets(c.Param("name"))
 
 	if err != nil {
 		return err

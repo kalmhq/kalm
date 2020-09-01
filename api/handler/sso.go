@@ -6,13 +6,11 @@ import (
 )
 
 func (h *ApiHandler) handleListSSOConfig(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
-	ssoConfig, err := builder.GetSSOConfig()
+	ssoConfig, err := h.builder.GetSSOConfig()
 
 	if err != nil {
 		return err
@@ -22,13 +20,11 @@ func (h *ApiHandler) handleListSSOConfig(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteSSOConfig(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
-	err := builder.DeleteSSOConfig()
+	err := h.builder.DeleteSSOConfig()
 
 	if err != nil {
 		return err
@@ -38,8 +34,6 @@ func (h *ApiHandler) handleDeleteSSOConfig(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUpdateSSOConfig(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
@@ -50,7 +44,7 @@ func (h *ApiHandler) handleUpdateSSOConfig(c echo.Context) error {
 		return err
 	}
 
-	ssoConfig, err := builder.UpdateSSOConfig(ssoConfig)
+	ssoConfig, err := h.builder.UpdateSSOConfig(ssoConfig)
 
 	if err != nil {
 		return err
@@ -60,8 +54,6 @@ func (h *ApiHandler) handleUpdateSSOConfig(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateSSOConfig(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
@@ -72,7 +64,7 @@ func (h *ApiHandler) handleCreateSSOConfig(c echo.Context) error {
 		return err
 	}
 
-	ssoConfig, err := builder.CreateSSOConfig(ssoConfig)
+	ssoConfig, err := h.builder.CreateSSOConfig(ssoConfig)
 
 	if err != nil {
 		return err
@@ -82,13 +74,11 @@ func (h *ApiHandler) handleCreateSSOConfig(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleListProtectedEndpoints(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
-	endpoints, err := builder.ListProtectedEndpoints()
+	endpoints, err := h.builder.ListProtectedEndpoints()
 
 	if err != nil {
 		return err
@@ -98,8 +88,6 @@ func (h *ApiHandler) handleListProtectedEndpoints(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteProtectedEndpoints(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
@@ -110,7 +98,7 @@ func (h *ApiHandler) handleDeleteProtectedEndpoints(c echo.Context) error {
 		return err
 	}
 
-	err := builder.DeleteProtectedEndpoints(protectedEndpoint)
+	err := h.builder.DeleteProtectedEndpoints(protectedEndpoint)
 
 	if err != nil {
 		return err
@@ -120,8 +108,6 @@ func (h *ApiHandler) handleDeleteProtectedEndpoints(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateProtectedEndpoints(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
@@ -132,7 +118,7 @@ func (h *ApiHandler) handleCreateProtectedEndpoints(c echo.Context) error {
 		return err
 	}
 
-	protectedEndpoint, err := builder.CreateProtectedEndpoint(protectedEndpoint)
+	protectedEndpoint, err := h.builder.CreateProtectedEndpoint(protectedEndpoint)
 
 	if err != nil {
 		return err
@@ -142,8 +128,6 @@ func (h *ApiHandler) handleCreateProtectedEndpoints(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUpdateProtectedEndpoints(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
@@ -154,7 +138,7 @@ func (h *ApiHandler) handleUpdateProtectedEndpoints(c echo.Context) error {
 		return err
 	}
 
-	protectedEndpoint, err := builder.UpdateProtectedEndpoint(protectedEndpoint)
+	protectedEndpoint, err := h.builder.UpdateProtectedEndpoint(protectedEndpoint)
 
 	if err != nil {
 		return err

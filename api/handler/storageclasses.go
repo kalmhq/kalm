@@ -21,14 +21,12 @@ type StorageClass struct {
 }
 
 func (h *ApiHandler) handleListStorageClasses(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
 	var storageClassList v1.StorageClassList
-	if err := builder.List(&storageClassList); err != nil {
+	if err := h.builder.List(&storageClassList); err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}

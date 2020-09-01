@@ -10,9 +10,7 @@ func (h *ApiHandler) handleListAccessTokens(c echo.Context) error {
 		return resources.NoClusterViewerRoleError
 	}
 
-	builder := h.Builder(c)
-
-	keys, err := builder.GetAccessTokens(c.Param("namespace"))
+	keys, err := h.builder.GetAccessTokens(c.Param("namespace"))
 
 	if err != nil {
 		return err
@@ -22,8 +20,6 @@ func (h *ApiHandler) handleListAccessTokens(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
@@ -33,7 +29,7 @@ func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
 		return err
 	}
 
-	accessToken, err = builder.CreateAccessToken(accessToken)
+	accessToken, err = h.builder.CreateAccessToken(accessToken)
 	if err != nil {
 		return err
 	}
@@ -42,8 +38,6 @@ func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
@@ -54,7 +48,7 @@ func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
 		return err
 	}
 
-	if err := builder.DeleteAccessToken(accessToken.Name); err != nil {
+	if err := h.builder.DeleteAccessToken(accessToken.Name); err != nil {
 		return err
 	}
 

@@ -9,13 +9,12 @@ import (
 )
 
 func (h *ApiHandler) handleGetHttpsCertIssuer(c echo.Context) error {
-	builder := h.Builder(c)
 
 	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
-	httpsCertIssuers, err := builder.GetHttpsCertIssuerList()
+	httpsCertIssuers, err := h.builder.GetHttpsCertIssuerList()
 	if err != nil {
 		return err
 	}
@@ -46,9 +45,9 @@ func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
 	}
 
 	if httpsCertIssuer.ACMECloudFlare != nil {
-		builder := h.Builder(c)
+
 		acmeSecretName := resources.GenerateSecretNameForACME(httpsCertIssuer)
-		err := builder.ReconcileSecretForIssuer(
+		err := h.builder.ReconcileSecretForIssuer(
 			controllers.CertManagerNamespace,
 			acmeSecretName,
 			httpsCertIssuer.ACMECloudFlare.Secret,
@@ -64,7 +63,7 @@ func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
 		}
 	}
 
-	err = h.Builder(c).Create(&resource)
+	err = h.builder.Create(&resource)
 	if err != nil {
 		return err
 	}
@@ -73,7 +72,6 @@ func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
 }
 
 func (h *ApiHandler) handleUpdateHttpsCertIssuer(c echo.Context) error {
-	builder := h.Builder(c)
 
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
@@ -84,7 +82,7 @@ func (h *ApiHandler) handleUpdateHttpsCertIssuer(c echo.Context) error {
 		return err
 	}
 
-	httpsCertIssuer, err = builder.UpdateHttpsCertIssuer(httpsCertIssuer)
+	httpsCertIssuer, err = h.builder.UpdateHttpsCertIssuer(httpsCertIssuer)
 	if err != nil {
 		return err
 	}
@@ -93,13 +91,12 @@ func (h *ApiHandler) handleUpdateHttpsCertIssuer(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteHttpsCertIssuer(c echo.Context) error {
-	builder := h.Builder(c)
 
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
-	err := builder.DeleteHttpsCertIssuer(c.Param("name"))
+	err := h.builder.DeleteHttpsCertIssuer(c.Param("name"))
 
 	if err != nil {
 		return err

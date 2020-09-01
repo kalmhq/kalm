@@ -5,7 +5,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/log"
-	rbac2 "github.com/kalmhq/kalm/api/rbac"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -19,21 +18,19 @@ var (
 )
 
 type WsHandler struct {
-	k8sClientManager client.ClientManager
-	rbacEnforcer     rbac2.Enforcer
-	clientPool       *ClientPool
-	logger           logr.Logger
+	clientManager client.ClientManager
+	clientPool    *ClientPool
+	logger        logr.Logger
 }
 
-func NewWsHandler(k8sClientManager client.ClientManager, enforcer rbac2.Enforcer) *WsHandler {
+func NewWsHandler(clientManager client.ClientManager) *WsHandler {
 	clientPool := NewClientPool()
 	go clientPool.run()
 
 	return &WsHandler{
-		k8sClientManager: k8sClientManager,
-		clientPool:       clientPool,
-		rbacEnforcer:     enforcer,
-		logger:           log.DefaultLogger(),
+		clientManager: clientManager,
+		clientPool:    clientPool,
+		logger:        log.DefaultLogger(),
 	}
 }
 
@@ -43,8 +40,7 @@ func (h *WsHandler) Serve(c echo.Context) error {
 		Send:             make(chan []byte, 256),
 		Done:             make(chan struct{}),
 		StopWatcher:      make(chan struct{}),
-		K8sClientManager: h.k8sClientManager,
-		RBACEnforcer:     h.rbacEnforcer,
+		K8sClientManager: h.clientManager,
 		logger:           h.logger,
 	}
 
@@ -57,7 +53,7 @@ func (h *WsHandler) Serve(c echo.Context) error {
 
 	clt.conn = conn
 
-	clientInfo, err := h.k8sClientManager.GetConfigForClientRequestContext(c)
+	clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
 
 	if err == nil {
 		clt.ClientInfo = clientInfo

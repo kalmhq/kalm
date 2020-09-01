@@ -7,7 +7,6 @@ import (
 
 func (h *ApiHandler) handleListClusterServices(c echo.Context) error {
 	namespace := c.Param("namespace")
-	builder := h.Builder(c)
 
 	if namespace != "" {
 		if !h.clientManager.CanViewNamespace(getCurrentUser(c), namespace) {
@@ -19,7 +18,7 @@ func (h *ApiHandler) handleListClusterServices(c echo.Context) error {
 		}
 	}
 
-	list, err := builder.GetServices(namespace)
+	list, err := h.builder.GetServices(namespace)
 
 	if err != nil {
 		return err

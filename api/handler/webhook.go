@@ -62,7 +62,7 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 		return resources.NoObjectEditorRoleError(callParams.Namespace, "components/"+callParams.ComponentName)
 	}
 
-	crdComp, err := builder.GetComponent(callParams.Namespace, callParams.ComponentName)
+	crdComp, err := h.builder.GetComponent(callParams.Namespace, callParams.ComponentName)
 
 	if err != nil {
 		return err
@@ -82,7 +82,7 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 	updateTs := int(time.Now().Unix())
 	copiedComp.Annotations[controllers.AnnoLastUpdatedByWebhook] = strconv.Itoa(updateTs)
 
-	if err := builder.Patch(copiedComp, client.MergeFrom(crdComp)); err != nil {
+	if err := h.builder.Patch(copiedComp, client.MergeFrom(crdComp)); err != nil {
 		h.logger.Info("fail updating component", "name", copiedComp.Name, "time", updateTs)
 		return err
 	}
@@ -90,12 +90,12 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 	h.logger.Info("updating component", "name", copiedComp.Name, "time", updateTs)
 
 	var accessToken v1alpha1.AccessToken
-	if err := builder.Get("", clientInfo.Name, &accessToken); err == nil {
+	if err := h.builder.Get("", clientInfo.Name, &accessToken); err == nil {
 		copiedKey := accessToken.DeepCopy()
 		copiedKey.Status.UsedCount += 1
 		copiedKey.Status.LastUsedAt = updateTs
 
-		if err := builder.Patch(copiedKey, client.MergeFrom(&accessToken)); err != nil {
+		if err := h.builder.Patch(copiedKey, client.MergeFrom(&accessToken)); err != nil {
 			h.logger.Error(err, "fail update status of access token")
 		}
 	} else {

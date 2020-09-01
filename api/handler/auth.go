@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"github.com/kalmhq/kalm/api/resources"
 	"net/http"
 
 	"github.com/kalmhq/kalm/api/auth"
@@ -62,8 +61,7 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		},
 	}
 
-	builder := resources.NewBuilder(clientInfo.Cfg, h.logger)
-	err = builder.Create(review)
+	err = h.builder.Create(review)
 
 	if err != nil {
 		return err

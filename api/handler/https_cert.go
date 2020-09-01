@@ -7,13 +7,11 @@ import (
 )
 
 func (h *ApiHandler) handleGetHttpsCerts(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
-	httpsCerts, err := builder.GetHttpsCerts()
+	httpsCerts, err := h.builder.GetHttpsCerts()
 	if err != nil {
 		return err
 	}
@@ -22,8 +20,6 @@ func (h *ApiHandler) handleGetHttpsCerts(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
@@ -38,7 +34,7 @@ func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
 		return fmt.Errorf("for selfManaged certs, use /upload instead")
 	}
 
-	httpsCert, err = builder.CreateAutoManagedHttpsCert(httpsCert)
+	httpsCert, err = h.builder.CreateAutoManagedHttpsCert(httpsCert)
 	if err != nil {
 		return err
 	}
@@ -47,8 +43,6 @@ func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
@@ -63,7 +57,7 @@ func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
 		return fmt.Errorf("can only upload selfManaged certs")
 	}
 
-	httpsCert, err = builder.CreateSelfManagedHttpsCert(httpsCert)
+	httpsCert, err = h.builder.CreateSelfManagedHttpsCert(httpsCert)
 
 	if err != nil {
 		return err
@@ -73,8 +67,6 @@ func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
@@ -85,12 +77,12 @@ func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
 	}
 
 	if httpsCert.IsSelfManaged {
-		httpsCert, err = builder.UpdateSelfManagedCert(httpsCert)
+		httpsCert, err = h.builder.UpdateSelfManagedCert(httpsCert)
 		if err != nil {
 			return err
 		}
 	} else {
-		httpsCert, err = builder.UpdateAutoManagedCert(httpsCert)
+		httpsCert, err = h.builder.UpdateAutoManagedCert(httpsCert)
 		if err != nil {
 			return err
 		}
@@ -100,13 +92,11 @@ func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteHttpsCert(c echo.Context) error {
-	builder := h.Builder(c)
-
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
-	err := builder.DeleteHttpsCert(c.Param("name"))
+	err := h.builder.DeleteHttpsCert(c.Param("name"))
 
 	if err != nil {
 		return err

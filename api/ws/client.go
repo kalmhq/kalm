@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/log"
-	rbac2 "github.com/kalmhq/kalm/api/rbac"
 	"github.com/kalmhq/kalm/api/resources"
 )
 
@@ -34,8 +33,6 @@ type Client struct {
 	StopWatcher chan struct{}
 
 	K8sClientManager client.ClientManager
-
-	RBACEnforcer rbac2.Enforcer
 
 	ClientInfo *client.ClientInfo
 

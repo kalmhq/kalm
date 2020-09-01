@@ -53,7 +53,6 @@ func isPrivateIP(ip string) bool {
 }
 
 func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
-	builder := h.Builder(c)
 
 	info := &ClusterInfo{}
 
@@ -67,7 +66,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	info.TLSPort = &tlsPort
 
 	var ingressService coreV1.Service
-	err := builder.Get("istio-system", "istio-ingressgateway", &ingressService)
+	err := h.builder.Get("istio-system", "istio-ingressgateway", &ingressService)
 
 	if err == nil {
 		if len(ingressService.Status.LoadBalancer.Ingress) > 0 {
@@ -86,7 +85,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		certNotFound = errors.IsNotFound(builder.Get(
+		certNotFound = errors.IsNotFound(h.builder.Get(
 			"",
 			KalmRouteCertName,
 			&v1alpha1.HttpsCert{},
@@ -96,7 +95,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		routeNotFound = errors.IsNotFound(builder.Get(
+		routeNotFound = errors.IsNotFound(h.builder.Get(
 			controllers.KALM_DEX_NAMESPACE,
 			KalmRouteName,
 			&v1alpha1.HttpRoute{},
@@ -106,7 +105,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		ssoNotFound = errors.IsNotFound(builder.Get(
+		ssoNotFound = errors.IsNotFound(h.builder.Get(
 			controllers.KALM_DEX_NAMESPACE,
 			resources.SSO_NAME,
 			&v1alpha1.SingleSignOnConfig{},
@@ -169,7 +168,6 @@ type SetupClusterResponse struct {
 }
 
 func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
-	builder := h.Builder(c)
 
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
@@ -253,25 +251,25 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 		route.HttpRouteSpec.HttpRedirectToHttps = false
 		route.HttpRouteSpec.Schemes = []v1alpha1.HttpRouteScheme{"http"}
 	} else {
-		_, err := builder.CreateAutoManagedHttpsCert(httpsCertForKalm)
+		_, err := h.builder.CreateAutoManagedHttpsCert(httpsCertForKalm)
 		if err != nil {
 			return err
 		}
 	}
 
-	_, err = builder.CreateHttpRoute(route)
+	_, err = h.builder.CreateHttpRoute(route)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = h.Builder(c).CreateProtectedEndpoint(protectedEndpoint)
+	_, err = h.builder.CreateProtectedEndpoint(protectedEndpoint)
 
 	if err != nil {
 		return err
 	}
 
-	ssoConfig, err = h.Builder(c).CreateSSOConfig(ssoConfig)
+	ssoConfig, err = h.builder.CreateSSOConfig(ssoConfig)
 
 	if err != nil {
 		return err
@@ -287,7 +285,6 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleResetCluster(c echo.Context) error {
-	builder := h.Builder(c)
 
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
@@ -298,25 +295,25 @@ func (h *ApiHandler) handleResetCluster(c echo.Context) error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_ = builder.DeleteHttpRoute(controllers.KalmSystemNamespace, KalmRouteName)
+		_ = h.builder.DeleteHttpRoute(controllers.KalmSystemNamespace, KalmRouteName)
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_ = builder.DeleteHttpsCert(KalmRouteCertName)
+		_ = h.builder.DeleteHttpsCert(KalmRouteCertName)
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_ = builder.DeleteSSOConfig()
+		_ = h.builder.DeleteSSOConfig()
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_ = builder.DeleteProtectedEndpoints(&resources.ProtectedEndpoint{
+		_ = h.builder.DeleteProtectedEndpoints(&resources.ProtectedEndpoint{
 			Namespace:    controllers.KalmSystemNamespace,
 			EndpointName: KalmProtectedEndpointName,
 		})

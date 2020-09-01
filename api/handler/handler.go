@@ -4,15 +4,14 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/log"
-	"github.com/kalmhq/kalm/api/rbac"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/api/ws"
 	"github.com/labstack/echo/v4"
 )
 
 type ApiHandler struct {
+	builder       *resources.Builder
 	clientManager client.ClientManager
-	rbacEnforcer  rbac.Enforcer
 	logger        logr.Logger
 }
 
@@ -31,7 +30,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	e.GET("/ping", handlePing)
 
 	// watch
-	wsHandler := ws.NewWsHandler(h.clientManager, h.rbacEnforcer)
+	wsHandler := ws.NewWsHandler(h.clientManager)
 	e.GET("/ws", wsHandler.Serve)
 
 	// login
@@ -125,15 +124,10 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.PUT("/protectedendpoints", h.handleUpdateProtectedEndpoints)
 }
 
-// use user token and permission
-func (h *ApiHandler) Builder(c echo.Context) *resources.Builder {
-	clientInfo := getCurrentUser(c)
-	return resources.NewBuilder(clientInfo.Cfg, h.logger)
-}
-
 func NewApiHandler(clientManager client.ClientManager) *ApiHandler {
 	return &ApiHandler{
 		clientManager: clientManager,
 		logger:        log.DefaultLogger(),
+		builder:       resources.NewBuilder(clientManager.GetDefaultClusterConfig(), log.DefaultLogger()),
 	}
 }
