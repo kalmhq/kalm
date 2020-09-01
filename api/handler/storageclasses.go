@@ -23,7 +23,7 @@ type StorageClass struct {
 func (h *ApiHandler) handleListStorageClasses(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanViewCluster() {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 

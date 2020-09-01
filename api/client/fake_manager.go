@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/kalmhq/kalm/api/rbac"
 	"github.com/labstack/echo/v4"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/rest"
@@ -9,6 +10,7 @@ import (
 
 // For test only
 type FakeClientManager struct {
+	*BaseClientManager
 	ClusterConfig *rest.Config
 }
 
@@ -72,8 +74,9 @@ func parseFakeToken(token string) (email string, roles []string) {
 	return
 }
 
-func NewFakeClientManager(cfg *rest.Config) *FakeClientManager {
+func NewFakeClientManager(cfg *rest.Config, policies string) *FakeClientManager {
 	return &FakeClientManager{
-		ClusterConfig: cfg,
+		BaseClientManager: NewBaseClientManager(rbac.NewStringPolicyAdapter(policies)),
+		ClusterConfig:     cfg,
 	}
 }

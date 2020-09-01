@@ -14,6 +14,19 @@ func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 
 	namespaces, err := builder.GetNamespaces()
 
+	l := len(namespaces)
+
+	// select all visible namespaces
+	for i := 0; i < l; i++ {
+		if !h.clientManager.CanViewNamespace(getCurrentUser(c), namespaces[i].Name) {
+			namespaces[l-1], namespaces[i] = namespaces[l-1], namespaces[i]
+			i--
+			l--
+		}
+	}
+
+	namespaces = namespaces[:l]
+
 	if err != nil {
 		return err
 	}
@@ -28,6 +41,10 @@ func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
+	if !h.clientManager.CanViewNamespace(getCurrentUser(c), c.Param("name")) {
+		return resources.NoNamespaceViewerRoleError(c.Param("name"))
+	}
+
 	builder := h.Builder(c)
 	namespace, err := builder.GetNamespace(c.Param("name"))
 
@@ -45,6 +62,10 @@ func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
+		return resources.NoClusterEditorRoleError
+	}
+
 	ns, err := getKalmNamespaceFromContext(c)
 
 	if err != nil {
@@ -67,6 +88,10 @@ func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
+		return resources.NoClusterEditorRoleError
+	}
+
 	if err := h.Builder(c).DeleteNamespace(&coreV1.Namespace{ObjectMeta: metaV1.ObjectMeta{Name: c.Param("name")}}); err != nil {
 		return err
 	}

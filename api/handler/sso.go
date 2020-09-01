@@ -8,7 +8,7 @@ import (
 func (h *ApiHandler) handleListSSOConfig(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanViewCluster() {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
@@ -24,7 +24,7 @@ func (h *ApiHandler) handleListSSOConfig(c echo.Context) error {
 func (h *ApiHandler) handleDeleteSSOConfig(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -40,7 +40,7 @@ func (h *ApiHandler) handleDeleteSSOConfig(c echo.Context) error {
 func (h *ApiHandler) handleUpdateSSOConfig(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -62,7 +62,7 @@ func (h *ApiHandler) handleUpdateSSOConfig(c echo.Context) error {
 func (h *ApiHandler) handleCreateSSOConfig(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -84,7 +84,7 @@ func (h *ApiHandler) handleCreateSSOConfig(c echo.Context) error {
 func (h *ApiHandler) handleListProtectedEndpoints(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanViewCluster() {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
@@ -100,7 +100,7 @@ func (h *ApiHandler) handleListProtectedEndpoints(c echo.Context) error {
 func (h *ApiHandler) handleDeleteProtectedEndpoints(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -122,7 +122,7 @@ func (h *ApiHandler) handleDeleteProtectedEndpoints(c echo.Context) error {
 func (h *ApiHandler) handleCreateProtectedEndpoints(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -144,7 +144,7 @@ func (h *ApiHandler) handleCreateProtectedEndpoints(c echo.Context) error {
 func (h *ApiHandler) handleUpdateProtectedEndpoints(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 

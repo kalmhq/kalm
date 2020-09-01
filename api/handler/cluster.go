@@ -11,6 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/client-go/kubernetes"
 	"strconv"
 	"strings"
 	"sync"
@@ -120,7 +121,13 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 		info.CanBeInitialized = routeNotFound && ssoNotFound
 	}
 
-	version, err := getK8sClient(c).ServerVersion()
+	k8sClient, err := kubernetes.NewForConfig(getCurrentUser(c).Cfg)
+
+	if err != nil {
+		panic(err)
+	}
+
+	version, err := k8sClient.ServerVersion()
 
 	if err == nil {
 		info.Version = version.GitVersion
@@ -130,9 +137,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 }
 
 func (h *ApiHandler) handleClusterInfo(c echo.Context) error {
-	builder := h.Builder(c)
-
-	if !builder.CanViewCluster() {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
@@ -166,7 +171,7 @@ type SetupClusterResponse struct {
 func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -284,7 +289,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 func (h *ApiHandler) handleResetCluster(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 

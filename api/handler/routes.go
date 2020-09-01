@@ -8,7 +8,7 @@ import (
 func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanViewCluster() {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
@@ -24,11 +24,11 @@ func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
 func (h *ApiHandler) handleListRoutes(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanViewCluster() {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
-	if !builder.CanViewCluster() {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
@@ -44,7 +44,7 @@ func (h *ApiHandler) handleListRoutes(c echo.Context) error {
 func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -64,7 +64,7 @@ func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
 func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -84,7 +84,7 @@ func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
 func (h *ApiHandler) handleDeleteRoute(c echo.Context) (err error) {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 

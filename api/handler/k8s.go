@@ -7,9 +7,7 @@ import (
 )
 
 func (h *ApiHandler) handleGetPVs(c echo.Context) error {
-	builder := h.Builder(c)
-
-	if !builder.CanViewCluster() {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 

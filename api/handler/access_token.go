@@ -6,11 +6,11 @@ import (
 )
 
 func (h *ApiHandler) handleListAccessTokens(c echo.Context) error {
-	builder := h.Builder(c)
-
-	if !builder.CanViewCluster() {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
+
+	builder := h.Builder(c)
 
 	keys, err := builder.GetAccessTokens(c.Param("namespace"))
 
@@ -24,7 +24,7 @@ func (h *ApiHandler) handleListAccessTokens(c echo.Context) error {
 func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -44,7 +44,7 @@ func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
 func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 

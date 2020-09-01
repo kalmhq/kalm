@@ -16,7 +16,7 @@ import (
 func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanViewCluster() {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
@@ -58,7 +58,7 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -123,7 +123,7 @@ func (h *ApiHandler) handleAvailableVolsForSimpleWorkload(c echo.Context) error 
 
 	builder := h.Builder(c)
 
-	if !builder.CanViewNamespace(ns) {
+	if !h.clientManager.CanViewNamespace(getCurrentUser(c), ns) {
 		return resources.NoNamespaceViewerRoleError(ns)
 	}
 
@@ -140,7 +140,7 @@ func (h *ApiHandler) handleAvailableVolsForSts(c echo.Context) error {
 
 	builder := h.Builder(c)
 
-	if !builder.CanViewNamespace(ns) {
+	if !h.clientManager.CanViewNamespace(getCurrentUser(c), ns) {
 		return resources.NoNamespaceViewerRoleError(ns)
 	}
 

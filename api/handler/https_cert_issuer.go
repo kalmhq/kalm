@@ -11,7 +11,7 @@ import (
 func (h *ApiHandler) handleGetHttpsCertIssuer(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanViewCluster() {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
@@ -24,9 +24,8 @@ func (h *ApiHandler) handleGetHttpsCertIssuer(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
-	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -76,7 +75,7 @@ func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
 func (h *ApiHandler) handleUpdateHttpsCertIssuer(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -96,7 +95,7 @@ func (h *ApiHandler) handleUpdateHttpsCertIssuer(c echo.Context) error {
 func (h *ApiHandler) handleDeleteHttpsCertIssuer(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 

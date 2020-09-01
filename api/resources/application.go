@@ -87,10 +87,6 @@ type Application struct {
 }
 
 func (builder *Builder) GetNamespace(name string) (*coreV1.Namespace, error) {
-	if !builder.CanViewNamespace(name) {
-		return nil, NoNamespaceViewerRoleError(name)
-	}
-
 	namespace := new(coreV1.Namespace)
 
 	err := builder.Get("", name, namespace)
@@ -112,19 +108,13 @@ func (builder *Builder) GetNamespaces() ([]*coreV1.Namespace, error) {
 	res := make([]*coreV1.Namespace, 0, len(fetched.Items))
 
 	for i := range fetched.Items {
-		if builder.CanViewNamespace(fetched.Items[i].Name) {
-			res = append(res, &fetched.Items[i])
-		}
+		res = append(res, &fetched.Items[i])
 	}
 
 	return res, nil
 }
 
 func (builder *Builder) CreateNamespace(ns *coreV1.Namespace) error {
-	if !builder.CanEditNamespace(ns.Name) {
-		return NoClusterEditorRoleError
-	}
-
 	if err := builder.Create(ns); err != nil {
 		return err
 	}
@@ -133,10 +123,6 @@ func (builder *Builder) CreateNamespace(ns *coreV1.Namespace) error {
 }
 
 func (builder *Builder) DeleteNamespace(ns *coreV1.Namespace) error {
-	if !builder.CanEditNamespace(ns.Name) {
-		return NoClusterEditorRoleError
-	}
-
 	if err := builder.Delete(ns); err != nil {
 		return err
 	}

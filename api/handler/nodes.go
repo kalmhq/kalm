@@ -8,7 +8,7 @@ import (
 func (h *ApiHandler) handleListNodes(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanViewCluster() {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
@@ -24,7 +24,7 @@ func (h *ApiHandler) handleListNodes(c echo.Context) error {
 func (h *ApiHandler) handleCordonNode(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -44,7 +44,7 @@ func (h *ApiHandler) handleCordonNode(c echo.Context) error {
 func (h *ApiHandler) handleUncordonNode(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 

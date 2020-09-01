@@ -24,10 +24,15 @@ type Enforcer interface {
 	CanViewCluster(subject string) bool
 	CanEditCluster(subject string) bool
 	CanManageCluster(subject string) bool
+
+	LoadPolicy() error
+	GetPolicy() [][]string
 }
 
+var _ Enforcer = &KalmRBACEnforcer{}
+
 type KalmRBACEnforcer struct {
-	*casbin.Enforcer
+	*casbin.SyncedEnforcer
 }
 
 func (e *KalmRBACEnforcer) Enforce(rvals ...interface{}) bool {
@@ -87,7 +92,7 @@ func NewEnforcer(adapter persist.Adapter) (Enforcer, error) {
 		return nil, err
 	}
 
-	e, err := casbin.NewEnforcer(mod, adapter)
+	e, err := casbin.NewSyncedEnforcer(mod, adapter)
 
 	if err != nil {
 		return nil, err

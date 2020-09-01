@@ -18,6 +18,10 @@ type ApiHandler struct {
 
 type H map[string]interface{}
 
+func (h *ApiHandler) InstallAdminRoutes(e *echo.Echo) {
+	e.GET("/policies", h.handlePolicies)
+}
+
 func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
 	e.GET("/ping", handlePing)
 	e.POST("/webhook/components", h.handleDeployWebhookCall)
@@ -123,14 +127,13 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 // use user token and permission
 func (h *ApiHandler) Builder(c echo.Context) *resources.Builder {
-	clientInfo := getK8sClientInfo(c)
-	return resources.NewBuilder(clientInfo, h.logger, h.rbacEnforcer)
+	clientInfo := getCurrentUser(c)
+	return resources.NewBuilder(clientInfo.Cfg, h.logger)
 }
 
-func NewApiHandler(clientManager client.ClientManager, rbacEnforcer rbac.Enforcer) *ApiHandler {
+func NewApiHandler(clientManager client.ClientManager) *ApiHandler {
 	return &ApiHandler{
 		clientManager: clientManager,
-		rbacEnforcer:  rbacEnforcer,
 		logger:        log.DefaultLogger(),
 	}
 }

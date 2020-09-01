@@ -7,7 +7,6 @@ import (
 	"fmt"
 	client2 "github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/log"
-	"github.com/kalmhq/kalm/api/rbac"
 	"github.com/kalmhq/kalm/api/server"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
@@ -26,7 +25,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"strings"
-	"text/template"
 	"time"
 )
 
@@ -93,15 +91,9 @@ func (suite *WithControllerTestSuite) SetupSuite() {
 }
 
 func (suite *WithControllerTestSuite) SetupApiServer(policies ...string) *echo.Echo {
-	enforcer, err := rbac.NewEnforcer(rbac.NewStringPolicyAdapter(strings.Join(policies, "")))
-
-	if err != nil {
-		panic(err)
-	}
-
 	e := server.NewEchoInstance()
-	clientManager := client2.NewFakeClientManager(suite.cfg)
-	apiHandler := NewApiHandler(clientManager, enforcer)
+	clientManager := client2.NewFakeClientManager(suite.cfg, strings.Join(policies, ""))
+	apiHandler := NewApiHandler(clientManager)
 	apiHandler.InstallMainRoutes(e)
 	apiHandler.InstallWebhookRoutes(e)
 	return e
@@ -109,9 +101,9 @@ func (suite *WithControllerTestSuite) SetupApiServer(policies ...string) *echo.E
 
 func (suite *WithControllerTestSuite) SetupApiServerWithDefaultPolicy(policies ...string) *echo.Echo {
 	ps := []string{
-		BuildClusterOwnerPolicy(),
-		BuildPoliciesForNamespace("ns1"),
-		BuildPoliciesForNamespace("ns2"),
+		client2.BuildClusterRolePolicies(),
+		client2.BuildRolePoliciesForNamespace("ns1"),
+		client2.BuildRolePoliciesForNamespace("ns2"),
 	}
 
 	ps = append(ps, policies...)
@@ -119,37 +111,12 @@ func (suite *WithControllerTestSuite) SetupApiServerWithDefaultPolicy(policies .
 	return suite.SetupApiServer(ps...)
 }
 
-func BuildClusterOwnerPolicy() string {
-	return `
-p, role_clusterViewer, view, *, *
-p, role_clusterEditor, edit, *, *
-g, role_clusterEditor, role_clusterViewer
-g, role_clusterOwner, role_clusterEditor
-p, role_clusterOwner, manage, *, *
-`
-}
-
-func BuildPoliciesForNamespace(name string) string {
-	t := template.Must(template.New("policy").Parse(`
-p, role_{{ .name }}Viewer, view, {{ .name }}, *
-p, role_{{ .name }}Editor, edit, {{ .name }}, *
-p, role_{{ .name }}Owner, manage, {{ .name }}, *
-g, role_{{ .name }}Editor, role_{{ .name }}Viewer
-g, role_{{ .name }}Owner, role_{{ .name }}Editor
-`))
-
-	strBuffer := &strings.Builder{}
-	_ = t.Execute(strBuffer, map[string]string{"name": name})
-
-	return strBuffer.String()
-}
-
 func GrantUserRoles(email string, roles ...string) string {
 	var sb strings.Builder
 	sb.WriteString("\n")
 
 	for i := range roles {
-		sb.WriteString(fmt.Sprintf("g, %s, %s\n", email, roles[i]))
+		sb.WriteString(fmt.Sprintf("g, %s, %s\n", client2.ToSafeSubject(email), roles[i]))
 	}
 
 	return sb.String()
@@ -290,12 +257,10 @@ func (suite *WithControllerTestSuite) DoTestRequest(rc *TestRequestContext) {
 	}
 
 	if rc.TestWithRoles != nil {
-		ps := []string{
-			BuildClusterOwnerPolicy(),
-		}
+		ps := []string{client2.BuildClusterRolePolicies()}
 
 		if rc.Namespace != "" {
-			ps = append(ps, BuildPoliciesForNamespace(rc.Namespace))
+			ps = append(ps, client2.BuildRolePoliciesForNamespace(rc.Namespace))
 		}
 
 		ps = append(ps, GrantUserRoles(rc.User, rc.Roles...))

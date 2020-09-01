@@ -10,11 +10,11 @@ func (h *ApiHandler) handleListClusterServices(c echo.Context) error {
 	builder := h.Builder(c)
 
 	if namespace != "" {
-		if !builder.CanViewNamespace(namespace) {
+		if !h.clientManager.CanViewNamespace(getCurrentUser(c), namespace) {
 			return resources.NoNamespaceViewerRoleError(namespace)
 		}
 	} else {
-		if !builder.CanViewCluster() {
+		if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 			return resources.NoClusterViewerRoleError
 		}
 	}

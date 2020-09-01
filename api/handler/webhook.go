@@ -52,13 +52,13 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 		return err
 	}
 
-	builder := resources.NewBuilder(clientInfo, h.logger, h.rbacEnforcer)
+	builder := resources.NewBuilder(clientInfo.Cfg, h.logger)
 
 	if builder == nil {
 		return fmt.Errorf("invalid access token")
 	}
 
-	if !builder.CanEdit(callParams.Namespace, "components/"+callParams.ComponentName) {
+	if !h.clientManager.CanEdit(clientInfo, callParams.Namespace, "components/"+callParams.ComponentName) {
 		return resources.NoObjectEditorRoleError(callParams.Namespace, "components/"+callParams.ComponentName)
 	}
 

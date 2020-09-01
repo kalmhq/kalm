@@ -62,7 +62,7 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		},
 	}
 
-	builder := resources.NewBuilder(clientInfo, h.logger, h.rbacEnforcer)
+	builder := resources.NewBuilder(clientInfo.Cfg, h.logger)
 	err = builder.Create(review)
 
 	if err != nil {

@@ -8,7 +8,7 @@ import (
 func (h *ApiHandler) handleListRegistries(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanViewCluster() {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
@@ -24,7 +24,7 @@ func (h *ApiHandler) handleListRegistries(c echo.Context) error {
 func (h *ApiHandler) handleGetRegistry(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanViewCluster() {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
 
@@ -40,7 +40,7 @@ func (h *ApiHandler) handleGetRegistry(c echo.Context) error {
 func (h *ApiHandler) handleCreateRegistry(c echo.Context) (err error) {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -60,7 +60,7 @@ func (h *ApiHandler) handleCreateRegistry(c echo.Context) (err error) {
 func (h *ApiHandler) handleUpdateRegistry(c echo.Context) (err error) {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -80,7 +80,7 @@ func (h *ApiHandler) handleUpdateRegistry(c echo.Context) (err error) {
 func (h *ApiHandler) handleDeleteRegistry(c echo.Context) error {
 	builder := h.Builder(c)
 
-	if !builder.CanEditCluster() {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
 	}
 

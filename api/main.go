@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"github.com/go-playground/validator/v10"
-	"github.com/kalmhq/kalm/api/rbac"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/net/http2"
 	"k8s.io/client-go/rest"
@@ -131,19 +130,7 @@ func initClusterK8sClientConfiguration(config *config.Config) (cfg *rest.Config,
 	return
 }
 
-func getClientManagerFromRunningConfig(runningConfig *config.Config, k8sClientConfig *rest.Config) client.ClientManager {
-	var clientManager client.ClientManager
-
-	if runningConfig.PrivilegedLocalhostAccess {
-		clientManager = client.NewLocalClientManager(k8sClientConfig)
-	} else {
-		clientManager = client.NewStandardClientManager(k8sClientConfig)
-	}
-
-	return clientManager
-}
-
-func startMainServer(runningConfig *config.Config, k8sClientConfig *rest.Config, rbacEnforcer rbac.Enforcer) {
+func startMainServer(runningConfig *config.Config, k8sClientConfig *rest.Config) {
 	e := server.NewEchoInstance()
 
 	// in production docker build, all things are in a single docker
@@ -159,10 +146,21 @@ func startMainServer(runningConfig *config.Config, k8sClientConfig *rest.Config,
 	}
 
 	e.Validator = &server.CustomValidator{Validator: validator.New()}
-	clientManager := getClientManagerFromRunningConfig(runningConfig, k8sClientConfig)
-	apiHandler := handler.NewApiHandler(clientManager, rbacEnforcer)
+	var clientManager client.ClientManager
+
+	if runningConfig.PrivilegedLocalhostAccess {
+		clientManager = client.NewLocalClientManager(k8sClientConfig)
+	} else {
+		clientManager = client.NewStandardClientManager(k8sClientConfig)
+	}
+
+	apiHandler := handler.NewApiHandler(clientManager)
 	apiHandler.InstallMainRoutes(e)
 	apiHandler.InstallWebhookRoutes(e)
+
+	if runningConfig.PrivilegedLocalhostAccess {
+		apiHandler.InstallAdminRoutes(e)
+	}
 
 	err := e.StartH2CServer(runningConfig.GetServerAddress(), &http2.Server{
 		MaxConcurrentStreams: 250,
@@ -179,16 +177,6 @@ func startMetricServer(cfg *rest.Config) {
 	_ = resources.StartMetricScraper(context.Background(), cfg)
 }
 
-func getRBACEnforcer() rbac.Enforcer {
-	e, err := rbac.NewEnforcer(rbac.NewStringPolicyAdapter(``))
-
-	if err != nil {
-		panic(err)
-	}
-
-	return e
-}
-
 func run(runningConfig *config.Config) {
 	if err := v1alpha1.AddToScheme(scheme.Scheme); err != nil {
 		panic(err)
@@ -200,8 +188,6 @@ func run(runningConfig *config.Config) {
 		panic(err)
 	}
 
-	rbacEnforcer := getRBACEnforcer()
-
 	go startMetricServer(k8sClientConfig)
 
 	// run localhost server with privilege
@@ -209,9 +195,9 @@ func run(runningConfig *config.Config) {
 	clonedConfig.PrivilegedLocalhostAccess = true
 	clonedConfig.BindAddress = "127.0.0.1"
 	clonedConfig.Port = 3010
-	go startMainServer(clonedConfig, k8sClientConfig, rbacEnforcer)
+	go startMainServer(clonedConfig, k8sClientConfig)
 
 	// real server serve
 	runningConfig.PrivilegedLocalhostAccess = false
-	startMainServer(runningConfig, k8sClientConfig, rbacEnforcer)
+	startMainServer(runningConfig, k8sClientConfig)
 }

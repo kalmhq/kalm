@@ -114,7 +114,7 @@ func (c *Client) read() {
 	}
 }
 func (c *Client) Builder() *resources.Builder {
-	return resources.NewBuilder(c.ClientInfo, c.logger, c.RBACEnforcer)
+	return resources.NewBuilder(c.ClientInfo.Cfg, c.logger)
 }
 
 func (c *Client) write() {
