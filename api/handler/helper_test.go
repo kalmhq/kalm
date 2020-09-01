@@ -21,6 +21,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -61,6 +62,8 @@ func (r *ResponseRecorder) BodyAsJSON(obj interface{}) {
 
 func (suite *WithControllerTestSuite) SetupSuite() {
 	log.InitDefaultLogger("debug")
+
+	os.Setenv("KALM_SKIP_ISTIO_METRICS", "true")
 
 	suite.Nil(scheme.AddToScheme(scheme.Scheme))
 	suite.Nil(v1alpha1.AddToScheme(scheme.Scheme))

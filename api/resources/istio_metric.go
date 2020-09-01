@@ -70,8 +70,14 @@ func (builder *Builder) GetIstioMetricsListChannel(ns string) *IstioMetricListCh
 	}
 
 	go func() {
-		httpSvc2MetricMap, err := getIstioMetricHistoriesMap(ns)
 
+		if os.Getenv("KALM_SKIP_ISTIO_METRICS") != "" {
+			channel.List <- nil
+			channel.Error <- nil
+			return
+		}
+
+		httpSvc2MetricMap, err := getIstioMetricHistoriesMap(ns)
 		channel.List <- httpSvc2MetricMap
 		channel.Error <- err
 	}()
