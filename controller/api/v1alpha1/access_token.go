@@ -75,8 +75,9 @@ type AccessTokenStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="Scope",type="string",JSONPath=".spec.scope"
-// +kubebuilder:printcolumn:name="Resources",type="string",JSONPath=".spec.resources"
+// +kubebuilder:printcolumn:name="Subject",type="string",JSONPath=".spec.subject"
+// +kubebuilder:printcolumn:name="Creator",type="string",JSONPath=".spec.creator"
+// +kubebuilder:printcolumn:name="ExpiredAt",type="string",JSONPath=".spec.expiredAt"
 
 // AccessToken is the Schema for the deploykeys API
 type AccessToken struct {

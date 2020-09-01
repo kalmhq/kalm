@@ -6,7 +6,7 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: accesstokens.core.kalm.dev
+  name: rolebindings.core.kalm.dev
 spec:
   additionalPrinterColumns:
   - JSONPath: .spec.subject
@@ -15,21 +15,24 @@ spec:
   - JSONPath: .spec.creator
     name: Creator
     type: string
+  - JSONPath: .spec.rule
+    name: Rule
+    type: string
   - JSONPath: .spec.expiredAt
     name: ExpiredAt
     type: string
   group: core.kalm.dev
   names:
-    kind: AccessToken
-    listKind: AccessTokenList
-    plural: accesstokens
-    singular: accesstoken
-  scope: Cluster
+    kind: RoleBinding
+    listKind: RoleBindingList
+    plural: rolebindings
+    singular: rolebinding
+  scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: AccessToken is the Schema for the deploykeys API
+      description: RoleBinding is the Schema for the deploykeys API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -44,71 +47,34 @@ spec:
         metadata:
           type: object
         spec:
-          description: A model to describe general access token permissions It's designed
-            to be easy to translate to casbin policies. This model should NOT be generate
-            manually through kubernetes api directly. Instead, use kalm apis to manage
-            records.
           properties:
             creator:
-              description: Creator of this key
+              description: Creator of this binding
               minLength: 1
               type: string
             expiredAt:
               description: Expire time of this key. Infinity if blank
               format: date-time
               type: string
-            rules:
-              description: Rules of this key
-              items:
-                properties:
-                  kind:
-                    minLength: 1
-                    type: string
-                  name:
-                    minLength: 1
-                    type: string
-                  namespace:
-                    minLength: 1
-                    type: string
-                  verb:
-                    enum:
-                    - view
-                    - edit
-                    - manage
-                    type: string
-                required:
-                - kind
-                - name
-                - namespace
-                - verb
-                type: object
-              minItems: 1
-              type: array
-            subject:
-              description: The subject of this key
-              minLength: 1
+            role:
+              enum:
+              - viewer
+              - editor
+              - owner
+              - clusterViewer
+              - clusterEditor
+              - clusterOwner
               type: string
-            token:
-              description: The token, the access token name should be sha256 of this
-                token.
-              minLength: 64
+            subject:
+              minLength: 1
               type: string
           required:
           - creator
-          - rules
+          - role
           - subject
-          - token
           type: object
         status:
-          description: AccessTokenStatus defines the observed state of AccessTokeny
-          properties:
-            lastUsedAt:
-              type: integer
-            usedCount:
-              type: integer
-          required:
-          - lastUsedAt
-          - usedCount
+          description: RoleBindingStatus defines the observed state of RoleBinding
           type: object
       type: object
   version: v1alpha1

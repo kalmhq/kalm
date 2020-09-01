@@ -5,6 +5,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
+const KalmSystemNamespace = "kalm-system"
+
 type EnvVarType string
 
 const (
