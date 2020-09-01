@@ -10,7 +10,7 @@ func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
 		return resources.NoClusterViewerRoleError
 	}
 
-	list, err := h.builder.GetHttpRoutes("")
+	list, err := h.resourceManager.GetHttpRoutes("")
 
 	if err != nil {
 		return err
@@ -28,7 +28,7 @@ func (h *ApiHandler) handleListRoutes(c echo.Context) error {
 		return resources.NoClusterViewerRoleError
 	}
 
-	list, err := h.builder.GetHttpRoutes(c.Param("namespace"))
+	list, err := h.resourceManager.GetHttpRoutes(c.Param("namespace"))
 
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
 		return err
 	}
 
-	if route, err = h.builder.CreateHttpRoute(route); err != nil {
+	if route, err = h.resourceManager.CreateHttpRoute(route); err != nil {
 		return err
 	}
 
@@ -66,7 +66,7 @@ func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
 		return err
 	}
 
-	if route, err = h.builder.UpdateHttpRoute(route); err != nil {
+	if route, err = h.resourceManager.UpdateHttpRoute(route); err != nil {
 		return err
 	}
 
@@ -78,7 +78,7 @@ func (h *ApiHandler) handleDeleteRoute(c echo.Context) (err error) {
 		return resources.NoClusterEditorRoleError
 	}
 
-	if err = h.builder.DeleteHttpRoute(c.Param("namespace"), c.Param("name")); err != nil {
+	if err = h.resourceManager.DeleteHttpRoute(c.Param("namespace"), c.Param("name")); err != nil {
 		return err
 	}
 

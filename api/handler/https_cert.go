@@ -11,7 +11,7 @@ func (h *ApiHandler) handleGetHttpsCerts(c echo.Context) error {
 		return resources.NoClusterViewerRoleError
 	}
 
-	httpsCerts, err := h.builder.GetHttpsCerts()
+	httpsCerts, err := h.resourceManager.GetHttpsCerts()
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
 		return fmt.Errorf("for selfManaged certs, use /upload instead")
 	}
 
-	httpsCert, err = h.builder.CreateAutoManagedHttpsCert(httpsCert)
+	httpsCert, err = h.resourceManager.CreateAutoManagedHttpsCert(httpsCert)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
 		return fmt.Errorf("can only upload selfManaged certs")
 	}
 
-	httpsCert, err = h.builder.CreateSelfManagedHttpsCert(httpsCert)
+	httpsCert, err = h.resourceManager.CreateSelfManagedHttpsCert(httpsCert)
 
 	if err != nil {
 		return err
@@ -77,12 +77,12 @@ func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
 	}
 
 	if httpsCert.IsSelfManaged {
-		httpsCert, err = h.builder.UpdateSelfManagedCert(httpsCert)
+		httpsCert, err = h.resourceManager.UpdateSelfManagedCert(httpsCert)
 		if err != nil {
 			return err
 		}
 	} else {
-		httpsCert, err = h.builder.UpdateAutoManagedCert(httpsCert)
+		httpsCert, err = h.resourceManager.UpdateAutoManagedCert(httpsCert)
 		if err != nil {
 			return err
 		}
@@ -96,7 +96,7 @@ func (h *ApiHandler) handleDeleteHttpsCert(c echo.Context) error {
 		return resources.NoClusterEditorRoleError
 	}
 
-	err := h.builder.DeleteHttpsCert(c.Param("name"))
+	err := h.resourceManager.DeleteHttpsCert(c.Param("name"))
 
 	if err != nil {
 		return err

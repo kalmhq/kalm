@@ -26,7 +26,7 @@ func (h *ApiHandler) handleListStorageClasses(c echo.Context) error {
 	}
 
 	var storageClassList v1.StorageClassList
-	if err := h.builder.List(&storageClassList); err != nil {
+	if err := h.resourceManager.List(&storageClassList); err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}

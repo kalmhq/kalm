@@ -21,7 +21,7 @@ type Namespace struct {
 	Roles []string `json:"roles"`
 }
 
-func (builder *Builder) GetNamespaceListChannel() *NamespaceListChannel {
+func (resourceManager *ResourceManager) GetNamespaceListChannel() *NamespaceListChannel {
 	channel := &NamespaceListChannel{
 		List:  make(chan []Namespace, 1),
 		Error: make(chan error, 1),
@@ -29,7 +29,7 @@ func (builder *Builder) GetNamespaceListChannel() *NamespaceListChannel {
 
 	go func() {
 		var nsList coreV1.NamespaceList
-		err := builder.List(&nsList)
+		err := resourceManager.List(&nsList)
 
 		if err != nil {
 			channel.List <- nil
@@ -68,7 +68,7 @@ func (builder *Builder) GetNamespaceListChannel() *NamespaceListChannel {
 
 			// TODO Is there a better way?
 			// Infer user roles with some specific access review. This is not accurate but a trade off.
-			err := builder.Create(writerReview)
+			err := resourceManager.Create(writerReview)
 
 			if err != nil {
 				channel.List <- nil
@@ -91,7 +91,7 @@ func (builder *Builder) GetNamespaceListChannel() *NamespaceListChannel {
 				},
 			}
 
-			err = builder.Create(readerReview)
+			err = resourceManager.Create(readerReview)
 
 			if err != nil {
 				channel.List <- nil
@@ -118,9 +118,9 @@ func (builder *Builder) GetNamespaceListChannel() *NamespaceListChannel {
 	return channel
 }
 
-func (builder *Builder) ListNamespaces() ([]Namespace, error) {
+func (resourceManager *ResourceManager) ListNamespaces() ([]Namespace, error) {
 	resourceChannels := &ResourceChannels{
-		NamespaceList: builder.GetNamespaceListChannel(),
+		NamespaceList: resourceManager.GetNamespaceListChannel(),
 	}
 
 	resources, err := resourceChannels.ToResources()

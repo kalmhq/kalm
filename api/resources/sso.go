@@ -19,7 +19,7 @@ type ProtectedEndpointsChannel struct {
 
 const SSO_NAME = "sso"
 
-func (builder *Builder) GetSSOConfigListChannel(listOptions ...client.ListOption) *SSOConfigListChannel {
+func (resourceManager *ResourceManager) GetSSOConfigListChannel(listOptions ...client.ListOption) *SSOConfigListChannel {
 	channel := &SSOConfigListChannel{
 		List:  make(chan []*v1alpha1.SingleSignOnConfig, 1),
 		Error: make(chan error, 1),
@@ -27,7 +27,7 @@ func (builder *Builder) GetSSOConfigListChannel(listOptions ...client.ListOption
 
 	go func() {
 		var fetched v1alpha1.SingleSignOnConfigList
-		err := builder.List(&fetched, listOptions...)
+		err := resourceManager.List(&fetched, listOptions...)
 
 		if err != nil {
 			channel.List <- nil
@@ -48,7 +48,7 @@ func (builder *Builder) GetSSOConfigListChannel(listOptions ...client.ListOption
 	return channel
 }
 
-func (builder *Builder) GetProtectedEndpointsChannel(listOptions ...client.ListOption) *ProtectedEndpointsChannel {
+func (resourceManager *ResourceManager) GetProtectedEndpointsChannel(listOptions ...client.ListOption) *ProtectedEndpointsChannel {
 	channel := &ProtectedEndpointsChannel{
 		List:  make(chan []v1alpha1.ProtectedEndpoint, 1),
 		Error: make(chan error, 1),
@@ -56,7 +56,7 @@ func (builder *Builder) GetProtectedEndpointsChannel(listOptions ...client.ListO
 
 	go func() {
 		var fetched v1alpha1.ProtectedEndpointList
-		err := builder.List(&fetched, listOptions...)
+		err := resourceManager.List(&fetched, listOptions...)
 
 		if err != nil {
 			channel.List <- nil
@@ -90,10 +90,10 @@ type SSOConfig struct {
 	*v1alpha1.SingleSignOnConfigSpec `json:",inline"`
 }
 
-func (builder *Builder) GetSSOConfig() (*SSOConfig, error) {
+func (resourceManager *ResourceManager) GetSSOConfig() (*SSOConfig, error) {
 	var ssoConfig v1alpha1.SingleSignOnConfig
 
-	if err := builder.Get(controllers.KALM_DEX_NAMESPACE, SSO_NAME, &ssoConfig); err != nil {
+	if err := resourceManager.Get(controllers.KALM_DEX_NAMESPACE, SSO_NAME, &ssoConfig); err != nil {
 		return nil, client.IgnoreNotFound(err)
 	}
 
@@ -106,7 +106,7 @@ func BuildSSOConfigFromResource(ssoConfig *v1alpha1.SingleSignOnConfig) *SSOConf
 	}
 }
 
-func (builder *Builder) CreateSSOConfig(ssoConfig *SSOConfig) (*SSOConfig, error) {
+func (resourceManager *ResourceManager) CreateSSOConfig(ssoConfig *SSOConfig) (*SSOConfig, error) {
 	sso := &v1alpha1.SingleSignOnConfig{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      SSO_NAME,
@@ -115,31 +115,31 @@ func (builder *Builder) CreateSSOConfig(ssoConfig *SSOConfig) (*SSOConfig, error
 		Spec: *ssoConfig.SingleSignOnConfigSpec,
 	}
 
-	if err := builder.Create(sso); err != nil {
+	if err := resourceManager.Create(sso); err != nil {
 		return nil, err
 	}
 
 	return BuildSSOConfigFromResource(sso), nil
 }
 
-func (builder *Builder) UpdateSSOConfig(ssoConfig *SSOConfig) (*SSOConfig, error) {
+func (resourceManager *ResourceManager) UpdateSSOConfig(ssoConfig *SSOConfig) (*SSOConfig, error) {
 	sso := &v1alpha1.SingleSignOnConfig{}
 
-	if err := builder.Get(controllers.KALM_DEX_NAMESPACE, SSO_NAME, sso); err != nil {
+	if err := resourceManager.Get(controllers.KALM_DEX_NAMESPACE, SSO_NAME, sso); err != nil {
 		return nil, err
 	}
 
 	sso.Spec = *ssoConfig.SingleSignOnConfigSpec
 
-	if err := builder.Update(sso); err != nil {
+	if err := resourceManager.Update(sso); err != nil {
 		return nil, err
 	}
 
 	return BuildSSOConfigFromResource(sso), nil
 }
 
-func (builder *Builder) DeleteSSOConfig() error {
-	return builder.Delete(&v1alpha1.SingleSignOnConfig{ObjectMeta: metaV1.ObjectMeta{Name: SSO_NAME, Namespace: controllers.KALM_DEX_NAMESPACE}})
+func (resourceManager *ResourceManager) DeleteSSOConfig() error {
+	return resourceManager.Delete(&v1alpha1.SingleSignOnConfig{ObjectMeta: metaV1.ObjectMeta{Name: SSO_NAME, Namespace: controllers.KALM_DEX_NAMESPACE}})
 }
 
 func ProtectedEndpointCRDToProtectedEndpoint(endpoint *v1alpha1.ProtectedEndpoint) *ProtectedEndpoint {
@@ -164,9 +164,9 @@ func ProtectedEndpointCRDToProtectedEndpoint(endpoint *v1alpha1.ProtectedEndpoin
 	return ep
 }
 
-func (builder *Builder) ListProtectedEndpoints() ([]*ProtectedEndpoint, error) {
+func (resourceManager *ResourceManager) ListProtectedEndpoints() ([]*ProtectedEndpoint, error) {
 	channel := ResourceChannels{
-		ProtectedEndpoint: builder.GetProtectedEndpointsChannel(),
+		ProtectedEndpoint: resourceManager.GetProtectedEndpointsChannel(),
 	}
 
 	resources, err := channel.ToResources()
@@ -188,7 +188,7 @@ func getProtectedEndpointCRDNameFromEndpointName(endpointName string) string {
 	return "component-" + endpointName
 }
 
-func (builder *Builder) CreateProtectedEndpoint(ep *ProtectedEndpoint) (*ProtectedEndpoint, error) {
+func (resourceManager *ResourceManager) CreateProtectedEndpoint(ep *ProtectedEndpoint) (*ProtectedEndpoint, error) {
 	endpoint := &v1alpha1.ProtectedEndpoint{
 		ObjectMeta: metaV1.ObjectMeta{
 			Namespace: ep.Namespace,
@@ -202,7 +202,7 @@ func (builder *Builder) CreateProtectedEndpoint(ep *ProtectedEndpoint) (*Protect
 		},
 	}
 
-	err := builder.Create(endpoint)
+	err := resourceManager.Create(endpoint)
 
 	if err != nil {
 		return nil, err
@@ -211,7 +211,7 @@ func (builder *Builder) CreateProtectedEndpoint(ep *ProtectedEndpoint) (*Protect
 	return ProtectedEndpointCRDToProtectedEndpoint(endpoint), nil
 }
 
-func (builder *Builder) UpdateProtectedEndpoint(ep *ProtectedEndpoint) (*ProtectedEndpoint, error) {
+func (resourceManager *ResourceManager) UpdateProtectedEndpoint(ep *ProtectedEndpoint) (*ProtectedEndpoint, error) {
 	endpoint := &v1alpha1.ProtectedEndpoint{
 		TypeMeta: metaV1.TypeMeta{
 			Kind:       "ProtectedEndpoint",
@@ -229,7 +229,7 @@ func (builder *Builder) UpdateProtectedEndpoint(ep *ProtectedEndpoint) (*Protect
 		},
 	}
 
-	err := builder.Apply(endpoint)
+	err := resourceManager.Apply(endpoint)
 
 	if err != nil {
 		return nil, err
@@ -238,7 +238,7 @@ func (builder *Builder) UpdateProtectedEndpoint(ep *ProtectedEndpoint) (*Protect
 	return ProtectedEndpointCRDToProtectedEndpoint(endpoint), nil
 }
 
-func (builder *Builder) DeleteProtectedEndpoints(ep *ProtectedEndpoint) error {
+func (resourceManager *ResourceManager) DeleteProtectedEndpoints(ep *ProtectedEndpoint) error {
 	endpoint := &v1alpha1.ProtectedEndpoint{
 		ObjectMeta: metaV1.ObjectMeta{
 			Namespace: ep.Namespace,
@@ -246,5 +246,5 @@ func (builder *Builder) DeleteProtectedEndpoints(ep *ProtectedEndpoint) error {
 		},
 	}
 
-	return builder.Delete(endpoint)
+	return resourceManager.Delete(endpoint)
 }

@@ -13,7 +13,7 @@ func (h *ApiHandler) handleDeletePod(c echo.Context) error {
 		return resources.NoNamespaceEditorRoleError(c.Param("namespace"))
 	}
 
-	err := h.builder.Delete(&coreV1.Pod{ObjectMeta: metaV1.ObjectMeta{
+	err := h.resourceManager.Delete(&coreV1.Pod{ObjectMeta: metaV1.ObjectMeta{
 		Namespace: c.Param("namespace"),
 		Name:      c.Param("name"),
 	}})

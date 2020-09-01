@@ -5,7 +5,7 @@ import (
 )
 
 func (h *ApiHandler) handleListComponentPlugins(c echo.Context) error {
-	plugins, err := h.builder.GetComponentPlugins()
+	plugins, err := h.resourceManager.GetComponentPlugins()
 
 	if err != nil {
 		return err

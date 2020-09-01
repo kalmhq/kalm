@@ -66,7 +66,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	info.TLSPort = &tlsPort
 
 	var ingressService coreV1.Service
-	err := h.builder.Get("istio-system", "istio-ingressgateway", &ingressService)
+	err := h.resourceManager.Get("istio-system", "istio-ingressgateway", &ingressService)
 
 	if err == nil {
 		if len(ingressService.Status.LoadBalancer.Ingress) > 0 {
@@ -85,7 +85,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		certNotFound = errors.IsNotFound(h.builder.Get(
+		certNotFound = errors.IsNotFound(h.resourceManager.Get(
 			"",
 			KalmRouteCertName,
 			&v1alpha1.HttpsCert{},
@@ -95,7 +95,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		routeNotFound = errors.IsNotFound(h.builder.Get(
+		routeNotFound = errors.IsNotFound(h.resourceManager.Get(
 			controllers.KALM_DEX_NAMESPACE,
 			KalmRouteName,
 			&v1alpha1.HttpRoute{},
@@ -105,7 +105,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		ssoNotFound = errors.IsNotFound(h.builder.Get(
+		ssoNotFound = errors.IsNotFound(h.resourceManager.Get(
 			controllers.KALM_DEX_NAMESPACE,
 			resources.SSO_NAME,
 			&v1alpha1.SingleSignOnConfig{},
@@ -251,25 +251,25 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 		route.HttpRouteSpec.HttpRedirectToHttps = false
 		route.HttpRouteSpec.Schemes = []v1alpha1.HttpRouteScheme{"http"}
 	} else {
-		_, err := h.builder.CreateAutoManagedHttpsCert(httpsCertForKalm)
+		_, err := h.resourceManager.CreateAutoManagedHttpsCert(httpsCertForKalm)
 		if err != nil {
 			return err
 		}
 	}
 
-	_, err = h.builder.CreateHttpRoute(route)
+	_, err = h.resourceManager.CreateHttpRoute(route)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = h.builder.CreateProtectedEndpoint(protectedEndpoint)
+	_, err = h.resourceManager.CreateProtectedEndpoint(protectedEndpoint)
 
 	if err != nil {
 		return err
 	}
 
-	ssoConfig, err = h.builder.CreateSSOConfig(ssoConfig)
+	ssoConfig, err = h.resourceManager.CreateSSOConfig(ssoConfig)
 
 	if err != nil {
 		return err
@@ -295,25 +295,25 @@ func (h *ApiHandler) handleResetCluster(c echo.Context) error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_ = h.builder.DeleteHttpRoute(controllers.KalmSystemNamespace, KalmRouteName)
+		_ = h.resourceManager.DeleteHttpRoute(controllers.KalmSystemNamespace, KalmRouteName)
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_ = h.builder.DeleteHttpsCert(KalmRouteCertName)
+		_ = h.resourceManager.DeleteHttpsCert(KalmRouteCertName)
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_ = h.builder.DeleteSSOConfig()
+		_ = h.resourceManager.DeleteSSOConfig()
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_ = h.builder.DeleteProtectedEndpoints(&resources.ProtectedEndpoint{
+		_ = h.resourceManager.DeleteProtectedEndpoints(&resources.ProtectedEndpoint{
 			Namespace:    controllers.KalmSystemNamespace,
 			EndpointName: KalmProtectedEndpointName,
 		})

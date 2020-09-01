@@ -10,7 +10,7 @@ import (
 )
 
 func (h *ApiHandler) handleGetApplications(c echo.Context) error {
-	namespaces, err := h.builder.GetNamespaces()
+	namespaces, err := h.resourceManager.GetNamespaces()
 
 	l := len(namespaces)
 
@@ -29,7 +29,7 @@ func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 		return err
 	}
 
-	res, err := h.builder.BuildApplicationListResponse(namespaces)
+	res, err := h.resourceManager.BuildApplicationListResponse(namespaces)
 
 	if err != nil {
 		return err
@@ -43,13 +43,13 @@ func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
 		return resources.NoNamespaceViewerRoleError(c.Param("name"))
 	}
 
-	namespace, err := h.builder.GetNamespace(c.Param("name"))
+	namespace, err := h.resourceManager.GetNamespace(c.Param("name"))
 
 	if err != nil {
 		return err
 	}
 
-	res, err := h.builder.BuildApplicationDetails(namespace)
+	res, err := h.resourceManager.BuildApplicationDetails(namespace)
 
 	if err != nil {
 		return err
@@ -69,11 +69,11 @@ func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
 		return err
 	}
 
-	if err := h.builder.CreateNamespace(ns); err != nil {
+	if err := h.resourceManager.CreateNamespace(ns); err != nil {
 		return err
 	}
 
-	res, err := h.builder.BuildApplicationDetails(ns)
+	res, err := h.resourceManager.BuildApplicationDetails(ns)
 
 	if err != nil {
 		return err
@@ -87,7 +87,7 @@ func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
 		return resources.NoClusterEditorRoleError
 	}
 
-	if err := h.builder.DeleteNamespace(&coreV1.Namespace{ObjectMeta: metaV1.ObjectMeta{Name: c.Param("name")}}); err != nil {
+	if err := h.resourceManager.DeleteNamespace(&coreV1.Namespace{ObjectMeta: metaV1.ObjectMeta{Name: c.Param("name")}}); err != nil {
 		return err
 	}
 

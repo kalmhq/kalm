@@ -19,14 +19,14 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 	}
 
 	var kalmPVCList v1.PersistentVolumeClaimList
-	if err := h.builder.List(&kalmPVCList, client.MatchingLabels{"kalm-managed": "true"}); err != nil {
+	if err := h.resourceManager.List(&kalmPVCList, client.MatchingLabels{"kalm-managed": "true"}); err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}
 	}
 
 	var kalmPVList v1.PersistentVolumeList
-	if err := h.builder.List(&kalmPVList, client.MatchingLabels{"kalm-managed": "true"}); err != nil {
+	if err := h.resourceManager.List(&kalmPVList, client.MatchingLabels{"kalm-managed": "true"}); err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}
@@ -39,7 +39,7 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 
 	respVolumes := []resources.Volume{}
 	for _, kalmPVC := range kalmPVCList.Items {
-		respVolume, err := h.builder.BuildVolumeResponse(kalmPVC, kalmPVMap[kalmPVC.Spec.VolumeName])
+		respVolume, err := h.resourceManager.BuildVolumeResponse(kalmPVC, kalmPVMap[kalmPVC.Spec.VolumeName])
 		if err != nil {
 			return err
 		}
@@ -59,18 +59,18 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 	}
 
 	var pvc v1.PersistentVolumeClaim
-	if err := h.builder.Get(pvcNamespace, pvcName, &pvc); err != nil {
+	if err := h.resourceManager.Get(pvcNamespace, pvcName, &pvc); err != nil {
 		return err
 	}
 
-	if isInUse, err := h.builder.IsPVCInUse(pvc); err != nil {
+	if isInUse, err := h.resourceManager.IsPVCInUse(pvc); err != nil {
 		return err
 	} else if isInUse {
 		return fmt.Errorf("cannot delete PVC in use")
 	}
 
 	var pvList v1.PersistentVolumeList
-	if err := h.builder.List(&pvList); err != nil {
+	if err := h.resourceManager.List(&pvList); err != nil {
 		return err
 	}
 
@@ -102,12 +102,12 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 		// clean will be triggered once pvc is deleted
 		copy.Labels[controllers.KalmLabelCleanIfPVCGone] = fmt.Sprintf("%s-%s", pvc.Namespace, pvc.Name)
 
-		if err := h.builder.Update(copy); err != nil {
+		if err := h.resourceManager.Update(copy); err != nil {
 			return err
 		}
 	}
 
-	if err := h.builder.Delete(&pvc); err != nil {
+	if err := h.resourceManager.Delete(&pvc); err != nil {
 		return err
 	}
 
@@ -121,7 +121,7 @@ func (h *ApiHandler) handleAvailableVolsForSimpleWorkload(c echo.Context) error 
 		return resources.NoNamespaceViewerRoleError(ns)
 	}
 
-	vols, err := h.builder.FindAvailableVolsForSimpleWorkload(ns)
+	vols, err := h.resourceManager.FindAvailableVolsForSimpleWorkload(ns)
 	if err != nil {
 		return err
 	}
@@ -136,7 +136,7 @@ func (h *ApiHandler) handleAvailableVolsForSts(c echo.Context) error {
 		return resources.NoNamespaceViewerRoleError(ns)
 	}
 
-	vols, err := h.builder.FindAvailableVolsForSts(ns)
+	vols, err := h.resourceManager.FindAvailableVolsForSts(ns)
 	if err != nil {
 		return err
 	}

@@ -11,8 +11,8 @@ type AccessToken struct {
 	*v1alpha1.AccessTokenSpec
 }
 
-func (builder *Builder) DeleteAccessToken(name string) error {
-	return builder.Delete(
+func (resourceManager *ResourceManager) DeleteAccessToken(name string) error {
+	return resourceManager.Delete(
 		&v1alpha1.AccessToken{
 			ObjectMeta: metaV1.ObjectMeta{
 				Name: name,
@@ -21,7 +21,7 @@ func (builder *Builder) DeleteAccessToken(name string) error {
 	)
 }
 
-func (builder *Builder) CreateAccessToken(accessToken *AccessToken) (*AccessToken, error) {
+func (resourceManager *ResourceManager) CreateAccessToken(accessToken *AccessToken) (*AccessToken, error) {
 	resAccessToken := &v1alpha1.AccessToken{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: accessToken.Name,
@@ -29,7 +29,7 @@ func (builder *Builder) CreateAccessToken(accessToken *AccessToken) (*AccessToke
 		Spec: *accessToken.AccessTokenSpec,
 	}
 
-	if err := builder.Create(resAccessToken); err != nil {
+	if err := resourceManager.Create(resAccessToken); err != nil {
 		return nil, err
 	}
 
@@ -43,19 +43,19 @@ func BuildAccessTokenFromResource(dk *v1alpha1.AccessToken) *AccessToken {
 	}
 }
 
-func (builder *Builder) GetAccessTokenByToken(token string) (*v1alpha1.AccessToken, error) {
+func (resourceManager *ResourceManager) GetAccessTokenByToken(token string) (*v1alpha1.AccessToken, error) {
 	name := v1alpha1.GetAccessTokenNameFromToken(token)
 	var accessToken v1alpha1.AccessToken
-	if err := builder.Get("", name, &accessToken); err != nil {
+	if err := resourceManager.Get("", name, &accessToken); err != nil {
 		return nil, err
 	}
 	return &accessToken, nil
 }
 
-func (builder *Builder) GetAccessTokens(ns string) ([]*AccessToken, error) {
+func (resourceManager *ResourceManager) GetAccessTokens(ns string) ([]*AccessToken, error) {
 	var accessTokenList v1alpha1.AccessTokenList
 
-	if err := builder.List(&accessTokenList, client.InNamespace(ns)); err != nil {
+	if err := resourceManager.List(&accessTokenList, client.InNamespace(ns)); err != nil {
 		return nil, err
 	}
 

@@ -11,7 +11,7 @@ type HttpRouteListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetHttpRouteListChannel(listOptions ...client.ListOption) *HttpRouteListChannel {
+func (resourceManager *ResourceManager) GetHttpRouteListChannel(listOptions ...client.ListOption) *HttpRouteListChannel {
 	channel := &HttpRouteListChannel{
 		List:  make(chan []*v1alpha1.HttpRoute, 1),
 		Error: make(chan error, 1),
@@ -20,7 +20,7 @@ func (builder *Builder) GetHttpRouteListChannel(listOptions ...client.ListOption
 	go func() {
 
 		var fetched v1alpha1.HttpRouteList
-		err := builder.List(&fetched, listOptions...)
+		err := resourceManager.List(&fetched, listOptions...)
 
 		if err != nil {
 			channel.List <- nil
@@ -47,20 +47,20 @@ type HttpRoute struct {
 	Namespace               string `json:"namespace"`
 }
 
-func (builder *Builder) GetHttpRoute(namespace, name string) (*HttpRoute, error) {
+func (resourceManager *ResourceManager) GetHttpRoute(namespace, name string) (*HttpRoute, error) {
 	var route v1alpha1.HttpRoute
 
-	if err := builder.Get(namespace, name, &route); err != nil {
+	if err := resourceManager.Get(namespace, name, &route); err != nil {
 		return nil, err
 	}
 
 	return BuildHttpRouteFromResource(&route), nil
 }
 
-func (builder *Builder) GetHttpRoutes(namespace string) ([]*HttpRoute, error) {
+func (resourceManager *ResourceManager) GetHttpRoutes(namespace string) ([]*HttpRoute, error) {
 	var routes v1alpha1.HttpRouteList
 
-	if err := builder.List(&routes, client.InNamespace(namespace)); err != nil {
+	if err := resourceManager.List(&routes, client.InNamespace(namespace)); err != nil {
 		return nil, err
 	}
 
@@ -81,7 +81,7 @@ func BuildHttpRouteFromResource(route *v1alpha1.HttpRoute) *HttpRoute {
 	}
 }
 
-func (builder *Builder) CreateHttpRoute(routeSpec *HttpRoute) (*HttpRoute, error) {
+func (resourceManager *ResourceManager) CreateHttpRoute(routeSpec *HttpRoute) (*HttpRoute, error) {
 	route := &v1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      routeSpec.Name,
@@ -90,29 +90,29 @@ func (builder *Builder) CreateHttpRoute(routeSpec *HttpRoute) (*HttpRoute, error
 		Spec: *routeSpec.HttpRouteSpec,
 	}
 
-	if err := builder.Create(route); err != nil {
+	if err := resourceManager.Create(route); err != nil {
 		return nil, err
 	}
 
 	return BuildHttpRouteFromResource(route), nil
 }
 
-func (builder *Builder) UpdateHttpRoute(routeSpec *HttpRoute) (*HttpRoute, error) {
+func (resourceManager *ResourceManager) UpdateHttpRoute(routeSpec *HttpRoute) (*HttpRoute, error) {
 	route := &v1alpha1.HttpRoute{}
 
-	if err := builder.Get(routeSpec.Namespace, routeSpec.Name, route); err != nil {
+	if err := resourceManager.Get(routeSpec.Namespace, routeSpec.Name, route); err != nil {
 		return nil, err
 	}
 
 	route.Spec = *routeSpec.HttpRouteSpec
 
-	if err := builder.Update(route); err != nil {
+	if err := resourceManager.Update(route); err != nil {
 		return nil, err
 	}
 
 	return BuildHttpRouteFromResource(route), nil
 }
 
-func (builder *Builder) DeleteHttpRoute(namespace, name string) error {
-	return builder.Delete(&v1alpha1.HttpRoute{ObjectMeta: metaV1.ObjectMeta{Name: name, Namespace: namespace}})
+func (resourceManager *ResourceManager) DeleteHttpRoute(namespace, name string) error {
+	return resourceManager.Delete(&v1alpha1.HttpRoute{ObjectMeta: metaV1.ObjectMeta{Name: name, Namespace: namespace}})
 }

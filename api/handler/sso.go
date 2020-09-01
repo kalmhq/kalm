@@ -10,7 +10,7 @@ func (h *ApiHandler) handleListSSOConfig(c echo.Context) error {
 		return resources.NoClusterViewerRoleError
 	}
 
-	ssoConfig, err := h.builder.GetSSOConfig()
+	ssoConfig, err := h.resourceManager.GetSSOConfig()
 
 	if err != nil {
 		return err
@@ -24,7 +24,7 @@ func (h *ApiHandler) handleDeleteSSOConfig(c echo.Context) error {
 		return resources.NoClusterEditorRoleError
 	}
 
-	err := h.builder.DeleteSSOConfig()
+	err := h.resourceManager.DeleteSSOConfig()
 
 	if err != nil {
 		return err
@@ -44,7 +44,7 @@ func (h *ApiHandler) handleUpdateSSOConfig(c echo.Context) error {
 		return err
 	}
 
-	ssoConfig, err := h.builder.UpdateSSOConfig(ssoConfig)
+	ssoConfig, err := h.resourceManager.UpdateSSOConfig(ssoConfig)
 
 	if err != nil {
 		return err
@@ -64,7 +64,7 @@ func (h *ApiHandler) handleCreateSSOConfig(c echo.Context) error {
 		return err
 	}
 
-	ssoConfig, err := h.builder.CreateSSOConfig(ssoConfig)
+	ssoConfig, err := h.resourceManager.CreateSSOConfig(ssoConfig)
 
 	if err != nil {
 		return err
@@ -78,7 +78,7 @@ func (h *ApiHandler) handleListProtectedEndpoints(c echo.Context) error {
 		return resources.NoClusterViewerRoleError
 	}
 
-	endpoints, err := h.builder.ListProtectedEndpoints()
+	endpoints, err := h.resourceManager.ListProtectedEndpoints()
 
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func (h *ApiHandler) handleDeleteProtectedEndpoints(c echo.Context) error {
 		return err
 	}
 
-	err := h.builder.DeleteProtectedEndpoints(protectedEndpoint)
+	err := h.resourceManager.DeleteProtectedEndpoints(protectedEndpoint)
 
 	if err != nil {
 		return err
@@ -118,7 +118,7 @@ func (h *ApiHandler) handleCreateProtectedEndpoints(c echo.Context) error {
 		return err
 	}
 
-	protectedEndpoint, err := h.builder.CreateProtectedEndpoint(protectedEndpoint)
+	protectedEndpoint, err := h.resourceManager.CreateProtectedEndpoint(protectedEndpoint)
 
 	if err != nil {
 		return err
@@ -138,7 +138,7 @@ func (h *ApiHandler) handleUpdateProtectedEndpoints(c echo.Context) error {
 		return err
 	}
 
-	protectedEndpoint, err := h.builder.UpdateProtectedEndpoint(protectedEndpoint)
+	protectedEndpoint, err := h.resourceManager.UpdateProtectedEndpoint(protectedEndpoint)
 
 	if err != nil {
 		return err

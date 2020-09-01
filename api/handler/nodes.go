@@ -10,7 +10,7 @@ func (h *ApiHandler) handleListNodes(c echo.Context) error {
 		return resources.NoClusterViewerRoleError
 	}
 
-	res, err := h.builder.ListNodes()
+	res, err := h.resourceManager.ListNodes()
 
 	if err != nil {
 		return err
@@ -24,17 +24,17 @@ func (h *ApiHandler) handleCordonNode(c echo.Context) error {
 		return resources.NoClusterEditorRoleError
 	}
 
-	node, err := h.builder.GetNode(c.Param("name"))
+	node, err := h.resourceManager.GetNode(c.Param("name"))
 
 	if err != nil {
 		return err
 	}
 
-	if err := h.builder.CordonNode(node); err != nil {
+	if err := h.resourceManager.CordonNode(node); err != nil {
 		return err
 	}
 
-	return c.JSON(200, h.builder.BuildNodeResponse(node))
+	return c.JSON(200, h.resourceManager.BuildNodeResponse(node))
 }
 
 func (h *ApiHandler) handleUncordonNode(c echo.Context) error {
@@ -42,15 +42,15 @@ func (h *ApiHandler) handleUncordonNode(c echo.Context) error {
 		return resources.NoClusterEditorRoleError
 	}
 
-	node, err := h.builder.GetNode(c.Param("name"))
+	node, err := h.resourceManager.GetNode(c.Param("name"))
 
 	if err != nil {
 		return err
 	}
 
-	if err := h.builder.UncordonNode(node); err != nil {
+	if err := h.resourceManager.UncordonNode(node); err != nil {
 		return err
 	}
 
-	return c.JSON(200, h.builder.BuildNodeResponse(node))
+	return c.JSON(200, h.resourceManager.BuildNodeResponse(node))
 }

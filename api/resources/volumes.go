@@ -30,12 +30,12 @@ type Volume struct {
 	PV                 string `json:"pvToMatch"`
 }
 
-func (builder *Builder) BuildVolumeResponse(
+func (resourceManager *ResourceManager) BuildVolumeResponse(
 	pvc coreV1.PersistentVolumeClaim,
 	pv coreV1.PersistentVolume,
 ) (*Volume, error) {
 
-	isInUse, err := builder.IsPVCInUse(pvc)
+	isInUse, err := resourceManager.IsPVCInUse(pvc)
 	if err != nil {
 		return nil, err
 	}
@@ -71,18 +71,18 @@ func formatQuantity(quantity resource.Quantity) string {
 	return capInStr
 }
 
-func (builder *Builder) GetPVs() ([]coreV1.PersistentVolume, error) {
+func (resourceManager *ResourceManager) GetPVs() ([]coreV1.PersistentVolume, error) {
 	var pvList coreV1.PersistentVolumeList
 
-	err := builder.List(&pvList)
+	err := resourceManager.List(&pvList)
 
 	return pvList.Items, err
 }
 
-func (builder *Builder) GetPVCs(opts ...client.ListOption) ([]coreV1.PersistentVolumeClaim, error) {
+func (resourceManager *ResourceManager) GetPVCs(opts ...client.ListOption) ([]coreV1.PersistentVolumeClaim, error) {
 	var pvcList coreV1.PersistentVolumeClaimList
 
-	err := builder.List(&pvcList, opts...)
+	err := resourceManager.List(&pvcList, opts...)
 
 	return pvcList.Items, err
 }
@@ -96,13 +96,13 @@ type volPair struct {
 // 2. filter all available kalmPVCs
 // 3. separate into 2 groups: same-ns pvc & diff-ns pvc (pv reclaimType must be Retain)
 // 4. resp: same-ns pvc: pvcName, diff-ns pvc: pvName
-func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume, error) {
-	pvList, err := builder.GetPVs()
+func (resourceManager *ResourceManager) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume, error) {
+	pvList, err := resourceManager.GetPVs()
 	if err != nil {
 		return nil, err
 	}
 
-	pvcList, err := builder.GetPVCs()
+	pvcList, err := resourceManager.GetPVCs()
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 	// find if boundedPV's pvc is in use
 	for _, boundedPV := range boundedPVs {
 		pvc, _ := findPVCByClaimRef(boundedPV.Spec.ClaimRef, pvcList)
-		isInUse, err := builder.IsPVCInUse(pvc)
+		isInUse, err := resourceManager.IsPVCInUse(pvc)
 		if err != nil {
 			return nil, err
 		}
@@ -228,8 +228,8 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 	return rst, nil
 }
 
-func (builder *Builder) FindAvailableVolsForSts(ns string) ([]Volume, error) {
-	pvcList, err := builder.GetPVCs(client.InNamespace(ns), client.MatchingLabels{controllers.KalmLabelManaged: "true"})
+func (resourceManager *ResourceManager) FindAvailableVolsForSts(ns string) ([]Volume, error) {
+	pvcList, err := resourceManager.GetPVCs(client.InNamespace(ns), client.MatchingLabels{controllers.KalmLabelManaged: "true"})
 	if client.IgnoreNotFound(err) != nil {
 		return nil, err
 	}
@@ -258,7 +258,7 @@ func (builder *Builder) FindAvailableVolsForSts(ns string) ([]Volume, error) {
 
 		pvcNamePrefix := pvc.Name[:idx]
 
-		isInUse, err := builder.IsPVCInUse(pvc)
+		isInUse, err := resourceManager.IsPVCInUse(pvc)
 		if err != nil {
 			return nil, err
 		}
@@ -375,9 +375,9 @@ func findPVCByClaimRef(
 	return
 }
 
-func (builder *Builder) IsPVCInUse(pvc coreV1.PersistentVolumeClaim) (bool, error) {
+func (resourceManager *ResourceManager) IsPVCInUse(pvc coreV1.PersistentVolumeClaim) (bool, error) {
 	var podList coreV1.PodList
-	err := builder.List(&podList, client.InNamespace(pvc.Namespace))
+	err := resourceManager.List(&podList, client.InNamespace(pvc.Namespace))
 	if errors.IsNotFound(err) {
 		return false, err
 	}

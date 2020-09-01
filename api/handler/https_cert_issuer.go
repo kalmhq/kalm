@@ -14,7 +14,7 @@ func (h *ApiHandler) handleGetHttpsCertIssuer(c echo.Context) error {
 		return resources.NoClusterViewerRoleError
 	}
 
-	httpsCertIssuers, err := h.builder.GetHttpsCertIssuerList()
+	httpsCertIssuers, err := h.resourceManager.GetHttpsCertIssuerList()
 	if err != nil {
 		return err
 	}
@@ -47,7 +47,7 @@ func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
 	if httpsCertIssuer.ACMECloudFlare != nil {
 
 		acmeSecretName := resources.GenerateSecretNameForACME(httpsCertIssuer)
-		err := h.builder.ReconcileSecretForIssuer(
+		err := h.resourceManager.ReconcileSecretForIssuer(
 			controllers.CertManagerNamespace,
 			acmeSecretName,
 			httpsCertIssuer.ACMECloudFlare.Secret,
@@ -63,7 +63,7 @@ func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
 		}
 	}
 
-	err = h.builder.Create(&resource)
+	err = h.resourceManager.Create(&resource)
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func (h *ApiHandler) handleUpdateHttpsCertIssuer(c echo.Context) error {
 		return err
 	}
 
-	httpsCertIssuer, err = h.builder.UpdateHttpsCertIssuer(httpsCertIssuer)
+	httpsCertIssuer, err = h.resourceManager.UpdateHttpsCertIssuer(httpsCertIssuer)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (h *ApiHandler) handleDeleteHttpsCertIssuer(c echo.Context) error {
 		return resources.NoClusterEditorRoleError
 	}
 
-	err := h.builder.DeleteHttpsCertIssuer(c.Param("name"))
+	err := h.resourceManager.DeleteHttpsCertIssuer(c.Param("name"))
 
 	if err != nil {
 		return err

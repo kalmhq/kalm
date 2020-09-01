@@ -12,7 +12,7 @@ func (h *ApiHandler) handleGetPVs(c echo.Context) error {
 	}
 
 	var pvList coreV1.PersistentVolumeList
-	err := h.builder.List(&pvList)
+	err := h.resourceManager.List(&pvList)
 	if err != nil {
 		return err
 	}

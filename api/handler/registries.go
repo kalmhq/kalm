@@ -10,7 +10,7 @@ func (h *ApiHandler) handleListRegistries(c echo.Context) error {
 		return resources.NoClusterViewerRoleError
 	}
 
-	list, err := h.builder.GetDockerRegistries()
+	list, err := h.resourceManager.GetDockerRegistries()
 
 	if err != nil {
 		return err
@@ -24,7 +24,7 @@ func (h *ApiHandler) handleGetRegistry(c echo.Context) error {
 		return resources.NoClusterViewerRoleError
 	}
 
-	registry, err := h.builder.GetDockerRegistry(c.Param("name"))
+	registry, err := h.resourceManager.GetDockerRegistry(c.Param("name"))
 
 	if err != nil {
 		return err
@@ -44,7 +44,7 @@ func (h *ApiHandler) handleCreateRegistry(c echo.Context) (err error) {
 		return err
 	}
 
-	if registry, err = h.builder.CreateDockerRegistry(registry); err != nil {
+	if registry, err = h.resourceManager.CreateDockerRegistry(registry); err != nil {
 		return err
 	}
 
@@ -62,7 +62,7 @@ func (h *ApiHandler) handleUpdateRegistry(c echo.Context) (err error) {
 		return err
 	}
 
-	if registry, err = h.builder.UpdateDockerRegistry(registry); err != nil {
+	if registry, err = h.resourceManager.UpdateDockerRegistry(registry); err != nil {
 		return err
 	}
 
@@ -74,7 +74,7 @@ func (h *ApiHandler) handleDeleteRegistry(c echo.Context) error {
 		return resources.NoClusterEditorRoleError
 	}
 
-	err := h.builder.DeleteDockerRegistry(c.Param("name"))
+	err := h.resourceManager.DeleteDockerRegistry(c.Param("name"))
 
 	if err != nil {
 		return err

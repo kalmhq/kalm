@@ -14,7 +14,7 @@ type RoleBindingListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) getRoleBindingListChannel(namespace string) *RoleBindingListChannel {
+func (resourceManager *ResourceManager) getRoleBindingListChannel(namespace string) *RoleBindingListChannel {
 	channel := &RoleBindingListChannel{
 		List:  make(chan []rbacV1.RoleBinding, 1),
 		Error: make(chan error, 1),
@@ -22,7 +22,7 @@ func (builder *Builder) getRoleBindingListChannel(namespace string) *RoleBinding
 
 	go func() {
 		var res rbacV1.RoleBindingList
-		err := builder.List(&res, client.InNamespace(namespace))
+		err := resourceManager.List(&res, client.InNamespace(namespace))
 
 		if err != nil {
 			channel.List <- nil
@@ -51,9 +51,9 @@ func (builder *Builder) getRoleBindingListChannel(namespace string) *RoleBinding
 	return channel
 }
 
-func (builder *Builder) ListRoleBindings(namespace string) ([]rbacV1.RoleBinding, error) {
+func (resourceManager *ResourceManager) ListRoleBindings(namespace string) ([]rbacV1.RoleBinding, error) {
 	resourceChannels := &ResourceChannels{
-		RoleBindingList: builder.getRoleBindingListChannel(namespace),
+		RoleBindingList: resourceManager.getRoleBindingListChannel(namespace),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -65,7 +65,7 @@ func (builder *Builder) ListRoleBindings(namespace string) ([]rbacV1.RoleBinding
 	return resources.RoleBindings, nil
 }
 
-func (builder *Builder) CreateRoleBinding(namespace string, subject rbacV1.Subject, role string) error {
+func (resourceManager *ResourceManager) CreateRoleBinding(namespace string, subject rbacV1.Subject, role string) error {
 	roleBinding := &rbacV1.RoleBinding{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      fmt.Sprintf("%s:%s:Role:%s", subject.Kind, subject.Name, role),
@@ -81,23 +81,23 @@ func (builder *Builder) CreateRoleBinding(namespace string, subject rbacV1.Subje
 		},
 	}
 
-	err := builder.Create(roleBinding)
+	err := resourceManager.Create(roleBinding)
 
 	if err != nil {
 		return err
 	}
 
-	err = builder.fixNamespaceDefaultRole(namespace, role)
+	err = resourceManager.fixNamespaceDefaultRole(namespace, role)
 
 	if err != nil {
 		return err
 	}
 
-	return builder.resolveSubjectClusterRoleBindings(subject.Kind, subject.Name)
+	return resourceManager.resolveSubjectClusterRoleBindings(subject.Kind, subject.Name)
 }
 
-func (builder *Builder) DeleteRoleBinding(namespace string, name string) error {
-	err := builder.Delete(&rbacV1.RoleBinding{ObjectMeta: metaV1.ObjectMeta{Name: name, Namespace: namespace}})
+func (resourceManager *ResourceManager) DeleteRoleBinding(namespace string, name string) error {
+	err := resourceManager.Delete(&rbacV1.RoleBinding{ObjectMeta: metaV1.ObjectMeta{Name: name, Namespace: namespace}})
 
 	if err != nil {
 		return err
@@ -105,19 +105,19 @@ func (builder *Builder) DeleteRoleBinding(namespace string, name string) error {
 
 	// TODO refactor this part
 	parts := strings.Split(name, ":")
-	return builder.resolveSubjectClusterRoleBindings(parts[0], parts[1])
+	return resourceManager.resolveSubjectClusterRoleBindings(parts[0], parts[1])
 }
 
 // If a subject still has some roles in kalm namespaces, the user will have `kalm-cluster-resources-reader` cluster role
 // Otherwise, the `kalm-cluster-resources-reader` binding will be deleted
-func (builder *Builder) resolveSubjectClusterRoleBindings(kind string, name string) (err error) {
-	err = builder.fixDefaultClusterRole()
+func (resourceManager *ResourceManager) resolveSubjectClusterRoleBindings(kind string, name string) (err error) {
+	err = resourceManager.fixDefaultClusterRole()
 
 	if err != nil {
 		return err
 	}
 
-	allRoleBindings, err := builder.ListRoleBindings(AllNamespaces)
+	allRoleBindings, err := resourceManager.ListRoleBindings(AllNamespaces)
 
 	if err != nil {
 		return err
@@ -166,7 +166,7 @@ func (builder *Builder) resolveSubjectClusterRoleBindings(kind string, name stri
 			},
 		}
 
-		err := builder.Create(clusterRoleBinding)
+		err := resourceManager.Create(clusterRoleBinding)
 
 		if errors.IsAlreadyExists(err) {
 			return nil
@@ -174,7 +174,7 @@ func (builder *Builder) resolveSubjectClusterRoleBindings(kind string, name stri
 
 		return err
 	} else {
-		return builder.Delete(&rbacV1.ClusterRoleBinding{
+		return resourceManager.Delete(&rbacV1.ClusterRoleBinding{
 			ObjectMeta: metaV1.ObjectMeta{
 				Name: clusterRoleBindingName,
 			},
@@ -182,7 +182,7 @@ func (builder *Builder) resolveSubjectClusterRoleBindings(kind string, name stri
 	}
 }
 
-func (builder *Builder) fixDefaultClusterRole() (err error) {
+func (resourceManager *ResourceManager) fixDefaultClusterRole() (err error) {
 	clusterRole := &rbacV1.ClusterRole{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: "kalm-cluster-resources-reader",
@@ -196,7 +196,7 @@ func (builder *Builder) fixDefaultClusterRole() (err error) {
 		},
 	}
 
-	err = builder.Create(clusterRole)
+	err = resourceManager.Create(clusterRole)
 
 	if err != nil && errors.IsAlreadyExists(err) {
 		return nil
@@ -205,16 +205,16 @@ func (builder *Builder) fixDefaultClusterRole() (err error) {
 	return err
 }
 
-func (builder *Builder) fixNamespaceDefaultRole(namespace string, roleName string) error {
+func (resourceManager *ResourceManager) fixNamespaceDefaultRole(namespace string, roleName string) error {
 
 	switch roleName {
 	case "reader":
 		role := &rbacV1.Role{}
-		err := builder.Get(namespace, roleName, role)
+		err := resourceManager.Get(namespace, roleName, role)
 
 		if err != nil {
 			if errors.IsNotFound(err) {
-				return builder.createReaderRole(namespace)
+				return resourceManager.createReaderRole(namespace)
 			} else {
 				return err
 			}
@@ -222,11 +222,11 @@ func (builder *Builder) fixNamespaceDefaultRole(namespace string, roleName strin
 
 	case "writer":
 		role := &rbacV1.Role{}
-		err := builder.Get(namespace, roleName, role)
+		err := resourceManager.Get(namespace, roleName, role)
 
 		if err != nil {
 			if errors.IsNotFound(err) {
-				return builder.createWriterRole(namespace)
+				return resourceManager.createWriterRole(namespace)
 			} else {
 				return err
 			}
@@ -236,7 +236,7 @@ func (builder *Builder) fixNamespaceDefaultRole(namespace string, roleName strin
 	return nil
 }
 
-func (builder *Builder) createReaderRole(namespace string) (err error) {
+func (resourceManager *ResourceManager) createReaderRole(namespace string) (err error) {
 	role := &rbacV1.Role{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      "reader",
@@ -290,7 +290,7 @@ func (builder *Builder) createReaderRole(namespace string) (err error) {
 		},
 	}
 
-	err = builder.Create(role)
+	err = resourceManager.Create(role)
 
 	if err != nil {
 		return err
@@ -298,7 +298,7 @@ func (builder *Builder) createReaderRole(namespace string) (err error) {
 	return nil
 }
 
-func (builder *Builder) createWriterRole(namespace string) (err error) {
+func (resourceManager *ResourceManager) createWriterRole(namespace string) (err error) {
 	role := &rbacV1.Role{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      "writer",
@@ -363,7 +363,7 @@ func (builder *Builder) createWriterRole(namespace string) (err error) {
 		},
 	}
 
-	err = builder.Create(role)
+	err = resourceManager.Create(role)
 
 	if err != nil {
 		return err
@@ -371,13 +371,13 @@ func (builder *Builder) createWriterRole(namespace string) (err error) {
 	return nil
 }
 
-func (builder *Builder) createDefaultKalmRoles(namespace string) (err error) {
-	err = builder.createReaderRole(namespace)
+func (resourceManager *ResourceManager) createDefaultKalmRoles(namespace string) (err error) {
+	err = resourceManager.createReaderRole(namespace)
 	if err != nil {
 		return
 	}
 
-	err = builder.createWriterRole(namespace)
+	err = resourceManager.createWriterRole(namespace)
 	if err != nil {
 		return
 	}

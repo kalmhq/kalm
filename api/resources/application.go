@@ -86,10 +86,10 @@ type Application struct {
 	Name string `json:"name"`
 }
 
-func (builder *Builder) GetNamespace(name string) (*coreV1.Namespace, error) {
+func (resourceManager *ResourceManager) GetNamespace(name string) (*coreV1.Namespace, error) {
 	namespace := new(coreV1.Namespace)
 
-	err := builder.Get("", name, namespace)
+	err := resourceManager.Get("", name, namespace)
 
 	if err != nil {
 		return nil, err
@@ -98,10 +98,10 @@ func (builder *Builder) GetNamespace(name string) (*coreV1.Namespace, error) {
 	return namespace, nil
 }
 
-func (builder *Builder) GetNamespaces() ([]*coreV1.Namespace, error) {
+func (resourceManager *ResourceManager) GetNamespaces() ([]*coreV1.Namespace, error) {
 	var fetched coreV1.NamespaceList
 
-	if err := builder.List(&fetched); err != nil {
+	if err := resourceManager.List(&fetched); err != nil {
 		return nil, err
 	}
 
@@ -114,23 +114,23 @@ func (builder *Builder) GetNamespaces() ([]*coreV1.Namespace, error) {
 	return res, nil
 }
 
-func (builder *Builder) CreateNamespace(ns *coreV1.Namespace) error {
-	if err := builder.Create(ns); err != nil {
+func (resourceManager *ResourceManager) CreateNamespace(ns *coreV1.Namespace) error {
+	if err := resourceManager.Create(ns); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (builder *Builder) DeleteNamespace(ns *coreV1.Namespace) error {
-	if err := builder.Delete(ns); err != nil {
+func (resourceManager *ResourceManager) DeleteNamespace(ns *coreV1.Namespace) error {
+	if err := resourceManager.Delete(ns); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (builder *Builder) BuildApplicationDetails(namespace *coreV1.Namespace) (*ApplicationDetails, error) {
+func (resourceManager *ResourceManager) BuildApplicationDetails(namespace *coreV1.Namespace) (*ApplicationDetails, error) {
 	nsName := namespace.Name
 	roles := make([]string, 0, 2)
 
@@ -147,7 +147,7 @@ func (builder *Builder) BuildApplicationDetails(namespace *coreV1.Namespace) (*A
 
 	// TODO Is there a better way?
 	// Infer user roles with some specific access review. This is not accurate but a trade off.
-	err := builder.Create(writeReview)
+	err := resourceManager.Create(writeReview)
 
 	if err != nil {
 		return nil, err
@@ -168,7 +168,7 @@ func (builder *Builder) BuildApplicationDetails(namespace *coreV1.Namespace) (*A
 		},
 	}
 
-	err = builder.Create(readReview)
+	err = resourceManager.Create(readReview)
 
 	if err != nil {
 		return nil, err
@@ -182,7 +182,7 @@ func (builder *Builder) BuildApplicationDetails(namespace *coreV1.Namespace) (*A
 
 	istioMetricHistories := &IstioMetricHistories{}
 
-	istioMetricListChan := builder.GetIstioMetricsListChannel(nsName)
+	istioMetricListChan := resourceManager.GetIstioMetricsListChannel(nsName)
 	err = <-istioMetricListChan.Error
 
 	if err != nil {
@@ -219,7 +219,7 @@ func formatEnvs(envs []v1alpha1.EnvVar) {
 	}
 }
 
-func (builder *Builder) BuildApplicationListResponse(namespaces []*coreV1.Namespace) ([]ApplicationDetails, error) {
+func (resourceManager *ResourceManager) BuildApplicationListResponse(namespaces []*coreV1.Namespace) ([]ApplicationDetails, error) {
 	apps := []ApplicationDetails{}
 
 	// TODO concurrent build response items
@@ -234,7 +234,7 @@ func (builder *Builder) BuildApplicationListResponse(namespaces []*coreV1.Namesp
 			continue
 		}
 
-		item, err := builder.BuildApplicationDetails(ns)
+		item, err := resourceManager.BuildApplicationDetails(ns)
 
 		if err != nil {
 			return nil, err

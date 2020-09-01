@@ -18,7 +18,7 @@ func (h *ApiHandler) handleListClusterServices(c echo.Context) error {
 		}
 	}
 
-	list, err := h.builder.GetServices(namespace)
+	list, err := h.resourceManager.GetServices(namespace)
 
 	if err != nil {
 		return err

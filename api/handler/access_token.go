@@ -10,7 +10,7 @@ func (h *ApiHandler) handleListAccessTokens(c echo.Context) error {
 		return resources.NoClusterViewerRoleError
 	}
 
-	keys, err := h.builder.GetAccessTokens(c.Param("namespace"))
+	keys, err := h.resourceManager.GetAccessTokens(c.Param("namespace"))
 
 	if err != nil {
 		return err
@@ -29,7 +29,7 @@ func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
 		return err
 	}
 
-	accessToken, err = h.builder.CreateAccessToken(accessToken)
+	accessToken, err = h.resourceManager.CreateAccessToken(accessToken)
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
 		return err
 	}
 
-	if err := h.builder.DeleteAccessToken(accessToken.Name); err != nil {
+	if err := h.resourceManager.DeleteAccessToken(accessToken.Name); err != nil {
 		return err
 	}
 

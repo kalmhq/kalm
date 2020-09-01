@@ -110,8 +110,8 @@ func (c *Client) read() {
 
 	}
 }
-func (c *Client) Builder() *resources.Builder {
-	return resources.NewBuilder(c.ClientInfo.Cfg, c.logger)
+func (c *Client) Builder() *resources.ResourceManager {
+	return resources.NewResourceManager(c.ClientInfo.Cfg, c.logger)
 }
 
 func (c *Client) write() {

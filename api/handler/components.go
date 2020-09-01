@@ -93,7 +93,7 @@ func (h *ApiHandler) deleteComponent(c echo.Context) error {
 		return resources.NoNamespaceEditorRoleError(c.Param("applicationName"))
 	}
 
-	err := h.builder.Delete(&v1alpha1.Component{ObjectMeta: metaV1.ObjectMeta{
+	err := h.resourceManager.Delete(&v1alpha1.Component{ObjectMeta: metaV1.ObjectMeta{
 		Name:      c.Param("name"),
 		Namespace: c.Param("applicationName"),
 	}})
@@ -107,7 +107,7 @@ func (h *ApiHandler) getComponent(c echo.Context) (*v1alpha1.Component, error) {
 	}
 
 	var component v1alpha1.Component
-	err := h.builder.Get(c.Param("applicationName"), c.Param("name"), &component)
+	err := h.resourceManager.Get(c.Param("applicationName"), c.Param("name"), &component)
 
 	if err != nil {
 		return nil, err
@@ -122,7 +122,7 @@ func (h *ApiHandler) getComponentList(c echo.Context) (*v1alpha1.ComponentList, 
 	}
 
 	var fetched v1alpha1.ComponentList
-	err := h.builder.List(&fetched, client.InNamespace(c.Param("applicationName")))
+	err := h.resourceManager.List(&fetched, client.InNamespace(c.Param("applicationName")))
 	if err != nil {
 		return nil, err
 	}
@@ -141,12 +141,12 @@ func (h *ApiHandler) createComponent(c echo.Context) (*v1alpha1.Component, error
 	}
 
 	crdComponent.Namespace = c.Param("applicationName")
-	err = h.builder.Create(crdComponent)
+	err = h.resourceManager.Create(crdComponent)
 	if err != nil {
 		return nil, err
 	}
 
-	err = h.builder.UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, plugins)
+	err = h.resourceManager.UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, plugins)
 
 	if err != nil {
 		return nil, err
@@ -165,11 +165,11 @@ func (h *ApiHandler) updateComponent(c echo.Context) (*v1alpha1.Component, error
 		return nil, resources.NoNamespaceEditorRoleError(crdComponent.Namespace)
 	}
 
-	if err := h.builder.Apply(crdComponent); err != nil {
+	if err := h.resourceManager.Apply(crdComponent); err != nil {
 		return nil, err
 	}
 
-	err = h.builder.UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, plugins)
+	err = h.resourceManager.UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, plugins)
 
 	if err != nil {
 		return nil, err
@@ -221,9 +221,9 @@ func getComponentFromContext(c echo.Context) (*v1alpha1.Component, []runtime.Raw
 }
 
 func (h *ApiHandler) componentResponse(c echo.Context, component *v1alpha1.Component) (*resources.ComponentDetails, error) {
-	return h.builder.BuildComponentDetails(component, nil)
+	return h.resourceManager.BuildComponentDetails(component, nil)
 }
 
 func (h *ApiHandler) componentListResponse(c echo.Context, componentList *v1alpha1.ComponentList) ([]resources.ComponentDetails, error) {
-	return h.builder.BuildComponentDetailsResponse(componentList)
+	return h.resourceManager.BuildComponentDetailsResponse(componentList)
 }

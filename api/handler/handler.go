@@ -10,9 +10,9 @@ import (
 )
 
 type ApiHandler struct {
-	builder       *resources.Builder
-	clientManager client.ClientManager
-	logger        logr.Logger
+	resourceManager *resources.ResourceManager
+	clientManager   client.ClientManager
+	logger          logr.Logger
 }
 
 type H map[string]interface{}
@@ -126,8 +126,8 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 func NewApiHandler(clientManager client.ClientManager) *ApiHandler {
 	return &ApiHandler{
-		clientManager: clientManager,
-		logger:        log.DefaultLogger(),
-		builder:       resources.NewBuilder(clientManager.GetDefaultClusterConfig(), log.DefaultLogger()),
+		clientManager:   clientManager,
+		logger:          log.DefaultLogger(),
+		resourceManager: resources.NewResourceManager(clientManager.GetDefaultClusterConfig(), log.DefaultLogger()),
 	}
 }

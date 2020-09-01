@@ -61,7 +61,7 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		},
 	}
 
-	err = h.builder.Create(review)
+	err = h.resourceManager.Create(review)
 
 	if err != nil {
 		return err
