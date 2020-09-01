@@ -15,7 +15,7 @@ import FormHelperText from "@material-ui/core/FormHelperText";
 import React from "react";
 import { WrappedFieldMetaProps, WrappedFieldProps } from "redux-form";
 import { ID } from "utils";
-import { FieldProps } from "formik";
+import { FieldProps, getIn } from "formik";
 import { Select as FormikSelect } from "formik-material-ui";
 
 const renderFormHelper = ({ touched, error }: Pick<WrappedFieldMetaProps, "touched" | "error">) => {
@@ -332,7 +332,7 @@ export const RenderFormikSelectField = (props: FieldProps & SelectProps & Props)
   return (
     <FormControl
       classes={{ root: classes.root }}
-      error={!!touched[name] && !!errors[name]}
+      error={!!getIn(touched, name) && !!getIn(errors, name)}
       variant="outlined"
       size="small"
       style={{ pointerEvents: "auto" }}
@@ -369,7 +369,7 @@ export const RenderFormikSelectField = (props: FieldProps & SelectProps & Props)
           })}
       </FormikSelect>
 
-      {renderFormHelper({ touched: !!touched[name], error: errors[name] })}
+      {renderFormHelper({ touched: !!getIn(touched, name), error: getIn(errors, name) })}
     </FormControl>
   );
 };

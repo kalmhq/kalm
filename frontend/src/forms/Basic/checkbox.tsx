@@ -15,7 +15,7 @@ import Immutable from "immutable";
 import React from "react";
 import { WrappedFieldProps } from "redux-form";
 import { KChip } from "widgets/Chip";
-import { FieldProps } from "formik";
+import { FieldProps, getIn } from "formik";
 import { Checkbox as FormikCheckbox } from "formik-material-ui";
 
 export const CheckboxField = ({
@@ -166,13 +166,13 @@ export const KFormikCheckboxGroupRender = ({
   field: { name },
   form: { setFieldValue, values, errors },
 }: KFormikCheckboxGroupRenderProps) => {
-  const showError = !!errors[name];
+  const showError = !!getIn(errors, name);
 
-  let value = values[name];
+  let value = getIn(values, name);
   return (
     <FormControl fullWidth error={showError}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}
-      {showError ? <FormHelperText>{errors[name]}</FormHelperText> : null}
+      {showError ? <FormHelperText>{getIn(errors, name)}</FormHelperText> : null}
       <FormGroup row>
         {options.map((x) => {
           const onCheckChange = (_: any, checked: boolean) => {

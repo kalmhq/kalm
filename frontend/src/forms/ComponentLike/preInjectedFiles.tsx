@@ -2,7 +2,7 @@ import { Box, Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
-import { Field, FieldArray, FieldArrayRenderProps } from "formik";
+import { Field, FieldArray, FieldArrayRenderProps, getIn } from "formik";
 import { TextField as FormikTextField } from "formik-material-ui";
 import { KFormikCheckbox } from "forms/Basic/checkbox";
 import Immutable from "immutable";
@@ -39,7 +39,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     this.state = {
       editingFileIndex: -1,
       fileContentValue: "",
-      activeIndex: values[name] ? values[name].length : 0,
+      activeIndex: getIn(values, name) ? getIn(values, name).length : 0,
     };
   }
 
@@ -56,9 +56,9 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
       form: { values, errors },
       replace,
     } = this.props;
-    const syncErrors = errors[name] as { [key: string]: string }[] | undefined;
+    const syncErrors = getIn(errors, name) as { [key: string]: string }[] | undefined;
     const { editingFileIndex, fileContentValue, activeIndex } = this.state;
-    const file = editingFileIndex > -1 ? values[name][editingFileIndex] : null;
+    const file = editingFileIndex > -1 ? getIn(values, name)[editingFileIndex] : null;
     const mountPathTmp = file ? file.mountPathTmp : "";
     const isDisabledSaveButton =
       !mountPathTmp ||
@@ -149,8 +149,8 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     } = this.props;
     const { activeIndex } = this.state;
     let fieldsNodes: any = [];
-    if (values[name]) {
-      values[name].forEach((injectedFile: PreInjectedFile, index: number) => {
+    if (getIn(values, name)) {
+      getIn(values, name).forEach((injectedFile: PreInjectedFile, index: number) => {
         if (injectedFile.get("mountPath")) {
           fieldsNodes.push(
             <Grid container spacing={1} key={index}>
@@ -205,7 +205,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
                 content: "",
                 mountPath: "",
               });
-              if (!values[name] || values[name].length <= activeIndex) {
+              if (!getIn(values, name) || getIn(values, name).length <= activeIndex) {
                 push(initFile);
               } else {
                 pop();

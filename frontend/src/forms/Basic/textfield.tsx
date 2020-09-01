@@ -5,7 +5,7 @@ import { WrappedFieldProps } from "redux-form";
 import { KalmConsoleIcon } from "widgets/Icon";
 import { withDebounceField, withDebounceProps, inputOnChangeWithDebounce } from "./debounce";
 import { TextField as FormikTextField } from "formik-material-ui";
-import { FieldProps } from "formik";
+import { FieldProps, getIn } from "formik";
 
 interface Props {
   endAdornment?: React.ReactNode;
@@ -89,7 +89,7 @@ export const KRenderFormikTextField = (props: TextFieldProps & FieldProps & { He
       margin="dense"
       fullWidth
       variant="outlined"
-      helperText={(touched[name] && errors[name]) || helperText || " "}
+      helperText={(getIn(touched, name) && getIn(errors, name)) || helperText || " "}
       inputProps={{
         required: false, // bypass html5 required feature
       }}
@@ -266,8 +266,8 @@ export class RenderFormikComplexValueTextField extends React.PureComponent<
       inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
     }
 
-    const error = errors[name];
-    const showError = !!errors[name] && !!touched[name];
+    const error = getIn(errors, name);
+    const showError = !!getIn(errors, name) && !!getIn(touched, name);
 
     return (
       <TextField
@@ -285,8 +285,8 @@ export class RenderFormikComplexValueTextField extends React.PureComponent<
         }}
         margin="dense"
         variant="outlined"
-        defaultValue={format ? format(values[name]) : values[name]}
-        value={format ? format(values[name]) : values[name]}
+        defaultValue={format ? format(getIn(values, name)) : getIn(values, name)}
+        value={format ? format(getIn(values, name)) : getIn(values, name)}
         onChange={(e) => {
           const value = e.target.value;
           return parse ? setFieldValue(name, parse(value)) : setFieldValue(name, value);
@@ -302,7 +302,7 @@ export const KRenderFormikCommandTextField = (props: TextFieldProps & FieldProps
     field: { name },
     form: { touched, errors },
   } = props;
-  const showError = !!errors[name] && !!touched[name];
+  const showError = !!getIn(errors, name) && !!getIn(touched, name);
 
   const theme = useTheme();
 
@@ -311,7 +311,7 @@ export const KRenderFormikCommandTextField = (props: TextFieldProps & FieldProps
       {...props}
       fullWidth
       spellCheck={false}
-      helperText={showError ? errors[name] : helperText ? helperText : ""}
+      helperText={showError ? getIn(errors, name) : helperText ? helperText : ""}
       InputLabelProps={{
         shrink: true,
       }}

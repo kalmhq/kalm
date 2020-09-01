@@ -220,7 +220,7 @@ export const ValidatorSchedule = (value: string) => {
 export const ValidatorStringLength = () => {};
 
 export const ValidateHost = (value: string) => {
-  if (value === undefined) return undefined;
+  if (!value) return "Required";
 
   if (value.length === 0 || value.length > 511) {
     return "Host length must be between 1 and 511 characters.";

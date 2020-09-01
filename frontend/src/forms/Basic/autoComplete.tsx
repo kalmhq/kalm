@@ -18,7 +18,7 @@ import {
 import { AutocompleteProps, RenderGroupParams } from "@material-ui/lab/Autocomplete/Autocomplete";
 import { WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
-import { FieldProps } from "formik";
+import { FieldProps, getIn } from "formik";
 import Immutable from "immutable";
 import React, { useState } from "react";
 import { BaseFieldProps, WrappedFieldProps } from "redux-form";
@@ -543,16 +543,16 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
       classes,
     } = props;
 
-    const errorsIsArray = Array.isArray(errors[name]);
-    const errorsArray = errors[name] as (string | undefined)[];
+    const errorsIsArray = Array.isArray(getIn(errors, name));
+    const errorsArray = getIn(errors, name) as (string | undefined)[];
     let errorText: string | undefined = undefined;
 
-    if (touched[name] && errorsIsArray) {
+    if (getIn(touched, name) && errorsIsArray) {
       errorText = errorsArray.find((x) => x !== undefined);
     }
 
-    if (typeof errors[name] === "string") {
-      errorText = errors[name] as string;
+    if (typeof getIn(errors, name) === "string") {
+      errorText = getIn(errors, name) as string;
     }
     return (
       <Autocomplete
@@ -565,7 +565,7 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
         size="small"
         id={id}
         onBlur={handleBlur}
-        value={values[name]}
+        value={getIn(values, name)}
         onChange={(e, value) => {
           setFieldValue(name, value);
         }}
@@ -590,10 +590,10 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
               {...params}
               margin="dense"
               variant="outlined"
-              error={!!touched[name] && !!errorText}
+              error={!!getIn(touched, name) && !!errorText}
               label={label}
               placeholder={placeholder}
-              helperText={(touched[name] && errorText) || helperText}
+              helperText={(getIn(touched, name) && errorText) || helperText}
             />
           );
         }}
@@ -624,7 +624,7 @@ function KFormikAutoCompleteSingleValueRaw<T>(
     noOptionsText,
   } = props;
 
-  const value = options.find((x) => x.value === values[name]) || null;
+  const value = options.find((x) => x.value === getIn(values, name)) || null;
 
   const { groupLabelDefault, groupIcon, logoIcon, groupLabelCurrent, ...autocompleteClasses } = classes;
 
@@ -692,10 +692,10 @@ function KFormikAutoCompleteSingleValueRaw<T>(
             {...params}
             fullWidth
             variant="outlined"
-            error={!!(touched[name] && errors[name])}
+            error={!!(getIn(touched, name) && getIn(errors, name))}
             label={label}
             placeholder={placeholder}
-            helperText={(touched[name] && errors[name]) || helperText}
+            helperText={(getIn(touched, name) && getIn(errors, name)) || helperText}
           />
         );
       }}
