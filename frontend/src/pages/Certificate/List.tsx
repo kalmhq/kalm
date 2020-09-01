@@ -27,6 +27,15 @@ import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
+    normalStatus: {
+      color: theme.palette.success.main,
+    },
+    warningStatus: {
+      color: theme.palette.warning.main,
+    },
+    domainsColumn: {
+      minWidth: 200,
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -62,6 +71,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderDomains = (cert: Certificate) => {
+    const { classes } = this.props;
     const isWildcardDomain = cert.get("httpsCertIssuer") === dns01Issuer;
     const domainStatus = (domain: string) => {
       const cname = cert.get("wildcardCertDNSChallengeDomain");
@@ -73,7 +83,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     };
     const prefix = isWildcardDomain ? "*." : "";
     return (
-      <>
+      <Box className={classes.domainsColumn}>
         {cert
           .get("domains")
           ?.map((domain) => {
@@ -85,7 +95,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
             );
           })
           .toArray()}
-      </>
+      </Box>
     );
   };
 
@@ -155,16 +165,14 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderStatus = (cert: Certificate) => {
+    const { classes } = this.props;
     const ready = cert.get("ready");
 
     if (ready === "True") {
       // why the ready field is a string value ?????
       return (
         <FlexRowItemCenterBox>
-          <FlexRowItemCenterBox mr={1}>
-            <SuccessBadge />
-          </FlexRowItemCenterBox>
-          <FlexRowItemCenterBox>Normal</FlexRowItemCenterBox>
+          <FlexRowItemCenterBox className={classes.normalStatus}>Normal</FlexRowItemCenterBox>
         </FlexRowItemCenterBox>
       );
     } else if (!!cert.get("reason")) {
@@ -173,7 +181,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
           <FlexRowItemCenterBox mr={1}>
             <PendingBadge />
           </FlexRowItemCenterBox>
-          <FlexRowItemCenterBox>{cert.get("reason")}</FlexRowItemCenterBox>
+          <FlexRowItemCenterBox className={classes.warningStatus}>{cert.get("reason")}</FlexRowItemCenterBox>
         </FlexRowItemCenterBox>
       );
     } else {
