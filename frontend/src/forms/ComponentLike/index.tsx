@@ -69,6 +69,7 @@ import { KFormikRenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
+import { FormMidware } from "tutorials/formMidware";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -958,10 +959,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { handleSubmit, classes, values } = this.props;
+    const { handleSubmit, classes, values, form } = this.props;
     return (
       <form onSubmit={handleSubmit} className={classes.root} id="component-form">
         {this.renderDirtyPrompt()}
+        <FormMidware values={values} form={form} />
         <KPanel
           content={
             <Box p={2} tutorial-anchor-id="component-from-basic">

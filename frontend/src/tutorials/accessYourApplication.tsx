@@ -12,10 +12,11 @@ import {
   requireSubStepCompleted,
   requireSubStepNotCompleted,
 } from "tutorials/utils";
-import { ApplicationDetails } from "types/application";
+import { ApplicationDetails, CREATE_COMPONENT } from "types/application";
 import { HttpRouteDestinationContent } from "types/route";
 import { Tutorial, TutorialFactory } from "types/tutorial";
 import { KMLink } from "widgets/Link";
+import { Actions } from "types";
 
 const resetTutorial = () => {
   store.dispatch(resetTutorialAction());
@@ -197,8 +198,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
           },
           {
             title: "Submit form",
-            // shouldCompleteByAction: (action: Actions) =>
-            //   action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) && action.meta!.form === "route",
+            shouldCompleteByAction: (action: Actions) => action.type === CREATE_COMPONENT,
           },
         ],
         highlights: [],

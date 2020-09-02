@@ -2,6 +2,7 @@ import { APPLICATION_FORM_ID, CERTIFICATE_FORM_ID, COMPONENT_FORM_ID } from "for
 import Immutable from "immutable";
 import { RootState } from "reducers";
 import { State as TutorialState } from "reducers/tutorial";
+import { getIn } from "formik";
 
 export const formValidateOrNotBlockByTutorial = (
   values: Immutable.Map<string, any>,
@@ -73,7 +74,7 @@ export const formikValidateOrNotBlockByTutorial = (
       for (let j = 0; j < subStep.formValidator.length; j++) {
         const rule = subStep.formValidator[j];
         if (rule.form === form) {
-          const error = rule.validate(values[rule.field]);
+          const error = rule.validate(getIn(values, rule.field));
 
           if (error) {
             errors[rule.field] = error;
@@ -153,7 +154,7 @@ export const getFormValue = (rootState: RootState, form: string, field: string) 
   if (!formValues) {
     return undefined;
   }
-  return formValues[field];
+  return getIn(formValues, field);
 };
 
 export const isFormFieldValueEqualTo = (rootState: RootState, form: string, field: string, value: any) => {
@@ -161,8 +162,9 @@ export const isFormFieldValueEqualTo = (rootState: RootState, form: string, fiel
   if (!formValues) {
     return false;
   }
-  console.log(formValues);
-  return Array.isArray(formValues[field]) ? formValues[field][0] === value[0] : formValues[field] === value;
+  return Array.isArray(getIn(formValues, field))
+    ? getIn(formValues, field)[0] === value[0]
+    : getIn(formValues, field) === value;
 };
 
 export const isFormFieldMeet = (rootState: RootState, form: string, field: string, cb: (value: any) => boolean) => {
