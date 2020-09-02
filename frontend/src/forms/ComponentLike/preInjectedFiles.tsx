@@ -2,13 +2,12 @@ import { Box, Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
-import { Field, FieldArray, FieldArrayRenderProps } from "formik";
+import { Field, FieldArray, FieldArrayRenderProps, FieldProps } from "formik";
 import { TextField as FormikTextField } from "formik-material-ui";
 import { KFormikCheckbox } from "forms/Basic/checkbox";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
-import { WrappedFieldProps } from "redux-form";
 import { TDispatchProp } from "types";
 import { PreInjectedFile } from "types/componentTemplate";
 import { ControlledDialog } from "widgets/ControlledDialog";
@@ -131,10 +130,14 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderContent = ({ meta: { error }, file }: WrappedFieldProps & { file: PreInjectedFile; index: number }) => {
+  private renderContent = ({
+    form: { errors },
+    field: { name },
+    file,
+  }: FieldProps & { file: PreInjectedFile; index: number }) => {
     return (
-      <Label color={error ? "error" : undefined} style={{ padding: 12, width: "100%" }}>
-        {error ? "File Content Required" : file.get("mountPath") || "Config File"}
+      <Label color={errors[name] ? "error" : undefined} style={{ padding: 12, width: "100%" }}>
+        {errors[name] ? "File Content Required" : file.get("mountPath") || "Config File"}
       </Label>
     );
   };

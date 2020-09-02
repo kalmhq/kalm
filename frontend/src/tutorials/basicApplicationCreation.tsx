@@ -1,11 +1,10 @@
 import { RootState } from "reducers";
 import { Actions } from "types";
-import { ActionTypes, actionTypes } from "redux-form";
 import Immutable from "immutable";
 import { ComponentLikePort } from "types/componentTemplate";
 import React from "react";
 import { Tutorial, TutorialFactory } from "types/tutorial";
-import { ApplicationDetails } from "types/application";
+import { ApplicationDetails, CREATE_APPLICATION } from "types/application";
 import { store } from "store";
 import {
   getFormValue,
@@ -89,9 +88,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           },
           {
             title: "Submit form",
-            shouldCompleteByAction: (action: Actions) =>
-              action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) &&
-              action.meta!.form === APPLICATION_FORM_ID,
+            shouldCompleteByAction: (action: Actions) => action.type === CREATE_APPLICATION,
           },
         ],
       },
@@ -223,9 +220,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           },
           {
             title: "Deploy!",
-            shouldCompleteByAction: (action: Actions) =>
-              action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) &&
-              action.meta!.form === COMPONENT_FORM_ID,
+            shouldCompleteByAction: (action: Actions) => action.type === CREATE_APPLICATION,
           },
         ],
       },
