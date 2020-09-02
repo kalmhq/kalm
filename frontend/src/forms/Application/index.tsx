@@ -16,7 +16,7 @@ import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
 import { KRenderFormikTextField } from "../Basic/textfield";
-import { ValidatorName, ValidatorRequired } from "../validator";
+import { ValidatorName } from "../validator";
 import { APPLICATION_FORM_ID } from "forms/formIDs";
 import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { FormMidware } from "tutorials/formMidware";
@@ -57,8 +57,6 @@ interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchPr
 
 export interface Props extends ConnectedProps, FormikProps<ApplicationContent>, WithStyles<typeof styles>, OwnProps {}
 
-const nameValidators = [ValidatorRequired, ValidatorName];
-
 class ApplicationFormRaw extends React.PureComponent<Props> {
   private renderBasic() {
     const { isEdit, values } = this.props;
@@ -71,7 +69,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           disabled={isEdit}
           component={KRenderFormikTextField}
           autoFocus={true}
-          validate={nameValidators}
+          validate={ValidatorName}
           helperText={isEdit ? "Can't modify name" : stringConstants.NAME_RULE}
         />
 

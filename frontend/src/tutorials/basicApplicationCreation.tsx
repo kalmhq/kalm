@@ -1,5 +1,3 @@
-import { setTutorialAction } from "actions/tutorial";
-import { APPLICATION_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
 import Immutable from "immutable";
 import React from "react";
 import { RootState } from "reducers";
@@ -14,9 +12,12 @@ import {
   requireSubStepCompleted,
   requireSubStepNotCompleted,
 } from "tutorials/utils";
-import { ApplicationDetails } from "types/application";
-import { ComponentLikePort } from "types/componentTemplate";
+import { Actions } from "types";
+import { ApplicationDetails, CREATE_APPLICATION, CREATE_COMPONENT } from "types/application";
+import { ComponentLikePortContent } from "types/componentTemplate";
 import { Tutorial, TutorialFactory } from "types/tutorial";
+import { COMPONENT_FORM_ID, APPLICATION_FORM_ID } from "forms/formIDs";
+import { setTutorialAction } from "actions/tutorial";
 
 export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title): Tutorial => {
   let apps: Immutable.List<ApplicationDetails> = store.getState().get("applications").get("applications");
@@ -87,9 +88,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           },
           {
             title: "Submit form",
-            // shouldCompleteByAction: (action: Actions) =>
-            //   action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) &&
-            //   action.meta!.form === APPLICATION_FORM_ID,
+            shouldCompleteByAction: (action: Actions) => action.type === CREATE_APPLICATION,
           },
         ],
       },
@@ -152,7 +151,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
             ),
             shouldCompleteByState: (state: RootState) => {
               const ports = getFormValue(state, COMPONENT_FORM_ID, "ports");
-              return ports && ports.size > 0;
+              return ports && ports.length > 0;
             },
           },
           {
@@ -164,15 +163,13 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
             formValidator: [
               {
                 form: COMPONENT_FORM_ID,
-                field: "ports[0].protocol",
+                field: "ports.0.protocol",
                 validate: (value) => (value === "http" ? undefined : `Please use "http"`),
               },
             ],
             shouldCompleteByState: (state: RootState) => {
-              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as
-                | Immutable.List<ComponentLikePort>
-                | undefined;
-              return !!ports && ports.size > 0 && ports.get(0)!.get("protocol") === "http";
+              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as ComponentLikePortContent[] | undefined;
+              return !!ports && ports.length > 0 && ports[0]!.protocol === "http";
             },
           },
           {
@@ -184,15 +181,14 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
             formValidator: [
               {
                 form: COMPONENT_FORM_ID,
-                field: "ports[0].containerPort",
-                validate: (value) => (value === 8001 ? undefined : `Please use "8001"`),
+                field: "ports.0.containerPort",
+                validate: (value) => (value === "8001" ? undefined : `Please use "8001"`),
               },
             ],
             shouldCompleteByState: (state: RootState) => {
-              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as
-                | Immutable.List<ComponentLikePort>
-                | undefined;
-              return !!ports && ports.size > 0 && ports.get(0)!.get("containerPort") === 8001;
+              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as ComponentLikePortContent[] | undefined;
+              console.log(ports);
+              return !!ports && ports.length > 0 && Number(ports[0]!.containerPort) === 8001;
             },
           },
           {
@@ -204,26 +200,18 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
             formValidator: [
               {
                 form: COMPONENT_FORM_ID,
-                field: "ports[0].servicePort",
+                field: "ports.0.servicePort",
                 validate: (value) => (value === 8001 || !value ? undefined : `Please use "8001"`),
               },
             ],
             shouldCompleteByState: (state: RootState) => {
-              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as
-                | Immutable.List<ComponentLikePort>
-                | undefined;
-              return (
-                !!ports &&
-                ports.size > 0 &&
-                (ports.get(0)!.get("servicePort") === 8001 || !ports.get(0)!.get("servicePort"))
-              );
+              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as ComponentLikePortContent[] | undefined;
+              return !!ports && ports.length > 0 && (ports[0]!.servicePort === 8001 || !ports[0]!.servicePort);
             },
           },
           {
             title: "Deploy!",
-            // shouldCompleteByAction: (action: Actions) =>
-            //   action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) &&
-            //   action.meta!.form === COMPONENT_FORM_ID,
+            shouldCompleteByAction: (action: Actions) => action.type === CREATE_COMPONENT,
           },
         ],
       },

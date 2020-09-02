@@ -2,7 +2,7 @@ import { Box, Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
-import { Field, FieldArray, FieldArrayRenderProps, getIn } from "formik";
+import { Field, FieldArray, FieldArrayRenderProps, getIn, FieldProps } from "formik";
 import { TextField as FormikTextField } from "formik-material-ui";
 import { KFormikCheckbox } from "forms/Basic/checkbox";
 import Immutable from "immutable";
@@ -130,11 +130,14 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderContent = ({ field: { name }, form: { touched, errors }, file }: any) => {
-    const error = getIn(errors, name);
+  private renderContent = ({
+    form: { errors },
+    field: { name },
+    file,
+  }: FieldProps & { file: PreInjectedFile; index: number }) => {
     return (
-      <Label color={error ? "error" : undefined} style={{ padding: 12, width: "100%" }}>
-        {error ? "File Content Required" : file.get("mountPath") || "Config File"}
+      <Label color={errors[name] ? "error" : undefined} style={{ padding: 12, width: "100%" }}>
+        {errors[name] ? "File Content Required" : file.get("mountPath") || "Config File"}
       </Label>
     );
   };
