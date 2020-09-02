@@ -45,7 +45,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 		Path:   "/v1alpha1/httproutes/test-routes",
 		Body:   route,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.NotNil(rec)
@@ -61,9 +61,6 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/httproutes/test-routes",
 		Body:   route,
-		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
-		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var routesRes []*resources.HttpRoute
 			rec.BodyAsJSON(&routesRes)
@@ -81,9 +78,6 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/httproutes",
 		Body:   route,
-		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
-		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var routesRes []*resources.HttpRoute
 			rec.BodyAsJSON(&routesRes)
@@ -119,7 +113,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 		Path:   "/v1alpha1/httproutes/test-routes/test-routes",
 		Body:   routeForUpdate,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.NotNil(rec)
@@ -135,9 +129,6 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/httproutes/test-routes",
 		Body:   route,
-		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
-		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var routesResForUpdate []*resources.HttpRoute
 			rec.BodyAsJSON(&routesResForUpdate)
@@ -156,7 +147,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 		Path:   "/v1alpha1/httproutes/test-routes/test-routes",
 		Body:   routeForUpdate,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.NotNil(rec)
@@ -171,9 +162,6 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/httproutes",
-		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
-		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var routesResForDelete []*resources.HttpRoute
 			rec.BodyAsJSON(&routesResForDelete)

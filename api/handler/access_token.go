@@ -73,7 +73,6 @@ func getAccessTokenFromContext(c echo.Context) (*resources.AccessToken, error) {
 func (h *ApiHandler) filterAuthorizedAccessTokens(c echo.Context, records []*resources.AccessToken) []*resources.AccessToken {
 	l := len(records)
 
-	// select all visible namespaces
 	for i := 0; i < l; i++ {
 		if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), records[i].AccessTokenSpec) {
 			records[l-1], records[i] = records[i], records[l-1]
