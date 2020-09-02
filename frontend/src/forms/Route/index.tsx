@@ -15,7 +15,7 @@ import { connect } from "react-redux";
 import { Link as RouteLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { httpMethods, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
+import { httpMethods, HttpRouteFormType, methodsModeAll, methodsModeSpecific } from "types/route";
 import { isArray } from "util";
 import { arraysMatch } from "utils";
 import { includesForceHttpsDomain } from "utils/domain";
@@ -81,12 +81,12 @@ const styles = (theme: Theme) =>
 interface OwnProps {
   isEdit?: boolean;
   onSubmit: any;
-  initial: HttpRouteForm;
+  initial: HttpRouteFormType;
 }
 
 export interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props extends ConnectedProps, OwnProps, FormikProps<HttpRouteForm>, WithStyles<typeof styles> {}
+export interface Props extends ConnectedProps, OwnProps, FormikProps<HttpRouteFormType>, WithStyles<typeof styles> {}
 
 interface State {
   isAdvancedPartUnfolded: boolean;
@@ -477,7 +477,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
-const form = withFormik<OwnProps & ConnectedProps & WithStyles<typeof styles>, HttpRouteForm>({
+const form = withFormik<OwnProps & ConnectedProps & WithStyles<typeof styles>, HttpRouteFormType>({
   mapPropsToValues: (props) => {
     return props.initial;
   },

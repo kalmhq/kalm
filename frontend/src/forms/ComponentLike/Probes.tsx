@@ -10,7 +10,7 @@ import {
   withStyles,
 } from "@material-ui/core";
 import { WithStyles } from "@material-ui/styles";
-import { Field, FieldProps } from "formik";
+import { Field, FieldProps, getIn } from "formik";
 import { NormalizeNumber } from "forms/normalizer";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
@@ -60,11 +60,11 @@ class RenderProbe extends React.PureComponent<Props> {
     const { classes } = this.props;
     return (
       <TextField
-        error={!!touched[name] && !!errors[name]}
-        helperText={!!touched[name] && !!errors[name] ? errors[name] : undefined}
+        error={!!getIn(touched, name) && !!getIn(errors, name)}
+        helperText={!!getIn(touched, name) && !!getIn(errors, name) ? getIn(errors, name) : undefined}
         InputProps={{ classes: { input: classes.input } }}
         onChange={(e) => setFieldValue(name, e.target.value)}
-        value={values[name]}
+        value={getIn(values, name)}
         size="small"
         type={type}
         select={select}
@@ -306,7 +306,7 @@ class RenderProbe extends React.PureComponent<Props> {
       form: { values },
     } = this.props;
 
-    let probe: ProbeContent | undefined = values[name];
+    let probe: ProbeContent | undefined = getIn(values, name);
 
     return probe;
   };

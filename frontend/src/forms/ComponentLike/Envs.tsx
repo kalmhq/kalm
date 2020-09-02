@@ -1,5 +1,5 @@
 import { Box, Button, Fade, Grid } from "@material-ui/core";
-import { Field, FieldArray, FieldArrayRenderProps } from "formik";
+import { Field, FieldArray, FieldArrayRenderProps, getIn } from "formik";
 import { TextField as FormikTextField } from "formik-material-ui";
 import Immutable from "immutable";
 import React from "react";
@@ -42,13 +42,13 @@ class RenderEnvs extends React.PureComponent<Props> {
     } = this.props;
     return (
       <>
-        {/* {errors[name] ? (
+        {/* {getIn(errors, name) ? (
           <Box mb={2}>
-            <Alert severity="error">{errors[name]}</Alert>
+            <Alert severity="error">{getIn(errors, name)}</Alert>
           </Box>
         ) : null} */}
-        {values[name] &&
-          values[name].map((env: ComponentLikeEnv, index: number) => {
+        {getIn(values, name) &&
+          getIn(values, name).map((env: ComponentLikeEnv, index: number) => {
             return (
               <Fade in key={index}>
                 <Grid container spacing={2}>

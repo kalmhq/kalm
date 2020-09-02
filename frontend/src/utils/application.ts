@@ -26,7 +26,7 @@ export const correctComponentFormValuesForSubmit = (
   const volumeOptions = getComponentFormVolumeOptions(
     state,
     componentValues.get("name"),
-    componentValues.get("workloadType"),
+    componentValues.get("workloadType") || "server",
   );
 
   const findPVC = (claimName: string) => {
@@ -93,7 +93,11 @@ export const correctComponentFormValuesForInit = (
 ): ApplicationComponent => {
   let volumes = component.get("volumes");
   if (volumes) {
-    const volumeOptions = getComponentFormVolumeOptions(state, component.get("name"), component.get("workloadType"));
+    const volumeOptions = getComponentFormVolumeOptions(
+      state,
+      component.get("name"),
+      component.get("workloadType") || "server",
+    );
 
     const findClaimName = (pvc?: string) => {
       pvc = pvc || "";

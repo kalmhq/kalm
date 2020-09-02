@@ -1,9 +1,8 @@
 import { Box, Button, Grid, TextField } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import HelpIcon from "@material-ui/icons/Help";
-import { Field, FieldArray } from "formik";
+import { Field, FieldArray, getIn, FieldArrayRenderProps } from "formik";
 import { KTooltip } from "forms/Application/KTooltip";
-import { FieldArrayRenderProps } from "forms/Basic/kFieldArray";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { RootState } from "reducers";
@@ -35,8 +34,6 @@ interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProp
 
 interface Props extends FieldArrayRenderProps, FieldArrayProps {}
 
-const sizeValidators = [ValidatorRequired, ValidatorVolumeSize];
-
 class RenderVolumesRaw extends React.PureComponent<Props> {
   private getUsingClaimNames() {
     const {
@@ -46,8 +43,8 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
 
     const claimNames: { [key: string]: boolean } = {};
 
-    if (values[name]) {
-      values[name].forEach((volume: VolumeContent, index: number) => {
+    if (getIn(values, name)) {
+      getIn(values, name).forEach((volume: VolumeContent, index: number) => {
         if (volume.type === VolumeTypePersistentVolumeClaim) {
           const claimName = volume.claimName;
           claimNames[claimName] = true;
@@ -205,7 +202,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           name={`${name}.${index}.size`}
           label="Size"
           margin
-          validate={sizeValidators}
+          validate={ValidatorVolumeSize}
           endAdornment={this.getSizeEndAdornment()}
           // format={(value: any) => {
           //   return !value ? "" : sizeStringToGi(value);
@@ -222,7 +219,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           name={`${name}.${index}.size`}
           label="Size"
           margin
-          validate={sizeValidators}
+          validate={ValidatorVolumeSize}
           endAdornment={this.getSizeEndAdornment()}
           // format={(value: any) => {
           //   return !value ? "" : sizeStringToGi(value);
@@ -285,8 +282,8 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           </Grid>
         </Box>
 
-        {values[name] &&
-          values[name].map((disk: VolumeContent, index: number) => {
+        {getIn(values, name) &&
+          getIn(values, name).map((disk: VolumeContent, index: number) => {
             return (
               <Grid container spacing={2} key={index}>
                 {this.getFieldComponents(disk, index).map((fieldComponent, fieldIndex) => {

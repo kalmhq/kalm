@@ -127,7 +127,7 @@ export const methodsModeAll = "all";
 export const methodsModeSpecific = "specific";
 export const httpMethods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT"];
 
-export interface HttpRouteForm {
+export interface HttpRouteFormType {
   name: string;
   namespace: string;
   hosts: string[];
@@ -147,7 +147,7 @@ export interface HttpRouteForm {
   methodsMode: string;
 }
 
-export const newEmptyRouteForm = (): HttpRouteForm => {
+export const newEmptyRouteForm = (): HttpRouteFormType => {
   return {
     namespace: "kalm-system",
     name: "http-route-" + ID(),

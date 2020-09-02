@@ -156,7 +156,7 @@ export const ValidatorVolumeSize = (value: string) => {
 };
 
 export const ValidatorName = (value: string) => {
-  if (!value) return undefined;
+  if (!value) return "Required";
 
   if (!value.match(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/) || value === "0") {
     return sc.NAME_RULE;
@@ -220,7 +220,7 @@ export const ValidatorSchedule = (value: string) => {
 export const ValidatorStringLength = () => {};
 
 export const ValidateHost = (value: string) => {
-  if (value === undefined) return undefined;
+  if (!value) return "Required";
 
   if (value.length === 0 || value.length > 511) {
     return "Host length must be between 1 and 511 characters.";

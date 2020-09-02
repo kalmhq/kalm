@@ -6,7 +6,7 @@ import { withSSO, WithSSOProps } from "hoc/withSSO";
 import { Loading } from "widgets/Loading";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { push } from "connected-react-router";
-import { ProtectedEndpoint } from "types/sso";
+import { ProtectedEndpointFormType } from "types/sso";
 import { updateProtectedEndpointAction } from "actions/sso";
 
 const styles = (theme: Theme) =>
@@ -24,12 +24,9 @@ class EditEndpointPageRaw extends React.PureComponent<Props, State> {
     this.state = {};
   }
 
-  private onSubmit = async (values: ProtectedEndpoint) => {
+  private onSubmit = async (values: ProtectedEndpointFormType) => {
     const { dispatch } = this.props;
     await dispatch(updateProtectedEndpointAction(values));
-  };
-
-  private onSubmitSuccess = () => {
     this.props.dispatch(push("/sso"));
   };
 
@@ -54,9 +51,8 @@ class EditEndpointPageRaw extends React.PureComponent<Props, State> {
       <BasePage>
         <Box p={2}>
           <ProtectedEndpointForm
-            initialValues={protectedEndpoint}
+            initial={protectedEndpoint.toJS() as ProtectedEndpointFormType}
             onSubmit={this.onSubmit}
-            onSubmitSuccess={this.onSubmitSuccess}
           />
         </Box>
       </BasePage>

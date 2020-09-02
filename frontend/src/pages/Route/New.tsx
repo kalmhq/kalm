@@ -3,7 +3,7 @@ import { createRouteAction } from "actions/routes";
 import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import React from "react";
-import { AllHttpMethods, HttpRouteForm, methodsModeAll, newEmptyRouteForm, HttpRoute } from "types/route";
+import { AllHttpMethods, HttpRouteFormType, methodsModeAll, newEmptyRouteForm, HttpRoute } from "types/route";
 import { BasePage } from "../BasePage";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { setSuccessNotificationAction } from "actions/notification";
@@ -17,7 +17,7 @@ const styles = (theme: Theme) =>
 interface Props extends WithStyles<typeof styles>, WithNamespaceProps {}
 
 class RouteNewRaw extends React.PureComponent<Props> {
-  private onSubmit = async (routeForm: HttpRouteForm) => {
+  private onSubmit = async (routeForm: HttpRouteFormType) => {
     const { activeNamespaceName, dispatch } = this.props;
     let route = Immutable.fromJS(routeForm) as HttpRoute;
     try {

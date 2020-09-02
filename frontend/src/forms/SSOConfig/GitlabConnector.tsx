@@ -1,20 +1,18 @@
 import { Grid } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
-import { KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
+import { Field } from "formik";
+import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { Field } from "redux-form/immutable";
-import { SSOGitlabConnector } from "types/sso";
+import { SSOGitlabConnectorFormType } from "types/sso";
 import { capitalize } from "utils/string";
 import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
-import { KRenderDebounceTextField } from "../Basic/textfield";
+import { KRenderFormikTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
 
 interface Props extends DispatchProp {
-  connector: SSOGitlabConnector;
-  meta: {
-    form: string;
-  };
+  connector: SSOGitlabConnectorFormType;
+  form: any;
   field: string;
 }
 
@@ -28,7 +26,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
           <Box style={{ verticalAlign: "middle" }} mr={2} display="inline-block">
             {/* Gitlab icon place holder */}
           </Box>
-          {capitalize(connector.get("type"))}
+          {capitalize(connector.type)}
         </H6>
 
         <Box mt={2}>
@@ -37,7 +35,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
               <Grid container spacing={2}>
                 <Grid item xs>
                   <Field
-                    component={KRenderDebounceTextField}
+                    component={KRenderFormikTextField}
                     name={`${field}.name`}
                     label="Name"
                     placeholder="Give a name of this connector"
@@ -48,7 +46,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                 </Grid>
                 <Grid item xs>
                   <Field
-                    component={KRenderDebounceTextField}
+                    component={KRenderFormikTextField}
                     name={`${field}.config.baseURL`}
                     label="Gitlab Base URL"
                     placeholder="Please type Gitlab Base URL"
@@ -60,7 +58,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
               <Grid container spacing={2}>
                 <Grid item xs>
                   <Field
-                    component={KRenderDebounceTextField}
+                    component={KRenderFormikTextField}
                     name={`${field}.config.clientID`}
                     label="Client ID"
                     autoComplete={"false"}
@@ -72,7 +70,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                 </Grid>
                 <Grid item xs>
                   <Field
-                    component={KRenderDebounceTextField}
+                    component={KRenderFormikTextField}
                     autoComplete={"false"}
                     name={`${field}.config.clientSecret`}
                     label="Client Secret"
@@ -93,7 +91,8 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
               {/*  </Body2>*/}
               {/*</Box>*/}
               <Box mt={1}>
-                <KFreeSoloAutoCompleteMultipleSelectStringField
+                <Field
+                  component={KFreeSoloFormikAutoCompleteMultiValues}
                   label="Groups"
                   name={`${field}.config.groups`}
                   validate={ValidatorRequired}

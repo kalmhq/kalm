@@ -1,114 +1,129 @@
 import { Grid } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
-import { Alert } from "@material-ui/lab";
-import { KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
-import Immutable from "immutable";
+import { Field, FieldArray, getIn } from "formik";
+import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import React from "react";
-import { connect, DispatchProp } from "react-redux";
-import { arrayPush } from "redux-form";
-import { Field, FieldArray } from "redux-form/immutable";
-import { SSOGithubConnector } from "types/sso";
+import { GithubOrgFormType, SSOGithubConnectorFormType } from "types/sso";
 import { capitalize } from "utils/string";
 import { DeleteIcon, GithubIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
-import { KRenderDebounceTextField } from "../Basic/textfield";
+import { KRenderFormikTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
+import { Alert } from "@material-ui/lab";
 
-const ValidatorOrgs = (values: Immutable.List<any>, _allValues?: any, _props?: any, _name?: any) => {
+export const ValidatorOrgs = (values: any[], _allValues?: any, _props?: any, _name?: any) => {
   if (!values) return undefined;
 
-  if (values.size === 0) {
+  if (values.length === 0) {
     return "You should at least configure one organization.";
   }
 };
 
-class RenderGithubConnectorOrganizations extends React.Component<any> {
+class RenderGithubConnectorOrganizations extends React.Component<{
+  name: string;
+  orgs?: GithubOrgFormType[];
+}> {
   public render() {
-    const {
-      fields,
-      meta: { error },
-    } = this.props;
+    const { name, orgs } = this.props;
 
     return (
-      <>
-        {error ? (
-          <Box mt={2} mb={2}>
-            <Alert severity="error">{error}</Alert>
-          </Box>
-        ) : null}
+      <FieldArray
+        name={name}
+        render={(arrayHelpers) => (
+          <>
+            {orgs && orgs.length === 0 ? (
+              <Box mt={2} mb={2}>
+                <Alert severity="error">{"You should at least configure one organization."}</Alert>
+              </Box>
+            ) : null}
 
-        {fields.map((field: string, index: number) => {
-          return (
-            <Grid container spacing={2} key={field}>
-              <Grid item xs={3}>
-                <Field
-                  component={KRenderDebounceTextField}
-                  name={`${field}.name`}
-                  label="Organization Name"
-                  placeholder="Please type a organization name"
-                  validate={ValidatorRequired}
-                  required
-                />
-              </Grid>
+            {orgs &&
+              orgs.map((org, index) => {
+                let field = `${name}.${index}`;
+                return (
+                  <Grid container spacing={2} key={field}>
+                    <Grid item xs={3}>
+                      <Field
+                        component={KRenderFormikTextField}
+                        name={`${field}.name`}
+                        label="Organization Name"
+                        placeholder="Please type a organization name"
+                        validate={ValidatorRequired}
+                        required
+                      />
+                    </Grid>
 
-              <Grid item xs={8}>
-                <KFreeSoloAutoCompleteMultipleSelectStringField
-                  label="Teams"
-                  name={`${field}.teams`}
-                  placeholder="Please type a team name"
-                  helperText="Multiple teams are allowed. After entering a team name, try to press enter."
-                />
-              </Grid>
-              <Grid item xs={1}>
-                <IconButtonWithTooltip
-                  tooltipPlacement="top"
-                  tooltipTitle="Delete"
-                  aria-label="delete"
-                  size="small"
-                  onClick={() => fields.remove(index)}
-                >
-                  <DeleteIcon />
-                </IconButtonWithTooltip>
-              </Grid>
-            </Grid>
-          );
-        })}
-      </>
+                    <Grid item xs={8}>
+                      <Field
+                        component={KFreeSoloFormikAutoCompleteMultiValues}
+                        label="Teams"
+                        name={`${field}.teams`}
+                        placeholder="Please type a team name"
+                        helperText="Multiple teams are allowed. After entering a team name, try to press enter."
+                      />
+                    </Grid>
+                    <Grid item xs={1}>
+                      <Box pt={1.5}>
+                        <IconButtonWithTooltip
+                          tooltipPlacement="top"
+                          tooltipTitle="Delete"
+                          aria-label="delete"
+                          size="small"
+                          onClick={() => arrayHelpers.remove(index)}
+                        >
+                          <DeleteIcon />
+                        </IconButtonWithTooltip>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                );
+              })}
+          </>
+        )}
+      />
     );
   }
 }
 
-interface Props extends DispatchProp {
-  connector: SSOGithubConnector;
-  meta: {
-    form: string;
-  };
+interface Props {
+  connector: SSOGithubConnectorFormType;
+  form: any;
   field: string;
 }
 
 class RenderGithubConnectorRaw extends React.PureComponent<Props> {
   private addOrganization = () => {
     const {
-      dispatch,
       field,
-      meta: { form },
+      form: { setFieldValue, values },
     } = this.props;
-    dispatch(
-      arrayPush(
-        form,
-        `${field}.config.orgs`,
-        Immutable.Map({
-          name: "",
-          teams: Immutable.List([]),
-        }),
-      ),
-    );
+
+    const prevOrgs = getIn(values, `${field}.config.orgs`);
+
+    prevOrgs && prevOrgs.length > 0
+      ? setFieldValue(`${field}.config.orgs`, [
+          ...prevOrgs,
+          {
+            name: "",
+            teams: [],
+          },
+        ])
+      : setFieldValue(`${field}.config.orgs`, [
+          {
+            name: "",
+            teams: [],
+          },
+        ]);
   };
 
   public render() {
-    const { connector, field } = this.props;
+    const {
+      connector,
+      field,
+      form: { values },
+    } = this.props;
 
     return (
       <Box p={2}>
@@ -116,14 +131,14 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
           <Box style={{ verticalAlign: "middle" }} mr={2} display="inline-block">
             <GithubIcon />
           </Box>
-          {capitalize(connector.get("type"))}
+          {capitalize(connector.type)}
         </H6>
 
         <Box mt={2}>
           <Grid container spacing={2}>
             <Grid item xs={8}>
               <Field
-                component={KRenderDebounceTextField}
+                component={KRenderFormikTextField}
                 name={`${field}.name`}
                 label="Name"
                 placeholder="Give a name of this connector"
@@ -135,7 +150,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
               <Grid container spacing={2}>
                 <Grid item xs>
                   <Field
-                    component={KRenderDebounceTextField}
+                    component={KRenderFormikTextField}
                     name={`${field}.config.clientID`}
                     label="Client ID"
                     autoComplete="disabled"
@@ -147,7 +162,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
                 </Grid>
                 <Grid item xs>
                   <Field
-                    component={KRenderDebounceTextField}
+                    component={KRenderFormikTextField}
                     autoComplete={"false"}
                     name={`${field}.config.clientSecret`}
                     label="Client Secret"
@@ -174,10 +189,9 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
               {/*</Box>*/}
 
               <Box mt={1}>
-                <FieldArray
+                <RenderGithubConnectorOrganizations
                   name={`${field}.config.orgs`}
-                  component={RenderGithubConnectorOrganizations}
-                  validate={ValidatorOrgs}
+                  orgs={getIn(values, `${field}.config.orgs`)}
                 />
               </Box>
 
@@ -227,4 +241,4 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
   }
 }
 
-export const RenderGithubConnector = connect()(RenderGithubConnectorRaw);
+export const RenderGithubConnector = RenderGithubConnectorRaw;

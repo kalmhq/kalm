@@ -3,7 +3,6 @@ import { ROUTE_FORM_ID } from "forms/formIDs";
 import Immutable from "immutable";
 import React from "react";
 import { RootState } from "reducers";
-import { ActionTypes, actionTypes } from "redux-form";
 import { store } from "store";
 import {
   isFormFieldMeet,
@@ -13,7 +12,6 @@ import {
   requireSubStepCompleted,
   requireSubStepNotCompleted,
 } from "tutorials/utils";
-import { Actions } from "types";
 import { ApplicationDetails } from "types/application";
 import { HttpRouteDestinationContent } from "types/route";
 import { Tutorial, TutorialFactory } from "types/tutorial";
@@ -199,8 +197,8 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
           },
           {
             title: "Submit form",
-            shouldCompleteByAction: (action: Actions) =>
-              action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) && action.meta!.form === "route",
+            // shouldCompleteByAction: (action: Actions) =>
+            //   action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) && action.meta!.form === "route",
           },
         ],
         highlights: [],

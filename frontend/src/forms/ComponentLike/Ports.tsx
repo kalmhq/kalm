@@ -1,5 +1,5 @@
 import { Box, Button, Fade, Grid, Paper, Popper } from "@material-ui/core";
-import { Field, FieldArray, FieldArrayRenderProps } from "formik";
+import { Field, FieldArray, FieldArrayRenderProps, getIn } from "formik";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { anchorRef, bindPopper, InjectedProps } from "material-ui-popup-state";
 import React from "react";
@@ -74,8 +74,8 @@ class RenderPorts extends React.PureComponent<Props> {
           </Grid>
         </Box>
 
-        {values[name] &&
-          values[name].map((field: ComponentLikePortContent, index: number) => {
+        {getIn(values, name) &&
+          getIn(values, name).map((field: ComponentLikePortContent, index: number) => {
             return (
               <Grid container spacing={2} key={index}>
                 <Grid item xs>

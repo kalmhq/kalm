@@ -1,11 +1,8 @@
-import { RootState } from "reducers";
-import { Actions } from "types";
 import Immutable from "immutable";
-import { ComponentLikePort } from "types/componentTemplate";
 import React from "react";
-import { Tutorial, TutorialFactory } from "types/tutorial";
-import { ApplicationDetails, CREATE_APPLICATION } from "types/application";
+import { RootState } from "reducers";
 import { store } from "store";
+import { AccessYourApplicationTutorialFactory } from "tutorials/accessYourApplication";
 import {
   getFormValue,
   isApplicationFormFieldValueEqualTo,
@@ -15,8 +12,11 @@ import {
   requireSubStepCompleted,
   requireSubStepNotCompleted,
 } from "tutorials/utils";
-import { APPLICATION_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
-import { AccessYourApplicationTutorialFactory } from "tutorials/accessYourApplication";
+import { Actions } from "types";
+import { ApplicationDetails, CREATE_APPLICATION } from "types/application";
+import { ComponentLikePort } from "types/componentTemplate";
+import { Tutorial, TutorialFactory } from "types/tutorial";
+import { COMPONENT_FORM_ID, APPLICATION_FORM_ID } from "forms/formIDs";
 import { setTutorialAction } from "actions/tutorial";
 
 export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title): Tutorial => {
