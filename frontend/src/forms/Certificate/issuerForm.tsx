@@ -2,8 +2,8 @@ import { Button, Grid, Paper } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Field, FormikProps, withFormik } from "formik";
-import { RenderSelectField } from "forms/Basic/select";
-import { KRenderDebounceTextField } from "forms/Basic/textfield";
+import { RenderFormikSelectField } from "forms/Basic/select";
+import { KRenderFormikTextField } from "forms/Basic/textfield";
 import { ValidatorRequired } from "forms/validator";
 import React from "react";
 import { connect } from "react-redux";
@@ -50,7 +50,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
         <Grid item md={12}>
           <Field
             label="Email"
-            component={KRenderDebounceTextField}
+            component={KRenderFormikTextField}
             name="acmeCloudFlare.account"
             margin="normal"
             validate={ValidatorRequired}
@@ -59,7 +59,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
         <Grid item md={12}>
           <Field
             label="Token Secret"
-            component={KRenderDebounceTextField}
+            component={KRenderFormikTextField}
             name="acmeCloudFlare.secret"
             margin="normal"
             validate={ValidatorRequired}
@@ -79,7 +79,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
             <Grid item md={12}>
               <Field
                 label="Issuer Type"
-                component={RenderSelectField}
+                component={RenderFormikSelectField}
                 name="issuerType"
                 margin="normal"
                 validate={ValidatorRequired}
@@ -94,7 +94,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
             <Grid item md={12}>
               <Field
                 label="Issuer name"
-                component={KRenderDebounceTextField}
+                component={KRenderFormikTextField}
                 name="name"
                 margin="normal"
                 validate={ValidatorRequired}

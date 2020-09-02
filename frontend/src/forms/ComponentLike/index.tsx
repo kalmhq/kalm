@@ -49,7 +49,7 @@ import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle1 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
-import { KFormikRadioGroupRender, KRadioGroupRender } from "../Basic/radio";
+import { KFormikRadioGroupRender } from "../Basic/radio";
 import { makeSelectOption, RenderFormikSelectField } from "../Basic/select";
 import {
   KRenderFormikCommandTextField,
@@ -399,7 +399,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <Field component={KRadioGroupRender} name="dnsPolicy" options={this.getDnsPolicyOptions()} />
+          <Field component={KFormikRadioGroupRender} name="dnsPolicy" options={this.getDnsPolicyOptions()} />
         </Grid>
       </>
     );

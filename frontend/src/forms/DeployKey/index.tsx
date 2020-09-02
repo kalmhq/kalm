@@ -143,11 +143,6 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
                   id="certificate-resources"
                   placeholder={"Select an application"}
                   helperText={""}
-                  meta
-                  formValueToEditValue={(v: any) =>
-                    v.map((item: any) => applicationOptions.find((a) => a.value === item))
-                  }
-                  editValueToFormValue={(v: any) => v.map((item: any) => item["value"])}
                 />
               ) : null}
 
@@ -160,11 +155,6 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
                   id="certificate-resources"
                   placeholder={"Select a component"}
                   helperText={""}
-                  meta
-                  formValueToEditValue={(v: any) =>
-                    v.map((item: any) => componentOptions.find((a) => `${a.value}` === item))
-                  }
-                  editValueToFormValue={(v: any) => v.map((item: any) => item["value"])}
                 />
               ) : null}
             </Box>

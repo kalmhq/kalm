@@ -8,7 +8,6 @@ import { KFormikCheckbox } from "forms/Basic/checkbox";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
-import { WrappedFieldProps } from "redux-form";
 import { TDispatchProp } from "types";
 import { PreInjectedFile } from "types/componentTemplate";
 import { ControlledDialog } from "widgets/ControlledDialog";
@@ -131,7 +130,8 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderContent = ({ meta: { error }, file }: WrappedFieldProps & { file: PreInjectedFile; index: number }) => {
+  private renderContent = ({ field: { name }, form: { touched, errors }, file }: any) => {
+    const error = getIn(errors, name);
     return (
       <Label color={error ? "error" : undefined} style={{ padding: 12, width: "100%" }}>
         {error ? "File Content Required" : file.get("mountPath") || "Config File"}

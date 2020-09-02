@@ -20,7 +20,6 @@ export interface Props {
 export class Connectors extends React.PureComponent<Props> {
   public render() {
     const { connectors } = this.props;
-    console.log("connectors", connectors);
     return (
       <FieldArray
         name="connectors"
