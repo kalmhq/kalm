@@ -2,50 +2,40 @@ import React from "react";
 import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { CertificateFormType, newEmptyCertificateForm } from "types/certificate";
-import { createCertificateAction, justCreatedCertificateAction } from "actions/certificate";
+import { CertificateFormType, newEmptyCertificateForm, Certificate } from "types/certificate";
+import { createCertificateAction } from "actions/certificate";
 import { CertificateForm } from "forms/Certificate";
 import { BasePage } from "pages/BasePage";
 import { H6 } from "widgets/Label";
 import { push } from "connected-react-router";
-import { RootState } from "reducers";
-
-const mapStateToProps = (state: RootState) => {
-  return {
-    justCreatedCertificate: state.get("certificates").get("justCreatedCertificate"),
-  };
-};
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
   });
 
-export interface Props extends ReturnType<typeof mapStateToProps>, WithStyles<typeof styles>, TDispatchProp {}
+export interface Props extends WithStyles<typeof styles>, TDispatchProp {}
 
-class CertificateNewRaw extends React.PureComponent<Props> {
-  componentDidUpdate(prevProps: Props) {
-    if (prevProps.justCreatedCertificate !== this.props.justCreatedCertificate) {
-      const { justCreatedCertificate, dispatch } = this.props;
-      if (justCreatedCertificate) {
-        dispatch(push(`/certificates/${justCreatedCertificate.get("name")}/guide`));
-      }
-    }
-  }
+interface State {
+  newCert: Certificate;
+}
+class CertificateNewRaw extends React.Component<Props, State> {
   private submit = async (certificate: CertificateFormType) => {
     try {
       const { dispatch } = this.props;
-      const certficate = await dispatch(createCertificateAction(certificate, false));
-      await dispatch(justCreatedCertificateAction(certficate));
+      const cert = await dispatch(createCertificateAction(certificate, false));
+      this.setState({
+        newCert: cert,
+      });
     } catch (e) {
       console.log(e);
     }
   };
 
   private onSubmitSuccess = () => {
-    //this.props.dispatch(push("/certificates"));
-    const { dispatch, justCreatedCertificate } = this.props;
-    dispatch(push(`/certificates/${justCreatedCertificate.get("name")}/guide`));
+    const { dispatch } = this.props;
+    const { newCert } = this.state;
+    dispatch(push(`/certificates/${newCert.get("name")}`));
   };
 
   public render() {
@@ -68,4 +58,4 @@ class CertificateNewRaw extends React.PureComponent<Props> {
   }
 }
 
-export const CertificateNewPage = withStyles(styles)(connect(mapStateToProps)(CertificateNewRaw));
+export const CertificateNewPage = withStyles(styles)(connect()(CertificateNewRaw));

@@ -10,7 +10,6 @@ export const LOAD_CERTIFICATE_ISSUERS_FULFILLED = "LOAD_CERTIFICATE_ISSUERS_FULF
 export const LOAD_CERTIFICATE_ISSUERS_PENDING = "LOAD_CERTIFICATE_ISSUERS_PENDING";
 export const LOAD_CERTIFICATE_ISSUERS_FAILED = "LOAD_CERTIFICATE_ISSUERS_FAILED";
 export const CREATE_CERTIFICATE = "CREATE_CERTIFICATE";
-export const JUST_CREATE_CERTIFICATE = "JUST_CREATE_CERTIFICATE";
 export const CREATE_CERTIFICATE_ISSUER = "CREATE_CERTIFICATE_ISSUER";
 export const LOAD_ACME_SERVER_FULFILLED = "LOAD_ACME_SERVER_FULFILLED";
 export const LOAD_ACME_SERVER_PENDING = "LOAD_ACME_SERVER_PENDING";
@@ -21,13 +20,6 @@ export const DELETE_ACME_SERVER = "DELETE_ACME_SERVER";
 
 export interface CreateCertificateAction {
   type: typeof CREATE_CERTIFICATE;
-  payload: {
-    certificate: Certificate;
-  };
-}
-
-export interface JustCreateCertificateAction {
-  type: typeof JUST_CREATE_CERTIFICATE;
   payload: {
     certificate: Certificate;
   };
@@ -216,7 +208,6 @@ export type CertificateActions =
   | LoadCertificateIssuersFailedAction
   | LoadCertificateIssuersAction
   | CreateCertificateAction
-  | JustCreateCertificateAction
   | CreateAcmeServerAction
   | DeleteAcmeServerAction
   | CreateCertificateIssuerAction;

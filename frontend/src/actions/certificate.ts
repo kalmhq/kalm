@@ -26,7 +26,6 @@ import {
   AcmeServerFormType,
   SetIsSubmittingAcmeServer,
   dns01Mananged,
-  JUST_CREATE_CERTIFICATE,
 } from "types/certificate";
 import { ThunkResult } from "types";
 
@@ -95,11 +94,6 @@ export const loadCertificateAcmeServerAction = (): ThunkResult<Promise<void>> =>
   };
 };
 
-export const justCreatedCertificateAction = (certificate: Certificate): ThunkResult<Promise<void>> => {
-  return async (dispatch) => {
-    dispatch({ type: JUST_CREATE_CERTIFICATE, payload: { certificate } });
-  };
-};
 export const createCertificateAction = (
   certificateContent: CertificateFormType,
   isEdit?: boolean,
