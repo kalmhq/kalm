@@ -16,6 +16,8 @@ import {
   SET_IS_SUBMITTING_CERTIFICATE,
   SET_IS_SUBMITTING_ACME_SERVER,
   AcmeServerInfo,
+  Certificate,
+  JUST_CREATE_CERTIFICATE,
 } from "types/certificate";
 import {
   RESOURCE_ACTION_ADD,
@@ -35,6 +37,7 @@ export type State = ImmutableMap<{
   isAcmeServerLoading: boolean;
   certificates: CertificateList;
   certificateIssuers: CertificateIssuerList;
+  justCreatedCertificate: Certificate;
   acmeServer: AcmeServerInfo | null;
 }>;
 
@@ -46,6 +49,7 @@ const initialState: State = Immutable.Map({
   isAcmeServerLoading: false,
   certificates: Immutable.List(),
   certificateIssuers: Immutable.List(),
+  justCreatedCertificate: null,
   acmeServer: null,
 });
 
@@ -83,6 +87,10 @@ const reducer = (state: State = initialState, action: Actions): State => {
     case CREATE_CERTIFICATE: {
       state = state.update("certificates", (x) => addOrUpdateInList(x, action.payload.certificate));
 
+      break;
+    }
+    case JUST_CREATE_CERTIFICATE: {
+      state = state.set("justCreatedCertificate", action.payload.certificate);
       break;
     }
     case CREATE_CERTIFICATE_ISSUER: {

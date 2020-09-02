@@ -271,7 +271,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <form className={classes.root} tutorial-anchor-id="certificate-form">
+        <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="certificate-form">
           <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
           <KPanel
             content={

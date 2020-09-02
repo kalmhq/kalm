@@ -11,7 +11,7 @@ import { TDispatchProp } from "types";
 import { Certificate, dns01Issuer } from "types/certificate";
 import { formatDate } from "utils/date";
 import sc from "utils/stringConstants";
-import { PendingBadge, SuccessBadge } from "widgets/Badge";
+import { PendingBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import DomainStatus from "widgets/DomainStatus";
@@ -23,6 +23,7 @@ import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { Loading } from "widgets/Loading";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
+import { KLink } from "widgets/Link";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -67,7 +68,11 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderName = (cert: Certificate) => {
-    return <Typography variant={"subtitle2"}>{cert.get("name")}</Typography>;
+    return (
+      <Typography variant={"subtitle2"}>
+        <KLink to={`/certificates/${cert.get("name")}`}>{cert.get("name")}</KLink>
+      </Typography>
+    );
   };
 
   private renderDomains = (cert: Certificate) => {

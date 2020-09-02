@@ -3,7 +3,7 @@ import React, { ReactNode } from "react";
 import { KMLink } from "./Link";
 
 interface Props {
-  title: string;
+  title: ReactNode;
   defaultOpen?: boolean;
   children?: ReactNode;
 }
