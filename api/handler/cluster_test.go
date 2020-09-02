@@ -94,9 +94,6 @@ func (suite *ClusterHandlerTestSuite) TestClusterInfo() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/httproutes/kalm-system",
 		Body:   `{}`,
-		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
-		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var routes []*resources.HttpRoute
 			rec.BodyAsJSON(&routes)
