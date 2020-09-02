@@ -20,13 +20,13 @@ func (suite *ClusterHandlerTestSuite) TestClusterInfo() {
 	// init cluster info
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/initialize",
 		Body:   `{"domain": "kalm.test"}`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsMissingRoleError(rec, "owner", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var setupClusterResponse SetupClusterResponse
@@ -75,13 +75,13 @@ func (suite *ClusterHandlerTestSuite) TestClusterInfo() {
 
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/reset",
 		Body:   `{}`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsMissingRoleError(rec, "owner", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)

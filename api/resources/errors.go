@@ -14,7 +14,7 @@ func NoObjectEditorRoleError(scope, obj string) error {
 }
 
 func NoObjectManagerRoleError(scope, obj string) error {
-	return errors.NewUnauthorized(fmt.Sprintf("Require manager role obj %s in application %s", obj, scope))
+	return errors.NewUnauthorized(fmt.Sprintf("Require owner role obj %s in application %s", obj, scope))
 }
 
 func NoNamespaceViewerRoleError(scope string) error {
@@ -26,9 +26,9 @@ func NoNamespaceEditorRoleError(scope string) error {
 }
 
 func NoNamespaceManagerRoleError(scope string) error {
-	return errors.NewUnauthorized(fmt.Sprintf("Require manager role in application %s", scope))
+	return errors.NewUnauthorized(fmt.Sprintf("Require owner role in application %s", scope))
 }
 
 var NoClusterViewerRoleError = errors.NewUnauthorized("Require viewer role in cluster level")
 var NoClusterEditorRoleError = errors.NewUnauthorized("Require editor role in cluster level")
-var NoClusterManagerRoleErro = errors.NewUnauthorized("Require manager role in cluster level")
+var NoClusterOwnerRoleError = errors.NewUnauthorized("Require owner role in cluster level")

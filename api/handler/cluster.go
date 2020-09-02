@@ -53,7 +53,6 @@ func isPrivateIP(ip string) bool {
 }
 
 func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
-
 	info := &ClusterInfo{}
 
 	httpPort := 80
@@ -132,6 +131,11 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 		info.Version = version.GitVersion
 	}
 
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
+		info.IngressHostname = ""
+		info.IngressIP = ""
+	}
+
 	return info
 }
 
@@ -169,8 +173,8 @@ type SetupClusterResponse struct {
 
 func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
+	if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
+		return resources.NoClusterOwnerRoleError
 	}
 
 	clusterInfo := h.getClusterInfo(c)
@@ -286,8 +290,8 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 
 func (h *ApiHandler) handleResetCluster(c echo.Context) error {
 
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
+	if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
+		return resources.NoClusterOwnerRoleError
 	}
 
 	wg := sync.WaitGroup{}
