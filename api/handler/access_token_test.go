@@ -37,9 +37,6 @@ func (suite *AccessTokenTestSuite) TestGetEmptyList() {
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/access_tokens",
-		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
-		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res []resources.AccessToken
 			rec.BodyAsJSON(&res)
@@ -77,7 +74,7 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 		Body:   key,
 		Path:   "/v1alpha1/access_tokens",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res resources.AccessToken
@@ -94,9 +91,6 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/access_tokens",
-		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
-		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var resList []resources.AccessToken
 			rec.BodyAsJSON(&resList)
@@ -114,7 +108,7 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 		Path:   "/v1alpha1/access_tokens",
 		Body:   key,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)
@@ -127,9 +121,6 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/access_tokens",
-		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
-		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var resList []resources.AccessToken
 			rec.BodyAsJSON(&resList)

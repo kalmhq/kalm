@@ -27,6 +27,7 @@ type ClientManager interface {
 	GetClientInfoFromToken(token string) (*ClientInfo, error)
 	GetConfigForClientRequestContext(c echo.Context) (*ClientInfo, error)
 
+	Can(client *ClientInfo, verb, scope, obj string) bool
 	CanView(client *ClientInfo, scope string, obj string) bool
 	CanEdit(client *ClientInfo, scope string, obj string) bool
 	CanManage(client *ClientInfo, scope string, obj string) bool
@@ -60,6 +61,24 @@ func NewBaseClientManager(adapter persist.Adapter) *BaseClientManager {
 
 func (m *BaseClientManager) GetRBACEnforcer() rbac.Enforcer {
 	return m.RBACEnforcer
+}
+
+func (m *BaseClientManager) Can(client *ClientInfo, action, scope string, obj string) bool {
+	if m.RBACEnforcer == nil {
+		return false
+	}
+
+	if m.RBACEnforcer.Can(ToSafeSubject(client.Email), action, scope, obj) {
+		return true
+	}
+
+	for i := range client.Groups {
+		if m.RBACEnforcer.Can(ToSafeSubject(client.Groups[i]), action, scope, obj) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (m *BaseClientManager) CanView(client *ClientInfo, scope string, obj string) bool {

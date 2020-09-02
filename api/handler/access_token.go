@@ -1,16 +1,15 @@
 package handler
 
 import (
+	client2 "github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/resources"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 )
 
 func (h *ApiHandler) handleListAccessTokens(c echo.Context) error {
-	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
-		return resources.NoClusterViewerRoleError
-	}
-
 	keys, err := h.resourceManager.GetAccessTokens(c.Param("namespace"))
+	keys = h.filterAuthorizedAccessTokens(c, keys)
 
 	if err != nil {
 		return err
@@ -20,13 +19,14 @@ func (h *ApiHandler) handleListAccessTokens(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
-	}
-
 	accessToken, err := getAccessTokenFromContext(c)
+
 	if err != nil {
 		return err
+	}
+
+	if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), accessToken.AccessTokenSpec) {
+		return resources.InsufficientPermissionsError
 	}
 
 	accessToken, err = h.resourceManager.CreateAccessToken(accessToken)
@@ -38,14 +38,19 @@ func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
-	}
-
 	accessToken, err := getAccessTokenFromContext(c)
 
 	if err != nil {
 		return err
+	}
+
+	var fetched v1alpha1.AccessToken
+	if err := h.resourceManager.Get("", accessToken.Name, &fetched); err != nil {
+		return nil
+	}
+
+	if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), &fetched.Spec) {
+		return resources.InsufficientPermissionsError
 	}
 
 	if err := h.resourceManager.DeleteAccessToken(accessToken.Name); err != nil {
@@ -63,4 +68,31 @@ func getAccessTokenFromContext(c echo.Context) (*resources.AccessToken, error) {
 	}
 
 	return &accessToken, nil
+}
+
+func (h *ApiHandler) filterAuthorizedAccessTokens(c echo.Context, records []*resources.AccessToken) []*resources.AccessToken {
+	l := len(records)
+
+	// select all visible namespaces
+	for i := 0; i < l; i++ {
+		if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), records[i].AccessTokenSpec) {
+			records[l-1], records[i] = records[i], records[l-1]
+			i--
+			l--
+		}
+	}
+
+	return records[:l]
+}
+
+func (h *ApiHandler) permissionsGreaterThanAccessToken(client *client2.ClientInfo, accessToken *v1alpha1.AccessTokenSpec) bool {
+	policies := client2.GetPoliciesFromAccessToken(accessToken)
+
+	for _, policy := range policies {
+		if !h.clientManager.Can(client, policy[1], policy[2], policy[3]) {
+			return false
+		}
+	}
+
+	return true
 }

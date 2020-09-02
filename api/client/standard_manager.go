@@ -65,6 +65,29 @@ g, role_{{ .name }}Owner, role_{{ .name }}Editor
 	return strBuffer.String()
 }
 
+func GetPoliciesFromAccessToken(accessToken *v1alpha1.AccessTokenSpec) [][]string {
+	var res = [][]string{}
+	for _, rule := range accessToken.Rules {
+
+		var obj string
+
+		if rule.Namespace == "*" && rule.Name == "*" {
+			obj = "*"
+		} else {
+			obj = fmt.Sprintf("%s/%s", rule.Namespace, rule.Name)
+		}
+
+		res = append(res, []string{
+			ToSafeSubject(accessToken.Subject),
+			string(rule.Verb),
+			rule.Namespace,
+			obj,
+		})
+	}
+
+	return res
+}
+
 func (m *StandardClientManager) UpdatePolicies() {
 	var sb strings.Builder
 
@@ -76,14 +99,15 @@ func (m *StandardClientManager) UpdatePolicies() {
 
 	for _, accessToken := range m.AccessTokens {
 		sb.WriteString(fmt.Sprintf("# policies for access token %s\n", accessToken.Name))
-		for _, rule := range accessToken.Spec.Rules {
+
+		for _, policy := range GetPoliciesFromAccessToken(&accessToken.Spec) {
 			sb.WriteString(
 				fmt.Sprintf(
 					"p, %s, %s, %s, %s\n",
-					ToSafeSubject(accessToken.Spec.Subject),
-					rule.Verb,
-					rule.Namespace,
-					rule.Name,
+					policy[0],
+					policy[1],
+					policy[2],
+					policy[3],
 				),
 			)
 		}
