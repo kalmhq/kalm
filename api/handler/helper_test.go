@@ -283,7 +283,7 @@ func (suite *WithControllerTestSuite) DoTestRequest(rc *TestRequestContext) {
 	}
 }
 
-func (suite *WithControllerTestSuite) IsMissingRoleError(rec *ResponseRecorder, role, scope string) {
+func (suite *WithControllerTestSuite) IsMissingRoleError(rec *ResponseRecorder, substrs ...string) {
 	var res map[string]interface{}
 	rec.BodyAsJSON(&res)
 
@@ -299,8 +299,9 @@ func (suite *WithControllerTestSuite) IsMissingRoleError(rec *ResponseRecorder, 
 		return
 	}
 
-	suite.Contains(res["message"], role)
-	suite.Contains(res["message"], scope)
+	for _, substr := range substrs {
+		suite.Contains(res["message"], substr)
+	}
 }
 
 func toReader(obj interface{}) io.Reader {

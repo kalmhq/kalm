@@ -50,6 +50,7 @@ func (suite *SsoHandlerTestSuite) TestSsoConfigHandler() {
 			rec.BodyAsJSON(&ssoConfig)
 			suite.EqualValues(200, rec.Code)
 			suite.EqualValues("Gitlab", ssoConfig.SingleSignOnConfigSpec.Connectors[0].Name)
+			suite.Nil(ssoConfig.SingleSignOnConfigSpec.Connectors[0].Config)
 		},
 	})
 
@@ -133,13 +134,14 @@ func (suite *SsoHandlerTestSuite) TestProtectedEndpointsHandler() {
 	// create a protected endpoint
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetEditorRoleOfNs(suite.namespace),
 		},
-		Method: http.MethodPost,
-		Path:   "/v1alpha1/protectedendpoints",
-		Body:   protectedEndpoint,
+		Method:    http.MethodPost,
+		Path:      "/v1alpha1/protectedendpoints",
+		Body:      protectedEndpoint,
+		Namespace: suite.namespace,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsMissingRoleError(rec, "editor", suite.namespace)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.EqualValues(201, rec.Code)
@@ -153,9 +155,6 @@ func (suite *SsoHandlerTestSuite) TestProtectedEndpointsHandler() {
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/protectedendpoints",
-		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
-		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var protectedEndpoints []*resources.ProtectedEndpoint
 			rec.BodyAsJSON(&protectedEndpoints)
@@ -170,11 +169,12 @@ func (suite *SsoHandlerTestSuite) TestProtectedEndpointsHandler() {
 		Roles: []string{
 			GetClusterEditorRole(),
 		},
-		Method: http.MethodPut,
-		Path:   "/v1alpha1/protectedendpoints",
-		Body:   protectedEndpoint,
+		Method:    http.MethodPut,
+		Path:      "/v1alpha1/protectedendpoints",
+		Body:      protectedEndpoint,
+		Namespace: suite.namespace,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsMissingRoleError(rec, "editor", suite.namespace)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.EqualValues(200, rec.Code)
@@ -188,9 +188,6 @@ func (suite *SsoHandlerTestSuite) TestProtectedEndpointsHandler() {
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/protectedendpoints",
-		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
-		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var protectedEndpoints []*resources.ProtectedEndpoint
 			rec.BodyAsJSON(&protectedEndpoints)
@@ -204,11 +201,12 @@ func (suite *SsoHandlerTestSuite) TestProtectedEndpointsHandler() {
 		Roles: []string{
 			GetClusterEditorRole(),
 		},
-		Method: http.MethodDelete,
-		Path:   "/v1alpha1/protectedendpoints",
-		Body:   protectedEndpoint,
+		Method:    http.MethodDelete,
+		Path:      "/v1alpha1/protectedendpoints",
+		Body:      protectedEndpoint,
+		Namespace: suite.namespace,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsMissingRoleError(rec, "editor", suite.namespace)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.EqualValues(200, rec.Code)
@@ -222,9 +220,6 @@ func (suite *SsoHandlerTestSuite) TestProtectedEndpointsHandler() {
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/protectedendpoints",
-		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
-		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var protectedEndpoints []*resources.ProtectedEndpoint
 			rec.BodyAsJSON(&protectedEndpoints)

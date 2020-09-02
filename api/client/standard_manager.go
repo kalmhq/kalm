@@ -51,7 +51,9 @@ func BuildRolePoliciesForNamespace(name string) string {
 	t := template.Must(template.New("policy").Parse(`
 # {{ .name }} application role policies
 p, role_{{ .name }}Viewer, view, {{ .name }}, *
+p, role_{{ .name }}Viewer, view, *, storageClasses
 p, role_{{ .name }}Editor, edit, {{ .name }}, *
+p, role_{{ .name }}Editor, view, *, registries
 p, role_{{ .name }}Owner, manage, {{ .name }}, *
 g, role_{{ .name }}Editor, role_{{ .name }}Viewer
 g, role_{{ .name }}Owner, role_{{ .name }}Editor

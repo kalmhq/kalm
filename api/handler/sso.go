@@ -16,6 +16,13 @@ func (h *ApiHandler) handleListSSOConfig(c echo.Context) error {
 		return err
 	}
 
+	if ssoConfig != nil && h.clientManager.CanViewCluster(getCurrentUser(c)) {
+		// hide sensitive info cluster viewer
+		for i := range ssoConfig.Connectors {
+			ssoConfig.Connectors[i].Config = nil
+		}
+	}
+
 	return c.JSON(200, ssoConfig)
 }
 
@@ -74,28 +81,26 @@ func (h *ApiHandler) handleCreateSSOConfig(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleListProtectedEndpoints(c echo.Context) error {
-	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
-		return resources.NoClusterViewerRoleError
-	}
-
 	endpoints, err := h.resourceManager.ListProtectedEndpoints()
 
 	if err != nil {
 		return err
 	}
 
+	endpoints = h.filterAuthorizedProtectedEndpoints(c, endpoints)
+
 	return c.JSON(200, endpoints)
 }
 
 func (h *ApiHandler) handleDeleteProtectedEndpoints(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
-	}
-
 	protectedEndpoint := &resources.ProtectedEndpoint{}
 
 	if err := c.Bind(protectedEndpoint); err != nil {
 		return err
+	}
+
+	if !h.clientManager.CanEditNamespace(getCurrentUser(c), protectedEndpoint.Namespace) {
+		return resources.NoNamespaceEditorRoleError(protectedEndpoint.Namespace)
 	}
 
 	err := h.resourceManager.DeleteProtectedEndpoints(protectedEndpoint)
@@ -108,14 +113,14 @@ func (h *ApiHandler) handleDeleteProtectedEndpoints(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateProtectedEndpoints(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
-	}
-
 	protectedEndpoint := &resources.ProtectedEndpoint{}
 
 	if err := c.Bind(protectedEndpoint); err != nil {
 		return err
+	}
+
+	if !h.clientManager.CanEditNamespace(getCurrentUser(c), protectedEndpoint.Namespace) {
+		return resources.NoNamespaceEditorRoleError(protectedEndpoint.Namespace)
 	}
 
 	protectedEndpoint, err := h.resourceManager.CreateProtectedEndpoint(protectedEndpoint)
@@ -128,14 +133,14 @@ func (h *ApiHandler) handleCreateProtectedEndpoints(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUpdateProtectedEndpoints(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
-	}
-
 	protectedEndpoint := &resources.ProtectedEndpoint{}
 
 	if err := c.Bind(protectedEndpoint); err != nil {
 		return err
+	}
+
+	if !h.clientManager.CanEditNamespace(getCurrentUser(c), protectedEndpoint.Namespace) {
+		return resources.NoNamespaceEditorRoleError(protectedEndpoint.Namespace)
 	}
 
 	protectedEndpoint, err := h.resourceManager.UpdateProtectedEndpoint(protectedEndpoint)

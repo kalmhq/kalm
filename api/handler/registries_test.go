@@ -52,7 +52,7 @@ func (suite *RegistriesHandlerTestSuite) TestRegistriesHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/registries/test-registry",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsMissingRoleError(rec, resources.NoRegistriesViewPermissionError.Error())
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var registryRes resources.DockerRegistry
@@ -71,7 +71,7 @@ func (suite *RegistriesHandlerTestSuite) TestRegistriesHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/registries",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsMissingRoleError(rec, resources.NoRegistriesViewPermissionError.Error())
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var registries []*resources.DockerRegistry
@@ -114,7 +114,7 @@ func (suite *RegistriesHandlerTestSuite) TestRegistriesHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/registries/test-registry",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsMissingRoleError(rec, resources.NoRegistriesViewPermissionError.Error())
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var registryResForUpdate resources.DockerRegistry
@@ -147,7 +147,7 @@ func (suite *RegistriesHandlerTestSuite) TestRegistriesHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/registries",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsMissingRoleError(rec, resources.NoRegistriesViewPermissionError.Error())
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var registries []*resources.DockerRegistry

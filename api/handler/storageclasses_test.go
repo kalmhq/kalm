@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/kalmhq/kalm/api/resources"
 	"github.com/stretchr/testify/suite"
 	v1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -48,12 +49,12 @@ func (suite *StorageclassesHandlerTestSuite) TestStorageclassesHandler() {
 	// list sso
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterViewerRole(),
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/storageclasses",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsMissingRoleError(rec, resources.NoStorageClassesViewPermissionError.Error())
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var storageClasses []*StorageClass

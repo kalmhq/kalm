@@ -29,6 +29,8 @@ func NoNamespaceManagerRoleError(scope string) error {
 	return errors.NewUnauthorized(fmt.Sprintf("Require owner role in application %s", scope))
 }
 
+var NoRegistriesViewPermissionError = errors.NewUnauthorized("Require editor role in any application or cluster reader role")
+var NoStorageClassesViewPermissionError = errors.NewUnauthorized("Require view role in any application or cluster")
 var NoClusterViewerRoleError = errors.NewUnauthorized("Require viewer role in cluster level")
 var NoClusterEditorRoleError = errors.NewUnauthorized("Require editor role in cluster level")
 var NoClusterOwnerRoleError = errors.NewUnauthorized("Require owner role in cluster level")

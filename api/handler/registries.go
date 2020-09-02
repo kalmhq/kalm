@@ -6,8 +6,8 @@ import (
 )
 
 func (h *ApiHandler) handleListRegistries(c echo.Context) error {
-	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
-		return resources.NoClusterViewerRoleError
+	if !h.clientManager.CanView(getCurrentUser(c), "*", "registries") {
+		return resources.NoRegistriesViewPermissionError
 	}
 
 	list, err := h.resourceManager.GetDockerRegistries()
@@ -20,8 +20,8 @@ func (h *ApiHandler) handleListRegistries(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleGetRegistry(c echo.Context) error {
-	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
-		return resources.NoClusterViewerRoleError
+	if !h.clientManager.CanView(getCurrentUser(c), "*", "registries") {
+		return resources.NoRegistriesViewPermissionError
 	}
 
 	registry, err := h.resourceManager.GetDockerRegistry(c.Param("name"))

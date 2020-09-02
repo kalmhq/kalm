@@ -130,7 +130,6 @@ func (h *ApiHandler) getComponentList(c echo.Context) (*v1alpha1.ComponentList, 
 }
 
 func (h *ApiHandler) createComponent(c echo.Context) (*v1alpha1.Component, error) {
-
 	if !h.clientManager.CanEditNamespace(getCurrentUser(c), c.Param("applicationName")) {
 		return nil, resources.NoNamespaceEditorRoleError(c.Param("applicationName"))
 	}

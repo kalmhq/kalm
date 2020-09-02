@@ -39,7 +39,13 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 
 	respVolumes := []resources.Volume{}
 	for _, kalmPVC := range kalmPVCList.Items {
+		if !h.clientManager.CanViewNamespace(getCurrentUser(c), kalmPVC.Namespace) {
+			continue
+		}
+
+		// TODO the second param seems not used.
 		respVolume, err := h.resourceManager.BuildVolumeResponse(kalmPVC, kalmPVMap[kalmPVC.Spec.VolumeName])
+
 		if err != nil {
 			return err
 		}
@@ -54,8 +60,8 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 	pvcNamespace := c.Param("namespace")
 	pvcName := c.Param("name")
 
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
+	if !h.clientManager.CanEditNamespace(getCurrentUser(c), pvcNamespace) {
+		return resources.NoNamespaceEditorRoleError(pvcNamespace)
 	}
 
 	var pvc v1.PersistentVolumeClaim
