@@ -79,8 +79,11 @@ export interface CertificateFormTypeContent extends Omit<CertificateContent, "do
   domains: string[];
 }
 
-export interface CertificateIssuerFormTypeContent extends CertificateIssuerContent {
+export interface CertificateIssuerFormTypeContent
+  extends Omit<CertificateIssuerContent, "caForTest" | "acmeCloudFlare"> {
   issuerType: typeof cloudFlare | typeof caForTest;
+  acmeCloudFlare: AcmeCloudFlareContent;
+  caForTest: {};
 }
 
 export const selfManaged = "selfManaged";

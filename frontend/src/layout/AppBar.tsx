@@ -159,13 +159,16 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           <MenuItem disabled>Auth as {entity}</MenuItem>
           {entity.indexOf("localhost") < 0 ? <Divider /> : null}
           {entity.indexOf("localhost") < 0 ? (
-            <MenuItem
-              onClick={() => {
-                this.props.dispatch(logoutAction());
-              }}
-            >
-              Logout
-            </MenuItem>
+            <Box>
+              <Divider />
+              <MenuItem
+                onClick={() => {
+                  this.props.dispatch(logoutAction());
+                }}
+              >
+                Logout
+              </MenuItem>
+            </Box>
           ) : null}
         </Menu>
       </div>

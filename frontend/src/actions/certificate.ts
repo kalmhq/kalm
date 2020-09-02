@@ -4,7 +4,6 @@ import {
   Certificate,
   CertificateFormTypeContent,
   CertificateIssuer,
-  CertificateIssuerFormType,
   CREATE_CERTIFICATE,
   CREATE_CERTIFICATE_ISSUER,
   DELETE_CERTIFICATE,
@@ -16,6 +15,7 @@ import {
   selfManaged,
   SetIsSubmittingCertificate,
   SET_IS_SUBMITTING_CERTIFICATE,
+  CertificateIssuerFormTypeContent,
 } from "types/certificate";
 
 export const deleteCertificateAction = (name: string): ThunkResult<Promise<void>> => {
@@ -87,7 +87,7 @@ export const createCertificateAction = (
 };
 
 export const createCertificateIssuerAction = (
-  certificateIssuerContent: CertificateIssuerFormType,
+  certificateIssuerContent: CertificateIssuerFormTypeContent,
   isEdit?: boolean,
 ): ThunkResult<Promise<void>> => {
   return async (dispatch) => {

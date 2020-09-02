@@ -3,7 +3,7 @@ import { ApplicationComponentDetails, ApplicationDetails, ComponentPlugin, PodSt
 import { LoginStatus } from "types/authorization";
 import {
   CertificateFormTypeContent,
-  CertificateIssuer,
+  CertificateIssuerFormTypeContent,
   CertificateIssuerList,
   CertificateList,
 } from "types/certificate";
@@ -132,12 +132,10 @@ export default class MockStore {
     await this.saveData();
   };
 
-  public updateCertificateIssuer = async (certificateIssuer: CertificateIssuer) => {
-    const index = this.data
-      .get("mockCertificateIssuers")
-      .findIndex((c) => c.get("name") === certificateIssuer.get("name"));
+  public updateCertificateIssuer = async (certificateIssuer: CertificateIssuerFormTypeContent) => {
+    const index = this.data.get("mockCertificateIssuers").findIndex((c) => c.get("name") === certificateIssuer.name);
     if (index >= 0) {
-      this.data = this.data.setIn(["mockCertificateIssuers", index], certificateIssuer);
+      this.data = this.data.setIn(["mockCertificateIssuers", index], Immutable.fromJS(certificateIssuer));
     } else {
       this.data = this.data.updateIn(["mockCertificateIssuers"], (c) => c.push("certificateIssuer"));
     }

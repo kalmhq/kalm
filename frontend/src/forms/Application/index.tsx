@@ -150,14 +150,3 @@ const form = withFormik<ConnectedProps & OwnProps & WithStyles<typeof styles>, A
 })(ApplicationFormRaw);
 
 export default connect(mapStateToProps)(withStyles(styles)(form));
-
-// reduxForm<Application, ConnectedProps & OwnProps>({
-//   form: APPLICATION_FORM_ID,
-//   initialValues: applicationInitialValues,
-//   validate: formValidateOrNotBlockByTutorial,
-//   shouldError: shouldError,
-//   onSubmitFail: (...args) => {
-//     console.log("submit failed", args);
-//   },
-// })
-// );

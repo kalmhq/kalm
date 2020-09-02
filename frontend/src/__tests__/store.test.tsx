@@ -1,7 +1,6 @@
 import { ThemeProvider } from "@material-ui/core";
 import { loadApplicationsAction } from "actions/application";
 import { loadCertificatesAction } from "actions/certificate";
-import { createComponentAction } from "actions/component";
 import MockStore from "api/mockStore";
 import configureStore from "configureStore";
 import { ConnectedRouter } from "connected-react-router/immutable";
@@ -12,7 +11,6 @@ import { CertificateForm } from "forms/Certificate";
 import { ComponentLikeForm } from "forms/ComponentLike";
 import { RouteForm } from "forms/Route";
 import { createBrowserHistory } from "history";
-import Immutable from "immutable";
 import React from "react";
 import { act } from "react-dom/test-utils";
 import { Provider } from "react-redux";
@@ -21,7 +19,7 @@ import { RootState } from "reducers";
 import { Store } from "redux";
 import { theme } from "theme/theme";
 import { newEmptyCertificateForm } from "types/certificate";
-import { ComponentLikeFormContent, newEmptyComponentLike } from "types/componentTemplate";
+import { newEmptyComponentLike } from "types/componentTemplate";
 import { newEmptyRouteForm } from "types/route";
 
 configure({ adapter: new Adapter() });
@@ -110,24 +108,10 @@ test("add application", () => {
   expect(component.find("code#application-name-code").text()).toContain(applicationName);
 });
 
-test("add component", async (done) => {
+test("add component", async () => {
   await store.dispatch(loadApplicationsAction());
-  const testApplication = store.getState().get("applications").get("applications").get(0);
-  const onSubmit = async (formValues: ComponentLikeFormContent) => {
-    await store.dispatch(createComponentAction(Immutable.fromJS(formValues), testApplication?.get("name")));
-    try {
-      const testApplicationComponent = store
-        .getState()
-        .get("components")
-        .get("components")
-        .get(testApplication!.get("name"))
-        ?.get(0);
-      expect(!!testApplicationComponent).toBeTruthy();
-      done();
-    } catch (error) {
-      done(error);
-    }
-  };
+  const onSubmit = jest.fn();
+
   const WrappedComponentForm = class extends React.Component {
     public render() {
       return <ComponentLikeForm _initialValues={newEmptyComponentLike} onSubmit={onSubmit} />;
@@ -155,6 +139,7 @@ test("add component", async (done) => {
   await act(async () => {
     component.find("form#component-form").simulate("submit");
   });
+  expect(onSubmit).toHaveBeenCalledTimes(1);
 });
 
 describe("add route", () => {
