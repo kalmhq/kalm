@@ -91,7 +91,81 @@ func (r *Component) ValidateCreate() error {
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateUpdate(old runtime.Object) error {
 	componentlog.Info("validate update", "name", r.Name)
-	return r.validate()
+
+	var volErrList KalmValidateErrorList
+
+	// for sts, persistent vols should be updated
+	if r.Spec.WorkloadType == WorkloadTypeStatefulSet {
+		if oldComponent, ok := old.(*Component); !ok {
+			componentlog.Info("oldObject is not *Component")
+		} else {
+			volMapNew := getStsTemplateVolMap(r)
+			volMapOld := getStsTemplateVolMap(oldComponent)
+
+			if !isIdenticalVolMap(volMapNew, volMapOld) {
+				volErrList = append(volErrList, KalmValidateError{
+					Err: fmt.Sprintf("should not update volume of type: %s for workload: statefulset",
+						VolumeTypePersistentVolumeClaimTemplate,
+					),
+					Path: "spec.volumes",
+				})
+			}
+		}
+	}
+
+	volErrList = append(volErrList, r.validate().(KalmValidateErrorList)...)
+
+	if len(volErrList) <= 0 {
+		return nil
+	}
+
+	return error(volErrList)
+}
+
+func isIdenticalVolMap(mapNew map[string]Volume, mapOld map[string]Volume) bool {
+
+	if len(mapNew) != len(mapOld) {
+		return false
+	}
+
+	for volName, volNew := range mapNew {
+		volOld, exist := mapOld[volName]
+		if !exist {
+			return false
+		}
+
+		// storage request
+		storageRequestNew := volNew.Size
+		storageRequestOld := volOld.Size
+		if !storageRequestNew.Equal(storageRequestOld) {
+			return false
+		}
+
+		// storageClass
+		if volNew.StorageClassName != volOld.StorageClassName {
+			return false
+		}
+	}
+
+	return true
+}
+
+func getStsTemplateVolMap(component *Component) map[string]Volume {
+	rst := make(map[string]Volume)
+
+	for _, vol := range component.Spec.Volumes {
+		if component.Spec.WorkloadType != WorkloadTypeStatefulSet {
+			continue
+		}
+
+		if vol.Type != VolumeTypePersistentVolumeClaimTemplate {
+			continue
+		}
+
+		rst[vol.PVC] = vol
+	}
+
+	return rst
 }
 
 func (r *Component) validate() error {
@@ -163,7 +237,36 @@ func (r *Component) validateVolumesOfComponent() (rst KalmValidateErrorList) {
 		}
 	}
 
+	if r.isSimpleWorkload() && r.Spec.Replicas != nil && *r.Spec.Replicas > 1 {
+		rst = append(rst, KalmValidateError{
+			Err: fmt.Sprintf("for simple workload: %s, replicas should <= 1",
+				r.Spec.WorkloadType,
+			),
+			Path: ".spec.replicas",
+		})
+	}
+
 	return rst
+}
+
+func (r *Component) isSimpleWorkload() bool {
+	simpleWorkloads := []WorkloadType{
+		WorkloadTypeServer,
+		WorkloadTypeDaemonSet,
+		WorkloadTypeCronjob,
+	}
+
+	isSimpleWorkload := false
+	for _, workload := range simpleWorkloads {
+		if r.Spec.WorkloadType != workload {
+			continue
+		}
+
+		isSimpleWorkload = true
+		break
+	}
+
+	return isSimpleWorkload
 }
 
 func (r *Component) validateScheduleOfComponentIfIsCronJob() (rst KalmValidateErrorList) {
