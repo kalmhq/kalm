@@ -87,7 +87,7 @@ export class RenderFormikComplexValueTextField extends React.PureComponent<
         }}
         margin="dense"
         variant="outlined"
-        defaultValue={format ? format(getIn(values, name)) : getIn(values, name)}
+        // defaultValue={format ? format(getIn(values, name)) : getIn(values, name)}
         value={format ? format(getIn(values, name)) : getIn(values, name)}
         onChange={(e) => {
           const value = e.target.value;

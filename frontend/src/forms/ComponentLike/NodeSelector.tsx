@@ -28,12 +28,10 @@ export const KFormikRenderSelectLabels = ({
     }
   }
 
-  const options = nodeLabels;
-
   return (
     <Autocomplete
       multiple
-      options={options}
+      options={nodeLabels}
       disableCloseOnSelect
       getOptionLabel={(option) => option}
       renderOption={(option, { selected }) => (
