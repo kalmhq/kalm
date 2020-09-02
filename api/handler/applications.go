@@ -11,19 +11,7 @@ import (
 
 func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 	namespaces, err := h.resourceManager.GetNamespaces()
-
-	l := len(namespaces)
-
-	// select all visible namespaces
-	for i := 0; i < l; i++ {
-		if !h.clientManager.CanViewNamespace(getCurrentUser(c), namespaces[i].Name) {
-			namespaces[l-1], namespaces[i] = namespaces[l-1], namespaces[i]
-			i--
-			l--
-		}
-	}
-
-	namespaces = namespaces[:l]
+	namespaces = h.filterAuthorizedApplications(c, namespaces)
 
 	if err != nil {
 		return err

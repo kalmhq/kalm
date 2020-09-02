@@ -28,6 +28,49 @@ func (suite *ApplicationsHandlerTestSuite) TestGetEmptyApplicationList() {
 	})
 }
 
+func (suite *ApplicationsHandlerTestSuite) TestApplicationListOnlyContainAuthorizedOnes() {
+	// Create two applications
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodPost,
+		Path:   "/v1alpha1/applications",
+		Body:   fmt.Sprintf(`{"name": "%s"}`, "list-test-1"),
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.Equal(201, rec.Code)
+		},
+	})
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodPost,
+		Path:   "/v1alpha1/applications",
+		Body:   fmt.Sprintf(`{"name": "%s"}`, "list-test-2"),
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.Equal(201, rec.Code)
+		},
+	})
+
+	// Get list
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetViewerRoleOfNs("list-test-2"),
+		},
+		Namespace: "list-test-2",
+		Method:    http.MethodGet,
+		Path:      "/v1alpha1/applications",
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res []resources.ApplicationDetails
+			rec.BodyAsJSON(&res)
+			suite.Equal(200, rec.Code)
+			suite.Len(res, 1)
+			suite.Equal("list-test-2", res[0].Name)
+		},
+	})
+}
+
 func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyApplication() {
 	name := "test"
 
