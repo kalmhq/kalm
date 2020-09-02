@@ -73,12 +73,15 @@ const (
 
 	VolumeTypePersistentVolumeClaimTemplate VolumeType = "pvcTemplate"
 
-	VolumeTypeHostPath VolumeType = "hostpath"
+	VolumeTypeHostPath VolumeType = "hostPath"
 )
 
 type Volume struct {
 	// the path we use to mount this volume to container
 	Path string `json:"path"`
+
+	// +optional
+	HostPath string `json:"hostPath"`
 
 	// If we need to create this volume first, the size of the volume
 	Size resource.Quantity `json:"size"`

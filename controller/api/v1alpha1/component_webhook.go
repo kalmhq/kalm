@@ -68,6 +68,14 @@ func (r *Component) Default() {
 		x := int64(30)
 		r.Spec.TerminationGracePeriodSeconds = &x
 	}
+
+	for _, vol := range r.Spec.Volumes {
+		if vol.Type == VolumeTypeHostPath {
+			if vol.HostPath != "" && vol.Path == "" {
+				vol.Path = vol.HostPath
+			}
+		}
+	}
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-component,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=components,versions=v1alpha1,name=vcomponent.kb.io
@@ -94,7 +102,7 @@ func (r *Component) validate() error {
 	rst = append(rst, r.validateScheduleOfComponentIfIsCronJob()...)
 	rst = append(rst, r.validateProbes()...)
 	rst = append(rst, r.validateResRequirement()...)
-	rst = append(rst, r.validateVolumeOfComponent()...)
+	rst = append(rst, r.validateVolumesOfComponent()...)
 	rst = append(rst, r.validateRunnerPermission()...)
 	rst = append(rst, r.validatePreInjectedFiles()...)
 
@@ -111,7 +119,7 @@ func (r *Component) ValidateDelete() error {
 	return nil
 }
 
-func (r *Component) validateVolumeOfComponent() (rst KalmValidateErrorList) {
+func (r *Component) validateVolumesOfComponent() (rst KalmValidateErrorList) {
 	vols := r.Spec.Volumes
 
 	for i, vol := range vols {
@@ -136,6 +144,22 @@ func (r *Component) validateVolumeOfComponent() (rst KalmValidateErrorList) {
 				Path: fmt.Sprintf(".spec.volumes[%d]", i),
 			})
 
+		}
+
+		if vol.Type == VolumeTypeHostPath {
+			if vol.HostPath == "" {
+				rst = append(rst, KalmValidateError{
+					Err:  "must set hostPath for this volume",
+					Path: fmt.Sprintf(".spec.volumes[%d].hostPath", i),
+				})
+			}
+
+			if vol.Path == "" {
+				rst = append(rst, KalmValidateError{
+					Err:  "must set path for this volume",
+					Path: fmt.Sprintf(".spec.volumes[%d].path", i),
+				})
+			}
 		}
 	}
 

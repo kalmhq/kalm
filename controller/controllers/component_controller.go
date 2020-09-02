@@ -221,11 +221,6 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 		return client.IgnoreNotFound(err)
 	}
 
-	//if err := r.FixComponentDefaultValues(); err != nil {
-	//	r.WarningEvent()(err, "Fix component default values error.")
-	//	return ctrl.Result{}, err
-	//}
-
 	if err := r.LoadResources(); err != nil {
 		return err
 	}
@@ -321,40 +316,40 @@ func GetPodSecurityContextFromAnnotation(annotations map[string]string) *coreV1.
 	return securityContext
 }
 
-func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
-	if r.component == nil {
-		return nil
-	}
-
-	if r.component.Spec.WorkloadType == "" {
-		r.component.Spec.WorkloadType = corev1alpha1.WorkloadTypeServer
-	}
-
-	if r.component.Spec.DnsPolicy == "" {
-		r.component.Spec.DnsPolicy = coreV1.DNSClusterFirst
-	}
-
-	if r.component.Spec.RestartPolicy == "" {
-		r.component.Spec.RestartPolicy = coreV1.RestartPolicyAlways
-	}
-
-	if r.component.Spec.TerminationGracePeriodSeconds == nil {
-		x := int64(30)
-		r.component.Spec.TerminationGracePeriodSeconds = &x
-	}
-
-	if r.component.Spec.RestartStrategy == "" {
-		r.component.Spec.RestartStrategy = appsV1.RollingUpdateDeploymentStrategyType
-	}
-
-	for i := range r.component.Spec.Env {
-		if r.component.Spec.Env[i].Type == "" {
-			r.component.Spec.Env[i].Type = corev1alpha1.EnvVarTypeStatic
-		}
-	}
-
-	return r.Update(r.ctx, r.component)
-}
+//func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
+//	if r.component == nil {
+//		return nil
+//	}
+//
+//	if r.component.Spec.WorkloadType == "" {
+//		r.component.Spec.WorkloadType = corev1alpha1.WorkloadTypeServer
+//	}
+//
+//	if r.component.Spec.DnsPolicy == "" {
+//		r.component.Spec.DnsPolicy = coreV1.DNSClusterFirst
+//	}
+//
+//	if r.component.Spec.RestartPolicy == "" {
+//		r.component.Spec.RestartPolicy = coreV1.RestartPolicyAlways
+//	}
+//
+//	if r.component.Spec.TerminationGracePeriodSeconds == nil {
+//		x := int64(30)
+//		r.component.Spec.TerminationGracePeriodSeconds = &x
+//	}
+//
+//	if r.component.Spec.RestartStrategy == "" {
+//		r.component.Spec.RestartStrategy = appsV1.RollingUpdateDeploymentStrategyType
+//	}
+//
+//	for i := range r.component.Spec.Env {
+//		if r.component.Spec.Env[i].Type == "" {
+//			r.component.Spec.Env[i].Type = corev1alpha1.EnvVarTypeStatic
+//		}
+//	}
+//
+//	return r.Update(r.ctx, r.component)
+//}
 
 func IsNamespaceKalmEnabled(namespace coreV1.Namespace) bool {
 	if v, exist := namespace.Labels[KalmEnableLabelName]; !exist || v != KalmEnableLabelValue {
@@ -1812,14 +1807,14 @@ func (r *ComponentReconcilerTask) preparePreInjectedFiles(
 //
 // - temp vol as podTemplate.volumes
 // - persistent vol as volClaimTemplate
-func (r *ComponentReconcilerTask) prepareVolsForSTS(template *coreV1.PodTemplateSpec) ([]coreV1.PersistentVolumeClaim, error) {
+func (r *ComponentReconcilerTask) prepareVolsForSTS(podTemplate *coreV1.PodTemplateSpec) ([]coreV1.PersistentVolumeClaim, error) {
 	component := r.component
 
 	var volumes []coreV1.Volume
 	var volumeMounts []coreV1.VolumeMount
 	var volClaimTemplates []coreV1.PersistentVolumeClaim
 
-	if err := r.preparePreInjectedFiles(template, &volumes, &volumeMounts); err != nil {
+	if err := r.preparePreInjectedFiles(podTemplate, &volumes, &volumeMounts); err != nil {
 		return nil, err
 	}
 
@@ -1845,45 +1840,36 @@ func (r *ComponentReconcilerTask) prepareVolsForSTS(template *coreV1.PodTemplate
 					},
 				},
 			})
-		} else if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim || disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaimTemplate {
+		} else if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim ||
+			disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaimTemplate {
 
-			pvcName := disk.PVC
-
+			volClaimTemplateName := disk.PVC
 			// for volClaimTemplate, volName == pvcName
-			volName = pvcName
+			volName = volClaimTemplateName
 
-			var pvc *coreV1.PersistentVolumeClaim
+			labels := mergeMap(r.GetLabels(), map[string]string{
+				KalmLabelVolClaimTemplateName: volClaimTemplateName,
+			})
 
-			pvcFetched, err := r.getPVC(pvcName)
-			if err != nil {
-				return nil, err
-			}
-
-			if pvcFetched != nil {
-				pvc = pvcFetched
-			} else {
-				expectedPVC := &coreV1.PersistentVolumeClaim{
-					ObjectMeta: metaV1.ObjectMeta{
-						Name:      pvcName,
-						Namespace: r.component.Namespace,
-						Labels:    r.GetLabels(),
-					},
-					Spec: coreV1.PersistentVolumeClaimSpec{
-						AccessModes: []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
-						Resources: coreV1.ResourceRequirements{
-							Requests: coreV1.ResourceList{
-								coreV1.ResourceStorage: disk.Size,
-							},
+			expectedVolClaimTemplate := coreV1.PersistentVolumeClaim{
+				ObjectMeta: metaV1.ObjectMeta{
+					Name:      volClaimTemplateName,
+					Namespace: r.component.Namespace,
+					Labels:    labels,
+				},
+				Spec: coreV1.PersistentVolumeClaimSpec{
+					AccessModes: []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
+					Resources: coreV1.ResourceRequirements{
+						Requests: coreV1.ResourceList{
+							coreV1.ResourceStorage: disk.Size,
 						},
-						StorageClassName: disk.StorageClassName,
 					},
-				}
-
-				pvc = expectedPVC
+					StorageClassName: disk.StorageClassName,
+				},
 			}
 
 			// claimTemplate for PVC
-			volClaimTemplates = append(volClaimTemplates, *pvc)
+			volClaimTemplates = append(volClaimTemplates, expectedVolClaimTemplate)
 		} else {
 			return nil, fmt.Errorf("unknown disk type: %s", disk.Type)
 		}
@@ -1896,9 +1882,10 @@ func (r *ComponentReconcilerTask) prepareVolsForSTS(template *coreV1.PodTemplate
 	}
 
 	// set volumes & volMounts for podTemplate of STS
-	template.Spec.Volumes = volumes
+	podTemplate.Spec.Volumes = volumes
 
-	mainContainer := &template.Spec.Containers[0]
+	// mount vols into container
+	mainContainer := &podTemplate.Spec.Containers[0]
 	mainContainer.VolumeMounts = volumeMounts
 
 	// for STS, pvc is not in podTemplate but in volumeClaimTemplate
@@ -1946,7 +1933,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 				Name: volName,
 				VolumeSource: coreV1.VolumeSource{
 					HostPath: &coreV1.HostPathVolumeSource{
-						Path: disk.Path,
+						Path: disk.HostPath,
 					},
 				},
 			})

@@ -229,7 +229,12 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 }
 
 func (builder *Builder) FindAvailableVolsForSts(ns string) ([]Volume, error) {
-	pvcList, err := builder.GetPVCs(client.InNamespace(ns), client.MatchingLabels{controllers.KalmLabelManaged: "true"})
+	pvcList, err := builder.GetPVCs(
+		client.InNamespace(ns),
+		client.MatchingLabels{controllers.KalmLabelManaged: "true"},
+		client.HasLabels([]string{controllers.KalmLabelVolClaimTemplateName}),
+	)
+
 	if client.IgnoreNotFound(err) != nil {
 		return nil, err
 	}

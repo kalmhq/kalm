@@ -101,7 +101,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	gv1Alpha1WithAuth.GET("/volumes", h.handleListVolumes)
 	gv1Alpha1WithAuth.DELETE("/volumes/:namespace/:name", h.handleDeletePVC)
-	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload", h.handleAvailableVolsForSimpleWorkload)
+	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload/:namespace", h.handleAvailableVolsForSimpleWorkload)
 	gv1Alpha1WithAuth.GET("/volumes/available/sts/:namespace", h.handleAvailableVolsForSts)
 
 	gv1Alpha1WithAuth.GET("/deploykeys", h.handleListDeployKeys)

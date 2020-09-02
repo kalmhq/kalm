@@ -111,7 +111,14 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleAvailableVolsForSimpleWorkload(c echo.Context) error {
-	ns := c.QueryParam("currentNamespace")
+	ns := c.Param("namespace")
+	if ns == "" {
+		ns = c.QueryParam("currentNamespace")
+	}
+
+	if ns == "" {
+		return fmt.Errorf("must provide namespace in query")
+	}
 
 	builder := h.Builder(c)
 	vols, err := builder.FindAvailableVolsForSimpleWorkload(ns)
@@ -124,6 +131,9 @@ func (h *ApiHandler) handleAvailableVolsForSimpleWorkload(c echo.Context) error 
 
 func (h *ApiHandler) handleAvailableVolsForSts(c echo.Context) error {
 	ns := c.Param("namespace")
+	if ns == "" {
+		return fmt.Errorf("must provide namespace in query")
+	}
 
 	builder := h.Builder(c)
 	vols, err := builder.FindAvailableVolsForSts(ns)
