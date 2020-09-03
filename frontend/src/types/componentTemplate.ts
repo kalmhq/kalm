@@ -22,7 +22,7 @@ export interface ComponentLikeFormContent
     "env" | "preInjectedFiles" | "ports" | "volumes" | "nodeSelectorLabels" | "livenessProbe" | "readinessProbe"
   > {
   env?: ComponentLikeEnv[];
-  preInjectedFiles?: PreInjectedFile[];
+  preInjectedFiles?: PreInjectedFileContent[];
   ports?: ComponentLikePortContent[];
   volumes?: VolumeContent[];
   nodeSelectorLabels?: NodeSelectorLabelsContent;
@@ -83,6 +83,14 @@ export interface VolumeContent {
   pvToMatch: string;
   // select claimName then pass pvc and pvToMatch
   claimName: string;
+}
+
+export interface PreInjectedFileContent {
+  content: string;
+  mountPath: string;
+  mountPathTmp?: string;
+  base64?: boolean;
+  readonly?: boolean;
 }
 
 export type PreInjectedFile = ImmutableMap<{

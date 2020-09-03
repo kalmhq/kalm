@@ -26,16 +26,14 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
     initialValues: correctComponentFormValuesForInit(
       state,
       componentDetailsToComponent(ownProps.component),
-    ).toObject() as ComponentLikeFormContent,
+    ).toJS() as ComponentLikeFormContent,
   };
 };
 
 class ComponentEditRaw extends React.PureComponent<Props> {
   private submit = async (formValues: ComponentLikeFormContent) => {
     const { dispatch, activeNamespaceName, component } = this.props;
-    formValues.preInjectedFiles = formValues.preInjectedFiles?.filter(
-      (file) => file.get("mountPath") || file.get("content"),
-    );
+    formValues.preInjectedFiles = formValues.preInjectedFiles?.filter((file) => file.mountPath || file.content);
     await dispatch(updateComponentAction(Immutable.fromJS(formValues), activeNamespaceName));
     const name = component.get("name");
     dispatch(push(`/applications/${activeNamespaceName}/components/${name}`));

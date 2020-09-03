@@ -2,14 +2,13 @@ import { Box, Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
-import { Field, FieldArray, FieldArrayRenderProps, getIn, FieldProps } from "formik";
+import { Field, FieldArray, FieldArrayRenderProps, FieldProps, getIn } from "formik";
 import { TextField as FormikTextField } from "formik-material-ui";
 import { KFormikCheckbox } from "forms/Basic/checkbox";
-import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { PreInjectedFile } from "types/componentTemplate";
+import { PreInjectedFileContent } from "types/componentTemplate";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
@@ -42,9 +41,9 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  private privateOpenEditDialog = (file: PreInjectedFile, index: number) => {
+  private privateOpenEditDialog = (file: PreInjectedFileContent, index: number) => {
     const { dispatch } = this.props;
-    this.setState({ editingFileIndex: index, fileContentValue: file.get("content") });
+    this.setState({ editingFileIndex: index, fileContentValue: file.content });
     dispatch(openDialogAction(updateContentDialogID));
   };
 
@@ -134,10 +133,10 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     form: { errors },
     field: { name },
     file,
-  }: FieldProps & { file: PreInjectedFile; index: number }) => {
+  }: FieldProps & { file: PreInjectedFileContent; index: number }) => {
     return (
       <Label color={errors[name] ? "error" : undefined} style={{ padding: 12, width: "100%" }}>
-        {errors[name] ? "File Content Required" : file.get("mountPath") || "Config File"}
+        {errors[name] ? "File Content Required" : file.mountPath || "Config File"}
       </Label>
     );
   };
@@ -153,8 +152,8 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     const { activeIndex } = this.state;
     let fieldsNodes: any = [];
     if (getIn(values, name)) {
-      getIn(values, name).forEach((injectedFile: PreInjectedFile, index: number) => {
-        if (injectedFile.get("mountPath")) {
+      getIn(values, name).forEach((injectedFile: PreInjectedFileContent, index: number) => {
+        if (injectedFile.mountPath) {
           fieldsNodes.push(
             <Grid container spacing={1} key={index}>
               <Grid item xs={4}>
@@ -203,11 +202,11 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
             startIcon={<AddIcon />}
             size="small"
             onClick={() => {
-              const initFile = Immutable.Map({
+              const initFile = {
                 readonly: true,
                 content: "",
                 mountPath: "",
-              });
+              };
               if (!getIn(values, name) || getIn(values, name).length <= activeIndex) {
                 push(initFile);
               } else {
@@ -230,13 +229,13 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
   }
 }
 
-const ValidatorInjectedFiles = (values: PreInjectedFile[]) => {
+const ValidatorInjectedFiles = (values: PreInjectedFileContent[]) => {
   if (!values) return undefined;
   const mountPaths = new Set<string>();
 
   for (let i = 0; i < values.length; i++) {
     const path = values[i]!;
-    const mountPath = path.get("mountPath");
+    const mountPath = path.mountPath;
 
     if (!mountPaths.has(mountPath)) {
       mountPaths.add(mountPath);
