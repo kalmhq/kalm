@@ -290,7 +290,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
     } else if (volumeType === VolumeTypeHostPath) {
       fieldComponents.push(
         <Field
-          component={KRenderFormikTextField}
+          component={KRenderDebounceFormikTextField}
           name={`${name}.${index}.hostPath`}
           label="Host Path"
           validate={ValidatorRequired}
