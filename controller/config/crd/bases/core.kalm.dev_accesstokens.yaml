@@ -84,10 +84,6 @@ spec:
                 type: object
               minItems: 1
               type: array
-            subject:
-              description: The subject of this key
-              minLength: 1
-              type: string
             token:
               description: The token, the access token name should be sha256 of this
                 token.
@@ -96,7 +92,6 @@ spec:
           required:
           - creator
           - rules
-          - subject
           - token
           type: object
         status:

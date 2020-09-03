@@ -46,10 +46,6 @@ type AccessTokenRule struct {
 // This model should NOT be generate manually through kubernetes api directly.
 // Instead, use kalm apis to manage records.
 type AccessTokenSpec struct {
-	// The subject of this key
-	// +kubebuilder:validation:MinLength=1
-	Subject string `json:"subject"`
-
 	// The token, the access token name should be sha256 of this token.
 	// +kubebuilder:validation:MinLength=64
 	Token string `json:"token"`

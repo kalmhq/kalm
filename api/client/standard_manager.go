@@ -8,6 +8,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/rbac"
+	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"html/template"
@@ -30,7 +31,7 @@ type StandardClientManager struct {
 
 	// Access tokens, roleBindings, applications are rarely changed.
 	// It is efficient to hold all roles and access tokens in memory to authorize requests.
-	mut          *sync.Mutex
+	mut          *sync.RWMutex
 	Applications map[string]*coreV1.Namespace
 	AccessTokens map[string]*v1alpha1.AccessToken
 	RoleBindings map[string]*v1alpha1.RoleBinding
@@ -65,7 +66,7 @@ g, role_{{ .name }}Owner, role_{{ .name }}Editor
 	return strBuffer.String()
 }
 
-func GetPoliciesFromAccessToken(accessToken *v1alpha1.AccessTokenSpec) [][]string {
+func GetPoliciesFromAccessToken(accessToken *resources.AccessToken) [][]string {
 	var res = [][]string{}
 	for _, rule := range accessToken.Rules {
 
@@ -78,7 +79,7 @@ func GetPoliciesFromAccessToken(accessToken *v1alpha1.AccessTokenSpec) [][]strin
 		}
 
 		res = append(res, []string{
-			ToSafeSubject(accessToken.Subject),
+			ToSafeSubject(accessToken.Name),
 			string(rule.Verb),
 			rule.Namespace,
 			obj,
@@ -100,7 +101,7 @@ func (m *StandardClientManager) UpdatePolicies() {
 	for _, accessToken := range m.AccessTokens {
 		sb.WriteString(fmt.Sprintf("# policies for access token %s\n", accessToken.Name))
 
-		for _, policy := range GetPoliciesFromAccessToken(&accessToken.Spec) {
+		for _, policy := range GetPoliciesFromAccessToken(&resources.AccessToken{Name: accessToken.Name, AccessTokenSpec: &accessToken.Spec}) {
 			sb.WriteString(
 				fmt.Sprintf(
 					"p, %s, %s, %s, %s\n",
@@ -142,6 +143,9 @@ func (m *StandardClientManager) GetDefaultClusterConfig() *rest.Config {
 }
 
 func (m *StandardClientManager) GetClientInfoFromToken(tokenString string) (*ClientInfo, error) {
+	m.mut.RLock()
+	defer m.mut.RUnlock()
+
 	accessToken, ok := m.AccessTokens[v1alpha1.GetAccessTokenNameFromToken(tokenString)]
 
 	if !ok {
@@ -220,7 +224,7 @@ func NewStandardClientManager(cfg *rest.Config) *StandardClientManager {
 		BaseClientManager: NewBaseClientManager(policyAdapter),
 		PolicyAdapter:     policyAdapter,
 		ClusterConfig:     cfg,
-		mut:               &sync.Mutex{},
+		mut:               &sync.RWMutex{},
 		Applications:      make(map[string]*coreV1.Namespace),
 		AccessTokens:      make(map[string]*v1alpha1.AccessToken),
 		RoleBindings:      make(map[string]*v1alpha1.RoleBinding),

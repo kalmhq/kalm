@@ -25,7 +25,7 @@ func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
 		return err
 	}
 
-	if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), accessToken.AccessTokenSpec) {
+	if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), accessToken) {
 		return resources.InsufficientPermissionsError
 	}
 
@@ -49,7 +49,7 @@ func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
 		return nil
 	}
 
-	if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), &fetched.Spec) {
+	if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), accessToken) {
 		return resources.InsufficientPermissionsError
 	}
 
@@ -74,7 +74,7 @@ func (h *ApiHandler) filterAuthorizedAccessTokens(c echo.Context, records []*res
 	l := len(records)
 
 	for i := 0; i < l; i++ {
-		if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), records[i].AccessTokenSpec) {
+		if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), records[i]) {
 			records[l-1], records[i] = records[i], records[l-1]
 			i--
 			l--
@@ -84,7 +84,7 @@ func (h *ApiHandler) filterAuthorizedAccessTokens(c echo.Context, records []*res
 	return records[:l]
 }
 
-func (h *ApiHandler) permissionsGreaterThanAccessToken(client *client2.ClientInfo, accessToken *v1alpha1.AccessTokenSpec) bool {
+func (h *ApiHandler) permissionsGreaterThanAccessToken(client *client2.ClientInfo, accessToken *resources.AccessToken) bool {
 	policies := client2.GetPoliciesFromAccessToken(accessToken)
 
 	for _, policy := range policies {
