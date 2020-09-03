@@ -27,6 +27,12 @@ import (
 // log is for logging in this package.
 var httpscertlog = logf.Log.WithName("httpscert-resource")
 
+var validIssuers = []string{
+	DefaultDNS01IssuerName,
+	DefaultHTTP01IssuerName,
+	DefaultCAIssuerName,
+}
+
 func (r *HttpsCert) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
@@ -89,12 +95,9 @@ func (r *HttpsCert) validate() error {
 			})
 		}
 	} else {
-		validIssuers := []string{
-			DefaultDNS01IssuerName,
-			DefaultHTTP01IssuerName,
-		}
 
-		if r.Spec.HttpsCertIssuer == DefaultHTTP01IssuerName {
+		switch r.Spec.HttpsCertIssuer {
+		case DefaultHTTP01IssuerName:
 			if len(r.Spec.Domains) <= 0 {
 				rst = append(rst, KalmValidateError{
 					Err:  "http01 cert should have at lease 1 domain",
@@ -110,14 +113,7 @@ func (r *HttpsCert) validate() error {
 					})
 				}
 			}
-		} else if r.Spec.HttpsCertIssuer == DefaultDNS01IssuerName {
-			//if len(r.Spec.Domains) != 1 {
-			//	rst = append(rst, KalmValidateError{
-			//		Err:  "dns01 cert support only 1 domain",
-			//		Path: "spec.domains",
-			//	})
-			//}
-
+		case DefaultDNS01IssuerName:
 			for i, domain := range r.Spec.Domains {
 				if strings.Contains(domain, "*") {
 					rst = append(rst, KalmValidateError{
@@ -126,9 +122,14 @@ func (r *HttpsCert) validate() error {
 					})
 				}
 			}
-		} else {
+		case DefaultCAIssuerName:
+			// nothing
+		default:
 			rst = append(rst, KalmValidateError{
-				Err:  fmt.Sprintf("for auto managed cert, httpsCertIssuer should be one of: %s", validIssuers),
+				Err: fmt.Sprintf("for auto managed cert, httpsCertIssuer should be one of: %s, but: %s",
+					validIssuers,
+					r.Spec.HttpsCertIssuer,
+				),
 				Path: "spec.httpsCertIssuer",
 			})
 		}

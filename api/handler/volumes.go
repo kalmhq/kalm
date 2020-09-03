@@ -3,6 +3,8 @@ package handler
 import (
 	"fmt"
 	"github.com/kalmhq/kalm/controller/controllers"
+	"sort"
+	"strings"
 
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
@@ -44,6 +46,19 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 
 		respVolumes = append(respVolumes, *respVolume)
 	}
+
+	sort.Slice(respVolumes, func(i, j int) bool {
+		a := respVolumes[i]
+		b := respVolumes[j]
+
+		if a.IsInUse == b.IsInUse {
+			return strings.Compare(a.Name, b.Name) < 0
+		} else if a.IsInUse {
+			return true
+		} else {
+			return false
+		}
+	})
 
 	return c.JSON(200, respVolumes)
 }

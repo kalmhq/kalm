@@ -18,21 +18,22 @@ import (
 
 // actual aggregation info of PVC & PV
 type Volume struct {
-	Name               string `json:"name"`
-	IsInUse            bool   `json:"isInUse"`                      // can be reused or not
-	ComponentNamespace string `json:"componentNamespace,omitempty"` // ns of latest component using this Volume
-	ComponentName      string `json:"componentName,omitempty"`      // name of latest component using this Volume
-	StorageClassName   string `json:"storageClassName"`
-	Capacity           string `json:"capacity"` // size, e.g. 1Gi
-	RequestedCapacity  string `json:"requestedCapacity"`
-	AllocatedCapacity  string `json:"allocatedCapacity"`
-	PVC                string `json:"pvc"`
-	PV                 string `json:"pvToMatch"`
+	Name                string `json:"name"`
+	IsInUse             bool   `json:"isInUse"`                      // can be reused or not
+	ComponentNamespace  string `json:"componentNamespace,omitempty"` // ns of latest component using this Volume
+	ComponentName       string `json:"componentName,omitempty"`      // name of latest component using this Volume
+	StorageClassName    string `json:"storageClassName"`
+	Capacity            string `json:"capacity"` // size, e.g. 1Gi
+	RequestedCapacity   string `json:"requestedCapacity"`
+	AllocatedCapacity   string `json:"allocatedCapacity"`
+	PVC                 string `json:"pvc"`
+	PV                  string `json:"pvToMatch"`
+	StsVolClaimTemplate string `json:"stsVolClaimTemplate,omitempty"`
 }
 
 func (builder *Builder) BuildVolumeResponse(
 	pvc coreV1.PersistentVolumeClaim,
-	pv coreV1.PersistentVolume,
+	_ coreV1.PersistentVolume,
 ) (*Volume, error) {
 
 	isInUse, err := builder.IsPVCInUse(pvc)
@@ -50,19 +51,19 @@ func (builder *Builder) BuildVolumeResponse(
 		allocatedQuantity = formatQuantity(*storage)
 	}
 
-	var compName string
-	if v, exist := pvc.Labels[controllers.KalmLabelComponentKey]; exist {
-		compName = v
-	}
+	compName := pvc.Labels[controllers.KalmLabelComponentKey]
+
+	stsVolClaimTemplate := pvc.Labels[controllers.KalmLabelVolClaimTemplateName]
 
 	return &Volume{
-		Name:               pvc.Name,
-		ComponentName:      compName,
-		ComponentNamespace: pvc.Namespace,
-		IsInUse:            isInUse,
-		Capacity:           capInStr,
-		RequestedCapacity:  capInStr,
-		AllocatedCapacity:  allocatedQuantity,
+		Name:                pvc.Name,
+		ComponentName:       compName,
+		ComponentNamespace:  pvc.Namespace,
+		IsInUse:             isInUse,
+		Capacity:            capInStr,
+		RequestedCapacity:   capInStr,
+		AllocatedCapacity:   allocatedQuantity,
+		StsVolClaimTemplate: stsVolClaimTemplate,
 	}, nil
 }
 

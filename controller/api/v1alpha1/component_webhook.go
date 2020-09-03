@@ -30,7 +30,7 @@ import (
 )
 
 // log is for logging in this package.
-var componentlog = logf.Log.WithName("component-resource")
+var componentlog = logf.Log.WithName("component-webhook")
 
 func (r *Component) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
@@ -85,7 +85,13 @@ var _ webhook.Validator = &Component{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateCreate() error {
 	componentlog.Info("validate create", "name", r.Name)
-	return r.validate()
+	errList := r.validate()
+
+	if errList == nil || len(errList) == 0 {
+		return nil
+	}
+
+	return error(errList)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
@@ -102,10 +108,11 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 			volMapNew := getStsTemplateVolMap(r)
 			volMapOld := getStsTemplateVolMap(oldComponent)
 
-			if !isIdenticalVolMap(volMapNew, volMapOld) {
+			if same, err := isIdenticalVolMap(volMapNew, volMapOld); !same {
 				volErrList = append(volErrList, KalmValidateError{
-					Err: fmt.Sprintf("should not update volume of type: %s for workload: statefulset",
+					Err: fmt.Sprintf("should not update volume of type: %s for workload: statefulset, err: %s",
 						VolumeTypePersistentVolumeClaimTemplate,
+						err,
 					),
 					Path: "spec.volumes",
 				})
@@ -113,7 +120,9 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 		}
 	}
 
-	volErrList = append(volErrList, r.validate().(KalmValidateErrorList)...)
+	commonValidateErr := r.validate()
+
+	volErrList = append(volErrList, commonValidateErr...)
 
 	if len(volErrList) <= 0 {
 		return nil
@@ -122,32 +131,40 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 	return error(volErrList)
 }
 
-func isIdenticalVolMap(mapNew map[string]Volume, mapOld map[string]Volume) bool {
+func isIdenticalVolMap(mapNew map[string]Volume, mapOld map[string]Volume) (bool, error) {
 
 	if len(mapNew) != len(mapOld) {
-		return false
+		return false, fmt.Errorf("vol size not the same")
 	}
 
 	for volName, volNew := range mapNew {
 		volOld, exist := mapOld[volName]
 		if !exist {
-			return false
+			return false, fmt.Errorf("volume not exist in old resource: %s", volName)
 		}
 
 		// storage request
 		storageRequestNew := volNew.Size
 		storageRequestOld := volOld.Size
 		if !storageRequestNew.Equal(storageRequestOld) {
-			return false
+			return false, fmt.Errorf("volume size changed, %s -> %s",
+				storageRequestOld.String(),
+				storageRequestNew.String(),
+			)
 		}
 
 		// storageClass
-		if volNew.StorageClassName != volOld.StorageClassName {
-			return false
+		scNew := volNew.StorageClassName
+		scOld := volOld.StorageClassName
+
+		if scNew != nil && scOld != nil && *scNew != *scOld {
+			return false, fmt.Errorf("not same storage class: %s -> %s",
+				*volOld.StorageClassName,
+				*volNew.StorageClassName)
 		}
 	}
 
-	return true
+	return true, nil
 }
 
 func getStsTemplateVolMap(component *Component) map[string]Volume {
@@ -168,7 +185,7 @@ func getStsTemplateVolMap(component *Component) map[string]Volume {
 	return rst
 }
 
-func (r *Component) validate() error {
+func (r *Component) validate() KalmValidateErrorList {
 	var rst KalmValidateErrorList
 
 	rst = append(rst, r.validateEnvVarList()...)
@@ -184,6 +201,7 @@ func (r *Component) validate() error {
 		return nil
 	}
 
+	componentlog.Info("component fail validate() in webhook", "errList", rst)
 	return rst
 }
 
@@ -237,13 +255,53 @@ func (r *Component) validateVolumesOfComponent() (rst KalmValidateErrorList) {
 		}
 	}
 
+	// sts use volType: pvcTemplate instead pvc
+	if r.Spec.WorkloadType == WorkloadTypeStatefulSet {
+		for i, vol := range vols {
+			if vol.Type == VolumeTypePersistentVolumeClaim {
+				rst = append(rst, KalmValidateError{
+					Err: fmt.Sprintf("for workload %s, use %s instead of %s",
+						WorkloadTypeStatefulSet, VolumeTypePersistentVolumeClaimTemplate, VolumeTypePersistentVolumeClaim),
+					Path: fmt.Sprintf(".spec.volumes[%d].type", i),
+				})
+			}
+		}
+	}
+
+	// for dp, volType should be pvc
+	if r.Spec.WorkloadType == WorkloadTypeServer {
+		for i, vol := range vols {
+			if vol.Type == VolumeTypePersistentVolumeClaimTemplate {
+				rst = append(rst, KalmValidateError{
+					Err: fmt.Sprintf("for workload %s, use %s instead of %s",
+						WorkloadTypeServer, VolumeTypePersistentVolumeClaim, VolumeTypePersistentVolumeClaimTemplate),
+					Path: fmt.Sprintf(".spec.volumes[%d].type", i),
+				})
+			}
+		}
+	}
+
+	// for simpleWorkload using pvc, constraints on replicas
 	if r.isSimpleWorkload() && r.Spec.Replicas != nil && *r.Spec.Replicas > 1 {
-		rst = append(rst, KalmValidateError{
-			Err: fmt.Sprintf("for simple workload: %s, replicas should <= 1",
-				r.Spec.WorkloadType,
-			),
-			Path: ".spec.replicas",
-		})
+
+		usingPVC := false
+		for _, vol := range r.Spec.Volumes {
+			if vol.Type != VolumeTypePersistentVolumeClaim {
+				continue
+			}
+
+			usingPVC = true
+			break
+		}
+
+		if usingPVC {
+			rst = append(rst, KalmValidateError{
+				Err: fmt.Sprintf("for simple workload: %s using PVC, replicas should <= 1",
+					r.Spec.WorkloadType,
+				),
+				Path: ".spec.replicas",
+			})
+		}
 	}
 
 	return rst
