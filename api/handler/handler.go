@@ -101,7 +101,11 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	gv1Alpha1WithAuth.GET("/volumes", h.handleListVolumes)
 	gv1Alpha1WithAuth.DELETE("/volumes/:namespace/:name", h.handleDeletePVC)
+
+	// deprecated
+	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload", h.handleAvailableVolsForSimpleWorkload)
 	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload/:namespace", h.handleAvailableVolsForSimpleWorkload)
+
 	gv1Alpha1WithAuth.GET("/volumes/available/sts/:namespace", h.handleAvailableVolsForSts)
 
 	gv1Alpha1WithAuth.GET("/deploykeys", h.handleListDeployKeys)
@@ -134,7 +138,6 @@ func (h *ApiHandler) KalmBuilder() *resources.Builder {
 	cfg := h.clientManager.ClusterConfig
 	return resources.NewBuilder(cfg, h.logger)
 }
-
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {
 	return &ApiHandler{
