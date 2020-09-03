@@ -19,6 +19,9 @@ type H map[string]interface{}
 
 func (h *ApiHandler) InstallAdminRoutes(e *echo.Echo) {
 	e.GET("/policies", h.handlePolicies)
+	e.GET("/routes", func(c echo.Context) error {
+		return c.JSON(200, e.Routes())
+	})
 }
 
 func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
