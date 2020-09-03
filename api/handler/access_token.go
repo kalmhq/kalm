@@ -5,6 +5,7 @@ import (
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
+	"k8s.io/apimachinery/pkg/util/rand"
 )
 
 func (h *ApiHandler) handleListAccessTokens(c echo.Context) error {
@@ -28,6 +29,10 @@ func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
 	if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), accessToken) {
 		return resources.InsufficientPermissionsError
 	}
+
+	// Set sensitive fields
+	accessToken.Token = rand.String(128)
+	accessToken.Creator = getCurrentUser(c).Name
 
 	accessToken, err = h.resourceManager.CreateAccessToken(accessToken)
 	if err != nil {
