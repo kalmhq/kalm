@@ -9,7 +9,7 @@ import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
-import { KRenderFormikTextField } from "../Basic/textfield";
+import { KRenderDebounceFormikTextField } from "../Basic/textfield";
 import { RequireNoSuffix, RequirePrefix, ValidatorName, ValidatorRequired } from "../validator";
 
 const styles = (theme: Theme) =>
@@ -55,7 +55,7 @@ class RegistryFormRaw extends React.PureComponent<
                     name="name"
                     label="Name"
                     disabled={isEdit}
-                    component={KRenderFormikTextField}
+                    component={KRenderDebounceFormikTextField}
                     validate={ValidatorName}
                     helperText={isEdit ? "Can't modify name" : sc.NAME_RULE}
                     placeholder="Please type the registry name"
@@ -66,7 +66,7 @@ class RegistryFormRaw extends React.PureComponent<
                     name="username"
                     label="Username"
                     autoComplete="off"
-                    component={KRenderFormikTextField}
+                    component={KRenderDebounceFormikTextField}
                     validate={ValidatorRequired}
                     placeholder="Please type the registry username"
                   />
@@ -77,7 +77,7 @@ class RegistryFormRaw extends React.PureComponent<
                     name="password"
                     label="Password"
                     autoComplete="off"
-                    component={KRenderFormikTextField}
+                    component={KRenderDebounceFormikTextField}
                     validate={ValidatorRequired}
                     placeholder="Please type the registry password"
                   />
@@ -86,7 +86,7 @@ class RegistryFormRaw extends React.PureComponent<
                   <Field
                     name="host"
                     label="Host"
-                    component={KRenderFormikTextField}
+                    component={KRenderDebounceFormikTextField}
                     validate={validateHost}
                     placeholder="Please type the registry host"
                     helperText={<span>Leave blank for private docker hub registry</span>}

@@ -15,7 +15,7 @@ import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { PortChart } from "widgets/PortChart";
 import { RenderFormikSelectField } from "../Basic/select";
-import { KRenderFormikTextField } from "../Basic/textfield";
+import { KRenderDebounceFormikTextField } from "../Basic/textfield";
 import { NormalizePort } from "../normalizer";
 import { ValidatorContainerPortRequired, ValidatorPort, ValidatorRequired } from "../validator";
 
@@ -106,7 +106,7 @@ class RenderPorts extends React.PureComponent<Props> {
                           }}
                         >
                           <Field
-                            component={KRenderFormikTextField}
+                            component={KRenderDebounceFormikTextField}
                             name={`${name}.${index}.containerPort`}
                             label="Container port"
                             placeholder="1~65535,not 443"
@@ -147,7 +147,7 @@ class RenderPorts extends React.PureComponent<Props> {
                           }}
                         >
                           <Field
-                            component={KRenderFormikTextField}
+                            component={KRenderDebounceFormikTextField}
                             name={`${name}.${index}.servicePort`}
                             label="Service Port"
                             placeholder="Default to equal publish port"
