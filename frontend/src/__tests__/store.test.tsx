@@ -129,7 +129,7 @@ test("add component", async () => {
   await act(async () => {
     component.find("form#component-form").simulate("submit");
   });
-  console.log(component.find("p#component-name-helper-text").text());
+
   expect(component.find("p#component-name-helper-text").text()).toContain(requiredError);
 
   component.find("input#component-name").getDOMNode().setAttribute("value", componentName);

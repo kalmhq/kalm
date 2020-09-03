@@ -9,7 +9,7 @@ import { capitalize } from "utils/string";
 import { DeleteIcon, GithubIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
-import { KRenderFormikTextField } from "../Basic/textfield";
+import { KRenderDebounceFormikTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
 import { Alert } from "@material-ui/lab";
 
@@ -46,7 +46,7 @@ class RenderGithubConnectorOrganizations extends React.Component<{
                   <Grid container spacing={2} key={field}>
                     <Grid item xs={3}>
                       <Field
-                        component={KRenderFormikTextField}
+                        component={KRenderDebounceFormikTextField}
                         name={`${field}.name`}
                         label="Organization Name"
                         placeholder="Please type a organization name"
@@ -138,7 +138,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
           <Grid container spacing={2}>
             <Grid item xs={8}>
               <Field
-                component={KRenderFormikTextField}
+                component={KRenderDebounceFormikTextField}
                 name={`${field}.name`}
                 label="Name"
                 placeholder="Give a name of this connector"
@@ -150,7 +150,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
               <Grid container spacing={2}>
                 <Grid item xs>
                   <Field
-                    component={KRenderFormikTextField}
+                    component={KRenderDebounceFormikTextField}
                     name={`${field}.config.clientID`}
                     label="Client ID"
                     autoComplete="disabled"
@@ -162,7 +162,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
                 </Grid>
                 <Grid item xs>
                   <Field
-                    component={KRenderFormikTextField}
+                    component={KRenderDebounceFormikTextField}
                     autoComplete={"false"}
                     name={`${field}.config.clientSecret`}
                     label="Client Secret"

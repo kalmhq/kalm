@@ -26,7 +26,7 @@ import { CopyIconDefault, GithubIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
-import { KRenderFormikTextField } from "../Basic/textfield";
+import { KRenderDebounceFormikTextField } from "../Basic/textfield";
 import { ValidateHost } from "../validator";
 
 const styles = (theme: Theme) =>
@@ -106,7 +106,7 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
                   <Field
                     name="domain"
                     label="Domain"
-                    component={KRenderFormikTextField}
+                    component={KRenderDebounceFormikTextField}
                     validate={ValidateHost}
                     autoFocus
                     placeholder="Please type a domain for your Single Sign-on configuration"

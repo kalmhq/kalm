@@ -25,7 +25,7 @@ import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Caption, H6 } from "widgets/Label";
 import { RenderFormikSelectField } from "../Basic/select";
-import { KRenderFormikTextField, RenderFormikComplexValueTextField } from "../Basic/textfield";
+import { KRenderDebounceFormikTextField, RenderFormikComplexValueTextField } from "../Basic/textfield";
 import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
@@ -215,7 +215,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
         options={typeOptions}
       />,
       <Field
-        component={KRenderFormikTextField}
+        component={KRenderDebounceFormikTextField}
         name={`${name}.${index}.path`}
         label="Mount Path"
         validate={ValidatorRequired}

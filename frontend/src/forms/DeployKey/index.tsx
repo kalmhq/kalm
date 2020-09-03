@@ -17,7 +17,7 @@ import {
 } from "types/deployKey";
 import { KPanel } from "widgets/KPanel";
 import { KAutoCompleteOption, KFormikAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
-import { KRenderFormikTextField } from "forms/Basic/textfield";
+import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
 import { KFormikRadioGroupRender } from "forms/Basic/radio";
 import { ApplicationComponentDetails } from "types/application";
 import { Loading } from "widgets/Loading";
@@ -103,7 +103,7 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
               label="Name"
               autoFocus
               autoComplete="off"
-              component={KRenderFormikTextField}
+              component={KRenderDebounceFormikTextField}
               id="deployKey-name"
               validate={ValidatorRequired}
             />

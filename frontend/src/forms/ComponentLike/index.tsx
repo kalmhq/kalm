@@ -53,7 +53,7 @@ import { KFormikRadioGroupRender } from "../Basic/radio";
 import { makeSelectOption, RenderFormikSelectField } from "../Basic/select";
 import {
   KRenderFormikCommandTextField,
-  KRenderFormikTextField,
+  KRenderDebounceFormikTextField,
   RenderFormikComplexValueTextField,
 } from "../Basic/textfield";
 import {
@@ -231,7 +231,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <>
           <Field
             name="schedule"
-            component={KRenderFormikTextField}
+            component={KRenderDebounceFormikTextField}
             placeholder="* * * * *"
             label="Cronjob Schedule"
             required
@@ -735,7 +735,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </HelperTextSection>
         <Grid item xs={6}>
           <Field
-            component={KRenderFormikTextField}
+            component={KRenderDebounceFormikTextField}
             name="terminationGracePeriodSeconds"
             label="Termination Grace Period (seconds)"
             // validate={ValidatorRequired}
@@ -834,7 +834,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <Grid container spacing={2}>
         <Grid item xs={6}>
           <Field
-            component={KRenderFormikTextField}
+            component={KRenderDebounceFormikTextField}
             autoFocus={true}
             id="component-name"
             name="name"
@@ -846,7 +846,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={6}>
           <Field
-            component={KRenderFormikTextField}
+            component={KRenderDebounceFormikTextField}
             id="component-image"
             name="image"
             label="Image"

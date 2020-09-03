@@ -5,7 +5,7 @@ import copy from "copy-to-clipboard";
 import { Field, Form, Formik, FormikProps } from "formik";
 import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KFormikRadioGroupRender } from "forms/Basic/radio";
-import { KRenderFormikTextField } from "forms/Basic/textfield";
+import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
 import { FormikUploader } from "forms/Basic/uploader";
 import { CERTIFICATE_FORM_ID } from "forms/formIDs";
 import { ValidateHost } from "forms/validator";
@@ -304,7 +304,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                       )}
                       <Grid item md={12}>
                         <Field
-                          component={KRenderFormikTextField}
+                          component={KRenderDebounceFormikTextField}
                           label="Certificate name"
                           name="name"
                           disabled={isEdit}
