@@ -51,8 +51,7 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 	key := resources.AccessToken{
 		Name: v1alpha1.GetAccessTokenNameFromToken(token),
 		AccessTokenSpec: &v1alpha1.AccessTokenSpec{
-			Subject: token,
-			Token:   rand.String(64),
+			Token: token,
 			Rules: []v1alpha1.AccessTokenRule{
 				{
 					Verb:      "view",

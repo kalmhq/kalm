@@ -20,6 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"strings"
 	"sync"
+	"time"
 )
 
 type StandardClientManager struct {
@@ -99,6 +100,10 @@ func (m *StandardClientManager) UpdatePolicies() {
 	}
 
 	for _, accessToken := range m.AccessTokens {
+		if accessToken.Spec.ExpiredAt != nil && accessToken.Spec.ExpiredAt.Time.Before(time.Now()) {
+			continue
+		}
+
 		sb.WriteString(fmt.Sprintf("# policies for access token %s\n", accessToken.Name))
 
 		for _, policy := range GetPoliciesFromAccessToken(&resources.AccessToken{Name: accessToken.Name, AccessTokenSpec: &accessToken.Spec}) {
@@ -115,6 +120,10 @@ func (m *StandardClientManager) UpdatePolicies() {
 	}
 
 	for _, roleBinding := range m.RoleBindings {
+		if roleBinding.Spec.ExpiredAt != nil && roleBinding.Spec.ExpiredAt.Time.Before(time.Now()) {
+			continue
+		}
+
 		sb.WriteString(fmt.Sprintf("# policies for rolebinding %s\n", roleBinding.Name))
 
 		var role string
@@ -150,6 +159,10 @@ func (m *StandardClientManager) GetClientInfoFromToken(tokenString string) (*Cli
 
 	if !ok {
 		return nil, errors.NewUnauthorized("access token not exist")
+	}
+
+	if accessToken.Spec.ExpiredAt != nil && accessToken.Spec.ExpiredAt.Time.Before(time.Now()) {
+		return nil, errors.NewUnauthorized("access token is expired")
 	}
 
 	return &ClientInfo{
@@ -231,8 +244,19 @@ func NewStandardClientManager(cfg *rest.Config) *StandardClientManager {
 	}
 
 	setupResourcesWatcher(cfg, manager)
+	go policyRegenerateLoop(manager)
 
 	return manager
+}
+
+// Run per minute to remove expired access tokens and role bindings
+func policyRegenerateLoop(manager *StandardClientManager) {
+	for {
+		time.Sleep(1 * time.Minute)
+		manager.mut.Lock()
+		manager.UpdatePolicies()
+		manager.mut.Unlock()
+	}
 }
 
 func setupResourcesWatcher(cfg *rest.Config, manager *StandardClientManager) {

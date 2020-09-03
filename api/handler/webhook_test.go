@@ -43,8 +43,7 @@ func (suite *WebhookHandlerTestSuite) TestWebhookHandler() {
 			Name: v1alpha1.GetAccessTokenNameFromToken(token),
 		},
 		Spec: v1alpha1.AccessTokenSpec{
-			Subject: token,
-			Token:   rand.String(64),
+			Token: token,
 			Rules: []v1alpha1.AccessTokenRule{
 				{
 					Verb:      "manage",
