@@ -93,13 +93,7 @@ export interface PreInjectedFileContent {
   readonly?: boolean;
 }
 
-export type PreInjectedFile = ImmutableMap<{
-  content: string;
-  mountPath: string;
-  mountPathTmp?: string;
-  base64?: boolean;
-  readonly?: boolean;
-}>;
+export type PreInjectedFile = ImmutableMap<PreInjectedFileContent>;
 
 export type Volume = ImmutableMap<VolumeContent>;
 
