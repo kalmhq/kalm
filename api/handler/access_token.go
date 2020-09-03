@@ -51,10 +51,10 @@ func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
 
 	var fetched v1alpha1.AccessToken
 	if err := h.resourceManager.Get("", accessToken.Name, &fetched); err != nil {
-		return nil
+		return err
 	}
 
-	if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), accessToken) {
+	if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), &resources.AccessToken{Name: fetched.Name, AccessTokenSpec: &fetched.Spec}) {
 		return resources.InsufficientPermissionsError
 	}
 

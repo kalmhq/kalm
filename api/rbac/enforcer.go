@@ -27,6 +27,7 @@ type Enforcer interface {
 
 	LoadPolicy() error
 	GetPolicy() [][]string
+	GetGroupingPolicy() [][]string
 }
 
 var _ Enforcer = &KalmRBACEnforcer{}

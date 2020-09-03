@@ -67,7 +67,7 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		return err
 	}
 
-	res.Entity = clientInfo.Name
+	res.Entity = clientInfo.Email
 	res.IsAdmin = review.Status.Allowed
 	res.Authorized = review.Status.Allowed
 

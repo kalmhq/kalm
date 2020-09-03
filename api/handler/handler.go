@@ -6,7 +6,10 @@ import (
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/api/ws"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/rand"
 )
 
 type ApiHandler struct {
@@ -18,10 +21,51 @@ type ApiHandler struct {
 type H map[string]interface{}
 
 func (h *ApiHandler) InstallAdminRoutes(e *echo.Echo) {
-	e.GET("/policies", h.handlePolicies)
+
 	e.GET("/routes", func(c echo.Context) error {
 		return c.JSON(200, e.Routes())
 	})
+
+	e.POST("/temporary_cluster_owner_access_tokens", func(c echo.Context) error {
+		token := rand.String(128)
+
+		accessToken := &v1alpha1.AccessToken{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name: v1alpha1.GetAccessTokenNameFromToken(token),
+			},
+			Spec: v1alpha1.AccessTokenSpec{
+				Token: token,
+				Rules: []v1alpha1.AccessTokenRule{
+					{
+						Verb:      "view",
+						Namespace: "*",
+						Kind:      "*",
+						Name:      "*",
+					},
+					{
+						Verb:      "edit",
+						Namespace: "*",
+						Kind:      "*",
+						Name:      "*",
+					},
+					{
+						Verb:      "manage",
+						Namespace: "*",
+						Kind:      "*",
+						Name:      "*",
+					},
+				},
+				Creator:   getCurrentUser(c).Name,
+				ExpiredAt: nil,
+			},
+		}
+
+		if err := h.resourceManager.Create(accessToken); err != nil {
+			return err
+		}
+
+		return c.JSON(200, accessToken)
+	}, h.AuthClientMiddleware)
 }
 
 func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
@@ -31,6 +75,7 @@ func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
 
 func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	e.GET("/ping", handlePing)
+	e.GET("/policies", h.handlePolicies)
 
 	// watch
 	wsHandler := ws.NewWsHandler(h.clientManager)

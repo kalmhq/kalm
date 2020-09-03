@@ -10,6 +10,7 @@ import (
 	"github.com/kalmhq/kalm/api/rbac"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	"html/template"
 	coreV1 "k8s.io/api/core/v1"
@@ -32,10 +33,11 @@ type StandardClientManager struct {
 
 	// Access tokens, roleBindings, applications are rarely changed.
 	// It is efficient to hold all roles and access tokens in memory to authorize requests.
-	mut          *sync.RWMutex
-	Applications map[string]*coreV1.Namespace
-	AccessTokens map[string]*v1alpha1.AccessToken
-	RoleBindings map[string]*v1alpha1.RoleBinding
+	mut           *sync.RWMutex
+	Applications  map[string]*coreV1.Namespace
+	AccessTokens  map[string]*v1alpha1.AccessToken
+	RoleBindings  map[string]*v1alpha1.RoleBinding
+	StopWatchChan chan struct{}
 }
 
 func BuildClusterRolePolicies() string {
@@ -96,6 +98,10 @@ func (m *StandardClientManager) UpdatePolicies() {
 	sb.WriteString(BuildClusterRolePolicies())
 
 	for _, application := range m.Applications {
+		if application.Labels == nil || application.Labels[controllers.KalmEnableLabelName] != controllers.KalmEnableLabelValue {
+			continue
+		}
+
 		sb.WriteString(BuildRolePoliciesForNamespace(application.Name))
 	}
 
@@ -168,7 +174,7 @@ func (m *StandardClientManager) GetClientInfoFromToken(tokenString string) (*Cli
 	return &ClientInfo{
 		Cfg:           m.ClusterConfig,
 		Name:          accessToken.Name,
-		Email:         fmt.Sprintf("AccessToken-%s", accessToken.Name),
+		Email:         accessToken.Name,
 		EmailVerified: false,
 		Groups:        []string{},
 	}, nil
@@ -241,9 +247,10 @@ func NewStandardClientManager(cfg *rest.Config) *StandardClientManager {
 		Applications:      make(map[string]*coreV1.Namespace),
 		AccessTokens:      make(map[string]*v1alpha1.AccessToken),
 		RoleBindings:      make(map[string]*v1alpha1.RoleBinding),
+		StopWatchChan:     make(chan struct{}),
 	}
 
-	setupResourcesWatcher(cfg, manager)
+	go setupResourcesWatcher(cfg, manager)
 	go policyRegenerateLoop(manager)
 
 	return manager
@@ -252,10 +259,10 @@ func NewStandardClientManager(cfg *rest.Config) *StandardClientManager {
 // Run per minute to remove expired access tokens and role bindings
 func policyRegenerateLoop(manager *StandardClientManager) {
 	for {
-		time.Sleep(1 * time.Minute)
 		manager.mut.Lock()
 		manager.UpdatePolicies()
 		manager.mut.Unlock()
+		time.Sleep(1 * time.Minute)
 	}
 }
 
@@ -362,6 +369,8 @@ func setupResourcesWatcher(cfg *rest.Config, manager *StandardClientManager) {
 		log.Error(err, "get informer error")
 		panic(err)
 	}
+
+	informerCache.Start(manager.StopWatchChan)
 }
 
 func getNamespacedName(metaObj metaV1.ObjectMeta) string {
