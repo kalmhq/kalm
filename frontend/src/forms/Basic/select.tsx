@@ -5,9 +5,9 @@ import { Select as FormikSelect } from "formik-material-ui";
 import React from "react";
 import { ID } from "utils";
 
-const renderFormHelper = ({ touched, error }: any) => {
+const renderFormHelper = ({ touched, error, helperText }: any) => {
   if (!(touched && error)) {
-    return <FormHelperText> </FormHelperText>;
+    return <FormHelperText>{helperText || ""}</FormHelperText>;
   } else {
     return <FormHelperText>{touched && error}</FormHelperText>;
   }
@@ -100,6 +100,7 @@ export const SelectField = ({
 
 interface Props {
   options: { text: React.ReactNode; value: string; selectedText?: string }[];
+  helperText?: any;
 }
 
 // const ITEM_HEIGHT = 48;
@@ -154,6 +155,8 @@ export const RenderFormikSelectField = (props: FieldProps & SelectProps & Props)
   }))();
   const inputLabel = React.useRef<HTMLLabelElement>(null);
 
+  const { helperText, ...formikSelectProps } = props;
+
   return (
     <FormControl
       classes={{ root: classes.root }}
@@ -167,7 +170,7 @@ export const RenderFormikSelectField = (props: FieldProps & SelectProps & Props)
         {label}
       </InputLabel>
       <FormikSelect
-        {...props}
+        {...formikSelectProps}
         labelId={labelId}
         renderValue={(value: any) => {
           const option = options.find((x) => x.value === value);
@@ -194,7 +197,7 @@ export const RenderFormikSelectField = (props: FieldProps & SelectProps & Props)
           })}
       </FormikSelect>
 
-      {renderFormHelper({ touched: !!getIn(touched, name), error: getIn(errors, name) })}
+      {renderFormHelper({ touched: !!getIn(touched, name), error: getIn(errors, name), helperText })}
     </FormControl>
   );
 };

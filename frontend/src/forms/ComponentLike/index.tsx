@@ -818,11 +818,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderMain() {
-    const { initialValues } = this.props;
+    const { initialValues, values } = this.props;
     let isEdit = false;
     // @ts-ignore
     if (initialValues && initialValues.name) {
       isEdit = true;
+    }
+
+    let hasVolumes = false;
+    if (values.volumes && values.volumes.length > 0) {
+      hasVolumes = true;
     }
 
     return (
@@ -857,13 +862,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             component={RenderFormikSelectField}
             label="Type"
             validate={ValidatorRequired}
-            disabled={isEdit}
+            disabled={isEdit || hasVolumes}
             options={[
               makeSelectOption(workloadTypeServer, "Service Component", sc.COMPONENT_TYPE_SERVICE_OPTION),
               makeSelectOption(workloadTypeCronjob, "CronJob", sc.COMPONENT_TYPE_CRONJOB_OPTION),
               makeSelectOption(workloadTypeDaemonSet, "DaemonSet", sc.COMPONENT_TYPE_DAEMON_OPTION),
               makeSelectOption(workloadTypeStatefulSet, "StatefulSet", sc.COMPONENT_TYPE_STATEFUL_SET_OPTION),
             ]}
+            helperText={!isEdit && hasVolumes ? "Type can't be changed after created disks" : ""}
           />
         </Grid>
         <Grid item xs={6}>

@@ -68,10 +68,13 @@ export type VolumeType = string;
 export const VolumeTypeTemporaryMemory: VolumeType = "emptyDirMemory";
 export const VolumeTypeTemporaryDisk: VolumeType = "emptyDir";
 export const VolumeTypePersistentVolumeClaim: VolumeType = "pvc";
-
+// for DaemonSet
+export const VolumeTypeHostPath: VolumeType = "hostPath";
+// for StatefulSet
+export const VolumeTypePersistentVolumeClaimTemplate: VolumeType = "pvcTemplate";
+export const VolumeTypePersistentVolumeClaimTemplateNew: VolumeType = "pvcTemplate-new";
 // derivative
 export const VolumeTypePersistentVolumeClaimNew: VolumeType = "pvc-new";
-// export const VolumeTypePersistentVolumeClaimExisting: VolumeType = "pvc-existing";
 
 export interface VolumeContent {
   type: VolumeType;
@@ -83,6 +86,8 @@ export interface VolumeContent {
   pvToMatch: string;
   // select claimName then pass pvc and pvToMatch
   claimName: string;
+  // for daemonset
+  hostPath?: string;
 }
 
 export interface PreInjectedFileContent {

@@ -12,7 +12,13 @@ import {
   VolumeTypePersistentVolumeClaimNew,
   VolumeTypeTemporaryDisk,
   VolumeTypeTemporaryMemory,
+  workloadTypeServer,
+  workloadTypeCronjob,
+  workloadTypeDaemonSet,
   workloadTypeStatefulSet,
+  VolumeTypeHostPath,
+  VolumeTypePersistentVolumeClaimTemplateNew,
+  VolumeTypePersistentVolumeClaimTemplate,
 } from "types/componentTemplate";
 import { sizeStringToGi } from "utils/sizeConv";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
@@ -122,10 +128,81 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
     return options;
   }
 
+  private getTypeOptions() {
+    let options: { value: string; text: string }[] = [];
+    const {
+      form: { values },
+    } = this.props;
+    if (values.workloadType === workloadTypeServer) {
+      options = [
+        { value: VolumeTypePersistentVolumeClaimNew, text: "Create and mount disk" },
+        { value: VolumeTypePersistentVolumeClaim, text: "Mount an existing disk" },
+      ];
+    } else if (values.workloadType === workloadTypeCronjob) {
+      options = [];
+    } else if (values.workloadType === workloadTypeDaemonSet) {
+      options = [{ value: VolumeTypeHostPath, text: "Mount a hostPath disk" }];
+    } else if (values.workloadType === workloadTypeStatefulSet) {
+      options = [
+        { value: VolumeTypePersistentVolumeClaimTemplateNew, text: "Create and mount disk group" },
+        { value: VolumeTypePersistentVolumeClaimTemplate, text: "Mount an existing disk group" },
+      ];
+    }
+
+    options.push({ value: VolumeTypeTemporaryDisk, text: "Mount a temporary disk" });
+    options.push({ value: VolumeTypeTemporaryMemory, text: "Mount a temporary memory disk" });
+
+    return options;
+  }
+
+  private getDefaultAddValues(): any {
+    const {
+      storageClasses,
+      form: { values },
+    } = this.props;
+
+    if (values.workloadType === workloadTypeServer) {
+      return {
+        type: VolumeTypePersistentVolumeClaimNew,
+        path: "",
+        storageClassName: storageClasses.get(0)?.get("name") || "",
+        size: "",
+      };
+    } else if (values.workloadType === workloadTypeCronjob) {
+      return {
+        type: VolumeTypeTemporaryDisk,
+        path: "",
+        size: "",
+      };
+    } else if (values.workloadType === workloadTypeDaemonSet) {
+      return {
+        type: VolumeTypeHostPath,
+        path: "",
+        hostPath: "",
+      };
+    } else if (values.workloadType === workloadTypeStatefulSet) {
+      return {
+        type: VolumeTypePersistentVolumeClaimTemplateNew,
+        path: "",
+        storageClassName: storageClasses.get(0)?.get("name") || "",
+        size: "",
+      };
+    }
+
+    return {
+      type: VolumeTypePersistentVolumeClaimNew,
+      path: "",
+      storageClassName: storageClasses.get(0)?.get("name") || "",
+      size: "",
+    };
+  }
+
   public getFieldComponents(disk: VolumeContent, index: number) {
     const { name } = this.props;
     const volumeOptions = this.getVolumeOptions();
+    const typeOptions = this.getTypeOptions();
     const volumeType = disk.type;
+
     const fieldComponents = [
       <Field
         name={`${name}.${index}.type`}
@@ -133,14 +210,9 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
         label="Type"
         validate={ValidatorRequired}
         placeholder="Select a volume type"
-        defaultValue={VolumeTypePersistentVolumeClaimNew}
-        options={[
-          // { value: VolumeTypePersistentVolumeClaim, text: "Mount a disk" },
-          { value: VolumeTypePersistentVolumeClaimNew, text: "Create and mount disk" },
-          { value: VolumeTypePersistentVolumeClaim, text: "Mount an existing disk" },
-          { value: VolumeTypeTemporaryDisk, text: "Mount a temporary disk" },
-          { value: VolumeTypeTemporaryMemory, text: "Mount a temporary memory disk" },
-        ]}
+        // defaultValue={typeOptions[0].value}
+        value={volumeType || typeOptions[0].value}
+        options={typeOptions}
       />,
       <Field
         component={KRenderFormikTextField}
@@ -150,7 +222,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
       />,
     ];
 
-    if (volumeType === VolumeTypePersistentVolumeClaim) {
+    if (volumeType === VolumeTypePersistentVolumeClaim || volumeType === VolumeTypePersistentVolumeClaimTemplate) {
       const claimName = disk.claimName;
       const volumeOption = volumeOptions.find((vo) => vo.get("name") === claimName);
 
@@ -186,7 +258,10 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           variant="outlined"
         />,
       );
-    } else if (volumeType === VolumeTypePersistentVolumeClaimNew) {
+    } else if (
+      volumeType === VolumeTypePersistentVolumeClaimNew ||
+      volumeType === VolumeTypePersistentVolumeClaimTemplateNew
+    ) {
       fieldComponents.push(
         <Field
           label="Storage Class"
@@ -204,12 +279,21 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           margin
           validate={ValidatorVolumeSize}
           endAdornment={this.getSizeEndAdornment()}
-          // format={(value: any) => {
-          //   return !value ? "" : sizeStringToGi(value);
-          // }}
-          // parse={(value: any) => {
-          //   return !value ? "" : value + "Gi";
-          // }}
+          format={(value: any) => {
+            return !value ? "" : sizeStringToGi(value);
+          }}
+          parse={(value: any) => {
+            return !value ? "" : value + "Gi";
+          }}
+        />,
+      );
+    } else if (volumeType === VolumeTypeHostPath) {
+      fieldComponents.push(
+        <Field
+          component={KRenderFormikTextField}
+          name={`${name}.${index}.hostPath`}
+          label="Host Path"
+          validate={ValidatorRequired}
         />,
       );
     } else {
@@ -221,12 +305,12 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           margin
           validate={ValidatorVolumeSize}
           endAdornment={this.getSizeEndAdornment()}
-          // format={(value: any) => {
-          //   return !value ? "" : sizeStringToGi(value);
-          // }}
-          // parse={(value: any) => {
-          //   return !value ? "" : value + "Gi";
-          // }}
+          format={(value: any) => {
+            return !value ? "" : sizeStringToGi(value);
+          }}
+          parse={(value: any) => {
+            return !value ? "" : value + "Gi";
+          }}
         />,
       );
     }
@@ -254,7 +338,6 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
       name,
       push,
       remove,
-      storageClasses,
       form: { values },
     } = this.props;
 
@@ -268,12 +351,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
               startIcon={<AddIcon />}
               size="small"
               onClick={() => {
-                push({
-                  type: VolumeTypePersistentVolumeClaimNew,
-                  path: "",
-                  storageClassName: storageClasses.get(0)?.get("name") || "",
-                  size: "",
-                });
+                push(this.getDefaultAddValues());
               }}
             >
               Add
@@ -281,7 +359,6 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
             {/* {submitFailed && error && <span>{error}</span>} */}
           </Grid>
         </Box>
-
         {getIn(values, name) &&
           getIn(values, name).map((disk: VolumeContent, index: number) => {
             return (
