@@ -67,6 +67,14 @@ func (r *AccessToken) ValidateUpdate(old runtime.Object) error {
 		}
 	}
 
+	if oldAccessToken, ok := old.(*AccessToken); !ok {
+		return fmt.Errorf("old object is not an access token")
+	} else {
+		if r.Spec.Token != oldAccessToken.Spec.Token {
+			return fmt.Errorf("Can't modify token")
+		}
+	}
+
 	return r.validate()
 }
 
