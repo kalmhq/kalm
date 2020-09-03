@@ -2,14 +2,15 @@ import { InputAdornment, OutlinedInputProps, useTheme } from "@material-ui/core"
 import TextField, { TextFieldProps } from "@material-ui/core/TextField";
 import { FieldProps, getIn } from "formik";
 import { TextField as FormikTextField } from "formik-material-ui";
-import React from "react";
+import React, { ChangeEvent } from "react";
 import { KalmConsoleIcon } from "widgets/Icon";
+import { withDebounceField, withDebounceProps, inputOnChangeWithDebounce } from "./debounce";
 
 interface Props {
   endAdornment?: React.ReactNode;
 }
 
-export const KRenderFormikTextField = (props: TextFieldProps & FieldProps & { HelperText: React.ReactNode }) => {
+export const KRenderFormikTextField = (props: TextFieldProps & FieldProps) => {
   const {
     helperText,
     field: { name },
@@ -32,6 +33,50 @@ export const KRenderFormikTextField = (props: TextFieldProps & FieldProps & { He
     />
   );
 };
+
+class KRenderTextField extends React.PureComponent<withDebounceProps & Props & FieldProps> {
+  render() {
+    const {
+      helperText,
+      endAdornment,
+      meta,
+      field: { value, name },
+      form: { errors, handleChange, handleBlur },
+      showError,
+      dispatch,
+      ...custom
+    } = this.props;
+    const inputProps: Partial<OutlinedInputProps> = {};
+    if (endAdornment) {
+      inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
+    }
+
+    return (
+      <TextField
+        {...custom}
+        fullWidth
+        name={name}
+        error={showError}
+        onBlur={handleBlur}
+        InputLabelProps={{
+          shrink: true,
+        }}
+        helperText={showError ? getIn(errors, name) : helperText ? helperText : " "}
+        margin="dense"
+        variant="outlined"
+        InputProps={inputProps}
+        inputProps={{
+          required: false, // bypass html5 required feature
+        }}
+        value={value}
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          inputOnChangeWithDebounce(dispatch, handleChange, event, name);
+        }}
+      />
+    );
+  }
+}
+export const KRenderDebounceFormikTextField = withDebounceField(KRenderTextField);
 
 interface ComplexValueTextFieldProps {
   endAdornment?: React.ReactNode;

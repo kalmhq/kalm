@@ -20,14 +20,8 @@ const mapStateToProps = (state: RootState, ownProps: FilledTextFieldProps & Fiel
   };
 };
 
-export const inputOnChangeWithDebounce = (
-  dispatch: any,
-  nativeOnChange: any,
-  value: any,
-  formID: string,
-  name: string,
-) => {
-  nativeOnChange(value);
+export const inputOnChangeWithDebounce = (dispatch: any, nativeOnChange: any, event: any, name: string) => {
+  nativeOnChange(event);
   dispatch(setDebouncing(name));
 };
 
