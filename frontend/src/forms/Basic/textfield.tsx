@@ -41,7 +41,7 @@ class KRenderTextField extends React.PureComponent<withDebounceProps & Props & F
       endAdornment,
       meta,
       field: { value, name },
-      form: { errors, handleChange, handleBlur },
+      form: { errors, handleChange },
       showError,
       dispatch,
       ...custom
@@ -57,7 +57,6 @@ class KRenderTextField extends React.PureComponent<withDebounceProps & Props & F
         fullWidth
         name={name}
         error={showError}
-        onBlur={handleBlur}
         InputLabelProps={{
           shrink: true,
         }}

@@ -1,10 +1,9 @@
 import { Box, Button, Fade, Grid } from "@material-ui/core";
-import { Field, FieldArray, FieldArrayRenderProps, getIn } from "formik";
+import { FastField, FieldArray, FieldArrayRenderProps, getIn } from "formik";
 import { TextField as FormikTextField } from "formik-material-ui";
-import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
-import { EnvItem } from "types/application";
+import { SharedEnv } from "types/application";
 import { ComponentLikeEnv } from "types/componentTemplate";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
@@ -53,7 +52,7 @@ class RenderEnvs extends React.PureComponent<Props> {
               <Fade in key={index}>
                 <Grid container spacing={2}>
                   <Grid item xs={5}>
-                    <Field
+                    <FastField
                       name={`${name}.${index}.name`}
                       label="Name"
                       component={FormikTextField}
@@ -70,7 +69,7 @@ class RenderEnvs extends React.PureComponent<Props> {
                     />
                   </Grid>
                   <Grid item xs={5}>
-                    <Field
+                    <FastField
                       name={`${name}.${index}.value`}
                       label="Value"
                       validate={ValidatorRequired}
@@ -106,13 +105,13 @@ class RenderEnvs extends React.PureComponent<Props> {
   }
 }
 
-const ValidatorEnvs = (values: Immutable.List<EnvItem>) => {
+const ValidatorEnvs = (values: SharedEnv[]) => {
   if (!values) return undefined;
   const names = new Set<string>();
 
-  for (let i = 0; i < values.size; i++) {
-    const env = values.get(i)!;
-    const name = env.get("name");
+  for (let i = 0; i < values.length; i++) {
+    const env = values[i]!;
+    const name = env.name;
     if (!names.has(name)) {
       names.add(name);
     } else if (name !== "") {

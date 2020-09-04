@@ -10,7 +10,7 @@ import {
   withStyles,
 } from "@material-ui/core";
 import { WithStyles } from "@material-ui/styles";
-import { Field, FieldProps, getIn } from "formik";
+import { FastField, FieldProps, getIn } from "formik";
 import { NormalizeNumber } from "forms/normalizer";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
@@ -83,7 +83,7 @@ class RenderProbe extends React.PureComponent<Props> {
       <Box p={1}>
         <Typography component="div">
           After initial
-          <Field
+          <FastField
             name={`${name}.initialDelaySeconds`}
             component={this.renderNestedTextfield}
             normalize={NormalizeNumber}
@@ -94,7 +94,7 @@ class RenderProbe extends React.PureComponent<Props> {
           />
           seconds delay, Request{" "}
           <Box className={classes.code} display="inline-block">
-            <Field
+            <FastField
               name={`${name}.httpGet.scheme`}
               component={this.renderNestedTextfield}
               validate={ValidatorScheme}
@@ -108,16 +108,16 @@ class RenderProbe extends React.PureComponent<Props> {
               <MenuItem key={"http"} value={"HTTPS"}>
                 https
               </MenuItem>
-            </Field>
+            </FastField>
             ://
-            <Field
+            <FastField
               name={`${name}.httpGet.host`}
               component={this.renderNestedTextfield}
               placeholder="0.0.0.0"
               style={{ width: 80 }}
             />
             :
-            <Field
+            <FastField
               name={`${name}.httpGet.port`}
               component={this.renderNestedTextfield}
               placeholder="8080"
@@ -125,7 +125,7 @@ class RenderProbe extends React.PureComponent<Props> {
               validate={ValidatorRequired}
               style={{ width: 60 }}
             />
-            <Field
+            <FastField
               name={`${name}.httpGet.path`}
               component={this.renderNestedTextfield}
               placeholder="/healthy"
@@ -134,7 +134,7 @@ class RenderProbe extends React.PureComponent<Props> {
             />
           </Box>{" "}
           will be triggered every{" "}
-          <Field
+          <FastField
             name={`${name}.periodSeconds`}
             component={this.renderNestedTextfield}
             normalize={NormalizeNumber}
@@ -156,7 +156,7 @@ class RenderProbe extends React.PureComponent<Props> {
       <Box p={1}>
         <Typography component="div">
           After initial
-          <Field
+          <FastField
             name={`${name}.initialDelaySeconds`}
             component={this.renderNestedTextfield}
             placeholder="10"
@@ -167,7 +167,7 @@ class RenderProbe extends React.PureComponent<Props> {
           />
           seconds delay, Command{" "}
           <Box className={classes.code} display="inline-block">
-            <Field
+            <FastField
               name={`${name}.exec.command[0]`}
               component={this.renderNestedTextfield}
               validate={ValidatorRequired}
@@ -176,7 +176,7 @@ class RenderProbe extends React.PureComponent<Props> {
             />
           </Box>{" "}
           will be executed every{" "}
-          <Field
+          <FastField
             name={`${name}.periodSeconds`}
             component={this.renderNestedTextfield}
             normalize={NormalizeNumber}
@@ -198,7 +198,7 @@ class RenderProbe extends React.PureComponent<Props> {
       <Box p={1}>
         <Typography component="div">
           After initial
-          <Field
+          <FastField
             name={`${name}.initialDelaySeconds`}
             component={this.renderNestedTextfield}
             normalize={NormalizeNumber}
@@ -209,14 +209,14 @@ class RenderProbe extends React.PureComponent<Props> {
           />
           seconds delay, TCP socket connection to{" "}
           <Box className={classes.code} display="inline-block">
-            <Field
+            <FastField
               name={`${name}.tcpSocket.host`}
               component={this.renderNestedTextfield}
               placeholder="0.0.0.0"
               style={{ width: 200 }}
             />
             :
-            <Field
+            <FastField
               name={`${name}.tcpSocket.port`}
               component={this.renderNestedTextfield}
               validate={ValidatorRequired}
@@ -226,7 +226,7 @@ class RenderProbe extends React.PureComponent<Props> {
             />
           </Box>{" "}
           will be established every{" "}
-          <Field
+          <FastField
             name={`${name}.periodSeconds`}
             component={this.renderNestedTextfield}
             normalize={NormalizeNumber}
@@ -249,7 +249,7 @@ class RenderProbe extends React.PureComponent<Props> {
       <Box p={1}>
         <Typography component="div">
           If there is no response within{" "}
-          <Field
+          <FastField
             name={`${name}.timeoutSeconds`}
             component={this.renderNestedTextfield}
             placeholder="1"
@@ -272,7 +272,7 @@ class RenderProbe extends React.PureComponent<Props> {
             "One successful testing"
           ) : (
             <>
-              <Field
+              <FastField
                 name={`${name}.successThreshold`}
                 component={this.renderNestedTextfield}
                 placeholder="1"
@@ -285,7 +285,7 @@ class RenderProbe extends React.PureComponent<Props> {
             </>
           )}{" "}
           will make the probe ready.{" "}
-          <Field
+          <FastField
             name={`${name}.failureThreshold`}
             component={this.renderNestedTextfield}
             placeholder="3"
@@ -411,9 +411,9 @@ class RenderProbe extends React.PureComponent<Props> {
 }
 
 export const LivenessProbe = connect()((props: ProbeProps) => {
-  return <Field name="livenessProbe" component={withStyles(styles)(RenderProbe)} {...props} />;
+  return <FastField name="livenessProbe" component={withStyles(styles)(RenderProbe)} {...props} />;
 });
 
 export const ReadinessProbe = connect()((props: ProbeProps) => {
-  return <Field name="readinessProbe" component={withStyles(styles)(RenderProbe)} {...props} />;
+  return <FastField name="readinessProbe" component={withStyles(styles)(RenderProbe)} {...props} />;
 });

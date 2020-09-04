@@ -1,5 +1,5 @@
 import { Box, Button, Fade, Grid, Paper, Popper } from "@material-ui/core";
-import { Field, FieldArray, FieldArrayRenderProps, getIn } from "formik";
+import { FastField, FieldArray, FieldArrayRenderProps } from "formik";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { anchorRef, bindPopper, InjectedProps } from "material-ui-popup-state";
 import React from "react";
@@ -16,7 +16,6 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { PortChart } from "widgets/PortChart";
 import { RenderFormikSelectField } from "../Basic/select";
 import { KRenderDebounceFormikTextField } from "../Basic/textfield";
-import { NormalizePort } from "../normalizer";
 import { ValidatorContainerPortRequired, ValidatorPort, ValidatorRequired } from "../validator";
 
 interface Props extends FieldArrayRenderProps {}
@@ -50,7 +49,6 @@ class RenderPorts extends React.PureComponent<Props> {
       form: { values },
       remove,
     } = this.props;
-
     return (
       <>
         <Box mb={2}>
@@ -74,12 +72,12 @@ class RenderPorts extends React.PureComponent<Props> {
           </Grid>
         </Box>
 
-        {getIn(values, name) &&
-          getIn(values, name).map((field: ComponentLikePortContent, index: number) => {
+        {values[name] &&
+          values[name].map((field: ComponentLikePortContent, index: number) => {
             return (
               <Grid container spacing={2} key={index}>
                 <Grid item xs>
-                  <Field
+                  <FastField
                     name={`${name}.${index}.protocol`}
                     component={RenderFormikSelectField}
                     required
@@ -105,14 +103,14 @@ class RenderPorts extends React.PureComponent<Props> {
                             anchorRef(popupState)(c);
                           }}
                         >
-                          <Field
+                          <FastField
+                            onFocus={popupState.open}
+                            onBlur={popupState.close}
                             component={KRenderDebounceFormikTextField}
                             name={`${name}.${index}.containerPort`}
                             label="Container port"
                             placeholder="1~65535,not 443"
-                            required
                             validate={ValidatorContainerPortRequired}
-                            normalize={NormalizePort}
                           />
                         </Grid>
                         <Popper
@@ -146,13 +144,14 @@ class RenderPorts extends React.PureComponent<Props> {
                             anchorRef(popupState)(c);
                           }}
                         >
-                          <Field
+                          <FastField
+                            onFocus={popupState.open}
+                            onBlur={popupState.close}
                             component={KRenderDebounceFormikTextField}
                             name={`${name}.${index}.servicePort`}
                             label="Service Port"
                             placeholder="Default to equal publish port"
                             validate={ValidatorPort}
-                            normalize={NormalizePort}
                           />
                         </Grid>
                         <Popper

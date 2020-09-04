@@ -420,6 +420,8 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
   }
 }
 
+const RenderVolumes = connect(mapStateToProps)(RenderVolumesRaw);
+
 export const Disks = (props: any) => {
-  return <FieldArray name="volumes" component={connect(mapStateToProps)(RenderVolumesRaw)} {...props} />;
+  return <FieldArray name="volumes" component={RenderVolumes} {...props} />;
 };

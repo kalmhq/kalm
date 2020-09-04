@@ -2,7 +2,7 @@ import { Box, Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
-import { Field, FieldArray, FieldArrayRenderProps, FieldProps, getIn } from "formik";
+import { FastField, FieldArray, FieldArrayRenderProps, FieldProps, getIn } from "formik";
 import { TextField as FormikTextField } from "formik-material-ui";
 import { KFormikCheckbox } from "forms/Basic/checkbox";
 import React from "react";
@@ -82,9 +82,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
                 if (isDisabledSaveButton) {
                   return;
                 }
-                let newFile = file.set("content", fileContentValue);
-                newFile = newFile.set("mountPath", mountPathTmp);
-                replace(editingFileIndex, newFile);
+                replace(editingFileIndex, { ...file, content: fileContentValue, mountPath: mountPathTmp });
                 if (editingFileIndex === activeIndex) {
                   this.setState({ activeIndex: activeIndex + 1 });
                 }
@@ -99,8 +97,8 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
       >
         <Grid container>
           <Grid item xs={8}>
-            <Field
-              name={`preInjectedFiles[${editingFileIndex}].mountPathTmp`}
+            <FastField
+              name={`preInjectedFiles.${editingFileIndex}.mountPathTmp`}
               label="Mount Path"
               component={FormikTextField}
               validate={validateMountPath}
@@ -117,11 +115,11 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
           </Grid>
           <Grid item xs={1}></Grid>
           <Grid item xs={3}>
-            <Field
-              name={`preInjectedFiles[${editingFileIndex}].readonly`}
+            <FastField
+              name={`preInjectedFiles.${editingFileIndex}.readonly`}
               component={KFormikCheckbox}
               label="Read Only"
-            ></Field>
+            />
           </Grid>
         </Grid>
         <RichEdtor value={fileContentValue} onChange={(value) => this.setState({ fileContentValue: value })} />
@@ -157,7 +155,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
           fieldsNodes.push(
             <Grid container spacing={1} key={index}>
               <Grid item xs={4}>
-                <Field
+                <FastField
                   name={`${name}.${index}.content`}
                   component={this.renderContent}
                   file={injectedFile}

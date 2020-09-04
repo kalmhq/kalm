@@ -18,14 +18,13 @@ import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 import clsx from "clsx";
 import { push } from "connected-react-router";
-import { Field, FormikProps, withFormik } from "formik";
+import { Field, FastField, FormikProps, withFormik } from "formik";
 import { KTooltip } from "forms/Application/KTooltip";
 import { KFormikBoolCheckboxRender } from "forms/Basic/checkbox";
 import { Disks } from "forms/ComponentLike/Disks";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
 import Immutable from "immutable";
 import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
-import queryString from "qs";
 import React from "react";
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
@@ -97,7 +96,6 @@ const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, De
 const mapStateToProps = (state: RootState) => {
   const nodeLabels = getNodeLabels(state);
 
-  const search = queryString.parse(window.location.search.replace("?", ""));
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");
   let currentTabIndex = tabs.map((t) => t.replace(/\s/g, "")).indexOf(`${anchor}`);
@@ -108,7 +106,6 @@ const mapStateToProps = (state: RootState) => {
   return {
     registries: state.get("registries").get("registries"),
     tutorialState: state.get("tutorial"),
-    search,
     isSubmittingApplicationComponent: state.get("components").get("isSubmittingApplicationComponent"),
     nodeLabels,
     currentTabIndex,
@@ -212,7 +209,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const workloadType = this.props.values.workloadType;
     if (workloadType === workloadTypeServer || workloadType === workloadTypeStatefulSet) {
       return (
-        <Field
+        <FastField
           component={RenderFormikComplexValueTextField}
           validate={ValidatorNaturalNumber}
           name="replicas"
@@ -229,7 +226,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     if (workloadType === workloadTypeCronjob) {
       return (
         <>
-          <Field
+          <FastField
             name="schedule"
             component={KRenderDebounceFormikTextField}
             placeholder="* * * * *"
@@ -464,7 +461,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <HelperTextSection>{sc.COMMAND_HELPER}</HelperTextSection>
         </Grid>
         <Grid item xs={12}>
-          <Field
+          <FastField
             component={KRenderFormikCommandTextField}
             name="command"
             label="Command"
@@ -555,7 +552,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
+          <FastField
             component={RenderFormikComplexValueTextField}
             name="cpuLimit"
             label="CPU Limit"
@@ -581,7 +578,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
+          <FastField
             component={RenderFormikComplexValueTextField}
             name="memoryLimit"
             label="Memory Limit"
@@ -608,7 +605,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
+          <FastField
             component={RenderFormikComplexValueTextField}
             name="cpuRequest"
             label="CPU Request"
@@ -634,7 +631,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
+          <FastField
             component={RenderFormikComplexValueTextField}
             name="memoryRequest"
             label="Memory Request"
@@ -669,10 +666,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <Field name="nodeSelectorLabels" component={KFormikRenderSelectLabels} nodeLabels={nodeLabels.toArray()} />
+          <FastField
+            name="nodeSelectorLabels"
+            component={KFormikRenderSelectLabels}
+            nodeLabels={nodeLabels.toArray()}
+          />
         </Grid>
         <Grid item xs={12}>
-          <Field
+          <FastField
             name="preferNotCoLocated"
             component={KFormikBoolCheckboxRender}
             label={sc.SCHEDULING_COLOCATE_CHECKBOX}
@@ -694,7 +695,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={8}>
-          <KFormikRadioGroupRender
+          <FastField
+            component={KFormikRadioGroupRender}
             onChange={this.props.handleChange}
             name="restartStrategy"
             value={this.props.values.restartStrategy || "RollingUpdate"}
@@ -734,7 +736,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </Link>
         </HelperTextSection>
         <Grid item xs={6}>
-          <Field
+          <FastField
             component={KRenderDebounceFormikTextField}
             name="terminationGracePeriodSeconds"
             label="Termination Grace Period (seconds)"
@@ -832,9 +834,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container spacing={2}>
         <Grid item xs={6}>
-          <Field
+          <FastField
+            autoFocus
             component={KRenderDebounceFormikTextField}
-            autoFocus={true}
             id="component-name"
             name="name"
             label="Name"
@@ -844,7 +846,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
         <Grid item xs={6}>
-          <Field
+          <FastField
             component={KRenderDebounceFormikTextField}
             id="component-image"
             name="image"
@@ -1003,7 +1005,6 @@ const form = withFormik<
   ComponentLikeFormContent
 >({
   mapPropsToValues: (props) => props._initialValues,
-  enableReinitialize: true,
   validate: formikValidateOrNotBlockByTutorial,
   handleSubmit: async (formValues, { props: { onSubmit } }) => {
     await onSubmit(formValues);
