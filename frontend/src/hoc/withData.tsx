@@ -14,6 +14,7 @@ import {
   RESOURCE_TYPE_NODE,
   RESOURCE_TYPE_PROTECTED_ENDPOINT,
   RESOURCE_TYPE_REGISTRY,
+  RESOURCE_TYPE_ROLE_BINDING,
   RESOURCE_TYPE_SERVICE,
   RESOURCE_TYPE_SSO,
   RESOURCE_TYPE_VOLUME,
@@ -223,6 +224,17 @@ class WithDataRaw extends React.PureComponent<Props> {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
             kind: RESOURCE_TYPE_SERVICE,
+            payload: {
+              action: data.action,
+              data: Immutable.fromJS(data.data),
+            },
+          });
+          break;
+        }
+        case RESOURCE_TYPE_ROLE_BINDING: {
+          dispatch({
+            type: WATCHED_RESOURCE_CHANGE,
+            kind: RESOURCE_TYPE_ROLE_BINDING,
             payload: {
               action: data.action,
               data: Immutable.fromJS(data.data),

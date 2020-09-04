@@ -4,7 +4,7 @@ import { FormState } from "redux-form";
 import { reducer as formReducer } from "redux-form/immutable";
 import { combineReducers } from "redux-immutable";
 import { ImmutableMap } from "typings";
-import roles, { State as RolesState } from "./role";
+import roles, { State as RolesState } from "reducers/roleBinding";
 import applications, { State as ApplicationState } from "./application";
 import components, { State as ApplicationComponentState } from "./component";
 import auth, { State as AuthState } from "./auth";
@@ -15,7 +15,6 @@ import registries, { State as RegistriesState } from "./registry";
 import notification, { State as NotificationState } from "./notification";
 import persistentVolumes, { State as PersistentVolumesState } from "./persistentVolume";
 import settings, { State as SettingsState } from "./settings";
-import users, { State as UserState } from "./user";
 import routes, { State as RouteState } from "./route";
 import cluster, { State as ClusterState } from "./cluster";
 import tutorial, { State as TutorialState } from "./tutorial";
@@ -39,7 +38,6 @@ export type RootState = ImmutableMap<{
   registries: RegistriesState;
   persistentVolumes: PersistentVolumesState;
   settings: SettingsState;
-  users: UserState;
   roles: RolesState;
   routes: RouteState;
   cluster: ClusterState;
@@ -71,7 +69,6 @@ export default (history: History<LocationState>) =>
     notification,
     settings,
     sso,
-    users,
     roles,
     routes,
     tutorial,

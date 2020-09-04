@@ -10,12 +10,23 @@ import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
-import { HelpIcon, KalmUserIcon, MenuIcon, MenuOpenIcon, KalmLogo2Icon, KalmTextLogoIcon } from "widgets/Icon";
+import {
+  HelpIcon,
+  ImpersonateIcon,
+  KalmLogo2Icon,
+  KalmTextLogoIcon,
+  KalmUserIcon,
+  MenuIcon,
+  MenuOpenIcon,
+} from "widgets/Icon";
 import { ThemeToggle } from "theme/ThemeToggle";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import stringConstants from "utils/stringConstants";
 import Button from "@material-ui/core/Button";
 import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
+import { IMPERSONATION_KEY, stopImpersonating } from "api/realApi/index";
+import { push } from "connected-react-router";
+import deepOrange from "@material-ui/core/colors/deepOrange";
 
 const mapStateToProps = (state: RootState) => {
   const activeNamespace = state.get("namespaces").get("active");
@@ -124,8 +135,16 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   }
 
   renderAuthEntity() {
-    const { entity } = this.props;
+    const { entity, dispatch } = this.props;
     const { authMenuAnchorElement } = this.state;
+    const impersonation = window.localStorage.getItem(IMPERSONATION_KEY);
+
+    let entityForDisplay: string = entity;
+
+    if (entity.length > 15) {
+      entityForDisplay = entity.slice(0, 15) + "...";
+    }
+
     return (
       <div>
         <IconButtonWithTooltip
@@ -137,7 +156,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           }}
           color="inherit"
         >
-          <KalmUserIcon />
+          {!impersonation ? <KalmUserIcon /> : <ImpersonateIcon style={{ color: deepOrange[400] }} />}
         </IconButtonWithTooltip>
         <Menu
           id="menu-appbar"
@@ -156,7 +175,18 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             this.setState({ authMenuAnchorElement: null });
           }}
         >
-          <MenuItem disabled>Auth as {entity}</MenuItem>
+          <MenuItem disabled>Auth as {entityForDisplay}</MenuItem>
+          {!!impersonation ? (
+            <MenuItem
+              onClick={async () => {
+                stopImpersonating();
+                await dispatch(push("/"));
+                window.location.reload();
+              }}
+            >
+              Stop impersonating {impersonation}
+            </MenuItem>
+          ) : null}
           {entity.indexOf("localhost") < 0 ? (
             <>
               <Divider />

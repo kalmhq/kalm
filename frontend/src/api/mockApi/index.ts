@@ -4,11 +4,11 @@ import { CertificateFormType, CertificateIssuerFormType } from "types/certificat
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import { HttpRoute } from "types/route";
 import { RegistryType } from "types/registry";
-import { RoleBindingsRequestBody } from "types/user";
 import MockStore from "../mockStore";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { DeployKey } from "types/deployKey";
 import { InitializeClusterResponse } from "types/cluster";
+import { RoleBindingContent } from "types/member";
 
 export const mockStore = new MockStore();
 
@@ -154,7 +154,8 @@ export default class MockApi extends Api {
   };
 
   // TODO (has not been used)
-  public createRoleBindings = async (roleBindingRequestBody: RoleBindingsRequestBody) => {};
+  public createRoleBinding = async (roleBinding: RoleBindingContent) => {};
+  public updateRoleBinding = async (roleBinding: RoleBindingContent) => {};
 
   public deleteCertificate = async (name: string) => {
     await mockStore.deleteCertificate(name);
@@ -185,7 +186,7 @@ export default class MockApi extends Api {
   };
 
   // TODO
-  public deleteRoleBindings = async (namespace: string, bindingName: string) => {};
+  public deleteRoleBinding = async (namespace: string, bindingName: string) => {};
 
   // TODO (has not been used)
   public getApplicationPlugins = async () => {
@@ -201,12 +202,7 @@ export default class MockApi extends Api {
   };
 
   // TODO
-  public getServiceAccountSecret = async (name: string) => {
-    return "";
-  };
-
-  // TODO
-  public loadRolebindings = async () => {
+  public loadRoleBindings = async () => {
     return Immutable.fromJS([]);
   };
 

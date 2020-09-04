@@ -5,13 +5,13 @@ import Axios, { AxiosRequestConfig } from "axios";
 import { RegistryType } from "types/registry";
 import { Application, ApplicationComponent } from "types/application";
 import { HttpRoute } from "types/route";
-import { RoleBindingsRequestBody } from "types/user";
 import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { Node } from "types/node";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { DeployKey } from "types/deployKey";
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
 import { InitializeClusterResponse } from "types/cluster";
+import { RoleBindingContent } from "types/member";
 
 export const mockStore = null;
 
@@ -234,22 +234,21 @@ export default class RealApi extends Api {
 
   // RoleBindings
 
-  public loadRolebindings = async () => {
+  public loadRoleBindings = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/rolebindings` });
-    return Immutable.fromJS(res.data.roleBindings);
+    return Immutable.fromJS(res.data);
   };
 
-  public createRoleBindings = async (roleBindingRequestBody: RoleBindingsRequestBody) => {
-    await axiosRequest({ method: "post", url: `/${K8sApiVersion}/rolebindings`, data: roleBindingRequestBody });
+  public createRoleBinding = async (roleBinding: RoleBindingContent) => {
+    await axiosRequest({ method: "post", url: `/${K8sApiVersion}/rolebindings`, data: roleBinding });
   };
 
-  public deleteRoleBindings = async (namespace: string, bindingName: string) => {
+  public updateRoleBinding = async (roleBinding: RoleBindingContent) => {
+    await axiosRequest({ method: "put", url: `/${K8sApiVersion}/rolebindings`, data: roleBinding });
+  };
+
+  public deleteRoleBinding = async (namespace: string, bindingName: string) => {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/rolebindings/` + namespace + "/" + bindingName });
-  };
-
-  public getServiceAccountSecret = async (name: string) => {
-    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/serviceaccounts/` + name });
-    return res.data;
   };
 
   // certificate
@@ -408,6 +407,16 @@ export default class RealApi extends Api {
   };
 }
 
+export const IMPERSONATION_KEY = "KALM_IMPERSONATION";
+
+export const impersonate = (subject: string) => {
+  window.localStorage.setItem(IMPERSONATION_KEY, subject);
+};
+
+export const stopImpersonating = () => {
+  window.localStorage.removeItem(IMPERSONATION_KEY);
+};
+
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
 export const K8sApiVersion = process.env.REACT_APP_K8S_API_VERSION;
 export const k8sWsPrefix = !K8sApiPrefix
@@ -420,6 +429,12 @@ const getAxiosClient = (withHeaderToken: boolean) => {
 
   if (withHeaderToken && token) {
     headers.Authorization = `Bearer ${token}`;
+  }
+
+  const impersonation = window.localStorage.getItem(IMPERSONATION_KEY);
+
+  if (!!impersonation) {
+    headers["Kalm-Impersonation"] = impersonation!;
   }
 
   const instance = Axios.create({

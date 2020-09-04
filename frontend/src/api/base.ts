@@ -5,7 +5,7 @@ import {
   ApplicationComponentDetails,
   ApplicationDetails,
   ApplicationPlugin,
-  ComponentPlugin,
+  ComponentPlugin
 } from "types/application";
 import { LoginStatus } from "types/authorization";
 import {
@@ -14,7 +14,7 @@ import {
   CertificateIssuer,
   CertificateIssuerFormType,
   CertificateIssuerList,
-  CertificateList,
+  CertificateList
 } from "types/certificate";
 import { ClusterInfo, InitializeClusterResponse } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
@@ -22,9 +22,9 @@ import { Node, NodesListResponse } from "types/node";
 import { RegistryType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
-import { RoleBinding, RoleBindingsRequestBody } from "types/user";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { DeployKey } from "types/deployKey";
+import { RoleBinding, RoleBindingContent } from "types/member";
 
 export abstract class Api {
   public abstract getClusterInfo(): Promise<ClusterInfo>;
@@ -106,13 +106,13 @@ export abstract class Api {
   public abstract deletePod(namespace: string, name: string): Promise<any>;
 
   // RoleBindings
-  public abstract loadRolebindings(): Promise<Immutable.List<RoleBinding>>;
+  public abstract loadRoleBindings(): Promise<Immutable.List<RoleBinding>>;
 
-  public abstract createRoleBindings(roleBindingRequestBody: RoleBindingsRequestBody): Promise<void>;
+  public abstract createRoleBinding(roleBinding: RoleBindingContent): Promise<void>;
 
-  public abstract deleteRoleBindings(namespace: string, bindingName: string): Promise<void>;
+  public abstract updateRoleBinding(roleBinding: RoleBindingContent): Promise<void>;
 
-  public abstract getServiceAccountSecret(name: string): any;
+  public abstract deleteRoleBinding(namespace: string, bindingName: string): Promise<void>;
 
   // certificate
   public abstract getCertificateList(): Promise<CertificateList>;

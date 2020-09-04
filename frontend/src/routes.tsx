@@ -38,6 +38,8 @@ import { DeployKeyDetailPage } from "pages/CI/Detail";
 import { RouteRedirectList } from "pages/Route/Redirect";
 import { SystemPage } from "pages/System";
 import { SetupPage } from "pages/Setup";
+import { RolesListPage } from "pages/Members";
+import { MemberNewPage } from "pages/Members/New";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -88,6 +90,10 @@ export const KalmRoutes = (
           <Route exact path="/applications/:applicationName/components/new" component={ComponentNewPage} />
           <Route exact path="/applications/:applicationName/components/:name" component={ComponentShowPage} />
           <Route exact path="/applications/:applicationName/components/:name/edit" component={ComponentEditPage} />
+
+          <Route exact path="/applications/:applicationName/members" component={RolesListPage} />
+          <Route exact path="/applications/:applicationName/members/new" component={MemberNewPage} />
+          <Route exact path="/applications/:applicationName/members/:name/edit" component={RolesListPage} />
 
           <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(Log)} />
           <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(Log)} />

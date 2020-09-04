@@ -7,6 +7,7 @@ import { Disk } from "./disk";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { DeployKey } from "types/deployKey";
 import { Service } from "types/service";
+import { RoleBinding } from "types/member";
 
 export const WATCHED_RESOURCE_CHANGE = "WATCHED_RESOURCE_CHANGE";
 
@@ -25,6 +26,7 @@ export const RESOURCE_TYPE_SSO = "SingleSignOnConfig";
 export const RESOURCE_TYPE_PROTECTED_ENDPOINT = "ProtectedEndpoint";
 export const RESOURCE_TYPE_DEPLOY_KEY = "DeployKey";
 export const RESOURCE_TYPE_SERVICE = "Service";
+export const RESOURCE_TYPE_ROLE_BINDING = "RoleBinding";
 
 export type ResourceActionType =
   | typeof RESOURCE_ACTION_UPDATE
@@ -132,6 +134,15 @@ export interface ServiceResourceAction {
   };
 }
 
+export interface RoleBindingResourceAction {
+  type: typeof WATCHED_RESOURCE_CHANGE;
+  kind: typeof RESOURCE_TYPE_ROLE_BINDING;
+  payload: {
+    action: ResourceActionType;
+    data: RoleBinding;
+  };
+}
+
 export type ResourceActions =
   | NodeResourceAction
   | ApplicationResourceAction
@@ -143,4 +154,5 @@ export type ResourceActions =
   | SSOConfigResourceAction
   | ProtectedEndpointResourceAction
   | DeployKeyResourceAction
-  | ServiceResourceAction;
+  | ServiceResourceAction
+  | RoleBindingResourceAction;

@@ -76,7 +76,8 @@ const stringConstants = {
     "Add a Route to allow external requests to access your Application. You can use Routes to specify how hosts and paths map to components, configure HTTPS, and setup canary or blue-green deployments.",
   NEW_APP_BUTTON: "Create App",
   CERT_AUTO: "Automatic Certification with Let's Encrypt",
-  CERT_AUTO_DESC: "Use a certificate signed by Let's Encrypt. Safe and fast. Renewing and updating are fully-automatic.",
+  CERT_AUTO_DESC:
+    "Use a certificate signed by Let's Encrypt. Safe and fast. Renewing and updating are fully-automatic.",
   CERT_UPLOAD: "Use an existing certificate",
   CERT_UPLOAD_DESC: "Use an existing certificate. You are responsible for renewal.",
   NODES_INFO_BOX_TEXT:
@@ -104,6 +105,7 @@ const stringConstants = {
   APP_TUTORIAL_TOOLTIPS: "Toggle tutorial",
   APP_AUTH_TOOLTIPS: "Auth menu",
   APP_DASHBOARD_PAGE_NAME: "Dashboard",
+  APP_MEMBERS_PAGE_NAME: "Members",
   PROTECTED_ENDPOINT_PORT:
     "Select the ports you want to protect. Leave blank to protected any ports of the selected component.",
   PROTECTED_ENDPOINT_SPECIFIC_GROUPS:

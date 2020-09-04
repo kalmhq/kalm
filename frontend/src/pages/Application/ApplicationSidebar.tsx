@@ -7,7 +7,7 @@ import { NavLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { blinkTopProgressAction } from "actions/settings";
-import { DashboardIcon, KalmComponentsIcon } from "widgets/Icon";
+import { DashboardIcon, KalmComponentsIcon, PeopleIcon } from "widgets/Icon";
 import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
@@ -67,7 +67,12 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
         to: "/applications/" + activeNamespaceName + "/components",
         icon: <KalmComponentsIcon />,
       },
-
+      {
+        text: sc.APP_MEMBERS_PAGE_NAME,
+        to: "/applications/" + activeNamespaceName + "/members",
+        highlightWhenExact: true,
+        icon: <PeopleIcon />,
+      },
       {
         text: sc.APP_DASHBOARD_PAGE_NAME,
         to: "/applications/" + activeNamespaceName + "/metrics",
