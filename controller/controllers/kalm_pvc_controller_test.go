@@ -66,7 +66,7 @@ func (suite *KalmVolumeControllerSuite) TestPVCIsLabeled() {
 		return err == nil
 	})
 
-	suite.Equal(component.Namespace, pvc.Labels[KalmLabelNamespaceKey])
+	suite.Equal(component.Namespace, pvc.Labels[KalmLabelComponentNSKey])
 	suite.Equal(component.Name, pvc.Labels[KalmLabelComponentKey])
 	suite.Equal("true", pvc.Labels[KalmLabelManaged])
 }
@@ -108,9 +108,9 @@ func (suite *KalmVolumeControllerSuite) TestDeletePVCWillRemoveClaimRefInBoundin
 			Name:      pvcName,
 			Namespace: suite.ns.Name,
 			Labels: map[string]string{
-				KalmLabelNamespaceKey: suite.ns.Namespace,
-				KalmLabelComponentKey: "comp-not-exist",
-				KalmLabelManaged:      "true",
+				KalmLabelComponentNSKey: suite.ns.Namespace,
+				KalmLabelComponentKey:   "comp-not-exist",
+				KalmLabelManaged:        "true",
 			},
 		},
 		Spec: coreV1.PersistentVolumeClaimSpec{
@@ -202,9 +202,9 @@ func (suite *KalmVolumeControllerSuite) TestDeletePVCWillRemovePVWithCleanLabel(
 			Name:      pvcName,
 			Namespace: suite.ns.Name,
 			Labels: map[string]string{
-				KalmLabelNamespaceKey: suite.ns.Namespace,
-				KalmLabelComponentKey: "comp-not-exist",
-				KalmLabelManaged:      "true",
+				KalmLabelComponentNSKey: suite.ns.Namespace,
+				KalmLabelComponentKey:   "comp-not-exist",
+				KalmLabelManaged:        "true",
 			},
 		},
 		Spec: coreV1.PersistentVolumeClaimSpec{

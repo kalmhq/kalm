@@ -27,7 +27,8 @@ import (
 )
 
 const (
-	KalmLabelPV                   = "kalm-pv"
+	KalmLabelPV = "kalm-pv"
+	//KalmLabelPVLocker             = "kalm-pv-locker"
 	KalmLabelManaged              = "kalm-managed"
 	KalmLabelVolClaimTemplateName = "kalm-vol-claim-template-name"
 )
@@ -96,7 +97,7 @@ func (r *KalmPVCReconciler) reconcileForPVCOwnerChange(pvc corev1.PersistentVolu
 			}
 
 			copiedPVC.Labels[KalmLabelComponentKey] = expectedComp
-			copiedPVC.Labels[KalmLabelNamespaceKey] = expectedNS
+			copiedPVC.Labels[KalmLabelComponentNSKey] = expectedNS
 			copiedPVC.Labels[KalmLabelManaged] = "true"
 
 			err := r.Update(r.ctx, copiedPVC)

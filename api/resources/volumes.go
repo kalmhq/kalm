@@ -347,7 +347,7 @@ func GetCapacityOfPV(pv coreV1.PersistentVolume) string {
 
 func GetComponentNameAndNsFromObjLabels(metaObj metav1.Object) (compName, compNamespace string) {
 	compName = metaObj.GetLabels()[controllers.KalmLabelComponentKey]
-	compNamespace = metaObj.GetLabels()[controllers.KalmLabelNamespaceKey]
+	compNamespace = metaObj.GetLabels()[controllers.KalmLabelComponentNSKey]
 
 	return
 }

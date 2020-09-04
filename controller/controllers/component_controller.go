@@ -49,7 +49,9 @@ import (
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
 
-const AnnoLastUpdatedByWebhook = "last-updated-by-webhook"
+const (
+	AnnoLastUpdatedByWebhook = "last-updated-by-webhook"
+)
 
 // ComponentReconciler reconciles a Component object
 type ComponentReconciler struct {
@@ -245,15 +247,18 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 }
 
 const (
-	KalmLabelComponentKey = "kalm-component"
-	KalmLabelNamespaceKey = "kalm-namespace"
+	KalmLabelComponentKey   = "kalm-component"
+	KalmLabelComponentNSKey = "kalm-component-namespace"
 )
 
 func (r *ComponentReconcilerTask) GetLabels() map[string]string {
 	res := map[string]string{
-		KalmLabelNamespaceKey: r.namespace.Name,
-		KalmLabelComponentKey: r.component.Name,
-		KalmLabelManaged:      "true",
+		// deprecated
+		"kalm-namespace": r.component.Namespace,
+
+		KalmLabelComponentNSKey: r.component.Namespace,
+		KalmLabelComponentKey:   r.component.Name,
+		KalmLabelManaged:        "true",
 	}
 
 	if r.component.Spec.Labels != nil {
@@ -676,7 +681,7 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 	ctx := r.ctx
 	deployment := r.deployment
 	isNewDeployment := false
-	labelMap := r.GetLabels()
+	labelMap := podTemplateSpec.Labels //r.GetLabels()
 	annotations := r.GetAnnotations()
 
 	if deployment == nil {
@@ -722,27 +727,6 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 		deployment.Spec.Replicas = nil
 	}
 
-	//if len(component.Ports) > 0 {
-	//	var ports []coreV1.ContainerPort
-	//	for _, p := range component.Ports {
-	//		ports = append(ports, coreV1.ContainerPort{
-	//			Name:          p.Name,
-	//			ContainerPort: int32(p.ContainerPort),
-	//			Protocol:      p.Protocol,
-	//		})
-	//	}
-	//}
-
-	// apply plugins
-	//for _, pluginDef := range component.Spec.Plugins {
-	//	plugin := corev1alpha1.GetPlugin(pluginDef)
-	//
-	//	switch p := plugin.(type) {
-	//	case *corev1alpha1.PluginManualScaler:
-	//		p.Operate(deployment)
-	//	}
-	//}
-
 	if err := ctrl.SetControllerReference(component, deployment, r.Scheme); err != nil {
 		r.WarningEvent(err, "unable to set owner for deployment")
 		return err
@@ -768,16 +752,6 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 
 		r.NormalEvent("DeploymentUpdated", deployment.Name+" is updated.")
 	}
-
-	// apply plugins
-	//for _, pluginDef := range app.Spec.Components[0].Plugins {
-	//	plugin := corev1alpha1.GetPlugin(pluginDef)
-	//
-	//	switch p := plugin.(type) {
-	//	case *corev1alpha1.PluginManualScaler:
-	//		p.Operate(deployment)
-	//	}
-	//}
 
 	return nil
 }
@@ -1982,7 +1956,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 
 					// expectation: PVToMatch only need to be set when try to re-use pv from other ns,
 					//   and pv's claimPolicy should be Retain (to make deletion of PVC safe)
-					if err := r.reconcilePVForReUse(r.ctx, *expectedPVC, disk.PVToMatch); err != nil {
+					if err := r.reconcilePVForReUse(*expectedPVC, disk.PVToMatch); err != nil {
 						return err
 					}
 				}
@@ -2027,14 +2001,18 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 }
 
 // 2. diff ns pv reuse, remove old pvc, clean ref in pv
-func (r *ComponentReconcilerTask) reconcilePVForReUse(ctx context.Context, pvc coreV1.PersistentVolumeClaim, pvName string) error {
-	// 1. same ns pv reuse, pvc name should be same
+func (r *ComponentReconcilerTask) reconcilePVForReUse(
+	pvc coreV1.PersistentVolumeClaim,
+	pvName string,
+) error {
+
+	// pvc is using this pv, nothing need to be done
 	if pvc.Spec.VolumeName == pvName {
 		return nil
 	}
 
 	var pv coreV1.PersistentVolume
-	if err := r.Get(ctx, types.NamespacedName{Name: pvName}, &pv); err != nil {
+	if err := r.Get(r.ctx, types.NamespacedName{Name: pvName}, &pv); err != nil {
 		return err
 	}
 
@@ -2049,12 +2027,12 @@ func (r *ComponentReconcilerTask) reconcilePVForReUse(ctx context.Context, pvc c
 	ownerName := pv.Spec.ClaimRef.Name
 
 	var ownerPVC coreV1.PersistentVolumeClaim
-	err := r.Get(ctx, types.NamespacedName{Name: ownerName, Namespace: ownerNs}, &ownerPVC)
+	err := r.Get(r.ctx, types.NamespacedName{Name: ownerName, Namespace: ownerNs}, &ownerPVC)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			cleanPVToBeAvailable(&pv)
 
-			if err := r.Update(ctx, &pv); err != nil {
+			if err := r.Update(r.ctx, &pv); err != nil {
 				return nil
 			}
 		} else {
@@ -2071,7 +2049,7 @@ func (r *ComponentReconcilerTask) reconcilePVForReUse(ctx context.Context, pvc c
 			)
 		} else {
 			// check if ownerPVC is being used
-			if isInUse, err := r.pvcIsInUsed(ctx, ownerPVC); err != nil {
+			if isInUse, err := r.pvcIsInUsed(ownerPVC); err != nil {
 				return err
 			} else if isInUse {
 				// pvc in use, nothing we can do but warning the user
@@ -2083,12 +2061,12 @@ func (r *ComponentReconcilerTask) reconcilePVForReUse(ctx context.Context, pvc c
 				)
 			} else {
 				// delete ownerPVC
-				if err := r.Delete(ctx, &ownerPVC); err != nil {
+				if err := r.Delete(r.ctx, &ownerPVC); err != nil {
 					return err
 				}
 
 				cleanPVToBeAvailable(&pv)
-				if err := r.Update(ctx, &pv); err != nil {
+				if err := r.Update(r.ctx, &pv); err != nil {
 					return nil
 				}
 			}
@@ -2105,9 +2083,9 @@ func cleanPVToBeAvailable(pv *coreV1.PersistentVolume) {
 	delete(pv.Labels, KalmLabelCleanIfPVCGone)
 }
 
-func (r *ComponentReconcilerTask) pvcIsInUsed(ctx context.Context, pvc coreV1.PersistentVolumeClaim) (bool, error) {
+func (r *ComponentReconcilerTask) pvcIsInUsed(pvc coreV1.PersistentVolumeClaim) (bool, error) {
 	var podList coreV1.PodList
-	err := r.List(ctx, &podList, client.InNamespace(pvc.Namespace))
+	err := r.List(r.ctx, &podList, client.InNamespace(pvc.Namespace))
 	if errors.IsNotFound(err) {
 		return false, err
 	}
