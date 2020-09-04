@@ -51,6 +51,7 @@ import (
 
 const (
 	AnnoLastUpdatedByWebhook = "last-updated-by-webhook"
+	ControllerComponent      = "controller-component"
 )
 
 // ComponentReconciler reconciles a Component object
@@ -752,6 +753,8 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 
 		r.NormalEvent("DeploymentUpdated", deployment.Name+" is updated.")
 	}
+
+
 
 	return nil
 }
@@ -2066,6 +2069,8 @@ func (r *ComponentReconcilerTask) reconcilePVForReUse(
 				}
 
 				cleanPVToBeAvailable(&pv)
+				pv.Labels[KalmLabelPVLocker] = ControllerComponent
+
 				if err := r.Update(r.ctx, &pv); err != nil {
 					return nil
 				}

@@ -35,6 +35,8 @@ type KalmPVReconciler struct {
 
 const (
 	KalmLabelCleanIfPVCGone = "clean-if-claimed-pvc-gone"
+	KalmLabelPVLocker       = "kalm-pv-locker"
+	ControllerKalmPV        = "controller-kalm-pv"
 )
 
 // this controller's task is to ensure all Kalm PVs are labeled with kalm-pv
@@ -172,6 +174,9 @@ func (r *KalmPVReconciler) reconcilePV(pvName string) error {
 	// to be selectable by PV
 	pv.Labels[KalmLabelPV] = pv.Name
 
+	// bounded pvc exist, safe to clean locker label
+	delete(pv.Labels, KalmLabelPVLocker)
+
 	if err := r.Update(r.ctx, &pv); err != nil {
 		return err
 	}
@@ -258,6 +263,12 @@ func (r *KalmPVReconciler) reconcileOrphanPVs(kalmPVList corev1.PersistentVolume
 func (r *KalmPVReconciler) reconcileOrphanPV(orphanPV *corev1.PersistentVolume) error {
 	if orphanPV.Labels[KalmLabelManaged] != "true" ||
 		orphanPV.Labels[KalmLabelCleanIfPVCGone] != "" {
+		return nil
+	}
+
+	locker := orphanPV.Labels[KalmLabelPVLocker]
+	// locker of pv exist, ignored
+	if locker != "" && locker != ControllerKalmPV {
 		return nil
 	}
 
