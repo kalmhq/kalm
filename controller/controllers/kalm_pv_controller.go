@@ -258,7 +258,9 @@ func (r *KalmPVReconciler) reconcileOrphanPV(orphanPV *corev1.PersistentVolume) 
 			Name:      pvcName,
 			Namespace: NamespaceKalmSystem,
 			Labels: map[string]string{
-				KalmLabelManaged: "true",
+				KalmLabelManaged:        "true",
+				KalmLabelComponentKey:   orphanPV.Labels[KalmLabelComponentKey],
+				KalmLabelComponentNSKey: orphanPV.Labels[KalmLabelComponentNSKey],
 			},
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{
@@ -271,7 +273,7 @@ func (r *KalmPVReconciler) reconcileOrphanPV(orphanPV *corev1.PersistentVolume) 
 			StorageClassName: &orphanPV.Spec.StorageClassName,
 			Selector: &metaV1.LabelSelector{
 				MatchLabels: map[string]string{
-					KalmLabelPV:             orphanPV.Name,
+					KalmLabelPV: orphanPV.Name,
 				},
 			},
 		},
