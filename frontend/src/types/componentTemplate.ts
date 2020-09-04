@@ -21,7 +21,7 @@ export interface ComponentLikeFormContent
     ComponentLikeContent,
     "env" | "preInjectedFiles" | "ports" | "volumes" | "nodeSelectorLabels" | "livenessProbe" | "readinessProbe"
   > {
-  env?: ComponentLikeEnv[];
+  env?: ComponentLikeEnvContent[];
   preInjectedFiles?: PreInjectedFileContent[];
   ports?: ComponentLikePortContent[];
   volumes?: VolumeContent[];
@@ -30,11 +30,13 @@ export interface ComponentLikeFormContent
   readinessProbe?: ProbeContent;
 }
 
-export type ComponentLikeEnv = ImmutableMap<{
+export interface ComponentLikeEnvContent {
   name: string;
   type: string;
   value: string;
-}>;
+}
+
+export type ComponentLikeEnv = ImmutableMap<ComponentLikeEnvContent>;
 
 export type PortProtocol = string;
 

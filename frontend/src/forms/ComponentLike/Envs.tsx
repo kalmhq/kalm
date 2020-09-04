@@ -2,9 +2,8 @@ import { Box, Button, Fade, Grid } from "@material-ui/core";
 import { FastField, FieldArray, FieldArrayRenderProps, getIn } from "formik";
 import { TextField as FormikTextField } from "formik-material-ui";
 import React from "react";
-import { connect } from "react-redux";
 import { SharedEnv } from "types/application";
-import { ComponentLikeEnv } from "types/componentTemplate";
+import { ComponentLikeEnvContent } from "types/componentTemplate";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorEnvName, ValidatorRequired } from "../validator";
@@ -47,7 +46,7 @@ class RenderEnvs extends React.PureComponent<Props> {
           </Box>
         ) : null} */}
         {getIn(values, name) &&
-          getIn(values, name).map((env: ComponentLikeEnv, index: number) => {
+          getIn(values, name).map((env: ComponentLikeEnvContent, index: number) => {
             return (
               <Fade in key={index}>
                 <Grid container spacing={2}>
@@ -120,6 +119,6 @@ const ValidatorEnvs = (values: SharedEnv[]) => {
   }
 };
 
-export const Envs = connect()((props: any) => {
+export const Envs = (props: any) => {
   return <FieldArray name="env" component={RenderEnvs} validate={ValidatorEnvs} {...props} />;
-});
+};

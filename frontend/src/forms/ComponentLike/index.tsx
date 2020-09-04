@@ -542,7 +542,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderScheduling() {
-    const { nodeLabels, classes } = this.props;
+    const { nodeLabels, classes, values, setFieldValue } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
@@ -564,7 +564,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
             }}
             parse={(value: any) => {
-              return !value ? "" : value + "m";
+              return !value ? undefined : value + "m";
             }}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
@@ -591,7 +591,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               return !value ? "" : sizeStringToMi(value);
             }}
             parse={(value: any) => {
-              return !value ? "" : value + "Mi";
+              return !value ? undefined : value + "Mi";
             }}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
@@ -617,7 +617,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
             }}
             parse={(value: any) => {
-              return !value ? "" : value + "m";
+              return !value ? undefined : value + "m";
             }}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
@@ -644,7 +644,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               return !value ? "" : sizeStringToMi(value);
             }}
             parse={(value: any) => {
-              return !value ? "" : value + "Mi";
+              return !value ? undefined : value + "Mi";
             }}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
@@ -673,6 +673,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="preferNotCoLocated"
             component={KFormikBoolCheckboxRender}
             label={sc.SCHEDULING_COLOCATE_CHECKBOX}
+            value={values.preferNotCoLocated}
+            onChange={(v: boolean) => {
+              setFieldValue("preferNotCoLocated", v);
+            }}
           />
         </Grid>
         {/* <Grid item xs={6}>
@@ -1001,6 +1005,7 @@ const form = withFormik<
   ComponentLikeFormContent
 >({
   mapPropsToValues: (props) => props._initialValues,
+  enableReinitialize: true,
   validate: formikValidateOrNotBlockByTutorial,
   handleSubmit: async (formValues, { props: { onSubmit } }) => {
     await onSubmit(formValues);

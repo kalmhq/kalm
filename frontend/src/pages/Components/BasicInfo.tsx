@@ -35,7 +35,7 @@ import { push } from "connected-react-router";
 import clsx from "clsx";
 import { SecretValueLabel } from "widgets/Label";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
-import { sizeStringToMi } from "utils/sizeConv";
+import { sizeStringToMi, sizeStringToGi } from "utils/sizeConv";
 import stringConsts from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
@@ -450,7 +450,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
                     <TableCell>{disk.get("pvc")}</TableCell>
                     <TableCell>{disk.get("storageClassName")}</TableCell>
                     <TableCell>{disk.get("path")}</TableCell>
-                    <TableCell>{disk.get("size")}</TableCell>
+                    <TableCell>{`${sizeStringToGi(disk.get("size"))}Gi`}</TableCell>
                   </TableRow>
                 );
               })}
