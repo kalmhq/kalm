@@ -1,12 +1,12 @@
 import { Box, Button, Fade, Grid } from "@material-ui/core";
 import { FastField, FieldArray, FieldArrayRenderProps, getIn } from "formik";
-import { TextField as FormikTextField } from "formik-material-ui";
 import React from "react";
 import { SharedEnv } from "types/application";
 import { ComponentLikeEnvContent } from "types/componentTemplate";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorEnvName, ValidatorRequired } from "../validator";
+import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
 
 interface Props extends FieldArrayRenderProps {}
 
@@ -54,7 +54,7 @@ class RenderEnvs extends React.PureComponent<Props> {
                     <FastField
                       name={`${name}.${index}.name`}
                       label="Name"
-                      component={FormikTextField}
+                      component={KRenderDebounceFormikTextField}
                       validate={nameValidators}
                       InputLabelProps={{
                         shrink: true,
@@ -72,7 +72,7 @@ class RenderEnvs extends React.PureComponent<Props> {
                       name={`${name}.${index}.value`}
                       label="Value"
                       validate={ValidatorRequired}
-                      component={FormikTextField}
+                      component={KRenderDebounceFormikTextField}
                       InputLabelProps={{
                         shrink: true,
                       }}
