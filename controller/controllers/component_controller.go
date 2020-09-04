@@ -286,13 +286,13 @@ func GetPodSecurityContextFromAnnotation(annotations map[string]string) *coreV1.
 	annotationFound := false
 
 	for k, v := range annotations {
-		if !strings.HasPrefix(k, "core.kalm.dev/podExt/securityContext") {
+		if !strings.HasPrefix(k, "core.kalm.dev/podExt-securityContext-") {
 			continue
 		}
 
 		annotationFound = true
 
-		rest := strings.TrimPrefix(k, "core.kalm.dev/podExt/securityContext")
+		rest := strings.TrimPrefix(k, "core.kalm.dev/podExt-securityContext-")
 
 		switch rest {
 		case "runAsGroup":
