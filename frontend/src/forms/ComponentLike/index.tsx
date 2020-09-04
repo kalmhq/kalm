@@ -695,8 +695,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={8}>
-          <FastField
-            component={KFormikRadioGroupRender}
+          <KFormikRadioGroupRender
             onChange={this.props.handleChange}
             name="restartStrategy"
             value={this.props.values.restartStrategy || "RollingUpdate"}

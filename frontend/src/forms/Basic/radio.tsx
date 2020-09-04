@@ -32,7 +32,7 @@ export const KFormikRadioGroupRender = ({
   return (
     <FormControl component="fieldset" fullWidth margin="dense" error={error}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}
-      <RadioGroup aria-label="gender" name={name || "gender1"} value={value || options[0].value} onChange={onChange}>
+      <RadioGroup aria-label={name} name={name} value={value || options[0].value} onChange={onChange}>
         {options.map((option) => {
           return (
             <span key={option.value}>
