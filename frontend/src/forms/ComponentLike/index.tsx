@@ -210,7 +210,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     if (workloadType === workloadTypeServer || workloadType === workloadTypeStatefulSet) {
       return (
         <FastField
-          component={RenderFormikComplexValueTextField}
+          component={KRenderDebounceFormikTextField}
           validate={ValidatorNaturalNumber}
           name="replicas"
           margin

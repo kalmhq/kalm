@@ -3,7 +3,6 @@ import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
 import { FastField, FieldArray, FieldArrayRenderProps, FieldProps, getIn } from "formik";
-import { TextField as FormikTextField } from "formik-material-ui";
 import { KFormikCheckbox } from "forms/Basic/checkbox";
 import React from "react";
 import { connect } from "react-redux";
@@ -15,6 +14,7 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Label } from "widgets/Label";
 import { RichEdtor } from "widgets/RichEditor";
 import { KValidatorInjectedFilePath, ValidatorRequired } from "../validator";
+import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
 
 interface State {
   editingFileIndex: number;
@@ -100,7 +100,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
             <FastField
               name={`preInjectedFiles.${editingFileIndex}.mountPathTmp`}
               label="Mount Path"
-              component={FormikTextField}
+              component={KRenderDebounceFormikTextField}
               validate={validateMountPath}
               InputLabelProps={{
                 shrink: true,
