@@ -25,7 +25,6 @@ import { Disks } from "forms/ComponentLike/Disks";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
 import Immutable from "immutable";
 import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
-import queryString from "qs";
 import React from "react";
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
@@ -95,9 +94,8 @@ const Deploy = "Deployment Strategy";
 const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy];
 
 const mapStateToProps = (state: RootState) => {
-  const nodeLabels = getNodeLabels(state);
+  const nodeLabels = getNodeLabels(state).toArray();
 
-  const search = queryString.parse(window.location.search.replace("?", ""));
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");
   let currentTabIndex = tabs.map((t) => t.replace(/\s/g, "")).indexOf(`${anchor}`);
@@ -108,7 +106,6 @@ const mapStateToProps = (state: RootState) => {
   return {
     registries: state.get("registries").get("registries"),
     tutorialState: state.get("tutorial"),
-    search,
     isSubmittingApplicationComponent: state.get("components").get("isSubmittingApplicationComponent"),
     nodeLabels,
     currentTabIndex,
@@ -669,7 +666,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <Field name="nodeSelectorLabels" component={KFormikRenderSelectLabels} nodeLabels={nodeLabels.toArray()} />
+          <Field name="nodeSelectorLabels" component={KFormikRenderSelectLabels} nodeLabels={nodeLabels} />
         </Grid>
         <Grid item xs={12}>
           <Field
