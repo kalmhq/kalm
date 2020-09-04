@@ -93,7 +93,7 @@ func (c *Client) read() {
 		_ = json.Unmarshal(messageBytes, &reqMessage)
 
 		if c.ClientInfo == nil {
-			clientInfo, err := c.K8sClientManager.GetClientInfoFromToken(reqMessage.Token)
+			clientInfo, err := c.K8sClientManager.GetClientInfoFromToken(reqMessage.Token, "")
 
 			if err != nil {
 				log.Error(err, "new config error")

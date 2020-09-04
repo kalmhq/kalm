@@ -92,6 +92,16 @@ func GetPoliciesFromAccessToken(accessToken *resources.AccessToken) [][]string {
 	return res
 }
 
+func roleValueToPolicyValue(role, ns string) string {
+	switch role {
+	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
+		return "role_" + role
+	default:
+		return fmt.Sprintf("role_%s%s", ns, strings.ToUpper(role[:1])+role[1:])
+	}
+
+}
+
 func (m *StandardClientManager) UpdatePolicies() {
 	var sb strings.Builder
 
@@ -131,18 +141,11 @@ func (m *StandardClientManager) UpdatePolicies() {
 		}
 
 		sb.WriteString(fmt.Sprintf("# policies for rolebinding %s\n", roleBinding.Name))
-
-		var role string
-
-		if roleBinding.Spec.Role == v1alpha1.ClusterRoleViewer ||
-			roleBinding.Spec.Role == v1alpha1.ClusterRoleEditor ||
-			roleBinding.Spec.Role == v1alpha1.ClusterRoleOwner {
-			role = roleBinding.Spec.Role
-		} else {
-			role = fmt.Sprintf("role_%s%s", roleBinding.Namespace, roleBinding.Spec.Role)
-		}
-
-		sb.WriteString(fmt.Sprintf("g, %s, %s\n", ToSafeSubject(roleBinding.Spec.Subject), role))
+		sb.WriteString(fmt.Sprintf(
+			"g, %s, %s\n",
+			ToSafeSubject(roleBinding.Spec.Subject),
+			roleValueToPolicyValue(roleBinding.Spec.Role, roleBinding.Namespace)),
+		)
 	}
 
 	m.PolicyAdapter.SetPoliciesString(sb.String())
@@ -157,7 +160,7 @@ func (m *StandardClientManager) GetDefaultClusterConfig() *rest.Config {
 	return m.ClusterConfig
 }
 
-func (m *StandardClientManager) GetClientInfoFromToken(tokenString string) (*ClientInfo, error) {
+func (m *StandardClientManager) GetClientInfoFromToken(tokenString, impersonation string) (*ClientInfo, error) {
 	m.mut.RLock()
 	defer m.mut.RUnlock()
 
@@ -171,13 +174,20 @@ func (m *StandardClientManager) GetClientInfoFromToken(tokenString string) (*Cli
 		return nil, errors.NewUnauthorized("access token is expired")
 	}
 
-	return &ClientInfo{
+	clientInfo := &ClientInfo{
 		Cfg:           m.ClusterConfig,
 		Name:          accessToken.Name,
 		Email:         accessToken.Name,
 		EmailVerified: false,
 		Groups:        []string{},
-	}, nil
+	}
+
+	// Only cluster manager can impersonate
+	if impersonation != "" && m.CanManageCluster(clientInfo) {
+		clientInfo.Impersonation = impersonation
+	}
+
+	return clientInfo, nil
 }
 
 func (m *StandardClientManager) GetConfigForClientRequestContext(c echo.Context) (*ClientInfo, error) {
@@ -185,7 +195,7 @@ func (m *StandardClientManager) GetConfigForClientRequestContext(c echo.Context)
 
 	// If the Authorization Header is not empty, use the bearer token as k8s token.
 	if token := extractAuthTokenFromClientRequestContext(c); token != "" {
-		return m.GetClientInfoFromToken(token)
+		return m.GetClientInfoFromToken(token, c.Request().Header.Get(("Kalm-Impersonation")))
 	}
 
 	// And the kalm-sso-userinfo header is not empty.
@@ -205,10 +215,15 @@ func (m *StandardClientManager) GetConfigForClientRequestContext(c echo.Context)
 			return nil, err
 		}
 
-		// Use cluster config permission
-		// TODO permissions based on group and email
-		// For current version, anyone that is verified through sso is treated as an admin.
 		clientInfo.Cfg = m.ClusterConfig
+
+		// Only cluster manager can impersonate
+		impersonation := clientInfo.Impersonation
+		clientInfo.Impersonation = ""
+
+		if impersonation != "" && m.CanManageCluster(&clientInfo) {
+			clientInfo.Impersonation = impersonation
+		}
 
 		return &clientInfo, nil
 	}

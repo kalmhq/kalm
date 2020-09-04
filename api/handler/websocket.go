@@ -227,7 +227,7 @@ func wsReadLoop(conn *WSConn, clientManager client.ClientManager) (err error) {
 				continue
 			}
 
-			if clientInfo, err := clientManager.GetClientInfoFromToken(m.AuthToken); err != nil {
+			if clientInfo, err := clientManager.GetClientInfoFromToken(m.AuthToken, ""); err != nil {
 				k8sClient, err := kubernetes.NewForConfig(clientInfo.Cfg)
 
 				if err != nil {

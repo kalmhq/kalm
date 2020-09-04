@@ -75,7 +75,7 @@ func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
 
 func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	e.GET("/ping", handlePing)
-	e.GET("/policies", h.handlePolicies)
+	e.GET("/policies", h.handlePolicies, h.AuthClientMiddleware)
 
 	// watch
 	wsHandler := ws.NewWsHandler(h.clientManager)
@@ -125,6 +125,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	gv1Alpha1WithAuth.GET("/rolebindings", h.handleListRoleBindings)
 	gv1Alpha1WithAuth.POST("/rolebindings", h.handleCreateRoleBinding)
+	gv1Alpha1WithAuth.PUT("/rolebindings", h.handleUpdateRoleBinding)
 	gv1Alpha1WithAuth.DELETE("/rolebindings/:namespace/:name", h.handleDeleteRoleBinding)
 
 	gv1Alpha1WithAuth.GET("/serviceaccounts/:name", h.handleGetServiceAccount)

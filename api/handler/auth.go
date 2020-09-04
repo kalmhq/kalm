@@ -19,7 +19,7 @@ type LoginStatusResponse struct {
 func (h *ApiHandler) handleValidateToken(c echo.Context) error {
 	token := auth.ExtractTokenFromHeader(c.Request().Header.Get(echo.HeaderAuthorization))
 
-	_, err := h.clientManager.GetClientInfoFromToken(token)
+	_, err := h.clientManager.GetClientInfoFromToken(token, "")
 
 	if err != nil {
 		return err

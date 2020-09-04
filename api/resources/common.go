@@ -30,7 +30,6 @@ type ResourceChannels struct {
 	PodList                    *PodListChannel
 	EventList                  *EventListChannel
 	ServiceList                *ServiceListChannel
-	RoleBindingList            *RoleBindingListChannel
 	NamespaceList              *NamespaceListChannel
 	ComponentList              *ComponentListChannel
 	ComponentPluginList        *ComponentPluginListChannel
@@ -109,14 +108,6 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 			return nil, err
 		}
 		resources.Services = <-c.ServiceList.List
-	}
-
-	if c.RoleBindingList != nil {
-		err = <-c.RoleBindingList.Error
-		if err != nil {
-			return nil, err
-		}
-		resources.RoleBindings = <-c.RoleBindingList.List
 	}
 
 	if c.NamespaceList != nil {

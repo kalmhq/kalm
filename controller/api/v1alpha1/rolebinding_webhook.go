@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"crypto/md5"
 	"fmt"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -45,10 +46,18 @@ func (r *RoleBinding) Default() {
 
 var _ webhook.Validator = &RoleBinding{}
 
+func (r *RoleBinding) GetNameBaseOnRoleAndSubject() string {
+	switch r.Spec.Role {
+	case ClusterRoleViewer, ClusterRoleEditor, ClusterRoleOwner:
+		return fmt.Sprintf("cluster-rolebinding-%x", md5.Sum([]byte(r.Spec.Subject)))
+	default:
+		return fmt.Sprintf("%s-rolebinding-%x", r.Namespace, md5.Sum([]byte(r.Spec.Subject)))
+	}
+}
+
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *RoleBinding) ValidateCreate() error {
 	rolebindinglog.Info("validate create", "name", r.Name)
-
 	return r.validate()
 }
 
@@ -61,6 +70,24 @@ func (r *RoleBinding) ValidateUpdate(old runtime.Object) error {
 	} else {
 		if r.Spec.Creator != oldRoleBinding.Spec.Creator {
 			return fmt.Errorf("Can't modify creator")
+		}
+
+		if r.Spec.Subject != oldRoleBinding.Spec.Subject {
+			return fmt.Errorf("Can't modify subject")
+		}
+
+		switch oldRoleBinding.Spec.Role {
+		case ClusterRoleOwner, ClusterRoleViewer, ClusterRoleEditor:
+			switch r.Spec.Role {
+			case ClusterRoleOwner, ClusterRoleViewer, ClusterRoleEditor:
+			default:
+				return fmt.Errorf("Can't modify role scope from cluster to namespace.")
+			}
+		default:
+			switch r.Spec.Role {
+			case ClusterRoleOwner, ClusterRoleViewer, ClusterRoleEditor:
+				return fmt.Errorf("Can't modify role scope from namespace to cluster.")
+			}
 		}
 	}
 

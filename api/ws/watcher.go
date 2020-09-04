@@ -35,6 +35,7 @@ func StartWatching(c *Client) {
 	registerWatchHandler(c, &informerCache, &v1alpha1.SingleSignOnConfig{}, buildSSOConfigResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.ProtectedEndpoint{}, buildProtectEndpointResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.AccessToken{}, buildDeployKeyResMessage)
+	registerWatchHandler(c, &informerCache, &v1alpha1.RoleBinding{}, buildRoleBindingResMessage)
 
 	informerCache.Start(c.StopWatcher)
 }
@@ -329,5 +330,23 @@ func buildDeployKeyResMessage(_ *Client, action string, objWatched interface{}) 
 		Kind:   "DeployKey",
 		Action: action,
 		Data:   resources.BuildAccessTokenFromResource(deployKey),
+	}, nil
+}
+
+func buildRoleBindingResMessage(_ *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	roleBinding, ok := objWatched.(*v1alpha1.RoleBinding)
+
+	if !ok {
+		return nil, errors.New("convert watch obj to RoleBinding failed")
+	}
+
+	return &ResMessage{
+		Kind:   "RoleBinding",
+		Action: action,
+		Data: &resources.RoleBinding{
+			Name:            roleBinding.Name,
+			Namespace:       roleBinding.Namespace,
+			RoleBindingSpec: &roleBinding.Spec,
+		},
 	}, nil
 }

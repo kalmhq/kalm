@@ -18,7 +18,7 @@ func (m *FakeClientManager) GetDefaultClusterConfig() *rest.Config {
 	return m.ClusterConfig
 }
 
-func (m *FakeClientManager) GetClientInfoFromToken(token string) (*ClientInfo, error) {
+func (m *FakeClientManager) GetClientInfoFromToken(token, _ string) (*ClientInfo, error) {
 	if token == "" {
 		return nil, errors.NewUnauthorized("No token found in request header")
 	}
@@ -36,7 +36,7 @@ func (m *FakeClientManager) GetClientInfoFromToken(token string) (*ClientInfo, e
 
 func (m *FakeClientManager) GetConfigForClientRequestContext(c echo.Context) (*ClientInfo, error) {
 	token := extractAuthTokenFromClientRequestContext(c)
-	return m.GetClientInfoFromToken(token)
+	return m.GetClientInfoFromToken(token, "")
 }
 
 func ToFakeToken(email string, roles ...string) string {
