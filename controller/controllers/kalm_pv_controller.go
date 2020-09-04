@@ -57,7 +57,7 @@ func (r *KalmPVReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if req.Namespace == NSForPVCChanged {
 		return ctrl.Result{}, r.reconcileForPVCChange()
 	} else {
-		return ctrl.Result{}, r.reconcilePVLabel(req.Name)
+		return ctrl.Result{}, r.reconcilePV(req.Name)
 	}
 }
 
@@ -133,7 +133,7 @@ func (r *KalmPVReconciler) reconcileDeleteOfPVWithSpecialCleanLabel(kalmPVList c
 
 // make sure for each active kalmPVC, underlying kalmPV is labeled with its name
 // (to be selected using selector)
-func (r *KalmPVReconciler) reconcilePVLabel(pvName string) error {
+func (r *KalmPVReconciler) reconcilePV(pvName string) error {
 
 	var pv corev1.PersistentVolume
 	if err := r.Get(r.ctx, client.ObjectKey{Name: pvName}, &pv); err != nil {
@@ -148,7 +148,16 @@ func (r *KalmPVReconciler) reconcilePVLabel(pvName string) error {
 	var pvc corev1.PersistentVolumeClaim
 	err := r.Get(r.ctx, client.ObjectKey{Namespace: claimRef.Namespace, Name: claimRef.Name}, &pvc)
 	if err != nil {
-		return err
+		if errors.IsNotFound(err) {
+			// pvc not exist
+			if pv.Labels[KalmLabelManaged] != "true" {
+				return nil
+			}
+
+			return r.reconcileOrphanPV(&pv)
+		} else {
+			return err
+		}
 	}
 
 	// ignore if pvc is not kalm managed
