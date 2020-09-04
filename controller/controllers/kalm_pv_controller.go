@@ -272,8 +272,6 @@ func (r *KalmPVReconciler) reconcileOrphanPV(orphanPV *corev1.PersistentVolume) 
 			Selector: &metaV1.LabelSelector{
 				MatchLabels: map[string]string{
 					KalmLabelPV:             orphanPV.Name,
-					KalmLabelComponentKey:   orphanPV.Labels[KalmLabelComponentKey],
-					KalmLabelComponentNSKey: orphanPV.Labels[KalmLabelComponentNSKey],
 				},
 			},
 		},
