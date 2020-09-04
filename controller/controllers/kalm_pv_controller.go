@@ -150,10 +150,6 @@ func (r *KalmPVReconciler) reconcilePV(pvName string) error {
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// pvc not exist
-			if pv.Labels[KalmLabelManaged] != "true" {
-				return nil
-			}
-
 			return r.reconcileOrphanPV(&pv)
 		} else {
 			return err
@@ -260,7 +256,14 @@ func (r *KalmPVReconciler) reconcileOrphanPVs(kalmPVList corev1.PersistentVolume
 }
 
 func (r *KalmPVReconciler) reconcileOrphanPV(orphanPV *corev1.PersistentVolume) error {
+	if orphanPV.Labels[KalmLabelManaged] != "true" ||
+		orphanPV.Labels[KalmLabelCleanIfPVCGone] != "" {
+		return nil
+	}
+
 	pvcName := fmt.Sprintf("pvc-orphan-%s", orphanPV.Name)
+
+	r.Log.Info("reconcileOrphanPV", "pvcName", pvcName)
 
 	expectedPVC := corev1.PersistentVolumeClaim{
 		ObjectMeta: metaV1.ObjectMeta{
