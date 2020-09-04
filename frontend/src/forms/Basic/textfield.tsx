@@ -42,7 +42,7 @@ export const TextFieldWrapper = (props: TextFieldProps & FieldProps & Props & wi
     helperText,
     endAdornment,
     meta,
-    field: { name },
+    field: { name, value },
     form: { errors, handleChange },
     dispatch,
     showError,
@@ -51,12 +51,12 @@ export const TextFieldWrapper = (props: TextFieldProps & FieldProps & Props & wi
   const [innerValue, setInnerValue] = useState("");
 
   useEffect(() => {
-    if (props.value) {
-      setInnerValue(props.value as string);
+    if (value) {
+      setInnerValue(value as string);
     } else {
       setInnerValue("");
     }
-  }, [props.value]);
+  }, [value]);
 
   const [debouncedHandleOnChange] = useDebouncedCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     inputOnChangeWithDebounce(dispatch, handleChange, event, name);
