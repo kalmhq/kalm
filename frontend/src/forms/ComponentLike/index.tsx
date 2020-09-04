@@ -94,7 +94,7 @@ const Deploy = "Deployment Strategy";
 const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy];
 
 const mapStateToProps = (state: RootState) => {
-  const nodeLabels = getNodeLabels(state);
+  const nodeLabels = getNodeLabels(state).toArray();
 
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");
@@ -666,11 +666,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <FastField
-            name="nodeSelectorLabels"
-            component={KFormikRenderSelectLabels}
-            nodeLabels={nodeLabels.toArray()}
-          />
+          <FastField name="nodeSelectorLabels" component={KFormikRenderSelectLabels} nodeLabels={nodeLabels} />
         </Grid>
         <Grid item xs={12}>
           <FastField
