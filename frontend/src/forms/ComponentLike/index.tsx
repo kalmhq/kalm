@@ -820,7 +820,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderMain() {
     const { initialValues, values } = this.props;
     let isEdit = false;
-    // @ts-ignore
     if (initialValues && initialValues.name) {
       isEdit = true;
     }

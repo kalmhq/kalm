@@ -61,6 +61,21 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
     return claimNames;
   }
 
+  private isEdit = () => {
+    const {
+      form: { initialValues },
+    } = this.props;
+    let isEdit = false;
+    if (initialValues && initialValues.name) {
+      isEdit = true;
+    }
+    return isEdit;
+  };
+
+  private shouldDisabledStatefulSetPvcTemplate(fieldDiskType: string) {
+    return this.isEdit() && fieldDiskType === VolumeTypePersistentVolumeClaimTemplate;
+  }
+
   private getVolumeOptions = () => {
     const {
       form: { values },
@@ -128,7 +143,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
     return options;
   }
 
-  private getTypeOptions() {
+  private getTypeOptions(filedDiskType: string) {
     let options: { value: string; text: string }[] = [];
     const {
       form: { values },
@@ -143,10 +158,16 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
     } else if (values.workloadType === workloadTypeDaemonSet) {
       options = [{ value: VolumeTypeHostPath, text: "Mount a hostPath disk" }];
     } else if (values.workloadType === workloadTypeStatefulSet) {
-      options = [
-        { value: VolumeTypePersistentVolumeClaimTemplateNew, text: "Create and mount disk group" },
-        { value: VolumeTypePersistentVolumeClaimTemplate, text: "Mount an existing disk group" },
-      ];
+      if (this.isEdit()) {
+        if (this.shouldDisabledStatefulSetPvcTemplate(filedDiskType)) {
+          options = [{ value: VolumeTypePersistentVolumeClaimTemplate, text: "Mount an existing disk group" }];
+        }
+      } else {
+        options = [
+          { value: VolumeTypePersistentVolumeClaimTemplateNew, text: "Create and mount disk group" },
+          { value: VolumeTypePersistentVolumeClaimTemplate, text: "Mount an existing disk group" },
+        ];
+      }
     }
 
     options.push({ value: VolumeTypeTemporaryDisk, text: "Mount a temporary disk" });
@@ -181,6 +202,13 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
         hostPath: "",
       };
     } else if (values.workloadType === workloadTypeStatefulSet) {
+      if (this.isEdit()) {
+        return {
+          type: VolumeTypeTemporaryDisk,
+          path: "",
+          size: "",
+        };
+      }
       return {
         type: VolumeTypePersistentVolumeClaimTemplateNew,
         path: "",
@@ -200,8 +228,8 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
   public getFieldComponents(disk: VolumeContent, index: number) {
     const { name } = this.props;
     const volumeOptions = this.getVolumeOptions();
-    const typeOptions = this.getTypeOptions();
-    const volumeType = disk.type;
+    const typeOptions = this.getTypeOptions(disk.type);
+    const shouldDisabledStatefulSetPvcTemplate = this.shouldDisabledStatefulSetPvcTemplate(disk.type);
 
     const fieldComponents = [
       <Field
@@ -211,8 +239,9 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
         validate={ValidatorRequired}
         placeholder="Select a volume type"
         // defaultValue={typeOptions[0].value}
-        value={volumeType || typeOptions[0].value}
+        value={disk.type || typeOptions[0].value}
         options={typeOptions}
+        disabled={shouldDisabledStatefulSetPvcTemplate}
       />,
       <Field
         component={KRenderDebounceFormikTextField}
@@ -222,7 +251,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
       />,
     ];
 
-    if (volumeType === VolumeTypePersistentVolumeClaim || volumeType === VolumeTypePersistentVolumeClaimTemplate) {
+    if (disk.type === VolumeTypePersistentVolumeClaim || disk.type === VolumeTypePersistentVolumeClaimTemplate) {
       const claimName = disk.claimName;
       const volumeOption = volumeOptions.find((vo) => vo.get("name") === claimName);
 
@@ -234,6 +263,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           // validate={ValidatorRequired}
           placeholder="Select a Claim Name"
           options={this.getClaimNameOptions(disk)}
+          disabled={shouldDisabledStatefulSetPvcTemplate}
         />,
       );
       // only for show info
@@ -259,8 +289,8 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
         />,
       );
     } else if (
-      volumeType === VolumeTypePersistentVolumeClaimNew ||
-      volumeType === VolumeTypePersistentVolumeClaimTemplateNew
+      disk.type === VolumeTypePersistentVolumeClaimNew ||
+      disk.type === VolumeTypePersistentVolumeClaimTemplateNew
     ) {
       fieldComponents.push(
         <Field
@@ -287,7 +317,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           }}
         />,
       );
-    } else if (volumeType === VolumeTypeHostPath) {
+    } else if (disk.type === VolumeTypeHostPath) {
       fieldComponents.push(
         <Field
           component={KRenderDebounceFormikTextField}
@@ -376,6 +406,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
                     tooltipPlacement="top"
                     tooltipTitle="Delete"
                     aria-label="delete"
+                    disabled={this.shouldDisabledStatefulSetPvcTemplate(disk.type)}
                     onClick={() => remove(index)}
                   >
                     <DeleteIcon />
