@@ -49,7 +49,7 @@ const styles = (theme: Theme) =>
 
 class RenderProbe extends React.PureComponent<Props> {
   private renderNestedTextfield = ({
-    field: { name },
+    field: { name, value },
     form: { setFieldValue, values, errors, touched },
     placeholder,
     style,
@@ -64,7 +64,7 @@ class RenderProbe extends React.PureComponent<Props> {
         helperText={!!getIn(touched, name) && !!getIn(errors, name) ? getIn(errors, name) : undefined}
         InputProps={{ classes: { input: classes.input } }}
         onChange={(e) => setFieldValue(name, e.target.value)}
-        value={getIn(values, name)}
+        value={value}
         size="small"
         type={type}
         select={select}
@@ -302,11 +302,10 @@ class RenderProbe extends React.PureComponent<Props> {
 
   private getProbeObject = () => {
     const {
-      field: { name },
-      form: { values },
+      field: { value },
     } = this.props;
 
-    let probe: ProbeContent | undefined = getIn(values, name);
+    let probe: ProbeContent | undefined = value;
 
     return probe;
   };

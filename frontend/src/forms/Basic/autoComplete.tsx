@@ -101,8 +101,8 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
       label,
       options,
       icons,
-      field: { name },
-      form: { touched, errors, setFieldValue, handleBlur, values },
+      field: { name, value },
+      form: { touched, errors, setFieldValue, handleBlur },
       placeholder,
       helperText,
       classes,
@@ -130,7 +130,7 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
         size="small"
         id={id}
         onBlur={handleBlur}
-        value={getIn(values, name)}
+        value={value}
         onChange={(e, value) => {
           setFieldValue(name, value);
         }}
@@ -181,15 +181,15 @@ function KFormikAutoCompleteSingleValueRaw<T>(
   const {
     label,
     helperText,
-    field: { name },
-    form: { touched, errors, setFieldValue, handleBlur, values },
+    field: { name, value: fieldValue },
+    form: { touched, errors, setFieldValue, handleBlur },
     classes,
     options,
     placeholder,
     noOptionsText,
   } = props;
 
-  const value = options.find((x) => x.value === getIn(values, name)) || null;
+  const value = options.find((x) => x.value === fieldValue) || null;
 
   const { groupLabelDefault, groupIcon, logoIcon, groupLabelCurrent, ...autocompleteClasses } = classes;
 
@@ -287,8 +287,8 @@ export const KFormikAutoCompleteMultipleSelectField = (props: KFormikAutoComplet
     label,
     helperText,
     options,
-    field: { name },
-    form: { touched, errors, setFieldValue, handleBlur, values },
+    field: { name, value },
+    form: { touched, errors, setFieldValue, handleBlur },
   } = props;
 
   return (
@@ -315,7 +315,7 @@ export const KFormikAutoCompleteMultipleSelectField = (props: KFormikAutoComplet
         });
       }}
       onBlur={handleBlur}
-      value={getIn(values, name)}
+      value={value}
       onChange={(e, value) => {
         setFieldValue(name, value);
       }}

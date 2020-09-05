@@ -542,7 +542,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderScheduling() {
-    const { nodeLabels, classes, values, setFieldValue } = this.props;
+    const { nodeLabels, classes } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
@@ -673,10 +673,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="preferNotCoLocated"
             component={KFormikBoolCheckboxRender}
             label={sc.SCHEDULING_COLOCATE_CHECKBOX}
-            value={values.preferNotCoLocated}
-            onChange={(v: boolean) => {
-              setFieldValue("preferNotCoLocated", v);
-            }}
           />
         </Grid>
         {/* <Grid item xs={6}>

@@ -13,12 +13,12 @@ import { ValidatorRequired } from "../validator";
 interface Props extends DispatchProp {
   connector: SSOGitlabConnectorFormType;
   form: any;
-  field: string;
+  fieldName: string;
 }
 
 class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
   public render() {
-    const { connector, field } = this.props;
+    const { connector, fieldName } = this.props;
 
     return (
       <Box p={2}>
@@ -36,7 +36,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                 <Grid item xs>
                   <Field
                     component={KRenderDebounceFormikTextField}
-                    name={`${field}.name`}
+                    name={`${fieldName}.name`}
                     label="Name"
                     placeholder="Give a name of this connector"
                     validate={ValidatorRequired}
@@ -47,7 +47,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                 <Grid item xs>
                   <Field
                     component={KRenderDebounceFormikTextField}
-                    name={`${field}.config.baseURL`}
+                    name={`${fieldName}.config.baseURL`}
                     label="Gitlab Base URL"
                     placeholder="Please type Gitlab Base URL"
                     validate={ValidatorRequired}
@@ -59,7 +59,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                 <Grid item xs>
                   <Field
                     component={KRenderDebounceFormikTextField}
-                    name={`${field}.config.clientID`}
+                    name={`${fieldName}.config.clientID`}
                     label="Client ID"
                     autoComplete={"false"}
                     placeholder="Oauth Client ID"
@@ -72,7 +72,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                   <Field
                     component={KRenderDebounceFormikTextField}
                     autoComplete={"false"}
-                    name={`${field}.config.clientSecret`}
+                    name={`${fieldName}.config.clientSecret`}
                     label="Client Secret"
                     placeholder="Oauth Client Secret"
                     validate={ValidatorRequired}
@@ -94,7 +94,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                 <Field
                   component={KFreeSoloFormikAutoCompleteMultiValues}
                   label="Groups"
-                  name={`${field}.config.groups`}
+                  name={`${fieldName}.config.groups`}
                   validate={ValidatorRequired}
                   placeholder="Please type a group name"
                   helperText="Multiple groups are allowed. After entering a group name, try to press enter."

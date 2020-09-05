@@ -41,13 +41,13 @@ class RenderGithubConnectorOrganizations extends React.Component<{
 
             {orgs &&
               orgs.map((org, index) => {
-                let field = `${name}.${index}`;
+                let fieldName = `${name}.${index}`;
                 return (
-                  <Grid container spacing={2} key={field}>
+                  <Grid container spacing={2} key={fieldName}>
                     <Grid item xs={3}>
                       <Field
                         component={KRenderDebounceFormikTextField}
-                        name={`${field}.name`}
+                        name={`${fieldName}.name`}
                         label="Organization Name"
                         placeholder="Please type a organization name"
                         validate={ValidatorRequired}
@@ -59,7 +59,7 @@ class RenderGithubConnectorOrganizations extends React.Component<{
                       <Field
                         component={KFreeSoloFormikAutoCompleteMultiValues}
                         label="Teams"
-                        name={`${field}.teams`}
+                        name={`${fieldName}.teams`}
                         placeholder="Please type a team name"
                         helperText="Multiple teams are allowed. After entering a team name, try to press enter."
                       />
@@ -90,27 +90,27 @@ class RenderGithubConnectorOrganizations extends React.Component<{
 interface Props {
   connector: SSOGithubConnectorFormType;
   form: any;
-  field: string;
+  fieldName: string;
 }
 
 class RenderGithubConnectorRaw extends React.PureComponent<Props> {
   private addOrganization = () => {
     const {
-      field,
+      fieldName,
       form: { setFieldValue, values },
     } = this.props;
 
-    const prevOrgs = getIn(values, `${field}.config.orgs`);
+    const prevOrgs = getIn(values, `${fieldName}.config.orgs`);
 
     prevOrgs && prevOrgs.length > 0
-      ? setFieldValue(`${field}.config.orgs`, [
+      ? setFieldValue(`${fieldName}.config.orgs`, [
           ...prevOrgs,
           {
             name: "",
             teams: [],
           },
         ])
-      : setFieldValue(`${field}.config.orgs`, [
+      : setFieldValue(`${fieldName}.config.orgs`, [
           {
             name: "",
             teams: [],
@@ -121,7 +121,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
   public render() {
     const {
       connector,
-      field,
+      fieldName,
       form: { values },
     } = this.props;
 
@@ -139,7 +139,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
             <Grid item xs={8}>
               <Field
                 component={KRenderDebounceFormikTextField}
-                name={`${field}.name`}
+                name={`${fieldName}.name`}
                 label="Name"
                 placeholder="Give a name of this connector"
                 validate={ValidatorRequired}
@@ -151,7 +151,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
                 <Grid item xs>
                   <Field
                     component={KRenderDebounceFormikTextField}
-                    name={`${field}.config.clientID`}
+                    name={`${fieldName}.config.clientID`}
                     label="Client ID"
                     autoComplete="disabled"
                     placeholder="Oauth Client ID"
@@ -164,7 +164,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
                   <Field
                     component={KRenderDebounceFormikTextField}
                     autoComplete={"false"}
-                    name={`${field}.config.clientSecret`}
+                    name={`${fieldName}.config.clientSecret`}
                     label="Client Secret"
                     placeholder="Oauth Client Secret"
                     validate={ValidatorRequired}
@@ -190,8 +190,8 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
 
               <Box mt={1}>
                 <RenderGithubConnectorOrganizations
-                  name={`${field}.config.orgs`}
-                  orgs={getIn(values, `${field}.config.orgs`)}
+                  name={`${fieldName}.config.orgs`}
+                  orgs={getIn(values, `${fieldName}.config.orgs`)}
                 />
               </Box>
 

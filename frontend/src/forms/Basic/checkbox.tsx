@@ -1,59 +1,34 @@
 import { Box, Checkbox, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel } from "@material-ui/core";
 import { FieldProps, getIn } from "formik";
-import { Checkbox as FormikCheckbox } from "formik-material-ui";
 import React from "react";
 import { KChip } from "widgets/Chip";
 
 interface KFormikBoolCheckboxRenderProps {
-  value: any;
   label: React.ReactNode;
   title?: string;
   helperText?: string;
-  onChange: any;
-  error: any;
-  touched: boolean;
 }
 
 // For bool
 export const KFormikBoolCheckboxRender = ({
-  value,
-  onChange,
-  error,
-  touched,
   title,
   helperText,
   label,
-}: KFormikBoolCheckboxRenderProps) => {
+  field: { name, value },
+  form: { setFieldValue, errors, touched },
+}: KFormikBoolCheckboxRenderProps & FieldProps) => {
   const checked: boolean = !!value;
-  const showError = !!error && touched;
+  const error = getIn(errors, name);
+  const showError = !!error && !!getIn(touched, name);
 
   return (
     <FormControl fullWidth error={showError} style={{ marginTop: 8 }}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}
       <FormGroup row>
         <FormControlLabel
-          control={<Checkbox checked={checked} onChange={(e) => onChange(e.target.checked)} />}
+          control={<Checkbox checked={checked} onChange={(e) => setFieldValue(name, e.target.checked)} />}
           label={label}
         />
-      </FormGroup>
-      {showError ? (
-        <FormHelperText>{error}</FormHelperText>
-      ) : helperText ? (
-        <FormHelperText>{helperText}</FormHelperText>
-      ) : null}
-    </FormControl>
-  );
-};
-
-export const KFormikCheckbox = (props: KFormikBoolCheckboxRenderProps & FieldProps) => {
-  const { error, touched, title, helperText, label } = props;
-  const showError = !!error && touched;
-
-  return (
-    <FormControl fullWidth error={showError} style={{ marginTop: 8 }}>
-      {title ? <FormLabel component="legend">{title}</FormLabel> : null}
-      <FormGroup row>
-        <FormControlLabel control={<FormikCheckbox type="checkbox" {...props} />} label={label} />
       </FormGroup>
       {showError ? (
         <FormHelperText>{error}</FormHelperText>
@@ -83,12 +58,11 @@ export const KFormikCheckboxGroupRender = ({
   options,
   helperText,
   componentType,
-  field: { name },
-  form: { setFieldValue, values, errors },
+  field: { name, value },
+  form: { setFieldValue, errors },
 }: KFormikCheckboxGroupRenderProps) => {
   const showError = !!getIn(errors, name);
 
-  let value = getIn(values, name);
   return (
     <FormControl fullWidth error={showError}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}

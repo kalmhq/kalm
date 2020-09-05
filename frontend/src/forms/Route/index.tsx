@@ -343,12 +343,6 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         name="stripPath"
                         label={sc.ROUTE_STRIP_PATH_LABEL}
                         helperText={sc.ROUTE_STRIP_PATH_HELPER}
-                        value={values.stripPath}
-                        error={errors.stripPath}
-                        touched={touched.stripPath}
-                        onChange={(v: boolean) => {
-                          setFieldValue("stripPath", v);
-                        }}
                       />
                     </Box>
                   }
@@ -414,10 +408,6 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         <Field
                           component={KFormikBoolCheckboxRender}
                           name="httpRedirectToHttps"
-                          value={values.httpRedirectToHttps}
-                          error={errors.httpRedirectToHttps}
-                          touched={touched.httpRedirectToHttps}
-                          onChange={(v: boolean) => setFieldValue("httpRedirectToHttps", v)}
                           label={
                             <span>
                               Redirect all <strong>http</strong> request to <strong>https</strong> with 301 status code.

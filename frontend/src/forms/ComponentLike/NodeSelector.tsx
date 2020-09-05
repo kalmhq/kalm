@@ -3,7 +3,7 @@ import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import { FieldProps, getIn } from "formik";
+import { FieldProps } from "formik";
 import React from "react";
 import { NodeSelectorLabelsContent } from "types/componentTemplate";
 
@@ -16,11 +16,11 @@ interface Props {
 
 export const KFormikRenderSelectLabels = ({
   nodeLabels,
-  field: { name },
+  field: { name, value },
   form: { values, setFieldValue },
 }: FilledTextFieldProps & FieldProps & Props) => {
   const defaultValue: string[] = [];
-  const inputValue = getIn(values, name) as NodeSelectorLabelsContent;
+  const inputValue = value as NodeSelectorLabelsContent;
 
   if (inputValue) {
     for (let k in inputValue) {

@@ -3,7 +3,7 @@ import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
 import { FastField, FieldArray, FieldArrayRenderProps, FieldProps, getIn } from "formik";
-import { KFormikCheckbox } from "forms/Basic/checkbox";
+import { KFormikBoolCheckboxRender } from "forms/Basic/checkbox";
 import React from "react";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
@@ -117,7 +117,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
           <Grid item xs={3}>
             <FastField
               name={`preInjectedFiles.${editingFileIndex}.readonly`}
-              component={KFormikCheckbox}
+              component={KFormikBoolCheckboxRender}
               label="Read Only"
             />
           </Grid>

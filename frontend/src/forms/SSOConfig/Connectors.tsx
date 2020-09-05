@@ -35,7 +35,7 @@ export class Connectors extends React.PureComponent<Props> {
                     <RenderGithubConnector
                       // @ts-ignore
                       connector={connector}
-                      field={field}
+                      fieldName={field}
                       form={arrayHelpers.form}
                       key={connector.type + "-" + index}
                     />
@@ -45,7 +45,7 @@ export class Connectors extends React.PureComponent<Props> {
                     <RenderGitlabConnector
                       // @ts-ignore
                       connector={connector}
-                      field={field}
+                      fieldName={field}
                       form={arrayHelpers.form}
                       key={connector.type + "-" + index}
                     />

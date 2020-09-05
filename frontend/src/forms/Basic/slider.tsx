@@ -1,7 +1,7 @@
 import { Slider, SliderProps, Typography } from "@material-ui/core";
+import { FieldProps } from "formik";
 import React from "react";
 import { ID } from "utils";
-import { FieldProps, getIn } from "formik";
 
 interface Props {
   label?: string;
@@ -18,8 +18,8 @@ export const KFormikRenderSlider = ({
   max,
   step,
   disabled,
-  field: { name },
-  form: { touched, errors, setFieldValue, handleBlur, values },
+  field: { name, value },
+  form: { setFieldValue },
 }: SliderProps & FieldProps & Props) => {
   const id = ID();
   return (
@@ -30,7 +30,7 @@ export const KFormikRenderSlider = ({
         </Typography>
       ) : null}
       <Slider
-        value={getIn(values, name) || 0}
+        value={value || 0}
         onChangeCommitted={(_event: React.ChangeEvent<{}>, value: number | number[]) => setFieldValue(name, value)}
         aria-labelledby={id}
         valueLabelDisplay="auto"

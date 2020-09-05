@@ -123,8 +123,8 @@ export class RenderFormikComplexValueTextField extends React.PureComponent<
       type,
       min,
       endAdornment,
-      field: { name },
-      form: { touched, errors, values, setFieldValue },
+      field: { name, value },
+      form: { touched, errors, setFieldValue },
       format,
       parse,
     } = this.props;
@@ -156,8 +156,8 @@ export class RenderFormikComplexValueTextField extends React.PureComponent<
         }}
         margin="dense"
         variant="outlined"
-        defaultValue={format ? format(getIn(values, name)) : getIn(values, name)}
-        // value={format ? format(getIn(values, name)) : getIn(values, name)}
+        defaultValue={format ? format(value) : value}
+        // value={format ? format(value) : value}
         onBlur={(e) => {
           const value = e.target.value;
           return parse ? setFieldValue(name, parse(value)) : setFieldValue(name, value);
