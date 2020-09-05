@@ -10,11 +10,13 @@ import { FieldProps, getIn } from "formik";
 const mapStateToProps = (state: RootState, ownProps: FilledTextFieldProps & FieldProps) => {
   const {
     field: { name },
-    form: { touched, errors },
+    form: { touched, errors, submitCount },
   } = ownProps;
   const isDisplayDebounceError = getIsDisplayDebounceError(state, name);
   const error = getIn(errors, name);
-  const _touched = getIn(touched, name);
+  // https://github.com/formium/formik/issues/691#issuecomment-446509600
+  const _touched = getIn(touched, name) || submitCount > 0;
+
   return {
     showError: !!error && (_touched || isDisplayDebounceError),
   };
