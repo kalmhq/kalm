@@ -2,10 +2,9 @@ import { InputAdornment, OutlinedInputProps, useTheme } from "@material-ui/core"
 import TextField, { TextFieldProps } from "@material-ui/core/TextField";
 import { FieldProps, getIn } from "formik";
 import { TextField as FormikTextField } from "formik-material-ui";
-import React, { useState, useEffect, useCallback } from "react";
-import { KalmConsoleIcon } from "widgets/Icon";
-import { withDebounceField, withDebounceProps, inputOnChangeWithDebounce } from "./debounce";
+import React, { useCallback, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
+import { KalmConsoleIcon } from "widgets/Icon";
 
 interface Props {
   endAdornment?: React.ReactNode;
@@ -35,20 +34,19 @@ export const KRenderFormikTextField = (props: TextFieldProps & FieldProps) => {
   );
 };
 
-const INPUT_DELAY = 500;
+export const INPUT_DELAY = 500;
 
-export const TextFieldWrapper = (props: TextFieldProps & FieldProps & Props & withDebounceProps) => {
+export const KRenderDebounceFormikTextField = (props: TextFieldProps & FieldProps & Props) => {
   const {
     helperText,
     endAdornment,
     meta,
     field: { name, value },
-    form: { errors, handleChange },
-    dispatch,
-    showError,
+    form: { errors, touched, handleChange },
     ...custom
   } = props;
   const [innerValue, setInnerValue] = useState("");
+  const showError = !!getIn(errors, name) && getIn(touched, name);
 
   useEffect(() => {
     if (value) {
@@ -59,7 +57,7 @@ export const TextFieldWrapper = (props: TextFieldProps & FieldProps & Props & wi
   }, [value]);
 
   const [debouncedHandleOnChange] = useDebouncedCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    inputOnChangeWithDebounce(dispatch, handleChange, event, name);
+    handleChange(event);
   }, INPUT_DELAY);
 
   const handleOnChange = useCallback(
@@ -99,8 +97,6 @@ export const TextFieldWrapper = (props: TextFieldProps & FieldProps & Props & wi
     />
   );
 };
-
-export const KRenderDebounceFormikTextField = withDebounceField(TextFieldWrapper);
 
 interface ComplexValueTextFieldProps {
   endAdornment?: React.ReactNode;

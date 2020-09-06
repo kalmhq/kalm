@@ -21,6 +21,8 @@ import { theme } from "theme/theme";
 import { newEmptyCertificateForm } from "types/certificate";
 import { newEmptyComponentLike } from "types/componentTemplate";
 import { newEmptyRouteForm } from "types/route";
+import { sleep } from "utils/testUtils";
+import { INPUT_DELAY } from "forms/Basic/textfield";
 
 configure({ adapter: new Adapter() });
 
@@ -90,7 +92,7 @@ describe("add certificate", () => {
   });
 });
 
-test("add application", () => {
+test("add application", async () => {
   const WrappedApplicationForm = class extends React.Component {
     public render() {
       return <ApplicationForm currentTab={"basic"} />;
@@ -105,6 +107,10 @@ test("add application", () => {
   );
   component.find("input#application-name").getDOMNode().setAttribute("value", applicationName);
   component.find("input#application-name").simulate("change");
+  await act(async () => {
+    await sleep(INPUT_DELAY);
+  });
+
   expect(component.find("code#application-name-code").text()).toContain(applicationName);
 });
 
@@ -137,6 +143,7 @@ test("add component", async () => {
   component.find("input#component-image").getDOMNode().setAttribute("value", "test-image");
   component.find("input#component-image").simulate("change");
   await act(async () => {
+    await sleep(INPUT_DELAY);
     component.find("form#component-form").simulate("submit");
   });
   expect(onSubmit).toHaveBeenCalledTimes(1);
