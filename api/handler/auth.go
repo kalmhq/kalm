@@ -1,18 +1,19 @@
 package handler
 
 import (
+	"github.com/kalmhq/kalm/api/client"
 	"net/http"
 
 	"github.com/kalmhq/kalm/api/auth"
 	"github.com/labstack/echo/v4"
-	authorizationV1 "k8s.io/api/authorization/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
 type LoginStatusResponse struct {
 	Authorized bool   `json:"authorized"`
-	IsAdmin    bool   `json:"isAdmin"`
 	Entity     string `json:"entity"`
+	Policies   string `json:"policies"`
+	RBACModel  string `json:"rbacModel"`
 	CSRF       string `json:"csrf"`
 }
 
@@ -39,37 +40,29 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		return c.JSON(http.StatusOK, res)
 	}
 
-	k8sClient, err := kubernetes.NewForConfig(clientInfo.Cfg)
-	if err != nil {
-		return c.JSON(http.StatusOK, res)
+	if clientInfo != nil {
+		k8sClient, err := kubernetes.NewForConfig(clientInfo.Cfg)
+
+		if err != nil {
+			return c.JSON(http.StatusOK, res)
+		}
+
+		_, err = k8sClient.ServerVersion()
+
+		if err != nil {
+			return c.JSON(http.StatusOK, res)
+		}
+
+		res.Entity = clientInfo.Email
+		res.Authorized = true
+
+		subjects := make([]string, len(clientInfo.Groups)+1)
+		subjects[0] = client.ToSafeSubject(clientInfo.Email)
+		for i, role := range clientInfo.Groups {
+			subjects[i+1] = client.ToSafeSubject(role)
+		}
+		res.Policies = h.clientManager.GetRBACEnforcer().GetCompletePoliciesFor(subjects...)
 	}
-
-	_, err = k8sClient.ServerVersion()
-
-	if err != nil {
-		return c.JSON(http.StatusOK, res)
-	}
-
-	// Check if current user is an admin. Any better solution?
-	review := &authorizationV1.SelfSubjectAccessReview{
-		Spec: authorizationV1.SelfSubjectAccessReviewSpec{
-			ResourceAttributes: &authorizationV1.ResourceAttributes{
-				Namespace: "",
-				Resource:  "clusterrolebindings",
-				Verb:      "create",
-			},
-		},
-	}
-
-	err = h.resourceManager.Create(review)
-
-	if err != nil {
-		return err
-	}
-
-	res.Entity = clientInfo.Email
-	res.IsAdmin = review.Status.Allowed
-	res.Authorized = review.Status.Allowed
 
 	return c.JSON(http.StatusOK, res)
 }

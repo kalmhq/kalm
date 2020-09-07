@@ -55,7 +55,7 @@ func (h *WsHandler) Serve(c echo.Context) error {
 
 	clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
 
-	if err == nil {
+	if err == nil && clientInfo != nil {
 		clt.ClientInfo = clientInfo
 	}
 

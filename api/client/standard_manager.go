@@ -191,11 +191,9 @@ func (m *StandardClientManager) GetClientInfoFromToken(tokenString, impersonatio
 }
 
 func (m *StandardClientManager) GetConfigForClientRequestContext(c echo.Context) (*ClientInfo, error) {
-	// TODO Impersonate
-
 	// If the Authorization Header is not empty, use the bearer token as k8s token.
 	if token := extractAuthTokenFromClientRequestContext(c); token != "" {
-		return m.GetClientInfoFromToken(token, c.Request().Header.Get(("Kalm-Impersonation")))
+		return m.GetClientInfoFromToken(token, c.Request().Header.Get("Kalm-Impersonation"))
 	}
 
 	// And the kalm-sso-userinfo header is not empty.
@@ -217,18 +215,13 @@ func (m *StandardClientManager) GetConfigForClientRequestContext(c echo.Context)
 
 		clientInfo.Cfg = m.ClusterConfig
 
-		// Only cluster manager can impersonate
-		impersonation := clientInfo.Impersonation
-		clientInfo.Impersonation = ""
-
-		if impersonation != "" && m.CanManageCluster(&clientInfo) {
-			clientInfo.Impersonation = impersonation
+		if c.Request().Header.Get("Kalm-Impersonation") != "" && m.CanManageCluster(&clientInfo) {
+			clientInfo.Impersonation = c.Request().Header.Get("Kalm-Impersonation")
 		}
 
 		return &clientInfo, nil
 	}
 
-	// Shouldn't be able to reach here
 	return nil, errors.NewUnauthorized("")
 }
 
