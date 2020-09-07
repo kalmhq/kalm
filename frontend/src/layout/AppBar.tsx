@@ -62,8 +62,11 @@ const styles = (theme: Theme) =>
     shrinkButton: {
       // margin: `0 10px`
     },
-    barTitle: {
-      color: theme.palette.primary.light,
+    breadcrumb: {
+      color: "#eeeeee",
+    },
+    breadLink: {
+      color: "#eeeeee",
       fontSize: "18px",
       fontWeight: "normal",
       padding: "0 0",
@@ -82,7 +85,6 @@ const styles = (theme: Theme) =>
       },
       "&:hover": {
         color: "white",
-        // fontWeight: "bold",
         borderBottom: "2px solid white",
       },
     },
@@ -239,20 +241,20 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
               {isOpenRootDrawer ? <MenuOpenIcon color="white" /> : <MenuIcon color="white" />}
             </IconButton>
             <FlexRowItemCenterBox>
-              <Breadcrumbs aria-label="breadcrumb">
+              <Breadcrumbs aria-label="breadcrumb" className={classes.breadcrumb}>
                 {pathArray.map((path, index) => {
                   if (path === "cluster") {
                     return null;
                   } else if (index === 0) {
                     return (
-                      <Link key={index} className={classes.barTitle} to="/" onClick={() => blinkTopProgressAction()}>
+                      <Link key={index} className={classes.breadLink} to="/" onClick={() => blinkTopProgressAction()}>
                         <KalmLogo2Icon />
                         <KalmTextLogoIcon />
                       </Link>
                     );
                   } else if (index + 1 === pathArray.length) {
                     return (
-                      <span key={index} className={`${classes.barTitle} disabled`}>
+                      <span key={index} className={`${classes.breadLink} disabled`}>
                         {this.renderBreadcrumbContent(path)}
                       </span>
                     );
@@ -260,7 +262,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                     return (
                       <Link
                         key={index}
-                        className={classes.barTitle}
+                        className={classes.breadLink}
                         to={pathArray.slice(0, index + 1).join("/")}
                         onClick={() => blinkTopProgressAction()}
                       >

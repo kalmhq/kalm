@@ -22,11 +22,12 @@ import (
 
 // KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
 type KalmOperatorConfigSpec struct {
-	SkipIstioInstallation          bool   `json:"skipIstioInstallation,omitempty"`
-	SkipCertManagerInstallation    bool   `json:"skipCertManagerInstallation,omitempty"`
-	SkipKalmControllerInstallation bool   `json:"skipKalmControllerInstallation,omitempty"`
-	SkipKalmDashboardInstallation  bool   `json:"skipKalmDashboardInstallation,omitempty"`
-	DashboardVersion               string `json:"dashboardVersion,omitempty"`
+	SkipIstioInstallation          bool `json:"skipIstioInstallation,omitempty"`
+	SkipCertManagerInstallation    bool `json:"skipCertManagerInstallation,omitempty"`
+	SkipKalmControllerInstallation bool `json:"skipKalmControllerInstallation,omitempty"`
+	SkipKalmDashboardInstallation  bool `json:"skipKalmDashboardInstallation,omitempty"`
+	//DashboardVersion               string `json:"dashboardVersion,omitempty"`
+	KalmVersion string `json:"kalmVersion,omitempty"`
 }
 
 // KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig

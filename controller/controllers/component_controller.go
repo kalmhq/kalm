@@ -43,6 +43,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"strconv"
 	"strings"
 
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -254,11 +255,70 @@ const (
 )
 
 func (r *ComponentReconcilerTask) GetLabels() map[string]string {
-	return map[string]string{
+	res := map[string]string{
 		KalmLabelNamespaceKey: r.namespace.Name,
 		KalmLabelComponentKey: r.component.Name,
 		KalmLabelManaged:      "true",
 	}
+
+	if r.component.Spec.Labels != nil {
+		for k, v := range r.component.Spec.Labels {
+			res[k] = v
+		}
+	}
+	return res
+}
+
+func (r *ComponentReconcilerTask) GetAnnotations() map[string]string {
+	res := make(map[string]string)
+
+	if r.component.Spec.Annotations != nil {
+		for k, v := range r.component.Spec.Annotations {
+			res[k] = v
+		}
+	}
+
+	return res
+}
+
+func GetPodSecurityContextFromAnnotation(annotations map[string]string) *coreV1.PodSecurityContext {
+	securityContext := new(coreV1.PodSecurityContext)
+	annotationFound := false
+
+	for k, v := range annotations {
+		if !strings.HasPrefix(k, "core.kalm.dev/podExt-securityContext-") {
+			continue
+		}
+
+		annotationFound = true
+
+		rest := strings.TrimPrefix(k, "core.kalm.dev/podExt-securityContext-")
+
+		switch rest {
+		case "runAsGroup":
+			n, err := strconv.ParseInt(v, 0, 64)
+
+			if err != nil {
+				continue
+			}
+
+			securityContext.RunAsGroup = &n
+		case "runAsUser":
+			n, err := strconv.ParseInt(v, 0, 64)
+
+			if err != nil {
+				continue
+			}
+
+			securityContext.RunAsUser = &n
+		}
+	}
+
+	if !annotationFound {
+		return nil
+	}
+
+	return securityContext
 }
 
 func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
@@ -622,6 +682,7 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 	deployment := r.deployment
 	isNewDeployment := false
 	labelMap := r.GetLabels()
+	annotations := r.GetAnnotations()
 
 	if deployment == nil {
 		isNewDeployment = true
@@ -629,7 +690,7 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 		deployment = &appsV1.Deployment{
 			ObjectMeta: metaV1.ObjectMeta{
 				Labels:      labelMap,
-				Annotations: make(map[string]string),
+				Annotations: annotations,
 				Name:        component.Name,
 				Namespace:   r.namespace.Name,
 			},
@@ -728,6 +789,7 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 
 func (r *ComponentReconcilerTask) ReconcileDaemonSet(podTemplateSpec *coreV1.PodTemplateSpec) error {
 	labelMap := r.GetLabels()
+	annotations := r.GetAnnotations()
 
 	daemonSet := r.daemonSet
 	isNewDs := false
@@ -738,7 +800,7 @@ func (r *ComponentReconcilerTask) ReconcileDaemonSet(podTemplateSpec *coreV1.Pod
 		daemonSet = &appsV1.DaemonSet{
 			ObjectMeta: metaV1.ObjectMeta{
 				Labels:      labelMap,
-				Annotations: make(map[string]string),
+				Annotations: annotations,
 				Name:        r.component.Name,
 				Namespace:   r.component.Namespace,
 			},
@@ -783,6 +845,7 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 	cj := r.cronJob
 	component := r.component
 	labelMap := r.GetLabels()
+	annotations := r.GetAnnotations()
 
 	// restartPolicy
 	if podTemplateSpec.Spec.RestartPolicy == coreV1.RestartPolicyAlways ||
@@ -812,9 +875,10 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 
 		cj = &batchV1Beta1.CronJob{
 			ObjectMeta: metaV1.ObjectMeta{
-				Name:      component.Name,
-				Namespace: r.namespace.Name,
-				Labels:    labelMap,
+				Name:        component.Name,
+				Namespace:   r.namespace.Name,
+				Labels:      labelMap,
+				Annotations: annotations,
 			},
 			Spec: desiredCJSpec,
 		}
@@ -853,6 +917,7 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(
 
 	log := r.Log
 	labelMap := r.GetLabels()
+	annotations := r.GetAnnotations()
 
 	sts := r.statefulSet
 
@@ -863,7 +928,7 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(
 		sts = &appsV1.StatefulSet{
 			ObjectMeta: metaV1.ObjectMeta{
 				Labels:      labelMap,
-				Annotations: make(map[string]string),
+				Annotations: annotations,
 				Name:        r.component.Name,
 				Namespace:   r.component.Namespace,
 			},
@@ -934,17 +999,14 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	labels["app"] = component.Name
 	labels["version"] = "v1" // TODO
 
+	annotations := r.GetAnnotations()
+
 	template = &coreV1.PodTemplateSpec{
 		ObjectMeta: metaV1.ObjectMeta{
 			Labels: labels,
 
 			// The following is for set sidecar resources.
-			Annotations: map[string]string{
-				//"sidecar.istio.io/proxyCPU":         "100m",
-				//"sidecar.istio.io/proxyMemory":      "50Mi",
-				//"sidecar.istio.io/proxyCPULimit":    "100m",
-				//"sidecar.istio.io/proxyMemoryLimit": "50Mi",
-			},
+			Annotations: annotations,
 		},
 		Spec: coreV1.PodSpec{
 			Containers: []coreV1.Container{
@@ -960,6 +1022,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 					LivenessProbe:  r.FixProbe(component.Spec.LivenessProbe),
 				},
 			},
+			SecurityContext: GetPodSecurityContextFromAnnotation(annotations),
 		},
 	}
 
@@ -1034,25 +1097,50 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 		var value string
 		var valueFrom *coreV1.EnvVarSource
 
-		if env.Type == "" || env.Type == corev1alpha1.EnvVarTypeStatic {
+		switch env.Type {
+		case "", corev1alpha1.EnvVarTypeStatic:
 			value = env.Value
-		} else if env.Type == corev1alpha1.EnvVarTypeExternal {
+		case corev1alpha1.EnvVarTypeExternal:
 			//value, err = r.FindShareEnvValue(env.Value)
 			//
 			////  if the env can't be found in sharedEnv, ignore it
 			//if err != nil {
 			//	continue
 			//}
-		} else if env.Type == corev1alpha1.EnvVarTypeLinked {
+		case corev1alpha1.EnvVarTypeLinked:
 			value, err = r.getValueOfLinkedEnv(env)
 			if err != nil {
 				return nil, err
 			}
-		} else if env.Type == corev1alpha1.EnvVarTypeFieldRef {
+		case corev1alpha1.EnvVarTypeFieldRef:
 			valueFrom = &coreV1.EnvVarSource{
 				FieldRef: &coreV1.ObjectFieldSelector{
 					FieldPath: env.Value,
 				},
+			}
+		case corev1alpha1.EnvVarTypeBuiltin:
+			switch env.Value {
+			case corev1alpha1.EnvVarBuiltinHost:
+				valueFrom = &coreV1.EnvVarSource{
+					FieldRef: &coreV1.ObjectFieldSelector{
+						APIVersion: "v1",
+						FieldPath:  "spec.nodeName",
+					},
+				}
+			case corev1alpha1.EnvVarBuiltinNamespace:
+				valueFrom = &coreV1.EnvVarSource{
+					FieldRef: &coreV1.ObjectFieldSelector{
+						APIVersion: "v1",
+						FieldPath:  "metadata.namespace",
+					},
+				}
+			case corev1alpha1.EnvVarBuiltinPodName:
+				valueFrom = &coreV1.EnvVarSource{
+					FieldRef: &coreV1.ObjectFieldSelector{
+						APIVersion: "v1",
+						FieldPath:  "metadata.name",
+					},
+				}
 			}
 		}
 
@@ -1757,7 +1845,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSTS(template *coreV1.PodTemplate
 					},
 				},
 			})
-		} else if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim {
+		} else if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim || disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaimTemplate {
 
 			pvcName := disk.PVC
 
@@ -1834,7 +1922,8 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 		// used in volumeMount, correspond to volume's name or volClaimTemplate's name
 		volName := getVolName(component.Name, disk.Path)
 
-		if disk.Type == corev1alpha1.VolumeTypeTemporaryDisk {
+		switch disk.Type {
+		case corev1alpha1.VolumeTypeTemporaryDisk:
 			volumes = append(volumes, coreV1.Volume{
 				Name: volName,
 				VolumeSource: coreV1.VolumeSource{
@@ -1843,7 +1932,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 					},
 				},
 			})
-		} else if disk.Type == corev1alpha1.VolumeTypeTemporaryMemory {
+		case corev1alpha1.VolumeTypeTemporaryMemory:
 			volumes = append(volumes, coreV1.Volume{
 				Name: volName,
 				VolumeSource: coreV1.VolumeSource{
@@ -1852,8 +1941,16 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 					},
 				},
 			})
-		} else if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim {
-
+		case corev1alpha1.VolumeTypeHostPath:
+			volumes = append(volumes, coreV1.Volume{
+				Name: volName,
+				VolumeSource: coreV1.VolumeSource{
+					HostPath: &coreV1.HostPathVolumeSource{
+						Path: disk.Path,
+					},
+				},
+			})
+		case corev1alpha1.VolumeTypePersistentVolumeClaim:
 			pvcName := disk.PVC
 			volName = pvcName
 
@@ -1923,7 +2020,8 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 					},
 				},
 			})
-		} else {
+
+		default:
 			return fmt.Errorf("unknown disk type: %s", disk.Type)
 		}
 

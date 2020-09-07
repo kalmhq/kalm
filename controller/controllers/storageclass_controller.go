@@ -55,10 +55,14 @@ func (r *StorageClassReconciler) guessCurrentCloudProvider() (string, bool) {
 			return "gcp", true
 		}
 
+		if isAzureNode(node) {
+			return "azure", true
+		}
+
 		if isMinikube(node) {
 			return "minikube", true
 		}
-		// todo, more for minikube & aws & azure
+		// todo, more for minikube & aws
 	}
 
 	return "", false
@@ -72,7 +76,7 @@ func (r *StorageClassReconciler) reconcileDefaultStorageClass(cloudProvider stri
 	case "aws":
 		hdd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "kalm-hdd",
+				Name:        "gp2",
 				Annotations: docInfoOnStorageClass["aws"],
 			},
 			Provisioner:   "kubernetes.io/aws-ebs",
@@ -93,7 +97,7 @@ func (r *StorageClassReconciler) reconcileDefaultStorageClass(cloudProvider stri
 	case "gcp":
 		hdd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "kalm-hdd",
+				Name:        "pd-standard",
 				Annotations: docInfoOnStorageClass["gcp"],
 			},
 			Provisioner:   "kubernetes.io/gce-pd",
@@ -106,7 +110,7 @@ func (r *StorageClassReconciler) reconcileDefaultStorageClass(cloudProvider stri
 		}
 		ssd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "kalm-ssd",
+				Name:        "pd-ssd",
 				Annotations: docInfoOnStorageClass["gcp"],
 			},
 			Provisioner:   "kubernetes.io/gce-pd",
@@ -119,17 +123,6 @@ func (r *StorageClassReconciler) reconcileDefaultStorageClass(cloudProvider stri
 		}
 
 		expectedStorageClasses = []v1.StorageClass{hdd, ssd}
-	case "minikube":
-		std := v1.StorageClass{
-			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "kalm-standard",
-				Annotations: docInfoOnStorageClass["minikube"],
-			},
-			Provisioner:   "k8s.io/minikube-hostpath",
-			ReclaimPolicy: &reclaimPolicy,
-		}
-
-		expectedStorageClasses = []v1.StorageClass{std}
 	default:
 		r.Log.Info("unknown cloudProvider", "cloudProvider:", cloudProvider)
 		return nil
@@ -190,6 +183,29 @@ func isGoogleNode(node corev1.Node) bool {
 
 	for _, gkeLabel := range gkeLabels {
 		if _, exist := node.Labels[gkeLabel]; exist {
+			return true
+		}
+	}
+
+	return false
+}
+
+func isAzureNode(node corev1.Node) bool {
+	if strings.HasPrefix(node.Name, "aks") {
+		return true
+	}
+
+	if strings.Contains(node.Status.NodeInfo.KernelVersion, "azure") {
+		return true
+	}
+
+	labels := []string{
+		"kubernetes.azure.com/cluster",
+		"kubernetes.azure.com/role",
+	}
+
+	for _, label := range labels {
+		if _, exist := node.Labels[label]; exist {
 			return true
 		}
 	}

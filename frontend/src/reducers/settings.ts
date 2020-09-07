@@ -16,7 +16,7 @@ export type State = ImmutableMap<SettingObject>;
 
 const initialState: State = Immutable.Map({
   isDisplayingHelpers: window.localStorage.getItem("isDisplayingHelpers") === "true",
-  isOpenRootDrawer: window.localStorage.getItem("isOpenRootDrawer") === "true",
+  isOpenRootDrawer: window.localStorage.getItem("isOpenRootDrawer") !== "false",
   usingApplicationCard: window.localStorage.getItem("usingApplicationCard") === "true",
   usingTheme: window.localStorage.getItem("usingTheme") ?? "light",
   isShowTopProgress: false,

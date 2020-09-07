@@ -6,7 +6,6 @@ import { setErrorNotificationAction, setSuccessNotificationAction } from "action
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import Immutable from "immutable";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { RouteWidgets } from "pages/Route/Widget";
@@ -16,7 +15,6 @@ import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { primaryColor } from "theme/theme";
 import { ApplicationDetails } from "types/application";
-import { HttpRoute } from "types/route";
 import { getApplicationCreatedAtString } from "utils/application";
 import { pluralize } from "utils/string";
 import sc from "utils/stringConstants";
@@ -35,9 +33,6 @@ import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 
-const externalEndpointsModalID = "externalEndpointsModalID";
-const internalEndpointsModalID = "internalEndpointsModalID";
-
 const styles = (theme: Theme) =>
   createStyles({
     emptyWrapper: {
@@ -49,16 +44,12 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const internalEndpointsDialog = state.get("dialogs").get(internalEndpointsModalID);
-  const externalEndpointsDialog = state.get("dialogs").get(externalEndpointsModalID);
   const httpRoutes = state.get("routes").get("httpRoutes");
   const componentsMap = state.get("components").get("components");
   const clusterInfo = state.get("cluster").get("info");
   const usingApplicationCard = state.get("settings").get("usingApplicationCard");
   return {
     clusterInfo,
-    internalEndpointsDialogData: internalEndpointsDialog ? internalEndpointsDialog.get("data") : {},
-    externalEndpointsDialogData: externalEndpointsDialog ? externalEndpointsDialog.get("data") : {},
     httpRoutes,
     componentsMap,
     usingApplicationCard,
@@ -67,29 +58,25 @@ const mapStateToProps = (state: RootState) => {
 
 interface Props extends WithStyles<typeof styles>, WithNamespaceProps, ReturnType<typeof mapStateToProps> {}
 
-interface RowData extends ApplicationDetails {
-  index: number;
-}
-
 class ApplicationListRaw extends React.PureComponent<Props> {
-  private confirmDelete = async (rowData: ApplicationDetails) => {
+  private confirmDelete = async (applicationDetails: ApplicationDetails) => {
     const { dispatch } = this.props;
     try {
-      await dispatch(deleteApplicationAction(rowData.get("name")));
+      await dispatch(deleteApplicationAction(applicationDetails.get("name")));
       await dispatch(setSuccessNotificationAction("Successfully delete an application"));
     } catch {
       dispatch(setErrorNotificationAction());
     }
   };
 
-  private renderCPU = (applicationListItem: RowData) => {
+  private renderCPU = (applicationListItem: ApplicationDetails) => {
     const metrics = applicationListItem.get("metrics");
     return (
       <SmallCPULineChart data={metrics.get("cpu")} hoverText={this.hasPods(applicationListItem) ? "" : "No data"} />
     );
   };
 
-  private renderMemory = (applicationListItem: RowData) => {
+  private renderMemory = (applicationListItem: ApplicationDetails) => {
     const metrics = applicationListItem.get("metrics");
     return (
       <SmallMemoryLineChart
@@ -99,22 +86,22 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     );
   };
 
-  private renderName = (rowData: RowData) => {
+  private renderName = (applicationDetails: ApplicationDetails) => {
     return (
-      <KLink to={`/applications/${rowData.get("name")}/components`} onClick={() => blinkTopProgressAction()}>
-        {rowData.get("name")}
+      <KLink to={`/applications/${applicationDetails.get("name")}/components`} onClick={() => blinkTopProgressAction()}>
+        {applicationDetails.get("name")}
       </KLink>
     );
   };
 
-  private renderCreatedAt = (applicationDetails: RowData) => {
+  private renderCreatedAt = (applicationDetails: ApplicationDetails) => {
     const { componentsMap } = this.props;
     const components = componentsMap.get(applicationDetails.get("name"));
 
     return <Caption>{components ? getApplicationCreatedAtString(components) : "-"}</Caption>;
   };
 
-  private hasPods = (applicationDetails: RowData) => {
+  private hasPods = (applicationDetails: ApplicationDetails) => {
     const { componentsMap } = this.props;
     let count = 0;
     componentsMap.get(applicationDetails.get("name"))?.forEach((component) => {
@@ -126,7 +113,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     return count !== 0;
   };
 
-  private renderStatus = (applicationDetails: RowData) => {
+  private renderStatus = (applicationDetails: ApplicationDetails) => {
     const { componentsMap } = this.props;
 
     let podCount = 0;
@@ -197,14 +184,29 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     );
   };
 
-  private renderExternalAccesses = (applicationDetails: RowData) => {
-    const { httpRoutes, activeNamespaceName } = this.props;
+  private getRoutes = (applicationName: string) => {
+    const { httpRoutes } = this.props;
+    const applicationRoutes = httpRoutes.filter((x) => {
+      let isCurrent = false;
+      x.get("destinations").map((target) => {
+        const hostInfos = target.get("host").split(".");
+        if (hostInfos[1].startsWith(applicationName)) {
+          isCurrent = true;
+        }
+        return target;
+      });
+      return isCurrent;
+    });
+    return applicationRoutes;
+  };
 
-    const applicationRoutes = httpRoutes.filter((x) => x.get("namespace") === activeNamespaceName);
+  private renderExternalAccesses = (applicationDetails: ApplicationDetails) => {
+    const applicationName = applicationDetails.get("name");
+    const applicationRoutes = this.getRoutes(applicationName);
 
     if (applicationRoutes && applicationRoutes.size > 0) {
       return (
-        <PopupState variant="popover" popupId={applicationDetails.get("name")}>
+        <PopupState variant="popover" popupId={applicationName}>
           {(popupState) => (
             <>
               <KMLink component="button" variant="body2" color={"inherit"} {...bindTrigger(popupState)}>
@@ -223,7 +225,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
                 }}
               >
                 <Box p={2}>
-                  <RouteWidgets routes={applicationRoutes} activeNamespaceName={activeNamespaceName} />
+                  <RouteWidgets routes={applicationRoutes} />
                 </Box>
               </Popover>
             </>
@@ -235,7 +237,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     }
   };
 
-  private renderActions = (rowData: RowData) => {
+  private renderActions = (applicationDetails: ApplicationDetails) => {
     return (
       <>
         <IconLinkWithToolTip
@@ -244,14 +246,14 @@ class ApplicationListRaw extends React.PureComponent<Props> {
           }}
           // size="small"
           tooltipTitle="Details"
-          to={`/applications/${rowData.get("name")}/components`}
+          to={`/applications/${applicationDetails.get("name")}/components`}
         >
           <KalmDetailsIcon />
         </IconLinkWithToolTip>
         <DeleteButtonWithConfirmPopover
           popupId="delete-application-popup"
           popupTitle="DELETE APPLICATION?"
-          confirmedAction={() => this.confirmDelete(rowData)}
+          confirmedAction={() => this.confirmDelete(applicationDetails)}
         />
       </>
     );
@@ -350,15 +352,15 @@ class ApplicationListRaw extends React.PureComponent<Props> {
 
     applications &&
       applications.forEach((application, index) => {
-        const rowData = application as RowData;
+        const applicationDetails = application as ApplicationDetails;
         data.push({
-          name: this.renderName(rowData),
-          status: this.renderStatus(rowData),
-          cpu: this.renderCPU(rowData),
-          memory: this.renderMemory(rowData),
-          createdAt: this.renderCreatedAt(rowData),
-          routes: this.renderExternalAccesses(rowData),
-          actions: this.renderActions(rowData),
+          name: this.renderName(applicationDetails),
+          status: this.renderStatus(applicationDetails),
+          cpu: this.renderCPU(applicationDetails),
+          memory: this.renderMemory(applicationDetails),
+          createdAt: this.renderCreatedAt(applicationDetails),
+          routes: this.renderExternalAccesses(applicationDetails),
+          actions: this.renderActions(applicationDetails),
         });
       });
 
@@ -366,22 +368,21 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   }
 
   private renderKRTable() {
-    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+    return <KRTable showTitle={true} title="Apps" columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
   }
 
   private renderGrid = () => {
-    const { applications, componentsMap, httpRoutes, activeNamespaceName } = this.props;
-    const applicationRoutes: Immutable.List<HttpRoute> = httpRoutes.filter(
-      (x) => x.get("namespace") === activeNamespaceName,
-    );
+    const { applications, componentsMap } = this.props;
+
     const GridRow = (app: ApplicationDetails, index: number) => {
+      const applicationName = app.get("name");
+      const applicationRoutes = this.getRoutes(applicationName);
       return (
         <Grid key={index} item sm={6} md={4} lg={3}>
           <ApplicationCard
             application={app}
             componentsMap={componentsMap}
             httpRoutes={applicationRoutes}
-            activeNamespaceName={activeNamespaceName}
             confirmDelete={this.confirmDelete}
           />
         </Grid>

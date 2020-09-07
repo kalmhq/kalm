@@ -12,6 +12,11 @@ const (
 	EnvVarTypeExternal EnvVarType = "external"
 	EnvVarTypeLinked   EnvVarType = "linked"
 	EnvVarTypeFieldRef EnvVarType = "fieldref"
+	EnvVarTypeBuiltin  EnvVarType = "builtin"
+
+	EnvVarBuiltinHost      string = "host"
+	EnvVarBuiltinPodName   string = "podName"
+	EnvVarBuiltinNamespace string = "namespace"
 )
 
 // +kubebuilder:validation:Enum=http;https;http2;grpc;grpc-web;tcp;udp;unknown
@@ -36,7 +41,7 @@ type EnvVar struct {
 
 	Value string `json:"value,omitempty"`
 
-	// +kubebuilder:validation:Enum=static;external;linked;fieldref
+	// +kubebuilder:validation:Enum=static;external;linked;fieldref;builtin
 	Type EnvVarType `json:"type,omitempty"`
 
 	Prefix string `json:"prefix,omitempty"`
@@ -58,7 +63,7 @@ type Port struct {
 	Protocol PortProtocol `json:"protocol"`
 }
 
-// +kubebuilder:validation:Enum=emptyDirMemory;emptyDir;pvc
+// +kubebuilder:validation:Enum=emptyDirMemory;emptyDir;pvc;pvcTemplate;hostpath
 type VolumeType string
 
 const (
@@ -66,8 +71,9 @@ const (
 	VolumeTypeTemporaryDisk         VolumeType = "emptyDir"
 	VolumeTypePersistentVolumeClaim VolumeType = "pvc"
 
-	// TODO
-	// HostPath
+	VolumeTypePersistentVolumeClaimTemplate VolumeType = "pvcTemplate"
+
+	VolumeTypeHostPath VolumeType = "hostpath"
 )
 
 type Volume struct {

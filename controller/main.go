@@ -170,6 +170,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (controllers.NewLogSystemReconciler(mgr)).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "LogSystem")
+		os.Exit(1)
+	}
+
 	// only run webhook if explicitly declared
 	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
 		if err = (&corev1alpha1.Component{}).SetupWebhookWithManager(mgr); err != nil {
@@ -214,6 +219,11 @@ func main() {
 
 		if err = (&corev1alpha1.SingleSignOnConfig{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "SingleSignOnConfig")
+			os.Exit(1)
+		}
+
+		if err = (&corev1alpha1.LogSystem{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "LogSystem")
 			os.Exit(1)
 		}
 		setupLog.Info("WEBHOOK enabled")

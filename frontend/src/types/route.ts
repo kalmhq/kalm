@@ -98,7 +98,7 @@ export const httpMethods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", 
 
 export const newEmptyRouteForm = (): HttpRouteForm => {
   return Immutable.fromJS({
-    namespace: "default",
+    namespace: "kalm-system",
     name: "http-route-" + ID(),
     hosts: [],
     paths: ["/"],

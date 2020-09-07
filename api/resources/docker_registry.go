@@ -112,11 +112,10 @@ func (builder *Builder) GetDockerRegistries() ([]*DockerRegistry, error) {
 }
 
 func buildDockerRegistryFromResource(registry *v1alpha1.DockerRegistry, secret *coreV1.Secret) *DockerRegistry {
-	var username, password string
+	var username string
 
 	if secret != nil {
 		username = string(secret.Data["username"])
-		password = string(secret.Data["password"])
 	}
 
 	return &DockerRegistry{
@@ -124,7 +123,7 @@ func buildDockerRegistryFromResource(registry *v1alpha1.DockerRegistry, secret *
 		DockerRegistryStatus: &registry.Status,
 		Name:                 registry.Name,
 		Username:             username,
-		Password:             password,
+		Password:             "", // do not pass password to client
 	}
 }
 

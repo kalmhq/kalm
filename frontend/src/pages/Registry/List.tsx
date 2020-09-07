@@ -42,10 +42,6 @@ interface State {
   deletingItemName?: string;
 }
 
-interface RowData extends RegistryType {
-  index: number;
-}
-
 class RegistryListPageRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -82,32 +78,32 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   //   );
   // };
 
-  private confirmDelete = async (rowData: RowData) => {
+  private confirmDelete = async (registry: RegistryType) => {
     const { dispatch } = this.props;
     try {
-      await dispatch(deleteRegistryAction(rowData.get("name")));
+      await dispatch(deleteRegistryAction(registry.get("name")));
     } catch {
       dispatch(setErrorNotificationAction());
     }
   };
 
-  private renderName(row: RowData) {
+  private renderName(row: RegistryType) {
     return <Typography variant="subtitle2">{row.get("name")}</Typography>;
   }
 
-  private renderHost(row: RowData) {
+  private renderHost(row: RegistryType) {
     return row.get("host") || "DockerHub";
   }
 
-  private renderUsername(row: RowData) {
+  private renderUsername(row: RegistryType) {
     return row.get("username");
   }
 
-  private renderPassword(row: RowData) {
+  private renderPassword(row: RegistryType) {
     return "******";
   }
 
-  private renderVerified(row: RowData) {
+  private renderVerified(row: RegistryType) {
     if (row.get("authenticationVerified")) {
       return <SuccessBadge />;
     } else {
@@ -121,14 +117,14 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     }
   }
 
-  private renderRepositories(row: RowData) {
+  private renderRepositories(row: RegistryType) {
     return row
       .get("repositories")
       ?.map((x) => x.get("name"))
       .join(",");
   }
 
-  private renderActions(row: RowData) {
+  private renderActions(row: RegistryType) {
     return (
       <>
         <IconLinkWithToolTip tooltipTitle={"Edit"} to={`/cluster/registries/${row.get("name")}/edit`}>
@@ -176,7 +172,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
 
       {
         Header: "Actions",
-        accessor: "action",
+        accessor: "actions",
       },
     ];
   }
@@ -187,14 +183,13 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
 
     registries &&
       registries.forEach((registry, index) => {
-        const rowData = registry as RowData;
         data.push({
-          name: this.renderName(rowData),
-          host: this.renderHost(rowData),
-          username: this.renderUsername(rowData),
-          password: this.renderPassword(rowData),
-          verified: this.renderVerified(rowData),
-          actions: this.renderActions(rowData),
+          name: this.renderName(registry),
+          host: this.renderHost(registry),
+          username: this.renderUsername(registry),
+          password: this.renderPassword(registry),
+          verified: this.renderVerified(registry),
+          actions: this.renderActions(registry),
         });
       });
 
@@ -202,7 +197,9 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderKRTable() {
-    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+    return (
+      <KRTable showTitle={true} title="Registries" columns={this.getKRTableColumns()} data={this.getKRTableData()} />
+    );
   }
 
   private renderSecondHeaderRight() {

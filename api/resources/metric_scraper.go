@@ -160,8 +160,9 @@ func GetFilteredNodeMetrics(nodes []string) NodesMetricHistories {
 
 func getMetricHistories(sql string, args ...interface{}) MetricHistories {
 	metricHistories := MetricHistories{}
+
 	if metricDb == nil {
-		log.Error(nil, "error metric DB nil")
+		log.Info("Metric is not available.")
 		return metricHistories
 	}
 
@@ -310,7 +311,7 @@ func CullDatabase(db *sql.DB, window *time.Duration) error {
 	}
 
 	affected, _ = res.RowsAffected()
-	log.Debug("Cleaning up pods: %d rows removed", affected)
+	log.Debug(fmt.Sprintf("Cleaning up pods: %d rows removed", affected))
 	err = tx.Commit()
 
 	if err != nil {

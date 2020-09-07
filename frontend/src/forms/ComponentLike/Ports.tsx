@@ -1,12 +1,12 @@
-import { Box, Button, Fade, Grid, Icon, Paper, Popper } from "@material-ui/core";
+import { Box, Button, Fade, Grid, Paper, Popper } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
 import Immutable from "immutable";
+import { POPPER_ZINDEX } from "layout/Constants";
+import PopupState, { anchorRef, bindPopper, InjectedProps } from "material-ui-popup-state";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { arrayPush, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
-import { DeleteIcon } from "widgets/Icon";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import {
   ComponentLikePort,
   PortProtocolGRPC,
@@ -15,13 +15,13 @@ import {
   PortProtocolTCP,
   PortProtocolUDP,
 } from "types/componentTemplate";
+import { AddIcon, DeleteIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { PortChart } from "widgets/PortChart";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderDebounceTextField } from "../Basic/textfield";
 import { NormalizePort } from "../normalizer";
-import { ValidatorRequired } from "../validator";
-import PopupState, { anchorRef, bindPopper, InjectedProps } from "material-ui-popup-state";
-import { PortChart } from "widgets/PortChart";
-import { POPPER_ZINDEX } from "layout/Constants";
+import { ValidatorRequired, ValidatorContainerPortRequired, ValidatorPort } from "../validator";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -68,7 +68,7 @@ class RenderPorts extends React.PureComponent<Props> {
             <Button
               variant="outlined"
               color="primary"
-              startIcon={<Icon>add</Icon>}
+              startIcon={<AddIcon />}
               size="small"
               onClick={() =>
                 dispatch(
@@ -131,9 +131,9 @@ class RenderPorts extends React.PureComponent<Props> {
                           onBlur={popupState.close}
                           name={`${field}.containerPort`}
                           label="Container port"
-                          placeholder="Port number between 1-65535"
+                          placeholder="1~65535,not 443"
                           required
-                          validate={ValidatorRequired}
+                          validate={ValidatorContainerPortRequired}
                           normalize={NormalizePort}
                         />
                       </Grid>
@@ -170,6 +170,7 @@ class RenderPorts extends React.PureComponent<Props> {
                           name={`${field}.servicePort`}
                           label="Service Port"
                           placeholder="Default to equal publish port"
+                          validate={ValidatorPort}
                           normalize={NormalizePort}
                         />
                       </Grid>

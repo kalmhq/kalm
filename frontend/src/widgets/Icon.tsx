@@ -7,6 +7,7 @@ import Clear from "@material-ui/icons/Clear";
 import SettingsIcon from "@material-ui/icons/Settings";
 import CreateNewFolder from "@material-ui/icons/CreateNewFolder";
 import OpenInBrowser from "@material-ui/icons/OpenInBrowser";
+import Add from "@material-ui/icons/Add";
 import Delete from "@material-ui/icons/Delete";
 import Edit from "@material-ui/icons/Edit";
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
@@ -169,6 +170,12 @@ export const OpenInBrowserIcon = withStyles(styles)((props: ColorIconsProps) => 
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
   return <OpenInBrowser className={className} fontSize={fontSize} style={style} />;
+});
+
+export const AddIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <Add className={className} fontSize={fontSize} style={style} />;
 });
 
 export const DeleteIcon = withStyles(styles)((props: ColorIconsProps) => {
@@ -395,10 +402,7 @@ export const KalmLogo2Icon = withStyles(styles)((props: ColorIconsProps) => {
       height="143"
       viewBox="0 0 139 143"
     >
-      <path
-        d="M119.4 85C114.9 110.6 92.7001 129.2 66.6001 129.2C39.3001 129.2 16.6 108.6 13.4 82.1H27.2001V91.4C27.2001 100.5 34.5001 107.8 43.6001 107.8H83.8C93.5 107.8 102.3 102.8 107.1 94.3C111.9 85.8 111.8 75.7 106.8 67.4L62.3 0H51.7001V85.3H64.8V27.5L95.6001 74.2C98.1001 78.5 98.1001 83.6 95.7001 87.9C93.2001 92.3 88.8 94.8 83.8 94.8H43.6001C41.8001 94.8 40.3 93.3 40.3 91.5V69H0V75.5C0 112.2 29.9001 142.2 66.7001 142.2C99.1001 142.2 126.7 119 132.4 87.2C132.9 84.2 135.5 82.1 138.5 82.1V69.1C129 69 121 75.7 119.4 85Z"
-        fill="#2CA5FF"
-      />
+      <path d="M119.4 85C114.9 110.6 92.7001 129.2 66.6001 129.2C39.3001 129.2 16.6 108.6 13.4 82.1H27.2001V91.4C27.2001 100.5 34.5001 107.8 43.6001 107.8H83.8C93.5 107.8 102.3 102.8 107.1 94.3C111.9 85.8 111.8 75.7 106.8 67.4L62.3 0H51.7001V85.3H64.8V27.5L95.6001 74.2C98.1001 78.5 98.1001 83.6 95.7001 87.9C93.2001 92.3 88.8 94.8 83.8 94.8H43.6001C41.8001 94.8 40.3 93.3 40.3 91.5V69H0V75.5C0 112.2 29.9001 142.2 66.7001 142.2C99.1001 142.2 126.7 119 132.4 87.2C132.9 84.2 135.5 82.1 138.5 82.1V69.1C129 69 121 75.7 119.4 85Z" />
     </SvgIcon>
   );
 });

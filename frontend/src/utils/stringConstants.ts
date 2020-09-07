@@ -76,13 +76,14 @@ const stringConstants = {
     "Add a Route to allow external requests to access your Application. You can use Routes to specify how hosts and paths map to components, configure HTTPS, and setup canary or blue-green deployments.",
   NEW_APP_BUTTON: "Create App",
   CERT_AUTO: "Automatic Certification with Let's Encrypt",
-  CERT_AUTO_DESC: "Use a certificate signed by Let's Encrypt. Safe and fast. Renew and update are full-automatic.",
+  CERT_AUTO_DESC:
+    "Use a certificate signed by Let's Encrypt. Safe and fast. Renewing and updating are fully-automatic.",
   CERT_UPLOAD: "Use an existing certificate",
-  CERT_UPLOAD_DESC: "Use an existing certificate. You are responsible for renewual.",
+  CERT_UPLOAD_DESC: "Use an existing certificate. You are responsible for renewal.",
   NODES_INFO_BOX_TEXT:
     "Data and metrics regarding nodes in the cluster is displayed here. For cluster administration operations, please see platform specific instructions.",
   ROUTE_HOSTS_INPUT_HELPER:
-    "If you don't have any DNS record point to this ip, you can use the ip directly in this field.",
+    "If you don't have any DNS records pointing to this ip, you can use the ip directly in this field.",
   ROUTE_PATHS_INPUT_HELPER: 'Add paths to be handled. Root("/") added by default. Each path must begin with "/".',
   ROUTE_STRIP_PATH_LABEL: "Strip Path Prefix from request",
   ROUTE_STRIP_PATH_HELPER:

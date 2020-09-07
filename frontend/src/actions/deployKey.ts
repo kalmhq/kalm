@@ -31,17 +31,19 @@ export const loadDeployKeyAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const createDeployKeyAction = (key: DeployKey): ThunkResult<Promise<void>> => {
+export const createDeployKeyAction = (key: DeployKey): ThunkResult<Promise<DeployKey>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: CREATE_DEPLOY_KEY_PENDING });
 
       const keyRes = await api.createDeployKey(key);
 
-      dispatch({
+      await dispatch({
         type: CREATE_DEPLOY_KEY_FULFILLED,
         payload: keyRes,
       });
+
+      return keyRes;
     } catch (e) {
       dispatch({ type: CREATE_DEPLOY_KEY_FAILED });
       throw e;
