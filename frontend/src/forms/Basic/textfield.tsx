@@ -8,6 +8,7 @@ import { KalmConsoleIcon } from "widgets/Icon";
 
 interface Props {
   endAdornment?: React.ReactNode;
+  normalize?: (event: React.ChangeEvent<HTMLInputElement>) => any;
 }
 
 export const KRenderFormikTextField = (props: TextFieldProps & FieldProps) => {
@@ -43,7 +44,8 @@ export const KRenderDebounceFormikTextField = (props: TextFieldProps & FieldProp
     meta,
     field: { name, value },
     onBlur,
-    form: { errors, handleChange, handleBlur },
+    normalize,
+    form: { errors, handleChange, handleBlur, setFieldValue },
     ...custom
   } = props;
   const [innerValue, setInnerValue] = useState("");
@@ -59,18 +61,22 @@ export const KRenderDebounceFormikTextField = (props: TextFieldProps & FieldProp
   }, [value]);
 
   const [debouncedHandleOnChange] = useDebouncedCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    handleChange(event);
+    if (normalize) {
+      setFieldValue(name, normalize(event));
+    } else {
+      handleChange(event);
+    }
   }, INPUT_DELAY);
 
   const handleOnChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       event.persist();
 
-      const newValue = event.currentTarget.value;
+      const newValue = normalize ? normalize(event) : event.currentTarget.value;
       setInnerValue(newValue);
       debouncedHandleOnChange(event);
     },
-    [debouncedHandleOnChange],
+    [debouncedHandleOnChange, normalize],
   );
 
   const inputProps: Partial<OutlinedInputProps> = {};

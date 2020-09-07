@@ -11,7 +11,7 @@ import {
 } from "@material-ui/core";
 import { WithStyles } from "@material-ui/styles";
 import { FastField, FieldProps, getIn } from "formik";
-import { NormalizeNumber } from "forms/normalizer";
+import { FormikNormalizeNumber } from "forms/normalizer";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { PortProtocolHTTP, PortProtocolTCP, ProbeContent, ComponentLikePortContent } from "types/componentTemplate";
@@ -55,15 +55,22 @@ class RenderProbe extends React.PureComponent<Props> {
     style,
     select,
     children,
+    normalize,
     type,
-  }: FieldProps & StandardTextFieldProps & { style?: any; type?: string }) => {
+  }: FieldProps & StandardTextFieldProps & { style?: any; type?: string; normalize?: any }) => {
     const { classes } = this.props;
     return (
       <TextField
         error={!!getIn(touched, name) && !!getIn(errors, name)}
         helperText={!!getIn(touched, name) && !!getIn(errors, name) ? getIn(errors, name) : undefined}
         InputProps={{ classes: { input: classes.input } }}
-        onChange={(e) => setFieldValue(name, e.target.value)}
+        onChange={(e) => {
+          if (normalize) {
+            setFieldValue(name, normalize(e));
+          } else {
+            setFieldValue(name, e.target.value);
+          }
+        }}
         value={value}
         size="small"
         type={type}
@@ -86,7 +93,7 @@ class RenderProbe extends React.PureComponent<Props> {
           <FastField
             name={`${name}.initialDelaySeconds`}
             component={this.renderNestedTextfield}
-            normalize={NormalizeNumber}
+            normalize={FormikNormalizeNumber}
             placeholder="10"
             type="number"
             min="1"
@@ -121,7 +128,7 @@ class RenderProbe extends React.PureComponent<Props> {
               name={`${name}.httpGet.port`}
               component={this.renderNestedTextfield}
               placeholder="8080"
-              normalize={NormalizeNumber}
+              normalize={FormikNormalizeNumber}
               validate={ValidatorRequired}
               style={{ width: 60 }}
             />
@@ -137,7 +144,7 @@ class RenderProbe extends React.PureComponent<Props> {
           <FastField
             name={`${name}.periodSeconds`}
             component={this.renderNestedTextfield}
-            normalize={NormalizeNumber}
+            normalize={FormikNormalizeNumber}
             placeholder="10"
             type="number"
             min="1"
@@ -160,7 +167,7 @@ class RenderProbe extends React.PureComponent<Props> {
             name={`${name}.initialDelaySeconds`}
             component={this.renderNestedTextfield}
             placeholder="10"
-            normalize={NormalizeNumber}
+            normalize={FormikNormalizeNumber}
             type="number"
             min="1"
             style={{ width: 60 }}
@@ -179,7 +186,7 @@ class RenderProbe extends React.PureComponent<Props> {
           <FastField
             name={`${name}.periodSeconds`}
             component={this.renderNestedTextfield}
-            normalize={NormalizeNumber}
+            normalize={FormikNormalizeNumber}
             placeholder="10"
             type="number"
             min="1"
@@ -201,7 +208,7 @@ class RenderProbe extends React.PureComponent<Props> {
           <FastField
             name={`${name}.initialDelaySeconds`}
             component={this.renderNestedTextfield}
-            normalize={NormalizeNumber}
+            normalize={FormikNormalizeNumber}
             placeholder="10"
             type="number"
             min="1"
@@ -220,7 +227,7 @@ class RenderProbe extends React.PureComponent<Props> {
               name={`${name}.tcpSocket.port`}
               component={this.renderNestedTextfield}
               validate={ValidatorRequired}
-              normalize={NormalizeNumber}
+              normalize={FormikNormalizeNumber}
               placeholder="8080"
               style={{ width: 60 }}
             />
@@ -229,7 +236,7 @@ class RenderProbe extends React.PureComponent<Props> {
           <FastField
             name={`${name}.periodSeconds`}
             component={this.renderNestedTextfield}
-            normalize={NormalizeNumber}
+            normalize={FormikNormalizeNumber}
             placeholder="10"
             type="number"
             min="1"
@@ -253,7 +260,7 @@ class RenderProbe extends React.PureComponent<Props> {
             name={`${name}.timeoutSeconds`}
             component={this.renderNestedTextfield}
             placeholder="1"
-            normalize={NormalizeNumber}
+            normalize={FormikNormalizeNumber}
             style={{ width: 60 }}
             type="number"
             min="1"
@@ -276,7 +283,7 @@ class RenderProbe extends React.PureComponent<Props> {
                 name={`${name}.successThreshold`}
                 component={this.renderNestedTextfield}
                 placeholder="1"
-                normalize={NormalizeNumber}
+                normalize={FormikNormalizeNumber}
                 style={{ width: 60 }}
                 type="number"
                 min="1"
@@ -289,7 +296,7 @@ class RenderProbe extends React.PureComponent<Props> {
             name={`${name}.failureThreshold`}
             component={this.renderNestedTextfield}
             placeholder="3"
-            normalize={NormalizeNumber}
+            normalize={FormikNormalizeNumber}
             type="number"
             min="1"
             style={{ width: 60 }}

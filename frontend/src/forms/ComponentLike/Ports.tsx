@@ -17,6 +17,7 @@ import { PortChart } from "widgets/PortChart";
 import { RenderFormikSelectField } from "../Basic/select";
 import { KRenderDebounceFormikTextField } from "../Basic/textfield";
 import { ValidatorContainerPortRequired, ValidatorPort, ValidatorRequired } from "../validator";
+import { FormikNormalizePort } from "forms/normalizer";
 
 interface Props extends FieldArrayRenderProps {}
 
@@ -110,6 +111,7 @@ class RenderPorts extends React.PureComponent<Props> {
                             name={`${name}.${index}.containerPort`}
                             label="Container port"
                             placeholder="1~65535,not 443"
+                            normalize={FormikNormalizePort}
                             validate={ValidatorContainerPortRequired}
                           />
                         </Grid>
@@ -151,6 +153,7 @@ class RenderPorts extends React.PureComponent<Props> {
                             name={`${name}.${index}.servicePort`}
                             label="Service Port"
                             placeholder="Default to equal publish port"
+                            normalize={FormikNormalizePort}
                             validate={ValidatorPort}
                           />
                         </Grid>
