@@ -1,9 +1,11 @@
 package rbac
 
 import (
+	"fmt"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	"github.com/casbin/casbin/v2/persist"
+	"strings"
 )
 
 type Enforcer interface {
@@ -28,6 +30,7 @@ type Enforcer interface {
 	LoadPolicy() error
 	GetPolicy() [][]string
 	GetGroupingPolicy() [][]string
+	GetCompletePoliciesFor(subjects ...string) string
 }
 
 var _ Enforcer = &KalmRBACEnforcer{}
@@ -86,8 +89,28 @@ func (e *KalmRBACEnforcer) CanManageCluster(subject string) bool {
 	return e.Enforce(subject, ActionManage, AllScope, ResourceAll)
 }
 
+func (e *KalmRBACEnforcer) GetCompletePoliciesFor(subjects ...string) string {
+	res := make([]string, 0)
+
+	for _, subject := range subjects {
+		implicitPermissions, _ := e.SyncedEnforcer.GetImplicitPermissionsForUser(subject)
+
+		for _, permission := range implicitPermissions {
+			res = append(res, fmt.Sprintf("p, %s, %s, %s, %s", permission[0], permission[1], permission[2], permission[3]))
+		}
+
+		implicitRoles, _ := e.SyncedEnforcer.GetImplicitRolesForUser(subject)
+
+		for _, role := range implicitRoles {
+			res = append(res, fmt.Sprintf("g, %s, %s", subject, role))
+		}
+	}
+
+	return strings.Join(res, "\n")
+}
+
 func NewEnforcer(adapter persist.Adapter) (Enforcer, error) {
-	mod, err := model.NewModelFromString(rbacWithAdminModel)
+	mod, err := model.NewModelFromString(RBACModelString)
 
 	if err != nil {
 		return nil, err

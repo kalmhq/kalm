@@ -35,11 +35,11 @@ func objMatchFunc(args ...interface{}) (interface{}, error) {
 	obj1 := args[0].(string)
 	obj2 := args[1].(string)
 
-	return (bool)(objMatch(obj1, obj2)), nil
+	return objMatch(obj1, obj2), nil
 }
 
 // Casbin RBAC model definition
-var rbacWithAdminModel = fmt.Sprintf(`
+var RBACModelString = fmt.Sprintf(`
 [request_definition]
 r = sub, act, scope, obj
 

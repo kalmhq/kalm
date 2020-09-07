@@ -6,7 +6,7 @@ import (
 )
 
 func TestEnforcer(t *testing.T) {
-	e, err := NewEnforcer(NewStringPolicyAdapter(`
+	policyAdapter := NewStringPolicyAdapter(`
 p, role_ns1Viewer, view, ns1, *
 p, role_ns1Editor, edit, ns1, *
 g, role_ns1Editor, role_ns1Viewer
@@ -35,53 +35,89 @@ g, clusterOwner, role_clusterOwner
 
 # Nio can edit any component under ns2
 p, Nio, edit, ns2, components/*
-`))
+`)
+
+	e, err := NewEnforcer(policyAdapter)
 
 	assert.Nil(t, err)
 
-	assert.True(t, e.CanViewNamespace("ns1Viewer", "ns1"))
-	assert.False(t, e.CanEditNamespace("ns1Viewer", "ns1"))
-	assert.False(t, e.CanManageNamespace("ns1Viewer", "ns1"))
-	assert.False(t, e.CanViewNamespace("ns1Viewer", "ns2"))
-	assert.False(t, e.CanEditNamespace("ns1Viewer", "ns2"))
-	assert.False(t, e.CanManageNamespace("ns1Viewer", "ns2"))
+	directlyAndRebuildWithPartialPoliciesTest(e, "ns1Viewer", func(e Enforcer, helperMessage string) {
+		assert.True(t, e.CanViewNamespace("ns1Viewer", "ns1"), helperMessage)
+		assert.False(t, e.CanEditNamespace("ns1Viewer", "ns1"), helperMessage)
+		assert.False(t, e.CanManageNamespace("ns1Viewer", "ns1"), helperMessage)
+		assert.False(t, e.CanViewNamespace("ns1Viewer", "ns2"), helperMessage)
+		assert.False(t, e.CanEditNamespace("ns1Viewer", "ns2"), helperMessage)
+		assert.False(t, e.CanManageNamespace("ns1Viewer", "ns2"), helperMessage)
 
-	assert.True(t, e.CanViewNamespace("ns1Editor", "ns1"))
-	assert.True(t, e.CanEditNamespace("ns1Editor", "ns1"))
-	assert.False(t, e.CanManageNamespace("ns1Editor", "ns1"))
-	assert.False(t, e.CanViewNamespace("ns1Editor", "ns2"))
-	assert.False(t, e.CanEditNamespace("ns1Editor", "ns2"))
-	assert.False(t, e.CanManageNamespace("ns1Editor", "ns2"))
+	})
 
-	assert.True(t, e.CanViewNamespace("ns1Owner", "ns1"))
-	assert.True(t, e.CanEditNamespace("ns1Owner", "ns1"))
-	assert.True(t, e.CanManageNamespace("ns1Owner", "ns1"))
-	assert.False(t, e.CanViewNamespace("ns1Owner", "ns2"))
-	assert.False(t, e.CanEditNamespace("ns1Owner", "ns2"))
-	assert.False(t, e.CanManageNamespace("ns1Owner", "ns2"))
+	directlyAndRebuildWithPartialPoliciesTest(e, "ns1Editor", func(e Enforcer, helperMessage string) {
+		assert.True(t, e.CanViewNamespace("ns1Editor", "ns1"), helperMessage)
+		assert.True(t, e.CanEditNamespace("ns1Editor", "ns1"), helperMessage)
+		assert.False(t, e.CanManageNamespace("ns1Editor", "ns1"), helperMessage)
+		assert.False(t, e.CanViewNamespace("ns1Editor", "ns2"), helperMessage)
+		assert.False(t, e.CanEditNamespace("ns1Editor", "ns2"), helperMessage)
+		assert.False(t, e.CanManageNamespace("ns1Editor", "ns2"), helperMessage)
+	})
 
-	assert.True(t, e.CanViewNamespace("clusterViewer", "ns1"))
-	assert.False(t, e.CanEditNamespace("clusterViewer", "ns1"))
-	assert.False(t, e.CanManageNamespace("clusterViewer", "ns1"))
-	assert.True(t, e.CanViewNamespace("clusterViewer", "ns2"))
-	assert.False(t, e.CanEditNamespace("clusterViewer", "ns2"))
-	assert.False(t, e.CanManageNamespace("clusterViewer", "ns2"))
+	directlyAndRebuildWithPartialPoliciesTest(e, "ns1Owner", func(e Enforcer, helperMessage string) {
+		assert.True(t, e.CanViewNamespace("ns1Owner", "ns1"), helperMessage)
+		assert.True(t, e.CanEditNamespace("ns1Owner", "ns1"), helperMessage)
+		assert.True(t, e.CanManageNamespace("ns1Owner", "ns1"), helperMessage)
+		assert.False(t, e.CanViewNamespace("ns1Owner", "ns2"), helperMessage)
+		assert.False(t, e.CanEditNamespace("ns1Owner", "ns2"), helperMessage)
+		assert.False(t, e.CanManageNamespace("ns1Owner", "ns2"), helperMessage)
+	})
 
-	assert.True(t, e.CanViewNamespace("clusterEditor", "ns1"))
-	assert.True(t, e.CanEditNamespace("clusterEditor", "ns1"))
-	assert.False(t, e.CanManageNamespace("clusterEditor", "ns1"))
-	assert.True(t, e.CanViewNamespace("clusterEditor", "ns2"))
-	assert.True(t, e.CanEditNamespace("clusterEditor", "ns2"))
-	assert.False(t, e.CanManageNamespace("clusterEditor", "ns2"))
+	directlyAndRebuildWithPartialPoliciesTest(e, "clusterViewer", func(e Enforcer, helperMessage string) {
+		assert.True(t, e.CanViewNamespace("clusterViewer", "ns1"), helperMessage)
+		assert.False(t, e.CanEditNamespace("clusterViewer", "ns1"), helperMessage)
+		assert.False(t, e.CanManageNamespace("clusterViewer", "ns1"), helperMessage)
+		assert.True(t, e.CanViewNamespace("clusterViewer", "ns2"), helperMessage)
+		assert.False(t, e.CanEditNamespace("clusterViewer", "ns2"), helperMessage)
+		assert.False(t, e.CanManageNamespace("clusterViewer", "ns2"), helperMessage)
+	})
 
-	assert.True(t, e.CanViewNamespace("clusterOwner", "ns1"))
-	assert.True(t, e.CanEditNamespace("clusterOwner", "ns1"))
-	assert.True(t, e.CanManageNamespace("clusterOwner", "ns1"))
-	assert.True(t, e.CanViewNamespace("clusterOwner", "ns2"))
-	assert.True(t, e.CanEditNamespace("clusterOwner", "ns2"))
-	assert.True(t, e.CanManageNamespace("clusterOwner", "ns2"))
+	directlyAndRebuildWithPartialPoliciesTest(e, "clusterEditor", func(e Enforcer, helperMessage string) {
+		assert.True(t, e.CanViewNamespace("clusterEditor", "ns1"), helperMessage)
+		assert.True(t, e.CanEditNamespace("clusterEditor", "ns1"), helperMessage)
+		assert.False(t, e.CanManageNamespace("clusterEditor", "ns1"), helperMessage)
+		assert.True(t, e.CanViewNamespace("clusterEditor", "ns2"), helperMessage)
+		assert.True(t, e.CanEditNamespace("clusterEditor", "ns2"), helperMessage)
+		assert.False(t, e.CanManageNamespace("clusterEditor", "ns2"), helperMessage)
+
+	})
+
+	directlyAndRebuildWithPartialPoliciesTest(e, "clusterOwner", func(e Enforcer, helperMessage string) {
+		assert.True(t, e.CanViewNamespace("clusterOwner", "ns1"), helperMessage)
+		assert.True(t, e.CanEditNamespace("clusterOwner", "ns1"), helperMessage)
+		assert.True(t, e.CanManageNamespace("clusterOwner", "ns1"), helperMessage)
+		assert.True(t, e.CanViewNamespace("clusterOwner", "ns2"), helperMessage)
+		assert.True(t, e.CanEditNamespace("clusterOwner", "ns2"), helperMessage)
+		assert.True(t, e.CanManageNamespace("clusterOwner", "ns2"), helperMessage)
+
+	})
 
 	// Special case
-	assert.True(t, e.Can("Nio", "edit", "ns2", "components/abc"))
-	assert.False(t, e.Can("Nio", "edit", "ns2", "pod/abc"))
+	directlyAndRebuildWithPartialPoliciesTest(e, "Nio", func(e Enforcer, helperMessage string) {
+		assert.True(t, e.Can("Nio", "edit", "ns2", "components/abc"), helperMessage)
+		assert.False(t, e.Can("Nio", "edit", "ns2", "pod/abc"), helperMessage)
+		assert.Equal(t, "p, Nio, edit, ns2, components/*", e.GetCompletePoliciesFor("Nio"), helperMessage)
+	})
+}
+
+// 1) Directly test is use the server side completed policies to test
+// 2) Partial policies test is only using the policies that are related with the subject to test.
+//    This is a simulation for frontend, since the user can only get policies that relate to him/her.
+func directlyAndRebuildWithPartialPoliciesTest(oldEnforcer Enforcer, sub string, fn func(e Enforcer, helperMessage string)) {
+	// directly test
+	fn(oldEnforcer, "directly test")
+
+	// create a new enforcer with abbreviated policies
+	policies := oldEnforcer.GetCompletePoliciesFor(sub)
+	policyAdapter := NewStringPolicyAdapter(policies)
+	e, _ := NewEnforcer(policyAdapter)
+
+	// test again
+	fn(e, "partial policies test")
 }
