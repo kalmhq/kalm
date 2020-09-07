@@ -68,6 +68,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                             {domain}
                           </FlexRowItemCenterBox>
                         }
+                        showIcon={true}
                       >
                         <Box p={1}>
                           Add a A Record
@@ -100,6 +101,8 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                             {domain}
                           </FlexRowItemCenterBox>
                         }
+                        defaultOpen={true}
+                        showIcon={true}
                       >
                         <Box p={1}>
                           Add a CNAME Record
