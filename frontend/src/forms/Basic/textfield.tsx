@@ -42,11 +42,13 @@ export const KRenderDebounceFormikTextField = (props: TextFieldProps & FieldProp
     endAdornment,
     meta,
     field: { name, value },
-    form: { errors, touched, handleChange },
+    onBlur,
+    form: { errors, handleChange, handleBlur },
     ...custom
   } = props;
   const [innerValue, setInnerValue] = useState("");
-  const showError = !!getIn(errors, name) && getIn(touched, name);
+  const error = getIn(errors, name);
+  const showError = !!error;
 
   useEffect(() => {
     if (value) {
@@ -81,11 +83,12 @@ export const KRenderDebounceFormikTextField = (props: TextFieldProps & FieldProp
       {...custom}
       fullWidth
       name={name}
+      onBlur={onBlur || handleBlur}
       error={showError}
       InputLabelProps={{
         shrink: true,
       }}
-      helperText={showError ? getIn(errors, name) : helperText ? helperText : " "}
+      helperText={showError ? error : helperText ? helperText : " "}
       margin="dense"
       variant="outlined"
       InputProps={inputProps}

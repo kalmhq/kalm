@@ -1,14 +1,16 @@
 import { Box, createStyles, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import { Alert } from "@material-ui/lab";
 import { createApplicationAction } from "actions/application";
 import { push } from "connected-react-router";
 import { Field, FormikProps, withFormik } from "formik";
+import { APPLICATION_FORM_ID } from "forms/formIDs";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { theme } from "theme/theme";
+import { FormMidware } from "tutorials/formMidware";
+import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import { ApplicationContent } from "types/application";
 import stringConstants from "utils/stringConstants";
@@ -17,9 +19,6 @@ import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
 import { KRenderDebounceFormikTextField } from "../Basic/textfield";
 import { ValidatorName } from "../validator";
-import { APPLICATION_FORM_ID } from "forms/formIDs";
-import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
-import { FormMidware } from "tutorials/formMidware";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -111,7 +110,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
   }
 
   public render() {
-    const { handleSubmit, classes, errors, touched, values, form } = this.props;
+    const { handleSubmit, classes, values, form } = this.props;
 
     return (
       <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">
@@ -124,11 +123,11 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           }
         />
 
-        {errors.name && touched.name ? (
+        {/* {errors.name && touched.name ? (
           <Box pt={2}>
             <Alert severity="error">{errors.name}</Alert>
           </Box>
-        ) : null}
+        ) : null} */}
 
         <Box pt={3} className={classes.displayFlex}>
           {this.renderButtons()}
