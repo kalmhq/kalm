@@ -18,7 +18,7 @@ import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 import clsx from "clsx";
 import { push } from "connected-react-router";
-import { Field, FastField, FormikProps, withFormik } from "formik";
+import { Field, FastField, FormikProps, withFormik, getIn } from "formik";
 import { KTooltip } from "forms/Application/KTooltip";
 import { KFormikBoolCheckboxRender } from "forms/Basic/checkbox";
 import { Disks } from "forms/ComponentLike/Disks";
@@ -781,8 +781,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     dispatch(push(`${pathname}#${tab ? tab.replace(/\s/g, "") : ""}`));
   }
 
+  private showError(fieldName: string): boolean {
+    const { touched, errors } = this.props;
+
+    return !!getIn(touched, fieldName) && !!getIn(errors, fieldName);
+  }
+
   private renderTabs() {
-    const { classes, currentTabIndex, errors } = this.props;
+    const { classes, currentTabIndex } = this.props;
     return (
       <Tabs
         className={clsx(classes.borderBottom, classes.tabsRoot)}
@@ -799,11 +805,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       >
         {this.tabs.map((tab) => {
           if (
-            (tab === Configurations && (errors.preInjectedFiles || errors.env || errors.command)) ||
-            (tab === DisksTab && errors.volumes) ||
-            (tab === HealthTab && (errors.livenessProbe || errors.readinessProbe)) ||
-            (tab === NetworkingTab && errors.ports) ||
-            (tab === Scheduling && (errors.cpuLimit || errors.memoryLimit || errors.nodeSelectorLabels))
+            (tab === Configurations &&
+              (this.showError("preInjectedFiles") || this.showError("env") || this.showError("command"))) ||
+            (tab === DisksTab && this.showError("volumes")) ||
+            (tab === HealthTab && (this.showError("livenessProbe") || this.showError("readinessProbe"))) ||
+            (tab === NetworkingTab && this.showError("ports")) ||
+            (tab === Scheduling &&
+              (this.showError("cpuLimit") || this.showError("memoryLimit") || this.showError("nodeSelectorLabels")))
           ) {
             return <Tab key={tab} label={tab} className={classes.hasError} />;
           }
