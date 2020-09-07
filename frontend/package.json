@@ -45,6 +45,7 @@
     "formik": "^2.1.5",
     "formik-material-ui": "^3.0.0-alpha.0",
     "hoist-non-react-statics": "^3.3.2",
+    "immer": "^7.0.8",
     "immutable": "^4.0.0-rc.12",
     "material-table": "^1.57.2",
     "material-ui-popup-state": "^1.6.1",

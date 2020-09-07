@@ -18,10 +18,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
   return {
-    initialValues: state
-      .get("registries")
-      .get("registries")
-      .find((registry) => registry.get("name") === ownProps.match.params.name),
+    initialValues: state.get("registries").registries.find((registry) => registry.name === ownProps.match.params.name),
   };
 };
 
@@ -56,7 +53,7 @@ class RegistryEditPageRaw extends React.PureComponent<Props, State> {
       <BasePage secondHeaderRight={<H6>Edit Registry</H6>}>
         <Grid container spacing={2}>
           <Grid item xs={8} sm={8} md={8}>
-            <RegistryForm isEdit onSubmit={this.submit} initial={initialValues.toJS() as RegistryFormType} />
+            <RegistryForm isEdit onSubmit={this.submit} initial={initialValues as RegistryFormType} />
           </Grid>
         </Grid>
       </BasePage>

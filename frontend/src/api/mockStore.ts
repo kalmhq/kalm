@@ -10,11 +10,12 @@ import {
 import { ClusterInfo } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import { NodesListResponse } from "types/node";
-import { RegistryType } from "types/registry";
+import { RegistryFormType, Registry } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { SSOConfig } from "types/sso";
 import { ImmutableMap } from "typings";
+import produce from "immer";
 
 interface MockStoreData {
   mockClusterInfo: ClusterInfo;
@@ -28,7 +29,6 @@ interface MockStoreData {
   mockHttpRoutes: Immutable.List<HttpRoute>;
   mockCertificates: CertificateList;
   mockCertificateIssuers: CertificateIssuerList;
-  mockRegistries: Immutable.List<RegistryType>;
   mockErrorPod: PodStatus;
   mockComponentPlugins: Immutable.List<ComponentPlugin>;
   mockServices: Immutable.List<Service>;
@@ -36,19 +36,48 @@ interface MockStoreData {
   mockSSO: SSOConfig;
 }
 
+interface MockStoreDataImmer {
+  mockRegistries: Registry[];
+}
+
 export default class MockStore {
   public data: ImmutableMap<MockStoreData>;
   public CACHE_KEY = "kubernetes-api-mock-data-v2";
   public onmessage?: any;
 
+  public dataImmer: MockStoreDataImmer;
+  public CACHE_KEY_IMMER = "kubernetes-api-mock-data-v3";
+
   constructor() {
     const cachedData = this.getCachedData();
     this.data = cachedData || this.getInitData();
+
+    const cachedDataImmer = this.getCachedDataImmer();
+    this.dataImmer = cachedDataImmer || this.getInitDataImmer();
   }
 
   public deleteRegistry = async (name: string) => {
-    const index = this.data.get("mockRegistries").findIndex((c) => c.get("name") === name);
-    this.data = this.data.deleteIn(["mockRegistries", index]);
+    let registries = this.dataImmer.mockRegistries;
+    this.dataImmer.mockRegistries = produce(registries, (draft) => {
+      // find should use original instead of draft for performance
+      const index = registries.findIndex((x) => x.name === name);
+      if (index > -1) {
+        draft.splice(index, 1);
+      }
+    });
+    await this.saveData();
+  };
+
+  public updateRegistry = async (registry: RegistryFormType) => {
+    let registries = this.dataImmer.mockRegistries;
+    this.dataImmer.mockRegistries = produce(registries, (draft) => {
+      const index = registries.findIndex((x) => x.name === registry.name);
+      if (index > -1) {
+        draft[index] = registry as Registry;
+      } else {
+        draft.push(registry as Registry);
+      }
+    });
     await this.saveData();
   };
 
@@ -190,18 +219,25 @@ export default class MockStore {
     await this.saveData(data);
   };
 
-  public updateRegistry = async (registry: RegistryType) => {
-    const index = this.data.get("mockRegistries").findIndex((c) => c.get("name") === registry.get("name"));
-    if (index >= 0) {
-      this.data = this.data.updateIn(["mockRegistries", index], registry as any);
-    } else {
-      this.data = this.data.updateIn(["mockRegistries"], (c) => c.push(registry));
-    }
-    await this.saveData();
+  public getCachedDataImmer = () => {
+    const cacheJSON = window.localStorage.getItem(this.CACHE_KEY_IMMER);
+
+    return !!cacheJSON ? JSON.parse(cacheJSON) : null;
+  };
+
+  public getInitDataImmer = () => {
+    return {
+      mockRegistries: [{ host: "https://abc.com", name: "registry1", username: "user1", password: "pass1" }],
+    };
   };
 
   public saveData = async (messageData?: any) => {
     window.localStorage.setItem(this.CACHE_KEY, JSON.stringify(this.data));
+    if (this.onmessage && messageData) {
+      await this.onmessage({ data: JSON.stringify(messageData) });
+    }
+
+    window.localStorage.setItem(this.CACHE_KEY_IMMER, JSON.stringify(this.dataImmer));
     if (this.onmessage && messageData) {
       await this.onmessage({ data: JSON.stringify(messageData) });
     }
@@ -214,7 +250,7 @@ export default class MockStore {
   };
 
   public getInitData = () => {
-    return Immutable.fromJS({
+    return Immutable.Map({
       mockClusterInfo: Immutable.fromJS({
         version: "v1.15.0",
         ingressIP: "192.168.64.3",
@@ -8288,7 +8324,7 @@ export default class MockStore {
 
       mockCertificateIssuers: Immutable.fromJS([{ name: "default-cert-issuer", caForTest: {} }]),
 
-      mockRegistries: Immutable.fromJS([{ host: "has.dd", name: "ll", username: "", password: "" }]),
+      mockRegistries: [{ host: "has.dd", name: "ll", username: "", password: "" }],
 
       mockErrorPod: Immutable.fromJS({
         name: "kkl-747f987f74-4mq5r",

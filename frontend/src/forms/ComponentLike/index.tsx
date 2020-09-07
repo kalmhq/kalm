@@ -104,7 +104,7 @@ const mapStateToProps = (state: RootState) => {
   }
 
   return {
-    registries: state.get("registries").get("registries"),
+    registries: state.get("registries").registries,
     tutorialState: state.get("tutorial"),
     isSubmittingApplicationComponent: state.get("components").get("isSubmittingApplicationComponent"),
     nodeLabels,
@@ -904,7 +904,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       return false;
     }
 
-    return !registries.find((r) => r.get("host").includes(parts[0]));
+    return !registries.find((r) => r.host.includes(parts[0]));
   };
 
   private renderPrivateRegistryAlert = () => {

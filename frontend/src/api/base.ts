@@ -20,7 +20,7 @@ import { ClusterInfo, InitializeClusterResponse } from "types/cluster";
 import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import { Node, NodesListResponse } from "types/node";
-import { RegistryType } from "types/registry";
+import { RegistryFormType, Registry } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
@@ -50,13 +50,13 @@ export abstract class Api {
   public abstract getStatefulSetOptions(namespace: string): Promise<VolumeOptions>;
 
   // registry
-  public abstract getRegistries(): Promise<Immutable.List<RegistryType>>;
+  public abstract getRegistries(): Promise<Registry[]>;
 
-  public abstract getRegistry(name: string): Promise<RegistryType>;
+  public abstract getRegistry(name: string): Promise<Registry>;
 
-  public abstract createRegistry(registry: RegistryType): Promise<RegistryType>;
+  public abstract createRegistry(registry: RegistryFormType): Promise<Registry>;
 
-  public abstract updateRegistry(registry: RegistryType): Promise<RegistryType>;
+  public abstract updateRegistry(registry: RegistryFormType): Promise<Registry>;
 
   public abstract deleteRegistry(name: string): Promise<void>;
 

@@ -1,6 +1,3 @@
-import { ImmutableMap } from "typings";
-import Immutable from "immutable";
-
 export const SET_IS_SUBMITTING_REGISTRY = "SET_IS_SUBMITTING_REGISTRY";
 export const LOAD_REGISTRIES_PENDING = "LOAD_REGISTRIES_PENDING";
 export const LOAD_REGISTRIES_FULFILLED = "LOAD_REGISTRIES_FULFILLED";
@@ -19,21 +16,17 @@ export const PublicRegistriesList = [
   "quay.io",
 ];
 
-export interface RepositoryTagContent {
+export interface RepositoryTag {
   name: string;
   manifest: string;
   timeCreatedMs: string;
   timeUploadedMs: string;
 }
 
-export type RepositoryTag = ImmutableMap<RepositoryTagContent>;
-
-export interface RepositoryContent {
+export interface Repository {
   name: string;
-  tags: Immutable.List<RepositoryTag>;
+  tags: RepositoryTag[];
 }
-
-export type Repository = ImmutableMap<RepositoryContent>;
 
 export interface Registry {
   name: string;
@@ -42,7 +35,7 @@ export interface Registry {
   host: string;
   poolingIntervalSeconds: number;
   authenticationVerified: boolean;
-  repositories: Immutable.List<Repository>;
+  repositories: Repository[];
 }
 
 export interface RegistryFormType {
@@ -61,26 +54,24 @@ export const newEmptyRegistry = (): RegistryFormType => {
   };
 };
 
-export type RegistryType = ImmutableMap<Registry>;
-
 export interface LoadRegistriesAction {
   type: typeof LOAD_REGISTRIES_FULFILLED;
   payload: {
-    registries: Immutable.List<RegistryType>;
+    registries: Registry[];
   };
 }
 
 export interface CreateRegistryAction {
   type: typeof CREATE_REGISTRY;
   payload: {
-    registry: RegistryType;
+    registry: Registry;
   };
 }
 
 export interface UpdateRegistryAction {
   type: typeof UPDATE_REGISTRY;
   payload: {
-    registry: RegistryType;
+    registry: Registry;
   };
 }
 

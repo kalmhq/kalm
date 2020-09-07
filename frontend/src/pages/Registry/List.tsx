@@ -7,7 +7,7 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { RegistryType } from "types/registry";
+import { Registry } from "types/registry";
 import sc from "utils/stringConstants";
 import { SuccessBadge } from "widgets/Badge";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
@@ -27,9 +27,9 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   const registriesState = state.get("registries");
   return {
-    isFirstLoaded: registriesState.get("isFirstLoaded"),
-    isLoading: registriesState.get("isLoading"),
-    registries: registriesState.get("registries"),
+    isFirstLoaded: registriesState.isFirstLoaded,
+    isLoading: registriesState.isLoading,
+    registries: registriesState.registries,
   };
 };
 
@@ -78,33 +78,33 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   //   );
   // };
 
-  private confirmDelete = async (registry: RegistryType) => {
+  private confirmDelete = async (registry: Registry) => {
     const { dispatch } = this.props;
     try {
-      await dispatch(deleteRegistryAction(registry.get("name")));
+      await dispatch(deleteRegistryAction(registry.name));
     } catch {
       dispatch(setErrorNotificationAction());
     }
   };
 
-  private renderName(row: RegistryType) {
-    return <Typography variant="subtitle2">{row.get("name")}</Typography>;
+  private renderName(row: Registry) {
+    return <Typography variant="subtitle2">{row.name}</Typography>;
   }
 
-  private renderHost(row: RegistryType) {
-    return row.get("host") || "DockerHub";
+  private renderHost(row: Registry) {
+    return row.host || "DockerHub";
   }
 
-  private renderUsername(row: RegistryType) {
-    return row.get("username");
+  private renderUsername(row: Registry) {
+    return row.username;
   }
 
-  private renderPassword(row: RegistryType) {
+  private renderPassword(row: Registry) {
     return "******";
   }
 
-  private renderVerified(row: RegistryType) {
-    if (row.get("authenticationVerified")) {
+  private renderVerified(row: Registry) {
+    if (row.authenticationVerified) {
       return <SuccessBadge />;
     } else {
       return (
@@ -117,17 +117,14 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     }
   }
 
-  private renderRepositories(row: RegistryType) {
-    return row
-      .get("repositories")
-      ?.map((x) => x.get("name"))
-      .join(",");
+  private renderRepositories(row: Registry) {
+    return row.repositories?.map((x) => x.name).join(",");
   }
 
-  private renderActions(row: RegistryType) {
+  private renderActions(row: Registry) {
     return (
       <>
-        <IconLinkWithToolTip tooltipTitle={"Edit"} to={`/cluster/registries/${row.get("name")}/edit`}>
+        <IconLinkWithToolTip tooltipTitle={"Edit"} to={`/cluster/registries/${row.name}/edit`}>
           <EditIcon />
         </IconLinkWithToolTip>
         <DeleteButtonWithConfirmPopover
@@ -248,11 +245,16 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { isLoading, isFirstLoaded, registries } = this.props;
-
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         <Box p={2}>
-          {isLoading && !isFirstLoaded ? <Loading /> : registries.size > 0 ? this.renderKRTable() : this.renderEmpty()}
+          {isLoading && !isFirstLoaded ? (
+            <Loading />
+          ) : registries.length > 0 ? (
+            this.renderKRTable()
+          ) : (
+            this.renderEmpty()
+          )}
         </Box>
         <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>

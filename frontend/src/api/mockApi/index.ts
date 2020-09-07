@@ -3,7 +3,7 @@ import { Application, ApplicationComponent, ApplicationComponentDetails, Applica
 import { CertificateFormTypeContent, CertificateIssuerFormTypeContent } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
-import { RegistryType } from "types/registry";
+import { RegistryFormType, Registry } from "types/registry";
 import { HttpRoute } from "types/route";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { RoleBindingsRequestBody } from "types/user";
@@ -53,8 +53,8 @@ export default class MockApi extends Api {
     return mockStore.data.get("mockStatefulSetOptions");
   };
 
-  public getRegistries = async () => {
-    return mockStore.data.get("mockRegistries");
+  public getRegistries = async (): Promise<Registry[]> => {
+    return mockStore.dataImmer.mockRegistries;
   };
 
   public getApplicationList = async () => {
@@ -148,9 +148,9 @@ export default class MockApi extends Api {
     return componentDetails;
   };
 
-  public createRegistry = async (registry: RegistryType) => {
+  public createRegistry = async (registry: RegistryFormType) => {
     await mockStore.updateRegistry(registry);
-    return Immutable.fromJS(registry);
+    return registry as Registry;
   };
 
   // TODO (has not been used)
@@ -197,7 +197,7 @@ export default class MockApi extends Api {
   };
 
   public getRegistry = async (name: string) => {
-    return mockStore.data.get("mockRegistries").find((c) => c.get("name") === name)!;
+    return mockStore.dataImmer.mockRegistries.find((x) => x.name === name)!;
   };
 
   // TODO
@@ -220,9 +220,9 @@ export default class MockApi extends Api {
     return Immutable.fromJS(component);
   };
 
-  public updateRegistry = async (registry: RegistryType) => {
+  public updateRegistry = async (registry: RegistryFormType) => {
     await mockStore.updateRegistry(registry);
-    return Immutable.fromJS(registry);
+    return registry as Registry;
   };
 
   // TODO

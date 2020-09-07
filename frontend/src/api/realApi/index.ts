@@ -7,7 +7,7 @@ import { InitializeClusterResponse } from "types/cluster";
 import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
 import { Node } from "types/node";
-import { RegistryType } from "types/registry";
+import { RegistryFormType, Registry } from "types/registry";
 import { HttpRoute } from "types/route";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { RoleBindingsRequestBody } from "types/user";
@@ -78,9 +78,9 @@ export default class RealApi extends Api {
 
   // registry
 
-  public getRegistries = async () => {
+  public getRegistries = async (): Promise<Registry[]> => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/registries` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public getRegistry = async (name: string) => {
@@ -88,18 +88,18 @@ export default class RealApi extends Api {
     return Immutable.fromJS(res.data);
   };
 
-  public createRegistry = async (registry: RegistryType) => {
+  public createRegistry = async (registry: RegistryFormType): Promise<Registry> => {
     const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/registries`, data: registry });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
-  public updateRegistry = async (registry: RegistryType) => {
+  public updateRegistry = async (registry: RegistryFormType): Promise<Registry> => {
     const res = await axiosRequest({
       method: "put",
-      url: `/${K8sApiVersion}/registries/${registry.get("name")}`,
+      url: `/${K8sApiVersion}/registries/${registry.name}`,
       data: registry,
     });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public deleteRegistry = async (name: string) => {

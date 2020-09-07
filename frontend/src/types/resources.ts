@@ -2,7 +2,7 @@ import { Node } from "types/node";
 import { ApplicationComponentDetails, ApplicationDetails } from "./application";
 import { HttpRoute } from "./route";
 import { Certificate } from "./certificate";
-import { RegistryType } from "./registry";
+import { Registry } from "./registry";
 import { Disk } from "./disk";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { DeployKeyFormType } from "types/deployKey";
@@ -83,7 +83,7 @@ export interface RegistryResourceAction {
   kind: typeof RESOURCE_TYPE_REGISTRY;
   payload: {
     action: ResourceActionType;
-    data: RegistryType;
+    data: Registry;
   };
 }
 
