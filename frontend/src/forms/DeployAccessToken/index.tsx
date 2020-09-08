@@ -8,7 +8,7 @@ import { Field, getFormValues, reduxForm } from "redux-form/immutable";
 import { RootState } from "reducers";
 import { ValidatorRequired } from "../validator";
 import { Prompt } from "widgets/Prompt";
-import { DEPLOY_KEY_ID } from "../formIDs";
+import { DEPLOY_ACCESS_TOKEN_ID } from "../formIDs";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import {
   DeployAccessToken,
@@ -32,7 +32,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   const fieldValues =
-    (getFormValues(DEPLOY_KEY_ID)(state) as DeployAccessToken) || (Immutable.Map() as DeployAccessToken);
+    (getFormValues(DEPLOY_ACCESS_TOKEN_ID)(state) as DeployAccessToken) || (Immutable.Map() as DeployAccessToken);
 
   return {
     fieldValues,
@@ -50,7 +50,7 @@ export interface FinalProps
     ReturnType<typeof mapStateToProps>,
     WithStyles<typeof styles> {}
 
-class DeployKeyFormRaw extends React.PureComponent<FinalProps> {
+class DeployAccessTokenFormRaw extends React.PureComponent<FinalProps> {
   public componentDidUpdate(prevProps: FinalProps) {
     if (prevProps.fieldValues.get("scope") !== this.props.fieldValues.get("scope")) {
       this.props.dispatch(change(this.props.form, "resources", Immutable.List()));
@@ -182,10 +182,10 @@ class DeployKeyFormRaw extends React.PureComponent<FinalProps> {
   }
 }
 
-export const DeployKeyForm = reduxForm<DeployAccessToken, Props>({
-  form: DEPLOY_KEY_ID,
+export const DeployAccessTokenForm = reduxForm<DeployAccessToken, Props>({
+  form: DEPLOY_ACCESS_TOKEN_ID,
   initialValues: newEmptyDeployAccessToken(),
   onSubmitFail: (...args) => {
     console.log("submit failed", args);
   },
-})(connect(mapStateToProps)(withNamespace(withStyles(styles)(DeployKeyFormRaw))));
+})(connect(mapStateToProps)(withNamespace(withStyles(styles)(DeployAccessTokenFormRaw))));

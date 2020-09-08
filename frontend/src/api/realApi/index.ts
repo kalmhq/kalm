@@ -358,23 +358,23 @@ export default class RealApi extends Api {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/protectedendpoints`, data: protectedEndpoint });
   };
 
-  public listDeployKeys = async (): Promise<Immutable.List<DeployAccessToken>> => {
-    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/deploykeys` });
+  public listDeployAccessTokens = async (): Promise<Immutable.List<DeployAccessToken>> => {
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/deploy_access_tokens` });
     return Immutable.fromJS(res.data);
   };
 
-  public createDeployKey = async (deployKey: DeployAccessToken): Promise<DeployAccessToken> => {
+  public createDeployAccessToken = async (deployAccessToken: DeployAccessToken): Promise<DeployAccessToken> => {
     const res = await axiosRequest({
       method: "post",
-      url: `/${K8sApiVersion}/deploykeys`,
-      data: deployKey,
+      url: `/${K8sApiVersion}/deploy_access_tokens`,
+      data: deployAccessToken,
     });
 
     return Immutable.fromJS(res.data);
   };
 
-  public deleteDeployKey = async (deployKey: DeployAccessToken): Promise<void> => {
-    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/deploykeys`, data: deployKey });
+  public deleteDeployAccessToken = async (deployAccessToken: DeployAccessToken): Promise<void> => {
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/deploy_access_tokens`, data: deployAccessToken });
   };
 
   public resolveDomain = async (domain: string, type: "A" | "CNAME", timeout: number = 5000): Promise<string[]> => {

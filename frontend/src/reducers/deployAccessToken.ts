@@ -6,7 +6,7 @@ import {
   RESOURCE_ACTION_ADD,
   RESOURCE_ACTION_DELETE,
   RESOURCE_ACTION_UPDATE,
-  RESOURCE_TYPE_DEPLOY_KEY,
+  RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN,
   WATCHED_RESOURCE_CHANGE
 } from "types/resources";
 import {
@@ -20,13 +20,13 @@ import { addOrUpdateInList, removeInList } from "reducers/utils";
 export type State = ImmutableMap<{
   isLoading: boolean;
   loaded: boolean;
-  deployKeys: Immutable.List<DeployAccessToken>;
+  deployAccessTokens: Immutable.List<DeployAccessToken>;
 }>;
 
 const initialState: State = Immutable.Map({
   isLoading: false,
   loaded: false,
-  deployKeys: Immutable.List(),
+  deployAccessTokens: Immutable.List(),
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -41,24 +41,24 @@ const reducer = (state: State = initialState, action: Actions): State => {
       return state.set("isLoading", false);
     }
     case LOAD_DEPLOY_ACCESS_TOKENS_FULFILLED: {
-      return state.set("isLoading", false).set("loaded", true).set("deployKeys", action.payload);
+      return state.set("isLoading", false).set("loaded", true).set("deployAccessTokens", action.payload);
     }
     case WATCHED_RESOURCE_CHANGE: {
-      if (action.kind !== RESOURCE_TYPE_DEPLOY_KEY) {
+      if (action.kind !== RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN) {
         return state;
       }
 
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          state = state.update("deployKeys", (x) => addOrUpdateInList(x, action.payload.data));
+          state = state.update("deployAccessTokens", (x) => addOrUpdateInList(x, action.payload.data));
           break;
         }
         case RESOURCE_ACTION_DELETE: {
-          state = state.update("deployKeys", (x) => removeInList(x, action.payload.data));
+          state = state.update("deployAccessTokens", (x) => removeInList(x, action.payload.data));
           break;
         }
         case RESOURCE_ACTION_UPDATE: {
-          state = state.update("deployKeys", (x) => addOrUpdateInList(x, action.payload.data));
+          state = state.update("deployAccessTokens", (x) => addOrUpdateInList(x, action.payload.data));
           break;
         }
       }

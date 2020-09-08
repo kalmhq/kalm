@@ -14,11 +14,11 @@ import {
 
 import { api } from "api";
 
-export const loadDeployKeyAction = (): ThunkResult<Promise<void>> => {
+export const loadDeployAccessTokensAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     dispatch({ type: LOAD_DEPLOY_ACCESS_TOKENS_PENDING });
     try {
-      const keys = await api.listDeployKeys();
+      const keys = await api.listDeployAccessTokens();
 
       dispatch({
         type: LOAD_DEPLOY_ACCESS_TOKENS_FULFILLED,
@@ -31,12 +31,12 @@ export const loadDeployKeyAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const createDeployKeyAction = (key: DeployAccessToken): ThunkResult<Promise<DeployAccessToken>> => {
+export const createDeployAccessTokenAction = (key: DeployAccessToken): ThunkResult<Promise<DeployAccessToken>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: CREATE_DEPLOY_ACCESS_TOKEN_PENDING });
 
-      const keyRes = await api.createDeployKey(key);
+      const keyRes = await api.createDeployAccessToken(key);
 
       await dispatch({
         type: CREATE_DEPLOY_ACCESS_TOKEN_FULFILLED,
@@ -51,11 +51,11 @@ export const createDeployKeyAction = (key: DeployAccessToken): ThunkResult<Promi
   };
 };
 
-export const deleteDeployKeyAction = (key: DeployAccessToken): ThunkResult<Promise<void>> => {
+export const deleteDeployAccessTokenAction = (key: DeployAccessToken): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: DELETE_DEPLOY_ACCESS_TOKEN_PENDING });
-      await api.deleteDeployKey(key);
+      await api.deleteDeployAccessToken(key);
       dispatch({ type: DELETE_DEPLOY_ACCESS_TOKEN_FULFILLED });
     } catch (e) {
       dispatch({ type: DELETE_DEPLOY_ACCESS_TOKEN_FAILED });

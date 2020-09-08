@@ -250,15 +250,15 @@ export default class MockApi extends Api {
 
   public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {};
 
-  public listDeployKeys = async (): Promise<Immutable.List<DeployAccessToken>> => {
+  public listDeployAccessTokens = async (): Promise<Immutable.List<DeployAccessToken>> => {
     return Immutable.List();
   };
 
-  public createDeployKey = async (protectedEndpoint: DeployAccessToken): Promise<DeployAccessToken> => {
+  public createDeployAccessToken = async (protectedEndpoint: DeployAccessToken): Promise<DeployAccessToken> => {
     return Immutable.Map();
   };
 
-  public deleteDeployKey = async (protectedEndpoint: DeployAccessToken): Promise<void> => {};
+  public deleteDeployAccessToken = async (protectedEndpoint: DeployAccessToken): Promise<void> => {};
 
   public resolveDomain = async (domain: string, type: "A" | "CNAME", timeout: number = 5000): Promise<string[]> => {
     return ["1.1.1.1"];

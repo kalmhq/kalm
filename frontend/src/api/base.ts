@@ -148,11 +148,11 @@ export abstract class Api {
 
   public abstract deleteProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<void>;
 
-  public abstract listDeployKeys(): Promise<Immutable.List<DeployAccessToken>>;
+  public abstract listDeployAccessTokens(): Promise<Immutable.List<DeployAccessToken>>;
 
-  public abstract createDeployKey(protectedEndpoint: DeployAccessToken): Promise<DeployAccessToken>;
+  public abstract createDeployAccessToken(protectedEndpoint: DeployAccessToken): Promise<DeployAccessToken>;
 
-  public abstract deleteDeployKey(protectedEndpoint: DeployAccessToken): Promise<void>;
+  public abstract deleteDeployAccessToken(protectedEndpoint: DeployAccessToken): Promise<void>;
 
   public abstract resolveDomain(domain: string, type: "A" | "CNAME", timeout?: number): Promise<string[]>;
 

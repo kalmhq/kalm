@@ -25,14 +25,14 @@ import { RequireAuthorizated, RequireNotAuthorizated } from "permission/Authoriz
 import { SSOPage } from "pages/SSO";
 import { SSOConfigPage } from "pages/SSO/Config";
 import { CIPage } from "pages/CI";
-import { DeployKeyNewPage } from "pages/CI/New";
+import { DeployAccessTokenNewPage } from "pages/CI/New";
 import { NewEndpointPage } from "pages/SSO/NewEndpoint";
 import { EditEndpointPage } from "pages/SSO/EditEndpoint";
 import { CertificateNewPage } from "pages/Certificate/New";
 import { CertificateEditPage } from "pages/Certificate/Edit";
 import { RegistryNewPage } from "pages/Registry/New";
 import { RegistryEditPage } from "pages/Registry/Edit";
-import { DeployKeyDetailPage } from "pages/CI/Detail";
+import { DeployAccessTokenDetailPage } from "pages/CI/Detail";
 import { RouteRedirectList } from "pages/Route/Redirect";
 import { SystemPage } from "pages/System";
 import { SetupPage } from "pages/Setup";
@@ -67,8 +67,8 @@ export const KalmRoutes = (
 
           <Route exact path="/ci" component={CIPage} />
           <Redirect exact path="/ci/keys" to="/ci" />
-          <Route exact path="/ci/keys/new" component={DeployKeyNewPage} />
-          <Route exact path="/ci/keys/:name" component={DeployKeyDetailPage} />
+          <Route exact path="/ci/keys/new" component={DeployAccessTokenNewPage} />
+          <Route exact path="/ci/keys/:name" component={DeployAccessTokenDetailPage} />
 
           <Route exact path="/applications" component={ApplicationListPage} />
           <Route exact path="/applications/new" component={ApplicationNewPage} />
