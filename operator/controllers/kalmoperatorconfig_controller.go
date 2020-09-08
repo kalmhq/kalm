@@ -38,8 +38,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strconv"
@@ -48,7 +50,7 @@ import (
 )
 
 const (
-	NamespaceKalmSystem  = "kalm-system"
+	NamespaceKalmSystem = "kalm-system"
 	//KalmImgRepo          = "quay.io/kalmhq/kalm"
 	NamespaceCertManager = "cert-manager"
 	NamespaceIstio       = "istio-system"
@@ -191,7 +193,7 @@ func (r *KalmOperatorConfigReconciler) applyFromYaml(ctx context.Context, yamlNa
 				r.Log.Error(err, fmt.Sprintf("Apply object failed. %v", objectKey))
 				return err
 			}
-			r.Log.Info(fmt.Sprintf("Patch object %s", objectKey.String()))
+			r.Log.Info(fmt.Sprintf("Patch object %s, kind: %s", objectKey.String(), object.GetObjectKind()))
 		}
 
 	}
@@ -254,7 +256,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 			return err
 		}
 
-		if !r.isKalmSystemReady(ctx) {
+		if !r.isKalmCRDReady(ctx) {
 			return nil
 		}
 
@@ -359,7 +361,6 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 
 	return nil
 }
-
 
 func (r *KalmOperatorConfigReconciler) isKalmCRDReady(ctx context.Context) bool {
 	crds := []string{
@@ -514,25 +515,6 @@ func (r *KalmOperatorConfigReconciler) isIstioReady(ctx context.Context) bool {
 	return r.checkIfDPReady(ctx, NamespaceIstio, dps...) && r.checkIfCRDReady(ctx, crds)
 }
 
-func (r *KalmOperatorConfigReconciler) isKalmSystemReady(ctx context.Context) bool {
-	dps := []string{"kalm-controller"}
-	crds := []string{
-		"componentpluginbindings.core.kalm.dev",
-		"componentplugins.core.kalm.dev",
-		"components.core.kalm.dev",
-		"deploykeys.core.kalm.dev",
-		"dockerregistries.core.kalm.dev",
-		"httproutes.core.kalm.dev",
-		"httpscertissuers.core.kalm.dev",
-		"httpscerts.core.kalm.dev",
-		"kalmoperatorconfigs.install.kalm.dev",
-		"protectedendpoints.core.kalm.dev",
-		"singlesignonconfigs.core.kalm.dev",
-	}
-
-	return r.checkIfDPReady(ctx, NamespaceKalmSystem, dps...) && r.checkIfCRDReady(ctx, crds)
-}
-
 type KalmIstioPrometheusWather struct{}
 
 func (r *KalmIstioPrometheusWather) Map(obj handler.MapObject) []reconcile.Request {
@@ -558,6 +540,9 @@ func (k KalmEssentialNSWatcher) Map(object handler.MapObject) []reconcile.Reques
 		if curNS != targetNs {
 			continue
 		}
+
+		//fmt.Println("nsObjDetail:", curNS, object.Object, curNS, "-------")
+		fmt.Println("nsObjDetail:", curNS)
 
 		return []reconcile.Request{{
 			NamespacedName: types.NamespacedName{
@@ -611,6 +596,10 @@ func (k KalmEssentialCRDWatcher) Map(object handler.MapObject) []reconcile.Reque
 
 	for _, essentialCRDGroup := range essentialCRDGroups {
 		if strings.HasSuffix(crdName, essentialCRDGroup) {
+
+			//fmt.Println("crdObjDetail:", crdName, object.Object, crdName, "-------")
+			fmt.Println("crdObjDetail:", crdName)
+
 			return []reconcile.Request{{
 				NamespacedName: types.NamespacedName{
 					Name: "reconcile-caused-by-essential-crd-change-" + crdName,
@@ -627,13 +616,13 @@ func (r *KalmOperatorConfigReconciler) SetupWithManager(mgr ctrl.Manager) error 
 		For(&installv1alpha1.KalmOperatorConfig{}).
 		Watches(&source.Kind{Type: &corev1.Namespace{}}, &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &KalmEssentialNSWatcher{},
-		}).
+		}, builder.WithPredicates(predicate.ResourceVersionChangedPredicate{})).
 		Watches(&source.Kind{Type: &v1.Deployment{}}, &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &KalmDeploymentInEssentialNSWatcher{},
 		}).
 		Watches(&source.Kind{Type: &apiextv1beta1.CustomResourceDefinition{}}, &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &KalmEssentialCRDWatcher{},
-		}).
+		}, builder.WithPredicates(predicate.ResourceVersionChangedPredicate{})).
 		Watches(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &KalmIstioPrometheusWather{},
 		}).
