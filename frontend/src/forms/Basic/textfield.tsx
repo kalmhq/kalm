@@ -45,12 +45,12 @@ export const KRenderDebounceFormikTextField = (props: TextFieldProps & FieldProp
     field: { name, value },
     onBlur,
     normalize,
-    form: { errors, handleChange, handleBlur, setFieldValue },
+    form: { errors, handleChange, handleBlur, setFieldValue, touched },
     ...custom
   } = props;
   const [innerValue, setInnerValue] = useState("");
   const error = getIn(errors, name);
-  const showError = !!error;
+  const showError = !!error && getIn(touched, name);
 
   useEffect(() => {
     if (value) {
