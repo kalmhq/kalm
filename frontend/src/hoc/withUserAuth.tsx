@@ -8,10 +8,10 @@ const mapStateToProps = (state: RootState) => {
   return { ...permissionMethods };
 };
 
-export interface withUserAuthProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
+export interface WithUserAuthProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
 export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
-  const HOC: React.ComponentType<withUserAuthProps> = class extends React.PureComponent<withUserAuthProps> {
+  const HOC: React.ComponentType<WithUserAuthProps> = class extends React.PureComponent<WithUserAuthProps> {
     render() {
       return <WrappedComponent {...this.props} />;
     }
