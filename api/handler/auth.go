@@ -10,11 +10,12 @@ import (
 )
 
 type LoginStatusResponse struct {
-	Authorized bool   `json:"authorized"`
-	Entity     string `json:"entity"`
-	Policies   string `json:"policies"`
-	RBACModel  string `json:"rbacModel"`
-	CSRF       string `json:"csrf"`
+	Authorized    bool   `json:"authorized"`
+	Entity        string `json:"entity"`
+	Impersonation string `json:"impersonation"`
+	Policies      string `json:"policies"`
+	RBACModel     string `json:"rbacModel"`
+	CSRF          string `json:"csrf"`
 }
 
 func (h *ApiHandler) handleValidateToken(c echo.Context) error {
@@ -56,11 +57,19 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		res.Entity = clientInfo.Email
 		res.Authorized = true
 
-		subjects := make([]string, len(clientInfo.Groups)+1)
-		subjects[0] = client.ToSafeSubject(clientInfo.Email)
-		for i, role := range clientInfo.Groups {
-			subjects[i+1] = client.ToSafeSubject(role)
+		var subjects []string
+		if clientInfo.Impersonation == "" {
+			subjects = make([]string, len(clientInfo.Groups)+1)
+			subjects[0] = client.ToSafeSubject(clientInfo.Email)
+
+			for i, role := range clientInfo.Groups {
+				subjects[i+1] = client.ToSafeSubject(role)
+			}
+		} else {
+			res.Impersonation = clientInfo.Impersonation
+			subjects = []string{client.ToSafeSubject(clientInfo.Impersonation)}
 		}
+
 		res.Policies = h.clientManager.GetRBACEnforcer().GetCompletePoliciesFor(subjects...)
 	}
 

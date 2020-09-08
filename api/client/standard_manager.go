@@ -214,6 +214,7 @@ func (m *StandardClientManager) GetConfigForClientRequestContext(c echo.Context)
 		}
 
 		clientInfo.Cfg = m.ClusterConfig
+		clientInfo.Impersonation = ""
 
 		if c.Request().Header.Get("Kalm-Impersonation") != "" && m.CanManageCluster(&clientInfo) {
 			clientInfo.Impersonation = c.Request().Header.Get("Kalm-Impersonation")
