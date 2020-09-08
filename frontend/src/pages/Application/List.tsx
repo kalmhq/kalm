@@ -32,6 +32,7 @@ import { KLink, KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
+import { withUserInfo, WithUserInfoProps } from "hoc/withUserinfo";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -56,7 +57,11 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface Props extends WithStyles<typeof styles>, WithNamespaceProps, ReturnType<typeof mapStateToProps> {}
+interface Props
+  extends WithStyles<typeof styles>,
+    WithNamespaceProps,
+    WithUserInfoProps,
+    ReturnType<typeof mapStateToProps> {}
 
 class ApplicationListRaw extends React.PureComponent<Props> {
   private confirmDelete = async (applicationDetails: ApplicationDetails) => {
@@ -238,23 +243,29 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderActions = (applicationDetails: ApplicationDetails) => {
+    const { canViewNamespace, canEditCluster } = this.props;
     return (
       <>
-        <IconLinkWithToolTip
-          onClick={() => {
-            blinkTopProgressAction();
-          }}
-          // size="small"
-          tooltipTitle="Details"
-          to={`/applications/${applicationDetails.get("name")}/components`}
-        >
-          <KalmDetailsIcon />
-        </IconLinkWithToolTip>
-        <DeleteButtonWithConfirmPopover
-          popupId="delete-application-popup"
-          popupTitle="DELETE APPLICATION?"
-          confirmedAction={() => this.confirmDelete(applicationDetails)}
-        />
+        {canViewNamespace(applicationDetails.get("name")) && (
+          <IconLinkWithToolTip
+            onClick={() => {
+              blinkTopProgressAction();
+            }}
+            // size="small"
+            tooltipTitle="Details"
+            to={`/applications/${applicationDetails.get("name")}/components`}
+          >
+            <KalmDetailsIcon />
+          </IconLinkWithToolTip>
+        )}
+
+        {canEditCluster() && (
+          <DeleteButtonWithConfirmPopover
+            popupId="delete-application-popup"
+            popupTitle="DELETE APPLICATION?"
+            confirmedAction={() => this.confirmDelete(applicationDetails)}
+          />
+        )}
       </>
     );
   };
@@ -418,4 +429,6 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   }
 }
 
-export const ApplicationListPage = withStyles(styles)(withNamespace(connect(mapStateToProps)(ApplicationListRaw)));
+export const ApplicationListPage = withStyles(styles)(
+  withNamespace(withUserInfo(connect(mapStateToProps)(ApplicationListRaw))),
+);

@@ -1,9 +1,12 @@
 import Immutable from "immutable";
 import {
+  emptyPermissionMethods,
   LOAD_LOGIN_STATUS_FAILED,
   LOAD_LOGIN_STATUS_FULFILLED,
   LOAD_LOGIN_STATUS_PENDING,
   LOGOUT,
+  PermissionMethods,
+  SET_AUTH_METHODS,
   SET_AUTH_TOKEN,
 } from "types/common";
 import { Actions } from "types";
@@ -17,6 +20,7 @@ export type State = ImmutableMap<{
   token: string;
   entity: string;
   policies: string; // casbin policies
+  permissionMethods: PermissionMethods;
 }>;
 
 const AUTHORIZED_TOKEN_KEY = "AUTHORIZED_TOKEN_KEY";
@@ -29,6 +33,7 @@ const initialState: State = Immutable.Map({
   entity: "",
   isAdmin: false,
   policies: "",
+  permissionMethods: emptyPermissionMethods,
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -56,6 +61,9 @@ const reducer = (state: State = initialState, action: Actions): State => {
     case LOGOUT: {
       window.localStorage.removeItem(AUTHORIZED_TOKEN_KEY);
       return initialState;
+    }
+    case SET_AUTH_METHODS: {
+      return state.set("permissionMethods", action.payload);
     }
   }
 
