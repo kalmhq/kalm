@@ -155,7 +155,10 @@ export const RenderFormikSelectField = (props: FieldProps & SelectProps & Props)
   }))();
   const inputLabel = React.useRef<HTMLLabelElement>(null);
 
-  const { helperText, ...formikSelectProps } = props;
+  const { helperText, field, ...formikSelectProps } = props;
+  if (field.value === undefined) {
+    field.value = "";
+  }
 
   return (
     <FormControl
@@ -170,6 +173,7 @@ export const RenderFormikSelectField = (props: FieldProps & SelectProps & Props)
         {label}
       </InputLabel>
       <FormikSelect
+        field={field}
         {...formikSelectProps}
         labelId={labelId}
         renderValue={(value: any) => {

@@ -126,7 +126,7 @@ export default class RealApi extends Api {
   public updateApplication = async (application: Application) => {
     const res = await axiosRequest({
       method: "put",
-      url: `/${K8sApiVersion}/applications/${application.get("name")}`,
+      url: `/${K8sApiVersion}/applications/${application.name}`,
       data: application,
     });
     return Immutable.fromJS(res.data);
@@ -164,7 +164,7 @@ export default class RealApi extends Api {
   public updateApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
     const res = await axiosRequest({
       method: "put",
-      url: `/${K8sApiVersion}/applications/${applicationName}/components/${component.get("name")}`,
+      url: `/${K8sApiVersion}/applications/${applicationName}/components/${component.name}`,
       data: component,
     });
     return Immutable.fromJS(res.data);

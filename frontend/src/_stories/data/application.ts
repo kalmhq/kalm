@@ -109,17 +109,17 @@ export const createApplicationComponent = (
   for (var i = 0; i < componentCount; i++) {
     componentArray.push(createApplicationComponentDetails(i, createTS, podCounters[i]));
   }
-  const components: Immutable.List<ApplicationComponentDetails> = Immutable.fromJS(componentArray);
-  let componentsMap: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>> = Immutable.Map({});
-  componentsMap = componentsMap.set(name, components);
+  let componentsMap: { [key: string]: ApplicationComponentDetails[] } = {};
+  componentsMap[name] = componentArray as any[];
   return componentsMap;
 };
+
 export const createApplicationComponentDetails = (index: number, createTS: number, pod: number) => {
   const pods = [];
   for (let index = 0; index < pod; index++) {
     pods.push(createPodDetails(createTS));
   }
-  const appComponent = Immutable.fromJS({
+  const appComponent = {
     env: [{ name: "LOG_DIR", value: "/tmp/logs" }],
     image: "docker.io/istio/examples-bookinfo-reviews-v3:1.15.0",
     nodeSelectorLabels: { "kubernetes.io/os": "linux" },
@@ -142,7 +142,7 @@ export const createApplicationComponentDetails = (index: number, createTS: numbe
       },
     ],
     pods: pods,
-  });
+  };
   return appComponent;
 };
 
@@ -183,7 +183,7 @@ const createMetricsSegements = ({
   value = 3,
   thresholds = 3,
 }: ICreateMetricsSegmentType) => {
-  let cpuSegments: Immutable.List<MetricItem> = Immutable.List();
+  let cpuSegments: MetricItem[] = [];
   const fromTS = from.getTime();
   const validateRange = [value - thresholds > 0 ? value - thresholds : 0, value + thresholds];
 
@@ -191,64 +191,60 @@ const createMetricsSegements = ({
     let lastValue = validateRange[0];
     let value = Math.floor(Math.random() * validateRange[1]) + validateRange[0];
     if (index > 0) {
-      lastValue = cpuSegments.get(index - 1)?.get("y") as number;
+      lastValue = cpuSegments[index - 1]?.y as number;
       const seed = Math.floor(Math.random() * 3) + 1;
       const direction = seed >= 2 ? 1 : -1;
       value = lastValue + (direction * thresholds * 1) / 4;
       value = Math.max(validateRange[0], Math.min(value, validateRange[1]));
     }
 
-    const element: MetricItem = Immutable.Map({ x: fromTS + 500 * index, y: value });
-    cpuSegments = cpuSegments.push(element);
+    const element: MetricItem = { x: fromTS + 500 * index, y: value };
+    cpuSegments.push(element);
   }
   return cpuSegments;
 };
 
 export const getCPUSamples = (value: any) => {
   let samples = createMetricsSegements({ value: value });
-  return samples.toJS();
+  return samples;
 };
 
 export const getMemorySamples = (value: any) => {
   let samples = createMetricsSegements({ value: value, thresholds: 10000 });
-  return samples.toJS();
+  return samples;
 };
 
 export const mergeMetrics = (
   application: ApplicationDetails,
-  components: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>,
+  components: { [key: string]: ApplicationComponentDetails[] },
 ) => {
-  let metricsCPU: Immutable.List<MetricItem> = Immutable.List();
-  let metricsMemory: Immutable.List<MetricItem> = Immutable.List();
-  let componentList: Immutable.List<ApplicationComponentDetails> = components.get(
-    application.get("name"),
-    Immutable.List<ApplicationComponentDetails>(),
-  );
-  componentList.map((component) => {
-    const pods: Immutable.List<PodStatus> = component.getIn(["pods"], Immutable.List<PodStatus>());
+  let metricsCPU: MetricItem[] = [];
+  let metricsMemory: MetricItem[] = [];
+  let componentList: ApplicationComponentDetails[] = components[application.name] || [];
+
+  componentList.forEach((component) => {
+    const pods: PodStatus[] = component.pods || [];
     pods.map((pod) => {
-      const cpuList: MetricList = pod.getIn(["metrics", "cpu"], Immutable.List<MetricItem>());
+      const cpuList: MetricList = pod?.metrics?.cpu || [];
       cpuList.map((cpu, index) => {
-        const x = cpu.get("x", 0);
-        const mergedValue =
-          metricsCPU.get(index, Immutable.Map({ x: 0, y: 0 }) as MetricItem).get("y", 0) + cpu.get("y", 0);
-        metricsCPU = metricsCPU.set(index, Immutable.fromJS({ x: x, y: mergedValue }));
+        const x = cpu.x || 0;
+        const mergedValue = (metricsCPU[index]?.y || 0) + (cpu.y || 0);
+        metricsCPU[index] = { x: x, y: mergedValue };
         return cpu;
       });
-      const memoryList: MetricList = pod.getIn(["metrics", "memory"], Immutable.List<MetricItem>());
+      const memoryList: MetricList = pod?.metrics?.memory || [];
       memoryList.map((memory, index) => {
-        const x = memory.get("x", 0);
-        const mergedValue =
-          metricsMemory.get(index, Immutable.Map({ x: 0, y: 0 }) as MetricItem).get("y", 0) + memory.get("y", 0);
-        metricsMemory = metricsMemory.set(index, Immutable.fromJS({ x: x, y: mergedValue }));
+        const x = memory.x || 0;
+        const mergedValue = (metricsMemory[index]?.y || 0) + (memory.y || 0);
+        metricsMemory[index] = { x: x, y: mergedValue };
         return memory;
       });
       return pod;
     });
     return component;
   });
-  application = application.setIn(["metrics", "cpu"], metricsCPU);
-  application = application.setIn(["metrics", "memory"], metricsMemory);
+  application.metrics.cpu = metricsCPU;
+  application.metrics.memory = metricsMemory;
   return application;
 };
 

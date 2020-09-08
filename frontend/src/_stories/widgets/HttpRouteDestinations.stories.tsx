@@ -1,13 +1,19 @@
-import React from "react";
-import { storiesOf } from "@storybook/react";
-import { Field } from "formik";
 import { Typography } from "@material-ui/core";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import Immutable from "immutable";
-import { resetStore, store } from "_stories/ReduxConfig";
-import { Service } from "types/service";
 import { date, number, text } from "@storybook/addon-knobs";
-
+import { storiesOf } from "@storybook/react";
+import { Field } from "formik";
+import { KAutoCompleteOption, KFormikAutoCompleteSingleValue } from "forms/Basic/autoComplete";
+import Immutable from "immutable";
+import React from "react";
+import {
+  ApplicationDetails,
+  LOAD_ALL_NAMESAPCES_COMPONETS,
+  LOAD_APPLICATIONS_FULFILLED,
+  LOAD_APPLICATIONS_PENDING,
+} from "types/application";
+import { SET_CURRENT_NAMESPACE } from "types/namespace";
+import { Service } from "types/service";
 import {
   createApplication,
   createApplicationComponent,
@@ -15,16 +21,8 @@ import {
   generateRandomIntList,
   mergeMetrics,
 } from "_stories/data/application";
-import {
-  ApplicationComponentDetails,
-  ApplicationDetails,
-  LOAD_ALL_NAMESAPCES_COMPONETS,
-  LOAD_APPLICATIONS_FULFILLED,
-  LOAD_APPLICATIONS_PENDING,
-} from "types/application";
-import { SET_CURRENT_NAMESPACE } from "types/namespace";
-import { KAutoCompleteOption, KFormikAutoCompleteSingleValue } from "forms/Basic/autoComplete";
 import { createServices } from "_stories/data/service";
+import { resetStore, store } from "_stories/ReduxConfig";
 
 storiesOf("Widgets/HttpRouteDestinations", module)
   //   .addDecorator(withProvider)
@@ -40,10 +38,12 @@ storiesOf("Widgets/HttpRouteDestinations", module)
 
     let oneApp: ApplicationDetails = createApplication(appName);
 
-    const allComponents: Immutable.Map<
-      string,
-      Immutable.List<ApplicationComponentDetails>
-    > = createApplicationComponent(appName, componentCounter, createTime, generateRandomIntList(podCounter, 0, 5));
+    const allComponents = createApplicationComponent(
+      appName,
+      componentCounter,
+      createTime,
+      generateRandomIntList(podCounter, 0, 5),
+    );
 
     oneApp = mergeMetrics(oneApp, allComponents);
 

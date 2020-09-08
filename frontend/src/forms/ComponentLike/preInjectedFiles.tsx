@@ -8,7 +8,7 @@ import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
 import React from "react";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { PreInjectedFileContent } from "types/componentTemplate";
+import { PreInjectedFile } from "types/componentTemplate";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
@@ -40,7 +40,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  private privateOpenEditDialog = (file: PreInjectedFileContent, index: number) => {
+  private privateOpenEditDialog = (file: PreInjectedFile, index: number) => {
     const { dispatch } = this.props;
     this.setState({ editingFileIndex: index, fileContentValue: file.content });
     dispatch(openDialogAction(updateContentDialogID));
@@ -137,7 +137,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     const { activeIndex } = this.state;
     let fieldsNodes: any = [];
     if (getIn(values, name)) {
-      getIn(values, name).forEach((injectedFile: PreInjectedFileContent, index: number) => {
+      getIn(values, name).forEach((injectedFile: PreInjectedFile, index: number) => {
         if (injectedFile.mountPath) {
           fieldsNodes.push(
             <Grid container spacing={1} key={index}>

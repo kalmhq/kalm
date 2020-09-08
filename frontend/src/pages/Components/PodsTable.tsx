@@ -4,7 +4,6 @@ import { loadComponentsAction } from "actions/component";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { blinkTopProgressAction } from "actions/settings";
 import { api } from "api";
-import Immutable from "immutable";
 import { getPodLogQuery } from "pages/Application/Log";
 import React from "react";
 import { connect } from "react-redux";
@@ -32,7 +31,7 @@ const mapStateToProps = (state: RootState) => {
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   activeNamespaceName: string;
   workloadType: WorkloadType;
-  pods: Immutable.List<PodStatus>;
+  pods: PodStatus[];
 }
 
 interface State {}
@@ -44,31 +43,31 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
   }
 
   private renderPodName = (pod: PodStatus) => {
-    return pod.get("name");
+    return pod.name;
   };
 
   private renderPodNode = (pod: PodStatus) => {
-    return pod.get("node");
+    return pod.node;
   };
 
   private renderPodRestarts = (pod: PodStatus) => {
-    return pod.get("restarts");
+    return pod.restarts;
   };
 
   private renderPodStatusText = (pod: PodStatus) => {
-    return pod.get("statusText");
+    return pod.statusText;
   };
 
   private renderPodAGE = (pod: PodStatus) => {
-    return formatTimeDistance(pod.get("createTimestamp"));
+    return formatTimeDistance(pod.createTimestamp);
   };
 
   private renderPodCPU = (pod: PodStatus) => {
-    return <SmallCPULineChart data={pod.get("metrics").get("cpu")!} />;
+    return <SmallCPULineChart data={pod.metrics.cpu!} />;
   };
 
   private renderPodMemory = (pod: PodStatus) => {
-    return <SmallMemoryLineChart data={pod.get("metrics").get("memory")!} />;
+    return <SmallMemoryLineChart data={pod.metrics.memory!} />;
   };
 
   private renderPodActions = (pod: PodStatus) => {
@@ -108,8 +107,8 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
               blinkTopProgressAction();
 
               try {
-                await api.deletePod(activeNamespaceName, pod.get("name"));
-                dispatch(setSuccessNotificationAction(`Delete pod ${pod.get("name")} successfully`));
+                await api.deletePod(activeNamespaceName, pod.name);
+                dispatch(setSuccessNotificationAction(`Delete pod ${pod.name} successfully`));
                 // reload
                 dispatch(loadComponentsAction(activeNamespaceName));
                 dispatch(loadApplicationAction(activeNamespaceName));
@@ -118,36 +117,17 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
               }
             }}
           />
-        ) : // <IconButtonWithTooltip
-        //   tooltipTitle="Delete"
-        //   size="small"
-        //   onClick={async () => {
-        //     blinkTopProgressAction();
-
-        //     try {
-        //       await api.deletePod(activeNamespaceName, pod.get("name"));
-        //       dispatch(setSuccessNotificationAction(`Delete pod ${pod.get("name")} successfully`));
-        //       // reload
-        //       dispatch(loadComponentsAction(activeNamespaceName));
-        //       dispatch(loadApplicationAction(activeNamespaceName));
-        //     } catch (e) {
-        //       dispatch(setErrorNotificationAction(e.response.data.message));
-        //     }
-        //   }}
-        // >
-        //   <DeleteIcon />
-        // </IconButtonWithTooltip>
-        null}
+        ) : null}
       </>
     );
   };
 
   private renderPodStatus = (pod: PodStatus) => {
-    if (pod.get("isTerminating")) {
+    if (pod.isTerminating) {
       return <PendingBadge />;
     }
 
-    switch (pod.get("status")) {
+    switch (pod.status) {
       case "Running": {
         return <SuccessBadge />;
       }
@@ -166,19 +146,16 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
   };
 
   private renderPodStatusIcon = (pod: PodStatus) => {
-    if (pod.get("status") === "Failed") {
+    if (pod.status === "Failed") {
       const popoverBody = (
         <Box p={2} maxWidth={800}>
-          {pod
-            .get("warnings")
-            .map((w, index) => {
-              return (
-                <Box color="error.main" key={index}>
-                  {index + 1}. {w.get("message")}
-                </Box>
-              );
-            })
-            .toArray()}
+          {pod.warnings.map((w, index) => {
+            return (
+              <Box color="error.main" key={index}>
+                {index + 1}. {w.message}
+              </Box>
+            );
+          })}
         </Box>
       );
 
@@ -186,7 +163,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
         <IconWithPopover
           icon={this.renderPodStatus(pod)}
           popoverBody={popoverBody}
-          popupId={`pod-${pod.get("name")}-popover`}
+          popupId={`pod-${pod.name}-popover`}
         />
       );
     }
@@ -241,26 +218,25 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
     const { pods } = this.props;
     const data: any[] = [];
 
-    pods &&
-      pods.forEach((pod, index) => {
-        const rowData = pod as PodStatus;
-        data.push({
-          statusIcon: this.renderPodStatusIcon(rowData),
-          name: this.renderPodName(rowData),
-          node: this.renderPodNode(rowData),
-          restarts: this.renderPodRestarts(rowData),
-          status: this.renderPodStatusText(rowData),
-          age: this.renderPodAGE(rowData),
-          cpu: this.renderPodCPU(rowData),
-          memory: this.renderPodMemory(rowData),
-          actions: this.renderPodActions(rowData),
-          // subRows: [
-          //   {
-          //     expandContent: <div style={{ width: "100%", height: "10px", background: "red" }}>dfsfdsf</div>,
-          //   },
-          // ],
-        });
+    pods?.forEach((pod, index) => {
+      const rowData = pod as PodStatus;
+      data.push({
+        statusIcon: this.renderPodStatusIcon(rowData),
+        name: this.renderPodName(rowData),
+        node: this.renderPodNode(rowData),
+        restarts: this.renderPodRestarts(rowData),
+        status: this.renderPodStatusText(rowData),
+        age: this.renderPodAGE(rowData),
+        cpu: this.renderPodCPU(rowData),
+        memory: this.renderPodMemory(rowData),
+        actions: this.renderPodActions(rowData),
+        // subRows: [
+        //   {
+        //     expandContent: <div style={{ width: "100%", height: "10px", background: "red" }}>dfsfdsf</div>,
+        //   },
+        // ],
       });
+    });
 
     return data;
   }

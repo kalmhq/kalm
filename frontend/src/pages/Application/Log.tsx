@@ -155,15 +155,12 @@ export const generateQueryForPods = (namespace: string, podNames: [string, strin
 };
 
 export const getPodLogQuery = (namespace: string, pod: PodStatus): string => {
-  const containerNames = pod
-    .get("containers")
-    .map((container) => container.get("name"))
-    .toArray();
+  const containerNames = pod.containers.map((container) => container.name);
 
   const containerName =
     containerNames[0] === "istio-proxy" ? containerNames[1] || containerNames[0] : containerNames[0];
 
-  return generateQueryForPods(namespace, [[pod.get("name"), containerName]], [pod.get("name"), containerName]);
+  return generateQueryForPods(namespace, [[pod.name, containerName]], [pod.name, containerName]);
 };
 
 export class LogStream extends React.PureComponent<Props, State> {
@@ -210,10 +207,10 @@ export class LogStream extends React.PureComponent<Props, State> {
   componentDidUpdate(prevProps: Props, prevState: State) {
     const { components, activeNamespaceName } = this.props;
 
-    let pods: Immutable.List<string> = Immutable.List();
+    let pods: string[] = [];
     components?.forEach((component) => {
-      component.get("pods").forEach((pod) => {
-        pods = pods.push(pod.get("name"));
+      component.pods?.forEach((pod) => {
+        pods.push(pod.name);
       });
     });
 
@@ -425,13 +422,13 @@ export class LogStream extends React.PureComponent<Props, State> {
     }
   };
 
-  getAllPods = (): Immutable.List<PodStatus> => {
+  getAllPods = (): PodStatus[] => {
     const { components } = this.props;
 
-    let pods: Immutable.List<PodStatus> = Immutable.List();
+    let pods: PodStatus[] = [];
     components?.forEach((component) => {
-      component.get("pods").forEach((pod) => {
-        pods = pods.push(pod);
+      component.pods?.forEach((pod) => {
+        pods.push(pod);
       });
     });
 
@@ -451,11 +448,8 @@ export class LogStream extends React.PureComponent<Props, State> {
       if (subscribedPod) {
         return subscribedPod;
       } else {
-        const pod = pods.find((x) => x.get("name") === podName)!;
-        const containerNames = pod
-          .get("containers")
-          .map((x) => x.get("name"))
-          .toArray();
+        const pod = pods.find((x) => x.name === podName)!;
+        const containerNames = pod.containers.map((x) => x.name);
         return [podName, containerNames[0]];
       }
     });
@@ -470,11 +464,8 @@ export class LogStream extends React.PureComponent<Props, State> {
     });
 
     currentPodNames.forEach((podName) => {
-      const pod = pods.find((x) => x.get("name") === podName)!;
-      const containerNames = pod
-        .get("containers")
-        .map((x) => x.get("name"))
-        .toArray();
+      const pod = pods.find((x) => x.name === podName)!;
+      const containerNames = pod.containers.map((x) => x.name);
       if (!subscribedPodNames.includes(podName)) {
         this.subscribe(podName, containerNames[0]);
       }
@@ -489,7 +480,7 @@ export class LogStream extends React.PureComponent<Props, State> {
   onInputContainerChange = (x: any) => {
     const { subscribedPods, value } = this.state;
     let newSubscribedPods = Immutable.List();
-    subscribedPods.forEach(([podName, containerName]) => {
+    subscribedPods?.forEach(([podName, containerName]) => {
       if (podName === value[0]) {
         newSubscribedPods = newSubscribedPods.push([podName, x]);
         this.unsubscribe(podName, containerName);
@@ -503,7 +494,7 @@ export class LogStream extends React.PureComponent<Props, State> {
 
   onLogOptionsChange = (newLogOptions: LogOptions) => {
     const { subscribedPods } = this.state;
-    subscribedPods.forEach(([podName, containerName]) => {
+    subscribedPods?.forEach(([podName, containerName]) => {
       this.unsubscribe(podName, containerName);
       this.subscribe(podName, containerName, newLogOptions);
     });
@@ -513,16 +504,16 @@ export class LogStream extends React.PureComponent<Props, State> {
   private renderInputPod() {
     const { components } = this.props;
 
-    let podNames: Immutable.List<string> = Immutable.List([]);
+    let podNames: string[] = [];
     components?.forEach((component) => {
-      component.get("pods").forEach((pod) => {
-        podNames = podNames.push(pod.get("name"));
+      component.pods?.forEach((pod) => {
+        podNames.push(pod.name);
       });
     });
 
     const { value, subscribedPods } = this.state;
     const subscribedPodNames = subscribedPods.map((p) => p[0]);
-    const names = podNames!.toArray().filter((x) => !subscribedPodNames.includes(x));
+    const names = podNames!.filter((x) => !subscribedPodNames.includes(x));
 
     return (
       <MyAutocomplete
@@ -565,21 +556,19 @@ export class LogStream extends React.PureComponent<Props, State> {
   private renderInputContainer() {
     const { value } = this.state;
     const pods = this.getAllPods();
-    const pod = pods.find((x) => value[0] === x.get("name"))!;
-    const containerNames = pod ? pod.get("containers").map((container) => container.get("name")) : Immutable.List();
+    const pod = pods.find((x) => value[0] === x.name)!;
+    const containerNames = pod ? pod.containers.map((container) => container.name) : [];
 
     return (
       <KSelect
         label="Container"
         value={value[1]}
-        options={containerNames
-          .map((x) => {
-            return {
-              value: x,
-              text: x,
-            };
-          })
-          .toJS()}
+        options={containerNames.map((x) => {
+          return {
+            value: x,
+            text: x,
+          };
+        })}
         onChange={this.onInputContainerChange}
       />
     );

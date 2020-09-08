@@ -141,14 +141,14 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
   private getKalmSystemComponentReady = (props: Props, componentName: string): boolean => {
     const { componentsMap } = props;
 
-    const components = componentsMap.get("kalm-system");
-    if (!components || components.size === 0) return false;
+    const components = componentsMap["kalm-system"];
+    if (!components || components.length === 0) return false;
 
-    const component = components.find((x) => x.get("name") === componentName);
+    const component = components.find((x) => x.name === componentName);
 
     if (!component) return false;
 
-    return !!component.get("pods").find((x) => x.get("phase") === "Running" && x.get("status") === "Running");
+    return !!component.pods.find((x) => x.phase === "Running" && x.status === "Running");
   };
 
   private isKalmDexChangedToReady = (prevProps: Props) => {

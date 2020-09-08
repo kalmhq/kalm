@@ -1,4 +1,3 @@
-import Immutable from "immutable";
 import { Actions } from "types";
 import {
   ApplicationDetails,
@@ -14,7 +13,6 @@ import {
   UPDATE_APPLICATION,
 } from "types/application";
 import { LOGOUT } from "types/common";
-import { ImmutableMap } from "typings";
 import {
   RESOURCE_ACTION_ADD,
   RESOURCE_ACTION_DELETE,
@@ -22,113 +20,105 @@ import {
   RESOURCE_TYPE_APPLICATION,
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
-import { addOrUpdateInList, removeInList, removeInListByName, isInList } from "./utils";
+import { addOrUpdateInArray, removeInArrayByName, isInArray, removeInArray } from "./utils";
+import produce from "immer";
 
-export type State = ImmutableMap<{
-  applications: Immutable.List<ApplicationDetails>;
+export type State = {
+  applications: ApplicationDetails[];
   isListLoading: boolean;
   isListFirstLoaded: boolean;
   isItemLoading: boolean;
   isSubmittingApplication: boolean;
-}>;
+};
 
-const initialState: State = Immutable.Map({
-  applications: Immutable.List(),
+const initialState: State = {
+  applications: [],
   isListLoading: false,
   isListFirstLoaded: false,
   isItemLoading: false,
   isSubmittingApplication: false,
-  isSubmittingApplicationComponent: false,
-});
+};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOGOUT: {
-      return initialState;
+      state = initialState;
+      return;
     }
     case SET_IS_SUBMITTING_APPLICATION: {
-      state = state.set("isSubmittingApplication", action.payload.isSubmittingApplication);
-      break;
+      state.isSubmittingApplication = action.payload.isSubmittingApplication;
+      return;
     }
     case LOAD_APPLICATIONS_PENDING: {
-      state = state.set("isListLoading", true);
-      break;
+      state.isListLoading = true;
+      return;
     }
     case LOAD_APPLICATIONS_FAILED: {
-      state = state.set("isListLoading", false);
-      break;
+      state.isListLoading = false;
+      return;
     }
     case LOAD_APPLICATIONS_FULFILLED: {
-      state = state.set("isListFirstLoaded", true).set("isListLoading", false);
-      state = state.set("applications", action.payload.applicationList);
-
-      break;
+      state.isListFirstLoaded = true;
+      state.isListLoading = false;
+      state.applications = action.payload.applicationList;
+      return;
     }
     case LOAD_APPLICATION_PENDING: {
-      state = state.set("isItemLoading", true);
-      break;
+      state.isItemLoading = true;
+      return;
     }
     case LOAD_APPLICATION_FAILED: {
-      state = state.set("isItemLoading", false);
-      break;
+      state.isItemLoading = false;
+      return;
     }
     case LOAD_APPLICATION_FULFILLED: {
-      state = state.set("isItemLoading", false);
-      state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.application));
-      break;
+      state.isItemLoading = false;
+      state.applications = addOrUpdateInArray(state.applications, action.payload.application);
+      return;
     }
     case CREATE_APPLICATION: {
-      state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.application));
-      break;
+      state.applications = addOrUpdateInArray(state.applications, action.payload.application);
+      return;
     }
     case UPDATE_APPLICATION: {
-      state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.application));
-      break;
+      state.applications = addOrUpdateInArray(state.applications, action.payload.application);
+      return;
     }
     case DELETE_APPLICATION: {
-      state = state.update("applications", (x) => removeInListByName(x, action.payload.applicationName));
-      break;
+      state.applications = removeInArrayByName(state.applications, action.payload.applicationName);
+      return;
     }
     case WATCHED_RESOURCE_CHANGE: {
       if (action.kind !== RESOURCE_TYPE_APPLICATION) {
-        break;
+        return;
       }
 
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          if (
-            action.payload.data.get("status") === "Active" &&
-            !isInList(state.get("applications"), action.payload.data)
-          ) {
-            state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.data, false));
+          if (action.payload.data.status === "Active" && !isInArray(state.applications, action.payload.data)) {
+            state.applications = addOrUpdateInArray(state.applications, action.payload.data, false);
           }
-          break;
+          return;
         }
         case RESOURCE_ACTION_DELETE: {
-          state = state.update("applications", (x) => removeInList(x, action.payload.data));
-          break;
+          state.applications = removeInArray(state.applications, action.payload.data);
+          return;
         }
         case RESOURCE_ACTION_UPDATE: {
-          if (action.payload.data.get("status") === "Terminating") {
-            state = state.update("applications", (x) => removeInList(x, action.payload.data));
-            break;
+          if (action.payload.data.status === "Terminating") {
+            state.applications = removeInArray(state.applications, action.payload.data);
+            return;
           }
-
-          state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.data));
-          break;
+          state.applications = addOrUpdateInArray(state.applications, action.payload.data);
+          return;
         }
+        default:
+          return;
       }
-
-      break;
     }
-    // case LOAD_APPLICATION_PLUGINS_FULFILLED: {
-    //   state = state.set("applicationPlugins", action.payload.applicationPlugins);
-
-    //   break;
-    // }
   }
 
-  return state;
-};
+  return;
+}, initialState);
 
 export default reducer;

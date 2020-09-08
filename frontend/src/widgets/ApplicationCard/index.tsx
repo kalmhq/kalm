@@ -53,7 +53,7 @@ const ApplicationCardStyles = (theme: Theme) =>
 
 type ApplicationCardProps = {
   application: ApplicationDetails;
-  componentsMap: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>;
+  componentsMap: { [key: string]: ApplicationComponentDetails[] };
   httpRoutes: Immutable.List<HttpRoute>;
   confirmDelete: (application: ApplicationDetails) => void;
 } & CardProps &
@@ -63,16 +63,16 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
   private renderName = () => {
     const { application } = this.props;
     return (
-      <KLink to={`/applications/${application.get("name")}/components`} onClick={() => blinkTopProgressAction()}>
-        <H6>{application.get("name")}</H6>
+      <KLink to={`/applications/${application.name}/components`} onClick={() => blinkTopProgressAction()}>
+        <H6>{application.name}</H6>
       </KLink>
     );
   };
   private hasPods = () => {
     const { componentsMap, application } = this.props;
     let count = 0;
-    componentsMap.get(application.get("name"))?.forEach((component) => {
-      component.get("pods").forEach((podStatus) => {
+    componentsMap[application.name]?.forEach((component) => {
+      component.pods?.forEach((podStatus) => {
         count++;
       });
     });
@@ -81,26 +81,26 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
   };
   private renderCreatedAt = () => {
     const { componentsMap, application } = this.props;
-    const components = componentsMap.get(application.get("name"));
+    const components = componentsMap[application.name];
 
     return <Caption>{components ? getApplicationCreatedAtString(components) : "-"}</Caption>;
   };
 
   private renderCPU = () => {
     const { application } = this.props;
-    const metrics = application.get("metrics");
-    return <CardCPULineChart data={metrics.get("cpu")} hoverText={this.hasPods() ? "" : "No data"} />;
+    const metrics = application.metrics;
+    return <CardCPULineChart data={metrics.cpu} hoverText={this.hasPods() ? "" : "No data"} />;
   };
 
   private renderMemory = () => {
     const { application } = this.props;
-    const metrics = application.get("metrics");
-    return <CardMemoryLineChart data={metrics.get("memory")} hoverText={this.hasPods() ? "" : "No data"} />;
+    const metrics = application.metrics;
+    return <CardMemoryLineChart data={metrics.memory} hoverText={this.hasPods() ? "" : "No data"} />;
   };
 
   private renderExternalAccesses = () => {
     const { httpRoutes, application } = this.props;
-    const applicationName = application.get("name");
+    const applicationName = application.name;
     if (httpRoutes && httpRoutes.size > 0) {
       return (
         <PopupState variant="popover" popupId={applicationName}>
@@ -136,7 +136,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
 
   private getPieChartData() {
     const { componentsMap, application } = this.props;
-    const components = componentsMap.get(application.get("name"));
+    const components = componentsMap[application.name];
 
     let componentSize = 0;
     let componentSuccess = 0;
@@ -150,10 +150,10 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
     components?.forEach((component) => {
       let hasError = false;
       let hasPending = false;
-      component.get("pods").forEach((pod) => {
-        if (pod.get("status") === "Succeeded" || pod.get("status") === "Running") {
+      component.pods?.forEach((pod) => {
+        if (pod.status === "Succeeded" || pod.status === "Running") {
           podSuccess = podSuccess + 1;
-        } else if (pod.get("status") === "Failed") {
+        } else if (pod.status === "Failed") {
           podError = podError + 1;
           hasError = true;
         } else {
@@ -223,7 +223,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
           }}
           // size="small"
           tooltipTitle="Details"
-          to={`/applications/${application.get("name")}/components`}
+          to={`/applications/${application.name}/components`}
         >
           <KalmDetailsIcon />
         </IconLinkWithToolTip>
@@ -246,10 +246,10 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
               aria-label="recipe"
               className={classes.avatar}
               style={{
-                background: stringToColor(application.get("name")),
+                background: stringToColor(application.name),
               }}
             >
-              {application.get("name").toUpperCase().slice(0, 1)}
+              {application.name.toUpperCase().slice(0, 1)}
             </Avatar>
           }
           action={<IconButton aria-label="settings">{/* <MoreVertIcon /> */}</IconButton>}

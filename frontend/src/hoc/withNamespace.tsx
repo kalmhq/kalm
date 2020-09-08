@@ -19,17 +19,17 @@ const mapStateToProps = (
 ) => {
   const applicationsState = state.get("applications");
   const activeNamespaceName = applicationName || state.getIn(["namespaces", "active"]);
-  const applications = applicationsState.get("applications");
-  const activeNamespace = applications.find((x) => x.get("name") === activeNamespaceName);
+  const applications = applicationsState.applications;
+  const activeNamespace = applications.find((x) => x.name === activeNamespaceName);
 
   return {
     applicationNameParam: applicationName,
     activeNamespaceName,
     activeNamespace,
     applications,
-    components: state.get("components").get("components").get(activeNamespaceName), // application details page need components and withRoutesData
-    isNamespaceLoading: applicationsState.get("isListLoading"),
-    isNamespaceFirstLoaded: applicationsState.get("isListFirstLoaded"),
+    components: state.get("components").components[activeNamespaceName], // application details page need components and withRoutesData
+    isNamespaceLoading: applicationsState.isListLoading,
+    isNamespaceFirstLoaded: applicationsState.isListFirstLoaded,
   };
 };
 
@@ -46,7 +46,7 @@ export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
 
     componentDidUpdate(prevProps: any) {
       if (this.props.activeNamespaceName !== prevProps.activeNamespaceName) {
-        console.log(this.props.applications.size);
+        console.log(this.props.applications.length);
         this.props.dispatch(setCurrentNamespaceAction(this.props.activeNamespaceName, false));
       }
     }
@@ -62,10 +62,10 @@ export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
         );
       }
 
-      if (applications.size > 0 && applicationNameParam) {
+      if (applications.length > 0 && applicationNameParam) {
         let foundApp = false;
         applications.forEach((app) => {
-          if (app.get("name") === applicationNameParam) {
+          if (app.name === applicationNameParam) {
             foundApp = true;
           }
         });

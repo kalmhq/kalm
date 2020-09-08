@@ -1,9 +1,8 @@
-import React from "react";
-import Immutable from "immutable";
+import { date, number, text } from "@storybook/addon-knobs";
 import { storiesOf } from "@storybook/react";
-
+import Immutable from "immutable";
 import { ApplicationListPage } from "pages/Application/List";
-
+import React from "react";
 import {
   ApplicationComponentDetails,
   ApplicationDetails,
@@ -12,8 +11,6 @@ import {
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
 } from "types/application";
-
-import { date, number, text } from "@storybook/addon-knobs";
 import {
   createApplication,
   createApplicationComponent,
@@ -38,7 +35,7 @@ storiesOf("Screens/Applications", module)
   })
   .add("Load Empty Application", () => {
     resetStore();
-    const applications: Immutable.List<ApplicationDetails> = Immutable.List<ApplicationDetails>([]);
+    const applications: ApplicationDetails[] = [];
     store.dispatch({ type: LOAD_APPLICATIONS_PENDING });
     store.dispatch({ type: LOAD_APPLICATIONS_FULFILLED, payload: { applicationList: applications } });
     return <ApplicationListPage />;
@@ -55,10 +52,12 @@ storiesOf("Screens/Applications", module)
 
     let oneApp: ApplicationDetails = createApplication(appName);
 
-    const allComponents: Immutable.Map<
-      string,
-      Immutable.List<ApplicationComponentDetails>
-    > = createApplicationComponent(appName, componentCounter, createTime, generateRandomIntList(podCounter, 0, 5));
+    const allComponents: { [key: string]: ApplicationComponentDetails[] } = createApplicationComponent(
+      appName,
+      componentCounter,
+      createTime,
+      generateRandomIntList(podCounter, 0, 5),
+    );
 
     oneApp = mergeMetrics(oneApp, allComponents);
 
@@ -134,7 +133,7 @@ storiesOf("Screens/Applications", module)
     );
     fourApp = mergeMetrics(fourApp, fourAppComponent);
 
-    fourAppComponent = fourAppComponent.merge(oneAppComponent, twoAppComponent, threeAppComponent);
+    fourAppComponent = Object.assign(oneAppComponent, twoAppComponent, threeAppComponent, fourAppComponent);
     store.dispatch({
       type: LOAD_ALL_NAMESAPCES_COMPONETS,
       payload: {

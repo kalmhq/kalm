@@ -4,7 +4,7 @@ import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { anchorRef, bindPopper, InjectedProps } from "material-ui-popup-state";
 import React from "react";
 import {
-  ComponentLikePortContent,
+  ComponentLikePort,
   PortProtocolGRPC,
   PortProtocolHTTP,
   PortProtocolHTTP2,
@@ -21,7 +21,7 @@ import { FormikNormalizePort } from "forms/normalizer";
 
 interface Props extends FieldArrayRenderProps {}
 
-const ValidatorPorts = (values: ComponentLikePortContent[], _allValues?: any, _props?: any, _name?: any) => {
+const ValidatorPorts = (values: ComponentLikePort[], _allValues?: any, _props?: any, _name?: any) => {
   if (!values) return undefined;
   const protocolServicePorts = new Set<string>();
 
@@ -74,7 +74,7 @@ class RenderPorts extends React.PureComponent<Props> {
         </Box>
 
         {getIn(values, name) &&
-          getIn(values, name).map((field: ComponentLikePortContent, index: number) => {
+          getIn(values, name).map((field: ComponentLikePort, index: number) => {
             return (
               <Grid container spacing={2} key={index}>
                 <Grid item xs>

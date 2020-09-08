@@ -54,7 +54,7 @@ export abstract class Api {
   public abstract deleteRegistry(name: string): Promise<void>;
 
   // applications
-  public abstract getApplicationList(): Promise<Immutable.List<ApplicationDetails>>;
+  public abstract getApplicationList(): Promise<ApplicationDetails[]>;
 
   public abstract getApplication(name: string): Promise<ApplicationDetails>;
 
@@ -64,9 +64,7 @@ export abstract class Api {
 
   public abstract deleteApplication(name: string): Promise<void>;
 
-  public abstract getApplicationComponentList(
-    applicationName: string,
-  ): Promise<Immutable.List<ApplicationComponentDetails>>;
+  public abstract getApplicationComponentList(applicationName: string): Promise<ApplicationComponentDetails[]>;
 
   public abstract getApplicationComponent(applicationName: string, name: string): Promise<ApplicationComponentDetails>;
 

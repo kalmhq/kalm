@@ -7,7 +7,7 @@ import { Actions } from "types";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    componentsMap: state.get("components").get("components"),
+    componentsMap: state.get("components").components,
   };
 };
 

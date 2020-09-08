@@ -7,7 +7,7 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { RootState } from "reducers";
 import {
-  VolumeContent,
+  Volume,
   VolumeTypePersistentVolumeClaim,
   VolumeTypePersistentVolumeClaimNew,
   VolumeTypeTemporaryDisk,
@@ -50,7 +50,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
     const claimNames: { [key: string]: boolean } = {};
 
     if (getIn(values, name)) {
-      getIn(values, name).forEach((volume: VolumeContent, index: number) => {
+      getIn(values, name).forEach((volume: Volume, index: number) => {
         if (volume.type === VolumeTypePersistentVolumeClaim) {
           const claimName = volume.claimName;
           claimNames[claimName] = true;
@@ -87,7 +87,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
       : simpleOptions;
   };
 
-  private getClaimNameOptions(disk: VolumeContent) {
+  private getClaimNameOptions(disk: Volume) {
     const volumeOptions = this.getVolumeOptions();
     const usingClaimNames = this.getUsingClaimNames();
     const currentClaimName = disk.claimName;
@@ -225,7 +225,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
     };
   }
 
-  public getFieldComponents(disk: VolumeContent, index: number) {
+  public getFieldComponents(disk: Volume, index: number) {
     const { name } = this.props;
     const volumeOptions = this.getVolumeOptions();
     const typeOptions = this.getTypeOptions(disk.type);
@@ -390,7 +390,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           </Grid>
         </Box>
         {getIn(values, name) &&
-          getIn(values, name).map((disk: VolumeContent, index: number) => {
+          getIn(values, name).map((disk: Volume, index: number) => {
             return (
               <Grid container spacing={2} key={index}>
                 {this.getFieldComponents(disk, index).map((fieldComponent, fieldIndex) => {

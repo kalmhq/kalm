@@ -41,8 +41,8 @@ const mapStateToProps = (state: RootState) => {
   return {
     nodes: state.get("nodes").get("nodes"),
     metrics: state.get("nodes").get("metrics"),
-    applications: state.get("applications").get("applications"),
-    componentsMap: state.get("components").get("components"),
+    applications: state.get("applications").applications,
+    componentsMap: state.get("components").components,
   };
 };
 
@@ -197,11 +197,11 @@ export class NodeListRaw extends React.Component<Props, States> {
             },
             {
               name: "CPU",
-              content: <SmallCPULineChart data={node.get("metrics").get("cpu")} />,
+              content: <SmallCPULineChart data={node.get("metrics").cpu} />,
             },
             {
               name: "Memory",
-              content: <SmallMemoryLineChart data={node.get("metrics").get("memory")} />,
+              content: <SmallMemoryLineChart data={node.get("metrics").memory} />,
             },
             {
               name: "CPU (Allocated / Total allocatable)",
@@ -426,7 +426,7 @@ export class NodeListRaw extends React.Component<Props, States> {
           <Grid container spacing={2}>
             <Grid item md={6}>
               <InfoPaper elevation={0} style={{ overflow: "hidden" }}>
-                <BigCPULineChart data={metrics.get("cpu")} filter={this.state.chartDateFilter as TimestampFilter} />
+                <BigCPULineChart data={metrics.cpu} filter={this.state.chartDateFilter as TimestampFilter} />
                 <PopupState variant="popper" popupId="big-cpu-popup-popper">
                   {(popupState) => {
                     return (
@@ -451,10 +451,7 @@ export class NodeListRaw extends React.Component<Props, States> {
             </Grid>
             <Grid item md={6}>
               <InfoPaper elevation={0} style={{ overflow: "hidden" }}>
-                <BigMemoryLineChart
-                  data={metrics.get("memory")}
-                  filter={this.state.chartDateFilter as TimestampFilter}
-                />
+                <BigMemoryLineChart data={metrics.memory} filter={this.state.chartDateFilter as TimestampFilter} />
                 <PopupState variant="popper" popupId="big-memory-popup-popper">
                   {(popupState) => {
                     return (

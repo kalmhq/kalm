@@ -1,29 +1,24 @@
-import React from "react";
+import { date, number, text } from "@storybook/addon-knobs";
 import { storiesOf } from "@storybook/react";
 import Immutable from "immutable";
-
 import { ComponentListPage } from "pages/Components/List";
-
+import React from "react";
 import {
-  ApplicationComponentDetails,
   ApplicationDetails,
   LOAD_ALL_NAMESAPCES_COMPONETS,
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
 } from "types/application";
-
-import { date, number, text } from "@storybook/addon-knobs";
+import { SET_CURRENT_NAMESPACE } from "types/namespace";
 import {
-  createApplicationComponent,
   createApplication,
-  mergeMetrics,
+  createApplicationComponent,
   createRoutes,
   generateRandomIntList,
+  mergeMetrics,
 } from "../data/application";
-
-import { store, withProvider, resetStore } from "../ReduxConfig";
-import { SET_CURRENT_NAMESPACE } from "types/namespace";
+import { resetStore, store, withProvider } from "../ReduxConfig";
 
 storiesOf("Screens/Components", module)
   .addDecorator(withProvider)
@@ -57,10 +52,12 @@ storiesOf("Screens/Components", module)
 
     let oneApp: ApplicationDetails = createApplication(appName);
 
-    const allComponents: Immutable.Map<
-      string,
-      Immutable.List<ApplicationComponentDetails>
-    > = createApplicationComponent(appName, componentCounter, createTime, generateRandomIntList(podCounter, 0, 5));
+    const allComponents = createApplicationComponent(
+      appName,
+      componentCounter,
+      createTime,
+      generateRandomIntList(podCounter, 0, 5),
+    );
 
     oneApp = mergeMetrics(oneApp, allComponents);
 
@@ -142,7 +139,7 @@ storiesOf("Screens/Components", module)
     );
     fourApp = mergeMetrics(fourApp, fourAppComponent);
 
-    fourAppComponent = fourAppComponent.merge(oneAppComponent, twoAppComponent, threeAppComponent);
+    fourAppComponent = Object.assign(oneAppComponent, twoAppComponent, threeAppComponent, fourAppComponent);
     store.dispatch({
       type: LOAD_ALL_NAMESAPCES_COMPONETS,
       payload: {

@@ -34,7 +34,7 @@ import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import { ApplicationDetails } from "types/application";
 import {
-  ComponentLikeFormContent,
+  ComponentLike,
   workloadTypeCronjob,
   workloadTypeDaemonSet,
   workloadTypeServer,
@@ -106,7 +106,7 @@ const mapStateToProps = (state: RootState) => {
   return {
     registries: state.get("registries").registries,
     tutorialState: state.get("tutorial"),
-    isSubmittingApplicationComponent: state.get("components").get("isSubmittingApplicationComponent"),
+    isSubmittingApplicationComponent: state.get("components").isSubmittingApplicationComponent,
     nodeLabels,
     currentTabIndex,
     form: COMPONENT_FORM_ID,
@@ -170,8 +170,8 @@ interface RawProps {
   showSubmitButton?: boolean;
   submitButtonText?: string;
   application?: ApplicationDetails;
-  _initialValues: ComponentLikeFormContent;
-  onSubmit: (formValues: ComponentLikeFormContent) => void;
+  _initialValues: ComponentLike;
+  onSubmit: (formValues: ComponentLike) => void;
 }
 
 interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {
@@ -179,7 +179,7 @@ interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchPr
 }
 
 export interface Props
-  extends FormikProps<ComponentLikeFormContent>,
+  extends FormikProps<ComponentLike>,
     RouteComponentProps,
     WithStyles<typeof styles>,
     ConnectedProps,
@@ -1004,10 +1004,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
-const form = withFormik<
-  ConnectedProps & RawProps & WithStyles<typeof styles> & RouteComponentProps,
-  ComponentLikeFormContent
->({
+const form = withFormik<ConnectedProps & RawProps & WithStyles<typeof styles> & RouteComponentProps, ComponentLike>({
   mapPropsToValues: (props) => props._initialValues,
   enableReinitialize: true,
   validate: formikValidateOrNotBlockByTutorial,

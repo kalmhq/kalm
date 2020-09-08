@@ -1,5 +1,4 @@
 import { api } from "api";
-import Immutable from "immutable";
 import { ThunkResult } from "types";
 import {
   ApplicationComponent,
@@ -19,7 +18,7 @@ export const loadComponentsAction = (namespace: string): ThunkResult<Promise<voi
   return async (dispatch) => {
     dispatch({ type: LOAD_COMPONENTS_PENDING });
 
-    let components: Immutable.List<ApplicationComponentDetails>;
+    let components: ApplicationComponentDetails[];
     try {
       components = await api.getApplicationComponentList(namespace);
     } catch (e) {

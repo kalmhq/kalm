@@ -45,7 +45,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   const httpRoutes = state.get("routes").get("httpRoutes");
-  const componentsMap = state.get("components").get("components");
+  const componentsMap = state.get("components").components;
   const clusterInfo = state.get("cluster").get("info");
   const usingApplicationCard = state.get("settings").get("usingApplicationCard");
   return {
@@ -62,7 +62,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   private confirmDelete = async (applicationDetails: ApplicationDetails) => {
     const { dispatch } = this.props;
     try {
-      await dispatch(deleteApplicationAction(applicationDetails.get("name")));
+      await dispatch(deleteApplicationAction(applicationDetails.name));
       await dispatch(setSuccessNotificationAction("Successfully delete an application"));
     } catch {
       dispatch(setErrorNotificationAction());
@@ -70,33 +70,28 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderCPU = (applicationListItem: ApplicationDetails) => {
-    const metrics = applicationListItem.get("metrics");
-    return (
-      <SmallCPULineChart data={metrics.get("cpu")} hoverText={this.hasPods(applicationListItem) ? "" : "No data"} />
-    );
+    const metrics = applicationListItem.metrics;
+    return <SmallCPULineChart data={metrics.cpu} hoverText={this.hasPods(applicationListItem) ? "" : "No data"} />;
   };
 
   private renderMemory = (applicationListItem: ApplicationDetails) => {
-    const metrics = applicationListItem.get("metrics");
+    const metrics = applicationListItem.metrics;
     return (
-      <SmallMemoryLineChart
-        data={metrics.get("memory")}
-        hoverText={this.hasPods(applicationListItem) ? "" : "No data"}
-      />
+      <SmallMemoryLineChart data={metrics.memory} hoverText={this.hasPods(applicationListItem) ? "" : "No data"} />
     );
   };
 
   private renderName = (applicationDetails: ApplicationDetails) => {
     return (
-      <KLink to={`/applications/${applicationDetails.get("name")}/components`} onClick={() => blinkTopProgressAction()}>
-        {applicationDetails.get("name")}
+      <KLink to={`/applications/${applicationDetails.name}/components`} onClick={() => blinkTopProgressAction()}>
+        {applicationDetails.name}
       </KLink>
     );
   };
 
   private renderCreatedAt = (applicationDetails: ApplicationDetails) => {
     const { componentsMap } = this.props;
-    const components = componentsMap.get(applicationDetails.get("name"));
+    const components = componentsMap[applicationDetails.name];
 
     return <Caption>{components ? getApplicationCreatedAtString(components) : "-"}</Caption>;
   };
@@ -104,8 +99,8 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   private hasPods = (applicationDetails: ApplicationDetails) => {
     const { componentsMap } = this.props;
     let count = 0;
-    componentsMap.get(applicationDetails.get("name"))?.forEach((component) => {
-      component.get("pods").forEach((podStatus) => {
+    componentsMap[applicationDetails.name]?.forEach((component) => {
+      component.pods?.forEach((podStatus) => {
         count++;
       });
     });
@@ -120,10 +115,10 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     let successCount = 0;
     let pendingCount = 0;
     let errorCount = 0;
-    componentsMap.get(applicationDetails.get("name"))?.forEach((component) => {
-      component.get("pods").forEach((podStatus) => {
+    componentsMap[applicationDetails.name]?.forEach((component) => {
+      component.pods?.forEach((podStatus) => {
         podCount++;
-        switch (podStatus.get("status")) {
+        switch (podStatus.status) {
           case "Running": {
             successCount++;
             break;
@@ -152,7 +147,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
 
     return (
       <KLink
-        to={`/applications/${applicationDetails.get("name")}/components`}
+        to={`/applications/${applicationDetails.name}/components`}
         style={{ color: primaryColor }}
         onClick={() => blinkTopProgressAction()}
       >
@@ -201,7 +196,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderExternalAccesses = (applicationDetails: ApplicationDetails) => {
-    const applicationName = applicationDetails.get("name");
+    const applicationName = applicationDetails.name;
     const applicationRoutes = this.getRoutes(applicationName);
 
     if (applicationRoutes && applicationRoutes.size > 0) {
@@ -246,7 +241,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
           }}
           // size="small"
           tooltipTitle="Details"
-          to={`/applications/${applicationDetails.get("name")}/components`}
+          to={`/applications/${applicationDetails.name}/components`}
         >
           <KalmDetailsIcon />
         </IconLinkWithToolTip>
@@ -375,8 +370,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     const { applications, componentsMap } = this.props;
 
     const GridRow = (app: ApplicationDetails, index: number) => {
-      const applicationName = app.get("name");
-      const applicationRoutes = this.getRoutes(applicationName);
+      const applicationRoutes = this.getRoutes(app.name);
       return (
         <Grid key={index} item sm={6} md={4} lg={3}>
           <ApplicationCard
@@ -405,7 +399,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
         <Box p={2}>
           {isNamespaceLoading && !isNamespaceFirstLoaded ? (
             <Loading />
-          ) : applications.size === 0 ? (
+          ) : applications.length === 0 ? (
             this.renderEmpty()
           ) : usingApplicationCard ? (
             this.renderGrid()

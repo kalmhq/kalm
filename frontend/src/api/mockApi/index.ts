@@ -58,22 +58,21 @@ export default class MockApi extends Api {
   };
 
   public getApplicationList = async () => {
-    return mockStore.data.get("mockApplications");
+    return mockStore.dataImmer.mockApplications;
   };
 
   public getApplication = async (name: string) => {
-    return mockStore.data.get("mockApplications").find((application) => application.get("name") === name)!;
+    return mockStore.dataImmer.mockApplications.find((application) => application.name === name)!;
   };
 
   public getApplicationComponentList = async (applicationName: string) => {
-    return mockStore.data.getIn(["mockApplicationComponents", applicationName]);
+    return mockStore.dataImmer.mockApplicationComponents[applicationName];
   };
 
   public getApplicationComponent = async (applicationName: string, name: string) => {
-    return mockStore.data
-      .get("mockApplicationComponents")
-      .get(applicationName)
-      ?.find((component) => component.get("name") === name)!;
+    return mockStore.dataImmer.mockApplicationComponents[applicationName].find(
+      (c) => c.name === name,
+    ) as ApplicationComponentDetails;
   };
 
   public getHttpRoutes = async () => {
@@ -119,31 +118,31 @@ export default class MockApi extends Api {
 
   public createApplication = async (application: Application) => {
     let applicationDetails = application as ApplicationDetails;
-    applicationDetails = applicationDetails.set(
-      "metrics",
-      Immutable.fromJS({
-        cpu: null,
-        memory: null,
-      }),
-    );
-    applicationDetails = applicationDetails.set("roles", Immutable.fromJS(["writer", "reader"]));
-    applicationDetails = applicationDetails.set("status", "Active");
-    applicationDetails = applicationDetails.set("istioMetricHistories", Immutable.fromJS({}));
+
+    applicationDetails.metrics = {
+      isMetricServerEnabled: true,
+      cpu: [],
+      memory: [],
+    };
+    applicationDetails.roles = ["writer", "reader"];
+    applicationDetails.status = "Active";
+    applicationDetails.istioMetricHistories = {};
+
     await mockStore.updateApplication(applicationDetails);
     return applicationDetails;
   };
 
   public createApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
     let componentDetails = component as ApplicationComponentDetails;
-    componentDetails = componentDetails.set(
-      "metrics",
-      Immutable.fromJS({
-        cpu: null,
-        memory: null,
-      }),
-    );
-    componentDetails = componentDetails.set("services", Immutable.fromJS([]));
-    componentDetails = componentDetails.set("pods", Immutable.List([mockStore.data.get("mockErrorPod")]));
+
+    componentDetails.metrics = {
+      isMetricServerEnabled: true,
+      cpu: [],
+      memory: [],
+    };
+    componentDetails.services = [];
+    componentDetails.pods = [mockStore.dataImmer.mockErrorPod];
+
     await mockStore.updateApplicationComponent(applicationName, componentDetails);
     return componentDetails;
   };
@@ -208,7 +207,7 @@ export default class MockApi extends Api {
 
   public updateApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
     await mockStore.updateApplicationComponent(applicationName, component as ApplicationComponentDetails);
-    return Immutable.fromJS(component);
+    return component as ApplicationComponentDetails;
   };
 
   public updateRegistry = async (registry: RegistryFormType) => {

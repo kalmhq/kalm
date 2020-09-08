@@ -1,4 +1,3 @@
-import Immutable from "immutable";
 import { RootState } from "reducers";
 import { getComponentFormVolumeOptions } from "selectors/component";
 import { ApplicationComponent, ApplicationComponentDetails } from "types/application";
@@ -11,24 +10,32 @@ import {
   VolumeTypePersistentVolumeClaimTemplateNew,
 } from "types/componentTemplate";
 import { formatDate, formatTimeDistance } from "utils/date";
+import produce from "immer";
 
 export const componentDetailsToComponent = (componentDetails: ApplicationComponentDetails): ApplicationComponent => {
-  if (!componentDetails.get("workloadType")) {
-    componentDetails = componentDetails.set("workloadType", workloadTypeServer);
-  }
-  return componentDetails.delete("pods").delete("services").delete("metrics") as ApplicationComponent;
+  const component = produce(componentDetails, (draft) => {
+    if (!draft.workloadType) {
+      draft.workloadType = workloadTypeServer;
+    }
+    delete draft.pods;
+    delete draft.services;
+    delete draft.metrics;
+    delete draft.istioMetricHistories;
+  });
+
+  return component as ApplicationComponent;
 };
 
 export const correctComponentFormValuesForSubmit = (
   state: RootState,
   componentValues: ApplicationComponent,
 ): ApplicationComponent => {
-  const volumes = componentValues.get("volumes");
+  const volumes = componentValues.volumes;
 
   const volumeOptions = getComponentFormVolumeOptions(
     state,
-    componentValues.get("name"),
-    componentValues.get("workloadType") || workloadTypeServer,
+    componentValues.name,
+    componentValues.workloadType || workloadTypeServer,
   );
 
   const findPVC = (claimName: string) => {
@@ -51,45 +58,41 @@ export const correctComponentFormValuesForSubmit = (
 
   const correctedVolumes = volumes?.map((v) => {
     // set pvc and pvToMatch
-    if (
-      v.get("type") === VolumeTypePersistentVolumeClaim ||
-      v.get("type") === VolumeTypePersistentVolumeClaimTemplate
-    ) {
-      const findResult = findPVC(v.get("claimName"));
-      v = v.set("pvc", findResult.pvc);
-      v = v.set("pvToMatch", findResult.pvToMatch);
-      v = v.set("storageClassName", findResult.storageClassName);
-      v = v.set("size", findResult.size);
+    if (v.type === VolumeTypePersistentVolumeClaim || v.type === VolumeTypePersistentVolumeClaimTemplate) {
+      const findResult = findPVC(v.claimName);
+      v.pvc = findResult.pvc;
+      v.pvToMatch = findResult.pvToMatch;
+      v.storageClassName = findResult.storageClassName;
+      v.size = findResult.size;
     }
     // if is pvc-new, set to pvc
-    if (v.get("type") === VolumeTypePersistentVolumeClaimNew) {
-      v = v.set("type", VolumeTypePersistentVolumeClaim);
+    if (v.type === VolumeTypePersistentVolumeClaimNew) {
+      v.type = VolumeTypePersistentVolumeClaim;
     }
-    if (v.get("type") === VolumeTypePersistentVolumeClaimTemplateNew) {
-      v = v.set("type", VolumeTypePersistentVolumeClaimTemplate);
+    if (v.type === VolumeTypePersistentVolumeClaimTemplateNew) {
+      v.type = VolumeTypePersistentVolumeClaimTemplate;
     }
     return v;
   });
-  componentValues = componentValues.set("volumes", correctedVolumes);
+  componentValues.volumes = correctedVolumes;
 
   if (
-    componentValues.get("cpuLimit") ||
-    componentValues.get("memoryLimit") ||
-    componentValues.get("cpuRequest") ||
-    componentValues.get("memoryRequest")
+    componentValues.cpuLimit ||
+    componentValues.memoryLimit ||
+    componentValues.cpuRequest ||
+    componentValues.memoryRequest
   ) {
-    const resourceRequirements: ResourceRequirements = Immutable.Map({
-      limits: Immutable.Map({
-        cpu: componentValues.get("cpuLimit"),
-        memory: componentValues.get("memoryLimit"),
-      }),
-      requests: Immutable.Map({
-        cpu: componentValues.get("cpuRequest"),
-        memory: componentValues.get("memoryRequest"),
-      }),
-    });
-
-    componentValues = componentValues.set("resourceRequirements", resourceRequirements);
+    const resourceRequirements: ResourceRequirements = {
+      limits: {
+        cpu: componentValues.cpuLimit,
+        memory: componentValues.memoryLimit,
+      },
+      requests: {
+        cpu: componentValues.cpuRequest,
+        memory: componentValues.memoryRequest,
+      },
+    };
+    componentValues.resourceRequirements = resourceRequirements;
   }
 
   return componentValues;
@@ -99,12 +102,12 @@ export const correctComponentFormValuesForInit = (
   state: RootState,
   component: ApplicationComponent,
 ): ApplicationComponent => {
-  let volumes = component.get("volumes");
+  let volumes = component.volumes;
   if (volumes) {
     const volumeOptions = getComponentFormVolumeOptions(
       state,
-      component.get("name"),
-      component.get("workloadType") || "server",
+      component.name,
+      component.workloadType || workloadTypeServer,
     );
 
     const findClaimName = (pvc?: string) => {
@@ -122,30 +125,27 @@ export const correctComponentFormValuesForInit = (
 
     const correctedVolumes = volumes?.map((v) => {
       // set claimName according to pvc
-      if (
-        v.get("type") === VolumeTypePersistentVolumeClaim ||
-        v.get("type") === VolumeTypePersistentVolumeClaimTemplate
-      ) {
-        const claimName = findClaimName(v.get("pvc"));
-        v = v.set("claimName", claimName);
+      if (v.type === VolumeTypePersistentVolumeClaim || v.type === VolumeTypePersistentVolumeClaimTemplate) {
+        const claimName = findClaimName(v.pvc);
+        v.claimName = claimName;
       }
 
       return v;
     });
 
-    component = component.set("volumes", correctedVolumes);
+    component.volumes = correctedVolumes;
   }
 
   return component;
 };
 
-export const getApplicationCreatedAtString = (components: Immutable.List<ApplicationComponentDetails>): string => {
+export const getApplicationCreatedAtString = (components: ApplicationComponentDetails[]): string => {
   const createdAt = getApplicationCreatedAtDate(components);
   const createdAtString = createdAt <= new Date(0) ? "-" : formatDate(createdAt);
   return createdAtString;
 };
 
-export const getApplicationCreatedAtDate = (components: Immutable.List<ApplicationComponentDetails>): Date => {
+export const getApplicationCreatedAtDate = (components: ApplicationComponentDetails[]): Date => {
   let createdAt = new Date(0);
 
   components.forEach((component) => {
@@ -174,8 +174,8 @@ export const getComponentCreatedFromAndAtString = (component: ApplicationCompone
 export const getComponentCreatedAtDate = (component: ApplicationComponentDetails): Date => {
   let createdAt = new Date(0);
 
-  component.get("pods").forEach((podStatus) => {
-    const ts = podStatus.get("createTimestamp");
+  component.pods?.forEach((podStatus) => {
+    const ts = podStatus.createTimestamp;
     const tsDate = new Date(ts);
     if (createdAt <= new Date(0) || (tsDate > new Date(0) && tsDate < createdAt)) {
       createdAt = tsDate;

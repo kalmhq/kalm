@@ -3,7 +3,6 @@ import { grey } from "@material-ui/core/colors";
 import { Expansion } from "forms/Route/expansion";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
-import Immutable from "immutable";
 import React, { ReactElement } from "react";
 import { ApplicationComponentDetails, PodStatus } from "types/application";
 import { TimestampFilter } from "utils/date";
@@ -136,11 +135,11 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   }
 
   private renderPodStatus = (pod: PodStatus) => {
-    if (pod.get("isTerminating")) {
+    if (pod.isTerminating) {
       return <PendingBadge />;
     }
 
-    switch (pod.get("status")) {
+    switch (pod.status) {
       case "Running": {
         return <SuccessBadge />;
       }
@@ -160,11 +159,11 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     let isError = false;
     let isPending = false;
 
-    component.get("pods").forEach((pod) => {
-      if (pod.get("isTerminating")) {
+    component.pods?.forEach((pod) => {
+      if (pod.isTerminating) {
         isPending = true;
       } else {
-        switch (pod.get("status")) {
+        switch (pod.status) {
           case "Pending": {
             isPending = true;
             break;
@@ -189,13 +188,13 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   private getPodsNumber = (component: ApplicationComponentDetails): string => {
     let runningCount = 0;
 
-    component.get("pods").forEach((pod) => {
-      if (pod.get("status") === "Succeeded" || pod.get("status") === "Running") {
+    component.pods?.forEach((pod) => {
+      if (pod.status === "Succeeded" || pod.status === "Running") {
         runningCount = runningCount + 1;
       }
     });
 
-    return `${runningCount}/${component.get("pods").size}`;
+    return `${runningCount}/${component.pods.length}`;
   };
 
   private getPieChartData() {
@@ -211,10 +210,10 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     components?.forEach((component) => {
       let hasError = false;
       let hasPending = false;
-      component.get("pods").forEach((pod) => {
-        if (pod.get("status") === "Succeeded" || pod.get("status") === "Running") {
+      component.pods?.forEach((pod) => {
+        if (pod.status === "Succeeded" || pod.status === "Running") {
           podSuccess = podSuccess + 1;
-        } else if (pod.get("status") === "Failed") {
+        } else if (pod.status === "Failed") {
           podError = podError + 1;
           hasError = true;
         } else {
@@ -259,20 +258,12 @@ class DetailsRaw extends React.PureComponent<Props, State> {
 
     if (components) {
       components.forEach((c) => {
-        c.get("pods").forEach((p) => {
-          p.get("warnings").forEach((w) => {
+        c.pods?.forEach((p) => {
+          p.warnings.forEach((w) => {
             warnings.push({
-              componentName: (
-                <Link href={`/applications/${activeNamespace?.get("name")}/components/${c.get("name")}`}>
-                  {c.get("name")}
-                </Link>
-              ),
-              podName: (
-                <Link href={`/applications/${activeNamespace?.get("name")}/components/${c.get("name")}`}>
-                  {p.get("name")}
-                </Link>
-              ),
-              message: <Typography color="error">{w.get("message")}</Typography>,
+              componentName: <Link href={`/applications/${activeNamespace?.name}/components/${c.name}`}>{c.name}</Link>,
+              podName: <Link href={`/applications/${activeNamespace?.name}/components/${c.name}`}>{p.name}</Link>,
+              message: <Typography color="error">{w.message}</Typography>,
             });
           });
         });
@@ -356,15 +347,15 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                 data={[
                   {
                     legend: "2xx",
-                    data: activeNamespace!.get("istioMetricHistories")?.get("httpRespCode2XXCount") || Immutable.List(),
+                    data: activeNamespace!.istioMetricHistories?.httpRespCode2XXCount || [],
                   },
                   {
                     legend: "4xx",
-                    data: activeNamespace!.get("istioMetricHistories")?.get("httpRespCode4XXCount") || Immutable.List(),
+                    data: activeNamespace!.istioMetricHistories?.httpRespCode4XXCount || [],
                   },
                   {
                     legend: "5xx",
-                    data: activeNamespace!.get("istioMetricHistories")?.get("httpRespCode5XXCount") || Immutable.List(),
+                    data: activeNamespace!.istioMetricHistories?.httpRespCode5XXCount || [],
                   },
                 ]}
                 title="http response code per second"
@@ -377,11 +368,11 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                 data={[
                   {
                     legend: "request",
-                    data: activeNamespace!.get("istioMetricHistories")?.get("httpRequestBytes") || Immutable.List(),
+                    data: activeNamespace!.istioMetricHistories?.httpRequestBytes || [],
                   },
                   {
                     legend: "response",
-                    data: activeNamespace!.get("istioMetricHistories")?.get("httpResponseBytes") || Immutable.List(),
+                    data: activeNamespace!.istioMetricHistories?.httpResponseBytes || [],
                   },
                 ]}
                 title="http traffic"
@@ -392,14 +383,14 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           <Grid container spacing={2}>
             <Grid item md>
               <BigCPULineChart
-                data={activeNamespace!.get("metrics")?.get("cpu")}
+                data={activeNamespace!.metrics?.cpu}
                 yAxesWidth={50}
                 filter={this.state.chartDateFilter as TimestampFilter}
               />
             </Grid>
             <Grid item md>
               <BigMemoryLineChart
-                data={activeNamespace!.get("metrics")?.get("memory")}
+                data={activeNamespace!.metrics?.memory}
                 yAxesWidth={50}
                 filter={this.state.chartDateFilter as TimestampFilter}
               />

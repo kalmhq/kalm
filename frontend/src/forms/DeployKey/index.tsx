@@ -1,28 +1,27 @@
 import { Box, Button, createStyles, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import Immutable from "immutable";
+import { Field, Form, FormikProps, withFormik } from "formik";
+import { KAutoCompleteOption, KFormikAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
+import { KFormikRadioGroupRender } from "forms/Basic/radio";
+import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
+import { RequireString, ValidatorRequired } from "forms/validator";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import React from "react";
 import { connect } from "react-redux";
-import { TDispatchProp } from "types";
 import { RootState } from "reducers";
-import { ValidatorRequired, RequireString } from "forms/validator";
-import { Prompt } from "widgets/Prompt";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { TDispatchProp } from "types";
+import { Application, ApplicationComponentDetails } from "types/application";
 import {
+  DeployKeyFormTypeContent,
   DeployKeyScopeCluster,
   DeployKeyScopeComponent,
   DeployKeyScopeNamespace,
   newEmptyDeployKeyForm,
-  DeployKeyFormTypeContent,
 } from "types/deployKey";
-import { KPanel } from "widgets/KPanel";
-import { KAutoCompleteOption, KFormikAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
-import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
-import { KFormikRadioGroupRender } from "forms/Basic/radio";
-import { ApplicationComponentDetails } from "types/application";
-import { Loading } from "widgets/Loading";
 import sc from "utils/stringConstants";
-import { Field, Form, FormikProps, withFormik } from "formik";
+import { KPanel } from "widgets/KPanel";
+import { Loading } from "widgets/Loading";
+import { Prompt } from "widgets/Prompt";
 import { object } from "yup";
 
 const styles = (theme: Theme) =>
@@ -32,7 +31,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    allComponents: state.get("components").get("components"),
+    allComponents: state.get("components").components,
   };
 };
 
@@ -66,28 +65,24 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
       );
     }
 
-    const applicationOptions = applications
-      .map(
-        (a): KAutoCompleteOption => ({
-          label: a.get("name"),
-          value: a.get("name"),
-          group: "",
-        }),
-      )
-      .toArray();
+    const applicationOptions = applications.map(
+      (a: Application): KAutoCompleteOption => ({
+        label: a.name,
+        value: a.name,
+        group: "",
+      }),
+    );
 
     let componentOptions: KAutoCompleteOption[] = [];
 
-    applications.forEach((application) => {
-      const components = (allComponents.get(application.get("name")) || Immutable.List()) as Immutable.List<
-        ApplicationComponentDetails
-      >;
+    applications.forEach((application: Application) => {
+      const components = allComponents[application.name] || ([] as ApplicationComponentDetails[]);
 
       components.forEach((component) => {
         componentOptions.push({
-          label: `${application.get("name")}/${component.get("name")}`,
-          value: `${application.get("name")}/${component.get("name")}`,
-          group: application.get("name"),
+          label: `${application.name}/${component.name}`,
+          value: `${application.name}/${component.name}`,
+          group: application.name,
         });
       });
     });

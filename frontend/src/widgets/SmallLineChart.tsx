@@ -51,9 +51,9 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
     let dataY = emptyChartDataY;
     let backgroundColorFixed = backgroundColor;
     let borderColorFixed = borderColor;
-    if (data && data.size > 0) {
-      dataY = data.map((n) => n.get("y")).toArray();
-      dataX = data.map((n) => n.get("x")).toArray();
+    if (data && data.length > 0) {
+      dataY = data.map((n) => n.y);
+      dataX = data.map((n) => n.x);
     } else {
       backgroundColorFixed = theme.palette.type === "light" ? grey[400] : grey[800];
       borderColorFixed = theme.palette.type === "light" ? grey[400] : grey[800];
@@ -81,14 +81,11 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
     // let text = "Data available soon";
     let text = "";
 
-    if (data && data.size > 0) {
+    if (data && data.length > 0) {
       if (formatValue) {
-        text = formatValue(data.get(data.size - 1)!.get("y"));
+        text = formatValue(data[data.length - 1]!.y);
       } else {
-        text = data
-          .get(data.size - 1)!
-          .get("y")
-          .toString();
+        text = data[data.length - 1]!.y.toString();
       }
     }
 
@@ -97,7 +94,7 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
 
   private hasData = () => {
     const { data } = this.props;
-    return data && data.size > 0;
+    return data && data.length > 0;
   };
 
   public render() {
@@ -201,10 +198,9 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
               if (!filter || filter === "all") {
                 return true;
               }
-              return item.get("x") >= startTimestamp;
+              return item.x >= startTimestamp;
             })
-            .map((n) => n.get("x"))
-            .toArray()
+            .map((n) => n.x)
         : [],
       datasets: [
         {
@@ -219,10 +215,9 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
                   if (!filter || filter === "all") {
                     return true;
                   }
-                  return item.get("x") >= startTimestamp;
+                  return item.x >= startTimestamp;
                 })
-                .map((n) => n.get("y"))
-                .toArray()
+                .map((n) => n.y)
             : [],
         },
       ],

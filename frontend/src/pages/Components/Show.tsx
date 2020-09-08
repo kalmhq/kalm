@@ -2,7 +2,6 @@ import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@mater
 import { Expansion } from "forms/Route/expansion";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
-import Immutable from "immutable";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { BasePage } from "pages/BasePage";
 import { ComponentBasicInfo } from "pages/Components/BasicInfo";
@@ -52,36 +51,34 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
   }
   private renderNetwork() {
     const { component, activeNamespaceName } = this.props;
-    const hasService = component.get("ports") && component.get("ports")!.size > 0;
+    const hasService = component.ports && component.ports!.length > 0;
     return (
       <Expansion title={"Networking"} defaultUnfold>
         <Box pb={2}>
           <Body>
             Cluster FQDN DNS:{" "}
-            <strong>{hasService ? `${component.get("name")}.${activeNamespaceName}.svc.cluster.local` : "none"}</strong>
+            <strong>{hasService ? `${component.name}.${activeNamespaceName}.svc.cluster.local` : "none"}</strong>
           </Body>
           <Body>
-            Cluster DNS: <strong>{hasService ? `${component.get("name")}.${activeNamespaceName}` : "none"}</strong>
+            Cluster DNS: <strong>{hasService ? `${component.name}.${activeNamespaceName}` : "none"}</strong>
           </Body>
           <Body>
-            Namespace DNS: <strong>{hasService ? `${component.get("name")}` : "none"}</strong>
+            Namespace DNS: <strong>{hasService ? `${component.name}` : "none"}</strong>
           </Body>
         </Box>
-        <VerticalHeadTable
-          items={component!
-            .get("ports", Immutable.List())!
-            .map((port) => ({
-              name: "Exposed port: " + port.get("protocol"),
+        {component.ports && (
+          <VerticalHeadTable
+            items={component.ports?.map((port) => ({
+              name: "Exposed port: " + port.protocol,
               content: (
                 <span>
-                  Expose port <strong>{port.get("containerPort")}</strong> to cluster port{" "}
-                  <strong>{port.get("servicePort") || port.get("containerPort")}</strong>
+                  Expose port <strong>{port.containerPort}</strong> to cluster port{" "}
+                  <strong>{port.servicePort || port.containerPort}</strong>
                 </span>
               ),
-            }))
-
-            .toArray()}
-        />
+            }))}
+          />
+        )}
       </Expansion>
     );
   }
@@ -89,7 +86,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
   private renderRoutes() {
     const { httpRoutes, component, activeNamespaceName } = this.props;
 
-    const serviceName = `${component.get("name")}`;
+    const serviceName = `${component.name}`;
 
     const routes = httpRoutes.filter(
       (route) =>
@@ -112,8 +109,8 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
       <Expansion title="pods" defaultUnfold>
         <PodsTable
           activeNamespaceName={activeNamespaceName}
-          pods={component.get("pods")}
-          workloadType={component.get("workloadType") as WorkloadType}
+          pods={component.pods}
+          workloadType={component.workloadType as WorkloadType}
         />
       </Expansion>
     );
@@ -124,14 +121,14 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
 
     return (
       <div className={classes.secondHeaderRight}>
-        <H6 className={classes.secondHeaderRightItem}>Component {component.get("name")}</H6>
+        <H6 className={classes.secondHeaderRightItem}>Component {component.name}</H6>
         <Button
           tutorial-anchor-id="edit-component"
           component={Link}
           color="primary"
           size="small"
           variant="outlined"
-          to={`/applications/${activeNamespaceName}/components/${component.get("name")}/edit`}
+          to={`/applications/${activeNamespaceName}/components/${component.name}/edit`}
         >
           Edit
         </Button>
