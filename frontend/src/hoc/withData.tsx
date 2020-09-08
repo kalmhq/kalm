@@ -8,7 +8,7 @@ import { TDispatchProp } from "types";
 import {
   RESOURCE_TYPE_APPLICATION,
   RESOURCE_TYPE_COMPONENT,
-  RESOURCE_TYPE_DEPLOY_KEY,
+  RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN,
   RESOURCE_TYPE_HTTP_ROUTE,
   RESOURCE_TYPE_HTTPS_CERT,
   RESOURCE_TYPE_NODE,
@@ -33,7 +33,8 @@ import { loadServicesAction } from "actions/service";
 import { throttle } from "utils";
 import { loadProtectedEndpointAction, loadSSOConfigAction } from "actions/sso";
 import { setErrorNotificationAction } from "actions/notification";
-import { loadDeployKeyAction } from "actions/deployKey";
+import { loadDeployAccessTokensAction } from "actions/deployAccessToken";
+import { AccessTokenToDeployAccessToken } from "types/deployAccessToken";
 
 export interface WatchResMessage {
   namespace: string;
@@ -71,7 +72,7 @@ class WithDataRaw extends React.PureComponent<Props> {
     dispatch(loadRoleBindingsAction());
     dispatch(loadServicesAction("")); // for routes destinations
     dispatch(loadStorageClassesAction());
-    dispatch(loadDeployKeyAction());
+    dispatch(loadDeployAccessTokensAction());
 
     // dispatch(loadComponentPluginsAction());
     dispatch(loadSSOConfigAction());
@@ -209,13 +210,13 @@ class WithDataRaw extends React.PureComponent<Props> {
           });
           break;
         }
-        case RESOURCE_TYPE_DEPLOY_KEY: {
+        case RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN: {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
-            kind: RESOURCE_TYPE_DEPLOY_KEY,
+            kind: RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: AccessTokenToDeployAccessToken(data.data),
             },
           });
           break;

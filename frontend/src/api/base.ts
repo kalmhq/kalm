@@ -23,7 +23,7 @@ import { RegistryType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { DeployKey } from "types/deployKey";
+import { DeployAccessToken } from "types/deployAccessToken";
 import { RoleBinding, RoleBindingContent } from "types/member";
 
 export abstract class Api {
@@ -148,11 +148,11 @@ export abstract class Api {
 
   public abstract deleteProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<void>;
 
-  public abstract listDeployKeys(): Promise<Immutable.List<DeployKey>>;
+  public abstract listDeployAccessTokens(): Promise<Immutable.List<DeployAccessToken>>;
 
-  public abstract createDeployKey(protectedEndpoint: DeployKey): Promise<DeployKey>;
+  public abstract createDeployAccessToken(protectedEndpoint: DeployAccessToken): Promise<DeployAccessToken>;
 
-  public abstract deleteDeployKey(protectedEndpoint: DeployKey): Promise<void>;
+  public abstract deleteDeployAccessToken(protectedEndpoint: DeployAccessToken): Promise<void>;
 
   public abstract resolveDomain(domain: string, type: "A" | "CNAME", timeout?: number): Promise<string[]>;
 

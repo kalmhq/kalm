@@ -18,7 +18,7 @@ import { ResourceActions } from "./resources";
 import { DebounceActions } from "./debounce";
 import { SSOConfigActions } from "types/sso";
 import { DomainActions } from "./domain";
-import { DeployKeyActions } from "types/deployKey";
+import { DeployAccessTokenActions } from "types/deployAccessToken";
 import { RoleBindingsActions } from "types/member";
 
 interface ReduxFormAction extends FormAction {
@@ -43,7 +43,7 @@ export type Actions =
   | DebounceActions
   | SSOConfigActions
   | DomainActions
-  | DeployKeyActions
+  | DeployAccessTokenActions
   | RoleBindingsActions;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;

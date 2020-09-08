@@ -158,9 +158,15 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload", h.handleAvailableVolsForSimpleWorkload)
 	gv1Alpha1WithAuth.GET("/volumes/available/sts/:namespace", h.handleAvailableVolsForSts)
 
+	// general access token handler
 	gv1Alpha1WithAuth.GET("/access_tokens", h.handleListAccessTokens)
 	gv1Alpha1WithAuth.POST("/access_tokens", h.handleCreateAccessToken)
 	gv1Alpha1WithAuth.DELETE("/access_tokens", h.handleDeleteAccessToken)
+
+	// deploy access token is just access token that only has update component permissions
+	gv1Alpha1WithAuth.GET("/deploy_access_tokens", h.handleListDeployAccessTokens)
+	gv1Alpha1WithAuth.POST("/deploy_access_tokens", h.handleCreateDeployAccessToken)
+	gv1Alpha1WithAuth.DELETE("/deploy_access_tokens", h.handleDeleteAccessToken)
 
 	gv1Alpha1WithAuth.GET("/sso", h.handleListSSOConfig)
 	gv1Alpha1WithAuth.DELETE("/sso", h.handleDeleteSSOConfig)

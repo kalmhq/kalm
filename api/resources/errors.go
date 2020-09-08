@@ -10,7 +10,7 @@ func NoObjectViewerRoleError(scope, obj string) error {
 }
 
 func NoObjectEditorRoleError(scope, obj string) error {
-	return errors.NewUnauthorized(fmt.Sprintf("Require editor role obj %s in application %s", obj, scope))
+	return errors.NewUnauthorized(fmt.Sprintf("Require edit permission on obj %s in application %s", obj, scope))
 }
 
 func NoObjectManagerRoleError(scope, obj string) error {

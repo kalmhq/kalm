@@ -5,10 +5,7 @@ go 1.13
 require (
 	github.com/casbin/casbin/v2 v2.11.2
 	github.com/coreos/go-oidc v2.2.1+incompatible
-	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
-	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/go-logr/logr v0.1.0
 	github.com/go-openapi/runtime v0.19.20 // indirect
 	github.com/go-openapi/spec v0.19.9 // indirect

@@ -8,7 +8,11 @@ import { HttpRoute } from "types/route";
 import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { Node } from "types/node";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { DeployKey } from "types/deployKey";
+import {
+  AccessTokenToDeployAccessToken,
+  DeployAccessToken,
+  DeployAccessTokenToAccessToken,
+} from "types/deployAccessToken";
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
 import { InitializeClusterResponse } from "types/cluster";
 import { RoleBindingContent } from "types/member";
@@ -358,23 +362,27 @@ export default class RealApi extends Api {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/protectedendpoints`, data: protectedEndpoint });
   };
 
-  public listDeployKeys = async (): Promise<Immutable.List<DeployKey>> => {
-    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/deploykeys` });
-    return Immutable.fromJS(res.data);
+  public listDeployAccessTokens = async (): Promise<Immutable.List<DeployAccessToken>> => {
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/deploy_access_tokens` });
+    return Immutable.List(res.data.map(AccessTokenToDeployAccessToken));
   };
 
-  public createDeployKey = async (deployKey: DeployKey): Promise<DeployKey> => {
+  public createDeployAccessToken = async (deployAccessToken: DeployAccessToken): Promise<DeployAccessToken> => {
     const res = await axiosRequest({
       method: "post",
-      url: `/${K8sApiVersion}/deploykeys`,
-      data: deployKey,
+      url: `/${K8sApiVersion}/deploy_access_tokens`,
+      data: DeployAccessTokenToAccessToken(deployAccessToken),
     });
 
-    return Immutable.fromJS(res.data);
+    return AccessTokenToDeployAccessToken(res.data);
   };
 
-  public deleteDeployKey = async (deployKey: DeployKey): Promise<void> => {
-    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/deploykeys`, data: deployKey });
+  public deleteDeployAccessToken = async (deployAccessToken: DeployAccessToken): Promise<void> => {
+    await axiosRequest({
+      method: "delete",
+      url: `/${K8sApiVersion}/deploy_access_tokens`,
+      data: DeployAccessTokenToAccessToken(deployAccessToken),
+    });
   };
 
   public resolveDomain = async (domain: string, type: "A" | "CNAME", timeout: number = 5000): Promise<string[]> => {

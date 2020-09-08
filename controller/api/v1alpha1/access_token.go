@@ -46,6 +46,8 @@ type AccessTokenRule struct {
 // This model should NOT be generate manually through kubernetes api directly.
 // Instead, use kalm apis to manage records.
 type AccessTokenSpec struct {
+	Memo string `json:"memo,omitempty"`
+
 	// The token, the access token name should be sha256 of this token.
 	// +kubebuilder:validation:MinLength=64
 	Token string `json:"token"`
@@ -71,9 +73,10 @@ type AccessTokenStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="Subject",type="string",JSONPath=".spec.subject"
+// +kubebuilder:printcolumn:name="Type",type="string",JSONPath=".metadata.labels.tokenType"
 // +kubebuilder:printcolumn:name="Creator",type="string",JSONPath=".spec.creator"
 // +kubebuilder:printcolumn:name="ExpiredAt",type="string",JSONPath=".spec.expiredAt"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // AccessToken is the Schema for the deploykeys API
 type AccessToken struct {

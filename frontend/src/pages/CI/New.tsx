@@ -3,27 +3,27 @@ import React from "react";
 import { BasePage } from "pages/BasePage";
 import { push } from "connected-react-router";
 import { setSuccessNotificationAction } from "actions/notification";
-import { withDeployKeys, WithDeployKeysProps } from "hoc/withDeployKeys";
-import { DeployKeyForm } from "forms/DeployKey";
-import { DeployKey } from "types/deployKey";
-import { createDeployKeyAction } from "actions/deployKey";
+import { withDeployAccessTokens, WithDeployAccessTokensProps } from "hoc/withDeployAccessTokens";
+import { DeployAccessTokenForm } from "forms/DeployAccessToken";
+import { DeployAccessToken } from "types/deployAccessToken";
+import { createDeployAccessTokenAction } from "actions/deployAccessToken";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
   });
 
-interface Props extends WithStyles<typeof styles>, WithDeployKeysProps {}
+interface Props extends WithStyles<typeof styles>, WithDeployAccessTokensProps {}
 
 interface State {}
 
-class DeployKeyNewPageRaw extends React.PureComponent<Props, State> {
-  private submit = async (config: DeployKey) => {
+class DeployAccessTokenNewPageRaw extends React.PureComponent<Props, State> {
+  private submit = async (config: DeployAccessToken) => {
     const { dispatch } = this.props;
-    return await dispatch(createDeployKeyAction(config));
+    return await dispatch(createDeployAccessTokenAction(config));
   };
 
-  private onSubmitSuccess = async (config: DeployKey) => {
+  private onSubmitSuccess = async (config: DeployAccessToken) => {
     const { dispatch } = this.props;
     dispatch(setSuccessNotificationAction("Create Deploy key Successfully"));
     dispatch(push("/ci/keys/" + config.get("name")));
@@ -35,7 +35,7 @@ class DeployKeyNewPageRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item md={8}>
-              <DeployKeyForm onSubmit={this.submit} onSubmitSuccess={this.onSubmitSuccess} />
+              <DeployAccessTokenForm onSubmit={this.submit} onSubmitSuccess={this.onSubmitSuccess} />
             </Grid>
           </Grid>
         </Box>
@@ -44,4 +44,4 @@ class DeployKeyNewPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const DeployKeyNewPage = withStyles(styles)(withDeployKeys(DeployKeyNewPageRaw));
+export const DeployAccessTokenNewPage = withStyles(styles)(withDeployAccessTokens(DeployAccessTokenNewPageRaw));

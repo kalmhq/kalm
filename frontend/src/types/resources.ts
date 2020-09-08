@@ -5,7 +5,7 @@ import { Certificate } from "./certificate";
 import { RegistryType } from "./registry";
 import { Disk } from "./disk";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { DeployKey } from "types/deployKey";
+import { DeployAccessToken } from "types/deployAccessToken";
 import { Service } from "types/service";
 import { RoleBinding } from "types/member";
 
@@ -24,7 +24,7 @@ export const RESOURCE_TYPE_REGISTRY = "Registry";
 export const RESOURCE_TYPE_VOLUME = "Volume";
 export const RESOURCE_TYPE_SSO = "SingleSignOnConfig";
 export const RESOURCE_TYPE_PROTECTED_ENDPOINT = "ProtectedEndpoint";
-export const RESOURCE_TYPE_DEPLOY_KEY = "DeployKey";
+export const RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN = "DeployAccessToken";
 export const RESOURCE_TYPE_SERVICE = "Service";
 export const RESOURCE_TYPE_ROLE_BINDING = "RoleBinding";
 
@@ -116,12 +116,12 @@ export interface ProtectedEndpointResourceAction {
   };
 }
 
-export interface DeployKeyResourceAction {
+export interface DeployAccessTokenResourceAction {
   type: typeof WATCHED_RESOURCE_CHANGE;
-  kind: typeof RESOURCE_TYPE_DEPLOY_KEY;
+  kind: typeof RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN;
   payload: {
     action: ResourceActionType;
-    data: DeployKey;
+    data: DeployAccessToken;
   };
 }
 
@@ -153,6 +153,6 @@ export type ResourceActions =
   | VolumeResourceAction
   | SSOConfigResourceAction
   | ProtectedEndpointResourceAction
-  | DeployKeyResourceAction
+  | DeployAccessTokenResourceAction
   | ServiceResourceAction
   | RoleBindingResourceAction;
