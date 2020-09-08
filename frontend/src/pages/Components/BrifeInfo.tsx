@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Box,
   createStyles,
@@ -15,28 +14,28 @@ import {
   withStyles,
   WithStyles,
 } from "@material-ui/core";
-import { TDispatchProp } from "types";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import { setSuccessNotificationAction } from "actions/notification";
+import clsx from "clsx";
+import { push } from "connected-react-router";
+import copy from "copy-to-clipboard";
+import { HealthTab, NetworkingTab } from "forms/ComponentLike";
+import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
+import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { VerticalHeadTable } from "widgets/VerticalHeadTable";
+import { TDispatchProp } from "types";
 import { ApplicationComponentDetails } from "types/application";
+import { Probe } from "types/componentTemplate";
 import { getComponentCreatedFromAndAtString } from "utils/application";
-import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
-import { HealthTab, NetworkingTab } from "forms/ComponentLike";
-import { ComponentLikePort, Probe } from "types/componentTemplate";
-import { List } from "immutable";
-import { CopyIcon, WrenchIcon } from "widgets/Icon";
-import copy from "copy-to-clipboard";
-import { setSuccessNotificationAction } from "actions/notification";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { push } from "connected-react-router";
-import clsx from "clsx";
-import { SecretValueLabel } from "widgets/Label";
-import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 import { sizeStringToGi, sizeStringToMi } from "utils/sizeConv";
 import stringConsts from "utils/stringConstants";
+import { CopyIcon, WrenchIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
+import { SecretValueLabel } from "widgets/Label";
+import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
+import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 
 const styles = (theme: Theme) =>
   createStyles({
