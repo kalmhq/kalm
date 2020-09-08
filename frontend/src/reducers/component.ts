@@ -2,10 +2,8 @@ import Immutable from "immutable";
 import { Actions } from "types";
 import {
   ApplicationComponentDetails,
-  ComponentPlugin,
   CREATE_COMPONENT,
   DELETE_COMPONENT,
-  LOAD_COMPONENT_PLUGINS_FULFILLED,
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   UPDATE_COMPONENT,
   LOAD_COMPONENTS_PENDING,
@@ -28,7 +26,6 @@ export type State = ImmutableMap<{
   isListLoading: boolean;
   isListFirstLoaded: boolean;
   isSubmittingApplicationComponent: boolean;
-  componentPlugins: ComponentPlugin[];
 }>;
 
 const initialState: State = Immutable.Map({
@@ -36,7 +33,6 @@ const initialState: State = Immutable.Map({
   isListLoading: false,
   isListFirstLoaded: false,
   isSubmittingApplicationComponent: false,
-  componentPlugins: [],
 });
 
 const isComponentInState = (state: State, applicationName: string, component: ApplicationComponentDetails): boolean => {
@@ -149,11 +145,6 @@ const reducer = (state: State = initialState, action: Actions): State => {
           break;
         }
       }
-      break;
-    }
-    case LOAD_COMPONENT_PLUGINS_FULFILLED: {
-      state = state.set("componentPlugins", action.payload.componentPlugins);
-
       break;
     }
   }

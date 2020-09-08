@@ -30,7 +30,6 @@ export type State = ImmutableMap<{
   isListFirstLoaded: boolean;
   isItemLoading: boolean;
   isSubmittingApplication: boolean;
-  // applicationPlugins: ApplicationPlugin[];
 }>;
 
 const initialState: State = Immutable.Map({
@@ -40,8 +39,6 @@ const initialState: State = Immutable.Map({
   isItemLoading: false,
   isSubmittingApplication: false,
   isSubmittingApplicationComponent: false,
-  // applicationPlugins: [],
-  componentPlugins: [],
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {

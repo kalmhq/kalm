@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { ApplicationComponentDetails, ApplicationDetails, ComponentPlugin, PodStatus } from "types/application";
+import { ApplicationComponentDetails, ApplicationDetails, PodStatus } from "types/application";
 import { LoginStatus } from "types/authorization";
 import {
   CertificateFormTypeContent,
@@ -30,7 +30,6 @@ interface MockStoreData {
   mockCertificates: CertificateList;
   mockCertificateIssuers: CertificateIssuerList;
   mockErrorPod: PodStatus;
-  mockComponentPlugins: Immutable.List<ComponentPlugin>;
   mockServices: Immutable.List<Service>;
   mockVolumes: PersistentVolumes;
   mockSSO: SSOConfig;
@@ -8386,40 +8385,6 @@ export default class MockStore {
           },
         ],
       }),
-      mockComponentPlugins: Immutable.fromJS([
-        {
-          name: "http-health-probe",
-          src:
-            'function addProbesForContainer(container) {\n  var SSOConfig = getConfig();\n\n  if (!SSOConfig) {\n    return\n  }\n\n  var probe = {\n    httpGet: {\n      path: "/",\n      port: SSOConfig.port\n    }\n  }\n\n  container.readinessProbe = probe;\n  container.livenessProbe = probe;\n\n  if (SSOConfig.initialDelaySeconds) {\n    container.readinessProbe.initialDelaySeconds = SSOConfig.initialDelaySeconds;\n    container.livenessProbe.initialDelaySeconds = SSOConfig.initialDelaySeconds;\n  }\n\n  if (SSOConfig.periodSeconds) {\n    container.readinessProbe.periodSeconds = SSOConfig.periodSeconds;\n    container.livenessProbe.periodSeconds = SSOConfig.periodSeconds;\n  }\n}\n\nfunction AfterPodTemplateGeneration(pod) {\n  var containers = pod.spec.containers;\n  containers.forEach(addProbesForContainer)\n  return pod;\n}\n',
-          configSchema: {
-            properties: {
-              initialDelaySeconds: {
-                type: "number",
-              },
-              periodSeconds: {
-                type: "number",
-              },
-              port: {
-                type: "number",
-              },
-            },
-            type: "object",
-          },
-        },
-        {
-          name: "termination-grace",
-          src:
-            "function AfterPodTemplateGeneration(pod) {\n  var SSOConfig = getConfig();\n\n  if (!SSOConfig) {\n    return;\n  }\n\n  if (SSOConfig.periodSeconds) {\n    pod.spec.terminationGracePeriodSeconds = SSOConfig.periodSeconds;\n  }\n\n  return pod;\n}\n",
-          configSchema: {
-            properties: {
-              periodSeconds: {
-                type: "number",
-              },
-            },
-            type: "object",
-          },
-        },
-      ]),
       mockSSO: Immutable.fromJS({
         domain: "sso.kapp.live",
         connectors: [

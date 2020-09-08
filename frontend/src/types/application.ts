@@ -21,20 +21,6 @@ export const LOAD_ALL_NAMESAPCES_COMPONETS = "LOAD_ALL_NAMESAPCES_COMPONETS"; //
 export const LOAD_COMPONENTS_PENDING = "LOAD_COMPONENTS_PENDING";
 export const LOAD_COMPONENTS_FULFILLED = "LOAD_COMPONENTS_FULFILLED";
 export const LOAD_COMPONENTS_FAILED = "LOAD_COMPONENTS_FAILED";
-// export const LOAD_APPLICATION_PLUGINS_FULFILLED = "LOAD_APPLICATION_PLUGINS_FULFILLED";
-export const LOAD_COMPONENT_PLUGINS_FULFILLED = "LOAD_COMPONENT_PLUGINS_FULFILLED";
-
-export interface ComponentPlugin {
-  name: string;
-  src: string;
-  configSchema: any;
-}
-
-export interface ApplicationPlugin {
-  name: string;
-  src: string;
-  configSchema: any;
-}
 
 export interface SharedEnv {
   name: string;
@@ -236,13 +222,6 @@ export interface SetIsSubmittingApplicationComponent {
   };
 }
 
-export interface LoadComponentPluginsFulfilledAction {
-  type: typeof LOAD_COMPONENT_PLUGINS_FULFILLED;
-  payload: {
-    componentPlugins: ApplicationPlugin[];
-  };
-}
-
 export type ApplicationActions =
   | CreateApplicationAction
   | UpdateApplicationAction
@@ -261,5 +240,4 @@ export type ApplicationActions =
   | LoadComponentsFulfilledAction
   | LoadComponentsPendingAction
   | LoadComponentsFailedAction
-  | LoadAllNamespacesComponentsAction
-  | LoadComponentPluginsFulfilledAction;
+  | LoadAllNamespacesComponentsAction;

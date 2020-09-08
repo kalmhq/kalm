@@ -71,8 +71,6 @@ class WithDataRaw extends React.PureComponent<Props> {
     dispatch(loadServicesAction("")); // for routes destinations
     dispatch(loadStorageClassesAction());
     dispatch(loadDeployKeyAction());
-
-    // dispatch(loadComponentPluginsAction());
     dispatch(loadSSOConfigAction());
     dispatch(loadProtectedEndpointAction());
   }

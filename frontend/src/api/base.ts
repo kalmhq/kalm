@@ -1,12 +1,5 @@
 import Immutable from "immutable";
-import {
-  Application,
-  ApplicationComponent,
-  ApplicationComponentDetails,
-  ApplicationDetails,
-  ApplicationPlugin,
-  ComponentPlugin,
-} from "types/application";
+import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import { LoginStatus } from "types/authorization";
 import {
   Certificate,
@@ -88,11 +81,6 @@ export abstract class Api {
   ): Promise<ApplicationComponentDetails>;
 
   public abstract deleteApplicationComponent(applicationName: string, name: string): Promise<void>;
-
-  // plugins
-  public abstract getApplicationPlugins(): Promise<ApplicationPlugin[]>;
-
-  public abstract getComponentPlugins(): Promise<ComponentPlugin[]>;
 
   // routes
   public abstract getHttpRoutes(): Promise<Immutable.List<HttpRoute>>;

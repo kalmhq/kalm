@@ -187,15 +187,6 @@ export default class MockApi extends Api {
   // TODO
   public deleteRoleBindings = async (namespace: string, bindingName: string) => {};
 
-  // TODO (has not been used)
-  public getApplicationPlugins = async () => {
-    return [];
-  };
-
-  public getComponentPlugins = async () => {
-    return mockStore.data.get("mockComponentPlugins").toArray();
-  };
-
   public getRegistry = async (name: string) => {
     return mockStore.dataImmer.mockRegistries.find((x) => x.name === name)!;
   };

@@ -15,7 +15,6 @@ import {
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
-  LOAD_COMPONENT_PLUGINS_FULFILLED,
   SET_IS_SUBMITTING_APPLICATION,
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   SetIsSubmittingApplication,
@@ -167,42 +166,6 @@ export const loadApplicationsAction = (): ThunkResult<Promise<Immutable.List<App
     });
 
     return applicationList;
-  };
-};
-
-// export const loadApplicationPluginsAction = (): ThunkResult<Promise<void>> => {
-//   return async dispatch => {
-//     let applicationPlugins;
-//     try {
-//       applicationPlugins = await getApplicationPlugins();
-//     } catch (e) {
-//       if (e.response && e.response.data.status === StatusFailure) {
-//         dispatch(setErrorNotificationAction(e.response.data.message));
-//       } else {
-//         dispatch(setErrorNotificationAction());
-//       }
-//       return;
-//     }
-
-//     dispatch({
-//       type: LOAD_APPLICATION_PLUGINS_FULFILLED,
-//       payload: {
-//         applicationPlugins
-//       }
-//     });
-//   };
-// };
-
-export const loadComponentPluginsAction = (): ThunkResult<Promise<void>> => {
-  return async (dispatch) => {
-    let componentPlugins = await api.getComponentPlugins();
-
-    dispatch({
-      type: LOAD_COMPONENT_PLUGINS_FULFILLED,
-      payload: {
-        componentPlugins,
-      },
-    });
   };
 };
 
