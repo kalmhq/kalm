@@ -5,7 +5,7 @@ import {
   ApplicationComponentDetails,
   ApplicationDetails,
   ApplicationPlugin,
-  ComponentPlugin
+  ComponentPlugin,
 } from "types/application";
 import { LoginStatus } from "types/authorization";
 import {
@@ -14,7 +14,7 @@ import {
   CertificateIssuer,
   CertificateIssuerFormType,
   CertificateIssuerList,
-  CertificateList
+  CertificateList,
 } from "types/certificate";
 import { ClusterInfo, InitializeClusterResponse } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
