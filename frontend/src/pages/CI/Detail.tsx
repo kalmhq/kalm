@@ -8,7 +8,12 @@ import { BasePage } from "pages/BasePage";
 import { deleteDeployKeyAction } from "actions/deployKey";
 import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle2 } from "widgets/Label";
-import { DeployKey, DeployKeyScopeCluster, DeployKeyScopeComponent, DeployKeyScopeNamespace } from "types/deployKey";
+import {
+  DeployAccessToken,
+  DeployAccessTokenScopeCluster,
+  DeployAccessTokenScopeComponent,
+  DeployAccessTokenScopeNamespace,
+} from "types/deployAccessToken";
 import { push } from "connected-react-router";
 import { connect } from "react-redux";
 import clsx from "clsx";
@@ -175,7 +180,7 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
     );
   }
 
-  private renderCopyKey = (deployKey: DeployKey) => {
+  private renderCopyKey = (deployKey: DeployAccessToken) => {
     const { dispatch } = this.props;
     const key = deployKey.get("key");
     return (
@@ -199,7 +204,7 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
     );
   };
 
-  private renderTabDetails(deployKey: DeployKey) {
+  private renderTabDetails(deployKey: DeployAccessToken) {
     const { currentTabIndex } = this.props;
 
     const curl = `curl -X POST \\
@@ -297,14 +302,14 @@ workflows:
     );
   }
 
-  private renderDeployKeyScope = (deployKey: DeployKey) => {
-    if (deployKey.get("scope") === DeployKeyScopeCluster) {
+  private renderDeployKeyScope = (deployKey: DeployAccessToken) => {
+    if (deployKey.get("scope") === DeployAccessTokenScopeCluster) {
       return (
         <Body2>
           Its granted scope is <strong>Cluster</strong>.
         </Body2>
       );
-    } else if (deployKey.get("scope") === DeployKeyScopeNamespace) {
+    } else if (deployKey.get("scope") === DeployAccessTokenScopeNamespace) {
       return (
         <>
           <Body2>
@@ -322,7 +327,7 @@ workflows:
           </Box>
         </>
       );
-    } else if (deployKey.get("scope") === DeployKeyScopeComponent) {
+    } else if (deployKey.get("scope") === DeployAccessTokenScopeComponent) {
       return (
         <>
           <Body2>

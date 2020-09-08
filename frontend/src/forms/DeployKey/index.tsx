@@ -11,12 +11,12 @@ import { Prompt } from "widgets/Prompt";
 import { DEPLOY_KEY_ID } from "../formIDs";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import {
-  DeployKey,
-  DeployKeyScopeCluster,
-  DeployKeyScopeComponent,
-  DeployKeyScopeNamespace,
-  newEmptyDeployKey,
-} from "types/deployKey";
+  DeployAccessToken,
+  DeployAccessTokenScopeCluster,
+  DeployAccessTokenScopeComponent,
+  DeployAccessTokenScopeNamespace,
+  newEmptyDeployAccessToken,
+} from "types/deployAccessToken";
 import { KPanel } from "widgets/KPanel";
 import { KAutoCompleteMultipleSelectField, KAutoCompleteOption } from "forms/Basic/autoComplete";
 import { KRenderDebounceTextField } from "forms/Basic/textfield";
@@ -31,7 +31,8 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const fieldValues = (getFormValues(DEPLOY_KEY_ID)(state) as DeployKey) || (Immutable.Map() as DeployKey);
+  const fieldValues =
+    (getFormValues(DEPLOY_KEY_ID)(state) as DeployAccessToken) || (Immutable.Map() as DeployAccessToken);
 
   return {
     fieldValues,
@@ -45,7 +46,7 @@ export interface Props {
 export interface FinalProps
   extends Props,
     WithNamespaceProps,
-    InjectedFormProps<DeployKey, Props>,
+    InjectedFormProps<DeployAccessToken, Props>,
     ReturnType<typeof mapStateToProps>,
     WithStyles<typeof styles> {}
 
@@ -124,23 +125,23 @@ class DeployKeyFormRaw extends React.PureComponent<FinalProps> {
               name="scope"
               options={[
                 {
-                  value: DeployKeyScopeCluster,
+                  value: DeployAccessTokenScopeCluster,
                   label: "Cluster - Can update all components on this cluster",
                 },
                 {
-                  value: DeployKeyScopeNamespace,
+                  value: DeployAccessTokenScopeNamespace,
                   label: "Specific Applications - Can update all components in selected applications",
                 },
 
                 {
-                  value: DeployKeyScopeComponent,
+                  value: DeployAccessTokenScopeComponent,
                   label: "Specific Components - Can only update selected components",
                 },
               ]}
             />
 
             <Box mt={2}>
-              {fieldValues.get("scope") === DeployKeyScopeNamespace ? (
+              {fieldValues.get("scope") === DeployAccessTokenScopeNamespace ? (
                 <KAutoCompleteMultipleSelectField
                   name="resources"
                   label="Applications"
@@ -150,7 +151,7 @@ class DeployKeyFormRaw extends React.PureComponent<FinalProps> {
                 />
               ) : null}
 
-              {fieldValues.get("scope") === DeployKeyScopeComponent ? (
+              {fieldValues.get("scope") === DeployAccessTokenScopeComponent ? (
                 <KAutoCompleteMultipleSelectField
                   name="resources"
                   label="Component"
@@ -181,9 +182,9 @@ class DeployKeyFormRaw extends React.PureComponent<FinalProps> {
   }
 }
 
-export const DeployKeyForm = reduxForm<DeployKey, Props>({
+export const DeployKeyForm = reduxForm<DeployAccessToken, Props>({
   form: DEPLOY_KEY_ID,
-  initialValues: newEmptyDeployKey(),
+  initialValues: newEmptyDeployAccessToken(),
   onSubmitFail: (...args) => {
     console.log("submit failed", args);
   },

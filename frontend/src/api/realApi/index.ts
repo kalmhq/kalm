@@ -8,7 +8,7 @@ import { HttpRoute } from "types/route";
 import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { Node } from "types/node";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { DeployKey } from "types/deployKey";
+import { DeployAccessToken } from "types/deployAccessToken";
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
 import { InitializeClusterResponse } from "types/cluster";
 import { RoleBindingContent } from "types/member";
@@ -358,12 +358,12 @@ export default class RealApi extends Api {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/protectedendpoints`, data: protectedEndpoint });
   };
 
-  public listDeployKeys = async (): Promise<Immutable.List<DeployKey>> => {
+  public listDeployKeys = async (): Promise<Immutable.List<DeployAccessToken>> => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/deploykeys` });
     return Immutable.fromJS(res.data);
   };
 
-  public createDeployKey = async (deployKey: DeployKey): Promise<DeployKey> => {
+  public createDeployKey = async (deployKey: DeployAccessToken): Promise<DeployAccessToken> => {
     const res = await axiosRequest({
       method: "post",
       url: `/${K8sApiVersion}/deploykeys`,
@@ -373,7 +373,7 @@ export default class RealApi extends Api {
     return Immutable.fromJS(res.data);
   };
 
-  public deleteDeployKey = async (deployKey: DeployKey): Promise<void> => {
+  public deleteDeployKey = async (deployKey: DeployAccessToken): Promise<void> => {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/deploykeys`, data: deployKey });
   };
 

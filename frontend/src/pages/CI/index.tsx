@@ -8,7 +8,12 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
-import { DeployKey, DeployKeyScopeCluster, DeployKeyScopeComponent, DeployKeyScopeNamespace } from "types/deployKey";
+import {
+  DeployAccessToken,
+  DeployAccessTokenScopeCluster,
+  DeployAccessTokenScopeComponent,
+  DeployAccessTokenScopeNamespace,
+} from "types/deployAccessToken";
 import sc from "utils/stringConstants";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
 import { CustomizedButton } from "widgets/Button";
@@ -54,41 +59,41 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderName = (rowData: DeployKey) => {
+  private renderName = (rowData: DeployAccessToken) => {
     return <Typography variant="subtitle2">{rowData.get("name")}</Typography>;
   };
 
-  private renderScope = (rowData: DeployKey) => {
+  private renderScope = (rowData: DeployAccessToken) => {
     switch (rowData.get("scope")) {
-      case DeployKeyScopeCluster: {
+      case DeployAccessTokenScopeCluster: {
         return "Cluster";
       }
-      case DeployKeyScopeNamespace: {
+      case DeployAccessTokenScopeNamespace: {
         return "Specific Applications";
       }
-      case DeployKeyScopeComponent: {
+      case DeployAccessTokenScopeComponent: {
         return "Specific Components";
       }
     }
   };
 
-  private renderResources = (rowData: DeployKey) => {
+  private renderResources = (rowData: DeployAccessToken) => {
     const resoureces = rowData.get("resources");
 
     switch (rowData.get("scope")) {
-      case DeployKeyScopeCluster: {
+      case DeployAccessTokenScopeCluster: {
         return "-";
       }
-      case DeployKeyScopeNamespace: {
+      case DeployAccessTokenScopeNamespace: {
         return resoureces.map((r) => <Box key={r}>{r}</Box>).toArray();
       }
-      case DeployKeyScopeComponent: {
+      case DeployAccessTokenScopeComponent: {
         return resoureces.map((r) => <Box key={r}>{r}</Box>).toArray();
       }
     }
   };
 
-  private renderActions = (rowData: DeployKey) => {
+  private renderActions = (rowData: DeployAccessToken) => {
     const { dispatch } = this.props;
     return (
       <>

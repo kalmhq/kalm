@@ -5,7 +5,7 @@ import { push } from "connected-react-router";
 import { setSuccessNotificationAction } from "actions/notification";
 import { withDeployKeys, WithDeployKeysProps } from "hoc/withDeployKeys";
 import { DeployKeyForm } from "forms/DeployKey";
-import { DeployKey } from "types/deployKey";
+import { DeployAccessToken } from "types/deployAccessToken";
 import { createDeployKeyAction } from "actions/deployKey";
 
 const styles = (theme: Theme) =>
@@ -18,12 +18,12 @@ interface Props extends WithStyles<typeof styles>, WithDeployKeysProps {}
 interface State {}
 
 class DeployKeyNewPageRaw extends React.PureComponent<Props, State> {
-  private submit = async (config: DeployKey) => {
+  private submit = async (config: DeployAccessToken) => {
     const { dispatch } = this.props;
     return await dispatch(createDeployKeyAction(config));
   };
 
-  private onSubmitSuccess = async (config: DeployKey) => {
+  private onSubmitSuccess = async (config: DeployAccessToken) => {
     const { dispatch } = this.props;
     dispatch(setSuccessNotificationAction("Create Deploy key Successfully"));
     dispatch(push("/ci/keys/" + config.get("name")));

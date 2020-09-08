@@ -6,7 +6,7 @@ import { HttpRoute } from "types/route";
 import { RegistryType } from "types/registry";
 import MockStore from "../mockStore";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { DeployKey } from "types/deployKey";
+import { DeployAccessToken } from "types/deployAccessToken";
 import { InitializeClusterResponse } from "types/cluster";
 import { RoleBindingContent } from "types/member";
 
@@ -250,15 +250,15 @@ export default class MockApi extends Api {
 
   public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {};
 
-  public listDeployKeys = async (): Promise<Immutable.List<DeployKey>> => {
+  public listDeployKeys = async (): Promise<Immutable.List<DeployAccessToken>> => {
     return Immutable.List();
   };
 
-  public createDeployKey = async (protectedEndpoint: DeployKey): Promise<DeployKey> => {
+  public createDeployKey = async (protectedEndpoint: DeployAccessToken): Promise<DeployAccessToken> => {
     return Immutable.Map();
   };
 
-  public deleteDeployKey = async (protectedEndpoint: DeployKey): Promise<void> => {};
+  public deleteDeployKey = async (protectedEndpoint: DeployAccessToken): Promise<void> => {};
 
   public resolveDomain = async (domain: string, type: "A" | "CNAME", timeout: number = 5000): Promise<string[]> => {
     return ["1.1.1.1"];

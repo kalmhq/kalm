@@ -5,7 +5,7 @@ import { Certificate } from "./certificate";
 import { RegistryType } from "./registry";
 import { Disk } from "./disk";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { DeployKey } from "types/deployKey";
+import { DeployAccessToken } from "types/deployAccessToken";
 import { Service } from "types/service";
 import { RoleBinding } from "types/member";
 
@@ -121,7 +121,7 @@ export interface DeployKeyResourceAction {
   kind: typeof RESOURCE_TYPE_DEPLOY_KEY;
   payload: {
     action: ResourceActionType;
-    data: DeployKey;
+    data: DeployAccessToken;
   };
 }
 

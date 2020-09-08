@@ -7,20 +7,20 @@ import {
   RESOURCE_ACTION_DELETE,
   RESOURCE_ACTION_UPDATE,
   RESOURCE_TYPE_DEPLOY_KEY,
-  WATCHED_RESOURCE_CHANGE,
+  WATCHED_RESOURCE_CHANGE
 } from "types/resources";
 import {
-  DeployKey,
-  LOAD_DEPLOY_KEYS_FAILED,
-  LOAD_DEPLOY_KEYS_FULFILLED,
-  LOAD_DEPLOY_KEYS_PENDING,
-} from "types/deployKey";
+  DeployAccessToken,
+  LOAD_DEPLOY_ACCESS_TOKENS_FAILED,
+  LOAD_DEPLOY_ACCESS_TOKENS_FULFILLED,
+  LOAD_DEPLOY_ACCESS_TOKENS_PENDING
+} from "types/deployAccessToken";
 import { addOrUpdateInList, removeInList } from "reducers/utils";
 
 export type State = ImmutableMap<{
   isLoading: boolean;
   loaded: boolean;
-  deployKeys: Immutable.List<DeployKey>;
+  deployKeys: Immutable.List<DeployAccessToken>;
 }>;
 
 const initialState: State = Immutable.Map({
@@ -34,13 +34,13 @@ const reducer = (state: State = initialState, action: Actions): State => {
     case LOGOUT: {
       return initialState;
     }
-    case LOAD_DEPLOY_KEYS_PENDING: {
+    case LOAD_DEPLOY_ACCESS_TOKENS_PENDING: {
       return state.set("isLoading", true);
     }
-    case LOAD_DEPLOY_KEYS_FAILED: {
+    case LOAD_DEPLOY_ACCESS_TOKENS_FAILED: {
       return state.set("isLoading", false);
     }
-    case LOAD_DEPLOY_KEYS_FULFILLED: {
+    case LOAD_DEPLOY_ACCESS_TOKENS_FULFILLED: {
       return state.set("isLoading", false).set("loaded", true).set("deployKeys", action.payload);
     }
     case WATCHED_RESOURCE_CHANGE: {
