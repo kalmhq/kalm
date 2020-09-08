@@ -853,6 +853,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             component={KRenderDebounceFormikTextField}
             id="component-image"
             name="image"
+            spellCheck={false}
             label="Image"
             placeholder={sc.IMAGE_PLACEHOLDER}
             validate={ValidatorRequired}

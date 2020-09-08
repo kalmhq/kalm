@@ -8,6 +8,7 @@ import { KalmConsoleIcon } from "widgets/Icon";
 
 interface Props {
   endAdornment?: React.ReactNode;
+  normalize?: (event: React.ChangeEvent<HTMLInputElement>) => any;
 }
 
 export const KRenderFormikTextField = (props: TextFieldProps & FieldProps) => {
@@ -42,11 +43,14 @@ export const KRenderDebounceFormikTextField = (props: TextFieldProps & FieldProp
     endAdornment,
     meta,
     field: { name, value },
-    form: { errors, touched, handleChange },
+    onBlur,
+    normalize,
+    form: { errors, handleChange, handleBlur, setFieldValue },
     ...custom
   } = props;
   const [innerValue, setInnerValue] = useState("");
-  const showError = !!getIn(errors, name) && getIn(touched, name);
+  const error = getIn(errors, name);
+  const showError = !!error;
 
   useEffect(() => {
     if (value) {
@@ -57,18 +61,22 @@ export const KRenderDebounceFormikTextField = (props: TextFieldProps & FieldProp
   }, [value]);
 
   const [debouncedHandleOnChange] = useDebouncedCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    handleChange(event);
+    if (normalize) {
+      setFieldValue(name, normalize(event));
+    } else {
+      handleChange(event);
+    }
   }, INPUT_DELAY);
 
   const handleOnChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       event.persist();
 
-      const newValue = event.currentTarget.value;
+      const newValue = normalize ? normalize(event) : event.currentTarget.value;
       setInnerValue(newValue);
       debouncedHandleOnChange(event);
     },
-    [debouncedHandleOnChange],
+    [debouncedHandleOnChange, normalize],
   );
 
   const inputProps: Partial<OutlinedInputProps> = {};
@@ -81,11 +89,12 @@ export const KRenderDebounceFormikTextField = (props: TextFieldProps & FieldProp
       {...custom}
       fullWidth
       name={name}
+      onBlur={onBlur || handleBlur}
       error={showError}
       InputLabelProps={{
         shrink: true,
       }}
-      helperText={showError ? getIn(errors, name) : helperText ? helperText : " "}
+      helperText={showError ? error : helperText ? helperText : " "}
       margin="dense"
       variant="outlined"
       InputProps={inputProps}

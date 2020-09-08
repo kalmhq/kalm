@@ -2,8 +2,9 @@ import { Box, Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
-import { FastField, FieldArray, FieldArrayRenderProps, FieldProps, getIn } from "formik";
+import { FastField, Field, FieldArray, FieldArrayRenderProps, getIn } from "formik";
 import { KFormikBoolCheckboxRender } from "forms/Basic/checkbox";
+import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
 import React from "react";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
@@ -11,10 +12,8 @@ import { PreInjectedFileContent } from "types/componentTemplate";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { Label } from "widgets/Label";
 import { RichEdtor } from "widgets/RichEditor";
 import { KValidatorInjectedFilePath, ValidatorRequired } from "../validator";
-import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
 
 interface State {
   editingFileIndex: number;
@@ -58,7 +57,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     const { editingFileIndex, fileContentValue, activeIndex } = this.state;
     const file = editingFileIndex > -1 ? getIn(values, name)[editingFileIndex] : null;
     const mountPathTmp = file ? file.mountPathTmp : "";
-    const isDisabledSaveButton =
+    const isInvalidFile =
       !mountPathTmp ||
       !fileContentValue ||
       (syncErrors && syncErrors[editingFileIndex] && !!syncErrors[editingFileIndex].mountPathTmp);
@@ -77,9 +76,9 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
               Discard
             </Button>
             <Button
-              disabled={isDisabledSaveButton}
+              disabled={isInvalidFile}
               onClick={() => {
-                if (isDisabledSaveButton) {
+                if (isInvalidFile) {
                   return;
                 }
                 replace(editingFileIndex, { ...file, content: fileContentValue, mountPath: mountPathTmp });
@@ -97,7 +96,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
       >
         <Grid container>
           <Grid item xs={8}>
-            <FastField
+            <Field
               name={`preInjectedFiles.${editingFileIndex}.mountPathTmp`}
               label="Mount Path"
               component={KRenderDebounceFormikTextField}
@@ -127,18 +126,6 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderContent = ({
-    form: { errors },
-    field: { name },
-    file,
-  }: FieldProps & { file: PreInjectedFileContent; index: number }) => {
-    return (
-      <Label color={errors[name] ? "error" : undefined} style={{ padding: 12, width: "100%" }}>
-        {errors[name] ? "File Content Required" : file.mountPath || "Config File"}
-      </Label>
-    );
-  };
-
   public render() {
     const {
       name,
@@ -156,8 +143,10 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
             <Grid container spacing={1} key={index}>
               <Grid item xs={4}>
                 <FastField
-                  name={`${name}.${index}.content`}
-                  component={this.renderContent}
+                  name={`${name}.${index}.mountPath`}
+                  component={KRenderDebounceFormikTextField}
+                  disabled={true}
+                  label="Mount Path"
                   file={injectedFile}
                   validate={ValidatorRequired}
                   index={index}
@@ -227,31 +216,8 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
   }
 }
 
-const ValidatorInjectedFiles = (values: PreInjectedFileContent[]) => {
-  if (!values) return undefined;
-  const mountPaths = new Set<string>();
-
-  for (let i = 0; i < values.length; i++) {
-    const path = values[i]!;
-    const mountPath = path.mountPath;
-
-    if (!mountPaths.has(mountPath)) {
-      mountPaths.add(mountPath);
-    } else if (mountPath !== "") {
-      return "Files paths should be unique.  " + mountPath + "";
-    }
-  }
-};
-
 const RenderPreInjectedFile = connect()(RenderPreInjectedFileRaw);
 
 export const PreInjectedFiles = (props: any) => {
-  return (
-    <FieldArray
-      name="preInjectedFiles"
-      component={RenderPreInjectedFile}
-      validate={ValidatorInjectedFiles}
-      {...props}
-    />
-  );
+  return <FieldArray name="preInjectedFiles" component={RenderPreInjectedFile} {...props} />;
 };
