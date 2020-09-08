@@ -41,6 +41,7 @@
     "driver.js": "^0.9.8",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
+    "expression-eval": "^3.1.2",
     "flowpoints": "git+https://github.com/iAladdin/flowpoints.js.git#23d517320c12eb7077ba8b5d8fdda3bfc1eeabd4",
     "formik": "^2.1.5",
     "hoist-non-react-statics": "^3.3.2",

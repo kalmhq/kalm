@@ -5,6 +5,8 @@ export interface LoginStatusContent {
   isAdmin: boolean;
   entity: string;
   csrf: string;
+  policies: string;
+  impersonation: string;
 }
 
 export type LoginStatus = ImmutableMap<LoginStatusContent>;

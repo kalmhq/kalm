@@ -8,7 +8,7 @@ import (
 )
 
 func TestCasbinModel(t *testing.T) {
-	mod, err := model.NewModelFromString(rbacWithAdminModel)
+	mod, err := model.NewModelFromString(RBACModelString)
 	assert.Nil(t, err)
 
 	e, err := casbin.NewEnforcer(mod, NewStringPolicyAdapter(`

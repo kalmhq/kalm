@@ -568,7 +568,7 @@ func (h *ApiHandler) prepareWSConnection(c echo.Context) (*WSConn, error) {
 
 	clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
 
-	if err == nil {
+	if err == nil && clientInfo != nil {
 		conn.IsAuthorized = true
 		k8sClient, err := kubernetes.NewForConfig(clientInfo.Cfg)
 		if err != nil {

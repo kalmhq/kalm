@@ -65,7 +65,7 @@ func (h *ApiHandler) InstallAdminRoutes(e *echo.Echo) {
 		}
 
 		return c.JSON(200, accessToken)
-	}, h.AuthClientMiddleware)
+	}, h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
 }
 
 func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
@@ -75,7 +75,7 @@ func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
 
 func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	e.GET("/ping", handlePing)
-	e.GET("/policies", h.handlePolicies, h.AuthClientMiddleware)
+	e.GET("/policies", h.handlePolicies, h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
 
 	// watch
 	wsHandler := ws.NewWsHandler(h.clientManager)
@@ -83,17 +83,17 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	// login
 	e.POST("/login/token", h.handleValidateToken)
-	e.GET("/login/status", h.handleLoginStatus)
+	e.GET("/login/status", h.handleLoginStatus, h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
 
 	// original resources routes
-	gV1 := e.Group("/v1", h.AuthClientMiddleware)
+	gV1 := e.Group("/v1", h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
 	gV1.GET("/persistentvolumes", h.handleGetPVs)
 
 	gv1Alpha1 := e.Group("/v1alpha1")
 	gv1Alpha1.GET("/logs", h.logWebsocketHandler)
 	gv1Alpha1.GET("/exec", h.execWebsocketHandler)
 
-	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.AuthClientMiddleware)
+	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
 
 	// initialize the cluster
 	gv1Alpha1WithAuth.POST("/initialize", h.handleInitializeCluster)
