@@ -100,7 +100,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
   };
 
   private renderExternalAccesses = () => {
-    const { httpRoutes, application } = this.props;
+    const { httpRoutes, application, canEdit } = this.props;
     const applicationName = application.get("name");
     if (httpRoutes && httpRoutes.size > 0) {
       return (
@@ -123,7 +123,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
                 }}
               >
                 <Box p={2}>
-                  <RouteWidgets routes={httpRoutes} />
+                  <RouteWidgets routes={httpRoutes} canEdit={canEdit} />
                 </Box>
               </Popover>
             </>

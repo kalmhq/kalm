@@ -20,6 +20,7 @@ import { KalmComponentsIcon } from "widgets/Icon";
 import { indigo } from "@material-ui/core/colors";
 import sc from "utils/stringConstants";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -40,7 +41,11 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface Props extends WithStyles<typeof styles>, WithNamespaceProps, ReturnType<typeof mapStateToProps> {}
+interface Props
+  extends WithStyles<typeof styles>,
+    WithUserAuthProps,
+    WithNamespaceProps,
+    ReturnType<typeof mapStateToProps> {}
 
 interface State {
   isDeleteConfirmDialogOpen: boolean;
@@ -91,21 +96,22 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   };
 
   private renderSecondHeaderRight() {
-    const { activeNamespaceName } = this.props;
+    const { activeNamespaceName, canEditNamespace } = this.props;
 
     return (
       <>
-        {/* <H6>Components</H6> */}
-        <Button
-          tutorial-anchor-id="add-component-button"
-          component={Link}
-          color="primary"
-          size="small"
-          variant="outlined"
-          to={`/applications/${activeNamespaceName}/components/new`}
-        >
-          Add Component
-        </Button>
+        {canEditNamespace(activeNamespaceName) && (
+          <Button
+            tutorial-anchor-id="add-component-button"
+            component={Link}
+            color="primary"
+            size="small"
+            variant="outlined"
+            to={`/applications/${activeNamespaceName}/components/new`}
+          >
+            Add Component
+          </Button>
+        )}
       </>
     );
   }
@@ -135,8 +141,8 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { components, activeNamespace } = this.props;
-
+    const { components, activeNamespace, canEditNamespace } = this.props;
+    const appName = activeNamespace!.get("name");
     return (
       <BasePage
         secondHeaderRight={this.renderSecondHeaderRight()}
@@ -149,7 +155,12 @@ class ComponentRaw extends React.PureComponent<Props, State> {
           {components && components.size > 0
             ? components?.map((component, index) => (
                 <Box pb={1} key={component.get("name")}>
-                  <ComponentPanel component={component} application={activeNamespace!} defaultUnfold={index === 0} />
+                  <ComponentPanel
+                    component={component}
+                    application={activeNamespace!}
+                    defaultUnfold={index === 0}
+                    canEdit={canEditNamespace(appName)}
+                  />
                 </Box>
               ))
             : this.renderEmpty()}
@@ -159,4 +170,6 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ComponentListPage = withStyles(styles)(withNamespace(connect(mapStateToProps)(ComponentRaw)));
+export const ComponentListPage = withStyles(styles)(
+  withNamespace(withUserAuth(connect(mapStateToProps)(ComponentRaw))),
+);

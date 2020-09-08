@@ -17,6 +17,7 @@ import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { LEFT_SECTION_OPEN_WIDTH, NAMESPACES_ZINDEX, SECOND_HEADER_HEIGHT } from "layout/Constants";
 import React from "react";
 import { Link, withRouter } from "react-router-dom";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -40,7 +41,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof styles>, WithNamespaceProps {}
+interface Props extends WithStyles<typeof styles>, WithUserAuthProps, WithNamespaceProps {}
 
 interface State {
   open: boolean;
@@ -76,7 +77,16 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, applications, activeNamespace, isNamespaceLoading, isNamespaceFirstLoaded, location } = this.props;
+    const {
+      classes,
+      applications,
+      activeNamespace,
+      isNamespaceLoading,
+      isNamespaceFirstLoaded,
+      location,
+      canViewNamespace,
+      canEditNamespace,
+    } = this.props;
     const { open } = this.state;
 
     if (isNamespaceLoading && !isNamespaceFirstLoaded) {
@@ -88,6 +98,10 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
     }
 
     const pathnameSplits = location.pathname.split("/");
+
+    const filteredApp = applications.filter((app) => {
+      return canEditNamespace(app.get("name")) || canViewNamespace(app.get("name"));
+    });
 
     return (
       <div className={classes.root}>
@@ -127,7 +141,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
                     onKeyDown={this.handleListKeyDown}
                     classes={{ root: classes.menuList }}
                   >
-                    {applications
+                    {filteredApp
                       .map((application) => {
                         let to = `/applications/${application.get("name")}/components`;
                         if (pathnameSplits[1] && pathnameSplits[2] && pathnameSplits[1] === "applications") {
@@ -159,4 +173,4 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const Namespaces = withNamespace(withStyles(styles)(withRouter(NamespacesRaw)));
+export const Namespaces = withUserAuth(withNamespace(withStyles(styles)(withRouter(NamespacesRaw))));

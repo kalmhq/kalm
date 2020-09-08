@@ -36,6 +36,7 @@ interface Props
     Pick<ExpansionProps, "defaultUnfold"> {
   application: Application;
   component: ApplicationComponentDetails;
+  canEdit: boolean;
 }
 
 interface State {}
@@ -112,7 +113,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
   }
 
   private componentControls = () => {
-    const { component, application, dispatch } = this.props;
+    const { component, application, dispatch, canEdit } = this.props;
     return (
       <Box pb={2} pt={2}>
         <Button
@@ -125,23 +126,26 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
         >
           View Details
         </Button>
-
-        <Button
-          component={Link}
-          style={{ marginRight: 20 }}
-          color="primary"
-          size="small"
-          variant="outlined"
-          to={`/applications/${application.get("name")}/components/${component.get("name")}/edit`}
-        >
-          Edit
-        </Button>
-        <DeleteButtonWithConfirmPopover
-          useText
-          popupId="delete-component-popup"
-          popupTitle="DELETE COMPONENT?"
-          confirmedAction={() => dispatch(deleteComponentAction(component.get("name"), application.get("name")))}
-        />
+        {canEdit && (
+          <>
+            <Button
+              component={Link}
+              style={{ marginRight: 20 }}
+              color="primary"
+              size="small"
+              variant="outlined"
+              to={`/applications/${application.get("name")}/components/${component.get("name")}/edit`}
+            >
+              Edit
+            </Button>
+            <DeleteButtonWithConfirmPopover
+              useText
+              popupId="delete-component-popup"
+              popupTitle="DELETE COMPONENT?"
+              confirmedAction={() => dispatch(deleteComponentAction(component.get("name"), application.get("name")))}
+            />
+          </>
+        )}
       </Box>
     );
   };

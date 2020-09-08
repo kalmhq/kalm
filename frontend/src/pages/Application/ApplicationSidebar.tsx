@@ -48,6 +48,7 @@ interface Props
     ReturnType<typeof mapStateToProps>,
     RouteComponentProps<{ applicationName: string }> {
   dispatch: TDispatch;
+  canEdit?: boolean;
 }
 
 interface State {}
@@ -60,26 +61,28 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private getMenuData() {
-    const { activeNamespaceName } = this.props;
-    return [
-      {
-        text: "Components",
-        to: "/applications/" + activeNamespaceName + "/components",
-        icon: <KalmComponentsIcon />,
-      },
-      {
+    const { activeNamespaceName, canEdit } = this.props;
+    const menus = [];
+    menus.push({
+      text: "Components",
+      to: "/applications/" + activeNamespaceName + "/components",
+      icon: <KalmComponentsIcon />,
+    });
+    if (canEdit) {
+      menus.push({
         text: sc.APP_MEMBERS_PAGE_NAME,
         to: "/applications/" + activeNamespaceName + "/members",
         highlightWhenExact: true,
         icon: <PeopleIcon />,
-      },
-      {
-        text: sc.APP_DASHBOARD_PAGE_NAME,
-        to: "/applications/" + activeNamespaceName + "/metrics",
-        highlightWhenExact: true,
-        icon: <DashboardIcon />,
-      },
-    ];
+      });
+    }
+    menus.push({
+      text: sc.APP_DASHBOARD_PAGE_NAME,
+      to: "/applications/" + activeNamespaceName + "/metrics",
+      highlightWhenExact: true,
+      icon: <DashboardIcon />,
+    });
+    return menus;
   }
 
   render() {

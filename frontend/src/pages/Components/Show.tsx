@@ -16,6 +16,7 @@ import { WorkloadType } from "types/componentTemplate";
 import { Body, H6 } from "widgets/Label";
 import { Namespaces } from "widgets/Namespaces";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -41,6 +42,7 @@ interface Props
   extends WithStyles<typeof styles>,
     ReturnType<typeof mapStateToProps>,
     WithComponentProp,
+    WithUserAuthProps,
     WithRoutesDataProps {}
 
 interface State {}
@@ -87,7 +89,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
   }
 
   private renderRoutes() {
-    const { httpRoutes, component, activeNamespaceName } = this.props;
+    const { httpRoutes, component, activeNamespaceName, canEditNamespace } = this.props;
 
     const serviceName = `${component.get("name")}`;
 
@@ -98,10 +100,9 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
           .filter((destination) => destination.get("host").startsWith(serviceName + "." + activeNamespaceName)).size >
         0,
     );
-
     return (
       <Expansion title={"Routes"} defaultUnfold>
-        <RouteWidgets routes={routes} />
+        <RouteWidgets routes={routes} canEdit={canEditNamespace(activeNamespaceName)} />
       </Expansion>
     );
   }
@@ -120,32 +121,34 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
   }
 
   private renderSecondHeaderRight() {
-    const { classes, component, activeNamespaceName } = this.props;
+    const { classes, component, activeNamespaceName, canEditNamespace } = this.props;
 
     return (
       <div className={classes.secondHeaderRight}>
         <H6 className={classes.secondHeaderRightItem}>Component {component.get("name")}</H6>
-        <Button
-          tutorial-anchor-id="edit-component"
-          component={Link}
-          color="primary"
-          size="small"
-          variant="outlined"
-          to={`/applications/${activeNamespaceName}/components/${component.get("name")}/edit`}
-        >
-          Edit
-        </Button>
+        {canEditNamespace(activeNamespaceName) && (
+          <Button
+            tutorial-anchor-id="edit-component"
+            component={Link}
+            color="primary"
+            size="small"
+            variant="outlined"
+            to={`/applications/${activeNamespaceName}/components/${component.get("name")}/edit`}
+          >
+            Edit
+          </Button>
+        )}
       </div>
     );
   }
 
   public render() {
-    const { component, activeNamespaceName } = this.props;
+    const { component, activeNamespaceName, canEditNamespace } = this.props;
     return (
       <BasePage
         secondHeaderRight={this.renderSecondHeaderRight()}
         secondHeaderLeft={<Namespaces />}
-        leftDrawer={<ApplicationSidebar />}
+        leftDrawer={<ApplicationSidebar canEdit={canEditNamespace(activeNamespaceName)} />}
       >
         <Box p={2}>
           <Expansion title={"Basic"} defaultUnfold>
@@ -161,5 +164,5 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
 }
 
 export const ComponentShowPage = withStyles(styles)(
-  connect(mapStateToProps)(withRoutesData(withComponent(ComponentShowRaw))),
+  withUserAuth(connect(mapStateToProps)(withRoutesData(withComponent(ComponentShowRaw)))),
 );

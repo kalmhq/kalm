@@ -45,6 +45,7 @@ const mapStateToProps = (state: RootState) => {
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   routes: Immutable.List<HttpRoute>;
+  canEdit: boolean;
 }
 
 interface State {}
@@ -56,7 +57,7 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
   }
 
   private renderRouteItem = (route: HttpRoute, index: number) => {
-    const { clusterInfo } = this.props;
+    const { clusterInfo, canEdit } = this.props;
     const scheme = route.get("schemes").size > 1 ? "http(s)" : route.get("schemes").get(0);
     const hosts = route.get("hosts");
     const paths = route.get("paths");
@@ -90,15 +91,17 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
           <Targets destinations={route.get("destinations")} />
         </TableCell>
         <TableCell>
-          <IconLinkWithToolTip
-            onClick={() => {
-              blinkTopProgressAction();
-            }}
-            tooltipTitle="Edit"
-            to={`/routes/${route.get("name")}/edit`}
-          >
-            <EditIcon />
-          </IconLinkWithToolTip>
+          {canEdit && (
+            <IconLinkWithToolTip
+              onClick={() => {
+                blinkTopProgressAction();
+              }}
+              tooltipTitle="Edit"
+              to={`/routes/${route.get("name")}/edit`}
+            >
+              <EditIcon />
+            </IconLinkWithToolTip>
+          )}
         </TableCell>
       </TableRow>
     );
@@ -137,6 +140,14 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
 
 export const RouteWidget = withStyles(styles)(connect(mapStateToProps)(RouteWidgetRaw));
 
-export const RouteWidgets = ({ routes }: { routes: Immutable.List<HttpRoute> }) => {
-  return <>{routes.size > 0 ? <RouteWidget routes={routes} /> : <CenterTypography>No Routes</CenterTypography>}</>;
+export const RouteWidgets = ({ routes, canEdit }: { routes: Immutable.List<HttpRoute>; canEdit: boolean }) => {
+  return (
+    <>
+      {routes.size > 0 ? (
+        <RouteWidget routes={routes} canEdit={canEdit} />
+      ) : (
+        <CenterTypography>No Routes</CenterTypography>
+      )}
+    </>
+  );
 };

@@ -217,7 +217,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderExternalAccesses = (applicationDetails: ApplicationDetails) => {
-    const { canViewNamespace } = this.props;
+    const { canViewNamespace, canEditNamespace } = this.props;
     const applicationName = applicationDetails.get("name");
     const applicationRoutes = this.getRoutes(applicationName);
 
@@ -242,7 +242,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
                 }}
               >
                 <Box p={2}>
-                  <RouteWidgets routes={applicationRoutes} />
+                  <RouteWidgets routes={applicationRoutes} canEdit={canEditNamespace(applicationName)} />
                 </Box>
               </Popover>
             </>
