@@ -52,10 +52,10 @@ func (resourceManager *ResourceManager) GetAccessTokenByToken(token string) (*v1
 	return &accessToken, nil
 }
 
-func (resourceManager *ResourceManager) GetAccessTokens(ns string) ([]*AccessToken, error) {
+func (resourceManager *ResourceManager) GetAccessTokens() ([]*AccessToken, error) {
 	var accessTokenList v1alpha1.AccessTokenList
 
-	if err := resourceManager.List(&accessTokenList, client.InNamespace(ns)); err != nil {
+	if err := resourceManager.List(&accessTokenList); err != nil {
 		return nil, err
 	}
 
@@ -66,4 +66,41 @@ func (resourceManager *ResourceManager) GetAccessTokens(ns string) ([]*AccessTok
 	}
 
 	return rst, nil
+}
+
+var deployAccessTokenLabels = map[string]string{
+	"tokenType": "deployAccessToken",
+}
+
+func (resourceManager *ResourceManager) GetDeployAccessTokens() ([]*AccessToken, error) {
+	var accessTokenList v1alpha1.AccessTokenList
+
+	if err := resourceManager.List(&accessTokenList, client.MatchingLabels(deployAccessTokenLabels)); err != nil {
+		return nil, err
+	}
+
+	rst := make([]*AccessToken, len(accessTokenList.Items))
+
+	for i := range accessTokenList.Items {
+		dk := accessTokenList.Items[i]
+		rst[i] = BuildAccessTokenFromResource(&dk)
+	}
+
+	return rst, nil
+}
+
+func (resourceManager *ResourceManager) CreateDeployAccessToken(accessToken *AccessToken) (*AccessToken, error) {
+	resAccessToken := &v1alpha1.AccessToken{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name:   accessToken.Name,
+			Labels: deployAccessTokenLabels,
+		},
+		Spec: *accessToken.AccessTokenSpec,
+	}
+
+	if err := resourceManager.Create(resAccessToken); err != nil {
+		return nil, err
+	}
+
+	return BuildAccessTokenFromResource(resAccessToken), nil
 }

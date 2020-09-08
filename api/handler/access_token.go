@@ -1,7 +1,7 @@
 package handler
 
 import (
-	client2 "github.com/kalmhq/kalm/api/client"
+	client "github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
@@ -9,7 +9,7 @@ import (
 )
 
 func (h *ApiHandler) handleListAccessTokens(c echo.Context) error {
-	keys, err := h.resourceManager.GetAccessTokens(c.Param("namespace"))
+	keys, err := h.resourceManager.GetAccessTokens()
 	keys = h.filterAuthorizedAccessTokens(c, keys)
 
 	if err != nil {
@@ -26,7 +26,7 @@ func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
 		return err
 	}
 
-	if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), accessToken) {
+	if !h.permissionsGreaterThanOrEqualAccessToken(getCurrentUser(c), accessToken) {
 		return resources.InsufficientPermissionsError
 	}
 
@@ -54,7 +54,7 @@ func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
 		return err
 	}
 
-	if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), &resources.AccessToken{Name: fetched.Name, AccessTokenSpec: &fetched.Spec}) {
+	if !h.permissionsGreaterThanOrEqualAccessToken(getCurrentUser(c), &resources.AccessToken{Name: fetched.Name, AccessTokenSpec: &fetched.Spec}) {
 		return resources.InsufficientPermissionsError
 	}
 
@@ -79,7 +79,7 @@ func (h *ApiHandler) filterAuthorizedAccessTokens(c echo.Context, records []*res
 	l := len(records)
 
 	for i := 0; i < l; i++ {
-		if !h.permissionsGreaterThanAccessToken(getCurrentUser(c), records[i]) {
+		if !h.permissionsGreaterThanOrEqualAccessToken(getCurrentUser(c), records[i]) {
 			records[l-1], records[i] = records[i], records[l-1]
 			i--
 			l--
@@ -89,11 +89,11 @@ func (h *ApiHandler) filterAuthorizedAccessTokens(c echo.Context, records []*res
 	return records[:l]
 }
 
-func (h *ApiHandler) permissionsGreaterThanAccessToken(client *client2.ClientInfo, accessToken *resources.AccessToken) bool {
-	policies := client2.GetPoliciesFromAccessToken(accessToken)
+func (h *ApiHandler) permissionsGreaterThanOrEqualAccessToken(c *client.ClientInfo, accessToken *resources.AccessToken) bool {
+	policies := client.GetPoliciesFromAccessToken(accessToken)
 
 	for _, policy := range policies {
-		if !h.clientManager.Can(client, policy[1], policy[2], policy[3]) {
+		if !h.clientManager.Can(c, policy[1], policy[2], policy[3]) {
 			return false
 		}
 	}
