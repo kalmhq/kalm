@@ -8,7 +8,11 @@ import { HttpRoute } from "types/route";
 import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { Node } from "types/node";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { DeployAccessToken } from "types/deployAccessToken";
+import {
+  AccessTokenToDeployAccessToken,
+  DeployAccessToken,
+  DeployAccessTokenToAccessToken,
+} from "types/deployAccessToken";
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
 import { InitializeClusterResponse } from "types/cluster";
 import { RoleBindingContent } from "types/member";
@@ -360,21 +364,25 @@ export default class RealApi extends Api {
 
   public listDeployAccessTokens = async (): Promise<Immutable.List<DeployAccessToken>> => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/deploy_access_tokens` });
-    return Immutable.fromJS(res.data);
+    return Immutable.List(res.data.map(AccessTokenToDeployAccessToken));
   };
 
   public createDeployAccessToken = async (deployAccessToken: DeployAccessToken): Promise<DeployAccessToken> => {
     const res = await axiosRequest({
       method: "post",
       url: `/${K8sApiVersion}/deploy_access_tokens`,
-      data: deployAccessToken,
+      data: DeployAccessTokenToAccessToken(deployAccessToken),
     });
 
-    return Immutable.fromJS(res.data);
+    return AccessTokenToDeployAccessToken(res.data);
   };
 
   public deleteDeployAccessToken = async (deployAccessToken: DeployAccessToken): Promise<void> => {
-    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/deploy_access_tokens`, data: deployAccessToken });
+    await axiosRequest({
+      method: "delete",
+      url: `/${K8sApiVersion}/deploy_access_tokens`,
+      data: DeployAccessTokenToAccessToken(deployAccessToken),
+    });
   };
 
   public resolveDomain = async (domain: string, type: "A" | "CNAME", timeout: number = 5000): Promise<string[]> => {

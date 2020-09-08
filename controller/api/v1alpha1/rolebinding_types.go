@@ -50,8 +50,8 @@ type RoleBindingStatus struct{}
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Subject",type="string",JSONPath=".spec.subject"
 // +kubebuilder:printcolumn:name="Creator",type="string",JSONPath=".spec.creator"
-// +kubebuilder:printcolumn:name="Rule",type="string",JSONPath=".spec.rule"
 // +kubebuilder:printcolumn:name="ExpiredAt",type="string",JSONPath=".spec.expiredAt"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // RoleBinding is the Schema for the deploykeys API
 type RoleBinding struct {

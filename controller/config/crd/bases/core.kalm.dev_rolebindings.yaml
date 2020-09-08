@@ -15,12 +15,12 @@ spec:
   - JSONPath: .spec.creator
     name: Creator
     type: string
-  - JSONPath: .spec.rule
-    name: Rule
-    type: string
   - JSONPath: .spec.expiredAt
     name: ExpiredAt
     type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
   group: core.kalm.dev
   names:
     kind: RoleBinding

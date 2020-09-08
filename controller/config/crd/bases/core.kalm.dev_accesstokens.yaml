@@ -9,8 +9,8 @@ metadata:
   name: accesstokens.core.kalm.dev
 spec:
   additionalPrinterColumns:
-  - JSONPath: .spec.subject
-    name: Subject
+  - JSONPath: .metadata.labels.tokenType
+    name: Type
     type: string
   - JSONPath: .spec.creator
     name: Creator
@@ -18,6 +18,9 @@ spec:
   - JSONPath: .spec.expiredAt
     name: ExpiredAt
     type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
   group: core.kalm.dev
   names:
     kind: AccessToken
@@ -56,6 +59,8 @@ spec:
             expiredAt:
               description: Expire time of this key. Infinity if blank
               format: date-time
+              type: string
+            memo:
               type: string
             rules:
               description: Rules of this key

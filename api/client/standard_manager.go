@@ -78,7 +78,7 @@ func GetPoliciesFromAccessToken(accessToken *resources.AccessToken) [][]string {
 		if rule.Namespace == "*" && rule.Name == "*" {
 			obj = "*"
 		} else {
-			obj = fmt.Sprintf("%s/%s", rule.Namespace, rule.Name)
+			obj = fmt.Sprintf("%s/%s", rule.Kind, rule.Name)
 		}
 
 		res = append(res, []string{

@@ -111,8 +111,8 @@ class DeployAccessTokenFormRaw extends React.PureComponent<FinalProps> {
         <KPanel>
           <Box p={2}>
             <Field
-              name="name"
-              label="Name"
+              name="memo"
+              label="Memo"
               autoFocus
               autoComplete="off"
               component={KRenderDebounceTextField}

@@ -34,6 +34,7 @@ import { throttle } from "utils";
 import { loadProtectedEndpointAction, loadSSOConfigAction } from "actions/sso";
 import { setErrorNotificationAction } from "actions/notification";
 import { loadDeployAccessTokensAction } from "actions/deployAccessToken";
+import { AccessTokenToDeployAccessToken } from "types/deployAccessToken";
 
 export interface WatchResMessage {
   namespace: string;
@@ -215,7 +216,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: AccessTokenToDeployAccessToken(data.data),
             },
           });
           break;

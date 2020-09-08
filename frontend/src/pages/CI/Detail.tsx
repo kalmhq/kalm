@@ -181,7 +181,7 @@ class DeployAccessTokenDetailPageRaw extends React.PureComponent<Props> {
 
   private renderCopy = (deployAccessToken: DeployAccessToken) => {
     const { dispatch } = this.props;
-    const key = deployAccessToken.get("key");
+    const key = deployAccessToken.get("token");
     return (
       <Box mt={2}>
         <Subtitle2>Copy key</Subtitle2>
@@ -208,7 +208,7 @@ class DeployAccessTokenDetailPageRaw extends React.PureComponent<Props> {
 
     const curl = `curl -X POST \\
     -H "Content-Type: application/json" \\
-    -H "Authorization: Bearer ${deployAccessToken.get("key")}" \\
+    -H "Authorization: Bearer ${deployAccessToken.get("token")}" \\
     -d '{
       "application":   "<application-name>",
       "componentName": "<component-name>",

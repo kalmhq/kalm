@@ -34,7 +34,7 @@ func StartWatching(c *Client) {
 	registerWatchHandler(c, &informerCache, &coreV1.PersistentVolumeClaim{}, buildVolumeResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.SingleSignOnConfig{}, buildSSOConfigResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.ProtectedEndpoint{}, buildProtectEndpointResMessage)
-	registerWatchHandler(c, &informerCache, &v1alpha1.AccessToken{}, buildDeployKeyResMessage)
+	registerWatchHandler(c, &informerCache, &v1alpha1.AccessToken{}, buildAccessTokenResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.RoleBinding{}, buildRoleBindingResMessage)
 
 	informerCache.Start(c.StopWatcher)
@@ -58,7 +58,10 @@ func registerWatchHandler(c *Client,
 				log.Error(err, "build res message error")
 				return
 			}
-			c.sendWatchResMessage(resMessage)
+
+			if resMessage != nil {
+				c.sendWatchResMessage(resMessage)
+			}
 		},
 		DeleteFunc: func(obj interface{}) {
 			resMessage, err := buildResMessage(c, "Delete", obj)
@@ -66,7 +69,9 @@ func registerWatchHandler(c *Client,
 				log.Error(err, "build res message error")
 				return
 			}
-			c.sendWatchResMessage(resMessage)
+			if resMessage != nil {
+				c.sendWatchResMessage(resMessage)
+			}
 		},
 		UpdateFunc: func(oldObj, obj interface{}) {
 			resMessage, err := buildResMessage(c, "Update", obj)
@@ -74,7 +79,9 @@ func registerWatchHandler(c *Client,
 				log.Error(err, "build res message error")
 				return
 			}
-			c.sendWatchResMessage(resMessage)
+			if resMessage != nil {
+				c.sendWatchResMessage(resMessage)
+			}
 		},
 	})
 
@@ -319,18 +326,22 @@ func buildProtectEndpointResMessage(_ *Client, action string, objWatched interfa
 	}, nil
 }
 
-func buildDeployKeyResMessage(_ *Client, action string, objWatched interface{}) (*ResMessage, error) {
-	deployKey, ok := objWatched.(*v1alpha1.AccessToken)
+func buildAccessTokenResMessage(_ *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	accessToken, ok := objWatched.(*v1alpha1.AccessToken)
 
 	if !ok {
 		return nil, errors.New("convert watch obj to DeployKey failed")
 	}
 
-	return &ResMessage{
-		Kind:   "DeployKey",
-		Action: action,
-		Data:   resources.BuildAccessTokenFromResource(deployKey),
-	}, nil
+	if accessToken.Labels != nil && accessToken.Labels[resources.AccessTokenTypeLabelKey] == resources.DeployAccessTokenLabelValue {
+		return &ResMessage{
+			Kind:   "DeployAccessToken",
+			Action: action,
+			Data:   resources.BuildAccessTokenFromResource(accessToken),
+		}, nil
+	}
+
+	return nil, nil
 }
 
 func buildRoleBindingResMessage(_ *Client, action string, objWatched interface{}) (*ResMessage, error) {

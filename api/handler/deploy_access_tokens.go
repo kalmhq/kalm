@@ -43,6 +43,7 @@ func (h *ApiHandler) handleCreateDeployAccessToken(c echo.Context) error {
 	// Set sensitive fields
 	accessToken.Token = rand.String(128)
 	accessToken.Creator = getCurrentUser(c).Name
+	accessToken.Name = v1alpha1.GetAccessTokenNameFromToken(accessToken.Token)
 
 	accessToken, err = h.resourceManager.CreateDeployAccessToken(accessToken)
 	if err != nil {

@@ -68,8 +68,11 @@ func (resourceManager *ResourceManager) GetAccessTokens() ([]*AccessToken, error
 	return rst, nil
 }
 
+var AccessTokenTypeLabelKey = "tokenType"
+var DeployAccessTokenLabelValue = "deployAccessToken"
+
 var deployAccessTokenLabels = map[string]string{
-	"tokenType": "deployAccessToken",
+	AccessTokenTypeLabelKey: DeployAccessTokenLabelValue,
 }
 
 func (resourceManager *ResourceManager) GetDeployAccessTokens() ([]*AccessToken, error) {

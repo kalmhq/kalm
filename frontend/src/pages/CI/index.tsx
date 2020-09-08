@@ -59,8 +59,8 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderName = (rowData: DeployAccessToken) => {
-    return <Typography variant="subtitle2">{rowData.get("name")}</Typography>;
+  private renderMemo = (rowData: DeployAccessToken) => {
+    return <Typography variant="subtitle2">{rowData.get("memo")}</Typography>;
   };
 
   private renderScope = (rowData: DeployAccessToken) => {
@@ -147,8 +147,8 @@ class CIPageRaw extends React.PureComponent<Props, State> {
   private getKRTableColumns() {
     return [
       {
-        Header: "Name",
-        accessor: "name",
+        Header: "Memo",
+        accessor: "memo",
       },
       {
         Header: "Scope",
@@ -173,7 +173,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
       deployAccessTokens.forEach((deployAccessToken, index) => {
         const rowData = deployAccessToken;
         data.push({
-          name: this.renderName(rowData),
+          memo: this.renderMemo(rowData),
           scope: this.renderScope(rowData),
           resources: this.renderResources(rowData),
           actions: this.renderActions(rowData),
