@@ -32,7 +32,7 @@ import { KLink, KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
-import { withUserInfo, WithUserInfoProps } from "hoc/withUserinfo";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -60,7 +60,7 @@ const mapStateToProps = (state: RootState) => {
 interface Props
   extends WithStyles<typeof styles>,
     WithNamespaceProps,
-    WithUserInfoProps,
+    WithUserAuthProps,
     ReturnType<typeof mapStateToProps> {}
 
 class ApplicationListRaw extends React.PureComponent<Props> {
@@ -92,10 +92,20 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderName = (applicationDetails: ApplicationDetails) => {
+    const { canViewNamespace } = this.props;
     return (
-      <KLink to={`/applications/${applicationDetails.get("name")}/components`} onClick={() => blinkTopProgressAction()}>
-        {applicationDetails.get("name")}
-      </KLink>
+      <>
+        {canViewNamespace(applicationDetails.get("name")) ? (
+          <KLink
+            to={`/applications/${applicationDetails.get("name")}/components`}
+            onClick={() => blinkTopProgressAction()}
+          >
+            {applicationDetails.get("name")}
+          </KLink>
+        ) : (
+          applicationDetails.get("name")
+        )}
+      </>
     );
   };
 
@@ -119,7 +129,8 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderStatus = (applicationDetails: ApplicationDetails) => {
-    const { componentsMap } = this.props;
+    const { componentsMap, canViewNamespace } = this.props;
+    const applicationName = applicationDetails.get("name");
 
     let podCount = 0;
     let successCount = 0;
@@ -149,7 +160,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
       });
     });
 
-    if (podCount === 0) {
+    if (!canViewNamespace(applicationName) || podCount === 0) {
       return "no pods";
     }
 
@@ -206,10 +217,11 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderExternalAccesses = (applicationDetails: ApplicationDetails) => {
+    const { canViewNamespace } = this.props;
     const applicationName = applicationDetails.get("name");
     const applicationRoutes = this.getRoutes(applicationName);
 
-    if (applicationRoutes && applicationRoutes.size > 0) {
+    if (applicationRoutes && applicationRoutes.size > 0 && canViewNamespace(applicationName)) {
       return (
         <PopupState variant="popover" popupId={applicationName}>
           {(popupState) => (
@@ -271,20 +283,22 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderSecondHeaderRight() {
-    const { usingApplicationCard, dispatch } = this.props;
+    const { usingApplicationCard, dispatch, canManageCluster } = this.props;
     return (
       <>
         {/* <H6>Applications</H6> */}
-        <Button
-          tutorial-anchor-id="add-application"
-          component={Link}
-          color="primary"
-          size="small"
-          variant="outlined"
-          to={`/applications/new`}
-        >
-          {sc.NEW_APP_BUTTON}
-        </Button>
+        {canManageCluster() && (
+          <Button
+            tutorial-anchor-id="add-application"
+            component={Link}
+            color="primary"
+            size="small"
+            variant="outlined"
+            to={`/applications/new`}
+          >
+            {sc.NEW_APP_BUTTON}
+          </Button>
+        )}
         <IconButtonWithTooltip
           tooltipTitle={usingApplicationCard ? "Using List View" : "Using Card View"}
           aria-label={usingApplicationCard ? "Using List View" : "Using Card View"}
@@ -358,21 +372,24 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   }
 
   private getKRTableData() {
-    const { applications } = this.props;
+    const { applications, canViewNamespace, canEditNamespace } = this.props;
     const data: any[] = [];
 
     applications &&
       applications.forEach((application, index) => {
         const applicationDetails = application as ApplicationDetails;
-        data.push({
-          name: this.renderName(applicationDetails),
-          status: this.renderStatus(applicationDetails),
-          cpu: this.renderCPU(applicationDetails),
-          memory: this.renderMemory(applicationDetails),
-          createdAt: this.renderCreatedAt(applicationDetails),
-          routes: this.renderExternalAccesses(applicationDetails),
-          actions: this.renderActions(applicationDetails),
-        });
+        const applicationName = applicationDetails.get("name");
+        if (canViewNamespace(applicationName) || canEditNamespace(applicationName)) {
+          data.push({
+            name: this.renderName(applicationDetails),
+            status: this.renderStatus(applicationDetails),
+            cpu: this.renderCPU(applicationDetails),
+            memory: this.renderMemory(applicationDetails),
+            createdAt: this.renderCreatedAt(applicationDetails),
+            routes: this.renderExternalAccesses(applicationDetails),
+            actions: this.renderActions(applicationDetails),
+          });
+        }
       });
 
     return data;
@@ -383,8 +400,11 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   }
 
   private renderGrid = () => {
-    const { applications, componentsMap } = this.props;
+    const { applications, componentsMap, canEditNamespace, canViewNamespace } = this.props;
 
+    const filteredApps = applications.filter((app) => {
+      return canEditNamespace(app.get("name")) || canViewNamespace(app.get("name"));
+    });
     const GridRow = (app: ApplicationDetails, index: number) => {
       const applicationName = app.get("name");
       const applicationRoutes = this.getRoutes(applicationName);
@@ -395,6 +415,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
             componentsMap={componentsMap}
             httpRoutes={applicationRoutes}
             confirmDelete={this.confirmDelete}
+            canEdit={canEditNamespace(applicationName)}
           />
         </Grid>
       );
@@ -402,7 +423,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
 
     return (
       <Grid container spacing={2}>
-        {applications.map((app, index) => {
+        {filteredApps.map((app, index) => {
           return GridRow(app, index);
         })}
       </Grid>
@@ -430,5 +451,5 @@ class ApplicationListRaw extends React.PureComponent<Props> {
 }
 
 export const ApplicationListPage = withStyles(styles)(
-  withNamespace(withUserInfo(connect(mapStateToProps)(ApplicationListRaw))),
+  withNamespace(withUserAuth(connect(mapStateToProps)(ApplicationListRaw))),
 );

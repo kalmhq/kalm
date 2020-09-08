@@ -55,6 +55,7 @@ type ApplicationCardProps = {
   application: ApplicationDetails;
   componentsMap: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>;
   httpRoutes: Immutable.List<HttpRoute>;
+  canEdit: boolean;
   confirmDelete: (application: ApplicationDetails) => void;
 } & CardProps &
   WithStyles<typeof ApplicationCardStyles>;
@@ -214,7 +215,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
   };
 
   private renderActions = () => {
-    const { application, confirmDelete } = this.props;
+    const { application, confirmDelete, canEdit } = this.props;
     return (
       <>
         <IconLinkWithToolTip
@@ -227,11 +228,13 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
         >
           <KalmDetailsIcon />
         </IconLinkWithToolTip>
-        <DeleteButtonWithConfirmPopover
-          popupId="delete-application-popup"
-          popupTitle="DELETE APPLICATION?"
-          confirmedAction={() => confirmDelete(application)}
-        />
+        {canEdit && (
+          <DeleteButtonWithConfirmPopover
+            popupId="delete-application-popup"
+            popupTitle="DELETE APPLICATION?"
+            confirmedAction={() => confirmDelete(application)}
+          />
+        )}
       </>
     );
   };
