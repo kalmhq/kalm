@@ -52,11 +52,10 @@ class CopyAsCurlRaw extends React.PureComponent<Props> {
   private copyAsCurl = () => {
     const { dispatch, route, host } = this.props;
 
-    const scheme = route.get("schemes").first("http");
-    const hostValue = host ?? route.get("hosts").first("");
-
-    const path = route.get("paths").first("/");
-    const method = route.get("methods").first("GET");
+    const scheme = route.schemes[0] || "http";
+    const hostValue = host ?? (route.hosts[0] || "");
+    const path = route.paths[0] || "/";
+    const method = route.methods[0] || "GET";
 
     copy(this.buildCurlCommand(scheme, hostValue, path, method));
     dispatch(setSuccessNotificationAction("Copied successful!"));

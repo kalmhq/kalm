@@ -44,7 +44,7 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const httpRoutes = state.get("routes").get("httpRoutes");
+  const httpRoutes = state.get("routes").httpRoutes;
   const componentsMap = state.get("components").components;
   const clusterInfo = state.get("cluster").get("info");
   const usingApplicationCard = state.get("settings").get("usingApplicationCard");
@@ -183,8 +183,8 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     const { httpRoutes } = this.props;
     const applicationRoutes = httpRoutes.filter((x) => {
       let isCurrent = false;
-      x.get("destinations").map((target) => {
-        const hostInfos = target.get("host").split(".");
+      x.destinations.map((target) => {
+        const hostInfos = target.host.split(".");
         if (hostInfos[1] && hostInfos[1].startsWith(applicationName)) {
           isCurrent = true;
         }
@@ -199,13 +199,13 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     const applicationName = applicationDetails.name;
     const applicationRoutes = this.getRoutes(applicationName);
 
-    if (applicationRoutes && applicationRoutes.size > 0) {
+    if (applicationRoutes && applicationRoutes.length > 0) {
       return (
         <PopupState variant="popover" popupId={applicationName}>
           {(popupState) => (
             <>
               <KMLink component="button" variant="body2" color={"inherit"} {...bindTrigger(popupState)}>
-                {pluralize("route", applicationRoutes.size)}
+                {pluralize("route", applicationRoutes.length)}
               </KMLink>
               <Popover
                 style={{ zIndex: POPPER_ZINDEX }}

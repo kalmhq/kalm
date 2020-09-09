@@ -13,24 +13,23 @@ import {
   withStyles,
   WithStyles,
 } from "@material-ui/core";
-import Immutable from "immutable";
+import { blinkTopProgressAction } from "actions/settings";
 import { Methods } from "pages/Route/Methods";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { HttpRoute } from "types/route";
-import { CopyAsCurl } from "widgets/CopyAsCurl";
-import { getRouteUrl } from "widgets/OpenInBrowser";
-import { Targets } from "widgets/Targets";
-import { CenterTypography } from "widgets/Label";
 import { FlexRowItemCenterBox } from "widgets/Box";
+import { CopyAsCurl } from "widgets/CopyAsCurl";
 import DomainStatus from "widgets/DomainStatus";
-import { KMLink } from "widgets/Link";
-import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
-import { blinkTopProgressAction } from "actions/settings";
 import { EditIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
+import { CenterTypography } from "widgets/Label";
+import { KMLink } from "widgets/Link";
+import { getRouteUrl } from "widgets/OpenInBrowser";
+import { Targets } from "widgets/Targets";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -44,7 +43,7 @@ const mapStateToProps = (state: RootState) => {
 };
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
-  routes: Immutable.List<HttpRoute>;
+  routes: HttpRoute[];
 }
 
 interface State {}
@@ -57,13 +56,13 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
 
   private renderRouteItem = (route: HttpRoute, index: number) => {
     const { clusterInfo } = this.props;
-    const scheme = route.get("schemes").size > 1 ? "http(s)" : route.get("schemes").get(0);
-    const hosts = route.get("hosts");
-    const paths = route.get("paths");
+    const scheme = route.schemes.length > 1 ? "http(s)" : route.schemes[0];
+    const hosts = route.hosts;
+    const paths = route.paths;
     return (
       <TableRow key={`route_${index}`}>
         <TableCell>
-          <Methods methods={route.get("methods")} />
+          <Methods methods={route.methods} />
         </TableCell>
         <TableCell>{scheme + "://"}</TableCell>
         <TableCell>
@@ -87,7 +86,7 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
           ))}
         </TableCell>
         <TableCell>
-          <Targets destinations={route.get("destinations")} />
+          <Targets destinations={route.destinations} />
         </TableCell>
         <TableCell>
           <IconLinkWithToolTip
@@ -95,7 +94,7 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
               blinkTopProgressAction();
             }}
             tooltipTitle="Edit"
-            to={`/routes/${route.get("name")}/edit`}
+            to={`/routes/${route.name}/edit`}
           >
             <EditIcon />
           </IconLinkWithToolTip>
@@ -137,6 +136,6 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
 
 export const RouteWidget = withStyles(styles)(connect(mapStateToProps)(RouteWidgetRaw));
 
-export const RouteWidgets = ({ routes }: { routes: Immutable.List<HttpRoute> }) => {
-  return <>{routes.size > 0 ? <RouteWidget routes={routes} /> : <CenterTypography>No Routes</CenterTypography>}</>;
+export const RouteWidgets = ({ routes }: { routes: HttpRoute[] }) => {
+  return <>{routes.length > 0 ? <RouteWidget routes={routes} /> : <CenterTypography>No Routes</CenterTypography>}</>;
 };

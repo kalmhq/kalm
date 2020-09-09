@@ -90,10 +90,8 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
 
     const routes = httpRoutes.filter(
       (route) =>
-        route
-          .get("destinations")
-          .filter((destination) => destination.get("host").startsWith(serviceName + "." + activeNamespaceName)).size >
-        0,
+        route.destinations.filter((destination) => destination.host.startsWith(serviceName + "." + activeNamespaceName))
+          .length > 0,
     );
 
     return (

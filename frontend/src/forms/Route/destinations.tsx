@@ -15,13 +15,13 @@ import {
   PortProtocolHTTP2,
   PortProtocolHTTPS,
 } from "types/componentTemplate";
-import { HttpRouteDestinationContent } from "types/route";
+import { HttpRouteDestination } from "types/route";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorRequired } from "../validator";
 
 interface FieldArrayComponentHackType {
-  destinations: HttpRouteDestinationContent[];
+  destinations: HttpRouteDestination[];
   errors: any;
   touched: any;
 }

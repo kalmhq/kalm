@@ -1,3 +1,4 @@
+import produce from "immer";
 import { RootState } from "reducers";
 import { getComponentFormVolumeOptions } from "selectors/component";
 import { ApplicationComponent, ApplicationComponentDetails } from "types/application";
@@ -5,12 +6,11 @@ import {
   ResourceRequirements,
   VolumeTypePersistentVolumeClaim,
   VolumeTypePersistentVolumeClaimNew,
-  workloadTypeServer,
   VolumeTypePersistentVolumeClaimTemplate,
   VolumeTypePersistentVolumeClaimTemplateNew,
+  workloadTypeServer,
 } from "types/componentTemplate";
 import { formatDate, formatTimeDistance } from "utils/date";
-import produce from "immer";
 
 export const componentDetailsToComponent = (componentDetails: ApplicationComponentDetails): ApplicationComponent => {
   const component = produce(componentDetails, (draft) => {

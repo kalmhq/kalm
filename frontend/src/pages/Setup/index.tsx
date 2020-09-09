@@ -163,7 +163,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
   };
 
   private getKalmRouteReady = (props: Props): boolean => {
-    return !!props.httpRoutes.find((x) => x.get("name") === "kalm-route");
+    return !!props.httpRoutes.find((x) => x.name === "kalm-route");
   };
 
   private isKalmRouteChangedToReady = (prevProps: Props) => {

@@ -1,7 +1,7 @@
 import { Box, Button, Grid } from "@material-ui/core";
 import { Field, FieldArray } from "formik";
 import React from "react";
-import { HttpRouteConditionContent } from "types/route";
+import { HttpRouteCondition } from "types/route";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { RenderFormikSelectField } from "../Basic/select";
@@ -9,7 +9,7 @@ import { KRenderDebounceFormikTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
 
 export interface Props {
-  conditions?: HttpRouteConditionContent[];
+  conditions?: HttpRouteCondition[];
 }
 
 export class RenderHttpRouteConditions extends React.PureComponent<Props> {

@@ -17,7 +17,7 @@ import { RootState } from "reducers";
 import { FormMidware } from "tutorials/formMidware";
 import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
-import { httpMethods, HttpRouteFormType, methodsModeAll, methodsModeSpecific } from "types/route";
+import { httpMethods, HttpRoute, methodsModeAll, methodsModeSpecific } from "types/route";
 import { isArray } from "util";
 import { arraysMatch } from "utils";
 import { includesForceHttpsDomain } from "utils/domain";
@@ -78,12 +78,12 @@ const styles = (theme: Theme) =>
 interface OwnProps {
   isEdit?: boolean;
   onSubmit: any;
-  initial: HttpRouteFormType;
+  initial: HttpRoute;
 }
 
 export interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props extends ConnectedProps, OwnProps, FormikProps<HttpRouteFormType>, WithStyles<typeof styles> {}
+export interface Props extends ConnectedProps, OwnProps, FormikProps<HttpRoute>, WithStyles<typeof styles> {}
 
 interface State {
   isAdvancedPartUnfolded: boolean;
@@ -464,7 +464,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
-const form = withFormik<OwnProps & ConnectedProps & WithStyles<typeof styles>, HttpRouteFormType>({
+const form = withFormik<OwnProps & ConnectedProps & WithStyles<typeof styles>, HttpRoute>({
   mapPropsToValues: (props) => {
     return props.initial;
   },

@@ -15,7 +15,6 @@ import { Certificate, CertificateIssuer, CertificateForm, CertificateIssuerForm 
 interface MockStoreData {
   mockClusterInfo: ClusterInfo;
   mockLoginStatus: LoginStatus;
-  mockHttpRoutes: Immutable.List<HttpRoute>;
   mockServices: Immutable.List<Service>;
   mockSSO: SSOConfig;
 }
@@ -32,6 +31,7 @@ interface MockStoreDataImmer {
   mockStatefulSetOptions: VolumeOptions;
   mockCertificates: Certificate[];
   mockCertificateIssuers: CertificateIssuer[];
+  mockHttpRoutes: HttpRoute[];
 }
 
 export default class MockStore {
@@ -113,8 +113,8 @@ export default class MockStore {
   };
 
   public deleteHttpRoute = async (namespace: string, name: string) => {
-    const index = this.data.get("mockHttpRoutes").findIndex((c) => c.get("name") === name);
-    this.data = this.data.deleteIn(["mockHttpRoutes", index]);
+    const index = this.dataImmer.mockHttpRoutes.findIndex((x) => x.name === name);
+    this.dataImmer.mockHttpRoutes.splice(index, 1);
     await this.saveData();
   };
 
@@ -162,12 +162,14 @@ export default class MockStore {
   };
 
   public updateHttpRoute = async (namepace: string, httpRoute: HttpRoute) => {
-    const index = this.data.get("mockHttpRoutes").findIndex((c) => c.get("name") === httpRoute.get("name"));
-    if (index && index >= 0) {
-      this.data = this.data.updateIn(["mockHttpRoutes", index], httpRoute as any);
-    } else {
-      this.data = this.data.updateIn(["mockHttpRoutes"], (c) => c.push(httpRoute));
-    }
+    const index = this.dataImmer.mockHttpRoutes.findIndex((x) => x.name === httpRoute.name);
+    this.dataImmer.mockHttpRoutes = produce(this.dataImmer.mockHttpRoutes, (draft) => {
+      if (index >= 0) {
+        draft[index] = httpRoute;
+      } else {
+        draft.push(httpRoute);
+      }
+    });
     await this.saveData();
   };
 
@@ -8346,6 +8348,19 @@ export default class MockStore {
           pvList: ["my-pv-1", "my-pv-2", "my-pv-3"],
         },
       ],
+
+      mockHttpRoutes: [
+        {
+          hosts: ["bookinfo.demo.com"],
+          paths: ["/"],
+          methods: ["GET", "POST"],
+          schemes: ["http"],
+          stripPath: true,
+          destinations: [{ host: "productpage.kalm-bookinfo.svc.cluster.local:3000", weight: 1 }],
+          name: "bookinfo",
+          namespace: "kalm-bookinfo",
+        },
+      ],
     };
   };
 
@@ -8379,6 +8394,46 @@ export default class MockStore {
           namespace: "kalm-bookinfo",
         },
       ]),
+
+      mockCertificates: Immutable.fromJS([
+        {
+          name: "cert",
+          isSelfManaged: false,
+          httpsCertIssuer: "ca2",
+          domains: ["dd.lo", "ec.op"],
+          ready: "False",
+          reason: 'Waiting for CertificateRequest "cert-3429837659" to complete',
+        },
+        { name: "dadada", isSelfManaged: true, domains: ["hydro.io"], ready: "True", reason: "" },
+        {
+          name: "dd",
+          isSelfManaged: false,
+          httpsCertIssuer: "cloudflare",
+          domains: ["ss.ff"],
+          ready: "False",
+          reason: 'Waiting for CertificateRequest "dd-2325188776" to complete',
+        },
+        {
+          name: "default-https-cert",
+          isSelfManaged: false,
+          httpsCertIssuer: "default-cert-issuer",
+          domains: ["*"],
+          ready: "True",
+          reason: "Certificate is up to date and has not expired",
+        },
+        { name: "hydro3", isSelfManaged: true, domains: ["hyo.io"], ready: "True", reason: "" },
+        {
+          name: "kalata",
+          isSelfManaged: false,
+          httpsCertIssuer: "ca",
+          domains: ["dde.ll"],
+          ready: "False",
+          reason: 'Waiting for CertificateRequest "kalata-1118927936" to complete',
+        },
+        { name: "tte", isSelfManaged: true, domains: ["hydro.io"], ready: "True", reason: "" },
+      ]),
+
+      mockCertificateIssuers: Immutable.fromJS([{ name: "default-cert-issuer", caForTest: {} }]),
 
       mockSSO: Immutable.fromJS({
         domain: "sso.kapp.live",

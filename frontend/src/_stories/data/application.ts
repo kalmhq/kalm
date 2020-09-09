@@ -14,7 +14,7 @@ import { optionsKnob, array, object } from "@storybook/addon-knobs";
 import { OptionsKnobOptions } from "@storybook/addon-knobs/dist/components/types";
 import { LOAD_ROUTES_PENDING, LOAD_ROUTES_FULFILLED, HttpRoute } from "types/route";
 
-export const createRoute = (name: string, namespace: string) => {
+export const createRoute = (name: string, namespace: string): HttpRoute[] => {
   const label = "Methods";
   const valuesObj = {
     GET: "GET",
@@ -55,25 +55,25 @@ export const createRoute = (name: string, namespace: string) => {
   ];
   // @ts-ignore
   const destinations = object("Destinations", [destinationOptions[0]], groupId);
-  return Immutable.fromJS([
+  return [
     {
       hosts: hosts,
       paths: paths, //["/"],
-      methods: methods, //["GET", "POST"],
-      schemes: schemes, //["http"],
+      methods: methods as any, //["GET", "POST"],
+      schemes: schemes as any, //["http"],
       stripPath: true,
       destinations: destinations,
       name: "bookinfo",
       namespace: name,
     },
-  ]);
+  ];
 };
 
 export const createRoutes = (store: any, appNames: string[]) => {
-  let routes = Immutable.List<HttpRoute>();
+  let routes: HttpRoute[] = [];
   appNames.forEach((appName, index) => {
     const namespace = `Application${index + 1}`;
-    routes = routes.merge(createRoute(appName, namespace));
+    routes = routes.concat(createRoute(appName, namespace));
   });
 
   store.dispatch({ type: LOAD_ROUTES_PENDING });

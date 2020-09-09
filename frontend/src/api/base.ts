@@ -74,7 +74,7 @@ export abstract class Api {
   public abstract deleteApplicationComponent(applicationName: string, name: string): Promise<void>;
 
   // routes
-  public abstract getHttpRoutes(): Promise<Immutable.List<HttpRoute>>;
+  public abstract getHttpRoutes(): Promise<HttpRoute[]>;
 
   public abstract updateHttpRoute(httpRoute: HttpRoute): Promise<HttpRoute>;
 
