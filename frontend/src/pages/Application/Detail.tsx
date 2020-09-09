@@ -302,7 +302,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
               labels={["Running", "Pending", "Error"]}
               data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}
             />
-            <DoughnutChart title="Routes" labels={["Running"]} data={[this.props.httpRoutes.size]} />
+            <DoughnutChart title="Routes" labels={["Running"]} data={[this.props.httpRoutes.length]} />
           </Box>
         </Expansion>
         <Expansion title="Metrics" defaultUnfold>

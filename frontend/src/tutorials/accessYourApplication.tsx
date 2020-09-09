@@ -13,7 +13,7 @@ import {
 } from "tutorials/utils";
 import { Actions } from "types";
 import { CREATE_COMPONENT } from "types/application";
-import { HttpRouteDestinationContent } from "types/route";
+import { HttpRouteDestination } from "types/route";
 import { Tutorial, TutorialFactory } from "types/tutorial";
 import { KMLink } from "widgets/Link";
 
@@ -176,7 +176,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
               {
                 form: "route",
                 field: "destinations",
-                validate: (destinations: HttpRouteDestinationContent[]) =>
+                validate: (destinations: HttpRouteDestination[]) =>
                   destinations.length === 1 &&
                   destinations.find((destination) => destination.host === "echoserver.tutorial.svc.cluster.local:8001")
                     ? undefined
@@ -188,7 +188,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
                 state,
                 "route",
                 "destinations",
-                (destinations: HttpRouteDestinationContent[]) =>
+                (destinations: HttpRouteDestination[]) =>
                   destinations.length === 1 &&
                   !!destinations.find(
                     (destination) => destination.host === "echoserver.tutorial.svc.cluster.local:8001",

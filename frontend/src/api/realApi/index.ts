@@ -196,31 +196,31 @@ export default class RealApi extends Api {
       method: "get",
       url: `/${K8sApiVersion}/httproutes`,
     });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public updateHttpRoute = async (httpRoute: HttpRoute) => {
     const res = await axiosRequest({
       method: "put",
-      url: `/${K8sApiVersion}/httproutes/${httpRoute.get("namespace")}/${httpRoute.get("name")}`,
+      url: `/${K8sApiVersion}/httproutes/${httpRoute.namespace}/${httpRoute.name}`,
       data: httpRoute,
     });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public createHttpRoute = async (httpRoute: HttpRoute) => {
     const res = await axiosRequest({
       method: "post",
-      url: `/${K8sApiVersion}/httproutes/${httpRoute.get("namespace")}`,
+      url: `/${K8sApiVersion}/httproutes/${httpRoute.namespace}`,
       data: httpRoute,
     });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public deleteHttpRoute = async (httpRoute: HttpRoute) => {
     const res = await axiosRequest({
       method: "delete",
-      url: `/${K8sApiVersion}/httproutes/${httpRoute.get("namespace")}/${httpRoute.get("name")}`,
+      url: `/${K8sApiVersion}/httproutes/${httpRoute.namespace}/${httpRoute.name}`,
     });
     return res.status === 200;
   };

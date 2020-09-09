@@ -44,7 +44,7 @@ export const ValidatorHttpRouteDestinations = (
   for (let i = 0; i < value.size; i++) {
     const target = value.get(i)!;
 
-    if (target.get("weight") > 0) {
+    if (target.weight > 0) {
       valid = true;
       break;
     }

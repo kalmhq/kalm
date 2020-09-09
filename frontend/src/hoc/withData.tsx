@@ -135,7 +135,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             payload: {
               namespace: data.namespace,
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;

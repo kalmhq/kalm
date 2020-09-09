@@ -31,7 +31,7 @@ class OpenInBrowserRaw extends React.PureComponent<Props> {
       return (
         <IconButtonWithTooltip
           tooltipTitle="Open In Browser"
-          disabled={!route.get("methods").includes("GET")}
+          disabled={!route.methods.includes("GET")}
           href={getRouteUrl(route, clusterInfo)}
           // @ts-ignore
           target="_blank"
@@ -46,7 +46,7 @@ class OpenInBrowserRaw extends React.PureComponent<Props> {
       <Button
         size="small"
         variant="outlined"
-        disabled={!route.get("methods").includes("GET")}
+        disabled={!route.methods.includes("GET")}
         href={getRouteUrl(route, clusterInfo)}
         target="_blank"
         rel="noreferrer"
@@ -63,11 +63,11 @@ export const OpenInBrowser = withStyles(styles)(connect(mapStateToProps)(OpenInB
  * Get the URL string of a Route object
  */
 export const getRouteUrl = (route: HttpRoute, clusterInfo: ClusterInfo, customHost?: string) => {
-  let host = customHost ? customHost : route.get("hosts").first("*");
-  const scheme = route.get("schemes").first();
+  let host = customHost ? customHost : route.hosts[0] || "*";
+  const scheme = route.schemes[0];
   // TODO: Grabbing the first host and first url is probably not sufficient here.
   // What is the right behavior when we are dealing with a row with 2 hosts and 2 paths?
-  const path = route.get("paths").first("/");
+  const path = route.paths[0] || "/";
 
   if (host === "*") {
     host =

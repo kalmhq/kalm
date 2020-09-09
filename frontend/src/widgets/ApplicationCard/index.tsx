@@ -15,7 +15,6 @@ import {
   withStyles,
 } from "@material-ui/core";
 import { blinkTopProgressAction } from "actions/settings";
-import Immutable from "immutable";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { RouteWidgets } from "pages/Route/Widget";
@@ -54,7 +53,7 @@ const ApplicationCardStyles = (theme: Theme) =>
 type ApplicationCardProps = {
   application: ApplicationDetails;
   componentsMap: { [key: string]: ApplicationComponentDetails[] };
-  httpRoutes: Immutable.List<HttpRoute>;
+  httpRoutes: HttpRoute[];
   confirmDelete: (application: ApplicationDetails) => void;
 } & CardProps &
   WithStyles<typeof ApplicationCardStyles>;
@@ -101,13 +100,13 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
   private renderExternalAccesses = () => {
     const { httpRoutes, application } = this.props;
     const applicationName = application.name;
-    if (httpRoutes && httpRoutes.size > 0) {
+    if (httpRoutes && httpRoutes.length > 0) {
       return (
         <PopupState variant="popover" popupId={applicationName}>
           {(popupState) => (
             <>
               <KMLink component="button" variant="body2" {...bindTrigger(popupState)}>
-                {pluralize("route", httpRoutes.size)}
+                {pluralize("route", httpRoutes.length)}
               </KMLink>
               <Popover
                 style={{ zIndex: POPPER_ZINDEX }}
@@ -204,9 +203,9 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
           icon={<KalmApplicationIcon />}
         />
         <DoughnutChart
-          title={pluralize("Route", httpRoutes.size)}
+          title={pluralize("Route", httpRoutes.length)}
           labels={["Running"]}
-          data={[httpRoutes.size]}
+          data={[httpRoutes.length]}
           icon={<KalmRoutesIcon />}
         />
       </Box>

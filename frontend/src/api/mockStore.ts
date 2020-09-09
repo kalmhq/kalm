@@ -6,7 +6,7 @@ import {
   CertificateFormTypeContent,
   CertificateIssuerFormTypeContent,
   CertificateIssuerList,
-  CertificateList
+  CertificateList,
 } from "types/certificate";
 import { ClusterInfo } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
@@ -20,7 +20,6 @@ import { ImmutableMap } from "typings";
 interface MockStoreData {
   mockClusterInfo: ClusterInfo;
   mockLoginStatus: LoginStatus;
-  mockHttpRoutes: Immutable.List<HttpRoute>;
   mockCertificates: CertificateList;
   mockCertificateIssuers: CertificateIssuerList;
   mockServices: Immutable.List<Service>;
@@ -37,6 +36,7 @@ interface MockStoreDataImmer {
   mockStorageClasses: StorageClasses;
   mockSimpleOptions: VolumeOptions;
   mockStatefulSetOptions: VolumeOptions;
+  mockHttpRoutes: HttpRoute[];
 }
 
 export default class MockStore {
@@ -118,8 +118,8 @@ export default class MockStore {
   };
 
   public deleteHttpRoute = async (namespace: string, name: string) => {
-    const index = this.data.get("mockHttpRoutes").findIndex((c) => c.get("name") === name);
-    this.data = this.data.deleteIn(["mockHttpRoutes", index]);
+    const index = this.dataImmer.mockHttpRoutes.findIndex((x) => x.name === name);
+    this.dataImmer.mockHttpRoutes.splice(index, 1);
     await this.saveData();
   };
 
@@ -167,12 +167,14 @@ export default class MockStore {
   };
 
   public updateHttpRoute = async (namepace: string, httpRoute: HttpRoute) => {
-    const index = this.data.get("mockHttpRoutes").findIndex((c) => c.get("name") === httpRoute.get("name"));
-    if (index && index >= 0) {
-      this.data = this.data.updateIn(["mockHttpRoutes", index], httpRoute as any);
-    } else {
-      this.data = this.data.updateIn(["mockHttpRoutes"], (c) => c.push(httpRoute));
-    }
+    const index = this.dataImmer.mockHttpRoutes.findIndex((x) => x.name === httpRoute.name);
+    this.dataImmer.mockHttpRoutes = produce(this.dataImmer.mockHttpRoutes, (draft) => {
+      if (index >= 0) {
+        draft[index] = httpRoute;
+      } else {
+        draft.push(httpRoute);
+      }
+    });
     await this.saveData();
   };
 
@@ -8313,6 +8315,19 @@ export default class MockStore {
           pvList: ["my-pv-1", "my-pv-2", "my-pv-3"],
         },
       ],
+
+      mockHttpRoutes: [
+        {
+          hosts: ["bookinfo.demo.com"],
+          paths: ["/"],
+          methods: ["GET", "POST"],
+          schemes: ["http"],
+          stripPath: true,
+          destinations: [{ host: "productpage.kalm-bookinfo.svc.cluster.local:3000", weight: 1 }],
+          name: "bookinfo",
+          namespace: "kalm-bookinfo",
+        },
+      ],
     };
   };
 
@@ -8333,19 +8348,6 @@ export default class MockStore {
         entity: "system:serviceaccount:default:kalm-sample-user",
         csrf: "",
       }),
-
-      mockHttpRoutes: Immutable.fromJS([
-        {
-          hosts: ["bookinfo.demo.com"],
-          paths: ["/"],
-          methods: ["GET", "POST"],
-          schemes: ["http"],
-          stripPath: true,
-          destinations: [{ host: "productpage.kalm-bookinfo.svc.cluster.local:3000", weight: 1 }],
-          name: "bookinfo",
-          namespace: "kalm-bookinfo",
-        },
-      ]),
 
       mockCertificates: Immutable.fromJS([
         {

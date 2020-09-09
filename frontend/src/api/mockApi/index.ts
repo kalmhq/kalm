@@ -77,21 +77,21 @@ export default class MockApi extends Api {
   };
 
   public getHttpRoutes = async () => {
-    return mockStore.data.get("mockHttpRoutes");
+    return mockStore.dataImmer.mockHttpRoutes;
   };
 
   public createHttpRoute = async (httpRoute: HttpRoute) => {
-    await mockStore.updateHttpRoute(httpRoute.get("namespace"), httpRoute);
+    await mockStore.updateHttpRoute(httpRoute.namespace, httpRoute);
     return httpRoute;
   };
 
   public updateHttpRoute = async (httpRoute: HttpRoute) => {
-    await mockStore.updateHttpRoute(httpRoute.get("namespace"), httpRoute);
-    return Immutable.fromJS(httpRoute);
+    await mockStore.updateHttpRoute(httpRoute.namespace, httpRoute);
+    return httpRoute;
   };
 
   public deleteHttpRoute = async (httpRoute: HttpRoute) => {
-    await mockStore.deleteHttpRoute(httpRoute.get("namespace"), httpRoute.get("name"));
+    await mockStore.deleteHttpRoute(httpRoute.namespace, httpRoute.name);
     return true;
   };
 
