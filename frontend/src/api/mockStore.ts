@@ -2,12 +2,6 @@ import produce from "immer";
 import Immutable from "immutable";
 import { ApplicationComponentDetails, ApplicationDetails, PodStatus } from "types/application";
 import { LoginStatus } from "types/authorization";
-import {
-  CertificateFormTypeContent,
-  CertificateIssuerFormTypeContent,
-  CertificateIssuerList,
-  CertificateList
-} from "types/certificate";
 import { ClusterInfo } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import { NodesListResponse } from "types/node";
@@ -16,13 +10,12 @@ import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { SSOConfig } from "types/sso";
 import { ImmutableMap } from "typings";
+import { Certificate, CertificateIssuer, CertificateForm, CertificateIssuerForm } from "types/certificate";
 
 interface MockStoreData {
   mockClusterInfo: ClusterInfo;
   mockLoginStatus: LoginStatus;
   mockHttpRoutes: Immutable.List<HttpRoute>;
-  mockCertificates: CertificateList;
-  mockCertificateIssuers: CertificateIssuerList;
   mockServices: Immutable.List<Service>;
   mockSSO: SSOConfig;
 }
@@ -37,6 +30,8 @@ interface MockStoreDataImmer {
   mockStorageClasses: StorageClasses;
   mockSimpleOptions: VolumeOptions;
   mockStatefulSetOptions: VolumeOptions;
+  mockCertificates: Certificate[];
+  mockCertificateIssuers: CertificateIssuer[];
 }
 
 export default class MockStore {
@@ -112,8 +107,8 @@ export default class MockStore {
   };
 
   public deleteCertificate = async (name: string) => {
-    const index = this.data.get("mockCertificates").findIndex((c) => c.get("name") === name);
-    this.data = this.data.deleteIn(["mockCertificates", index]);
+    const index = this.dataImmer.mockCertificates.findIndex((c) => c.name === name);
+    this.dataImmer.mockCertificates.splice(index, 1);
     await this.saveData();
   };
 
@@ -146,22 +141,22 @@ export default class MockStore {
     });
   };
 
-  public updateCertificate = async (certificate: CertificateFormTypeContent) => {
-    const index = this.data.get("mockCertificates").findIndex((c) => c.get("name") === certificate.name);
+  public updateCertificate = async (certificate: CertificateForm) => {
+    const index = this.dataImmer.mockCertificates.findIndex((c) => c.name === certificate.name);
     if (index >= 0) {
-      this.data = this.data.setIn(["mockCertificates", index], Immutable.fromJS(certificate));
+      this.dataImmer.mockCertificates[index] = certificate;
     } else {
-      this.data = this.data.updateIn(["mockCertificates"], (c) => c.push(Immutable.fromJS(certificate)));
+      this.dataImmer.mockCertificates.push(certificate);
     }
     await this.saveData();
   };
 
-  public updateCertificateIssuer = async (certificateIssuer: CertificateIssuerFormTypeContent) => {
-    const index = this.data.get("mockCertificateIssuers").findIndex((c) => c.get("name") === certificateIssuer.name);
+  public updateCertificateIssuer = async (certificateIssuer: CertificateIssuerForm) => {
+    const index = this.dataImmer.mockCertificateIssuers.findIndex((c) => c.name === certificateIssuer.name);
     if (index >= 0) {
-      this.data = this.data.setIn(["mockCertificateIssuers", index], Immutable.fromJS(certificateIssuer));
+      this.dataImmer.mockCertificateIssuers[index] = certificateIssuer;
     } else {
-      this.data = this.data.updateIn(["mockCertificateIssuers"], (c) => c.push("certificateIssuer"));
+      this.dataImmer.mockCertificateIssuers.push(certificateIssuer);
     }
     await this.saveData();
   };
@@ -252,6 +247,44 @@ export default class MockStore {
 
   public getInitDataImmer = () => {
     return {
+      mockCertificates: [
+        {
+          name: "cert",
+          isSelfManaged: false,
+          httpsCertIssuer: "ca2",
+          domains: ["dd.lo", "ec.op"],
+          ready: "False",
+          reason: 'Waiting for CertificateRequest "cert-3429837659" to complete',
+        },
+        { name: "dadada", isSelfManaged: true, domains: ["hydro.io"], ready: "True", reason: "" },
+        {
+          name: "dd",
+          isSelfManaged: false,
+          httpsCertIssuer: "cloudflare",
+          domains: ["ss.ff"],
+          ready: "False",
+          reason: 'Waiting for CertificateRequest "dd-2325188776" to complete',
+        },
+        {
+          name: "default-https-cert",
+          isSelfManaged: false,
+          httpsCertIssuer: "default-cert-issuer",
+          domains: ["*"],
+          ready: "True",
+          reason: "Certificate is up to date and has not expired",
+        },
+        { name: "hydro3", isSelfManaged: true, domains: ["hyo.io"], ready: "True", reason: "" },
+        {
+          name: "kalata",
+          isSelfManaged: false,
+          httpsCertIssuer: "ca",
+          domains: ["dde.ll"],
+          ready: "False",
+          reason: 'Waiting for CertificateRequest "kalata-1118927936" to complete',
+        },
+        { name: "tte", isSelfManaged: true, domains: ["hydro.io"], ready: "True", reason: "" },
+      ],
+      mockCertificateIssuers: [{ name: "default-cert-issuer", caForTest: {} }],
       mockRegistries: [{ host: "https://abc.com", name: "registry1", username: "user1", password: "pass1" }],
       mockErrorPod: {
         name: "kkl-747f987f74-4mq5r",
@@ -8346,46 +8379,6 @@ export default class MockStore {
           namespace: "kalm-bookinfo",
         },
       ]),
-
-      mockCertificates: Immutable.fromJS([
-        {
-          name: "cert",
-          isSelfManaged: false,
-          httpsCertIssuer: "ca2",
-          domains: ["dd.lo", "ec.op"],
-          ready: "False",
-          reason: 'Waiting for CertificateRequest "cert-3429837659" to complete',
-        },
-        { name: "dadada", isSelfManaged: true, domains: ["hydro.io"], ready: "True", reason: "" },
-        {
-          name: "dd",
-          isSelfManaged: false,
-          httpsCertIssuer: "cloudflare",
-          domains: ["ss.ff"],
-          ready: "False",
-          reason: 'Waiting for CertificateRequest "dd-2325188776" to complete',
-        },
-        {
-          name: "default-https-cert",
-          isSelfManaged: false,
-          httpsCertIssuer: "default-cert-issuer",
-          domains: ["*"],
-          ready: "True",
-          reason: "Certificate is up to date and has not expired",
-        },
-        { name: "hydro3", isSelfManaged: true, domains: ["hyo.io"], ready: "True", reason: "" },
-        {
-          name: "kalata",
-          isSelfManaged: false,
-          httpsCertIssuer: "ca",
-          domains: ["dde.ll"],
-          ready: "False",
-          reason: 'Waiting for CertificateRequest "kalata-1118927936" to complete',
-        },
-        { name: "tte", isSelfManaged: true, domains: ["hydro.io"], ready: "True", reason: "" },
-      ]),
-
-      mockCertificateIssuers: Immutable.fromJS([{ name: "default-cert-issuer", caForTest: {} }]),
 
       mockSSO: Immutable.fromJS({
         domain: "sso.kapp.live",

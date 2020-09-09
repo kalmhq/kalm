@@ -7,13 +7,15 @@ import { Field, Form, FormikProps, withFormik } from "formik";
 import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KFormikBoolCheckboxRender, KFormikCheckboxGroupRender } from "forms/Basic/checkbox";
 import { KFormikRadioGroupRender } from "forms/Basic/radio";
+import { ROUTE_FORM_ID } from "forms/formIDs";
 import { KValidatorHostsWithWildcardPrefix, KValidatorPaths, ValidatorArrayNotEmpty } from "forms/validator";
 import routesGif from "images/routes.gif";
-import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { Link as RouteLink } from "react-router-dom";
 import { RootState } from "reducers";
+import { FormMidware } from "tutorials/formMidware";
+import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import { httpMethods, HttpRouteFormType, methodsModeAll, methodsModeSpecific } from "types/route";
 import { isArray } from "util";
@@ -27,18 +29,13 @@ import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
-import { ROUTE_FORM_ID } from "forms/formIDs";
-import { FormMidware } from "tutorials/formMidware";
-import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 
 const mapStateToProps = (state: RootState) => {
-  const certifications = state.get("certificates").get("certificates");
+  const certifications = state.get("certificates").certificates;
   const domains: Set<string> = new Set();
 
   certifications.forEach((x) => {
-    x.get("domains")
-      .filter((x) => x !== "*")
-      .forEach((domain) => domains.add(domain));
+    x.domains.filter((x) => x !== "*").forEach((domain) => domains.add(domain));
   });
 
   return {
@@ -128,9 +125,9 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     }
   }
 
-  private canCertDomainsSuiteForHost = (domains: Immutable.List<string>, host: string) => {
-    for (let i = 0; i < domains.size; i++) {
-      const domain = domains.get(i)!;
+  private canCertDomainsSuiteForHost = (domains: string[], host: string) => {
+    for (let i = 0; i < domains.length; i++) {
+      const domain = domains[i]!;
       if (domain === "*") {
         return false;
       }
@@ -166,7 +163,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     let hostCertResults: any[] = [];
 
     hosts.forEach((host) => {
-      const cert = certifications.find((c) => this.canCertDomainsSuiteForHost(c.get("domains"), host));
+      const cert = certifications.find((c) => this.canCertDomainsSuiteForHost(c.domains, host));
 
       hostCertResults.push({
         host,

@@ -1,14 +1,7 @@
 import Immutable from "immutable";
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import { LoginStatus } from "types/authorization";
-import {
-  Certificate,
-  CertificateFormTypeContent,
-  CertificateIssuer,
-  CertificateIssuerList,
-  CertificateList,
-  CertificateIssuerFormTypeContent,
-} from "types/certificate";
+import { Certificate, CertificateIssuer, CertificateIssuerForm, CertificateForm } from "types/certificate";
 import { ClusterInfo, InitializeClusterResponse } from "types/cluster";
 import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
@@ -101,14 +94,14 @@ export abstract class Api {
   public abstract getServiceAccountSecret(name: string): any;
 
   // certificate
-  public abstract getCertificateList(): Promise<CertificateList>;
+  public abstract getCertificateList(): Promise<Certificate[]>;
 
-  public abstract getCertificateIssuerList(): Promise<CertificateIssuerList>;
+  public abstract getCertificateIssuerList(): Promise<CertificateIssuer[]>;
 
-  public abstract createCertificate(certificate: CertificateFormTypeContent, isEdit?: boolean): Promise<Certificate>;
+  public abstract createCertificate(certificate: CertificateForm, isEdit?: boolean): Promise<Certificate>;
 
   public abstract createCertificateIssuer(
-    certificateIssuer: CertificateIssuerFormTypeContent,
+    certificateIssuer: CertificateIssuerForm,
     isEdit?: boolean,
   ): Promise<CertificateIssuer>;
 

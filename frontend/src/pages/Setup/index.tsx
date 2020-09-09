@@ -130,8 +130,8 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
   }
 
   private getKalmCertReady = (props: Props): boolean => {
-    const cert = props.certs.find((x) => x.get("name") === "kalm-cert");
-    return !!cert && cert.get("ready") === "True";
+    const cert = props.certs.find((x) => x.name === "kalm-cert");
+    return !!cert && cert.ready === "True";
   };
 
   private isKalmCertChangedToReady = (prevProps: Props) => {

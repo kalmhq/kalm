@@ -1,8 +1,5 @@
-import Immutable from "immutable";
 import { Actions } from "types";
 import {
-  CertificateIssuerList,
-  CertificateList,
   CREATE_CERTIFICATE,
   CREATE_CERTIFICATE_ISSUER,
   DELETE_CERTIFICATE,
@@ -11,6 +8,8 @@ import {
   LOAD_CERTIFICATES_PENDING,
   LOAD_CERTIFICATE_ISSUERS_FULFILLED,
   SET_IS_SUBMITTING_CERTIFICATE,
+  Certificate,
+  CertificateIssuer,
 } from "types/certificate";
 import {
   RESOURCE_ACTION_ADD,
@@ -19,95 +18,86 @@ import {
   WATCHED_RESOURCE_CHANGE,
   RESOURCE_ACTION_UPDATE,
 } from "types/resources";
-import { ImmutableMap } from "typings";
-import { addOrUpdateInList, removeInList, removeInListByName, isInList } from "./utils";
+import { produce } from "immer";
+import { addOrUpdateInArray, removeInArrayByName, isInArray, removeInArray } from "./utils";
 
-export type State = ImmutableMap<{
+export interface State {
   isLoading: boolean;
   isFirstLoaded: boolean;
   isSubmittingCreateCertificate: boolean;
-  certificates: CertificateList;
-  certificateIssuers: CertificateIssuerList;
-}>;
+  certificates: Certificate[];
+  certificateIssuers: CertificateIssuer[];
+}
 
-const initialState: State = Immutable.Map({
+const initialState: State = {
   isLoading: false,
   isFirstLoaded: false,
   isSubmittingCreateCertificate: false,
-  certificates: Immutable.List(),
-  certificateIssuers: Immutable.List(),
-});
+  certificates: [],
+  certificateIssuers: [],
+};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State = initialState, action: Actions) => {
   switch (action.type) {
     case LOAD_CERTIFICATES_PENDING: {
-      return state.set("isLoading", true);
+      state.isLoading = true;
+      return;
     }
     case LOAD_CERTIFICATES_FAILED: {
-      return state.set("isLoading", false);
+      state.isLoading = false;
+      return;
     }
     case LOAD_CERTIFICATES_FULFILLED: {
-      state = state.set("isFirstLoaded", true);
-      state = state.set("certificates", action.payload.certificates || Immutable.List());
-      break;
+      state.isFirstLoaded = true;
+      state.certificates = action.payload.certificates || [];
+      return;
     }
     case LOAD_CERTIFICATE_ISSUERS_FULFILLED: {
-      return state.set("certificateIssuers", action.payload.certificateIssuers || Immutable.List());
+      state.certificateIssuers = action.payload.certificateIssuers || [];
+      return;
     }
     case DELETE_CERTIFICATE: {
-      state = state.update("certificates", (x) => removeInListByName(x, action.payload.name));
-      break;
+      state.certificates = removeInArrayByName(state.certificates, action.payload.name);
+      return;
     }
     case CREATE_CERTIFICATE: {
-      state = state.update("certificates", (x) => addOrUpdateInList(x, Immutable.fromJS(action.payload.certificate)));
-
-      break;
+      state.certificates = addOrUpdateInArray(state.certificates, action.payload.certificate);
+      return;
     }
     case CREATE_CERTIFICATE_ISSUER: {
-      const index = state
-        .get("certificateIssuers")
-        .findIndex(
-          (certificateIssuer) => certificateIssuer.get("name") === action.payload.certificateIssuer.get("name"),
-        );
-      if (index >= 0) {
-        state = state.setIn(["certificateIssuers", index], action.payload.certificateIssuer);
-      } else {
-        state = state.update("certificateIssuers", (certificateIssuers) =>
-          certificateIssuers.push(action.payload.certificateIssuer),
-        );
-      }
-      break;
+      state.certificateIssuers = addOrUpdateInArray(state.certificateIssuers, action.payload.certificateIssuer);
+      return;
     }
     case WATCHED_RESOURCE_CHANGE: {
       if (action.kind !== RESOURCE_TYPE_HTTPS_CERT) {
-        return state;
+        return;
       }
 
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          if (!isInList(state.get("certificates"), action.payload.data)) {
-            state = state.update("certificates", (x) => addOrUpdateInList(x, Immutable.fromJS(action.payload.data)));
+          if (!isInArray(state.certificates, action.payload.data)) {
+            state.certificates = addOrUpdateInArray(state.certificates, action.payload.data);
           }
-          break;
+          return;
         }
         case RESOURCE_ACTION_DELETE: {
-          state = state.update("certificates", (x) => removeInList(x, Immutable.fromJS(action.payload.data)));
-          break;
+          state.certificates = removeInArray(state.certificates, action.payload.data);
+          return;
         }
         case RESOURCE_ACTION_UPDATE: {
-          state = state.update("certificates", (x) => addOrUpdateInList(x, Immutable.fromJS(action.payload.data)));
-          break;
+          state.certificates = addOrUpdateInArray(state.certificates, action.payload.data);
+          return;
         }
       }
-
       break;
     }
     case SET_IS_SUBMITTING_CERTIFICATE: {
-      return state.set("isSubmittingCreateCertificate", action.payload.isSubmittingCertificate);
+      state.isSubmittingCreateCertificate = action.payload.isSubmittingCertificate;
+      return;
     }
   }
 
-  return state;
-};
+  return;
+}, initialState);
 
 export default reducer;

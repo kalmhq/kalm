@@ -6,18 +6,17 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { CertificateFormTypeContent, selfManaged } from "types/certificate";
+import { CertificateForm as CertificateFormType, selfManaged } from "types/certificate";
 import { H6 } from "widgets/Label";
 import { CertificateForm } from "forms/Certificate";
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
   const certificate = state
     .get("certificates")
-    .get("certificates")
-    .find((certificate) => certificate.get("name") === ownProps.match.params.name);
+    .certificates.find((certificate) => certificate.name === ownProps.match.params.name);
   return {
-    initialValues: (certificate ? certificate.merge({ managedType: selfManaged }).toJS() : undefined) as
-      | CertificateFormTypeContent
+    initialValues: (certificate ? Object.assign(certificate, { managedType: selfManaged }) : undefined) as
+      | CertificateFormType
       | undefined,
   };
 };
@@ -30,7 +29,7 @@ const styles = (theme: Theme) =>
 export interface Props extends WithStyles<typeof styles>, TDispatchProp, ReturnType<typeof mapStateToProps> {}
 
 class CertificateEditRaw extends React.PureComponent<Props> {
-  private submit = async (certificate: CertificateFormTypeContent) => {
+  private submit = async (certificate: CertificateFormType) => {
     try {
       const { dispatch } = this.props;
       await dispatch(createCertificateAction(certificate, true));

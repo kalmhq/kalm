@@ -40,7 +40,7 @@ beforeEach(() => {
 
 test("load certificate list", async () => {
   await store.dispatch(loadCertificatesAction());
-  expect(store.getState().get("certificates").get("certificates")).toEqual(mockStore.data.get("mockCertificates"));
+  expect(store.getState().get("certificates").certificates).toEqual(mockStore.dataImmer.mockCertificates);
 });
 
 describe("add certificate", () => {

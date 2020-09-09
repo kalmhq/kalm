@@ -2,7 +2,7 @@ import Axios, { AxiosRequestConfig } from "axios";
 import Immutable from "immutable";
 import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
-import { CertificateFormTypeContent, CertificateIssuerFormTypeContent } from "types/certificate";
+import { CertificateForm, CertificateIssuerForm } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
@@ -253,15 +253,15 @@ export default class RealApi extends Api {
 
   public getCertificateList = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/httpscerts` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public getCertificateIssuerList = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/httpscertissuers` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
-  public createCertificate = async (certificate: CertificateFormTypeContent, isEdit?: boolean) => {
+  public createCertificate = async (certificate: CertificateForm, isEdit?: boolean) => {
     let res;
     if (isEdit) {
       res = await axiosRequest({
@@ -275,10 +275,10 @@ export default class RealApi extends Api {
       res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/httpscerts`, data: certificate });
     }
 
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
-  public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormTypeContent, isEdit?: boolean) => {
+  public createCertificateIssuer = async (certificateIssuer: CertificateIssuerForm, isEdit?: boolean) => {
     let res;
     if (isEdit) {
       res = await axiosRequest({
@@ -293,7 +293,7 @@ export default class RealApi extends Api {
         data: { certificateIssuer },
       });
     }
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public deleteCertificate = async (name: string) => {

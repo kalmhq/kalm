@@ -17,7 +17,7 @@ import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { FormMidware } from "tutorials/formMidware";
 import { TDispatchProp } from "types";
-import { CertificateFormTypeContent, issuerManaged, selfManaged } from "types/certificate";
+import { issuerManaged, selfManaged, CertificateForm as CertificateFormType } from "types/certificate";
 import DomainStatus from "widgets/DomainStatus";
 import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
@@ -26,7 +26,7 @@ import sc from "../../utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    certificateIssuers: state.get("certificates").get("certificateIssuers"),
+    certificateIssuers: state.get("certificates").certificateIssuers,
     ingressIP: state.get("cluster").get("info").get("ingressIP"),
   };
 };
@@ -34,7 +34,7 @@ const mapStateToProps = (state: RootState) => {
 interface OwnProps {
   isEdit?: boolean;
   onSubmit: any;
-  initialValues: CertificateFormTypeContent;
+  initialValues: CertificateFormType;
 }
 
 const styles = (theme: Theme) =>
@@ -81,7 +81,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   //   }
   // };
 
-  private renderSelfManagedFields = (formikProps: FormikProps<CertificateFormTypeContent>) => {
+  private renderSelfManagedFields = (formikProps: FormikProps<CertificateFormType>) => {
     const { classes } = this.props;
     const { setFieldValue, values, errors, touched } = formikProps;
 
@@ -229,7 +229,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   //   }
   // };
 
-  private validate = async (values: CertificateFormTypeContent) => {
+  private validate = async (values: CertificateFormType) => {
     let errors: any = {};
 
     if (values.managedType === selfManaged && (!values.domains || values.domains.length < 1)) {
