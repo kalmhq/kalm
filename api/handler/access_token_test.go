@@ -4,7 +4,6 @@ import (
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
-	"k8s.io/apimachinery/pkg/util/rand"
 	"net/http"
 	"testing"
 )
@@ -46,12 +45,8 @@ func (suite *AccessTokenTestSuite) TestGetEmptyList() {
 }
 
 func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
-	token := rand.String(64)
-
 	key := resources.AccessToken{
-		Name: v1alpha1.GetAccessTokenNameFromToken(token),
 		AccessTokenSpec: &v1alpha1.AccessTokenSpec{
-			Token: token,
 			Rules: []v1alpha1.AccessTokenRule{
 				{
 					Verb:      "view",
@@ -79,7 +74,6 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 			var res resources.AccessToken
 			rec.BodyAsJSON(&res)
 			suite.Equal(201, rec.Code)
-			suite.Equal(key.Name, res.Name)
 		},
 	})
 
@@ -95,6 +89,9 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 			rec.BodyAsJSON(&resList)
 			suite.Equal(200, rec.Code)
 			suite.Equal(1, len(resList))
+
+			// set name for delete
+			key.Name = resList[0].Name
 		},
 	})
 

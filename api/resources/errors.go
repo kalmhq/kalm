@@ -6,27 +6,27 @@ import (
 )
 
 func NoObjectViewerRoleError(scope, obj string) error {
-	return errors.NewUnauthorized(fmt.Sprintf("Require viewer role of obj %s in application %s", obj, scope))
+	return errors.NewUnauthorized(fmt.Sprintf("Require viewer role. [obj: %s, application: %s]", obj, scope))
 }
 
 func NoObjectEditorRoleError(scope, obj string) error {
-	return errors.NewUnauthorized(fmt.Sprintf("Require edit permission on obj %s in application %s", obj, scope))
+	return errors.NewUnauthorized(fmt.Sprintf("Require editor role. [obj %s, application %s]", obj, scope))
 }
 
 func NoObjectManagerRoleError(scope, obj string) error {
-	return errors.NewUnauthorized(fmt.Sprintf("Require owner role obj %s in application %s", obj, scope))
+	return errors.NewUnauthorized(fmt.Sprintf("Require owner role. [obj %s, application %s]", obj, scope))
 }
 
 func NoNamespaceViewerRoleError(scope string) error {
-	return errors.NewUnauthorized(fmt.Sprintf("Require viewer role in application %s", scope))
+	return errors.NewUnauthorized(fmt.Sprintf("Require viewer role. [application %s]", scope))
 }
 
 func NoNamespaceEditorRoleError(scope string) error {
-	return errors.NewUnauthorized(fmt.Sprintf("Require editor role in application %s", scope))
+	return errors.NewUnauthorized(fmt.Sprintf("Require editor role. [application %s]", scope))
 }
 
 func NoNamespaceManagerRoleError(scope string) error {
-	return errors.NewUnauthorized(fmt.Sprintf("Require owner role in application %s", scope))
+	return errors.NewUnauthorized(fmt.Sprintf("Require owner role. [application %s]", scope))
 }
 
 var NoRegistriesViewPermissionError = errors.NewUnauthorized("Require editor role in any application or cluster reader role")
