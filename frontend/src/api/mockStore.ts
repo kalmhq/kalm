@@ -1,3 +1,4 @@
+import produce from "immer";
 import Immutable from "immutable";
 import { ApplicationComponentDetails, ApplicationDetails, PodStatus } from "types/application";
 import { LoginStatus } from "types/authorization";
@@ -5,29 +6,24 @@ import {
   CertificateFormTypeContent,
   CertificateIssuerFormTypeContent,
   CertificateIssuerList,
-  CertificateList,
+  CertificateList
 } from "types/certificate";
 import { ClusterInfo } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import { NodesListResponse } from "types/node";
-import { RegistryFormType, Registry } from "types/registry";
+import { Registry, RegistryFormType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { SSOConfig } from "types/sso";
 import { ImmutableMap } from "typings";
-import produce from "immer";
 
 interface MockStoreData {
   mockClusterInfo: ClusterInfo;
   mockLoginStatus: LoginStatus;
-  mockStorageClasses: StorageClasses;
-  mockSimpleOptions: VolumeOptions;
-  mockStatefulSetOptions: VolumeOptions;
   mockHttpRoutes: Immutable.List<HttpRoute>;
   mockCertificates: CertificateList;
   mockCertificateIssuers: CertificateIssuerList;
   mockServices: Immutable.List<Service>;
-  mockVolumes: PersistentVolumes;
   mockSSO: SSOConfig;
 }
 
@@ -37,6 +33,10 @@ interface MockStoreDataImmer {
   mockApplications: ApplicationDetails[];
   mockApplicationComponents: { [key: string]: ApplicationComponentDetails[] };
   mockNodes: NodesListResponse;
+  mockVolumes: PersistentVolumes;
+  mockStorageClasses: StorageClasses;
+  mockSimpleOptions: VolumeOptions;
+  mockStatefulSetOptions: VolumeOptions;
 }
 
 export default class MockStore {
@@ -81,8 +81,10 @@ export default class MockStore {
   };
 
   public deleteVolume = async (name: string) => {
-    const index = this.data.get("mockVolumes").findIndex((c) => c.get("name") === name);
-    this.data = this.data.deleteIn(["mockVolumes", index]);
+    const index = this.dataImmer.mockVolumes.findIndex((x) => x.name === name);
+    this.dataImmer.mockVolumes = produce(this.dataImmer.mockVolumes, (draft) => {
+      draft.splice(index, 1);
+    });
     await this.saveData();
   };
 
@@ -8263,6 +8265,54 @@ export default class MockStore {
           ],
         },
       },
+      mockVolumes: [
+        {
+          name: "pvc-5c3132fc-0508-4a7f-b11a-b6b924424016",
+          isInUse: true,
+          componentNamespace: "kalm-bookinfo",
+          componentName: "reviews",
+          phase: "Available",
+          capacity: "1Gi",
+        },
+        {
+          name: "pvc-5c3132fc-0508-4a7f-b11a-b6b924424012",
+          isInUse: false,
+          componentNamespace: "kalm-empty",
+          componentName: "",
+          phase: "Available",
+          capacity: "1Gi",
+        },
+      ],
+
+      mockStorageClasses: [
+        { name: "standard", isManaged: false },
+        { name: "kalm-standard", isManaged: true },
+      ],
+
+      mockSimpleOptions: [
+        {
+          name: "my-pvc-hello-sts-1",
+          isInUse: false,
+          componentNamespace: "kalm-vols",
+          componentName: "hello-sts",
+          capacity: "1Mi",
+          pvc: "my-pvc-hello-sts-1",
+          pvToMatch: "underlying-pv-name",
+        },
+      ],
+
+      mockStatefulSetOptions: [
+        {
+          name: "my-pvc",
+          isInUse: false,
+          componentNamespace: "kalm-vols",
+          componentName: "hello-sts",
+          capacity: "1Mi",
+          pvc: "my-pvc",
+          pvToMatch: "",
+          pvList: ["my-pv-1", "my-pv-2", "my-pv-3"],
+        },
+      ],
     };
   };
 
@@ -8283,55 +8333,6 @@ export default class MockStore {
         entity: "system:serviceaccount:default:kalm-sample-user",
         csrf: "",
       }),
-
-      mockVolumes: Immutable.fromJS([
-        {
-          name: "pvc-5c3132fc-0508-4a7f-b11a-b6b924424016",
-          isInUse: true,
-          componentNamespace: "kalm-bookinfo",
-          componentName: "reviews",
-          phase: "Available",
-          capacity: "1Gi",
-        },
-        {
-          name: "pvc-5c3132fc-0508-4a7f-b11a-b6b924424012",
-          isInUse: false,
-          componentNamespace: "kalm-empty",
-          componentName: "",
-          phase: "Available",
-          capacity: "1Gi",
-        },
-      ]),
-
-      mockStorageClasses: Immutable.fromJS([
-        { name: "standard", isManaged: false },
-        { name: "kalm-standard", isManaged: true },
-      ]),
-
-      mockSimpleOptions: Immutable.fromJS([
-        {
-          name: "my-pvc-hello-sts-1",
-          isInUse: false,
-          componentNamespace: "kalm-vols",
-          componentName: "hello-sts",
-          capacity: "1Mi",
-          pvc: "my-pvc-hello-sts-1",
-          pvToMatch: "underlying-pv-name",
-        },
-      ]),
-
-      mockStatefulSetOptions: Immutable.fromJS([
-        {
-          name: "my-pvc",
-          isInUse: false,
-          componentNamespace: "kalm-vols",
-          componentName: "hello-sts",
-          capacity: "1Mi",
-          pvc: "my-pvc",
-          pvToMatch: "",
-          pvList: ["my-pv-1", "my-pv-2", "my-pv-3"],
-        },
-      ]),
 
       mockHttpRoutes: Immutable.fromJS([
         {

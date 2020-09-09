@@ -10,9 +10,8 @@ export const getComponentFormVolumeOptions = (
     componentWorkloadType === workloadTypeStatefulSet
       ? state
           .get("persistentVolumes")
-          .get("statefulSetOptions")
-          .filter((statefulSetOption) => statefulSetOption.get("componentName") === componentName)
-      : state.get("persistentVolumes").get("simpleOptions");
+          .statefulSetOptions.filter((statefulSetOption) => statefulSetOption.componentName === componentName)
+      : state.get("persistentVolumes").simpleOptions;
 
   return volumeOptions;
 };

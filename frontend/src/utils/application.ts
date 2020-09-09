@@ -45,11 +45,11 @@ export const correctComponentFormValuesForSubmit = (
     let size = "";
 
     volumeOptions.forEach((vo) => {
-      if (vo.get("name") === claimName) {
-        pvc = vo.get("pvc");
-        pvToMatch = vo.get("pvToMatch");
-        storageClassName = vo.get("storageClassName");
-        size = vo.get("capacity");
+      if (vo.name === claimName) {
+        pvc = vo.pvc;
+        pvToMatch = vo.pvToMatch;
+        storageClassName = vo.storageClassName;
+        size = vo.capacity;
       }
     });
 
@@ -115,8 +115,8 @@ export const correctComponentFormValuesForInit = (
       let claimName = "";
 
       volumeOptions.forEach((vo) => {
-        if (vo.get("pvc") === pvc) {
-          claimName = vo.get("name");
+        if (vo.pvc === pvc) {
+          claimName = vo.name;
         }
       });
 

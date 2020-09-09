@@ -30,9 +30,9 @@ import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    statefulSetOptions: state.get("persistentVolumes").get("statefulSetOptions"),
-    simpleOptions: state.get("persistentVolumes").get("simpleOptions"),
-    storageClasses: state.get("persistentVolumes").get("storageClasses"),
+    statefulSetOptions: state.get("persistentVolumes").statefulSetOptions,
+    simpleOptions: state.get("persistentVolumes").simpleOptions,
+    storageClasses: state.get("persistentVolumes").storageClasses,
   };
 };
 
@@ -83,7 +83,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
       simpleOptions,
     } = this.props;
     return values.workloadType === workloadTypeStatefulSet
-      ? statefulSetOptions.filter((statefulSetOption) => statefulSetOption.get("componentName") === values.name)
+      ? statefulSetOptions.filter((statefulSetOption) => statefulSetOption.componentName === values.name)
       : simpleOptions;
   };
 
@@ -99,25 +99,23 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
     }[] = [];
 
     volumeOptions.forEach((vo) => {
-      if (vo.get("name") === currentClaimName || !usingClaimNames[vo.get("name")]) {
+      if (vo.name === currentClaimName || !usingClaimNames[vo.name]) {
         options.push({
-          value: vo.get("name"),
+          value: vo.name,
           text: (
             <Box pt={1} pb={1}>
-              <H6>{vo.get("name")}</H6>
+              <H6>{vo.name}</H6>
+              <Box>{vo.componentNamespace ? <Caption>Namespace: {vo.componentNamespace}</Caption> : null}</Box>
+              <Box>{vo.componentName ? <Caption>Component: {vo.componentName}</Caption> : null}</Box>
               <Box>
-                {vo.get("componentNamespace") ? <Caption>Namespace: {vo.get("componentNamespace")}</Caption> : null}
-              </Box>
-              <Box>{vo.get("componentName") ? <Caption>Component: {vo.get("componentName")}</Caption> : null}</Box>
-              <Box>
-                <Caption>Storage Class: {vo.get("storageClassName")}</Caption>
+                <Caption>Storage Class: {vo.storageClassName}</Caption>
               </Box>
               <Box>
-                <Caption>size: {sizeStringToGi(vo.get("capacity")) + " Gi"}</Caption>
+                <Caption>size: {sizeStringToGi(vo.capacity) + " Gi"}</Caption>
               </Box>
             </Box>
           ),
-          selectedText: vo.get("name"),
+          selectedText: vo.name,
         });
       }
     });
@@ -135,8 +133,8 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
 
     storageClasses.forEach((sc) => {
       options.push({
-        value: sc.get("name"),
-        text: sc.get("name"),
+        value: sc.name,
+        text: sc.name,
       });
     });
 
@@ -186,7 +184,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
       return {
         type: VolumeTypePersistentVolumeClaimNew,
         path: "",
-        storageClassName: storageClasses.get(0)?.get("name") || "",
+        storageClassName: storageClasses[0]?.name || "",
         size: "",
       };
     } else if (values.workloadType === workloadTypeCronjob) {
@@ -212,7 +210,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
       return {
         type: VolumeTypePersistentVolumeClaimTemplateNew,
         path: "",
-        storageClassName: storageClasses.get(0)?.get("name") || "",
+        storageClassName: storageClasses[0]?.name || "",
         size: "",
       };
     }
@@ -220,7 +218,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
     return {
       type: VolumeTypePersistentVolumeClaimNew,
       path: "",
-      storageClassName: storageClasses.get(0)?.get("name") || "",
+      storageClassName: storageClasses[0]?.name || "",
       size: "",
     };
   }
@@ -253,7 +251,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
 
     if (disk.type === VolumeTypePersistentVolumeClaim || disk.type === VolumeTypePersistentVolumeClaimTemplate) {
       const claimName = disk.claimName;
-      const volumeOption = volumeOptions.find((vo) => vo.get("name") === claimName);
+      const volumeOption = volumeOptions.find((vo) => vo.name === claimName);
 
       fieldComponents.push(
         <Field
@@ -272,7 +270,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           fullWidth
           disabled
           label="Storage Class"
-          value={volumeOption?.get("storageClassName") || ""}
+          value={volumeOption?.storageClassName || ""}
           margin="dense"
           variant="outlined"
         />,
@@ -283,7 +281,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           fullWidth
           disabled
           label="Size"
-          value={volumeOption?.get("capacity") ? sizeStringToGi(volumeOption?.get("capacity")) + " Gi" : ""}
+          value={volumeOption?.capacity ? sizeStringToGi(volumeOption?.capacity) + " Gi" : ""}
           margin="dense"
           variant="outlined"
         />,

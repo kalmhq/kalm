@@ -39,19 +39,19 @@ export default class MockApi extends Api {
   };
 
   public getPersistentVolumes = async () => {
-    return mockStore.data.get("mockVolumes");
+    return mockStore.dataImmer.mockVolumes;
   };
 
   public getStorageClasses = async () => {
-    return mockStore.data.get("mockStorageClasses");
+    return mockStore.dataImmer.mockStorageClasses;
   };
 
   public getSimpleOptions = async (namespace: string) => {
-    return mockStore.data.get("mockSimpleOptions");
+    return mockStore.dataImmer.mockSimpleOptions;
   };
 
   public getStatefulSetOptions = async (namespace: string) => {
-    return mockStore.data.get("mockStatefulSetOptions");
+    return mockStore.dataImmer.mockStatefulSetOptions;
   };
 
   public getRegistries = async (): Promise<Registry[]> => {
