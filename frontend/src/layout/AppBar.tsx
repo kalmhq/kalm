@@ -24,7 +24,7 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import stringConstants from "utils/stringConstants";
 import Button from "@material-ui/core/Button";
 import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
-import { IMPERSONATION_KEY, stopImpersonating } from "api/realApi/index";
+import { stopImpersonating } from "api/realApi/index";
 import { push } from "connected-react-router";
 import deepOrange from "@material-ui/core/colors/deepOrange";
 
@@ -34,9 +34,11 @@ const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
   const isAdmin = auth.get("isAdmin");
   const entity = auth.get("entity");
+  const impersonation = auth.get("impersonation");
   return {
     isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
     tutorialDrawerOpen: state.get("tutorial").get("drawerOpen"),
+    impersonation,
     activeNamespace,
     isAdmin,
     entity,
@@ -135,9 +137,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   }
 
   renderAuthEntity() {
-    const { entity, dispatch } = this.props;
+    const { impersonation, entity, dispatch } = this.props;
     const { authMenuAnchorElement } = this.state;
-    const impersonation = window.localStorage.getItem(IMPERSONATION_KEY);
 
     let entityForDisplay: string = entity;
 

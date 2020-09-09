@@ -46,6 +46,7 @@ export interface WatchResMessage {
 const mapStateToProps = (state: RootState) => {
   return {
     token: state.get("auth").get("token"),
+    impersonation: state.get("auth").get("impersonation"),
   };
 };
 
@@ -80,7 +81,7 @@ class WithDataRaw extends React.PureComponent<Props> {
   }
 
   private connectWebsocket() {
-    const { dispatch, token } = this.props;
+    const { dispatch, token, impersonation } = this.props;
     let rws: any;
     if (process.env.REACT_APP_USE_MOCK_API === "true" || process.env.NODE_ENV === "test") {
       rws = mockStore;
@@ -90,6 +91,7 @@ class WithDataRaw extends React.PureComponent<Props> {
         const message = {
           method: "StartWatching",
           token,
+          impersonation,
         };
         rws.send(JSON.stringify(message));
       });

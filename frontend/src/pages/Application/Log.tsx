@@ -26,7 +26,7 @@ import React from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import { PodStatus } from "types/application";
 import { ImmutableMap } from "typings";
-import { formatTimestamp, formatDate } from "utils/date";
+import { formatDate, formatTimestamp } from "utils/date";
 import { KSelect } from "widgets/KSelect";
 import { Body2 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
@@ -34,8 +34,9 @@ import { Namespaces } from "widgets/Namespaces";
 import { Terminal } from "xterm";
 import "xterm/css/xterm.css";
 import { BasePage } from "../BasePage";
-import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 import { Xterm, XtermRaw } from "./Xterm";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const logger = debug("ws");
 const detailedLogger = debug("ws:details");
@@ -115,7 +116,7 @@ const MyAutocomplete = withStyles(autocompleteStyles)(
   },
 );
 
-interface Props extends WithApplicationItemDataProps, WithStyles<typeof styles> {}
+interface Props extends WithNamespaceProps, WithUserAuthProps, WithStyles<typeof styles> {}
 
 const tailLinesOptions = [100, 200, 500, 1000, 2000];
 
@@ -207,15 +208,12 @@ export class LogStream extends React.PureComponent<Props, State> {
     }
   }
 
-  componentDidUpdate(prevProps: Props, prevState: State) {
-    const { components, activeNamespaceName } = this.props;
+  componentDidMount() {
+    this.initFromQuery();
+  }
 
-    let pods: Immutable.List<string> = Immutable.List();
-    components?.forEach((component) => {
-      component.get("pods").forEach((pod) => {
-        pods = pods.push(pod.get("name"));
-      });
-    });
+  componentDidUpdate(prevProps: Props, prevState: State) {
+    const { activeNamespaceName } = this.props;
 
     if (!window.location.search) {
       this.props.dispatch(push(`/applications/${activeNamespaceName}/components`));
@@ -235,6 +233,19 @@ export class LogStream extends React.PureComponent<Props, State> {
         }),
       );
     }
+
+    this.initFromQuery();
+  }
+
+  private initFromQuery = () => {
+    const { components } = this.props;
+
+    let pods: Immutable.List<string> = Immutable.List();
+    components?.forEach((component) => {
+      component.get("pods").forEach((pod) => {
+        pods = pods.push(pod.get("name"));
+      });
+    });
 
     if (pods && !this.initalizedFromQuery) {
       // load selected pods from query, this is useful when first loaded.
@@ -272,7 +283,7 @@ export class LogStream extends React.PureComponent<Props, State> {
 
       this.initalizedFromQuery = true;
     }
-  }
+  };
 
   private getTimestamps = (logs: string) => {
     const timestamps = logs.match(/^\d+\S+/gm);
@@ -366,7 +377,8 @@ export class LogStream extends React.PureComponent<Props, State> {
         ws.send(
           JSON.stringify({
             type: "auth",
-            authToken: window.localStorage.AUTHORIZED_TOKEN_KEY,
+            authToken: this.props.authToken,
+            impersonation: this.props.impersonation,
           }),
         );
         return;
@@ -765,7 +777,7 @@ export class LogStream extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { isLoading, application } = this.props;
+    const { isNamespaceLoading, activeNamespace } = this.props;
     const { value, subscribedPods } = this.state;
 
     return (
@@ -776,7 +788,7 @@ export class LogStream extends React.PureComponent<Props, State> {
         fullContainer={true}
       >
         <Box p={2}>
-          {isLoading || !application ? (
+          {isNamespaceLoading || !activeNamespace ? (
             <Loading />
           ) : (
             <>
@@ -827,4 +839,4 @@ export class LogStream extends React.PureComponent<Props, State> {
   }
 }
 
-export const Log = withStyles(styles)(ApplicationItemDataWrapper({ autoReload: false })(LogStream));
+export const Log = withStyles(styles)(withNamespace(withUserAuth(LogStream)));

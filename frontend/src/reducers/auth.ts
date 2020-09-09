@@ -20,6 +20,7 @@ export type State = ImmutableMap<{
   token: string;
   entity: string;
   policies: string; // casbin policies
+  impersonation: string;
   permissionMethods: PermissionMethods;
 }>;
 
@@ -33,6 +34,7 @@ const initialState: State = Immutable.Map({
   entity: "",
   isAdmin: false,
   policies: "",
+  impersonation: "",
   permissionMethods: emptyPermissionMethods,
 });
 
@@ -43,6 +45,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
       state = state.set("isAdmin", action.payload.loginStatus.get("isAdmin"));
       state = state.set("entity", action.payload.loginStatus.get("entity"));
       state = state.set("policies", action.payload.loginStatus.get("policies"));
+      state = state.set("impersonation", action.payload.loginStatus.get("impersonation"));
       state = state.set("firstLoaded", true);
       state = state.set("isLoading", false);
       break;
