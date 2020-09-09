@@ -57,43 +57,48 @@ export const correctComponentFormValuesForSubmit = (
   };
 
   const correctedVolumes = volumes?.map((v) => {
-    // set pvc and pvToMatch
-    if (v.type === VolumeTypePersistentVolumeClaim || v.type === VolumeTypePersistentVolumeClaimTemplate) {
-      const findResult = findPVC(v.claimName);
-      v.pvc = findResult.pvc;
-      v.pvToMatch = findResult.pvToMatch;
-      v.storageClassName = findResult.storageClassName;
-      v.size = findResult.size;
-    }
-    // if is pvc-new, set to pvc
-    if (v.type === VolumeTypePersistentVolumeClaimNew) {
-      v.type = VolumeTypePersistentVolumeClaim;
-    }
-    if (v.type === VolumeTypePersistentVolumeClaimTemplateNew) {
-      v.type = VolumeTypePersistentVolumeClaimTemplate;
-    }
-    return v;
+    const newVolume = produce(v, (draft) => {
+      // set pvc and pvToMatch
+      if (v.type === VolumeTypePersistentVolumeClaim || v.type === VolumeTypePersistentVolumeClaimTemplate) {
+        const findResult = findPVC(v.claimName);
+        draft.pvc = findResult.pvc;
+        draft.pvToMatch = findResult.pvToMatch;
+        draft.storageClassName = findResult.storageClassName;
+        draft.size = findResult.size;
+      }
+      // if is pvc-new, set to pvc
+      if (v.type === VolumeTypePersistentVolumeClaimNew) {
+        draft.type = VolumeTypePersistentVolumeClaim;
+      }
+      if (v.type === VolumeTypePersistentVolumeClaimTemplateNew) {
+        draft.type = VolumeTypePersistentVolumeClaimTemplate;
+      }
+    });
+    return newVolume;
   });
-  componentValues.volumes = correctedVolumes;
 
-  if (
-    componentValues.cpuLimit ||
-    componentValues.memoryLimit ||
-    componentValues.cpuRequest ||
-    componentValues.memoryRequest
-  ) {
-    const resourceRequirements: ResourceRequirements = {
-      limits: {
-        cpu: componentValues.cpuLimit,
-        memory: componentValues.memoryLimit,
-      },
-      requests: {
-        cpu: componentValues.cpuRequest,
-        memory: componentValues.memoryRequest,
-      },
-    };
-    componentValues.resourceRequirements = resourceRequirements;
-  }
+  componentValues = produce(componentValues, (draft) => {
+    draft.volumes = correctedVolumes;
+
+    if (
+      componentValues.cpuLimit ||
+      componentValues.memoryLimit ||
+      componentValues.cpuRequest ||
+      componentValues.memoryRequest
+    ) {
+      const resourceRequirements: ResourceRequirements = {
+        limits: {
+          cpu: componentValues.cpuLimit,
+          memory: componentValues.memoryLimit,
+        },
+        requests: {
+          cpu: componentValues.cpuRequest,
+          memory: componentValues.memoryRequest,
+        },
+      };
+      draft.resourceRequirements = resourceRequirements;
+    }
+  });
 
   return componentValues;
 };
@@ -124,16 +129,20 @@ export const correctComponentFormValuesForInit = (
     };
 
     const correctedVolumes = volumes?.map((v) => {
-      // set claimName according to pvc
-      if (v.type === VolumeTypePersistentVolumeClaim || v.type === VolumeTypePersistentVolumeClaimTemplate) {
-        const claimName = findClaimName(v.pvc);
-        v.claimName = claimName;
-      }
+      const newVolume = produce(v, (draft) => {
+        // set claimName according to pvc
+        if (v.type === VolumeTypePersistentVolumeClaim || v.type === VolumeTypePersistentVolumeClaimTemplate) {
+          const claimName = findClaimName(v.pvc);
+          draft.claimName = claimName;
+        }
+      });
 
-      return v;
+      return newVolume;
     });
 
-    component.volumes = correctedVolumes;
+    component = produce(component, (draft) => {
+      draft.volumes = correctedVolumes;
+    });
   }
 
   return component;

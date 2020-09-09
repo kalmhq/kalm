@@ -110,7 +110,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_APPLICATION,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -123,7 +123,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             payload: {
               namespace: data.namespace,
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -146,7 +146,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_NODE,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -168,7 +168,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_REGISTRY,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -179,7 +179,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_VOLUME,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;

@@ -104,7 +104,6 @@ export class NodeListRaw extends React.Component<Props, States> {
     }
 
     const { cpuRankData, memoryRankData } = this.getNodeResourceRankData(node);
-
     return (
       <Expansion
         title={

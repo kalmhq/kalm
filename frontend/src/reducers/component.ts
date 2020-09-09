@@ -55,10 +55,12 @@ const putComponentIntoState = (
   isCreate: boolean,
 ): State => {
   let components = state.components[applicationName];
+  let componentIndex = -1;
   if (!components) {
     state.components[applicationName] = [];
+  } else {
+    componentIndex = original(components)!.findIndex((c) => c.name === component.name);
   }
-  const componentIndex = original(components)!.findIndex((c) => c.name === component.name);
   if (componentIndex < 0) {
     if (isCreate) {
       state.components[applicationName].push(component);

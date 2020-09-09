@@ -33,22 +33,22 @@ export default class RealApi extends Api {
 
   public getNodes = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/nodes` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public cordonNode = async (name: string): Promise<Node> => {
     const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/nodes/${name}/cordon` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public uncordonNode = async (name: string): Promise<Node> => {
     const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/nodes/${name}/uncordon` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public getPersistentVolumes = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/volumes` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public deletePersistentVolume = async (namespace: string, name: string): Promise<void> => {
@@ -57,7 +57,7 @@ export default class RealApi extends Api {
 
   public getStorageClasses = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/storageclasses` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public getSimpleOptions = async (namespace: string) => {
@@ -65,7 +65,7 @@ export default class RealApi extends Api {
       method: "get",
       url: `/${K8sApiVersion}/volumes/available/simple-workload?currentNamespace=${namespace}`,
     });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public getStatefulSetOptions = async (namespace: string) => {
@@ -73,7 +73,7 @@ export default class RealApi extends Api {
       method: "get",
       url: `/${K8sApiVersion}/volumes/available/sts/${namespace}`,
     });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   // registry
@@ -85,7 +85,7 @@ export default class RealApi extends Api {
 
   public getRegistry = async (name: string) => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/registries/${name}` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public createRegistry = async (registry: RegistryFormType): Promise<Registry> => {
@@ -110,17 +110,17 @@ export default class RealApi extends Api {
 
   public getApplicationList = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/applications` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public getApplication = async (name: string) => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/applications/${name}` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public createApplication = async (application: Application) => {
     const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/applications`, data: application });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public updateApplication = async (application: Application) => {
@@ -129,7 +129,7 @@ export default class RealApi extends Api {
       url: `/${K8sApiVersion}/applications/${application.name}`,
       data: application,
     });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public deleteApplication = async (name: string): Promise<void> => {
@@ -141,7 +141,7 @@ export default class RealApi extends Api {
       method: "get",
       url: `/${K8sApiVersion}/applications/${applicationName}/components`,
     });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public getApplicationComponent = async (applicationName: string, name: string) => {
@@ -149,7 +149,7 @@ export default class RealApi extends Api {
       method: "get",
       url: `/${K8sApiVersion}/applications/${applicationName}/components/${name}`,
     });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public createApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
@@ -158,7 +158,7 @@ export default class RealApi extends Api {
       url: `/${K8sApiVersion}/applications/${applicationName}/components`,
       data: component,
     });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public updateApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
@@ -167,7 +167,7 @@ export default class RealApi extends Api {
       url: `/${K8sApiVersion}/applications/${applicationName}/components/${component.name}`,
       data: component,
     });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public deleteApplicationComponent = async (applicationName: string, name: string) => {
