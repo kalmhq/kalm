@@ -26,15 +26,16 @@ export default class MockApi extends Api {
   };
 
   public getNodes = async () => {
-    return mockStore.data.get("mockNodes");
+    console.log("mockapi", mockStore.dataImmer.mockNodes);
+    return mockStore.dataImmer.mockNodes;
   };
 
   public cordonNode = async () => {
-    return mockStore.data.get("mockNodes").get("nodes").get(0)!;
+    return mockStore.dataImmer.mockNodes.nodes[0];
   };
 
   public uncordonNode = async () => {
-    return mockStore.data.get("mockNodes").get("nodes").get(0)!;
+    return mockStore.dataImmer.mockNodes.nodes[0];
   };
 
   public getPersistentVolumes = async () => {

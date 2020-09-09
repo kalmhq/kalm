@@ -20,7 +20,6 @@ import produce from "immer";
 interface MockStoreData {
   mockClusterInfo: ClusterInfo;
   mockLoginStatus: LoginStatus;
-  mockNodes: NodesListResponse;
   mockStorageClasses: StorageClasses;
   mockSimpleOptions: VolumeOptions;
   mockStatefulSetOptions: VolumeOptions;
@@ -37,6 +36,7 @@ interface MockStoreDataImmer {
   mockErrorPod: PodStatus;
   mockApplications: ApplicationDetails[];
   mockApplicationComponents: { [key: string]: ApplicationComponentDetails[] };
+  mockNodes: NodesListResponse;
 }
 
 export default class MockStore {
@@ -6200,28 +6200,7 @@ export default class MockStore {
           },
         ],
       },
-    };
-  };
-
-  public getInitData = () => {
-    return Immutable.Map({
-      mockClusterInfo: Immutable.fromJS({
-        version: "v1.15.0",
-        ingressIP: "192.168.64.3",
-        ingressHostname: "",
-        httpPort: 31243,
-        httpsPort: 32039,
-        tlsPort: 32228,
-      }),
-
-      mockLoginStatus: Immutable.fromJS({
-        authorized: true,
-        isAdmin: true,
-        entity: "system:serviceaccount:default:kalm-sample-user",
-        csrf: "",
-      }),
-
-      mockNodes: Immutable.fromJS({
+      mockNodes: {
         nodes: [
           {
             metrics: {
@@ -8283,6 +8262,26 @@ export default class MockStore {
             },
           ],
         },
+      },
+    };
+  };
+
+  public getInitData = () => {
+    return Immutable.Map({
+      mockClusterInfo: Immutable.fromJS({
+        version: "v1.15.0",
+        ingressIP: "192.168.64.3",
+        ingressHostname: "",
+        httpPort: 31243,
+        httpsPort: 32039,
+        tlsPort: 32228,
+      }),
+
+      mockLoginStatus: Immutable.fromJS({
+        authorized: true,
+        isAdmin: true,
+        entity: "system:serviceaccount:default:kalm-sample-user",
+        csrf: "",
       }),
 
       mockVolumes: Immutable.fromJS([

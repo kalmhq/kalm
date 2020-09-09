@@ -3,7 +3,6 @@ import React from "react";
 import { Node } from "types/node";
 import { sizeStringToNumber } from "utils/sizeConv";
 import { ColoredLinearProgress } from "./LinearProgress";
-import Immutable from "immutable";
 
 interface Props {
   node: Node;
@@ -11,8 +10,8 @@ interface Props {
 }
 
 export const NodeCPU = ({ node, showDetails }: Props) => {
-  const allocatable = sizeStringToNumber(node.get("status").get("allocatable").get("cpu"));
-  const requests = sizeStringToNumber(node.get("allocatedResources").get("requests").get("cpu"));
+  const allocatable = sizeStringToNumber(node.status.allocatable.cpu);
+  const requests = sizeStringToNumber(node.allocatedResources.requests.cpu);
 
   const progress = (requests / allocatable) * 100;
   return (
@@ -32,19 +31,19 @@ export const NodeCPU = ({ node, showDetails }: Props) => {
   );
 };
 
-export const NodesCPU = ({ nodes }: { nodes: Immutable.List<Node> }) => {
+export const NodesCPU = ({ nodes }: { nodes: Node[] }) => {
   let allocatable: number = 0;
   let requests: number = 0;
 
   nodes.forEach((node) => {
-    allocatable = allocatable + sizeStringToNumber(node.get("status").get("allocatable").get("cpu"));
-    requests = requests + sizeStringToNumber(node.get("allocatedResources").get("requests").get("cpu"));
+    allocatable = allocatable + sizeStringToNumber(node.status.allocatable.cpu);
+    requests = requests + sizeStringToNumber(node.allocatedResources.requests.cpu);
   });
 
   const progress = (requests / allocatable) * 100;
   return (
     <Box p={2}>
-      Allocated {requests.toFixed(2)} Cores, Total allocatable {allocatable.toFixed(2)} Cores of {nodes.size} Nodes.
+      Allocated {requests.toFixed(2)} Cores, Total allocatable {allocatable.toFixed(2)} Cores of {nodes.length} Nodes.
       <Box pt={1} display="flex" alignItems="center">
         <ColoredLinearProgress style={{ width: "100%" }} variant="determinate" value={progress} />
         <Box ml={1}>({(isNaN(progress) ? 0 : progress).toFixed(2)}%)</Box>

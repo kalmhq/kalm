@@ -18,7 +18,7 @@ import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 import clsx from "clsx";
 import { push } from "connected-react-router";
-import { Field, FastField, FormikProps, withFormik, getIn } from "formik";
+import { FastField, Field, FormikProps, getIn, withFormik } from "formik";
 import { KTooltip } from "forms/Application/KTooltip";
 import { KFormikBoolCheckboxRender } from "forms/Basic/checkbox";
 import { Disks } from "forms/ComponentLike/Disks";
@@ -29,7 +29,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
-import { getNodeLabels } from "selectors/node";
+import { FormMidware } from "tutorials/formMidware";
 import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import { ApplicationDetails } from "types/application";
@@ -51,8 +51,8 @@ import { SectionTitle } from "widgets/SectionTitle";
 import { KFormikRadioGroupRender } from "../Basic/radio";
 import { makeSelectOption, RenderFormikSelectField } from "../Basic/select";
 import {
-  KRenderFormikCommandTextField,
   KRenderDebounceFormikTextField,
+  KRenderFormikCommandTextField,
   RenderFormikComplexValueTextField,
 } from "../Basic/textfield";
 import {
@@ -68,7 +68,6 @@ import { KFormikRenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { FormMidware } from "tutorials/formMidware";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -94,8 +93,6 @@ const Deploy = "Deployment Strategy";
 const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy];
 
 const mapStateToProps = (state: RootState) => {
-  const nodeLabels = getNodeLabels(state).toArray();
-
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");
   let currentTabIndex = tabs.map((t) => t.replace(/\s/g, "")).indexOf(`${anchor}`);
@@ -107,7 +104,7 @@ const mapStateToProps = (state: RootState) => {
     registries: state.get("registries").registries,
     tutorialState: state.get("tutorial"),
     isSubmittingApplicationComponent: state.get("components").isSubmittingApplicationComponent,
-    nodeLabels,
+    nodeLabels: state.get("nodes").labels,
     currentTabIndex,
     form: COMPONENT_FORM_ID,
   };

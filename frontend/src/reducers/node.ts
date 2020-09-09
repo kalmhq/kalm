@@ -1,6 +1,6 @@
-import Immutable from "immutable";
+import produce from "immer";
+import { addOrUpdateInArray, isInArray, removeInArray } from "reducers/utils";
 import { Actions } from "types";
-import { ImmutableMap } from "typings";
 import { LOGOUT, Metrics } from "types/common";
 import { LOAD_NODES_FAILED, LOAD_NODES_FULFILlED, LOAD_NODES_PENDING, Node } from "types/node";
 import {
@@ -10,88 +10,94 @@ import {
   RESOURCE_TYPE_NODE,
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
-import { addOrUpdateInList, removeInList, isInList } from "reducers/utils";
 
-interface StateContent {
+export type State = {
   isLoading: boolean;
   isFirstLoaded: boolean;
   metrics: Metrics;
-  nodes: Immutable.List<Node>;
+  nodes: Node[];
   // use list instead of map, prevent some nodes labels have same key, but different value
-  labels: Immutable.List<string>;
-}
+  labels: string[];
+};
 
-export type State = ImmutableMap<StateContent>;
-
-const initialState: State = Immutable.Map({
-  nodes: Immutable.List([]),
-  metrics: Immutable.Map(),
+const initialState: State = {
+  nodes: [],
+  metrics: {
+    isMetricServerEnabled: false,
+    cpu: [],
+    memory: [],
+  },
   isLoading: false,
   isFirstLoaded: false,
-  labels: Immutable.List([]),
-});
+  labels: [],
+};
 
 const setLabels = (state: State): State => {
-  let labelsSet = Immutable.Set();
-  state.get("nodes").forEach((node) => {
-    const labels = node.get("labels");
+  let labelsSet = new Set();
+  state.nodes.forEach((node) => {
+    const labels = node.labels || {};
 
     if (labels) {
-      labels.forEach((value, key) => {
-        labelsSet = labelsSet.add(`${key}:${value}`);
-      });
+      for (let key in labels) {
+        let value = labels[key];
+        labelsSet.add(`${key}:${value}`);
+      }
     }
   });
 
-  return state.set("labels", labelsSet.toList());
+  state.labels = Array.from(labelsSet) as string[];
+  return state;
 };
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case WATCHED_RESOURCE_CHANGE: {
       if (action.kind !== RESOURCE_TYPE_NODE) {
-        return state;
+        return;
       }
-
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          if (!isInList(state.get("nodes"), action.payload.data)) {
-            state = state.update("nodes", (x) => addOrUpdateInList(x, action.payload.data));
+          if (!isInArray(state.nodes, action.payload.data)) {
+            state.nodes = addOrUpdateInArray(state.nodes, action.payload.data);
           }
           break;
         }
         case RESOURCE_ACTION_DELETE: {
-          state = state.update("nodes", (x) => removeInList(x, action.payload.data));
+          state.nodes = removeInArray(state.nodes, action.payload.data);
           break;
         }
         case RESOURCE_ACTION_UPDATE: {
-          state = state.update("nodes", (x) => addOrUpdateInList(x, action.payload.data));
+          state.nodes = addOrUpdateInArray(state.nodes, action.payload.data);
           break;
         }
       }
-
-      return setLabels(state);
+      state = setLabels(state);
+      return;
     }
     case LOGOUT: {
-      return initialState;
+      state = initialState;
+      return;
     }
     case LOAD_NODES_PENDING: {
-      return state.set("isLoading", true);
+      state.isLoading = true;
+      return;
     }
     case LOAD_NODES_FAILED: {
-      return state.set("isLoading", false);
+      state.isLoading = false;
+      return;
     }
     case LOAD_NODES_FULFILlED: {
-      state = state.set("isLoading", false);
-      state = state.set("isFirstLoaded", true);
-      state = state.set("nodes", action.payload.get("nodes"));
-      state = state.set("metrics", action.payload.get("metrics"));
+      state.isLoading = false;
+      state.isFirstLoaded = true;
+      state.nodes = action.payload.nodes;
+      state.metrics = action.payload.metrics;
 
-      return setLabels(state);
+      state = setLabels(state);
+      return;
     }
   }
 
-  return state;
-};
+  return;
+}, initialState);
 
 export default reducer;
