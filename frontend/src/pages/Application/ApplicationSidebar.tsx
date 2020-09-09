@@ -30,7 +30,7 @@ const styles = (theme: Theme) =>
       },
       borderLeft: `4px solid transparent`,
     },
-    listItemSeleted: {
+    listItemSelected: {
       borderLeft: `4px solid ${
         theme.palette.type === "light" ? theme.palette.primary.dark : theme.palette.primary.light
       }`,
@@ -99,7 +99,7 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
             onClick={() => blinkTopProgressAction()}
             className={classes.listItem}
             classes={{
-              selected: classes.listItemSeleted,
+              selected: classes.listItemSelected,
             }}
             button
             component={NavLink}
