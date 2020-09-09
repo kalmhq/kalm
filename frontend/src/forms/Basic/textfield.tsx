@@ -5,6 +5,7 @@ import { TextField as FormikTextField } from "formik-material-ui";
 import React, { useCallback, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { KalmConsoleIcon } from "widgets/Icon";
+import { inputOnChangeWithDebounce, withDebounceField, withDebounceProps } from "./debounce";
 
 interface Props {
   endAdornment?: React.ReactNode;
@@ -37,75 +38,78 @@ export const KRenderFormikTextField = (props: TextFieldProps & FieldProps) => {
 
 export const INPUT_DELAY = 500;
 
-export const KRenderDebounceFormikTextField = (props: TextFieldProps & FieldProps & Props) => {
-  const {
-    helperText,
-    endAdornment,
-    meta,
-    field: { name, value },
-    onBlur,
-    normalize,
-    form: { errors, handleChange, handleBlur, setFieldValue },
-    ...custom
-  } = props;
-  const [innerValue, setInnerValue] = useState("");
-  const error = getIn(errors, name);
-  const showError = !!error;
+export const KRenderDebounceFormikTextField = withDebounceField(
+  (props: TextFieldProps & FieldProps & Props & withDebounceProps) => {
+    const {
+      helperText,
+      endAdornment,
+      meta,
+      field: { name, value },
+      onBlur,
+      normalize,
+      form: { errors, handleChange, handleBlur, setFieldValue },
+      showError,
+      dispatch,
+      ...custom
+    } = props;
+    const [innerValue, setInnerValue] = useState("");
+    const error = getIn(errors, name);
 
-  useEffect(() => {
-    if (value) {
-      setInnerValue(value as string);
-    } else {
-      setInnerValue("");
+    useEffect(() => {
+      if (value) {
+        setInnerValue(value as string);
+      } else {
+        setInnerValue("");
+      }
+    }, [value]);
+
+    const [debouncedHandleOnChange] = useDebouncedCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+      if (normalize) {
+        inputOnChangeWithDebounce(dispatch, () => setFieldValue(name, normalize(event)), name);
+      } else {
+        inputOnChangeWithDebounce(dispatch, () => handleChange(event), name);
+      }
+    }, INPUT_DELAY);
+
+    const handleOnChange = useCallback(
+      (event: React.ChangeEvent<HTMLInputElement>) => {
+        event.persist();
+
+        const newValue = normalize ? normalize(event) : event.currentTarget.value;
+        setInnerValue(newValue);
+        debouncedHandleOnChange(event);
+      },
+      [debouncedHandleOnChange, normalize],
+    );
+
+    const inputProps: Partial<OutlinedInputProps> = {};
+    if (endAdornment) {
+      inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
     }
-  }, [value]);
 
-  const [debouncedHandleOnChange] = useDebouncedCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    if (normalize) {
-      setFieldValue(name, normalize(event));
-    } else {
-      handleChange(event);
-    }
-  }, INPUT_DELAY);
-
-  const handleOnChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      event.persist();
-
-      const newValue = normalize ? normalize(event) : event.currentTarget.value;
-      setInnerValue(newValue);
-      debouncedHandleOnChange(event);
-    },
-    [debouncedHandleOnChange, normalize],
-  );
-
-  const inputProps: Partial<OutlinedInputProps> = {};
-  if (endAdornment) {
-    inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
-  }
-
-  return (
-    <TextField
-      {...custom}
-      fullWidth
-      name={name}
-      onBlur={onBlur || handleBlur}
-      error={showError}
-      InputLabelProps={{
-        shrink: true,
-      }}
-      helperText={showError ? error : helperText ? helperText : " "}
-      margin="dense"
-      variant="outlined"
-      InputProps={inputProps}
-      inputProps={{
-        required: false, // bypass html5 required feature
-      }}
-      value={innerValue}
-      onChange={handleOnChange}
-    />
-  );
-};
+    return (
+      <TextField
+        {...custom}
+        fullWidth
+        name={name}
+        onBlur={onBlur || handleBlur}
+        error={showError}
+        InputLabelProps={{
+          shrink: true,
+        }}
+        helperText={showError ? error : helperText ? helperText : " "}
+        margin="dense"
+        variant="outlined"
+        InputProps={inputProps}
+        inputProps={{
+          required: false, // bypass html5 required feature
+        }}
+        value={innerValue}
+        onChange={handleOnChange}
+      />
+    );
+  },
+);
 
 interface ComplexValueTextFieldProps {
   endAdornment?: React.ReactNode;
