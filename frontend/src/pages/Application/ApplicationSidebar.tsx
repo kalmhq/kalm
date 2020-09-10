@@ -11,10 +11,10 @@ import { DashboardIcon, KalmComponentsIcon } from "widgets/Icon";
 import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
-  const auth = state.get("auth");
+  const auth = state.auth;
   const isAdmin = auth.isAdmin;
   return {
-    activeNamespaceName: state.get("namespaces").active,
+    activeNamespaceName: state.namespaces.active,
     isAdmin,
   };
 };

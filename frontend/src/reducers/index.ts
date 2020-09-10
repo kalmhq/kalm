@@ -1,7 +1,6 @@
-import { connectRouter } from "connected-react-router/immutable";
+import { connectRouter } from "connected-react-router";
 import { History, LocationState } from "history";
-import { combineReducers } from "redux-immutable";
-import { ImmutableMap } from "typings";
+import { combineReducers } from "redux";
 import applications, { State as ApplicationState } from "./application";
 import components, { State as ApplicationComponentState } from "./component";
 import auth, { State as AuthState } from "./auth";
@@ -22,12 +21,12 @@ import sso, { State as SSOState } from "./sso";
 import domain, { State as DomainState } from "./domain";
 import deployKeys, { State as DeployKeysState } from "./deployKey";
 
-export type RootState = ImmutableMap<{
+export type RootState = {
   namespaces: NamespacesState;
   applications: ApplicationState;
   components: ApplicationComponentState;
   auth: AuthState;
-  router: ImmutableMap<any>; //RouterState<LocationState>;
+  router: any; //RouterState<LocationState>;
   notification: NotificationState;
   dialogs: DialogState;
   nodes: NodesState;
@@ -43,14 +42,10 @@ export type RootState = ImmutableMap<{
   sso: SSOState;
   deployKeys: DeployKeysState;
   domain: DomainState;
-}>;
-
-// combineReducers returns immutable map, but the type is not working correctly
-// https://github.com/gajus/redux-immutable/issues/74
+};
 
 export default (history: History<LocationState>) =>
   combineReducers<RootState>({
-    // @ts-ignore
     namespaces,
     nodes,
     registries,

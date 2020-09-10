@@ -46,7 +46,7 @@ export const formikValidateOrNotBlockByTutorial = (
 };
 
 export const requireSubStepNotCompleted = (state: RootState, ...subStepIndexes: number[]) => {
-  const tutorialState = state.get("tutorial");
+  const tutorialState = state.tutorial;
 
   const tutorial = tutorialState.tutorial;
   if (!tutorial) return false;
@@ -69,7 +69,7 @@ export const requireSubStepNotCompleted = (state: RootState, ...subStepIndexes: 
 };
 
 export const requireSubStepCompleted = (state: RootState, ...subStepIndexes: number[]) => {
-  const tutorialState = state.get("tutorial");
+  const tutorialState = state.tutorial;
 
   const tutorial = tutorialState.tutorial;
   if (!tutorial) return false;
@@ -92,7 +92,7 @@ export const requireSubStepCompleted = (state: RootState, ...subStepIndexes: num
 };
 
 export const getFormValue = (rootState: RootState, form: string, field: string) => {
-  const formValuesMap = rootState.get("tutorial").formValues;
+  const formValuesMap = rootState.tutorial.formValues;
   const formValues = formValuesMap ? formValuesMap[form] : undefined;
   if (!formValues) {
     return undefined;
@@ -101,7 +101,7 @@ export const getFormValue = (rootState: RootState, form: string, field: string) 
 };
 
 export const isFormFieldValueEqualTo = (rootState: RootState, form: string, field: string, value: any) => {
-  const formValuesMap = rootState.get("tutorial").formValues;
+  const formValuesMap = rootState.tutorial.formValues;
   const formValues = formValuesMap ? formValuesMap[form] : undefined;
 
   if (!formValues) {
@@ -130,7 +130,7 @@ export const isCertificateFormFieldValueEqualTo = (rootState: RootState, field: 
 };
 
 export const isUnderPath = (state: RootState, ...paths: string[]) => {
-  const pathname = state.get("router").get("location").get("pathname") as string;
+  const pathname = state.router.location.pathname as string;
 
   return paths.includes(pathname);
 };

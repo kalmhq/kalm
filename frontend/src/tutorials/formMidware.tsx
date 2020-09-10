@@ -6,7 +6,7 @@ import { setTutorialFormValues } from "actions/tutorial";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    tutorialDrawerOpen: state.get("tutorial").drawerOpen,
+    tutorialDrawerOpen: state.tutorial.drawerOpen,
   };
 };
 

@@ -11,7 +11,7 @@ import { loadComponentsAction } from "actions/component";
 import { Box } from "@material-ui/core";
 
 const mapStateToProps = (state: RootState, props: any) => {
-  const applications = state.get("applications");
+  const applications = state.applications;
 
   const { match, location } = props;
   let { applicationName, componentName } = match!.params;
@@ -19,10 +19,10 @@ const mapStateToProps = (state: RootState, props: any) => {
   componentName = componentName || search.component;
 
   const application = applications.applications.find((x) => x.name === applicationName);
-  const components = application && state.get("components").components[application?.name];
+  const components = application && state.components.components[application?.name];
   const component = components?.find((x) => x.name === componentName);
 
-  const activeNamespaceName = state.get("namespaces").active;
+  const activeNamespaceName = state.namespaces.active;
 
   return {
     applicationName,

@@ -1,6 +1,5 @@
 import { date, number, text } from "@storybook/addon-knobs";
 import { storiesOf } from "@storybook/react";
-import Immutable from "immutable";
 import { ApplicationListPage } from "pages/Application/List";
 import React from "react";
 import {
@@ -50,7 +49,7 @@ storiesOf("Screens/Applications", module)
 
     createRoutes(store, [appName]);
 
-    let oneApp: ApplicationDetails = createApplication(appName);
+    let oneApp: ApplicationDetails = createApplication(appName) as any;
 
     const allComponents: { [key: string]: ApplicationComponentDetails[] } = createApplicationComponent(
       appName,
@@ -61,7 +60,7 @@ storiesOf("Screens/Applications", module)
 
     oneApp = mergeMetrics(oneApp, allComponents);
 
-    const applications: Immutable.List<ApplicationDetails> = Immutable.List<ApplicationDetails>([oneApp]);
+    const applications: ApplicationDetails[] = [oneApp];
     store.dispatch({ type: LOAD_APPLICATIONS_PENDING });
     store.dispatch({
       type: LOAD_ALL_NAMESAPCES_COMPONETS,
@@ -97,7 +96,7 @@ storiesOf("Screens/Applications", module)
 
     createRoutes(store, [oneAppName, twoAppName, threeAppName, fourAppName]);
 
-    let oneApp: ApplicationDetails = createApplication(oneAppName);
+    let oneApp: ApplicationDetails = createApplication(oneAppName) as any;
     const oneAppComponent = createApplicationComponent(
       oneAppName,
       oneComponentCounter,
@@ -106,7 +105,7 @@ storiesOf("Screens/Applications", module)
     );
     oneApp = mergeMetrics(oneApp, oneAppComponent);
 
-    let twoApp: ApplicationDetails = createApplication(twoAppName);
+    let twoApp: ApplicationDetails = createApplication(twoAppName) as any;
     const twoAppComponent = createApplicationComponent(
       twoAppName,
       twoComponentCounter,
@@ -115,7 +114,7 @@ storiesOf("Screens/Applications", module)
     );
     twoApp = mergeMetrics(twoApp, twoAppComponent);
 
-    let threeApp: ApplicationDetails = createApplication(threeAppName);
+    let threeApp: ApplicationDetails = createApplication(threeAppName) as any;
     const threeAppComponent = createApplicationComponent(
       threeAppName,
       threeComponentCounter,
@@ -124,7 +123,7 @@ storiesOf("Screens/Applications", module)
     );
     threeApp = mergeMetrics(threeApp, threeAppComponent);
 
-    let fourApp: ApplicationDetails = createApplication(fourAppName);
+    let fourApp: ApplicationDetails = createApplication(fourAppName) as any;
     let fourAppComponent = createApplicationComponent(
       fourAppName,
       fourComponentCounter,
@@ -141,12 +140,7 @@ storiesOf("Screens/Applications", module)
       },
     });
 
-    const applications: Immutable.List<ApplicationDetails> = Immutable.List<ApplicationDetails>([
-      oneApp,
-      twoApp,
-      threeApp,
-      fourApp,
-    ]);
+    const applications: ApplicationDetails[] = [oneApp, twoApp, threeApp, fourApp];
 
     // store.dispatch(loadApplicationsAction());
     store.dispatch({ type: LOAD_APPLICATIONS_PENDING });

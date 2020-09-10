@@ -12,7 +12,7 @@ const mapStateToProps = (
     },
   }: RouteComponentProps<{ name?: string }>,
 ) => {
-  const routeState = state.get("routes");
+  const routeState = state.routes;
   const httpRoutes = routeState.httpRoutes;
 
   return {

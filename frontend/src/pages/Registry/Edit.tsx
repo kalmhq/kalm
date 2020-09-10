@@ -18,7 +18,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
   return {
-    initialValues: state.get("registries").registries.find((registry) => registry.name === ownProps.match.params.name),
+    initialValues: state.registries.registries.find((registry) => registry.name === ownProps.match.params.name),
   };
 };
 

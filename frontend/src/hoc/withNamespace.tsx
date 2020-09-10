@@ -17,8 +17,8 @@ const mapStateToProps = (
     },
   }: RouteComponentProps<{ applicationName: string }>,
 ) => {
-  const applicationsState = state.get("applications");
-  const activeNamespaceName = applicationName || state.getIn(["namespaces", "active"]);
+  const applicationsState = state.applications;
+  const activeNamespaceName = applicationName || state.namespaces.active;
   const applications = applicationsState.applications;
   const activeNamespace = applications.find((x) => x.name === activeNamespaceName);
 
@@ -27,7 +27,7 @@ const mapStateToProps = (
     activeNamespaceName,
     activeNamespace,
     applications,
-    components: state.get("components").components[activeNamespaceName], // application details page need components and withRoutesData
+    components: state.components.components[activeNamespaceName], // application details page need components and withRoutesData
     isNamespaceLoading: applicationsState.isListLoading,
     isNamespaceFirstLoaded: applicationsState.isListFirstLoaded,
   };

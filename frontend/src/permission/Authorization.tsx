@@ -10,7 +10,7 @@ import { getDisplayName } from "./utils";
 import { Box } from "@material-ui/core";
 
 const mapStateToProps = (state: RootState) => {
-  const auth = state.get("auth");
+  const auth = state.auth;
   const authorized = auth.authorized;
   const firstLoaded = auth.firstLoaded;
   const isLoading = auth.isLoading;

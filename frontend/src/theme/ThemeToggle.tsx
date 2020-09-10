@@ -30,7 +30,7 @@ const Styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const usingTheme = state.get("settings").usingTheme;
+  const usingTheme = state.settings.usingTheme;
   return { usingTheme };
 };
 interface Props extends TDispatchProp, ReturnType<typeof mapStateToProps>, WithStyles<typeof Styles> {}

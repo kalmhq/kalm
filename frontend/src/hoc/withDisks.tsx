@@ -5,7 +5,7 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 
 const mapStateToProps = (state: RootState) => {
-  const disksState = state.get("persistentVolumes");
+  const disksState = state.persistentVolumes;
   const disks = disksState.persistentVolumes;
 
   return {

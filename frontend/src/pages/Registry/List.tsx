@@ -25,7 +25,7 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const registriesState = state.get("registries");
+  const registriesState = state.registries;
   return {
     isFirstLoaded: registriesState.isFirstLoaded,
     isLoading: registriesState.isLoading,
@@ -132,14 +132,6 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
           popupTitle="DELETE REGISTRY?"
           confirmedAction={() => this.confirmDelete(row)}
         />
-        {/* <IconButtonWithTooltip
-          tooltipTitle={"Delete"}
-          onClick={() => {
-            this.showDeleteConfirmDialog(row.get("name"));
-          }}
-        >
-          <DeleteIcon />
-        </IconButtonWithTooltip> */}
       </>
     );
   }

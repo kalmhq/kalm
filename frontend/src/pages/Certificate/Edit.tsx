@@ -11,9 +11,9 @@ import { H6 } from "widgets/Label";
 import { CertificateForm } from "forms/Certificate";
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
-  const certificate = state
-    .get("certificates")
-    .certificates.find((certificate) => certificate.name === ownProps.match.params.name);
+  const certificate = state.certificates.certificates.find(
+    (certificate) => certificate.name === ownProps.match.params.name,
+  );
   return {
     initialValues: (certificate ? Object.assign(certificate, { managedType: selfManaged }) : undefined) as
       | CertificateFormType

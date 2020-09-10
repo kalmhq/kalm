@@ -31,7 +31,7 @@ import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
 
 const mapStateToProps = (state: RootState) => {
-  const certifications = state.get("certificates").certificates;
+  const certifications = state.certificates.certificates;
   const domains: Set<string> = new Set();
 
   certifications.forEach((x) => {
@@ -39,9 +39,9 @@ const mapStateToProps = (state: RootState) => {
   });
 
   return {
-    tutorialState: state.get("tutorial"),
+    tutorialState: state.tutorial,
     domains: Array.from(domains),
-    ingressIP: state.get("cluster").info.ingressIP,
+    ingressIP: state.cluster.info.ingressIP,
     certifications,
     form: ROUTE_FORM_ID,
   };
@@ -228,7 +228,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
               <Typography key={host}>
                 <strong>{host}</strong> will use{" "}
                 <Link href="#" variant="body2">
-                  <strong>{cert.get("name")}</strong>
+                  <strong>{cert.name}</strong>
                 </Link>{" "}
                 certification.
               </Typography>

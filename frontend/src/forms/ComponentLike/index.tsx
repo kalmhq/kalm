@@ -23,7 +23,6 @@ import { KTooltip } from "forms/Application/KTooltip";
 import { KFormikBoolCheckboxRender } from "forms/Basic/checkbox";
 import { Disks } from "forms/ComponentLike/Disks";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
-import Immutable from "immutable";
 import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 import React from "react";
 import { connect } from "react-redux";
@@ -101,10 +100,10 @@ const mapStateToProps = (state: RootState) => {
   }
 
   return {
-    registries: state.get("registries").registries,
-    tutorialState: state.get("tutorial"),
-    isSubmittingApplicationComponent: state.get("components").isSubmittingApplicationComponent,
-    nodeLabels: state.get("nodes").labels,
+    registries: state.registries.registries,
+    tutorialState: state.tutorial,
+    isSubmittingApplicationComponent: state.components.isSubmittingApplicationComponent,
+    nodeLabels: state.nodes.labels,
     currentTabIndex,
     form: COMPONENT_FORM_ID,
   };
@@ -171,9 +170,7 @@ interface RawProps {
   onSubmit: (formValues: ComponentLike) => void;
 }
 
-interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {
-  // submitAppplicationErrors?: Immutable.Map<string, any>;
-}
+interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
 export interface Props
   extends FormikProps<ComponentLike>,
@@ -990,9 +987,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Box>
         {process.env.REACT_APP_DEBUG === "true" ? (
-          <pre style={{ maxWidth: 1500, background: "#eee" }}>
-            {JSON.stringify(Immutable.fromJS(values).delete("metrics").delete("pods").delete("services"), undefined, 2)}
-          </pre>
+          <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
         ) : null}
         {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
         {this.renderDeployButton()}

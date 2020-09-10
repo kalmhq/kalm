@@ -9,11 +9,11 @@ import { TDispatch } from "types";
 import { blinkTopProgressAction } from "actions/settings";
 
 const mapStateToProps = (state: RootState) => {
-  const auth = state.get("auth");
+  const auth = state.auth;
   const isAdmin = auth.isAdmin;
   const entity = auth.entity;
   return {
-    activeNamespaceName: state.get("namespaces").active,
+    activeNamespaceName: state.namespaces.active,
     isAdmin,
     entity,
   };

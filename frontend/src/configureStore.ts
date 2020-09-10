@@ -1,4 +1,4 @@
-import { routerMiddleware } from "connected-react-router/immutable";
+import { routerMiddleware } from "connected-react-router";
 import { History, LocationState } from "history";
 import { applyMiddleware, createStore } from "redux";
 import { createLogger } from "redux-logger";

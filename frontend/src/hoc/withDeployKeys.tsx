@@ -4,7 +4,7 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 
 const mapStateToProps = (state: RootState) => {
-  const deployKeys = state.get("deployKeys");
+  const deployKeys = state.deployKeys;
 
   return {
     deployKeys: deployKeys.deployKeys,

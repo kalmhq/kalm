@@ -5,7 +5,7 @@ import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
 
 export const loadDomainDNSInfo = (domain: string): ThunkResult<void> => {
   return async (dispatch, getState) => {
-    const currentDomainInfo = getState().get("domain")[domain];
+    const currentDomainInfo = getState().domain[domain];
     if (currentDomainInfo) {
       return;
     }

@@ -40,8 +40,8 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    tutorialState: state.get("tutorial"),
-    isSubmittingApplication: state.get("applications").isSubmittingApplication,
+    tutorialState: state.tutorial,
+    isSubmittingApplication: state.applications.isSubmittingApplication,
     form: APPLICATION_FORM_ID,
   };
 };

@@ -30,9 +30,9 @@ import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    statefulSetOptions: state.get("persistentVolumes").statefulSetOptions,
-    simpleOptions: state.get("persistentVolumes").simpleOptions,
-    storageClasses: state.get("persistentVolumes").storageClasses,
+    statefulSetOptions: state.persistentVolumes.statefulSetOptions,
+    simpleOptions: state.persistentVolumes.simpleOptions,
+    storageClasses: state.persistentVolumes.storageClasses,
   };
 };
 

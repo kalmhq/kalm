@@ -162,28 +162,6 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           popupTitle="DELETE ROUTE?"
           confirmedAction={() => dispatch(deleteRouteAction(row))}
         />
-        {/* <Button
-          size="small"
-          variant="outlined"
-          style={{ marginLeft: 16, marginRight: 16 }}
-          color="primary"
-          onClick={() => {
-            blinkTopProgressAction();
-            dispatch(push(`/applications/${activeNamespaceName}/routes/${row.get("name")}/edit`));
-          }}
-        >
-          Edit
-        </Button>
-        <DangerButton
-          variant="outlined"
-          size="small"
-          onClick={() => {
-            blinkTopProgressAction();
-            dispatch(deleteRouteAction(row.get("name"), row.get("namespace")));
-          }}
-        >
-          Delete
-        </DangerButton> */}
       </>
     );
   };

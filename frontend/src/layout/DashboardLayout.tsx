@@ -49,8 +49,8 @@ const styles = (theme: Theme) => {
 
 const mapStateToProps = (state: RootState) => {
   return {
-    isShowTopProgress: state.get("settings").isShowTopProgress,
-    showTutorialDrawer: state.get("tutorial").drawerOpen,
+    isShowTopProgress: state.settings.isShowTopProgress,
+    showTutorialDrawer: state.tutorial.drawerOpen,
   };
 };
 

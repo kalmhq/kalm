@@ -18,7 +18,7 @@ import { BasePage } from "../BasePage";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    ingressInfo: state.get("cluster").info,
+    ingressInfo: state.cluster.info,
   };
 };
 

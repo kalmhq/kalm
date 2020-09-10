@@ -3,7 +3,7 @@ import { SET_DEBOUNCING, SET_TIMER } from "types/debounce";
 
 export const setDebouncing = (name: string): ThunkResult<void> => {
   return (dispatch, getState) => {
-    const debounceState = getState().get("debounce");
+    const debounceState = getState().debounce;
 
     dispatch({
       type: SET_DEBOUNCING,

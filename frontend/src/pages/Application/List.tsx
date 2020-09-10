@@ -44,10 +44,10 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const httpRoutes = state.get("routes").httpRoutes;
-  const componentsMap = state.get("components").components;
-  const clusterInfo = state.get("cluster").info;
-  const usingApplicationCard = state.get("settings").usingApplicationCard;
+  const httpRoutes = state.routes.httpRoutes;
+  const componentsMap = state.components.components;
+  const clusterInfo = state.cluster.info;
+  const usingApplicationCard = state.settings.usingApplicationCard;
   return {
     clusterInfo,
     httpRoutes,

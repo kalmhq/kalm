@@ -4,7 +4,6 @@ import { date, number, text } from "@storybook/addon-knobs";
 import { storiesOf } from "@storybook/react";
 import { Field } from "formik";
 import { KAutoCompleteOption, KFormikAutoCompleteSingleValue } from "forms/Basic/autoComplete";
-import Immutable from "immutable";
 import React from "react";
 import {
   ApplicationDetails,
@@ -36,7 +35,7 @@ storiesOf("Widgets/HttpRouteDestinations", module)
 
     createRoutes(store, [appName]);
 
-    let oneApp: ApplicationDetails = createApplication(appName);
+    let oneApp: ApplicationDetails = createApplication(appName) as any;
 
     const allComponents = createApplicationComponent(
       appName,
@@ -47,7 +46,7 @@ storiesOf("Widgets/HttpRouteDestinations", module)
 
     oneApp = mergeMetrics(oneApp, allComponents);
 
-    const applications: Immutable.List<ApplicationDetails> = Immutable.List<ApplicationDetails>([oneApp]);
+    const applications: ApplicationDetails[] = [oneApp];
     store.dispatch({ type: LOAD_APPLICATIONS_PENDING });
     store.dispatch({
       type: LOAD_ALL_NAMESAPCES_COMPONETS,
@@ -63,7 +62,7 @@ storiesOf("Widgets/HttpRouteDestinations", module)
       },
     });
     const options: KAutoCompleteOption[] = [];
-    const services = createServices() as Immutable.List<Service>;
+    const services: Service[] = createServices() as any[];
     const activeNamespace = "kalm-bookinfo";
     services
       .filter((x) => {

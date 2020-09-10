@@ -31,9 +31,9 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    isLoading: state.get("certificates").isLoading,
-    isFirstLoaded: state.get("certificates").isFirstLoaded,
-    certificates: state.get("certificates").certificates,
+    isLoading: state.certificates.isLoading,
+    isFirstLoaded: state.certificates.isFirstLoaded,
+    certificates: state.certificates.certificates,
   };
 };
 
@@ -102,20 +102,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       </>
     );
   };
-
-  // private renderDeleteConfirmDialog = () => {
-  //   const { isDeleteConfirmDialogOpen, deletingCertificate } = this.state;
-  //   const certName = deletingCertificate ? ` '${deletingCertificate.get("name")}'` : "";
-  //   return (
-  //     <ConfirmDialog
-  //       open={isDeleteConfirmDialogOpen}
-  //       onClose={this.closeDeleteConfirmDialog}
-  //       title={`Are you sure you want to delete the certificate${certName}?`}
-  //       content=""
-  //       onAgree={this.confirmDelete}
-  //     />
-  //   );
-  // };
 
   private closeDeleteConfirmDialog = () => {
     this.setState({

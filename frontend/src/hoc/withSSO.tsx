@@ -4,7 +4,7 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 
 const mapStateToProps = (state: RootState) => {
-  const sso = state.get("sso");
+  const sso = state.sso;
   return {
     ssoConfig: sso.config,
     isSSOConfigLoaded: sso.loaded,

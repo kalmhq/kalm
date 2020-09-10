@@ -68,9 +68,9 @@ const styles = (theme: Theme) => {
 
 const mapStateToProps = (state: RootState) => {
   return {
-    tutorial: state.get("tutorial").tutorial,
-    applications: state.get("applications"),
-    drawerOpen: state.get("tutorial").drawerOpen,
+    tutorial: state.tutorial.tutorial,
+    applications: state.applications,
+    drawerOpen: state.tutorial.drawerOpen,
   };
 };
 

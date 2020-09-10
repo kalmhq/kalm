@@ -15,7 +15,7 @@ import { Domain } from "types/domain";
 const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
   const regResultIp = regExpIp.exec(ownProps.domain);
   let domainStatus: Domain | undefined;
-  const domainState = state.get("domain");
+  const domainState = state.domain;
   for (let domainKey in domainState) {
     if (domainKey === ownProps.domain) {
       domainStatus = domainState[domainKey];
@@ -23,7 +23,7 @@ const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
   }
   return {
     domainStatus,
-    ingressIP: state.get("cluster").info.ingressIP,
+    ingressIP: state.cluster.info.ingressIP,
     isIPDomain: regResultIp !== null,
   };
 };

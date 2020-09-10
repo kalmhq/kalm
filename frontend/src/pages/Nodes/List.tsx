@@ -39,10 +39,10 @@ import { ResourceRank } from "./ResourceRank";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    nodes: state.get("nodes").nodes,
-    metrics: state.get("nodes").metrics,
-    applications: state.get("applications").applications,
-    componentsMap: state.get("components").components,
+    nodes: state.nodes.nodes,
+    metrics: state.nodes.metrics,
+    applications: state.applications.applications,
+    componentsMap: state.components.components,
   };
 };
 

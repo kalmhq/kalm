@@ -10,7 +10,6 @@ import { usePagination, useTable, useGlobalFilter, useAsyncDebounce } from "reac
 import { TextField, Grid, Box } from "@material-ui/core";
 import { FilterListIcon } from "./Icon";
 import { Body } from "./Label";
-import Immutable from "immutable";
 
 interface RowData {
   [key: string]: any;
@@ -242,8 +241,8 @@ const cellIncludes = (cellValue: any, filterValue: string): boolean => {
             if (cellIncludes(cellValue.props[key], filterValue)) {
               return true;
             }
-          } else if (Immutable.isImmutable(cellValue.props[key])) {
-            if (cellIncludes(JSON.stringify(cellValue.props[key].toJS()), filterValue)) {
+          } else if (typeof cellValue.props[key] === "object") {
+            if (cellIncludes(JSON.stringify(cellValue.props[key]), filterValue)) {
               return true;
             }
           }

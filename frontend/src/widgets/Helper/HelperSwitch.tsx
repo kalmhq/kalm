@@ -6,7 +6,7 @@ import { setSettingsAction } from "actions/settings";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    open: state.get("settings").isDisplayingHelpers,
+    open: state.settings.isDisplayingHelpers,
   };
 };
 

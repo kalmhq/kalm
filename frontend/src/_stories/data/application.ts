@@ -1,4 +1,3 @@
-import Immutable from "immutable";
 import {
   ApplicationComponentDetails,
   ApplicationDetails,
@@ -88,7 +87,7 @@ export const createRoutes = (store: any, appNames: string[]) => {
 };
 
 export const createApplication = (name: string) => {
-  return Immutable.fromJS({
+  return {
     name: name,
     metrics: {
       cpu: getCPUSamples(4),
@@ -96,7 +95,7 @@ export const createApplication = (name: string) => {
     },
     roles: ["writer", "reader"],
     status: "Active",
-  });
+  };
 };
 
 export const createApplicationComponent = (

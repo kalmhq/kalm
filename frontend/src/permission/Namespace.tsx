@@ -11,16 +11,16 @@ import { Box } from "@material-ui/core";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
 
 const mapStateToProps = (state: RootState, props: any) => {
-  const applicationsState = state.get("applications");
+  const applicationsState = state.applications;
   const namespaces = applicationsState.applications.map((application) => application.name);
   const activeNamespace =
     props.match && props.match.params && props.match.params.applicationName
       ? props.match.params.applicationName
-      : state.get("namespaces").active;
+      : state.namespaces.active;
   const isApplicationListLoading = applicationsState.isListLoading;
   const isApplicationListFirstLoaded = applicationsState.isListFirstLoaded;
   const activeApplication = applicationsState.applications.find((application) => application.name === activeNamespace);
-  const isAdmin = state.get("auth").isAdmin;
+  const isAdmin = state.auth.isAdmin;
 
   return {
     isAdmin,

@@ -19,7 +19,7 @@ import { ComponentLikePort } from "types/componentTemplate";
 import { Tutorial, TutorialFactory } from "types/tutorial";
 
 export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title): Tutorial => {
-  let apps = store.getState().get("applications").applications;
+  let apps = store.getState().applications.applications;
 
   const applicationNameTemplate = "tutorial-";
   let i = 0;
@@ -221,7 +221,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           {
             title: "Wait the component to be running.",
             shouldCompleteByState: (state: RootState) => {
-              const components = state.get("components").components[applicationName];
+              const components = state.components.components[applicationName];
 
               if (!components) {
                 return false;

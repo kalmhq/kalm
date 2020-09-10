@@ -143,7 +143,7 @@ export const loadApplicationsAction = (): ThunkResult<Promise<ApplicationDetails
       throw e;
     }
 
-    const activeNamespace = getState().get("namespaces").active;
+    const activeNamespace = getState().namespaces.active;
     const firstNamespace = applicationList[0];
     if (!activeNamespace && applicationList.length > 0 && firstNamespace != null) {
       dispatch(setCurrentNamespaceAction(firstNamespace?.name, false));

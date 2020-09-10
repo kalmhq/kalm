@@ -24,7 +24,7 @@ const resetTutorial = () => {
 export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tutorial => {
   const state = store.getState();
 
-  const apps = state.get("applications").applications;
+  const apps = state.applications.applications;
   const application = apps.find((x) => x.name === "tutorial");
 
   if (!application) {
@@ -55,7 +55,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   const routesPath = "/routes";
   const newRoutePath = "/routes/new";
 
-  const clusterInfo = state.get("cluster").info;
+  const clusterInfo = state.cluster.info;
   const clusterIngressIP = clusterInfo.ingressIP || "10.0.0.1"; // TODO
 
   const domain = clusterIngressIP.replace(/\./g, "-") + ".nip.io";

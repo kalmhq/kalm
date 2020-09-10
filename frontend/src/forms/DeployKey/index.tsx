@@ -31,7 +31,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    allComponents: state.get("components").components,
+    allComponents: state.components.components,
   };
 };
 

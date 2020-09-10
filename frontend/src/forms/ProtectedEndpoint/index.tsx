@@ -21,7 +21,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    allComponents: state.get("components").components,
+    allComponents: state.components.components,
   };
 };
 
@@ -188,16 +188,6 @@ class ProtectedEndpointFormRaw extends React.PureComponent<FinalProps> {
     );
   }
 }
-
-// export const ProtectedEndpointForm = reduxForm<ProtectedEndpoint, Props>({
-//   form: PROTECTED_ENDPOINT_ID,
-//   enableReinitialize: true,
-//   keepDirtyOnReinitialize: false,
-//   initialValues: Immutable.Map(),
-//   onSubmitFail: (...args) => {
-//     console.log("submit failed", args);
-//   },
-// })(connect(mapStateToProps)(withNamespace(withStyles(styles)(ProtectedEndpointFormRaw))));
 
 const connectedForm = connect(mapStateToProps)(withNamespace(withStyles(styles)(ProtectedEndpointFormRaw)));
 

@@ -5,7 +5,7 @@ import { RootState } from "reducers";
 import { Actions } from "types";
 
 const mapStateToProps = (state: RootState) => {
-  const certificates = state.get("certificates");
+  const certificates = state.certificates;
   return {
     componentTemplates: certificates.certificates,
     isLoading: certificates.isLoading,

@@ -41,7 +41,7 @@ export interface WatchResMessage {
 
 const mapStateToProps = (state: RootState) => {
   return {
-    token: state.get("auth").token,
+    token: state.auth.token,
   };
 };
 

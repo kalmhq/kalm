@@ -395,7 +395,7 @@ export const k8sWsPrefix = !K8sApiPrefix
   : K8sApiPrefix.replace(/^http/, "ws");
 
 const getAxiosClient = (withHeaderToken: boolean) => {
-  const token = store.getState().get("auth").token;
+  const token = store.getState().auth.token;
   const headers: { [key: string]: string } = {};
 
   if (withHeaderToken && token) {

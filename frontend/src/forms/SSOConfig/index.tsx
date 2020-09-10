@@ -38,7 +38,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    tutorialState: state.get("tutorial"),
+    tutorialState: state.tutorial,
   };
 };
 

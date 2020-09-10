@@ -9,7 +9,6 @@ import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
 import { FormikUploader } from "forms/Basic/uploader";
 import { CERTIFICATE_FORM_ID } from "forms/formIDs";
 import { ValidateHost } from "forms/validator";
-import Immutable from "immutable";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
 import { connect } from "react-redux";
@@ -26,8 +25,8 @@ import sc from "../../utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    certificateIssuers: state.get("certificates").certificateIssuers,
-    ingressIP: state.get("cluster").info.ingressIP,
+    certificateIssuers: state.certificates.certificateIssuers,
+    ingressIP: state.cluster.info.ingressIP,
   };
 };
 
@@ -66,20 +65,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
       isEditCertificateIssuer: false,
     };
   }
-
-  // private submitCreateIssuer = async (certificateIssuer: CertificateIssuerFormType) => {
-  //   const { dispatch, setFieldValue } = this.props;
-  //   const { isEditCertificateIssuer } = this.state;
-  //   try {
-  //     await dispatch(createCertificateIssuerAction(certificateIssuer, isEditCertificateIssuer));
-  //     setFieldValue("httpsCertIssuer", certificateIssuer.get("name"));
-  //     if (isEditCertificateIssuer) {
-  //       this.setState({ isEditCertificateIssuer: false });
-  //     }
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // };
 
   private renderSelfManagedFields = (formikProps: FormikProps<CertificateFormType>) => {
     const { classes } = this.props;
@@ -129,106 +114,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  // private generateHttpsCertIssuerOptions = () => {
-  //   const { certificateIssuers } = this.props;
-  //   const httpsCertIssuerOptions: any = [
-  //     {
-  //       value: ISSUER_FORM_ID,
-  //       label: "Add new certificate issuer",
-  //     },
-  //   ];
-  //   certificateIssuers.forEach((certificateIssuer) => {
-  //     const name = certificateIssuer.get("name");
-
-  //     httpsCertIssuerOptions.push({
-  //       value: name,
-  //       label: name,
-  //       group: !certificateIssuer.get("acmeCloudFlare") ? "CA for Test" : "Cloudflare",
-  //     });
-  //   });
-
-  //   if (certificateIssuers.size === 0) {
-  //     this.setDefaultHttpsCertIssuer(ISSUER_FORM_ID);
-  //   } else {
-  //     const certificateIssuer = certificateIssuers.first() as CertificateIssuer;
-  //     this.setDefaultHttpsCertIssuer(certificateIssuer.get("name"));
-  //   }
-
-  //   return httpsCertIssuerOptions;
-  // };
-
-  // private setDefaultHttpsCertIssuer = (value: string) => {
-  //   const { httpsCertIssuer, setFieldValue } = this.props;
-  //   if (!httpsCertIssuer) {
-  //     setFieldValue("httpsCertIssuer", value);
-  //   }
-  // };
-
-  // private renderIssuerManagedFields = () => {
-  //   const { classes, httpsCertIssuer } = this.props;
-  //   const { isEditCertificateIssuer } = this.state;
-  //   const httpsCertIssuerOptions = this.generateHttpsCertIssuerOptions();
-  //   const certificateIssuer = this.getActiveCertificateIssuer();
-
-  //   return (
-  //     <>
-  //       <Grid item md={12}>
-  //         <label className={classes.label}>
-  //           We are doing DNS01 challenge for you, please select your DNS Provider API and token.
-  //         </label>
-  //         <Field
-  //           notSelectFirstIfValueIsUndefined
-  //           label="Certificate issuser"
-  //           multiline={true}
-  //           className={classes.fileInput}
-  //           component={KAutoCompleteSingleValue}
-  //           name="httpsCertIssuer"
-  //           margin="normal"
-  //           validate={ValidatorRequired}
-  //           options={httpsCertIssuerOptions}
-  //         ></Field>
-  //       </Grid>
-  //       {certificateIssuer && certificateIssuer.get("acmeCloudFlare") && (
-  //         <Button
-  //           className={classes.editBtn}
-  //           onClick={() => this.setState({ isEditCertificateIssuer: true })}
-  //           color="primary"
-  //           disabled={isEditCertificateIssuer}
-  //           variant={isEditCertificateIssuer ? "contained" : undefined}
-  //         >
-  //           Edit cloudflare issuser config
-  //         </Button>
-  //       )}
-  //       {httpsCertIssuer === ISSUER_FORM_ID || isEditCertificateIssuer ? (
-  //         <CertificateIssuerForm
-  //           isEdit={isEditCertificateIssuer}
-  //           onSubmit={this.submitCreateIssuer}
-  //           initialValues={this.generateCertificateIssuerForm()}
-  //         />
-  //       ) : null}
-  //     </>
-  //   );
-  // };
-
-  // private getActiveCertificateIssuer = () => {
-  //   const { httpsCertIssuer, certificateIssuers } = this.props;
-  //   return certificateIssuers.find((certificate) => certificate.get("name") === httpsCertIssuer);
-  // };
-
-  // private generateCertificateIssuerForm = () => {
-  //   const { isEditCertificateIssuer } = this.state;
-  //   const certificateIssuer = this.getActiveCertificateIssuer();
-  //   if (isEditCertificateIssuer && certificateIssuer) {
-  //     return Immutable.fromJS({
-  //       name: certificateIssuer.get("name"),
-  //       issuerType: certificateIssuer.get("acmeCloudFlare") ? cloudFlare : caForTest,
-  //       acmeCloudFlare: certificateIssuer.get("acmeCloudFlare"),
-  //     });
-  //   } else {
-  //     return newEmptyCertificateIssuerForm();
-  //   }
-  // };
-
   private validate = async (values: CertificateFormType) => {
     let errors: any = {};
 
@@ -262,10 +147,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
       >
         {(formikProps) => {
           const { values, dirty, handleChange, touched, errors, setFieldValue, isSubmitting } = formikProps;
-          const icons = Immutable.List(
-            values.domains.map((domain, index) =>
-              Array.isArray(errors.domains) && errors.domains[index] ? undefined : <DomainStatus domain={domain} />,
-            ),
+          const icons = values.domains.map((domain, index) =>
+            Array.isArray(errors.domains) && errors.domains[index] ? undefined : <DomainStatus domain={domain} />,
           );
           if (!dirty && values.selfManagedCertContent && values.domains.length <= 0) {
             const domains = extractDomainsFromCertificateContent(values.selfManagedCertContent);

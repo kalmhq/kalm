@@ -121,9 +121,7 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  return {
-    // xxx: state.get("xxx").get("xxx"),
-  };
+  return {};
 };
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {

@@ -7,7 +7,7 @@ import { Actions } from "types";
 import { getDisplayName } from "./utils";
 
 const mapStateToProps = (state: RootState) => {
-  const auth = state.get("auth");
+  const auth = state.auth;
   const isAdmin = auth.isAdmin;
 
   return {

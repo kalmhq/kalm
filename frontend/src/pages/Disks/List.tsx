@@ -28,8 +28,8 @@ import { BasePage } from "../BasePage";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    persistentVolumes: state.get("persistentVolumes").persistentVolumes,
-    storageClasses: state.get("persistentVolumes").storageClasses,
+    persistentVolumes: state.persistentVolumes.persistentVolumes,
+    storageClasses: state.persistentVolumes.storageClasses,
   };
 };
 

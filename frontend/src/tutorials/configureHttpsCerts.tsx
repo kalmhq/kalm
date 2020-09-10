@@ -1,5 +1,4 @@
 import { CERTIFICATE_FORM_ID } from "forms/formIDs";
-import Immutable from "immutable";
 import React from "react";
 import { RootState } from "reducers";
 import { store } from "store";
@@ -14,7 +13,7 @@ import { Certificate } from "types/certificate";
 import { Tutorial, TutorialFactory } from "types/tutorial";
 
 export const ConfigureHttpsCertsTutorialFactory: TutorialFactory = (title): Tutorial => {
-  let certificates: Certificate[] = store.getState().get("certificates").certificates;
+  let certificates: Certificate[] = store.getState().certificates.certificates;
 
   const certificateNameTemplate = "tutorial-";
   const domain = "tutorial.io";
@@ -91,7 +90,9 @@ export const ConfigureHttpsCertsTutorialFactory: TutorialFactory = (title): Tuto
                 form: CERTIFICATE_FORM_ID,
                 field: "domains",
                 validate: (domains) =>
-                  domains === Immutable.List([domain]) ? undefined : `Please follow the tutorial, use ${domain}.`,
+                  domains.length === 1 && domains[0] === domain
+                    ? undefined
+                    : `Please follow the tutorial, use ${domain}.`,
               },
             ],
             shouldCompleteByState: (state: RootState) => isCertificateFormFieldValueEqualTo(state, "domains", [domain]),
@@ -111,7 +112,7 @@ export const ConfigureHttpsCertsTutorialFactory: TutorialFactory = (title): Tuto
           {
             title: "Wait the certificate validate.",
             shouldCompleteByState: (state: RootState) => {
-              const certificate = state.get("certificates").certificates.find((c) => c.name === certificateName);
+              const certificate = state.certificates.certificates.find((c) => c.name === certificateName);
 
               if (!certificate) {
                 return false;

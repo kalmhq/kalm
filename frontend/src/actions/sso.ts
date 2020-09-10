@@ -1,6 +1,5 @@
-import { ThunkResult } from "types";
-import { setErrorNotificationAction } from "./notification";
 import { api } from "api";
+import { ThunkResult } from "types";
 import {
   CREATE_PROTECTED_ENDPOINT_FAILED,
   CREATE_PROTECTED_ENDPOINT_FULFILLED,
@@ -29,7 +28,7 @@ import {
   UPDATE_SSO_CONFIG_FULFILLED,
   UPDATE_SSO_CONFIG_PENDING,
 } from "types/sso";
-import Immutable from "immutable";
+import { setErrorNotificationAction } from "./notification";
 
 export const loadSSOConfigAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
@@ -115,12 +114,11 @@ export const loadProtectedEndpointAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const createProtectedEndpointAction = (protectedEndpointForm: ProtectedEndpoint): ThunkResult<Promise<void>> => {
+export const createProtectedEndpointAction = (protectedEndpoint: ProtectedEndpoint): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: CREATE_PROTECTED_ENDPOINT_PENDING });
 
-      let protectedEndpoint: ProtectedEndpoint = Immutable.fromJS(protectedEndpointForm);
       const protectedEndpointRes = await api.createProtectedEndpoint(protectedEndpoint);
 
       dispatch({
@@ -134,12 +132,11 @@ export const createProtectedEndpointAction = (protectedEndpointForm: ProtectedEn
   };
 };
 
-export const updateProtectedEndpointAction = (protectedEndpointForm: ProtectedEndpoint): ThunkResult<Promise<void>> => {
+export const updateProtectedEndpointAction = (protectedEndpoint: ProtectedEndpoint): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: UPDATE_PROTECTED_ENDPOINT_PENDING });
 
-      let protectedEndpoint: ProtectedEndpoint = Immutable.fromJS(protectedEndpointForm);
       const protectedEndpointRes = await api.updateProtectedEndpoint(protectedEndpoint);
 
       dispatch({
