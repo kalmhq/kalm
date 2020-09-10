@@ -1,5 +1,4 @@
 import Axios, { AxiosRequestConfig } from "axios";
-import Immutable from "immutable";
 import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
 import { CertificateForm, CertificateIssuerForm } from "types/certificate";
@@ -18,12 +17,12 @@ export const mockStore = null;
 export default class RealApi extends Api {
   public getClusterInfo = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/cluster` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public getLoginStatus = async () => {
     const res = await axiosRequest({ method: "get", url: "/login/status" });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public validateToken = async (token: string): Promise<boolean> => {
@@ -233,7 +232,7 @@ export default class RealApi extends Api {
 
   public loadRolebindings = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/rolebindings` });
-    return Immutable.fromJS(res.data.roleBindings);
+    return res.data.roleBindings;
   };
 
   public createRoleBindings = async (roleBindingRequestBody: RoleBindingsRequestBody) => {
@@ -304,7 +303,7 @@ export default class RealApi extends Api {
 
   public loadServices = async (name: string) => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/services` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   // sso
@@ -394,7 +393,7 @@ export default class RealApi extends Api {
       data: { domain },
     });
 
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public resetCluster = async (): Promise<any> => {
@@ -412,7 +411,7 @@ export const k8sWsPrefix = !K8sApiPrefix
   : K8sApiPrefix.replace(/^http/, "ws");
 
 const getAxiosClient = (withHeaderToken: boolean) => {
-  const token = store.getState().get("auth").get("token");
+  const token = store.getState().get("auth").token;
   const headers: { [key: string]: string } = {};
 
   if (withHeaderToken && token) {

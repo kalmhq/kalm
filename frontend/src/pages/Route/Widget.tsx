@@ -38,7 +38,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    clusterInfo: state.get("cluster").get("info"),
+    clusterInfo: state.get("cluster").info,
   };
 };
 

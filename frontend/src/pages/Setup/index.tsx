@@ -68,7 +68,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
     if (!ignoreDNSResult) {
       try {
         const result = await api.resolveDomain(values.domain, "A");
-        if (result.length <= 0 || result.indexOf(clusterInfo.get("ingressIP")) < 0) {
+        if (result.length <= 0 || result.indexOf(clusterInfo.ingressIP) < 0) {
           this.setState({ showDNSWarning: true });
           errors.domain = dnsCheckError;
           return errors;
@@ -93,7 +93,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
         activeStep: 1,
 
         // If it's not production. We don't need to wait cert to be ready
-        kalmCertReady: !res.get("clusterInfo").get("isProduction"),
+        kalmCertReady: !res.clusterInfo.isProduction,
         initializeResponse: res,
       });
     } catch (e) {
@@ -179,7 +179,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
         cluster load balancer IP{" "}
         <Box display="inline-block" style={{ verticalAlign: "bottom" }}>
           <H5>
-            <strong>{clusterInfo.get("ingressIP")}</strong>
+            <strong>{clusterInfo.ingressIP}</strong>
           </H5>
         </Box>
         . This domain name will be your address to access the kalm dashboard in the future.
@@ -315,13 +315,13 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
       return null;
     }
 
-    const temporaryAdmin = initializeResponse!.get("temporaryAdmin");
-    const clusterInfo = initializeResponse!.get("clusterInfo");
+    const temporaryAdmin = initializeResponse!.temporaryAdmin;
+    const clusterInfo = initializeResponse!.clusterInfo;
 
-    const email = temporaryAdmin.get("email");
-    const password = temporaryAdmin.get("password");
-    const scheme = clusterInfo.get("isProduction") ? "https" : "http";
-    const domain = initializeResponse!.get("sso").domain;
+    const email = temporaryAdmin.email;
+    const password = temporaryAdmin.password;
+    const scheme = clusterInfo.isProduction ? "https" : "http";
+    const domain = initializeResponse!.sso.domain;
 
     const url = `${scheme}://${domain}`;
 
@@ -367,7 +367,7 @@ Password: ${password}`}</pre>
       );
     }
 
-    if (!clusterInfo.get("canBeInitialized")) {
+    if (!clusterInfo.canBeInitialized) {
       return (
         <Box p={2}>
           Your cluster has been initialized already.

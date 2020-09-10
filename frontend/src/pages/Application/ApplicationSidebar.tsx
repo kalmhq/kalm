@@ -12,7 +12,7 @@ import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
-  const isAdmin = auth.get("isAdmin");
+  const isAdmin = auth.isAdmin;
   return {
     activeNamespaceName: state.get("namespaces").get("active"),
     isAdmin,

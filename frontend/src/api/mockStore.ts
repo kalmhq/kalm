@@ -1,5 +1,4 @@
 import produce from "immer";
-import Immutable from "immutable";
 import { ApplicationComponentDetails, ApplicationDetails, PodStatus } from "types/application";
 import { LoginStatus } from "types/authorization";
 import { ClusterInfo } from "types/cluster";
@@ -9,16 +8,9 @@ import { Registry, RegistryFormType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { SSOConfig } from "types/sso";
-import { ImmutableMap } from "typings";
 import { Certificate, CertificateIssuer, CertificateForm, CertificateIssuerForm } from "types/certificate";
 
 interface MockStoreData {
-  mockClusterInfo: ClusterInfo;
-  mockLoginStatus: LoginStatus;
-  mockServices: Immutable.List<Service>;
-}
-
-interface MockStoreDataImmer {
   mockRegistries: Registry[];
   mockErrorPod: PodStatus;
   mockApplications: ApplicationDetails[];
@@ -32,27 +24,24 @@ interface MockStoreDataImmer {
   mockCertificateIssuers: CertificateIssuer[];
   mockHttpRoutes: HttpRoute[];
   mockSSO: SSOConfig;
+  mockClusterInfo: ClusterInfo;
+  mockLoginStatus: LoginStatus;
+  mockServices: Service[];
 }
 
 export default class MockStore {
-  public data: ImmutableMap<MockStoreData>;
-  public CACHE_KEY = "kubernetes-api-mock-data-v2";
   public onmessage?: any;
-
-  public dataImmer: MockStoreDataImmer;
-  public CACHE_KEY_IMMER = "kubernetes-api-mock-data-v3";
+  public data: MockStoreData;
+  public CACHE_KEY = "kubernetes-api-mock-data-v3";
 
   constructor() {
     const cachedData = this.getCachedData();
     this.data = cachedData || this.getInitData();
-
-    const cachedDataImmer = this.getCachedDataImmer();
-    this.dataImmer = cachedDataImmer || this.getInitDataImmer();
   }
 
   public deleteRegistry = async (name: string) => {
-    let registries = this.dataImmer.mockRegistries;
-    this.dataImmer.mockRegistries = produce(registries, (draft) => {
+    let registries = this.data.mockRegistries;
+    this.data.mockRegistries = produce(registries, (draft) => {
       // find should use original instead of draft for performance
       const index = registries.findIndex((x) => x.name === name);
       if (index > -1) {
@@ -63,8 +52,8 @@ export default class MockStore {
   };
 
   public updateRegistry = async (registry: RegistryFormType) => {
-    let registries = this.dataImmer.mockRegistries;
-    this.dataImmer.mockRegistries = produce(registries, (draft) => {
+    let registries = this.data.mockRegistries;
+    this.data.mockRegistries = produce(registries, (draft) => {
       const index = registries.findIndex((x) => x.name === registry.name);
       if (index > -1) {
         draft[index] = registry as Registry;
@@ -76,8 +65,8 @@ export default class MockStore {
   };
 
   public deleteVolume = async (name: string) => {
-    const index = this.dataImmer.mockVolumes.findIndex((x) => x.name === name);
-    this.dataImmer.mockVolumes = produce(this.dataImmer.mockVolumes, (draft) => {
+    const index = this.data.mockVolumes.findIndex((x) => x.name === name);
+    this.data.mockVolumes = produce(this.data.mockVolumes, (draft) => {
       draft.splice(index, 1);
     });
     await this.saveData();
@@ -87,7 +76,7 @@ export default class MockStore {
     let componentIndex = -1,
       podIndex = -1,
       pod;
-    this.dataImmer.mockApplicationComponents[namespace]?.forEach((component, index) => {
+    this.data.mockApplicationComponents[namespace]?.forEach((component, index) => {
       const i = component.pods.findIndex((c) => c.name === name);
       if (i >= 0) {
         componentIndex = index;
@@ -97,7 +86,7 @@ export default class MockStore {
     });
 
     if (componentIndex >= 0 && podIndex >= 0) {
-      this.dataImmer.mockApplicationComponents[namespace][componentIndex].pods.splice(podIndex, 1);
+      this.data.mockApplicationComponents[namespace][componentIndex].pods.splice(podIndex, 1);
       this.saveData({
         kind: "Pod",
         data: pod,
@@ -107,21 +96,21 @@ export default class MockStore {
   };
 
   public deleteCertificate = async (name: string) => {
-    const index = this.dataImmer.mockCertificates.findIndex((c) => c.name === name);
-    this.dataImmer.mockCertificates.splice(index, 1);
+    const index = this.data.mockCertificates.findIndex((c) => c.name === name);
+    this.data.mockCertificates.splice(index, 1);
     await this.saveData();
   };
 
   public deleteHttpRoute = async (namespace: string, name: string) => {
-    const index = this.dataImmer.mockHttpRoutes.findIndex((x) => x.name === name);
-    this.dataImmer.mockHttpRoutes.splice(index, 1);
+    const index = this.data.mockHttpRoutes.findIndex((x) => x.name === name);
+    this.data.mockHttpRoutes.splice(index, 1);
     await this.saveData();
   };
 
   public deleteApplication = async (name: string): Promise<void> => {
-    const index = this.dataImmer.mockApplications.findIndex((c) => c.name === name);
-    const application = this.dataImmer.mockApplications[index];
-    this.dataImmer.mockApplications.splice(index, 1);
+    const index = this.data.mockApplications.findIndex((c) => c.name === name);
+    const application = this.data.mockApplications[index];
+    this.data.mockApplications.splice(index, 1);
     await this.saveData({
       kind: "Application",
       action: "Delete",
@@ -130,9 +119,9 @@ export default class MockStore {
   };
 
   public deleteApplicationComponent = async (applicationName: string, name: string) => {
-    const index = this.dataImmer.mockApplicationComponents[applicationName]?.findIndex((c) => c.name === name);
-    const component = this.dataImmer.mockApplicationComponents[applicationName][index];
-    this.dataImmer.mockApplicationComponents[applicationName].splice(index, 1);
+    const index = this.data.mockApplicationComponents[applicationName]?.findIndex((c) => c.name === name);
+    const component = this.data.mockApplicationComponents[applicationName][index];
+    this.data.mockApplicationComponents[applicationName].splice(index, 1);
     await this.saveData({
       kind: "Component",
       namespace: applicationName,
@@ -142,28 +131,28 @@ export default class MockStore {
   };
 
   public updateCertificate = async (certificate: CertificateForm) => {
-    const index = this.dataImmer.mockCertificates.findIndex((c) => c.name === certificate.name);
+    const index = this.data.mockCertificates.findIndex((c) => c.name === certificate.name);
     if (index >= 0) {
-      this.dataImmer.mockCertificates[index] = certificate;
+      this.data.mockCertificates[index] = certificate;
     } else {
-      this.dataImmer.mockCertificates.push(certificate);
+      this.data.mockCertificates.push(certificate);
     }
     await this.saveData();
   };
 
   public updateCertificateIssuer = async (certificateIssuer: CertificateIssuerForm) => {
-    const index = this.dataImmer.mockCertificateIssuers.findIndex((c) => c.name === certificateIssuer.name);
+    const index = this.data.mockCertificateIssuers.findIndex((c) => c.name === certificateIssuer.name);
     if (index >= 0) {
-      this.dataImmer.mockCertificateIssuers[index] = certificateIssuer;
+      this.data.mockCertificateIssuers[index] = certificateIssuer;
     } else {
-      this.dataImmer.mockCertificateIssuers.push(certificateIssuer);
+      this.data.mockCertificateIssuers.push(certificateIssuer);
     }
     await this.saveData();
   };
 
   public updateHttpRoute = async (namepace: string, httpRoute: HttpRoute) => {
-    const index = this.dataImmer.mockHttpRoutes.findIndex((x) => x.name === httpRoute.name);
-    this.dataImmer.mockHttpRoutes = produce(this.dataImmer.mockHttpRoutes, (draft) => {
+    const index = this.data.mockHttpRoutes.findIndex((x) => x.name === httpRoute.name);
+    this.data.mockHttpRoutes = produce(this.data.mockHttpRoutes, (draft) => {
       if (index >= 0) {
         draft[index] = httpRoute;
       } else {
@@ -174,25 +163,23 @@ export default class MockStore {
   };
 
   public updateApplication = async (application: ApplicationDetails) => {
-    const index = this.dataImmer.mockApplications.findIndex((c) => c.name === application.name);
+    const index = this.data.mockApplications.findIndex((c) => c.name === application.name);
     let data = {
       kind: "Application",
       data: application,
       action: "Add",
     };
     if (index >= 0) {
-      this.dataImmer.mockApplications[index] = application;
+      this.data.mockApplications[index] = application;
       data.action = "Update";
     } else {
-      this.dataImmer.mockApplications.push(application);
+      this.data.mockApplications.push(application);
     }
     await this.saveData(data);
   };
 
   public updateApplicationComponent = async (applicationName: string, component: ApplicationComponentDetails) => {
-    const index = this.dataImmer.mockApplicationComponents[applicationName]?.findIndex(
-      (c) => c.name === component.name,
-    );
+    const index = this.data.mockApplicationComponents[applicationName]?.findIndex((c) => c.name === component.name);
 
     let data = {
       kind: "Component",
@@ -209,7 +196,7 @@ export default class MockStore {
     //     ? (this.dataImmer.mockApplicationComponents[applicationName] = [component])
     //     : this.dataImmer.mockApplicationComponents[applicationName].push(component);
     // }
-    this.dataImmer = produce(this.dataImmer, (draft) => {
+    this.data = produce(this.data, (draft) => {
       if (index !== undefined && index >= 0) {
         draft.mockApplicationComponents[applicationName][index] = component;
         data.action = "Update";
@@ -223,8 +210,8 @@ export default class MockStore {
     await this.saveData(data);
   };
 
-  public getCachedDataImmer = () => {
-    const cacheJSON = window.localStorage.getItem(this.CACHE_KEY_IMMER);
+  public getCachedData = () => {
+    const cacheJSON = window.localStorage.getItem(this.CACHE_KEY);
 
     return !!cacheJSON ? JSON.parse(cacheJSON) : null;
   };
@@ -234,20 +221,9 @@ export default class MockStore {
     if (this.onmessage && messageData) {
       await this.onmessage({ data: JSON.stringify(messageData) });
     }
-
-    window.localStorage.setItem(this.CACHE_KEY_IMMER, JSON.stringify(this.dataImmer));
-    if (this.onmessage && messageData) {
-      await this.onmessage({ data: JSON.stringify(messageData) });
-    }
   };
 
-  public getCachedData = () => {
-    const cacheJSON = window.localStorage.getItem(this.CACHE_KEY);
-
-    return !!cacheJSON ? Immutable.fromJS(JSON.parse(cacheJSON)) : null;
-  };
-
-  public getInitDataImmer = () => {
+  public getInitData = () => {
     return {
       mockCertificates: [
         {
@@ -8377,28 +8353,21 @@ export default class MockStore {
           },
         ],
       },
-    };
-  };
-
-  public getInitData = () => {
-    return Immutable.Map({
-      mockClusterInfo: Immutable.fromJS({
+      mockClusterInfo: {
         version: "v1.15.0",
         ingressIP: "192.168.64.3",
         ingressHostname: "",
         httpPort: 31243,
         httpsPort: 32039,
         tlsPort: 32228,
-      }),
-
-      mockLoginStatus: Immutable.fromJS({
+      },
+      mockLoginStatus: {
         authorized: true,
         isAdmin: true,
         entity: "system:serviceaccount:default:kalm-sample-user",
         csrf: "",
-      }),
-
-      mockServices: Immutable.fromJS([
+      },
+      mockServices: [
         {
           name: "cert-manager",
           namespace: "cert-manager",
@@ -8584,7 +8553,7 @@ export default class MockStore {
           type: "ClusterIP",
           sessionAffinity: "None",
         },
-      ]),
-    });
+      ],
+    };
   };
 }

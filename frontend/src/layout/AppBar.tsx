@@ -21,8 +21,8 @@ const mapStateToProps = (state: RootState) => {
   const activeNamespace = state.get("namespaces").get("active");
 
   const auth = state.get("auth");
-  const isAdmin = auth.get("isAdmin");
-  const entity = auth.get("entity");
+  const isAdmin = auth.isAdmin;
+  const entity = auth.entity;
   return {
     isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
     tutorialDrawerOpen: state.get("tutorial").get("drawerOpen"),
@@ -277,7 +277,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           </div>
 
           <div className={classes.barRight}>
-            {clusterInfo.get("canBeInitialized") && (
+            {clusterInfo.canBeInitialized && (
               <Box mr={2}>
                 <Button to="/setup" component={Link} onClick={console.log} variant="outlined" color="secondary">
                   Finish the setup steps

@@ -27,7 +27,7 @@ import sc from "../../utils/stringConstants";
 const mapStateToProps = (state: RootState) => {
   return {
     certificateIssuers: state.get("certificates").certificateIssuers,
-    ingressIP: state.get("cluster").get("info").get("ingressIP"),
+    ingressIP: state.get("cluster").info.ingressIP,
   };
 };
 

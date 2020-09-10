@@ -67,7 +67,7 @@ storiesOf("Widgets/HttpRouteDestinations", module)
     const activeNamespace = "kalm-bookinfo";
     services
       .filter((x) => {
-        const ns = x.get("namespace");
+        const ns = x.namespace;
 
         // TODO should we ignore the system namespaces??
         return (
@@ -82,32 +82,30 @@ storiesOf("Widgets/HttpRouteDestinations", module)
         );
       })
       .sort((a, b): number => {
-        const aNamespace = a.get("namespace");
+        const aNamespace = a.namespace;
         if (aNamespace === activeNamespace) {
           return -1;
         }
 
-        const bNamespace = b.get("namespace");
+        const bNamespace = b.namespace;
         if (bNamespace === activeNamespace) {
           return 1;
         }
 
         if (aNamespace === bNamespace) {
-          return a.get("name").localeCompare(b.get("name"));
+          return a.name.localeCompare(b.name);
         } else {
           return aNamespace.localeCompare(bNamespace);
         }
       })
       .forEach((svc) => {
-        svc
-          .get("ports")
-          .filter((p) => p.get("protocol") === "TCP")
+        svc.ports
+          .filter((p) => p.protocol === "TCP")
           .forEach((port) => {
             options.push({
-              value: `${svc.get("name")}.${svc.get("namespace")}.svc.cluster.local:${port.get("port")}`,
-              label: svc.get("name") + ":" + port.get("port"),
-              group:
-                svc.get("namespace") === activeNamespace ? `${svc.get("namespace")} (Current)` : svc.get("namespace"),
+              value: `${svc.name}.${svc.namespace}.svc.cluster.local:${port.port}`,
+              label: svc.name + ":" + port.port,
+              group: svc.namespace === activeNamespace ? `${svc.namespace} (Current)` : svc.namespace,
             });
           });
       });

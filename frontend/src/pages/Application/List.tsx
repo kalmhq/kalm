@@ -46,7 +46,7 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   const httpRoutes = state.get("routes").httpRoutes;
   const componentsMap = state.get("components").components;
-  const clusterInfo = state.get("cluster").get("info");
+  const clusterInfo = state.get("cluster").info;
   const usingApplicationCard = state.get("settings").get("usingApplicationCard");
   return {
     clusterInfo,

@@ -29,7 +29,7 @@ interface FieldArrayComponentHackType {
 const mapStateToProps = (state: RootState) => {
   return {
     activeNamespace: state.get("namespaces").get("active"),
-    services: state.get("services").get("services"),
+    services: state.get("services").services,
   };
 };
 
@@ -42,7 +42,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
     const options: KAutoCompleteOption[] = [];
     services
       .filter((x) => {
-        const ns = x.get("namespace");
+        const ns = x.namespace;
 
         // TODO should we ignore the system namespaces??
         return (
@@ -57,10 +57,9 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
         );
       })
       .forEach((svc) => {
-        svc
-          .get("ports")
+        svc.ports
           .filter((p) => {
-            const appProtocol = p.get("appProtocol");
+            const appProtocol = p.appProtocol;
             return (
               appProtocol === PortProtocolHTTP ||
               appProtocol === PortProtocolHTTP2 ||
@@ -71,10 +70,9 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
           })
           .forEach((port) => {
             options.push({
-              value: `${svc.get("name")}.${svc.get("namespace")}.svc.cluster.local:${port.get("port")}`,
-              label: svc.get("name") + ":" + port.get("port") + `(${port.get("appProtocol")})`,
-              group:
-                svc.get("namespace") === activeNamespace ? `${svc.get("namespace")} (Current)` : svc.get("namespace"),
+              value: `${svc.name}.${svc.namespace}.svc.cluster.local:${port.port}`,
+              label: svc.name + ":" + port.port + `(${port.appProtocol})`,
+              group: svc.namespace === activeNamespace ? `${svc.namespace} (Current)` : svc.namespace,
             });
           });
       });

@@ -41,7 +41,7 @@ const mapStateToProps = (state: RootState) => {
   return {
     tutorialState: state.get("tutorial"),
     domains: Array.from(domains),
-    ingressIP: state.get("cluster").get("info").get("ingressIP"),
+    ingressIP: state.get("cluster").info.ingressIP,
     certifications,
     form: ROUTE_FORM_ID,
   };

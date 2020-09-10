@@ -17,7 +17,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    clusterInfo: state.get("cluster").get("info"),
+    clusterInfo: state.get("cluster").info,
   };
 };
 
@@ -31,19 +31,19 @@ class CopyAsCurlRaw extends React.PureComponent<Props> {
   private buildCurlCommand = (scheme: string, host: string, path: string, method: string) => {
     const { clusterInfo } = this.props;
     let extraArgs: string[] = [];
-    if (isPrivateIP(clusterInfo.get("ingressIP"))) {
+    if (isPrivateIP(clusterInfo.ingressIP)) {
       if (scheme === "https") {
         if (!host.includes(":")) {
-          host = host + ":" + clusterInfo.get("httpsPort");
+          host = host + ":" + clusterInfo.httpsPort;
         }
         extraArgs.push(`-k`);
       } else {
         if (!host.includes(":")) {
           extraArgs.push(`-H "Host: ${host}"`);
-          host = host + ":" + clusterInfo.get("httpPort");
+          host = host + ":" + clusterInfo.httpPort;
         }
       }
-      extraArgs.push(`--resolve ${host}:${clusterInfo.get("ingressIP")}`);
+      extraArgs.push(`--resolve ${host}:${clusterInfo.ingressIP}`);
     }
     const url = `${scheme}://${host}${path}`;
     return `curl -v -X ${method}${extraArgs.map((x) => " " + x).join("")} ${url}`;

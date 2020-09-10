@@ -1,7 +1,6 @@
-import Immutable from "immutable";
+import produce from "immer";
+import { addOrUpdateInArray, removeInArray } from "reducers/utils";
 import { Actions } from "types";
-import { ImmutableMap } from "typings";
-import { LOAD_SERVICES_FAILED, LOAD_SERVICES_FULFILLED, LOAD_SERVICES_PENDING, Service } from "types/service";
 import {
   RESOURCE_ACTION_ADD,
   RESOURCE_ACTION_DELETE,
@@ -9,59 +8,61 @@ import {
   RESOURCE_TYPE_SERVICE,
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
-import { addOrUpdateInList, removeInList } from "reducers/utils";
+import { LOAD_SERVICES_FAILED, LOAD_SERVICES_FULFILLED, LOAD_SERVICES_PENDING, Service } from "types/service";
 
-export type State = ImmutableMap<{
+export type State = {
   isLoading: boolean;
   isFirstLoaded: boolean;
-  services: Immutable.List<Service>;
-}>;
+  services: Service[];
+};
 
-const initialState: State = Immutable.Map({
+const initialState: State = {
   isLoading: false,
   isFirstLoaded: false,
-  services: Immutable.List([]),
-});
+  services: [],
+};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOAD_SERVICES_PENDING: {
-      return state.set("isLoading", true);
+      state.isLoading = true;
+      return;
     }
     case LOAD_SERVICES_FAILED: {
-      return state.set("isLoading", false);
+      state.isLoading = false;
+      return;
     }
     case LOAD_SERVICES_FULFILLED: {
-      state = state.set("isLoading", false);
-      state = state.set("isFirstLoaded", true);
-      state = state.set("services", action.payload.services);
-      break;
+      state.isLoading = false;
+      state.isFirstLoaded = true;
+      state.services = action.payload.services;
+      return;
     }
     case WATCHED_RESOURCE_CHANGE: {
       if (action.kind !== RESOURCE_TYPE_SERVICE) {
-        return state;
+        return;
       }
 
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          state = state.update("services", (x) => addOrUpdateInList(x, action.payload.data));
-          break;
+          state.services = addOrUpdateInArray(state.services, action.payload.data);
+          return;
         }
         case RESOURCE_ACTION_DELETE: {
-          state = state.update("services", (x) => removeInList(x, action.payload.data));
-          break;
+          state.services = removeInArray(state.services, action.payload.data);
+          return;
         }
         case RESOURCE_ACTION_UPDATE: {
-          state = state.update("services", (x) => addOrUpdateInList(x, action.payload.data));
-          break;
+          state.services = addOrUpdateInArray(state.services, action.payload.data);
+          return;
         }
       }
 
-      break;
+      return;
     }
   }
 
   return state;
-};
+}, initialState);
 
 export default reducer;

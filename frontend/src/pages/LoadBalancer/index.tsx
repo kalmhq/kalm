@@ -18,7 +18,7 @@ import { BasePage } from "../BasePage";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    ingressInfo: state.get("cluster").get("info"),
+    ingressInfo: state.get("cluster").info,
   };
 };
 
@@ -77,9 +77,9 @@ export class LoadBalancerInfoRaw extends React.Component<Props, States> {
 
   private renderPorts = (row: ClusterInfo) => {
     const { classes } = this.props;
-    const httpPort = row.get("httpPort");
-    const httpsPort = row.get("httpsPort");
-    const tlsPort = row.get("tlsPort");
+    const httpPort = row.httpPort;
+    const httpsPort = row.httpsPort;
+    const tlsPort = row.tlsPort;
     return (
       <div className={classes.portsContainer}>
         {this.renderPort("HTTP", httpPort)}
@@ -124,8 +124,8 @@ export class LoadBalancerInfoRaw extends React.Component<Props, States> {
   };
 
   private renderHostName = (row: ClusterInfo) => {
-    const ipContent = row.get("ingressIP");
-    const hostName = row.get("ingressHostname");
+    const ipContent = row.ingressIP;
+    const hostName = row.ingressHostname;
     const coms = [];
     if (hostName) {
       coms.push(this.generateCopyContent(hostName));

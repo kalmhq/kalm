@@ -55,16 +55,16 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   const routesPath = "/routes";
   const newRoutePath = "/routes/new";
 
-  const clusterInfo = state.get("cluster").get("info");
-  const clusterIngressIP = clusterInfo.get("ingressIP") || "10.0.0.1"; // TODO
+  const clusterInfo = state.get("cluster").info;
+  const clusterIngressIP = clusterInfo.ingressIP || "10.0.0.1"; // TODO
 
   const domain = clusterIngressIP.replace(/\./g, "-") + ".nip.io";
 
   const path = "/echoserver";
   let finialLink = "http://" + domain + path;
 
-  if (clusterInfo.get("httpPort") !== 80) {
-    finialLink = finialLink + ":" + clusterInfo.get("httpPort");
+  if (clusterInfo.httpPort !== 80) {
+    finialLink = finialLink + ":" + clusterInfo.httpPort;
   }
 
   return {

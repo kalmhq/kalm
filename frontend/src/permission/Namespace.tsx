@@ -20,7 +20,7 @@ const mapStateToProps = (state: RootState, props: any) => {
   const isApplicationListLoading = applicationsState.isListLoading;
   const isApplicationListFirstLoaded = applicationsState.isListFirstLoaded;
   const activeApplication = applicationsState.applications.find((application) => application.name === activeNamespace);
-  const isAdmin = state.get("auth").get("isAdmin");
+  const isAdmin = state.get("auth").isAdmin;
 
   return {
     isAdmin,

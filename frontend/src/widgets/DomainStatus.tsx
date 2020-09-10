@@ -15,7 +15,7 @@ const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
   const regResultIp = regExpIp.exec(ownProps.domain);
   return {
     domainStatus: state.get("domain").find((status) => status.get("domain") === ownProps.domain),
-    ingressIP: state.get("cluster").get("info").get("ingressIP"),
+    ingressIP: state.get("cluster").info.ingressIP,
     isIPDomain: regResultIp !== null,
   };
 };

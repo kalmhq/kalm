@@ -1,9 +1,8 @@
-import Immutable from "immutable";
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import { CertificateForm, CertificateIssuerForm } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import { DeployKey } from "types/deployKey";
-import { RegistryFormType, Registry } from "types/registry";
+import { Registry, RegistryFormType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { RoleBindingsRequestBody } from "types/user";
@@ -14,11 +13,11 @@ export const mockStore = new MockStore();
 
 export default class MockApi extends Api {
   public getClusterInfo = async () => {
-    return mockStore.data.get("mockClusterInfo");
+    return mockStore.data.mockClusterInfo;
   };
 
   public getLoginStatus = async () => {
-    return mockStore.data.get("mockLoginStatus");
+    return mockStore.data.mockLoginStatus;
   };
 
   public validateToken = async (token: string): Promise<boolean> => {
@@ -26,57 +25,57 @@ export default class MockApi extends Api {
   };
 
   public getNodes = async () => {
-    return mockStore.dataImmer.mockNodes;
+    return mockStore.data.mockNodes;
   };
 
   public cordonNode = async () => {
-    return mockStore.dataImmer.mockNodes.nodes[0];
+    return mockStore.data.mockNodes.nodes[0];
   };
 
   public uncordonNode = async () => {
-    return mockStore.dataImmer.mockNodes.nodes[0];
+    return mockStore.data.mockNodes.nodes[0];
   };
 
   public getPersistentVolumes = async () => {
-    return mockStore.dataImmer.mockVolumes;
+    return mockStore.data.mockVolumes;
   };
 
   public getStorageClasses = async () => {
-    return mockStore.dataImmer.mockStorageClasses;
+    return mockStore.data.mockStorageClasses;
   };
 
   public getSimpleOptions = async (namespace: string) => {
-    return mockStore.dataImmer.mockSimpleOptions;
+    return mockStore.data.mockSimpleOptions;
   };
 
   public getStatefulSetOptions = async (namespace: string) => {
-    return mockStore.dataImmer.mockStatefulSetOptions;
+    return mockStore.data.mockStatefulSetOptions;
   };
 
   public getRegistries = async (): Promise<Registry[]> => {
-    return mockStore.dataImmer.mockRegistries;
+    return mockStore.data.mockRegistries;
   };
 
   public getApplicationList = async () => {
-    return mockStore.dataImmer.mockApplications;
+    return mockStore.data.mockApplications;
   };
 
   public getApplication = async (name: string) => {
-    return mockStore.dataImmer.mockApplications.find((application) => application.name === name)!;
+    return mockStore.data.mockApplications.find((application) => application.name === name)!;
   };
 
   public getApplicationComponentList = async (applicationName: string) => {
-    return mockStore.dataImmer.mockApplicationComponents[applicationName];
+    return mockStore.data.mockApplicationComponents[applicationName];
   };
 
   public getApplicationComponent = async (applicationName: string, name: string) => {
-    return mockStore.dataImmer.mockApplicationComponents[applicationName].find(
+    return mockStore.data.mockApplicationComponents[applicationName].find(
       (c) => c.name === name,
     ) as ApplicationComponentDetails;
   };
 
   public getHttpRoutes = async () => {
-    return mockStore.dataImmer.mockHttpRoutes;
+    return mockStore.data.mockHttpRoutes;
   };
 
   public createHttpRoute = async (httpRoute: HttpRoute) => {
@@ -95,15 +94,15 @@ export default class MockApi extends Api {
   };
 
   public mockLoadRolebindings = async () => {
-    return Immutable.fromJS([]);
+    return [];
   };
 
   public getCertificateList = async () => {
-    return mockStore.dataImmer.mockCertificates;
+    return mockStore.data.mockCertificates;
   };
 
   public getCertificateIssuerList = async () => {
-    return mockStore.dataImmer.mockCertificateIssuers;
+    return mockStore.data.mockCertificateIssuers;
   };
 
   public createCertificate = async (certificate: CertificateForm, isEdit?: boolean) => {
@@ -113,7 +112,7 @@ export default class MockApi extends Api {
 
   public createCertificateIssuer = async (certificateIssuer: CertificateIssuerForm, isEdit?: boolean) => {
     await mockStore.updateCertificateIssuer(certificateIssuer);
-    return Immutable.fromJS(certificateIssuer);
+    return certificateIssuer;
   };
 
   public createApplication = async (application: Application) => {
@@ -141,7 +140,7 @@ export default class MockApi extends Api {
       memory: [],
     };
     componentDetails.services = [];
-    componentDetails.pods = [mockStore.dataImmer.mockErrorPod];
+    componentDetails.pods = [mockStore.data.mockErrorPod];
 
     await mockStore.updateApplicationComponent(applicationName, componentDetails);
     return componentDetails;
@@ -168,7 +167,7 @@ export default class MockApi extends Api {
   };
 
   public loadServices = async (name: string) => {
-    return mockStore.data.get("mockServices");
+    return mockStore.data.mockServices;
   };
 
   public deletePersistentVolume = async (name: string): Promise<void> => {
@@ -187,7 +186,7 @@ export default class MockApi extends Api {
   public deleteRoleBindings = async (namespace: string, bindingName: string) => {};
 
   public getRegistry = async (name: string) => {
-    return mockStore.dataImmer.mockRegistries.find((x) => x.name === name)!;
+    return mockStore.data.mockRegistries.find((x) => x.name === name)!;
   };
 
   // TODO
@@ -197,12 +196,12 @@ export default class MockApi extends Api {
 
   // TODO
   public loadRolebindings = async () => {
-    return Immutable.fromJS([]);
+    return [];
   };
 
   public updateApplication = async (application: Application) => {
     await mockStore.updateApplication(application as ApplicationDetails);
-    return Immutable.fromJS(application);
+    return application as ApplicationDetails;
   };
 
   public updateApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
@@ -217,7 +216,7 @@ export default class MockApi extends Api {
 
   // TODO
   public getSSOConfig = async (): Promise<SSOConfig> => {
-    return mockStore.dataImmer.mockSSO;
+    return mockStore.data.mockSSO;
   };
 
   public createSSOConfig = async (ssoConfig: SSOConfig): Promise<SSOConfig> => {
@@ -259,7 +258,7 @@ export default class MockApi extends Api {
   };
 
   public initializeCluster = async (domain: string): Promise<InitializeClusterResponse> => {
-    return Immutable.Map({});
+    return {} as any;
   };
 
   public resetCluster = async (): Promise<any> => {

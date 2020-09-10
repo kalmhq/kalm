@@ -33,7 +33,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   const routesMap = state.get("routes").httpRoutes;
-  const clusterInfo = state.get("cluster").get("info");
+  const clusterInfo = state.get("cluster").info;
   return {
     clusterInfo,
     routesMap,

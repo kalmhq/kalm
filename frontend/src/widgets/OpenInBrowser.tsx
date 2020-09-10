@@ -15,7 +15,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    clusterInfo: state.get("cluster").get("info"),
+    clusterInfo: state.get("cluster").info,
   };
 };
 
@@ -71,9 +71,9 @@ export const getRouteUrl = (route: HttpRoute, clusterInfo: ClusterInfo, customHo
 
   if (host === "*") {
     host =
-      (clusterInfo.get("ingressIP") || clusterInfo.get("ingressHostname")) +
+      (clusterInfo.ingressIP || clusterInfo.ingressHostname) +
       ":" +
-      clusterInfo.get(scheme === "https" ? "httpsPort" : "httpPort");
+      clusterInfo[scheme === "https" ? "httpsPort" : "httpPort"];
   }
 
   if (host.includes("*")) {

@@ -1,4 +1,3 @@
-import Immutable from "immutable";
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import { LoginStatus } from "types/authorization";
 import { Certificate, CertificateIssuer, CertificateIssuerForm, CertificateForm } from "types/certificate";
@@ -85,7 +84,7 @@ export abstract class Api {
   public abstract deletePod(namespace: string, name: string): Promise<any>;
 
   // RoleBindings
-  public abstract loadRolebindings(): Promise<Immutable.List<RoleBinding>>;
+  public abstract loadRolebindings(): Promise<RoleBinding[]>;
 
   public abstract createRoleBindings(roleBindingRequestBody: RoleBindingsRequestBody): Promise<void>;
 
@@ -108,7 +107,7 @@ export abstract class Api {
   public abstract deleteCertificate(name: string): Promise<void>;
 
   // services
-  public abstract loadServices(name: string): Promise<Immutable.List<Service>>;
+  public abstract loadServices(name: string): Promise<Service[]>;
 
   // SSOConfig
   public abstract getSSOConfig(): Promise<SSOConfig>;
