@@ -18,7 +18,7 @@ export const CollapseWrapper = ({ title, defaultOpen, showIcon, children }: Prop
       <KMLink component="button" variant="body2" onClick={() => setOpen(!open)}>
         <FlexRowItemCenterBox>
           {showIcon ? (
-            <Box>
+            <Box style={{ display: "flex", alignItems: "center" }}>
               {open ? (
                 <ExpandMoreIcon />
               ) : (

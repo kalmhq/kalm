@@ -134,11 +134,13 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
         onBlur={handleBlur}
         value={value}
         onChange={(e, value) => {
-          setFieldValue(name, value);
+          setFieldValue(
+            name,
+            value.map((v) => v.trim()),
+          );
         }}
         // @ts-ignore
         renderTags={(value: string[], getTagProps) => {
-          console.log("value:", value);
           return value.map((option: string, index: number) => {
             return (
               <Chip

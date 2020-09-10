@@ -60,7 +60,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
               {domains
                 ?.map((domain) => {
                   return (
-                    <>
+                    <Box key={domain}>
                       <CollapseWrapper
                         title={
                           <FlexRowItemCenterBox>
@@ -77,7 +77,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                           </pre>
                         </Box>
                       </CollapseWrapper>
-                    </>
+                    </Box>
                   );
                 })
                 .toList()}
@@ -127,9 +127,9 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
               {domains
                 ?.map((domain) => {
                   return (
-                    <>
+                    <Box key={domain}>
                       <FlexRowItemCenterBox>{domain}</FlexRowItemCenterBox>
-                    </>
+                    </Box>
                   );
                 })
                 .toList()}
@@ -203,7 +203,6 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
     const certName = coms[coms.length - 1];
     const certInfoList = certificates.filter((item) => item.get("name") === certName);
     const certInfo = certInfoList.get(0);
-    console.log(certInfo);
     return (
       <BasePage>
         <div className={classes.root}>

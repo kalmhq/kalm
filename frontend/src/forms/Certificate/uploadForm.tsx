@@ -141,7 +141,6 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { onSubmit, initialValues, classes, isEdit, ingressIP, dispatch } = this.props;
-    console.log("initialValues", initialValues, initialValues.managedType === selfManaged);
     return (
       <Formik
         onSubmit={onSubmit}
