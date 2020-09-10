@@ -54,6 +54,7 @@ const reducer = produce((state: State = initialState, action: Actions) => {
 
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
+          console.log(action.payload.data);
           state.deployKeys = addOrUpdateInArray(state.deployKeys, action.payload.data);
           break;
         }

@@ -212,7 +212,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_DEPLOY_KEY,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
