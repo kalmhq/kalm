@@ -1,8 +1,8 @@
-import Immutable, { isImmutable } from "immutable";
-import { State as TutorialState } from "reducers/tutorial";
+import { APPLICATION_FORM_ID, CERTIFICATE_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
+import Immutable from "immutable";
 import { RootState } from "reducers";
-import { formValueSelector } from "redux-form/immutable";
-import { APPLICATION_FORM_ID, COMPONENT_FORM_ID, CERTIFICATE_FORM_ID } from "forms/formIDs";
+import { State as TutorialState } from "reducers/tutorial";
+import { getIn } from "formik";
 
 export const formValidateOrNotBlockByTutorial = (
   values: Immutable.Map<string, any>,
@@ -42,6 +42,48 @@ export const formValidateOrNotBlockByTutorial = (
       }
     }
   }
+  return errors;
+};
+
+export const formikValidateOrNotBlockByTutorial = (
+  values: { [key: string]: any },
+  props: { tutorialState: TutorialState; form: string },
+) => {
+  const { tutorialState, form } = props;
+  const errors: { [key: string]: any } = {};
+  const state = tutorialState;
+
+  if (!tutorialState) {
+    return errors;
+  }
+
+  const tutorial = tutorialState.get("tutorial");
+  if (!tutorial) {
+    return errors;
+  }
+
+  const currentStep = tutorial.steps[state.get("currentStepIndex")];
+  if (!currentStep) {
+    return errors;
+  }
+
+  for (let i = 0; i < currentStep.subSteps.length; i++) {
+    const subStep = currentStep.subSteps[i];
+
+    if (subStep.formValidator) {
+      for (let j = 0; j < subStep.formValidator.length; j++) {
+        const rule = subStep.formValidator[j];
+        if (rule.form === form) {
+          const error = rule.validate(getIn(values, rule.field));
+
+          if (error) {
+            errors[rule.field] = error;
+          }
+        }
+      }
+    }
+  }
+
   return errors;
 };
 
@@ -108,13 +150,21 @@ export const requireSubStepCompleted = (state: RootState, ...subStepIndexes: num
 };
 
 export const getFormValue = (rootState: RootState, form: string, field: string) => {
-  const selector = formValueSelector(form);
-  return selector(rootState, field);
+  const formValues = rootState.get("tutorial").get("formValues")?.get(form);
+  if (!formValues) {
+    return undefined;
+  }
+  return getIn(formValues, field);
 };
 
 export const isFormFieldValueEqualTo = (rootState: RootState, form: string, field: string, value: any) => {
-  const formValue = getFormValue(rootState, form, field);
-  return isImmutable(formValue) ? formValue.equals(value) : formValue === value;
+  const formValues = rootState.get("tutorial").get("formValues")?.get(form);
+  if (!formValues) {
+    return false;
+  }
+  return Array.isArray(getIn(formValues, field))
+    ? getIn(formValues, field)[0] === value[0]
+    : getIn(formValues, field) === value;
 };
 
 export const isFormFieldMeet = (rootState: RootState, form: string, field: string, cb: (value: any) => boolean) => {

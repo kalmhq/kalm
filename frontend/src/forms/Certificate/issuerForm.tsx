@@ -1,34 +1,20 @@
 import { Button, Grid, Paper } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
-import { RenderSelectField } from "forms/Basic/select";
-import { KRenderDebounceTextField } from "forms/Basic/textfield";
+import { Field, FormikProps, withFormik } from "formik";
+import { RenderFormikSelectField } from "forms/Basic/select";
+import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
 import { ValidatorRequired } from "forms/validator";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
-import { InjectedFormProps } from "redux-form";
-import { Field, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
 import { TDispatchProp } from "types";
-import { AcmeCloudFlare, caForTest, CertificateIssuerFormType, cloudFlare } from "types/certificate";
-
-const defaultFormID = "certificate-issuer";
-
-const mapStateToProps = (state: RootState, { form }: OwnProps) => {
-  const selector = formValueSelector(form || defaultFormID);
-  const syncErrors = getFormSyncErrors(form || defaultFormID)(state) as { [key: string]: any };
-  return {
-    syncErrors,
-    name: selector(state, "name") as string,
-    issuerType: selector(state, "issuerType") as string,
-    caForTest: selector(state, "caForTest") as {} | undefined,
-    acmeCloudFlare: selector(state, "acmeCloudFlare") as AcmeCloudFlare | undefined,
-  };
-};
+import { caForTest, CertificateIssuerFormTypeContent, cloudFlare } from "types/certificate";
 
 interface OwnProps {
   form?: string;
   isEdit?: boolean;
+  _initialValues: CertificateIssuerFormTypeContent;
+  onSubmit: (formValues: CertificateIssuerFormTypeContent) => void;
 }
 
 const styles = (theme: Theme) =>
@@ -44,9 +30,9 @@ const styles = (theme: Theme) =>
 
 export interface Props
   extends WithStyles<typeof styles>,
-    ReturnType<typeof mapStateToProps>,
+    OwnProps,
     TDispatchProp,
-    InjectedFormProps<CertificateIssuerFormType> {
+    FormikProps<CertificateIssuerFormTypeContent> {
   isEdit?: boolean;
 }
 
@@ -64,7 +50,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
         <Grid item md={12}>
           <Field
             label="Email"
-            component={KRenderDebounceTextField}
+            component={KRenderDebounceFormikTextField}
             name="acmeCloudFlare.account"
             margin="normal"
             validate={ValidatorRequired}
@@ -73,7 +59,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
         <Grid item md={12}>
           <Field
             label="Token Secret"
-            component={KRenderDebounceTextField}
+            component={KRenderDebounceFormikTextField}
             name="acmeCloudFlare.secret"
             margin="normal"
             validate={ValidatorRequired}
@@ -84,7 +70,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, handleSubmit, issuerType, isEdit } = this.props;
+    const { classes, handleSubmit, values, isEdit } = this.props;
 
     return (
       <Paper square className={classes.paper} elevation={0}>
@@ -93,7 +79,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
             <Grid item md={12}>
               <Field
                 label="Issuer Type"
-                component={RenderSelectField}
+                component={RenderFormikSelectField}
                 name="issuerType"
                 margin="normal"
                 validate={ValidatorRequired}
@@ -108,18 +94,24 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
             <Grid item md={12}>
               <Field
                 label="Issuer name"
-                component={KRenderDebounceTextField}
+                component={KRenderDebounceFormikTextField}
                 name="name"
                 margin="normal"
                 validate={ValidatorRequired}
               />
             </Grid>
           )}
-          {issuerType === cloudFlare ? this.renderCloudflareFields() : null}
+          {values.issuerType === cloudFlare ? this.renderCloudflareFields() : null}
           <Grid container spacing={2}>
             <Grid item md={10}></Grid>
             <Grid item md={2}>
-              <Button type="submit" onClick={handleSubmit} color="primary">
+              <Button
+                type="submit"
+                onClick={(event: any) => {
+                  handleSubmit(event);
+                }}
+                color="primary"
+              >
                 {isEdit ? "Save" : "Create"}
               </Button>
             </Grid>
@@ -130,8 +122,10 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const CertificateIssuerForm = reduxForm<CertificateIssuerFormType, OwnProps>({
-  onSubmitFail: console.log,
-  form: defaultFormID,
-  touchOnChange: true,
-})(connect(mapStateToProps)(withStyles(styles)(CertificateIssuerFormRaw)));
+export const CertificateIssuerForm = withFormik<Props, CertificateIssuerFormTypeContent>({
+  mapPropsToValues: (props) => props._initialValues,
+  enableReinitialize: true,
+  handleSubmit: async (formValues, { props: { onSubmit } }) => {
+    await onSubmit(formValues);
+  },
+})(connect()(withStyles(styles)(CertificateIssuerFormRaw)));

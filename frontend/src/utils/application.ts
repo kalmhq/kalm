@@ -7,6 +7,8 @@ import {
   VolumeTypePersistentVolumeClaim,
   VolumeTypePersistentVolumeClaimNew,
   workloadTypeServer,
+  VolumeTypePersistentVolumeClaimTemplate,
+  VolumeTypePersistentVolumeClaimTemplateNew,
 } from "types/componentTemplate";
 import { formatDate, formatTimeDistance } from "utils/date";
 
@@ -26,7 +28,7 @@ export const correctComponentFormValuesForSubmit = (
   const volumeOptions = getComponentFormVolumeOptions(
     state,
     componentValues.get("name"),
-    componentValues.get("workloadType"),
+    componentValues.get("workloadType") || workloadTypeServer,
   );
 
   const findPVC = (claimName: string) => {
@@ -49,7 +51,10 @@ export const correctComponentFormValuesForSubmit = (
 
   const correctedVolumes = volumes?.map((v) => {
     // set pvc and pvToMatch
-    if (v.get("type") === VolumeTypePersistentVolumeClaim) {
+    if (
+      v.get("type") === VolumeTypePersistentVolumeClaim ||
+      v.get("type") === VolumeTypePersistentVolumeClaimTemplate
+    ) {
       const findResult = findPVC(v.get("claimName"));
       v = v.set("pvc", findResult.pvc);
       v = v.set("pvToMatch", findResult.pvToMatch);
@@ -59,6 +64,9 @@ export const correctComponentFormValuesForSubmit = (
     // if is pvc-new, set to pvc
     if (v.get("type") === VolumeTypePersistentVolumeClaimNew) {
       v = v.set("type", VolumeTypePersistentVolumeClaim);
+    }
+    if (v.get("type") === VolumeTypePersistentVolumeClaimTemplateNew) {
+      v = v.set("type", VolumeTypePersistentVolumeClaimTemplate);
     }
     return v;
   });
@@ -93,7 +101,11 @@ export const correctComponentFormValuesForInit = (
 ): ApplicationComponent => {
   let volumes = component.get("volumes");
   if (volumes) {
-    const volumeOptions = getComponentFormVolumeOptions(state, component.get("name"), component.get("workloadType"));
+    const volumeOptions = getComponentFormVolumeOptions(
+      state,
+      component.get("name"),
+      component.get("workloadType") || "server",
+    );
 
     const findClaimName = (pvc?: string) => {
       pvc = pvc || "";
@@ -110,7 +122,10 @@ export const correctComponentFormValuesForInit = (
 
     const correctedVolumes = volumes?.map((v) => {
       // set claimName according to pvc
-      if (v.get("type") === VolumeTypePersistentVolumeClaim) {
+      if (
+        v.get("type") === VolumeTypePersistentVolumeClaim ||
+        v.get("type") === VolumeTypePersistentVolumeClaimTemplate
+      ) {
         const claimName = findClaimName(v.get("pvc"));
         v = v.set("claimName", claimName);
       }

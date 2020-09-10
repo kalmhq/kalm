@@ -56,7 +56,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
         return (
           <Box>
             <Box className={classes.key}>Domains</Box>
-            <Box pl={10} pt={1}>
+            <Box pl={0} pt={1}>
               {domains
                 ?.map((domain) => {
                   return (
@@ -89,7 +89,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
         return (
           <Box>
             <Box className={classes.key}>Domains</Box>
-            <Box pl={10} pt={1}>
+            <Box pl={0} pt={1}>
               {domains
                 ?.map((cname, domain) => {
                   return (

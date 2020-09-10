@@ -1,19 +1,17 @@
-import { RootState } from "reducers";
-import { Actions } from "types";
-import { ActionTypes, actionTypes } from "redux-form";
+import { CERTIFICATE_FORM_ID } from "forms/formIDs";
 import Immutable from "immutable";
 import React from "react";
-import { Tutorial, TutorialFactory } from "types/tutorial";
+import { RootState } from "reducers";
 import { store } from "store";
 import {
+  isCertificateFormFieldValueEqualTo,
   isUnderPath,
+  popupTitle,
   requireSubStepCompleted,
   requireSubStepNotCompleted,
-  isCertificateFormFieldValueEqualTo,
-  popupTitle,
 } from "tutorials/utils";
-import { CERTIFICATE_FORM_ID } from "forms/formIDs";
 import { Certificate } from "types/certificate";
+import { Tutorial, TutorialFactory } from "types/tutorial";
 
 export const ConfigureHttpsCertsTutorialFactory: TutorialFactory = (title): Tutorial => {
   let certificates: Immutable.List<Certificate> = store.getState().get("certificates").get("certificates");
@@ -96,14 +94,13 @@ export const ConfigureHttpsCertsTutorialFactory: TutorialFactory = (title): Tuto
                   domains === Immutable.List([domain]) ? undefined : `Please follow the tutorial, use ${domain}.`,
               },
             ],
-            shouldCompleteByState: (state: RootState) =>
-              isCertificateFormFieldValueEqualTo(state, "domains", Immutable.List([domain])),
+            shouldCompleteByState: (state: RootState) => isCertificateFormFieldValueEqualTo(state, "domains", [domain]),
           },
           {
             title: "Submit form",
-            shouldCompleteByAction: (action: Actions) =>
-              action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) &&
-              action.meta!.form === CERTIFICATE_FORM_ID,
+            // shouldCompleteByAction: (action: Actions) =>
+            //   action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) &&
+            //   action.meta!.form === CERTIFICATE_FORM_ID,
           },
         ],
       },

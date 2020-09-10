@@ -1,20 +1,17 @@
 import { Box, Button, createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import Immutable from "immutable";
+import { Field, Form, FormikProps, withFormik } from "formik";
+import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
+import { RenderFormikSelectField } from "forms/Basic/select";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import React from "react";
 import { connect } from "react-redux";
-import { change, InjectedFormProps } from "redux-form";
-import { Field, getFormValues, reduxForm } from "redux-form/immutable";
 import { RootState } from "reducers";
-import { ValidatorRequired } from "../validator";
-import { Prompt } from "widgets/Prompt";
-import { PROTECTED_ENDPOINT_ID } from "../formIDs";
-import { ProtectedEndpoint } from "types/sso";
-import { RenderSelectField } from "forms/Basic/select";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { ProtectedEndpointFormType } from "types/sso";
 import sc from "utils/stringConstants";
 import { KPanel } from "widgets/KPanel";
-import { KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
+import { Prompt } from "widgets/Prompt";
+import { ValidatorRequired } from "../validator";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -22,83 +19,81 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const fieldValues =
-    (getFormValues(PROTECTED_ENDPOINT_ID)(state) as ProtectedEndpoint) || (Immutable.Map() as ProtectedEndpoint);
-
   return {
-    fieldValues,
     allComponents: state.get("components").get("components"),
   };
 };
 
-const normalizePorts = (values?: Immutable.List<string | number>) => {
+const normalizePorts = (values?: Array<string | number>) => {
   if (!values) return undefined;
 
-  return values
-    .map((x) => {
-      const val = parseInt(x.toString(), 10);
+  const valuesSet = new Set<number>();
 
-      // Check if the number has non-number suffix
-      // e.g. "123,," will be parsed as 123, but it's still an invalid value
-      if (x !== val && val.toString() !== x) {
-        // the validator will raise errors
-        return null;
-      }
+  values.forEach((x) => {
+    const val = parseInt(x.toString(), 10);
 
-      return val;
-    })
-    .toSet()
-    .toList();
+    // Check if the number has non-number suffix
+    // e.g. "123,," will be parsed as 123, but it's still an invalid value
+    if (x !== val && val.toString() !== x) {
+      // the validator will raise errors
+      return;
+    }
+    valuesSet.add(val);
+  });
+
+  return Array.from(valuesSet);
 };
 
-const validatePorts = (values?: Immutable.List<number>) => {
-  if (!values || values.size === 0) {
+const validatePorts = (values?: number[]) => {
+  if (!values || values.length === 0) {
     return undefined;
   }
 
-  const errors = values
-    .map((port) => {
-      if (!port) {
-        return "Invalid port";
-      }
+  const errors = values.map((port) => {
+    if (!port) {
+      return "Invalid port";
+    }
 
-      return port > 65535 || port <= 0 ? "Port should be in range of (0,65536)" : undefined;
-    })
-    .toArray();
+    return port > 65535 || port <= 0 ? "Port should be in range of (0,65536)" : undefined;
+  });
 
   return errors.filter((x) => !!x).length > 0 ? errors : undefined;
 };
 
 export interface Props {
   isEdit?: boolean;
+  onSubmit: any;
+  initial: ProtectedEndpointFormType;
 }
+
 export interface FinalProps
   extends Props,
     WithNamespaceProps,
-    InjectedFormProps<ProtectedEndpoint, Props>,
+    FormikProps<ProtectedEndpointFormType>,
     ReturnType<typeof mapStateToProps>,
     WithStyles<typeof styles> {}
 
 class ProtectedEndpointFormRaw extends React.PureComponent<FinalProps> {
   public componentDidUpdate(prevProps: FinalProps) {
-    if (prevProps.fieldValues.get("namespace") !== this.props.fieldValues.get("namespace")) {
-      this.props.dispatch(change(PROTECTED_ENDPOINT_ID, "endpointName", ""));
-      this.props.dispatch(change(PROTECTED_ENDPOINT_ID, "ports", Immutable.List()));
+    const { values, setFieldValue } = this.props;
+    if (prevProps.values.namespace !== values.namespace) {
+      setFieldValue("endpointName", "");
+      setFieldValue("ports", []);
     }
 
-    if (prevProps.fieldValues.get("endpointName") !== this.props.fieldValues.get("endpointName")) {
-      this.props.dispatch(change(PROTECTED_ENDPOINT_ID, "ports", Immutable.List()));
+    if (prevProps.values.endpointName !== values.endpointName) {
+      setFieldValue("ports", []);
     }
   }
 
   private isEdit = () => {
     const { initialValues } = this.props;
-    const initializeNamespace = (initialValues as any).get("name");
+    const initializeNamespace = initialValues.name;
     return initializeNamespace !== "";
   };
 
   public render() {
-    const { handleSubmit, classes, dirty, submitSucceeded, fieldValues, applications, allComponents } = this.props;
+    const { classes, dirty, values, applications, allComponents, isSubmitting } = this.props;
 
     const applicationOptions = applications
       .map((a) => ({
@@ -108,7 +103,7 @@ class ProtectedEndpointFormRaw extends React.PureComponent<FinalProps> {
       .toArray();
 
     let componentOptions: { value: string; text: string }[] = [];
-    const selectApplication = fieldValues.get("namespace");
+    const selectApplication = values.namespace;
 
     if (selectApplication) {
       const components = allComponents.get(selectApplication);
@@ -126,8 +121,8 @@ class ProtectedEndpointFormRaw extends React.PureComponent<FinalProps> {
     const isEdit = this.isEdit();
 
     return (
-      <form onSubmit={handleSubmit} className={classes.root}>
-        <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+      <Form className={classes.root} id="protected-endpoint-form">
+        <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
         <KPanel title={"Protected Endpoint"}>
           <Box p={2}>
             <Grid container spacing={2}>
@@ -139,39 +134,39 @@ class ProtectedEndpointFormRaw extends React.PureComponent<FinalProps> {
                     autoComplete="off"
                     disabled={isEdit}
                     required
-                    component={RenderSelectField}
+                    component={RenderFormikSelectField}
                     validate={ValidatorRequired}
                     options={applicationOptions}
-                    helperText={sc.CANT_NOT_EDIT}
                   />
                 </Grid>
                 <Grid item xs={12}>
                   <Field
                     name="endpointName"
                     autoComplete="off"
-                    key={fieldValues.get("namespace")}
+                    key={values.namespace}
                     required
-                    disabled={isEdit || !fieldValues.get("namespace")}
-                    label={!fieldValues.get("namespace") ? "Please select an Application first" : "Choose a component"}
-                    component={RenderSelectField}
+                    disabled={isEdit || !values.namespace}
+                    label={!values.namespace ? "Please select an Application first" : "Choose a component"}
+                    component={RenderFormikSelectField}
                     validate={ValidatorRequired}
                     options={componentOptions}
-                    helperText={sc.CANT_NOT_EDIT}
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <KFreeSoloAutoCompleteMultipleSelectStringField
+                  <Field
+                    component={KFreeSoloFormikAutoCompleteMultiValues}
                     label="Ports"
                     name="ports"
-                    disabled={!fieldValues.get("endpointName")}
-                    placeholder={!fieldValues.get("endpointName") ? "Please select a Component first" : "Select a port"}
+                    disabled={!values.endpointName}
+                    placeholder={!values.endpointName ? "Please select a Component first" : "Select a port"}
                     normalize={normalizePorts}
                     validate={validatePorts}
                     helperText={sc.PROTECTED_ENDPOINT_PORT}
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <KFreeSoloAutoCompleteMultipleSelectStringField
+                  <Field
+                    component={KFreeSoloFormikAutoCompleteMultiValues}
                     label="Grant to specific groups"
                     name="groups"
                     placeholder="e.g. my-github-org:a-team-name. a-gitlab-group-name"
@@ -189,22 +184,35 @@ class ProtectedEndpointFormRaw extends React.PureComponent<FinalProps> {
         </KPanel>
         {process.env.REACT_APP_DEBUG === "true" ? (
           <Box mt={2}>
-            <pre style={{ maxWidth: 1500, background: "#eee" }}>
-              {JSON.stringify(this.props.fieldValues, undefined, 2)}
-            </pre>
+            <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
           </Box>
         ) : null}
-      </form>
+      </Form>
     );
   }
 }
 
-export const ProtectedEndpointForm = reduxForm<ProtectedEndpoint, Props>({
-  form: PROTECTED_ENDPOINT_ID,
-  enableReinitialize: true,
-  keepDirtyOnReinitialize: false,
-  initialValues: Immutable.Map(),
-  onSubmitFail: (...args) => {
-    console.log("submit failed", args);
+// export const ProtectedEndpointForm = reduxForm<ProtectedEndpoint, Props>({
+//   form: PROTECTED_ENDPOINT_ID,
+//   enableReinitialize: true,
+//   keepDirtyOnReinitialize: false,
+//   initialValues: Immutable.Map(),
+//   onSubmitFail: (...args) => {
+//     console.log("submit failed", args);
+//   },
+// })(connect(mapStateToProps)(withNamespace(withStyles(styles)(ProtectedEndpointFormRaw))));
+
+const connectedForm = connect(mapStateToProps)(withNamespace(withStyles(styles)(ProtectedEndpointFormRaw)));
+
+export const ProtectedEndpointForm = withFormik<Props, ProtectedEndpointFormType>({
+  mapPropsToValues: (props) => {
+    return props.initial;
   },
-})(connect(mapStateToProps)(withNamespace(withStyles(styles)(ProtectedEndpointFormRaw))));
+  validate: (values: ProtectedEndpointFormType) => {
+    let errors = {};
+    return errors;
+  },
+  handleSubmit: async (formValues, { props: { onSubmit } }) => {
+    await onSubmit(formValues);
+  },
+})(connectedForm);

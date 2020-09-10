@@ -2,7 +2,6 @@ import Paper from "@material-ui/core/Paper";
 import MuiTable from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
@@ -94,7 +93,7 @@ export const KRTable = ({
   );
 
   return (
-    <TableContainer component={Paper} variant="outlined" square>
+    <Paper variant="outlined" square>
       {showTitle ? (
         <Grid container spacing={2}>
           <Grid item md={9}>
@@ -152,7 +151,7 @@ export const KRTable = ({
           onChangeRowsPerPage={onChangeRowsPerPage}
         />
       ) : null}
-    </TableContainer>
+    </Paper>
   );
 };
 

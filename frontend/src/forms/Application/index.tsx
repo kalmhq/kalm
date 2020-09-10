@@ -1,23 +1,24 @@
 import { Box, createStyles, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import { Alert } from "@material-ui/lab";
-import { shouldError } from "forms/common";
+import { createApplicationAction } from "actions/application";
+import { push } from "connected-react-router";
+import { Field, FormikProps, withFormik } from "formik";
+import { APPLICATION_FORM_ID } from "forms/formIDs";
 import Immutable from "immutable";
 import React from "react";
-import { connect, DispatchProp } from "react-redux";
+import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { InjectedFormProps } from "redux-form";
-import { Field, formValueSelector, reduxForm } from "redux-form/immutable";
 import { theme } from "theme/theme";
-import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
-import { Application } from "types/application";
+import { FormMidware } from "tutorials/formMidware";
+import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { TDispatchProp } from "types";
+import { ApplicationContent } from "types/application";
 import stringConstants from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
-import { KRenderDebounceTextField } from "../Basic/textfield";
-import { APPLICATION_FORM_ID } from "../formIDs";
-import { ValidatorName, ValidatorRequired } from "../validator";
+import { KRenderDebounceFormikTextField } from "../Basic/textfield";
+import { ValidatorName } from "../validator";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -39,12 +40,10 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const selector = formValueSelector(APPLICATION_FORM_ID);
-  const name = selector(state, "name") as string;
   return {
     tutorialState: state.get("tutorial"),
     isSubmittingApplication: state.get("applications").get("isSubmittingApplication"),
-    name,
+    form: APPLICATION_FORM_ID,
   };
 };
 
@@ -53,28 +52,23 @@ interface OwnProps {
   currentTab: "basic" | "applicationPlugins";
 }
 
-interface ConnectedProps extends ReturnType<typeof mapStateToProps>, DispatchProp {}
+interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props
-  extends ConnectedProps,
-    InjectedFormProps<Application, ConnectedProps & OwnProps>,
-    WithStyles<typeof styles>,
-    OwnProps {}
-
-const nameValidators = [ValidatorRequired, ValidatorName];
+export interface Props extends ConnectedProps, FormikProps<ApplicationContent>, WithStyles<typeof styles>, OwnProps {}
 
 class ApplicationFormRaw extends React.PureComponent<Props> {
   private renderBasic() {
-    const { isEdit, name } = this.props;
+    const { isEdit, values } = this.props;
     return (
       <>
         <Field
           name="name"
           label="App Name"
+          id="application-name"
           disabled={isEdit}
-          component={KRenderDebounceTextField}
+          component={KRenderDebounceFormikTextField}
           autoFocus={true}
-          validate={nameValidators}
+          validate={ValidatorName}
           helperText={isEdit ? "Can't modify name" : stringConstants.NAME_RULE}
         />
 
@@ -82,7 +76,8 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           <Body>The App Name becomes part of the DNS name for its resources:</Body>
           <Box p={1}>
             <code id="application-name-code">
-              {"<COMPONENT_NAME>"}.<strong style={{ color: theme.palette.text.primary }}>{name || "<APP_NAME>"}</strong>
+              {"<COMPONENT_NAME>"}.
+              <strong style={{ color: theme.palette.text.primary }}>{values.name || "<APP_NAME>"}</strong>
               .svc.cluster.local
             </code>
           </Box>
@@ -115,10 +110,11 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
   }
 
   public render() {
-    const { handleSubmit, classes, submitFailed, error } = this.props;
+    const { handleSubmit, classes, values, form } = this.props;
 
     return (
       <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">
+        <FormMidware values={values} form={form} />
         <KPanel
           content={
             <Box p={2} tutorial-anchor-id="application-form-name-field">
@@ -127,11 +123,11 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           }
         />
 
-        {error && submitFailed ? (
+        {/* {errors.name && touched.name ? (
           <Box pt={2}>
-            <Alert severity="error">{error}</Alert>
+            <Alert severity="error">{errors.name}</Alert>
           </Box>
-        ) : null}
+        ) : null} */}
 
         <Box pt={3} className={classes.displayFlex}>
           {this.renderButtons()}
@@ -141,19 +137,13 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
   }
 }
 
-export const applicationInitialValues: Application = Immutable.fromJS({
-  name: "",
-  components: [],
-});
+const form = withFormik<ConnectedProps & OwnProps & WithStyles<typeof styles>, ApplicationContent>({
+  mapPropsToValues: () => ({ name: "" }),
+  handleSubmit: async (applicationFormValue, { props: { dispatch } }) => {
+    await dispatch(createApplicationAction(Immutable.fromJS(applicationFormValue)));
+    dispatch(push(`/applications/${applicationFormValue.name}/components/new`));
+  },
+  validate: formikValidateOrNotBlockByTutorial,
+})(ApplicationFormRaw);
 
-export default connect(mapStateToProps)(
-  reduxForm<Application, ConnectedProps & OwnProps>({
-    form: APPLICATION_FORM_ID,
-    initialValues: applicationInitialValues,
-    validate: formValidateOrNotBlockByTutorial,
-    shouldError: shouldError,
-    onSubmitFail: (...args) => {
-      console.log("submit failed", args);
-    },
-  })(withStyles(styles)(ApplicationFormRaw)),
-);
+export default connect(mapStateToProps)(withStyles(styles)(form));

@@ -1,38 +1,33 @@
 import { Box, createStyles, WithStyles, withStyles } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
+import Grid from "@material-ui/core/Grid";
 import { Theme } from "@material-ui/core/styles";
+import { Alert } from "@material-ui/lab";
+import { setSuccessNotificationAction } from "actions/notification";
+import copy from "copy-to-clipboard";
+import { Field, Form, FormikProps, withFormik } from "formik";
+import { Connectors } from "forms/SSOConfig/Connectors";
 import React from "react";
 import { connect } from "react-redux";
-import { Field, formValueSelector, getFormValues, reduxForm } from "redux-form/immutable";
 import { RootState } from "reducers";
+import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { TDispatchProp } from "types";
 import {
   newEmptyGithubConnector,
   newEmptyGitlabConnector,
-  newEmptySSOConfig,
+  SSOConfigFormType,
   SSO_CONNECTOR_TYPE,
   SSO_CONNECTOR_TYPE_GITHUB,
   SSO_CONNECTOR_TYPE_GITLAB,
-  SSOConfig,
 } from "types/sso";
-import { CustomizedButton } from "widgets/Button";
-import { KPanel } from "widgets/KPanel";
-import { KRenderDebounceTextField } from "../Basic/textfield";
-import { ValidateHost, ValidatorRequired } from "../validator";
-import { Alert } from "@material-ui/lab";
-import { shouldError } from "forms/common";
-import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
-import { arrayPush, InjectedFormProps } from "redux-form";
-import { SSO_CONFIG_FORM_ID } from "../formIDs";
-import { Body } from "widgets/Label";
-import Grid from "@material-ui/core/Grid";
-import { CopyIconDefault, GithubIcon } from "widgets/Icon";
-import copy from "copy-to-clipboard";
-import { setSuccessNotificationAction } from "actions/notification";
-import { TDispatchProp } from "types";
-import Button from "@material-ui/core/Button";
-import { Prompt } from "widgets/Prompt";
-import { Connectors } from "forms/SSOConfig/Connectors";
 import sc from "utils/stringConstants";
-import Immutable from "immutable";
+import { CustomizedButton } from "widgets/Button";
+import { CopyIconDefault, GithubIcon } from "widgets/Icon";
+import { KPanel } from "widgets/KPanel";
+import { Body } from "widgets/Label";
+import { Prompt } from "widgets/Prompt";
+import { KRenderDebounceFormikTextField } from "../Basic/textfield";
+import { ValidateHost } from "../validator";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -42,37 +37,28 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const selector = formValueSelector(SSO_CONFIG_FORM_ID);
-  const domain = selector(state, "domain") as string;
-  const fieldValues = getFormValues(SSO_CONFIG_FORM_ID)(state);
-
   return {
     tutorialState: state.get("tutorial"),
-    fieldValues,
-    domain,
   };
 };
 
 interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-interface OwnProps {}
+interface OwnProps {
+  onSubmit: any;
+  initial: SSOConfigFormType;
+}
 
-export interface Props
-  extends ConnectedProps,
-    InjectedFormProps<SSOConfig, ConnectedProps & OwnProps>,
-    WithStyles<typeof styles>,
-    OwnProps {}
-
-const fieldValidators = [ValidatorRequired, ValidateHost];
+export interface Props extends ConnectedProps, FormikProps<SSOConfigFormType>, WithStyles<typeof styles>, OwnProps {}
 
 class SSOConfigFormRaw extends React.PureComponent<Props> {
   private renderButtons() {
-    const { handleSubmit, initialValues, submitting } = this.props;
-    const isEdit = initialValues.get!("connectors", Immutable.List())!.size! > 0 || initialValues.get!("domain") !== "";
+    const { initialValues, isSubmitting } = this.props;
+    const isEdit = (initialValues.connectors && initialValues.connectors?.length > 0) || initialValues.domain !== "";
 
     return (
       <>
-        <CustomizedButton variant="contained" color="primary" pending={submitting} onClick={handleSubmit}>
+        <CustomizedButton variant="contained" color="primary" pending={isSubmitting} type="submit">
           {isEdit ? "Update Single Sign-On Config" : "Enable Single Sign-On"}
         </CustomizedButton>
       </>
@@ -80,17 +66,17 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
   }
 
   private copyCallback = () => {
-    copy(`https://${this.props.domain}/dex/callback`);
+    copy(`https://${this.props.values.domain}/dex/callback`);
     this.props.dispatch(setSuccessNotificationAction("Copied successful!"));
   };
 
   private renderPrompt = () => {
-    const { dirty, submitSucceeded } = this.props;
-    return <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />;
+    const { dirty, isSubmitting } = this.props;
+    return <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />;
   };
 
   private addConnector = (type: SSO_CONNECTOR_TYPE) => {
-    const { form, dispatch } = this.props;
+    const { values, setFieldValue } = this.props;
 
     let connector;
     if (type === SSO_CONNECTOR_TYPE_GITLAB) {
@@ -99,14 +85,17 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
       connector = newEmptyGithubConnector();
     }
 
-    dispatch(arrayPush(form, "connectors", connector));
+    setFieldValue(
+      "connectors",
+      values.connectors && values.connectors.length > 0 ? [...values.connectors, connector] : [connector],
+    );
   };
 
   public render() {
-    const { handleSubmit, domain, submitFailed, error } = this.props;
+    const { values } = this.props;
 
     return (
-      <form onSubmit={handleSubmit}>
+      <Form>
         {this.renderPrompt()}
         <KPanel
           title="Setup Domain"
@@ -117,8 +106,8 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
                   <Field
                     name="domain"
                     label="Domain"
-                    component={KRenderDebounceTextField}
-                    validate={fieldValidators}
+                    component={KRenderDebounceFormikTextField}
+                    validate={ValidateHost}
                     autoFocus
                     placeholder="Please type a domain for your Single Sign-on configuration"
                     helperText="A valid domain name is required."
@@ -133,7 +122,7 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
                 </Body>
                 <Box p={1}>
                   <pre>
-                    https://<strong style={{ color: "black" }}>{domain || "<domain>"}</strong>/dex/callback
+                    https://<strong style={{ color: "black" }}>{values.domain || "<domain>"}</strong>/dex/callback
                     <Box
                       display="inline-block"
                       ml={1}
@@ -182,17 +171,17 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
                   </a>{" "}
                   on kalm github. Also, pull request is well welcomed.
                 </Body>
-                <Connectors />
+                <Connectors connectors={values.connectors} />
               </Box>
             }
           />
         </Box>
 
-        {error && submitFailed ? (
+        {/* {error && submitFailed ? (
           <Box pt={2}>
             <Alert severity="error">{error}</Alert>
           </Box>
-        ) : null}
+        ) : null} */}
 
         <Box mt={2}>
           <Alert severity="info">
@@ -206,24 +195,23 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
         </Box>
         {process.env.REACT_APP_DEBUG === "true" ? (
           <Box mt={2}>
-            <pre style={{ maxWidth: 1500, background: "#eee" }}>
-              {JSON.stringify(this.props.fieldValues as any, undefined, 2)}
-            </pre>
+            <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values as any, undefined, 2)}</pre>
           </Box>
         ) : null}
-      </form>
+      </Form>
     );
   }
 }
 
-export const SSOConfigForm = connect(mapStateToProps)(
-  reduxForm<SSOConfig, ConnectedProps & OwnProps>({
-    form: SSO_CONFIG_FORM_ID,
-    initialValues: newEmptySSOConfig(),
-    validate: formValidateOrNotBlockByTutorial,
-    shouldError: shouldError,
-    onSubmitFail: (...args) => {
-      console.log("submit failed", args);
-    },
-  })(withStyles(styles)(SSOConfigFormRaw)),
-);
+const connectedForm = connect(mapStateToProps)(withStyles(styles)(SSOConfigFormRaw));
+
+export const SSOConfigForm = withFormik<OwnProps, SSOConfigFormType>({
+  mapPropsToValues: (props) => {
+    return props.initial;
+  },
+  // @ts-ignore
+  validate: formikValidateOrNotBlockByTutorial,
+  handleSubmit: async (formValues, { props: { onSubmit } }) => {
+    await onSubmit(formValues);
+  },
+})(connectedForm);

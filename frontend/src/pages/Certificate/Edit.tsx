@@ -1,14 +1,14 @@
+import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { push } from "connected-react-router";
+import { BasePage } from "pages/BasePage";
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { CertificateFormType, selfManaged } from "types/certificate";
 import { createCertificateAction } from "actions/certificate";
 import { CertificateUploadForm } from "forms/Certificate/uploadForm";
 import { RootState } from "reducers";
-import { BasePage } from "pages/BasePage";
+import { CertificateFormTypeContent, selfManaged } from "types/certificate";
 import { H6 } from "widgets/Label";
-import { push } from "connected-react-router";
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
   const certificate = state
@@ -16,7 +16,9 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
     .get("certificates")
     .find((certificate) => certificate.get("name") === ownProps.match.params.name);
   return {
-    initialValues: certificate ? certificate.merge({ managedType: selfManaged }) : undefined,
+    initialValues: (certificate ? certificate.merge({ managedType: selfManaged }).toJS() : undefined) as
+      | CertificateFormTypeContent
+      | undefined,
   };
 };
 
@@ -28,17 +30,14 @@ const styles = (theme: Theme) =>
 export interface Props extends WithStyles<typeof styles>, TDispatchProp, ReturnType<typeof mapStateToProps> {}
 
 class CertificateEditRaw extends React.PureComponent<Props> {
-  private submit = async (certificate: CertificateFormType) => {
+  private submit = async (certificate: CertificateFormTypeContent) => {
     try {
       const { dispatch } = this.props;
       await dispatch(createCertificateAction(certificate, true));
+      dispatch(push("/certificates"));
     } catch (e) {
       console.log(e);
     }
-  };
-
-  private onSubmitSuccess = () => {
-    this.props.dispatch(push("/certificates"));
   };
 
   public render() {
@@ -52,12 +51,7 @@ class CertificateEditRaw extends React.PureComponent<Props> {
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>
-              <CertificateUploadForm
-                isEdit
-                onSubmitSuccess={this.onSubmitSuccess}
-                onSubmit={this.submit}
-                initialValues={initialValues}
-              />
+              <CertificateUploadForm isEdit onSubmit={this.submit} initialValues={initialValues} />
             </Grid>
           </Grid>
         </div>

@@ -1,13 +1,13 @@
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { CertificateFormType, newEmptyCertificateForm, Certificate } from "types/certificate";
+import { newEmptyCertificateForm, Certificate, CertificateFormTypeContent } from "types/certificate";
+import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { createCertificateAction } from "actions/certificate";
+import { push } from "connected-react-router";
 import { CertificateForm } from "forms/Certificate";
 import { BasePage } from "pages/BasePage";
 import { H6 } from "widgets/Label";
-import { push } from "connected-react-router";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -20,13 +20,14 @@ interface State {
   newCert: Certificate;
 }
 class CertificateNewRaw extends React.Component<Props, State> {
-  private submit = async (certificate: CertificateFormType) => {
+  private submit = async (certificate: CertificateFormTypeContent) => {
     try {
       const { dispatch } = this.props;
       const cert = await dispatch(createCertificateAction(certificate, false));
       this.setState({
         newCert: cert,
       });
+      this.onSubmitSuccess();
     } catch (e) {
       console.log(e);
     }
@@ -45,11 +46,7 @@ class CertificateNewRaw extends React.Component<Props, State> {
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>
-              <CertificateForm
-                onSubmitSuccess={this.onSubmitSuccess}
-                onSubmit={this.submit}
-                initialValues={newEmptyCertificateForm}
-              />
+              <CertificateForm onSubmit={this.submit} initialValues={newEmptyCertificateForm} />
             </Grid>
           </Grid>
         </div>

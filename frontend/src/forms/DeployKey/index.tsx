@@ -3,27 +3,27 @@ import { Theme } from "@material-ui/core/styles";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
-import { change, InjectedFormProps, untouch } from "redux-form";
-import { Field, getFormValues, reduxForm } from "redux-form/immutable";
+import { TDispatchProp } from "types";
 import { RootState } from "reducers";
-import { ValidatorRequired } from "../validator";
+import { ValidatorRequired, RequireString } from "forms/validator";
 import { Prompt } from "widgets/Prompt";
-import { DEPLOY_KEY_ID } from "../formIDs";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import {
-  DeployKey,
   DeployKeyScopeCluster,
   DeployKeyScopeComponent,
   DeployKeyScopeNamespace,
-  newEmptyDeployKey,
+  newEmptyDeployKeyForm,
+  DeployKeyFormTypeContent,
 } from "types/deployKey";
 import { KPanel } from "widgets/KPanel";
-import { KAutoCompleteMultipleSelectField, KAutoCompleteOption } from "forms/Basic/autoComplete";
-import { KRenderDebounceTextField } from "forms/Basic/textfield";
-import { KRadioGroupRender } from "forms/Basic/radio";
+import { KAutoCompleteOption, KFormikAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
+import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
+import { KFormikRadioGroupRender } from "forms/Basic/radio";
 import { ApplicationComponentDetails } from "types/application";
 import { Loading } from "widgets/Loading";
 import sc from "utils/stringConstants";
+import { Field, Form, FormikProps, withFormik } from "formik";
+import { object } from "yup";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -31,44 +31,32 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const fieldValues = (getFormValues(DEPLOY_KEY_ID)(state) as DeployKey) || (Immutable.Map() as DeployKey);
-
   return {
-    fieldValues,
     allComponents: state.get("components").get("components"),
   };
 };
 
-export interface Props {
+interface OwnProps {
   isEdit?: boolean;
+  onSubmit: any;
 }
-export interface FinalProps
-  extends Props,
+
+export interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
+
+export interface Props
+  extends ConnectedProps,
+    OwnProps,
     WithNamespaceProps,
-    InjectedFormProps<DeployKey, Props>,
-    ReturnType<typeof mapStateToProps>,
+    FormikProps<DeployKeyFormTypeContent>,
     WithStyles<typeof styles> {}
 
-class DeployKeyFormRaw extends React.PureComponent<FinalProps> {
-  public componentDidUpdate(prevProps: FinalProps) {
-    if (prevProps.fieldValues.get("scope") !== this.props.fieldValues.get("scope")) {
-      this.props.dispatch(change(this.props.form, "resources", Immutable.List()));
-      this.props.dispatch(untouch(this.props.form, "resources"));
-    }
-  }
+const schema = object().shape({
+  name: RequireString,
+});
 
+class DeployKeyFormikRaw extends React.PureComponent<Props> {
   public render() {
-    const {
-      handleSubmit,
-      classes,
-      dirty,
-      submitSucceeded,
-      fieldValues,
-      isNamespaceLoading,
-      isNamespaceFirstLoaded,
-      applications,
-      allComponents,
-    } = this.props;
+    const { classes, isNamespaceLoading, isNamespaceFirstLoaded, applications, allComponents } = this.props;
 
     if (isNamespaceLoading && !isNamespaceFirstLoaded) {
       return (
@@ -104,9 +92,10 @@ class DeployKeyFormRaw extends React.PureComponent<FinalProps> {
       });
     });
 
+    const { values, dirty, setFieldValue, isSubmitting } = this.props;
     return (
-      <form onSubmit={handleSubmit} className={classes.root}>
-        <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+      <Form className={classes.root} id="deployKey-form">
+        <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
         <KPanel>
           <Box p={2}>
             <Field
@@ -114,14 +103,19 @@ class DeployKeyFormRaw extends React.PureComponent<FinalProps> {
               label="Name"
               autoFocus
               autoComplete="off"
-              component={KRenderDebounceTextField}
+              component={KRenderDebounceFormikTextField}
+              id="deployKey-name"
               validate={ValidatorRequired}
             />
 
-            <Field
+            <KFormikRadioGroupRender
               title="Permission Scope"
-              component={KRadioGroupRender}
               name="scope"
+              value={values.scope}
+              onChange={(event: any, value: string) => {
+                setFieldValue("scope", value);
+                setFieldValue("resources", []);
+              }}
               options={[
                 {
                   value: DeployKeyScopeCluster,
@@ -140,23 +134,27 @@ class DeployKeyFormRaw extends React.PureComponent<FinalProps> {
             />
 
             <Box mt={2}>
-              {fieldValues.get("scope") === DeployKeyScopeNamespace ? (
-                <KAutoCompleteMultipleSelectField
+              {values.scope === DeployKeyScopeNamespace ? (
+                <Field
+                  component={KFormikAutoCompleteMultipleSelectField}
                   name="resources"
                   label="Applications"
-                  validate={ValidatorRequired}
-                  placeholder="Select an application"
                   options={applicationOptions}
+                  id="certificate-resources"
+                  placeholder={"Select an application"}
+                  helperText={""}
                 />
               ) : null}
 
-              {fieldValues.get("scope") === DeployKeyScopeComponent ? (
-                <KAutoCompleteMultipleSelectField
+              {values.scope === DeployKeyScopeComponent ? (
+                <Field
+                  component={KFormikAutoCompleteMultipleSelectField}
                   name="resources"
                   label="Component"
-                  validate={ValidatorRequired}
-                  placeholder="Select an component"
                   options={componentOptions}
+                  id="certificate-resources"
+                  placeholder={"Select a component"}
+                  helperText={""}
                 />
               ) : null}
             </Box>
@@ -164,27 +162,26 @@ class DeployKeyFormRaw extends React.PureComponent<FinalProps> {
         </KPanel>
 
         <Box mt={2}>
-          <Button color="primary" variant="contained" type="submit">
+          <Button id="save-deployKey-button" color="primary" variant="contained" type="submit">
             Create Deploy Key
           </Button>
         </Box>
-
         {process.env.REACT_APP_DEBUG === "true" ? (
           <Box mt={2}>
-            <pre style={{ maxWidth: 1500, background: "#eee" }}>
-              {JSON.stringify(this.props.fieldValues, undefined, 2)}
-            </pre>
+            <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
           </Box>
         ) : null}
-      </form>
+      </Form>
     );
   }
 }
 
-export const DeployKeyForm = reduxForm<DeployKey, Props>({
-  form: DEPLOY_KEY_ID,
-  initialValues: newEmptyDeployKey(),
-  onSubmitFail: (...args) => {
-    console.log("submit failed", args);
+const DeployKeyForm = withNamespace(connect(mapStateToProps)(withStyles(styles)(DeployKeyFormikRaw)));
+export const DeployKeyFormik = withFormik<OwnProps, DeployKeyFormTypeContent>({
+  mapPropsToValues: () => newEmptyDeployKeyForm,
+  validationSchema: schema,
+  handleSubmit: (values, bag) => {
+    bag.props.onSubmit(values);
   },
-})(connect(mapStateToProps)(withNamespace(withStyles(styles)(DeployKeyFormRaw))));
+  // @ts-ignore
+})(DeployKeyForm);

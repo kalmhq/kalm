@@ -1,6 +1,6 @@
 import { Slider, SliderProps, Typography } from "@material-ui/core";
+import { FieldProps } from "formik";
 import React from "react";
-import { WrappedFieldProps } from "redux-form";
 import { ID } from "utils";
 
 interface Props {
@@ -12,17 +12,16 @@ interface Props {
 }
 
 // value type is string
-export const KRenderSlider = ({
-  input,
+export const KFormikRenderSlider = ({
   label,
   min,
   max,
   step,
   disabled,
-  meta: { touched, invalid, error },
-}: SliderProps & WrappedFieldProps & Props) => {
+  field: { name, value },
+  form: { setFieldValue },
+}: SliderProps & FieldProps & Props) => {
   const id = ID();
-
   return (
     <div>
       {label ? (
@@ -31,8 +30,8 @@ export const KRenderSlider = ({
         </Typography>
       ) : null}
       <Slider
-        value={input.value}
-        onChangeCommitted={(_event: React.ChangeEvent<{}>, value: number | number[]) => input.onChange(value)}
+        value={value || 0}
+        onChangeCommitted={(_event: React.ChangeEvent<{}>, value: number | number[]) => setFieldValue(name, value)}
         aria-labelledby={id}
         valueLabelDisplay="auto"
         step={step}
