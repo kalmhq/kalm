@@ -6,6 +6,7 @@ import {
   CertificateIssuerFormTypeContent,
   CertificateIssuerList,
   CertificateList,
+  AcmeServerInfo,
 } from "types/certificate";
 import { ClusterInfo } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
@@ -27,6 +28,7 @@ interface MockStoreData {
   mockApplicationComponents: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>;
   mockHttpRoutes: Immutable.List<HttpRoute>;
   mockCertificates: CertificateList;
+  mockAcmeServer: AcmeServerInfo;
   mockCertificateIssuers: CertificateIssuerList;
   mockRegistries: Immutable.List<RegistryType>;
   mockErrorPod: PodStatus;
@@ -8250,6 +8252,17 @@ export default class MockStore {
 
       mockCertificates: Immutable.fromJS([
         {
+          name: "wildcard-need-cert-liumingmin-xyz-sflrq6",
+          isSelfManaged: false,
+          httpsCertIssuer: "default-dns01-issuer",
+          domains: ["need-cert.liumingmin.xyz"],
+          ready: "True",
+          reason: "Certificate is up to date and has not expired",
+          isSignedByTrustedCA: true,
+          expireTimestamp: 1606206327,
+          wildcardCertDNSChallengeDomain: "fc2381e8-4589-4e76-8735-81e563858723.acme.liumingmin.xyz",
+        },
+        {
           name: "cert",
           isSelfManaged: false,
           httpsCertIssuer: "ca2",
@@ -8285,6 +8298,13 @@ export default class MockStore {
         },
         { name: "tte", isSelfManaged: true, domains: ["hydro.io"], ready: "True", reason: "" },
       ]),
+
+      mockAcmeServer: Immutable.fromJS({
+        acmeDomain: "<acme>.your-domain.com",
+        nsDomain: "<name-server.your-domain.com",
+        ipForNameServer: "1.2.3.4",
+        ready: true,
+      }),
 
       mockCertificateIssuers: Immutable.fromJS([{ name: "default-cert-issuer", caForTest: {} }]),
 

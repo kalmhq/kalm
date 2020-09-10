@@ -242,6 +242,8 @@ export const regExpHostname = new RegExp(
   /^([a-z0-9*])(([a-z0-9-]{1,61})?[a-z0-9]{1})?(\.[a-z0-9](([a-z0-9-]{1,61})?[a-z0-9]{1})?)?(\.[a-zA-Z]{2,4})+$/,
 );
 
+export const regExpWildcardname = new RegExp(/^(([\w-]+\.)|(\*\.))+[\w-]+$/);
+
 const validateHostWithWildcardPrefix = (value: string) => {
   if (value.length === 0 || value.length > 511) {
     return "Host length must be between 1 and 511 characters.";
@@ -250,7 +252,8 @@ const validateHostWithWildcardPrefix = (value: string) => {
   var regResultIp = regExpIp.exec(value);
 
   var regResultHostname = regExpHostname.exec(value);
-  if (regResultIp === null && regResultHostname === null) {
+  var regResultWildcardname = regExpWildcardname.exec(value);
+  if (regResultIp === null && regResultHostname === null && regResultWildcardname == null) {
     return "Host must be a valid IP address or hostname.";
   }
 
@@ -268,6 +271,27 @@ export const KValidatorHostsWithWildcardPrefix = (
   }
 
   const errors = values.map((host) => (host === "*" ? undefined : validateHostWithWildcardPrefix(host)));
+
+  return errors.filter((x) => !!x).length > 0 ? errors : undefined;
+};
+
+export const KValidatorWildcardHost = (
+  values: Immutable.List<string>,
+  _allValues?: any,
+  _props?: any,
+  _name?: any,
+): (undefined | string)[] | undefined => {
+  if (!values || values.size === 0) {
+    return undefined;
+  }
+
+  if (!values || values.size > 1) {
+    return ["You only can input one wildcard domain"];
+  }
+
+  const errors = values
+    .map((host) => (host === "*" ? "You can't use * as domain." : validateHostWithWildcardPrefix(host)))
+    .toArray();
 
   return errors.filter((x) => !!x).length > 0 ? errors : undefined;
 };

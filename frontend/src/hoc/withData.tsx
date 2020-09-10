@@ -23,7 +23,11 @@ import {
 import { loadApplicationsAction } from "actions/application";
 import { loadRoutesAction } from "actions/routes";
 import { loadNodesAction } from "actions/node";
-import { loadCertificateIssuersAction, loadCertificatesAction } from "actions/certificate";
+import {
+  loadCertificateIssuersAction,
+  loadCertificatesAction,
+  loadCertificateAcmeServerAction,
+} from "actions/certificate";
 import { loadClusterInfoAction } from "actions/cluster";
 import { loadPersistentVolumesAction, loadStorageClassesAction } from "actions/persistentVolume";
 import { loadRegistriesAction } from "actions/registries";
@@ -62,6 +66,7 @@ class WithDataRaw extends React.PureComponent<Props> {
     dispatch(loadRoutesAction()); // all namespaces
     dispatch(loadApplicationsAction());
     dispatch(loadNodesAction());
+    dispatch(loadCertificateAcmeServerAction());
     dispatch(loadCertificatesAction());
     dispatch(loadCertificateIssuersAction());
     dispatch(loadClusterInfoAction());

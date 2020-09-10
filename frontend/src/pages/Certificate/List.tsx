@@ -8,10 +8,10 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { Certificate } from "types/certificate";
+import { Certificate, dns01Issuer } from "types/certificate";
 import { formatDate } from "utils/date";
 import sc from "utils/stringConstants";
-import { PendingBadge, SuccessBadge } from "widgets/Badge";
+import { PendingBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import DomainStatus from "widgets/DomainStatus";
@@ -23,10 +23,20 @@ import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { Loading } from "widgets/Loading";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
+import { KLink } from "widgets/Link";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
+    normalStatus: {
+      color: theme.palette.success.main,
+    },
+    warningStatus: {
+      color: theme.palette.warning.main,
+    },
+    domainsColumn: {
+      minWidth: 200,
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -58,24 +68,39 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderName = (cert: Certificate) => {
-    return <Typography variant={"subtitle2"}>{cert.get("name")}</Typography>;
+    return (
+      <Typography variant={"subtitle2"}>
+        <KLink to={`/certificates/${cert.get("name")}`}>{cert.get("name")}</KLink>
+      </Typography>
+    );
   };
 
   private renderDomains = (cert: Certificate) => {
+    const { classes } = this.props;
+    const isWildcardDomain = cert.get("httpsCertIssuer") === dns01Issuer;
+    const domainStatus = (domain: string) => {
+      const cname = cert.get("wildcardCertDNSChallengeDomain");
+      return isWildcardDomain ? (
+        <DomainStatus mr={1} domain={domain} cnameDomain={cname} />
+      ) : (
+        <DomainStatus mr={1} domain={domain} />
+      );
+    };
+    const prefix = isWildcardDomain ? "*." : "";
     return (
-      <>
+      <Box className={classes.domainsColumn}>
         {cert
           .get("domains")
           ?.map((domain) => {
             return (
               <FlexRowItemCenterBox key={domain}>
-                <DomainStatus mr={1} domain={domain} />
-                {domain}
+                {domainStatus(`${domain}`)}
+                {`${prefix}${domain}`}
               </FlexRowItemCenterBox>
             );
           })
           .toArray()}
-      </>
+      </Box>
     );
   };
 
@@ -145,16 +170,14 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderStatus = (cert: Certificate) => {
+    const { classes } = this.props;
     const ready = cert.get("ready");
 
     if (ready === "True") {
       // why the ready field is a string value ?????
       return (
         <FlexRowItemCenterBox>
-          <FlexRowItemCenterBox mr={1}>
-            <SuccessBadge />
-          </FlexRowItemCenterBox>
-          <FlexRowItemCenterBox>Normal</FlexRowItemCenterBox>
+          <FlexRowItemCenterBox className={classes.normalStatus}>Normal</FlexRowItemCenterBox>
         </FlexRowItemCenterBox>
       );
     } else if (!!cert.get("reason")) {
@@ -163,7 +186,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
           <FlexRowItemCenterBox mr={1}>
             <PendingBadge />
           </FlexRowItemCenterBox>
-          <FlexRowItemCenterBox>{cert.get("reason")}</FlexRowItemCenterBox>
+          <FlexRowItemCenterBox className={classes.warningStatus}>{cert.get("reason")}</FlexRowItemCenterBox>
         </FlexRowItemCenterBox>
       );
     } else {
@@ -278,6 +301,16 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               to="/certificates/new"
             >
               New Certificate
+            </Button>
+            <Button
+              color="primary"
+              variant="outlined"
+              size="small"
+              component={Link}
+              tutorial-anchor-id="upload-certificate"
+              to="/certificates/upload"
+            >
+              Upload Certificate
             </Button>
           </>
         }

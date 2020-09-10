@@ -1,6 +1,11 @@
 import Immutable from "immutable";
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
-import { CertificateFormTypeContent, CertificateIssuerFormTypeContent } from "types/certificate";
+import {
+  CertificateFormTypeContent,
+  CertificateIssuerFormTypeContent,
+  AcmeServerInfo,
+  AcmeServerFormType,
+} from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
 import { RegistryType } from "types/registry";
@@ -274,5 +279,17 @@ export default class MockApi extends Api {
 
   public resetCluster = async (): Promise<any> => {
     return {};
+  };
+
+  public createAcmeServer = async (acmeServer: AcmeServerFormType): Promise<AcmeServerInfo> => {
+    return mockStore.data.get("mockAcmeServer");
+  };
+
+  public deleteAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
+    return;
+  };
+
+  public getAcmeServer = async (): Promise<AcmeServerInfo> => {
+    return mockStore.data.get("mockAcmeServer");
   };
 }

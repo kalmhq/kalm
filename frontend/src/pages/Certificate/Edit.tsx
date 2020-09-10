@@ -1,14 +1,14 @@
 import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { createCertificateAction } from "actions/certificate";
 import { push } from "connected-react-router";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
 import { TDispatchProp } from "types";
+import { createCertificateAction } from "actions/certificate";
+import { CertificateUploadForm } from "forms/Certificate/uploadForm";
+import { RootState } from "reducers";
 import { CertificateFormTypeContent, selfManaged } from "types/certificate";
 import { H6 } from "widgets/Label";
-import { CertificateForm } from "forms/Certificate";
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
   const certificate = state
@@ -51,7 +51,7 @@ class CertificateEditRaw extends React.PureComponent<Props> {
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>
-              <CertificateForm isEdit onSubmit={this.submit} initialValues={initialValues} />
+              <CertificateUploadForm isEdit onSubmit={this.submit} initialValues={initialValues} />
             </Grid>
           </Grid>
         </div>
