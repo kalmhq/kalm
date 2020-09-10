@@ -42,7 +42,7 @@ export const createComponentAction = (
 ): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (!applicationName) {
-      applicationName = getState().get("namespaces").get("active");
+      applicationName = getState().get("namespaces").active;
     }
     dispatch(setIsSubmittingApplicationComponentAction(true));
 
@@ -73,7 +73,7 @@ export const updateComponentAction = (
 ): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (!applicationName) {
-      applicationName = getState().get("namespaces").get("active");
+      applicationName = getState().get("namespaces").active;
     }
 
     dispatch(setIsSubmittingApplicationComponentAction(true));
@@ -101,7 +101,7 @@ export const updateComponentAction = (
 export const deleteComponentAction = (componentName: string, applicationName?: string): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (!applicationName) {
-      applicationName = getState().get("namespaces").get("active");
+      applicationName = getState().get("namespaces").active;
     }
 
     await api.deleteApplicationComponent(applicationName, componentName);

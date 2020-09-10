@@ -37,8 +37,7 @@ const initialState: State = {
 const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOGOUT: {
-      state = initialState;
-      return;
+      return initialState;
     }
     case LOAD_PERSISTENT_VOLUMES: {
       state.persistentVolumes = action.payload.persistentVolumes;

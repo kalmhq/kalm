@@ -1,32 +1,48 @@
-import Immutable from "immutable";
+import produce from "immer";
 import { Actions } from "types";
-import { SET_DOMAIN_A_RECORDS, DomainType, SET_DOMAIN_CNAME, INIT_DOMAIN_STATUS } from "types/domain";
+import { Domain, INIT_DOMAIN_STATUS, SET_DOMAIN_A_RECORDS, SET_DOMAIN_CNAME } from "types/domain";
 
-export type State = Immutable.Map<string, DomainType>;
+export type State = { [key: string]: Domain };
 
-export let initialState: State = Immutable.Map();
+export let initialState: State = {};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case INIT_DOMAIN_STATUS: {
       const { domain } = action.payload;
-      const currentDomain = state.get(domain);
+      const currentDomain = state[domain];
       if (!currentDomain) {
-        state = state.set(domain, Immutable.Map({ domain }));
+        state[domain] = { domain } as Domain;
       }
-      return state;
+      return;
     }
     case SET_DOMAIN_A_RECORDS: {
       const { domain, aRecords } = action.payload;
-      return state.setIn([domain, "aRecords"], Immutable.List(aRecords));
+      if (state[domain]) {
+        state[domain].aRecords = aRecords;
+      } else {
+        state[domain] = {
+          domain,
+          aRecords,
+        } as Domain;
+      }
+      return;
     }
     case SET_DOMAIN_CNAME: {
       const { domain, cname } = action.payload;
-      return state.setIn([domain, "cname"], cname);
+      if (state[domain]) {
+        state[domain].cname = cname;
+      } else {
+        state[domain] = {
+          domain,
+          cname,
+        } as Domain;
+      }
+      return;
     }
   }
 
   return state;
-};
+}, initialState);
 
 export default reducer;

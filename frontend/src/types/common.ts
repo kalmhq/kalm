@@ -1,6 +1,5 @@
 import { CallHistoryMethodAction } from "connected-react-router";
 import { VariantType } from "notistack";
-import { ImmutableMap } from "typings";
 import { SettingObject } from "reducers/settings";
 import { NamespaceActions } from "./namespace";
 import { LoginStatus } from "./authorization";
@@ -24,10 +23,10 @@ export const EnvTypeExternal = "external";
 export const EnvTypeStatic = "static";
 export const EnvTypeLinked = "linked";
 
-export type ControlledDialogParams<T> = ImmutableMap<{
+export type ControlledDialogParams<T> = {
   open: boolean;
   data: T;
-}>;
+};
 
 export type MetricItem = {
   x: number;

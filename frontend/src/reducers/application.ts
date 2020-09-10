@@ -42,8 +42,7 @@ const initialState: State = {
 const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOGOUT: {
-      state = initialState;
-      return;
+      return initialState;
     }
     case SET_IS_SUBMITTING_APPLICATION: {
       state.isSubmittingApplication = action.payload.isSubmittingApplication;

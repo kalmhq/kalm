@@ -37,7 +37,7 @@ const initialState: State = {
   certificateIssuers: [],
 };
 
-const reducer = produce((state: State = initialState, action: Actions) => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOAD_CERTIFICATES_PENDING: {
       state.isLoading = true;

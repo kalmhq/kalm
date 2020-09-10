@@ -9,7 +9,6 @@ import { Node } from "types/node";
 import { RegistryFormType, Registry } from "types/registry";
 import { HttpRoute } from "types/route";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { RoleBindingsRequestBody } from "types/user";
 import { Api } from "../base";
 
 export const mockStore = null;
@@ -226,21 +225,6 @@ export default class RealApi extends Api {
 
   public deletePod = async (namespace: string, name: string) => {
     return await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/pods/${namespace}/${name}` });
-  };
-
-  // RoleBindings
-
-  public loadRolebindings = async () => {
-    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/rolebindings` });
-    return res.data.roleBindings;
-  };
-
-  public createRoleBindings = async (roleBindingRequestBody: RoleBindingsRequestBody) => {
-    await axiosRequest({ method: "post", url: `/${K8sApiVersion}/rolebindings`, data: roleBindingRequestBody });
-  };
-
-  public deleteRoleBindings = async (namespace: string, bindingName: string) => {
-    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/rolebindings/` + namespace + "/" + bindingName });
   };
 
   public getServiceAccountSecret = async (name: string) => {

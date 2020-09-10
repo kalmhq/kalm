@@ -47,7 +47,7 @@ const mapStateToProps = (state: RootState) => {
   const httpRoutes = state.get("routes").httpRoutes;
   const componentsMap = state.get("components").components;
   const clusterInfo = state.get("cluster").info;
-  const usingApplicationCard = state.get("settings").get("usingApplicationCard");
+  const usingApplicationCard = state.get("settings").usingApplicationCard;
   return {
     clusterInfo,
     httpRoutes,
@@ -62,6 +62,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   private confirmDelete = async (applicationDetails: ApplicationDetails) => {
     const { dispatch } = this.props;
     try {
+      console.log("confirmDelete", applicationDetails.name);
       await dispatch(deleteApplicationAction(applicationDetails.name));
       await dispatch(setSuccessNotificationAction("Successfully delete an application"));
     } catch {
@@ -71,13 +72,18 @@ class ApplicationListRaw extends React.PureComponent<Props> {
 
   private renderCPU = (applicationListItem: ApplicationDetails) => {
     const metrics = applicationListItem.metrics;
-    return <SmallCPULineChart data={metrics.cpu} hoverText={this.hasPods(applicationListItem) ? "" : "No data"} />;
+    return (
+      <SmallCPULineChart data={metrics && metrics.cpu} hoverText={this.hasPods(applicationListItem) ? "" : "No data"} />
+    );
   };
 
   private renderMemory = (applicationListItem: ApplicationDetails) => {
     const metrics = applicationListItem.metrics;
     return (
-      <SmallMemoryLineChart data={metrics.memory} hoverText={this.hasPods(applicationListItem) ? "" : "No data"} />
+      <SmallMemoryLineChart
+        data={metrics && metrics.memory}
+        hoverText={this.hasPods(applicationListItem) ? "" : "No data"}
+      />
     );
   };
 

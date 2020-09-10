@@ -5,7 +5,6 @@ import { DeployKey } from "types/deployKey";
 import { Registry, RegistryFormType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { RoleBindingsRequestBody } from "types/user";
 import { Api } from "../base";
 import MockStore from "../mockStore";
 
@@ -151,9 +150,6 @@ export default class MockApi extends Api {
     return registry as Registry;
   };
 
-  // TODO (has not been used)
-  public createRoleBindings = async (roleBindingRequestBody: RoleBindingsRequestBody) => {};
-
   public deleteCertificate = async (name: string) => {
     await mockStore.deleteCertificate(name);
   };
@@ -182,9 +178,6 @@ export default class MockApi extends Api {
     await mockStore.deleteRegistry(name);
   };
 
-  // TODO
-  public deleteRoleBindings = async (namespace: string, bindingName: string) => {};
-
   public getRegistry = async (name: string) => {
     return mockStore.data.mockRegistries.find((x) => x.name === name)!;
   };
@@ -192,11 +185,6 @@ export default class MockApi extends Api {
   // TODO
   public getServiceAccountSecret = async (name: string) => {
     return "";
-  };
-
-  // TODO
-  public loadRolebindings = async () => {
-    return [];
   };
 
   public updateApplication = async (application: Application) => {

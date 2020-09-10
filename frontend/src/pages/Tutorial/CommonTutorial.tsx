@@ -61,8 +61,8 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   const tutorial = state.get("tutorial");
   return {
-    currentStepIndex: tutorial.get("currentStepIndex"),
-    tutorial: tutorial.get("tutorial")!,
+    currentStepIndex: tutorial.currentStepIndex,
+    tutorial: tutorial.tutorial!,
     pathname: state.get("router").get("location").get("pathname") as string,
   };
 };

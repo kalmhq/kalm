@@ -10,11 +10,19 @@ import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 import copy from "copy-to-clipboard";
 import { setSuccessNotificationAction } from "actions/notification";
 import { regExpIp } from "forms/validator";
+import { Domain } from "types/domain";
 
 const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
   const regResultIp = regExpIp.exec(ownProps.domain);
+  let domainStatus: Domain | undefined;
+  const domainState = state.get("domain");
+  for (let domainKey in domainState) {
+    if (domainKey === ownProps.domain) {
+      domainStatus = domainState[domainKey];
+    }
+  }
   return {
-    domainStatus: state.get("domain").find((status) => status.get("domain") === ownProps.domain),
+    domainStatus,
     ingressIP: state.get("cluster").info.ingressIP,
     isIPDomain: regResultIp !== null,
   };
@@ -68,14 +76,14 @@ class DomainStatus extends React.PureComponent<Props> {
           ),
       };
     }
-    if (!domainStatus || !domainStatus?.get("cname")) {
+    if (!domainStatus || !domainStatus?.cname) {
       return {
         icon: <CircularProgress size={24} style={{ padding: 2 }} />,
         body: <Box p={2}>checking domain status</Box>,
       };
     }
 
-    const aRecords = domainStatus?.get("aRecords");
+    const aRecords = domainStatus?.aRecords;
     const isError = (!aRecords || !aRecords.includes(ingressIP)) && domain !== ingressIP;
     if (isError) {
       return {

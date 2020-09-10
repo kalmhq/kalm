@@ -10,7 +10,7 @@ export const setDebouncing = (name: string): ThunkResult<void> => {
       payload: { name, debouncing: false },
     });
 
-    const currentTimer = debounceState.get(name)?.get("timer");
+    const currentTimer = debounceState[name]?.timer;
     if (currentTimer) {
       window.clearTimeout(currentTimer);
     }

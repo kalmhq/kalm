@@ -28,7 +28,7 @@ const initialState: State = {
   deployKeys: [],
 };
 
-const reducer = produce((state: State = initialState, action: Actions) => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOGOUT: {
       return initialState;

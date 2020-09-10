@@ -1,34 +1,36 @@
-import Immutable from "immutable";
-import { Actions } from "types";
-import { SET_CURRENT_NAMESPACE } from "types/namespace";
-import { ImmutableMap } from "typings";
+import produce from "immer";
 import queryString from "qs";
+import { Actions } from "types";
 import { LOGOUT } from "types/common";
+import { SET_CURRENT_NAMESPACE } from "types/namespace";
 
-export type State = ImmutableMap<{
+export type State = {
   active: string;
-}>;
+};
 
 const search = queryString.parse(window.location.search.replace("?", ""));
 const LAST_SELECTED_NAMESPACE_CACHE_KEY = "LAST_SELECTED_NAMESPACE_CACHE_KEY";
 
-const initialState: State = Immutable.Map({
-  active: search.namespace || window.localStorage.getItem(LAST_SELECTED_NAMESPACE_CACHE_KEY) || "",
-});
+const initialState: State = {
+  active:
+    typeof search.namespace === "string"
+      ? search.namespace
+      : window.localStorage.getItem(LAST_SELECTED_NAMESPACE_CACHE_KEY) || "",
+};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOGOUT: {
       return initialState;
     }
     case SET_CURRENT_NAMESPACE: {
-      state = state.set("active", action.payload.namespace);
+      state.active = action.payload.namespace;
       window.localStorage.setItem(LAST_SELECTED_NAMESPACE_CACHE_KEY, action.payload.namespace);
-      break;
+      return;
     }
   }
 
   return state;
-};
+}, initialState);
 
 export default reducer;

@@ -9,7 +9,6 @@ import { RegistryFormType, Registry } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { RoleBinding, RoleBindingsRequestBody } from "types/user";
 
 export abstract class Api {
   public abstract getClusterInfo(): Promise<ClusterInfo>;
@@ -82,13 +81,6 @@ export abstract class Api {
   public abstract deleteHttpRoute(httpRoute: HttpRoute): Promise<boolean>;
 
   public abstract deletePod(namespace: string, name: string): Promise<any>;
-
-  // RoleBindings
-  public abstract loadRolebindings(): Promise<RoleBinding[]>;
-
-  public abstract createRoleBindings(roleBindingRequestBody: RoleBindingsRequestBody): Promise<void>;
-
-  public abstract deleteRoleBindings(namespace: string, bindingName: string): Promise<void>;
 
   public abstract getServiceAccountSecret(name: string): any;
 

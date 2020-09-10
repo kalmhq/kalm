@@ -88,8 +88,7 @@ const deleteComponentFromState = (state: State, applicationName: string, compone
 const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOGOUT: {
-      state = initialState;
-      return;
+      return initialState;
     }
     case SET_IS_SUBMITTING_APPLICATION_COMPONENT: {
       state.isSubmittingApplicationComponent = action.payload.isSubmittingApplicationComponent;

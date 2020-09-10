@@ -72,8 +72,8 @@ const dialogStyles = (theme: Theme) => ({
 
 const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
   const { dialogID } = ownProps;
-  const dialog = state.get("dialogs").get(dialogID);
-  const open = !!dialog && dialog.get("open", false);
+  const dialog = state.get("dialogs")[dialogID];
+  const open = !!dialog && (dialog.open || false);
 
   return { dialogID, open };
 };

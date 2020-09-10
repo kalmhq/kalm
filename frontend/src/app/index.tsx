@@ -8,7 +8,7 @@ import { getTheme } from "theme/theme";
 import { connect } from "react-redux";
 
 const mapStateToProps = (state: RootState) => {
-  const usingTheme = state.get("settings").get("usingTheme");
+  const usingTheme = state.get("settings").usingTheme;
   return {
     usingTheme,
   };

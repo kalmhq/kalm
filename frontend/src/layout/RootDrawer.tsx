@@ -35,8 +35,8 @@ const mapStateToProps = (state: RootState) => {
   const entity = auth.entity;
   return {
     pathname: window.location.pathname,
-    isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
-    activeNamespaceName: state.get("namespaces").get("active"),
+    isOpenRootDrawer: state.get("settings").isOpenRootDrawer,
+    activeNamespaceName: state.get("namespaces").active,
     isAdmin,
     entity,
   };

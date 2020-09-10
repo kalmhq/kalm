@@ -22,7 +22,7 @@ const mapStateToProps = (state: RootState, props: any) => {
   const components = application && state.get("components").components[application?.name];
   const component = components?.find((x) => x.name === componentName);
 
-  const activeNamespaceName = state.get("namespaces").get("active");
+  const activeNamespaceName = state.get("namespaces").active;
 
   return {
     applicationName,

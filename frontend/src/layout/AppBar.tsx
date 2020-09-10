@@ -18,14 +18,14 @@ import Button from "@material-ui/core/Button";
 import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
 
 const mapStateToProps = (state: RootState) => {
-  const activeNamespace = state.get("namespaces").get("active");
+  const activeNamespace = state.get("namespaces").active;
 
   const auth = state.get("auth");
   const isAdmin = auth.isAdmin;
   const entity = auth.entity;
   return {
-    isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
-    tutorialDrawerOpen: state.get("tutorial").get("drawerOpen"),
+    isOpenRootDrawer: state.get("settings").isOpenRootDrawer,
+    tutorialDrawerOpen: state.get("tutorial").drawerOpen,
     activeNamespace,
     isAdmin,
     entity,

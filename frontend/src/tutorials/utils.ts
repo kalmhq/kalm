@@ -1,49 +1,7 @@
+import { getIn } from "formik";
 import { APPLICATION_FORM_ID, CERTIFICATE_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
-import Immutable from "immutable";
 import { RootState } from "reducers";
 import { State as TutorialState } from "reducers/tutorial";
-import { getIn } from "formik";
-
-export const formValidateOrNotBlockByTutorial = (
-  values: Immutable.Map<string, any>,
-  props: { tutorialState: TutorialState; form: string },
-) => {
-  const { tutorialState, form } = props;
-  const errors: { [key: string]: any } = {};
-  const state = tutorialState;
-  if (!tutorialState) {
-    return errors;
-  }
-
-  const tutorial = tutorialState.get("tutorial");
-  if (!tutorial) {
-    return errors;
-  }
-
-  const currentStep = tutorial.steps[state.get("currentStepIndex")];
-  if (!currentStep) {
-    return errors;
-  }
-
-  for (let i = 0; i < currentStep.subSteps.length; i++) {
-    const subStep = currentStep.subSteps[i];
-
-    if (subStep.formValidator) {
-      for (let j = 0; j < subStep.formValidator.length; j++) {
-        const rule = subStep.formValidator[j];
-        if (rule.form === form) {
-          const attrPath = rule.field.replace(/\]$/, "").split(/\[|\]\.|\./);
-          const error = rule.validate(values.getIn(attrPath));
-
-          if (error) {
-            setValueInPath(errors, attrPath, error);
-          }
-        }
-      }
-    }
-  }
-  return errors;
-};
 
 export const formikValidateOrNotBlockByTutorial = (
   values: { [key: string]: any },
@@ -57,12 +15,12 @@ export const formikValidateOrNotBlockByTutorial = (
     return errors;
   }
 
-  const tutorial = tutorialState.get("tutorial");
+  const tutorial = tutorialState.tutorial;
   if (!tutorial) {
     return errors;
   }
 
-  const currentStep = tutorial.steps[state.get("currentStepIndex")];
+  const currentStep = tutorial.steps[state.currentStepIndex];
   if (!currentStep) {
     return errors;
   }
@@ -87,33 +45,17 @@ export const formikValidateOrNotBlockByTutorial = (
   return errors;
 };
 
-const setValueInPath = (obj: { [key: string]: any }, attrPaths: string[], value: string) => {
-  for (let i = 0; i < attrPaths.length; i++) {
-    const currentAttr = attrPaths[i];
-    const nextAttr = attrPaths[i + 1];
-    if (nextAttr) {
-      if (!obj[currentAttr]) {
-        obj[currentAttr] = nextAttr.match(/^\d+$/) ? [] : {};
-      }
-
-      obj = obj[currentAttr];
-    } else {
-      obj[currentAttr] = value;
-    }
-  }
-};
-
 export const requireSubStepNotCompleted = (state: RootState, ...subStepIndexes: number[]) => {
   const tutorialState = state.get("tutorial");
 
-  const tutorial = tutorialState.get("tutorial");
+  const tutorial = tutorialState.tutorial;
   if (!tutorial) return false;
 
-  const currentStep = tutorial.steps[tutorialState.get("currentStepIndex")];
+  const currentStep = tutorial.steps[tutorialState.currentStepIndex];
   if (!currentStep) return false;
 
   for (let i = 0; i < subStepIndexes.length; i++) {
-    if (tutorialState.get("tutorialStepStatus").get(`${tutorialState.get("currentStepIndex")}-${subStepIndexes[i]}`)) {
+    if (tutorialState.tutorialStepStatus[`${tutorialState.currentStepIndex}-${subStepIndexes[i]}`]) {
       return false;
     }
 
@@ -129,14 +71,14 @@ export const requireSubStepNotCompleted = (state: RootState, ...subStepIndexes: 
 export const requireSubStepCompleted = (state: RootState, ...subStepIndexes: number[]) => {
   const tutorialState = state.get("tutorial");
 
-  const tutorial = tutorialState.get("tutorial");
+  const tutorial = tutorialState.tutorial;
   if (!tutorial) return false;
 
-  const currentStep = tutorial.steps[tutorialState.get("currentStepIndex")];
+  const currentStep = tutorial.steps[tutorialState.currentStepIndex];
   if (!currentStep) return false;
 
   for (let i = 0; i < subStepIndexes.length; i++) {
-    if (!tutorialState.get("tutorialStepStatus").get(`${tutorialState.get("currentStepIndex")}-${subStepIndexes[i]}`)) {
+    if (!tutorialState.tutorialStepStatus[`${tutorialState.currentStepIndex}-${subStepIndexes[i]}`]) {
       return false;
     }
 
@@ -150,7 +92,8 @@ export const requireSubStepCompleted = (state: RootState, ...subStepIndexes: num
 };
 
 export const getFormValue = (rootState: RootState, form: string, field: string) => {
-  const formValues = rootState.get("tutorial").get("formValues")?.get(form);
+  const formValuesMap = rootState.get("tutorial").formValues;
+  const formValues = formValuesMap ? formValuesMap[form] : undefined;
   if (!formValues) {
     return undefined;
   }
@@ -158,7 +101,9 @@ export const getFormValue = (rootState: RootState, form: string, field: string) 
 };
 
 export const isFormFieldValueEqualTo = (rootState: RootState, form: string, field: string, value: any) => {
-  const formValues = rootState.get("tutorial").get("formValues")?.get(form);
+  const formValuesMap = rootState.get("tutorial").formValues;
+  const formValues = formValuesMap ? formValuesMap[form] : undefined;
+
   if (!formValues) {
     return false;
   }

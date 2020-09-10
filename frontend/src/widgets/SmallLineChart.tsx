@@ -31,7 +31,7 @@ const smallLineChartStyles = (theme: Theme) =>
   });
 
 interface Props extends WithStyles<typeof smallLineChartStyles>, WithTheme {
-  data: MetricList;
+  data?: MetricList;
   hoverText?: string;
   width: number | string;
   height: number | string;

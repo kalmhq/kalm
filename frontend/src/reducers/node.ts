@@ -75,8 +75,7 @@ const reducer = produce((state: State, action: Actions) => {
       return;
     }
     case LOGOUT: {
-      state = initialState;
-      return;
+      return initialState;
     }
     case LOAD_NODES_PENDING: {
       state.isLoading = true;

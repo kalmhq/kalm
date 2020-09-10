@@ -97,20 +97,26 @@ export default class MockStore {
 
   public deleteCertificate = async (name: string) => {
     const index = this.data.mockCertificates.findIndex((c) => c.name === name);
-    this.data.mockCertificates.splice(index, 1);
+    this.data.mockCertificates = produce(this.data.mockCertificates, (draft) => {
+      draft.splice(index, 1);
+    });
     await this.saveData();
   };
 
   public deleteHttpRoute = async (namespace: string, name: string) => {
     const index = this.data.mockHttpRoutes.findIndex((x) => x.name === name);
-    this.data.mockHttpRoutes.splice(index, 1);
+    this.data.mockHttpRoutes = produce(this.data.mockHttpRoutes, (draft) => {
+      draft.splice(index, 1);
+    });
     await this.saveData();
   };
 
   public deleteApplication = async (name: string): Promise<void> => {
     const index = this.data.mockApplications.findIndex((c) => c.name === name);
     const application = this.data.mockApplications[index];
-    this.data.mockApplications.splice(index, 1);
+    this.data.mockApplications = produce(this.data.mockApplications, (draft) => {
+      draft.splice(index, 1);
+    });
     await this.saveData({
       kind: "Application",
       action: "Delete",
@@ -121,7 +127,10 @@ export default class MockStore {
   public deleteApplicationComponent = async (applicationName: string, name: string) => {
     const index = this.data.mockApplicationComponents[applicationName]?.findIndex((c) => c.name === name);
     const component = this.data.mockApplicationComponents[applicationName][index];
-    this.data.mockApplicationComponents[applicationName].splice(index, 1);
+    this.data.mockApplicationComponents = produce(this.data.mockApplicationComponents, (draft) => {
+      draft[applicationName].splice(index, 1);
+    });
+
     await this.saveData({
       kind: "Component",
       namespace: applicationName,
@@ -132,21 +141,25 @@ export default class MockStore {
 
   public updateCertificate = async (certificate: CertificateForm) => {
     const index = this.data.mockCertificates.findIndex((c) => c.name === certificate.name);
-    if (index >= 0) {
-      this.data.mockCertificates[index] = certificate;
-    } else {
-      this.data.mockCertificates.push(certificate);
-    }
+    this.data.mockCertificates = produce(this.data.mockCertificates, (draft) => {
+      if (index >= 0) {
+        draft[index] = certificate;
+      } else {
+        draft.push(certificate);
+      }
+    });
     await this.saveData();
   };
 
   public updateCertificateIssuer = async (certificateIssuer: CertificateIssuerForm) => {
     const index = this.data.mockCertificateIssuers.findIndex((c) => c.name === certificateIssuer.name);
-    if (index >= 0) {
-      this.data.mockCertificateIssuers[index] = certificateIssuer;
-    } else {
-      this.data.mockCertificateIssuers.push(certificateIssuer);
-    }
+    this.data.mockCertificateIssuers = produce(this.data.mockCertificateIssuers, (draft) => {
+      if (index >= 0) {
+        draft[index] = certificateIssuer;
+      } else {
+        draft.push(certificateIssuer);
+      }
+    });
     await this.saveData();
   };
 
@@ -169,12 +182,14 @@ export default class MockStore {
       data: application,
       action: "Add",
     };
-    if (index >= 0) {
-      this.data.mockApplications[index] = application;
-      data.action = "Update";
-    } else {
-      this.data.mockApplications.push(application);
-    }
+    this.data = produce(this.data, (draft) => {
+      if (index >= 0) {
+        draft.mockApplications[index] = application;
+        data.action = "Update";
+      } else {
+        draft.mockApplications.push(application);
+      }
+    });
     await this.saveData(data);
   };
 

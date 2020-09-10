@@ -13,12 +13,12 @@ const NotificationComponent = connect(getMessageFromState)(({ message }: ReturnT
   const { enqueueSnackbar } = useSnackbar();
 
   React.useEffect(() => {
-    if (!message.get("message")) {
+    if (!message.message) {
       return;
     }
 
-    enqueueSnackbar(message.get("message"), {
-      variant: message.get("variant"),
+    enqueueSnackbar(message.message, {
+      variant: message.variant,
     });
   }, [enqueueSnackbar, message]);
 
@@ -26,7 +26,7 @@ const NotificationComponent = connect(getMessageFromState)(({ message }: ReturnT
 });
 
 const mapStateToProps = (state: RootState) => {
-  return { isTutorialDrawerOpen: state.get("tutorial").get("drawerOpen") };
+  return { isTutorialDrawerOpen: state.get("tutorial").drawerOpen };
 };
 
 const styles = (theme: Theme) =>

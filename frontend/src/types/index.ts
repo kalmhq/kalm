@@ -12,7 +12,6 @@ import { RegistriesActions } from "./registry";
 import { RouteActions } from "./route";
 import { ServiceActions } from "./service";
 import { TutorialActions } from "./tutorial";
-import { UserActions } from "./user";
 import { ResourceActions } from "./resources";
 import { DebounceActions } from "./debounce";
 import { SSOConfigActions } from "types/sso";
@@ -23,7 +22,6 @@ export type Actions =
   | RouterAction
   | CommonActions
   | ApplicationActions
-  | UserActions
   | NamespaceActions
   | NodeActions
   | RegistriesActions

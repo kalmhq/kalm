@@ -92,7 +92,6 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
 export const deleteApplicationAction = (name: string): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     await api.deleteApplication(name);
-
     dispatch({
       type: DELETE_APPLICATION,
       payload: { applicationName: name },
@@ -144,7 +143,7 @@ export const loadApplicationsAction = (): ThunkResult<Promise<ApplicationDetails
       throw e;
     }
 
-    const activeNamespace = getState().get("namespaces").get("active");
+    const activeNamespace = getState().get("namespaces").active;
     const firstNamespace = applicationList[0];
     if (!activeNamespace && applicationList.length > 0 && firstNamespace != null) {
       dispatch(setCurrentNamespaceAction(firstNamespace?.name, false));

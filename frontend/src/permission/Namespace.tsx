@@ -16,7 +16,7 @@ const mapStateToProps = (state: RootState, props: any) => {
   const activeNamespace =
     props.match && props.match.params && props.match.params.applicationName
       ? props.match.params.applicationName
-      : state.get("namespaces").get("active");
+      : state.get("namespaces").active;
   const isApplicationListLoading = applicationsState.isListLoading;
   const isApplicationListFirstLoaded = applicationsState.isListFirstLoaded;
   const activeApplication = applicationsState.applications.find((application) => application.name === activeNamespace);

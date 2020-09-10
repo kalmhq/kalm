@@ -41,8 +41,7 @@ const initialState: State = {
 const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOGOUT: {
-      state = initialState;
-      return;
+      return initialState;
     }
     case LOAD_SSO_CONFIG_PENDING: {
       state.isLoading = true;

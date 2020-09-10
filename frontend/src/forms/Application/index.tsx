@@ -4,7 +4,6 @@ import { createApplicationAction } from "actions/application";
 import { push } from "connected-react-router";
 import { Field, FormikProps, withFormik } from "formik";
 import { APPLICATION_FORM_ID } from "forms/formIDs";
-import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -140,7 +139,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
 const form = withFormik<ConnectedProps & OwnProps & WithStyles<typeof styles>, Application>({
   mapPropsToValues: () => ({ name: "" }),
   handleSubmit: async (applicationFormValue, { props: { dispatch } }) => {
-    await dispatch(createApplicationAction(Immutable.fromJS(applicationFormValue)));
+    await dispatch(createApplicationAction(applicationFormValue));
     dispatch(push(`/applications/${applicationFormValue.name}/components/new`));
   },
   validate: formikValidateOrNotBlockByTutorial,

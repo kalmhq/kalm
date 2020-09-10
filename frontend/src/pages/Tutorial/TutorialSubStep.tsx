@@ -23,14 +23,14 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState, { subStep, stepIndex, subStepIndex }: OwnProps) => {
-  const currentStepIndex = state.get("tutorial").get("currentStepIndex");
+  const currentStepIndex = state.get("tutorial").currentStepIndex;
   let completionByState =
     subStep.shouldCompleteByState && currentStepIndex === stepIndex ? subStep.shouldCompleteByState(state) : false;
 
   return {
     definedCompletionByState: !!subStep.shouldCompleteByState,
     completionByState,
-    isCompleted: !!state.get("tutorial").get("tutorialStepStatus").get(`${stepIndex}-${subStepIndex}`),
+    isCompleted: !!state.get("tutorial").tutorialStepStatus[`${stepIndex}-${subStepIndex}`],
   };
 };
 

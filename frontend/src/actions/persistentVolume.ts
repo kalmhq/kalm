@@ -43,7 +43,7 @@ export const loadStorageClassesAction = (): ThunkResult<Promise<void>> => {
 export const loadSimpleOptionsAction = (namespace?: string): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (!namespace) {
-      namespace = getState().get("namespaces").get("active");
+      namespace = getState().get("namespaces").active;
     }
     const simpleOptions = await api.getSimpleOptions(namespace);
 
@@ -57,7 +57,7 @@ export const loadSimpleOptionsAction = (namespace?: string): ThunkResult<Promise
 export const loadStatefulSetOptionsAction = (namespace?: string): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (!namespace) {
-      namespace = getState().get("namespaces").get("active");
+      namespace = getState().get("namespaces").active;
     }
 
     const statefulSetOptions = await api.getStatefulSetOptions(namespace);

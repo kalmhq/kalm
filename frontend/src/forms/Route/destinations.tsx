@@ -28,7 +28,7 @@ interface FieldArrayComponentHackType {
 
 const mapStateToProps = (state: RootState) => {
   return {
-    activeNamespace: state.get("namespaces").get("active"),
+    activeNamespace: state.get("namespaces").active,
     services: state.get("services").services,
   };
 };

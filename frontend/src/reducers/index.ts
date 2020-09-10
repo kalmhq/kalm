@@ -2,7 +2,6 @@ import { connectRouter } from "connected-react-router/immutable";
 import { History, LocationState } from "history";
 import { combineReducers } from "redux-immutable";
 import { ImmutableMap } from "typings";
-import roles, { State as RolesState } from "./role";
 import applications, { State as ApplicationState } from "./application";
 import components, { State as ApplicationComponentState } from "./component";
 import auth, { State as AuthState } from "./auth";
@@ -35,7 +34,6 @@ export type RootState = ImmutableMap<{
   registries: RegistriesState;
   persistentVolumes: PersistentVolumesState;
   settings: SettingsState;
-  roles: RolesState;
   routes: RouteState;
   cluster: ClusterState;
   tutorial: TutorialState;
@@ -65,7 +63,6 @@ export default (history: History<LocationState>) =>
     notification,
     settings,
     sso,
-    roles,
     routes,
     tutorial,
     cluster,

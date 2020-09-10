@@ -13,7 +13,7 @@ const mapStateToProps = (state: RootState) => {
   const isAdmin = auth.isAdmin;
   const entity = auth.entity;
   return {
-    activeNamespaceName: state.get("namespaces").get("active"),
+    activeNamespaceName: state.get("namespaces").active,
     isAdmin,
     entity,
   };

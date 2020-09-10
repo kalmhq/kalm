@@ -56,8 +56,7 @@ const reducer = produce((state: State, action: Actions) => {
     }
     case LOGOUT: {
       window.localStorage.removeItem(AUTHORIZED_TOKEN_KEY);
-      state = initialState;
-      return;
+      return initialState;
     }
   }
 

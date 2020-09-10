@@ -97,7 +97,7 @@ export class LoginRaw extends React.PureComponent<Props, State> {
     if (!errorMessage) {
       this.props.dispatch(push("/"));
     } else {
-      this.setState({ error: errorMessage });
+      this.setState({ error: errorMessage as any });
     }
   };
 
