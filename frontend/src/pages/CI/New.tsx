@@ -5,7 +5,7 @@ import { push } from "connected-react-router";
 import { setSuccessNotificationAction } from "actions/notification";
 import { withDeployKeys, WithDeployKeysProps } from "hoc/withDeployKeys";
 import { DeployKeyFormik } from "forms/DeployKey";
-import { DeployKeyFormTypeContent } from "types/deployKey";
+import { DeployKey } from "types/deployKey";
 import { createDeployKeyAction } from "actions/deployKey";
 
 const styles = (theme: Theme) =>
@@ -18,7 +18,7 @@ interface Props extends WithStyles<typeof styles>, WithDeployKeysProps {}
 interface State {}
 
 class DeployKeyNewPageRaw extends React.PureComponent<Props, State> {
-  private submitFormik = async (config: DeployKeyFormTypeContent) => {
+  private submitFormik = async (config: DeployKey) => {
     try {
       const { dispatch } = this.props;
       await dispatch(createDeployKeyAction(config));

@@ -3,7 +3,7 @@ import { Application, ApplicationComponent, ApplicationComponentDetails, Applica
 import { LoginStatus } from "types/authorization";
 import { Certificate, CertificateIssuer, CertificateIssuerForm, CertificateForm } from "types/certificate";
 import { ClusterInfo, InitializeClusterResponse } from "types/cluster";
-import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
+import { DeployKey } from "types/deployKey";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import { Node, NodesListResponse } from "types/node";
 import { RegistryFormType, Registry } from "types/registry";
@@ -127,11 +127,11 @@ export abstract class Api {
 
   public abstract deleteProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<void>;
 
-  public abstract listDeployKeys(): Promise<Immutable.List<DeployKeyFormType>>;
+  public abstract listDeployKeys(): Promise<DeployKey[]>;
 
-  public abstract createDeployKey(deployKey: DeployKeyFormTypeContent): Promise<DeployKeyFormType>;
+  public abstract createDeployKey(deployKey: DeployKey): Promise<DeployKey>;
 
-  public abstract deleteDeployKey(deployKey: DeployKeyFormType): Promise<void>;
+  public abstract deleteDeployKey(deployKey: DeployKey): Promise<void>;
 
   public abstract resolveDomain(domain: string, type: "A" | "CNAME", timeout?: number): Promise<string[]>;
 

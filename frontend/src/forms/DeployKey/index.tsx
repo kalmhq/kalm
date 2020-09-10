@@ -12,7 +12,7 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Application, ApplicationComponentDetails } from "types/application";
 import {
-  DeployKeyFormTypeContent,
+  DeployKey,
   DeployKeyScopeCluster,
   DeployKeyScopeComponent,
   DeployKeyScopeNamespace,
@@ -46,7 +46,7 @@ export interface Props
   extends ConnectedProps,
     OwnProps,
     WithNamespaceProps,
-    FormikProps<DeployKeyFormTypeContent>,
+    FormikProps<DeployKey>,
     WithStyles<typeof styles> {}
 
 const schema = object().shape({
@@ -172,7 +172,7 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
 }
 
 const DeployKeyForm = withNamespace(connect(mapStateToProps)(withStyles(styles)(DeployKeyFormikRaw)));
-export const DeployKeyFormik = withFormik<OwnProps, DeployKeyFormTypeContent>({
+export const DeployKeyFormik = withFormik<OwnProps, DeployKey>({
   mapPropsToValues: () => newEmptyDeployKeyForm,
   validationSchema: schema,
   handleSubmit: (values, bag) => {

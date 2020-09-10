@@ -1,6 +1,4 @@
-import Immutable from "immutable";
 import { Actions } from "types";
-import { ImmutableMap } from "typings";
 import { LOGOUT } from "types/common";
 import {
   RESOURCE_ACTION_ADD,
@@ -10,38 +8,44 @@ import {
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
 import {
-  DeployKeyFormType,
+  DeployKey,
   LOAD_DEPLOY_KEYS_FAILED,
   LOAD_DEPLOY_KEYS_FULFILLED,
   LOAD_DEPLOY_KEYS_PENDING,
 } from "types/deployKey";
-import { addOrUpdateInList, removeInList } from "reducers/utils";
+import { addOrUpdateInArray, removeInArray } from "reducers/utils";
+import produce from "immer";
 
-export type State = ImmutableMap<{
+export interface State {
   isLoading: boolean;
   loaded: boolean;
-  deployKeys: Immutable.List<DeployKeyFormType>;
-}>;
+  deployKeys: DeployKey[];
+}
 
-const initialState: State = Immutable.Map({
+const initialState: State = {
   isLoading: false,
   loaded: false,
-  deployKeys: Immutable.List(),
-});
+  deployKeys: [],
+};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State = initialState, action: Actions) => {
   switch (action.type) {
     case LOGOUT: {
       return initialState;
     }
     case LOAD_DEPLOY_KEYS_PENDING: {
-      return state.set("isLoading", true);
+      state.isLoading = true;
+      return;
     }
     case LOAD_DEPLOY_KEYS_FAILED: {
-      return state.set("isLoading", false);
+      state.isLoading = false;
+      return;
     }
     case LOAD_DEPLOY_KEYS_FULFILLED: {
-      return state.set("isLoading", false).set("loaded", true).set("deployKeys", action.payload);
+      state.isLoading = false;
+      state.loaded = true;
+      state.deployKeys = action.payload;
+      return;
     }
     case WATCHED_RESOURCE_CHANGE: {
       if (action.kind !== RESOURCE_TYPE_DEPLOY_KEY) {
@@ -50,15 +54,15 @@ const reducer = (state: State = initialState, action: Actions): State => {
 
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          state = state.update("deployKeys", (x) => addOrUpdateInList(x, action.payload.data));
+          state.deployKeys = addOrUpdateInArray(state.deployKeys, action.payload.data);
           break;
         }
         case RESOURCE_ACTION_DELETE: {
-          state = state.update("deployKeys", (x) => removeInList(x, action.payload.data));
+          state.deployKeys = removeInArray(state.deployKeys, action.payload.data);
           break;
         }
         case RESOURCE_ACTION_UPDATE: {
-          state = state.update("deployKeys", (x) => addOrUpdateInList(x, action.payload.data));
+          state.deployKeys = addOrUpdateInArray(state.deployKeys, action.payload.data);
           break;
         }
       }
@@ -67,7 +71,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
   }
 
-  return state;
-};
+  return;
+}, initialState);
 
 export default reducer;

@@ -8,12 +8,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
-import {
-  DeployKeyFormType,
-  DeployKeyScopeCluster,
-  DeployKeyScopeComponent,
-  DeployKeyScopeNamespace,
-} from "types/deployKey";
+import { DeployKey, DeployKeyScopeCluster, DeployKeyScopeComponent, DeployKeyScopeNamespace } from "types/deployKey";
 import sc from "utils/stringConstants";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
 import { CustomizedButton } from "widgets/Button";
@@ -59,12 +54,12 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderName = (rowData: DeployKeyFormType) => {
-    return <Typography variant="subtitle2">{rowData.get("name")}</Typography>;
+  private renderName = (rowData: DeployKey) => {
+    return <Typography variant="subtitle2">{rowData.name}</Typography>;
   };
 
-  private renderScope = (rowData: DeployKeyFormType) => {
-    switch (rowData.get("scope")) {
+  private renderScope = (rowData: DeployKey) => {
+    switch (rowData.scope) {
       case DeployKeyScopeCluster: {
         return "Cluster";
       }
@@ -77,10 +72,10 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderResources = (rowData: DeployKeyFormType) => {
-    const resoureces = rowData.get("resources");
+  private renderResources = (rowData: DeployKey) => {
+    const resoureces = rowData.resources;
 
-    switch (rowData.get("scope")) {
+    switch (rowData.scope) {
       case DeployKeyScopeCluster: {
         return "-";
       }
@@ -93,7 +88,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderActions = (rowData: DeployKeyFormType) => {
+  private renderActions = (rowData: DeployKey) => {
     const { dispatch } = this.props;
     return (
       <>
@@ -103,7 +98,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
           }}
           // size="small"
           tooltipTitle="Details"
-          to={`/ci/keys/${rowData.get("name")}`}
+          to={`/ci/keys/${rowData.name}`}
         >
           <KalmDetailsIcon />
         </IconLinkWithToolTip>
@@ -198,7 +193,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
       );
     }
 
-    return <Box p={2}>{deployKeys.size === 0 ? this.renderEmpty() : this.renderKRTable()}</Box>;
+    return <Box p={2}>{deployKeys.length === 0 ? this.renderEmpty() : this.renderKRTable()}</Box>;
   };
 
   public render() {

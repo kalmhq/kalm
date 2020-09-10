@@ -7,9 +7,9 @@ const mapStateToProps = (state: RootState) => {
   const deployKeys = state.get("deployKeys");
 
   return {
-    deployKeys: deployKeys.get("deployKeys"),
-    loaded: deployKeys.get("loaded"),
-    isLoading: deployKeys.get("isLoading"),
+    deployKeys: deployKeys.deployKeys,
+    loaded: deployKeys.loaded,
+    isLoading: deployKeys.isLoading,
   };
 };
 

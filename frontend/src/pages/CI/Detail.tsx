@@ -8,12 +8,7 @@ import { BasePage } from "pages/BasePage";
 import { deleteDeployKeyAction } from "actions/deployKey";
 import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle2 } from "widgets/Label";
-import {
-  DeployKeyFormType,
-  DeployKeyScopeCluster,
-  DeployKeyScopeComponent,
-  DeployKeyScopeNamespace,
-} from "types/deployKey";
+import { DeployKey, DeployKeyScopeCluster, DeployKeyScopeComponent, DeployKeyScopeNamespace } from "types/deployKey";
 import { push } from "connected-react-router";
 import { connect } from "react-redux";
 import clsx from "clsx";
@@ -72,7 +67,7 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
 
   private getDeployKey = () => {
     const { deployKeys, match } = this.props;
-    return deployKeys.find((x) => x.get("name") === match.params.name);
+    return deployKeys.find((x) => x.name === match.params.name);
   };
 
   private renderContent = () => {
@@ -180,9 +175,9 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
     );
   }
 
-  private renderCopyKey = (deployKey: DeployKeyFormType) => {
+  private renderCopyKey = (deployKey: DeployKey) => {
     const { dispatch } = this.props;
-    const key = deployKey.get("key");
+    const key = deployKey.key;
     return (
       <Box mt={2}>
         <Subtitle2>Copy key</Subtitle2>
@@ -204,12 +199,12 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
     );
   };
 
-  private renderTabDetails(deployKey: DeployKeyFormType) {
+  private renderTabDetails(deployKey: DeployKey) {
     const { currentTabIndex } = this.props;
 
     const curl = `curl -X POST \\
     -H "Content-Type: application/json" \\
-    -H "Authorization: Bearer ${deployKey.get("key")}" \\
+    -H "Authorization: Bearer ${deployKey.key}" \\
     -d '{
       "application":   "<application-name>",
       "componentName": "<component-name>",
@@ -302,21 +297,21 @@ workflows:
     );
   }
 
-  private renderDeployKeyScope = (deployKey: DeployKeyFormType) => {
-    if (deployKey.get("scope") === DeployKeyScopeCluster) {
+  private renderDeployKeyScope = (deployKey: DeployKey) => {
+    if (deployKey.scope === DeployKeyScopeCluster) {
       return (
         <Body2>
           Its granted scope is <strong>Cluster</strong>.
         </Body2>
       );
-    } else if (deployKey.get("scope") === DeployKeyScopeNamespace) {
+    } else if (deployKey.scope === DeployKeyScopeNamespace) {
       return (
         <>
           <Body2>
             Its granted scope is <strong>Specific Applications</strong>:
           </Body2>
           <Box pl={2} mt={1}>
-            {deployKey.get("resources").map((x) => (
+            {deployKey.resources.map((x) => (
               <Box key={x}>
                 <strong>{x}</strong>
               </Box>
@@ -324,14 +319,14 @@ workflows:
           </Box>
         </>
       );
-    } else if (deployKey.get("scope") === DeployKeyScopeComponent) {
+    } else if (deployKey.scope === DeployKeyScopeComponent) {
       return (
         <>
           <Body2>
             Its granted scope is <strong>Specific Components</strong>:
           </Body2>
           <Box pl={2} mt={1}>
-            {deployKey.get("resources").map((x) => (
+            {deployKey.resources.map((x) => (
               <Box key={x}>
                 <strong>{x}</strong>
               </Box>
@@ -353,7 +348,7 @@ workflows:
       );
     }
 
-    const deployKey = deployKeys.find((x) => x.get("name") === match.params.name);
+    const deployKey = deployKeys.find((x) => x.name === match.params.name);
 
     if (!deployKey) {
       return <Box p={2}>Deploy key "${match.params.name}" not found.</Box>;
@@ -368,7 +363,7 @@ workflows:
               color="primary"
               variant="outlined"
               size="small"
-              to={`/ci/keys/${deployKey.get("name")}/edit`}
+              to={`/ci/keys/${deployKey.name}/edit`}
             >
               Edit
             </Button>

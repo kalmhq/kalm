@@ -4,7 +4,7 @@ import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
 import { CertificateForm, CertificateIssuerForm } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
-import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
+import { DeployKey } from "types/deployKey";
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
 import { Node } from "types/node";
 import { RegistryFormType, Registry } from "types/registry";
@@ -356,22 +356,22 @@ export default class RealApi extends Api {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/protectedendpoints`, data: protectedEndpoint });
   };
 
-  public listDeployKeys = async (): Promise<Immutable.List<DeployKeyFormType>> => {
+  public listDeployKeys = async (): Promise<DeployKey[]> => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/deploykeys` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
-  public createDeployKey = async (deployKey: DeployKeyFormTypeContent): Promise<DeployKeyFormType> => {
+  public createDeployKey = async (deployKey: DeployKey): Promise<DeployKey> => {
     const res = await axiosRequest({
       method: "post",
       url: `/${K8sApiVersion}/deploykeys`,
       data: deployKey,
     });
 
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
-  public deleteDeployKey = async (deployKey: DeployKeyFormType): Promise<void> => {
+  public deleteDeployKey = async (deployKey: DeployKey): Promise<void> => {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/deploykeys`, data: deployKey });
   };
 

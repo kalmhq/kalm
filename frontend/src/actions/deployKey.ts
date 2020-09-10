@@ -6,15 +6,13 @@ import {
   DELETE_DEPLOY_KEY_FAILED,
   DELETE_DEPLOY_KEY_FULFILLED,
   DELETE_DEPLOY_KEY_PENDING,
-  DeployKeyFormType,
+  DeployKey,
   LOAD_DEPLOY_KEYS_FAILED,
   LOAD_DEPLOY_KEYS_FULFILLED,
   LOAD_DEPLOY_KEYS_PENDING,
-  DeployKeyFormTypeContent,
 } from "types/deployKey";
 
 import { api } from "api";
-import { Map } from "immutable";
 
 export const loadDeployKeyAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
@@ -33,14 +31,14 @@ export const loadDeployKeyAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const createDeployKeyAction = (key: DeployKeyFormTypeContent): ThunkResult<Promise<DeployKeyFormType>> => {
+export const createDeployKeyAction = (key: DeployKey): ThunkResult<Promise<DeployKey>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: CREATE_DEPLOY_KEY_PENDING });
       const keyRes = await api.createDeployKey(key);
       dispatch({
         type: CREATE_DEPLOY_KEY_FULFILLED,
-        payload: Map(keyRes),
+        payload: keyRes,
       });
       return keyRes;
     } catch (e) {
@@ -50,7 +48,7 @@ export const createDeployKeyAction = (key: DeployKeyFormTypeContent): ThunkResul
   };
 };
 
-export const deleteDeployKeyAction = (key: DeployKeyFormType): ThunkResult<Promise<void>> => {
+export const deleteDeployKeyAction = (key: DeployKey): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: DELETE_DEPLOY_KEY_PENDING });
