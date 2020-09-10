@@ -5,8 +5,8 @@ import { RenderGithubConnector } from "forms/SSOConfig/GithubConnector";
 import { RenderGitlabConnector } from "forms/SSOConfig/GitlabConnector";
 import React from "react";
 import {
-  SSOGithubConnectorFormType,
-  SSOGitlabConnectorFormType,
+  SSOGithubConnector,
+  SSOGitlabConnector,
   SSO_CONNECTOR_TYPE_GITHUB,
   SSO_CONNECTOR_TYPE_GITLAB,
 } from "types/sso";
@@ -14,7 +14,7 @@ import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { Alert } from "@material-ui/lab";
 
 export interface Props {
-  connectors?: Array<SSOGithubConnectorFormType | SSOGitlabConnectorFormType>;
+  connectors?: Array<SSOGithubConnector | SSOGitlabConnector>;
 }
 
 export class Connectors extends React.PureComponent<Props> {

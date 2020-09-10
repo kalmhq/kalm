@@ -7,7 +7,7 @@ import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { ProtectedEndpointFormType } from "types/sso";
+import { ProtectedEndpoint } from "types/sso";
 import sc from "utils/stringConstants";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
@@ -64,13 +64,13 @@ const validatePorts = (values?: number[]) => {
 export interface Props {
   isEdit?: boolean;
   onSubmit: any;
-  initial: ProtectedEndpointFormType;
+  initial: ProtectedEndpoint;
 }
 
 export interface FinalProps
   extends Props,
     WithNamespaceProps,
-    FormikProps<ProtectedEndpointFormType>,
+    FormikProps<ProtectedEndpoint>,
     ReturnType<typeof mapStateToProps>,
     WithStyles<typeof styles> {}
 
@@ -201,11 +201,11 @@ class ProtectedEndpointFormRaw extends React.PureComponent<FinalProps> {
 
 const connectedForm = connect(mapStateToProps)(withNamespace(withStyles(styles)(ProtectedEndpointFormRaw)));
 
-export const ProtectedEndpointForm = withFormik<Props, ProtectedEndpointFormType>({
+export const ProtectedEndpointForm = withFormik<Props, ProtectedEndpoint>({
   mapPropsToValues: (props) => {
     return props.initial;
   },
-  validate: (values: ProtectedEndpointFormType) => {
+  validate: (values: ProtectedEndpoint) => {
     let errors = {};
     return errors;
   },

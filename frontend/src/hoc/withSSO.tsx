@@ -6,12 +6,12 @@ import { TDispatchProp } from "types";
 const mapStateToProps = (state: RootState) => {
   const sso = state.get("sso");
   return {
-    ssoConfig: sso.get("config"),
-    isSSOConfigLoaded: sso.get("loaded"),
-    isSSOConfigLoading: sso.get("isLoading"),
-    isProtectedEndpointsLoaded: sso.get("isProtectedEndpointsLoaded"),
-    isProtectedEndpointsLoading: sso.get("isProtectedEndpointsLoading"),
-    protectedEndpoints: sso.get("protectedEndpoints"),
+    ssoConfig: sso.config,
+    isSSOConfigLoaded: sso.loaded,
+    isSSOConfigLoading: sso.isLoading,
+    isProtectedEndpointsLoaded: sso.isProtectedEndpointsLoaded,
+    isProtectedEndpointsLoading: sso.isProtectedEndpointsLoading,
+    protectedEndpoints: sso.protectedEndpoints,
   };
 };
 

@@ -310,26 +310,26 @@ export default class RealApi extends Api {
   // sso
   public getSSOConfig = async (): Promise<SSOConfig> => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/sso` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public createSSOConfig = async (ssoConfig: SSOConfig): Promise<SSOConfig> => {
     const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/sso`, data: ssoConfig });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public updateSSOConfig = async (ssoConfig: SSOConfig): Promise<SSOConfig> => {
     const res = await axiosRequest({ method: "put", url: `/${K8sApiVersion}/sso`, data: ssoConfig });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public deleteSSOConfig = async (): Promise<void> => {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/sso` });
   };
 
-  public listProtectedEndpoints = async (): Promise<Immutable.List<ProtectedEndpoint>> => {
+  public listProtectedEndpoints = async (): Promise<ProtectedEndpoint[]> => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/protectedendpoints` });
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public createProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint> => {
@@ -339,7 +339,7 @@ export default class RealApi extends Api {
       data: protectedEndpoint,
     });
 
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public updateProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint> => {
@@ -349,7 +349,7 @@ export default class RealApi extends Api {
       data: protectedEndpoint,
     });
 
-    return Immutable.fromJS(res.data);
+    return res.data;
   };
 
   public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {

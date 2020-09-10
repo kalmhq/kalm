@@ -4,7 +4,7 @@ import Button from "@material-ui/core/Button";
 import { Field, FieldArray, getIn } from "formik";
 import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import React from "react";
-import { GithubOrgFormType, SSOGithubConnectorFormType } from "types/sso";
+import { GithubOrg, SSOGithubConnector } from "types/sso";
 import { capitalize } from "utils/string";
 import { DeleteIcon, GithubIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
@@ -23,7 +23,7 @@ export const ValidatorOrgs = (values: any[], _allValues?: any, _props?: any, _na
 
 class RenderGithubConnectorOrganizations extends React.Component<{
   name: string;
-  orgs?: GithubOrgFormType[];
+  orgs?: GithubOrg[];
 }> {
   public render() {
     const { name, orgs } = this.props;
@@ -88,7 +88,7 @@ class RenderGithubConnectorOrganizations extends React.Component<{
 }
 
 interface Props {
-  connector: SSOGithubConnectorFormType;
+  connector: SSOGithubConnector;
   form: any;
   fieldName: string;
 }

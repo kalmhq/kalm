@@ -321,7 +321,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
     const email = temporaryAdmin.get("email");
     const password = temporaryAdmin.get("password");
     const scheme = clusterInfo.get("isProduction") ? "https" : "http";
-    const domain = initializeResponse!.get("sso").get("domain");
+    const domain = initializeResponse!.get("sso").domain;
 
     const url = `${scheme}://${domain}`;
 

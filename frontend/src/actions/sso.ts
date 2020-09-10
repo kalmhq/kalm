@@ -28,7 +28,6 @@ import {
   UPDATE_SSO_CONFIG_FAILED,
   UPDATE_SSO_CONFIG_FULFILLED,
   UPDATE_SSO_CONFIG_PENDING,
-  ProtectedEndpointFormType,
 } from "types/sso";
 import Immutable from "immutable";
 
@@ -37,7 +36,6 @@ export const loadSSOConfigAction = (): ThunkResult<Promise<void>> => {
     dispatch({ type: LOAD_SSO_CONFIG_PENDING });
     try {
       const ssoConfig = await api.getSSOConfig();
-
       dispatch({
         type: LOAD_SSO_CONFIG_FULFILLED,
         payload: ssoConfig,
@@ -117,9 +115,7 @@ export const loadProtectedEndpointAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const createProtectedEndpointAction = (
-  protectedEndpointForm: ProtectedEndpointFormType,
-): ThunkResult<Promise<void>> => {
+export const createProtectedEndpointAction = (protectedEndpointForm: ProtectedEndpoint): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: CREATE_PROTECTED_ENDPOINT_PENDING });
@@ -138,9 +134,7 @@ export const createProtectedEndpointAction = (
   };
 };
 
-export const updateProtectedEndpointAction = (
-  protectedEndpointForm: ProtectedEndpointFormType,
-): ThunkResult<Promise<void>> => {
+export const updateProtectedEndpointAction = (protectedEndpointForm: ProtectedEndpoint): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: UPDATE_PROTECTED_ENDPOINT_PENDING });

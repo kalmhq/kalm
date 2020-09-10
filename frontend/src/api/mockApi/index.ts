@@ -26,7 +26,6 @@ export default class MockApi extends Api {
   };
 
   public getNodes = async () => {
-    console.log("mockapi", mockStore.dataImmer.mockNodes);
     return mockStore.dataImmer.mockNodes;
   };
 
@@ -218,29 +217,29 @@ export default class MockApi extends Api {
 
   // TODO
   public getSSOConfig = async (): Promise<SSOConfig> => {
-    return mockStore.data.get("mockSSO");
+    return mockStore.dataImmer.mockSSO;
   };
 
   public createSSOConfig = async (ssoConfig: SSOConfig): Promise<SSOConfig> => {
-    return Immutable.Map();
+    return {} as any;
   };
 
   public updateSSOConfig = async (ssoConfig: SSOConfig): Promise<SSOConfig> => {
-    return Immutable.Map();
+    return {} as any;
   };
 
   public deleteSSOConfig = async (): Promise<void> => {};
 
-  public listProtectedEndpoints = async (): Promise<Immutable.List<ProtectedEndpoint>> => {
-    return Immutable.List();
+  public listProtectedEndpoints = async (): Promise<ProtectedEndpoint[]> => {
+    return [];
   };
 
   public createProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint> => {
-    return Immutable.Map();
+    return {} as any;
   };
 
   public updateProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint> => {
-    return Immutable.Map();
+    return {} as any;
   };
 
   public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {};

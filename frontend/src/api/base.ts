@@ -119,7 +119,7 @@ export abstract class Api {
 
   public abstract deleteSSOConfig(): Promise<void>;
 
-  public abstract listProtectedEndpoints(): Promise<Immutable.List<ProtectedEndpoint>>;
+  public abstract listProtectedEndpoints(): Promise<ProtectedEndpoint[]>;
 
   public abstract createProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint>;
 
