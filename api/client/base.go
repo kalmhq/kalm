@@ -4,9 +4,12 @@ import (
 	"github.com/casbin/casbin/v2/persist"
 	"github.com/kalmhq/kalm/api/auth"
 	"github.com/kalmhq/kalm/api/rbac"
+	"github.com/kalmhq/kalm/api/resources"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/rest"
 	"reflect"
+	"strings"
 )
 
 const (
@@ -39,6 +42,11 @@ type ClientManager interface {
 	CanViewCluster(client *ClientInfo) bool
 	CanEditCluster(client *ClientInfo) bool
 	CanManageCluster(client *ClientInfo) bool
+
+	// special resources
+	CanOperateHttpRoute(c *ClientInfo, action string, route *resources.HttpRoute) bool
+	PermissionsGreaterThanOrEqualAccessToken(c *ClientInfo, accessToken *resources.AccessToken) bool
+	CanManageRoleBinding(c *ClientInfo, roleBinding *v1alpha1.RoleBinding) bool
 
 	GetRBACEnforcer() rbac.Enforcer
 }
@@ -137,6 +145,55 @@ func (m *BaseClientManager) CanEditCluster(client *ClientInfo) bool {
 
 func (m *BaseClientManager) CanManageCluster(client *ClientInfo) bool {
 	return m.wrapper(client, m.RBACEnforcer.CanManageCluster)
+}
+
+func (m *BaseClientManager) PermissionsGreaterThanOrEqualAccessToken(c *ClientInfo, accessToken *resources.AccessToken) bool {
+	policies := GetPoliciesFromAccessToken(accessToken)
+
+	for _, policy := range policies {
+		if !m.Can(c, policy[1], policy[2], policy[3]) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, route *resources.HttpRoute) bool {
+	for _, dest := range route.HttpRouteSpec.Destinations {
+		parts := strings.Split(dest.Host, ".")
+
+		if len(parts) == 0 {
+			return false
+		}
+
+		var ns string
+		if len(parts) == 1 {
+			ns = route.Namespace
+		} else {
+			ns = parts[1]
+		}
+
+		if action == "view" {
+			if !m.CanViewNamespace(c, ns) {
+				return false
+			}
+		} else if action == "edit" {
+			if !m.CanEditNamespace(c, ns) {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+func (m *BaseClientManager) CanManageRoleBinding(c *ClientInfo, roleBinding *v1alpha1.RoleBinding) bool {
+	switch roleBinding.Spec.Role {
+	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
+		return m.CanManageCluster(c)
+	default:
+		return m.CanManageNamespace(c, roleBinding.Namespace)
+	}
 }
 
 func extractAuthTokenFromClientRequestContext(c echo.Context) string {

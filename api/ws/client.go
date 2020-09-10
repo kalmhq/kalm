@@ -10,8 +10,9 @@ import (
 )
 
 type ReqMessage struct {
-	Method string `json:"method"`
-	Token  string `json:"token"`
+	Method        string `json:"method"`
+	Token         string `json:"token"`
+	Impersonation string `json:"impersonation"`
 }
 
 type ResMessage struct {
@@ -22,29 +23,20 @@ type ResMessage struct {
 }
 
 type Client struct {
-	clientPool *ClientPool
-
-	conn *websocket.Conn
-
-	Send chan []byte
-
-	Done chan struct{}
-
-	StopWatcher chan struct{}
-
-	K8sClientManager client.ClientManager
-
-	ClientInfo *client.ClientInfo
-
-	logger     logr.Logger
-	IsWatching bool
+	clientPool    *ClientPool
+	conn          *websocket.Conn
+	send          chan []byte
+	done          chan struct{}
+	stopWatcher   chan struct{}
+	clientManager client.ClientManager
+	clientInfo    *client.ClientInfo
+	logger        logr.Logger
+	isWatching    bool
 }
 
 type ClientPool struct {
-	clients map[*Client]bool
-
-	register chan *Client
-
+	clients    map[*Client]bool
+	register   chan *Client
 	unregister chan *Client
 }
 
@@ -59,12 +51,12 @@ func NewClientPool() *ClientPool {
 func (h *ClientPool) run() {
 	for {
 		select {
-		case client := <-h.register:
-			h.clients[client] = true
-		case client := <-h.unregister:
-			if _, ok := h.clients[client]; ok {
-				delete(h.clients, client)
-				client.Send = nil
+		case c := <-h.register:
+			h.clients[c] = true
+		case c := <-h.unregister:
+			if _, ok := h.clients[c]; ok {
+				delete(h.clients, c)
+				c.send = nil
 			}
 		}
 	}
@@ -73,8 +65,8 @@ func (h *ClientPool) run() {
 func (c *Client) read() {
 	defer func() {
 		c.clientPool.unregister <- c
-		close(c.StopWatcher)
-		close(c.Done)
+		close(c.stopWatcher)
+		close(c.done)
 		c.conn.Close()
 	}()
 
@@ -92,18 +84,18 @@ func (c *Client) read() {
 		var reqMessage ReqMessage
 		_ = json.Unmarshal(messageBytes, &reqMessage)
 
-		if c.ClientInfo == nil {
-			clientInfo, err := c.K8sClientManager.GetClientInfoFromToken(reqMessage.Token, "")
+		if c.clientInfo == nil {
+			clientInfo, err := c.clientManager.GetClientInfoFromToken(reqMessage.Token, reqMessage.Impersonation)
 
 			if err != nil {
 				log.Error(err, "new config error")
 			}
 
-			c.ClientInfo = clientInfo
+			c.clientInfo = clientInfo
 		}
 
-		if reqMessage.Method == "StartWatching" && !c.IsWatching {
-			c.IsWatching = true
+		if reqMessage.Method == "StartWatching" && !c.isWatching {
+			c.isWatching = true
 			c.sendWatchResMessage(&ResMessage{Kind: "PlainMessage", Data: "Started"})
 			go StartWatching(c)
 		}
@@ -111,7 +103,7 @@ func (c *Client) read() {
 	}
 }
 func (c *Client) Builder() *resources.ResourceManager {
-	return resources.NewResourceManager(c.ClientInfo.Cfg, c.logger)
+	return resources.NewResourceManager(c.clientInfo.Cfg, c.logger)
 }
 
 func (c *Client) write() {
@@ -121,7 +113,7 @@ func (c *Client) write() {
 
 	for {
 		select {
-		case message, ok := <-c.Send:
+		case message, ok := <-c.send:
 			if !ok {
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				break
@@ -133,7 +125,7 @@ func (c *Client) write() {
 				break
 			}
 			continue
-		case <-c.Done:
+		case <-c.done:
 			return
 		}
 	}
@@ -150,5 +142,5 @@ func (c *Client) sendWatchResMessage(resMessage *ResMessage) {
 		return
 	}
 
-	c.Send <- bts
+	c.send <- bts
 }

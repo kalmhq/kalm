@@ -36,12 +36,12 @@ func NewWsHandler(clientManager client.ClientManager) *WsHandler {
 
 func (h *WsHandler) Serve(c echo.Context) error {
 	clt := &Client{
-		clientPool:       h.clientPool,
-		Send:             make(chan []byte, 256),
-		Done:             make(chan struct{}),
-		StopWatcher:      make(chan struct{}),
-		K8sClientManager: h.clientManager,
-		logger:           h.logger,
+		clientPool:    h.clientPool,
+		send:          make(chan []byte, 256),
+		done:          make(chan struct{}),
+		stopWatcher:   make(chan struct{}),
+		clientManager: h.clientManager,
+		logger:        h.logger,
 	}
 
 	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
@@ -56,7 +56,7 @@ func (h *WsHandler) Serve(c echo.Context) error {
 	clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
 
 	if err == nil && clientInfo != nil {
-		clt.ClientInfo = clientInfo
+		clt.clientInfo = clientInfo
 	}
 
 	clt.clientPool.register <- clt

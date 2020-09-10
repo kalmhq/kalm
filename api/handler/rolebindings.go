@@ -37,15 +37,8 @@ func (h *ApiHandler) handleCreateRoleBinding(c echo.Context) (err error) {
 		return err
 	}
 
-	switch roleBinding.Spec.Role {
-	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
-		if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
-			return resources.NoClusterOwnerRoleError
-		}
-	default:
-		if !h.clientManager.CanManageNamespace(getCurrentUser(c), roleBinding.Namespace) {
-			return resources.NoNamespaceManagerRoleError(roleBinding.Namespace)
-		}
+	if !h.clientManager.CanManageRoleBinding(getCurrentUser(c), roleBinding) {
+		return resources.InsufficientPermissionsError
 	}
 
 	roleBinding.Name = roleBinding.GetNameBaseOnRoleAndSubject()
@@ -65,15 +58,8 @@ func (h *ApiHandler) handleUpdateRoleBinding(c echo.Context) error {
 		return err
 	}
 
-	switch roleBinding.Spec.Role {
-	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
-		if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
-			return resources.NoClusterOwnerRoleError
-		}
-	default:
-		if !h.clientManager.CanManageNamespace(getCurrentUser(c), roleBinding.Namespace) {
-			return resources.NoNamespaceManagerRoleError(roleBinding.Namespace)
-		}
+	if !h.clientManager.CanManageRoleBinding(getCurrentUser(c), roleBinding) {
+		return resources.InsufficientPermissionsError
 	}
 
 	var fetched v1alpha1.RoleBinding
@@ -98,15 +84,8 @@ func (h *ApiHandler) handleDeleteRoleBinding(c echo.Context) error {
 		return err
 	}
 
-	switch fetched.Spec.Role {
-	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
-		if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
-			return resources.NoClusterOwnerRoleError
-		}
-	default:
-		if !h.clientManager.CanManageNamespace(getCurrentUser(c), fetched.Namespace) {
-			return resources.NoNamespaceManagerRoleError(fetched.Namespace)
-		}
+	if !h.clientManager.CanManageRoleBinding(getCurrentUser(c), &fetched) {
+		return resources.InsufficientPermissionsError
 	}
 
 	err := h.resourceManager.Delete(&fetched)
@@ -155,18 +134,10 @@ func getRoleBindingFromContext(c echo.Context) (*v1alpha1.RoleBinding, error) {
 
 func (h *ApiHandler) filterAuthorizedRoleBindings(c echo.Context, records []v1alpha1.RoleBinding) []v1alpha1.RoleBinding {
 	l := len(records)
+	user := getCurrentUser(c)
 
 	for i := 0; i < l; i++ {
-		canView := false
-
-		switch records[i].Spec.Role {
-		case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
-			canView = h.clientManager.CanManageCluster(getCurrentUser(c))
-		default:
-			canView = h.clientManager.CanManageNamespace(getCurrentUser(c), records[i].Namespace)
-		}
-
-		if !canView {
+		if !h.clientManager.CanManageRoleBinding(user, &records[i]) {
 			records[l-1], records[i] = records[i], records[l-1]
 			i--
 			l--

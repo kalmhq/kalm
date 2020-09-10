@@ -1,7 +1,6 @@
 package handler
 
 import (
-	client "github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
@@ -26,7 +25,7 @@ func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
 		return err
 	}
 
-	if !h.permissionsGreaterThanOrEqualAccessToken(getCurrentUser(c), accessToken) {
+	if !h.clientManager.PermissionsGreaterThanOrEqualAccessToken(getCurrentUser(c), accessToken) {
 		return resources.InsufficientPermissionsError
 	}
 
@@ -55,7 +54,7 @@ func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
 		return err
 	}
 
-	if !h.permissionsGreaterThanOrEqualAccessToken(getCurrentUser(c), &resources.AccessToken{Name: fetched.Name, AccessTokenSpec: &fetched.Spec}) {
+	if !h.clientManager.PermissionsGreaterThanOrEqualAccessToken(getCurrentUser(c), &resources.AccessToken{Name: fetched.Name, AccessTokenSpec: &fetched.Spec}) {
 		return resources.InsufficientPermissionsError
 	}
 
@@ -80,7 +79,7 @@ func (h *ApiHandler) filterAuthorizedAccessTokens(c echo.Context, records []*res
 	l := len(records)
 
 	for i := 0; i < l; i++ {
-		if !h.permissionsGreaterThanOrEqualAccessToken(getCurrentUser(c), records[i]) {
+		if !h.clientManager.PermissionsGreaterThanOrEqualAccessToken(getCurrentUser(c), records[i]) {
 			records[l-1], records[i] = records[i], records[l-1]
 			i--
 			l--
@@ -88,16 +87,4 @@ func (h *ApiHandler) filterAuthorizedAccessTokens(c echo.Context, records []*res
 	}
 
 	return records[:l]
-}
-
-func (h *ApiHandler) permissionsGreaterThanOrEqualAccessToken(c *client.ClientInfo, accessToken *resources.AccessToken) bool {
-	policies := client.GetPoliciesFromAccessToken(accessToken)
-
-	for _, policy := range policies {
-		if !h.clientManager.Can(c, policy[1], policy[2], policy[3]) {
-			return false
-		}
-	}
-
-	return true
 }

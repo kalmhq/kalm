@@ -1,10 +1,8 @@
 package handler
 
 import (
-	client2 "github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
-	"strings"
 )
 
 func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
@@ -36,7 +34,7 @@ func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
 		return err
 	}
 
-	if !h.CanOperateHttpRoute(getCurrentUser(c), "edit", route) {
+	if !h.clientManager.CanOperateHttpRoute(getCurrentUser(c), "edit", route) {
 		return resources.InsufficientPermissionsError
 	}
 
@@ -54,7 +52,7 @@ func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
 		return err
 	}
 
-	if !h.CanOperateHttpRoute(getCurrentUser(c), "edit", route) {
+	if !h.clientManager.CanOperateHttpRoute(getCurrentUser(c), "edit", route) {
 		return resources.InsufficientPermissionsError
 	}
 
@@ -72,7 +70,7 @@ func (h *ApiHandler) handleDeleteRoute(c echo.Context) (err error) {
 		return nil
 	}
 
-	if !h.CanOperateHttpRoute(getCurrentUser(c), "edit", route) {
+	if !h.clientManager.CanOperateHttpRoute(getCurrentUser(c), "edit", route) {
 		return resources.InsufficientPermissionsError
 	}
 
@@ -97,7 +95,7 @@ func (h *ApiHandler) filterAuthorizedHttpRoutes(c echo.Context, records []*resou
 	l := len(records)
 
 	for i := 0; i < l; i++ {
-		if !h.CanOperateHttpRoute(getCurrentUser(c), "view", records[i]) {
+		if !h.clientManager.CanOperateHttpRoute(getCurrentUser(c), "view", records[i]) {
 			records[l-1], records[i] = records[i], records[l-1]
 			i--
 			l--
@@ -105,33 +103,4 @@ func (h *ApiHandler) filterAuthorizedHttpRoutes(c echo.Context, records []*resou
 	}
 
 	return records[:l]
-}
-
-func (h *ApiHandler) CanOperateHttpRoute(client *client2.ClientInfo, action string, route *resources.HttpRoute) bool {
-	for _, dest := range route.HttpRouteSpec.Destinations {
-		parts := strings.Split(dest.Host, ".")
-
-		if len(parts) == 0 {
-			return false
-		}
-
-		var ns string
-		if len(parts) == 1 {
-			ns = route.Namespace
-		} else {
-			ns = parts[1]
-		}
-
-		if action == "view" {
-			if !h.clientManager.CanViewNamespace(client, ns) {
-				return false
-			}
-		} else if action == "edit" {
-			if !h.clientManager.CanEditNamespace(client, ns) {
-				return false
-			}
-		}
-	}
-
-	return true
 }

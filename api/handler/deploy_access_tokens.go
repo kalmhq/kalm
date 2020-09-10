@@ -26,7 +26,7 @@ func (h *ApiHandler) handleCreateDeployAccessToken(c echo.Context) error {
 		return err
 	}
 
-	if !h.permissionsGreaterThanOrEqualAccessToken(getCurrentUser(c), accessToken) {
+	if !h.clientManager.PermissionsGreaterThanOrEqualAccessToken(getCurrentUser(c), accessToken) {
 		return resources.InsufficientPermissionsError
 	}
 
