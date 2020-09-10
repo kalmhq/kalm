@@ -309,15 +309,19 @@ export const KFormikAutoCompleteMultipleSelectField = (props: KFormikAutoComplet
       getOptionLabel={(option): string => {
         return option.label;
       }}
-      renderTags={(value, getTagProps) => {
-        return value.map((option, index: number) => {
-          return <Chip variant="outlined" label={option.label} size="small" {...getTagProps({ index })} />;
+      renderTags={(value: string[], getTagProps) => {
+        return value.map((option: string, index: number) => {
+          return <Chip variant="outlined" label={option} size="small" {...getTagProps({ index })} />;
         });
       }}
       onBlur={handleBlur}
       value={value}
       onChange={(e, value) => {
-        setFieldValue(name, value);
+        console.log(value.map((option) => option.value));
+        setFieldValue(
+          name,
+          value.map((option) => option.value),
+        );
       }}
       renderInput={(params) => (
         <TextField

@@ -74,7 +74,6 @@ class CIPageRaw extends React.PureComponent<Props, State> {
 
   private renderResources = (rowData: DeployKey) => {
     const resoureces = rowData.resources;
-
     switch (rowData.scope) {
       case DeployKeyScopeCluster: {
         return "-";

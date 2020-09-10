@@ -23,7 +23,7 @@ class DeployKeyNewPageRaw extends React.PureComponent<Props, State> {
       const { dispatch } = this.props;
       await dispatch(createDeployKeyAction(config));
       dispatch(setSuccessNotificationAction("Create Deploy key Successfully"));
-      dispatch(push("/ci"));
+      dispatch(push(`/ci/keys/${config.name}`));
     } catch (error) {
       console.log(error);
     }
