@@ -42,7 +42,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           {
             title: popupTitle,
             description: "Go to applications page",
-            anchor: "[tutorial-anchor-id=first-level-sidebar-item-applications]",
+            anchor: "[tutorial-anchor-id=first-level-sidebar-item-apps]",
             triggeredByState: (state: RootState) => requireSubStepNotCompleted(state, 0),
           },
           {
@@ -186,7 +186,6 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
             ],
             shouldCompleteByState: (state: RootState) => {
               const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as ComponentLikePort[] | undefined;
-              console.log(ports);
               return !!ports && ports.length > 0 && Number(ports[0]!.containerPort) === 8001;
             },
           },
@@ -210,7 +209,10 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           },
           {
             title: "Deploy!",
-            shouldCompleteByAction: (action: Actions) => action.type === CREATE_COMPONENT,
+            shouldCompleteByAction: (action: Actions) => {
+              console.log(action);
+              return action.type === CREATE_COMPONENT;
+            },
           },
         ],
       },
