@@ -1,13 +1,18 @@
-import React from "react";
-import { storiesOf } from "@storybook/react";
-import { Field } from "formik";
 import { Typography } from "@material-ui/core";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import Immutable from "immutable";
-import { resetStore, store } from "_stories/ReduxConfig";
-import { Service } from "types/service";
 import { date, number, text } from "@storybook/addon-knobs";
-
+import { storiesOf } from "@storybook/react";
+import { Field } from "formik";
+import { KAutoCompleteOption, KFormikAutoCompleteSingleValue } from "forms/Basic/autoComplete";
+import React from "react";
+import {
+  ApplicationDetails,
+  LOAD_ALL_NAMESAPCES_COMPONETS,
+  LOAD_APPLICATIONS_FULFILLED,
+  LOAD_APPLICATIONS_PENDING,
+} from "types/application";
+import { SET_CURRENT_NAMESPACE } from "types/namespace";
+import { Service } from "types/service";
 import {
   createApplication,
   createApplicationComponent,
@@ -15,16 +20,8 @@ import {
   generateRandomIntList,
   mergeMetrics,
 } from "_stories/data/application";
-import {
-  ApplicationComponentDetails,
-  ApplicationDetails,
-  LOAD_ALL_NAMESAPCES_COMPONETS,
-  LOAD_APPLICATIONS_FULFILLED,
-  LOAD_APPLICATIONS_PENDING,
-} from "types/application";
-import { SET_CURRENT_NAMESPACE } from "types/namespace";
-import { KAutoCompleteOption, KFormikAutoCompleteSingleValue } from "forms/Basic/autoComplete";
 import { createServices } from "_stories/data/service";
+import { resetStore, store } from "_stories/ReduxConfig";
 
 storiesOf("Widgets/HttpRouteDestinations", module)
   //   .addDecorator(withProvider)
@@ -38,16 +35,18 @@ storiesOf("Widgets/HttpRouteDestinations", module)
 
     createRoutes(store, [appName]);
 
-    let oneApp: ApplicationDetails = createApplication(appName);
+    let oneApp: ApplicationDetails = createApplication(appName) as any;
 
-    const allComponents: Immutable.Map<
-      string,
-      Immutable.List<ApplicationComponentDetails>
-    > = createApplicationComponent(appName, componentCounter, createTime, generateRandomIntList(podCounter, 0, 5));
+    const allComponents = createApplicationComponent(
+      appName,
+      componentCounter,
+      createTime,
+      generateRandomIntList(podCounter, 0, 5),
+    );
 
     oneApp = mergeMetrics(oneApp, allComponents);
 
-    const applications: Immutable.List<ApplicationDetails> = Immutable.List<ApplicationDetails>([oneApp]);
+    const applications: ApplicationDetails[] = [oneApp];
     store.dispatch({ type: LOAD_APPLICATIONS_PENDING });
     store.dispatch({
       type: LOAD_ALL_NAMESAPCES_COMPONETS,
@@ -63,11 +62,11 @@ storiesOf("Widgets/HttpRouteDestinations", module)
       },
     });
     const options: KAutoCompleteOption[] = [];
-    const services = createServices() as Immutable.List<Service>;
+    const services: Service[] = createServices() as any[];
     const activeNamespace = "kalm-bookinfo";
     services
       .filter((x) => {
-        const ns = x.get("namespace");
+        const ns = x.namespace;
 
         // TODO should we ignore the system namespaces??
         return (
@@ -82,32 +81,30 @@ storiesOf("Widgets/HttpRouteDestinations", module)
         );
       })
       .sort((a, b): number => {
-        const aNamespace = a.get("namespace");
+        const aNamespace = a.namespace;
         if (aNamespace === activeNamespace) {
           return -1;
         }
 
-        const bNamespace = b.get("namespace");
+        const bNamespace = b.namespace;
         if (bNamespace === activeNamespace) {
           return 1;
         }
 
         if (aNamespace === bNamespace) {
-          return a.get("name").localeCompare(b.get("name"));
+          return a.name.localeCompare(b.name);
         } else {
           return aNamespace.localeCompare(bNamespace);
         }
       })
       .forEach((svc) => {
-        svc
-          .get("ports")
-          .filter((p) => p.get("protocol") === "TCP")
+        svc.ports
+          .filter((p) => p.protocol === "TCP")
           .forEach((port) => {
             options.push({
-              value: `${svc.get("name")}.${svc.get("namespace")}.svc.cluster.local:${port.get("port")}`,
-              label: svc.get("name") + ":" + port.get("port"),
-              group:
-                svc.get("namespace") === activeNamespace ? `${svc.get("namespace")} (Current)` : svc.get("namespace"),
+              value: `${svc.name}.${svc.namespace}.svc.cluster.local:${port.port}`,
+              label: svc.name + ":" + port.port,
+              group: svc.namespace === activeNamespace ? `${svc.namespace} (Current)` : svc.namespace,
             });
           });
       });

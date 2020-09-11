@@ -3,7 +3,6 @@ import React from "react";
 import { Node } from "types/node";
 import { humanFileSize, sizeStringToNumber } from "utils/sizeConv";
 import { ColoredLinearProgress } from "./LinearProgress";
-import Immutable from "immutable";
 
 interface Props {
   node: Node;
@@ -11,8 +10,8 @@ interface Props {
 }
 
 export const NodeMemory = ({ node, showDetails }: Props) => {
-  const allocatable = sizeStringToNumber(node.get("status").get("allocatable").get("memory"));
-  const requests = sizeStringToNumber(node.get("allocatedResources").get("requests").get("memory"));
+  const allocatable = sizeStringToNumber(node.status.allocatable.memory);
+  const requests = sizeStringToNumber(node.allocatedResources.requests.memory);
 
   const progress = (requests / allocatable) * 100;
   return (
@@ -30,18 +29,18 @@ export const NodeMemory = ({ node, showDetails }: Props) => {
   );
 };
 
-export const NodesMemory = ({ nodes }: { nodes: Immutable.List<Node> }) => {
+export const NodesMemory = ({ nodes }: { nodes: Node[] }) => {
   let allocatable: number = 0;
   let requests: number = 0;
   nodes.forEach((node) => {
-    allocatable = allocatable + sizeStringToNumber(node.get("status").get("allocatable").get("memory"));
-    requests = requests + sizeStringToNumber(node.get("allocatedResources").get("requests").get("memory"));
+    allocatable = allocatable + sizeStringToNumber(node.status.allocatable.memory);
+    requests = requests + sizeStringToNumber(node.allocatedResources.requests.memory);
   });
 
   const progress = (requests / allocatable) * 100;
   return (
     <Box p={2}>
-      Allocated {humanFileSize(requests)}, Total allocatable {humanFileSize(allocatable)} Cores of {nodes.size} Nodes.
+      Allocated {humanFileSize(requests)}, Total allocatable {humanFileSize(allocatable)} Cores of {nodes.length} Nodes.
       <Box pt={1} display="flex" alignItems="center">
         <ColoredLinearProgress style={{ width: "100%" }} variant="determinate" value={progress} />
         <Box ml={1}>({(isNaN(progress) ? 0 : progress).toFixed(2)}%)</Box>

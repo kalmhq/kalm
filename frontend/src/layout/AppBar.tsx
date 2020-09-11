@@ -29,15 +29,15 @@ import { push } from "connected-react-router";
 import deepOrange from "@material-ui/core/colors/deepOrange";
 
 const mapStateToProps = (state: RootState) => {
-  const activeNamespace = state.get("namespaces").get("active");
+  const activeNamespace = state.namespaces.active;
 
-  const auth = state.get("auth");
-  const isAdmin = auth.get("isAdmin");
-  const entity = auth.get("entity");
-  const impersonation = auth.get("impersonation");
+  const auth = state.auth;
+  const isAdmin = auth.isAdmin;
+  const entity = auth.entity;
+  const impersonation = auth.impersonation;
   return {
-    isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
-    tutorialDrawerOpen: state.get("tutorial").get("drawerOpen"),
+    isOpenRootDrawer: state.settings.isOpenRootDrawer,
+    tutorialDrawerOpen: state.tutorial.drawerOpen,
     impersonation,
     activeNamespace,
     isAdmin,
@@ -309,7 +309,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           </div>
 
           <div className={classes.barRight}>
-            {clusterInfo.get("canBeInitialized") && (
+            {clusterInfo.canBeInitialized && (
               <Box mr={2}>
                 <Button to="/setup" component={Link} onClick={console.log} variant="outlined" color="secondary">
                   Finish the setup steps

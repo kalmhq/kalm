@@ -19,7 +19,6 @@ import { AutocompleteProps, RenderGroupParams } from "@material-ui/lab/Autocompl
 import { WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
 import { FieldProps, getIn } from "formik";
-import Immutable from "immutable";
 import React from "react";
 import { theme } from "theme/theme";
 import { KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
@@ -284,7 +283,7 @@ interface KFormikAutoCompleteMultipleSelectFieldProps<T>
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
   InputLabelProps?: {};
   disabled?: boolean;
-  icons?: Immutable.List<any>;
+  icons?: any[];
 }
 
 export const KFormikAutoCompleteMultipleSelectField = (props: KFormikAutoCompleteMultipleSelectFieldProps<string>) => {
@@ -315,15 +314,18 @@ export const KFormikAutoCompleteMultipleSelectField = (props: KFormikAutoComplet
       getOptionLabel={(option): string => {
         return option.label;
       }}
-      renderTags={(value, getTagProps) => {
-        return value.map((option, index: number) => {
-          return <Chip variant="outlined" label={option.label} size="small" {...getTagProps({ index })} />;
+      renderTags={(value: string[], getTagProps) => {
+        return value.map((option: string, index: number) => {
+          return <Chip variant="outlined" label={option} size="small" {...getTagProps({ index })} />;
         });
       }}
       onBlur={handleBlur}
       value={value}
       onChange={(e, value) => {
-        setFieldValue(name, value);
+        setFieldValue(
+          name,
+          value.map((option) => option.value),
+        );
       }}
       renderInput={(params) => (
         <TextField

@@ -4,7 +4,7 @@ import { Button, createStyles, Theme, withStyles, WithStyles } from "@material-u
 import { TDispatchProp } from "types";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { RoleBindingContent } from "types/member";
+import { RoleBinding } from "types/member";
 import { KPanel } from "widgets/KPanel";
 import Box from "@material-ui/core/Box";
 import { Prompt } from "widgets/Prompt";
@@ -24,12 +24,12 @@ const mapStateToProps = (state: RootState) => {
 };
 
 interface OwnProps {
-  initial: RoleBindingContent;
-  onSubmit: (roleBinding: RoleBindingContent) => any;
+  initial: RoleBinding;
+  onSubmit: (roleBinding: RoleBinding) => any;
 }
 
 interface Props
-  extends FormikProps<RoleBindingContent>,
+  extends FormikProps<RoleBinding>,
     WithStyles<typeof styles>,
     ReturnType<typeof mapStateToProps>,
     TDispatchProp,
@@ -117,7 +117,7 @@ class MemberFormRaw extends React.PureComponent<Props, State> {
 
 const ConnectedForm = connect(mapStateToProps)(withStyles(styles)(MemberFormRaw));
 
-export const MemberForm = withFormik<OwnProps, RoleBindingContent>({
+export const MemberForm = withFormik<OwnProps, RoleBinding>({
   mapPropsToValues: (props) => {
     return props.initial;
   },

@@ -1,6 +1,3 @@
-import { ImmutableMap } from "typings";
-import Immutable from "immutable";
-
 export const CREATE_DEPLOY_ACCESS_TOKEN_FAILED = "CREATE_DEPLOY_ACCESS_TOKEN_FAILED";
 export const CREATE_DEPLOY_ACCESS_TOKEN_FULFILLED = "CREATE_DEPLOY_ACCESS_TOKEN_FULFILLED";
 export const CREATE_DEPLOY_ACCESS_TOKEN_PENDING = "CREATE_DEPLOY_ACCESS_TOKEN_PENDING";
@@ -32,7 +29,7 @@ export interface AccessToken {
   rules: AccessTokenRule[];
 }
 
-export const DeployAccessTokenToAccessToken = (dat: DeployAccessTokenContent): AccessToken => {
+export const DeployAccessTokenToAccessToken = (dat: DeployAccessToken): AccessToken => {
   const rules: AccessTokenRule[] = [];
 
   if (dat.scope === DeployAccessTokenScopeCluster) {
@@ -92,17 +89,17 @@ export const AccessTokenToDeployAccessToken = (at: AccessToken): DeployAccessTok
     }
   }
 
-  return Immutable.Map({
+  return {
     name: at.name,
     memo: at.memo,
     token: at.token,
     creator: at.creator,
-    resources: Immutable.List(resources),
+    resources: resources,
     scope: scope,
-  });
+  };
 };
 
-export interface DeployAccessTokenContent {
+export interface DeployAccessToken {
   name: string;
   memo: string;
   scope: DeployAccessTokenScope;
@@ -111,9 +108,7 @@ export interface DeployAccessTokenContent {
   creator: string;
 }
 
-export type DeployAccessToken = ImmutableMap<DeployAccessTokenContent>;
-
-export const newEmptyDeployAccessToken = (): DeployAccessTokenContent => {
+export const newEmptyDeployAccessToken = (): DeployAccessToken => {
   return {
     name: "",
     memo: "",
@@ -126,7 +121,7 @@ export const newEmptyDeployAccessToken = (): DeployAccessTokenContent => {
 
 export interface LoadDeployAccessTokensAction {
   type: typeof LOAD_DEPLOY_ACCESS_TOKENS_FULFILLED;
-  payload: Immutable.List<DeployAccessToken>;
+  payload: DeployAccessToken[];
 }
 
 export interface DeleteDeployAccessTokenAction {

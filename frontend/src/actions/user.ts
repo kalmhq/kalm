@@ -6,7 +6,7 @@ import {
   LOAD_ROLE_BINDINGS_FAILED,
   LOAD_ROLE_BINDINGS_FULFILLED,
   LOAD_ROLE_BINDINGS_PENDING,
-  RoleBindingContent,
+  RoleBinding,
 } from "types/member";
 import { api } from "api";
 
@@ -30,7 +30,7 @@ export const loadRoleBindingsAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const createRoleBindingsAction = (roleBindingsBody: RoleBindingContent): ThunkResult<Promise<void>> => {
+export const createRoleBindingsAction = (roleBindingsBody: RoleBinding): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     dispatch({ type: CREATE_ROLE_BINDINGS_PENDING });
 
@@ -44,7 +44,7 @@ export const createRoleBindingsAction = (roleBindingsBody: RoleBindingContent): 
   };
 };
 
-export const updateRoleBindingsAction = (roleBindingsBody: RoleBindingContent): ThunkResult<Promise<void>> => {
+export const updateRoleBindingsAction = (roleBindingsBody: RoleBinding): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     try {
       await api.updateRoleBinding(roleBindingsBody);

@@ -1,9 +1,8 @@
 import { compile } from "expression-eval";
-
+import { DefaultRoleManager, RoleManager } from "rbac/casbin/roleManager";
 import { DefaultEffector, Effect, Effector } from "./effect";
 import { FunctionMap, Model } from "./model";
 import { Adapter } from "./persist";
-import { DefaultRoleManager, RoleManager } from "rbac/casbin/roleManager";
 
 function generateGFunction(rm: RoleManager): any {
   return function func(...args: any[]): boolean {

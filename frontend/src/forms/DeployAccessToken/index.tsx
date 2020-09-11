@@ -6,14 +6,13 @@ import { KFormikRadioGroupRender } from "forms/Basic/radio";
 import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
 import { RequireString, ValidatorRequired } from "forms/validator";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { ApplicationComponentDetails } from "types/application";
+import { Application, ApplicationComponentDetails } from "types/application";
 import {
-  DeployAccessTokenContent,
+  DeployAccessToken,
   DeployAccessTokenScopeCluster,
   DeployAccessTokenScopeComponent,
   DeployAccessTokenScopeNamespace,
@@ -32,7 +31,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    allComponents: state.get("components").get("components"),
+    allComponents: state.components.components,
   };
 };
 
@@ -47,7 +46,7 @@ export interface Props
   extends ConnectedProps,
     OwnProps,
     WithNamespaceProps,
-    FormikProps<DeployAccessTokenContent>,
+    FormikProps<DeployAccessToken>,
     WithStyles<typeof styles> {}
 
 const schema = object().shape({
@@ -66,28 +65,24 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
       );
     }
 
-    const applicationOptions = applications
-      .map(
-        (a): KAutoCompleteOption => ({
-          label: a.get("name"),
-          value: a.get("name"),
-          group: "",
-        }),
-      )
-      .toArray();
+    const applicationOptions = applications.map(
+      (a: Application): KAutoCompleteOption => ({
+        label: a.name,
+        value: a.name,
+        group: "",
+      }),
+    );
 
     let componentOptions: KAutoCompleteOption[] = [];
 
-    applications.forEach((application) => {
-      const components = (allComponents.get(application.get("name")) || Immutable.List()) as Immutable.List<
-        ApplicationComponentDetails
-      >;
+    applications.forEach((application: Application) => {
+      const components = allComponents[application.name] || ([] as ApplicationComponentDetails[]);
 
       components.forEach((component) => {
         componentOptions.push({
-          label: `${application.get("name")}/${component.get("name")}`,
-          value: `${application.get("name")}/${component.get("name")}`,
-          group: application.get("name"),
+          label: `${application.name}/${component.name}`,
+          value: `${application.name}/${component.name}`,
+          group: application.name,
         });
       });
     });
@@ -186,7 +181,7 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
 // })(connect(mapStateToProps)(withNamespace(withStyles(styles)(DeployKeyFormikRaw))));
 
 const DeployKeyForm = withNamespace(connect(mapStateToProps)(withStyles(styles)(DeployKeyFormikRaw)));
-export const DeployAccessTokenForm = withFormik<OwnProps, DeployAccessTokenContent>({
+export const DeployAccessTokenForm = withFormik<OwnProps, DeployAccessToken>({
   mapPropsToValues: newEmptyDeployAccessToken,
   validationSchema: schema,
   handleSubmit: (values, bag) => {

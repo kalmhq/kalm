@@ -9,10 +9,10 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import {
+  DeployAccessToken,
   DeployAccessTokenScopeCluster,
   DeployAccessTokenScopeComponent,
   DeployAccessTokenScopeNamespace,
-  DeployAccessTokenContent,
 } from "types/deployAccessToken";
 import sc from "utils/stringConstants";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
@@ -59,11 +59,11 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderMemo = (rowData: DeployAccessTokenContent) => {
+  private renderMemo = (rowData: DeployAccessToken) => {
     return <Typography variant="subtitle2">{rowData.memo}</Typography>;
   };
 
-  private renderScope = (rowData: DeployAccessTokenContent) => {
+  private renderScope = (rowData: DeployAccessToken) => {
     switch (rowData.scope) {
       case DeployAccessTokenScopeCluster: {
         return "Cluster";
@@ -77,7 +77,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderResources = (rowData: DeployAccessTokenContent) => {
+  private renderResources = (rowData: DeployAccessToken) => {
     const resoureces = rowData.resources;
 
     switch (rowData.scope) {
@@ -93,7 +93,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderActions = (rowData: DeployAccessTokenContent) => {
+  private renderActions = (rowData: DeployAccessToken) => {
     const { dispatch } = this.props;
     return (
       <>
@@ -171,7 +171,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
 
     deployAccessTokens &&
       deployAccessTokens.forEach((deployAccessToken, index) => {
-        const rowData = deployAccessToken.toJS() as DeployAccessTokenContent;
+        const rowData = deployAccessToken;
         data.push({
           memo: this.renderMemo(rowData),
           scope: this.renderScope(rowData),
@@ -198,7 +198,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
       );
     }
 
-    return <Box p={2}>{deployAccessTokens.size === 0 ? this.renderEmpty() : this.renderKRTable()}</Box>;
+    return <Box p={2}>{deployAccessTokens.length === 0 ? this.renderEmpty() : this.renderKRTable()}</Box>;
   };
 
   public render() {

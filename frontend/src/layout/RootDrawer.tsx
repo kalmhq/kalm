@@ -30,13 +30,13 @@ import {
 import { blinkTopProgressAction } from "actions/settings";
 
 const mapStateToProps = (state: RootState) => {
-  const auth = state.get("auth");
-  const isAdmin = auth.get("isAdmin");
-  const entity = auth.get("entity");
+  const auth = state.auth;
+  const isAdmin = auth.isAdmin;
+  const entity = auth.entity;
   return {
     pathname: window.location.pathname,
-    isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
-    activeNamespaceName: state.get("namespaces").get("active"),
+    isOpenRootDrawer: state.settings.isOpenRootDrawer,
+    activeNamespaceName: state.namespaces.active,
     isAdmin,
     entity,
   };

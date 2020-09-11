@@ -39,10 +39,10 @@ import { ResourceRank } from "./ResourceRank";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    nodes: state.get("nodes").get("nodes"),
-    metrics: state.get("nodes").get("metrics"),
-    applications: state.get("applications").get("applications"),
-    componentsMap: state.get("components").get("components"),
+    nodes: state.nodes.nodes,
+    metrics: state.nodes.metrics,
+    applications: state.applications.applications,
+    componentsMap: state.components.components,
   };
 };
 
@@ -65,13 +65,13 @@ export class NodeListRaw extends React.Component<Props, States> {
     };
   }
 
-  private hasCordon = (node: Node) => node.get("statusTexts").includes("SchedulingDisabled");
+  private hasCordon = (node: Node) => node.statusTexts.includes("SchedulingDisabled");
 
   private handleClickCordonButton = (event: React.MouseEvent) => {
     const name = event.currentTarget!.getAttribute("node-name")!;
     if (!name) return;
 
-    const node = this.props.nodes.find((n) => n.get("name") === name)!;
+    const node = this.props.nodes.find((n) => n.name === name)!;
     if (!node) return;
 
     if (this.hasCordon(node)) {
@@ -84,41 +84,43 @@ export class NodeListRaw extends React.Component<Props, States> {
   private renderNodePanel = (node: Node) => {
     let labels: React.ReactNode[] = [];
     let annotations: React.ReactNode[] = [];
-    node.get("labels").forEach((value: string, key: string) => {
+
+    for (let key in node.labels) {
+      let value = node.labels[key];
       labels.push(
         <Box key={key}>
           {key}: {value}
         </Box>,
       );
-    });
+    }
 
-    node.get("annotations").forEach((value: string, key: string) => {
+    for (let key in node.annotations) {
+      let value = node.annotations[key];
       annotations.push(
         <Box key={key}>
           {key}: {value}
         </Box>,
       );
-    });
+    }
 
     const { cpuRankData, memoryRankData } = this.getNodeResourceRankData(node);
-
     return (
       <Expansion
         title={
           <Grid container spacing={2}>
             <Grid item>
               <Box display="flex">
-                <NodeStatus node={node} enableMarginRight /> <Subtitle1>{node.get("name")}</Subtitle1>
+                <NodeStatus node={node} enableMarginRight /> <Subtitle1>{node.name}</Subtitle1>
               </Box>
             </Grid>
-            <Grid item>{node.get("roles").join(",")}</Grid>
-            <Grid item>{node.get("status").get("nodeInfo").get("kubeletVersion")}</Grid>
-            <Grid item>Age: {formatTimeDistance(node.get("creationTimestamp"))}</Grid>
-            <Grid item>{node.get("statusTexts").join(",")}</Grid>
+            <Grid item>{node.roles.join(",")}</Grid>
+            <Grid item>{node.status.nodeInfo.kubeletVersion}</Grid>
+            <Grid item>Age: {formatTimeDistance(node.creationTimestamp)}</Grid>
+            <Grid item>{node.statusTexts.join(",")}</Grid>
             <Grid item>
               <Box display="flex">
                 <Box mr={2}>CPU:</Box>
-                <PopupState variant="popper" popupId={`big-memory-popup-popper-${node.get("name")}`}>
+                <PopupState variant="popper" popupId={`big-memory-popup-popper-${node.name}`}>
                   {(popupState) => {
                     return (
                       <div>
@@ -143,7 +145,7 @@ export class NodeListRaw extends React.Component<Props, States> {
             <Grid item>
               <Box display="flex">
                 <Box mr={2}>Memory:</Box>
-                <PopupState variant="popper" popupId={`big-memory-popup-popper-${node.get("name")}`}>
+                <PopupState variant="popper" popupId={`big-memory-popup-popper-${node.name}`}>
                   {(popupState) => {
                     return (
                       <div>
@@ -174,7 +176,7 @@ export class NodeListRaw extends React.Component<Props, States> {
             color="primary"
             size="small"
             variant="outlined"
-            node-name={node.get("name")}
+            node-name={node.name}
             onClick={this.handleClickCordonButton}
           >
             {this.hasCordon(node) ? "Enable Scheduling" : "Disable Scheduling"}
@@ -185,28 +187,28 @@ export class NodeListRaw extends React.Component<Props, States> {
           items={[
             {
               name: "Name",
-              content: node.get("name"),
+              content: node.name,
             },
             {
               name: "Status",
-              content: node.get("statusTexts").join(", "),
+              content: node.statusTexts.join(", "),
             },
             {
               name: "Age",
-              content: formatTimeDistance(node.get("creationTimestamp")),
+              content: formatTimeDistance(node.creationTimestamp),
             },
             {
               name: "CPU",
-              content: <SmallCPULineChart data={node.get("metrics").get("cpu")} />,
+              content: <SmallCPULineChart data={node.metrics.cpu} />,
             },
             {
               name: "Memory",
-              content: <SmallMemoryLineChart data={node.get("metrics").get("memory")} />,
+              content: <SmallMemoryLineChart data={node.metrics.memory} />,
             },
             {
               name: "CPU (Allocated / Total allocatable)",
               content: (
-                <PopupState variant="popper" popupId={`big-memory-popup-popper-${node.get("name")}`}>
+                <PopupState variant="popper" popupId={`big-memory-popup-popper-${node.name}`}>
                   {(popupState) => {
                     return (
                       <div>
@@ -236,7 +238,7 @@ export class NodeListRaw extends React.Component<Props, States> {
             {
               name: "Memory (Allocated / Total allocatable)",
               content: (
-                <PopupState variant="popper" popupId={`big-memory-popup-popper-${node.get("name")}`}>
+                <PopupState variant="popper" popupId={`big-memory-popup-popper-${node.name}`}>
                   {(popupState) => {
                     return (
                       <div>
@@ -269,30 +271,27 @@ export class NodeListRaw extends React.Component<Props, States> {
             },
             {
               name: "Internal IP",
-              content: node.get("internalIP"),
+              content: node.internalIP,
             },
             {
               name: "External IP",
-              content: node.get("externalIP"),
+              content: node.externalIP,
             },
             {
               name: "OS",
-              content: `${node.get("status").get("nodeInfo").get("operatingSystem")}(${node
-                .get("status")
-                .get("nodeInfo")
-                .get("architecture")})`,
+              content: `${node.status.nodeInfo.operatingSystem}(${node.status.nodeInfo.architecture})`,
             },
             {
               name: "OS Image",
-              content: node.get("status").get("nodeInfo").get("osImage"),
+              content: node.status.nodeInfo.osImage,
             },
             {
               name: "Kernel Version",
-              content: node.get("status").get("nodeInfo").get("kernelVersion"),
+              content: node.status.nodeInfo.kernelVersion,
             },
             {
               name: "Kubelet version",
-              content: node.get("status").get("nodeInfo").get("kubeletVersion"),
+              content: node.status.nodeInfo.kubeletVersion,
             },
             {
               name: "Labels",
@@ -426,7 +425,7 @@ export class NodeListRaw extends React.Component<Props, States> {
           <Grid container spacing={2}>
             <Grid item md={6}>
               <InfoPaper elevation={0} style={{ overflow: "hidden" }}>
-                <BigCPULineChart data={metrics.get("cpu")} filter={this.state.chartDateFilter as TimestampFilter} />
+                <BigCPULineChart data={metrics.cpu} filter={this.state.chartDateFilter as TimestampFilter} />
                 <PopupState variant="popper" popupId="big-cpu-popup-popper">
                   {(popupState) => {
                     return (
@@ -451,10 +450,7 @@ export class NodeListRaw extends React.Component<Props, States> {
             </Grid>
             <Grid item md={6}>
               <InfoPaper elevation={0} style={{ overflow: "hidden" }}>
-                <BigMemoryLineChart
-                  data={metrics.get("memory")}
-                  filter={this.state.chartDateFilter as TimestampFilter}
-                />
+                <BigMemoryLineChart data={metrics.memory} filter={this.state.chartDateFilter as TimestampFilter} />
                 <PopupState variant="popper" popupId="big-memory-popup-popper">
                   {(popupState) => {
                     return (
@@ -482,7 +478,7 @@ export class NodeListRaw extends React.Component<Props, States> {
 
         <Box p={2} pt={0} pb={0}>
           {nodes.map((node, index) => (
-            <Box pb={index === nodes.size ? 0 : 1} key={node.get("name")}>
+            <Box pb={index === nodes.length ? 0 : 1} key={node.name}>
               {this.renderNodePanel(node)}
             </Box>
           ))}
@@ -512,32 +508,29 @@ export class NodeListRaw extends React.Component<Props, States> {
     const memoryRankMap: { [key: string]: number } = {};
 
     nodes.forEach((node) => {
-      node
-        .get("allocatedResources")
-        .get("podsRequests")
-        .forEach((podRequest) => {
-          const namespace = podRequest.get("namespace");
+      node.allocatedResources?.podsRequests?.forEach((podRequest) => {
+        const namespace = podRequest.namespace;
 
-          const cpuData = podRequest.get("requests").get("cpu");
+        const cpuData = podRequest.requests.cpu;
 
-          if (cpuData) {
-            if (cpuRankMap[namespace]) {
-              cpuRankMap[namespace] = cpuRankMap[namespace] + sizeStringToNumber(cpuData) * 1000;
-            } else {
-              cpuRankMap[namespace] = sizeStringToNumber(cpuData) * 1000;
-            }
+        if (cpuData) {
+          if (cpuRankMap[namespace]) {
+            cpuRankMap[namespace] = cpuRankMap[namespace] + sizeStringToNumber(cpuData) * 1000;
+          } else {
+            cpuRankMap[namespace] = sizeStringToNumber(cpuData) * 1000;
           }
+        }
 
-          const memoryData = podRequest.get("requests").get("memory");
+        const memoryData = podRequest.requests.memory;
 
-          if (memoryData) {
-            if (memoryRankMap[namespace]) {
-              memoryRankMap[namespace] = memoryRankMap[namespace] + sizeStringToNumber(memoryData);
-            } else {
-              memoryRankMap[namespace] = sizeStringToNumber(memoryData);
-            }
+        if (memoryData) {
+          if (memoryRankMap[namespace]) {
+            memoryRankMap[namespace] = memoryRankMap[namespace] + sizeStringToNumber(memoryData);
+          } else {
+            memoryRankMap[namespace] = sizeStringToNumber(memoryData);
           }
-        });
+        }
+      });
     });
 
     for (let namespace in cpuRankMap) {
@@ -578,32 +571,29 @@ export class NodeListRaw extends React.Component<Props, States> {
 
     const memoryRankMap: { [key: string]: number } = {};
 
-    node
-      .get("allocatedResources")
-      .get("podsRequests")
-      .forEach((podRequest) => {
-        const podName = podRequest.get("podName");
+    node.allocatedResources?.podsRequests?.forEach((podRequest) => {
+      const podName = podRequest.podName;
 
-        const cpuData = podRequest.get("requests").get("cpu");
+      const cpuData = podRequest.requests.cpu;
 
-        if (cpuData) {
-          if (cpuRankMap[podName]) {
-            cpuRankMap[podName] = cpuRankMap[podName] + sizeStringToNumber(cpuData) * 1000;
-          } else {
-            cpuRankMap[podName] = sizeStringToNumber(cpuData) * 1000;
-          }
+      if (cpuData) {
+        if (cpuRankMap[podName]) {
+          cpuRankMap[podName] = cpuRankMap[podName] + sizeStringToNumber(cpuData) * 1000;
+        } else {
+          cpuRankMap[podName] = sizeStringToNumber(cpuData) * 1000;
         }
+      }
 
-        const memoryData = podRequest.get("requests").get("memory");
+      const memoryData = podRequest.requests.memory;
 
-        if (memoryData) {
-          if (memoryRankMap[podName]) {
-            memoryRankMap[podName] = memoryRankMap[podName] + sizeStringToNumber(memoryData);
-          } else {
-            memoryRankMap[podName] = sizeStringToNumber(memoryData);
-          }
+      if (memoryData) {
+        if (memoryRankMap[podName]) {
+          memoryRankMap[podName] = memoryRankMap[podName] + sizeStringToNumber(memoryData);
+        } else {
+          memoryRankMap[podName] = sizeStringToNumber(memoryData);
         }
-      });
+      }
+    });
 
     for (let podName in cpuRankMap) {
       cpuRankData.push({

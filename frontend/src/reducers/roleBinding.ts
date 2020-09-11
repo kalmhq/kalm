@@ -1,13 +1,13 @@
-import Immutable from "immutable";
+import produce from "immer";
+import { addOrUpdateInArray, removeInArray } from "reducers/utils";
+import { Actions } from "types";
+import { LOGOUT } from "types/common";
 import {
   LOAD_ROLE_BINDINGS_FAILED,
   LOAD_ROLE_BINDINGS_FULFILLED,
   LOAD_ROLE_BINDINGS_PENDING,
   RoleBinding,
 } from "types/member";
-import { Actions } from "types";
-import { ImmutableMap } from "typings";
-import { LOGOUT } from "types/common";
 import {
   RESOURCE_ACTION_ADD,
   RESOURCE_ACTION_DELETE,
@@ -15,61 +15,63 @@ import {
   RESOURCE_TYPE_ROLE_BINDING,
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
-import { addOrUpdateInList, removeInList } from "reducers/utils";
 
-export type State = ImmutableMap<{
+export type State = {
   isLoading: boolean;
   isFirstLoaded: boolean;
-  roleBindings: Immutable.List<RoleBinding>;
-}>;
+  roleBindings: RoleBinding[];
+};
 
-const initialState: State = Immutable.Map({
-  roleBindings: Immutable.List(),
+const initialState: State = {
+  roleBindings: [],
   isLoading: false,
   isFirstLoaded: false,
-});
+};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOGOUT: {
       return initialState;
     }
     case LOAD_ROLE_BINDINGS_FULFILLED: {
-      state = state.set("isLoading", false);
-      state = state.set("isFirstLoaded", true);
-      return state.set("roleBindings", action.payload.roleBindings);
+      state.isLoading = false;
+      state.isFirstLoaded = true;
+      state.roleBindings = action.payload.roleBindings;
+      return;
     }
     case LOAD_ROLE_BINDINGS_FAILED: {
-      return state.set("isLoading", false);
+      state.isLoading = false;
+      return;
     }
     case LOAD_ROLE_BINDINGS_PENDING: {
-      return state.set("isLoading", true);
+      state.isLoading = true;
+      return;
     }
     case WATCHED_RESOURCE_CHANGE: {
       if (action.kind !== RESOURCE_TYPE_ROLE_BINDING) {
-        return state;
+        return;
       }
 
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          state = state.update("roleBindings", (x) => addOrUpdateInList(x, action.payload.data));
+          state.roleBindings = addOrUpdateInArray(state.roleBindings, action.payload.data);
           break;
         }
         case RESOURCE_ACTION_DELETE: {
-          state = state.update("roleBindings", (x) => removeInList(x, action.payload.data));
+          state.roleBindings = removeInArray(state.roleBindings, action.payload.data);
           break;
         }
         case RESOURCE_ACTION_UPDATE: {
-          state = state.update("roleBindings", (x) => addOrUpdateInList(x, action.payload.data));
+          state.roleBindings = addOrUpdateInArray(state.roleBindings, action.payload.data);
           break;
         }
       }
 
-      break;
+      return;
     }
   }
 
   return state;
-};
+}, initialState);
 
 export default reducer;

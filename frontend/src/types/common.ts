@@ -1,10 +1,8 @@
 import { CallHistoryMethodAction } from "connected-react-router";
 import { VariantType } from "notistack";
-import { ImmutableMap } from "typings";
 import { SettingObject } from "reducers/settings";
 import { NamespaceActions } from "./namespace";
 import { LoginStatus } from "./authorization";
-import Immutable from "immutable";
 
 export const LOAD_LOGIN_STATUS_PENDING = "LOAD_LOGIN_STATUS_PENDING";
 export const LOAD_LOGIN_STATUS_FULFILLED = "LOAD_LOGIN_STATUS_FULFILLED";
@@ -26,23 +24,23 @@ export const EnvTypeExternal = "external";
 export const EnvTypeStatic = "static";
 export const EnvTypeLinked = "linked";
 
-export type ControlledDialogParams<T> = ImmutableMap<{
+export type ControlledDialogParams<T> = {
   open: boolean;
   data: T;
-}>;
+};
 
-export type MetricItem = ImmutableMap<{
+export type MetricItem = {
   x: number;
   y: number;
-}>;
+};
 
-export type MetricList = Immutable.List<MetricItem>;
+export type MetricList = MetricItem[];
 
-export type Metrics = ImmutableMap<{
+export type Metrics = {
   isMetricServerEnabled: boolean;
   cpu: MetricList;
   memory: MetricList;
-}>;
+};
 
 export const StatusTypeRunning = "RUNNING";
 export const StatusTypePending = "PENDING";

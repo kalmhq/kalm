@@ -1,7 +1,13 @@
-import Immutable from "immutable";
+import produce from "immer";
+import { addOrUpdateInArray, removeInArray } from "reducers/utils";
 import { Actions } from "types";
-import { ImmutableMap } from "typings";
 import { LOGOUT } from "types/common";
+import {
+  DeployAccessToken,
+  LOAD_DEPLOY_ACCESS_TOKENS_FAILED,
+  LOAD_DEPLOY_ACCESS_TOKENS_FULFILLED,
+  LOAD_DEPLOY_ACCESS_TOKENS_PENDING,
+} from "types/deployAccessToken";
 import {
   RESOURCE_ACTION_ADD,
   RESOURCE_ACTION_DELETE,
@@ -9,39 +15,37 @@ import {
   RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN,
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
-import {
-  DeployAccessToken,
-  LOAD_DEPLOY_ACCESS_TOKENS_FAILED,
-  LOAD_DEPLOY_ACCESS_TOKENS_FULFILLED,
-  LOAD_DEPLOY_ACCESS_TOKENS_PENDING,
-} from "types/deployAccessToken";
-import { addOrUpdateInList, removeInList } from "reducers/utils";
 
-export type State = ImmutableMap<{
+export interface State {
   isLoading: boolean;
   loaded: boolean;
-  deployAccessTokens: Immutable.List<DeployAccessToken>;
-}>;
+  deployAccessTokens: DeployAccessToken[];
+}
 
-const initialState: State = Immutable.Map({
+const initialState: State = {
   isLoading: false,
   loaded: false,
-  deployAccessTokens: Immutable.List(),
-});
+  deployAccessTokens: [],
+};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOGOUT: {
       return initialState;
     }
     case LOAD_DEPLOY_ACCESS_TOKENS_PENDING: {
-      return state.set("isLoading", true);
+      state.isLoading = true;
+      return;
     }
     case LOAD_DEPLOY_ACCESS_TOKENS_FAILED: {
-      return state.set("isLoading", false);
+      state.isLoading = false;
+      return;
     }
     case LOAD_DEPLOY_ACCESS_TOKENS_FULFILLED: {
-      return state.set("isLoading", false).set("loaded", true).set("deployAccessTokens", action.payload);
+      state.isLoading = false;
+      state.loaded = true;
+      state.deployAccessTokens = action.payload;
+      return;
     }
     case WATCHED_RESOURCE_CHANGE: {
       if (action.kind !== RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN) {
@@ -50,15 +54,15 @@ const reducer = (state: State = initialState, action: Actions): State => {
 
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          state = state.update("deployAccessTokens", (x) => addOrUpdateInList(x, action.payload.data));
+          state.deployAccessTokens = addOrUpdateInArray(state.deployAccessTokens, action.payload.data);
           break;
         }
         case RESOURCE_ACTION_DELETE: {
-          state = state.update("deployAccessTokens", (x) => removeInList(x, action.payload.data));
+          state.deployAccessTokens = removeInArray(state.deployAccessTokens, action.payload.data);
           break;
         }
         case RESOURCE_ACTION_UPDATE: {
-          state = state.update("deployAccessTokens", (x) => addOrUpdateInList(x, action.payload.data));
+          state.deployAccessTokens = addOrUpdateInArray(state.deployAccessTokens, action.payload.data);
           break;
         }
       }
@@ -67,7 +71,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
   }
 
-  return state;
-};
+  return;
+}, initialState);
 
 export default reducer;

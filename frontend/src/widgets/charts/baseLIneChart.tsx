@@ -35,11 +35,9 @@ class BaseLineChartRaw extends React.PureComponent<BaseLineChartProps & WithStyl
         if (!filter || filter === "all") {
           return true;
         }
-        return item.get("x") >= startTimestamp;
+        return item.x >= startTimestamp;
       })
-      .map((item) => format(item.get("x"), "HH:mm"))
-      .toArray();
-
+      .map((item) => format(item.x, "HH:mm"));
     const datasets = data.map(
       ({ data, legend, borderColor, backgroundColor }): ChartDataSets => {
         return {
@@ -55,10 +53,9 @@ class BaseLineChartRaw extends React.PureComponent<BaseLineChartProps & WithStyl
               if (!filter || filter === "all") {
                 return true;
               }
-              return item.get("x") >= startTimestamp;
+              return item.x >= startTimestamp;
             })
-            .map((n) => n.get("y"))
-            .toArray(),
+            .map((n) => n.y),
         };
       },
     );

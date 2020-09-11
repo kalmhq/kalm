@@ -1,29 +1,28 @@
-import React from "react";
 import { Button, createStyles, Tab, Tabs, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { withDeployAccessTokens, WithDeployAccessTokensProps } from "hoc/withDeployAccessTokens";
-import { Link, RouteComponentProps, withRouter } from "react-router-dom";
-import { Loading } from "widgets/Loading";
 import Box from "@material-ui/core/Box";
-import { BasePage } from "pages/BasePage";
 import { deleteDeployAccessTokenAction } from "actions/deployAccessToken";
-import { KPanel } from "widgets/KPanel";
-import { Body2, Subtitle2 } from "widgets/Label";
+import { setSuccessNotificationAction } from "actions/notification";
+import clsx from "clsx";
+import { push } from "connected-react-router";
+import copy from "copy-to-clipboard";
+import { withDeployAccessTokens, WithDeployAccessTokensProps } from "hoc/withDeployAccessTokens";
+import { BasePage } from "pages/BasePage";
+import React from "react";
+import { connect } from "react-redux";
+import { Link, RouteComponentProps, withRouter } from "react-router-dom";
 import {
   DeployAccessToken,
   DeployAccessTokenScopeCluster,
   DeployAccessTokenScopeComponent,
   DeployAccessTokenScopeNamespace,
-  DeployAccessTokenContent,
 } from "types/deployAccessToken";
-import { push } from "connected-react-router";
-import { connect } from "react-redux";
-import clsx from "clsx";
-import { RichEdtor } from "widgets/RichEditor";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import copy from "copy-to-clipboard";
-import { setSuccessNotificationAction } from "actions/notification";
 import { CopyIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { KPanel } from "widgets/KPanel";
+import { Body2, Subtitle2 } from "widgets/Label";
+import { Loading } from "widgets/Loading";
+import { RichEdtor } from "widgets/RichEditor";
 
 const TAB_CURL = "curl";
 const TAB_GITHUB_ACTION = "Github Action";
@@ -68,12 +67,12 @@ class DeployAccessTokenDetailPageRaw extends React.PureComponent<Props> {
       return;
     }
 
-    dispatch(deleteDeployAccessTokenAction(deployAccessToken.toJS() as DeployAccessTokenContent));
+    dispatch(deleteDeployAccessTokenAction(deployAccessToken));
   };
 
   private getDeployAccessToken = () => {
     const { deployAccessTokens, match } = this.props;
-    return deployAccessTokens.find((x) => x.get("name") === match.params.name);
+    return deployAccessTokens.find((x) => x.name === match.params.name);
   };
 
   private renderContent = () => {
@@ -182,7 +181,7 @@ class DeployAccessTokenDetailPageRaw extends React.PureComponent<Props> {
 
   private renderCopy = (deployAccessToken: DeployAccessToken) => {
     const { dispatch } = this.props;
-    const key = deployAccessToken.get("token");
+    const key = deployAccessToken.token;
     return (
       <Box mt={2}>
         <Subtitle2>Copy key</Subtitle2>
@@ -209,7 +208,7 @@ class DeployAccessTokenDetailPageRaw extends React.PureComponent<Props> {
 
     const curl = `curl -X POST \\
     -H "Content-Type: application/json" \\
-    -H "Authorization: Bearer ${deployAccessToken.get("token")}" \\
+    -H "Authorization: Bearer ${deployAccessToken.token}" \\
     -d '{
       "application":   "<application-name>",
       "componentName": "<component-name>",
@@ -303,20 +302,20 @@ workflows:
   }
 
   private renderDeployAccessTokenScope = (deployAccessToken: DeployAccessToken) => {
-    if (deployAccessToken.get("scope") === DeployAccessTokenScopeCluster) {
+    if (deployAccessToken.scope === DeployAccessTokenScopeCluster) {
       return (
         <Body2>
           Its granted scope is <strong>Cluster</strong>.
         </Body2>
       );
-    } else if (deployAccessToken.get("scope") === DeployAccessTokenScopeNamespace) {
+    } else if (deployAccessToken.scope === DeployAccessTokenScopeNamespace) {
       return (
         <>
           <Body2>
             Its granted scope is <strong>Specific Applications</strong>:
           </Body2>
           <Box pl={2} mt={1}>
-            {deployAccessToken.get("resources").map((x) => (
+            {deployAccessToken.resources.map((x) => (
               <Box key={x}>
                 <strong>{x}</strong>
               </Box>
@@ -324,14 +323,14 @@ workflows:
           </Box>
         </>
       );
-    } else if (deployAccessToken.get("scope") === DeployAccessTokenScopeComponent) {
+    } else if (deployAccessToken.scope === DeployAccessTokenScopeComponent) {
       return (
         <>
           <Body2>
             Its granted scope is <strong>Specific Components</strong>:
           </Body2>
           <Box pl={2} mt={1}>
-            {deployAccessToken.get("resources").map((x) => (
+            {deployAccessToken.resources.map((x) => (
               <Box key={x}>
                 <strong>{x}</strong>
               </Box>
@@ -353,7 +352,7 @@ workflows:
       );
     }
 
-    const deployAccessToken = deployAccessTokens.find((x) => x.get("name") === match.params.name);
+    const deployAccessToken = deployAccessTokens.find((x) => x.name === match.params.name);
 
     if (!deployAccessToken) {
       return <Box p={2}>Deploy key "${match.params.name}" not found.</Box>;
@@ -368,7 +367,7 @@ workflows:
               color="primary"
               variant="outlined"
               size="small"
-              to={`/ci/keys/${deployAccessToken.get("name")}/edit`}
+              to={`/ci/keys/${deployAccessToken.name}/edit`}
             >
               Edit
             </Button>

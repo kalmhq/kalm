@@ -3,7 +3,7 @@ import { loadApplicationsAction } from "actions/application";
 import { loadCertificatesAction } from "actions/certificate";
 import MockStore from "api/mockStore";
 import configureStore from "configureStore";
-import { ConnectedRouter } from "connected-react-router/immutable";
+import { ConnectedRouter } from "connected-react-router";
 import { configure, mount } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
 import ApplicationForm from "forms/Application";
@@ -40,7 +40,7 @@ beforeEach(() => {
 
 test("load certificate list", async () => {
   await store.dispatch(loadCertificatesAction());
-  expect(store.getState().get("certificates").get("certificates")).toEqual(mockStore.data.get("mockCertificates"));
+  expect(store.getState().certificates.certificates).toEqual(mockStore.data.mockCertificates);
 });
 
 describe("add certificate", () => {

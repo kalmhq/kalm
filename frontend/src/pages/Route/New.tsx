@@ -1,13 +1,12 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { setSuccessNotificationAction } from "actions/notification";
 import { createRouteAction } from "actions/routes";
 import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
-import React from "react";
-import { AllHttpMethods, HttpRouteFormType, methodsModeAll, newEmptyRouteForm, HttpRoute } from "types/route";
-import { BasePage } from "../BasePage";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import { setSuccessNotificationAction } from "actions/notification";
-import Immutable from "immutable";
+import React from "react";
+import { AllHttpMethods, HttpRoute, methodsModeAll, newEmptyRouteForm } from "types/route";
+import { BasePage } from "../BasePage";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -17,14 +16,13 @@ const styles = (theme: Theme) =>
 interface Props extends WithStyles<typeof styles>, WithNamespaceProps {}
 
 class RouteNewRaw extends React.PureComponent<Props> {
-  private onSubmit = async (routeForm: HttpRouteFormType) => {
+  private onSubmit = async (route: HttpRoute) => {
     const { activeNamespaceName, dispatch } = this.props;
-    let route = Immutable.fromJS(routeForm) as HttpRoute;
     try {
-      if (route.get("methodsMode") === methodsModeAll) {
-        route = route.set("methods", AllHttpMethods);
+      if (route.methodsMode === methodsModeAll) {
+        route.methods = AllHttpMethods;
       }
-      route = route.set("namespace", activeNamespaceName);
+      route.namespace = activeNamespaceName;
 
       await dispatch(createRouteAction(route));
       await dispatch(setSuccessNotificationAction("Create route successfully"));

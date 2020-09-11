@@ -1,6 +1,5 @@
 import { getWebsocketInstance } from "actions/websocket";
 import { mockStore } from "@apiType/index";
-import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -32,7 +31,6 @@ import {
 import { loadClusterInfoAction } from "actions/cluster";
 import { loadPersistentVolumesAction, loadStorageClassesAction } from "actions/persistentVolume";
 import { loadRegistriesAction } from "actions/registries";
-import { loadRoleBindingsAction } from "actions/user";
 import { loadServicesAction } from "actions/service";
 import { throttle } from "utils";
 import { loadProtectedEndpointAction, loadSSOConfigAction } from "actions/sso";
@@ -49,8 +47,8 @@ export interface WatchResMessage {
 
 const mapStateToProps = (state: RootState) => {
   return {
-    token: state.get("auth").get("token"),
-    impersonation: state.get("auth").get("impersonation"),
+    token: state.auth.token,
+    impersonation: state.auth.impersonation,
   };
 };
 
@@ -75,12 +73,9 @@ class WithDataRaw extends React.PureComponent<Props> {
     dispatch(loadClusterInfoAction());
     dispatch(loadPersistentVolumesAction());
     dispatch(loadRegistriesAction());
-    dispatch(loadRoleBindingsAction());
     dispatch(loadServicesAction("")); // for routes destinations
     dispatch(loadStorageClassesAction());
     dispatch(loadDeployAccessTokensAction());
-
-    // dispatch(loadComponentPluginsAction());
     dispatch(loadSSOConfigAction());
     dispatch(loadProtectedEndpointAction());
   }
@@ -121,7 +116,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_APPLICATION,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -134,7 +129,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             payload: {
               namespace: data.namespace,
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -146,7 +141,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             payload: {
               namespace: data.namespace,
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -157,7 +152,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_NODE,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -168,7 +163,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_HTTPS_CERT,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -179,7 +174,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_REGISTRY,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -190,7 +185,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_VOLUME,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -201,7 +196,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_SSO,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -212,7 +207,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_PROTECTED_ENDPOINT,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -234,7 +229,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_SERVICE,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -245,7 +240,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_ROLE_BINDING,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;

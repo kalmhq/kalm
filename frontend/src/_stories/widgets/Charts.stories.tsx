@@ -1,6 +1,5 @@
 import React from "react";
 import { Targets } from "widgets/Targets";
-import Immutable from "immutable";
 import { HttpStatusCodeLineChart } from "widgets/charts/httpStatusCodeChart";
 import { HttpBytesSizeChart } from "widgets/charts/httpBytesSizeChart";
 import { DoughnutChart } from "widgets/DoughnutChart";
@@ -24,7 +23,7 @@ export const HttpStatusCode = () => {
   const data = [
     {
       legend: "2xx",
-      data: Immutable.fromJS([
+      data: [
         { x: 1594112909000, y: 0 },
         { x: 1594112969000, y: 0 },
         { x: 1594113029000, y: 0 },
@@ -56,11 +55,11 @@ export const HttpStatusCode = () => {
         { x: 1594114589000, y: 0.1263157894736842 },
         { x: 1594114649000, y: 0.12631623268853576 },
         { x: 1594114709000, y: 0.021156410623930942 },
-      ]),
+      ],
     },
     {
       legend: "4xx",
-      data: Immutable.fromJS([
+      data: [
         { x: 1594112909000, y: 0 },
         { x: 1594112969000, y: 0 },
         { x: 1594113029000, y: 0 },
@@ -92,11 +91,11 @@ export const HttpStatusCode = () => {
         { x: 1594114589000, y: 0.12 },
         { x: 1594114649000, y: 0.016 },
         { x: 1594114709000, y: 0.02 },
-      ]),
+      ],
     },
     {
       legend: "5xx",
-      data: Immutable.fromJS([
+      data: [
         { x: 1594112909000, y: 0 },
         { x: 1594112969000, y: 0 },
         { x: 1594113029000, y: 0 },
@@ -128,7 +127,7 @@ export const HttpStatusCode = () => {
         { x: 1594114589000, y: 0.012 },
         { x: 1594114649000, y: 0.006 },
         { x: 1594114709000, y: 0 },
-      ]),
+      ],
     },
   ];
 
@@ -139,7 +138,7 @@ export const HttpBytesSize = () => {
   const data = [
     {
       legend: "request",
-      data: Immutable.fromJS([
+      data: [
         { x: 1594118257000, y: 0 },
         { x: 1594118317000, y: 0 },
         { x: 1594118377000, y: 0 },
@@ -171,11 +170,11 @@ export const HttpBytesSize = () => {
         { x: 1594119937000, y: 20.579019575507285 },
         { x: 1594119997000, y: 473.8076821814641 },
         { x: 1594120057000, y: 1159.249406930257 },
-      ]),
+      ],
     },
     {
       legend: "response",
-      data: Immutable.fromJS([
+      data: [
         { x: 1594118257000, y: 0 },
         { x: 1594118317000, y: 0 },
         { x: 1594118377000, y: 0 },
@@ -207,7 +206,7 @@ export const HttpBytesSize = () => {
         { x: 1594119937000, y: 33.68432871694287 },
         { x: 1594119997000, y: 538.5973967406348 },
         { x: 1594120057000, y: 1387.8522743001338 },
-      ]),
+      ],
     },
   ];
 

@@ -1,42 +1,14 @@
-import Immutable from "immutable";
-import { ImmutableMap } from "typings";
-
 export type WorkloadType = string;
 export const workloadTypeServer: WorkloadType = "server";
 export const workloadTypeCronjob: WorkloadType = "cronjob";
 export const workloadTypeDaemonSet: WorkloadType = "daemonset";
 export const workloadTypeStatefulSet: WorkloadType = "statefulset";
 
-export const newEmptyComponentLike: ComponentLikeFormContent = {
-  name: "",
-  image: "",
-  replicas: 1,
-  workloadType: "server",
-  dnsPolicy: "ClusterFirst",
-  schedule: "* * * * *",
-};
-
-export interface ComponentLikeFormContent
-  extends Omit<
-    ComponentLikeContent,
-    "env" | "preInjectedFiles" | "ports" | "volumes" | "nodeSelectorLabels" | "livenessProbe" | "readinessProbe"
-  > {
-  env?: ComponentLikeEnvContent[];
-  preInjectedFiles?: PreInjectedFileContent[];
-  ports?: ComponentLikePortContent[];
-  volumes?: VolumeContent[];
-  nodeSelectorLabels?: NodeSelectorLabelsContent;
-  livenessProbe?: ProbeContent;
-  readinessProbe?: ProbeContent;
-}
-
-export interface ComponentLikeEnvContent {
+export interface ComponentLikeEnv {
   name: string;
   type: string;
   value: string;
 }
-
-export type ComponentLikeEnv = ImmutableMap<ComponentLikeEnvContent>;
 
 export type PortProtocol = string;
 
@@ -48,19 +20,15 @@ export const PortProtocolGRPCWEB: PortProtocol = "grpc-web";
 export const PortProtocolTCP: PortProtocol = "tcp";
 export const PortProtocolUDP: PortProtocol = "udp";
 
-export type ComponentLikePort = ImmutableMap<ComponentLikePortContent>;
-
-export interface ComponentLikePortContent {
+export interface ComponentLikePort {
   protocol: string;
   containerPort: number;
   servicePort: number;
 }
 
-export interface NodeSelectorLabelsContent {
+export interface NodeSelectorLabels {
   [key: string]: string;
 }
-
-export type NodeSelectorLabels = ImmutableMap<NodeSelectorLabelsContent>;
 
 export type PodAffinityType = string;
 export const PodAffinityTypePreferFanout: PodAffinityType = "prefer-fanout"; // multi host
@@ -78,7 +46,7 @@ export const VolumeTypePersistentVolumeClaimTemplateNew: VolumeType = "pvcTempla
 // derivative
 export const VolumeTypePersistentVolumeClaimNew: VolumeType = "pvc-new";
 
-export interface VolumeContent {
+export interface Volume {
   type: VolumeType;
   path: string;
   size: string;
@@ -92,7 +60,7 @@ export interface VolumeContent {
   hostPath?: string;
 }
 
-export interface PreInjectedFileContent {
+export interface PreInjectedFile {
   content: string;
   mountPath: string;
   mountPathTmp?: string;
@@ -100,32 +68,26 @@ export interface PreInjectedFileContent {
   readonly?: boolean;
 }
 
-export type PreInjectedFile = ImmutableMap<PreInjectedFileContent>;
-
-export type Volume = ImmutableMap<VolumeContent>;
-
-export type ConfigMount = ImmutableMap<{
-  paths: Immutable.List<string>;
+export type ConfigMount = {
+  paths: string[];
   mountPath: string;
-}>;
+};
 
-export interface HttpHeaderContent {
+export interface HttpHeader {
   name: string;
   value: string;
 }
 
-export type HttpHeader = ImmutableMap<HttpHeaderContent>;
+export type HttpHeaders = HttpHeader[];
 
-export type HttpHeaders = Immutable.List<HttpHeader>;
-
-export interface ProbeContent {
+export interface Probe {
   exec?: {
     command?: string[];
   };
 
   httpGet?: {
     host?: string;
-    httpHeaders?: HttpHeaderContent[];
+    httpHeaders?: HttpHeader[];
     path?: string;
     port: number | string;
     scheme?: string;
@@ -143,44 +105,19 @@ export interface ProbeContent {
   failureThreshold?: number;
 }
 
-export type Probe = ImmutableMap<{
-  exec?: ImmutableMap<{
-    command?: Immutable.List<string>;
-  }>;
-
-  httpGet?: ImmutableMap<{
-    host?: string;
-    httpHeaders?: HttpHeaders;
-    path?: string;
-    port: number | string;
-    scheme?: string;
-  }>;
-
-  tcpSocket?: ImmutableMap<{
-    host?: string;
-    port: number | string;
-  }>;
-
-  initialDelaySeconds?: number;
-  timeoutSeconds?: number;
-  periodSeconds?: number;
-  successThreshold?: number;
-  failureThreshold?: number;
-}>;
-
-export type ResourceRequirements = ImmutableMap<{
-  limits?: ImmutableMap<{
+export type ResourceRequirements = {
+  limits?: {
     cpu?: string;
     memory?: string;
-  }>;
+  };
 
-  requests?: ImmutableMap<{
+  requests?: {
     cpu?: string;
     memory?: string;
-  }>;
-}>;
+  };
+};
 
-export interface ComponentLikeContent {
+export interface ComponentLike {
   name: string;
   image: string;
   replicas: number;
@@ -195,12 +132,10 @@ export interface ComponentLikeContent {
   restartStrategy?: string;
   terminationGracePeriodSeconds?: number;
   dnsPolicy: string;
-  env?: Immutable.List<ComponentLikeEnv>;
-  ports?: Immutable.List<ComponentLikePort>;
-  volumes?: Immutable.List<Volume>;
-  // configs?: Immutable.List<ConfigMount>;
-  // plugins?: Immutable.List<PluginType>;
-  preInjectedFiles?: Immutable.List<PreInjectedFile>;
+  env?: ComponentLikeEnv[];
+  ports?: ComponentLikePort[];
+  volumes?: Volume[];
+  preInjectedFiles?: PreInjectedFile[];
   livenessProbe?: Probe;
   readinessProbe?: Probe;
   nodeSelectorLabels?: NodeSelectorLabels;
@@ -208,4 +143,11 @@ export interface ComponentLikeContent {
   podAffinityType?: PodAffinityType;
 }
 
-export type ComponentLike = ImmutableMap<ComponentLikeContent>;
+export const newEmptyComponentLike: ComponentLike = {
+  name: "",
+  image: "",
+  replicas: 1,
+  workloadType: workloadTypeServer,
+  dnsPolicy: "ClusterFirst",
+  schedule: "* * * * *",
+};

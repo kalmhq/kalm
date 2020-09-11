@@ -1,8 +1,5 @@
-import Immutable from "immutable";
 import { Actions } from "types";
 import {
-  CertificateIssuerList,
-  CertificateList,
   CREATE_CERTIFICATE,
   CREATE_CERTIFICATE_ISSUER,
   DELETE_CERTIFICATE,
@@ -14,6 +11,8 @@ import {
   LOAD_ACME_SERVER_FULFILLED,
   LOAD_ACME_SERVER_FAILED,
   SET_IS_SUBMITTING_CERTIFICATE,
+  Certificate,
+  CertificateIssuer,
   SET_IS_SUBMITTING_ACME_SERVER,
   AcmeServerInfo,
 } from "types/certificate";
@@ -24,115 +23,109 @@ import {
   WATCHED_RESOURCE_CHANGE,
   RESOURCE_ACTION_UPDATE,
 } from "types/resources";
-import { ImmutableMap } from "typings";
-import { addOrUpdateInList, removeInList, removeInListByName, isInList } from "./utils";
+import { produce } from "immer";
+import { addOrUpdateInArray, removeInArrayByName, isInArray, removeInArray } from "./utils";
 
-export type State = ImmutableMap<{
+export interface State {
   isLoading: boolean;
   isFirstLoaded: boolean;
   isSubmittingCreateCertificate: boolean;
+  certificates: Certificate[];
+  certificateIssuers: CertificateIssuer[];
   isSubmittingCreateAcmeServer: boolean;
   isAcmeServerLoading: boolean;
-  certificates: CertificateList;
-  certificateIssuers: CertificateIssuerList;
   acmeServer: AcmeServerInfo | null;
-}>;
+}
 
-const initialState: State = Immutable.Map({
+const initialState: State = {
   isLoading: false,
   isFirstLoaded: false,
   isSubmittingCreateCertificate: false,
+  certificates: [],
+  certificateIssuers: [],
   isSubmittingCreateAcmeServer: false,
   isAcmeServerLoading: false,
-  certificates: Immutable.List(),
-  certificateIssuers: Immutable.List(),
   acmeServer: null,
-});
+};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOAD_CERTIFICATES_PENDING: {
-      return state.set("isLoading", true);
+      state.isLoading = true;
+      return;
     }
     case LOAD_CERTIFICATES_FAILED: {
-      return state.set("isLoading", false);
+      state.isLoading = false;
+      return;
     }
     case LOAD_CERTIFICATES_FULFILLED: {
-      state = state.set("isFirstLoaded", true);
-      state = state.set("certificates", action.payload.certificates || Immutable.List());
-      break;
+      state.isFirstLoaded = true;
+      state.certificates = action.payload.certificates || [];
+      return;
     }
     case LOAD_ACME_SERVER_PENDING: {
-      return state.set("isAcmeServerLoading", true);
+      state.isAcmeServerLoading = true;
+      return;
     }
     case LOAD_ACME_SERVER_FAILED: {
-      return state.set("isAcmeServerLoading", false);
+      state.isAcmeServerLoading = false;
+      return;
     }
     case LOAD_ACME_SERVER_FULFILLED: {
-      state = state.set("isAcmeServerLoading", false);
-      state = state.set("acmeServer", action.payload.acmeServer || null);
+      state.isAcmeServerLoading = false;
+      state.acmeServer = action.payload.acmeServer || null;
       break;
     }
     case LOAD_CERTIFICATE_ISSUERS_FULFILLED: {
-      return state.set("certificateIssuers", action.payload.certificateIssuers || Immutable.List());
+      state.certificateIssuers = action.payload.certificateIssuers || [];
+      return;
     }
     case DELETE_CERTIFICATE: {
-      state = state.update("certificates", (x) => removeInListByName(x, action.payload.name));
-      break;
+      state.certificates = removeInArrayByName(state.certificates, action.payload.name);
+      return;
     }
     case CREATE_CERTIFICATE: {
-      state = state.update("certificates", (x) => addOrUpdateInList(x, Immutable.fromJS(action.payload.certificate)));
-
-      break;
+      state.certificates = addOrUpdateInArray(state.certificates, action.payload.certificate);
+      return;
     }
     case CREATE_CERTIFICATE_ISSUER: {
-      const index = state
-        .get("certificateIssuers")
-        .findIndex(
-          (certificateIssuer) => certificateIssuer.get("name") === action.payload.certificateIssuer.get("name"),
-        );
-      if (index >= 0) {
-        state = state.setIn(["certificateIssuers", index], action.payload.certificateIssuer);
-      } else {
-        state = state.update("certificateIssuers", (certificateIssuers) =>
-          certificateIssuers.push(action.payload.certificateIssuer),
-        );
-      }
-      break;
+      state.certificateIssuers = addOrUpdateInArray(state.certificateIssuers, action.payload.certificateIssuer);
+      return;
     }
     case WATCHED_RESOURCE_CHANGE: {
       if (action.kind !== RESOURCE_TYPE_HTTPS_CERT) {
-        return state;
+        return;
       }
 
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          if (!isInList(state.get("certificates"), action.payload.data)) {
-            state = state.update("certificates", (x) => addOrUpdateInList(x, Immutable.fromJS(action.payload.data)));
+          if (!isInArray(state.certificates, action.payload.data)) {
+            state.certificates = addOrUpdateInArray(state.certificates, action.payload.data);
           }
-          break;
+          return;
         }
         case RESOURCE_ACTION_DELETE: {
-          state = state.update("certificates", (x) => removeInList(x, Immutable.fromJS(action.payload.data)));
-          break;
+          state.certificates = removeInArray(state.certificates, action.payload.data);
+          return;
         }
         case RESOURCE_ACTION_UPDATE: {
-          state = state.update("certificates", (x) => addOrUpdateInList(x, Immutable.fromJS(action.payload.data)));
-          break;
+          state.certificates = addOrUpdateInArray(state.certificates, action.payload.data);
+          return;
         }
       }
-
       break;
     }
     case SET_IS_SUBMITTING_CERTIFICATE: {
-      return state.set("isSubmittingCreateCertificate", action.payload.isSubmittingCertificate);
+      state.isSubmittingCreateCertificate = action.payload.isSubmittingCertificate;
+      return;
     }
     case SET_IS_SUBMITTING_ACME_SERVER: {
-      return state.set("isSubmittingCreateAcmeServer", action.payload.isSubmittingAcmeServer);
+      state.isSubmittingCreateAcmeServer = action.payload.isSubmittingAcmeServer;
+      return;
     }
   }
 
-  return state;
-};
+  return;
+}, initialState);
 
 export default reducer;

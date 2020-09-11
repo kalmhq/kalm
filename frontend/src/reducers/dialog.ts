@@ -1,4 +1,3 @@
-import Immutable from "immutable";
 import {
   CLEAR_CONTROLLED_DIALOG_DATA,
   CLOSE_CONTROLLED_DIALOG,
@@ -9,53 +8,52 @@ import {
   OPEN_CONTROLLED_DIALOG,
 } from "types/common";
 import { Actions } from "types";
+import produce from "immer";
 
-export type State = Immutable.Map<string, ControlledDialogParams<any>>;
+export type State = { [key: string]: ControlledDialogParams<any> };
 
-const initialState: State = Immutable.Map({});
+const initialState: State = {};
 
-const emptyControlledDialogParams = () =>
-  Immutable.Map({
-    open: false,
-    data: {},
-  });
+const emptyControlledDialogParams = () => ({
+  open: false,
+  data: {},
+});
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOGOUT: {
       return initialState;
     }
     case INIT_CONTROLLED_DIALOG: {
-      state = state.set(action.payload.dialogID, emptyControlledDialogParams());
-      break;
+      state[action.payload.dialogID] = emptyControlledDialogParams();
+      return;
     }
     case DESTROY_CONTROLLED_DIALOG: {
-      state = state.delete(action.payload.dialogID);
-      break;
+      delete state[action.payload.dialogID];
+      return;
     }
     case OPEN_CONTROLLED_DIALOG: {
-      state = state.set(
-        action.payload.dialogID,
-        Immutable.Map({
-          open: true,
-          data: action.payload.data,
-        }),
-      );
-      break;
+      state[action.payload.dialogID] = {
+        open: true,
+        data: action.payload.data,
+      };
+      return;
     }
     case CLOSE_CONTROLLED_DIALOG: {
-      state = state.setIn([action.payload.dialogID, "open"], false);
-      break;
+      if (state[action.payload.dialogID]) {
+        state[action.payload.dialogID].open = false;
+      }
+      return;
     }
     case CLEAR_CONTROLLED_DIALOG_DATA: {
-      if (state.get(action.payload.dialogID)) {
-        state = state.setIn([action.payload.dialogID, "data"], {});
+      if (state[action.payload.dialogID]) {
+        state[action.payload.dialogID].data = {};
       }
-      break;
+      return;
     }
   }
 
   return state;
-};
+}, initialState);
 
 export default reducer;

@@ -1,13 +1,13 @@
-import { Node } from "types/node";
-import { ApplicationComponentDetails, ApplicationDetails } from "./application";
-import { HttpRoute } from "./route";
-import { Certificate } from "./certificate";
-import { RegistryType } from "./registry";
-import { Disk } from "./disk";
-import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { DeployAccessToken } from "types/deployAccessToken";
-import { Service } from "types/service";
 import { RoleBinding } from "types/member";
+import { Node } from "types/node";
+import { Service } from "types/service";
+import { ProtectedEndpoint, SSOConfig } from "types/sso";
+import { ApplicationComponentDetails, ApplicationDetails } from "./application";
+import { Certificate } from "./certificate";
+import { Disk } from "./disk";
+import { Registry } from "./registry";
+import { HttpRoute } from "./route";
 
 export const WATCHED_RESOURCE_CHANGE = "WATCHED_RESOURCE_CHANGE";
 
@@ -85,7 +85,7 @@ export interface RegistryResourceAction {
   kind: typeof RESOURCE_TYPE_REGISTRY;
   payload: {
     action: ResourceActionType;
-    data: RegistryType;
+    data: Registry;
   };
 }
 

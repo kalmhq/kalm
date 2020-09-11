@@ -8,7 +8,7 @@ import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { Namespaces } from "widgets/Namespaces";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { MemberForm } from "forms/Member";
-import { newEmptyRoleBindingContent, RoleBindingContent } from "types/member";
+import { newEmptyRoleBinding, RoleBinding } from "types/member";
 import { createRoleBindingsAction } from "actions/user";
 import { setSuccessNotificationAction } from "actions/notification";
 import { push } from "connected-react-router";
@@ -26,7 +26,7 @@ interface Props
     WithNamespaceProps {}
 
 class MemberNewPageRaw extends React.PureComponent<Props> {
-  private onSubmit = async (values: RoleBindingContent) => {
+  private onSubmit = async (values: RoleBinding) => {
     const { dispatch, activeNamespaceName } = this.props;
     values.namespace = activeNamespaceName;
     await dispatch(createRoleBindingsAction(values));
@@ -38,7 +38,7 @@ class MemberNewPageRaw extends React.PureComponent<Props> {
     return (
       <BasePage secondHeaderLeft={<Namespaces />} leftDrawer={<ApplicationSidebar />}>
         <Box p={2}>
-          <MemberForm initial={newEmptyRoleBindingContent()} onSubmit={this.onSubmit} />
+          <MemberForm initial={newEmptyRoleBinding()} onSubmit={this.onSubmit} />
         </Box>
       </BasePage>
     );

@@ -4,9 +4,9 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 
 const mapStateToProps = (state: RootState) => {
-  const permissionMethods = state.get("auth").get("permissionMethods");
-  const impersonation = state.get("auth").get("impersonation");
-  const authToken = state.get("auth").get("token");
+  const permissionMethods = state.auth.permissionMethods;
+  const impersonation = state.auth.impersonation;
+  const authToken = state.auth.token;
   return { authToken, impersonation, ...permissionMethods };
 };
 

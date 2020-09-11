@@ -33,8 +33,8 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const routesMap = state.get("routes").get("httpRoutes");
-  const clusterInfo = state.get("cluster").get("info");
+  const routesMap = state.routes.httpRoutes;
+  const clusterInfo = state.cluster.info;
   return {
     clusterInfo,
     routesMap,
@@ -75,7 +75,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title={`${sc.ARE_YOU_SURE_PREFIX} this Application(${deletingComponentItem?.get("name")})?`}
+        title={`${sc.ARE_YOU_SURE_PREFIX} this Application(${deletingComponentItem?.name})?`}
         content="This application is already disabled. You will lost this application config, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />
@@ -87,7 +87,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     try {
       const { deletingComponentItem } = this.state;
       if (deletingComponentItem) {
-        await dispatch(deleteApplicationAction(deletingComponentItem.get("name")));
+        await dispatch(deleteApplicationAction(deletingComponentItem.name));
         await dispatch(setSuccessNotificationAction("Successfully delete an application"));
       }
     } catch {
@@ -142,7 +142,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { components, activeNamespace, canEditNamespace } = this.props;
-    const appName = activeNamespace!.get("name");
+    const appName = activeNamespace!.name;
     return (
       <BasePage
         secondHeaderRight={this.renderSecondHeaderRight()}
@@ -152,9 +152,9 @@ class ComponentRaw extends React.PureComponent<Props, State> {
         {this.renderDeleteConfirmDialog()}
 
         <Box p={2}>
-          {components && components.size > 0
+          {components && components.length > 0
             ? components?.map((component, index) => (
-                <Box pb={1} key={component.get("name")}>
+                <Box pb={1} key={component.name}>
                   <ComponentPanel
                     component={component}
                     application={activeNamespace!}

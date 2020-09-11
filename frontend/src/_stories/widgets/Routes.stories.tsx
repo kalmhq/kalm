@@ -1,22 +1,17 @@
 import React from "react";
-import { Targets } from "widgets/Targets";
 import { HttpRouteDestination } from "types/route";
-import Immutable from "immutable";
+import { Targets } from "widgets/Targets";
 
 export default {
   title: "Widgets/Targets",
   component: Targets,
 };
 
-const firstDestination: HttpRouteDestination = Immutable.Map({ host: "productpage", weight: 1 });
-const secondDestination: HttpRouteDestination = Immutable.Map({ host: "productpage", weight: 1 });
-const oneDestinationList: Immutable.List<HttpRouteDestination> = Immutable.List([firstDestination]);
-const twoDestinationList: Immutable.List<HttpRouteDestination> = Immutable.List([firstDestination, secondDestination]);
-const threeDestinationList: Immutable.List<HttpRouteDestination> = Immutable.List([
-  firstDestination,
-  secondDestination,
-  secondDestination,
-]);
+const firstDestination: HttpRouteDestination = { host: "productpage", weight: 1 };
+const secondDestination: HttpRouteDestination = { host: "productpage", weight: 1 };
+const oneDestinationList: HttpRouteDestination[] = [firstDestination];
+const twoDestinationList: HttpRouteDestination[] = [firstDestination, secondDestination];
+const threeDestinationList: HttpRouteDestination[] = [firstDestination, secondDestination, secondDestination];
 
 export const OneDestinationTarget = () => {
   return <Targets destinations={oneDestinationList} />;

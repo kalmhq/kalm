@@ -14,7 +14,7 @@ import { FastField, FieldProps, getIn } from "formik";
 import { FormikNormalizeNumber } from "forms/normalizer";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { PortProtocolHTTP, PortProtocolTCP, ProbeContent, ComponentLikePortContent } from "types/componentTemplate";
+import { PortProtocolHTTP, PortProtocolTCP, Probe, ComponentLikePort } from "types/componentTemplate";
 import sc from "../../utils/stringConstants";
 import { makeSelectOption, SelectField } from "../Basic/select";
 import { ValidatorOneof, ValidatorRequired } from "../validator";
@@ -312,7 +312,7 @@ class RenderProbe extends React.PureComponent<Props> {
       field: { value },
     } = this.props;
 
-    let probe: ProbeContent | undefined = value;
+    let probe: Probe | undefined = value;
 
     return probe;
   };
@@ -323,7 +323,7 @@ class RenderProbe extends React.PureComponent<Props> {
       form: { setFieldValue, values },
     } = this.props;
 
-    const ports: ComponentLikePortContent[] | undefined = values.ports;
+    const ports: ComponentLikePort[] | undefined = values.ports;
 
     if (type === "httpGet") {
       const potentialPort = ports ? ports.find((x) => x.protocol === PortProtocolHTTP && !!x.containerPort) : null;

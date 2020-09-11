@@ -5,7 +5,7 @@ import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import { FieldProps } from "formik";
 import React from "react";
-import { NodeSelectorLabelsContent } from "types/componentTemplate";
+import { NodeSelectorLabels } from "types/componentTemplate";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" color="primary" />;
@@ -20,7 +20,7 @@ export const KFormikRenderSelectLabels = ({
   form: { values, setFieldValue },
 }: FilledTextFieldProps & FieldProps & Props) => {
   const defaultValue: string[] = [];
-  const inputValue = value as NodeSelectorLabelsContent;
+  const inputValue = value as NodeSelectorLabels;
 
   if (inputValue) {
     for (let k in inputValue) {
@@ -57,7 +57,7 @@ export const KFormikRenderSelectLabels = ({
       onChange={(_, v: any) => {
         const value = v as string[];
 
-        let nodeSelectorLabels: NodeSelectorLabelsContent = {};
+        let nodeSelectorLabels: NodeSelectorLabels = {};
 
         value.forEach((nodeLabel) => {
           const kv = nodeLabel.split(":");

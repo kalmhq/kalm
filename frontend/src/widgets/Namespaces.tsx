@@ -100,7 +100,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
     const pathnameSplits = location.pathname.split("/");
 
     const filteredApp = applications.filter((app) => {
-      return canEditNamespace(app.get("name")) || canViewNamespace(app.get("name"));
+      return canEditNamespace(app.name) || canViewNamespace(app.name);
     });
 
     return (
@@ -115,7 +115,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
           {isNamespaceLoading && !isNamespaceFirstLoaded
             ? "Loading..."
             : activeNamespace
-            ? activeNamespace.get("name")
+            ? activeNamespace.name
             : "Select a Application"}
           {open ? <ExpandLess /> : <ExpandMore />}
         </Button>
@@ -141,27 +141,25 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
                     onKeyDown={this.handleListKeyDown}
                     classes={{ root: classes.menuList }}
                   >
-                    {filteredApp
-                      .map((application) => {
-                        let to = `/applications/${application.get("name")}/components`;
-                        if (pathnameSplits[1] && pathnameSplits[2] && pathnameSplits[1] === "applications") {
-                          pathnameSplits[2] = application.get("name");
-                          to = pathnameSplits.slice(0, 4).join("/");
-                        }
-                        return (
-                          <MenuItem
-                            onClick={this.handleClose}
-                            namespace-name={application.get("name")}
-                            key={application.get("name")}
-                            className={classes.menuItem}
-                            component={Link}
-                            to={to}
-                          >
-                            {application.get("name")}
-                          </MenuItem>
-                        );
-                      })
-                      .toArray()}
+                    {filteredApp.map((application) => {
+                      let to = `/applications/${application.name}/components`;
+                      if (pathnameSplits[1] && pathnameSplits[2] && pathnameSplits[1] === "applications") {
+                        pathnameSplits[2] = application.name;
+                        to = pathnameSplits.slice(0, 4).join("/");
+                      }
+                      return (
+                        <MenuItem
+                          onClick={this.handleClose}
+                          namespace-name={application.name}
+                          key={application.name}
+                          className={classes.menuItem}
+                          component={Link}
+                          to={to}
+                        >
+                          {application.name}
+                        </MenuItem>
+                      );
+                    })}
                   </MenuList>
                 </ClickAwayListener>
               </Paper>

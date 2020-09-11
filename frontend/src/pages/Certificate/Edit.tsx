@@ -1,23 +1,22 @@
 import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createCertificateAction } from "actions/certificate";
 import { push } from "connected-react-router";
+import { CertificateUploadForm } from "forms/Certificate/uploadForm";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
-import { TDispatchProp } from "types";
-import { createCertificateAction } from "actions/certificate";
-import { CertificateUploadForm } from "forms/Certificate/uploadForm";
 import { RootState } from "reducers";
-import { CertificateFormTypeContent, selfManaged } from "types/certificate";
+import { TDispatchProp } from "types";
+import { CertificateFormType, selfManaged } from "types/certificate";
 import { H6 } from "widgets/Label";
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
-  const certificate = state
-    .get("certificates")
-    .get("certificates")
-    .find((certificate) => certificate.get("name") === ownProps.match.params.name);
+  const certificate = state.certificates.certificates.find(
+    (certificate) => certificate.name === ownProps.match.params.name,
+  );
   return {
-    initialValues: (certificate ? certificate.merge({ managedType: selfManaged }).toJS() : undefined) as
-      | CertificateFormTypeContent
+    initialValues: (certificate ? Object.assign(certificate, { managedType: selfManaged }) : undefined) as
+      | CertificateFormType
       | undefined,
   };
 };
@@ -30,7 +29,7 @@ const styles = (theme: Theme) =>
 export interface Props extends WithStyles<typeof styles>, TDispatchProp, ReturnType<typeof mapStateToProps> {}
 
 class CertificateEditRaw extends React.PureComponent<Props> {
-  private submit = async (certificate: CertificateFormTypeContent) => {
+  private submit = async (certificate: CertificateFormType) => {
     try {
       const { dispatch } = this.props;
       await dispatch(createCertificateAction(certificate, true));

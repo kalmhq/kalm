@@ -1,6 +1,3 @@
-import { ImmutableMap } from "typings";
-import Immutable from "immutable";
-
 export const LOAD_ROLE_BINDINGS_PENDING = "LOAD_ROLE_BINDINGS_PENDING";
 export const LOAD_ROLE_BINDINGS_FAILED = "LOAD_ROLE_BINDINGS_FAILED";
 export const LOAD_ROLE_BINDINGS_FULFILLED = "LOAD_ROLE_BINDINGS_FULFILLED";
@@ -13,7 +10,7 @@ export const DELETE_ROLE_BINDINGS_PENDING = "DELETE_ROLE_BINDINGS_PENDING";
 export const DELETE_ROLE_BINDINGS_FAILED = "DELETE_ROLE_BINDINGS_FAILED";
 export const DELETE_ROLE_BINDINGS_FULFILLED = "DELETE_ROLE_BINDINGS_FULFILLED";
 
-export interface RoleBindingContent {
+export interface RoleBinding {
   name: string;
   namespace: string;
   subject: string;
@@ -21,9 +18,7 @@ export interface RoleBindingContent {
   expiredAtTimestamp: number;
 }
 
-export type RoleBinding = ImmutableMap<RoleBindingContent>;
-
-export const newEmptyRoleBindingContent = (): RoleBindingContent => {
+export const newEmptyRoleBinding = (): RoleBinding => {
   return {
     name: "",
     namespace: "",
@@ -46,7 +41,7 @@ export interface RoleBindingRequestStatusAction {
 export interface LoadRoleBindingsAction {
   type: typeof LOAD_ROLE_BINDINGS_FULFILLED;
   payload: {
-    roleBindings: Immutable.List<RoleBinding>;
+    roleBindings: RoleBinding[];
   };
 }
 

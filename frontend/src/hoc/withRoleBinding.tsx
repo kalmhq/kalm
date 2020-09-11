@@ -4,12 +4,12 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 
 const mapStateToProps = (state: RootState) => {
-  const roles = state.get("roles");
-  const roleBindings = roles.get("roleBindings");
+  const roles = state.roles;
+  const roleBindings = roles.roleBindings;
 
   return {
-    isRoleBindingsLoading: roles.get("isLoading"),
-    isRoleBindingsFirstLoaded: roles.get("isFirstLoaded"),
+    isRoleBindingsLoading: roles.isLoading,
+    isRoleBindingsFirstLoaded: roles.isFirstLoaded,
     roleBindings: roleBindings,
   };
 };

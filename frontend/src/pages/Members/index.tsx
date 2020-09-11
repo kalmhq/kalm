@@ -17,9 +17,8 @@ import { ImpersonateIcon, PeopleIcon } from "widgets/Icon";
 import { KRTable } from "widgets/KRTable";
 import { WithRoleBindingProps, withRoleBindings } from "hoc/withRoleBinding";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
-import { RoleBinding, RoleBindingContent } from "types/member";
+import { RoleBinding } from "types/member";
 import { deleteRoleBindingsAction, updateRoleBindingsAction } from "actions/user";
-import Immutable from "immutable";
 import MenuItem from "@material-ui/core/MenuItem";
 import TextField from "@material-ui/core/TextField";
 import { setSuccessNotificationAction } from "actions/notification";
@@ -112,7 +111,8 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
 
   private changeRole = async (roleBinding: RoleBinding, newRole: string) => {
     const { dispatch } = this.props;
-    await dispatch(updateRoleBindingsAction(roleBinding.set("role", newRole).toJS() as RoleBindingContent));
+    roleBinding.role = newRole;
+    await dispatch(updateRoleBindingsAction(roleBinding));
     await dispatch(setSuccessNotificationAction("Update role successfully"));
   };
 
@@ -124,7 +124,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
         variant="outlined"
         size="small"
         SelectProps={{ displayEmpty: true }}
-        value={roleBinding.get("role")}
+        value={roleBinding.role}
         onChange={(event) => this.changeRole(roleBinding, event.target.value)}
       >
         <MenuItem value="viewer">Viewer</MenuItem>
@@ -141,8 +141,8 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     roleBindings &&
       roleBindings.forEach((roleBinding, index) => {
         data.push({
-          name: roleBinding.get("name"),
-          subject: roleBinding.get("subject"),
+          name: roleBinding.name,
+          subject: roleBinding.subject,
           role: this.renderRole(roleBinding),
           actions: this.renderActions(roleBinding),
         });
@@ -151,9 +151,9 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     return data;
   }
 
-  private getRoleBindings = (): Immutable.List<RoleBinding> => {
+  private getRoleBindings = (): RoleBinding[] => {
     const { roleBindings, activeNamespaceName } = this.props;
-    return roleBindings.filter((x) => x.get("namespace") === activeNamespaceName);
+    return roleBindings.filter((x) => x.namespace === activeNamespaceName);
   };
 
   private renderActions = (roleBinding: RoleBinding) => {
@@ -162,7 +162,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
       <>
         <IconButtonWithTooltip
           onClick={async () => {
-            impersonate(roleBinding.get("subject"));
+            impersonate(roleBinding.subject);
             await dispatch(push("/"));
             window.location.reload();
           }}
@@ -172,11 +172,9 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
           <ImpersonateIcon />
         </IconButtonWithTooltip>
         <DeleteButtonWithConfirmPopover
-          popupId={`delete-member-${roleBinding.get("namespace")}-${roleBinding.get("name")}-popup`}
+          popupId={`delete-member-${roleBinding.namespace}-${roleBinding.name}-popup`}
           popupTitle="DELETE Member"
-          confirmedAction={() =>
-            dispatch(deleteRoleBindingsAction(roleBinding.get("namespace"), roleBinding.get("name")))
-          }
+          confirmedAction={() => dispatch(deleteRoleBindingsAction(roleBinding.namespace, roleBinding.name))}
         />
       </>
     );
@@ -217,7 +215,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
         leftDrawer={<ApplicationSidebar />}
       >
         <Box p={2}>
-          {roleBindings.size > 0 ? (
+          {roleBindings.length > 0 ? (
             <KRTable showTitle={true} title="Members" columns={this.getKRTableColumns()} data={this.getKRTableData()} />
           ) : (
             this.renderEmpty()

@@ -1,18 +1,17 @@
+import { api } from "api";
+import { ThunkResult } from "types";
 import {
   CREATE_REGISTRY,
   DELETE_REGISTRY,
   LOAD_REGISTRIES_FAILED,
   LOAD_REGISTRIES_FULFILLED,
   LOAD_REGISTRIES_PENDING,
-  RegistryType,
-  SET_IS_SUBMITTING_REGISTRY,
-  SetIsSubmittingRegistry,
-  UPDATE_REGISTRY,
+  Registry,
   RegistryFormType,
+  SetIsSubmittingRegistry,
+  SET_IS_SUBMITTING_REGISTRY,
+  UPDATE_REGISTRY,
 } from "types/registry";
-import { ThunkResult } from "types";
-import { api } from "api";
-import Immutable from "immutable";
 
 export const loadRegistriesAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
@@ -37,9 +36,9 @@ export const createRegistryAction = (registryValues: RegistryFormType): ThunkRes
   return async (dispatch) => {
     dispatch(setIsSubmittingRegistry(true));
 
-    let registry: RegistryType = Immutable.fromJS(registryValues);
+    let registry: Registry;
     try {
-      registry = await api.createRegistry(registry);
+      registry = await api.createRegistry(registryValues);
     } catch (e) {
       dispatch(setIsSubmittingRegistry(false));
       throw e;
@@ -59,9 +58,9 @@ export const updateRegistryAction = (registryValues: RegistryFormType): ThunkRes
   return async (dispatch) => {
     dispatch(setIsSubmittingRegistry(true));
 
-    let registry: RegistryType = Immutable.fromJS(registryValues);
+    let registry: Registry;
     try {
-      registry = await api.updateRegistry(registry);
+      registry = await api.updateRegistry(registryValues);
     } catch (e) {
       dispatch(setIsSubmittingRegistry(false));
       throw e;

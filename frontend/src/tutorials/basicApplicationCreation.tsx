@@ -1,4 +1,5 @@
-import Immutable from "immutable";
+import { setTutorialAction } from "actions/tutorial";
+import { APPLICATION_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
 import React from "react";
 import { RootState } from "reducers";
 import { store } from "store";
@@ -13,21 +14,19 @@ import {
   requireSubStepNotCompleted,
 } from "tutorials/utils";
 import { Actions } from "types";
-import { ApplicationDetails, CREATE_APPLICATION, CREATE_COMPONENT } from "types/application";
-import { ComponentLikePortContent } from "types/componentTemplate";
+import { CREATE_APPLICATION, CREATE_COMPONENT } from "types/application";
+import { ComponentLikePort } from "types/componentTemplate";
 import { Tutorial, TutorialFactory } from "types/tutorial";
-import { COMPONENT_FORM_ID, APPLICATION_FORM_ID } from "forms/formIDs";
-import { setTutorialAction } from "actions/tutorial";
 
 export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title): Tutorial => {
-  let apps: Immutable.List<ApplicationDetails> = store.getState().get("applications").get("applications");
+  let apps = store.getState().applications.applications;
 
   const applicationNameTemplate = "tutorial-";
   let i = 0;
   let applicationName = "tutorial";
 
   // eslint-disable-next-line
-  while (apps.find((app) => app.get("name") === applicationName)) {
+  while (apps.find((app) => app.name === applicationName)) {
     i += 1;
     applicationName = applicationNameTemplate + i;
   }
@@ -168,7 +167,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
               },
             ],
             shouldCompleteByState: (state: RootState) => {
-              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as ComponentLikePortContent[] | undefined;
+              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as ComponentLikePort[] | undefined;
               return !!ports && ports.length > 0 && ports[0]!.protocol === "http";
             },
           },
@@ -186,7 +185,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
               },
             ],
             shouldCompleteByState: (state: RootState) => {
-              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as ComponentLikePortContent[] | undefined;
+              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as ComponentLikePort[] | undefined;
               console.log(ports);
               return !!ports && ports.length > 0 && Number(ports[0]!.containerPort) === 8001;
             },
@@ -205,7 +204,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
               },
             ],
             shouldCompleteByState: (state: RootState) => {
-              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as ComponentLikePortContent[] | undefined;
+              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as ComponentLikePort[] | undefined;
               return !!ports && ports.length > 0 && (ports[0]!.servicePort === 8001 || !ports[0]!.servicePort);
             },
           },
@@ -222,19 +221,19 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           {
             title: "Wait the component to be running.",
             shouldCompleteByState: (state: RootState) => {
-              const components = state.get("components").get("components").get(applicationName);
+              const components = state.components.components[applicationName];
 
               if (!components) {
                 return false;
               }
 
-              const pod = components.getIn([0, "pods", 0]);
+              const pod = components[0]?.pods[0];
 
               if (!pod) {
                 return false;
               }
 
-              return pod.get("phase") === "Running" && pod.get("status") === "Running";
+              return pod.phase === "Running" && pod.status === "Running";
             },
           },
         ],

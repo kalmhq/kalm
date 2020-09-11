@@ -6,11 +6,10 @@ import {
   DELETE_DEPLOY_ACCESS_TOKEN_FAILED,
   DELETE_DEPLOY_ACCESS_TOKEN_FULFILLED,
   DELETE_DEPLOY_ACCESS_TOKEN_PENDING,
-  DeployAccessToken,
   LOAD_DEPLOY_ACCESS_TOKENS_FAILED,
   LOAD_DEPLOY_ACCESS_TOKENS_FULFILLED,
   LOAD_DEPLOY_ACCESS_TOKENS_PENDING,
-  DeployAccessTokenContent,
+  DeployAccessToken,
 } from "types/deployAccessToken";
 
 import { api } from "api";
@@ -32,9 +31,7 @@ export const loadDeployAccessTokensAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const createDeployAccessTokenAction = (
-  key: DeployAccessTokenContent,
-): ThunkResult<Promise<DeployAccessToken>> => {
+export const createDeployAccessTokenAction = (key: DeployAccessToken): ThunkResult<Promise<DeployAccessToken>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: CREATE_DEPLOY_ACCESS_TOKEN_PENDING });
@@ -54,7 +51,7 @@ export const createDeployAccessTokenAction = (
   };
 };
 
-export const deleteDeployAccessTokenAction = (key: DeployAccessTokenContent): ThunkResult<Promise<void>> => {
+export const deleteDeployAccessTokenAction = (key: DeployAccessToken): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: DELETE_DEPLOY_ACCESS_TOKEN_PENDING });

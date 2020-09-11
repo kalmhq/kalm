@@ -21,7 +21,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    isSubmittingRegistry: state.get("registries").get("isSubmittingRegistry"),
+    isSubmittingRegistry: state.registries.isSubmittingRegistry,
   };
 };
 

@@ -45,10 +45,10 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const httpRoutes = state.get("routes").get("httpRoutes");
-  const componentsMap = state.get("components").get("components");
-  const clusterInfo = state.get("cluster").get("info");
-  const usingApplicationCard = state.get("settings").get("usingApplicationCard");
+  const httpRoutes = state.routes.httpRoutes;
+  const componentsMap = state.components.components;
+  const clusterInfo = state.cluster.info;
+  const usingApplicationCard = state.settings.usingApplicationCard;
   return {
     clusterInfo,
     httpRoutes,
@@ -67,7 +67,8 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   private confirmDelete = async (applicationDetails: ApplicationDetails) => {
     const { dispatch } = this.props;
     try {
-      await dispatch(deleteApplicationAction(applicationDetails.get("name")));
+      console.log("confirmDelete", applicationDetails.name);
+      await dispatch(deleteApplicationAction(applicationDetails.name));
       await dispatch(setSuccessNotificationAction("Successfully delete an application"));
     } catch {
       dispatch(setErrorNotificationAction());
@@ -75,17 +76,17 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderCPU = (applicationListItem: ApplicationDetails) => {
-    const metrics = applicationListItem.get("metrics");
+    const metrics = applicationListItem.metrics;
     return (
-      <SmallCPULineChart data={metrics.get("cpu")} hoverText={this.hasPods(applicationListItem) ? "" : "No data"} />
+      <SmallCPULineChart data={metrics && metrics.cpu} hoverText={this.hasPods(applicationListItem) ? "" : "No data"} />
     );
   };
 
   private renderMemory = (applicationListItem: ApplicationDetails) => {
-    const metrics = applicationListItem.get("metrics");
+    const metrics = applicationListItem.metrics;
     return (
       <SmallMemoryLineChart
-        data={metrics.get("memory")}
+        data={metrics && metrics.memory}
         hoverText={this.hasPods(applicationListItem) ? "" : "No data"}
       />
     );
@@ -95,15 +96,12 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     const { canViewNamespace } = this.props;
     return (
       <>
-        {canViewNamespace(applicationDetails.get("name")) ? (
-          <KLink
-            to={`/applications/${applicationDetails.get("name")}/components`}
-            onClick={() => blinkTopProgressAction()}
-          >
-            {applicationDetails.get("name")}
+        {canViewNamespace(applicationDetails.name) ? (
+          <KLink to={`/applications/${applicationDetails.name}/components`} onClick={() => blinkTopProgressAction()}>
+            {applicationDetails.name}
           </KLink>
         ) : (
-          applicationDetails.get("name")
+          applicationDetails.name
         )}
       </>
     );
@@ -111,7 +109,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
 
   private renderCreatedAt = (applicationDetails: ApplicationDetails) => {
     const { componentsMap } = this.props;
-    const components = componentsMap.get(applicationDetails.get("name"));
+    const components = componentsMap[applicationDetails.name];
 
     return <Caption>{components ? getApplicationCreatedAtString(components) : "-"}</Caption>;
   };
@@ -119,8 +117,8 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   private hasPods = (applicationDetails: ApplicationDetails) => {
     const { componentsMap } = this.props;
     let count = 0;
-    componentsMap.get(applicationDetails.get("name"))?.forEach((component) => {
-      component.get("pods").forEach((podStatus) => {
+    componentsMap[applicationDetails.name]?.forEach((component) => {
+      component.pods?.forEach((podStatus) => {
         count++;
       });
     });
@@ -130,16 +128,16 @@ class ApplicationListRaw extends React.PureComponent<Props> {
 
   private renderStatus = (applicationDetails: ApplicationDetails) => {
     const { componentsMap, canViewNamespace } = this.props;
-    const applicationName = applicationDetails.get("name");
+    const applicationName = applicationDetails.name;
 
     let podCount = 0;
     let successCount = 0;
     let pendingCount = 0;
     let errorCount = 0;
-    componentsMap.get(applicationDetails.get("name"))?.forEach((component) => {
-      component.get("pods").forEach((podStatus) => {
+    componentsMap[applicationDetails.name]?.forEach((component) => {
+      component.pods?.forEach((podStatus) => {
         podCount++;
-        switch (podStatus.get("status")) {
+        switch (podStatus.status) {
           case "Running": {
             successCount++;
             break;
@@ -168,7 +166,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
 
     return (
       <KLink
-        to={`/applications/${applicationDetails.get("name")}/components`}
+        to={`/applications/${applicationDetails.name}/components`}
         style={{ color: primaryColor }}
         onClick={() => blinkTopProgressAction()}
       >
@@ -204,8 +202,8 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     const { httpRoutes } = this.props;
     const applicationRoutes = httpRoutes.filter((x) => {
       let isCurrent = false;
-      x.get("destinations").map((target) => {
-        const hostInfos = target.get("host").split(".");
+      x.destinations.map((target) => {
+        const hostInfos = target.host.split(".");
         if (hostInfos[1] && hostInfos[1].startsWith(applicationName)) {
           isCurrent = true;
         }
@@ -218,16 +216,16 @@ class ApplicationListRaw extends React.PureComponent<Props> {
 
   private renderExternalAccesses = (applicationDetails: ApplicationDetails) => {
     const { canViewNamespace, canEditNamespace } = this.props;
-    const applicationName = applicationDetails.get("name");
+    const applicationName = applicationDetails.name;
     const applicationRoutes = this.getRoutes(applicationName);
 
-    if (applicationRoutes && applicationRoutes.size > 0 && canViewNamespace(applicationName)) {
+    if (applicationRoutes && applicationRoutes.length > 0 && canViewNamespace(applicationName)) {
       return (
         <PopupState variant="popover" popupId={applicationName}>
           {(popupState) => (
             <>
               <KMLink component="button" variant="body2" color={"inherit"} {...bindTrigger(popupState)}>
-                {pluralize("route", applicationRoutes.size)}
+                {pluralize("route", applicationRoutes.length)}
               </KMLink>
               <Popover
                 style={{ zIndex: POPPER_ZINDEX }}
@@ -258,14 +256,14 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     const { canViewNamespace, canEditCluster } = this.props;
     return (
       <>
-        {canViewNamespace(applicationDetails.get("name")) && (
+        {canViewNamespace(applicationDetails.name) && (
           <IconLinkWithToolTip
             onClick={() => {
               blinkTopProgressAction();
             }}
             // size="small"
             tooltipTitle="Details"
-            to={`/applications/${applicationDetails.get("name")}/components`}
+            to={`/applications/${applicationDetails.name}/components`}
           >
             <KalmDetailsIcon />
           </IconLinkWithToolTip>
@@ -378,7 +376,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     applications &&
       applications.forEach((application, index) => {
         const applicationDetails = application as ApplicationDetails;
-        const applicationName = applicationDetails.get("name");
+        const applicationName = applicationDetails.name;
         if (canViewNamespace(applicationName) || canEditNamespace(applicationName)) {
           data.push({
             name: this.renderName(applicationDetails),
@@ -403,11 +401,10 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     const { applications, componentsMap, canEditNamespace, canViewNamespace } = this.props;
 
     const filteredApps = applications.filter((app) => {
-      return canEditNamespace(app.get("name")) || canViewNamespace(app.get("name"));
+      return canEditNamespace(app.name) || canViewNamespace(app.name);
     });
     const GridRow = (app: ApplicationDetails, index: number) => {
-      const applicationName = app.get("name");
-      const applicationRoutes = this.getRoutes(applicationName);
+      const applicationRoutes = this.getRoutes(app.name);
       return (
         <Grid key={index} item sm={6} md={4} lg={3}>
           <ApplicationCard
@@ -415,7 +412,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
             componentsMap={componentsMap}
             httpRoutes={applicationRoutes}
             confirmDelete={this.confirmDelete}
-            canEdit={canEditNamespace(applicationName)}
+            canEdit={canEditNamespace(app.name)}
           />
         </Grid>
       );
@@ -437,7 +434,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
         <Box p={2}>
           {isNamespaceLoading && !isNamespaceFirstLoaded ? (
             <Loading />
-          ) : applications.size === 0 ? (
+          ) : applications.length === 0 ? (
             this.renderEmpty()
           ) : usingApplicationCard ? (
             this.renderGrid()

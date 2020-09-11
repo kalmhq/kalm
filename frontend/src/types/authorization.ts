@@ -1,6 +1,4 @@
-import { ImmutableMap } from "typings";
-
-export interface LoginStatusContent {
+export interface LoginStatus {
   authorized: boolean;
   isAdmin: boolean;
   entity: string;
@@ -8,5 +6,3 @@ export interface LoginStatusContent {
   policies: string;
   impersonation: string;
 }
-
-export type LoginStatus = ImmutableMap<LoginStatusContent>;

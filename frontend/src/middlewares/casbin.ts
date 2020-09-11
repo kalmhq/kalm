@@ -14,15 +14,15 @@ export const createCasbinEnforcerMiddleware = () => {
 
   return (store: Store<RootState, Actions>) => (next: any) => (action: Actions) => {
     if (action.type === LOAD_LOGIN_STATUS_FULFILLED) {
-      enforcer.loadPolicies(action.payload.loginStatus.get("policies"));
+      enforcer.loadPolicies(action.payload.loginStatus.policies);
 
       const clientInfo = action.payload.loginStatus;
       let subject: string;
 
-      if (clientInfo.get("impersonation") !== "") {
-        subject = toSafeSubject(clientInfo.get("impersonation"));
+      if (clientInfo.impersonation !== "") {
+        subject = toSafeSubject(clientInfo.impersonation);
       } else {
-        subject = toSafeSubject(action.payload.loginStatus.get("entity"));
+        subject = toSafeSubject(action.payload.loginStatus.entity);
       }
 
       store.dispatch({

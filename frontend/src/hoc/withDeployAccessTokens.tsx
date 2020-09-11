@@ -4,12 +4,12 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 
 const mapStateToProps = (state: RootState) => {
-  const deployAccessTokens = state.get("deployAccessTokens");
+  const deployAccessTokens = state.deployAccessTokens;
 
   return {
-    deployAccessTokens: deployAccessTokens.get("deployAccessTokens"),
-    loaded: deployAccessTokens.get("loaded"),
-    isLoading: deployAccessTokens.get("isLoading"),
+    deployAccessTokens: deployAccessTokens.deployAccessTokens,
+    loaded: deployAccessTokens.loaded,
+    isLoading: deployAccessTokens.isLoading,
   };
 };
 
