@@ -1,13 +1,13 @@
 import React from "react";
+import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { newEmptyCertificateForm, Certificate, CertificateFormTypeContent } from "types/certificate";
-import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { newEmptyCertificateUploadForm, CertificateFormTypeContent } from "types/certificate";
 import { createCertificateAction } from "actions/certificate";
-import { push } from "connected-react-router";
-import { CertificateForm } from "forms/Certificate";
+import { CertificateUploadForm } from "forms/Certificate/uploadForm";
 import { BasePage } from "pages/BasePage";
 import { H6 } from "widgets/Label";
+import { push } from "connected-react-router";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -16,17 +16,11 @@ const styles = (theme: Theme) =>
 
 export interface Props extends WithStyles<typeof styles>, TDispatchProp {}
 
-interface State {
-  newCert: Certificate;
-}
-class CertificateNewRaw extends React.Component<Props, State> {
+class CertificateUploadRaw extends React.PureComponent<Props> {
   private submit = async (certificate: CertificateFormTypeContent) => {
     try {
       const { dispatch } = this.props;
-      const cert = await dispatch(createCertificateAction(certificate, false));
-      this.setState({
-        newCert: cert,
-      });
+      await dispatch(createCertificateAction(certificate, false));
       this.onSubmitSuccess();
     } catch (e) {
       console.log(e);
@@ -34,19 +28,17 @@ class CertificateNewRaw extends React.Component<Props, State> {
   };
 
   private onSubmitSuccess = () => {
-    const { dispatch } = this.props;
-    const { newCert } = this.state;
-    dispatch(push(`/certificates/${newCert.get("name")}`));
+    this.props.dispatch(push("/certificates"));
   };
 
   public render() {
     const { classes } = this.props;
     return (
-      <BasePage secondHeaderRight={<H6>New Certificate</H6>}>
+      <BasePage secondHeaderRight={<H6>Upload Certificate</H6>}>
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>
-              <CertificateForm onSubmit={this.submit} initialValues={newEmptyCertificateForm} />
+              <CertificateUploadForm onSubmit={this.submit} initialValues={newEmptyCertificateUploadForm} />
             </Grid>
           </Grid>
         </div>
@@ -55,4 +47,4 @@ class CertificateNewRaw extends React.Component<Props, State> {
   }
 }
 
-export const CertificateNewPage = withStyles(styles)(connect()(CertificateNewRaw));
+export const CertificateUploadPage = withStyles(styles)(connect()(CertificateUploadRaw));

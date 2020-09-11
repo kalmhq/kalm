@@ -1,6 +1,4 @@
 import { RouterAction } from "connected-react-router";
-import { FormAction } from "redux-form";
-import { ActionTypes } from "redux-form/lib/actionTypes";
 import { ThunkAction, ThunkDispatch } from "redux-thunk";
 import { RootState } from "reducers";
 import { ApplicationActions } from "./application";
@@ -21,12 +19,7 @@ import { DomainActions } from "./domain";
 import { DeployAccessTokenActions } from "types/deployAccessToken";
 import { RoleBindingsActions } from "types/member";
 
-interface ReduxFormAction extends FormAction {
-  type: keyof ActionTypes;
-}
-
 export type Actions =
-  | ReduxFormAction
   | RouterAction
   | CommonActions
   | ApplicationActions

@@ -11,6 +11,12 @@ export const LOAD_CERTIFICATE_ISSUERS_PENDING = "LOAD_CERTIFICATE_ISSUERS_PENDIN
 export const LOAD_CERTIFICATE_ISSUERS_FAILED = "LOAD_CERTIFICATE_ISSUERS_FAILED";
 export const CREATE_CERTIFICATE = "CREATE_CERTIFICATE";
 export const CREATE_CERTIFICATE_ISSUER = "CREATE_CERTIFICATE_ISSUER";
+export const LOAD_ACME_SERVER_FULFILLED = "LOAD_ACME_SERVER_FULFILLED";
+export const LOAD_ACME_SERVER_PENDING = "LOAD_ACME_SERVER_PENDING";
+export const LOAD_ACME_SERVER_FAILED = "LOAD_ACME_SERVER_FAILED";
+export const SET_IS_SUBMITTING_ACME_SERVER = "SET_IS_SUBMITTING_ACME_SERVER";
+export const CREATE_ACME_SERVER = "CREATE_ACME_SERVER";
+export const DELETE_ACME_SERVER = "DELETE_ACME_SERVER";
 
 export interface CreateCertificateAction {
   type: typeof CREATE_CERTIFICATE;
@@ -26,6 +32,20 @@ export interface CreateCertificateIssuerAction {
   };
 }
 
+export interface CreateAcmeServerAction {
+  type: typeof CREATE_ACME_SERVER;
+  payload: {
+    acmeServer: AcmeServerInfo;
+  };
+}
+
+export interface DeleteAcmeServerAction {
+  type: typeof DELETE_ACME_SERVER;
+  payload: {
+    acmeServer: null;
+  };
+}
+
 export interface LoadCertificatesPendingAction {
   type: typeof LOAD_CERTIFICATES_PENDING;
 }
@@ -38,6 +58,21 @@ export interface LoadCertificatesAction {
   type: typeof LOAD_CERTIFICATES_FULFILLED;
   payload: {
     certificates: Immutable.List<Certificate>;
+  };
+}
+
+export interface LoadAcmeServerPendingAction {
+  type: typeof LOAD_ACME_SERVER_PENDING;
+}
+
+export interface LoadAcmeServerFailedAction {
+  type: typeof LOAD_ACME_SERVER_FAILED;
+}
+
+export interface LoadAcmeServerAction {
+  type: typeof LOAD_ACME_SERVER_FULFILLED;
+  payload: {
+    acmeServer: AcmeServerInfo;
   };
 }
 
@@ -63,6 +98,13 @@ export interface SetIsSubmittingCertificate {
   };
 }
 
+export interface SetIsSubmittingAcmeServer {
+  type: typeof SET_IS_SUBMITTING_ACME_SERVER;
+  payload: {
+    isSubmittingAcmeServer: boolean;
+  };
+}
+
 export interface DeleteCertificate {
   type: typeof DELETE_CERTIFICATE;
   payload: {
@@ -74,19 +116,28 @@ export type CertificateList = Immutable.List<Certificate>;
 
 export type CertificateIssuerList = Immutable.List<CertificateIssuer>;
 
-export interface CertificateFormTypeContent extends CertificateContent {
-  managedType: typeof selfManaged | typeof issuerManaged;
+export interface CertificateFormTypeContent extends Omit<CertificateContent, "domains"> {
+  managedType: typeof selfManaged | typeof issuerManaged | typeof dns01Mananged;
+  domains: string[];
 }
 
-export interface CertificateIssuerFormTypeContent extends CertificateIssuerContent {
+export interface CertificateIssuerFormTypeContent
+  extends Omit<CertificateIssuerContent, "caForTest" | "acmeCloudFlare"> {
   issuerType: typeof cloudFlare | typeof caForTest;
+  acmeCloudFlare: AcmeCloudFlareContent;
+  caForTest: {};
 }
 
-export const selfManaged = "selfManaged";
+export const dns01Mananged = "default-dns01-issuer";
 export const issuerManaged = "issuerManaged";
+export const selfManaged = "selfManaged";
 
 export const cloudFlare = "cloudFlare";
 export const caForTest = "caForTest";
+
+// wildcard support httpsCertIssuser type
+export const dns01Issuer = "default-dns01-issuer";
+export const http01Issuer = "default-http01-issuer";
 
 export type CertificateFormType = ImmutableMap<CertificateFormTypeContent>;
 
@@ -96,13 +147,33 @@ export type Certificate = ImmutableMap<CertificateContent>;
 
 export type CertificateIssuer = ImmutableMap<CertificateIssuerContent>;
 
-export const newEmptyCertificateForm: CertificateFormType = Immutable.fromJS({
+export const newEmptyCertificateForm: CertificateFormTypeContent = {
   name: "",
   managedType: issuerManaged,
   selfManagedCertContent: "",
   selfManagedCertPrivateKey: "",
-  domains: Immutable.List(),
-});
+  domains: [],
+  ready: "",
+  reason: "",
+};
+
+export const newUpdateEmptyCertificateForm: CertificateFormTypeContent = {
+  name: "",
+  managedType: selfManaged,
+  selfManagedCertContent: "",
+  selfManagedCertPrivateKey: "",
+  domains: [],
+  ready: "",
+  reason: "",
+};
+
+export const newEmptyCertificateUploadForm: CertificateFormTypeContent = {
+  name: "",
+  managedType: selfManaged,
+  selfManagedCertContent: "",
+  selfManagedCertPrivateKey: "",
+  domains: [],
+};
 
 export const newEmptyCertificateIssuerForm = (): CertificateIssuerFormType => {
   return Immutable.fromJS({
@@ -113,15 +184,17 @@ export const newEmptyCertificateIssuerForm = (): CertificateIssuerFormType => {
 
 export interface CertificateContent {
   name: string;
-  isSelfManaged: boolean;
-  isSignedByTrustedCA: boolean;
-  expireTimestamp: number;
+  isSelfManaged?: boolean;
+  isSignedByTrustedCA?: boolean;
+  expireTimestamp?: number;
   selfManagedCertContent: string;
   selfManagedCertPrivateKey: string;
-  httpsCertIssuer: string;
+  httpsCertIssuer?: string;
   domains: Immutable.List<string>;
-  ready: string; // why is a string??
-  reason: string;
+  ready?: string; // why is a string??
+  reason?: string;
+  wildcardCertDNSChallengeDomain?: string;
+  wildcardCertDNSChallengeDomainMap?: Immutable.Map<string, string>;
 }
 
 export interface CertificateIssuerContent {
@@ -141,10 +214,31 @@ export type CertificateActions =
   | LoadCertificatesPendingAction
   | LoadCertificatesFailedAction
   | LoadCertificatesAction
+  | LoadAcmeServerPendingAction
+  | LoadAcmeServerFailedAction
+  | LoadAcmeServerAction
+  | SetIsSubmittingAcmeServer
   | SetIsSubmittingCertificate
   | DeleteCertificate
   | LoadCertificateIssuersPendingAction
   | LoadCertificateIssuersFailedAction
   | LoadCertificateIssuersAction
   | CreateCertificateAction
+  | CreateAcmeServerAction
+  | DeleteAcmeServerAction
   | CreateCertificateIssuerAction;
+
+export interface AcmeServerInfoContent {
+  acmeDomain: string;
+  nsDomain: string;
+  ipForNameServer: string;
+  ready: boolean;
+}
+export type AcmeServerInfo = ImmutableMap<AcmeServerInfoContent>;
+
+export interface AcmeServerFormTypeContent {
+  acmeDomain: string;
+  nsDomain: string;
+}
+
+export type AcmeServerFormType = ImmutableMap<AcmeServerFormTypeContent>;

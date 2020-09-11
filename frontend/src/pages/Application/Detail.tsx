@@ -356,15 +356,15 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                 data={[
                   {
                     legend: "2xx",
-                    data: activeNamespace!.get("istioMetricHistories").get("httpRespCode2XXCount") || Immutable.List(),
+                    data: activeNamespace!.get("istioMetricHistories")?.get("httpRespCode2XXCount") || Immutable.List(),
                   },
                   {
                     legend: "4xx",
-                    data: activeNamespace!.get("istioMetricHistories").get("httpRespCode4XXCount") || Immutable.List(),
+                    data: activeNamespace!.get("istioMetricHistories")?.get("httpRespCode4XXCount") || Immutable.List(),
                   },
                   {
                     legend: "5xx",
-                    data: activeNamespace!.get("istioMetricHistories").get("httpRespCode5XXCount") || Immutable.List(),
+                    data: activeNamespace!.get("istioMetricHistories")?.get("httpRespCode5XXCount") || Immutable.List(),
                   },
                 ]}
                 title="http response code per second"
@@ -377,11 +377,11 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                 data={[
                   {
                     legend: "request",
-                    data: activeNamespace!.get("istioMetricHistories").get("httpRequestBytes") || Immutable.List(),
+                    data: activeNamespace!.get("istioMetricHistories")?.get("httpRequestBytes") || Immutable.List(),
                   },
                   {
                     legend: "response",
-                    data: activeNamespace!.get("istioMetricHistories").get("httpResponseBytes") || Immutable.List(),
+                    data: activeNamespace!.get("istioMetricHistories")?.get("httpResponseBytes") || Immutable.List(),
                   },
                 ]}
                 title="http traffic"

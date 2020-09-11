@@ -14,6 +14,7 @@ export interface DiskContent {
   componentName?: string;
   phase: string;
   capacity: string;
+  stsVolClaimTemplate?: string;
 }
 
 export type Disk = ImmutableMap<DiskContent>;

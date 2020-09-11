@@ -1,14 +1,19 @@
-import { Api } from "../base";
 import Immutable from "immutable";
-import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
-import { HttpRoute } from "types/route";
+import {
+  CertificateFormTypeContent,
+  CertificateIssuerFormTypeContent,
+  AcmeServerInfo,
+  AcmeServerFormType,
+} from "types/certificate";
 import { RegistryType } from "types/registry";
 import MockStore from "../mockStore";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { DeployAccessToken } from "types/deployAccessToken";
 import { InitializeClusterResponse } from "types/cluster";
 import { RoleBindingContent } from "types/member";
+import { Api } from "../base";
+import { HttpRoute } from "types/route";
 
 export const mockStore = new MockStore();
 
@@ -107,14 +112,14 @@ export default class MockApi extends Api {
     return mockStore.data.get("mockCertificateIssuers");
   };
 
-  public createCertificate = async (certificate: CertificateFormType, isEdit?: boolean) => {
+  public createCertificate = async (certificate: CertificateFormTypeContent, isEdit?: boolean) => {
     await mockStore.updateCertificate(certificate);
     return certificate as any;
   };
 
-  public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormType, isEdit?: boolean) => {
+  public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormTypeContent, isEdit?: boolean) => {
     await mockStore.updateCertificateIssuer(certificateIssuer);
-    return certificateIssuer;
+    return Immutable.fromJS(certificateIssuer);
   };
 
   public createApplication = async (application: Application) => {
@@ -270,5 +275,17 @@ export default class MockApi extends Api {
 
   public resetCluster = async (): Promise<any> => {
     return {};
+  };
+
+  public createAcmeServer = async (acmeServer: AcmeServerFormType): Promise<AcmeServerInfo> => {
+    return mockStore.data.get("mockAcmeServer");
+  };
+
+  public deleteAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
+    return;
+  };
+
+  public getAcmeServer = async (): Promise<AcmeServerInfo> => {
+    return mockStore.data.get("mockAcmeServer");
   };
 }

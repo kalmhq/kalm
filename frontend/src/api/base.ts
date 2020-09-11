@@ -10,11 +10,13 @@ import {
 import { LoginStatus } from "types/authorization";
 import {
   Certificate,
-  CertificateFormType,
+  CertificateFormTypeContent,
   CertificateIssuer,
-  CertificateIssuerFormType,
   CertificateIssuerList,
   CertificateList,
+  AcmeServerInfo,
+  AcmeServerFormType,
+  CertificateIssuerFormTypeContent,
 } from "types/certificate";
 import { ClusterInfo, InitializeClusterResponse } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
@@ -119,14 +121,21 @@ export abstract class Api {
 
   public abstract getCertificateIssuerList(): Promise<CertificateIssuerList>;
 
-  public abstract createCertificate(certificate: CertificateFormType, isEdit?: boolean): Promise<Certificate>;
+  public abstract createCertificate(certificate: CertificateFormTypeContent, isEdit?: boolean): Promise<Certificate>;
 
   public abstract createCertificateIssuer(
-    certificateIssuer: CertificateIssuerFormType,
+    certificateIssuer: CertificateIssuerFormTypeContent,
     isEdit?: boolean,
   ): Promise<CertificateIssuer>;
 
   public abstract deleteCertificate(name: string): Promise<void>;
+
+  // certificate acme server
+  public abstract createAcmeServer(acmeServer: AcmeServerFormType): Promise<AcmeServerInfo>;
+
+  public abstract deleteAcmeServer(acmeServer: AcmeServerFormType): Promise<void>;
+
+  public abstract getAcmeServer(): Promise<AcmeServerInfo>;
 
   // services
   public abstract loadServices(name: string): Promise<Immutable.List<Service>>;

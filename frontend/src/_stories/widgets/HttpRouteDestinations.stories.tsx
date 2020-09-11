@@ -1,6 +1,6 @@
 import React from "react";
 import { storiesOf } from "@storybook/react";
-import { Field } from "redux-form";
+import { Field } from "formik";
 import { Typography } from "@material-ui/core";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import Immutable from "immutable";
@@ -23,13 +23,11 @@ import {
   LOAD_APPLICATIONS_PENDING,
 } from "types/application";
 import { SET_CURRENT_NAMESPACE } from "types/namespace";
-import { KAutoCompleteOption, KAutoCompleteSingleValue } from "forms/Basic/autoComplete";
+import { KAutoCompleteOption, KFormikAutoCompleteSingleValue } from "forms/Basic/autoComplete";
 import { createServices } from "_stories/data/service";
-import withReduxForm from "_stories/ReduxFormConfig";
 
 storiesOf("Widgets/HttpRouteDestinations", module)
   //   .addDecorator(withProvider)
-  .addDecorator(withReduxForm)
   .add("Has data", () => {
     resetStore();
 
@@ -116,7 +114,7 @@ storiesOf("Widgets/HttpRouteDestinations", module)
     return (
       <Field
         name={"name"}
-        component={KAutoCompleteSingleValue}
+        component={KFormikAutoCompleteSingleValue}
         label="Choose a target"
         // validate={ValidatorRequired}
         options={options}

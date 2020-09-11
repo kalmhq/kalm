@@ -13,6 +13,7 @@ import {
   DeployAccessTokenScopeCluster,
   DeployAccessTokenScopeComponent,
   DeployAccessTokenScopeNamespace,
+  DeployAccessTokenContent,
 } from "types/deployAccessToken";
 import { push } from "connected-react-router";
 import { connect } from "react-redux";
@@ -67,7 +68,7 @@ class DeployAccessTokenDetailPageRaw extends React.PureComponent<Props> {
       return;
     }
 
-    dispatch(deleteDeployAccessTokenAction(deployAccessToken));
+    dispatch(deleteDeployAccessTokenAction(deployAccessToken.toJS() as DeployAccessTokenContent));
   };
 
   private getDeployAccessToken = () => {
@@ -315,14 +316,11 @@ workflows:
             Its granted scope is <strong>Specific Applications</strong>:
           </Body2>
           <Box pl={2} mt={1}>
-            {deployAccessToken
-              .get("resources")
-              .map((x) => (
-                <Box key={x}>
-                  <strong>{x}</strong>
-                </Box>
-              ))
-              .toArray()}
+            {deployAccessToken.get("resources").map((x) => (
+              <Box key={x}>
+                <strong>{x}</strong>
+              </Box>
+            ))}
           </Box>
         </>
       );
@@ -333,14 +331,11 @@ workflows:
             Its granted scope is <strong>Specific Components</strong>:
           </Body2>
           <Box pl={2} mt={1}>
-            {deployAccessToken
-              .get("resources")
-              .map((x) => (
-                <Box key={x}>
-                  <strong>{x}</strong>
-                </Box>
-              ))
-              .toArray()}
+            {deployAccessToken.get("resources").map((x) => (
+              <Box key={x}>
+                <strong>{x}</strong>
+              </Box>
+            ))}
           </Box>
         </>
       );

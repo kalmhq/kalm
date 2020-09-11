@@ -29,6 +29,7 @@ import { DeployAccessTokenNewPage } from "pages/CI/New";
 import { NewEndpointPage } from "pages/SSO/NewEndpoint";
 import { EditEndpointPage } from "pages/SSO/EditEndpoint";
 import { CertificateNewPage } from "pages/Certificate/New";
+import { CertificateUploadPage } from "pages/Certificate/Upload";
 import { CertificateEditPage } from "pages/Certificate/Edit";
 import { RegistryNewPage } from "pages/Registry/New";
 import { RegistryEditPage } from "pages/Registry/Edit";
@@ -38,6 +39,7 @@ import { SystemPage } from "pages/System";
 import { SetupPage } from "pages/Setup";
 import { RolesListPage } from "pages/Members";
 import { MemberNewPage } from "pages/Members/New";
+import { CertificateDetailPage } from "pages/Certificate/Detail";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -94,7 +96,9 @@ export const KalmRoutes = (
 
           <Route exact path="/certificates" component={CertificateListPage} />
           <Route exact path="/certificates/new" component={CertificateNewPage} />
+          <Route exact path="/certificates/upload" component={CertificateUploadPage} />
           <Route exact path="/certificates/:name/edit" component={CertificateEditPage} />
+          <Route exact path="/certificates/:name" component={CertificateDetailPage} />
           <Route component={NoMatch} />
         </Switch>
       </RequireAuthorizatedDashboard>

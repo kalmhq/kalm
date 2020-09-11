@@ -1,7 +1,5 @@
 import { connectRouter } from "connected-react-router/immutable";
 import { History, LocationState } from "history";
-import { FormState } from "redux-form";
-import { reducer as formReducer } from "redux-form/immutable";
 import { combineReducers } from "redux-immutable";
 import { ImmutableMap } from "typings";
 import roles, { State as RolesState } from "reducers/roleBinding";
@@ -33,7 +31,6 @@ export type RootState = ImmutableMap<{
   router: ImmutableMap<any>; //RouterState<LocationState>;
   notification: NotificationState;
   dialogs: DialogState;
-  form: FormState;
   nodes: NodesState;
   registries: RegistriesState;
   persistentVolumes: PersistentVolumesState;
@@ -56,7 +53,6 @@ export type RootState = ImmutableMap<{
 export default (history: History<LocationState>) =>
   combineReducers<RootState>({
     // @ts-ignore
-    form: formReducer,
     namespaces,
     nodes,
     registries,

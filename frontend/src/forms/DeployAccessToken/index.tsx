@@ -3,10 +3,9 @@ import { Theme } from "@material-ui/core/styles";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
-import { change, InjectedFormProps, untouch } from "redux-form";
-import { Field, getFormValues, reduxForm } from "redux-form/immutable";
+import { TDispatchProp } from "types";
 import { RootState } from "reducers";
-import { ValidatorRequired } from "../validator";
+import { ValidatorRequired, RequireString } from "forms/validator";
 import { Prompt } from "widgets/Prompt";
 import { DEPLOY_ACCESS_TOKEN_ID } from "../formIDs";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
@@ -18,12 +17,14 @@ import {
   newEmptyDeployAccessToken,
 } from "types/deployAccessToken";
 import { KPanel } from "widgets/KPanel";
-import { KAutoCompleteMultipleSelectField, KAutoCompleteOption } from "forms/Basic/autoComplete";
-import { KRenderDebounceTextField } from "forms/Basic/textfield";
-import { KRadioGroupRender } from "forms/Basic/radio";
+import { KAutoCompleteOption, KFormikAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
+import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
+import { KFormikRadioGroupRender } from "forms/Basic/radio";
 import { ApplicationComponentDetails } from "types/application";
 import { Loading } from "widgets/Loading";
 import sc from "utils/stringConstants";
+import { Field, Form, FormikProps, withFormik } from "formik";
+import { object } from "yup";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -35,16 +36,20 @@ const mapStateToProps = (state: RootState) => {
     (getFormValues(DEPLOY_ACCESS_TOKEN_ID)(state) as DeployAccessToken) || (Immutable.Map() as DeployAccessToken);
 
   return {
-    fieldValues,
     allComponents: state.get("components").get("components"),
   };
 };
 
-export interface Props {
+interface OwnProps {
   isEdit?: boolean;
+  onSubmit: any;
 }
-export interface FinalProps
-  extends Props,
+
+export interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
+
+export interface Props
+  extends ConnectedProps,
+    OwnProps,
     WithNamespaceProps,
     InjectedFormProps<DeployAccessToken, Props>,
     ReturnType<typeof mapStateToProps>,
@@ -58,18 +63,9 @@ class DeployAccessTokenFormRaw extends React.PureComponent<FinalProps> {
     }
   }
 
+class DeployKeyFormikRaw extends React.PureComponent<Props> {
   public render() {
-    const {
-      handleSubmit,
-      classes,
-      dirty,
-      submitSucceeded,
-      fieldValues,
-      isNamespaceLoading,
-      isNamespaceFirstLoaded,
-      applications,
-      allComponents,
-    } = this.props;
+    const { classes, isNamespaceLoading, isNamespaceFirstLoaded, applications, allComponents } = this.props;
 
     if (isNamespaceLoading && !isNamespaceFirstLoaded) {
       return (
@@ -105,9 +101,10 @@ class DeployAccessTokenFormRaw extends React.PureComponent<FinalProps> {
       });
     });
 
+    const { values, dirty, setFieldValue, isSubmitting } = this.props;
     return (
-      <form onSubmit={handleSubmit} className={classes.root}>
-        <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+      <Form className={classes.root} id="deployKey-form">
+        <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
         <KPanel>
           <Box p={2}>
             <Field
@@ -115,14 +112,19 @@ class DeployAccessTokenFormRaw extends React.PureComponent<FinalProps> {
               label="Memo"
               autoFocus
               autoComplete="off"
-              component={KRenderDebounceTextField}
+              component={KRenderDebounceFormikTextField}
+              id="deployKey-name"
               validate={ValidatorRequired}
             />
 
-            <Field
+            <KFormikRadioGroupRender
               title="Permission Scope"
-              component={KRadioGroupRender}
               name="scope"
+              value={values.scope}
+              onChange={(event: any, value: string) => {
+                setFieldValue("scope", value);
+                setFieldValue("resources", []);
+              }}
               options={[
                 {
                   value: DeployAccessTokenScopeCluster,
@@ -145,9 +147,10 @@ class DeployAccessTokenFormRaw extends React.PureComponent<FinalProps> {
                 <KAutoCompleteMultipleSelectField
                   name="resources"
                   label="Applications"
-                  validate={ValidatorRequired}
-                  placeholder="Select an application"
                   options={applicationOptions}
+                  id="certificate-resources"
+                  placeholder={"Select an application"}
+                  helperText={""}
                 />
               ) : null}
 
@@ -155,9 +158,10 @@ class DeployAccessTokenFormRaw extends React.PureComponent<FinalProps> {
                 <KAutoCompleteMultipleSelectField
                   name="resources"
                   label="Component"
-                  validate={ValidatorRequired}
-                  placeholder="Select an component"
                   options={componentOptions}
+                  id="certificate-resources"
+                  placeholder={"Select a component"}
+                  helperText={""}
                 />
               ) : null}
             </Box>
@@ -165,19 +169,16 @@ class DeployAccessTokenFormRaw extends React.PureComponent<FinalProps> {
         </KPanel>
 
         <Box mt={2}>
-          <Button color="primary" variant="contained" type="submit">
+          <Button id="save-deployKey-button" color="primary" variant="contained" type="submit">
             Create Deploy Key
           </Button>
         </Box>
-
         {process.env.REACT_APP_DEBUG === "true" ? (
           <Box mt={2}>
-            <pre style={{ maxWidth: 1500, background: "#eee" }}>
-              {JSON.stringify(this.props.fieldValues, undefined, 2)}
-            </pre>
+            <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
           </Box>
         ) : null}
-      </form>
+      </Form>
     );
   }
 }

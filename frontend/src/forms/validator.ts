@@ -1,6 +1,7 @@
 import Immutable from "immutable";
 import { HttpRoute, HttpRouteDestination } from "types/route";
 import sc from "utils/stringConstants";
+import { string, array } from "yup";
 
 export const validator = () => {
   const errors = {};
@@ -10,6 +11,14 @@ export const validator = () => {
 
 export const ValidatorListNotEmpty = (value: Immutable.List<any>, _allValues?: any, _props?: any, _name?: any) => {
   if (!value || value.size <= 0) {
+    return "Select at least one option";
+  }
+
+  return undefined;
+};
+
+export const ValidatorArrayNotEmpty = (value: any[], _allValues?: any, _props?: any, _name?: any) => {
+  if (!value || value.length <= 0) {
     return "Select at least one option";
   }
 
@@ -147,7 +156,7 @@ export const ValidatorVolumeSize = (value: string) => {
 };
 
 export const ValidatorName = (value: string) => {
-  if (!value) return undefined;
+  if (!value) return "Required";
 
   if (!value.match(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/) || value === "0") {
     return sc.NAME_RULE;
@@ -211,7 +220,7 @@ export const ValidatorSchedule = (value: string) => {
 export const ValidatorStringLength = () => {};
 
 export const ValidateHost = (value: string) => {
-  if (value === undefined) return undefined;
+  if (!value) return "Required";
 
   if (value.length === 0 || value.length > 511) {
     return "Host length must be between 1 and 511 characters.";
@@ -233,6 +242,8 @@ export const regExpHostname = new RegExp(
   /^([a-z0-9*])(([a-z0-9-]{1,61})?[a-z0-9]{1})?(\.[a-z0-9](([a-z0-9-]{1,61})?[a-z0-9]{1})?)?(\.[a-zA-Z]{2,4})+$/,
 );
 
+export const regExpWildcardname = new RegExp(/^(([\w-]+\.)|(\*\.))+[\w-]+$/);
+
 const validateHostWithWildcardPrefix = (value: string) => {
   if (value.length === 0 || value.length > 511) {
     return "Host length must be between 1 and 511 characters.";
@@ -241,7 +252,8 @@ const validateHostWithWildcardPrefix = (value: string) => {
   var regResultIp = regExpIp.exec(value);
 
   var regResultHostname = regExpHostname.exec(value);
-  if (regResultIp === null && regResultHostname === null) {
+  var regResultWildcardname = regExpWildcardname.exec(value);
+  if (regResultIp === null && regResultHostname === null && regResultWildcardname == null) {
     return "Host must be a valid IP address or hostname.";
   }
 
@@ -249,6 +261,21 @@ const validateHostWithWildcardPrefix = (value: string) => {
 };
 
 export const KValidatorHostsWithWildcardPrefix = (
+  values: string[],
+  _allValues?: any,
+  _props?: any,
+  _name?: any,
+): string | (undefined | string)[] | undefined => {
+  if (!values || values.length === 0) {
+    return "Required";
+  }
+
+  const errors = values.map((host) => (host === "*" ? undefined : validateHostWithWildcardPrefix(host)));
+
+  return errors.filter((x) => !!x).length > 0 ? errors : undefined;
+};
+
+export const KValidatorWildcardHost = (
   values: Immutable.List<string>,
   _allValues?: any,
   _props?: any,
@@ -258,7 +285,13 @@ export const KValidatorHostsWithWildcardPrefix = (
     return undefined;
   }
 
-  const errors = values.map((host) => (host === "*" ? undefined : validateHostWithWildcardPrefix(host))).toArray();
+  if (!values || values.size > 1) {
+    return ["You only can input one wildcard domain"];
+  }
+
+  const errors = values
+    .map((host) => (host === "*" ? "You can't use * as domain." : validateHostWithWildcardPrefix(host)))
+    .toArray();
 
   return errors.filter((x) => !!x).length > 0 ? errors : undefined;
 };
@@ -275,16 +308,16 @@ export const KValidatorInjectedFilePath = (value: string, _allValues?: any, _pro
 };
 
 export const KValidatorPaths = (
-  values: Immutable.List<string>,
+  values: string[],
   _allValues?: any,
   _props?: any,
   _name?: any,
-): (undefined | string)[] | undefined => {
-  if (!values) {
-    return undefined;
+): string | (undefined | string)[] | undefined => {
+  if (!values || values.length === 0) {
+    return "Required";
   }
 
-  const errors = values.map((x) => (x.startsWith("/") ? undefined : 'path should start with a "/"')).toArray();
+  const errors = values.map((x) => (x.startsWith("/") ? undefined : 'path should start with a "/"'));
 
   return errors.filter((x) => !!x).length > 0 ? errors : undefined;
 };
@@ -320,3 +353,7 @@ export const RequireNoSuffix = (suffix: string) => (value: string) => {
   if (value.endsWith(suffix)) return `Require no suffix "${suffix}"`;
   return undefined;
 };
+
+export const RequireString = string().required("Required");
+
+export const RequireArray = array().min(1, "Required");

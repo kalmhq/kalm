@@ -206,7 +206,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
       let isCurrent = false;
       x.get("destinations").map((target) => {
         const hostInfos = target.get("host").split(".");
-        if (hostInfos[1].startsWith(applicationName)) {
+        if (hostInfos[1] && hostInfos[1].startsWith(applicationName)) {
           isCurrent = true;
         }
         return target;

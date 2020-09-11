@@ -1,20 +1,25 @@
-import Immutable from "immutable";
-import { Api } from "../base";
-import { store } from "store";
 import Axios, { AxiosRequestConfig } from "axios";
-import { RegistryType } from "types/registry";
+import Immutable from "immutable";
+import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
-import { HttpRoute } from "types/route";
-import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
+
+import {
+  CertificateFormTypeContent,
+  CertificateIssuerFormTypeContent,
+  AcmeServerInfo,
+  AcmeServerFormType,
+} from "types/certificate";
+import { InitializeClusterResponse } from "types/cluster";
+import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
 import { Node } from "types/node";
+import { RegistryType } from "types/registry";
+import { HttpRoute } from "types/route";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import {
   AccessTokenToDeployAccessToken,
   DeployAccessToken,
   DeployAccessTokenToAccessToken,
 } from "types/deployAccessToken";
-import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
-import { InitializeClusterResponse } from "types/cluster";
 import { RoleBindingContent } from "types/member";
 
 export const mockStore = null;
@@ -267,15 +272,15 @@ export default class RealApi extends Api {
     return Immutable.fromJS(res.data);
   };
 
-  public createCertificate = async (certificate: CertificateFormType, isEdit?: boolean) => {
+  public createCertificate = async (certificate: CertificateFormTypeContent, isEdit?: boolean) => {
     let res;
     if (isEdit) {
       res = await axiosRequest({
         method: "put",
-        url: `/${K8sApiVersion}/httpscerts/${certificate.get("name")}`,
+        url: `/${K8sApiVersion}/httpscerts/${certificate.name}`,
         data: certificate,
       });
-    } else if (certificate.get("isSelfManaged")) {
+    } else if (certificate.isSelfManaged) {
       res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/httpscerts/upload`, data: certificate });
     } else {
       res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/httpscerts`, data: certificate });
@@ -284,12 +289,12 @@ export default class RealApi extends Api {
     return Immutable.fromJS(res.data);
   };
 
-  public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormType, isEdit?: boolean) => {
+  public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormTypeContent, isEdit?: boolean) => {
     let res;
     if (isEdit) {
       res = await axiosRequest({
         method: "put",
-        url: `/${K8sApiVersion}/httpscertissuers/${certificateIssuer.get("name")}`,
+        url: `/${K8sApiVersion}/httpscertissuers/${certificateIssuer.name}`,
         data: certificateIssuer,
       });
     } else {
@@ -304,6 +309,23 @@ export default class RealApi extends Api {
 
   public deleteCertificate = async (name: string) => {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/httpscerts/${name}` });
+  };
+
+  // certificate acme server
+  public createAcmeServer = async (acmeServer: AcmeServerFormType): Promise<AcmeServerInfo> => {
+    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
+
+    return Immutable.fromJS(res.data);
+  };
+
+  public deleteAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
+    return;
+  };
+
+  public getAcmeServer = async (): Promise<AcmeServerInfo> => {
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/acmeserver` });
+    return Immutable.fromJS(res.data);
   };
 
   // services

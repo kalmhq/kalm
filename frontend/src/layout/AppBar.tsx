@@ -189,7 +189,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             </MenuItem>
           ) : null}
           {entity.indexOf("localhost") < 0 ? (
-            <>
+            <Box>
               <Divider />
               <MenuItem
                 onClick={() => {
@@ -198,7 +198,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
               >
                 Logout
               </MenuItem>
-            </>
+            </Box>
           ) : null}
         </Menu>
       </div>
@@ -244,6 +244,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
         return "Registries";
       case "new":
         return "New";
+      case "upload":
+        return "Upload";
       case "edit":
         return "Edit";
       case "sso":

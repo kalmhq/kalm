@@ -9,10 +9,10 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import {
-  DeployAccessToken,
   DeployAccessTokenScopeCluster,
   DeployAccessTokenScopeComponent,
   DeployAccessTokenScopeNamespace,
+  DeployAccessTokenContent,
 } from "types/deployAccessToken";
 import sc from "utils/stringConstants";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
@@ -59,12 +59,12 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderMemo = (rowData: DeployAccessToken) => {
-    return <Typography variant="subtitle2">{rowData.get("memo")}</Typography>;
+  private renderMemo = (rowData: DeployAccessTokenContent) => {
+    return <Typography variant="subtitle2">{rowData.memo}</Typography>;
   };
 
-  private renderScope = (rowData: DeployAccessToken) => {
-    switch (rowData.get("scope")) {
+  private renderScope = (rowData: DeployAccessTokenContent) => {
+    switch (rowData.scope) {
       case DeployAccessTokenScopeCluster: {
         return "Cluster";
       }
@@ -77,23 +77,23 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderResources = (rowData: DeployAccessToken) => {
-    const resoureces = rowData.get("resources");
+  private renderResources = (rowData: DeployAccessTokenContent) => {
+    const resoureces = rowData.resources;
 
-    switch (rowData.get("scope")) {
+    switch (rowData.scope) {
       case DeployAccessTokenScopeCluster: {
         return "-";
       }
       case DeployAccessTokenScopeNamespace: {
-        return resoureces.map((r) => <Box key={r}>{r}</Box>).toArray();
+        return resoureces.map((r) => <Box key={r}>{r}</Box>);
       }
       case DeployAccessTokenScopeComponent: {
-        return resoureces.map((r) => <Box key={r}>{r}</Box>).toArray();
+        return resoureces.map((r) => <Box key={r}>{r}</Box>);
       }
     }
   };
 
-  private renderActions = (rowData: DeployAccessToken) => {
+  private renderActions = (rowData: DeployAccessTokenContent) => {
     const { dispatch } = this.props;
     return (
       <>
@@ -103,7 +103,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
           }}
           // size="small"
           tooltipTitle="Details"
-          to={`/ci/keys/${rowData.get("name")}`}
+          to={`/ci/keys/${rowData.name}`}
         >
           <KalmDetailsIcon />
         </IconLinkWithToolTip>
@@ -171,7 +171,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
 
     deployAccessTokens &&
       deployAccessTokens.forEach((deployAccessToken, index) => {
-        const rowData = deployAccessToken;
+        const rowData = deployAccessToken.toJS() as DeployAccessTokenContent;
         data.push({
           memo: this.renderMemo(rowData),
           scope: this.renderScope(rowData),
