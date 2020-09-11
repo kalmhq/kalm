@@ -26,6 +26,7 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { InfoBox } from "widgets/InfoBox";
 import { KLink } from "widgets/Link";
 import { impersonate } from "api/realApi";
+import produce from "immer";
 
 const styles = (theme: Theme) => createStyles({});
 
@@ -111,8 +112,13 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
 
   private changeRole = async (roleBinding: RoleBinding, newRole: string) => {
     const { dispatch } = this.props;
-    roleBinding.role = newRole;
-    await dispatch(updateRoleBindingsAction(roleBinding));
+    await dispatch(
+      updateRoleBindingsAction(
+        produce(roleBinding, (draft) => {
+          draft.role = newRole;
+        }),
+      ),
+    );
     await dispatch(setSuccessNotificationAction("Update role successfully"));
   };
 
