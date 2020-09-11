@@ -12,6 +12,7 @@ import { newEmptyRoleBinding, RoleBinding } from "types/member";
 import { createRoleBindingsAction } from "actions/user";
 import { setSuccessNotificationAction } from "actions/notification";
 import { push } from "connected-react-router";
+import { withRouter } from "react-router-dom";
 
 const styles = (theme: Theme) => createStyles({});
 
@@ -28,21 +29,33 @@ interface Props
 class MemberNewPageRaw extends React.PureComponent<Props> {
   private onSubmit = async (values: RoleBinding) => {
     const { dispatch, activeNamespaceName } = this.props;
-    values.namespace = activeNamespaceName;
+    values.namespace = this.isClusterLevel() ? "kalm-system" : activeNamespaceName;
     await dispatch(createRoleBindingsAction(values));
     await dispatch(setSuccessNotificationAction("Successfully create role binding"));
-    await dispatch(push("/applications/" + activeNamespaceName + "/members"));
+    if (this.isClusterLevel()) {
+      await dispatch(push("/cluster/members"));
+    } else {
+      await dispatch(push("/applications/" + activeNamespaceName + "/members"));
+    }
   };
+
+  private isClusterLevel() {
+    const { location } = this.props;
+    return location.pathname.startsWith("/cluster/members");
+  }
 
   public render() {
     return (
-      <BasePage secondHeaderLeft={<Namespaces />} leftDrawer={<ApplicationSidebar />}>
+      <BasePage
+        secondHeaderLeft={this.isClusterLevel() ? null : <Namespaces />}
+        leftDrawer={this.isClusterLevel() ? null : <ApplicationSidebar />}
+      >
         <Box p={2}>
-          <MemberForm initial={newEmptyRoleBinding()} onSubmit={this.onSubmit} />
+          <MemberForm initial={newEmptyRoleBinding()} onSubmit={this.onSubmit} isClusterLevel={this.isClusterLevel()} />
         </Box>
       </BasePage>
     );
   }
 }
 
-export const MemberNewPage = withStyles(styles)(withNamespace(connect(mapStateToProps)(MemberNewPageRaw)));
+export const MemberNewPage = withStyles(styles)(withNamespace(connect(mapStateToProps)(withRouter(MemberNewPageRaw))));

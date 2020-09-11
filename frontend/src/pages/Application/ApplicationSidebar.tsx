@@ -9,6 +9,7 @@ import { TDispatch } from "types";
 import { blinkTopProgressAction } from "actions/settings";
 import { DashboardIcon, KalmComponentsIcon, PeopleIcon } from "widgets/Icon";
 import sc from "utils/stringConstants";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.auth;
@@ -45,10 +46,11 @@ const styles = (theme: Theme) =>
 
 interface Props
   extends WithStyles<typeof styles>,
+    WithUserAuthProps,
     ReturnType<typeof mapStateToProps>,
     RouteComponentProps<{ applicationName: string }> {
   dispatch: TDispatch;
-  canEdit?: boolean;
+  // canEdit?: boolean;
 }
 
 interface State {}
@@ -61,14 +63,14 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private getMenuData() {
-    const { activeNamespaceName, canEdit } = this.props;
+    const { activeNamespaceName, canManageNamespace } = this.props;
     const menus = [];
     menus.push({
       text: "Components",
       to: "/applications/" + activeNamespaceName + "/components",
       icon: <KalmComponentsIcon />,
     });
-    if (canEdit) {
+    if (canManageNamespace(activeNamespaceName)) {
       menus.push({
         text: sc.APP_MEMBERS_PAGE_NAME,
         to: "/applications/" + activeNamespaceName + "/members",
@@ -116,4 +118,6 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ApplicationSidebar = withRouter(connect(mapStateToProps)(withStyles(styles)(ApplicationViewDrawerRaw)));
+export const ApplicationSidebar = withUserAuth(
+  withRouter(connect(mapStateToProps)(withStyles(styles)(ApplicationViewDrawerRaw))),
+);

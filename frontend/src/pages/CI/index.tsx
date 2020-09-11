@@ -24,6 +24,8 @@ import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { Loading } from "widgets/Loading";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -34,7 +36,12 @@ const mapStateToProps = (state: RootState) => {
   return {};
 };
 
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, WithDeployAccessTokensProps {}
+interface Props
+  extends WithStyles<typeof styles>,
+    ReturnType<typeof mapStateToProps>,
+    WithDeployAccessTokensProps,
+    WithNamespaceProps,
+    WithUserAuthProps {}
 
 interface State {}
 
@@ -51,9 +58,11 @@ class CIPageRaw extends React.PureComponent<Props, State> {
         title={sc.EMPTY_CI_TITLE}
         content={sc.EMPTY_CI_SUBTITLE}
         button={
-          <CustomizedButton component={Link} variant="contained" to="/ci/keys/new" color="primary">
-            New Deploy Key
-          </CustomizedButton>
+          this.canEdit() ? (
+            <CustomizedButton component={Link} variant="contained" to="/ci/keys/new" color="primary">
+              New Deploy Key
+            </CustomizedButton>
+          ) : null
         }
       />
     );
@@ -95,7 +104,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
 
   private renderActions = (rowData: DeployAccessToken) => {
     const { dispatch } = this.props;
-    return (
+    return this.canEdit() ? (
       <>
         <IconLinkWithToolTip
           onClick={() => {
@@ -113,7 +122,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
           confirmedAction={() => dispatch(deleteDeployAccessTokenAction(rowData))}
         />
       </>
-    );
+    ) : null;
   };
 
   private renderInfoBox() {
@@ -201,15 +210,22 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     return <Box p={2}>{deployAccessTokens.length === 0 ? this.renderEmpty() : this.renderKRTable()}</Box>;
   };
 
+  private canEdit() {
+    const { canEditNamespace, canEditCluster, activeNamespaceName } = this.props;
+    return canEditNamespace(activeNamespaceName) || canEditCluster();
+  }
+
   public render() {
     return (
       <BasePage
         secondHeaderRight={
-          <>
-            <Button component={Link} color="primary" variant="outlined" size="small" to="/ci/keys/new">
-              New Deploy Token
-            </Button>
-          </>
+          this.canEdit() ? (
+            <>
+              <Button component={Link} color="primary" variant="outlined" size="small" to="/ci/keys/new">
+                New Deploy Token
+              </Button>
+            </>
+          ) : null
         }
       >
         {this.renderContent()}
@@ -218,4 +234,6 @@ class CIPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const CIPage = withStyles(styles)(withDeployAccessTokens(connect(mapStateToProps)(CIPageRaw)));
+export const CIPage = withNamespace(
+  withUserAuth(withStyles(styles)(withDeployAccessTokens(connect(mapStateToProps)(CIPageRaw)))),
+);

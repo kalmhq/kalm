@@ -25,6 +25,7 @@ import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { KLink } from "widgets/Link";
 import { BasePage } from "../BasePage";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -45,7 +46,7 @@ interface States {
   deletingPersistentVolume?: Disk;
 }
 
-type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
+type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles> & WithUserAuthProps;
 
 export class VolumesRaw extends React.Component<Props, States> {
   constructor(props: Props) {
@@ -68,7 +69,8 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private renderActions = (disk: Disk) => {
-    return (
+    const { canEditCluster } = this.props;
+    return canEditCluster() ? (
       <>
         {disk.isInUse ? (
           <IconButtonWithTooltip
@@ -85,7 +87,7 @@ export class VolumesRaw extends React.Component<Props, States> {
           />
         )}
       </>
-    );
+    ) : null;
   };
 
   private renderSecondHeaderRight() {
@@ -248,4 +250,4 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 }
 
-export const DiskListPage = connect(mapStateToProps)(withStyles(styles)(VolumesRaw));
+export const DiskListPage = withUserAuth(connect(mapStateToProps)(withStyles(styles)(VolumesRaw)));

@@ -24,6 +24,7 @@ import { KRTable } from "widgets/KRTable";
 import { Loading } from "widgets/Loading";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
 import { KLink } from "widgets/Link";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -49,6 +50,7 @@ const mapStateToProps = (state: RootState) => {
 
 interface Props
   extends WithCertificatesDataProps,
+    WithUserAuthProps,
     WithStyles<typeof styles>,
     ReturnType<typeof mapStateToProps>,
     TDispatchProp {}
@@ -248,15 +250,18 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderEmpty() {
+    const { canEditCluster } = this.props;
     return (
       <EmptyInfoBox
         image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={sc.EMPTY_CERT_TITLE}
         content={sc.EMPTY_CERT_SUBTITLE}
         button={
-          <CustomizedButton variant="contained" color="primary" component={Link} to="/certificates/new">
-            New Certificate
-          </CustomizedButton>
+          canEditCluster() ? (
+            <CustomizedButton variant="contained" color="primary" component={Link} to="/certificates/new">
+              New Certificate
+            </CustomizedButton>
+          ) : null
         }
       />
     );
@@ -269,33 +274,35 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isFirstLoaded, isLoading, certificates } = this.props;
+    const { isFirstLoaded, isLoading, certificates, canEditCluster } = this.props;
     return (
       <BasePage
         secondHeaderRight={
-          <>
-            {/* <H6>Certificates</H6> */}
-            <Button
-              color="primary"
-              variant="outlined"
-              size="small"
-              component={Link}
-              tutorial-anchor-id="add-certificate"
-              to="/certificates/new"
-            >
-              New Certificate
-            </Button>
-            <Button
-              color="primary"
-              variant="outlined"
-              size="small"
-              component={Link}
-              tutorial-anchor-id="upload-certificate"
-              to="/certificates/upload"
-            >
-              Upload Certificate
-            </Button>
-          </>
+          canEditCluster() ? (
+            <>
+              {/* <H6>Certificates</H6> */}
+              <Button
+                color="primary"
+                variant="outlined"
+                size="small"
+                component={Link}
+                tutorial-anchor-id="add-certificate"
+                to="/certificates/new"
+              >
+                New Certificate
+              </Button>
+              <Button
+                color="primary"
+                variant="outlined"
+                size="small"
+                component={Link}
+                tutorial-anchor-id="upload-certificate"
+                to="/certificates/upload"
+              >
+                Upload Certificate
+              </Button>
+            </>
+          ) : null
         }
       >
         {/* {this.renderDeleteConfirmDialog()} */}
@@ -314,6 +321,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const CertificateListPage = withStyles(styles)(
-  connect(mapStateToProps)(CertificateDataWrapper(CertificateListPageRaw)),
+export const CertificateListPage = withUserAuth(
+  withStyles(styles)(connect(mapStateToProps)(CertificateDataWrapper(CertificateListPageRaw))),
 );

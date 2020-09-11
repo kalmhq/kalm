@@ -67,6 +67,10 @@ export const KalmRoutes = (
           <Route exact path="/cluster/registries/new" component={RegistryNewPage} />
           <Route exact path="/cluster/registries/:name/edit" component={RegistryEditPage} />
 
+          <Route exact path="/cluster/members" component={RolesListPage} />
+          <Route exact path="/cluster/members/new" component={MemberNewPage} />
+          <Route exact path="/cluster/members/:name/edit" component={RolesListPage} />
+
           <Route exact path="/ci" component={CIPage} />
           <Redirect exact path="/ci/keys" to="/ci" />
           <Route exact path="/ci/keys/new" component={DeployAccessTokenNewPage} />

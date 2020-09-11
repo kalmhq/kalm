@@ -6,7 +6,7 @@ import { RootState } from "reducers";
 import { BasePage } from "pages/BasePage";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { Namespaces } from "widgets/Namespaces";
-import { Link } from "react-router-dom";
+import { Link, withRouter } from "react-router-dom";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { indigo } from "@material-ui/core/colors";
@@ -26,6 +26,7 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { InfoBox } from "widgets/InfoBox";
 import { KLink } from "widgets/Link";
 import { impersonate } from "api/realApi";
+import produce from "immer";
 
 const styles = (theme: Theme) => createStyles({});
 
@@ -60,7 +61,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
           color="primary"
           size="small"
           variant="outlined"
-          to={`/applications/${activeNamespaceName}/members/new`}
+          to={this.isClusterLevel() ? `/cluster/members/new` : `/applications/${activeNamespaceName}/members/new`}
         >
           Add member
         </Button>
@@ -82,7 +83,11 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
             color="primary"
             onClick={() => {
               blinkTopProgressAction();
-              dispatch(push(`/applications/${activeNamespaceName}/members/new`));
+              dispatch(
+                push(
+                  this.isClusterLevel() ? `/cluster/members/new` : `/applications/${activeNamespaceName}/members/new`,
+                ),
+              );
             }}
           >
             Add member
@@ -111,12 +116,41 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
 
   private changeRole = async (roleBinding: RoleBinding, newRole: string) => {
     const { dispatch } = this.props;
-    roleBinding.role = newRole;
-    await dispatch(updateRoleBindingsAction(roleBinding));
+    await dispatch(
+      updateRoleBindingsAction(
+        produce(roleBinding, (draft) => {
+          draft.role = newRole;
+        }),
+      ),
+    );
     await dispatch(setSuccessNotificationAction("Update role successfully"));
   };
 
   private renderRole = (roleBinding: RoleBinding) => {
+    const items = this.isClusterLevel()
+      ? [
+          <MenuItem key="clusterViewer" value="clusterViewer">
+            Cluster Viewer
+          </MenuItem>,
+          <MenuItem key="clusterEditor" value="clusterEditor">
+            Cluster Editor
+          </MenuItem>,
+          <MenuItem key="clusterOwner" value="clusterOwner">
+            Cluster Owner
+          </MenuItem>,
+        ]
+      : [
+          <MenuItem key="viewer" value="viewer">
+            Viewer
+          </MenuItem>,
+          <MenuItem key="editor" value="editor">
+            Editor
+          </MenuItem>,
+          <MenuItem key="owner" value="owner">
+            Owner
+          </MenuItem>,
+        ];
+
     return (
       <TextField
         select
@@ -127,9 +161,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
         value={roleBinding.role}
         onChange={(event) => this.changeRole(roleBinding, event.target.value)}
       >
-        <MenuItem value="viewer">Viewer</MenuItem>
-        <MenuItem value="editor">Editor</MenuItem>
-        <MenuItem value="owner">Owner</MenuItem>
+        {items}
       </TextField>
     );
   };
@@ -153,7 +185,8 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
 
   private getRoleBindings = (): RoleBinding[] => {
     const { roleBindings, activeNamespaceName } = this.props;
-    return roleBindings.filter((x) => x.namespace === activeNamespaceName);
+    const filterNamespace = this.isClusterLevel() ? "kalm-system" : activeNamespaceName;
+    return roleBindings.filter((x) => x.namespace === filterNamespace);
   };
 
   private renderActions = (roleBinding: RoleBinding) => {
@@ -205,14 +238,18 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     return <InfoBox title={title} options={options} />;
   };
 
+  private isClusterLevel() {
+    const { location } = this.props;
+    return location.pathname.startsWith("/cluster/members");
+  }
+
   public render() {
     const roleBindings = this.getRoleBindings();
-
     return (
       <BasePage
         secondHeaderRight={this.renderSecondHeaderRight()}
-        secondHeaderLeft={<Namespaces />}
-        leftDrawer={<ApplicationSidebar />}
+        secondHeaderLeft={this.isClusterLevel() ? null : <Namespaces />}
+        leftDrawer={this.isClusterLevel() ? null : <ApplicationSidebar />}
       >
         <Box p={2}>
           {roleBindings.length > 0 ? (
@@ -228,5 +265,5 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
 }
 
 export const RolesListPage = withStyles(styles)(
-  withNamespace(withRoleBindings(connect(mapStateToProps)(RolesListPageRaw))),
+  withNamespace(withRoleBindings(connect(mapStateToProps)(withRouter(RolesListPageRaw)))),
 );

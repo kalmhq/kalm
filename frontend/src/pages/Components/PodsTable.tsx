@@ -32,6 +32,7 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
   activeNamespaceName: string;
   workloadType: WorkloadType;
   pods: PodStatus[];
+  canEdit?: boolean;
 }
 
 interface State {}
@@ -71,8 +72,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
   };
 
   private renderPodActions = (pod: PodStatus) => {
-    const { activeNamespaceName, dispatch } = this.props;
-    const hasWriterRole = true;
+    const { activeNamespaceName, dispatch, canEdit } = this.props;
 
     return (
       <>
@@ -86,7 +86,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
         >
           <KalmLogIcon />
         </IconLinkWithToolTip>
-        {hasWriterRole ? (
+        {canEdit ? (
           <IconLinkWithToolTip
             onClick={() => {
               blinkTopProgressAction();
@@ -98,7 +98,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
             <KalmConsoleIcon />
           </IconLinkWithToolTip>
         ) : null}
-        {hasWriterRole ? (
+        {canEdit ? (
           <DeleteButtonWithConfirmPopover
             iconSize="small"
             popupId="delete-pod-popup"

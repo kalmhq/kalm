@@ -46,7 +46,6 @@ export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
 
     componentDidUpdate(prevProps: any) {
       if (this.props.activeNamespaceName !== prevProps.activeNamespaceName) {
-        console.log(this.props.applications.length);
         this.props.dispatch(setCurrentNamespaceAction(this.props.activeNamespaceName, false));
       }
     }

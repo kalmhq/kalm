@@ -27,13 +27,15 @@ import { Loading } from "widgets/Loading";
 import { getRouteUrl } from "widgets/OpenInBrowser";
 import { Targets } from "widgets/Targets";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
   });
 
-interface Props extends WithStyles<typeof styles>, WithRoutesDataProps {}
+interface Props extends WithStyles<typeof styles>, WithRoutesDataProps, WithNamespaceProps, WithUserAuthProps {}
 
 interface State {}
 
@@ -144,8 +146,8 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions = (row: HttpRoute) => {
-    const { dispatch } = this.props;
-    return (
+    const { dispatch, activeNamespaceName, canEditNamespace } = this.props;
+    return canEditNamespace(activeNamespaceName) ? (
       <>
         <IconLinkWithToolTip
           onClick={() => {
@@ -163,11 +165,11 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           confirmedAction={() => dispatch(deleteRouteAction(row))}
         />
       </>
-    );
+    ) : null;
   };
 
   private renderEmpty() {
-    const { dispatch } = this.props;
+    const { dispatch, canEditNamespace, activeNamespaceName } = this.props;
 
     return (
       <EmptyInfoBox
@@ -175,16 +177,18 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         title={sc.EMPTY_ROUTES_TITLE}
         content={sc.EMPTY_ROUTES_SUBTITLE}
         button={
-          <CustomizedButton
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              blinkTopProgressAction();
-              dispatch(push(`/routes/new`));
-            }}
-          >
-            Add Route
-          </CustomizedButton>
+          canEditNamespace(activeNamespaceName) ? (
+            <CustomizedButton
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                blinkTopProgressAction();
+                dispatch(push(`/routes/new`));
+              }}
+            >
+              Add Route
+            </CustomizedButton>
+          ) : null
         }
       />
     );
@@ -248,21 +252,23 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes } = this.props;
+    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes, canEditNamespace, activeNamespaceName } = this.props;
 
     return (
       <BasePage
         secondHeaderRight={
-          <Button
-            tutorial-anchor-id="add-route"
-            component={Link}
-            color="primary"
-            size="small"
-            variant="outlined"
-            to={`/routes/new`}
-          >
-            Add Route
-          </Button>
+          canEditNamespace(activeNamespaceName) ? (
+            <Button
+              tutorial-anchor-id="add-route"
+              component={Link}
+              color="primary"
+              size="small"
+              variant="outlined"
+              to={`/routes/new`}
+            >
+              Add Route
+            </Button>
+          ) : null
         }
       >
         <Box p={2}>
@@ -278,4 +284,4 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     );
   }
 }
-export const RouteListPage = withRoutesData(withStyles(styles)(RouteListPageRaw));
+export const RouteListPage = withNamespace(withUserAuth(withRoutesData(withStyles(styles)(RouteListPageRaw))));

@@ -136,12 +136,12 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { component, activeNamespaceName, canEditNamespace } = this.props;
+    const { component, activeNamespaceName } = this.props;
     return (
       <BasePage
         secondHeaderRight={this.renderSecondHeaderRight()}
         secondHeaderLeft={<Namespaces />}
-        leftDrawer={<ApplicationSidebar canEdit={canEditNamespace(activeNamespaceName)} />}
+        leftDrawer={<ApplicationSidebar />}
       >
         <Box p={2}>
           <Expansion title={"Basic"} defaultUnfold>

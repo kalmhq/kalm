@@ -101,13 +101,14 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
   };
 
   private renderPods() {
-    const { component, application } = this.props;
+    const { component, application, canEdit } = this.props;
 
     return (
       <PodsTable
         activeNamespaceName={application.name}
         pods={component.pods}
         workloadType={component.workloadType as WorkloadType}
+        canEdit={canEdit}
       />
     );
   }
