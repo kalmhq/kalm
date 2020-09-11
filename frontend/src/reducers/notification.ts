@@ -13,8 +13,7 @@ const initialState: State = {} as State;
 const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case SET_NOTIFICATION_MESSAGE: {
-      state = action.payload;
-      return;
+      return action.payload;
     }
   }
 
