@@ -18,6 +18,7 @@ import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { Loading } from "widgets/Loading";
 import { BasePage } from "../BasePage";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -35,7 +36,11 @@ const mapStateToProps = (state: RootState) => {
 
 const pageObjectName: string = "Private Registry";
 
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
+interface Props
+  extends WithStyles<typeof styles>,
+    ReturnType<typeof mapStateToProps>,
+    TDispatchProp,
+    WithUserAuthProps {}
 
 interface State {
   isDeleteConfirmDialogOpen: boolean;
@@ -122,7 +127,8 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions(row: Registry) {
-    return (
+    const { canEditCluster } = this.props;
+    return canEditCluster() ? (
       <>
         <IconLinkWithToolTip tooltipTitle={"Edit"} to={`/cluster/registries/${row.name}/edit`}>
           <EditIcon />
@@ -133,7 +139,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
           confirmedAction={() => this.confirmDelete(row)}
         />
       </>
-    );
+    ) : null;
   }
 
   private getKRTableColumns() {
@@ -210,7 +216,8 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderEmpty() {
-    return (
+    const { canEditCluster } = this.props;
+    return canEditCluster() ? (
       <EmptyInfoBox
         image={<KalmRegistryIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={sc.EMPTY_REGISTRY_TITLE}
@@ -228,7 +235,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
           </Button>
         }
       />
-    );
+    ) : null;
   }
 
   private renderInfoBox() {
@@ -236,9 +243,9 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isLoading, isFirstLoaded, registries } = this.props;
+    const { isLoading, isFirstLoaded, registries, canEditCluster } = this.props;
     return (
-      <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
+      <BasePage secondHeaderRight={canEditCluster() ? this.renderSecondHeaderRight() : null}>
         <Box p={2}>
           {isLoading && !isFirstLoaded ? (
             <Loading />
@@ -254,4 +261,4 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const RegistryListPage = withStyles(styles)(connect(mapStateToProps)(RegistryListPageRaw));
+export const RegistryListPage = withUserAuth(withStyles(styles)(connect(mapStateToProps)(RegistryListPageRaw)));

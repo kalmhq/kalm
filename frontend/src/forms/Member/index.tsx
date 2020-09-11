@@ -26,6 +26,7 @@ const mapStateToProps = (state: RootState) => {
 interface OwnProps {
   initial: RoleBinding;
   onSubmit: (roleBinding: RoleBinding) => any;
+  isClusterLevel?: boolean;
 }
 
 interface Props
@@ -44,7 +45,37 @@ class MemberFormRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { dirty, isSubmitting } = this.props;
+    const { dirty, isSubmitting, isClusterLevel } = this.props;
+
+    const items = isClusterLevel
+      ? [
+          <MenuItem key="cluster-select-a-role" value="" disabled>
+            Select a role
+          </MenuItem>,
+          <MenuItem key="clusterViewer" value="clusterViewer">
+            Cluster Viewer
+          </MenuItem>,
+          <MenuItem key="clusterEditor" value="clusterEditor">
+            Cluster Editor
+          </MenuItem>,
+          <MenuItem key="clusterOwner" value="clusterOwner">
+            Cluster Owner
+          </MenuItem>,
+        ]
+      : [
+          <MenuItem key="select-a-role" value="" disabled>
+            Select a role
+          </MenuItem>,
+          <MenuItem key="viewer" value="viewer">
+            Viewer
+          </MenuItem>,
+          <MenuItem key="editor" value="editor">
+            Editor
+          </MenuItem>,
+          <MenuItem key="owner" value="owner">
+            Owner
+          </MenuItem>,
+        ];
 
     return (
       <Form>
@@ -91,12 +122,7 @@ class MemberFormRaw extends React.PureComponent<Props, State> {
                         SelectProps={{ displayEmpty: true }}
                         {...field}
                       >
-                        <MenuItem value="" disabled>
-                          Select a role
-                        </MenuItem>
-                        <MenuItem value="viewer">Viewer</MenuItem>
-                        <MenuItem value="editor">Editor</MenuItem>
-                        <MenuItem value="owner">Owner</MenuItem>
+                        {items}
                       </TextField>
                     </Box>
                   )}

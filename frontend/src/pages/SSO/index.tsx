@@ -22,13 +22,15 @@ import { KRTable } from "widgets/KRTable";
 import { Body, Subtitle1 } from "widgets/Label";
 import { KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
   });
 
-interface Props extends WithStyles<typeof styles>, WithSSOProps {}
+interface Props extends WithStyles<typeof styles>, WithSSOProps, WithUserAuthProps, WithNamespaceProps {}
 
 interface State {}
 
@@ -99,7 +101,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderConfigDetails = () => {
-    const { ssoConfig } = this.props;
+    const { ssoConfig, canEditCluster } = this.props;
 
     if (!ssoConfig) {
       return null;
@@ -113,10 +115,11 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
             {ssoConfig.connectors && ssoConfig.connectors!.map(this.renderConnectorDetails)}
           </Box>
           <Box p={2} display="inline-block">
-            <CustomizedButton component={Link} size="small" to="/sso/config" variant="outlined" color="primary">
-              Edit
-            </CustomizedButton>
-            {/*{loaded && ssoConfig ? <DangerButton>Delete Single Sign-On Config</DangerButton> : null}*/}
+            {canEditCluster() ? (
+              <CustomizedButton component={Link} size="small" to="/sso/config" variant="outlined" color="primary">
+                Edit
+              </CustomizedButton>
+            ) : null}
           </Box>
         </KPanel>
         {this.renderProtectedComponents()}
@@ -141,8 +144,9 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderProtectedComponentActions = (rowData: ProtectedEndpoint) => {
-    const { dispatch } = this.props;
-    return (
+    const { dispatch, canEditNamespace } = this.props;
+
+    return canEditNamespace(rowData.name) ? (
       <>
         <IconButtonWithTooltip
           component={Link}
@@ -160,7 +164,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
           confirmedAction={() => dispatch(deleteProtectedEndpointAction(rowData))}
         />
       </>
-    );
+    ) : null;
   };
 
   private getKRTableColumns() {
@@ -207,20 +211,23 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderProtectedComponents() {
+    const { canEditCluster } = this.props;
     return (
       <Box mt={2}>
         <KPanel title="Protected Component">
           <Box p={2}>
             <Box display="inline-block" mb={2}>
-              <CustomizedButton
-                size="small"
-                component={Link}
-                to="/sso/endpoints/new"
-                variant="outlined"
-                color="primary"
-              >
-                New Protected Endpoint
-              </CustomizedButton>
+              {canEditCluster() ? (
+                <CustomizedButton
+                  size="small"
+                  component={Link}
+                  to="/sso/endpoints/new"
+                  variant="outlined"
+                  color="primary"
+                >
+                  New Protected Endpoint
+                </CustomizedButton>
+              ) : null}
             </Box>
             {this.renderKRTable()}
           </Box>
@@ -230,6 +237,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderEmptyText = () => {
+    const { canEditCluster } = this.props;
     return (
       <Box>
         <Body>
@@ -238,12 +246,14 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
           Kalm SSO will integrate with your existing user system, such as <strong>github</strong>,{" "}
           <strong>gitlab</strong>, <strong>google</strong>, etc.
         </Body>
-        <Box mt={2} width={300}>
-          <CustomizedButton component={Link} to="/sso/config" variant="contained" color="primary">
-            Enable Single Sign-on
-          </CustomizedButton>
-          {/*{loaded && ssoConfig ? <DangerButton>Delete Single Sign-On Config</DangerButton> : null}*/}
-        </Box>
+        {canEditCluster() ? (
+          <Box mt={2} width={300}>
+            <CustomizedButton component={Link} to="/sso/config" variant="contained" color="primary">
+              Enable Single Sign-on
+            </CustomizedButton>
+            {/*{loaded && ssoConfig ? <DangerButton>Delete Single Sign-On Config</DangerButton> : null}*/}
+          </Box>
+        ) : null}
       </Box>
     );
   };
@@ -273,4 +283,4 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const SSOPage = withStyles(styles)(withSSO(SSOPageRaw));
+export const SSOPage = withNamespace(withUserAuth(withStyles(styles)(withSSO(SSOPageRaw))));

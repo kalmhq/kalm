@@ -281,11 +281,11 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderSecondHeaderRight() {
-    const { usingApplicationCard, dispatch, canManageCluster } = this.props;
+    const { usingApplicationCard, dispatch, canEditCluster } = this.props;
     return (
       <>
         {/* <H6>Applications</H6> */}
-        {canManageCluster() && (
+        {canEditCluster() && (
           <Button
             tutorial-anchor-id="add-application"
             component={Link}
