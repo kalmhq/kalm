@@ -2,7 +2,7 @@ import { InputAdornment, OutlinedInputProps, useTheme } from "@material-ui/core"
 import TextField, { TextFieldProps } from "@material-ui/core/TextField";
 import { FieldProps, getIn } from "formik";
 import { TextField as FormikTextField } from "formik-material-ui";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, ChangeEvent } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { KalmConsoleIcon } from "widgets/Icon";
 import { inputOnChangeWithDebounce, withDebounceField, withDebounceProps } from "./debounce";
@@ -65,9 +65,9 @@ export const KRenderDebounceFormikTextField = withDebounceField(
 
     const [debouncedHandleOnChange] = useDebouncedCallback((event: React.ChangeEvent<HTMLInputElement>) => {
       if (normalize) {
-        inputOnChangeWithDebounce(dispatch, () => setFieldValue(name, normalize(event)), name);
+        setFieldValue(name, normalize(event));
       } else {
-        inputOnChangeWithDebounce(dispatch, () => handleChange(event), name);
+        handleChange(event);
       }
     }, INPUT_DELAY);
 
@@ -105,7 +105,9 @@ export const KRenderDebounceFormikTextField = withDebounceField(
           required: false, // bypass html5 required feature
         }}
         value={innerValue}
-        onChange={handleOnChange}
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          inputOnChangeWithDebounce(dispatch, () => handleOnChange(event), name);
+        }}
       />
     );
   },
