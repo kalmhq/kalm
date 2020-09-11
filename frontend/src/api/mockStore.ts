@@ -1,6 +1,7 @@
 import produce from "immer";
 import { ApplicationComponentDetails, ApplicationDetails, PodStatus } from "types/application";
 import { LoginStatus } from "types/authorization";
+import { AcmeServerInfo } from "types/certificate";
 import { ClusterInfo } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import { NodesListResponse } from "types/node";
@@ -23,6 +24,7 @@ interface MockStoreData {
   mockCertificates: Certificate[];
   mockCertificateIssuers: CertificateIssuer[];
   mockHttpRoutes: HttpRoute[];
+  mockAcmeServer: AcmeServerInfo;
   mockSSO: SSOConfig;
   mockClusterInfo: ClusterInfo;
   mockLoginStatus: LoginStatus;
@@ -8314,6 +8316,13 @@ export default class MockStore {
         { name: "standard", isManaged: false },
         { name: "kalm-standard", isManaged: true },
       ],
+
+      mockAcmeServer: {
+        acmeDomain: "<acme>.your-domain.com",
+        nsDomain: "<name-server.your-domain.com",
+        ipForNameServer: "1.2.3.4",
+        ready: true,
+      },
 
       mockSimpleOptions: [
         {

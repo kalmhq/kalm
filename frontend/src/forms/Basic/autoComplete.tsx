@@ -100,6 +100,7 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
       label,
       options,
       icons,
+      disabled,
       field: { name, value },
       form: { touched, errors, setFieldValue, handleBlur },
       placeholder,
@@ -126,12 +127,16 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
         autoSelect
         clearOnEscape
         freeSolo
+        disabled={disabled}
         size="small"
         id={id}
         onBlur={handleBlur}
         value={value}
         onChange={(e, value) => {
-          setFieldValue(name, value);
+          setFieldValue(
+            name,
+            value.map((v) => v.trim()),
+          );
         }}
         // @ts-ignore
         renderTags={(value: string[], getTagProps) => {
@@ -154,6 +159,7 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
               {...params}
               margin="dense"
               variant="outlined"
+              disabled={disabled}
               error={!!getIn(touched, name) && !!errorText}
               label={label}
               placeholder={placeholder}

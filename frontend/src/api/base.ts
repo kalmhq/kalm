@@ -1,6 +1,13 @@
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import { LoginStatus } from "types/authorization";
-import { Certificate, CertificateIssuer, CertificateIssuerForm, CertificateForm } from "types/certificate";
+import {
+  Certificate,
+  CertificateIssuer,
+  AcmeServerInfo,
+  AcmeServerFormType,
+  CertificateForm,
+  CertificateIssuerForm,
+} from "types/certificate";
 import { ClusterInfo, InitializeClusterResponse } from "types/cluster";
 import { DeployKey } from "types/deployKey";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
@@ -97,6 +104,13 @@ export abstract class Api {
   ): Promise<CertificateIssuer>;
 
   public abstract deleteCertificate(name: string): Promise<void>;
+
+  // certificate acme server
+  public abstract createAcmeServer(acmeServer: AcmeServerFormType): Promise<AcmeServerInfo>;
+
+  public abstract deleteAcmeServer(acmeServer: AcmeServerFormType): Promise<void>;
+
+  public abstract getAcmeServer(): Promise<AcmeServerInfo>;
 
   // services
   public abstract loadServices(name: string): Promise<Service[]>;

@@ -20,7 +20,7 @@ const styles = (theme: Theme) =>
       },
     },
     heading: {
-      flexBasis: "20%",
+      flexBasis: "40%",
       flexShrink: 0,
     },
     secondaryHeading: {

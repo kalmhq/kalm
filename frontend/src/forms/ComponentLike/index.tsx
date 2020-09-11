@@ -157,7 +157,7 @@ const styles = (theme: Theme) =>
  */
 const HelperTextSection: React.FC<{}> = ({ children }) => (
   <Grid item xs={8}>
-    <Body2>{children}</Body2>
+    {children}
   </Grid>
 );
 

@@ -7,9 +7,14 @@ import {
   LOAD_CERTIFICATES_FULFILLED,
   LOAD_CERTIFICATES_PENDING,
   LOAD_CERTIFICATE_ISSUERS_FULFILLED,
+  LOAD_ACME_SERVER_PENDING,
+  LOAD_ACME_SERVER_FULFILLED,
+  LOAD_ACME_SERVER_FAILED,
   SET_IS_SUBMITTING_CERTIFICATE,
   Certificate,
   CertificateIssuer,
+  SET_IS_SUBMITTING_ACME_SERVER,
+  AcmeServerInfo,
 } from "types/certificate";
 import {
   RESOURCE_ACTION_ADD,
@@ -27,6 +32,9 @@ export interface State {
   isSubmittingCreateCertificate: boolean;
   certificates: Certificate[];
   certificateIssuers: CertificateIssuer[];
+  isSubmittingCreateAcmeServer: boolean;
+  isAcmeServerLoading: boolean;
+  acmeServer: AcmeServerInfo | null;
 }
 
 const initialState: State = {
@@ -35,6 +43,9 @@ const initialState: State = {
   isSubmittingCreateCertificate: false,
   certificates: [],
   certificateIssuers: [],
+  isSubmittingCreateAcmeServer: false,
+  isAcmeServerLoading: false,
+  acmeServer: null,
 };
 
 const reducer = produce((state: State, action: Actions) => {
@@ -51,6 +62,19 @@ const reducer = produce((state: State, action: Actions) => {
       state.isFirstLoaded = true;
       state.certificates = action.payload.certificates || [];
       return;
+    }
+    case LOAD_ACME_SERVER_PENDING: {
+      state.isAcmeServerLoading = true;
+      return;
+    }
+    case LOAD_ACME_SERVER_FAILED: {
+      state.isAcmeServerLoading = false;
+      return;
+    }
+    case LOAD_ACME_SERVER_FULFILLED: {
+      state.isAcmeServerLoading = false;
+      state.acmeServer = action.payload.acmeServer || null;
+      break;
     }
     case LOAD_CERTIFICATE_ISSUERS_FULFILLED: {
       state.certificateIssuers = action.payload.certificateIssuers || [];
@@ -93,6 +117,10 @@ const reducer = produce((state: State, action: Actions) => {
     }
     case SET_IS_SUBMITTING_CERTIFICATE: {
       state.isSubmittingCreateCertificate = action.payload.isSubmittingCertificate;
+      return;
+    }
+    case SET_IS_SUBMITTING_ACME_SERVER: {
+      state.isSubmittingCreateAcmeServer = action.payload.isSubmittingAcmeServer;
       return;
     }
   }

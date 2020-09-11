@@ -1,5 +1,5 @@
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
-import { CertificateForm, CertificateIssuerForm } from "types/certificate";
+import { AcmeServerFormType, AcmeServerInfo, CertificateForm, CertificateIssuerForm } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import { DeployKey } from "types/deployKey";
 import { Registry, RegistryFormType } from "types/registry";
@@ -251,5 +251,17 @@ export default class MockApi extends Api {
 
   public resetCluster = async (): Promise<any> => {
     return {};
+  };
+
+  public createAcmeServer = async (acmeServer: AcmeServerFormType): Promise<AcmeServerInfo> => {
+    return mockStore.data.mockAcmeServer;
+  };
+
+  public deleteAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
+    return;
+  };
+
+  public getAcmeServer = async (): Promise<AcmeServerInfo> => {
+    return mockStore.data.mockAcmeServer;
   };
 }

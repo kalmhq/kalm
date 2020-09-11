@@ -1,12 +1,12 @@
 import Axios, { AxiosRequestConfig } from "axios";
 import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
-import { CertificateForm, CertificateIssuerForm } from "types/certificate";
+import { AcmeServerFormType, AcmeServerInfo, CertificateForm, CertificateIssuerForm } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import { DeployKey } from "types/deployKey";
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
 import { Node } from "types/node";
-import { RegistryFormType, Registry } from "types/registry";
+import { Registry, RegistryFormType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { Api } from "../base";
@@ -281,6 +281,23 @@ export default class RealApi extends Api {
 
   public deleteCertificate = async (name: string) => {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/httpscerts/${name}` });
+  };
+
+  // certificate acme server
+  public createAcmeServer = async (acmeServer: AcmeServerFormType): Promise<AcmeServerInfo> => {
+    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
+
+    return res.data;
+  };
+
+  public deleteAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
+    return;
+  };
+
+  public getAcmeServer = async (): Promise<AcmeServerInfo> => {
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/acmeserver` });
+    return res.data;
   };
 
   // services
