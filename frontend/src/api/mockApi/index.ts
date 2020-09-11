@@ -9,7 +9,7 @@ import {
 import { RegistryType } from "types/registry";
 import MockStore from "../mockStore";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { DeployAccessToken } from "types/deployAccessToken";
+import { DeployAccessToken, DeployAccessTokenContent } from "types/deployAccessToken";
 import { InitializeClusterResponse } from "types/cluster";
 import { RoleBindingContent } from "types/member";
 import { Api } from "../base";
@@ -259,11 +259,11 @@ export default class MockApi extends Api {
     return Immutable.List();
   };
 
-  public createDeployAccessToken = async (protectedEndpoint: DeployAccessToken): Promise<DeployAccessToken> => {
+  public createDeployAccessToken = async (protectedEndpoint: DeployAccessTokenContent): Promise<DeployAccessToken> => {
     return Immutable.Map();
   };
 
-  public deleteDeployAccessToken = async (protectedEndpoint: DeployAccessToken): Promise<void> => {};
+  public deleteDeployAccessToken = async (protectedEndpoint: DeployAccessTokenContent): Promise<void> => {};
 
   public resolveDomain = async (domain: string, type: "A" | "CNAME", timeout: number = 5000): Promise<string[]> => {
     return ["1.1.1.1"];

@@ -1,29 +1,28 @@
 import { Box, Button, createStyles, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
+import { Field, Form, FormikProps, withFormik } from "formik";
+import { KAutoCompleteOption, KFormikAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
+import { KFormikRadioGroupRender } from "forms/Basic/radio";
+import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
+import { RequireString, ValidatorRequired } from "forms/validator";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
-import { TDispatchProp } from "types";
 import { RootState } from "reducers";
-import { ValidatorRequired, RequireString } from "forms/validator";
-import { Prompt } from "widgets/Prompt";
-import { DEPLOY_ACCESS_TOKEN_ID } from "../formIDs";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { TDispatchProp } from "types";
+import { ApplicationComponentDetails } from "types/application";
 import {
-  DeployAccessToken,
+  DeployAccessTokenContent,
   DeployAccessTokenScopeCluster,
   DeployAccessTokenScopeComponent,
   DeployAccessTokenScopeNamespace,
   newEmptyDeployAccessToken,
 } from "types/deployAccessToken";
-import { KPanel } from "widgets/KPanel";
-import { KAutoCompleteOption, KFormikAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
-import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
-import { KFormikRadioGroupRender } from "forms/Basic/radio";
-import { ApplicationComponentDetails } from "types/application";
-import { Loading } from "widgets/Loading";
 import sc from "utils/stringConstants";
-import { Field, Form, FormikProps, withFormik } from "formik";
+import { KPanel } from "widgets/KPanel";
+import { Loading } from "widgets/Loading";
+import { Prompt } from "widgets/Prompt";
 import { object } from "yup";
 
 const styles = (theme: Theme) =>
@@ -32,9 +31,6 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const fieldValues =
-    (getFormValues(DEPLOY_ACCESS_TOKEN_ID)(state) as DeployAccessToken) || (Immutable.Map() as DeployAccessToken);
-
   return {
     allComponents: state.get("components").get("components"),
   };
@@ -51,17 +47,12 @@ export interface Props
   extends ConnectedProps,
     OwnProps,
     WithNamespaceProps,
-    InjectedFormProps<DeployAccessToken, Props>,
-    ReturnType<typeof mapStateToProps>,
+    FormikProps<DeployAccessTokenContent>,
     WithStyles<typeof styles> {}
 
-class DeployAccessTokenFormRaw extends React.PureComponent<FinalProps> {
-  public componentDidUpdate(prevProps: FinalProps) {
-    if (prevProps.fieldValues.get("scope") !== this.props.fieldValues.get("scope")) {
-      this.props.dispatch(change(this.props.form, "resources", Immutable.List()));
-      this.props.dispatch(untouch(this.props.form, "resources"));
-    }
-  }
+const schema = object().shape({
+  memo: RequireString,
+});
 
 class DeployKeyFormikRaw extends React.PureComponent<Props> {
   public render() {
@@ -101,7 +92,8 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
       });
     });
 
-    const { values, dirty, setFieldValue, isSubmitting } = this.props;
+    const { values, errors, dirty, setFieldValue, isSubmitting } = this.props;
+    console.log(errors);
     return (
       <Form className={classes.root} id="deployKey-form">
         <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
@@ -143,8 +135,9 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
             />
 
             <Box mt={2}>
-              {fieldValues.get("scope") === DeployAccessTokenScopeNamespace ? (
-                <KAutoCompleteMultipleSelectField
+              {values.scope === DeployAccessTokenScopeNamespace ? (
+                <Field
+                  component={KFormikAutoCompleteMultipleSelectField}
                   name="resources"
                   label="Applications"
                   options={applicationOptions}
@@ -154,8 +147,9 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
                 />
               ) : null}
 
-              {fieldValues.get("scope") === DeployAccessTokenScopeComponent ? (
-                <KAutoCompleteMultipleSelectField
+              {values.scope === DeployAccessTokenScopeComponent ? (
+                <Field
+                  component={KFormikAutoCompleteMultipleSelectField}
                   name="resources"
                   label="Component"
                   options={componentOptions}
@@ -183,10 +177,20 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
   }
 }
 
-export const DeployAccessTokenForm = reduxForm<DeployAccessToken, Props>({
-  form: DEPLOY_ACCESS_TOKEN_ID,
-  initialValues: newEmptyDeployAccessToken(),
-  onSubmitFail: (...args) => {
-    console.log("submit failed", args);
+// export const DeployAccessTokenForm = reduxForm<DeployAccessToken, Props>({
+//   form: DEPLOY_ACCESS_TOKEN_ID,
+//   initialValues: newEmptyDeployAccessToken(),
+//   onSubmitFail: (...args) => {
+//     console.log("submit failed", args);
+//   },
+// })(connect(mapStateToProps)(withNamespace(withStyles(styles)(DeployKeyFormikRaw))));
+
+const DeployKeyForm = withNamespace(connect(mapStateToProps)(withStyles(styles)(DeployKeyFormikRaw)));
+export const DeployAccessTokenForm = withFormik<OwnProps, DeployAccessTokenContent>({
+  mapPropsToValues: newEmptyDeployAccessToken,
+  validationSchema: schema,
+  handleSubmit: (values, bag) => {
+    bag.props.onSubmit(values);
   },
-})(connect(mapStateToProps)(withNamespace(withStyles(styles)(DeployAccessTokenFormRaw))));
+  // @ts-ignore
+})(DeployKeyForm);

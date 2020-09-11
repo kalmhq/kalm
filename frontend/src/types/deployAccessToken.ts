@@ -32,28 +32,28 @@ export interface AccessToken {
   rules: AccessTokenRule[];
 }
 
-export const DeployAccessTokenToAccessToken = (dat: DeployAccessToken): AccessToken => {
+export const DeployAccessTokenToAccessToken = (dat: DeployAccessTokenContent): AccessToken => {
   const rules: AccessTokenRule[] = [];
 
-  if (dat.get("scope") === DeployAccessTokenScopeCluster) {
+  if (dat.scope === DeployAccessTokenScopeCluster) {
     rules.push({
       name: "*",
       namespace: "*",
       verb: "edit",
       kind: "components",
     });
-  } else if (dat.get("scope") === DeployAccessTokenScopeNamespace) {
-    for (let i = 0; i < dat.get("resources").size; i++) {
+  } else if (dat.scope === DeployAccessTokenScopeNamespace) {
+    for (let i = 0; i < dat.resources.length; i++) {
       rules.push({
         name: "*",
-        namespace: dat.get("resources").get(i)!,
+        namespace: dat.resources[i],
         verb: "edit",
         kind: "components",
       });
     }
   } else {
-    for (let i = 0; i < dat.get("resources").size; i++) {
-      const [namespace, componentName] = dat.get("resources").get(i)!.split("/");
+    for (let i = 0; i < dat.resources.length; i++) {
+      const [namespace, componentName] = dat.resources[i].split("/");
       rules.push({
         name: componentName,
         namespace: namespace,
@@ -64,10 +64,10 @@ export const DeployAccessTokenToAccessToken = (dat: DeployAccessToken): AccessTo
   }
 
   return {
-    name: dat.get("name"),
-    memo: dat.get("memo"),
-    token: dat.get("token"),
-    creator: dat.get("creator"),
+    name: dat.name,
+    memo: dat.memo,
+    token: dat.token,
+    creator: dat.creator,
     rules: rules,
   };
 };
@@ -102,22 +102,26 @@ export const AccessTokenToDeployAccessToken = (at: AccessToken): DeployAccessTok
   });
 };
 
-export type DeployAccessToken = ImmutableMap<{
+export interface DeployAccessTokenContent {
   name: string;
   memo: string;
   scope: DeployAccessTokenScope;
-  resources: Immutable.List<string>;
+  resources: string[];
   token: string;
   creator: string;
-}>;
+}
 
-export const newEmptyDeployAccessToken = () => {
-  return Immutable.Map({
+export type DeployAccessToken = ImmutableMap<DeployAccessTokenContent>;
+
+export const newEmptyDeployAccessToken = (): DeployAccessTokenContent => {
+  return {
+    name: "",
     memo: "",
     scope: DeployAccessTokenScopeCluster,
-    resources: Immutable.List(),
+    resources: [],
+    token: "",
     creator: "",
-  });
+  };
 };
 
 export interface LoadDeployAccessTokensAction {

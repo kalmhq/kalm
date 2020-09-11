@@ -19,8 +19,10 @@ import {
   AccessTokenToDeployAccessToken,
   DeployAccessToken,
   DeployAccessTokenToAccessToken,
+  DeployAccessTokenContent,
 } from "types/deployAccessToken";
 import { RoleBindingContent } from "types/member";
+import { Api } from "api/base";
 
 export const mockStore = null;
 
@@ -389,7 +391,7 @@ export default class RealApi extends Api {
     return Immutable.List(res.data.map(AccessTokenToDeployAccessToken));
   };
 
-  public createDeployAccessToken = async (deployAccessToken: DeployAccessToken): Promise<DeployAccessToken> => {
+  public createDeployAccessToken = async (deployAccessToken: DeployAccessTokenContent): Promise<DeployAccessToken> => {
     const res = await axiosRequest({
       method: "post",
       url: `/${K8sApiVersion}/deploy_access_tokens`,
@@ -399,7 +401,7 @@ export default class RealApi extends Api {
     return AccessTokenToDeployAccessToken(res.data);
   };
 
-  public deleteDeployAccessToken = async (deployAccessToken: DeployAccessToken): Promise<void> => {
+  public deleteDeployAccessToken = async (deployAccessToken: DeployAccessTokenContent): Promise<void> => {
     await axiosRequest({
       method: "delete",
       url: `/${K8sApiVersion}/deploy_access_tokens`,

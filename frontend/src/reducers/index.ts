@@ -73,5 +73,5 @@ export default (history: History<LocationState>) =>
     certificates,
     debounce,
     domain,
-    deployAccessTokens: deployAccessTokens,
+    deployAccessTokens,
   });

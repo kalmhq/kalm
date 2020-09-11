@@ -5,7 +5,7 @@ import { push } from "connected-react-router";
 import { setSuccessNotificationAction } from "actions/notification";
 import { withDeployAccessTokens, WithDeployAccessTokensProps } from "hoc/withDeployAccessTokens";
 import { DeployAccessTokenForm } from "forms/DeployAccessToken";
-import { DeployAccessToken } from "types/deployAccessToken";
+import { DeployAccessTokenContent } from "types/deployAccessToken";
 import { createDeployAccessTokenAction } from "actions/deployAccessToken";
 
 const styles = (theme: Theme) =>
@@ -18,15 +18,17 @@ interface Props extends WithStyles<typeof styles>, WithDeployAccessTokensProps {
 interface State {}
 
 class DeployAccessTokenNewPageRaw extends React.PureComponent<Props, State> {
-  private submit = async (config: DeployAccessToken) => {
+  private submit = async (config: DeployAccessTokenContent) => {
     const { dispatch } = this.props;
-    return await dispatch(createDeployAccessTokenAction(config));
+    await dispatch(createDeployAccessTokenAction(config));
+    this.onSubmitSuccess(config);
+    return;
   };
 
-  private onSubmitSuccess = async (config: DeployAccessToken) => {
+  private onSubmitSuccess = async (config: DeployAccessTokenContent) => {
     const { dispatch } = this.props;
     dispatch(setSuccessNotificationAction("Create Deploy key Successfully"));
-    dispatch(push("/ci/keys/" + config.get("name")));
+    dispatch(push("/ci/keys/" + config.name));
   };
 
   public render() {
@@ -35,7 +37,7 @@ class DeployAccessTokenNewPageRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item md={8}>
-              <DeployAccessTokenForm onSubmit={this.submit} onSubmitSuccess={this.onSubmitSuccess} />
+              <DeployAccessTokenForm onSubmit={this.submit} />
             </Grid>
           </Grid>
         </Box>
