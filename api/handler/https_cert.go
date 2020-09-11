@@ -7,6 +7,10 @@ import (
 )
 
 func (h *ApiHandler) handleGetHttpsCerts(c echo.Context) error {
+
+	// review-notes: only clusterViewer and above can see certs
+	//   but nsEditor above can create routes using cert
+
 	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}

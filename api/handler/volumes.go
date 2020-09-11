@@ -14,6 +14,9 @@ import (
 // actually list pvc-pv pairs
 // if pvc is not used by any pod, it can be deleted
 func (h *ApiHandler) handleListVolumes(c echo.Context) error {
+
+	// review-notes: nsViewer, nsEditor & nsOwner should be able to see same ns pvcs
+
 	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
@@ -59,6 +62,8 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 	pvcNamespace := c.Param("namespace")
 	pvcName := c.Param("name")
+
+	// review-notes: only clusterEditor & clusterOwner can delete pv, nsEditor & nsOwner is not included
 
 	if !h.clientManager.CanEditNamespace(getCurrentUser(c), pvcNamespace) {
 		return resources.NoNamespaceEditorRoleError(pvcNamespace)
@@ -122,6 +127,8 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 
 func (h *ApiHandler) handleAvailableVolsForSimpleWorkload(c echo.Context) error {
 	ns := c.QueryParam("currentNamespace")
+
+	// review-notes: need permission for pvc in other ns
 
 	if !h.clientManager.CanViewNamespace(getCurrentUser(c), ns) {
 		return resources.NoNamespaceViewerRoleError(ns)

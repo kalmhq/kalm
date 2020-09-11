@@ -134,6 +134,7 @@ func (resourceManager *ResourceManager) BuildApplicationDetails(namespace *coreV
 	nsName := namespace.Name
 	roles := make([]string, 0, 2)
 
+	// review-notes: is this accessReview check still necessary?
 	writeReview := &authorizationV1.SelfSubjectAccessReview{
 		Spec: authorizationV1.SelfSubjectAccessReviewSpec{
 			ResourceAttributes: &authorizationV1.ResourceAttributes{
