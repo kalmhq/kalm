@@ -37,6 +37,7 @@ import { loadProtectedEndpointAction, loadSSOConfigAction } from "actions/sso";
 import { setErrorNotificationAction } from "actions/notification";
 import { loadDeployAccessTokensAction } from "actions/deployAccessToken";
 import { AccessTokenToDeployAccessToken } from "types/deployAccessToken";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 export interface WatchResMessage {
   namespace: string;
@@ -52,7 +53,7 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
+interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp, WithUserAuthProps {}
 
 class WithDataRaw extends React.PureComponent<Props> {
   public componentDidMount() {
@@ -62,26 +63,29 @@ class WithDataRaw extends React.PureComponent<Props> {
   }
 
   private loadData() {
-    const { dispatch } = this.props;
+    const { dispatch, canViewCluster } = this.props;
 
     dispatch(loadRoutesAction()); // all namespaces
     dispatch(loadApplicationsAction());
-    dispatch(loadNodesAction());
-    dispatch(loadCertificateAcmeServerAction());
-    dispatch(loadCertificatesAction());
-    dispatch(loadCertificateIssuersAction());
-    dispatch(loadClusterInfoAction());
-    dispatch(loadPersistentVolumesAction());
     dispatch(loadRegistriesAction());
-    dispatch(loadServicesAction("")); // for routes destinations
-    dispatch(loadStorageClassesAction());
     dispatch(loadDeployAccessTokensAction());
-    dispatch(loadSSOConfigAction());
     dispatch(loadProtectedEndpointAction());
+
+    if (canViewCluster()) {
+      dispatch(loadCertificatesAction());
+      dispatch(loadCertificateIssuersAction());
+      dispatch(loadCertificateAcmeServerAction());
+      dispatch(loadSSOConfigAction());
+      dispatch(loadNodesAction());
+      dispatch(loadClusterInfoAction());
+      dispatch(loadServicesAction("")); // for routes destinations
+      dispatch(loadPersistentVolumesAction());
+      dispatch(loadStorageClassesAction());
+    }
   }
 
   private connectWebsocket() {
-    const { dispatch, token, impersonation } = this.props;
+    const { dispatch, token, impersonation, canViewCluster } = this.props;
     let rws: any;
     if (process.env.REACT_APP_USE_MOCK_API === "true" || process.env.NODE_ENV === "test") {
       rws = mockStore;
@@ -98,8 +102,10 @@ class WithDataRaw extends React.PureComponent<Props> {
     }
 
     function reloadResouces() {
-      dispatch(loadPersistentVolumesAction()); // is in use can't watch
-      dispatch(loadServicesAction("")); // for routes destinations
+      if (canViewCluster()) {
+        dispatch(loadPersistentVolumesAction()); // is in use can't watch
+        dispatch(loadServicesAction("")); // for routes destinations
+      }
     }
 
     rws.onmessage = async (event: any) => {
@@ -254,4 +260,4 @@ class WithDataRaw extends React.PureComponent<Props> {
   }
 }
 
-export const WithData = connect(mapStateToProps)(WithDataRaw);
+export const WithData = withUserAuth(connect(mapStateToProps)(WithDataRaw));
