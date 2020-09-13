@@ -115,6 +115,7 @@ const stringConstants = {
     "Select the groups you want to grant access permissions for the selected component. Leave blank to allow any sso member.",
   CANT_NOT_EDIT: "Can NOT edit this field",
   REGISTRY_VERIFIED_ERROR: "Error",
+  NO_PERMISSION_TIPS: "No permission to view this, please contact with admin.",
 };
 
 export default stringConstants;
