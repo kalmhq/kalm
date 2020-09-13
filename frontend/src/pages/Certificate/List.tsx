@@ -104,18 +104,24 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderMoreActions = (cert: Certificate) => {
+    const { canEditCluster } = this.props;
     return (
       <>
-        {cert.isSelfManaged && (
-          <IconLinkWithToolTip tooltipTitle="Edit" aria-label="edit" to={`/certificates/${cert.name}/edit`}>
-            <EditIcon />
-          </IconLinkWithToolTip>
+        {canEditCluster() && (
+          <>
+            {cert.isSelfManaged && (
+              <IconLinkWithToolTip tooltipTitle="Edit" aria-label="edit" to={`/certificates/${cert.name}/edit`}>
+                <EditIcon />
+              </IconLinkWithToolTip>
+            )}
+            <DeleteButtonWithConfirmPopover
+              popupId="delete-certificate-popup"
+              popupTitle="DELETE CERTIFICATE?"
+              confirmedAction={() => this.confirmDelete(cert)}
+            />
+          </>
         )}
-        <DeleteButtonWithConfirmPopover
-          popupId="delete-certificate-popup"
-          popupTitle="DELETE CERTIFICATE?"
-          confirmedAction={() => this.confirmDelete(cert)}
-        />
+
         {/* <IconButtonWithTooltip
           tooltipTitle="Delete"
           aria-label="delete"
