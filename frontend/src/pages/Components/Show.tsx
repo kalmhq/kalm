@@ -100,7 +100,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
     );
   }
   private renderPods() {
-    const { component, activeNamespaceName } = this.props;
+    const { component, activeNamespaceName, canEditNamespace } = this.props;
 
     return (
       <Expansion title="pods" defaultUnfold>
@@ -108,6 +108,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
           activeNamespaceName={activeNamespaceName}
           pods={component.pods}
           workloadType={component.workloadType as WorkloadType}
+          canEdit={canEditNamespace(activeNamespaceName)}
         />
       </Expansion>
     );
