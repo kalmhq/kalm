@@ -63,14 +63,14 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private getMenuData() {
-    const { activeNamespaceName, canManageNamespace } = this.props;
+    const { activeNamespaceName, canManageNamespace, canEditCluster } = this.props;
     const menus = [];
     menus.push({
       text: "Components",
       to: "/applications/" + activeNamespaceName + "/components",
       icon: <KalmComponentsIcon />,
     });
-    if (canManageNamespace(activeNamespaceName)) {
+    if (canManageNamespace(activeNamespaceName) || canEditCluster()) {
       menus.push({
         text: sc.APP_MEMBERS_PAGE_NAME,
         to: "/applications/" + activeNamespaceName + "/members",
