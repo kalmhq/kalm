@@ -21,33 +21,33 @@ import { FormikNormalizePort } from "forms/normalizer";
 
 interface Props extends FieldArrayRenderProps {}
 
-const ValidatorPorts = (values: ComponentLikePort[], _allValues?: any, _props?: any, _name?: any) => {
-  if (!values) return undefined;
-  const protocolServicePorts = new Set<string>();
+// const ValidatorPorts = (values: ComponentLikePort[], _allValues?: any, _props?: any, _name?: any) => {
+//   if (!values) return undefined;
+//   const protocolServicePorts = new Set<string>();
 
-  for (let i = 0; i < values.length; i++) {
-    const port = values[i]!;
-    const servicePort = port.servicePort || port.containerPort;
+//   for (let i = 0; i < values.length; i++) {
+//     const port = values[i]!;
+//     const servicePort = port.servicePort || port.containerPort;
 
-    if (servicePort) {
-      const protocol = port.protocol;
-      const protocolServicePort = protocol + "-" + servicePort;
+//     if (servicePort) {
+//       const protocol = port.protocol;
+//       const protocolServicePort = protocol + "-" + servicePort;
 
-      if (!protocolServicePorts.has(protocolServicePort)) {
-        protocolServicePorts.add(protocolServicePort);
-      } else if (protocolServicePort !== "") {
-        return "Listening port on a protocol should be unique.  " + protocol + " - " + servicePort;
-      }
-    }
-  }
-};
+//       if (!protocolServicePorts.has(protocolServicePort)) {
+//         protocolServicePorts.add(protocolServicePort);
+//       } else if (protocolServicePort !== "") {
+//         return "Listening port on a protocol should be unique.  " + protocol + " - " + servicePort;
+//       }
+//     }
+//   }
+// };
 
 class RenderPorts extends React.PureComponent<Props> {
   public render() {
     const {
       push,
       name,
-      form: { values },
+      form: { values, handleBlur },
       remove,
     } = this.props;
     return (
@@ -106,7 +106,10 @@ class RenderPorts extends React.PureComponent<Props> {
                         >
                           <FastField
                             onFocus={popupState.open}
-                            onBlur={popupState.close}
+                            onBlur={(e: any) => {
+                              popupState.close();
+                              handleBlur(e);
+                            }}
                             component={KRenderDebounceFormikTextField}
                             name={`${name}.${index}.containerPort`}
                             label="Container port"
@@ -148,7 +151,10 @@ class RenderPorts extends React.PureComponent<Props> {
                         >
                           <FastField
                             onFocus={popupState.open}
-                            onBlur={popupState.close}
+                            onBlur={(e: any) => {
+                              popupState.close();
+                              handleBlur(e);
+                            }}
                             component={KRenderDebounceFormikTextField}
                             name={`${name}.${index}.servicePort`}
                             label="Service Port"
@@ -197,5 +203,5 @@ class RenderPorts extends React.PureComponent<Props> {
 }
 
 export const Ports = (props: any) => {
-  return <FieldArray name="ports" component={RenderPorts} validate={ValidatorPorts} {...props} />;
+  return <FieldArray name="ports" component={RenderPorts} {...props} />;
 };

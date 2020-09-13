@@ -50,6 +50,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     const {
       dispatch,
       name,
+      remove,
       form: { values, errors },
       replace,
     } = this.props;
@@ -72,7 +73,15 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
         }}
         actions={
           <>
-            <Button onClick={() => dispatch(closeDialogAction(updateContentDialogID))} color="primary">
+            <Button
+              onClick={() => {
+                if (isInvalidFile) {
+                  remove(editingFileIndex);
+                }
+                dispatch(closeDialogAction(updateContentDialogID));
+              }}
+              color="primary"
+            >
               Discard
             </Button>
             <Button
@@ -101,15 +110,6 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
               label="Mount Path"
               component={KRenderDebounceFormikTextField}
               validate={validateMountPath}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              margin="dense"
-              fullWidth
-              variant="outlined"
-              inputProps={{
-                required: false, // bypass html5 required feature
-              }}
             />
           </Grid>
           <Grid item xs={1}></Grid>

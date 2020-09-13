@@ -67,6 +67,7 @@ import { KFormikRenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
+import { FormikNormalizeNumber } from "forms/normalizer";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -185,6 +186,9 @@ const nameValidators = (value: any) => {
   return ValidatorRequired(value) || ValidatorName(value);
 };
 
+const numberValidators = (value: any) => {
+  return ValidatorRequired(value) || ValidatorNaturalNumber(value);
+};
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
 
@@ -205,14 +209,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       return (
         <FastField
           component={KRenderDebounceFormikTextField}
-          validate={ValidatorNaturalNumber}
+          validate={numberValidators}
           name="replicas"
           margin
           label="Replicas"
           helperText={sc.REPLICA_INPUT_HELPER}
           type="number"
           min="0"
-          // normalize={NormalizeNumber}
+          normalize={FormikNormalizeNumber}
         />
       );
     }
