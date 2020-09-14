@@ -46,8 +46,6 @@ func init() {
 	_ = installv1alpha1.AddToScheme(scheme)
 	_ = cmv1alpha2.AddToScheme(scheme)
 	_ = apiextv1beta1.AddToScheme(scheme)
-	//fmt.Print("errrrrrr:", err)
-	//err = apiextv1.AddToScheme(scheme)
 	_ = istioScheme.AddToScheme(scheme)
 	_ = v1alpha1.AddToScheme(scheme)
 
