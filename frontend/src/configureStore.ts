@@ -19,7 +19,7 @@ const configureStore = (history: History<LocationState>) => {
     const logger = createLogger({
       diff: true,
       collapsed: true,
-      stateTransformer: (state) => state.toJS(),
+      stateTransformer: (state) => state,
     });
 
     middlewares.push(logger);

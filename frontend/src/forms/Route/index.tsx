@@ -459,6 +459,9 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             </Grid>
           </Grid>
         </Form>
+        {process.env.REACT_APP_DEBUG === "true" ? (
+          <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
+        ) : null}
       </div>
     );
   }
