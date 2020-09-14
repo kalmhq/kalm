@@ -227,7 +227,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		}
 	}
 
-	// check dp to determine if install is ready
+	// check dp to determine if install is ready, dp will be ready after crd
 	if !config.Spec.SkipCertManagerInstallation && !config.Spec.SkipIstioInstallation {
 		if !r.isIstioReady(ctx) || !r.isCertManagerReady(ctx) {
 			return nil
