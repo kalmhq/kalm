@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"fmt"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,6 +32,35 @@ func (builder *Builder) CreateACMEServer(server ACMEServer) (ACMEServer, error) 
 	}
 
 	err := builder.Create(&resource)
+
+	return ACMEServer{
+		Name:       resource.Name,
+		ACMEDomain: resource.Spec.ACMEDomain,
+		NSDomain:   resource.Spec.NSDomain,
+	}, err
+}
+
+func (builder *Builder) UpdateACMEServer(server ACMEServer) (ACMEServer, error) {
+	resource := v1alpha1.ACMEServer{
+		ObjectMeta: controllerruntime.ObjectMeta{
+			Name: controllers.ACMEServerName,
+		},
+		Spec: v1alpha1.ACMEServerSpec{
+			ACMEDomain: server.ACMEDomain,
+			NSDomain:   server.NSDomain,
+		},
+	}
+
+	acmeServerResp, err := builder.GetACMEServer()
+	if err != nil {
+		return ACMEServer{}, err
+	}
+
+	if acmeServerResp.Name == "" {
+		return ACMEServer{}, fmt.Errorf("no acme-server to update")
+	}
+
+	err = builder.Update(&resource)
 
 	return ACMEServer{
 		Name:       resource.Name,

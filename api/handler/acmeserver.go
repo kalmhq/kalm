@@ -28,6 +28,28 @@ func (h *ApiHandler) handleCreateACMEServer(c echo.Context) error {
 	return c.JSON(201, acmeServer)
 }
 
+func (h *ApiHandler) handleUpdateACMEServer(c echo.Context) error {
+	acmeServer, err := getACMEServerFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	if acmeServer.NSDomain == "" {
+		return fmt.Errorf("must set nsDomain")
+	}
+
+	if acmeServer.ACMEDomain == "" {
+		return fmt.Errorf("must set acmeDomain")
+	}
+
+	acmeServer, err = h.Builder(c).UpdateACMEServer(acmeServer)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, acmeServer)
+}
+
 func (h *ApiHandler) handleGetACMEServer(c echo.Context) error {
 
 	acmeServerResp, err := h.Builder(c).GetACMEServer()
