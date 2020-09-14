@@ -30,7 +30,7 @@ import (
 	appsV1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,14 +38,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -105,6 +102,8 @@ type KalmOperatorConfigReconciler struct {
 func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("kalmoperatorconfig", req.NamespacedName)
+
+	log.Info("KalmOperatorConfigReconciler reconciling...")
 
 	// only allow one operator config in a namespace. If there is no config or more than one,
 	// this controller won't do anything to the system.
@@ -184,18 +183,11 @@ func (r *KalmOperatorConfigReconciler) applyFromYaml(ctx context.Context, yamlNa
 			}
 		}
 
-		if object.GetObjectKind().GroupVersionKind().Kind == "CustomResourceDefinition" {
-			r.Log.Info("Skip patch crd",
-				"gkv", object.GetObjectKind().GroupVersionKind(),
-				"objKey", objectKey)
-		} else {
-			if err := r.Client.Patch(ctx, object, client.Merge); err != nil {
-				r.Log.Error(err, fmt.Sprintf("Apply object failed. %v", objectKey))
-				return err
-			}
-			r.Log.Info(fmt.Sprintf("Patch object %s, kind: %s", objectKey.String(), object.GetObjectKind()))
+		if err := r.Client.Patch(ctx, object, client.Merge); err != nil {
+			r.Log.Error(err, fmt.Sprintf("Apply object failed. %v", objectKey))
+			return err
 		}
-
+		r.Log.Info(fmt.Sprintf("Patch object %s, kind: %s", objectKey.String(), object.GetObjectKind()))
 	}
 
 	return nil
@@ -254,10 +246,6 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		if err := r.applyFromYaml(ctx, "kalm.yaml"); err != nil {
 			log.Error(err, "install kalm error.")
 			return err
-		}
-
-		if !r.isKalmCRDReady(ctx) {
-			return nil
 		}
 
 		if err := r.reconcileKalmController(ctx, config); err != nil {
@@ -362,24 +350,6 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 	return nil
 }
 
-func (r *KalmOperatorConfigReconciler) isKalmCRDReady(ctx context.Context) bool {
-	crds := []string{
-		"componentpluginbindings.core.kalm.dev",
-		"componentplugins.core.kalm.dev",
-		"components.core.kalm.dev",
-		"deploykeys.core.kalm.dev",
-		"dockerregistries.core.kalm.dev",
-		"httproutes.core.kalm.dev",
-		"httpscertissuers.core.kalm.dev",
-		"httpscerts.core.kalm.dev",
-		"kalmoperatorconfigs.install.kalm.dev",
-		"protectedendpoints.core.kalm.dev",
-		"singlesignonconfigs.core.kalm.dev",
-	}
-
-	return r.checkIfCRDReady(ctx, crds)
-}
-
 func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx context.Context) error {
 	cmPrometheus := corev1.ConfigMap{}
 	err := r.Get(ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &cmPrometheus)
@@ -452,67 +422,31 @@ func (r *KalmOperatorConfigReconciler) checkIfDPReady(ctx context.Context, ns st
 	return true
 }
 
-func (r *KalmOperatorConfigReconciler) checkIfCRDReady(ctx context.Context, crdNameOpt []string) bool {
-	for _, crdName := range crdNameOpt {
-		var crd apiextv1beta1.CustomResourceDefinition
-		err := r.Get(ctx, client.ObjectKey{Name: crdName}, &crd)
-		if err != nil {
-			r.Log.Info("CRD not ready", "crd", crdName, "err", err)
-			return false
-		}
-	}
-
-	return true
-}
+//func (r *KalmOperatorConfigReconciler) checkIfCRDReady(ctx context.Context, crdNameOpt []string) bool {
+//	for _, crdName := range crdNameOpt {
+//		var crd apiextv1beta1.CustomResourceDefinition
+//		err := r.Get(ctx, client.ObjectKey{Name: crdName}, &crd)
+//		if err != nil {
+//			r.Log.Info("CRD not ready", "crd", crdName, "err", err)
+//			return false
+//		}
+//	}
+//
+//	return true
+//}
 
 // make sure cert-manager is ready
 func (r *KalmOperatorConfigReconciler) isCertManagerReady(ctx context.Context) bool {
 
 	dps := []string{"cert-manager", "cert-manager-cainjector", "cert-manager-webhook"}
 
-	crds := []string{
-		"certificaterequests.cert-manager.io",
-		"certificates.cert-manager.io",
-		"challenges.acme.cert-manager.io",
-		"clusterissuers.cert-manager.io",
-		"issuers.cert-manager.io",
-		"orders.acme.cert-manager.io",
-	}
-
-	return r.checkIfDPReady(ctx, NamespaceCertManager, dps...) && r.checkIfCRDReady(ctx, crds)
+	return r.checkIfDPReady(ctx, NamespaceCertManager, dps...)
 }
 
 func (r *KalmOperatorConfigReconciler) isIstioReady(ctx context.Context) bool {
 	dps := []string{"istiod", "istio-ingressgateway", "prometheus"}
-	crds := []string{
-		"adapters.config.istio.io",
-		"attributemanifests.config.istio.io",
-		"authorizationpolicies.security.istio.io",
-		"clusterrbacconfigs.rbac.istio.io",
-		"destinationrules.networking.istio.io",
-		"envoyfilters.networking.istio.io",
-		"gateways.networking.istio.io",
-		"handlers.config.istio.io",
-		"httpapispecbindings.config.istio.io",
-		"httpapispecs.config.istio.io",
-		"instances.config.istio.io",
-		"istiooperators.install.istio.io",
-		"peerauthentications.security.istio.io",
-		"quotaspecbindings.config.istio.io",
-		"quotaspecs.config.istio.io",
-		"rbacconfigs.rbac.istio.io",
-		"requestauthentications.security.istio.io",
-		"rules.config.istio.io",
-		"serviceentries.networking.istio.io",
-		"servicerolebindings.rbac.istio.io",
-		"serviceroles.rbac.istio.io",
-		"sidecars.networking.istio.io",
-		"templates.config.istio.io",
-		"virtualservices.networking.istio.io",
-		"workloadentries.networking.istio.io",
-	}
 
-	return r.checkIfDPReady(ctx, NamespaceIstio, dps...) && r.checkIfCRDReady(ctx, crds)
+	return r.checkIfDPReady(ctx, NamespaceIstio, dps...)
 }
 
 type KalmIstioPrometheusWather struct{}
@@ -541,8 +475,7 @@ func (k KalmEssentialNSWatcher) Map(object handler.MapObject) []reconcile.Reques
 			continue
 		}
 
-		//fmt.Println("nsObjDetail:", curNS, object.Object, curNS, "-------")
-		fmt.Println("nsObjDetail:", curNS)
+		//fmt.Println("nsObjDetail:", curNS)
 
 		return []reconcile.Request{{
 			NamespacedName: types.NamespacedName{
@@ -582,47 +515,15 @@ func (k KalmDeploymentInEssentialNSWatcher) Map(object handler.MapObject) []reco
 	return nil
 }
 
-type KalmEssentialCRDWatcher struct{}
-
-func (k KalmEssentialCRDWatcher) Map(object handler.MapObject) []reconcile.Request {
-
-	essentialCRDGroups := []string{
-		"istio.io",
-		"cert-manager.io",
-		"kalm.dev",
-	}
-
-	crdName := object.Meta.GetName()
-
-	for _, essentialCRDGroup := range essentialCRDGroups {
-		if strings.HasSuffix(crdName, essentialCRDGroup) {
-
-			//fmt.Println("crdObjDetail:", crdName, object.Object, crdName, "-------")
-			fmt.Println("crdObjDetail:", crdName)
-
-			return []reconcile.Request{{
-				NamespacedName: types.NamespacedName{
-					Name: "reconcile-caused-by-essential-crd-change-" + crdName,
-				},
-			}}
-		}
-	}
-
-	return nil
-}
-
 func (r *KalmOperatorConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&installv1alpha1.KalmOperatorConfig{}).
 		Watches(&source.Kind{Type: &corev1.Namespace{}}, &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &KalmEssentialNSWatcher{},
-		}, builder.WithPredicates(predicate.ResourceVersionChangedPredicate{})).
+		}).
 		Watches(&source.Kind{Type: &v1.Deployment{}}, &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &KalmDeploymentInEssentialNSWatcher{},
 		}).
-		Watches(&source.Kind{Type: &apiextv1beta1.CustomResourceDefinition{}}, &handler.EnqueueRequestsFromMapFunc{
-			ToRequests: &KalmEssentialCRDWatcher{},
-		}, builder.WithPredicates(predicate.ResourceVersionChangedPredicate{})).
 		Watches(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &KalmIstioPrometheusWather{},
 		}).

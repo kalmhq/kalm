@@ -24,7 +24,6 @@ import (
 	"github.com/kalmhq/kalm/operator/controllers"
 	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -47,9 +46,8 @@ func init() {
 	_ = installv1alpha1.AddToScheme(scheme)
 	_ = cmv1alpha2.AddToScheme(scheme)
 	_ = apiextv1beta1.AddToScheme(scheme)
-	//_ = apiextv1.AddToScheme(scheme)
-	//err := apiextv1beta1.AddToScheme(scheme)
 	//fmt.Print("errrrrrr:", err)
+	//err = apiextv1.AddToScheme(scheme)
 	_ = istioScheme.AddToScheme(scheme)
 	_ = v1alpha1.AddToScheme(scheme)
 
