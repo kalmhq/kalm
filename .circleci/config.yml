@@ -256,6 +256,14 @@ workflows:
           filters:
             tags:
               only: /^v.*/
+      - hold:
+          type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
+          requires: # We only run the "hold" job when test2 has succeeded
+           - test-controller
+      - build-push-controller-image:
+          context: kalm-ci
+          requires:
+            - hold
       - build-push-controller-image:
           context: kalm-ci
           requires:
