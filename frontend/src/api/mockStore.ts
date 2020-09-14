@@ -8387,9 +8387,12 @@ export default class MockStore {
       },
       mockLoginStatus: {
         authorized: true,
-        isAdmin: true,
-        entity: "system:serviceaccount:default:kalm-sample-user",
         csrf: "",
+        entity: "023ff5a27659178bc79bea4d289da5110c5cbbd381b2fa5089cff8f40f48b834",
+        impersonation: "",
+        policies:
+          "p, sub-023ff5a27659178bc79bea4d289da5110c5cbbd381b2fa5089cff8f40f48b834, view, *, *↵p, sub-023ff5a27659178bc79bea4d289da5110c5cbbd381b2fa5089cff8f40f48b834, edit, *, *↵p, sub-023ff5a27659178bc79bea4d289da5110c5cbbd381b2fa5089cff8f40f48b834, manage, *, *",
+        rbacModel: "",
       },
       mockServices: [
         {
