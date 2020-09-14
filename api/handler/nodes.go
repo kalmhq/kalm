@@ -1,11 +1,16 @@
 package handler
 
 import (
+	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 )
 
 func (h *ApiHandler) handleListNodes(c echo.Context) error {
-	res, err := h.Builder(c).ListNodes()
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
+		return resources.NoClusterViewerRoleError
+	}
+
+	res, err := h.resourceManager.ListNodes()
 
 	if err != nil {
 		return err
@@ -15,31 +20,37 @@ func (h *ApiHandler) handleListNodes(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCordonNode(c echo.Context) error {
-	builder := h.Builder(c)
-	node, err := builder.GetNode(c.Param("name"))
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
+		return resources.NoClusterEditorRoleError
+	}
+
+	node, err := h.resourceManager.GetNode(c.Param("name"))
 
 	if err != nil {
 		return err
 	}
 
-	if err := builder.CordonNode(node); err != nil {
+	if err := h.resourceManager.CordonNode(node); err != nil {
 		return err
 	}
 
-	return c.JSON(200, h.Builder(c).BuildNodeResponse(node))
+	return c.JSON(200, h.resourceManager.BuildNodeResponse(node))
 }
 
 func (h *ApiHandler) handleUncordonNode(c echo.Context) error {
-	builder := h.Builder(c)
-	node, err := builder.GetNode(c.Param("name"))
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
+		return resources.NoClusterEditorRoleError
+	}
+
+	node, err := h.resourceManager.GetNode(c.Param("name"))
 
 	if err != nil {
 		return err
 	}
 
-	if err := builder.UncordonNode(node); err != nil {
+	if err := h.resourceManager.UncordonNode(node); err != nil {
 		return err
 	}
 
-	return c.JSON(200, h.Builder(c).BuildNodeResponse(node))
+	return c.JSON(200, h.resourceManager.BuildNodeResponse(node))
 }

@@ -205,8 +205,6 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.Nil(NewSingleSignOnConfigReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewProtectedEndpointReconciler(mgr).SetupWithManager(mgr))
 
-	suite.Nil(NewDeployKeyReconciler(mgr).SetupWithManager(mgr))
-
 	mgrStopChannel := make(chan struct{})
 	suite.MgrStopChannel = mgrStopChannel
 

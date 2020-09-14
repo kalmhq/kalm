@@ -1,15 +1,14 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import React from "react";
-import { BasePage } from "pages/BasePage";
-import { SSOConfigForm } from "forms/SSOConfig";
-import { SSOImplementDetails } from "pages/SSO/Details";
-import { newEmptySSOConfig, SSOConfig, SSOConfigFormType } from "types/sso";
-import { createSSOConfigAction, updateSSOConfigAction } from "actions/sso";
-import { Loading } from "widgets/Loading";
-import { push } from "connected-react-router";
 import { setSuccessNotificationAction } from "actions/notification";
+import { createSSOConfigAction, updateSSOConfigAction } from "actions/sso";
+import { push } from "connected-react-router";
+import { SSOConfigForm } from "forms/SSOConfig";
 import { withSSO, WithSSOProps } from "hoc/withSSO";
-import Immutable from "immutable";
+import { BasePage } from "pages/BasePage";
+import { SSOImplementDetails } from "pages/SSO/Details";
+import React from "react";
+import { newEmptySSOConfig, SSOConfig } from "types/sso";
+import { Loading } from "widgets/Loading";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -21,10 +20,9 @@ interface Props extends WithStyles<typeof styles>, WithSSOProps {}
 interface State {}
 
 class SSOConfigFormPageRaw extends React.PureComponent<Props, State> {
-  private submit = async (configForm: SSOConfigFormType) => {
+  private submit = async (config: SSOConfig) => {
     const { dispatch } = this.props;
 
-    const config = Immutable.fromJS(configForm) as SSOConfig;
     if (this.isEdit()) {
       await dispatch(updateSSOConfigAction(config));
     } else {
@@ -58,10 +56,7 @@ class SSOConfigFormPageRaw extends React.PureComponent<Props, State> {
     return (
       <BasePage>
         <Box p={2}>
-          <SSOConfigForm
-            onSubmit={this.submit}
-            initial={ssoConfig ? (ssoConfig.toJS() as SSOConfigFormType) : newEmptySSOConfig()}
-          />
+          <SSOConfigForm onSubmit={this.submit} initial={ssoConfig ? ssoConfig : newEmptySSOConfig()} />
           <Box mt={2}>
             <SSOImplementDetails />
           </Box>

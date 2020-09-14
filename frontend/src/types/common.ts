@@ -1,15 +1,14 @@
 import { CallHistoryMethodAction } from "connected-react-router";
 import { VariantType } from "notistack";
-import { ImmutableMap } from "typings";
 import { SettingObject } from "reducers/settings";
 import { NamespaceActions } from "./namespace";
 import { LoginStatus } from "./authorization";
-import Immutable from "immutable";
 
 export const LOAD_LOGIN_STATUS_PENDING = "LOAD_LOGIN_STATUS_PENDING";
 export const LOAD_LOGIN_STATUS_FULFILLED = "LOAD_LOGIN_STATUS_FULFILLED";
 export const LOAD_LOGIN_STATUS_FAILED = "LOAD_LOGIN_STATUS_FAILED";
 export const SET_AUTH_TOKEN = "SET_AUTH_TOKEN";
+export const SET_AUTH_METHODS = "SET_AUTH_METHODS";
 export const LOGOUT = "LOGOUT";
 
 export const SET_NOTIFICATION_MESSAGE = "SET_NOTIFICATION_MESSAGE";
@@ -25,23 +24,23 @@ export const EnvTypeExternal = "external";
 export const EnvTypeStatic = "static";
 export const EnvTypeLinked = "linked";
 
-export type ControlledDialogParams<T> = ImmutableMap<{
+export type ControlledDialogParams<T> = {
   open: boolean;
   data: T;
-}>;
+};
 
-export type MetricItem = ImmutableMap<{
+export type MetricItem = {
   x: number;
   y: number;
-}>;
+};
 
-export type MetricList = Immutable.List<MetricItem>;
+export type MetricList = MetricItem[];
 
-export type Metrics = ImmutableMap<{
+export type Metrics = {
   isMetricServerEnabled: boolean;
   cpu: MetricList;
   memory: MetricList;
-}>;
+};
 
 export const StatusTypeRunning = "RUNNING";
 export const StatusTypePending = "PENDING";
@@ -125,6 +124,37 @@ export interface LoadStatusAction {
   type: typeof LOAD_LOGIN_STATUS_FAILED | typeof LOAD_LOGIN_STATUS_PENDING;
 }
 
+export interface PermissionMethods {
+  can: (action: string, scope: string, object: string) => boolean;
+  canView: (scope: string, resource: string) => boolean;
+  canEdit: (scope: string, resource: string) => boolean;
+  canManage: (scope: string, resource: string) => boolean;
+  canViewNamespace: (scope: string) => boolean;
+  canEditNamespace: (scope: string) => boolean;
+  canManageNamespace: (scope: string) => boolean;
+  canViewCluster: () => boolean;
+  canEditCluster: () => boolean;
+  canManageCluster: () => boolean;
+}
+
+export const emptyPermissionMethods: PermissionMethods = {
+  can: (action: string, scope: string, object: string) => false,
+  canView: (scope: string, resource: string) => false,
+  canEdit: (scope: string, resource: string) => false,
+  canManage: (scope: string, resource: string) => false,
+  canViewNamespace: (scope: string) => false,
+  canEditNamespace: (scope: string) => false,
+  canManageNamespace: (scope: string) => false,
+  canViewCluster: () => false,
+  canEditCluster: () => false,
+  canManageCluster: () => false,
+};
+
+export interface SetAuthMethodsAction {
+  type: typeof SET_AUTH_METHODS;
+  payload: PermissionMethods;
+}
+
 export type CommonActions =
   | LogoutAction
   | LoadStatusAction
@@ -138,4 +168,5 @@ export type CommonActions =
   | OpenControlledDialogAction
   | CloseControlledDialogAction
   | ClearControlledDialogAction
-  | NamespaceActions;
+  | NamespaceActions
+  | SetAuthMethodsAction;

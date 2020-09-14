@@ -26,7 +26,7 @@ type Service struct {
 	Ports     []ServicePort `json:"ports"`
 }
 
-func (builder *Builder) GetServiceListChannel(opts ...client.ListOption) *ServiceListChannel {
+func (resourceManager *ResourceManager) GetServiceListChannel(opts ...client.ListOption) *ServiceListChannel {
 	channel := &ServiceListChannel{
 		List:  make(chan []coreV1.Service, 1),
 		Error: make(chan error, 1),
@@ -34,7 +34,7 @@ func (builder *Builder) GetServiceListChannel(opts ...client.ListOption) *Servic
 
 	go func() {
 		var list coreV1.ServiceList
-		err := builder.List(&list, opts...)
+		err := resourceManager.List(&list, opts...)
 
 		if err != nil {
 			channel.List <- nil
@@ -75,10 +75,10 @@ func BuildServiceResponse(svc *coreV1.Service) *Service {
 	}
 }
 
-func (builder *Builder) GetServices(namespace string) ([]*Service, error) {
+func (resourceManager *ResourceManager) GetServices(namespace string) ([]*Service, error) {
 	var services coreV1.ServiceList
 
-	if err := builder.List(&services, client.InNamespace(namespace)); err != nil {
+	if err := resourceManager.List(&services, client.InNamespace(namespace)); err != nil {
 		return nil, err
 	}
 

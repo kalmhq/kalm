@@ -1,12 +1,13 @@
+import { DeployAccessToken } from "types/deployAccessToken";
+import { RoleBinding } from "types/member";
 import { Node } from "types/node";
-import { ApplicationComponentDetails, ApplicationDetails } from "./application";
-import { HttpRoute } from "./route";
-import { Certificate } from "./certificate";
-import { RegistryType } from "./registry";
-import { Disk } from "./disk";
-import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { DeployKeyFormType } from "types/deployKey";
 import { Service } from "types/service";
+import { ProtectedEndpoint, SSOConfig } from "types/sso";
+import { ApplicationComponentDetails, ApplicationDetails } from "./application";
+import { Certificate } from "./certificate";
+import { Disk } from "./disk";
+import { Registry } from "./registry";
+import { HttpRoute } from "./route";
 
 export const WATCHED_RESOURCE_CHANGE = "WATCHED_RESOURCE_CHANGE";
 
@@ -23,8 +24,9 @@ export const RESOURCE_TYPE_REGISTRY = "Registry";
 export const RESOURCE_TYPE_VOLUME = "Volume";
 export const RESOURCE_TYPE_SSO = "SingleSignOnConfig";
 export const RESOURCE_TYPE_PROTECTED_ENDPOINT = "ProtectedEndpoint";
-export const RESOURCE_TYPE_DEPLOY_KEY = "DeployKey";
+export const RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN = "DeployAccessToken";
 export const RESOURCE_TYPE_SERVICE = "Service";
+export const RESOURCE_TYPE_ROLE_BINDING = "RoleBinding";
 
 export type ResourceActionType =
   | typeof RESOURCE_ACTION_UPDATE
@@ -83,7 +85,7 @@ export interface RegistryResourceAction {
   kind: typeof RESOURCE_TYPE_REGISTRY;
   payload: {
     action: ResourceActionType;
-    data: RegistryType;
+    data: Registry;
   };
 }
 
@@ -114,12 +116,12 @@ export interface ProtectedEndpointResourceAction {
   };
 }
 
-export interface DeployKeyResourceAction {
+export interface DeployAccessTokenResourceAction {
   type: typeof WATCHED_RESOURCE_CHANGE;
-  kind: typeof RESOURCE_TYPE_DEPLOY_KEY;
+  kind: typeof RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN;
   payload: {
     action: ResourceActionType;
-    data: DeployKeyFormType;
+    data: DeployAccessToken;
   };
 }
 
@@ -129,6 +131,15 @@ export interface ServiceResourceAction {
   payload: {
     action: ResourceActionType;
     data: Service;
+  };
+}
+
+export interface RoleBindingResourceAction {
+  type: typeof WATCHED_RESOURCE_CHANGE;
+  kind: typeof RESOURCE_TYPE_ROLE_BINDING;
+  payload: {
+    action: ResourceActionType;
+    data: RoleBinding;
   };
 }
 
@@ -142,5 +153,6 @@ export type ResourceActions =
   | VolumeResourceAction
   | SSOConfigResourceAction
   | ProtectedEndpointResourceAction
-  | DeployKeyResourceAction
-  | ServiceResourceAction;
+  | DeployAccessTokenResourceAction
+  | ServiceResourceAction
+  | RoleBindingResourceAction;

@@ -7,7 +7,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { newEmptyProtectedEndpoint, ProtectedEndpointFormType } from "types/sso";
+import { newEmptyProtectedEndpoint, ProtectedEndpoint } from "types/sso";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -28,7 +28,7 @@ class NewEndpointPageRaw extends React.PureComponent<Props, State> {
     this.state = {};
   }
 
-  private onSubmit = async (values: ProtectedEndpointFormType) => {
+  private onSubmit = async (values: ProtectedEndpoint) => {
     const { dispatch } = this.props;
     await dispatch(createProtectedEndpointAction(values));
     this.props.dispatch(push("/sso"));

@@ -2,7 +2,7 @@ import React from "react";
 import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { newEmptyCertificateUploadForm, CertificateFormTypeContent } from "types/certificate";
+import { newEmptyCertificateUploadForm, CertificateFormType } from "types/certificate";
 import { createCertificateAction } from "actions/certificate";
 import { CertificateUploadForm } from "forms/Certificate/uploadForm";
 import { BasePage } from "pages/BasePage";
@@ -17,7 +17,7 @@ const styles = (theme: Theme) =>
 export interface Props extends WithStyles<typeof styles>, TDispatchProp {}
 
 class CertificateUploadRaw extends React.PureComponent<Props> {
-  private submit = async (certificate: CertificateFormTypeContent) => {
+  private submit = async (certificate: CertificateFormType) => {
     try {
       const { dispatch } = this.props;
       await dispatch(createCertificateAction(certificate, false));

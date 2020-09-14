@@ -1,32 +1,22 @@
-import Immutable from "immutable";
-import {
-  Application,
-  ApplicationComponent,
-  ApplicationComponentDetails,
-  ApplicationDetails,
-  ApplicationPlugin,
-  ComponentPlugin,
-} from "types/application";
+import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import { LoginStatus } from "types/authorization";
 import {
-  Certificate,
-  CertificateFormTypeContent,
-  CertificateIssuer,
-  CertificateIssuerList,
-  CertificateList,
-  AcmeServerInfo,
   AcmeServerFormType,
-  CertificateIssuerFormTypeContent,
+  AcmeServerInfo,
+  Certificate,
+  CertificateFormType,
+  CertificateIssuer,
+  CertificateIssuerFormType,
 } from "types/certificate";
 import { ClusterInfo, InitializeClusterResponse } from "types/cluster";
-import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
+import { DeployAccessToken } from "types/deployAccessToken";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
+import { RoleBinding } from "types/member";
 import { Node, NodesListResponse } from "types/node";
-import { RegistryType } from "types/registry";
+import { Registry, RegistryFormType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { RoleBinding, RoleBindingsRequestBody } from "types/user";
 
 export abstract class Api {
   public abstract getClusterInfo(): Promise<ClusterInfo>;
@@ -52,18 +42,18 @@ export abstract class Api {
   public abstract getStatefulSetOptions(namespace: string): Promise<VolumeOptions>;
 
   // registry
-  public abstract getRegistries(): Promise<Immutable.List<RegistryType>>;
+  public abstract getRegistries(): Promise<Registry[]>;
 
-  public abstract getRegistry(name: string): Promise<RegistryType>;
+  public abstract getRegistry(name: string): Promise<Registry>;
 
-  public abstract createRegistry(registry: RegistryType): Promise<RegistryType>;
+  public abstract createRegistry(registry: RegistryFormType): Promise<Registry>;
 
-  public abstract updateRegistry(registry: RegistryType): Promise<RegistryType>;
+  public abstract updateRegistry(registry: RegistryFormType): Promise<Registry>;
 
   public abstract deleteRegistry(name: string): Promise<void>;
 
   // applications
-  public abstract getApplicationList(): Promise<Immutable.List<ApplicationDetails>>;
+  public abstract getApplicationList(): Promise<ApplicationDetails[]>;
 
   public abstract getApplication(name: string): Promise<ApplicationDetails>;
 
@@ -73,9 +63,7 @@ export abstract class Api {
 
   public abstract deleteApplication(name: string): Promise<void>;
 
-  public abstract getApplicationComponentList(
-    applicationName: string,
-  ): Promise<Immutable.List<ApplicationComponentDetails>>;
+  public abstract getApplicationComponentList(applicationName: string): Promise<ApplicationComponentDetails[]>;
 
   public abstract getApplicationComponent(applicationName: string, name: string): Promise<ApplicationComponentDetails>;
 
@@ -91,13 +79,8 @@ export abstract class Api {
 
   public abstract deleteApplicationComponent(applicationName: string, name: string): Promise<void>;
 
-  // plugins
-  public abstract getApplicationPlugins(): Promise<ApplicationPlugin[]>;
-
-  public abstract getComponentPlugins(): Promise<ComponentPlugin[]>;
-
   // routes
-  public abstract getHttpRoutes(): Promise<Immutable.List<HttpRoute>>;
+  public abstract getHttpRoutes(): Promise<HttpRoute[]>;
 
   public abstract updateHttpRoute(httpRoute: HttpRoute): Promise<HttpRoute>;
 
@@ -108,23 +91,24 @@ export abstract class Api {
   public abstract deletePod(namespace: string, name: string): Promise<any>;
 
   // RoleBindings
-  public abstract loadRolebindings(): Promise<Immutable.List<RoleBinding>>;
+  public abstract loadRoleBindings(): Promise<RoleBinding[]>;
 
-  public abstract createRoleBindings(roleBindingRequestBody: RoleBindingsRequestBody): Promise<void>;
+  public abstract createRoleBinding(roleBinding: RoleBinding): Promise<void>;
 
-  public abstract deleteRoleBindings(namespace: string, bindingName: string): Promise<void>;
+  public abstract updateRoleBinding(roleBinding: RoleBinding): Promise<void>;
 
+  public abstract deleteRoleBinding(namespace: string, bindingName: string): Promise<void>;
   public abstract getServiceAccountSecret(name: string): any;
 
   // certificate
-  public abstract getCertificateList(): Promise<CertificateList>;
+  public abstract getCertificateList(): Promise<Certificate[]>;
 
-  public abstract getCertificateIssuerList(): Promise<CertificateIssuerList>;
+  public abstract getCertificateIssuerList(): Promise<CertificateIssuer[]>;
 
-  public abstract createCertificate(certificate: CertificateFormTypeContent, isEdit?: boolean): Promise<Certificate>;
+  public abstract createCertificate(certificate: CertificateFormType, isEdit?: boolean): Promise<Certificate>;
 
   public abstract createCertificateIssuer(
-    certificateIssuer: CertificateIssuerFormTypeContent,
+    certificateIssuer: CertificateIssuerFormType,
     isEdit?: boolean,
   ): Promise<CertificateIssuer>;
 
@@ -138,7 +122,7 @@ export abstract class Api {
   public abstract getAcmeServer(): Promise<AcmeServerInfo>;
 
   // services
-  public abstract loadServices(name: string): Promise<Immutable.List<Service>>;
+  public abstract loadServices(name: string): Promise<Service[]>;
 
   // SSOConfig
   public abstract getSSOConfig(): Promise<SSOConfig>;
@@ -149,7 +133,7 @@ export abstract class Api {
 
   public abstract deleteSSOConfig(): Promise<void>;
 
-  public abstract listProtectedEndpoints(): Promise<Immutable.List<ProtectedEndpoint>>;
+  public abstract listProtectedEndpoints(): Promise<ProtectedEndpoint[]>;
 
   public abstract createProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint>;
 
@@ -157,11 +141,11 @@ export abstract class Api {
 
   public abstract deleteProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<void>;
 
-  public abstract listDeployKeys(): Promise<Immutable.List<DeployKeyFormType>>;
+  public abstract listDeployAccessTokens(): Promise<DeployAccessToken[]>;
 
-  public abstract createDeployKey(deployKey: DeployKeyFormTypeContent): Promise<DeployKeyFormType>;
+  public abstract createDeployAccessToken(protectedEndpoint: DeployAccessToken): Promise<DeployAccessToken>;
 
-  public abstract deleteDeployKey(deployKey: DeployKeyFormType): Promise<void>;
+  public abstract deleteDeployAccessToken(protectedEndpoint: DeployAccessToken): Promise<void>;
 
   public abstract resolveDomain(domain: string, type: "A" | "CNAME", timeout?: number): Promise<string[]>;
 

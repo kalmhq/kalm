@@ -83,9 +83,9 @@ func BuildHttpsCertResponse(httpsCert v1alpha1.HttpsCert) *HttpsCertResp {
 	return &resp
 }
 
-func (builder *Builder) GetHttpsCerts() ([]HttpsCertResp, error) {
+func (resourceManager *ResourceManager) GetHttpsCerts() ([]HttpsCertResp, error) {
 	var fetched v1alpha1.HttpsCertList
-	if err := builder.List(&fetched); err != nil {
+	if err := resourceManager.List(&fetched); err != nil {
 		return nil, err
 	}
 
@@ -99,7 +99,7 @@ func (builder *Builder) GetHttpsCerts() ([]HttpsCertResp, error) {
 	return httpsCerts, nil
 }
 
-func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert, error) {
+func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert, error) {
 	// by default, cert use our default http01Issuer
 	if cert.HttpsCertIssuer == "" {
 		cert.HttpsCertIssuer = controllers.DefaultHTTP01IssuerName
@@ -113,7 +113,7 @@ func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 
 			// check if exist
 			existCert := v1alpha1.HttpsCert{}
-			err := builder.Get("", name, &existCert)
+			err := resourceManager.Get("", name, &existCert)
 			if errors.IsNotFound(err) {
 				cert.Name = name
 				break
@@ -139,7 +139,7 @@ func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 		},
 	}
 
-	err := builder.Create(&res)
+	err := resourceManager.Create(&res)
 
 	if err != nil {
 		return nil, err
@@ -170,10 +170,10 @@ func cleanToResName(s string) string {
 	return s
 }
 
-func (builder *Builder) UpdateAutoManagedCert(cert *HttpsCert) (*HttpsCert, error) {
+func (resourceManager *ResourceManager) UpdateAutoManagedCert(cert *HttpsCert) (*HttpsCert, error) {
 	var res v1alpha1.HttpsCert
 
-	err := builder.Get("", cert.Name, &res)
+	err := resourceManager.Get("", cert.Name, &res)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +181,7 @@ func (builder *Builder) UpdateAutoManagedCert(cert *HttpsCert) (*HttpsCert, erro
 	res.Spec.Domains = cert.Domains
 	res.Spec.HttpsCertIssuer = cert.HttpsCertIssuer
 
-	err = builder.Update(&res)
+	err = resourceManager.Update(&res)
 	if err != nil {
 		return nil, err
 	}
@@ -189,10 +189,10 @@ func (builder *Builder) UpdateAutoManagedCert(cert *HttpsCert) (*HttpsCert, erro
 	return cert, nil
 }
 
-func (builder *Builder) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, error) {
+func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, error) {
 	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
 	if err != nil {
-		builder.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
+		resourceManager.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
 		return nil, err
 	}
 
@@ -204,7 +204,7 @@ func (builder *Builder) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, erro
 
 		// update sec
 		var sec coreV1.Secret
-		if err := builder.Get(nsIstioSystem, getSecNameForSelfManagedCert(cert), &sec); err != nil {
+		if err := resourceManager.Get(nsIstioSystem, getSecNameForSelfManagedCert(cert), &sec); err != nil {
 			err1 = err
 			return
 		}
@@ -217,7 +217,7 @@ func (builder *Builder) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, erro
 		sec.Data["tls.crt"] = []byte(cert.SelfManagedCertContent)
 		sec.Data["tls.key"] = []byte(cert.SelfManagedCertPrvKey)
 
-		err1 = builder.Update(&sec)
+		err1 = resourceManager.Update(&sec)
 	}()
 
 	var err2 error
@@ -228,7 +228,7 @@ func (builder *Builder) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, erro
 
 		// update domains
 		var res v1alpha1.HttpsCert
-		if err2 = builder.Get("", cert.Name, &res); err2 != nil {
+		if err2 = resourceManager.Get("", cert.Name, &res); err2 != nil {
 			return
 		}
 
@@ -238,7 +238,7 @@ func (builder *Builder) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, erro
 
 		// ensure domains updated
 		res.Spec.Domains = x509Cert.DNSNames
-		err2 = builder.Update(&res)
+		err2 = resourceManager.Update(&res)
 	}()
 
 	wg1.Wait()
@@ -253,10 +253,10 @@ func (builder *Builder) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, erro
 	return cert, nil
 }
 
-func (builder *Builder) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCert, error) {
+func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCert, error) {
 	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
 	if err != nil {
-		builder.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
+		resourceManager.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
 		return nil, err
 	}
 
@@ -275,7 +275,7 @@ func (builder *Builder) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 	}
 
 	// create secret in istio-system
-	certSecretName, err := builder.createCertSecretInNSIstioSystem(cert)
+	certSecretName, err := resourceManager.createCertSecretInNSIstioSystem(cert)
 	if err != nil {
 		return nil, err
 	}
@@ -291,7 +291,7 @@ func (builder *Builder) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 		},
 	}
 
-	err = builder.Create(&res)
+	err = resourceManager.Create(&res)
 	if err != nil {
 		return nil, err
 	}
@@ -319,8 +319,8 @@ func checkPrivateKey(cert *x509.Certificate, prvKey string) bool {
 //	return cert, nil
 //}
 
-func (builder *Builder) DeleteHttpsCert(name string) error {
-	return builder.Delete(&v1alpha1.HttpsCert{ObjectMeta: v1.ObjectMeta{Name: name}})
+func (resourceManager *ResourceManager) DeleteHttpsCert(name string) error {
+	return resourceManager.Delete(&v1alpha1.HttpsCert{ObjectMeta: v1.ObjectMeta{Name: name}})
 }
 
 const nsIstioSystem = "istio-system"
@@ -330,7 +330,7 @@ func getSecNameForSelfManagedCert(cert *HttpsCert) string {
 	return certSecName
 }
 
-func (builder *Builder) createCertSecretInNSIstioSystem(cert *HttpsCert) (string, error) {
+func (resourceManager *ResourceManager) createCertSecretInNSIstioSystem(cert *HttpsCert) (string, error) {
 
 	certSecName := getSecNameForSelfManagedCert(cert)
 
@@ -349,7 +349,7 @@ func (builder *Builder) createCertSecretInNSIstioSystem(cert *HttpsCert) (string
 		},
 	}
 
-	err := builder.Create(&certSec)
+	err := resourceManager.Create(&certSec)
 	if err != nil {
 		return "", err
 	}

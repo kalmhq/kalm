@@ -15,7 +15,6 @@ const mapStateToProps = (state: RootState, ownProps: FilledTextFieldProps & Fiel
   const isDisplayDebounceError = getIsDisplayDebounceError(state, name);
   const error = getIn(errors, name);
   // https://github.com/formium/formik/issues/691#issuecomment-446509600
-  // const _touched = getIn(touched, name) || submitCount > 0;
   const _touched = getIn(touched, name);
 
   return {

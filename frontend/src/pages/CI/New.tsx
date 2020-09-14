@@ -1,32 +1,34 @@
 import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
-import React from "react";
-import { BasePage } from "pages/BasePage";
-import { push } from "connected-react-router";
+import { createDeployAccessTokenAction } from "actions/deployAccessToken";
 import { setSuccessNotificationAction } from "actions/notification";
-import { withDeployKeys, WithDeployKeysProps } from "hoc/withDeployKeys";
-import { DeployKeyFormik } from "forms/DeployKey";
-import { DeployKeyFormTypeContent } from "types/deployKey";
-import { createDeployKeyAction } from "actions/deployKey";
+import { push } from "connected-react-router";
+import { DeployAccessTokenForm } from "forms/DeployAccessToken";
+import { withDeployAccessTokens, WithDeployAccessTokensProps } from "hoc/withDeployAccessTokens";
+import { BasePage } from "pages/BasePage";
+import React from "react";
+import { DeployAccessToken } from "types/deployAccessToken";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
   });
 
-interface Props extends WithStyles<typeof styles>, WithDeployKeysProps {}
+interface Props extends WithStyles<typeof styles>, WithDeployAccessTokensProps {}
 
 interface State {}
 
-class DeployKeyNewPageRaw extends React.PureComponent<Props, State> {
-  private submitFormik = async (config: DeployKeyFormTypeContent) => {
-    try {
-      const { dispatch } = this.props;
-      await dispatch(createDeployKeyAction(config));
-      dispatch(setSuccessNotificationAction("Create Deploy key Successfully"));
-      dispatch(push("/ci"));
-    } catch (error) {
-      console.log(error);
-    }
+class DeployAccessTokenNewPageRaw extends React.PureComponent<Props, State> {
+  private submit = async (config: DeployAccessToken) => {
+    const { dispatch } = this.props;
+    await dispatch(createDeployAccessTokenAction(config));
+    this.onSubmitSuccess(config);
+    return;
+  };
+
+  private onSubmitSuccess = async (config: DeployAccessToken) => {
+    const { dispatch } = this.props;
+    dispatch(setSuccessNotificationAction("Create Deploy key Successfully"));
+    dispatch(push("/ci/keys/" + config.name));
   };
 
   public render() {
@@ -35,7 +37,7 @@ class DeployKeyNewPageRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item md={8}>
-              <DeployKeyFormik onSubmit={this.submitFormik} />
+              <DeployAccessTokenForm onSubmit={this.submit} />
             </Grid>
           </Grid>
         </Box>
@@ -44,4 +46,4 @@ class DeployKeyNewPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const DeployKeyNewPage = withStyles(styles)(withDeployKeys(DeployKeyNewPageRaw));
+export const DeployAccessTokenNewPage = withStyles(styles)(withDeployAccessTokens(DeployAccessTokenNewPageRaw));

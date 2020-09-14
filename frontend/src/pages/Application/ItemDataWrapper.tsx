@@ -11,18 +11,18 @@ import { loadComponentsAction } from "actions/component";
 import { Box } from "@material-ui/core";
 
 const mapStateToProps = (state: RootState, props: any) => {
-  const applications = state.get("applications");
+  const applications = state.applications;
 
   const { match, location } = props;
   let { applicationName, componentName } = match!.params;
   const search = queryString.parse(location.search.replace("?", ""));
   componentName = componentName || search.component;
 
-  const application = applications.get("applications").find((x) => x.get("name") === applicationName);
-  const components = application && state.get("components").get("components").get(application?.get("name"));
-  const component = components?.find((x) => x.get("name") === componentName);
+  const application = applications.applications.find((x) => x.name === applicationName);
+  const components = application && state.components.components[application?.name];
+  const component = components?.find((x) => x.name === componentName);
 
-  const activeNamespaceName = state.get("namespaces").get("active");
+  const activeNamespaceName = state.namespaces.active;
 
   return {
     applicationName,
@@ -30,7 +30,7 @@ const mapStateToProps = (state: RootState, props: any) => {
     application,
     components,
     component,
-    isLoading: applications.get("isItemLoading"),
+    isLoading: applications.isItemLoading,
   };
 };
 

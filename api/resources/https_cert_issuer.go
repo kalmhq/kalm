@@ -21,9 +21,9 @@ type AccountAndSecret struct {
 	Secret  string `json:"secret"`
 }
 
-func (builder *Builder) GetHttpsCertIssuerList() ([]HttpsCertIssuer, error) {
+func (resourceManager *ResourceManager) GetHttpsCertIssuerList() ([]HttpsCertIssuer, error) {
 	var fetched v1alpha1.HttpsCertIssuerList
-	if err := builder.List(&fetched); err != nil {
+	if err := resourceManager.List(&fetched); err != nil {
 		return nil, err
 	}
 
@@ -58,10 +58,10 @@ func GenerateSecretNameForACME(issuer HttpsCertIssuer) string {
 	return "kalm-sec-acme-" + issuer.Name
 }
 
-func (builder *Builder) UpdateHttpsCertIssuer(hcIssuer HttpsCertIssuer) (HttpsCertIssuer, error) {
+func (resourceManager *ResourceManager) UpdateHttpsCertIssuer(hcIssuer HttpsCertIssuer) (HttpsCertIssuer, error) {
 	var res v1alpha1.HttpsCertIssuer
 
-	err := builder.Get("", hcIssuer.Name, &res)
+	err := resourceManager.Get("", hcIssuer.Name, &res)
 	if err != nil {
 		return HttpsCertIssuer{}, err
 	}
@@ -84,7 +84,7 @@ func (builder *Builder) UpdateHttpsCertIssuer(hcIssuer HttpsCertIssuer) (HttpsCe
 			secNs := controllers.CertManagerNamespace
 			secContent := hcIssuer.ACMECloudFlare.Secret
 
-			err := builder.ReconcileSecretForIssuer(secNs, secName, secContent)
+			err := resourceManager.ReconcileSecretForIssuer(secNs, secName, secContent)
 			if err != nil {
 				return HttpsCertIssuer{}, err
 			}
@@ -96,7 +96,7 @@ func (builder *Builder) UpdateHttpsCertIssuer(hcIssuer HttpsCertIssuer) (HttpsCe
 		}
 	}
 
-	err = builder.Update(&res)
+	err = resourceManager.Update(&res)
 	if err != nil {
 		return HttpsCertIssuer{}, err
 	}
@@ -104,11 +104,11 @@ func (builder *Builder) UpdateHttpsCertIssuer(hcIssuer HttpsCertIssuer) (HttpsCe
 	return hcIssuer, nil
 }
 
-func (builder *Builder) DeleteHttpsCertIssuer(name string) error {
-	return builder.Delete(&v1alpha1.HttpsCertIssuer{ObjectMeta: metaV1.ObjectMeta{Name: name}})
+func (resourceManager *ResourceManager) DeleteHttpsCertIssuer(name string) error {
+	return resourceManager.Delete(&v1alpha1.HttpsCertIssuer{ObjectMeta: metaV1.ObjectMeta{Name: name}})
 }
 
-func (builder *Builder) ReconcileSecretForIssuer(secNs, secName string, secret string) error {
+func (resourceManager *ResourceManager) ReconcileSecretForIssuer(secNs, secName string, secret string) error {
 	expectedSec := coreV1.Secret{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      secName,
@@ -123,11 +123,11 @@ func (builder *Builder) ReconcileSecretForIssuer(secNs, secName string, secret s
 	}
 
 	// check if exist
-	sec, err := builder.GetSecret(secNs, secName)
+	sec, err := resourceManager.GetSecret(secNs, secName)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			sec := expectedSec
-			return builder.Create(&sec)
+			return resourceManager.Create(&sec)
 		}
 
 		return err
@@ -136,5 +136,5 @@ func (builder *Builder) ReconcileSecretForIssuer(secNs, secName string, secret s
 	sec.Data = expectedSec.Data
 	sec.ObjectMeta.Labels = expectedSec.ObjectMeta.Labels
 
-	return builder.Update(&sec)
+	return resourceManager.Update(&sec)
 }

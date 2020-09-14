@@ -3,7 +3,6 @@ package resources
 import (
 	authorizationV1 "k8s.io/api/authorization/v1"
 	coreV1 "k8s.io/api/core/v1"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
 )
 
@@ -22,7 +21,7 @@ type Namespace struct {
 	Roles []string `json:"roles"`
 }
 
-func (builder *Builder) GetNamespaceListChannel() *NamespaceListChannel {
+func (resourceManager *ResourceManager) GetNamespaceListChannel() *NamespaceListChannel {
 	channel := &NamespaceListChannel{
 		List:  make(chan []Namespace, 1),
 		Error: make(chan error, 1),
@@ -30,7 +29,7 @@ func (builder *Builder) GetNamespaceListChannel() *NamespaceListChannel {
 
 	go func() {
 		var nsList coreV1.NamespaceList
-		err := builder.List(&nsList)
+		err := resourceManager.List(&nsList)
 
 		if err != nil {
 			channel.List <- nil
@@ -69,7 +68,7 @@ func (builder *Builder) GetNamespaceListChannel() *NamespaceListChannel {
 
 			// TODO Is there a better way?
 			// Infer user roles with some specific access review. This is not accurate but a trade off.
-			err := builder.Create(writerReview)
+			err := resourceManager.Create(writerReview)
 
 			if err != nil {
 				channel.List <- nil
@@ -92,7 +91,7 @@ func (builder *Builder) GetNamespaceListChannel() *NamespaceListChannel {
 				},
 			}
 
-			err = builder.Create(readerReview)
+			err = resourceManager.Create(readerReview)
 
 			if err != nil {
 				channel.List <- nil
@@ -119,9 +118,9 @@ func (builder *Builder) GetNamespaceListChannel() *NamespaceListChannel {
 	return channel
 }
 
-func (builder *Builder) ListNamespaces() ([]Namespace, error) {
+func (resourceManager *ResourceManager) ListNamespaces() ([]Namespace, error) {
 	resourceChannels := &ResourceChannels{
-		NamespaceList: builder.GetNamespaceListChannel(),
+		NamespaceList: resourceManager.GetNamespaceListChannel(),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -131,26 +130,6 @@ func (builder *Builder) ListNamespaces() ([]Namespace, error) {
 	}
 
 	return resources.Namespaces, nil
-}
-
-func (builder *Builder) CreateNamespace(name string) error {
-	namespace := &coreV1.Namespace{
-		ObjectMeta: metaV1.ObjectMeta{
-			Name: formatNamespaceName(name),
-		},
-	}
-
-	err := builder.Create(namespace)
-
-	if err != nil {
-		return err
-	}
-
-	return builder.createDefaultKalmRoles(namespace.Name)
-}
-
-func (builder *Builder) DeleteNamespace(name string) error {
-	return builder.Delete(&coreV1.Namespace{ObjectMeta: metaV1.ObjectMeta{Name: formatNamespaceName(name)}})
 }
 
 func formatNamespaceName(name string) string {

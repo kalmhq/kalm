@@ -11,18 +11,16 @@ import { Box } from "@material-ui/core";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
 
 const mapStateToProps = (state: RootState, props: any) => {
-  const applicationsRoot = state.get("applications");
-  const namespaces = applicationsRoot.get("applications").map((application) => application.get("name"));
+  const applicationsState = state.applications;
+  const namespaces = applicationsState.applications.map((application) => application.name);
   const activeNamespace =
     props.match && props.match.params && props.match.params.applicationName
       ? props.match.params.applicationName
-      : state.get("namespaces").get("active");
-  const isApplicationListLoading = applicationsRoot.get("isListLoading");
-  const isApplicationListFirstLoaded = applicationsRoot.get("isListFirstLoaded");
-  const activeApplication = applicationsRoot
-    .get("applications")
-    .find((application) => application.get("name") === activeNamespace);
-  const isAdmin = state.get("auth").get("isAdmin");
+      : state.namespaces.active;
+  const isApplicationListLoading = applicationsState.isListLoading;
+  const isApplicationListFirstLoaded = applicationsState.isListFirstLoaded;
+  const activeApplication = applicationsState.applications.find((application) => application.name === activeNamespace);
+  const isAdmin = state.auth.isAdmin;
 
   return {
     isAdmin,
@@ -40,7 +38,7 @@ const mapStateToProps = (state: RootState, props: any) => {
         return false;
       }
 
-      if (!activeNamespace || (!isAdmin && !activeApplication!.get("roles").find((x) => x === role))) {
+      if (!activeNamespace || (!isAdmin && !activeApplication!.roles.find((x) => x === role))) {
         return false;
       }
 
@@ -78,7 +76,7 @@ export const RequireRoleInNamespce = ({ requiredRole }: Options) => (WrappedComp
         );
       }
 
-      if (activeApplication && !isAdmin && !activeApplication.get("roles").find((x) => x === requiredRole)) {
+      if (activeApplication && !isAdmin && !activeApplication.roles.find((x) => x === requiredRole)) {
         return (
           <BasePage>
             <Box p={2}>

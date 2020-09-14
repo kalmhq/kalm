@@ -1,7 +1,0 @@
-apiVersion: core.kalm.dev/v1alpha1
-kind: DeployKey
-metadata:
-  name: deploykey-kalm-system-abcd
-spec:
-  scope: namespace
-  resources: ["kalm-system"]

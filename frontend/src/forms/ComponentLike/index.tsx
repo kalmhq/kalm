@@ -18,23 +18,22 @@ import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 import clsx from "clsx";
 import { push } from "connected-react-router";
-import { Field, FastField, FormikProps, withFormik, getIn } from "formik";
+import { FastField, Field, FormikProps, getIn, withFormik } from "formik";
 import { KTooltip } from "forms/Application/KTooltip";
 import { KFormikBoolCheckboxRender } from "forms/Basic/checkbox";
 import { Disks } from "forms/ComponentLike/Disks";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
-import Immutable from "immutable";
 import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 import React from "react";
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
-import { getNodeLabels } from "selectors/node";
+import { FormMidware } from "tutorials/formMidware";
 import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import { ApplicationDetails } from "types/application";
 import {
-  ComponentLikeFormContent,
+  ComponentLike,
   workloadTypeCronjob,
   workloadTypeDaemonSet,
   workloadTypeServer,
@@ -51,8 +50,8 @@ import { SectionTitle } from "widgets/SectionTitle";
 import { KFormikRadioGroupRender } from "../Basic/radio";
 import { makeSelectOption, RenderFormikSelectField } from "../Basic/select";
 import {
-  KRenderFormikCommandTextField,
   KRenderDebounceFormikTextField,
+  KRenderFormikCommandTextField,
   RenderFormikComplexValueTextField,
 } from "../Basic/textfield";
 import {
@@ -68,7 +67,7 @@ import { KFormikRenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { FormMidware } from "tutorials/formMidware";
+import { FormikNormalizeNumber } from "forms/normalizer";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -94,8 +93,6 @@ const Deploy = "Deployment Strategy";
 const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy];
 
 const mapStateToProps = (state: RootState) => {
-  const nodeLabels = getNodeLabels(state).toArray();
-
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");
   let currentTabIndex = tabs.map((t) => t.replace(/\s/g, "")).indexOf(`${anchor}`);
@@ -104,10 +101,10 @@ const mapStateToProps = (state: RootState) => {
   }
 
   return {
-    registries: state.get("registries").get("registries"),
-    tutorialState: state.get("tutorial"),
-    isSubmittingApplicationComponent: state.get("components").get("isSubmittingApplicationComponent"),
-    nodeLabels,
+    registries: state.registries.registries,
+    tutorialState: state.tutorial,
+    isSubmittingApplicationComponent: state.components.isSubmittingApplicationComponent,
+    nodeLabels: state.nodes.labels,
     currentTabIndex,
     form: COMPONENT_FORM_ID,
   };
@@ -170,16 +167,14 @@ interface RawProps {
   showSubmitButton?: boolean;
   submitButtonText?: string;
   application?: ApplicationDetails;
-  _initialValues: ComponentLikeFormContent;
-  onSubmit: (formValues: ComponentLikeFormContent) => void;
+  _initialValues: ComponentLike;
+  onSubmit: (formValues: ComponentLike) => void;
 }
 
-interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {
-  // submitAppplicationErrors?: Immutable.Map<string, any>;
-}
+interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
 export interface Props
-  extends FormikProps<ComponentLikeFormContent>,
+  extends FormikProps<ComponentLike>,
     RouteComponentProps,
     WithStyles<typeof styles>,
     ConnectedProps,
@@ -191,6 +186,9 @@ const nameValidators = (value: any) => {
   return ValidatorRequired(value) || ValidatorName(value);
 };
 
+const numberValidators = (value: any) => {
+  return ValidatorRequired(value) || ValidatorNaturalNumber(value);
+};
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
 
@@ -211,14 +209,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       return (
         <FastField
           component={KRenderDebounceFormikTextField}
-          validate={ValidatorNaturalNumber}
+          validate={numberValidators}
           name="replicas"
           margin
           label="Replicas"
           helperText={sc.REPLICA_INPUT_HELPER}
           type="number"
           min="0"
-          // normalize={NormalizeNumber}
+          normalize={FormikNormalizeNumber}
         />
       );
     }
@@ -905,7 +903,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       return false;
     }
 
-    return !registries.find((r) => r.get("host").includes(parts[0]));
+    return !registries.find((r) => r.host.includes(parts[0]));
   };
 
   private renderPrivateRegistryAlert = () => {
@@ -993,9 +991,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Box>
         {process.env.REACT_APP_DEBUG === "true" ? (
-          <pre style={{ maxWidth: 1500, background: "#eee" }}>
-            {JSON.stringify(Immutable.fromJS(values).delete("metrics").delete("pods").delete("services"), undefined, 2)}
-          </pre>
+          <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
         ) : null}
         {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
         {this.renderDeployButton()}
@@ -1004,10 +1000,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
-const form = withFormik<
-  ConnectedProps & RawProps & WithStyles<typeof styles> & RouteComponentProps,
-  ComponentLikeFormContent
->({
+const form = withFormik<ConnectedProps & RawProps & WithStyles<typeof styles> & RouteComponentProps, ComponentLike>({
   mapPropsToValues: (props) => props._initialValues,
   enableReinitialize: true,
   validate: formikValidateOrNotBlockByTutorial,

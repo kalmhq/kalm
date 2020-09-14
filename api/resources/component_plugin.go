@@ -18,7 +18,7 @@ type ComponentPluginListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetComponentPluginListChannel(listOptions metaV1.ListOptions) *ComponentPluginListChannel {
+func (resourceManager *ResourceManager) GetComponentPluginListChannel(listOptions metaV1.ListOptions) *ComponentPluginListChannel {
 	channel := &ComponentPluginListChannel{
 		List:  make(chan []v1alpha1.ComponentPlugin, 1),
 		Error: make(chan error, 1),
@@ -27,7 +27,7 @@ func (builder *Builder) GetComponentPluginListChannel(listOptions metaV1.ListOpt
 	go func() {
 		var fetched v1alpha1.ComponentPluginList
 
-		err := builder.List(&fetched)
+		err := resourceManager.List(&fetched)
 
 		if err != nil {
 			channel.List <- nil
@@ -48,15 +48,15 @@ func (builder *Builder) GetComponentPluginListChannel(listOptions metaV1.ListOpt
 	return channel
 }
 
-func (builder *Builder) GetComponentPlugins() ([]ComponentPlugin, error) {
+func (resourceManager *ResourceManager) GetComponentPlugins() ([]ComponentPlugin, error) {
 	resourceChannels := &ResourceChannels{
-		ComponentPluginList: builder.GetComponentPluginListChannel(ListAll),
+		ComponentPluginList: resourceManager.GetComponentPluginListChannel(ListAll),
 	}
 
 	resources, err := resourceChannels.ToResources()
 
 	if err != nil {
-		builder.Logger.Error(err, "channels to resources error")
+		resourceManager.Logger.Error(err, "channels to resources error")
 		return nil, err
 	}
 

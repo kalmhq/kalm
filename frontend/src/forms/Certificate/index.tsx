@@ -1,45 +1,40 @@
 import { Box, Button, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
+import { setSuccessNotificationAction } from "actions/notification";
+import copy from "copy-to-clipboard";
 import { Field, Form, Formik } from "formik";
+import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
 import { ValidateHost } from "forms/validator";
-import Immutable from "immutable";
+import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { FormMidware } from "tutorials/formMidware";
 import { TDispatchProp } from "types";
-import { CertificateIssuerList } from "types/certificate";
-import { CERTIFICATE_FORM_ID } from "../formIDs";
-import { Caption, Body } from "widgets/Label";
-import { Link } from "react-router-dom";
-import { KPanel } from "widgets/KPanel";
-import copy from "copy-to-clipboard";
-import { setSuccessNotificationAction } from "actions/notification";
-import { CertificateFormTypeContent, selfManaged } from "types/certificate";
+import { CertificateFormType, selfManaged } from "types/certificate";
 import DomainStatus from "widgets/DomainStatus";
+import { KPanel } from "widgets/KPanel";
+import { Body, Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import sc from "../../utils/stringConstants";
-import { extractDomainsFromCertificateContent } from "permission/utils";
-import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
+import { CERTIFICATE_FORM_ID } from "../formIDs";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    certificateIssuers: state.get("certificates").get("certificateIssuers") as CertificateIssuerList,
-    ingressIP: state.get("cluster").get("info").get("ingressIP", "---.---.---.---"),
-    acmeServer: state.get("certificates").get("acmeServer"),
-    acmeServerIsReady:
-      state.get("certificates").get("acmeServer") !== null
-        ? state.get("certificates").get("acmeServer")?.get("ready")
-        : null,
-    isLoadingAcmeServer: state.get("certificates").get("isAcmeServerLoading"),
+    certificateIssuers: state.certificates.certificateIssuers,
+    ingressIP: state.cluster.info.ingressIP || "---.---.---.---",
+    acmeServer: state.certificates.acmeServer,
+    acmeServerIsReady: state.certificates.acmeServer !== null ? state.certificates.acmeServer?.ready : null,
+    isLoadingAcmeServer: state.certificates.isAcmeServerLoading,
   };
 };
 
 interface OwnProps {
   isEdit?: boolean;
   onSubmit: any;
-  initialValues: CertificateFormTypeContent;
+  initialValues: CertificateFormType;
 }
 
 const styles = (theme: Theme) =>
@@ -74,7 +69,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
 
   public componentDidUpdate = (prevProps: Props) => {};
 
-  private validate = async (values: CertificateFormTypeContent) => {
+  private validate = async (values: CertificateFormType) => {
     let errors: any = {};
 
     if (values.managedType === selfManaged && (!values.domains || values.domains.length < 1)) {
@@ -107,10 +102,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
       >
         {(formikProps) => {
           const { values, dirty, touched, errors, setFieldValue, isSubmitting } = formikProps;
-          const icons = Immutable.List(
-            values.domains.map((domain, index) =>
-              Array.isArray(errors.domains) && errors.domains[index] ? undefined : <DomainStatus domain={domain} />,
-            ),
+          const icons = values.domains.map((domain, index) =>
+            Array.isArray(errors.domains) && errors.domains[index] ? undefined : <DomainStatus domain={domain} />,
           );
           if (!dirty && values.selfManagedCertContent && values.domains.length <= 0) {
             const domains = extractDomainsFromCertificateContent(values.selfManagedCertContent);

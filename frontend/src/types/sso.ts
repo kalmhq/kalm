@@ -1,5 +1,3 @@
-import { ImmutableMap } from "typings";
-import Immutable from "immutable";
 import { ID } from "utils";
 
 export const LOAD_SSO_CONFIG_FULFILLED = "LOAD_SSO_CONFIG_FULFILLED";
@@ -36,7 +34,7 @@ export const DELETE_PROTECTED_ENDPOINT_FAILED = "DELETE_PROTECTED_ENDPOINT_FAILE
 
 export interface LoadProtectedEndpointsAction {
   type: typeof LOAD_PROTECTED_ENDPOINTS_FULFILLED;
-  payload: Immutable.List<ProtectedEndpoint>;
+  payload: ProtectedEndpoint[];
 }
 
 export interface DeleteProtectedEndpointAction {
@@ -53,15 +51,7 @@ export interface UpdateProtectedEndpointAction {
   payload: ProtectedEndpoint;
 }
 
-export type ProtectedEndpoint = ImmutableMap<{
-  name: string;
-  namespace: string;
-  endpointName: string;
-  ports?: Immutable.List<number>;
-  groups?: Immutable.List<string>;
-}>;
-
-export interface ProtectedEndpointFormType {
+export interface ProtectedEndpoint {
   name: string;
   namespace: string;
   endpointName: string;
@@ -69,7 +59,7 @@ export interface ProtectedEndpointFormType {
   groups?: string[];
 }
 
-export const newEmptyProtectedEndpoint = (): ProtectedEndpointFormType => {
+export const newEmptyProtectedEndpoint = (): ProtectedEndpoint => {
   return {
     name: "",
     namespace: "",
@@ -134,81 +124,44 @@ export type SSO_CONNECTOR_TYPE = string;
 export const SSO_CONNECTOR_TYPE_GITHUB: SSO_CONNECTOR_TYPE = "github";
 export const SSO_CONNECTOR_TYPE_GITLAB: SSO_CONNECTOR_TYPE = "gitlab";
 
-export interface GitlabConfigFormType {
+export interface GitlabConfig {
   baseURL: string;
   clientID: string;
   clientSecret: string;
   groups: string[];
 }
 
-export type GitlabConfig = ImmutableMap<{
-  baseURL: string;
-  clientID: string;
-  clientSecret: string;
-  groups: Immutable.List<string>;
-}>;
-
-export interface GithubOrgFormType {
+export interface GithubOrg {
   name: string;
   teams: string[];
 }
 
-export type GithubOrg = ImmutableMap<{
-  name: string;
-  teams: Immutable.List<string>;
-}>;
-
-export interface GithubConfigFormType {
+export interface GithubConfig {
   clientID: string;
   clientSecret: string;
-  orgs: GithubOrgFormType[];
+  orgs: GithubOrg[];
 }
 
-export type GithubConfig = ImmutableMap<{
-  clientID: string;
-  clientSecret: string;
-  orgs: Immutable.List<GithubOrg>;
-}>;
-
-export interface SSOGithubConnectorFormType {
-  id: string;
-  name: string;
-  type: typeof SSO_CONNECTOR_TYPE_GITHUB;
-  config: GithubConfigFormType;
-}
-
-export type SSOGithubConnector = ImmutableMap<{
+export interface SSOGithubConnector {
   id: string;
   name: string;
   type: typeof SSO_CONNECTOR_TYPE_GITHUB;
   config: GithubConfig;
-}>;
-
-export interface SSOGitlabConnectorFormType {
-  id: string;
-  name: string;
-  type: typeof SSO_CONNECTOR_TYPE_GITLAB;
-  config: GitlabConfigFormType;
 }
 
-export type SSOGitlabConnector = ImmutableMap<{
+export interface SSOGitlabConnector {
   id: string;
   name: string;
   type: typeof SSO_CONNECTOR_TYPE_GITLAB;
   config: GitlabConfig;
-}>;
-
-export interface SSOConfigFormType {
-  domain: string;
-  connectors?: Array<SSOGithubConnectorFormType | SSOGitlabConnectorFormType>;
 }
 
-export type SSOConfig = ImmutableMap<{
+export interface SSOConfig {
   domain: string;
-  connectors?: Immutable.List<SSOGithubConnector | SSOGitlabConnector>;
-}>;
+  connectors?: Array<SSOGithubConnector | SSOGitlabConnector>;
+}
 
-export const newEmptyGithubConnector = (): SSOGithubConnectorFormType => {
+export const newEmptyGithubConnector = (): SSOGithubConnector => {
   return {
     id: ID(),
     name: "",
@@ -221,7 +174,7 @@ export const newEmptyGithubConnector = (): SSOGithubConnectorFormType => {
   };
 };
 
-export const newEmptyGitlabConnector = (): SSOGitlabConnectorFormType => {
+export const newEmptyGitlabConnector = (): SSOGitlabConnector => {
   return {
     id: ID(),
     name: "",
@@ -235,7 +188,7 @@ export const newEmptyGitlabConnector = (): SSOGitlabConnectorFormType => {
   };
 };
 
-export const newEmptySSOConfig = (): SSOConfigFormType => {
+export const newEmptySSOConfig = (): SSOConfig => {
   return {
     domain: "",
     connectors: [],

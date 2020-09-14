@@ -1,12 +1,12 @@
-import React from "react";
-import { connect } from "react-redux";
-import { TDispatchProp } from "types";
-import { newEmptyCertificateForm, Certificate, CertificateFormTypeContent } from "types/certificate";
 import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { createCertificateAction } from "actions/certificate";
 import { push } from "connected-react-router";
 import { CertificateForm } from "forms/Certificate";
 import { BasePage } from "pages/BasePage";
+import React from "react";
+import { connect } from "react-redux";
+import { TDispatchProp } from "types";
+import { Certificate, CertificateFormType, newEmptyCertificateForm } from "types/certificate";
 import { H6 } from "widgets/Label";
 
 const styles = (theme: Theme) =>
@@ -20,7 +20,7 @@ interface State {
   newCert: Certificate;
 }
 class CertificateNewRaw extends React.Component<Props, State> {
-  private submit = async (certificate: CertificateFormTypeContent) => {
+  private submit = async (certificate: CertificateFormType) => {
     try {
       const { dispatch } = this.props;
       const cert = await dispatch(createCertificateAction(certificate, false));
@@ -36,7 +36,7 @@ class CertificateNewRaw extends React.Component<Props, State> {
   private onSubmitSuccess = () => {
     const { dispatch } = this.props;
     const { newCert } = this.state;
-    dispatch(push(`/certificates/${newCert.get("name")}`));
+    dispatch(push(`/certificates/${newCert.name}`));
   };
 
   public render() {

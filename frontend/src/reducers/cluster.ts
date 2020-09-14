@@ -1,4 +1,5 @@
-import Immutable from "immutable";
+import produce from "immer";
+import { Actions } from "types";
 import {
   ClusterInfo,
   LOAD_CLUSTER_INFO_FAILED,
@@ -6,8 +7,6 @@ import {
   LOAD_CLUSTER_INFO_PENDING,
 } from "types/cluster";
 import { LOGOUT } from "types/common";
-import { Actions } from "types";
-import { ImmutableMap } from "typings";
 
 export interface DependencyStateContent {
   info: ClusterInfo;
@@ -15,35 +14,36 @@ export interface DependencyStateContent {
   isFirstLoaded: boolean;
 }
 
-export type State = ImmutableMap<DependencyStateContent>;
+export type State = DependencyStateContent;
 
-const initialState: State = Immutable.Map({
-  info: Immutable.Map(),
-  isListLoading: false,
+const initialState: State = {
+  info: {} as any,
+  isLoading: false,
   isFirstLoaded: false,
-});
+};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOGOUT: {
       return initialState;
     }
     case LOAD_CLUSTER_INFO_PENDING: {
-      state = state.set("isLoading", true);
-      break;
+      state.isLoading = true;
+      return;
     }
     case LOAD_CLUSTER_INFO_FAILED: {
-      state = state.set("isLoading", false);
-      break;
+      state.isLoading = false;
+      return;
     }
     case LOAD_CLUSTER_INFO_FULFILlED: {
-      state = state.set("isFirstLoaded", true).set("isLoading", false);
-      state = state.set("info", action.payload);
-      break;
+      state.isFirstLoaded = true;
+      state.isLoading = false;
+      state.info = action.payload;
+      return;
     }
   }
 
   return state;
-};
+}, initialState);
 
 export default reducer;

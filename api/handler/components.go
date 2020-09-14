@@ -89,7 +89,11 @@ func (h *ApiHandler) handleDeleteComponent(c echo.Context) error {
 // helper
 
 func (h *ApiHandler) deleteComponent(c echo.Context) error {
-	err := h.Builder(c).Delete(&v1alpha1.Component{ObjectMeta: metaV1.ObjectMeta{
+	if !h.clientManager.CanEditNamespace(getCurrentUser(c), c.Param("applicationName")) {
+		return resources.NoNamespaceEditorRoleError(c.Param("applicationName"))
+	}
+
+	err := h.resourceManager.Delete(&v1alpha1.Component{ObjectMeta: metaV1.ObjectMeta{
 		Name:      c.Param("name"),
 		Namespace: c.Param("applicationName"),
 	}})
@@ -98,8 +102,12 @@ func (h *ApiHandler) deleteComponent(c echo.Context) error {
 }
 
 func (h *ApiHandler) getComponent(c echo.Context) (*v1alpha1.Component, error) {
+	if !h.clientManager.CanViewNamespace(getCurrentUser(c), c.Param("applicationName")) {
+		return nil, resources.NoNamespaceViewerRoleError(c.Param("applicationName"))
+	}
+
 	var component v1alpha1.Component
-	err := h.Builder(c).Get(c.Param("applicationName"), c.Param("name"), &component)
+	err := h.resourceManager.Get(c.Param("applicationName"), c.Param("name"), &component)
 
 	if err != nil {
 		return nil, err
@@ -109,8 +117,12 @@ func (h *ApiHandler) getComponent(c echo.Context) (*v1alpha1.Component, error) {
 }
 
 func (h *ApiHandler) getComponentList(c echo.Context) (*v1alpha1.ComponentList, error) {
+	if !h.clientManager.CanViewNamespace(getCurrentUser(c), c.Param("applicationName")) {
+		return nil, resources.NoNamespaceViewerRoleError(c.Param("applicationName"))
+	}
+
 	var fetched v1alpha1.ComponentList
-	err := h.Builder(c).List(&fetched, client.InNamespace(c.Param("applicationName")))
+	err := h.resourceManager.List(&fetched, client.InNamespace(c.Param("applicationName")))
 	if err != nil {
 		return nil, err
 	}
@@ -118,18 +130,22 @@ func (h *ApiHandler) getComponentList(c echo.Context) (*v1alpha1.ComponentList, 
 }
 
 func (h *ApiHandler) createComponent(c echo.Context) (*v1alpha1.Component, error) {
+	if !h.clientManager.CanEditNamespace(getCurrentUser(c), c.Param("applicationName")) {
+		return nil, resources.NoNamespaceEditorRoleError(c.Param("applicationName"))
+	}
+
 	crdComponent, plugins, err := getComponentFromContext(c)
 	if err != nil {
 		return nil, err
 	}
 
 	crdComponent.Namespace = c.Param("applicationName")
-	err = h.Builder(c).Create(crdComponent)
+	err = h.resourceManager.Create(crdComponent)
 	if err != nil {
 		return nil, err
 	}
 
-	err = h.Builder(c).UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, plugins)
+	err = h.resourceManager.UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, plugins)
 
 	if err != nil {
 		return nil, err
@@ -144,11 +160,15 @@ func (h *ApiHandler) updateComponent(c echo.Context) (*v1alpha1.Component, error
 		return nil, err
 	}
 
-	if err := h.Builder(c).Apply(crdComponent); err != nil {
+	if !h.clientManager.CanEditNamespace(getCurrentUser(c), crdComponent.Namespace) {
+		return nil, resources.NoNamespaceEditorRoleError(crdComponent.Namespace)
+	}
+
+	if err := h.resourceManager.Apply(crdComponent); err != nil {
 		return nil, err
 	}
 
-	err = h.Builder(c).UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, plugins)
+	err = h.resourceManager.UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, plugins)
 
 	if err != nil {
 		return nil, err
@@ -200,9 +220,9 @@ func getComponentFromContext(c echo.Context) (*v1alpha1.Component, []runtime.Raw
 }
 
 func (h *ApiHandler) componentResponse(c echo.Context, component *v1alpha1.Component) (*resources.ComponentDetails, error) {
-	return h.Builder(c).BuildComponentDetails(component, nil)
+	return h.resourceManager.BuildComponentDetails(component, nil)
 }
 
 func (h *ApiHandler) componentListResponse(c echo.Context, componentList *v1alpha1.ComponentList) ([]resources.ComponentDetails, error) {
-	return h.Builder(c).BuildComponentDetailsResponse(componentList)
+	return h.resourceManager.BuildComponentDetailsResponse(componentList)
 }

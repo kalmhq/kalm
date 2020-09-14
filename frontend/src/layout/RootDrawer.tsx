@@ -26,17 +26,20 @@ import {
   KalmRoutesIcon,
   KalmVolumeIcon,
   SettingIcon,
+  PeopleIcon,
 } from "widgets/Icon";
 import { blinkTopProgressAction } from "actions/settings";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 
 const mapStateToProps = (state: RootState) => {
-  const auth = state.get("auth");
-  const isAdmin = auth.get("isAdmin");
-  const entity = auth.get("entity");
+  const auth = state.auth;
+  const isAdmin = auth.isAdmin;
+  const entity = auth.entity;
   return {
     pathname: window.location.pathname,
-    isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
-    activeNamespaceName: state.get("namespaces").get("active"),
+    isOpenRootDrawer: state.settings.isOpenRootDrawer,
+    activeNamespaceName: state.namespaces.active,
     isAdmin,
     entity,
   };
@@ -104,81 +107,110 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
+interface Props
+  extends WithStyles<typeof styles>,
+    ReturnType<typeof mapStateToProps>,
+    WithNamespaceProps,
+    WithUserAuthProps {
   dispatch: TDispatch;
 }
 
 interface State {}
-
-const sideBarData = [
-  {
-    name: "Application",
-    items: [
-      { icon: KalmApplicationIcon, text: "Apps", to: "/applications" },
-      {
-        icon: KalmCertificatesIcon,
-        text: "Certificates",
-        to: "/certificates",
-      },
-      {
-        text: "Routes",
-        to: "/routes",
-        icon: KalmRoutesIcon,
-      },
-      {
-        icon: CIIcon,
-        text: "CI / CD",
-        to: "/ci",
-      },
-    ],
-  },
-  {
-    name: "Cluster",
-    items: [
-      {
-        icon: KalmNodeIcon,
-        text: "Nodes",
-        to: "/cluster/nodes",
-      },
-      {
-        icon: KalmIngressIcon,
-        text: "Load Balancer",
-        to: "/cluster/loadbalancer",
-      },
-      {
-        icon: KalmVolumeIcon,
-        text: "Disks",
-        to: "/cluster/disks",
-      },
-      {
-        icon: KalmRegistryIcon,
-        text: "Registries",
-        to: "/cluster/registries",
-      },
-    ],
-  },
-  {
-    name: "Settings",
-    items: [
-      {
-        icon: SettingIcon,
-        text: "Single Sign-on",
-        to: "/sso",
-      },
-      // {
-      //   icon: SettingIcon,
-      //   text: "System",
-      //   to: "/system",
-      // },
-    ],
-  },
-];
 
 class RootDrawerRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
 
     this.state = {};
+  }
+
+  private getSideBarData() {
+    const { activeNamespaceName, canViewCluster, canEditNamespace, canEditCluster } = this.props;
+
+    return [
+      {
+        name: "Application",
+        items: [
+          { icon: KalmApplicationIcon, text: "Apps", to: "/applications" },
+          canViewCluster()
+            ? {
+                icon: KalmCertificatesIcon,
+                text: "Certificates",
+                to: "/certificates",
+              }
+            : null,
+          {
+            text: "Routes",
+            to: "/routes",
+            icon: KalmRoutesIcon,
+          },
+          canEditNamespace(activeNamespaceName) || canEditCluster()
+            ? {
+                icon: CIIcon,
+                text: "CI / CD",
+                to: "/ci",
+              }
+            : null,
+        ],
+      },
+      {
+        name: "Cluster",
+        items: [
+          canEditCluster()
+            ? {
+                icon: PeopleIcon,
+                text: "Members",
+                to: "/cluster/members",
+              }
+            : null,
+          canViewCluster()
+            ? {
+                icon: KalmNodeIcon,
+                text: "Nodes",
+                to: "/cluster/nodes",
+              }
+            : null,
+          canViewCluster()
+            ? {
+                icon: KalmIngressIcon,
+                text: "Load Balancer",
+                to: "/cluster/loadbalancer",
+              }
+            : null,
+          canViewCluster()
+            ? {
+                icon: KalmVolumeIcon,
+                text: "Disks",
+                to: "/cluster/disks",
+              }
+            : null,
+          canEditNamespace(activeNamespaceName) || canViewCluster()
+            ? {
+                icon: KalmRegistryIcon,
+                text: "Registries",
+                to: "/cluster/registries",
+              }
+            : null,
+        ],
+      },
+      {
+        name: "Settings",
+        items: [
+          canViewCluster()
+            ? {
+                icon: SettingIcon,
+                text: "Single Sign-on",
+                to: "/sso",
+              }
+            : null,
+          // {
+          //   icon: SettingIcon,
+          //   text: "System",
+          //   to: "/system",
+          // },
+        ],
+      },
+    ];
   }
 
   render() {
@@ -198,7 +230,20 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
         }}
       >
         <List style={{ paddingTop: open ? 8 : 0 }}>
-          {sideBarData.map((group) => {
+          {this.getSideBarData().map((group) => {
+            if (!group) {
+              return null;
+            } else {
+              let emptyGroup = true;
+              group.items.forEach((item) => {
+                if (item) {
+                  emptyGroup = false;
+                }
+              });
+              if (emptyGroup) {
+                return null;
+              }
+            }
             return (
               <React.Fragment key={group.name}>
                 {open ? (
@@ -208,6 +253,9 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
                 ) : null}
 
                 {group.items!.map((item) => {
+                  if (!item) {
+                    return null;
+                  }
                   return (
                     <ListItem
                       onClick={() => blinkTopProgressAction()}
@@ -240,4 +288,4 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const RootDrawer = connect(mapStateToProps)(withStyles(styles)(RootDrawerRaw));
+export const RootDrawer = withNamespace(withUserAuth(connect(mapStateToProps)(withStyles(styles)(RootDrawerRaw))));

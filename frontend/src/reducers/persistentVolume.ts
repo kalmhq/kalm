@@ -1,86 +1,89 @@
-import Immutable from "immutable";
+import produce from "immer";
 import { Actions } from "types";
-import { ImmutableMap } from "typings";
 import { LOGOUT } from "types/common";
 import {
   DELETE_PERSISTENT_VOLUME,
   LOAD_PERSISTENT_VOLUMES,
+  LOAD_SIMPLE_OPTIONS,
+  LOAD_STATEFULSET_OPTIONS,
   LOAD_STORAGE_CLASSES,
   PersistentVolumes,
   StorageClasses,
   VolumeOptions,
-  LOAD_SIMPLE_OPTIONS,
-  LOAD_STATEFULSET_OPTIONS,
 } from "types/disk";
 import {
-  RESOURCE_TYPE_VOLUME,
-  WATCHED_RESOURCE_CHANGE,
   RESOURCE_ACTION_ADD,
   RESOURCE_ACTION_DELETE,
   RESOURCE_ACTION_UPDATE,
+  RESOURCE_TYPE_VOLUME,
+  WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
-import { addOrUpdateInList, removeInList, removeInListByName } from "./utils";
+import { addOrUpdateInArray, removeInArray, removeInArrayByName } from "./utils";
 
-export type State = ImmutableMap<{
+export type State = {
   persistentVolumes: PersistentVolumes;
   storageClasses: StorageClasses;
   simpleOptions: VolumeOptions; // for simple workloads, including: Deployment, CronJob and DaemonSet
   statefulSetOptions: VolumeOptions; // for StatefulSet
-}>;
+};
 
-const initialState: State = Immutable.Map({
-  persistentVolumes: Immutable.List([]),
-  storageClasses: Immutable.List([]),
-  simpleOptions: Immutable.List([]),
-  statefulSetOptions: Immutable.List([]),
-});
+const initialState: State = {
+  persistentVolumes: [],
+  storageClasses: [],
+  simpleOptions: [],
+  statefulSetOptions: [],
+};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOGOUT: {
       return initialState;
     }
     case LOAD_PERSISTENT_VOLUMES: {
-      return state.set("persistentVolumes", action.payload.persistentVolumes);
+      state.persistentVolumes = action.payload.persistentVolumes;
+      return;
     }
     case LOAD_STORAGE_CLASSES: {
-      return state.set("storageClasses", action.payload.storageClasses);
+      state.storageClasses = action.payload.storageClasses;
+      return;
     }
     case DELETE_PERSISTENT_VOLUME: {
-      state = state.update("persistentVolumes", (x) => removeInListByName(x, action.payload.name));
-      return state;
+      state.persistentVolumes = removeInArrayByName(state.persistentVolumes, action.payload.name);
+      return;
     }
     case WATCHED_RESOURCE_CHANGE: {
       if (action.kind !== RESOURCE_TYPE_VOLUME) {
-        return state;
+        return;
       }
 
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          state = state.update("persistentVolumes", (x) => addOrUpdateInList(x, action.payload.data));
+          state.persistentVolumes = addOrUpdateInArray(state.persistentVolumes, action.payload.data);
           break;
         }
         case RESOURCE_ACTION_DELETE: {
-          state = state.update("persistentVolumes", (x) => removeInList(x, action.payload.data));
+          state.persistentVolumes = removeInArray(state.persistentVolumes, action.payload.data);
           break;
         }
         case RESOURCE_ACTION_UPDATE: {
-          state = state.update("persistentVolumes", (x) => addOrUpdateInList(x, action.payload.data));
+          state.persistentVolumes = addOrUpdateInArray(state.persistentVolumes, action.payload.data);
           break;
         }
       }
 
-      break;
+      return;
     }
     case LOAD_SIMPLE_OPTIONS: {
-      return state.set("simpleOptions", action.payload.simpleOptions);
+      state.simpleOptions = action.payload.simpleOptions;
+      return;
     }
     case LOAD_STATEFULSET_OPTIONS: {
-      return state.set("statefulSetOptions", action.payload.statefulSetOptions);
+      state.statefulSetOptions = action.payload.statefulSetOptions;
+      return;
     }
   }
 
   return state;
-};
+}, initialState);
 
 export default reducer;

@@ -7,11 +7,12 @@ import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { ProtectedEndpointFormType } from "types/sso";
+import { ProtectedEndpoint } from "types/sso";
 import sc from "utils/stringConstants";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
 import { ValidatorRequired } from "../validator";
+import { Application } from "types/application";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -20,7 +21,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    allComponents: state.get("components").get("components"),
+    allComponents: state.components.components,
   };
 };
 
@@ -63,13 +64,13 @@ const validatePorts = (values?: number[]) => {
 export interface Props {
   isEdit?: boolean;
   onSubmit: any;
-  initial: ProtectedEndpointFormType;
+  initial: ProtectedEndpoint;
 }
 
 export interface FinalProps
   extends Props,
     WithNamespaceProps,
-    FormikProps<ProtectedEndpointFormType>,
+    FormikProps<ProtectedEndpoint>,
     ReturnType<typeof mapStateToProps>,
     WithStyles<typeof styles> {}
 
@@ -95,26 +96,22 @@ class ProtectedEndpointFormRaw extends React.PureComponent<FinalProps> {
   public render() {
     const { classes, dirty, values, applications, allComponents, isSubmitting } = this.props;
 
-    const applicationOptions = applications
-      .map((a) => ({
-        value: a.get("name"),
-        text: a.get("name"),
-      }))
-      .toArray();
+    const applicationOptions = applications.map((a: Application) => ({
+      value: a.name,
+      text: a.name,
+    }));
 
     let componentOptions: { value: string; text: string }[] = [];
     const selectApplication = values.namespace;
 
     if (selectApplication) {
-      const components = allComponents.get(selectApplication);
+      const components = allComponents[selectApplication];
 
       if (components) {
-        componentOptions = components
-          .map((c) => ({
-            value: c.get("name"),
-            text: c.get("name"),
-          }))
-          .toArray();
+        componentOptions = components.map((c) => ({
+          value: c.name,
+          text: c.name,
+        }));
       }
     }
 
@@ -192,23 +189,13 @@ class ProtectedEndpointFormRaw extends React.PureComponent<FinalProps> {
   }
 }
 
-// export const ProtectedEndpointForm = reduxForm<ProtectedEndpoint, Props>({
-//   form: PROTECTED_ENDPOINT_ID,
-//   enableReinitialize: true,
-//   keepDirtyOnReinitialize: false,
-//   initialValues: Immutable.Map(),
-//   onSubmitFail: (...args) => {
-//     console.log("submit failed", args);
-//   },
-// })(connect(mapStateToProps)(withNamespace(withStyles(styles)(ProtectedEndpointFormRaw))));
-
 const connectedForm = connect(mapStateToProps)(withNamespace(withStyles(styles)(ProtectedEndpointFormRaw)));
 
-export const ProtectedEndpointForm = withFormik<Props, ProtectedEndpointFormType>({
+export const ProtectedEndpointForm = withFormik<Props, ProtectedEndpoint>({
   mapPropsToValues: (props) => {
     return props.initial;
   },
-  validate: (values: ProtectedEndpointFormType) => {
+  validate: (values: ProtectedEndpoint) => {
     let errors = {};
     return errors;
   },

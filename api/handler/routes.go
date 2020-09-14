@@ -6,7 +6,8 @@ import (
 )
 
 func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
-	list, err := h.Builder(c).GetHttpRoutes("")
+	list, err := h.resourceManager.GetHttpRoutes("")
+	list = h.filterAuthorizedHttpRoutes(c, list)
 
 	if err != nil {
 		return err
@@ -16,7 +17,8 @@ func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleListRoutes(c echo.Context) error {
-	list, err := h.Builder(c).GetHttpRoutes(c.Param("namespace"))
+	list, err := h.resourceManager.GetHttpRoutes(c.Param("namespace"))
+	list = h.filterAuthorizedHttpRoutes(c, list)
 
 	if err != nil {
 		return err
@@ -32,7 +34,11 @@ func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
 		return err
 	}
 
-	if route, err = h.Builder(c).CreateHttpRoute(route); err != nil {
+	if !h.clientManager.CanOperateHttpRoute(getCurrentUser(c), "edit", route) {
+		return resources.InsufficientPermissionsError
+	}
+
+	if route, err = h.resourceManager.CreateHttpRoute(route); err != nil {
 		return err
 	}
 
@@ -46,7 +52,11 @@ func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
 		return err
 	}
 
-	if route, err = h.Builder(c).UpdateHttpRoute(route); err != nil {
+	if !h.clientManager.CanOperateHttpRoute(getCurrentUser(c), "edit", route) {
+		return resources.InsufficientPermissionsError
+	}
+
+	if route, err = h.resourceManager.UpdateHttpRoute(route); err != nil {
 		return err
 	}
 
@@ -54,7 +64,17 @@ func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
 }
 
 func (h *ApiHandler) handleDeleteRoute(c echo.Context) (err error) {
-	if err = h.Builder(c).DeleteHttpRoute(c.Param("namespace"), c.Param("name")); err != nil {
+	route, err := h.resourceManager.GetHttpRoute(c.Param("namespace"), c.Param("name"))
+
+	if err != nil {
+		return nil
+	}
+
+	if !h.clientManager.CanOperateHttpRoute(getCurrentUser(c), "edit", route) {
+		return resources.InsufficientPermissionsError
+	}
+
+	if err = h.resourceManager.DeleteHttpRoute(route.Namespace, route.Name); err != nil {
 		return err
 	}
 
@@ -69,4 +89,18 @@ func getHttpRouteFromContext(c echo.Context) (*resources.HttpRoute, error) {
 	}
 
 	return &route, nil
+}
+
+func (h *ApiHandler) filterAuthorizedHttpRoutes(c echo.Context, records []*resources.HttpRoute) []*resources.HttpRoute {
+	l := len(records)
+
+	for i := 0; i < l; i++ {
+		if !h.clientManager.CanOperateHttpRoute(getCurrentUser(c), "view", records[i]) {
+			records[l-1], records[i] = records[i], records[l-1]
+			i--
+			l--
+		}
+	}
+
+	return records[:l]
 }

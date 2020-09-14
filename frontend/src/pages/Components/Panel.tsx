@@ -52,13 +52,13 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     const { component } = this.props;
     let runningCount = 0;
 
-    component.get("pods").forEach((pod) => {
-      if (pod.get("status") === "Succeeded" || pod.get("status") === "Running") {
+    component.pods?.forEach((pod) => {
+      if (pod.status === "Succeeded" || pod.status === "Running") {
         runningCount = runningCount + 1;
       }
     });
 
-    return `${runningCount}/${component.get("pods").size}`;
+    return `${runningCount}/${component.pods.length}`;
   };
 
   private renderPods() {
@@ -67,9 +67,9 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     return (
       <Expansion title="pods" defaultUnfold nested>
         <PodsTable
-          activeNamespaceName={application.get("name")}
-          pods={component.get("pods")}
-          workloadType={component.get("workloadType") as WorkloadType}
+          activeNamespaceName={application.name}
+          pods={component.pods}
+          workloadType={component.workloadType as WorkloadType}
         />
       </Expansion>
     );
@@ -86,7 +86,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
             color="primary"
             size="small"
             variant="outlined"
-            to={`/applications/${application.get("name")}/components/${component.get("name")}`}
+            to={`/applications/${application.name}/components/${component.name}`}
           >
             View More Details
           </Button>
@@ -97,7 +97,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
             color="primary"
             size="small"
             variant="outlined"
-            to={`/applications/${application.get("name")}/components/${component.get("name")}/edit`}
+            to={`/applications/${application.name}/components/${component.name}/edit`}
           >
             Edit
           </Button>
@@ -106,10 +106,10 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
             useText
             popupId="delete-component-popup"
             popupTitle="DELETE COMPONENT?"
-            confirmedAction={() => dispatch(deleteComponentAction(component.get("name"), application.get("name")))}
+            confirmedAction={() => dispatch(deleteComponentAction(component.name, application.name))}
           />
         </Box>
-        <ComponentBrifeInfo component={component} activeNamespaceName={application.get("name")} />
+        <ComponentBrifeInfo component={component} activeNamespaceName={application.name} />
 
         {this.renderPods()}
       </Box>
@@ -130,8 +130,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
           <Grid container spacing={2}>
             <Grid item>
               <Box display="flex" minWidth={200}>
-                <ComponentStatus component={component} enableMarginRight />{" "}
-                <Subtitle1>{component.get("name")}</Subtitle1>
+                <ComponentStatus component={component} enableMarginRight /> <Subtitle1>{component.name}</Subtitle1>
               </Box>
             </Grid>
             <Grid item>
@@ -140,7 +139,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
               </Box>
             </Grid>
             <Grid item>
-              <Subtitle1>{component.get("workloadType")}</Subtitle1>
+              <Subtitle1>{component.workloadType}</Subtitle1>
             </Grid>
           </Grid>
         }
