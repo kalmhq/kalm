@@ -33,7 +33,6 @@ export const deletePersistentVolumeAction = (namespace: string, name: string): T
 export const loadStorageClassesAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     const storageClasses = await api.getStorageClasses();
-
     dispatch({
       type: LOAD_STORAGE_CLASSES,
       payload: { storageClasses },

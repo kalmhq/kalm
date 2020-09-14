@@ -1,14 +1,19 @@
-import { Api } from "../base";
 import Immutable from "immutable";
-import { CertificateFormType, CertificateIssuerFormType, AcmeServerInfo, AcmeServerFormType } from "types/certificate";
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
-import { HttpRoute } from "types/route";
-import { RegistryType } from "types/registry";
-import { RoleBindingsRequestBody } from "types/user";
-import MockStore from "../mockStore";
-import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { DeployKey } from "types/deployKey";
+import {
+  CertificateFormTypeContent,
+  CertificateIssuerFormTypeContent,
+  AcmeServerInfo,
+  AcmeServerFormType,
+} from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
+import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
+import { RegistryType } from "types/registry";
+import { HttpRoute } from "types/route";
+import { ProtectedEndpoint, SSOConfig } from "types/sso";
+import { RoleBindingsRequestBody } from "types/user";
+import { Api } from "../base";
+import MockStore from "../mockStore";
 
 export const mockStore = new MockStore();
 
@@ -107,14 +112,14 @@ export default class MockApi extends Api {
     return mockStore.data.get("mockCertificateIssuers");
   };
 
-  public createCertificate = async (certificate: CertificateFormType, isEdit?: boolean) => {
+  public createCertificate = async (certificate: CertificateFormTypeContent, isEdit?: boolean) => {
     await mockStore.updateCertificate(certificate);
     return certificate as any;
   };
 
-  public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormType, isEdit?: boolean) => {
+  public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormTypeContent, isEdit?: boolean) => {
     await mockStore.updateCertificateIssuer(certificateIssuer);
-    return certificateIssuer;
+    return Immutable.fromJS(certificateIssuer);
   };
 
   public createApplication = async (application: Application) => {
@@ -254,15 +259,15 @@ export default class MockApi extends Api {
 
   public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {};
 
-  public listDeployKeys = async (): Promise<Immutable.List<DeployKey>> => {
+  public listDeployKeys = async (): Promise<Immutable.List<DeployKeyFormType>> => {
     return Immutable.List();
   };
 
-  public createDeployKey = async (protectedEndpoint: DeployKey): Promise<DeployKey> => {
+  public createDeployKey = async (protectedEndpoint: DeployKeyFormTypeContent): Promise<DeployKeyFormType> => {
     return Immutable.Map();
   };
 
-  public deleteDeployKey = async (protectedEndpoint: DeployKey): Promise<void> => {};
+  public deleteDeployKey = async (deployKey: DeployKeyFormType): Promise<void> => {};
 
   public resolveDomain = async (domain: string, type: "A" | "CNAME", timeout: number = 5000): Promise<string[]> => {
     return ["1.1.1.1"];

@@ -13,7 +13,6 @@ export const SET_TIMER = "SET_TIMER";
 interface SetDebouncing {
   type: typeof SET_DEBOUNCING;
   payload: {
-    formID: string;
     name: string;
     debouncing: boolean;
   };
@@ -22,7 +21,6 @@ interface SetDebouncing {
 interface SetTimer {
   type: typeof SET_TIMER;
   payload: {
-    formID: string;
     name: string;
     timer: number;
   };

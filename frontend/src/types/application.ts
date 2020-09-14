@@ -36,13 +36,13 @@ export interface ApplicationPlugin {
   configSchema: any;
 }
 
-export type SharedEnv = ImmutableMap<{
+export interface SharedEnv {
   name: string;
   type: string;
   value: string;
-}>;
+}
 
-export type EnvItem = SharedEnv;
+export type EnvItem = ImmutableMap<SharedEnv>;
 
 export type ServiceStatus = ImmutableMap<{
   name: string;
@@ -110,7 +110,7 @@ export type ApplicationComponentDetails = ImmutableMap<ApplicationComponentDetai
 
 export interface ApplicationContent {
   name: string;
-  istioMetricHistories: IstioMetricHistories;
+  istioMetricHistories?: IstioMetricHistories;
 }
 
 export type Application = ImmutableMap<ApplicationContent>;

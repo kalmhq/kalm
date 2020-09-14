@@ -115,6 +115,7 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                             e.stopPropagation();
                             blinkTopProgressAction();
                             confirmedAction();
+                            popover.onClose();
                           }}
                         >
                           Delete

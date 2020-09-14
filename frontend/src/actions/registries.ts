@@ -8,9 +8,11 @@ import {
   SET_IS_SUBMITTING_REGISTRY,
   SetIsSubmittingRegistry,
   UPDATE_REGISTRY,
+  RegistryFormType,
 } from "types/registry";
 import { ThunkResult } from "types";
 import { api } from "api";
+import Immutable from "immutable";
 
 export const loadRegistriesAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
@@ -31,13 +33,13 @@ export const loadRegistriesAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const createRegistryAction = (registryValues: RegistryType): ThunkResult<Promise<void>> => {
+export const createRegistryAction = (registryValues: RegistryFormType): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     dispatch(setIsSubmittingRegistry(true));
 
-    let registry;
+    let registry: RegistryType = Immutable.fromJS(registryValues);
     try {
-      registry = await api.createRegistry(registryValues);
+      registry = await api.createRegistry(registry);
     } catch (e) {
       dispatch(setIsSubmittingRegistry(false));
       throw e;
@@ -53,13 +55,13 @@ export const createRegistryAction = (registryValues: RegistryType): ThunkResult<
   };
 };
 
-export const updateRegistryAction = (registryValues: RegistryType): ThunkResult<Promise<void>> => {
+export const updateRegistryAction = (registryValues: RegistryFormType): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     dispatch(setIsSubmittingRegistry(true));
 
-    let registry;
+    let registry: RegistryType = Immutable.fromJS(registryValues);
     try {
-      registry = await api.updateRegistry(registryValues);
+      registry = await api.updateRegistry(registry);
     } catch (e) {
       dispatch(setIsSubmittingRegistry(false));
       throw e;

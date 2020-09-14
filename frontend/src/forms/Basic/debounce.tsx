@@ -1,39 +1,37 @@
-import React, { ChangeEvent } from "react";
+import React from "react";
 import { RootState } from "reducers";
 import { FilledTextFieldProps } from "@material-ui/core";
-import { WrappedFieldProps, EventOrValueHandler } from "redux-form";
 import { getIsDisplayDebounceError } from "selectors/debounce";
 import { connect } from "react-redux";
 import { setDebouncing } from "actions/debounce";
 import { TDispatchProp } from "types";
+import { FieldProps, getIn } from "formik";
 
-const mapStateToProps = (state: RootState, ownProps: FilledTextFieldProps & WrappedFieldProps) => {
+const mapStateToProps = (state: RootState, ownProps: FilledTextFieldProps & FieldProps) => {
   const {
-    input: { name },
-    meta: { form, touched, dirty, error, active },
+    field: { name },
+    form: { touched, errors },
   } = ownProps;
-  const isDisplayDebounceError = getIsDisplayDebounceError(state, form, name);
+  const isDisplayDebounceError = getIsDisplayDebounceError(state, name);
+  const error = getIn(errors, name);
+  // https://github.com/formium/formik/issues/691#issuecomment-446509600
+  // const _touched = getIn(touched, name) || submitCount > 0;
+  const _touched = getIn(touched, name);
 
   return {
-    showError: !!error && (touched || (dirty && isDisplayDebounceError)) && !active,
+    showError: !!error && (_touched || isDisplayDebounceError),
   };
 };
 
-export const inputOnChangeWithDebounce = (
-  dispatch: any,
-  nativeOnChange: EventOrValueHandler<ChangeEvent<any>>,
-  value: any,
-  formID: string,
-  name: string,
-) => {
-  nativeOnChange(value);
-  dispatch(setDebouncing(formID, name));
+export const inputOnChangeWithDebounce = (dispatch: any, nativeOnChange: any, name: string) => {
+  nativeOnChange();
+  dispatch(setDebouncing(name));
 };
 
 export interface withDebounceProps
   extends ReturnType<typeof mapStateToProps>,
     FilledTextFieldProps,
-    WrappedFieldProps,
+    FieldProps,
     TDispatchProp {}
 
 export const withDebounceField = (WrappedComponent: React.ComponentType<any>) => {

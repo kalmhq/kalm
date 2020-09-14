@@ -1,34 +1,22 @@
 import { Box, Button, Fade, Grid } from "@material-ui/core";
-import { Alert } from "@material-ui/lab";
-import Immutable from "immutable";
+import { FastField, FieldArray, FieldArrayRenderProps, getIn } from "formik";
 import React from "react";
-import { connect, DispatchProp } from "react-redux";
-import { arrayPush, WrappedFieldArrayProps } from "redux-form";
-import { Field, FieldArray } from "redux-form/immutable";
-import { EnvItem, SharedEnv } from "types/application";
+import { SharedEnv } from "types/application";
+import { ComponentLikeEnvContent } from "types/componentTemplate";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { KRenderDebounceTextField } from "../Basic/textfield";
 import { ValidatorEnvName, ValidatorRequired } from "../validator";
+import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
 
-interface FieldArrayComponentHackType {
-  name: any;
-  component: any;
-  validate: any;
-}
+interface Props extends FieldArrayRenderProps {}
 
-interface FieldArrayProps extends DispatchProp {}
-
-interface Props extends WrappedFieldArrayProps<SharedEnv>, FieldArrayComponentHackType, FieldArrayProps {}
-
-const nameValidators = [ValidatorRequired, ValidatorEnvName];
+const nameValidators = (value: any) => {
+  return ValidatorRequired(value) || ValidatorEnvName(value);
+};
 
 class RenderEnvs extends React.PureComponent<Props> {
   private renderAddButton = () => {
-    const {
-      meta: { form },
-      dispatch,
-    } = this.props;
+    const { push } = this.props;
     return (
       <Box mb={2}>
         <Button
@@ -36,19 +24,7 @@ class RenderEnvs extends React.PureComponent<Props> {
           color="primary"
           startIcon={<AddIcon />}
           size="small"
-          onClick={() =>
-            dispatch(
-              arrayPush(
-                form,
-                "env",
-                Immutable.Map({
-                  type: "static",
-                  name: "",
-                  value: "",
-                }),
-              ),
-            )
-          }
+          onClick={() => push({ type: "static", name: "", value: "" })}
         >
           New Variable
         </Button>
@@ -58,65 +34,83 @@ class RenderEnvs extends React.PureComponent<Props> {
 
   public render() {
     const {
-      fields,
-      meta: { error },
+      name,
+      form: { values },
+      remove,
     } = this.props;
     return (
       <>
-        {error ? (
+        {/* {getIn(errors, name) ? (
           <Box mb={2}>
-            <Alert severity="error">{error}</Alert>
+            <Alert severity="error">{getIn(errors, name)}</Alert>
           </Box>
-        ) : null}
-        {fields.map((field, index) => {
-          return (
-            <Fade in key={field}>
-              <Grid container spacing={2}>
-                <Grid item xs={5}>
-                  <Field
-                    name={`${field}.name`}
-                    label="Name"
-                    component={KRenderDebounceTextField}
-                    margin
-                    validate={nameValidators}
-                  />
+        ) : null} */}
+        {getIn(values, name) &&
+          getIn(values, name).map((env: ComponentLikeEnvContent, index: number) => {
+            return (
+              <Fade in key={index}>
+                <Grid container spacing={2}>
+                  <Grid item xs={5}>
+                    <FastField
+                      name={`${name}.${index}.name`}
+                      label="Name"
+                      component={KRenderDebounceFormikTextField}
+                      validate={nameValidators}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      margin="dense"
+                      fullWidth
+                      variant="outlined"
+                      inputProps={{
+                        required: false, // bypass html5 required feature
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={5}>
+                    <FastField
+                      name={`${name}.${index}.value`}
+                      label="Value"
+                      validate={ValidatorRequired}
+                      component={KRenderDebounceFormikTextField}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      margin="dense"
+                      fullWidth
+                      variant="outlined"
+                      inputProps={{
+                        required: false, // bypass html5 required feature
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={2}>
+                    <IconButtonWithTooltip
+                      tooltipPlacement="top"
+                      tooltipTitle="Delete"
+                      aria-label="delete"
+                      onClick={() => remove(index)}
+                    >
+                      <DeleteIcon />
+                    </IconButtonWithTooltip>
+                  </Grid>
                 </Grid>
-                <Grid item xs={5}>
-                  <Field
-                    name={`${field}.value`}
-                    label="Value"
-                    margin
-                    validate={ValidatorRequired}
-                    component={KRenderDebounceTextField}
-                  />
-                </Grid>
-                <Grid item xs={2}>
-                  <IconButtonWithTooltip
-                    tooltipPlacement="top"
-                    tooltipTitle="Delete"
-                    aria-label="delete"
-                    onClick={() => fields.remove(index)}
-                  >
-                    <DeleteIcon />
-                  </IconButtonWithTooltip>
-                </Grid>
-              </Grid>
-            </Fade>
-          );
-        })}
+              </Fade>
+            );
+          })}
         {this.renderAddButton()}
       </>
     );
   }
 }
 
-const ValidatorEnvs = (values: Immutable.List<EnvItem>, _allValues?: any, _props?: any, _name?: any) => {
+const ValidatorEnvs = (values: SharedEnv[]) => {
   if (!values) return undefined;
   const names = new Set<string>();
 
-  for (let i = 0; i < values.size; i++) {
-    const env = values.get(i)!;
-    const name = env.get("name");
+  for (let i = 0; i < values.length; i++) {
+    const env = values[i]!;
+    const name = env.name;
     if (!names.has(name)) {
       names.add(name);
     } else if (name !== "") {
@@ -125,6 +119,6 @@ const ValidatorEnvs = (values: Immutable.List<EnvItem>, _allValues?: any, _props
   }
 };
 
-export const Envs = connect()((props: FieldArrayProps) => {
+export const Envs = (props: any) => {
   return <FieldArray name="env" component={RenderEnvs} validate={ValidatorEnvs} {...props} />;
-});
+};

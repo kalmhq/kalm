@@ -39,6 +39,7 @@ import { DeployKeyDetailPage } from "pages/CI/Detail";
 import { RouteRedirectList } from "pages/Route/Redirect";
 import { SystemPage } from "pages/System";
 import { SetupPage } from "pages/Setup";
+import { CertificateDetailPage } from "pages/Certificate/Detail";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -97,6 +98,7 @@ export const KalmRoutes = (
           <Route exact path="/certificates/new" component={CertificateNewPage} />
           <Route exact path="/certificates/upload" component={CertificateUploadPage} />
           <Route exact path="/certificates/:name/edit" component={CertificateEditPage} />
+          <Route exact path="/certificates/:name" component={CertificateDetailPage} />
           <Route component={NoMatch} />
         </Switch>
       </RequireAuthorizatedDashboard>

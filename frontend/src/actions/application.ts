@@ -1,7 +1,6 @@
 import { api } from "api";
 import { push } from "connected-react-router";
 import Immutable from "immutable";
-import { SubmissionError } from "redux-form";
 import { ThunkResult } from "types";
 import {
   Application,
@@ -23,7 +22,6 @@ import {
   SetIsSubmittingApplicationComponent,
   UPDATE_APPLICATION,
 } from "types/application";
-import { resErrorsToSubmitErrors } from "utils";
 import { setCurrentNamespaceAction } from "./namespaces";
 import { setSuccessNotificationAction } from "./notification";
 
@@ -37,11 +35,6 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
       application = await api.createApplication(applicationValues);
     } catch (e) {
       dispatch(setIsSubmittingApplicationAction(false));
-
-      if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
-        const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
-        throw new SubmissionError(submitErrors);
-      }
       throw e;
     }
 
@@ -84,10 +77,6 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
       application = await api.updateApplication(applicationRaw);
     } catch (e) {
       dispatch(setIsSubmittingApplicationAction(false));
-      if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
-        const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
-        throw new SubmissionError(submitErrors);
-      }
       throw e;
     }
 

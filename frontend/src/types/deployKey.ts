@@ -17,26 +17,30 @@ export const DeployKeyScopeCluster: DeployKeyScope = "cluster";
 export const DeployKeyScopeNamespace: DeployKeyScope = "namespace";
 export const DeployKeyScopeComponent: DeployKeyScope = "component";
 
-export type DeployKey = ImmutableMap<{
+export interface DeployKeyContent {
   name: string;
   scope: DeployKeyScope;
   resources: Immutable.List<string>;
   key: string;
   creator: string;
-}>;
+}
+export interface DeployKeyFormTypeContent extends Omit<DeployKeyContent, "resources"> {
+  resources: string[];
+}
 
-export const newEmptyDeployKey = () => {
-  return Immutable.Map({
-    name: "",
-    scope: DeployKeyScopeCluster,
-    resources: Immutable.List(),
-    creator: "",
-  });
+export type DeployKeyFormType = ImmutableMap<DeployKeyFormTypeContent>;
+
+export const newEmptyDeployKeyForm: DeployKeyFormTypeContent = {
+  name: "",
+  scope: DeployKeyScopeCluster,
+  resources: [],
+  key: "",
+  creator: "",
 };
 
 export interface LoadDeployKeysAction {
   type: typeof LOAD_DEPLOY_KEYS_FULFILLED;
-  payload: Immutable.List<DeployKey>;
+  payload: Immutable.List<DeployKeyFormType>;
 }
 
 export interface DeleteDeployKeyAction {
@@ -45,7 +49,7 @@ export interface DeleteDeployKeyAction {
 
 export interface CreateDeployKeyAction {
   type: typeof CREATE_DEPLOY_KEY_FULFILLED;
-  payload: DeployKey;
+  payload: DeployKeyFormType;
 }
 
 export interface DeployKeyStateAction {

@@ -1,35 +1,87 @@
 import { InputAdornment, OutlinedInputProps, useTheme } from "@material-ui/core";
-import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
-import React, { ChangeEvent } from "react";
-import { WrappedFieldProps } from "redux-form";
+import TextField, { TextFieldProps } from "@material-ui/core/TextField";
+import { FieldProps, getIn } from "formik";
+import { TextField as FormikTextField } from "formik-material-ui";
+import React, { useCallback, useEffect, useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
 import { KalmConsoleIcon } from "widgets/Icon";
-import { withDebounceField, withDebounceProps, inputOnChangeWithDebounce } from "./debounce";
+import { inputOnChangeWithDebounce, withDebounceField, withDebounceProps } from "./debounce";
 
 interface Props {
   endAdornment?: React.ReactNode;
+  normalize?: (event: React.ChangeEvent<HTMLInputElement>) => any;
 }
 
-// value type is string
-export class KRenderTextField extends React.PureComponent<withDebounceProps & Props> {
-  render() {
+export const KRenderFormikTextField = (props: TextFieldProps & FieldProps) => {
+  const {
+    helperText,
+    field: { name },
+    form: { touched, errors },
+  } = props;
+
+  return (
+    <FormikTextField
+      {...props}
+      InputLabelProps={{
+        shrink: true,
+      }}
+      margin="dense"
+      fullWidth
+      variant="outlined"
+      helperText={(getIn(touched, name) && getIn(errors, name)) || helperText || " "}
+      inputProps={{
+        required: false, // bypass html5 required feature
+      }}
+    />
+  );
+};
+
+export const INPUT_DELAY = 500;
+
+export const KRenderDebounceFormikTextField = withDebounceField(
+  (props: TextFieldProps & FieldProps & Props & withDebounceProps) => {
     const {
-      input,
-      label,
       helperText,
-      placeholder,
-      required,
-      disabled,
-      autoFocus,
-      type,
       endAdornment,
-      multiline,
-      rows,
       meta,
-      meta: { error, form },
+      field: { name, value },
+      onBlur,
+      normalize,
+      form: { errors, handleChange, handleBlur, setFieldValue },
       showError,
       dispatch,
       ...custom
-    } = this.props;
+    } = props;
+    const [innerValue, setInnerValue] = useState("");
+    const error = getIn(errors, name);
+
+    useEffect(() => {
+      if (value) {
+        setInnerValue(value as string);
+      } else {
+        setInnerValue("");
+      }
+    }, [value]);
+
+    const [debouncedHandleOnChange] = useDebouncedCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+      if (normalize) {
+        inputOnChangeWithDebounce(dispatch, () => setFieldValue(name, normalize(event)), name);
+      } else {
+        inputOnChangeWithDebounce(dispatch, () => handleChange(event), name);
+      }
+    }, INPUT_DELAY);
+
+    const handleOnChange = useCallback(
+      (event: React.ChangeEvent<HTMLInputElement>) => {
+        event.persist();
+
+        const newValue = normalize ? normalize(event) : event.currentTarget.value;
+        setInnerValue(newValue);
+        debouncedHandleOnChange(event);
+      },
+      [debouncedHandleOnChange, normalize],
+    );
+
     const inputProps: Partial<OutlinedInputProps> = {};
     if (endAdornment) {
       inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
@@ -39,17 +91,9 @@ export class KRenderTextField extends React.PureComponent<withDebounceProps & Pr
       <TextField
         {...custom}
         fullWidth
-        label={label}
-        placeholder={placeholder}
-        disabled={disabled}
-        required={required}
+        name={name}
+        onBlur={onBlur || handleBlur}
         error={showError}
-        type={type}
-        multiline={multiline}
-        rows={rows}
-        autoFocus={autoFocus}
-        onFocus={input.onFocus}
-        onBlur={input.onBlur}
         InputLabelProps={{
           shrink: true,
         }}
@@ -60,64 +104,26 @@ export class KRenderTextField extends React.PureComponent<withDebounceProps & Pr
         inputProps={{
           required: false, // bypass html5 required feature
         }}
-        value={input.value}
-        onChange={(event: ChangeEvent<HTMLInputElement>) => {
-          inputOnChangeWithDebounce(dispatch, input.onChange, event.target.value, form, input.name);
-        }}
+        value={innerValue}
+        onChange={handleOnChange}
       />
     );
-  }
-}
-
-export const KRenderDebounceTextField = withDebounceField(KRenderTextField);
-
-export const KRenderTextareaField = ({
-  input,
-  label,
-  helperText,
-  placeholder,
-  required,
-  disabled,
-  meta: { touched, invalid, error },
-  ...custom
-}: FilledTextFieldProps & WrappedFieldProps & Props) => {
-  const showError = !!error && touched;
-
-  return (
-    <TextField
-      fullWidth
-      multiline
-      label={label}
-      placeholder={placeholder}
-      disabled={disabled}
-      required={required}
-      error={showError}
-      InputLabelProps={{
-        shrink: true,
-      }}
-      InputProps={{
-        rows: 4,
-      }}
-      helperText={showError ? error : helperText ? helperText : ""}
-      margin="dense"
-      variant="outlined"
-      value={input.value}
-      onChange={(event: ChangeEvent<HTMLInputElement>) => input.onChange(event.target.value)}
-    />
-  );
-};
+  },
+);
 
 interface ComplexValueTextFieldProps {
   endAdornment?: React.ReactNode;
   min?: string;
   pattern?: string;
+  format?: (value: any) => any;
+  parse?: (value: any) => any;
 }
 
-// value type is complex like array or json, like "command" is array, but using textfield input
-export class RenderComplexValueTextField extends React.PureComponent<withDebounceProps & ComplexValueTextFieldProps> {
+export class RenderFormikComplexValueTextField extends React.PureComponent<
+  TextFieldProps & FieldProps & ComplexValueTextFieldProps
+> {
   render() {
     const {
-      input,
       label,
       helperText,
       placeholder,
@@ -126,8 +132,10 @@ export class RenderComplexValueTextField extends React.PureComponent<withDebounc
       type,
       min,
       endAdornment,
-      meta: { error },
-      showError,
+      field: { name, value },
+      form: { touched, errors, setFieldValue },
+      format,
+      parse,
     } = this.props;
     const inputProps: Partial<OutlinedInputProps> = {
       inputProps: {
@@ -137,6 +145,9 @@ export class RenderComplexValueTextField extends React.PureComponent<withDebounc
     if (endAdornment) {
       inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
     }
+
+    const error = getIn(errors, name);
+    const showError = !!getIn(errors, name) && !!getIn(touched, name);
 
     return (
       <TextField
@@ -154,42 +165,33 @@ export class RenderComplexValueTextField extends React.PureComponent<withDebounc
         }}
         margin="dense"
         variant="outlined"
-        onChange={(event: any) => {
-          input.onChange(event.target.value);
+        defaultValue={format ? format(value) : value}
+        // value={format ? format(value) : value}
+        onBlur={(e) => {
+          const value = e.target.value;
+          return parse ? setFieldValue(name, parse(value)) : setFieldValue(name, value);
         }}
-        defaultValue={input.value}
-        // {...custom}
       />
     );
   }
 }
 
-export const RenderComplexValueTextDebounceField = withDebounceField(RenderComplexValueTextField);
-
-export const KRenderCommandTextField = ({
-  input,
-  label,
-  helperText,
-  placeholder,
-  required,
-  disabled,
-  meta: { touched, invalid, error },
-  ...custom
-}: FilledTextFieldProps & WrappedFieldProps & ComplexValueTextFieldProps) => {
-  const showError = !!error && touched;
+export const KRenderFormikCommandTextField = (props: TextFieldProps & FieldProps & ComplexValueTextFieldProps) => {
+  const {
+    helperText,
+    field: { name },
+    form: { touched, errors },
+  } = props;
+  const showError = !!getIn(errors, name) && !!getIn(touched, name);
 
   const theme = useTheme();
 
   return (
-    <TextField
+    <FormikTextField
+      {...props}
       fullWidth
-      label={label}
-      placeholder={placeholder}
-      disabled={disabled}
-      required={required}
-      error={showError}
       spellCheck={false}
-      helperText={showError ? error : helperText ? helperText : ""}
+      helperText={showError ? getIn(errors, name) : helperText ? helperText : ""}
       InputLabelProps={{
         shrink: true,
       }}
@@ -202,11 +204,6 @@ export const KRenderCommandTextField = ({
       }}
       margin="dense"
       variant="outlined"
-      onChange={(event: any) => {
-        input.onChange(event.target.value);
-      }}
-      value={input.value}
-      // {...custom}
     />
   );
 };

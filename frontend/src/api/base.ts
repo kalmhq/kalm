@@ -10,23 +10,23 @@ import {
 import { LoginStatus } from "types/authorization";
 import {
   Certificate,
-  CertificateFormType,
+  CertificateFormTypeContent,
   CertificateIssuer,
-  CertificateIssuerFormType,
   CertificateIssuerList,
   CertificateList,
   AcmeServerInfo,
   AcmeServerFormType,
+  CertificateIssuerFormTypeContent,
 } from "types/certificate";
 import { ClusterInfo, InitializeClusterResponse } from "types/cluster";
+import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import { Node, NodesListResponse } from "types/node";
 import { RegistryType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
-import { RoleBinding, RoleBindingsRequestBody } from "types/user";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { DeployKey } from "types/deployKey";
+import { RoleBinding, RoleBindingsRequestBody } from "types/user";
 
 export abstract class Api {
   public abstract getClusterInfo(): Promise<ClusterInfo>;
@@ -121,10 +121,10 @@ export abstract class Api {
 
   public abstract getCertificateIssuerList(): Promise<CertificateIssuerList>;
 
-  public abstract createCertificate(certificate: CertificateFormType, isEdit?: boolean): Promise<Certificate>;
+  public abstract createCertificate(certificate: CertificateFormTypeContent, isEdit?: boolean): Promise<Certificate>;
 
   public abstract createCertificateIssuer(
-    certificateIssuer: CertificateIssuerFormType,
+    certificateIssuer: CertificateIssuerFormTypeContent,
     isEdit?: boolean,
   ): Promise<CertificateIssuer>;
 
@@ -157,11 +157,11 @@ export abstract class Api {
 
   public abstract deleteProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<void>;
 
-  public abstract listDeployKeys(): Promise<Immutable.List<DeployKey>>;
+  public abstract listDeployKeys(): Promise<Immutable.List<DeployKeyFormType>>;
 
-  public abstract createDeployKey(protectedEndpoint: DeployKey): Promise<DeployKey>;
+  public abstract createDeployKey(deployKey: DeployKeyFormTypeContent): Promise<DeployKeyFormType>;
 
-  public abstract deleteDeployKey(protectedEndpoint: DeployKey): Promise<void>;
+  public abstract deleteDeployKey(deployKey: DeployKeyFormType): Promise<void>;
 
   public abstract resolveDomain(domain: string, type: "A" | "CNAME", timeout?: number): Promise<string[]>;
 
