@@ -220,7 +220,7 @@ workflows:
       - deploy-dashboard:
           context: deploy-demo-cluster
           requires:
-            - push-dashboard-image
+            - build-push-dashboard-image
           filters:
             branches:
               only:
@@ -228,7 +228,7 @@ workflows:
       - deploy-auth-proxy:
           context: deploy-demo-cluster
           requires:
-            - push-dashboard-image
+            - build-push-dashboard-image
           filters:
             branches:
               only:
