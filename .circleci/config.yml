@@ -261,6 +261,7 @@ workflows:
           requires: # We only run the "hold" job when test2 has succeeded
            - test-controller
       - build-push-controller-image:
+          name: manual-build-push-controller-image
           context: kalm-ci
           requires:
             - hold
