@@ -329,6 +329,7 @@ export const KFormikAutoCompleteMultipleSelectField = (props: KFormikAutoComplet
       }}
       renderInput={(params) => (
         <TextField
+          name={name}
           {...params}
           InputLabelProps={{
             shrink: true,

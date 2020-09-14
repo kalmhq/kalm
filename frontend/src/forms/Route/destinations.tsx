@@ -2,7 +2,7 @@ import { Box, Button, Collapse, Grid } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import Warning from "@material-ui/icons/Warning";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import { Field, FieldArray } from "formik";
+import { Field, FieldArray, getIn } from "formik";
 import { KAutoCompleteOption, KFormikAutoCompleteSingleValue } from "forms/Basic/autoComplete";
 import { KFormikRenderSlider } from "forms/Basic/slider";
 import React from "react";
@@ -162,14 +162,13 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
   }
 
   public render() {
-    const { errors, touched } = this.props;
-    const error = errors["destinations"];
+    const { destinations, touched } = this.props;
     return (
       <div>
-        {!!error && !!touched["destinations"] ? (
-          <Alert className={"alert"} severity="error">
-            {error}
-          </Alert>
+        {getIn(touched, "destinations") && destinations && destinations.length === 0 ? (
+          <Box>
+            <Alert severity="error">{"You should at least configure one Targets."}</Alert>
+          </Box>
         ) : null}
         {this.renderRows()}
       </div>
