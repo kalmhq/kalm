@@ -1,18 +1,17 @@
-import { Field, Form, FormikProps, withFormik } from "formik";
-import React from "react";
 import { Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { TDispatchProp } from "types";
+import Box from "@material-ui/core/Box";
+import { FastField, Field, Form, FormikProps, withFormik } from "formik";
+import { RenderFormikSelectField } from "forms/Basic/select";
+import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
+import { ValidatorRequired } from "forms/validator";
+import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
+import { TDispatchProp } from "types";
 import { RoleBinding } from "types/member";
-import { KPanel } from "widgets/KPanel";
-import Box from "@material-ui/core/Box";
-import { Prompt } from "widgets/Prompt";
 import { default as sc } from "utils/stringConstants";
-import { FieldProps } from "formik/dist/Field";
-import TextField from "@material-ui/core/TextField";
-import MenuItem from "@material-ui/core/MenuItem";
-import { ValidatorRequired } from "forms/validator";
+import { KPanel } from "widgets/KPanel";
+import { Prompt } from "widgets/Prompt";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -47,34 +46,16 @@ class MemberFormRaw extends React.PureComponent<Props, State> {
   public render() {
     const { dirty, isSubmitting, isClusterLevel } = this.props;
 
-    const items = isClusterLevel
+    const rolesOptions = isClusterLevel
       ? [
-          <MenuItem key="cluster-select-a-role" value="" disabled>
-            Select a role
-          </MenuItem>,
-          <MenuItem key="clusterViewer" value="clusterViewer">
-            Cluster Viewer
-          </MenuItem>,
-          <MenuItem key="clusterEditor" value="clusterEditor">
-            Cluster Editor
-          </MenuItem>,
-          <MenuItem key="clusterOwner" value="clusterOwner">
-            Cluster Owner
-          </MenuItem>,
+          { text: "Cluster Viewer", value: "clusterViewer" },
+          { text: "Cluster Editor", value: "clusterEditor" },
+          { text: "Cluster Owner", value: "clusterOwner" },
         ]
       : [
-          <MenuItem key="select-a-role" value="" disabled>
-            Select a role
-          </MenuItem>,
-          <MenuItem key="viewer" value="viewer">
-            Viewer
-          </MenuItem>,
-          <MenuItem key="editor" value="editor">
-            Editor
-          </MenuItem>,
-          <MenuItem key="owner" value="owner">
-            Owner
-          </MenuItem>,
+          { text: "Viewer", value: "viewer" },
+          { text: "Editor", value: "editor" },
+          { text: "Owner", value: "owner" },
         ];
 
     return (
@@ -85,48 +66,26 @@ class MemberFormRaw extends React.PureComponent<Props, State> {
             title="Member"
             content={
               <Box p={2}>
-                <Field name="subject" validate={ValidatorRequired}>
-                  {({ field, form: { touched, errors }, meta }: FieldProps<any>) => (
-                    <Box mb={2}>
-                      <TextField
-                        fullWidth
-                        error={!!meta.touched && !!meta.error}
-                        label="Subject"
-                        variant="outlined"
-                        size="small"
-                        InputLabelProps={{ shrink: true }}
-                        placeholder="e.g. user@example.com, <github-group>:<abc>"
-                        helperText={
-                          meta.touched && meta.error
-                            ? meta.error
-                            : "The owner can be the email of a specific user or the name of a group"
-                        }
-                        {...field}
-                      />
-                    </Box>
-                  )}
-                </Field>
+                <Box mb={2}>
+                  <FastField
+                    autoFocus
+                    component={KRenderDebounceFormikTextField}
+                    name="subject"
+                    label="Subject"
+                    validate={ValidatorRequired}
+                    placeholder="e.g. user@example.com, <github-group>:<abc>"
+                    helperText={"The owner can be the email of a specific user or the name of a group"}
+                  />
+                </Box>
 
-                <Field name="role" as="select" validate={ValidatorRequired}>
-                  {({ field, form: { touched, errors }, meta }: FieldProps<any>) => (
-                    <Box mb={2}>
-                      <TextField
-                        fullWidth
-                        select
-                        error={!!meta.touched && !!meta.error}
-                        label="Role"
-                        variant="outlined"
-                        size="small"
-                        helperText={meta.touched && meta.error}
-                        InputLabelProps={{ shrink: true }}
-                        SelectProps={{ displayEmpty: true }}
-                        {...field}
-                      >
-                        {items}
-                      </TextField>
-                    </Box>
-                  )}
-                </Field>
+                <Field
+                  name="role"
+                  component={RenderFormikSelectField}
+                  label="Role"
+                  placeholder="Select a role"
+                  validate={ValidatorRequired}
+                  options={rolesOptions}
+                />
               </Box>
             }
           />

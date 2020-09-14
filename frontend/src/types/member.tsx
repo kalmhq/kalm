@@ -18,12 +18,12 @@ export interface RoleBinding {
   expiredAtTimestamp: number;
 }
 
-export const newEmptyRoleBinding = (): RoleBinding => {
+export const newEmptyRoleBinding = (isClusterLevel: boolean = false): RoleBinding => {
   return {
     name: "",
     namespace: "",
     subject: "",
-    role: "",
+    role: isClusterLevel ? "clusterViewer" : "viewer",
     expiredAtTimestamp: 1,
   };
 };

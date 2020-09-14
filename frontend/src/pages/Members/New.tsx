@@ -1,18 +1,18 @@
-import React from "react";
-import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { TDispatchProp } from "types";
-import { connect } from "react-redux";
-import { RootState } from "reducers";
-import { BasePage } from "pages/BasePage";
-import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
-import { Namespaces } from "widgets/Namespaces";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import { MemberForm } from "forms/Member";
-import { newEmptyRoleBinding, RoleBinding } from "types/member";
-import { createRoleBindingsAction } from "actions/user";
+import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { setSuccessNotificationAction } from "actions/notification";
+import { createRoleBindingsAction } from "actions/user";
 import { push } from "connected-react-router";
+import { MemberForm } from "forms/Member";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
+import { BasePage } from "pages/BasePage";
+import React from "react";
+import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
+import { RootState } from "reducers";
+import { TDispatchProp } from "types";
+import { newEmptyRoleBinding, RoleBinding } from "types/member";
+import { Namespaces } from "widgets/Namespaces";
 
 const styles = (theme: Theme) => createStyles({});
 
@@ -45,13 +45,22 @@ class MemberNewPageRaw extends React.PureComponent<Props> {
   }
 
   public render() {
+    const isClusterLevel = this.isClusterLevel();
     return (
       <BasePage
-        secondHeaderLeft={this.isClusterLevel() ? null : <Namespaces />}
-        leftDrawer={this.isClusterLevel() ? null : <ApplicationSidebar />}
+        secondHeaderLeft={isClusterLevel ? null : <Namespaces />}
+        leftDrawer={isClusterLevel ? null : <ApplicationSidebar />}
       >
         <Box p={2}>
-          <MemberForm initial={newEmptyRoleBinding()} onSubmit={this.onSubmit} isClusterLevel={this.isClusterLevel()} />
+          <Grid container spacing={2}>
+            <Grid item xs={8} sm={8} md={8}>
+              <MemberForm
+                initial={newEmptyRoleBinding(isClusterLevel)}
+                onSubmit={this.onSubmit}
+                isClusterLevel={isClusterLevel}
+              />
+            </Grid>
+          </Grid>
         </Box>
       </BasePage>
     );

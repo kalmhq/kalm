@@ -164,6 +164,9 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
               label={label}
               placeholder={placeholder}
               helperText={(getIn(touched, name) && errorText) || helperText}
+              InputLabelProps={{
+                shrink: true,
+              }}
             />
           );
         }}

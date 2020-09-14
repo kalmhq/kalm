@@ -110,16 +110,6 @@ class RegistryFormRaw extends React.PureComponent<
   }
 }
 
-// export const RegistryForm = reduxForm<RegistryType, Props>({
-//   form: REGISTRY_FORM_ID,
-//   enableReinitialize: true,
-//   keepDirtyOnReinitialize: false,
-//   initialValues: newEmptyRegistry(),
-//   onSubmitFail: (...args) => {
-//     console.log("submit failed", args);
-//   },
-// })(connect(mapStateToProps)(withStyles(styles)(RegistryFormRaw)));
-
 const connectedForm = connect(mapStateToProps)(withStyles(styles)(RegistryFormRaw));
 
 export const RegistryForm = withFormik<Props, RegistryFormType>({
