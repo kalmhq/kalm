@@ -1003,9 +1003,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 
 	template = &coreV1.PodTemplateSpec{
 		ObjectMeta: metaV1.ObjectMeta{
-			Labels: labels,
-
-			// The following is for set sidecar resources.
+			Labels:      labels,
 			Annotations: annotations,
 		},
 		Spec: coreV1.PodSpec{
@@ -1025,15 +1023,6 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 			SecurityContext: GetPodSecurityContextFromAnnotation(annotations),
 		},
 	}
-
-	// TODO are these values reasonable?
-	template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPULimit"] = "100m"
-	template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemoryLimit"] = "50Mi"
-
-	//if component.Spec.EnableResourcesRequests {
-	//	template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPU"] = "10m"
-	//	template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemory"] = "50Mi"
-	//}
 
 	if v, exist := component.Annotations[AnnoLastUpdatedByWebhook]; exist {
 		template.ObjectMeta.Annotations[AnnoLastUpdatedByWebhook] = v
