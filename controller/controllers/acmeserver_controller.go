@@ -722,11 +722,9 @@ func (r *ACMEServerReconciler) installACMEServer(cert corev1alpha1.HttpsCert) er
 	acmeDomain := fmt.Sprintf("acme-%s.%s", sha1String(baseDomain)[:6], baseDomain)
 	nsDomain := fmt.Sprintf("name-server-%s.%s", sha1String(baseDomain)[:6], baseDomain)
 
-	autoGenACMEServerName := "auto-acme-server"
-
 	expectedACMEServer := corev1alpha1.ACMEServer{
 		ObjectMeta: ctrl.ObjectMeta{
-			Name: autoGenACMEServerName,
+			Name: ACMEServerName,
 		},
 		Spec: corev1alpha1.ACMEServerSpec{
 			ACMEDomain: acmeDomain,

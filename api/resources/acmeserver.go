@@ -82,8 +82,15 @@ func (builder *Builder) GetACMEServer() (v1alpha1.ACMEServer, error) {
 		return v1alpha1.ACMEServer{}, err
 	}
 
-	server := acmeServerList.Items[0]
-	return server, nil
+	for _, acmeServer := range acmeServerList.Items {
+		if acmeServer.Name != controllers.ACMEServerName {
+			continue
+		}
+
+		return acmeServer, nil
+	}
+
+	return v1alpha1.ACMEServer{}, fmt.Errorf("expected acme-server not exist yet")
 }
 
 func (builder *Builder) GetACMEServerAsResp() (ACMEServerResp, error) {
