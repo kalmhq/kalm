@@ -50,17 +50,12 @@ class RenderPorts extends React.PureComponent<Props> {
       form: { values, handleBlur },
       remove,
     } = this.props;
+    const handlePush = () => push({ protocol: PortProtocolHTTP });
     return (
       <>
         <Box mb={2}>
           <Grid item xs>
-            <Button
-              variant="outlined"
-              color="primary"
-              startIcon={<AddIcon />}
-              size="small"
-              onClick={() => push({ protocol: PortProtocolHTTP })}
-            >
+            <Button variant="outlined" color="primary" startIcon={<AddIcon />} size="small" onClick={handlePush}>
               Add
             </Button>
 
@@ -75,6 +70,7 @@ class RenderPorts extends React.PureComponent<Props> {
 
         {getIn(values, name) &&
           getIn(values, name).map((field: ComponentLikePort, index: number) => {
+            const handleRemove = () => remove(index);
             return (
               <Grid container spacing={2} key={index}>
                 <Grid item xs>
@@ -189,7 +185,7 @@ class RenderPorts extends React.PureComponent<Props> {
                     tooltipPlacement="top"
                     tooltipTitle="Delete"
                     aria-label="delete"
-                    onClick={() => remove(index)}
+                    onClick={handleRemove}
                   >
                     <DeleteIcon />
                   </IconButtonWithTooltip>

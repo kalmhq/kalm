@@ -86,6 +86,9 @@ export const KRenderDebounceFormikTextField = withDebounceField(
     if (endAdornment) {
       inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
     }
+    const onChange = (event: ChangeEvent<HTMLInputElement>) => {
+      inputOnChangeWithDebounce(dispatch, () => handleOnChange(event), name);
+    };
 
     return (
       <TextField
@@ -105,9 +108,7 @@ export const KRenderDebounceFormikTextField = withDebounceField(
           required: false, // bypass html5 required feature
         }}
         value={innerValue}
-        onChange={(event: ChangeEvent<HTMLInputElement>) => {
-          inputOnChangeWithDebounce(dispatch, () => handleOnChange(event), name);
-        }}
+        onChange={onChange}
       />
     );
   },

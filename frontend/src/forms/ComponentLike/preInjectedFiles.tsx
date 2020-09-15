@@ -136,8 +136,26 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     } = this.props;
     const { activeIndex } = this.state;
     let fieldsNodes: any = [];
+    const handlePush = () => {
+      const initFile = {
+        readonly: true,
+        content: "",
+        mountPath: "",
+      };
+      if (!getIn(values, name) || getIn(values, name).length <= activeIndex) {
+        push(initFile);
+      } else {
+        pop();
+        push(initFile);
+      }
+      this.privateOpenEditDialog(initFile, activeIndex);
+    };
     if (getIn(values, name)) {
       getIn(values, name).forEach((injectedFile: PreInjectedFile, index: number) => {
+        const handleRemove = () => {
+          remove(index);
+          this.setState({ activeIndex: activeIndex - 1 });
+        };
         if (injectedFile.mountPath) {
           fieldsNodes.push(
             <Grid container spacing={1} key={index}>
@@ -165,10 +183,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
                   tooltipPlacement="top"
                   tooltipTitle="Delete"
                   aria-label="delete"
-                  onClick={() => {
-                    remove(index);
-                    this.setState({ activeIndex: activeIndex - 1 });
-                  }}
+                  onClick={handleRemove}
                 >
                   <DeleteIcon />
                 </IconButtonWithTooltip>
@@ -183,26 +198,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
         {this.renderEditContentDialog()}
         {fieldsNodes}
         <Box mb={2}>
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<AddIcon />}
-            size="small"
-            onClick={() => {
-              const initFile = {
-                readonly: true,
-                content: "",
-                mountPath: "",
-              };
-              if (!getIn(values, name) || getIn(values, name).length <= activeIndex) {
-                push(initFile);
-              } else {
-                pop();
-                push(initFile);
-              }
-              this.privateOpenEditDialog(initFile, activeIndex);
-            }}
-          >
+          <Button variant="outlined" color="primary" startIcon={<AddIcon />} size="small" onClick={handlePush}>
             New File
           </Button>
           {/* {error ? (

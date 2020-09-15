@@ -368,20 +368,12 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
       remove,
       form: { values },
     } = this.props;
-
+    const handlePush = () => push(this.getDefaultAddValues());
     return (
       <Box>
         <Box mb={2}>
           <Grid item xs>
-            <Button
-              variant="outlined"
-              color="primary"
-              startIcon={<AddIcon />}
-              size="small"
-              onClick={() => {
-                push(this.getDefaultAddValues());
-              }}
-            >
+            <Button variant="outlined" color="primary" startIcon={<AddIcon />} size="small" onClick={handlePush}>
               Add
             </Button>
             {/* {submitFailed && error && <span>{error}</span>} */}
@@ -389,6 +381,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
         </Box>
         {getIn(values, name) &&
           getIn(values, name).map((disk: Volume, index: number) => {
+            const handleRemove = () => remove(index);
             return (
               <Grid container spacing={2} key={index}>
                 {this.getFieldComponents(disk, index).map((fieldComponent, fieldIndex) => {
@@ -405,7 +398,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
                     tooltipTitle="Delete"
                     aria-label="delete"
                     disabled={this.shouldDisabledStatefulSetPvcTemplate(disk.type)}
-                    onClick={() => remove(index)}
+                    onClick={handleRemove}
                   >
                     <DeleteIcon />
                   </IconButtonWithTooltip>

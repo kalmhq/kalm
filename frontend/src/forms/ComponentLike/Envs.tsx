@@ -16,15 +16,10 @@ const nameValidators = (value: any) => {
 class RenderEnvs extends React.PureComponent<Props> {
   private renderAddButton = () => {
     const { push } = this.props;
+    const handlePush = () => push({ type: "static", name: "", value: "" });
     return (
       <Box mb={2}>
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<AddIcon />}
-          size="small"
-          onClick={() => push({ type: "static", name: "", value: "" })}
-        >
+        <Button variant="outlined" color="primary" startIcon={<AddIcon />} size="small" onClick={handlePush}>
           New Variable
         </Button>
       </Box>
@@ -46,6 +41,7 @@ class RenderEnvs extends React.PureComponent<Props> {
         ) : null} */}
         {getIn(values, name) &&
           getIn(values, name).map((env: ComponentLikeEnv, index: number) => {
+            const handleRemove = () => remove(index);
             return (
               <Fade in key={index}>
                 <Grid container spacing={2}>
@@ -70,7 +66,7 @@ class RenderEnvs extends React.PureComponent<Props> {
                       tooltipPlacement="top"
                       tooltipTitle="Delete"
                       aria-label="delete"
-                      onClick={() => remove(index)}
+                      onClick={handleRemove}
                     >
                       <DeleteIcon />
                     </IconButtonWithTooltip>
