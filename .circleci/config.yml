@@ -66,6 +66,8 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             docker push kalmhq/kalm:latest
+            docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_SHA1
+            docker push kalmhq/kalm:$CIRCLE_SHA1
             TAG=$(git tag --points-at HEAD)
 
             if [ "$TAG" != "" ]
@@ -118,6 +120,8 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             docker push kalmhq/kalm-controller:latest
+            docker tag kalmhq/kalm-controller:latest kalmhq/kalm-controller:$CIRCLE_SHA1
+            docker push kalmhq/kalm-controller:$CIRCLE_SHA1
             TAG=$(git tag --points-at HEAD)
 
             if [ "$TAG" != "" ]
@@ -145,6 +149,8 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             docker push kalmhq/kalm-operator:latest
+            docker tag kalmhq/kalm-operator:latest kalmhq/kalm-operator:$CIRCLE_SHA1
+            docker push kalmhq/kalm-operator:$CIRCLE_SHA1
 
             TAG=$(git tag --points-at HEAD)
             if [ "$TAG" != "" ]
