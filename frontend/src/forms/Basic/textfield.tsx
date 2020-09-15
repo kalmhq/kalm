@@ -46,6 +46,7 @@ class KRenderTextField extends React.PureComponent<withDebounceProps & Props & F
       showError,
       dispatch,
       normalize,
+      onBlur,
       ...custom
     } = this.props;
     const inputProps: Partial<OutlinedInputProps> = {};
@@ -59,7 +60,7 @@ class KRenderTextField extends React.PureComponent<withDebounceProps & Props & F
         fullWidth
         name={name}
         error={showError}
-        onBlur={handleBlur}
+        onBlur={onBlur || handleBlur}
         InputLabelProps={{
           shrink: true,
         }}
