@@ -1,11 +1,12 @@
 package resources
 
 import (
-	"k8s.io/apimachinery/pkg/api/resource"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/kalmhq/kalm/controller/controllers"
 	coreV1 "k8s.io/api/core/v1"
@@ -18,16 +19,16 @@ import (
 
 // actual aggregation info of PVC & PV
 type Volume struct {
-	Name               string `json:"name"`
-	IsInUse            bool   `json:"isInUse"`                      // can be reused or not
-	ComponentNamespace string `json:"componentNamespace,omitempty"` // ns of latest component using this Volume
-	ComponentName      string `json:"componentName,omitempty"`      // name of latest component using this Volume
-	StorageClassName   string `json:"storageClassName"`
-	Capacity           string `json:"capacity"` // size, e.g. 1Gi
-	RequestedCapacity  string `json:"requestedCapacity"`
-	AllocatedCapacity  string `json:"allocatedCapacity"`
-	PVC                string `json:"pvc"`
-	PV                 string `json:"pvToMatch"`
+	Name               string            `json:"name"`
+	IsInUse            bool              `json:"isInUse"`                      // can be reused or not
+	ComponentNamespace string            `json:"componentNamespace,omitempty"` // ns of latest component using this Volume
+	ComponentName      string            `json:"componentName,omitempty"`      // name of latest component using this Volume
+	StorageClassName   string            `json:"storageClassName"`
+	Capacity           resource.Quantity `json:"capacity"` // size, e.g. 1Gi
+	RequestedCapacity  resource.Quantity `json:"requestedCapacity"`
+	AllocatedCapacity  resource.Quantity `json:"allocatedCapacity"`
+	PVC                string            `json:"pvc"`
+	PV                 string            `json:"pvToMatch"`
 }
 
 func (resourceManager *ResourceManager) BuildVolumeResponse(
@@ -40,14 +41,14 @@ func (resourceManager *ResourceManager) BuildVolumeResponse(
 		return nil, err
 	}
 
-	var capInStr string
+	var capInQuantity resource.Quantity
 	if cap, exist := pvc.Spec.Resources.Requests[coreV1.ResourceStorage]; exist {
-		capInStr = formatQuantity(cap)
+		capInQuantity = cap
 	}
 
-	var allocatedQuantity string
+	var allocatedQuantity resource.Quantity
 	if storage := pvc.Status.Capacity.Storage(); storage != nil {
-		allocatedQuantity = formatQuantity(*storage)
+		allocatedQuantity = *storage
 	}
 
 	var compName string
@@ -60,8 +61,8 @@ func (resourceManager *ResourceManager) BuildVolumeResponse(
 		ComponentName:      compName,
 		ComponentNamespace: pvc.Namespace,
 		IsInUse:            isInUse,
-		Capacity:           capInStr,
-		RequestedCapacity:  capInStr,
+		Capacity:           capInQuantity,
+		RequestedCapacity:  capInQuantity,
 		AllocatedCapacity:  allocatedQuantity,
 	}, nil
 }
@@ -323,20 +324,20 @@ func getValOfString(s *string, fallbackOpt ...string) string {
 	return *s
 }
 
-func GetCapacityOfPVC(pvc coreV1.PersistentVolumeClaim) string {
-	var capInStr string
+func GetCapacityOfPVC(pvc coreV1.PersistentVolumeClaim) resource.Quantity {
+	var capInQuantity resource.Quantity
 	if cap, exist := pvc.Spec.Resources.Requests[coreV1.ResourceStorage]; exist {
-		capInStr = cap.String()
+		capInQuantity = cap
 	}
-	return capInStr
+	return capInQuantity
 }
 
-func GetCapacityOfPV(pv coreV1.PersistentVolume) string {
-	var capInStr string
+func GetCapacityOfPV(pv coreV1.PersistentVolume) resource.Quantity {
+	var capInQuantity resource.Quantity
 	if cap, exist := pv.Spec.Capacity[coreV1.ResourceStorage]; exist {
-		capInStr = cap.String()
+		capInQuantity = cap
 	}
-	return capInStr
+	return capInQuantity
 }
 
 func GetComponentNameAndNsFromObjLabels(metaObj metav1.Object) (compName, compNamespace string) {
