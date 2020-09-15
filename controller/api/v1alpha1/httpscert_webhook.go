@@ -127,9 +127,12 @@ func (r *HttpsCert) validate() error {
 					})
 				}
 			}
+		} else if r.Spec.HttpsCertIssuer == DefaultCAIssuerName {
+			// nothing
 		} else {
 			rst = append(rst, KalmValidateError{
-				Err:  fmt.Sprintf("for auto managed cert, httpsCertIssuer should be one of: %s", validIssuers),
+				Err: fmt.Sprintf("for auto managed cert, httpsCertIssuer should be one of: %s, but: %s",
+					validIssuers, r.Spec.HttpsCertIssuer),
 				Path: "spec.httpsCertIssuer",
 			})
 		}
