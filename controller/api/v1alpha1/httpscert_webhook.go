@@ -92,6 +92,7 @@ func (r *HttpsCert) validate() error {
 		validIssuers := []string{
 			DefaultDNS01IssuerName,
 			DefaultHTTP01IssuerName,
+			DefaultCAIssuerName,
 		}
 
 		if r.Spec.HttpsCertIssuer == DefaultHTTP01IssuerName {

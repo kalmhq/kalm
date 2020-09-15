@@ -52,7 +52,7 @@ func (h *ApiHandler) handleUpdateACMEServer(c echo.Context) error {
 
 func (h *ApiHandler) handleGetACMEServer(c echo.Context) error {
 
-	acmeServerResp, err := h.Builder(c).GetACMEServer()
+	acmeServerResp, err := h.Builder(c).GetACMEServerAsResp()
 	if err != nil {
 		return err
 	}

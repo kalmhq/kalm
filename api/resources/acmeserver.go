@@ -41,7 +41,7 @@ func (builder *Builder) CreateACMEServer(server ACMEServer) (ACMEServer, error) 
 }
 
 func (builder *Builder) UpdateACMEServer(server ACMEServer) (ACMEServer, error) {
-	resource := v1alpha1.ACMEServer{
+	expectedACMEServer := v1alpha1.ACMEServer{
 		ObjectMeta: controllerruntime.ObjectMeta{
 			Name: controllers.ACMEServerName,
 		},
@@ -51,37 +51,46 @@ func (builder *Builder) UpdateACMEServer(server ACMEServer) (ACMEServer, error) 
 		},
 	}
 
-	acmeServerResp, err := builder.GetACMEServer()
+	acmeServer, err := builder.GetACMEServer()
 	if err != nil {
 		return ACMEServer{}, err
 	}
 
-	if acmeServerResp.Name == "" {
-		return ACMEServer{}, fmt.Errorf("no acme-server to update")
+	if acmeServer.Name != controllers.ACMEServerName {
+		return ACMEServer{}, fmt.Errorf("should only 1 acmeServer named as %s exist", controllers.ACMEServerName)
 	}
 
-	err = builder.Update(&resource)
+	acmeServer.Spec = expectedACMEServer.Spec
+	err = builder.Update(&acmeServer)
 
 	return ACMEServer{
-		Name:       resource.Name,
-		ACMEDomain: resource.Spec.ACMEDomain,
-		NSDomain:   resource.Spec.NSDomain,
+		Name:       acmeServer.Name,
+		ACMEDomain: acmeServer.Spec.ACMEDomain,
+		NSDomain:   acmeServer.Spec.NSDomain,
 	}, err
 }
 
-func (builder *Builder) GetACMEServer() (ACMEServerResp, error) {
+func (builder *Builder) GetACMEServer() (v1alpha1.ACMEServer, error) {
 	var acmeServerList v1alpha1.ACMEServerList
 	err := builder.List(&acmeServerList)
 	if err != nil {
-		return ACMEServerResp{}, err
+		return v1alpha1.ACMEServer{}, err
 	}
 
 	size := len(acmeServerList.Items)
 	if size == 0 {
-		return ACMEServerResp{}, nil
+		return v1alpha1.ACMEServer{}, err
 	}
 
 	server := acmeServerList.Items[0]
+	return server, nil
+}
+
+func (builder *Builder) GetACMEServerAsResp() (ACMEServerResp, error) {
+	server, err := builder.GetACMEServer()
+	if err != nil {
+		return ACMEServerResp{}, err
+	}
 
 	return ACMEServerResp{
 		ACMEServer: ACMEServer{
