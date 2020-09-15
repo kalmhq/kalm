@@ -40,7 +40,14 @@ interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProp
 
 interface Props extends FieldArrayRenderProps, FieldArrayProps {}
 
-class RenderVolumesRaw extends React.PureComponent<Props> {
+class RenderVolumesRaw extends React.Component<Props> {
+  shouldComponentUpdate(nextProps: Props) {
+    return (
+      nextProps.form.values.volumes !== this.props.form.values.volumes ||
+      nextProps.form.errors.volumes !== this.props.form.errors.volumes
+    );
+  }
+
   private getUsingClaimNames() {
     const {
       form: { values },

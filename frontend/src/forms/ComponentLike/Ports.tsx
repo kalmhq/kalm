@@ -42,7 +42,13 @@ interface Props extends FieldArrayRenderProps {}
 //   }
 // };
 
-class RenderPorts extends React.PureComponent<Props> {
+class RenderPorts extends React.Component<Props> {
+  shouldComponentUpdate(nextProps: Props) {
+    return (
+      nextProps.form.values.ports !== this.props.form.values.ports ||
+      nextProps.form.errors.ports !== this.props.form.errors.ports
+    );
+  }
   public render() {
     const {
       push,

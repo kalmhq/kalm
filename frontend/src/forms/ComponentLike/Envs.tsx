@@ -13,7 +13,13 @@ const nameValidators = (value: any) => {
   return ValidatorRequired(value) || ValidatorEnvName(value);
 };
 
-class RenderEnvs extends React.PureComponent<Props> {
+class RenderEnvs extends React.Component<Props> {
+  shouldComponentUpdate(nextProps: Props) {
+    return (
+      nextProps.form.values.env !== this.props.form.values.env ||
+      nextProps.form.errors.env !== this.props.form.errors.env
+    );
+  }
   private renderAddButton = () => {
     const { push } = this.props;
     return (

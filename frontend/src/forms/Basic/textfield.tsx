@@ -2,8 +2,7 @@ import { InputAdornment, OutlinedInputProps, useTheme } from "@material-ui/core"
 import TextField, { TextFieldProps } from "@material-ui/core/TextField";
 import { FieldProps, getIn } from "formik";
 import { TextField as FormikTextField } from "formik-material-ui";
-import React, { useCallback, useEffect, useState, ChangeEvent } from "react";
-import { useDebouncedCallback } from "use-debounce";
+import React, { ChangeEvent } from "react";
 import { KalmConsoleIcon } from "widgets/Icon";
 import { inputOnChangeWithDebounce, withDebounceField, withDebounceProps } from "./debounce";
 
@@ -36,52 +35,19 @@ export const KRenderFormikTextField = (props: TextFieldProps & FieldProps) => {
   );
 };
 
-export const INPUT_DELAY = 500;
-
-export const KRenderDebounceFormikTextField = withDebounceField(
-  (props: TextFieldProps & FieldProps & Props & withDebounceProps) => {
+class KRenderTextField extends React.PureComponent<withDebounceProps & Props & FieldProps> {
+  render() {
     const {
       helperText,
       endAdornment,
       meta,
-      field: { name, value },
-      onBlur,
-      normalize,
+      field: { value, name },
       form: { errors, handleChange, handleBlur, setFieldValue },
       showError,
       dispatch,
+      normalize,
       ...custom
-    } = props;
-    const [innerValue, setInnerValue] = useState("");
-    const error = getIn(errors, name);
-
-    useEffect(() => {
-      if (value) {
-        setInnerValue(value as string);
-      } else {
-        setInnerValue("");
-      }
-    }, [value]);
-
-    const [debouncedHandleOnChange] = useDebouncedCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-      if (normalize) {
-        setFieldValue(name, normalize(event));
-      } else {
-        handleChange(event);
-      }
-    }, INPUT_DELAY);
-
-    const handleOnChange = useCallback(
-      (event: React.ChangeEvent<HTMLInputElement>) => {
-        event.persist();
-
-        const newValue = normalize ? normalize(event) : event.currentTarget.value;
-        setInnerValue(newValue);
-        debouncedHandleOnChange(event);
-      },
-      [debouncedHandleOnChange, normalize],
-    );
-
+    } = this.props;
     const inputProps: Partial<OutlinedInputProps> = {};
     if (endAdornment) {
       inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
@@ -92,26 +58,37 @@ export const KRenderDebounceFormikTextField = withDebounceField(
         {...custom}
         fullWidth
         name={name}
-        onBlur={onBlur || handleBlur}
         error={showError}
+        onBlur={handleBlur}
         InputLabelProps={{
           shrink: true,
         }}
-        helperText={showError ? error : helperText ? helperText : " "}
+        helperText={showError ? getIn(errors, name) : helperText ? helperText : " "}
         margin="dense"
         variant="outlined"
         InputProps={inputProps}
         inputProps={{
           required: false, // bypass html5 required feature
         }}
-        value={innerValue}
+        value={value}
         onChange={(event: ChangeEvent<HTMLInputElement>) => {
-          inputOnChangeWithDebounce(dispatch, () => handleOnChange(event), name);
+          inputOnChangeWithDebounce(
+            dispatch,
+            () => {
+              if (normalize) {
+                setFieldValue(name, normalize(event));
+              } else {
+                handleChange(event);
+              }
+            },
+            name,
+          );
         }}
       />
     );
-  },
-);
+  }
+}
+export const KRenderDebounceFormikTextField = withDebounceField(KRenderTextField);
 
 interface ComplexValueTextFieldProps {
   endAdornment?: React.ReactNode;

@@ -26,7 +26,7 @@ interface Props extends FieldArrayRenderProps, TDispatchProp {}
 const updateContentDialogID = "update-content-dialog";
 const validateMountPath = (value: any) => ValidatorRequired(value) || KValidatorInjectedFilePath(value);
 
-class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
+class RenderPreInjectedFileRaw extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     const {
@@ -38,6 +38,14 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
       fileContentValue: "",
       activeIndex: getIn(values, name) ? getIn(values, name).length : 0,
     };
+  }
+
+  shouldComponentUpdate(nextProps: Props, nextState: State) {
+    return (
+      nextProps.form.values.preInjectedFiles !== this.props.form.values.preInjectedFiles ||
+      nextProps.form.errors.preInjectedFiles !== this.props.form.errors.preInjectedFiles ||
+      nextState !== this.state
+    );
   }
 
   private privateOpenEditDialog = (file: PreInjectedFile, index: number) => {

@@ -14,7 +14,6 @@ const mapStateToProps = (state: RootState, ownProps: FilledTextFieldProps & Fiel
   } = ownProps;
   const isDisplayDebounceError = getIsDisplayDebounceError(state, name);
   const error = getIn(errors, name);
-  // https://github.com/formium/formik/issues/691#issuecomment-446509600
   const _touched = getIn(touched, name);
 
   return {
@@ -34,7 +33,7 @@ export interface withDebounceProps
     TDispatchProp {}
 
 export const withDebounceField = (WrappedComponent: React.ComponentType<any>) => {
-  const withDebounce: React.ComponentType<withDebounceProps> = class extends React.Component<withDebounceProps> {
+  const withDebounce: React.ComponentType<withDebounceProps> = class extends React.PureComponent<withDebounceProps> {
     render() {
       return <WrappedComponent {...this.props} />;
     }

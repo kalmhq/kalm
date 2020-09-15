@@ -189,7 +189,7 @@ const nameValidators = (value: any) => {
 const numberValidators = (value: any) => {
   return ValidatorRequired(value) || ValidatorNaturalNumber(value);
 };
-class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
+class ComponentLikeFormRaw extends React.Component<Props, State> {
   private tabs = tabs;
 
   private loadRequiredData() {
@@ -201,6 +201,18 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
   componentDidMount() {
     this.loadRequiredData();
+  }
+
+  shouldComponentUpdate(nextProps: Props) {
+    return (
+      nextProps.values.name !== this.props.values.name ||
+      nextProps.values.image !== this.props.values.image ||
+      nextProps.values.workloadType !== this.props.values.workloadType ||
+      nextProps.values.replicas !== this.props.values.replicas ||
+      nextProps.values.volumes !== this.props.values.volumes ||
+      nextProps.errors !== this.props.errors ||
+      nextProps.currentTabIndex !== this.props.currentTabIndex
+    );
   }
 
   private renderReplicasOrSchedule = () => {

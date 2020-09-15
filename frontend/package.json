@@ -67,7 +67,6 @@
     "redux-thunk": "^2.3.0",
     "redux-thunk-error-handler": "^1.1.4",
     "typescript": "^3.7.4",
-    "use-debounce": "^4.0.0",
     "xterm": "^4.4.0",
     "xterm-addon-fit": "^0.3.0",
     "xterm-addon-search": "^0.5.0",
@@ -85,8 +84,16 @@
     "build-storybook": "NODE_ENV=test build-storybook --docs -s public"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "jest": {
     "moduleNameMapper": {
