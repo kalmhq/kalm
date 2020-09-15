@@ -152,7 +152,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
           return (
             <Box p={2}>
               <Expansion title="ACME DNS Server" defaultUnfold>
-                <Loading />;
+                <Loading />
               </Expansion>
             </Box>
           );
