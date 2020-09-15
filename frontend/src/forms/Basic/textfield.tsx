@@ -135,7 +135,7 @@ export class RenderFormikComplexValueTextField extends React.PureComponent<
       min,
       endAdornment,
       field: { name, value },
-      form: { touched, errors, setFieldValue },
+      form: { touched, errors, setFieldValue, setFieldTouched },
       format,
       parse,
     } = this.props;
@@ -170,8 +170,11 @@ export class RenderFormikComplexValueTextField extends React.PureComponent<
         defaultValue={format ? format(value) : value}
         // value={format ? format(value) : value}
         onBlur={(e) => {
+          setFieldTouched(name, true);
+        }}
+        onChange={(e) => {
           const value = e.target.value;
-          return parse ? setFieldValue(name, parse(value)) : setFieldValue(name, value);
+          parse ? setFieldValue(name, parse(value)) : setFieldValue(name, value);
         }}
       />
     );
