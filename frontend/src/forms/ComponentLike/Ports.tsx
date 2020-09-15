@@ -43,12 +43,23 @@ interface Props extends FieldArrayRenderProps {}
 // };
 
 class RenderPorts extends React.PureComponent<Props> {
+  private handlePush() {
+    this.props.push({ protocol: PortProtocolHTTP });
+  }
+
+  private handleRemove(index: number) {
+    this.props.remove(index);
+  }
+
+  private handleBlur(close: any, e: any) {
+    close();
+    this.props.form.handleBlur(e);
+  }
+
   public render() {
     const {
-      push,
       name,
-      form: { values, handleBlur },
-      remove,
+      form: { values },
     } = this.props;
     return (
       <>
@@ -59,7 +70,7 @@ class RenderPorts extends React.PureComponent<Props> {
               color="primary"
               startIcon={<AddIcon />}
               size="small"
-              onClick={() => push({ protocol: PortProtocolHTTP })}
+              onClick={this.handlePush.bind(this)}
             >
               Add
             </Button>
@@ -106,10 +117,7 @@ class RenderPorts extends React.PureComponent<Props> {
                         >
                           <FastField
                             onFocus={popupState.open}
-                            onBlur={(e: any) => {
-                              popupState.close();
-                              handleBlur(e);
-                            }}
+                            onBlur={this.handleBlur.bind(this, popupState.close)}
                             component={KRenderDebounceFormikTextField}
                             name={`${name}.${index}.containerPort`}
                             label="Container port"
@@ -151,10 +159,7 @@ class RenderPorts extends React.PureComponent<Props> {
                         >
                           <FastField
                             onFocus={popupState.open}
-                            onBlur={(e: any) => {
-                              popupState.close();
-                              handleBlur(e);
-                            }}
+                            onBlur={this.handleBlur.bind(this, popupState.close)}
                             component={KRenderDebounceFormikTextField}
                             name={`${name}.${index}.servicePort`}
                             label="Service Port"
@@ -189,7 +194,7 @@ class RenderPorts extends React.PureComponent<Props> {
                     tooltipPlacement="top"
                     tooltipTitle="Delete"
                     aria-label="delete"
-                    onClick={() => remove(index)}
+                    onClick={this.handleRemove.bind(this, index)}
                   >
                     <DeleteIcon />
                   </IconButtonWithTooltip>

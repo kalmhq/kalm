@@ -46,16 +46,65 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     dispatch(openDialogAction(updateContentDialogID));
   };
 
+  private handleDiscard(isInvalidFile: boolean | undefined) {
+    const { remove, dispatch } = this.props;
+    const { editingFileIndex } = this.state;
+    if (isInvalidFile) {
+      remove(editingFileIndex);
+    }
+    dispatch(closeDialogAction(updateContentDialogID));
+  }
+
+  private handleSave(isInvalidFile: boolean | undefined, file: any, mountPathTmp: string) {
+    const { replace, dispatch } = this.props;
+    const { editingFileIndex, activeIndex, fileContentValue } = this.state;
+    if (isInvalidFile) {
+      return;
+    }
+
+    replace(editingFileIndex, { ...file, content: fileContentValue, mountPath: mountPathTmp });
+    if (editingFileIndex === activeIndex) {
+      this.setState({ activeIndex: activeIndex + 1 });
+    }
+    dispatch(closeDialogAction(updateContentDialogID));
+  }
+
+  private handleChangeEditor(value: string) {
+    this.setState({ fileContentValue: value });
+  }
+
+  private handleRemove(index: number) {
+    const { remove } = this.props;
+    const { activeIndex } = this.state;
+    remove(index);
+    this.setState({ activeIndex: activeIndex - 1 });
+  }
+
+  private handlePush() {
+    const { activeIndex } = this.state;
+    const {
+      form: { values },
+      name,
+      push,
+      pop,
+    } = this.props;
+    const initFile = { readonly: true, content: "", mountPath: "" };
+    if (!getIn(values, name) || getIn(values, name).length <= activeIndex) {
+      push(initFile);
+    } else {
+      pop();
+      push(initFile);
+    }
+    this.privateOpenEditDialog(initFile, activeIndex);
+  }
+
   private renderEditContentDialog = () => {
     const {
-      dispatch,
       name,
-      remove,
       form: { values, errors },
-      replace,
     } = this.props;
     const syncErrors = getIn(errors, name) as { [key: string]: string }[] | undefined;
-    const { editingFileIndex, fileContentValue, activeIndex } = this.state;
+    const { editingFileIndex, fileContentValue } = this.state;
     const file = editingFileIndex > -1 ? getIn(values, name)[editingFileIndex] : null;
     const mountPathTmp = file ? file.mountPathTmp : "";
     const isInvalidFile =
@@ -73,29 +122,12 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
         }}
         actions={
           <>
-            <Button
-              onClick={() => {
-                if (isInvalidFile) {
-                  remove(editingFileIndex);
-                }
-                dispatch(closeDialogAction(updateContentDialogID));
-              }}
-              color="primary"
-            >
+            <Button onClick={this.handleDiscard.bind(this, isInvalidFile)} color="primary">
               Discard
             </Button>
             <Button
               disabled={isInvalidFile}
-              onClick={() => {
-                if (isInvalidFile) {
-                  return;
-                }
-                replace(editingFileIndex, { ...file, content: fileContentValue, mountPath: mountPathTmp });
-                if (editingFileIndex === activeIndex) {
-                  this.setState({ activeIndex: activeIndex + 1 });
-                }
-                dispatch(closeDialogAction(updateContentDialogID));
-              }}
+              onClick={this.handleSave.bind(this, isInvalidFile, file, mountPathTmp)}
               color="primary"
             >
               Save
@@ -121,7 +153,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
             />
           </Grid>
         </Grid>
-        <RichEdtor value={fileContentValue} onChange={(value) => this.setState({ fileContentValue: value })} />
+        <RichEdtor value={fileContentValue} onChange={this.handleChangeEditor.bind(this)} />
       </ControlledDialog>
     );
   };
@@ -130,11 +162,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     const {
       name,
       form: { values },
-      remove,
-      push,
-      pop,
     } = this.props;
-    const { activeIndex } = this.state;
     let fieldsNodes: any = [];
     if (getIn(values, name)) {
       getIn(values, name).forEach((injectedFile: PreInjectedFile, index: number) => {
@@ -157,7 +185,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
                   tooltipPlacement="top"
                   tooltipTitle="Edit"
                   aria-label="edit"
-                  onClick={() => this.privateOpenEditDialog(injectedFile, index)}
+                  onClick={this.privateOpenEditDialog.bind(this, injectedFile, index)}
                 >
                   <EditIcon />
                 </IconButtonWithTooltip>
@@ -165,10 +193,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
                   tooltipPlacement="top"
                   tooltipTitle="Delete"
                   aria-label="delete"
-                  onClick={() => {
-                    remove(index);
-                    this.setState({ activeIndex: activeIndex - 1 });
-                  }}
+                  onClick={this.handleRemove.bind(this, index)}
                 >
                   <DeleteIcon />
                 </IconButtonWithTooltip>
@@ -188,20 +213,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
             color="primary"
             startIcon={<AddIcon />}
             size="small"
-            onClick={() => {
-              const initFile = {
-                readonly: true,
-                content: "",
-                mountPath: "",
-              };
-              if (!getIn(values, name) || getIn(values, name).length <= activeIndex) {
-                push(initFile);
-              } else {
-                pop();
-                push(initFile);
-              }
-              this.privateOpenEditDialog(initFile, activeIndex);
-            }}
+            onClick={this.handlePush.bind(this)}
           >
             New File
           </Button>
