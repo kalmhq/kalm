@@ -36,7 +36,7 @@ export const KRenderFormikTextField = (props: TextFieldProps & FieldProps) => {
   );
 };
 
-export const INPUT_DELAY = 500;
+export const INPUT_DELAY = 100;
 
 export const KRenderDebounceFormikTextField = withDebounceField(
   (props: TextFieldProps & FieldProps & Props & withDebounceProps) => {
