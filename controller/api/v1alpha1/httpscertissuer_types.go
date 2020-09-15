@@ -52,7 +52,8 @@ type HTTP01Issuer struct {
 }
 
 type DNS01Issuer struct {
-	Configs map[string]DNS01IssuerConfig `json:"configs"`
+	BaseACMEDomain string                       `json:"baseACMEDomain"`
+	Configs        map[string]DNS01IssuerConfig `json:"configs"`
 }
 
 type DNS01IssuerConfig struct {

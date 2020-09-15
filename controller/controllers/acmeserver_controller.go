@@ -371,18 +371,22 @@ func (r *ACMEServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *ACMEServerReconciler) registerDomainsInACMEServer(
 	httpsCertIssuer corev1alpha1.HttpsCertIssuer,
-) (map[string]corev1alpha1.DNS01IssuerConfig, error) {
+) (needRegister map[string]corev1alpha1.DNS01IssuerConfig, needCleanDomains []string, err error) {
 
 	dns01Certs, err := r.getCertsUsingDNSIssuer(r.ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var needRegisterDomains []string
+	domainsInCertsUsingDNSIssuer := make(map[string]interface{})
+
 	for _, dns01Cert := range dns01Certs {
 		domains := dns01Cert.Spec.Domains
 
 		for _, domain := range domains {
+			domainsInCertsUsingDNSIssuer[domain] = true
+
 			if _, exist := httpsCertIssuer.Spec.DNS01.Configs[domain]; exist {
 				continue
 			}
@@ -393,41 +397,26 @@ func (r *ACMEServerReconciler) registerDomainsInACMEServer(
 
 	r.Log.Info("updateConfigsForIssuer", "needRegisterDomains", needRegisterDomains)
 
-	domainConfigMap, err := r.registerACMEDNS(needRegisterDomains)
+	needRegister, err = r.registerACMEDNS(needRegisterDomains)
 	if err != nil {
 		r.Log.Error(err, "fail to registerACMEDNS")
-		return nil, err
+		return nil, nil, err
 	}
 
 	if httpsCertIssuer.Spec.DNS01.Configs == nil {
 		httpsCertIssuer.Spec.DNS01.Configs = make(map[string]corev1alpha1.DNS01IssuerConfig)
 	}
 
-	// update status of certs using dns01Issuer
-	for _, cert := range dns01Certs {
-		if len(cert.Spec.Domains) <= 0 {
+	for domainInIssuerSpec := range httpsCertIssuer.Spec.DNS01.Configs {
+		_, domainInIssuerSpecStillBeingUsingByCert := domainsInCertsUsingDNSIssuer[domainInIssuerSpec]
+		if domainInIssuerSpecStillBeingUsingByCert {
 			continue
 		}
 
-		if cert.Status.WildcardCertDNSChallengeDomainMap == nil {
-			cert.Status.WildcardCertDNSChallengeDomainMap = make(map[string]string)
-		}
-
-		for _, domain := range cert.Spec.Domains {
-			config, exist := httpsCertIssuer.Spec.DNS01.Configs[domain]
-			if !exist {
-				continue
-			}
-
-			cert.Status.WildcardCertDNSChallengeDomainMap[domain] = config.FullDomain
-		}
-
-		if err := r.Status().Update(r.ctx, &cert); err != nil {
-			return nil, err
-		}
+		needCleanDomains = append(needCleanDomains, domainInIssuerSpec)
 	}
 
-	return domainConfigMap, nil
+	return needRegister, needCleanDomains, nil
 }
 
 func getNameForLoadBalanceServiceForNSDomain() string {
@@ -517,7 +506,7 @@ func (r *ACMEServerReconciler) reconcileIssuer(acmeServer corev1alpha1.ACMEServe
 		}
 	}
 
-	domainConfigMap, err := r.registerDomainsInACMEServer(issuer)
+	needRegisterDomainConfigs, needCleanDomains, err := r.registerDomainsInACMEServer(issuer)
 	if err != nil {
 		r.Log.Error(err, "registerDomainsInACMEServer fail")
 		return err
@@ -529,19 +518,41 @@ func (r *ACMEServerReconciler) reconcileIssuer(acmeServer corev1alpha1.ACMEServe
 			return err
 		}
 
-		issuer.Spec.DNS01.Configs = domainConfigMap
+		issuer.Spec.DNS01.Configs = needRegisterDomainConfigs
+		issuer.Spec.DNS01.BaseACMEDomain = acmeServer.Spec.ACMEDomain
 
 		err = r.Create(r.ctx, &issuer)
 	} else {
-		copied := issuer.DeepCopy()
-		for domain, config := range domainConfigMap {
-			// both example.com & *.example.com is needed
-			copied.Spec.DNS01.Configs[domain] = config
-			copied.Spec.DNS01.Configs["*."+domain] = config
+		copiedIssuer := issuer.DeepCopy()
+		for domain, config := range needRegisterDomainConfigs {
+			// ? both example.com & *.example.com is needed
+			issuer.Spec.DNS01.Configs[domain] = config
+			//copiedIssuer.Spec.DNS01.Configs["*."+domain] = config
 		}
 
-		err = r.Patch(r.ctx, copied, client.MergeFrom(&issuer))
+		for _, needClean := range needCleanDomains {
+			delete(issuer.Spec.DNS01.Configs, needClean)
+		}
+
+		baseACMEDomain := acmeServer.Spec.ACMEDomain
+
+		// make sure full domain is right
+		for domain, config := range issuer.Spec.DNS01.Configs {
+			config.FullDomain = fmt.Sprintf("%s.%s", config.SubDomain, baseACMEDomain)
+			issuer.Spec.DNS01.Configs[domain] = config
+		}
+
+		issuer.Spec.DNS01.BaseACMEDomain = baseACMEDomain
+
+		err = r.Patch(r.ctx, &issuer, client.MergeFrom(copiedIssuer))
 	}
+
+	if err != nil {
+		return err
+	}
+
+	// update status of certs using dnsIssuer
+	err = r.updateStatusOfCertsUsingDNSIssuer(issuer)
 
 	return err
 }
@@ -724,6 +735,40 @@ func (r *ACMEServerReconciler) installACMEServer(cert corev1alpha1.HttpsCert) er
 	}
 
 	return r.Create(r.ctx, &expectedACMEServer)
+}
+
+func (r *ACMEServerReconciler) updateStatusOfCertsUsingDNSIssuer(httpsCertIssuer corev1alpha1.HttpsCertIssuer) error {
+	dns01Certs, err := r.getCertsUsingDNSIssuer(r.ctx)
+	if err != nil {
+		return err
+	}
+
+	// update status of certs using dns01Issuer
+	for _, cert := range dns01Certs {
+		if len(cert.Spec.Domains) <= 0 {
+			continue
+		}
+
+		if cert.Status.WildcardCertDNSChallengeDomainMap == nil {
+			cert.Status.WildcardCertDNSChallengeDomainMap = make(map[string]string)
+		}
+
+		for _, domain := range cert.Spec.Domains {
+			config, exist := httpsCertIssuer.Spec.DNS01.Configs[domain]
+			if !exist {
+				continue
+			}
+
+			challengeDomain := fmt.Sprintf("%s.%s", config.SubDomain, httpsCertIssuer.Spec.DNS01.BaseACMEDomain)
+			cert.Status.WildcardCertDNSChallengeDomainMap[domain] = challengeDomain
+		}
+
+		if err := r.Status().Update(r.ctx, &cert); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func sha1String(s string) string {
