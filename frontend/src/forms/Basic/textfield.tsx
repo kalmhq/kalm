@@ -2,7 +2,7 @@ import { InputAdornment, OutlinedInputProps, useTheme } from "@material-ui/core"
 import TextField, { TextFieldProps } from "@material-ui/core/TextField";
 import { FieldProps, getIn } from "formik";
 import { TextField as FormikTextField } from "formik-material-ui";
-import React, { useCallback, useEffect, useState, ChangeEvent } from "react";
+import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { KalmConsoleIcon } from "widgets/Icon";
 import { inputOnChangeWithDebounce, withDebounceField, withDebounceProps } from "./debounce";
@@ -36,7 +36,7 @@ export const KRenderFormikTextField = (props: TextFieldProps & FieldProps) => {
   );
 };
 
-export const INPUT_DELAY = 500;
+export const INPUT_DELAY = 100;
 
 export const KRenderDebounceFormikTextField = withDebounceField(
   (props: TextFieldProps & FieldProps & Props & withDebounceProps) => {
