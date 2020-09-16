@@ -110,7 +110,7 @@ export const createCertificateAction = (
         if (d.startsWith("*.")) {
           hasWildcardDomains = true;
         }
-        return d.replace("*.", "");
+        return d;
       });
       if (hasWildcardDomains) {
         certContent.httpsCertIssuer = dns01Mananged;
