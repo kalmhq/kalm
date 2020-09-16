@@ -1,24 +1,40 @@
-import Immutable from "immutable";
 import { Actions } from "types";
-import { SET_DEBOUNCING, SET_TIMER, DebounceType } from "types/debounce";
+import { SET_DEBOUNCING, SET_TIMER, DebouncesMap } from "types/debounce";
+import produce from "immer";
 
-export type State = DebounceType;
+export type State = DebouncesMap;
 
-export let initialState: State = Immutable.Map();
+export let initialState: State = {};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case SET_DEBOUNCING: {
       const { name, debouncing } = action.payload;
-      return state.setIn([name, "debouncing"], debouncing);
+      if (state[name]) {
+        state[name].debouncing = debouncing;
+      } else {
+        state[name] = {
+          debouncing,
+          timer: 0,
+        };
+      }
+      return;
     }
     case SET_TIMER: {
       const { name, timer } = action.payload;
-      return state.setIn([name, "timer"], timer);
+      if (state[name]) {
+        state[name].timer = timer;
+      } else {
+        state[name] = {
+          timer,
+          debouncing: false,
+        };
+      }
+      return;
     }
   }
 
   return state;
-};
+}, initialState);
 
 export default reducer;

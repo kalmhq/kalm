@@ -5,13 +5,12 @@ import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete
 import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
 import { FormikUploader } from "forms/Basic/uploader";
 import { ValidateHost } from "forms/validator";
-import Immutable from "immutable";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import sc from "../../utils/stringConstants";
-import { CertificateIssuerList, selfManaged, CertificateFormTypeContent } from "types/certificate";
+import { selfManaged, CertificateFormType } from "types/certificate";
 import DomainStatus from "widgets/DomainStatus";
 import { connect } from "react-redux";
 import { Prompt } from "widgets/Prompt";
@@ -24,8 +23,8 @@ import { setSuccessNotificationAction } from "actions/notification";
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   return {
     managedType: selfManaged as string,
-    certificateIssuers: state.get("certificates").get("certificateIssuers") as CertificateIssuerList,
-    ingressIP: state.get("cluster").get("info").get("ingressIP", "---.---.---.---"),
+    certificateIssuers: state.certificates.certificateIssuers,
+    ingressIP: state.cluster.info.ingressIP || "---.---.---.---",
   };
 };
 
@@ -33,7 +32,7 @@ interface OwnProps {
   form?: string;
   isEdit?: boolean;
   onSubmit: any;
-  initialValues: CertificateFormTypeContent;
+  initialValues: CertificateFormType;
 }
 
 const styles = (theme: Theme) =>
@@ -55,7 +54,7 @@ const styles = (theme: Theme) =>
 export interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   isEdit?: boolean;
   onSubmit: any;
-  initialValues: CertificateFormTypeContent;
+  initialValues: CertificateFormType;
 }
 
 interface State {
@@ -70,7 +69,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  private renderSelfManagedFields = (formikProps: FormikProps<CertificateFormTypeContent>) => {
+  private renderSelfManagedFields = (formikProps: FormikProps<CertificateFormType>) => {
     const { classes } = this.props;
     const { setFieldValue, values, errors, touched } = formikProps;
     return (
@@ -118,7 +117,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private validate = async (values: CertificateFormTypeContent) => {
+  private validate = async (values: CertificateFormType) => {
     let errors: any = {};
 
     if (values.managedType === selfManaged && (!values.domains || values.domains.length < 1)) {
@@ -151,11 +150,10 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
       >
         {(formikProps) => {
           const { values, dirty, touched, errors, setFieldValue, isSubmitting } = formikProps;
-          const icons = Immutable.List(
-            values.domains.map((domain, index) =>
-              Array.isArray(errors.domains) && errors.domains[index] ? undefined : <DomainStatus domain={domain} />,
-            ),
+          const icons = values.domains.map((domain, index) =>
+            Array.isArray(errors.domains) && errors.domains[index] ? undefined : <DomainStatus domain={domain} />,
           );
+
           if (!dirty && values.selfManagedCertContent && values.domains.length <= 0) {
             const domains = extractDomainsFromCertificateContent(values.selfManagedCertContent);
             setFieldValue("domains", domains);

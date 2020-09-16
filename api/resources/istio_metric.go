@@ -63,15 +63,21 @@ func mergeIstioMetricHistories(a, b *IstioMetricHistories) *IstioMetricHistories
 	return &rst
 }
 
-func (builder *Builder) GetIstioMetricsListChannel(ns string) *IstioMetricListChannel {
+func (resourceManager *ResourceManager) GetIstioMetricsListChannel(ns string) *IstioMetricListChannel {
 	channel := IstioMetricListChannel{
 		List:  make(chan map[string]*IstioMetricHistories, 1),
 		Error: make(chan error, 1),
 	}
 
 	go func() {
-		httpSvc2MetricMap, err := getIstioMetricHistoriesMap(ns)
 
+		if os.Getenv("KALM_SKIP_ISTIO_METRICS") != "" {
+			channel.List <- nil
+			channel.Error <- nil
+			return
+		}
+
+		httpSvc2MetricMap, err := getIstioMetricHistoriesMap(ns)
 		channel.List <- httpSvc2MetricMap
 		channel.Error <- err
 	}()

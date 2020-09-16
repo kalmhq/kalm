@@ -34,20 +34,53 @@ func (suite *NodesHandlerTestSuite) TestNodesHandler() {
 	suite.Nil(err)
 
 	// list node
-	var nodeList resources.NodesResponse
-	rec := suite.NewRequest(http.MethodGet, "/v1alpha1/nodes", "{}")
-	rec.BodyAsJSON(&nodeList)
-	suite.EqualValues(200, rec.Code)
-	suite.Equal(1, len(nodeList.Nodes))
-	suite.Equal("test-node", nodeList.Nodes[0].Name)
-
-	// cordon node
-	rec = suite.NewRequest(http.MethodPost, "/v1alpha1/nodes/test-node/uncordon", "{}")
-	suite.EqualValues(200, rec.Code)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterViewerRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/nodes",
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var nodeList resources.NodesResponse
+			rec.BodyAsJSON(&nodeList)
+			suite.EqualValues(200, rec.Code)
+			suite.Equal(1, len(nodeList.Nodes))
+			suite.Equal("test-node", nodeList.Nodes[0].Name)
+		},
+	})
 
 	// uncordon node
-	rec = suite.NewRequest(http.MethodPost, "/v1alpha1/nodes/test-node/cordon", "{}")
-	suite.EqualValues(200, rec.Code)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodPost,
+		Path:   "/v1alpha1/nodes/test-node/uncordon",
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.EqualValues(200, rec.Code)
+		},
+	})
+
+	// cordon node
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodPost,
+		Path:   "/v1alpha1/nodes/test-node/cordon",
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.EqualValues(200, rec.Code)
+		},
+	})
 }
 
 func TestNodesHandlerTestSuite(t *testing.T) {

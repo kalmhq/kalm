@@ -1,19 +1,19 @@
 import { Box, Button, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
-import { deleteDeployKeyAction } from "actions/deployKey";
+import { deleteDeployAccessTokenAction } from "actions/deployAccessToken";
 import { blinkTopProgressAction } from "actions/settings";
-import { withDeployKeys, WithDeployKeysProps } from "hoc/withDeployKeys";
+import { withDeployAccessTokens, WithDeployAccessTokensProps } from "hoc/withDeployAccessTokens";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import {
-  DeployKeyFormType,
-  DeployKeyScopeCluster,
-  DeployKeyScopeComponent,
-  DeployKeyScopeNamespace,
-} from "types/deployKey";
+  DeployAccessToken,
+  DeployAccessTokenScopeCluster,
+  DeployAccessTokenScopeComponent,
+  DeployAccessTokenScopeNamespace,
+} from "types/deployAccessToken";
 import sc from "utils/stringConstants";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
 import { CustomizedButton } from "widgets/Button";
@@ -24,6 +24,8 @@ import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { Loading } from "widgets/Loading";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -34,7 +36,12 @@ const mapStateToProps = (state: RootState) => {
   return {};
 };
 
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, WithDeployKeysProps {}
+interface Props
+  extends WithStyles<typeof styles>,
+    ReturnType<typeof mapStateToProps>,
+    WithDeployAccessTokensProps,
+    WithNamespaceProps,
+    WithUserAuthProps {}
 
 interface State {}
 
@@ -51,51 +58,53 @@ class CIPageRaw extends React.PureComponent<Props, State> {
         title={sc.EMPTY_CI_TITLE}
         content={sc.EMPTY_CI_SUBTITLE}
         button={
-          <CustomizedButton component={Link} variant="contained" to="/ci/keys/new" color="primary">
-            New Deploy Key
-          </CustomizedButton>
+          this.canEdit() ? (
+            <CustomizedButton component={Link} variant="contained" to="/ci/keys/new" color="primary">
+              New Deploy Key
+            </CustomizedButton>
+          ) : null
         }
       />
     );
   }
 
-  private renderName = (rowData: DeployKeyFormType) => {
-    return <Typography variant="subtitle2">{rowData.get("name")}</Typography>;
+  private renderMemo = (rowData: DeployAccessToken) => {
+    return <Typography variant="subtitle2">{rowData.memo}</Typography>;
   };
 
-  private renderScope = (rowData: DeployKeyFormType) => {
-    switch (rowData.get("scope")) {
-      case DeployKeyScopeCluster: {
+  private renderScope = (rowData: DeployAccessToken) => {
+    switch (rowData.scope) {
+      case DeployAccessTokenScopeCluster: {
         return "Cluster";
       }
-      case DeployKeyScopeNamespace: {
+      case DeployAccessTokenScopeNamespace: {
         return "Specific Applications";
       }
-      case DeployKeyScopeComponent: {
+      case DeployAccessTokenScopeComponent: {
         return "Specific Components";
       }
     }
   };
 
-  private renderResources = (rowData: DeployKeyFormType) => {
-    const resoureces = rowData.get("resources");
+  private renderResources = (rowData: DeployAccessToken) => {
+    const resoureces = rowData.resources;
 
-    switch (rowData.get("scope")) {
-      case DeployKeyScopeCluster: {
+    switch (rowData.scope) {
+      case DeployAccessTokenScopeCluster: {
         return "-";
       }
-      case DeployKeyScopeNamespace: {
+      case DeployAccessTokenScopeNamespace: {
         return resoureces.map((r) => <Box key={r}>{r}</Box>);
       }
-      case DeployKeyScopeComponent: {
+      case DeployAccessTokenScopeComponent: {
         return resoureces.map((r) => <Box key={r}>{r}</Box>);
       }
     }
   };
 
-  private renderActions = (rowData: DeployKeyFormType) => {
+  private renderActions = (rowData: DeployAccessToken) => {
     const { dispatch } = this.props;
-    return (
+    return this.canEdit() ? (
       <>
         <IconLinkWithToolTip
           onClick={() => {
@@ -103,17 +112,17 @@ class CIPageRaw extends React.PureComponent<Props, State> {
           }}
           // size="small"
           tooltipTitle="Details"
-          to={`/ci/keys/${rowData.get("name")}`}
+          to={`/ci/keys/${rowData.name}`}
         >
           <KalmDetailsIcon />
         </IconLinkWithToolTip>
         <DeleteButtonWithConfirmPopover
           popupId="delete-ci-popup"
           popupTitle="DELETE CI?"
-          confirmedAction={() => dispatch(deleteDeployKeyAction(rowData))}
+          confirmedAction={() => dispatch(deleteDeployAccessTokenAction(rowData))}
         />
       </>
-    );
+    ) : null;
   };
 
   private renderInfoBox() {
@@ -147,8 +156,8 @@ class CIPageRaw extends React.PureComponent<Props, State> {
   private getKRTableColumns() {
     return [
       {
-        Header: "Name",
-        accessor: "name",
+        Header: "Memo",
+        accessor: "memo",
       },
       {
         Header: "Scope",
@@ -166,14 +175,14 @@ class CIPageRaw extends React.PureComponent<Props, State> {
   }
 
   private getKRTableData() {
-    const { deployKeys } = this.props;
+    const { deployAccessTokens } = this.props;
     const data: any[] = [];
 
-    deployKeys &&
-      deployKeys.forEach((deployKey, index) => {
-        const rowData = deployKey;
+    deployAccessTokens &&
+      deployAccessTokens.forEach((deployAccessToken, index) => {
+        const rowData = deployAccessToken;
         data.push({
-          name: this.renderName(rowData),
+          memo: this.renderMemo(rowData),
           scope: this.renderScope(rowData),
           resources: this.renderResources(rowData),
           actions: this.renderActions(rowData),
@@ -188,7 +197,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderContent = () => {
-    const { deployKeys, isLoading, loaded } = this.props;
+    const { deployAccessTokens, isLoading, loaded } = this.props;
 
     if (!loaded && isLoading) {
       return (
@@ -198,18 +207,25 @@ class CIPageRaw extends React.PureComponent<Props, State> {
       );
     }
 
-    return <Box p={2}>{deployKeys.size === 0 ? this.renderEmpty() : this.renderKRTable()}</Box>;
+    return <Box p={2}>{deployAccessTokens.length === 0 ? this.renderEmpty() : this.renderKRTable()}</Box>;
   };
+
+  private canEdit() {
+    const { canEditNamespace, canEditCluster, activeNamespaceName } = this.props;
+    return canEditNamespace(activeNamespaceName) || canEditCluster();
+  }
 
   public render() {
     return (
       <BasePage
         secondHeaderRight={
-          <>
-            <Button component={Link} color="primary" variant="outlined" size="small" to="/ci/keys/new">
-              New Deploy Key
-            </Button>
-          </>
+          this.canEdit() ? (
+            <>
+              <Button component={Link} color="primary" variant="outlined" size="small" to="/ci/keys/new">
+                New Deploy Token
+              </Button>
+            </>
+          ) : null
         }
       >
         {this.renderContent()}
@@ -218,4 +234,6 @@ class CIPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const CIPage = withStyles(styles)(withDeployKeys(connect(mapStateToProps)(CIPageRaw)));
+export const CIPage = withNamespace(
+  withUserAuth(withStyles(styles)(withDeployAccessTokens(connect(mapStateToProps)(CIPageRaw)))),
+);

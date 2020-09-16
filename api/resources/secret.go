@@ -10,7 +10,7 @@ type SecretListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetSecretListChannel(opts ...client.ListOption) *SecretListChannel {
+func (resourceManager *ResourceManager) GetSecretListChannel(opts ...client.ListOption) *SecretListChannel {
 	channel := &SecretListChannel{
 		List:  make(chan []coreV1.Secret, 1),
 		Error: make(chan error, 1),
@@ -18,7 +18,7 @@ func (builder *Builder) GetSecretListChannel(opts ...client.ListOption) *SecretL
 
 	go func() {
 		var secretList coreV1.SecretList
-		err := builder.List(&secretList, opts...)
+		err := resourceManager.List(&secretList, opts...)
 
 		if err != nil {
 			channel.List <- nil
@@ -39,9 +39,9 @@ func (builder *Builder) GetSecretListChannel(opts ...client.ListOption) *SecretL
 	return channel
 }
 
-func (builder *Builder) GetSecret(ns, secName string) (coreV1.Secret, error) {
+func (resourceManager *ResourceManager) GetSecret(ns, secName string) (coreV1.Secret, error) {
 	sec := coreV1.Secret{}
-	if err := builder.Get(ns, secName, &sec); err != nil {
+	if err := resourceManager.Get(ns, secName, &sec); err != nil {
 		return coreV1.Secret{}, err
 	}
 

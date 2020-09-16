@@ -110,38 +110,38 @@ func getNodeInternalIP(node *coreV1.Node) string {
 	return "<none>"
 }
 
-func (builder *Builder) GetNode(name string) (*coreV1.Node, error) {
+func (resourceManager *ResourceManager) GetNode(name string) (*coreV1.Node, error) {
 	var node coreV1.Node
 
-	if err := builder.Get("", name, &node); err != nil {
+	if err := resourceManager.Get("", name, &node); err != nil {
 		return nil, err
 	}
 
 	return &node, nil
 }
 
-func (builder *Builder) CordonNode(node *coreV1.Node) error {
+func (resourceManager *ResourceManager) CordonNode(node *coreV1.Node) error {
 	nodeCopy := node.DeepCopy()
 	nodeCopy.Spec.Unschedulable = true
 
-	if err := builder.Patch(nodeCopy, client.MergeFrom(node)); err != nil {
+	if err := resourceManager.Patch(nodeCopy, client.MergeFrom(node)); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (builder *Builder) UncordonNode(node *coreV1.Node) error {
+func (resourceManager *ResourceManager) UncordonNode(node *coreV1.Node) error {
 	nodeCopy := node.DeepCopy()
 	nodeCopy.Spec.Unschedulable = false
 
-	if err := builder.Patch(nodeCopy, client.MergeFrom(node)); err != nil {
+	if err := resourceManager.Patch(nodeCopy, client.MergeFrom(node)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (builder *Builder) BuildNodeResponse(node *coreV1.Node) *Node {
+func (resourceManager *ResourceManager) BuildNodeResponse(node *coreV1.Node) *Node {
 	histories := GetFilteredNodeMetrics([]string{node.Name})
 
 	return &Node{
@@ -155,13 +155,13 @@ func (builder *Builder) BuildNodeResponse(node *coreV1.Node) *Node {
 		StatusTexts:        getNodeRunningStatus(node),
 		InternalIP:         getNodeInternalIP(node),
 		ExternalIP:         getNodeExternalIP(node),
-		AllocatedResources: *builder.getAllocatedResources(node),
+		AllocatedResources: *resourceManager.getAllocatedResources(node),
 	}
 }
 
-func (builder *Builder) ListNodes() (*NodesResponse, error) {
+func (resourceManager *ResourceManager) ListNodes() (*NodesResponse, error) {
 	nodeList := &coreV1.NodeList{}
-	err := builder.List(nodeList)
+	err := resourceManager.List(nodeList)
 
 	if err != nil {
 		return nil, err
@@ -184,17 +184,17 @@ func (builder *Builder) ListNodes() (*NodesResponse, error) {
 
 	for i := range nodeList.Items {
 		node := nodeList.Items[i]
-		res.Nodes = append(res.Nodes, *builder.BuildNodeResponse(&node))
+		res.Nodes = append(res.Nodes, *resourceManager.BuildNodeResponse(&node))
 	}
 
 	return res, nil
 }
 
-func (builder *Builder) getAllocatedResources(node *coreV1.Node) *AllocatedResources {
+func (resourceManager *ResourceManager) getAllocatedResources(node *coreV1.Node) *AllocatedResources {
 	fieldSelector, err := fields.ParseSelector("spec.nodeName=" + node.Name + ",status.phase!=" + string(coreV1.PodSucceeded) + ",status.phase!=" + string(coreV1.PodFailed))
 
 	nodeNonTerminatedPodsList := &coreV1.PodList{}
-	err = builder.List(nodeNonTerminatedPodsList, client.MatchingFieldsSelector{Selector: fieldSelector})
+	err = resourceManager.List(nodeNonTerminatedPodsList, client.MatchingFieldsSelector{Selector: fieldSelector})
 
 	if err != nil {
 		return &AllocatedResources{}

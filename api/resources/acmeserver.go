@@ -20,7 +20,7 @@ type ACMEServerResp struct {
 	Ready           bool   `json:"ready"`
 }
 
-func (builder *Builder) CreateACMEServer(server ACMEServer) (ACMEServer, error) {
+func (resourceManager *ResourceManager) CreateACMEServer(server ACMEServer) (ACMEServer, error) {
 	resource := v1alpha1.ACMEServer{
 		ObjectMeta: controllerruntime.ObjectMeta{
 			Name: controllers.ACMEServerName,
@@ -31,7 +31,7 @@ func (builder *Builder) CreateACMEServer(server ACMEServer) (ACMEServer, error) 
 		},
 	}
 
-	err := builder.Create(&resource)
+	err := resourceManager.Create(&resource)
 
 	return ACMEServer{
 		Name:       resource.Name,
@@ -40,7 +40,7 @@ func (builder *Builder) CreateACMEServer(server ACMEServer) (ACMEServer, error) 
 	}, err
 }
 
-func (builder *Builder) UpdateACMEServer(server ACMEServer) (ACMEServer, error) {
+func (resourceManager *ResourceManager) UpdateACMEServer(server ACMEServer) (ACMEServer, error) {
 	expectedACMEServer := v1alpha1.ACMEServer{
 		ObjectMeta: controllerruntime.ObjectMeta{
 			Name: controllers.ACMEServerName,
@@ -51,7 +51,7 @@ func (builder *Builder) UpdateACMEServer(server ACMEServer) (ACMEServer, error) 
 		},
 	}
 
-	acmeServer, err := builder.GetACMEServer()
+	acmeServer, err := resourceManager.GetACMEServer()
 	if err != nil {
 		return ACMEServer{}, err
 	}
@@ -61,7 +61,7 @@ func (builder *Builder) UpdateACMEServer(server ACMEServer) (ACMEServer, error) 
 	}
 
 	acmeServer.Spec = expectedACMEServer.Spec
-	err = builder.Update(&acmeServer)
+	err = resourceManager.Update(&acmeServer)
 
 	return ACMEServer{
 		Name:       acmeServer.Name,
@@ -70,9 +70,9 @@ func (builder *Builder) UpdateACMEServer(server ACMEServer) (ACMEServer, error) 
 	}, err
 }
 
-func (builder *Builder) GetACMEServer() (v1alpha1.ACMEServer, error) {
+func (resourceManager *ResourceManager) GetACMEServer() (v1alpha1.ACMEServer, error) {
 	var acmeServerList v1alpha1.ACMEServerList
-	err := builder.List(&acmeServerList)
+	err := resourceManager.List(&acmeServerList)
 	if err != nil {
 		return v1alpha1.ACMEServer{}, err
 	}
@@ -93,8 +93,8 @@ func (builder *Builder) GetACMEServer() (v1alpha1.ACMEServer, error) {
 	return v1alpha1.ACMEServer{}, fmt.Errorf("expected acme-server not exist yet")
 }
 
-func (builder *Builder) GetACMEServerAsResp() (ACMEServerResp, error) {
-	server, err := builder.GetACMEServer()
+func (resourceManager *ResourceManager) GetACMEServerAsResp() (ACMEServerResp, error) {
+	server, err := resourceManager.GetACMEServer()
 	if err != nil {
 		return ACMEServerResp{}, err
 	}
@@ -110,8 +110,8 @@ func (builder *Builder) GetACMEServerAsResp() (ACMEServerResp, error) {
 	}, nil
 }
 
-func (builder *Builder) DeleteACMEServer() error {
-	return builder.Delete(&v1alpha1.ACMEServer{
+func (resourceManager *ResourceManager) DeleteACMEServer() error {
+	return resourceManager.Delete(&v1alpha1.ACMEServer{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: controllers.ACMEServerName,
 		},

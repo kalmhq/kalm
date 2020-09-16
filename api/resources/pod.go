@@ -61,7 +61,7 @@ type PodListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetPodListChannel(opts ...client.ListOption) *PodListChannel {
+func (resourceManager *ResourceManager) GetPodListChannel(opts ...client.ListOption) *PodListChannel {
 	channel := &PodListChannel{
 		List:  make(chan *coreV1.PodList, 1),
 		Error: make(chan error, 1),
@@ -69,7 +69,7 @@ func (builder *Builder) GetPodListChannel(opts ...client.ListOption) *PodListCha
 
 	go func() {
 		var list coreV1.PodList
-		err := builder.List(&list, opts...)
+		err := resourceManager.List(&list, opts...)
 		channel.List <- &list
 		channel.Error <- err
 	}()

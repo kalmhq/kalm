@@ -1,15 +1,12 @@
 package handler
 
 import (
-	"context"
 	"fmt"
 	"github.com/kalmhq/kalm/api/auth"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
-	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/clientcmd/api"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strconv"
@@ -49,21 +46,23 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 		return fmt.Errorf("componentName can't be blank")
 	}
 
-	deployKeyConfig, err := h.clientManager.BuildClientConfigWithAuthInfo(
-		&api.AuthInfo{Token: callParams.DeployKey},
-	)
+	clientInfo, err := h.clientManager.GetClientInfoFromToken(callParams.DeployKey, "")
 
 	if err != nil {
 		return err
 	}
 
-	builder := resources.NewBuilder(deployKeyConfig, h.logger)
+	builder := resources.NewResourceManager(clientInfo.Cfg, h.logger)
 
 	if builder == nil {
-		return fmt.Errorf("invalid deploy key")
+		return fmt.Errorf("invalid access token")
 	}
 
-	crdComp, err := builder.GetComponent(callParams.Namespace, callParams.ComponentName)
+	if !h.clientManager.CanEdit(clientInfo, callParams.Namespace, "components/"+callParams.ComponentName) {
+		return resources.NoObjectEditorRoleError(callParams.Namespace, "components/"+callParams.ComponentName)
+	}
+
+	crdComp, err := h.resourceManager.GetComponent(callParams.Namespace, callParams.ComponentName)
 
 	if err != nil {
 		return err
@@ -83,39 +82,25 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 	updateTs := int(time.Now().Unix())
 	copiedComp.Annotations[controllers.AnnoLastUpdatedByWebhook] = strconv.Itoa(updateTs)
 
-	if err := builder.Patch(copiedComp, client.MergeFrom(crdComp)); err != nil {
+	if err := h.resourceManager.Patch(copiedComp, client.MergeFrom(crdComp)); err != nil {
 		h.logger.Info("fail updating component", "name", copiedComp.Name, "time", updateTs)
 		return err
 	}
 
-	if kClient, err := client.New(h.clientManager.ClusterConfig, client.Options{Scheme: scheme.Scheme}); err != nil {
-		h.logger.Error(err, "fail create client from clusterConfig")
-	} else {
-		var deployKeyList v1alpha1.DeployKeyList
-
-		ctx := context.Background()
-
-		if err := kClient.List(ctx, &deployKeyList); err != nil {
-			h.logger.Error(err, "fail to list deployKeys")
-		}
-
-		for _, key := range deployKeyList.Items {
-			if callParams.DeployKey != key.Status.ServiceAccountToken {
-				continue
-			}
-
-			copiedKey := key.DeepCopy()
-			copiedKey.Status.LastUsedTimestamp = updateTs
-			copiedKey.Status.UsedCount += 1
-
-			if err := kClient.Status().Update(ctx, copiedKey); err != nil {
-				h.logger.Error(err, "fail update status of deployKeys")
-			}
-			break
-		}
-	}
-
 	h.logger.Info("updating component", "name", copiedComp.Name, "time", updateTs)
+
+	var accessToken v1alpha1.AccessToken
+	if err := h.resourceManager.Get("", clientInfo.Name, &accessToken); err == nil {
+		copiedKey := accessToken.DeepCopy()
+		copiedKey.Status.UsedCount += 1
+		copiedKey.Status.LastUsedAt = updateTs
+
+		if err := h.resourceManager.Patch(copiedKey, client.MergeFrom(&accessToken)); err != nil {
+			h.logger.Error(err, "fail update status of access token")
+		}
+	} else {
+		h.logger.Error(err, "fail to get access token")
+	}
 
 	return c.JSON(http.StatusOK, map[string]string{
 		"status": "Success",

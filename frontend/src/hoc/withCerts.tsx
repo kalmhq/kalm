@@ -5,9 +5,9 @@ import { TDispatchProp } from "types";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    isCertsLoading: state.get("certificates").get("isLoading"),
-    isCertsFirstLoaded: state.get("certificates").get("isFirstLoaded"),
-    certs: state.get("certificates").get("certificates"),
+    isCertsLoading: state.certificates.isLoading,
+    isCertsFirstLoaded: state.certificates.isFirstLoaded,
+    certs: state.certificates.certificates,
   };
 };
 

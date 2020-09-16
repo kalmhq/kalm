@@ -1,29 +1,23 @@
-import React from "react";
+import { date, number, text } from "@storybook/addon-knobs";
 import { storiesOf } from "@storybook/react";
-import Immutable from "immutable";
-
 import { ComponentListPage } from "pages/Components/List";
-
+import React from "react";
 import {
-  ApplicationComponentDetails,
   ApplicationDetails,
   LOAD_ALL_NAMESAPCES_COMPONETS,
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
 } from "types/application";
-
-import { date, number, text } from "@storybook/addon-knobs";
+import { SET_CURRENT_NAMESPACE } from "types/namespace";
 import {
-  createApplicationComponent,
   createApplication,
-  mergeMetrics,
+  createApplicationComponent,
   createRoutes,
   generateRandomIntList,
+  mergeMetrics,
 } from "../data/application";
-
-import { store, withProvider, resetStore } from "../ReduxConfig";
-import { SET_CURRENT_NAMESPACE } from "types/namespace";
+import { resetStore, store, withProvider } from "../ReduxConfig";
 
 storiesOf("Screens/Components", module)
   .addDecorator(withProvider)
@@ -40,7 +34,7 @@ storiesOf("Screens/Components", module)
   })
   .add("Load Empty Application", () => {
     resetStore();
-    const applications: Immutable.List<ApplicationDetails> = Immutable.List<ApplicationDetails>([]);
+    const applications: ApplicationDetails[] = [];
     store.dispatch({ type: LOAD_APPLICATIONS_PENDING });
     store.dispatch({ type: LOAD_APPLICATIONS_FULFILLED, payload: { applicationList: applications } });
     return <ComponentListPage />;
@@ -55,16 +49,18 @@ storiesOf("Screens/Components", module)
 
     createRoutes(store, [appName]);
 
-    let oneApp: ApplicationDetails = createApplication(appName);
+    let oneApp: ApplicationDetails = createApplication(appName) as any;
 
-    const allComponents: Immutable.Map<
-      string,
-      Immutable.List<ApplicationComponentDetails>
-    > = createApplicationComponent(appName, componentCounter, createTime, generateRandomIntList(podCounter, 0, 5));
+    const allComponents = createApplicationComponent(
+      appName,
+      componentCounter,
+      createTime,
+      generateRandomIntList(podCounter, 0, 5),
+    );
 
     oneApp = mergeMetrics(oneApp, allComponents);
 
-    const applications: Immutable.List<ApplicationDetails> = Immutable.List<ApplicationDetails>([oneApp]);
+    const applications: ApplicationDetails[] = [oneApp];
     store.dispatch({ type: LOAD_APPLICATIONS_PENDING });
     store.dispatch({
       type: LOAD_ALL_NAMESAPCES_COMPONETS,
@@ -106,7 +102,7 @@ storiesOf("Screens/Components", module)
 
     createRoutes(store, [oneAppName, twoAppName, threeAppName, fourAppName]);
 
-    let oneApp: ApplicationDetails = createApplication(oneAppName);
+    let oneApp: ApplicationDetails = createApplication(oneAppName) as any;
     const oneAppComponent = createApplicationComponent(
       oneAppName,
       oneComponentCounter,
@@ -115,7 +111,7 @@ storiesOf("Screens/Components", module)
     );
     oneApp = mergeMetrics(oneApp, oneAppComponent);
 
-    let twoApp: ApplicationDetails = createApplication(twoAppName);
+    let twoApp: ApplicationDetails = createApplication(twoAppName) as any;
     const twoAppComponent = createApplicationComponent(
       twoAppName,
       twoComponentCounter,
@@ -124,7 +120,7 @@ storiesOf("Screens/Components", module)
     );
     twoApp = mergeMetrics(twoApp, twoAppComponent);
 
-    let threeApp: ApplicationDetails = createApplication(threeAppName);
+    let threeApp: ApplicationDetails = createApplication(threeAppName) as any;
     const threeAppComponent = createApplicationComponent(
       threeAppName,
       threeComponentCounter,
@@ -133,7 +129,7 @@ storiesOf("Screens/Components", module)
     );
     threeApp = mergeMetrics(threeApp, threeAppComponent);
 
-    let fourApp: ApplicationDetails = createApplication(fourAppName);
+    let fourApp: ApplicationDetails = createApplication(fourAppName) as any;
     let fourAppComponent = createApplicationComponent(
       fourAppName,
       fourComponentCounter,
@@ -142,7 +138,7 @@ storiesOf("Screens/Components", module)
     );
     fourApp = mergeMetrics(fourApp, fourAppComponent);
 
-    fourAppComponent = fourAppComponent.merge(oneAppComponent, twoAppComponent, threeAppComponent);
+    fourAppComponent = Object.assign(oneAppComponent, twoAppComponent, threeAppComponent, fourAppComponent);
     store.dispatch({
       type: LOAD_ALL_NAMESAPCES_COMPONETS,
       payload: {
@@ -156,12 +152,7 @@ storiesOf("Screens/Components", module)
       },
     });
 
-    const applications: Immutable.List<ApplicationDetails> = Immutable.List<ApplicationDetails>([
-      oneApp,
-      twoApp,
-      threeApp,
-      fourApp,
-    ]);
+    const applications: ApplicationDetails[] = [oneApp, twoApp, threeApp, fourApp];
 
     // store.dispatch(loadApplicationsAction());
     store.dispatch({ type: LOAD_APPLICATIONS_PENDING });

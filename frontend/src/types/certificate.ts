@@ -1,6 +1,3 @@
-import Immutable from "immutable";
-import { ImmutableMap } from "typings";
-
 export const LOAD_CERTIFICATES_FULFILLED = "LOAD_CERTIFICATES_FULFILLED";
 export const LOAD_CERTIFICATES_PENDING = "LOAD_CERTIFICATES_PENDING";
 export const LOAD_CERTIFICATES_FAILED = "LOAD_CERTIFICATES_FAILED";
@@ -57,7 +54,7 @@ export interface LoadCertificatesFailedAction {
 export interface LoadCertificatesAction {
   type: typeof LOAD_CERTIFICATES_FULFILLED;
   payload: {
-    certificates: Immutable.List<Certificate>;
+    certificates: Certificate[];
   };
 }
 
@@ -87,7 +84,7 @@ export interface LoadCertificateIssuersFailedAction {
 export interface LoadCertificateIssuersAction {
   type: typeof LOAD_CERTIFICATE_ISSUERS_FULFILLED;
   payload: {
-    certificateIssuers: Immutable.List<CertificateIssuer>;
+    certificateIssuers: CertificateIssuer[];
   };
 }
 
@@ -112,20 +109,12 @@ export interface DeleteCertificate {
   };
 }
 
-export type CertificateList = Immutable.List<Certificate>;
-
-export type CertificateIssuerList = Immutable.List<CertificateIssuer>;
-
-export interface CertificateFormTypeContent extends Omit<CertificateContent, "domains"> {
-  managedType: typeof selfManaged | typeof issuerManaged | typeof dns01Mananged;
-  domains: string[];
+export interface CertificateFormType extends Certificate {
+  managedType: typeof selfManaged | typeof issuerManaged;
 }
 
-export interface CertificateIssuerFormTypeContent
-  extends Omit<CertificateIssuerContent, "caForTest" | "acmeCloudFlare"> {
+export interface CertificateIssuerFormType extends CertificateIssuer {
   issuerType: typeof cloudFlare | typeof caForTest;
-  acmeCloudFlare: AcmeCloudFlareContent;
-  caForTest: {};
 }
 
 export const dns01Mananged = "default-dns01-issuer";
@@ -139,15 +128,7 @@ export const caForTest = "caForTest";
 export const dns01Issuer = "default-dns01-issuer";
 export const http01Issuer = "default-http01-issuer";
 
-export type CertificateFormType = ImmutableMap<CertificateFormTypeContent>;
-
-export type CertificateIssuerFormType = ImmutableMap<CertificateIssuerFormTypeContent>;
-
-export type Certificate = ImmutableMap<CertificateContent>;
-
-export type CertificateIssuer = ImmutableMap<CertificateIssuerContent>;
-
-export const newEmptyCertificateForm: CertificateFormTypeContent = {
+export const newEmptyCertificateForm: CertificateFormType = {
   name: "",
   managedType: issuerManaged,
   selfManagedCertContent: "",
@@ -157,7 +138,7 @@ export const newEmptyCertificateForm: CertificateFormTypeContent = {
   reason: "",
 };
 
-export const newUpdateEmptyCertificateForm: CertificateFormTypeContent = {
+export const newUpdateEmptyCertificateForm: CertificateFormType = {
   name: "",
   managedType: selfManaged,
   selfManagedCertContent: "",
@@ -167,7 +148,7 @@ export const newUpdateEmptyCertificateForm: CertificateFormTypeContent = {
   reason: "",
 };
 
-export const newEmptyCertificateUploadForm: CertificateFormTypeContent = {
+export const newEmptyCertificateUploadForm: CertificateFormType = {
   name: "",
   managedType: selfManaged,
   selfManagedCertContent: "",
@@ -176,13 +157,13 @@ export const newEmptyCertificateUploadForm: CertificateFormTypeContent = {
 };
 
 export const newEmptyCertificateIssuerForm = (): CertificateIssuerFormType => {
-  return Immutable.fromJS({
+  return {
     name: "",
     issuerType: cloudFlare,
-  });
+  };
 };
 
-export interface CertificateContent {
+export interface Certificate {
   name: string;
   isSelfManaged?: boolean;
   isSignedByTrustedCA?: boolean;
@@ -190,22 +171,20 @@ export interface CertificateContent {
   selfManagedCertContent: string;
   selfManagedCertPrivateKey: string;
   httpsCertIssuer?: string;
-  domains: Immutable.List<string>;
+  domains: string[];
   ready?: string; // why is a string??
   reason?: string;
   wildcardCertDNSChallengeDomain?: string;
-  wildcardCertDNSChallengeDomainMap?: Immutable.Map<string, string>;
+  wildcardCertDNSChallengeDomainMap?: { [key: string]: string };
 }
 
-export interface CertificateIssuerContent {
+export interface CertificateIssuer {
   name: string;
   acmeCloudFlare?: AcmeCloudFlare;
-  caForTest?: ImmutableMap<{}>;
+  caForTest?: {};
 }
 
-export type AcmeCloudFlare = ImmutableMap<AcmeCloudFlareContent>;
-
-export interface AcmeCloudFlareContent {
+export interface AcmeCloudFlare {
   account: string;
   secret: string;
 }
@@ -228,17 +207,14 @@ export type CertificateActions =
   | DeleteAcmeServerAction
   | CreateCertificateIssuerAction;
 
-export interface AcmeServerInfoContent {
+export interface AcmeServerInfo {
   acmeDomain: string;
   nsDomain: string;
   ipForNameServer: string;
   ready: boolean;
 }
-export type AcmeServerInfo = ImmutableMap<AcmeServerInfoContent>;
 
-export interface AcmeServerFormTypeContent {
+export interface AcmeServerFormType {
   acmeDomain: string;
   nsDomain: string;
 }
-
-export type AcmeServerFormType = ImmutableMap<AcmeServerFormTypeContent>;

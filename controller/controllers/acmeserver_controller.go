@@ -238,7 +238,7 @@ func getSVCNameForACMEDNS() string {
 	if os.Getenv("ACME_DNS_HOST") != "" {
 		host = os.Getenv("ACME_DNS_HOST")
 	} else {
-		host = fmt.Sprintf("%s.%s.svc.cluster.local", ACMEServerName, NamespaceKalmSystem)
+		host = fmt.Sprintf("%s.%s.svc.cluster.local", ACMEServerName, KalmSystemNamespace)
 	}
 
 	return host
@@ -342,7 +342,7 @@ type ACMEDNSServiceMapper struct {
 }
 
 func (A ACMEDNSServiceMapper) Map(object handler.MapObject) []reconcile.Request {
-	if object.Meta.GetNamespace() != NamespaceKalmSystem ||
+	if object.Meta.GetNamespace() != KalmSystemNamespace ||
 		object.Meta.GetName() != getNameForLoadBalanceServiceForNSDomain() {
 		return nil
 	}
@@ -460,7 +460,7 @@ func getNameForLoadBalanceServiceForNSDomain() string {
 func (r *ACMEServerReconciler) reconcileLoadBalanceServiceForNSDomain(acmeServer corev1alpha1.ACMEServer) error {
 	expectedLBService := corev1.Service{
 		ObjectMeta: ctrl.ObjectMeta{
-			Namespace: NamespaceKalmSystem,
+			Namespace: KalmSystemNamespace,
 			Name:      getNameForLoadBalanceServiceForNSDomain(),
 		},
 		Spec: corev1.ServiceSpec{
@@ -593,7 +593,7 @@ func (r *ACMEServerReconciler) reconcileStatus(server corev1alpha1.ACMEServer) e
 	// check if lb-svc is assigned loadBalancer ip
 	var svc corev1.Service
 	err := r.Get(r.ctx, client.ObjectKey{
-		Namespace: NamespaceKalmSystem,
+		Namespace: KalmSystemNamespace,
 		Name:      getNameForLoadBalanceServiceForNSDomain(),
 	}, &svc)
 	if err != nil {
@@ -622,7 +622,7 @@ func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.AC
 	// find if lb-svc IP is ready
 	var lbSvc corev1.Service
 	err := r.Get(r.ctx, client.ObjectKey{
-		Namespace: NamespaceKalmSystem,
+		Namespace: KalmSystemNamespace,
 		Name:      getNameForLoadBalanceServiceForNSDomain(),
 	}, &lbSvc)
 	if err != nil {
@@ -656,7 +656,7 @@ func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.AC
 
 	expectedComp := corev1alpha1.Component{
 		ObjectMeta: ctrl.ObjectMeta{
-			Namespace: NamespaceKalmSystem,
+			Namespace: KalmSystemNamespace,
 			Name:      ACMEServerName,
 			Labels: map[string]string{
 				"app": ACMEServerName,

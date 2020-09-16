@@ -10,8 +10,8 @@ import { setTutorialHighlightStatusAction } from "actions/tutorial";
 const styles = (theme: Theme) => createStyles({});
 
 const mapStateToProps = (state: RootState, { highlight, highlightIndex, stepIndex }: OwnProps) => {
-  const tutorialState = state.get("tutorial");
-  const latestHighlight = tutorialState.get("latestHighlight");
+  const tutorialState = state.tutorial;
+  const latestHighlight = tutorialState.latestHighlight;
 
   let notTriggered: boolean;
 
@@ -24,7 +24,7 @@ const mapStateToProps = (state: RootState, { highlight, highlightIndex, stepInde
 
   let shouldTrigger: boolean = false;
 
-  if (tutorialState.get("currentStepIndex") === stepIndex && notTriggered && highlight.triggeredByState) {
+  if (tutorialState.currentStepIndex === stepIndex && notTriggered && highlight.triggeredByState) {
     shouldTrigger = highlight.triggeredByState!(state);
   }
 

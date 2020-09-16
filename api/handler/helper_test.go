@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	client2 "github.com/kalmhq/kalm/api/client"
-	"github.com/kalmhq/kalm/api/config"
+	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/server"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
@@ -18,7 +18,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -29,7 +31,8 @@ import (
 type WithControllerTestSuite struct {
 	suite.Suite
 	testEnv   *envtest.Environment
-	Client    client.Client
+	cfg       *rest.Config
+	client    client.Client
 	apiServer *echo.Echo
 	ctx       context.Context
 }
@@ -56,6 +59,10 @@ func (r *ResponseRecorder) BodyAsJSON(obj interface{}) {
 }
 
 func (suite *WithControllerTestSuite) SetupSuite() {
+	log.InitDefaultLogger("debug")
+
+	os.Setenv("KALM_SKIP_ISTIO_METRICS", "true")
+
 	suite.Nil(scheme.AddToScheme(scheme.Scheme))
 	suite.Nil(v1alpha1.AddToScheme(scheme.Scheme))
 	suite.ctx = context.Background()
@@ -70,7 +77,7 @@ func (suite *WithControllerTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	// TODO the test server has no permissions
+	suite.cfg = cfg
 
 	clt, err := client.New(cfg, client.Options{Scheme: scheme.Scheme})
 
@@ -78,43 +85,93 @@ func (suite *WithControllerTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	suite.Client = clt
+	suite.client = clt
 
-	runningConfig := &config.Config{
-		KubernetesApiServerAddress: cfg.Host,
-	}
+	suite.apiServer = suite.SetupApiServer()
+}
 
+func (suite *WithControllerTestSuite) SetupApiServer(policies ...string) *echo.Echo {
 	e := server.NewEchoInstance()
-	clientManager := client2.NewClientManager(runningConfig)
+	clientManager := client2.NewFakeClientManager(suite.cfg, strings.Join(policies, ""))
 	apiHandler := NewApiHandler(clientManager)
 	apiHandler.InstallMainRoutes(e)
 	apiHandler.InstallWebhookRoutes(e)
+	return e
+}
 
-	suite.apiServer = e
+func (suite *WithControllerTestSuite) SetupApiServerWithDefaultPolicy(policies ...string) *echo.Echo {
+	ps := []string{
+		client2.BuildClusterRolePolicies(),
+		client2.BuildRolePoliciesForNamespace("ns1"),
+		client2.BuildRolePoliciesForNamespace("ns2"),
+	}
+
+	ps = append(ps, policies...)
+
+	return suite.SetupApiServer(ps...)
+}
+
+func GrantUserRoles(email string, roles ...string) string {
+	var sb strings.Builder
+	sb.WriteString("\n")
+
+	for i := range roles {
+		sb.WriteString(fmt.Sprintf("g, %s, %s\n", client2.ToSafeSubject(email), roles[i]))
+	}
+
+	return sb.String()
+}
+
+func GetViewerRoleOfNs(name string) string {
+	return fmt.Sprintf("role_%sViewer", name)
+}
+
+func GetEditorRoleOfNs(name string) string {
+	return fmt.Sprintf("role_%sEditor", name)
+}
+
+func GetOwnerRoleOfNs(name string) string {
+	return fmt.Sprintf("role_%sOwner", name)
+}
+
+func GetClusterViewerRole() string {
+	return "role_clusterViewer"
+}
+
+func GetClusterEditorRole() string {
+	return "role_clusterEditor"
+}
+
+func GetClusterOwnerRole() string {
+	return "role_clusterOwner"
+}
+
+func (suite *WithControllerTestSuite) SetupApiServerWithoutPolicy() {
+	suite.SetupApiServer("")
 }
 
 func (suite *WithControllerTestSuite) Get(namespace, name string, obj runtime.Object) error {
-	return suite.Client.Get(suite.ctx, types.NamespacedName{Namespace: namespace, Name: name}, obj)
+	return suite.client.Get(suite.ctx, types.NamespacedName{Namespace: namespace, Name: name}, obj)
 }
 
 func (suite *WithControllerTestSuite) List(obj runtime.Object, opts ...client.ListOption) error {
-	return suite.Client.List(suite.ctx, obj, opts...)
+	return suite.client.List(suite.ctx, obj, opts...)
 }
 
 func (suite *WithControllerTestSuite) Create(obj runtime.Object, opts ...client.CreateOption) error {
-	return suite.Client.Create(suite.ctx, obj, opts...)
+	return suite.client.Create(suite.ctx, obj, opts...)
 }
 
 func (suite *WithControllerTestSuite) Delete(obj runtime.Object, opts ...client.DeleteOption) error {
-	return suite.Client.Delete(suite.ctx, obj, opts...)
+	return suite.client.Delete(suite.ctx, obj, opts...)
 }
 
 func (suite *WithControllerTestSuite) Update(obj runtime.Object, opts ...client.UpdateOption) error {
-	return suite.Client.Update(suite.ctx, obj, opts...)
+	return suite.client.Update(suite.ctx, obj, opts...)
 }
 
 func (suite *WithControllerTestSuite) Patch(obj runtime.Object, patch client.Patch, opts ...client.PatchOption) error {
-	return suite.Client.Patch(suite.ctx, obj, patch, opts...)
+	return suite.client.Patch(suite.ctx, obj, patch, opts...)
 }
 
 func (suite *WithControllerTestSuite) TearDownSuite() {
@@ -128,12 +185,16 @@ func (suite *WithControllerTestSuite) Eventually(condition func() bool, msgAndAr
 }
 
 func (suite *WithControllerTestSuite) NewRequest(method string, path string, body interface{}) *ResponseRecorder {
-	return suite.NewRequestWithHeaders(method, path, body, map[string]string{
-		echo.HeaderAuthorization: "Bearer faketoken", // TODO use a real token
+	return BaseRequest(suite.apiServer, method, path, body, nil)
+}
+
+func (suite *WithControllerTestSuite) NewRequestWithIdentity(method string, path string, body interface{}, email string, roles ...string) *ResponseRecorder {
+	return BaseRequest(suite.apiServer, method, path, body, map[string]string{
+		echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(email, roles...),
 	})
 }
 
-func (suite *WithControllerTestSuite) NewRequestWithHeaders(method string, path string, body interface{}, headers map[string]string) *ResponseRecorder {
+func BaseRequest(server *echo.Echo, method string, path string, body interface{}, headers map[string]string) *ResponseRecorder {
 	var reader io.Reader
 
 	switch v := body.(type) {
@@ -156,9 +217,91 @@ func (suite *WithControllerTestSuite) NewRequestWithHeaders(method string, path 
 	rec := &ResponseRecorder{
 		ResponseRecorder: httptest.NewRecorder(),
 	}
-	suite.apiServer.ServeHTTP(rec, req)
+
+	server.ServeHTTP(rec, req)
 	rec.read()
 	return rec
+}
+
+type TestRequestContext struct {
+	User      string
+	Groups    []string
+	Roles     []string
+	Headers   map[string]string
+	Namespace string
+
+	Method           string
+	Path             string
+	Body             interface{}
+	TestWithRoles    func(rec *ResponseRecorder)
+	TestWithoutRoles func(rec *ResponseRecorder)
+
+	CleanUp func(c *TestRequestContext, s *echo.Echo)
+
+	Debug bool
+}
+
+func (suite *WithControllerTestSuite) DoTestRequest(rc *TestRequestContext) {
+	if rc.User == "" {
+		rc.User = "foo@bar"
+	}
+
+	if rc.TestWithoutRoles != nil {
+		s := suite.SetupApiServer()
+
+		rec := BaseRequest(s, rc.Method, rc.Path, rc.Body, map[string]string{
+			echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(rc.User, rc.Groups...),
+		})
+
+		rc.TestWithoutRoles(rec)
+	}
+
+	if rc.TestWithRoles != nil {
+		ps := []string{client2.BuildClusterRolePolicies()}
+
+		if rc.Namespace != "" {
+			ps = append(ps, client2.BuildRolePoliciesForNamespace(rc.Namespace))
+		}
+
+		ps = append(ps, GrantUserRoles(rc.User, rc.Roles...))
+
+		if rc.Debug {
+			println(strings.Join(ps, ""))
+		}
+
+		s := suite.SetupApiServer(ps...)
+
+		rec := BaseRequest(s, rc.Method, rc.Path, rc.Body, map[string]string{
+			echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(rc.User, rc.Groups...),
+		})
+
+		rc.TestWithRoles(rec)
+
+		if rc.CleanUp != nil {
+			rc.CleanUp(rc, s)
+		}
+	}
+}
+
+func (suite *WithControllerTestSuite) IsMissingRoleError(rec *ResponseRecorder, substrs ...string) {
+	var res map[string]interface{}
+	rec.BodyAsJSON(&res)
+
+	suite.Require().Equal(401, rec.Code, "Should be an Unauthorized error with code 401")
+
+	if _, ok := res["message"]; !ok {
+		suite.Fail("Expect missing role message, but message is empty")
+		return
+	}
+
+	if _, ok := res["message"].(string); !ok {
+		suite.Fail("Expect missing role message, but message is not string")
+		return
+	}
+
+	for _, substr := range substrs {
+		suite.Contains(res["message"], substr)
+	}
 }
 
 func toReader(obj interface{}) io.Reader {

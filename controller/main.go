@@ -160,11 +160,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (controllers.NewDeployKeyReconciler(mgr)).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "DeployKey")
-		os.Exit(1)
-	}
-
 	if err = (controllers.NewStorageClassReconciler(mgr)).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "StorageClass")
 		os.Exit(1)
@@ -182,6 +177,16 @@ func main() {
 
 	// only run webhook if explicitly declared
 	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
+		if err = (&corev1alpha1.AccessToken{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "AccessToken")
+			os.Exit(1)
+		}
+
+		if err = (&corev1alpha1.RoleBinding{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "RoleBinding")
+			os.Exit(1)
+		}
+
 		if err = (&corev1alpha1.Component{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Component")
 			os.Exit(1)
@@ -189,11 +194,6 @@ func main() {
 
 		if err = (&corev1alpha1.ComponentPluginBinding{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "ComponentPluginBinding")
-			os.Exit(1)
-		}
-
-		if err = (&corev1alpha1.DeployKey{}).SetupWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "DeployKey")
 			os.Exit(1)
 		}
 

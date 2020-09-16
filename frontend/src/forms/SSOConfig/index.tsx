@@ -15,7 +15,7 @@ import { TDispatchProp } from "types";
 import {
   newEmptyGithubConnector,
   newEmptyGitlabConnector,
-  SSOConfigFormType,
+  SSOConfig,
   SSO_CONNECTOR_TYPE,
   SSO_CONNECTOR_TYPE_GITHUB,
   SSO_CONNECTOR_TYPE_GITLAB,
@@ -38,7 +38,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    tutorialState: state.get("tutorial"),
+    tutorialState: state.tutorial,
   };
 };
 
@@ -46,10 +46,10 @@ interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchPr
 
 interface OwnProps {
   onSubmit: any;
-  initial: SSOConfigFormType;
+  initial: SSOConfig;
 }
 
-export interface Props extends ConnectedProps, FormikProps<SSOConfigFormType>, WithStyles<typeof styles>, OwnProps {}
+export interface Props extends ConnectedProps, FormikProps<SSOConfig>, WithStyles<typeof styles>, OwnProps {}
 
 class SSOConfigFormRaw extends React.PureComponent<Props> {
   private renderButtons() {
@@ -205,7 +205,7 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
 
 const connectedForm = connect(mapStateToProps)(withStyles(styles)(SSOConfigFormRaw));
 
-export const SSOConfigForm = withFormik<OwnProps, SSOConfigFormType>({
+export const SSOConfigForm = withFormik<OwnProps, SSOConfig>({
   mapPropsToValues: (props) => {
     return props.initial;
   },

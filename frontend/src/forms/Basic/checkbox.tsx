@@ -2,6 +2,7 @@ import { Box, Checkbox, FormControl, FormControlLabel, FormGroup, FormHelperText
 import { FieldProps, getIn } from "formik";
 import React from "react";
 import { KChip } from "widgets/Chip";
+import produce from "immer";
 
 interface KFormikBoolCheckboxRenderProps {
   label: React.ReactNode;
@@ -70,16 +71,18 @@ export const KFormikCheckboxGroupRender = ({
       <FormGroup row>
         {options.map((x) => {
           const onCheckChange = (_: any, checked: boolean) => {
-            if (checked) {
-              value.push(x.value);
-            } else {
-              const index = value.indexOf(x.value);
-              if (index > -1) {
-                value.splice(index, 1);
+            const newValue = produce(value, (draft: any[]) => {
+              if (checked) {
+                draft.push(x.value);
+              } else {
+                const index = value.indexOf(x.value);
+                if (index > -1) {
+                  draft.splice(index, 1);
+                }
               }
-            }
-            // copy array
-            setFieldValue(name, [...value]);
+            });
+
+            setFieldValue(name, newValue);
           };
 
           if (componentType === "Chip") {

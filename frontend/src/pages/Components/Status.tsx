@@ -33,11 +33,11 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
     let isPending = false;
     const { component, enableMarginRight } = this.props;
 
-    component.get("pods").forEach((pod) => {
-      if (pod.get("isTerminating")) {
+    component.pods?.forEach((pod) => {
+      if (pod.isTerminating) {
         isPending = true;
       } else {
-        switch (pod.get("status")) {
+        switch (pod.status) {
           case "Pending": {
             isPending = true;
             break;

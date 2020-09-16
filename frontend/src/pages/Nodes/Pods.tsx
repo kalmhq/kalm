@@ -5,8 +5,8 @@ import { sizeStringToNumber } from "utils/sizeConv";
 import { ColoredLinearProgress } from "./LinearProgress";
 
 export const NodePods = ({ node }: { node: Node }) => {
-  const allocatable = sizeStringToNumber(node.get("status").get("allocatable").get("pods"));
-  const allocated = node.get("allocatedResources").get("podsCount");
+  const allocatable = sizeStringToNumber(node.status.allocatable.pods);
+  const allocated = node.allocatedResources.podsCount;
   const progress = (allocated / allocatable) * 100;
   return (
     <Box>

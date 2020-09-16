@@ -25,11 +25,12 @@ import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { KLink } from "widgets/Link";
 import { BasePage } from "../BasePage";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    persistentVolumes: state.get("persistentVolumes").get("persistentVolumes"),
-    storageClasses: state.get("persistentVolumes").get("storageClasses"),
+    persistentVolumes: state.persistentVolumes.persistentVolumes,
+    storageClasses: state.persistentVolumes.storageClasses,
   };
 };
 
@@ -45,7 +46,7 @@ interface States {
   deletingPersistentVolume?: Disk;
 }
 
-type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
+type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles> & WithUserAuthProps;
 
 export class VolumesRaw extends React.Component<Props, States> {
   constructor(props: Props) {
@@ -58,46 +59,20 @@ export class VolumesRaw extends React.Component<Props, States> {
     };
   }
 
-  private showDeleteConfirmDialog = (deletingPersistentVolume: Disk) => {
-    this.setState({
-      isDeleteConfirmDialogOpen: true,
-      deletingPersistentVolume,
-    });
-  };
-
-  private closeDeleteConfirmDialog = () => {
-    this.setState({
-      isDeleteConfirmDialogOpen: false,
-    });
-  };
-
-  // private renderDeleteConfirmDialog = () => {
-  //   const { isDeleteConfirmDialogOpen, deletingPersistentVolume } = this.state;
-
-  //   return (
-  //     <ConfirmDialog
-  //       open={isDeleteConfirmDialogOpen}
-  //       onClose={this.closeDeleteConfirmDialog}
-  //       title={`${sc.ARE_YOU_SURE_PREFIX} this Persistent Volume(${deletingPersistentVolume?.get("name")})?`}
-  //       content="You will lost this Persistent Volume, and this action is irrevocable."
-  //       onAgree={this.confirmDelete}
-  //     />
-  //   );
-  // };
-
   private confirmDelete = async (disk: Disk) => {
     const { dispatch } = this.props;
     try {
-      await dispatch(deletePersistentVolumeAction(disk.get("componentNamespace") as string, disk.get("name")));
+      await dispatch(deletePersistentVolumeAction(disk.componentNamespace as string, disk.name));
     } catch {
       dispatch(setErrorNotificationAction());
     }
   };
 
   private renderActions = (disk: Disk) => {
-    return (
+    const { canEditCluster } = this.props;
+    return canEditCluster() ? (
       <>
-        {disk.get("isInUse") ? (
+        {disk.isInUse ? (
           <IconButtonWithTooltip
             disabled
             tooltipTitle={"The disk must be unmounted(removed) from all associated components before it can be deleted"}
@@ -112,7 +87,7 @@ export class VolumesRaw extends React.Component<Props, States> {
           />
         )}
       </>
-    );
+    ) : null;
   };
 
   private renderSecondHeaderRight() {
@@ -122,53 +97,53 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 
   private renderApplication = (disk: Disk) => {
-    if (!disk.get("isInUse")) {
+    if (!disk.isInUse) {
       return (
         <KTooltip title={"Last used by"}>
-          <Box>{disk.get("componentNamespace")}</Box>
+          <Box>{disk.componentNamespace}</Box>
         </KTooltip>
       );
     }
     return (
       <KLink
         style={{ color: primaryColor }}
-        to={`/applications/${disk.get("componentNamespace")}/components`}
+        to={`/applications/${disk.componentNamespace}/components`}
         onClick={() => blinkTopProgressAction()}
       >
-        {disk.get("componentNamespace")}
+        {disk.componentNamespace}
       </KLink>
     );
   };
 
   private renderComponent = (disk: Disk) => {
-    if (!disk.get("isInUse")) {
+    if (!disk.isInUse) {
       return (
         <KTooltip title={"Last used by"}>
-          <Box> {disk.get("componentName")}</Box>
+          <Box> {disk.componentName}</Box>
         </KTooltip>
       );
     }
     return (
       <KLink
         style={{ color: primaryColor }}
-        to={`/applications/${disk.get("componentNamespace")}/components/${disk.get("componentName")}`}
+        to={`/applications/${disk.componentNamespace}/components/${disk.componentName}`}
         onClick={() => blinkTopProgressAction()}
       >
-        {disk.get("componentName")}
+        {disk.componentName}
       </KLink>
     );
   };
 
   private renderName = (disk: Disk) => {
-    return disk.get("name");
+    return disk.name;
   };
 
   private renderUse = (disk: Disk) => {
-    return disk.get("isInUse") ? "Yes" : "No";
+    return disk.isInUse ? "Yes" : "No";
   };
 
   private renderCapacity = (disk: Disk) => {
-    return sizeStringToGi(disk.get("capacity")) + " Gi";
+    return sizeStringToGi(disk.capacity) + " Gi";
   };
 
   private getKRTableColumns() {
@@ -267,7 +242,7 @@ export class VolumesRaw extends React.Component<Props, States> {
             </Alert>
           ) : null}
 
-          {persistentVolumes.size > 0 ? this.renderKRTable() : this.renderEmpty()}
+          {persistentVolumes.length > 0 ? this.renderKRTable() : this.renderEmpty()}
         </Box>
         <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>
@@ -275,4 +250,4 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 }
 
-export const DiskListPage = connect(mapStateToProps)(withStyles(styles)(VolumesRaw));
+export const DiskListPage = withUserAuth(connect(mapStateToProps)(withStyles(styles)(VolumesRaw)));

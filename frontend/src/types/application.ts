@@ -1,6 +1,4 @@
-import Immutable from "immutable";
-import { ImmutableMap } from "typings";
-import { ComponentLikeContent } from "./componentTemplate";
+import { ComponentLike } from "./componentTemplate";
 import { MetricList, Metrics } from "./common";
 
 export const CREATE_APPLICATION = "CREATE_APPLICATION";
@@ -21,45 +19,27 @@ export const LOAD_ALL_NAMESAPCES_COMPONETS = "LOAD_ALL_NAMESAPCES_COMPONETS"; //
 export const LOAD_COMPONENTS_PENDING = "LOAD_COMPONENTS_PENDING";
 export const LOAD_COMPONENTS_FULFILLED = "LOAD_COMPONENTS_FULFILLED";
 export const LOAD_COMPONENTS_FAILED = "LOAD_COMPONENTS_FAILED";
-// export const LOAD_APPLICATION_PLUGINS_FULFILLED = "LOAD_APPLICATION_PLUGINS_FULFILLED";
-export const LOAD_COMPONENT_PLUGINS_FULFILLED = "LOAD_COMPONENT_PLUGINS_FULFILLED";
 
-export interface ComponentPlugin {
-  name: string;
-  src: string;
-  configSchema: any;
-}
-
-export interface ApplicationPlugin {
-  name: string;
-  src: string;
-  configSchema: any;
-}
-
-export interface SharedEnv {
+export interface EnvItem {
   name: string;
   type: string;
   value: string;
 }
 
-export type EnvItem = ImmutableMap<SharedEnv>;
-
-export type ServiceStatus = ImmutableMap<{
+export type ServiceStatus = {
   name: string;
   clusterIP: string;
-  ports: Immutable.List<
-    ImmutableMap<{
-      name: string;
-      protocol: string;
-      port: number;
-      targetPort: number;
-    }>
-  >;
-}>;
+  ports: {
+    name: string;
+    protocol: string;
+    port: number;
+    targetPort: number;
+  }[];
+};
 
-export type PodWarning = ImmutableMap<{ message: string }>;
+export type PodWarning = { message: string };
 
-export type PodStatus = ImmutableMap<{
+export type PodStatus = {
   name: string;
   node: string;
   status: string;
@@ -72,29 +52,27 @@ export type PodStatus = ImmutableMap<{
   startTimestamp: number;
   isTerminating: boolean;
   restarts: number;
-  containers: Immutable.List<
-    ImmutableMap<{
-      name: string;
-      restartCount: number;
-      ready: boolean;
-      started: boolean;
-      startedAt: number;
-    }>
-  >;
-  warnings: Immutable.List<PodWarning>;
+  containers: {
+    name: string;
+    restartCount: number;
+    ready: boolean;
+    started: boolean;
+    startedAt: number;
+  }[];
+  warnings: PodWarning[];
   metrics: Metrics;
-}>;
+};
 
-export interface ApplicationComponentContent extends ComponentLikeContent {}
+export interface ApplicationComponent extends ComponentLike {}
 
-export interface ApplicationComponentDetailsContent extends ApplicationComponentContent {
+export interface ApplicationComponentDetails extends ApplicationComponent {
   metrics: Metrics;
-  pods: Immutable.List<PodStatus>;
-  services: Immutable.List<ServiceStatus>;
+  pods: PodStatus[];
+  services: ServiceStatus[];
   istioMetricHistories: IstioMetricHistories;
 }
 
-export type IstioMetricHistories = ImmutableMap<{
+export type IstioMetricHistories = {
   httpRequestsTotal?: MetricList;
   httpRespCode2XXCount?: MetricList;
   httpRespCode4XXCount?: MetricList;
@@ -103,26 +81,18 @@ export type IstioMetricHistories = ImmutableMap<{
   httpResponseBytes?: MetricList;
   tcpSentBytesTotal?: MetricList;
   tcpReceivedBytesTotal?: MetricList;
-}>;
+};
 
-export type ApplicationComponent = ImmutableMap<ApplicationComponentContent>;
-export type ApplicationComponentDetails = ImmutableMap<ApplicationComponentDetailsContent>;
-
-export interface ApplicationContent {
+export type Application = {
   name: string;
   istioMetricHistories?: IstioMetricHistories;
-}
+};
 
-export type Application = ImmutableMap<ApplicationContent>;
-
-export interface ApplicationDetailsContent extends ApplicationContent {
+export interface ApplicationDetails extends Application {
   status: string; // Active or Terminating
-  // components: Immutable.List<ApplicationComponentDetails>;
   metrics: Metrics;
-  roles: Immutable.List<string>;
+  roles: string[];
 }
-
-export type ApplicationDetails = ImmutableMap<ApplicationDetailsContent>;
 
 export interface CreateApplicationAction {
   type: typeof CREATE_APPLICATION;
@@ -181,14 +151,14 @@ export interface LoadComponentsFulfilledAction {
   type: typeof LOAD_COMPONENTS_FULFILLED;
   payload: {
     applicationName: string;
-    components: Immutable.List<ApplicationComponentDetails>;
+    components: ApplicationComponentDetails[];
   };
 }
 
 export interface LoadAllNamespacesComponentsAction {
   type: typeof LOAD_ALL_NAMESAPCES_COMPONETS;
   payload: {
-    components: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>; // key applicationName
+    components: { [key: string]: ApplicationComponentDetails[] }; // key applicationName
   };
 }
 
@@ -203,7 +173,7 @@ export interface LoadApplicationsFailedAction {
 export interface LoadApplicationsFulfilledAction {
   type: typeof LOAD_APPLICATIONS_FULFILLED;
   payload: {
-    applicationList: Immutable.List<ApplicationDetails>;
+    applicationList: ApplicationDetails[];
   };
 }
 
@@ -236,13 +206,6 @@ export interface SetIsSubmittingApplicationComponent {
   };
 }
 
-export interface LoadComponentPluginsFulfilledAction {
-  type: typeof LOAD_COMPONENT_PLUGINS_FULFILLED;
-  payload: {
-    componentPlugins: ApplicationPlugin[];
-  };
-}
-
 export type ApplicationActions =
   | CreateApplicationAction
   | UpdateApplicationAction
@@ -261,5 +224,4 @@ export type ApplicationActions =
   | LoadComponentsFulfilledAction
   | LoadComponentsPendingAction
   | LoadComponentsFailedAction
-  | LoadAllNamespacesComponentsAction
-  | LoadComponentPluginsFulfilledAction;
+  | LoadAllNamespacesComponentsAction;

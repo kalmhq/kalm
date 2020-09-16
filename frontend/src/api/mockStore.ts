@@ -1,47 +1,45 @@
-import Immutable from "immutable";
-import { ApplicationComponentDetails, ApplicationDetails, ComponentPlugin, PodStatus } from "types/application";
+import produce from "immer";
+import { ApplicationComponentDetails, ApplicationDetails, PodStatus } from "types/application";
 import { LoginStatus } from "types/authorization";
 import {
-  CertificateFormTypeContent,
-  CertificateIssuerFormTypeContent,
-  CertificateIssuerList,
-  CertificateList,
   AcmeServerInfo,
+  Certificate,
+  CertificateFormType,
+  CertificateIssuer,
+  CertificateIssuerFormType,
 } from "types/certificate";
 import { ClusterInfo } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import { NodesListResponse } from "types/node";
-import { RegistryType } from "types/registry";
+import { Registry, RegistryFormType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { SSOConfig } from "types/sso";
-import { ImmutableMap } from "typings";
 
 interface MockStoreData {
-  mockClusterInfo: ClusterInfo;
-  mockLoginStatus: LoginStatus;
+  mockRegistries: Registry[];
+  mockErrorPod: PodStatus;
+  mockApplications: ApplicationDetails[];
+  mockApplicationComponents: { [key: string]: ApplicationComponentDetails[] };
   mockNodes: NodesListResponse;
+  mockVolumes: PersistentVolumes;
   mockStorageClasses: StorageClasses;
   mockSimpleOptions: VolumeOptions;
   mockStatefulSetOptions: VolumeOptions;
-  mockApplications: Immutable.List<ApplicationDetails>;
-  mockApplicationComponents: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>;
-  mockHttpRoutes: Immutable.List<HttpRoute>;
-  mockCertificates: CertificateList;
+  mockCertificates: Certificate[];
+  mockCertificateIssuers: CertificateIssuer[];
+  mockHttpRoutes: HttpRoute[];
   mockAcmeServer: AcmeServerInfo;
-  mockCertificateIssuers: CertificateIssuerList;
-  mockRegistries: Immutable.List<RegistryType>;
-  mockErrorPod: PodStatus;
-  mockComponentPlugins: Immutable.List<ComponentPlugin>;
-  mockServices: Immutable.List<Service>;
-  mockVolumes: PersistentVolumes;
   mockSSO: SSOConfig;
+  mockClusterInfo: ClusterInfo;
+  mockLoginStatus: LoginStatus;
+  mockServices: Service[];
 }
 
 export default class MockStore {
-  public data: ImmutableMap<MockStoreData>;
-  public CACHE_KEY = "kubernetes-api-mock-data-v2";
   public onmessage?: any;
+  public data: MockStoreData;
+  public CACHE_KEY = "kubernetes-api-mock-data-v3";
 
   constructor() {
     const cachedData = this.getCachedData();
@@ -49,14 +47,35 @@ export default class MockStore {
   }
 
   public deleteRegistry = async (name: string) => {
-    const index = this.data.get("mockRegistries").findIndex((c) => c.get("name") === name);
-    this.data = this.data.deleteIn(["mockRegistries", index]);
+    let registries = this.data.mockRegistries;
+    this.data.mockRegistries = produce(registries, (draft) => {
+      // find should use original instead of draft for performance
+      const index = registries.findIndex((x) => x.name === name);
+      if (index > -1) {
+        draft.splice(index, 1);
+      }
+    });
+    await this.saveData();
+  };
+
+  public updateRegistry = async (registry: RegistryFormType) => {
+    let registries = this.data.mockRegistries;
+    this.data.mockRegistries = produce(registries, (draft) => {
+      const index = registries.findIndex((x) => x.name === registry.name);
+      if (index > -1) {
+        draft[index] = registry as Registry;
+      } else {
+        draft.push(registry as Registry);
+      }
+    });
     await this.saveData();
   };
 
   public deleteVolume = async (name: string) => {
-    const index = this.data.get("mockVolumes").findIndex((c) => c.get("name") === name);
-    this.data = this.data.deleteIn(["mockVolumes", index]);
+    const index = this.data.mockVolumes.findIndex((x) => x.name === name);
+    this.data.mockVolumes = produce(this.data.mockVolumes, (draft) => {
+      draft.splice(index, 1);
+    });
     await this.saveData();
   };
 
@@ -64,20 +83,17 @@ export default class MockStore {
     let componentIndex = -1,
       podIndex = -1,
       pod;
-    this.data
-      .get("mockApplicationComponents")
-      .get(namespace)
-      ?.forEach((component, index) => {
-        const i = component.get("pods").findIndex((c) => c.get("name") === name);
-        if (i >= 0) {
-          componentIndex = index;
-          podIndex = i;
-          pod = component.get("pods").find((c) => c.get("name") === name);
-        }
-      });
+    this.data.mockApplicationComponents[namespace]?.forEach((component, index) => {
+      const i = component.pods.findIndex((c) => c.name === name);
+      if (i >= 0) {
+        componentIndex = index;
+        podIndex = i;
+        pod = component.pods.find((c) => c.name === name);
+      }
+    });
 
     if (componentIndex >= 0 && podIndex >= 0) {
-      this.data = this.data.deleteIn(["mockApplicationComponents", namespace, componentIndex, "pods", podIndex]);
+      this.data.mockApplicationComponents[namespace][componentIndex].pods.splice(podIndex, 1);
       this.saveData({
         kind: "Pod",
         data: pod,
@@ -87,21 +103,27 @@ export default class MockStore {
   };
 
   public deleteCertificate = async (name: string) => {
-    const index = this.data.get("mockCertificates").findIndex((c) => c.get("name") === name);
-    this.data = this.data.deleteIn(["mockCertificates", index]);
+    const index = this.data.mockCertificates.findIndex((c) => c.name === name);
+    this.data.mockCertificates = produce(this.data.mockCertificates, (draft) => {
+      draft.splice(index, 1);
+    });
     await this.saveData();
   };
 
   public deleteHttpRoute = async (namespace: string, name: string) => {
-    const index = this.data.get("mockHttpRoutes").findIndex((c) => c.get("name") === name);
-    this.data = this.data.deleteIn(["mockHttpRoutes", index]);
+    const index = this.data.mockHttpRoutes.findIndex((x) => x.name === name);
+    this.data.mockHttpRoutes = produce(this.data.mockHttpRoutes, (draft) => {
+      draft.splice(index, 1);
+    });
     await this.saveData();
   };
 
   public deleteApplication = async (name: string): Promise<void> => {
-    const index = this.data.get("mockApplications").findIndex((c) => c.get("name") === name);
-    const application = this.data.getIn(["mockApplications", index]);
-    this.data = this.data.deleteIn(["mockApplications", index]);
+    const index = this.data.mockApplications.findIndex((c) => c.name === name);
+    const application = this.data.mockApplications[index];
+    this.data.mockApplications = produce(this.data.mockApplications, (draft) => {
+      draft.splice(index, 1);
+    });
     await this.saveData({
       kind: "Application",
       action: "Delete",
@@ -110,12 +132,12 @@ export default class MockStore {
   };
 
   public deleteApplicationComponent = async (applicationName: string, name: string) => {
-    const index = this.data
-      .get("mockApplicationComponents")
-      .get(applicationName)
-      ?.findIndex((c) => c.get("name") === name);
-    const component = this.data.getIn(["mockApplicationComponents", applicationName, index]);
-    this.data = this.data.deleteIn(["mockApplicationComponents", index]);
+    const index = this.data.mockApplicationComponents[applicationName]?.findIndex((c) => c.name === name);
+    const component = this.data.mockApplicationComponents[applicationName][index];
+    this.data.mockApplicationComponents = produce(this.data.mockApplicationComponents, (draft) => {
+      draft[applicationName].splice(index, 1);
+    });
+
     await this.saveData({
       kind: "Component",
       namespace: applicationName,
@@ -124,82 +146,96 @@ export default class MockStore {
     });
   };
 
-  public updateCertificate = async (certificate: CertificateFormTypeContent) => {
-    const index = this.data.get("mockCertificates").findIndex((c) => c.get("name") === certificate.name);
-    if (index >= 0) {
-      this.data = this.data.setIn(["mockCertificates", index], Immutable.fromJS(certificate));
-    } else {
-      this.data = this.data.updateIn(["mockCertificates"], (c) => c.push(Immutable.fromJS(certificate)));
-    }
+  public updateCertificate = async (certificate: CertificateFormType) => {
+    const index = this.data.mockCertificates.findIndex((c) => c.name === certificate.name);
+    this.data.mockCertificates = produce(this.data.mockCertificates, (draft) => {
+      if (index >= 0) {
+        draft[index] = certificate;
+      } else {
+        draft.push(certificate);
+      }
+    });
     await this.saveData();
   };
 
-  public updateCertificateIssuer = async (certificateIssuer: CertificateIssuerFormTypeContent) => {
-    const index = this.data.get("mockCertificateIssuers").findIndex((c) => c.get("name") === certificateIssuer.name);
-    if (index >= 0) {
-      this.data = this.data.setIn(["mockCertificateIssuers", index], Immutable.fromJS(certificateIssuer));
-    } else {
-      this.data = this.data.updateIn(["mockCertificateIssuers"], (c) => c.push("certificateIssuer"));
-    }
+  public updateCertificateIssuer = async (certificateIssuer: CertificateIssuerFormType) => {
+    const index = this.data.mockCertificateIssuers.findIndex((c) => c.name === certificateIssuer.name);
+    this.data.mockCertificateIssuers = produce(this.data.mockCertificateIssuers, (draft) => {
+      if (index >= 0) {
+        draft[index] = certificateIssuer;
+      } else {
+        draft.push(certificateIssuer);
+      }
+    });
     await this.saveData();
   };
 
   public updateHttpRoute = async (namepace: string, httpRoute: HttpRoute) => {
-    const index = this.data.get("mockHttpRoutes").findIndex((c) => c.get("name") === httpRoute.get("name"));
-    if (index && index >= 0) {
-      this.data = this.data.updateIn(["mockHttpRoutes", index], httpRoute as any);
-    } else {
-      this.data = this.data.updateIn(["mockHttpRoutes"], (c) => c.push(httpRoute));
-    }
+    const index = this.data.mockHttpRoutes.findIndex((x) => x.name === httpRoute.name);
+    this.data.mockHttpRoutes = produce(this.data.mockHttpRoutes, (draft) => {
+      if (index >= 0) {
+        draft[index] = httpRoute;
+      } else {
+        draft.push(httpRoute);
+      }
+    });
     await this.saveData();
   };
 
   public updateApplication = async (application: ApplicationDetails) => {
-    const index = this.data.get("mockApplications").findIndex((c) => c.get("name") === application.get("name"));
+    const index = this.data.mockApplications.findIndex((c) => c.name === application.name);
     let data = {
       kind: "Application",
       data: application,
       action: "Add",
     };
-    if (index >= 0) {
-      this.data = this.data.updateIn(["mockApplications", index], application as any);
-      data.action = "Update";
-    } else {
-      this.data = this.data.updateIn(["mockApplications"], (c) => c.push(application));
-    }
+    this.data = produce(this.data, (draft) => {
+      if (index >= 0) {
+        draft.mockApplications[index] = application;
+        data.action = "Update";
+      } else {
+        draft.mockApplications.push(application);
+      }
+    });
     await this.saveData(data);
   };
 
   public updateApplicationComponent = async (applicationName: string, component: ApplicationComponentDetails) => {
-    const index = this.data
-      .get("mockApplicationComponents")
-      .get(applicationName)
-      ?.findIndex((c) => c.get("name") === component.get("name"));
+    const index = this.data.mockApplicationComponents[applicationName]?.findIndex((c) => c.name === component.name);
+
     let data = {
       kind: "Component",
       namespace: applicationName,
       data: component,
       action: "Add",
     };
-    if (index && index >= 0) {
-      this.data = this.data.updateIn(["mockApplicationComponents", applicationName, index], component as any);
-      data.action = "Update";
-    } else {
-      this.data = this.data.updateIn(["mockApplicationComponents", applicationName], (c) =>
-        c ? c.push(component) : Immutable.List([component]),
-      );
-    }
+
+    // if (index !== undefined && index >= 0) {
+    //   this.dataImmer.mockApplicationComponents[applicationName][index] = component;
+    //   data.action = "Update";
+    // } else {
+    //   index === undefined
+    //     ? (this.dataImmer.mockApplicationComponents[applicationName] = [component])
+    //     : this.dataImmer.mockApplicationComponents[applicationName].push(component);
+    // }
+    this.data = produce(this.data, (draft) => {
+      if (index !== undefined && index >= 0) {
+        draft.mockApplicationComponents[applicationName][index] = component;
+        data.action = "Update";
+      } else {
+        index === undefined
+          ? (draft.mockApplicationComponents[applicationName] = [component])
+          : draft.mockApplicationComponents[applicationName].push(component);
+      }
+    });
+
     await this.saveData(data);
   };
 
-  public updateRegistry = async (registry: RegistryType) => {
-    const index = this.data.get("mockRegistries").findIndex((c) => c.get("name") === registry.get("name"));
-    if (index >= 0) {
-      this.data = this.data.updateIn(["mockRegistries", index], registry as any);
-    } else {
-      this.data = this.data.updateIn(["mockRegistries"], (c) => c.push(registry));
-    }
-    await this.saveData();
+  public getCachedData = () => {
+    const cacheJSON = window.localStorage.getItem(this.CACHE_KEY);
+
+    return !!cacheJSON ? JSON.parse(cacheJSON) : null;
   };
 
   public saveData = async (messageData?: any) => {
@@ -209,2144 +245,108 @@ export default class MockStore {
     }
   };
 
-  public getCachedData = () => {
-    const cacheJSON = window.localStorage.getItem(this.CACHE_KEY);
-
-    return !!cacheJSON ? Immutable.fromJS(JSON.parse(cacheJSON)) : null;
-  };
-
   public getInitData = () => {
-    return Immutable.fromJS({
-      mockClusterInfo: Immutable.fromJS({
-        version: "v1.15.0",
-        ingressIP: "192.168.64.3",
-        ingressHostname: "",
-        httpPort: 31243,
-        httpsPort: 32039,
-        tlsPort: 32228,
-      }),
-
-      mockLoginStatus: Immutable.fromJS({
-        authorized: true,
-        isAdmin: true,
-        entity: "system:serviceaccount:default:kalm-sample-user",
-        csrf: "",
-      }),
-
-      mockNodes: Immutable.fromJS({
-        nodes: [
+    return {
+      mockCertificates: [
+        {
+          name: "cert",
+          isSelfManaged: false,
+          httpsCertIssuer: "ca2",
+          domains: ["dd.lo", "ec.op"],
+          ready: "False",
+          reason: 'Waiting for CertificateRequest "cert-3429837659" to complete',
+        },
+        { name: "dadada", isSelfManaged: true, domains: ["hydro.io"], ready: "True", reason: "" },
+        {
+          name: "dd",
+          isSelfManaged: false,
+          httpsCertIssuer: "cloudflare",
+          domains: ["ss.ff"],
+          ready: "False",
+          reason: 'Waiting for CertificateRequest "dd-2325188776" to complete',
+        },
+        {
+          name: "default-https-cert",
+          isSelfManaged: false,
+          httpsCertIssuer: "default-cert-issuer",
+          domains: ["*"],
+          ready: "True",
+          reason: "Certificate is up to date and has not expired",
+        },
+        { name: "hydro3", isSelfManaged: true, domains: ["hyo.io"], ready: "True", reason: "" },
+        {
+          name: "kalata",
+          isSelfManaged: false,
+          httpsCertIssuer: "ca",
+          domains: ["dde.ll"],
+          ready: "False",
+          reason: 'Waiting for CertificateRequest "kalata-1118927936" to complete',
+        },
+        { name: "tte", isSelfManaged: true, domains: ["hydro.io"], ready: "True", reason: "" },
+      ],
+      mockCertificateIssuers: [{ name: "default-cert-issuer", caForTest: {} }],
+      mockRegistries: [{ host: "https://abc.com", name: "registry1", username: "user1", password: "pass1" }],
+      mockErrorPod: {
+        name: "kkl-747f987f74-4mq5r",
+        node: "minikube",
+        status: "Failed",
+        phase: "Pending",
+        statusText: "Waiting: ImagePullBackOff",
+        restarts: 0,
+        isTerminating: false,
+        podIps: null,
+        hostIp: "192.168.64.3",
+        createTimestamp: 1592984368000,
+        startTimestamp: 1592984368000,
+        containers: [
           {
-            metrics: {
-              cpu: [
-                { x: 1596278774000, y: 1 },
-                { x: 1596278779000, y: 1 },
-                { x: 1596278784000, y: 1 },
-                { x: 1596278789000, y: 1 },
-                { x: 1596278794000, y: 1 },
-                { x: 1596278799000, y: 1 },
-                { x: 1596278804000, y: 1 },
-                { x: 1596278809000, y: 1 },
-                { x: 1596278814000, y: 1 },
-                { x: 1596278819000, y: 1 },
-                { x: 1596278824000, y: 1 },
-                { x: 1596278829000, y: 1 },
-                { x: 1596278834000, y: 1 },
-                { x: 1596278839000, y: 1 },
-                { x: 1596278844000, y: 1 },
-                { x: 1596278849000, y: 1 },
-                { x: 1596278854000, y: 1 },
-                { x: 1596278859000, y: 1 },
-                { x: 1596278864000, y: 1 },
-                { x: 1596278869000, y: 1 },
-                { x: 1596278874000, y: 1 },
-                { x: 1596278879000, y: 1 },
-                { x: 1596278884000, y: 1 },
-                { x: 1596278889000, y: 1 },
-                { x: 1596278894000, y: 1 },
-                { x: 1596278899000, y: 1 },
-                { x: 1596278904000, y: 1 },
-                { x: 1596278909000, y: 1 },
-                { x: 1596278914000, y: 1 },
-                { x: 1596278919000, y: 1 },
-                { x: 1596278924000, y: 1 },
-                { x: 1596278929000, y: 1 },
-                { x: 1596278934000, y: 1 },
-                { x: 1596278939000, y: 1 },
-                { x: 1596278944000, y: 1 },
-                { x: 1596278949000, y: 1 },
-                { x: 1596278954000, y: 1 },
-                { x: 1596278959000, y: 1 },
-                { x: 1596278964000, y: 1 },
-                { x: 1596278969000, y: 1 },
-                { x: 1596278974000, y: 1 },
-                { x: 1596278979000, y: 1 },
-                { x: 1596278984000, y: 1 },
-                { x: 1596278989000, y: 1 },
-                { x: 1596278994000, y: 1 },
-                { x: 1596278999000, y: 1 },
-                { x: 1596279004000, y: 1 },
-                { x: 1596279009000, y: 1 },
-                { x: 1596279014000, y: 1 },
-                { x: 1596279019000, y: 1 },
-                { x: 1596279024000, y: 1 },
-                { x: 1596279029000, y: 1 },
-                { x: 1596279034000, y: 1 },
-                { x: 1596279039000, y: 1 },
-                { x: 1596279044000, y: 1 },
-                { x: 1596279049000, y: 1 },
-                { x: 1596279054000, y: 1 },
-                { x: 1596279059000, y: 1 },
-                { x: 1596279064000, y: 1 },
-                { x: 1596279069000, y: 1 },
-                { x: 1596279074000, y: 1 },
-                { x: 1596279079000, y: 1 },
-                { x: 1596279084000, y: 1 },
-                { x: 1596279089000, y: 1 },
-                { x: 1596279094000, y: 1 },
-                { x: 1596279099000, y: 1 },
-                { x: 1596279104000, y: 1 },
-                { x: 1596279109000, y: 1 },
-                { x: 1596279114000, y: 1 },
-                { x: 1596279119000, y: 1 },
-                { x: 1596279124000, y: 1 },
-                { x: 1596279129000, y: 1 },
-                { x: 1596279134000, y: 1 },
-                { x: 1596279139000, y: 1 },
-                { x: 1596279144000, y: 1 },
-                { x: 1596279149000, y: 1 },
-                { x: 1596279154000, y: 1 },
-                { x: 1596279159000, y: 1 },
-                { x: 1596279164000, y: 1 },
-                { x: 1596279169000, y: 1 },
-                { x: 1596279174000, y: 1 },
-                { x: 1596279179000, y: 1 },
-                { x: 1596279184000, y: 1 },
-                { x: 1596279189000, y: 1 },
-                { x: 1596279194000, y: 1 },
-                { x: 1596279199000, y: 1 },
-                { x: 1596279204000, y: 1 },
-                { x: 1596279209000, y: 1 },
-                { x: 1596279214000, y: 1 },
-                { x: 1596279219000, y: 1 },
-                { x: 1596279224000, y: 1 },
-                { x: 1596279229000, y: 1 },
-                { x: 1596279234000, y: 1 },
-                { x: 1596279239000, y: 1 },
-                { x: 1596279244000, y: 1 },
-                { x: 1596279249000, y: 1 },
-                { x: 1596279254000, y: 1 },
-                { x: 1596279259000, y: 1 },
-                { x: 1596279264000, y: 1 },
-                { x: 1596279269000, y: 1 },
-                { x: 1596279274000, y: 1 },
-                { x: 1596279279000, y: 1 },
-                { x: 1596279284000, y: 1 },
-                { x: 1596279289000, y: 1 },
-                { x: 1596279294000, y: 1 },
-                { x: 1596279299000, y: 1 },
-                { x: 1596279304000, y: 1 },
-                { x: 1596279309000, y: 1 },
-                { x: 1596279314000, y: 1 },
-                { x: 1596279319000, y: 1 },
-                { x: 1596279324000, y: 1 },
-                { x: 1596279329000, y: 1 },
-                { x: 1596279334000, y: 1 },
-                { x: 1596279339000, y: 1 },
-                { x: 1596279344000, y: 1 },
-                { x: 1596279349000, y: 1 },
-                { x: 1596279354000, y: 1 },
-                { x: 1596279359000, y: 1 },
-                { x: 1596279364000, y: 1 },
-                { x: 1596279369000, y: 1 },
-                { x: 1596279374000, y: 1 },
-                { x: 1596279379000, y: 1 },
-                { x: 1596279384000, y: 1 },
-                { x: 1596279389000, y: 1 },
-                { x: 1596279394000, y: 1 },
-                { x: 1596279399000, y: 1 },
-                { x: 1596279404000, y: 1 },
-                { x: 1596279409000, y: 1 },
-                { x: 1596279414000, y: 1 },
-                { x: 1596279419000, y: 1 },
-                { x: 1596279424000, y: 1 },
-                { x: 1596279429000, y: 1 },
-                { x: 1596279434000, y: 1 },
-                { x: 1596279439000, y: 1 },
-                { x: 1596279444000, y: 1 },
-                { x: 1596279449000, y: 1 },
-                { x: 1596279454000, y: 1 },
-                { x: 1596279459000, y: 1 },
-                { x: 1596279464000, y: 1 },
-                { x: 1596279469000, y: 1 },
-                { x: 1596279474000, y: 1 },
-                { x: 1596279479000, y: 1 },
-                { x: 1596279484000, y: 1 },
-                { x: 1596279489000, y: 1 },
-                { x: 1596279494000, y: 1 },
-                { x: 1596279499000, y: 1 },
-                { x: 1596279504000, y: 1 },
-                { x: 1596279509000, y: 1 },
-                { x: 1596279514000, y: 1 },
-                { x: 1596279519000, y: 1 },
-                { x: 1596279524000, y: 1 },
-                { x: 1596279529000, y: 1 },
-                { x: 1596279534000, y: 1 },
-                { x: 1596279539000, y: 1 },
-                { x: 1596279544000, y: 1 },
-                { x: 1596279549000, y: 1 },
-                { x: 1596279554000, y: 1 },
-                { x: 1596279559000, y: 1 },
-                { x: 1596279564000, y: 1 },
-                { x: 1596279569000, y: 1 },
-                { x: 1596279574000, y: 1 },
-                { x: 1596279579000, y: 1 },
-                { x: 1596279584000, y: 1 },
-                { x: 1596279589000, y: 1 },
-                { x: 1596279594000, y: 1 },
-                { x: 1596279599000, y: 1 },
-                { x: 1596279604000, y: 1 },
-                { x: 1596279609000, y: 1 },
-                { x: 1596279614000, y: 1 },
-                { x: 1596279619000, y: 1 },
-                { x: 1596279624000, y: 1 },
-                { x: 1596279629000, y: 1 },
-                { x: 1596279634000, y: 1 },
-                { x: 1596279639000, y: 1 },
-                { x: 1596279644000, y: 1 },
-                { x: 1596279649000, y: 1 },
-                { x: 1596279654000, y: 1 },
-                { x: 1596279659000, y: 1 },
-                { x: 1596279664000, y: 1 },
-                { x: 1596279669000, y: 1 },
-              ],
-              memory: [
-                { x: 1596278774000, y: 4351053824 },
-                { x: 1596278779000, y: 4351053824 },
-                { x: 1596278784000, y: 4351053824 },
-                { x: 1596278789000, y: 4351053824 },
-                { x: 1596278794000, y: 4351053824 },
-                { x: 1596278799000, y: 4351053824 },
-                { x: 1596278804000, y: 4351053824 },
-                { x: 1596278809000, y: 4351053824 },
-                { x: 1596278814000, y: 4351053824 },
-                { x: 1596278819000, y: 4351053824 },
-                { x: 1596278824000, y: 4351053824 },
-                { x: 1596278829000, y: 4351053824 },
-                { x: 1596278834000, y: 4338397184 },
-                { x: 1596278839000, y: 4338397184 },
-                { x: 1596278844000, y: 4338397184 },
-                { x: 1596278849000, y: 4338397184 },
-                { x: 1596278854000, y: 4338397184 },
-                { x: 1596278859000, y: 4338397184 },
-                { x: 1596278864000, y: 4338397184 },
-                { x: 1596278869000, y: 4338397184 },
-                { x: 1596278874000, y: 4338397184 },
-                { x: 1596278879000, y: 4338397184 },
-                { x: 1596278884000, y: 4338397184 },
-                { x: 1596278889000, y: 4338397184 },
-                { x: 1596278894000, y: 4351344640 },
-                { x: 1596278899000, y: 4351344640 },
-                { x: 1596278904000, y: 4351344640 },
-                { x: 1596278909000, y: 4351344640 },
-                { x: 1596278914000, y: 4351344640 },
-                { x: 1596278919000, y: 4351344640 },
-                { x: 1596278924000, y: 4351344640 },
-                { x: 1596278929000, y: 4351344640 },
-                { x: 1596278934000, y: 4351344640 },
-                { x: 1596278939000, y: 4351344640 },
-                { x: 1596278944000, y: 4351344640 },
-                { x: 1596278949000, y: 4351344640 },
-                { x: 1596278954000, y: 4352077824 },
-                { x: 1596278959000, y: 4352077824 },
-                { x: 1596278964000, y: 4352077824 },
-                { x: 1596278969000, y: 4352077824 },
-                { x: 1596278974000, y: 4352077824 },
-                { x: 1596278979000, y: 4352077824 },
-                { x: 1596278984000, y: 4352077824 },
-                { x: 1596278989000, y: 4352077824 },
-                { x: 1596278994000, y: 4352077824 },
-                { x: 1596278999000, y: 4352077824 },
-                { x: 1596279004000, y: 4352077824 },
-                { x: 1596279009000, y: 4352077824 },
-                { x: 1596279014000, y: 4338327552 },
-                { x: 1596279019000, y: 4338327552 },
-                { x: 1596279024000, y: 4338327552 },
-                { x: 1596279029000, y: 4338327552 },
-                { x: 1596279034000, y: 4338327552 },
-                { x: 1596279039000, y: 4338327552 },
-                { x: 1596279044000, y: 4338327552 },
-                { x: 1596279049000, y: 4338327552 },
-                { x: 1596279054000, y: 4338327552 },
-                { x: 1596279059000, y: 4338327552 },
-                { x: 1596279064000, y: 4338327552 },
-                { x: 1596279069000, y: 4338327552 },
-                { x: 1596279074000, y: 4338012160 },
-                { x: 1596279079000, y: 4338012160 },
-                { x: 1596279084000, y: 4338012160 },
-                { x: 1596279089000, y: 4338012160 },
-                { x: 1596279094000, y: 4338012160 },
-                { x: 1596279099000, y: 4338012160 },
-                { x: 1596279104000, y: 4338012160 },
-                { x: 1596279109000, y: 4338012160 },
-                { x: 1596279114000, y: 4338012160 },
-                { x: 1596279119000, y: 4338012160 },
-                { x: 1596279124000, y: 4338012160 },
-                { x: 1596279129000, y: 4338012160 },
-                { x: 1596279134000, y: 4331720704 },
-                { x: 1596279139000, y: 4331720704 },
-                { x: 1596279144000, y: 4331720704 },
-                { x: 1596279149000, y: 4331720704 },
-                { x: 1596279154000, y: 4331720704 },
-                { x: 1596279159000, y: 4331720704 },
-                { x: 1596279164000, y: 4331720704 },
-                { x: 1596279169000, y: 4331720704 },
-                { x: 1596279174000, y: 4331720704 },
-                { x: 1596279179000, y: 4331720704 },
-                { x: 1596279184000, y: 4331720704 },
-                { x: 1596279189000, y: 4331720704 },
-                { x: 1596279194000, y: 4332216320 },
-                { x: 1596279199000, y: 4332216320 },
-                { x: 1596279204000, y: 4332216320 },
-                { x: 1596279209000, y: 4332216320 },
-                { x: 1596279214000, y: 4332216320 },
-                { x: 1596279219000, y: 4332216320 },
-                { x: 1596279224000, y: 4332216320 },
-                { x: 1596279229000, y: 4332216320 },
-                { x: 1596279234000, y: 4332216320 },
-                { x: 1596279239000, y: 4332216320 },
-                { x: 1596279244000, y: 4332216320 },
-                { x: 1596279249000, y: 4332216320 },
-                { x: 1596279254000, y: 4332163072 },
-                { x: 1596279259000, y: 4332163072 },
-                { x: 1596279264000, y: 4332163072 },
-                { x: 1596279269000, y: 4332163072 },
-                { x: 1596279274000, y: 4332163072 },
-                { x: 1596279279000, y: 4332163072 },
-                { x: 1596279284000, y: 4332163072 },
-                { x: 1596279289000, y: 4332163072 },
-                { x: 1596279294000, y: 4332163072 },
-                { x: 1596279299000, y: 4332163072 },
-                { x: 1596279304000, y: 4332163072 },
-                { x: 1596279309000, y: 4332163072 },
-                { x: 1596279314000, y: 4353519616 },
-                { x: 1596279319000, y: 4353519616 },
-                { x: 1596279324000, y: 4353519616 },
-                { x: 1596279329000, y: 4353519616 },
-                { x: 1596279334000, y: 4353519616 },
-                { x: 1596279339000, y: 4353519616 },
-                { x: 1596279344000, y: 4353519616 },
-                { x: 1596279349000, y: 4353519616 },
-                { x: 1596279354000, y: 4353519616 },
-                { x: 1596279359000, y: 4353519616 },
-                { x: 1596279364000, y: 4353519616 },
-                { x: 1596279369000, y: 4353519616 },
-                { x: 1596279374000, y: 4354027520 },
-                { x: 1596279379000, y: 4354027520 },
-                { x: 1596279384000, y: 4354027520 },
-                { x: 1596279389000, y: 4354027520 },
-                { x: 1596279394000, y: 4354027520 },
-                { x: 1596279399000, y: 4354027520 },
-                { x: 1596279404000, y: 4354027520 },
-                { x: 1596279409000, y: 4354027520 },
-                { x: 1596279414000, y: 4354027520 },
-                { x: 1596279419000, y: 4354027520 },
-                { x: 1596279424000, y: 4354027520 },
-                { x: 1596279429000, y: 4354027520 },
-                { x: 1596279434000, y: 4331171840 },
-                { x: 1596279439000, y: 4331171840 },
-                { x: 1596279444000, y: 4331171840 },
-                { x: 1596279449000, y: 4331171840 },
-                { x: 1596279454000, y: 4331171840 },
-                { x: 1596279459000, y: 4331171840 },
-                { x: 1596279464000, y: 4331171840 },
-                { x: 1596279469000, y: 4331171840 },
-                { x: 1596279474000, y: 4331171840 },
-                { x: 1596279479000, y: 4331171840 },
-                { x: 1596279484000, y: 4331171840 },
-                { x: 1596279489000, y: 4331171840 },
-                { x: 1596279494000, y: 4331192320 },
-                { x: 1596279499000, y: 4331192320 },
-                { x: 1596279504000, y: 4331192320 },
-                { x: 1596279509000, y: 4331192320 },
-                { x: 1596279514000, y: 4331192320 },
-                { x: 1596279519000, y: 4331192320 },
-                { x: 1596279524000, y: 4331192320 },
-                { x: 1596279529000, y: 4331192320 },
-                { x: 1596279534000, y: 4331192320 },
-                { x: 1596279539000, y: 4331192320 },
-                { x: 1596279544000, y: 4331192320 },
-                { x: 1596279549000, y: 4331192320 },
-                { x: 1596279554000, y: 4331610112 },
-                { x: 1596279559000, y: 4331610112 },
-                { x: 1596279564000, y: 4331610112 },
-                { x: 1596279569000, y: 4331610112 },
-                { x: 1596279574000, y: 4331610112 },
-                { x: 1596279579000, y: 4331610112 },
-                { x: 1596279584000, y: 4331610112 },
-                { x: 1596279589000, y: 4331610112 },
-                { x: 1596279594000, y: 4331610112 },
-                { x: 1596279599000, y: 4331610112 },
-                { x: 1596279604000, y: 4331610112 },
-                { x: 1596279609000, y: 4331610112 },
-                { x: 1596279614000, y: 4331421696 },
-                { x: 1596279619000, y: 4331421696 },
-                { x: 1596279624000, y: 4331421696 },
-                { x: 1596279629000, y: 4331421696 },
-                { x: 1596279634000, y: 4331421696 },
-                { x: 1596279639000, y: 4331421696 },
-                { x: 1596279644000, y: 4331421696 },
-                { x: 1596279649000, y: 4331421696 },
-                { x: 1596279654000, y: 4331421696 },
-                { x: 1596279659000, y: 4331421696 },
-                { x: 1596279664000, y: 4331421696 },
-                { x: 1596279669000, y: 4331421696 },
-              ],
-            },
-            internalIP: "192.168.64.3",
-            annotations: {
-              "kubeadm.alpha.kubernetes.io/cri-socket": "/var/run/dockershim.sock",
-              "node.alpha.kubernetes.io/ttl": "0",
-              "volumes.kubernetes.io/controller-managed-attach-detach": "true",
-            },
-            name: "minikube",
-            externalIP: "<none>",
-            status: {
-              capacity: {
-                cpu: "4",
-                "ephemeral-storage": "16954224Ki",
-                "hugepages-2Mi": "0",
-                memory: "8163668Ki",
-                pods: "110",
-              },
-              allocatable: {
-                cpu: "4",
-                "ephemeral-storage": "16954224Ki",
-                "hugepages-2Mi": "0",
-                memory: "8163668Ki",
-                pods: "110",
-              },
-              conditions: [
-                {
-                  type: "MemoryPressure",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-26T00:01:55Z",
-                  lastTransitionTime: "2020-07-07T16:22:47Z",
-                  reason: "KubeletHasSufficientMemory",
-                  message: "kubelet has sufficient memory available",
-                },
-                {
-                  type: "DiskPressure",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-26T00:01:55Z",
-                  lastTransitionTime: "2020-07-07T16:22:47Z",
-                  reason: "KubeletHasNoDiskPressure",
-                  message: "kubelet has no disk pressure",
-                },
-                {
-                  type: "PIDPressure",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-26T00:01:55Z",
-                  lastTransitionTime: "2020-07-07T16:22:47Z",
-                  reason: "KubeletHasSufficientPID",
-                  message: "kubelet has sufficient PID available",
-                },
-                {
-                  type: "Ready",
-                  status: "True",
-                  lastHeartbeatTime: "2020-07-26T00:01:55Z",
-                  lastTransitionTime: "2020-07-07T16:22:47Z",
-                  reason: "KubeletReady",
-                  message: "kubelet is posting ready status",
-                },
-              ],
-              addresses: [
-                { type: "InternalIP", address: "192.168.64.3" },
-                { type: "Hostname", address: "minikube" },
-              ],
-              daemonEndpoints: { kubeletEndpoint: { Port: 10250 } },
-              nodeInfo: {
-                containerRuntimeVersion: "docker://19.3.8",
-                machineID: "cf517b6996054bc2805f9d6f0a967e04",
-                kubeletVersion: "v1.15.0",
-                systemUUID: "6b0711ea-0000-0000-8f04-acde48001122",
-                bootID: "85429ef0-a5d7-4c64-a4ad-ec145bd87bc5",
-                operatingSystem: "linux",
-                architecture: "amd64",
-                osImage: "Buildroot 2019.02.10",
-                kubeProxyVersion: "v1.15.0",
-                kernelVersion: "4.19.107",
-              },
-              images: [
-                {
-                  names: [
-                    "istio/examples-bookinfo-reviews-v2@sha256:e86d247b7ac275eb681a7e9c869325762686ccf0b5cfb6bde100ff2c1f01ae2b",
-                    "istio/examples-bookinfo-reviews-v2:1.15.0",
-                  ],
-                  sizeBytes: 539699348,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-reviews-v1@sha256:40e8aba77c1b46f37e820a60aa6948485d39e6f55f1492fa1f17383efd95511c",
-                    "istio/examples-bookinfo-reviews-v1:1.15.0",
-                  ],
-                  sizeBytes: 539699348,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-reviews-v3@sha256:e454cab754cf9234e8b41d7c5e30f53a4c125d7d9443cb3ef2b2eb1c4bd1ec14",
-                    "istio/examples-bookinfo-reviews-v3:1.15.0",
-                  ],
-                  sizeBytes: 539699348,
-                },
-                {
-                  names: [
-                    "istio/proxyv2@sha256:b569b3226624b63ca007f3252162390545643433770c79a9aadb1406687d767a",
-                    "istio/proxyv2:1.5.2",
-                  ],
-                  sizeBytes: 300343292,
-                },
-                { names: ["k8s.gcr.io/etcd:3.3.10"], sizeBytes: 258116302 },
-                {
-                  names: [
-                    "istio/pilot@sha256:9969a1d0b7f620c972edd706cb84672304096c3f9dbade4d00d4f98215531757",
-                    "istio/pilot:1.5.2",
-                  ],
-                  sizeBytes: 223362302,
-                },
-                { names: ["kubernetesui/dashboard:v2.0.0"], sizeBytes: 221895031 },
-                { names: ["k8s.gcr.io/kube-apiserver:v1.15.0"], sizeBytes: 206815166 },
-                {
-                  names: [
-                    "istio/operator@sha256:3214e38deb9ecc63ce051852b985faf3e956a5e5afc2326ec2401a0127c33ab5",
-                    "istio/operator:1.5.2",
-                  ],
-                  sizeBytes: 192260148,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-productpage-v1@sha256:0a5eb4795952372251d51f72834bccb7ea01a67cb72fd9b58b757cca103b7524",
-                    "istio/examples-bookinfo-productpage-v1:1.15.0",
-                  ],
-                  sizeBytes: 182635847,
-                },
-                { names: ["k8s.gcr.io/kube-controller-manager:v1.15.0"], sizeBytes: 158714430 },
-                {
-                  names: [
-                    "istio/examples-bookinfo-ratings-v1@sha256:09b9d6958a13ad1a97377b7d5c2aa9e0372c008cdf5a44ce3e72fbd9660936cf",
-                    "istio/examples-bookinfo-ratings-v1:1.15.0",
-                  ],
-                  sizeBytes: 155154241,
-                },
-                {
-                  names: [
-                    "quay.io/kiali/kiali@sha256:96e50ee264377fc84b3d82061d4e5eb4ad98fb95f5919ca5800fcea151e5aff9",
-                    "quay.io/kiali/kiali:v1.15",
-                  ],
-                  sizeBytes: 154460526,
-                },
-                {
-                  names: [
-                    "prom/prometheus@sha256:169b743ceb4452266915272f9c3409d36972e41cb52f3f28644e6c0609fc54e6",
-                    "prom/prometheus:v2.15.1",
-                  ],
-                  sizeBytes: 132670450,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-details-v1@sha256:fce0bcbff0bed09116dacffca15695cd345e0c3788c15b0114a05f654ddecc17",
-                    "istio/examples-bookinfo-details-v1:1.15.0",
-                  ],
-                  sizeBytes: 126666747,
-                },
-                {
-                  names: ["redis@sha256:e72b3d93ac43b6bfe76f79f5ccac21fcf3272e1a20349807f776c6ffb2773bc7"],
-                  sizeBytes: 104153916,
-                },
-                {
-                  names: [
-                    "redis@sha256:021541c7f7210194b8e41df861b348efe4ffea4e1adee6a4956536d917ca5b50",
-                    "redis@sha256:04f89ad6723f1e74d081bffc187351480cdce5f9f3c368cf07b4c126841db629",
-                    "redis@sha256:0f865ceb68b3a31470f5bf5617bb457cba0782f6906f0a718c3b585f8b6bd949",
-                    "redis@sha256:42de6bbb5e1f33b5783e246bd7c6fcd511598e4284002e41f0e2ee961f3f7bfb",
-                    "redis@sha256:a3c30c2953cea94597bef30dd4c8daa021a8751b17daa6183f9ed5a6b710afb4",
-                  ],
-                  sizeBytes: 104153916,
-                },
-                {
-                  names: ["redis@sha256:800f2587bf3376cb01e6307afe599ddce9439deafbd4fb8562829da96085c9c5"],
-                  sizeBytes: 104124452,
-                },
-                { names: ["k8s.gcr.io/kube-proxy:v1.15.0"], sizeBytes: 82404188 },
-                { names: ["k8s.gcr.io/kube-scheduler:v1.15.0"], sizeBytes: 81103486 },
-                { names: ["gcr.io/k8s-minikube/storage-provisioner:v1.8.1"], sizeBytes: 80815640 },
-                {
-                  names: [
-                    "quay.io/jetstack/cert-manager-controller@sha256:916ad11088651e28923fa6891ac5c27790ba33f6dcc8ca34f223afa6b55f7b54",
-                    "quay.io/jetstack/cert-manager-controller:v0.15.0",
-                  ],
-                  sizeBytes: 52432042,
-                },
-                {
-                  names: [
-                    "registry.cn-hangzhou.aliyuncs.com/google_containers/metrics-server-amd64@sha256:787a47614c668a9b3536111ee6c28df3bea131481f8b850e3223c41b58e6fffb",
-                    "k8s.gcr.io/metrics-server-amd64:v0.2.1",
-                    "registry.cn-hangzhou.aliyuncs.com/google_containers/metrics-server-amd64:v0.2.1",
-                  ],
-                  sizeBytes: 42541759,
-                },
-                { names: ["k8s.gcr.io/coredns:1.3.1"], sizeBytes: 40303560 },
-                { names: ["kubernetesui/metrics-scraper:v1.0.2"], sizeBytes: 40101552 },
-                {
-                  names: [
-                    "quay.io/jetstack/cert-manager-cainjector@sha256:445e35d3511d5b6e7570bad32eb7978d4116ad2d1866d75e6d7785e3e2cc9d6d",
-                    "quay.io/jetstack/cert-manager-cainjector:v0.15.0",
-                  ],
-                  sizeBytes: 39480964,
-                },
-                {
-                  names: [
-                    "quay.io/jetstack/cert-manager-webhook@sha256:effebe863e61d7fc361fc5a70a2a363523b902668ccbd9c745d4121bf193596f",
-                    "quay.io/jetstack/cert-manager-webhook:v0.15.0",
-                  ],
-                  sizeBytes: 39358529,
-                },
-                {
-                  names: [
-                    "quay.io/jetstack/cert-manager-acmesolver@sha256:4166abca3db409aad3aa4561e0e11d9857ddf766ae736072b0a769f1fe499450",
-                    "quay.io/jetstack/cert-manager-acmesolver:v0.15.0",
-                  ],
-                  sizeBytes: 30487206,
-                },
-                {
-                  names: [
-                    "busybox@sha256:4f47c01fa91355af2865ac10fef5bf6ec9c7f42ad2321377c21e844427972977",
-                    "busybox:latest",
-                  ],
-                  sizeBytes: 1223534,
-                },
-                { names: ["k8s.gcr.io/pause:3.1"], sizeBytes: 742472 },
-              ],
-            },
-            statusTexts: ["Ready"],
-            creationTimestamp: 1592560321000,
-            roles: ["master"],
-            allocatedResources: {
-              podsCount: 41,
-              requests: { cpu: "3880m", memory: "4084Mi" },
-              limits: { cpu: "4750m", memory: "3260Mi" },
-            },
-            labels: {
-              "minikube.k8s.io/version": "v1.11.0",
-              "minikube.k8s.io/name": "minikube",
-              "beta.kubernetes.io/os": "linux",
-              "kubernetes.io/os": "linux",
-              "minikube.k8s.io/updated_at": "2020_06_19T17_52_07_0700",
-              "minikube.k8s.io/commit": "57e2f55f47effe9ce396cea42a1e0eb4f611ebbd",
-              "node-role.kubernetes.io/master": "",
-              "kubernetes.io/hostname": "minikube",
-              "beta.kubernetes.io/arch": "amd64",
-              "kubernetes.io/arch": "amd64",
-            },
+            name: "kkl",
+            restartCount: 0,
+            ready: false,
+            started: false,
+            startedAt: 0,
           },
         ],
         metrics: {
-          cpu: [
-            {
-              x: 1594000731000,
-              y: 3,
-            },
-            {
-              x: 1594000736000,
-              y: 3,
-            },
-            {
-              x: 1594000741000,
-              y: 3,
-            },
-            {
-              x: 1594000746000,
-              y: 3,
-            },
-            {
-              x: 1594000751000,
-              y: 3,
-            },
-            {
-              x: 1594000756000,
-              y: 3,
-            },
-            {
-              x: 1594000761000,
-              y: 3,
-            },
-            {
-              x: 1594000766000,
-              y: 3,
-            },
-            {
-              x: 1594000771000,
-              y: 3,
-            },
-            {
-              x: 1594000776000,
-              y: 3,
-            },
-            {
-              x: 1594000781000,
-              y: 3,
-            },
-            {
-              x: 1594000786000,
-              y: 3,
-            },
-            {
-              x: 1594000791000,
-              y: 3,
-            },
-            {
-              x: 1594000796000,
-              y: 3,
-            },
-            {
-              x: 1594000801000,
-              y: 3,
-            },
-            {
-              x: 1594000807000,
-              y: 3,
-            },
-            {
-              x: 1594000811000,
-              y: 3,
-            },
-            {
-              x: 1594000816000,
-              y: 3,
-            },
-            {
-              x: 1594000821000,
-              y: 3,
-            },
-            {
-              x: 1594000826000,
-              y: 3,
-            },
-            {
-              x: 1594000831000,
-              y: 3,
-            },
-            {
-              x: 1594000836000,
-              y: 3,
-            },
-            {
-              x: 1594000841000,
-              y: 3,
-            },
-            {
-              x: 1594000846000,
-              y: 3,
-            },
-            {
-              x: 1594000851000,
-              y: 3,
-            },
-            {
-              x: 1594000856000,
-              y: 3,
-            },
-            {
-              x: 1594000861000,
-              y: 3,
-            },
-            {
-              x: 1594000866000,
-              y: 3,
-            },
-            {
-              x: 1594000871000,
-              y: 3,
-            },
-            {
-              x: 1594000876000,
-              y: 3,
-            },
-            {
-              x: 1594000881000,
-              y: 3,
-            },
-            {
-              x: 1594000887000,
-              y: 3,
-            },
-            {
-              x: 1594000891000,
-              y: 3,
-            },
-            {
-              x: 1594000896000,
-              y: 3,
-            },
-            {
-              x: 1594000901000,
-              y: 3,
-            },
-            {
-              x: 1594000906000,
-              y: 3,
-            },
-            {
-              x: 1594000911000,
-              y: 3,
-            },
-            {
-              x: 1594000916000,
-              y: 3,
-            },
-            {
-              x: 1594000921000,
-              y: 3,
-            },
-            {
-              x: 1594000926000,
-              y: 3,
-            },
-            {
-              x: 1594000931000,
-              y: 3,
-            },
-            {
-              x: 1594000936000,
-              y: 3,
-            },
-            {
-              x: 1594000941000,
-              y: 3,
-            },
-            {
-              x: 1594000946000,
-              y: 3,
-            },
-            {
-              x: 1594000951000,
-              y: 3,
-            },
-            {
-              x: 1594000956000,
-              y: 3,
-            },
-            {
-              x: 1594000962000,
-              y: 3,
-            },
-            {
-              x: 1594000966000,
-              y: 3,
-            },
-            {
-              x: 1594000971000,
-              y: 3,
-            },
-            {
-              x: 1594000976000,
-              y: 3,
-            },
-            {
-              x: 1594000981000,
-              y: 3,
-            },
-            {
-              x: 1594000986000,
-              y: 3,
-            },
-            {
-              x: 1594000991000,
-              y: 3,
-            },
-            {
-              x: 1594000996000,
-              y: 3,
-            },
-            {
-              x: 1594001001000,
-              y: 3,
-            },
-            {
-              x: 1594001006000,
-              y: 3,
-            },
-            {
-              x: 1594001011000,
-              y: 3,
-            },
-            {
-              x: 1594001016000,
-              y: 3,
-            },
-            {
-              x: 1594001021000,
-              y: 3,
-            },
-            {
-              x: 1594001026000,
-              y: 3,
-            },
-            {
-              x: 1594001031000,
-              y: 3,
-            },
-            {
-              x: 1594001036000,
-              y: 3,
-            },
-            {
-              x: 1594001042000,
-              y: 3,
-            },
-            {
-              x: 1594001046000,
-              y: 3,
-            },
-            {
-              x: 1594001051000,
-              y: 3,
-            },
-            {
-              x: 1594001056000,
-              y: 3,
-            },
-            {
-              x: 1594001061000,
-              y: 3,
-            },
-            {
-              x: 1594001066000,
-              y: 3,
-            },
-            {
-              x: 1594001071000,
-              y: 3,
-            },
-            {
-              x: 1594001076000,
-              y: 3,
-            },
-            {
-              x: 1594001081000,
-              y: 3,
-            },
-            {
-              x: 1594001086000,
-              y: 3,
-            },
-            {
-              x: 1594001091000,
-              y: 3,
-            },
-            {
-              x: 1594001096000,
-              y: 3,
-            },
-            {
-              x: 1594001101000,
-              y: 3,
-            },
-            {
-              x: 1594001106000,
-              y: 3,
-            },
-            {
-              x: 1594001111000,
-              y: 3,
-            },
-            {
-              x: 1594001117000,
-              y: 3,
-            },
-            {
-              x: 1594001121000,
-              y: 3,
-            },
-            {
-              x: 1594001126000,
-              y: 3,
-            },
-            {
-              x: 1594001131000,
-              y: 3,
-            },
-            {
-              x: 1594001136000,
-              y: 3,
-            },
-            {
-              x: 1594001141000,
-              y: 3,
-            },
-            {
-              x: 1594001146000,
-              y: 3,
-            },
-            {
-              x: 1594001151000,
-              y: 3,
-            },
-            {
-              x: 1594001156000,
-              y: 3,
-            },
-            {
-              x: 1594001161000,
-              y: 3,
-            },
-            {
-              x: 1594001166000,
-              y: 3,
-            },
-            {
-              x: 1594001171000,
-              y: 3,
-            },
-            {
-              x: 1594001176000,
-              y: 3,
-            },
-            {
-              x: 1594001181000,
-              y: 3,
-            },
-            {
-              x: 1594001186000,
-              y: 3,
-            },
-            {
-              x: 1594001191000,
-              y: 3,
-            },
-            {
-              x: 1594001197000,
-              y: 3,
-            },
-            {
-              x: 1594001201000,
-              y: 3,
-            },
-            {
-              x: 1594001206000,
-              y: 3,
-            },
-            {
-              x: 1594001211000,
-              y: 3,
-            },
-            {
-              x: 1594001216000,
-              y: 3,
-            },
-            {
-              x: 1594001221000,
-              y: 3,
-            },
-            {
-              x: 1594001226000,
-              y: 3,
-            },
-            {
-              x: 1594001231000,
-              y: 3,
-            },
-            {
-              x: 1594001236000,
-              y: 3,
-            },
-            {
-              x: 1594001241000,
-              y: 3,
-            },
-            {
-              x: 1594001246000,
-              y: 3,
-            },
-            {
-              x: 1594001251000,
-              y: 3,
-            },
-            {
-              x: 1594001256000,
-              y: 3,
-            },
-            {
-              x: 1594001261000,
-              y: 3,
-            },
-            {
-              x: 1594001266000,
-              y: 3,
-            },
-            {
-              x: 1594001271000,
-              y: 3,
-            },
-            {
-              x: 1594001276000,
-              y: 3,
-            },
-            {
-              x: 1594001281000,
-              y: 3,
-            },
-            {
-              x: 1594001286000,
-              y: 3,
-            },
-            {
-              x: 1594001291000,
-              y: 3,
-            },
-            {
-              x: 1594001296000,
-              y: 3,
-            },
-            {
-              x: 1594001301000,
-              y: 3,
-            },
-            {
-              x: 1594001306000,
-              y: 3,
-            },
-            {
-              x: 1594001311000,
-              y: 3,
-            },
-            {
-              x: 1594001316000,
-              y: 3,
-            },
-            {
-              x: 1594001321000,
-              y: 3,
-            },
-            {
-              x: 1594001326000,
-              y: 3,
-            },
-            {
-              x: 1594001331000,
-              y: 3,
-            },
-            {
-              x: 1594001336000,
-              y: 3,
-            },
-            {
-              x: 1594001341000,
-              y: 3,
-            },
-            {
-              x: 1594001346000,
-              y: 3,
-            },
-            {
-              x: 1594001352000,
-              y: 3,
-            },
-            {
-              x: 1594001356000,
-              y: 3,
-            },
-            {
-              x: 1594001361000,
-              y: 3,
-            },
-            {
-              x: 1594001366000,
-              y: 3,
-            },
-            {
-              x: 1594001371000,
-              y: 3,
-            },
-            {
-              x: 1594001376000,
-              y: 3,
-            },
-            {
-              x: 1594001381000,
-              y: 3,
-            },
-            {
-              x: 1594001386000,
-              y: 3,
-            },
-            {
-              x: 1594001391000,
-              y: 3,
-            },
-            {
-              x: 1594001396000,
-              y: 3,
-            },
-            {
-              x: 1594001401000,
-              y: 3,
-            },
-            {
-              x: 1594001406000,
-              y: 3,
-            },
-            {
-              x: 1594001412000,
-              y: 3,
-            },
-            {
-              x: 1594001416000,
-              y: 3,
-            },
-            {
-              x: 1594001421000,
-              y: 3,
-            },
-            {
-              x: 1594001426000,
-              y: 3,
-            },
-            {
-              x: 1594001431000,
-              y: 3,
-            },
-            {
-              x: 1594001436000,
-              y: 3,
-            },
-            {
-              x: 1594001441000,
-              y: 3,
-            },
-            {
-              x: 1594001446000,
-              y: 3,
-            },
-            {
-              x: 1594001451000,
-              y: 3,
-            },
-            {
-              x: 1594001456000,
-              y: 3,
-            },
-            {
-              x: 1594001461000,
-              y: 3,
-            },
-            {
-              x: 1594001466000,
-              y: 3,
-            },
-            {
-              x: 1594001471000,
-              y: 3,
-            },
-            {
-              x: 1594001476000,
-              y: 3,
-            },
-            {
-              x: 1594001481000,
-              y: 3,
-            },
-            {
-              x: 1594001487000,
-              y: 3,
-            },
-            {
-              x: 1594001491000,
-              y: 3,
-            },
-            {
-              x: 1594001496000,
-              y: 3,
-            },
-            {
-              x: 1594001501000,
-              y: 3,
-            },
-            {
-              x: 1594001506000,
-              y: 3,
-            },
-            {
-              x: 1594001511000,
-              y: 3,
-            },
-            {
-              x: 1594001516000,
-              y: 3,
-            },
-            {
-              x: 1594001521000,
-              y: 3,
-            },
-            {
-              x: 1594001526000,
-              y: 3,
-            },
-            {
-              x: 1594001531000,
-              y: 3,
-            },
-            {
-              x: 1594001536000,
-              y: 3,
-            },
-            {
-              x: 1594001541000,
-              y: 3,
-            },
-            {
-              x: 1594001546000,
-              y: 3,
-            },
-            {
-              x: 1594001551000,
-              y: 3,
-            },
-            {
-              x: 1594001556000,
-              y: 3,
-            },
-            {
-              x: 1594001562000,
-              y: 3,
-            },
-            {
-              x: 1594001566000,
-              y: 3,
-            },
-            {
-              x: 1594001571000,
-              y: 3,
-            },
-            {
-              x: 1594001576000,
-              y: 3,
-            },
-            {
-              x: 1594001581000,
-              y: 3,
-            },
-            {
-              x: 1594001586000,
-              y: 3,
-            },
-            {
-              x: 1594001591000,
-              y: 3,
-            },
-            {
-              x: 1594001596000,
-              y: 3,
-            },
-            {
-              x: 1594001601000,
-              y: 3,
-            },
-            {
-              x: 1594001606000,
-              y: 3,
-            },
-            {
-              x: 1594001611000,
-              y: 3,
-            },
-            {
-              x: 1594001616000,
-              y: 3,
-            },
-            {
-              x: 1594001621000,
-              y: 3,
-            },
-            {
-              x: 1594001627000,
-              y: 3,
-            },
-          ],
-          memory: [
-            {
-              x: 1594000731000,
-              y: 6152183808,
-            },
-            {
-              x: 1594000736000,
-              y: 6152183808,
-            },
-            {
-              x: 1594000741000,
-              y: 6152183808,
-            },
-            {
-              x: 1594000746000,
-              y: 6175760384,
-            },
-            {
-              x: 1594000751000,
-              y: 6175760384,
-            },
-            {
-              x: 1594000756000,
-              y: 6175760384,
-            },
-            {
-              x: 1594000761000,
-              y: 6175760384,
-            },
-            {
-              x: 1594000766000,
-              y: 6175760384,
-            },
-            {
-              x: 1594000771000,
-              y: 6175760384,
-            },
-            {
-              x: 1594000776000,
-              y: 6150213632,
-            },
-            {
-              x: 1594000781000,
-              y: 6150213632,
-            },
-            {
-              x: 1594000786000,
-              y: 6150213632,
-            },
-            {
-              x: 1594000791000,
-              y: 6150213632,
-            },
-            {
-              x: 1594000796000,
-              y: 6150213632,
-            },
-            {
-              x: 1594000801000,
-              y: 6150213632,
-            },
-            {
-              x: 1594000807000,
-              y: 6151692288,
-            },
-            {
-              x: 1594000811000,
-              y: 6151692288,
-            },
-            {
-              x: 1594000816000,
-              y: 6151692288,
-            },
-            {
-              x: 1594000821000,
-              y: 6151692288,
-            },
-            {
-              x: 1594000826000,
-              y: 6151692288,
-            },
-            {
-              x: 1594000831000,
-              y: 6151692288,
-            },
-            {
-              x: 1594000836000,
-              y: 6153228288,
-            },
-            {
-              x: 1594000841000,
-              y: 6153228288,
-            },
-            {
-              x: 1594000846000,
-              y: 6153228288,
-            },
-            {
-              x: 1594000851000,
-              y: 6153228288,
-            },
-            {
-              x: 1594000856000,
-              y: 6153228288,
-            },
-            {
-              x: 1594000861000,
-              y: 6153228288,
-            },
-            {
-              x: 1594000866000,
-              y: 6147518464,
-            },
-            {
-              x: 1594000871000,
-              y: 6147518464,
-            },
-            {
-              x: 1594000876000,
-              y: 6147518464,
-            },
-            {
-              x: 1594000881000,
-              y: 6147518464,
-            },
-            {
-              x: 1594000887000,
-              y: 6147518464,
-            },
-            {
-              x: 1594000891000,
-              y: 6147518464,
-            },
-            {
-              x: 1594000896000,
-              y: 6148730880,
-            },
-            {
-              x: 1594000901000,
-              y: 6148730880,
-            },
-            {
-              x: 1594000906000,
-              y: 6148730880,
-            },
-            {
-              x: 1594000911000,
-              y: 6148730880,
-            },
-            {
-              x: 1594000916000,
-              y: 6148730880,
-            },
-            {
-              x: 1594000921000,
-              y: 6148730880,
-            },
-            {
-              x: 1594000926000,
-              y: 6148952064,
-            },
-            {
-              x: 1594000931000,
-              y: 6148952064,
-            },
-            {
-              x: 1594000936000,
-              y: 6148952064,
-            },
-            {
-              x: 1594000941000,
-              y: 6148952064,
-            },
-            {
-              x: 1594000946000,
-              y: 6148952064,
-            },
-            {
-              x: 1594000951000,
-              y: 6148952064,
-            },
-            {
-              x: 1594000956000,
-              y: 6150062080,
-            },
-            {
-              x: 1594000962000,
-              y: 6150062080,
-            },
-            {
-              x: 1594000966000,
-              y: 6150062080,
-            },
-            {
-              x: 1594000971000,
-              y: 6150062080,
-            },
-            {
-              x: 1594000976000,
-              y: 6150062080,
-            },
-            {
-              x: 1594000981000,
-              y: 6150062080,
-            },
-            {
-              x: 1594000986000,
-              y: 6148755456,
-            },
-            {
-              x: 1594000991000,
-              y: 6148755456,
-            },
-            {
-              x: 1594000996000,
-              y: 6148755456,
-            },
-            {
-              x: 1594001001000,
-              y: 6148755456,
-            },
-            {
-              x: 1594001006000,
-              y: 6148755456,
-            },
-            {
-              x: 1594001011000,
-              y: 6148755456,
-            },
-            {
-              x: 1594001016000,
-              y: 6149427200,
-            },
-            {
-              x: 1594001021000,
-              y: 6149427200,
-            },
-            {
-              x: 1594001026000,
-              y: 6149427200,
-            },
-            {
-              x: 1594001031000,
-              y: 6149427200,
-            },
-            {
-              x: 1594001036000,
-              y: 6149427200,
-            },
-            {
-              x: 1594001042000,
-              y: 6149427200,
-            },
-            {
-              x: 1594001046000,
-              y: 6157062144,
-            },
-            {
-              x: 1594001051000,
-              y: 6157062144,
-            },
-            {
-              x: 1594001056000,
-              y: 6157062144,
-            },
-            {
-              x: 1594001061000,
-              y: 6157062144,
-            },
-            {
-              x: 1594001066000,
-              y: 6157062144,
-            },
-            {
-              x: 1594001071000,
-              y: 6157062144,
-            },
-            {
-              x: 1594001076000,
-              y: 6148218880,
-            },
-            {
-              x: 1594001081000,
-              y: 6148218880,
-            },
-            {
-              x: 1594001086000,
-              y: 6148218880,
-            },
-            {
-              x: 1594001091000,
-              y: 6148218880,
-            },
-            {
-              x: 1594001096000,
-              y: 6148218880,
-            },
-            {
-              x: 1594001101000,
-              y: 6148218880,
-            },
-            {
-              x: 1594001106000,
-              y: 6154772480,
-            },
-            {
-              x: 1594001111000,
-              y: 6154772480,
-            },
-            {
-              x: 1594001117000,
-              y: 6154772480,
-            },
-            {
-              x: 1594001121000,
-              y: 6154772480,
-            },
-            {
-              x: 1594001126000,
-              y: 6154772480,
-            },
-            {
-              x: 1594001131000,
-              y: 6154772480,
-            },
-            {
-              x: 1594001136000,
-              y: 6147993600,
-            },
-            {
-              x: 1594001141000,
-              y: 6147993600,
-            },
-            {
-              x: 1594001146000,
-              y: 6147993600,
-            },
-            {
-              x: 1594001151000,
-              y: 6147993600,
-            },
-            {
-              x: 1594001156000,
-              y: 6147993600,
-            },
-            {
-              x: 1594001161000,
-              y: 6147993600,
-            },
-            {
-              x: 1594001166000,
-              y: 6147072000,
-            },
-            {
-              x: 1594001171000,
-              y: 6147072000,
-            },
-            {
-              x: 1594001176000,
-              y: 6147072000,
-            },
-            {
-              x: 1594001181000,
-              y: 6147072000,
-            },
-            {
-              x: 1594001186000,
-              y: 6147072000,
-            },
-            {
-              x: 1594001191000,
-              y: 6147072000,
-            },
-            {
-              x: 1594001197000,
-              y: 6147702784,
-            },
-            {
-              x: 1594001201000,
-              y: 6147702784,
-            },
-            {
-              x: 1594001206000,
-              y: 6147702784,
-            },
-            {
-              x: 1594001211000,
-              y: 6147702784,
-            },
-            {
-              x: 1594001216000,
-              y: 6147702784,
-            },
-            {
-              x: 1594001221000,
-              y: 6147702784,
-            },
-            {
-              x: 1594001226000,
-              y: 6146920448,
-            },
-            {
-              x: 1594001231000,
-              y: 6146920448,
-            },
-            {
-              x: 1594001236000,
-              y: 6146920448,
-            },
-            {
-              x: 1594001241000,
-              y: 6146920448,
-            },
-            {
-              x: 1594001246000,
-              y: 6146920448,
-            },
-            {
-              x: 1594001251000,
-              y: 6146920448,
-            },
-            {
-              x: 1594001256000,
-              y: 6144917504,
-            },
-            {
-              x: 1594001261000,
-              y: 6144917504,
-            },
-            {
-              x: 1594001266000,
-              y: 6144917504,
-            },
-            {
-              x: 1594001271000,
-              y: 6144917504,
-            },
-            {
-              x: 1594001276000,
-              y: 6144917504,
-            },
-            {
-              x: 1594001281000,
-              y: 6144917504,
-            },
-            {
-              x: 1594001286000,
-              y: 6144716800,
-            },
-            {
-              x: 1594001291000,
-              y: 6144716800,
-            },
-            {
-              x: 1594001296000,
-              y: 6144716800,
-            },
-            {
-              x: 1594001301000,
-              y: 6144716800,
-            },
-            {
-              x: 1594001306000,
-              y: 6144716800,
-            },
-            {
-              x: 1594001311000,
-              y: 6144716800,
-            },
-            {
-              x: 1594001316000,
-              y: 6168010752,
-            },
-            {
-              x: 1594001321000,
-              y: 6168010752,
-            },
-            {
-              x: 1594001326000,
-              y: 6168010752,
-            },
-            {
-              x: 1594001331000,
-              y: 6168010752,
-            },
-            {
-              x: 1594001336000,
-              y: 6168010752,
-            },
-            {
-              x: 1594001341000,
-              y: 6168010752,
-            },
-            {
-              x: 1594001346000,
-              y: 6140063744,
-            },
-            {
-              x: 1594001352000,
-              y: 6140063744,
-            },
-            {
-              x: 1594001356000,
-              y: 6140063744,
-            },
-            {
-              x: 1594001361000,
-              y: 6140063744,
-            },
-            {
-              x: 1594001366000,
-              y: 6140063744,
-            },
-            {
-              x: 1594001371000,
-              y: 6140063744,
-            },
-            {
-              x: 1594001376000,
-              y: 6143750144,
-            },
-            {
-              x: 1594001381000,
-              y: 6143750144,
-            },
-            {
-              x: 1594001386000,
-              y: 6143750144,
-            },
-            {
-              x: 1594001391000,
-              y: 6143750144,
-            },
-            {
-              x: 1594001396000,
-              y: 6143750144,
-            },
-            {
-              x: 1594001401000,
-              y: 6143750144,
-            },
-            {
-              x: 1594001406000,
-              y: 6144487424,
-            },
-            {
-              x: 1594001412000,
-              y: 6144487424,
-            },
-            {
-              x: 1594001416000,
-              y: 6144487424,
-            },
-            {
-              x: 1594001421000,
-              y: 6144487424,
-            },
-            {
-              x: 1594001426000,
-              y: 6144487424,
-            },
-            {
-              x: 1594001431000,
-              y: 6144487424,
-            },
-            {
-              x: 1594001436000,
-              y: 6144348160,
-            },
-            {
-              x: 1594001441000,
-              y: 6144348160,
-            },
-            {
-              x: 1594001446000,
-              y: 6144348160,
-            },
-            {
-              x: 1594001451000,
-              y: 6144348160,
-            },
-            {
-              x: 1594001456000,
-              y: 6144348160,
-            },
-            {
-              x: 1594001461000,
-              y: 6144348160,
-            },
-            {
-              x: 1594001466000,
-              y: 6144733184,
-            },
-            {
-              x: 1594001471000,
-              y: 6144733184,
-            },
-            {
-              x: 1594001476000,
-              y: 6144733184,
-            },
-            {
-              x: 1594001481000,
-              y: 6144733184,
-            },
-            {
-              x: 1594001487000,
-              y: 6144733184,
-            },
-            {
-              x: 1594001491000,
-              y: 6144733184,
-            },
-            {
-              x: 1594001496000,
-              y: 6145949696,
-            },
-            {
-              x: 1594001501000,
-              y: 6145949696,
-            },
-            {
-              x: 1594001506000,
-              y: 6145949696,
-            },
-            {
-              x: 1594001511000,
-              y: 6145949696,
-            },
-            {
-              x: 1594001516000,
-              y: 6145949696,
-            },
-            {
-              x: 1594001521000,
-              y: 6145949696,
-            },
-            {
-              x: 1594001526000,
-              y: 6146842624,
-            },
-            {
-              x: 1594001531000,
-              y: 6146842624,
-            },
-            {
-              x: 1594001536000,
-              y: 6146842624,
-            },
-            {
-              x: 1594001541000,
-              y: 6146842624,
-            },
-            {
-              x: 1594001546000,
-              y: 6146842624,
-            },
-            {
-              x: 1594001551000,
-              y: 6146842624,
-            },
-            {
-              x: 1594001556000,
-              y: 6147416064,
-            },
-            {
-              x: 1594001562000,
-              y: 6147416064,
-            },
-            {
-              x: 1594001566000,
-              y: 6147416064,
-            },
-            {
-              x: 1594001571000,
-              y: 6147416064,
-            },
-            {
-              x: 1594001576000,
-              y: 6147416064,
-            },
-            {
-              x: 1594001581000,
-              y: 6147416064,
-            },
-            {
-              x: 1594001586000,
-              y: 6152359936,
-            },
-            {
-              x: 1594001591000,
-              y: 6152359936,
-            },
-            {
-              x: 1594001596000,
-              y: 6152359936,
-            },
-            {
-              x: 1594001601000,
-              y: 6152359936,
-            },
-            {
-              x: 1594001606000,
-              y: 6152359936,
-            },
-            {
-              x: 1594001611000,
-              y: 6152359936,
-            },
-            {
-              x: 1594001616000,
-              y: 6154399744,
-            },
-            {
-              x: 1594001621000,
-              y: 6154399744,
-            },
-            {
-              x: 1594001627000,
-              y: 6154399744,
-            },
-          ],
+          cpu: null,
+          memory: null,
         },
-      }),
-
-      mockVolumes: Immutable.fromJS([
-        {
-          name: "pvc-5c3132fc-0508-4a7f-b11a-b6b924424016",
-          isInUse: true,
-          componentNamespace: "kalm-bookinfo",
-          componentName: "reviews",
-          phase: "Available",
-          capacity: "1Gi",
-        },
-        {
-          name: "pvc-5c3132fc-0508-4a7f-b11a-b6b924424012",
-          isInUse: false,
-          componentNamespace: "kalm-empty",
-          componentName: "",
-          phase: "Available",
-          capacity: "1Gi",
-        },
-      ]),
-
-      mockStorageClasses: Immutable.fromJS([
-        { name: "standard", isManaged: false },
-        { name: "kalm-standard", isManaged: true },
-      ]),
-
-      mockSimpleOptions: Immutable.fromJS([
-        {
-          name: "my-pvc-hello-sts-1",
-          isInUse: false,
-          componentNamespace: "kalm-vols",
-          componentName: "hello-sts",
-          capacity: "1Mi",
-          pvc: "my-pvc-hello-sts-1",
-          pvToMatch: "underlying-pv-name",
-        },
-      ]),
-
-      mockStatefulSetOptions: Immutable.fromJS([
-        {
-          name: "my-pvc",
-          isInUse: false,
-          componentNamespace: "kalm-vols",
-          componentName: "hello-sts",
-          capacity: "1Mi",
-          pvc: "my-pvc",
-          pvToMatch: "",
-          pvList: ["my-pv-1", "my-pv-2", "my-pv-3"],
-        },
-      ]),
-
-      mockApplications: Immutable.fromJS([
+        warnings: [
+          {
+            metadata: {
+              name: "kkl-747f987f74-4mq5r.161b6ad92f435c54",
+              namespace: "ttes2",
+              selfLink: "/api/v1/namespaces/ttes2/events/kkl-747f987f74-4mq5r.161b6ad92f435c54",
+              uid: "ea264050-fe29-4649-854e-a127a2c63a73",
+              resourceVersion: "1107200",
+              creationTimestamp: "2020-06-24T07:39:34Z",
+            },
+            involvedObject: {
+              kind: "Pod",
+              namespace: "ttes2",
+              name: "kkl-747f987f74-4mq5r",
+              uid: "dc02c167-7d79-458d-8b09-503789e13df6",
+              apiVersion: "v1",
+              resourceVersion: "1086774",
+              fieldPath: "spec.containers{kkl}",
+            },
+            reason: "Failed",
+            message: "Error: ImagePullBackOff",
+            source: {
+              component: "kubelet",
+              host: "minikube",
+            },
+            firstTimestamp: "2020-06-24T07:39:34Z",
+            lastTimestamp: "2020-06-24T09:34:39Z",
+            count: 505,
+            type: "Warning",
+            eventTime: null,
+            reportingComponent: "",
+            reportingInstance: "",
+          },
+        ],
+      },
+      mockApplications: [
         {
           name: "kalm-bookinfo",
           istioMetricHistories: {},
@@ -2443,9 +443,8 @@ export default class MockStore {
           roles: ["writer", "reader"],
           status: "Active",
         },
-      ]),
-
-      mockApplicationComponents: Immutable.fromJS({
+      ],
+      mockApplicationComponents: {
         "kalm-bookinfo": [
           {
             image: "docker.io/istio/examples-bookinfo-details-v1:1.15.2",
@@ -8235,9 +6234,2127 @@ export default class MockStore {
             ],
           },
         ],
-      }),
+      },
+      mockNodes: {
+        nodes: [
+          {
+            metrics: {
+              cpu: [
+                { x: 1596278774000, y: 1 },
+                { x: 1596278779000, y: 1 },
+                { x: 1596278784000, y: 1 },
+                { x: 1596278789000, y: 1 },
+                { x: 1596278794000, y: 1 },
+                { x: 1596278799000, y: 1 },
+                { x: 1596278804000, y: 1 },
+                { x: 1596278809000, y: 1 },
+                { x: 1596278814000, y: 1 },
+                { x: 1596278819000, y: 1 },
+                { x: 1596278824000, y: 1 },
+                { x: 1596278829000, y: 1 },
+                { x: 1596278834000, y: 1 },
+                { x: 1596278839000, y: 1 },
+                { x: 1596278844000, y: 1 },
+                { x: 1596278849000, y: 1 },
+                { x: 1596278854000, y: 1 },
+                { x: 1596278859000, y: 1 },
+                { x: 1596278864000, y: 1 },
+                { x: 1596278869000, y: 1 },
+                { x: 1596278874000, y: 1 },
+                { x: 1596278879000, y: 1 },
+                { x: 1596278884000, y: 1 },
+                { x: 1596278889000, y: 1 },
+                { x: 1596278894000, y: 1 },
+                { x: 1596278899000, y: 1 },
+                { x: 1596278904000, y: 1 },
+                { x: 1596278909000, y: 1 },
+                { x: 1596278914000, y: 1 },
+                { x: 1596278919000, y: 1 },
+                { x: 1596278924000, y: 1 },
+                { x: 1596278929000, y: 1 },
+                { x: 1596278934000, y: 1 },
+                { x: 1596278939000, y: 1 },
+                { x: 1596278944000, y: 1 },
+                { x: 1596278949000, y: 1 },
+                { x: 1596278954000, y: 1 },
+                { x: 1596278959000, y: 1 },
+                { x: 1596278964000, y: 1 },
+                { x: 1596278969000, y: 1 },
+                { x: 1596278974000, y: 1 },
+                { x: 1596278979000, y: 1 },
+                { x: 1596278984000, y: 1 },
+                { x: 1596278989000, y: 1 },
+                { x: 1596278994000, y: 1 },
+                { x: 1596278999000, y: 1 },
+                { x: 1596279004000, y: 1 },
+                { x: 1596279009000, y: 1 },
+                { x: 1596279014000, y: 1 },
+                { x: 1596279019000, y: 1 },
+                { x: 1596279024000, y: 1 },
+                { x: 1596279029000, y: 1 },
+                { x: 1596279034000, y: 1 },
+                { x: 1596279039000, y: 1 },
+                { x: 1596279044000, y: 1 },
+                { x: 1596279049000, y: 1 },
+                { x: 1596279054000, y: 1 },
+                { x: 1596279059000, y: 1 },
+                { x: 1596279064000, y: 1 },
+                { x: 1596279069000, y: 1 },
+                { x: 1596279074000, y: 1 },
+                { x: 1596279079000, y: 1 },
+                { x: 1596279084000, y: 1 },
+                { x: 1596279089000, y: 1 },
+                { x: 1596279094000, y: 1 },
+                { x: 1596279099000, y: 1 },
+                { x: 1596279104000, y: 1 },
+                { x: 1596279109000, y: 1 },
+                { x: 1596279114000, y: 1 },
+                { x: 1596279119000, y: 1 },
+                { x: 1596279124000, y: 1 },
+                { x: 1596279129000, y: 1 },
+                { x: 1596279134000, y: 1 },
+                { x: 1596279139000, y: 1 },
+                { x: 1596279144000, y: 1 },
+                { x: 1596279149000, y: 1 },
+                { x: 1596279154000, y: 1 },
+                { x: 1596279159000, y: 1 },
+                { x: 1596279164000, y: 1 },
+                { x: 1596279169000, y: 1 },
+                { x: 1596279174000, y: 1 },
+                { x: 1596279179000, y: 1 },
+                { x: 1596279184000, y: 1 },
+                { x: 1596279189000, y: 1 },
+                { x: 1596279194000, y: 1 },
+                { x: 1596279199000, y: 1 },
+                { x: 1596279204000, y: 1 },
+                { x: 1596279209000, y: 1 },
+                { x: 1596279214000, y: 1 },
+                { x: 1596279219000, y: 1 },
+                { x: 1596279224000, y: 1 },
+                { x: 1596279229000, y: 1 },
+                { x: 1596279234000, y: 1 },
+                { x: 1596279239000, y: 1 },
+                { x: 1596279244000, y: 1 },
+                { x: 1596279249000, y: 1 },
+                { x: 1596279254000, y: 1 },
+                { x: 1596279259000, y: 1 },
+                { x: 1596279264000, y: 1 },
+                { x: 1596279269000, y: 1 },
+                { x: 1596279274000, y: 1 },
+                { x: 1596279279000, y: 1 },
+                { x: 1596279284000, y: 1 },
+                { x: 1596279289000, y: 1 },
+                { x: 1596279294000, y: 1 },
+                { x: 1596279299000, y: 1 },
+                { x: 1596279304000, y: 1 },
+                { x: 1596279309000, y: 1 },
+                { x: 1596279314000, y: 1 },
+                { x: 1596279319000, y: 1 },
+                { x: 1596279324000, y: 1 },
+                { x: 1596279329000, y: 1 },
+                { x: 1596279334000, y: 1 },
+                { x: 1596279339000, y: 1 },
+                { x: 1596279344000, y: 1 },
+                { x: 1596279349000, y: 1 },
+                { x: 1596279354000, y: 1 },
+                { x: 1596279359000, y: 1 },
+                { x: 1596279364000, y: 1 },
+                { x: 1596279369000, y: 1 },
+                { x: 1596279374000, y: 1 },
+                { x: 1596279379000, y: 1 },
+                { x: 1596279384000, y: 1 },
+                { x: 1596279389000, y: 1 },
+                { x: 1596279394000, y: 1 },
+                { x: 1596279399000, y: 1 },
+                { x: 1596279404000, y: 1 },
+                { x: 1596279409000, y: 1 },
+                { x: 1596279414000, y: 1 },
+                { x: 1596279419000, y: 1 },
+                { x: 1596279424000, y: 1 },
+                { x: 1596279429000, y: 1 },
+                { x: 1596279434000, y: 1 },
+                { x: 1596279439000, y: 1 },
+                { x: 1596279444000, y: 1 },
+                { x: 1596279449000, y: 1 },
+                { x: 1596279454000, y: 1 },
+                { x: 1596279459000, y: 1 },
+                { x: 1596279464000, y: 1 },
+                { x: 1596279469000, y: 1 },
+                { x: 1596279474000, y: 1 },
+                { x: 1596279479000, y: 1 },
+                { x: 1596279484000, y: 1 },
+                { x: 1596279489000, y: 1 },
+                { x: 1596279494000, y: 1 },
+                { x: 1596279499000, y: 1 },
+                { x: 1596279504000, y: 1 },
+                { x: 1596279509000, y: 1 },
+                { x: 1596279514000, y: 1 },
+                { x: 1596279519000, y: 1 },
+                { x: 1596279524000, y: 1 },
+                { x: 1596279529000, y: 1 },
+                { x: 1596279534000, y: 1 },
+                { x: 1596279539000, y: 1 },
+                { x: 1596279544000, y: 1 },
+                { x: 1596279549000, y: 1 },
+                { x: 1596279554000, y: 1 },
+                { x: 1596279559000, y: 1 },
+                { x: 1596279564000, y: 1 },
+                { x: 1596279569000, y: 1 },
+                { x: 1596279574000, y: 1 },
+                { x: 1596279579000, y: 1 },
+                { x: 1596279584000, y: 1 },
+                { x: 1596279589000, y: 1 },
+                { x: 1596279594000, y: 1 },
+                { x: 1596279599000, y: 1 },
+                { x: 1596279604000, y: 1 },
+                { x: 1596279609000, y: 1 },
+                { x: 1596279614000, y: 1 },
+                { x: 1596279619000, y: 1 },
+                { x: 1596279624000, y: 1 },
+                { x: 1596279629000, y: 1 },
+                { x: 1596279634000, y: 1 },
+                { x: 1596279639000, y: 1 },
+                { x: 1596279644000, y: 1 },
+                { x: 1596279649000, y: 1 },
+                { x: 1596279654000, y: 1 },
+                { x: 1596279659000, y: 1 },
+                { x: 1596279664000, y: 1 },
+                { x: 1596279669000, y: 1 },
+              ],
+              memory: [
+                { x: 1596278774000, y: 4351053824 },
+                { x: 1596278779000, y: 4351053824 },
+                { x: 1596278784000, y: 4351053824 },
+                { x: 1596278789000, y: 4351053824 },
+                { x: 1596278794000, y: 4351053824 },
+                { x: 1596278799000, y: 4351053824 },
+                { x: 1596278804000, y: 4351053824 },
+                { x: 1596278809000, y: 4351053824 },
+                { x: 1596278814000, y: 4351053824 },
+                { x: 1596278819000, y: 4351053824 },
+                { x: 1596278824000, y: 4351053824 },
+                { x: 1596278829000, y: 4351053824 },
+                { x: 1596278834000, y: 4338397184 },
+                { x: 1596278839000, y: 4338397184 },
+                { x: 1596278844000, y: 4338397184 },
+                { x: 1596278849000, y: 4338397184 },
+                { x: 1596278854000, y: 4338397184 },
+                { x: 1596278859000, y: 4338397184 },
+                { x: 1596278864000, y: 4338397184 },
+                { x: 1596278869000, y: 4338397184 },
+                { x: 1596278874000, y: 4338397184 },
+                { x: 1596278879000, y: 4338397184 },
+                { x: 1596278884000, y: 4338397184 },
+                { x: 1596278889000, y: 4338397184 },
+                { x: 1596278894000, y: 4351344640 },
+                { x: 1596278899000, y: 4351344640 },
+                { x: 1596278904000, y: 4351344640 },
+                { x: 1596278909000, y: 4351344640 },
+                { x: 1596278914000, y: 4351344640 },
+                { x: 1596278919000, y: 4351344640 },
+                { x: 1596278924000, y: 4351344640 },
+                { x: 1596278929000, y: 4351344640 },
+                { x: 1596278934000, y: 4351344640 },
+                { x: 1596278939000, y: 4351344640 },
+                { x: 1596278944000, y: 4351344640 },
+                { x: 1596278949000, y: 4351344640 },
+                { x: 1596278954000, y: 4352077824 },
+                { x: 1596278959000, y: 4352077824 },
+                { x: 1596278964000, y: 4352077824 },
+                { x: 1596278969000, y: 4352077824 },
+                { x: 1596278974000, y: 4352077824 },
+                { x: 1596278979000, y: 4352077824 },
+                { x: 1596278984000, y: 4352077824 },
+                { x: 1596278989000, y: 4352077824 },
+                { x: 1596278994000, y: 4352077824 },
+                { x: 1596278999000, y: 4352077824 },
+                { x: 1596279004000, y: 4352077824 },
+                { x: 1596279009000, y: 4352077824 },
+                { x: 1596279014000, y: 4338327552 },
+                { x: 1596279019000, y: 4338327552 },
+                { x: 1596279024000, y: 4338327552 },
+                { x: 1596279029000, y: 4338327552 },
+                { x: 1596279034000, y: 4338327552 },
+                { x: 1596279039000, y: 4338327552 },
+                { x: 1596279044000, y: 4338327552 },
+                { x: 1596279049000, y: 4338327552 },
+                { x: 1596279054000, y: 4338327552 },
+                { x: 1596279059000, y: 4338327552 },
+                { x: 1596279064000, y: 4338327552 },
+                { x: 1596279069000, y: 4338327552 },
+                { x: 1596279074000, y: 4338012160 },
+                { x: 1596279079000, y: 4338012160 },
+                { x: 1596279084000, y: 4338012160 },
+                { x: 1596279089000, y: 4338012160 },
+                { x: 1596279094000, y: 4338012160 },
+                { x: 1596279099000, y: 4338012160 },
+                { x: 1596279104000, y: 4338012160 },
+                { x: 1596279109000, y: 4338012160 },
+                { x: 1596279114000, y: 4338012160 },
+                { x: 1596279119000, y: 4338012160 },
+                { x: 1596279124000, y: 4338012160 },
+                { x: 1596279129000, y: 4338012160 },
+                { x: 1596279134000, y: 4331720704 },
+                { x: 1596279139000, y: 4331720704 },
+                { x: 1596279144000, y: 4331720704 },
+                { x: 1596279149000, y: 4331720704 },
+                { x: 1596279154000, y: 4331720704 },
+                { x: 1596279159000, y: 4331720704 },
+                { x: 1596279164000, y: 4331720704 },
+                { x: 1596279169000, y: 4331720704 },
+                { x: 1596279174000, y: 4331720704 },
+                { x: 1596279179000, y: 4331720704 },
+                { x: 1596279184000, y: 4331720704 },
+                { x: 1596279189000, y: 4331720704 },
+                { x: 1596279194000, y: 4332216320 },
+                { x: 1596279199000, y: 4332216320 },
+                { x: 1596279204000, y: 4332216320 },
+                { x: 1596279209000, y: 4332216320 },
+                { x: 1596279214000, y: 4332216320 },
+                { x: 1596279219000, y: 4332216320 },
+                { x: 1596279224000, y: 4332216320 },
+                { x: 1596279229000, y: 4332216320 },
+                { x: 1596279234000, y: 4332216320 },
+                { x: 1596279239000, y: 4332216320 },
+                { x: 1596279244000, y: 4332216320 },
+                { x: 1596279249000, y: 4332216320 },
+                { x: 1596279254000, y: 4332163072 },
+                { x: 1596279259000, y: 4332163072 },
+                { x: 1596279264000, y: 4332163072 },
+                { x: 1596279269000, y: 4332163072 },
+                { x: 1596279274000, y: 4332163072 },
+                { x: 1596279279000, y: 4332163072 },
+                { x: 1596279284000, y: 4332163072 },
+                { x: 1596279289000, y: 4332163072 },
+                { x: 1596279294000, y: 4332163072 },
+                { x: 1596279299000, y: 4332163072 },
+                { x: 1596279304000, y: 4332163072 },
+                { x: 1596279309000, y: 4332163072 },
+                { x: 1596279314000, y: 4353519616 },
+                { x: 1596279319000, y: 4353519616 },
+                { x: 1596279324000, y: 4353519616 },
+                { x: 1596279329000, y: 4353519616 },
+                { x: 1596279334000, y: 4353519616 },
+                { x: 1596279339000, y: 4353519616 },
+                { x: 1596279344000, y: 4353519616 },
+                { x: 1596279349000, y: 4353519616 },
+                { x: 1596279354000, y: 4353519616 },
+                { x: 1596279359000, y: 4353519616 },
+                { x: 1596279364000, y: 4353519616 },
+                { x: 1596279369000, y: 4353519616 },
+                { x: 1596279374000, y: 4354027520 },
+                { x: 1596279379000, y: 4354027520 },
+                { x: 1596279384000, y: 4354027520 },
+                { x: 1596279389000, y: 4354027520 },
+                { x: 1596279394000, y: 4354027520 },
+                { x: 1596279399000, y: 4354027520 },
+                { x: 1596279404000, y: 4354027520 },
+                { x: 1596279409000, y: 4354027520 },
+                { x: 1596279414000, y: 4354027520 },
+                { x: 1596279419000, y: 4354027520 },
+                { x: 1596279424000, y: 4354027520 },
+                { x: 1596279429000, y: 4354027520 },
+                { x: 1596279434000, y: 4331171840 },
+                { x: 1596279439000, y: 4331171840 },
+                { x: 1596279444000, y: 4331171840 },
+                { x: 1596279449000, y: 4331171840 },
+                { x: 1596279454000, y: 4331171840 },
+                { x: 1596279459000, y: 4331171840 },
+                { x: 1596279464000, y: 4331171840 },
+                { x: 1596279469000, y: 4331171840 },
+                { x: 1596279474000, y: 4331171840 },
+                { x: 1596279479000, y: 4331171840 },
+                { x: 1596279484000, y: 4331171840 },
+                { x: 1596279489000, y: 4331171840 },
+                { x: 1596279494000, y: 4331192320 },
+                { x: 1596279499000, y: 4331192320 },
+                { x: 1596279504000, y: 4331192320 },
+                { x: 1596279509000, y: 4331192320 },
+                { x: 1596279514000, y: 4331192320 },
+                { x: 1596279519000, y: 4331192320 },
+                { x: 1596279524000, y: 4331192320 },
+                { x: 1596279529000, y: 4331192320 },
+                { x: 1596279534000, y: 4331192320 },
+                { x: 1596279539000, y: 4331192320 },
+                { x: 1596279544000, y: 4331192320 },
+                { x: 1596279549000, y: 4331192320 },
+                { x: 1596279554000, y: 4331610112 },
+                { x: 1596279559000, y: 4331610112 },
+                { x: 1596279564000, y: 4331610112 },
+                { x: 1596279569000, y: 4331610112 },
+                { x: 1596279574000, y: 4331610112 },
+                { x: 1596279579000, y: 4331610112 },
+                { x: 1596279584000, y: 4331610112 },
+                { x: 1596279589000, y: 4331610112 },
+                { x: 1596279594000, y: 4331610112 },
+                { x: 1596279599000, y: 4331610112 },
+                { x: 1596279604000, y: 4331610112 },
+                { x: 1596279609000, y: 4331610112 },
+                { x: 1596279614000, y: 4331421696 },
+                { x: 1596279619000, y: 4331421696 },
+                { x: 1596279624000, y: 4331421696 },
+                { x: 1596279629000, y: 4331421696 },
+                { x: 1596279634000, y: 4331421696 },
+                { x: 1596279639000, y: 4331421696 },
+                { x: 1596279644000, y: 4331421696 },
+                { x: 1596279649000, y: 4331421696 },
+                { x: 1596279654000, y: 4331421696 },
+                { x: 1596279659000, y: 4331421696 },
+                { x: 1596279664000, y: 4331421696 },
+                { x: 1596279669000, y: 4331421696 },
+              ],
+            },
+            internalIP: "192.168.64.3",
+            annotations: {
+              "kubeadm.alpha.kubernetes.io/cri-socket": "/var/run/dockershim.sock",
+              "node.alpha.kubernetes.io/ttl": "0",
+              "volumes.kubernetes.io/controller-managed-attach-detach": "true",
+            },
+            name: "minikube",
+            externalIP: "<none>",
+            status: {
+              capacity: {
+                cpu: "4",
+                "ephemeral-storage": "16954224Ki",
+                "hugepages-2Mi": "0",
+                memory: "8163668Ki",
+                pods: "110",
+              },
+              allocatable: {
+                cpu: "4",
+                "ephemeral-storage": "16954224Ki",
+                "hugepages-2Mi": "0",
+                memory: "8163668Ki",
+                pods: "110",
+              },
+              conditions: [
+                {
+                  type: "MemoryPressure",
+                  status: "False",
+                  lastHeartbeatTime: "2020-07-26T00:01:55Z",
+                  lastTransitionTime: "2020-07-07T16:22:47Z",
+                  reason: "KubeletHasSufficientMemory",
+                  message: "kubelet has sufficient memory available",
+                },
+                {
+                  type: "DiskPressure",
+                  status: "False",
+                  lastHeartbeatTime: "2020-07-26T00:01:55Z",
+                  lastTransitionTime: "2020-07-07T16:22:47Z",
+                  reason: "KubeletHasNoDiskPressure",
+                  message: "kubelet has no disk pressure",
+                },
+                {
+                  type: "PIDPressure",
+                  status: "False",
+                  lastHeartbeatTime: "2020-07-26T00:01:55Z",
+                  lastTransitionTime: "2020-07-07T16:22:47Z",
+                  reason: "KubeletHasSufficientPID",
+                  message: "kubelet has sufficient PID available",
+                },
+                {
+                  type: "Ready",
+                  status: "True",
+                  lastHeartbeatTime: "2020-07-26T00:01:55Z",
+                  lastTransitionTime: "2020-07-07T16:22:47Z",
+                  reason: "KubeletReady",
+                  message: "kubelet is posting ready status",
+                },
+              ],
+              addresses: [
+                { type: "InternalIP", address: "192.168.64.3" },
+                { type: "Hostname", address: "minikube" },
+              ],
+              daemonEndpoints: { kubeletEndpoint: { Port: 10250 } },
+              nodeInfo: {
+                containerRuntimeVersion: "docker://19.3.8",
+                machineID: "cf517b6996054bc2805f9d6f0a967e04",
+                kubeletVersion: "v1.15.0",
+                systemUUID: "6b0711ea-0000-0000-8f04-acde48001122",
+                bootID: "85429ef0-a5d7-4c64-a4ad-ec145bd87bc5",
+                operatingSystem: "linux",
+                architecture: "amd64",
+                osImage: "Buildroot 2019.02.10",
+                kubeProxyVersion: "v1.15.0",
+                kernelVersion: "4.19.107",
+              },
+              images: [
+                {
+                  names: [
+                    "istio/examples-bookinfo-reviews-v2@sha256:e86d247b7ac275eb681a7e9c869325762686ccf0b5cfb6bde100ff2c1f01ae2b",
+                    "istio/examples-bookinfo-reviews-v2:1.15.0",
+                  ],
+                  sizeBytes: 539699348,
+                },
+                {
+                  names: [
+                    "istio/examples-bookinfo-reviews-v1@sha256:40e8aba77c1b46f37e820a60aa6948485d39e6f55f1492fa1f17383efd95511c",
+                    "istio/examples-bookinfo-reviews-v1:1.15.0",
+                  ],
+                  sizeBytes: 539699348,
+                },
+                {
+                  names: [
+                    "istio/examples-bookinfo-reviews-v3@sha256:e454cab754cf9234e8b41d7c5e30f53a4c125d7d9443cb3ef2b2eb1c4bd1ec14",
+                    "istio/examples-bookinfo-reviews-v3:1.15.0",
+                  ],
+                  sizeBytes: 539699348,
+                },
+                {
+                  names: [
+                    "istio/proxyv2@sha256:b569b3226624b63ca007f3252162390545643433770c79a9aadb1406687d767a",
+                    "istio/proxyv2:1.5.2",
+                  ],
+                  sizeBytes: 300343292,
+                },
+                { names: ["k8s.gcr.io/etcd:3.3.10"], sizeBytes: 258116302 },
+                {
+                  names: [
+                    "istio/pilot@sha256:9969a1d0b7f620c972edd706cb84672304096c3f9dbade4d00d4f98215531757",
+                    "istio/pilot:1.5.2",
+                  ],
+                  sizeBytes: 223362302,
+                },
+                { names: ["kubernetesui/dashboard:v2.0.0"], sizeBytes: 221895031 },
+                { names: ["k8s.gcr.io/kube-apiserver:v1.15.0"], sizeBytes: 206815166 },
+                {
+                  names: [
+                    "istio/operator@sha256:3214e38deb9ecc63ce051852b985faf3e956a5e5afc2326ec2401a0127c33ab5",
+                    "istio/operator:1.5.2",
+                  ],
+                  sizeBytes: 192260148,
+                },
+                {
+                  names: [
+                    "istio/examples-bookinfo-productpage-v1@sha256:0a5eb4795952372251d51f72834bccb7ea01a67cb72fd9b58b757cca103b7524",
+                    "istio/examples-bookinfo-productpage-v1:1.15.0",
+                  ],
+                  sizeBytes: 182635847,
+                },
+                { names: ["k8s.gcr.io/kube-controller-manager:v1.15.0"], sizeBytes: 158714430 },
+                {
+                  names: [
+                    "istio/examples-bookinfo-ratings-v1@sha256:09b9d6958a13ad1a97377b7d5c2aa9e0372c008cdf5a44ce3e72fbd9660936cf",
+                    "istio/examples-bookinfo-ratings-v1:1.15.0",
+                  ],
+                  sizeBytes: 155154241,
+                },
+                {
+                  names: [
+                    "quay.io/kiali/kiali@sha256:96e50ee264377fc84b3d82061d4e5eb4ad98fb95f5919ca5800fcea151e5aff9",
+                    "quay.io/kiali/kiali:v1.15",
+                  ],
+                  sizeBytes: 154460526,
+                },
+                {
+                  names: [
+                    "prom/prometheus@sha256:169b743ceb4452266915272f9c3409d36972e41cb52f3f28644e6c0609fc54e6",
+                    "prom/prometheus:v2.15.1",
+                  ],
+                  sizeBytes: 132670450,
+                },
+                {
+                  names: [
+                    "istio/examples-bookinfo-details-v1@sha256:fce0bcbff0bed09116dacffca15695cd345e0c3788c15b0114a05f654ddecc17",
+                    "istio/examples-bookinfo-details-v1:1.15.0",
+                  ],
+                  sizeBytes: 126666747,
+                },
+                {
+                  names: ["redis@sha256:e72b3d93ac43b6bfe76f79f5ccac21fcf3272e1a20349807f776c6ffb2773bc7"],
+                  sizeBytes: 104153916,
+                },
+                {
+                  names: [
+                    "redis@sha256:021541c7f7210194b8e41df861b348efe4ffea4e1adee6a4956536d917ca5b50",
+                    "redis@sha256:04f89ad6723f1e74d081bffc187351480cdce5f9f3c368cf07b4c126841db629",
+                    "redis@sha256:0f865ceb68b3a31470f5bf5617bb457cba0782f6906f0a718c3b585f8b6bd949",
+                    "redis@sha256:42de6bbb5e1f33b5783e246bd7c6fcd511598e4284002e41f0e2ee961f3f7bfb",
+                    "redis@sha256:a3c30c2953cea94597bef30dd4c8daa021a8751b17daa6183f9ed5a6b710afb4",
+                  ],
+                  sizeBytes: 104153916,
+                },
+                {
+                  names: ["redis@sha256:800f2587bf3376cb01e6307afe599ddce9439deafbd4fb8562829da96085c9c5"],
+                  sizeBytes: 104124452,
+                },
+                { names: ["k8s.gcr.io/kube-proxy:v1.15.0"], sizeBytes: 82404188 },
+                { names: ["k8s.gcr.io/kube-scheduler:v1.15.0"], sizeBytes: 81103486 },
+                { names: ["gcr.io/k8s-minikube/storage-provisioner:v1.8.1"], sizeBytes: 80815640 },
+                {
+                  names: [
+                    "quay.io/jetstack/cert-manager-controller@sha256:916ad11088651e28923fa6891ac5c27790ba33f6dcc8ca34f223afa6b55f7b54",
+                    "quay.io/jetstack/cert-manager-controller:v0.15.0",
+                  ],
+                  sizeBytes: 52432042,
+                },
+                {
+                  names: [
+                    "registry.cn-hangzhou.aliyuncs.com/google_containers/metrics-server-amd64@sha256:787a47614c668a9b3536111ee6c28df3bea131481f8b850e3223c41b58e6fffb",
+                    "k8s.gcr.io/metrics-server-amd64:v0.2.1",
+                    "registry.cn-hangzhou.aliyuncs.com/google_containers/metrics-server-amd64:v0.2.1",
+                  ],
+                  sizeBytes: 42541759,
+                },
+                { names: ["k8s.gcr.io/coredns:1.3.1"], sizeBytes: 40303560 },
+                { names: ["kubernetesui/metrics-scraper:v1.0.2"], sizeBytes: 40101552 },
+                {
+                  names: [
+                    "quay.io/jetstack/cert-manager-cainjector@sha256:445e35d3511d5b6e7570bad32eb7978d4116ad2d1866d75e6d7785e3e2cc9d6d",
+                    "quay.io/jetstack/cert-manager-cainjector:v0.15.0",
+                  ],
+                  sizeBytes: 39480964,
+                },
+                {
+                  names: [
+                    "quay.io/jetstack/cert-manager-webhook@sha256:effebe863e61d7fc361fc5a70a2a363523b902668ccbd9c745d4121bf193596f",
+                    "quay.io/jetstack/cert-manager-webhook:v0.15.0",
+                  ],
+                  sizeBytes: 39358529,
+                },
+                {
+                  names: [
+                    "quay.io/jetstack/cert-manager-acmesolver@sha256:4166abca3db409aad3aa4561e0e11d9857ddf766ae736072b0a769f1fe499450",
+                    "quay.io/jetstack/cert-manager-acmesolver:v0.15.0",
+                  ],
+                  sizeBytes: 30487206,
+                },
+                {
+                  names: [
+                    "busybox@sha256:4f47c01fa91355af2865ac10fef5bf6ec9c7f42ad2321377c21e844427972977",
+                    "busybox:latest",
+                  ],
+                  sizeBytes: 1223534,
+                },
+                { names: ["k8s.gcr.io/pause:3.1"], sizeBytes: 742472 },
+              ],
+            },
+            statusTexts: ["Ready"],
+            creationTimestamp: 1592560321000,
+            roles: ["master"],
+            allocatedResources: {
+              podsCount: 41,
+              requests: { cpu: "3880m", memory: "4084Mi" },
+              limits: { cpu: "4750m", memory: "3260Mi" },
+            },
+            labels: {
+              "minikube.k8s.io/version": "v1.11.0",
+              "minikube.k8s.io/name": "minikube",
+              "beta.kubernetes.io/os": "linux",
+              "kubernetes.io/os": "linux",
+              "minikube.k8s.io/updated_at": "2020_06_19T17_52_07_0700",
+              "minikube.k8s.io/commit": "57e2f55f47effe9ce396cea42a1e0eb4f611ebbd",
+              "node-role.kubernetes.io/master": "",
+              "kubernetes.io/hostname": "minikube",
+              "beta.kubernetes.io/arch": "amd64",
+              "kubernetes.io/arch": "amd64",
+            },
+          },
+        ],
+        metrics: {
+          cpu: [
+            {
+              x: 1594000731000,
+              y: 3,
+            },
+            {
+              x: 1594000736000,
+              y: 3,
+            },
+            {
+              x: 1594000741000,
+              y: 3,
+            },
+            {
+              x: 1594000746000,
+              y: 3,
+            },
+            {
+              x: 1594000751000,
+              y: 3,
+            },
+            {
+              x: 1594000756000,
+              y: 3,
+            },
+            {
+              x: 1594000761000,
+              y: 3,
+            },
+            {
+              x: 1594000766000,
+              y: 3,
+            },
+            {
+              x: 1594000771000,
+              y: 3,
+            },
+            {
+              x: 1594000776000,
+              y: 3,
+            },
+            {
+              x: 1594000781000,
+              y: 3,
+            },
+            {
+              x: 1594000786000,
+              y: 3,
+            },
+            {
+              x: 1594000791000,
+              y: 3,
+            },
+            {
+              x: 1594000796000,
+              y: 3,
+            },
+            {
+              x: 1594000801000,
+              y: 3,
+            },
+            {
+              x: 1594000807000,
+              y: 3,
+            },
+            {
+              x: 1594000811000,
+              y: 3,
+            },
+            {
+              x: 1594000816000,
+              y: 3,
+            },
+            {
+              x: 1594000821000,
+              y: 3,
+            },
+            {
+              x: 1594000826000,
+              y: 3,
+            },
+            {
+              x: 1594000831000,
+              y: 3,
+            },
+            {
+              x: 1594000836000,
+              y: 3,
+            },
+            {
+              x: 1594000841000,
+              y: 3,
+            },
+            {
+              x: 1594000846000,
+              y: 3,
+            },
+            {
+              x: 1594000851000,
+              y: 3,
+            },
+            {
+              x: 1594000856000,
+              y: 3,
+            },
+            {
+              x: 1594000861000,
+              y: 3,
+            },
+            {
+              x: 1594000866000,
+              y: 3,
+            },
+            {
+              x: 1594000871000,
+              y: 3,
+            },
+            {
+              x: 1594000876000,
+              y: 3,
+            },
+            {
+              x: 1594000881000,
+              y: 3,
+            },
+            {
+              x: 1594000887000,
+              y: 3,
+            },
+            {
+              x: 1594000891000,
+              y: 3,
+            },
+            {
+              x: 1594000896000,
+              y: 3,
+            },
+            {
+              x: 1594000901000,
+              y: 3,
+            },
+            {
+              x: 1594000906000,
+              y: 3,
+            },
+            {
+              x: 1594000911000,
+              y: 3,
+            },
+            {
+              x: 1594000916000,
+              y: 3,
+            },
+            {
+              x: 1594000921000,
+              y: 3,
+            },
+            {
+              x: 1594000926000,
+              y: 3,
+            },
+            {
+              x: 1594000931000,
+              y: 3,
+            },
+            {
+              x: 1594000936000,
+              y: 3,
+            },
+            {
+              x: 1594000941000,
+              y: 3,
+            },
+            {
+              x: 1594000946000,
+              y: 3,
+            },
+            {
+              x: 1594000951000,
+              y: 3,
+            },
+            {
+              x: 1594000956000,
+              y: 3,
+            },
+            {
+              x: 1594000962000,
+              y: 3,
+            },
+            {
+              x: 1594000966000,
+              y: 3,
+            },
+            {
+              x: 1594000971000,
+              y: 3,
+            },
+            {
+              x: 1594000976000,
+              y: 3,
+            },
+            {
+              x: 1594000981000,
+              y: 3,
+            },
+            {
+              x: 1594000986000,
+              y: 3,
+            },
+            {
+              x: 1594000991000,
+              y: 3,
+            },
+            {
+              x: 1594000996000,
+              y: 3,
+            },
+            {
+              x: 1594001001000,
+              y: 3,
+            },
+            {
+              x: 1594001006000,
+              y: 3,
+            },
+            {
+              x: 1594001011000,
+              y: 3,
+            },
+            {
+              x: 1594001016000,
+              y: 3,
+            },
+            {
+              x: 1594001021000,
+              y: 3,
+            },
+            {
+              x: 1594001026000,
+              y: 3,
+            },
+            {
+              x: 1594001031000,
+              y: 3,
+            },
+            {
+              x: 1594001036000,
+              y: 3,
+            },
+            {
+              x: 1594001042000,
+              y: 3,
+            },
+            {
+              x: 1594001046000,
+              y: 3,
+            },
+            {
+              x: 1594001051000,
+              y: 3,
+            },
+            {
+              x: 1594001056000,
+              y: 3,
+            },
+            {
+              x: 1594001061000,
+              y: 3,
+            },
+            {
+              x: 1594001066000,
+              y: 3,
+            },
+            {
+              x: 1594001071000,
+              y: 3,
+            },
+            {
+              x: 1594001076000,
+              y: 3,
+            },
+            {
+              x: 1594001081000,
+              y: 3,
+            },
+            {
+              x: 1594001086000,
+              y: 3,
+            },
+            {
+              x: 1594001091000,
+              y: 3,
+            },
+            {
+              x: 1594001096000,
+              y: 3,
+            },
+            {
+              x: 1594001101000,
+              y: 3,
+            },
+            {
+              x: 1594001106000,
+              y: 3,
+            },
+            {
+              x: 1594001111000,
+              y: 3,
+            },
+            {
+              x: 1594001117000,
+              y: 3,
+            },
+            {
+              x: 1594001121000,
+              y: 3,
+            },
+            {
+              x: 1594001126000,
+              y: 3,
+            },
+            {
+              x: 1594001131000,
+              y: 3,
+            },
+            {
+              x: 1594001136000,
+              y: 3,
+            },
+            {
+              x: 1594001141000,
+              y: 3,
+            },
+            {
+              x: 1594001146000,
+              y: 3,
+            },
+            {
+              x: 1594001151000,
+              y: 3,
+            },
+            {
+              x: 1594001156000,
+              y: 3,
+            },
+            {
+              x: 1594001161000,
+              y: 3,
+            },
+            {
+              x: 1594001166000,
+              y: 3,
+            },
+            {
+              x: 1594001171000,
+              y: 3,
+            },
+            {
+              x: 1594001176000,
+              y: 3,
+            },
+            {
+              x: 1594001181000,
+              y: 3,
+            },
+            {
+              x: 1594001186000,
+              y: 3,
+            },
+            {
+              x: 1594001191000,
+              y: 3,
+            },
+            {
+              x: 1594001197000,
+              y: 3,
+            },
+            {
+              x: 1594001201000,
+              y: 3,
+            },
+            {
+              x: 1594001206000,
+              y: 3,
+            },
+            {
+              x: 1594001211000,
+              y: 3,
+            },
+            {
+              x: 1594001216000,
+              y: 3,
+            },
+            {
+              x: 1594001221000,
+              y: 3,
+            },
+            {
+              x: 1594001226000,
+              y: 3,
+            },
+            {
+              x: 1594001231000,
+              y: 3,
+            },
+            {
+              x: 1594001236000,
+              y: 3,
+            },
+            {
+              x: 1594001241000,
+              y: 3,
+            },
+            {
+              x: 1594001246000,
+              y: 3,
+            },
+            {
+              x: 1594001251000,
+              y: 3,
+            },
+            {
+              x: 1594001256000,
+              y: 3,
+            },
+            {
+              x: 1594001261000,
+              y: 3,
+            },
+            {
+              x: 1594001266000,
+              y: 3,
+            },
+            {
+              x: 1594001271000,
+              y: 3,
+            },
+            {
+              x: 1594001276000,
+              y: 3,
+            },
+            {
+              x: 1594001281000,
+              y: 3,
+            },
+            {
+              x: 1594001286000,
+              y: 3,
+            },
+            {
+              x: 1594001291000,
+              y: 3,
+            },
+            {
+              x: 1594001296000,
+              y: 3,
+            },
+            {
+              x: 1594001301000,
+              y: 3,
+            },
+            {
+              x: 1594001306000,
+              y: 3,
+            },
+            {
+              x: 1594001311000,
+              y: 3,
+            },
+            {
+              x: 1594001316000,
+              y: 3,
+            },
+            {
+              x: 1594001321000,
+              y: 3,
+            },
+            {
+              x: 1594001326000,
+              y: 3,
+            },
+            {
+              x: 1594001331000,
+              y: 3,
+            },
+            {
+              x: 1594001336000,
+              y: 3,
+            },
+            {
+              x: 1594001341000,
+              y: 3,
+            },
+            {
+              x: 1594001346000,
+              y: 3,
+            },
+            {
+              x: 1594001352000,
+              y: 3,
+            },
+            {
+              x: 1594001356000,
+              y: 3,
+            },
+            {
+              x: 1594001361000,
+              y: 3,
+            },
+            {
+              x: 1594001366000,
+              y: 3,
+            },
+            {
+              x: 1594001371000,
+              y: 3,
+            },
+            {
+              x: 1594001376000,
+              y: 3,
+            },
+            {
+              x: 1594001381000,
+              y: 3,
+            },
+            {
+              x: 1594001386000,
+              y: 3,
+            },
+            {
+              x: 1594001391000,
+              y: 3,
+            },
+            {
+              x: 1594001396000,
+              y: 3,
+            },
+            {
+              x: 1594001401000,
+              y: 3,
+            },
+            {
+              x: 1594001406000,
+              y: 3,
+            },
+            {
+              x: 1594001412000,
+              y: 3,
+            },
+            {
+              x: 1594001416000,
+              y: 3,
+            },
+            {
+              x: 1594001421000,
+              y: 3,
+            },
+            {
+              x: 1594001426000,
+              y: 3,
+            },
+            {
+              x: 1594001431000,
+              y: 3,
+            },
+            {
+              x: 1594001436000,
+              y: 3,
+            },
+            {
+              x: 1594001441000,
+              y: 3,
+            },
+            {
+              x: 1594001446000,
+              y: 3,
+            },
+            {
+              x: 1594001451000,
+              y: 3,
+            },
+            {
+              x: 1594001456000,
+              y: 3,
+            },
+            {
+              x: 1594001461000,
+              y: 3,
+            },
+            {
+              x: 1594001466000,
+              y: 3,
+            },
+            {
+              x: 1594001471000,
+              y: 3,
+            },
+            {
+              x: 1594001476000,
+              y: 3,
+            },
+            {
+              x: 1594001481000,
+              y: 3,
+            },
+            {
+              x: 1594001487000,
+              y: 3,
+            },
+            {
+              x: 1594001491000,
+              y: 3,
+            },
+            {
+              x: 1594001496000,
+              y: 3,
+            },
+            {
+              x: 1594001501000,
+              y: 3,
+            },
+            {
+              x: 1594001506000,
+              y: 3,
+            },
+            {
+              x: 1594001511000,
+              y: 3,
+            },
+            {
+              x: 1594001516000,
+              y: 3,
+            },
+            {
+              x: 1594001521000,
+              y: 3,
+            },
+            {
+              x: 1594001526000,
+              y: 3,
+            },
+            {
+              x: 1594001531000,
+              y: 3,
+            },
+            {
+              x: 1594001536000,
+              y: 3,
+            },
+            {
+              x: 1594001541000,
+              y: 3,
+            },
+            {
+              x: 1594001546000,
+              y: 3,
+            },
+            {
+              x: 1594001551000,
+              y: 3,
+            },
+            {
+              x: 1594001556000,
+              y: 3,
+            },
+            {
+              x: 1594001562000,
+              y: 3,
+            },
+            {
+              x: 1594001566000,
+              y: 3,
+            },
+            {
+              x: 1594001571000,
+              y: 3,
+            },
+            {
+              x: 1594001576000,
+              y: 3,
+            },
+            {
+              x: 1594001581000,
+              y: 3,
+            },
+            {
+              x: 1594001586000,
+              y: 3,
+            },
+            {
+              x: 1594001591000,
+              y: 3,
+            },
+            {
+              x: 1594001596000,
+              y: 3,
+            },
+            {
+              x: 1594001601000,
+              y: 3,
+            },
+            {
+              x: 1594001606000,
+              y: 3,
+            },
+            {
+              x: 1594001611000,
+              y: 3,
+            },
+            {
+              x: 1594001616000,
+              y: 3,
+            },
+            {
+              x: 1594001621000,
+              y: 3,
+            },
+            {
+              x: 1594001627000,
+              y: 3,
+            },
+          ],
+          memory: [
+            {
+              x: 1594000731000,
+              y: 6152183808,
+            },
+            {
+              x: 1594000736000,
+              y: 6152183808,
+            },
+            {
+              x: 1594000741000,
+              y: 6152183808,
+            },
+            {
+              x: 1594000746000,
+              y: 6175760384,
+            },
+            {
+              x: 1594000751000,
+              y: 6175760384,
+            },
+            {
+              x: 1594000756000,
+              y: 6175760384,
+            },
+            {
+              x: 1594000761000,
+              y: 6175760384,
+            },
+            {
+              x: 1594000766000,
+              y: 6175760384,
+            },
+            {
+              x: 1594000771000,
+              y: 6175760384,
+            },
+            {
+              x: 1594000776000,
+              y: 6150213632,
+            },
+            {
+              x: 1594000781000,
+              y: 6150213632,
+            },
+            {
+              x: 1594000786000,
+              y: 6150213632,
+            },
+            {
+              x: 1594000791000,
+              y: 6150213632,
+            },
+            {
+              x: 1594000796000,
+              y: 6150213632,
+            },
+            {
+              x: 1594000801000,
+              y: 6150213632,
+            },
+            {
+              x: 1594000807000,
+              y: 6151692288,
+            },
+            {
+              x: 1594000811000,
+              y: 6151692288,
+            },
+            {
+              x: 1594000816000,
+              y: 6151692288,
+            },
+            {
+              x: 1594000821000,
+              y: 6151692288,
+            },
+            {
+              x: 1594000826000,
+              y: 6151692288,
+            },
+            {
+              x: 1594000831000,
+              y: 6151692288,
+            },
+            {
+              x: 1594000836000,
+              y: 6153228288,
+            },
+            {
+              x: 1594000841000,
+              y: 6153228288,
+            },
+            {
+              x: 1594000846000,
+              y: 6153228288,
+            },
+            {
+              x: 1594000851000,
+              y: 6153228288,
+            },
+            {
+              x: 1594000856000,
+              y: 6153228288,
+            },
+            {
+              x: 1594000861000,
+              y: 6153228288,
+            },
+            {
+              x: 1594000866000,
+              y: 6147518464,
+            },
+            {
+              x: 1594000871000,
+              y: 6147518464,
+            },
+            {
+              x: 1594000876000,
+              y: 6147518464,
+            },
+            {
+              x: 1594000881000,
+              y: 6147518464,
+            },
+            {
+              x: 1594000887000,
+              y: 6147518464,
+            },
+            {
+              x: 1594000891000,
+              y: 6147518464,
+            },
+            {
+              x: 1594000896000,
+              y: 6148730880,
+            },
+            {
+              x: 1594000901000,
+              y: 6148730880,
+            },
+            {
+              x: 1594000906000,
+              y: 6148730880,
+            },
+            {
+              x: 1594000911000,
+              y: 6148730880,
+            },
+            {
+              x: 1594000916000,
+              y: 6148730880,
+            },
+            {
+              x: 1594000921000,
+              y: 6148730880,
+            },
+            {
+              x: 1594000926000,
+              y: 6148952064,
+            },
+            {
+              x: 1594000931000,
+              y: 6148952064,
+            },
+            {
+              x: 1594000936000,
+              y: 6148952064,
+            },
+            {
+              x: 1594000941000,
+              y: 6148952064,
+            },
+            {
+              x: 1594000946000,
+              y: 6148952064,
+            },
+            {
+              x: 1594000951000,
+              y: 6148952064,
+            },
+            {
+              x: 1594000956000,
+              y: 6150062080,
+            },
+            {
+              x: 1594000962000,
+              y: 6150062080,
+            },
+            {
+              x: 1594000966000,
+              y: 6150062080,
+            },
+            {
+              x: 1594000971000,
+              y: 6150062080,
+            },
+            {
+              x: 1594000976000,
+              y: 6150062080,
+            },
+            {
+              x: 1594000981000,
+              y: 6150062080,
+            },
+            {
+              x: 1594000986000,
+              y: 6148755456,
+            },
+            {
+              x: 1594000991000,
+              y: 6148755456,
+            },
+            {
+              x: 1594000996000,
+              y: 6148755456,
+            },
+            {
+              x: 1594001001000,
+              y: 6148755456,
+            },
+            {
+              x: 1594001006000,
+              y: 6148755456,
+            },
+            {
+              x: 1594001011000,
+              y: 6148755456,
+            },
+            {
+              x: 1594001016000,
+              y: 6149427200,
+            },
+            {
+              x: 1594001021000,
+              y: 6149427200,
+            },
+            {
+              x: 1594001026000,
+              y: 6149427200,
+            },
+            {
+              x: 1594001031000,
+              y: 6149427200,
+            },
+            {
+              x: 1594001036000,
+              y: 6149427200,
+            },
+            {
+              x: 1594001042000,
+              y: 6149427200,
+            },
+            {
+              x: 1594001046000,
+              y: 6157062144,
+            },
+            {
+              x: 1594001051000,
+              y: 6157062144,
+            },
+            {
+              x: 1594001056000,
+              y: 6157062144,
+            },
+            {
+              x: 1594001061000,
+              y: 6157062144,
+            },
+            {
+              x: 1594001066000,
+              y: 6157062144,
+            },
+            {
+              x: 1594001071000,
+              y: 6157062144,
+            },
+            {
+              x: 1594001076000,
+              y: 6148218880,
+            },
+            {
+              x: 1594001081000,
+              y: 6148218880,
+            },
+            {
+              x: 1594001086000,
+              y: 6148218880,
+            },
+            {
+              x: 1594001091000,
+              y: 6148218880,
+            },
+            {
+              x: 1594001096000,
+              y: 6148218880,
+            },
+            {
+              x: 1594001101000,
+              y: 6148218880,
+            },
+            {
+              x: 1594001106000,
+              y: 6154772480,
+            },
+            {
+              x: 1594001111000,
+              y: 6154772480,
+            },
+            {
+              x: 1594001117000,
+              y: 6154772480,
+            },
+            {
+              x: 1594001121000,
+              y: 6154772480,
+            },
+            {
+              x: 1594001126000,
+              y: 6154772480,
+            },
+            {
+              x: 1594001131000,
+              y: 6154772480,
+            },
+            {
+              x: 1594001136000,
+              y: 6147993600,
+            },
+            {
+              x: 1594001141000,
+              y: 6147993600,
+            },
+            {
+              x: 1594001146000,
+              y: 6147993600,
+            },
+            {
+              x: 1594001151000,
+              y: 6147993600,
+            },
+            {
+              x: 1594001156000,
+              y: 6147993600,
+            },
+            {
+              x: 1594001161000,
+              y: 6147993600,
+            },
+            {
+              x: 1594001166000,
+              y: 6147072000,
+            },
+            {
+              x: 1594001171000,
+              y: 6147072000,
+            },
+            {
+              x: 1594001176000,
+              y: 6147072000,
+            },
+            {
+              x: 1594001181000,
+              y: 6147072000,
+            },
+            {
+              x: 1594001186000,
+              y: 6147072000,
+            },
+            {
+              x: 1594001191000,
+              y: 6147072000,
+            },
+            {
+              x: 1594001197000,
+              y: 6147702784,
+            },
+            {
+              x: 1594001201000,
+              y: 6147702784,
+            },
+            {
+              x: 1594001206000,
+              y: 6147702784,
+            },
+            {
+              x: 1594001211000,
+              y: 6147702784,
+            },
+            {
+              x: 1594001216000,
+              y: 6147702784,
+            },
+            {
+              x: 1594001221000,
+              y: 6147702784,
+            },
+            {
+              x: 1594001226000,
+              y: 6146920448,
+            },
+            {
+              x: 1594001231000,
+              y: 6146920448,
+            },
+            {
+              x: 1594001236000,
+              y: 6146920448,
+            },
+            {
+              x: 1594001241000,
+              y: 6146920448,
+            },
+            {
+              x: 1594001246000,
+              y: 6146920448,
+            },
+            {
+              x: 1594001251000,
+              y: 6146920448,
+            },
+            {
+              x: 1594001256000,
+              y: 6144917504,
+            },
+            {
+              x: 1594001261000,
+              y: 6144917504,
+            },
+            {
+              x: 1594001266000,
+              y: 6144917504,
+            },
+            {
+              x: 1594001271000,
+              y: 6144917504,
+            },
+            {
+              x: 1594001276000,
+              y: 6144917504,
+            },
+            {
+              x: 1594001281000,
+              y: 6144917504,
+            },
+            {
+              x: 1594001286000,
+              y: 6144716800,
+            },
+            {
+              x: 1594001291000,
+              y: 6144716800,
+            },
+            {
+              x: 1594001296000,
+              y: 6144716800,
+            },
+            {
+              x: 1594001301000,
+              y: 6144716800,
+            },
+            {
+              x: 1594001306000,
+              y: 6144716800,
+            },
+            {
+              x: 1594001311000,
+              y: 6144716800,
+            },
+            {
+              x: 1594001316000,
+              y: 6168010752,
+            },
+            {
+              x: 1594001321000,
+              y: 6168010752,
+            },
+            {
+              x: 1594001326000,
+              y: 6168010752,
+            },
+            {
+              x: 1594001331000,
+              y: 6168010752,
+            },
+            {
+              x: 1594001336000,
+              y: 6168010752,
+            },
+            {
+              x: 1594001341000,
+              y: 6168010752,
+            },
+            {
+              x: 1594001346000,
+              y: 6140063744,
+            },
+            {
+              x: 1594001352000,
+              y: 6140063744,
+            },
+            {
+              x: 1594001356000,
+              y: 6140063744,
+            },
+            {
+              x: 1594001361000,
+              y: 6140063744,
+            },
+            {
+              x: 1594001366000,
+              y: 6140063744,
+            },
+            {
+              x: 1594001371000,
+              y: 6140063744,
+            },
+            {
+              x: 1594001376000,
+              y: 6143750144,
+            },
+            {
+              x: 1594001381000,
+              y: 6143750144,
+            },
+            {
+              x: 1594001386000,
+              y: 6143750144,
+            },
+            {
+              x: 1594001391000,
+              y: 6143750144,
+            },
+            {
+              x: 1594001396000,
+              y: 6143750144,
+            },
+            {
+              x: 1594001401000,
+              y: 6143750144,
+            },
+            {
+              x: 1594001406000,
+              y: 6144487424,
+            },
+            {
+              x: 1594001412000,
+              y: 6144487424,
+            },
+            {
+              x: 1594001416000,
+              y: 6144487424,
+            },
+            {
+              x: 1594001421000,
+              y: 6144487424,
+            },
+            {
+              x: 1594001426000,
+              y: 6144487424,
+            },
+            {
+              x: 1594001431000,
+              y: 6144487424,
+            },
+            {
+              x: 1594001436000,
+              y: 6144348160,
+            },
+            {
+              x: 1594001441000,
+              y: 6144348160,
+            },
+            {
+              x: 1594001446000,
+              y: 6144348160,
+            },
+            {
+              x: 1594001451000,
+              y: 6144348160,
+            },
+            {
+              x: 1594001456000,
+              y: 6144348160,
+            },
+            {
+              x: 1594001461000,
+              y: 6144348160,
+            },
+            {
+              x: 1594001466000,
+              y: 6144733184,
+            },
+            {
+              x: 1594001471000,
+              y: 6144733184,
+            },
+            {
+              x: 1594001476000,
+              y: 6144733184,
+            },
+            {
+              x: 1594001481000,
+              y: 6144733184,
+            },
+            {
+              x: 1594001487000,
+              y: 6144733184,
+            },
+            {
+              x: 1594001491000,
+              y: 6144733184,
+            },
+            {
+              x: 1594001496000,
+              y: 6145949696,
+            },
+            {
+              x: 1594001501000,
+              y: 6145949696,
+            },
+            {
+              x: 1594001506000,
+              y: 6145949696,
+            },
+            {
+              x: 1594001511000,
+              y: 6145949696,
+            },
+            {
+              x: 1594001516000,
+              y: 6145949696,
+            },
+            {
+              x: 1594001521000,
+              y: 6145949696,
+            },
+            {
+              x: 1594001526000,
+              y: 6146842624,
+            },
+            {
+              x: 1594001531000,
+              y: 6146842624,
+            },
+            {
+              x: 1594001536000,
+              y: 6146842624,
+            },
+            {
+              x: 1594001541000,
+              y: 6146842624,
+            },
+            {
+              x: 1594001546000,
+              y: 6146842624,
+            },
+            {
+              x: 1594001551000,
+              y: 6146842624,
+            },
+            {
+              x: 1594001556000,
+              y: 6147416064,
+            },
+            {
+              x: 1594001562000,
+              y: 6147416064,
+            },
+            {
+              x: 1594001566000,
+              y: 6147416064,
+            },
+            {
+              x: 1594001571000,
+              y: 6147416064,
+            },
+            {
+              x: 1594001576000,
+              y: 6147416064,
+            },
+            {
+              x: 1594001581000,
+              y: 6147416064,
+            },
+            {
+              x: 1594001586000,
+              y: 6152359936,
+            },
+            {
+              x: 1594001591000,
+              y: 6152359936,
+            },
+            {
+              x: 1594001596000,
+              y: 6152359936,
+            },
+            {
+              x: 1594001601000,
+              y: 6152359936,
+            },
+            {
+              x: 1594001606000,
+              y: 6152359936,
+            },
+            {
+              x: 1594001611000,
+              y: 6152359936,
+            },
+            {
+              x: 1594001616000,
+              y: 6154399744,
+            },
+            {
+              x: 1594001621000,
+              y: 6154399744,
+            },
+            {
+              x: 1594001627000,
+              y: 6154399744,
+            },
+          ],
+        },
+      },
+      mockVolumes: [
+        {
+          name: "pvc-5c3132fc-0508-4a7f-b11a-b6b924424016",
+          isInUse: true,
+          componentNamespace: "kalm-bookinfo",
+          componentName: "reviews",
+          phase: "Available",
+          capacity: "1Gi",
+        },
+        {
+          name: "pvc-5c3132fc-0508-4a7f-b11a-b6b924424012",
+          isInUse: false,
+          componentNamespace: "kalm-empty",
+          componentName: "",
+          phase: "Available",
+          capacity: "1Gi",
+        },
+      ],
 
-      mockHttpRoutes: Immutable.fromJS([
+      mockStorageClasses: [
+        { name: "standard", isManaged: false },
+        { name: "kalm-standard", isManaged: true },
+      ],
+
+      mockAcmeServer: {
+        acmeDomain: "<acme>.your-domain.com",
+        nsDomain: "<name-server.your-domain.com",
+        ipForNameServer: "1.2.3.4",
+        ready: true,
+      },
+
+      mockSimpleOptions: [
+        {
+          name: "my-pvc-hello-sts-1",
+          isInUse: false,
+          componentNamespace: "kalm-vols",
+          componentName: "hello-sts",
+          capacity: "1Mi",
+          pvc: "my-pvc-hello-sts-1",
+          pvToMatch: "underlying-pv-name",
+        },
+      ],
+
+      mockStatefulSetOptions: [
+        {
+          name: "my-pvc",
+          isInUse: false,
+          componentNamespace: "kalm-vols",
+          componentName: "hello-sts",
+          capacity: "1Mi",
+          pvc: "my-pvc",
+          pvToMatch: "",
+          pvList: ["my-pv-1", "my-pv-2", "my-pv-3"],
+        },
+      ],
+
+      mockHttpRoutes: [
         {
           hosts: ["bookinfo.demo.com"],
           paths: ["/"],
@@ -8248,163 +8365,8 @@ export default class MockStore {
           name: "bookinfo",
           namespace: "kalm-bookinfo",
         },
-      ]),
-
-      mockCertificates: Immutable.fromJS([
-        {
-          name: "wildcard-need-cert-liumingmin-xyz-sflrq6",
-          isSelfManaged: false,
-          httpsCertIssuer: "default-dns01-issuer",
-          domains: ["need-cert.liumingmin.xyz"],
-          ready: "True",
-          reason: "Certificate is up to date and has not expired",
-          isSignedByTrustedCA: true,
-          expireTimestamp: 1606206327,
-          wildcardCertDNSChallengeDomain: "fc2381e8-4589-4e76-8735-81e563858723.acme.liumingmin.xyz",
-        },
-        {
-          name: "cert",
-          isSelfManaged: false,
-          httpsCertIssuer: "ca2",
-          domains: ["dd.lo", "ec.op"],
-          ready: "False",
-          reason: 'Waiting for CertificateRequest "cert-3429837659" to complete',
-        },
-        { name: "dadada", isSelfManaged: true, domains: ["hydro.io"], ready: "True", reason: "" },
-        {
-          name: "dd",
-          isSelfManaged: false,
-          httpsCertIssuer: "cloudflare",
-          domains: ["ss.ff"],
-          ready: "False",
-          reason: 'Waiting for CertificateRequest "dd-2325188776" to complete',
-        },
-        {
-          name: "default-https-cert",
-          isSelfManaged: false,
-          httpsCertIssuer: "default-cert-issuer",
-          domains: ["*"],
-          ready: "True",
-          reason: "Certificate is up to date and has not expired",
-        },
-        { name: "hydro3", isSelfManaged: true, domains: ["hyo.io"], ready: "True", reason: "" },
-        {
-          name: "kalata",
-          isSelfManaged: false,
-          httpsCertIssuer: "ca",
-          domains: ["dde.ll"],
-          ready: "False",
-          reason: 'Waiting for CertificateRequest "kalata-1118927936" to complete',
-        },
-        { name: "tte", isSelfManaged: true, domains: ["hydro.io"], ready: "True", reason: "" },
-      ]),
-
-      mockAcmeServer: Immutable.fromJS({
-        acmeDomain: "<acme>.your-domain.com",
-        nsDomain: "<name-server.your-domain.com",
-        ipForNameServer: "1.2.3.4",
-        ready: true,
-      }),
-
-      mockCertificateIssuers: Immutable.fromJS([{ name: "default-cert-issuer", caForTest: {} }]),
-
-      mockRegistries: Immutable.fromJS([{ host: "has.dd", name: "ll", username: "", password: "" }]),
-
-      mockErrorPod: Immutable.fromJS({
-        name: "kkl-747f987f74-4mq5r",
-        node: "minikube",
-        status: "Failed",
-        phase: "Pending",
-        statusText: "Waiting: ImagePullBackOff",
-        restarts: 0,
-        isTerminating: false,
-        podIps: null,
-        hostIp: "192.168.64.3",
-        createTimestamp: 1592984368000,
-        startTimestamp: 1592984368000,
-        containers: [
-          {
-            name: "kkl",
-            restartCount: 0,
-            ready: false,
-            started: false,
-            startedAt: 0,
-          },
-        ],
-        metrics: {
-          cpu: null,
-          memory: null,
-        },
-        warnings: [
-          {
-            metadata: {
-              name: "kkl-747f987f74-4mq5r.161b6ad92f435c54",
-              namespace: "ttes2",
-              selfLink: "/api/v1/namespaces/ttes2/events/kkl-747f987f74-4mq5r.161b6ad92f435c54",
-              uid: "ea264050-fe29-4649-854e-a127a2c63a73",
-              resourceVersion: "1107200",
-              creationTimestamp: "2020-06-24T07:39:34Z",
-            },
-            involvedObject: {
-              kind: "Pod",
-              namespace: "ttes2",
-              name: "kkl-747f987f74-4mq5r",
-              uid: "dc02c167-7d79-458d-8b09-503789e13df6",
-              apiVersion: "v1",
-              resourceVersion: "1086774",
-              fieldPath: "spec.containers{kkl}",
-            },
-            reason: "Failed",
-            message: "Error: ImagePullBackOff",
-            source: {
-              component: "kubelet",
-              host: "minikube",
-            },
-            firstTimestamp: "2020-06-24T07:39:34Z",
-            lastTimestamp: "2020-06-24T09:34:39Z",
-            count: 505,
-            type: "Warning",
-            eventTime: null,
-            reportingComponent: "",
-            reportingInstance: "",
-          },
-        ],
-      }),
-      mockComponentPlugins: Immutable.fromJS([
-        {
-          name: "http-health-probe",
-          src:
-            'function addProbesForContainer(container) {\n  var SSOConfig = getConfig();\n\n  if (!SSOConfig) {\n    return\n  }\n\n  var probe = {\n    httpGet: {\n      path: "/",\n      port: SSOConfig.port\n    }\n  }\n\n  container.readinessProbe = probe;\n  container.livenessProbe = probe;\n\n  if (SSOConfig.initialDelaySeconds) {\n    container.readinessProbe.initialDelaySeconds = SSOConfig.initialDelaySeconds;\n    container.livenessProbe.initialDelaySeconds = SSOConfig.initialDelaySeconds;\n  }\n\n  if (SSOConfig.periodSeconds) {\n    container.readinessProbe.periodSeconds = SSOConfig.periodSeconds;\n    container.livenessProbe.periodSeconds = SSOConfig.periodSeconds;\n  }\n}\n\nfunction AfterPodTemplateGeneration(pod) {\n  var containers = pod.spec.containers;\n  containers.forEach(addProbesForContainer)\n  return pod;\n}\n',
-          configSchema: {
-            properties: {
-              initialDelaySeconds: {
-                type: "number",
-              },
-              periodSeconds: {
-                type: "number",
-              },
-              port: {
-                type: "number",
-              },
-            },
-            type: "object",
-          },
-        },
-        {
-          name: "termination-grace",
-          src:
-            "function AfterPodTemplateGeneration(pod) {\n  var SSOConfig = getConfig();\n\n  if (!SSOConfig) {\n    return;\n  }\n\n  if (SSOConfig.periodSeconds) {\n    pod.spec.terminationGracePeriodSeconds = SSOConfig.periodSeconds;\n  }\n\n  return pod;\n}\n",
-          configSchema: {
-            properties: {
-              periodSeconds: {
-                type: "number",
-              },
-            },
-            type: "object",
-          },
-        },
-      ]),
-      mockSSO: Immutable.fromJS({
+      ],
+      mockSSO: {
         domain: "sso.kapp.live",
         connectors: [
           {
@@ -8419,8 +8381,24 @@ export default class MockStore {
             },
           },
         ],
-      }),
-      mockServices: Immutable.fromJS([
+      },
+      mockClusterInfo: {
+        version: "v1.15.0",
+        ingressIP: "192.168.64.3",
+        ingressHostname: "",
+        httpPort: 31243,
+        httpsPort: 32039,
+        tlsPort: 32228,
+      },
+      mockLoginStatus: {
+        authorized: true,
+        email: "023ff5a27659178bc79bea4d289da5110c5cbbd381b2fa5089cff8f40f48b834",
+        groups: [],
+        impersonation: "",
+        policies:
+          "p, sub-023ff5a27659178bc79bea4d289da5110c5cbbd381b2fa5089cff8f40f48b834, view, *, *↵p, sub-023ff5a27659178bc79bea4d289da5110c5cbbd381b2fa5089cff8f40f48b834, edit, *, *↵p, sub-023ff5a27659178bc79bea4d289da5110c5cbbd381b2fa5089cff8f40f48b834, manage, *, *",
+      },
+      mockServices: [
         {
           name: "cert-manager",
           namespace: "cert-manager",
@@ -8606,7 +8584,7 @@ export default class MockStore {
           type: "ClusterIP",
           sessionAffinity: "None",
         },
-      ]),
-    });
+      ],
+    };
   };
 }

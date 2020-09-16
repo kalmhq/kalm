@@ -1,12 +1,10 @@
-import React from "react";
-import Immutable from "immutable";
 import configureStore from "configureStore";
-import { Store } from "redux";
+import { ConnectedRouter } from "connected-react-router";
 import { createBrowserHistory } from "history";
-import { RootState } from "reducers";
+import React from "react";
 import { Provider } from "react-redux";
-import { ConnectedRouter } from "connected-react-router/immutable";
-
+import { RootState } from "reducers";
+import { Store } from "redux";
 import { LOAD_LOGIN_STATUS_FULFILLED, LOGOUT } from "types/common";
 
 export const history = createBrowserHistory();
@@ -17,12 +15,10 @@ export const resetStore = () => {
   store.dispatch({
     type: LOAD_LOGIN_STATUS_FULFILLED,
     payload: {
-      loginStatus: Immutable.fromJS({
+      loginStatus: {
         authorized: true,
-        isAdmin: true,
-        entity: "system:serviceaccount:default:kalm-sample-user",
-        csrf: "",
-      }),
+        email: "system:serviceaccount:default:kalm-sample-user",
+      },
     },
   });
 };

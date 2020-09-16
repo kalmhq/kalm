@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	v1 "k8s.io/api/storage/v1"
@@ -20,10 +21,13 @@ type StorageClass struct {
 }
 
 func (h *ApiHandler) handleListStorageClasses(c echo.Context) error {
-	builder := h.Builder(c)
+	if !h.clientManager.CanView(getCurrentUser(c), "*", "storageClasses") {
+		return resources.NoStorageClassesViewPermissionError
+	}
 
 	var storageClassList v1.StorageClassList
-	if err := builder.List(&storageClassList); err != nil {
+
+	if err := h.resourceManager.List(&storageClassList); err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}

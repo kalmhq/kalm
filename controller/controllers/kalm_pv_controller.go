@@ -279,7 +279,7 @@ func (r *KalmPVReconciler) reconcileOrphanPV(orphanPV *corev1.PersistentVolume) 
 	expectedPVC := corev1.PersistentVolumeClaim{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      pvcName,
-			Namespace: NamespaceKalmSystem,
+			Namespace: KalmSystemNamespace,
 			Labels: map[string]string{
 				KalmLabelManaged:      "true",
 				KalmLabelComponentKey: orphanPV.Labels[KalmLabelComponentKey],
@@ -319,7 +319,7 @@ func (r *KalmPVReconciler) reconcileOrphanPV(orphanPV *corev1.PersistentVolume) 
 	var isNew bool
 
 	err := r.Get(r.ctx, client.ObjectKey{
-		Namespace: NamespaceKalmSystem,
+		Namespace: KalmSystemNamespace,
 		Name:      expectedPVC.Name,
 	}, &pvc)
 

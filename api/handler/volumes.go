@@ -16,17 +16,19 @@ import (
 // actually list pvc-pv pairs
 // if pvc is not used by any pod, it can be deleted
 func (h *ApiHandler) handleListVolumes(c echo.Context) error {
-	builder := h.Builder(c)
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
+		return resources.NoClusterViewerRoleError
+	}
 
 	var kalmPVCList v1.PersistentVolumeClaimList
-	if err := builder.List(&kalmPVCList, client.MatchingLabels{"kalm-managed": "true"}); err != nil {
+	if err := h.resourceManager.List(&kalmPVCList, client.MatchingLabels{"kalm-managed": "true"}); err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}
 	}
 
 	var kalmPVList v1.PersistentVolumeList
-	if err := builder.List(&kalmPVList, client.MatchingLabels{"kalm-managed": "true"}); err != nil {
+	if err := h.resourceManager.List(&kalmPVList, client.MatchingLabels{"kalm-managed": "true"}); err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}
@@ -39,7 +41,13 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 
 	respVolumes := []resources.Volume{}
 	for _, kalmPVC := range kalmPVCList.Items {
-		respVolume, err := builder.BuildVolumeResponse(kalmPVC, kalmPVMap[kalmPVC.Spec.VolumeName])
+		if !h.clientManager.CanViewNamespace(getCurrentUser(c), kalmPVC.Namespace) {
+			continue
+		}
+
+		// TODO the second param seems not used.
+		respVolume, err := h.resourceManager.BuildVolumeResponse(kalmPVC, kalmPVMap[kalmPVC.Spec.VolumeName])
+
 		if err != nil {
 			return err
 		}
@@ -67,21 +75,23 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 	pvcNamespace := c.Param("namespace")
 	pvcName := c.Param("name")
 
-	builder := h.Builder(c)
+	if !h.clientManager.CanEditNamespace(getCurrentUser(c), pvcNamespace) {
+		return resources.NoNamespaceEditorRoleError(pvcNamespace)
+	}
 
 	var pvc v1.PersistentVolumeClaim
-	if err := builder.Get(pvcNamespace, pvcName, &pvc); err != nil {
+	if err := h.resourceManager.Get(pvcNamespace, pvcName, &pvc); err != nil {
 		return err
 	}
 
-	if isInUse, err := builder.IsPVCInUse(pvc); err != nil {
+	if isInUse, err := h.resourceManager.IsPVCInUse(pvc); err != nil {
 		return err
 	} else if isInUse {
 		return fmt.Errorf("cannot delete PVC in use")
 	}
 
 	var pvList v1.PersistentVolumeList
-	if err := builder.List(&pvList); err != nil {
+	if err := h.resourceManager.List(&pvList); err != nil {
 		return err
 	}
 
@@ -113,12 +123,12 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 		// clean will be triggered once pvc is deleted
 		copy.Labels[controllers.KalmLabelCleanIfPVCGone] = fmt.Sprintf("%s-%s", pvc.Namespace, pvc.Name)
 
-		if err := builder.Update(copy); err != nil {
+		if err := h.resourceManager.Update(copy); err != nil {
 			return err
 		}
 	}
 
-	if err := builder.Delete(&pvc); err != nil {
+	if err := h.resourceManager.Delete(&pvc); err != nil {
 		return err
 	}
 
@@ -135,8 +145,11 @@ func (h *ApiHandler) handleAvailableVolsForSimpleWorkload(c echo.Context) error 
 		return fmt.Errorf("must provide namespace in query")
 	}
 
-	builder := h.Builder(c)
-	vols, err := builder.FindAvailableVolsForSimpleWorkload(ns)
+	if !h.clientManager.CanViewNamespace(getCurrentUser(c), ns) {
+		return resources.NoNamespaceViewerRoleError(ns)
+	}
+
+	vols, err := h.resourceManager.FindAvailableVolsForSimpleWorkload(ns)
 	if err != nil {
 		return err
 	}
@@ -150,8 +163,11 @@ func (h *ApiHandler) handleAvailableVolsForSts(c echo.Context) error {
 		return fmt.Errorf("must provide namespace in query")
 	}
 
-	builder := h.Builder(c)
-	vols, err := builder.FindAvailableVolsForSts(ns)
+	if !h.clientManager.CanViewNamespace(getCurrentUser(c), ns) {
+		return resources.NoNamespaceViewerRoleError(ns)
+	}
+
+	vols, err := h.resourceManager.FindAvailableVolsForSts(ns)
 	if err != nil {
 		return err
 	}

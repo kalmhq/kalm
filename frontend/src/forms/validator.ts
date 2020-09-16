@@ -1,4 +1,3 @@
-import Immutable from "immutable";
 import { HttpRoute, HttpRouteDestination } from "types/route";
 import sc from "utils/stringConstants";
 import { string, array } from "yup";
@@ -9,8 +8,8 @@ export const validator = () => {
   return errors;
 };
 
-export const ValidatorListNotEmpty = (value: Immutable.List<any>, _allValues?: any, _props?: any, _name?: any) => {
-  if (!value || value.size <= 0) {
+export const ValidatorListNotEmpty = (value: Array<any>, _allValues?: any, _props?: any, _name?: any) => {
+  if (!value || value.length <= 0) {
     return "Select at least one option";
   }
 
@@ -26,25 +25,25 @@ export const ValidatorArrayNotEmpty = (value: any[], _allValues?: any, _props?: 
 };
 
 export const ValidatorHttpRouteDestinations = (
-  value: Immutable.List<HttpRouteDestination>,
+  value: Array<HttpRouteDestination>,
   _allValues?: HttpRoute,
   _props?: any,
   _name?: any,
 ) => {
-  if (!value || value.size <= 0) {
+  if (!value || value.length <= 0) {
     return "Please define at least one target.";
   }
 
-  if (value.size === 1) {
+  if (value.length === 1) {
     return undefined;
   }
 
   let valid = false;
 
-  for (let i = 0; i < value.size; i++) {
-    const target = value.get(i)!;
+  for (let i = 0; i < value.length; i++) {
+    const target = value[i]!;
 
-    if (target.get("weight") > 0) {
+    if (target.weight > 0) {
       valid = true;
       break;
     }
@@ -62,14 +61,10 @@ export const ValidatorRequired = (value: any, _allValues?: any, _props?: any, _n
     return value.length > 0 ? undefined : "Required";
   }
 
-  if (Immutable.isList(value)) {
-    return value.size > 0 ? undefined : "Required";
-  }
-
   return !!value ? undefined : `Required`;
 };
 
-export const ValidatorContainerPortRequired = (value: any, _allValues?: any, _props?: any, _name?: any) => {
+export const ValidatorContainerPortRequired = (value: any) => {
   if (!!value !== undefined) {
     const portInteger = parseInt(value, 10);
 
@@ -276,22 +271,22 @@ export const KValidatorHostsWithWildcardPrefix = (
 };
 
 export const KValidatorWildcardHost = (
-  values: Immutable.List<string>,
+  values: string[],
   _allValues?: any,
   _props?: any,
   _name?: any,
 ): (undefined | string)[] | undefined => {
-  if (!values || values.size === 0) {
+  if (!values || values.length === 0) {
     return undefined;
   }
 
-  if (!values || values.size > 1) {
+  if (!values || values.length > 1) {
     return ["You only can input one wildcard domain"];
   }
 
-  const errors = values
-    .map((host) => (host === "*" ? "You can't use * as domain." : validateHostWithWildcardPrefix(host)))
-    .toArray();
+  const errors = values.map((host) =>
+    host === "*" ? "You can't use * as domain." : validateHostWithWildcardPrefix(host),
+  );
 
   return errors.filter((x) => !!x).length > 0 ? errors : undefined;
 };

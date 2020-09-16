@@ -16,7 +16,7 @@ type DockerRegistryListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetDockerRegistryListChannel(listOptions metaV1.ListOptions) *DockerRegistryListChannel {
+func (resourceManager *ResourceManager) GetDockerRegistryListChannel(listOptions metaV1.ListOptions) *DockerRegistryListChannel {
 	channel := &DockerRegistryListChannel{
 		List:  make(chan []v1alpha1.DockerRegistry, 1),
 		Error: make(chan error, 1),
@@ -24,7 +24,7 @@ func (builder *Builder) GetDockerRegistryListChannel(listOptions metaV1.ListOpti
 
 	go func() {
 		var fetched v1alpha1.DockerRegistryList
-		err := builder.List(&fetched)
+		err := resourceManager.List(&fetched)
 
 		if err != nil {
 			channel.List <- nil
@@ -53,7 +53,7 @@ type DockerRegistry struct {
 	Password                       string `json:"password"`
 }
 
-func (builder *Builder) GetDockerRegistry(name string) (*DockerRegistry, error) {
+func (resourceManager *ResourceManager) GetDockerRegistry(name string) (*DockerRegistry, error) {
 	var registry v1alpha1.DockerRegistry
 	var secret coreV1.Secret
 	var err error
@@ -62,14 +62,14 @@ func (builder *Builder) GetDockerRegistry(name string) (*DockerRegistry, error) 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		err = builder.Get("", name, &registry)
+		err = resourceManager.Get("", name, &registry)
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		secretName := controllers.GetRegistryAuthenticationName(name)
-		err = builder.Get("kalm-system", secretName, &secret)
+		err = resourceManager.Get("kalm-system", secretName, &secret)
 	}()
 
 	wg.Wait()
@@ -81,10 +81,10 @@ func (builder *Builder) GetDockerRegistry(name string) (*DockerRegistry, error) 
 	return buildDockerRegistryFromResource(&registry, &secret), nil
 }
 
-func (builder *Builder) GetDockerRegistries() ([]*DockerRegistry, error) {
+func (resourceManager *ResourceManager) GetDockerRegistries() ([]*DockerRegistry, error) {
 	resourceChannels := &ResourceChannels{
-		DockerRegistryList: builder.GetDockerRegistryListChannel(ListAll),
-		SecretList:         builder.GetSecretListChannel(client.InNamespace("kalm-system"), client.MatchingLabels{"kalm-docker-registry-authentication": "true"}),
+		DockerRegistryList: resourceManager.GetDockerRegistryListChannel(ListAll),
+		SecretList:         resourceManager.GetSecretListChannel(client.InNamespace("kalm-system"), client.MatchingLabels{"kalm-docker-registry-authentication": "true"}),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -127,7 +127,7 @@ func buildDockerRegistryFromResource(registry *v1alpha1.DockerRegistry, secret *
 	}
 }
 
-func (builder *Builder) CreateDockerRegistry(registry *DockerRegistry) (*DockerRegistry, error) {
+func (resourceManager *ResourceManager) CreateDockerRegistry(registry *DockerRegistry) (*DockerRegistry, error) {
 	dockerRegistry := &v1alpha1.DockerRegistry{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: registry.Name,
@@ -155,12 +155,12 @@ func (builder *Builder) CreateDockerRegistry(registry *DockerRegistry) (*DockerR
 
 	go func() {
 		defer wg.Done()
-		err = builder.Create(dockerRegistry)
+		err = resourceManager.Create(dockerRegistry)
 	}()
 
 	go func() {
 		defer wg.Done()
-		err = builder.Create(secret)
+		err = resourceManager.Create(secret)
 	}()
 
 	wg.Wait()
@@ -172,11 +172,11 @@ func (builder *Builder) CreateDockerRegistry(registry *DockerRegistry) (*DockerR
 	return buildDockerRegistryFromResource(dockerRegistry, secret), nil
 }
 
-func (builder *Builder) UpdateDockerRegistry(registry *DockerRegistry) (*DockerRegistry, error) {
+func (resourceManager *ResourceManager) UpdateDockerRegistry(registry *DockerRegistry) (*DockerRegistry, error) {
 	dockerRegistry := &v1alpha1.DockerRegistry{}
 	secret := &coreV1.Secret{}
 
-	if err := builder.Get("", registry.Name, dockerRegistry); err != nil {
+	if err := resourceManager.Get("", registry.Name, dockerRegistry); err != nil {
 		return nil, err
 	}
 
@@ -184,7 +184,7 @@ func (builder *Builder) UpdateDockerRegistry(registry *DockerRegistry) (*DockerR
 
 	secretNotExist := false
 
-	if err := builder.Get("kalm-system", secretName, secret); err != nil {
+	if err := resourceManager.Get("kalm-system", secretName, secret); err != nil {
 		if errors.IsNotFound(err) {
 			secretNotExist = true
 		} else {
@@ -201,18 +201,18 @@ func (builder *Builder) UpdateDockerRegistry(registry *DockerRegistry) (*DockerR
 		dockerRegistry.Spec = *registry.DockerRegistrySpec
 	}
 
-	if err := builder.Update(dockerRegistry); err != nil {
+	if err := resourceManager.Update(dockerRegistry); err != nil {
 		return nil, err
 	}
 
 	if secretNotExist {
 		secret.Namespace = "kalm-system"
 		secret.Name = secretName
-		if err := builder.Create(secret); err != nil {
+		if err := resourceManager.Create(secret); err != nil {
 			return nil, err
 		}
 	} else {
-		if err := builder.Update(secret); err != nil {
+		if err := resourceManager.Update(secret); err != nil {
 			return nil, err
 		}
 	}
@@ -220,6 +220,6 @@ func (builder *Builder) UpdateDockerRegistry(registry *DockerRegistry) (*DockerR
 	return buildDockerRegistryFromResource(dockerRegistry, secret), nil
 }
 
-func (builder *Builder) DeleteDockerRegistry(name string) error {
-	return builder.Delete(&v1alpha1.DockerRegistry{ObjectMeta: metaV1.ObjectMeta{Name: name}})
+func (resourceManager *ResourceManager) DeleteDockerRegistry(name string) error {
+	return resourceManager.Delete(&v1alpha1.DockerRegistry{ObjectMeta: metaV1.ObjectMeta{Name: name}})
 }

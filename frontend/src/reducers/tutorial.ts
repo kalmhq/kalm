@@ -1,4 +1,3 @@
-import Immutable from "immutable";
 import {
   CLOSE_TUTORIAL_DRAWER,
   OPEN_TUTORIAL_DRAWER,
@@ -10,29 +9,29 @@ import {
   SET_TUTORIAL_FORM_VALUES,
 } from "types/tutorial";
 import { Actions } from "types";
-import { ImmutableMap } from "typings";
+import produce, { createDraft } from "immer";
 
-export type State = ImmutableMap<{
+export type State = {
   drawerOpen: boolean;
   tutorial?: Tutorial;
-  tutorialStepStatus: Immutable.Map<string, boolean>;
+  tutorialStepStatus: { [key: string]: boolean };
   latestHighlight?: string;
   currentStepIndex: number;
-  formValues?: ImmutableMap<any>;
-}>;
+  formValues?: { [key: string]: any };
+};
 
 const DISABLE_TUTORIAL_AUTO_OPEN = "DISABLE_TUTORIAL_AUTO_OPEN";
 
-const initialState: State = Immutable.Map({
+const initialState: State = {
   drawerOpen: !window.localStorage.getItem(DISABLE_TUTORIAL_AUTO_OPEN),
-  tutorial: null,
-  tutorialStepStatus: Immutable.Map(),
+  tutorial: undefined,
+  tutorialStepStatus: {},
   currentStepIndex: -1,
-});
+};
 
 const tryMoveToNextStep = (state: State): State => {
-  const currentStepIndex = state.get("currentStepIndex");
-  const currentStep = state.get("tutorial")!.steps[currentStepIndex];
+  const currentStepIndex = state.currentStepIndex;
+  const currentStep = state.tutorial!.steps[currentStepIndex];
 
   if (currentStep.subSteps.length === 0) {
     return state;
@@ -40,77 +39,105 @@ const tryMoveToNextStep = (state: State): State => {
 
   const notCompletedSubSteps = currentStep.subSteps.filter((_subStep, subStepIndex) => {
     const statusKey = `${currentStepIndex}-${subStepIndex}`;
-    return !state.get("tutorialStepStatus").get(statusKey);
+    return !state.tutorialStepStatus[statusKey];
   });
 
-  return notCompletedSubSteps.length > 0 ? state : state.set("currentStepIndex", currentStepIndex + 1);
+  if (notCompletedSubSteps.length > 0) {
+    return state;
+  }
+
+  state.currentStepIndex = currentStepIndex + 1;
+  return state;
 };
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   if (action.type === OPEN_TUTORIAL_DRAWER) {
-    return state.set("drawerOpen", true);
+    state.drawerOpen = true;
+    return;
   }
 
   if (action.type === CLOSE_TUTORIAL_DRAWER) {
     window.localStorage.setItem(DISABLE_TUTORIAL_AUTO_OPEN, "true");
-    return state.set("drawerOpen", false);
+    state.drawerOpen = false;
+    return;
   }
 
   if (action.type === RESET_TUTORIAL_ACTION) {
-    return initialState.set("drawerOpen", state.get("drawerOpen"));
+    const drawerOpen = state.drawerOpen;
+    state = createDraft(initialState);
+    state.drawerOpen = drawerOpen;
+    return state;
   }
 
   if (action.type === SET_TUTORIAL_ACTION) {
-    return initialState
-      .set("drawerOpen", state.get("drawerOpen"))
-      .set("tutorial", action.payload.tutorial)
-      .set("currentStepIndex", 0);
+    const drawerOpen = state.drawerOpen;
+    state = createDraft(initialState);
+    state.drawerOpen = drawerOpen;
+    state.tutorial = action.payload.tutorial;
+    state.currentStepIndex = 0;
+    return state;
   }
 
   if (action.type === SET_TUTORIAL_FORM_VALUES) {
-    return state.setIn(["formValues", action.payload.form], action.payload.values);
+    if (state.formValues) {
+      state.formValues[action.payload.form] = action.payload.values;
+    } else {
+      state.formValues = {
+        [action.payload.form]: action.payload.values,
+      };
+    }
+    return;
   }
 
-  const tutorial = state.get("tutorial");
+  const tutorial = state.tutorial;
 
   if (!tutorial) {
-    return state;
+    return;
   }
 
-  const currentStep = tutorial.steps[state.get("currentStepIndex")];
+  const currentStep = tutorial.steps[state.currentStepIndex];
 
   if (!currentStep) {
-    return state;
+    return;
   }
 
   if (action.type === SET_TUTORIAL_STEP_COMPLETION_STATUS) {
-    state = state.setIn(
-      ["tutorialStepStatus", `${action.payload.stepIndex}-${action.payload.subStepIndex}`],
-      action.payload.isCompleted,
-    );
-
-    return tryMoveToNextStep(state);
+    const statusKey = `${action.payload.stepIndex}-${action.payload.subStepIndex}`;
+    if (state.tutorialStepStatus) {
+      state.tutorialStepStatus[statusKey] = action.payload.isCompleted;
+    } else {
+      state.tutorialStepStatus = {
+        [statusKey]: action.payload.isCompleted,
+      };
+    }
+    state = tryMoveToNextStep(state);
+    return;
   }
 
   if (action.type === SET_TUTORIAL_HIGHLIGHT_STATUS) {
-    state = state.set("latestHighlight", `${action.payload.stepIndex}-${action.payload.highlightIndex}`);
-    return state;
+    state.latestHighlight = `${action.payload.stepIndex}-${action.payload.highlightIndex}`;
+    return;
   }
 
   currentStep.subSteps.forEach((subStep, subStepIndex) => {
-    const statusKey = `${state.get("currentStepIndex")}-${subStepIndex}`;
+    const statusKey = `${state.currentStepIndex}-${subStepIndex}`;
     if (
-      !state.get("tutorialStepStatus").get(statusKey) && // this step not completed
+      !state.tutorialStepStatus[statusKey] && // this step not completed
       subStep.shouldCompleteByAction && // has action completion hook
       subStep.shouldCompleteByAction(action)
     ) {
-      state = state.setIn(["tutorialStepStatus", statusKey], true);
+      if (state.tutorialStepStatus) {
+        state.tutorialStepStatus[statusKey] = true;
+      } else {
+        state.tutorialStepStatus = {
+          [statusKey]: true,
+        };
+      }
     }
   });
 
   state = tryMoveToNextStep(state);
-
-  return state;
-};
+  return;
+}, initialState);
 
 export default reducer;

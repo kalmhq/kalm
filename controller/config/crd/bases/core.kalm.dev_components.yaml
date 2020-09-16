@@ -558,7 +558,7 @@ spec:
                     - emptyDir
                     - pvc
                     - pvcTemplate
-                    - hostPath
+                    - hostpath
                     type: string
                 required:
                 - path

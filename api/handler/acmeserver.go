@@ -20,7 +20,7 @@ func (h *ApiHandler) handleCreateACMEServer(c echo.Context) error {
 		return fmt.Errorf("must set acmeDomain")
 	}
 
-	acmeServer, err = h.Builder(c).CreateACMEServer(acmeServer)
+	acmeServer, err = h.resourceManager.CreateACMEServer(acmeServer)
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func (h *ApiHandler) handleUpdateACMEServer(c echo.Context) error {
 		return fmt.Errorf("must set acmeDomain")
 	}
 
-	acmeServer, err = h.Builder(c).UpdateACMEServer(acmeServer)
+	acmeServer, err = h.resourceManager.UpdateACMEServer(acmeServer)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func (h *ApiHandler) handleUpdateACMEServer(c echo.Context) error {
 
 func (h *ApiHandler) handleGetACMEServer(c echo.Context) error {
 
-	acmeServerResp, err := h.Builder(c).GetACMEServerAsResp()
+	acmeServerResp, err := h.resourceManager.GetACMEServerAsResp()
 	if err != nil {
 		return err
 	}
@@ -62,7 +62,7 @@ func (h *ApiHandler) handleGetACMEServer(c echo.Context) error {
 
 func (h *ApiHandler) handleDeleteACMEServer(c echo.Context) error {
 
-	err := h.Builder(c).DeleteACMEServer()
+	err := h.resourceManager.DeleteACMEServer()
 
 	if err != nil {
 		return err

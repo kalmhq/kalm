@@ -27,13 +27,15 @@ import { Loading } from "widgets/Loading";
 import { getRouteUrl } from "widgets/OpenInBrowser";
 import { Targets } from "widgets/Targets";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
   });
 
-interface Props extends WithStyles<typeof styles>, WithRoutesDataProps {}
+interface Props extends WithStyles<typeof styles>, WithRoutesDataProps, WithNamespaceProps, WithUserAuthProps {}
 
 interface State {}
 
@@ -46,22 +48,19 @@ type HostCellProps = { row: HttpRoute; clusterInfo: ClusterInfo };
 const HostCellRaw = ({ row, clusterInfo }: HostCellProps) => {
   return (
     <Box>
-      {row
-        .get("hosts")
-        .map((h) => {
-          const url = getRouteUrl(row as HttpRoute, clusterInfo, h);
-          return (
-            <FlexRowItemCenterBox key={h}>
-              <DomainStatus mr={1} domain={h} />
-              <ItemWithHoverIcon icon={<CopyAsCurl route={row as HttpRoute} showIconButton={true} host={h} />}>
-                <KMLink href={url} target="_blank" rel="noopener noreferrer">
-                  {h}
-                </KMLink>
-              </ItemWithHoverIcon>
-            </FlexRowItemCenterBox>
-          );
-        })
-        .toArray()}
+      {row.hosts.map((h) => {
+        const url = getRouteUrl(row as HttpRoute, clusterInfo, h);
+        return (
+          <FlexRowItemCenterBox key={h}>
+            <DomainStatus mr={1} domain={h} />
+            <ItemWithHoverIcon icon={<CopyAsCurl route={row as HttpRoute} showIconButton={true} host={h} />}>
+              <KMLink href={url} target="_blank" rel="noopener noreferrer">
+                {h}
+              </KMLink>
+            </ItemWithHoverIcon>
+          </FlexRowItemCenterBox>
+        );
+      })}
     </Box>
   );
 };
@@ -81,80 +80,74 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   private renderUrls(row: HttpRoute) {
     return (
       <Box>
-        {row
-          .get("paths")
-          .map((h) => {
-            return <Box key={h}>{h}</Box>;
-          })
-          .toArray()}
+        {row.paths.map((h) => {
+          return <Box key={h}>{h}</Box>;
+        })}
       </Box>
     );
   }
 
   private renderRules(row: HttpRoute) {
-    if (!row.get("conditions")) {
+    if (!row.conditions) {
       return null;
     }
 
-    return row
-      .get("conditions")!
-      .map((x) => {
-        return (
-          <div>
-            {x.get("type")} {x.get("name")} {x.get("operator")} {x.get("value")}{" "}
-          </div>
-        );
-      })
-      .toArray();
+    return row.conditions!.map((x) => {
+      return (
+        <div>
+          {x.type} {x.name} {x.operator} {x.value}{" "}
+        </div>
+      );
+    });
   }
 
   private renderMethods(row: HttpRoute) {
-    return <Methods methods={row.get("methods")} />;
+    return <Methods methods={row.methods} />;
   }
 
   private renderSupportHttp(row: HttpRoute) {
-    if (row.get("httpRedirectToHttps") && row.get("schemes").includes("http") && row.get("schemes").includes("https")) {
+    if (row.httpRedirectToHttps && row.schemes.includes("http") && row.schemes.includes("https")) {
       return <ForwardIcon />;
     }
 
-    if (row.get("schemes").find((x) => x === "http")) {
+    if (row.schemes.find((x) => x === "http")) {
       return <CheckIcon />;
     }
   }
 
   private renderSupportHttps(row: HttpRoute) {
-    if (row.get("schemes").find((x) => x === "https")) {
+    if (row.schemes.find((x) => x === "https")) {
       return <CheckIcon />;
     }
   }
 
   private renderTargets = (row: HttpRoute) => {
-    return <Targets destinations={row.get("destinations")} />;
+    return <Targets destinations={row.destinations} />;
   };
 
   private renderAdvanced(row: HttpRoute) {
     let res: string[] = [];
-    if (row.get("mirror")) {
+    if (row.mirror) {
       res.push("mirror");
     }
-    if (row.get("delay")) {
+    if (row.delay) {
       res.push("delay");
     }
-    if (row.get("fault")) {
+    if (row.fault) {
       res.push("fault");
     }
-    if (row.get("cors")) {
+    if (row.cors) {
       res.push("cors");
     }
-    if (row.get("retries")) {
+    if (row.retries) {
       res.push("retries");
     }
     return res.join(",");
   }
 
   private renderActions = (row: HttpRoute) => {
-    const { dispatch } = this.props;
-    return (
+    const { dispatch, activeNamespaceName, canEditNamespace } = this.props;
+    return canEditNamespace(activeNamespaceName) ? (
       <>
         <IconLinkWithToolTip
           onClick={() => {
@@ -162,7 +155,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           }}
           // size="small"
           tooltipTitle="Edit"
-          to={`/routes/${row.get("name")}/edit`}
+          to={`/routes/${row.name}/edit`}
         >
           <EditIcon />
         </IconLinkWithToolTip>
@@ -171,34 +164,12 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           popupTitle="DELETE ROUTE?"
           confirmedAction={() => dispatch(deleteRouteAction(row))}
         />
-        {/* <Button
-          size="small"
-          variant="outlined"
-          style={{ marginLeft: 16, marginRight: 16 }}
-          color="primary"
-          onClick={() => {
-            blinkTopProgressAction();
-            dispatch(push(`/applications/${activeNamespaceName}/routes/${row.get("name")}/edit`));
-          }}
-        >
-          Edit
-        </Button>
-        <DangerButton
-          variant="outlined"
-          size="small"
-          onClick={() => {
-            blinkTopProgressAction();
-            dispatch(deleteRouteAction(row.get("name"), row.get("namespace")));
-          }}
-        >
-          Delete
-        </DangerButton> */}
       </>
-    );
+    ) : null;
   };
 
   private renderEmpty() {
-    const { dispatch } = this.props;
+    const { dispatch, canEditNamespace, activeNamespaceName } = this.props;
 
     return (
       <EmptyInfoBox
@@ -206,16 +177,18 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         title={sc.EMPTY_ROUTES_TITLE}
         content={sc.EMPTY_ROUTES_SUBTITLE}
         button={
-          <CustomizedButton
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              blinkTopProgressAction();
-              dispatch(push(`/routes/new`));
-            }}
-          >
-            Add Route
-          </CustomizedButton>
+          canEditNamespace(activeNamespaceName) ? (
+            <CustomizedButton
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                blinkTopProgressAction();
+                dispatch(push(`/routes/new`));
+              }}
+            >
+              Add Route
+            </CustomizedButton>
+          ) : null
         }
       />
     );
@@ -279,27 +252,29 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes } = this.props;
+    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes, canEditNamespace, activeNamespaceName } = this.props;
 
     return (
       <BasePage
         secondHeaderRight={
-          <Button
-            tutorial-anchor-id="add-route"
-            component={Link}
-            color="primary"
-            size="small"
-            variant="outlined"
-            to={`/routes/new`}
-          >
-            Add Route
-          </Button>
+          canEditNamespace(activeNamespaceName) ? (
+            <Button
+              tutorial-anchor-id="add-route"
+              component={Link}
+              color="primary"
+              size="small"
+              variant="outlined"
+              to={`/routes/new`}
+            >
+              Add Route
+            </Button>
+          ) : null
         }
       >
         <Box p={2}>
           {isRoutesLoading && !isRoutesFirstLoaded ? (
             <Loading />
-          ) : httpRoutes && httpRoutes.size > 0 ? (
+          ) : httpRoutes && httpRoutes.length > 0 ? (
             this.renderKRTable()
           ) : (
             this.renderEmpty()
@@ -309,4 +284,4 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     );
   }
 }
-export const RouteListPage = withRoutesData(withStyles(styles)(RouteListPageRaw));
+export const RouteListPage = withNamespace(withUserAuth(withRoutesData(withStyles(styles)(RouteListPageRaw))));

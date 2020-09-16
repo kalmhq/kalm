@@ -2,7 +2,7 @@ import { Box, Button, Collapse, Grid } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import Warning from "@material-ui/icons/Warning";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import { Field, FieldArray } from "formik";
+import { Field, FieldArray, getIn } from "formik";
 import { KAutoCompleteOption, KFormikAutoCompleteSingleValue } from "forms/Basic/autoComplete";
 import { KFormikRenderSlider } from "forms/Basic/slider";
 import React from "react";
@@ -15,21 +15,21 @@ import {
   PortProtocolHTTP2,
   PortProtocolHTTPS,
 } from "types/componentTemplate";
-import { HttpRouteDestinationContent } from "types/route";
+import { HttpRouteDestination } from "types/route";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorRequired } from "../validator";
 
 interface FieldArrayComponentHackType {
-  destinations: HttpRouteDestinationContent[];
+  destinations: HttpRouteDestination[];
   errors: any;
   touched: any;
 }
 
 const mapStateToProps = (state: RootState) => {
   return {
-    activeNamespace: state.get("namespaces").get("active"),
-    services: state.get("services").get("services"),
+    activeNamespace: state.namespaces.active,
+    services: state.services.services,
   };
 };
 
@@ -42,7 +42,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
     const options: KAutoCompleteOption[] = [];
     services
       .filter((x) => {
-        const ns = x.get("namespace");
+        const ns = x.namespace;
 
         // TODO should we ignore the system namespaces??
         return (
@@ -57,10 +57,9 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
         );
       })
       .forEach((svc) => {
-        svc
-          .get("ports")
+        svc.ports
           .filter((p) => {
-            const appProtocol = p.get("appProtocol");
+            const appProtocol = p.appProtocol;
             return (
               appProtocol === PortProtocolHTTP ||
               appProtocol === PortProtocolHTTP2 ||
@@ -71,10 +70,9 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
           })
           .forEach((port) => {
             options.push({
-              value: `${svc.get("name")}.${svc.get("namespace")}.svc.cluster.local:${port.get("port")}`,
-              label: svc.get("name") + ":" + port.get("port") + `(${port.get("appProtocol")})`,
-              group:
-                svc.get("namespace") === activeNamespace ? `${svc.get("namespace")} (Current)` : svc.get("namespace"),
+              value: `${svc.name}.${svc.namespace}.svc.cluster.local:${port.port}`,
+              label: svc.name + ":" + port.port + `(${port.appProtocol})`,
+              group: svc.namespace === activeNamespace ? `${svc.namespace} (Current)` : svc.namespace,
             });
           });
       });
@@ -164,14 +162,13 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
   }
 
   public render() {
-    const { errors, touched } = this.props;
-    const error = errors["destinations"];
+    const { destinations, touched } = this.props;
     return (
       <div>
-        {!!error && !!touched["destinations"] ? (
-          <Alert className={"alert"} severity="error">
-            {error}
-          </Alert>
+        {getIn(touched, "destinations") && destinations && destinations.length === 0 ? (
+          <Box>
+            <Alert severity="error">{"You should at least configure one Targets."}</Alert>
+          </Box>
         ) : null}
         {this.renderRows()}
       </div>

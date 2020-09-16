@@ -1,6 +1,5 @@
 import { resetTutorialAction } from "actions/tutorial";
 import { ROUTE_FORM_ID } from "forms/formIDs";
-import Immutable from "immutable";
 import React from "react";
 import { RootState } from "reducers";
 import { store } from "store";
@@ -12,11 +11,11 @@ import {
   requireSubStepCompleted,
   requireSubStepNotCompleted,
 } from "tutorials/utils";
-import { ApplicationDetails, CREATE_COMPONENT } from "types/application";
-import { HttpRouteDestinationContent } from "types/route";
+import { Actions } from "types";
+import { CREATE_COMPONENT } from "types/application";
+import { HttpRouteDestination } from "types/route";
 import { Tutorial, TutorialFactory } from "types/tutorial";
 import { KMLink } from "widgets/Link";
-import { Actions } from "types";
 
 const resetTutorial = () => {
   store.dispatch(resetTutorialAction());
@@ -25,8 +24,8 @@ const resetTutorial = () => {
 export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tutorial => {
   const state = store.getState();
 
-  const apps: Immutable.List<ApplicationDetails> = state.get("applications").get("applications");
-  const application = apps.find((x) => x.get("name") === "tutorial");
+  const apps = state.applications.applications;
+  const application = apps.find((x) => x.name === "tutorial");
 
   if (!application) {
     return {
@@ -52,20 +51,20 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
     };
   }
 
-  const applicationName = application.get("name");
+  const applicationName = application.name;
   const routesPath = "/routes";
   const newRoutePath = "/routes/new";
 
-  const clusterInfo = state.get("cluster").get("info");
-  const clusterIngressIP = clusterInfo.get("ingressIP") || "10.0.0.1"; // TODO
+  const clusterInfo = state.cluster.info;
+  const clusterIngressIP = clusterInfo.ingressIP || "10.0.0.1"; // TODO
 
   const domain = clusterIngressIP.replace(/\./g, "-") + ".nip.io";
 
   const path = "/echoserver";
   let finialLink = "http://" + domain + path;
 
-  if (clusterInfo.get("httpPort") !== 80) {
-    finialLink = finialLink + ":" + clusterInfo.get("httpPort");
+  if (clusterInfo.httpPort !== 80) {
+    finialLink = finialLink + ":" + clusterInfo.httpPort;
   }
 
   return {
@@ -177,7 +176,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
               {
                 form: "route",
                 field: "destinations",
-                validate: (destinations: HttpRouteDestinationContent[]) =>
+                validate: (destinations: HttpRouteDestination[]) =>
                   destinations.length === 1 &&
                   destinations.find((destination) => destination.host === "echoserver.tutorial.svc.cluster.local:8001")
                     ? undefined
@@ -189,7 +188,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
                 state,
                 "route",
                 "destinations",
-                (destinations: HttpRouteDestinationContent[]) =>
+                (destinations: HttpRouteDestination[]) =>
                   destinations.length === 1 &&
                   !!destinations.find(
                     (destination) => destination.host === "echoserver.tutorial.svc.cluster.local:8001",

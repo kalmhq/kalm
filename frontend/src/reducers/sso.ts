@@ -1,6 +1,4 @@
-import Immutable from "immutable";
 import { Actions } from "types";
-import { ImmutableMap } from "typings";
 import { LOGOUT } from "types/common";
 import {
   LOAD_PROTECTED_ENDPOINTS_FAILED,
@@ -20,113 +18,110 @@ import {
   RESOURCE_TYPE_SSO,
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
+import produce, { original } from "immer";
 
-export type State = ImmutableMap<{
+export type State = {
   isLoading: boolean;
   loaded: boolean;
   config?: SSOConfig;
   isProtectedEndpointsLoaded: boolean;
   isProtectedEndpointsLoading: boolean;
-  protectedEndpoints: Immutable.List<ProtectedEndpoint>;
-}>;
+  protectedEndpoints: ProtectedEndpoint[];
+};
 
-const initialState: State = Immutable.Map({
+const initialState: State = {
   isLoading: false,
   loaded: false,
-  config: null,
+  config: undefined,
   isProtectedEndpointsLoaded: false,
   isProtectedEndpointsLoading: false,
-  protectedEndpoints: Immutable.List(),
-});
+  protectedEndpoints: [],
+};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOGOUT: {
       return initialState;
     }
     case LOAD_SSO_CONFIG_PENDING: {
-      return state.set("isLoading", true);
+      state.isLoading = true;
+      return;
     }
     case LOAD_SSO_CONFIG_FAILED: {
-      return state.set("isLoading", false);
+      state.isLoading = false;
+      return;
     }
     case LOAD_SSO_CONFIG_FULFILLED: {
-      return state.set("isLoading", false).set("loaded", true).set("config", action.payload);
+      state.isLoading = false;
+      state.loaded = true;
+      state.config = action.payload;
+      return;
     }
     case LOAD_PROTECTED_ENDPOINTS_PENDING: {
-      return state.set("isProtectedEndpointsLoading", true);
+      state.isProtectedEndpointsLoading = true;
+      return;
     }
     case LOAD_PROTECTED_ENDPOINTS_FAILED: {
-      return state.set("isProtectedEndpointsLoading", false);
+      state.isProtectedEndpointsLoading = false;
+      return;
     }
     case LOAD_PROTECTED_ENDPOINTS_FULFILLED: {
-      return state
-        .set("isProtectedEndpointsLoading", false)
-        .set("isProtectedEndpointsLoaded", true)
-        .set("protectedEndpoints", action.payload);
+      state.isProtectedEndpointsLoading = false;
+      state.isProtectedEndpointsLoaded = true;
+      state.protectedEndpoints = action.payload;
+      return;
     }
     case WATCHED_RESOURCE_CHANGE: {
       if (action.kind === RESOURCE_TYPE_SSO) {
         switch (action.payload.action) {
           case RESOURCE_ACTION_ADD: {
-            state = state.set("config", action.payload.data);
-            break;
+            state.config = action.payload.data;
+            return;
           }
           case RESOURCE_ACTION_DELETE: {
-            state = state.set("config", null);
-            break;
+            state.config = undefined;
+            return;
           }
           case RESOURCE_ACTION_UPDATE: {
-            state = state.set("config", action.payload.data);
-            break;
+            state.config = action.payload.data;
+            return;
           }
         }
       } else if (action.kind === RESOURCE_TYPE_PROTECTED_ENDPOINT) {
         const endpoint = action.payload.data;
 
-        const findIndex = (list: Immutable.List<ProtectedEndpoint>) => {
-          return list.findIndex(
-            (x) =>
-              x.get("endpointName") === endpoint.get("endpointName") &&
-              x.get("namespace") === endpoint.get("namespace"),
-          );
+        const findIndex = (arr: ProtectedEndpoint[]) => {
+          return arr.findIndex((x) => x.endpointName === endpoint.name && x.namespace === endpoint.namespace);
         };
 
         switch (action.payload.action) {
           case RESOURCE_ACTION_UPDATE:
           case RESOURCE_ACTION_ADD: {
-            state = state.update("protectedEndpoints", (list) => {
-              const index = findIndex(list);
+            const index = findIndex(original(state.protectedEndpoints)!);
+            if (index < 0) {
+              state.protectedEndpoints.unshift(endpoint);
+            } else {
+              state.protectedEndpoints[index] = endpoint;
+            }
 
-              if (index < 0) {
-                return list.unshift(endpoint);
-              }
-
-              return list.set(index, endpoint);
-            });
-            break;
+            return;
           }
           case RESOURCE_ACTION_DELETE: {
-            state = state.update("protectedEndpoints", (list) => {
-              const index = findIndex(list);
-
-              if (index < 0) {
-                return list;
-              }
-
-              return list.delete(index);
-            });
-            break;
+            const index = findIndex(original(state.protectedEndpoints)!);
+            if (index >= 0) {
+              state.protectedEndpoints.splice(index, 1);
+            }
+            return;
           }
         }
       } else {
-        return state;
+        return;
       }
-      break;
+      return;
     }
   }
 
-  return state;
-};
+  return;
+}, initialState);
 
 export default reducer;

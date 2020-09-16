@@ -13,7 +13,6 @@ import { setSuccessNotificationAction } from "actions/notification";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { createAcmeServerAction, deleteAcmeServerAction, loadCertificateAcmeServerAction } from "actions/certificate";
-import Immutable from "immutable";
 import { DangerButton } from "./Button";
 
 interface KAcmeServerCardProps extends TDispatchProp {
@@ -77,12 +76,12 @@ const KAcmeServerForm = (props: FormikProps<{ acmeDomain: string; nsDomain: stri
 
 export const KAcmeServerCard = connect(mapStateToProps)((props: KAcmeServerCardProps) => {
   const { acmeServer, dispatch } = props;
-  const acmeDomain = acmeServer.get("acmeDomain");
+  const acmeDomain = acmeServer.acmeDomain;
   const userHasSetup = acmeDomain && acmeDomain.length > 0;
-  const isReady = acmeServer.get("ready");
+  const isReady = acmeServer.ready;
 
-  const nsDomain = acmeServer.get("nsDomain");
-  const ipForNameServer = acmeServer.get("ipForNameServer");
+  const nsDomain = acmeServer.nsDomain;
+  const ipForNameServer = acmeServer.ipForNameServer;
 
   const renderServer = () => {
     return (
@@ -169,7 +168,7 @@ export const KAcmeServerCard = connect(mapStateToProps)((props: KAcmeServerCardP
 
 export const KAcmeServerFormCard = connect(mapStateToProps)((props: KAcmeServerCardProps) => {
   const { acmeServer, dispatch } = props;
-  const acmeDomain = acmeServer.get("acmeDomain");
+  const acmeDomain = acmeServer.acmeDomain;
   const userHasSetup = acmeDomain && acmeDomain.length > 0;
 
   const DNS01Form = withFormik({
@@ -181,7 +180,7 @@ export const KAcmeServerFormCard = connect(mapStateToProps)((props: KAcmeServerC
     },
     handleSubmit: async (values, bag) => {
       try {
-        await dispatch(createAcmeServerAction(Immutable.Map(values)));
+        await dispatch(createAcmeServerAction(values));
         await dispatch(loadCertificateAcmeServerAction());
       } catch (error) {
         console.log(error);

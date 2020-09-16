@@ -10,25 +10,36 @@ import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
-import { HelpIcon, KalmUserIcon, MenuIcon, MenuOpenIcon, KalmLogo2Icon, KalmTextLogoIcon } from "widgets/Icon";
+import {
+  HelpIcon,
+  ImpersonateIcon,
+  KalmLogo2Icon,
+  KalmTextLogoIcon,
+  KalmUserIcon,
+  MenuIcon,
+  MenuOpenIcon,
+} from "widgets/Icon";
 import { ThemeToggle } from "theme/ThemeToggle";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import stringConstants from "utils/stringConstants";
 import Button from "@material-ui/core/Button";
 import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
+import { stopImpersonating } from "api/realApi/index";
+import { push } from "connected-react-router";
+import deepOrange from "@material-ui/core/colors/deepOrange";
 
 const mapStateToProps = (state: RootState) => {
-  const activeNamespace = state.get("namespaces").get("active");
+  const activeNamespace = state.namespaces.active;
 
-  const auth = state.get("auth");
-  const isAdmin = auth.get("isAdmin");
-  const entity = auth.get("entity");
+  const auth = state.auth;
+  const email = auth.email;
+  const impersonation = auth.impersonation;
   return {
-    isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
-    tutorialDrawerOpen: state.get("tutorial").get("drawerOpen"),
+    isOpenRootDrawer: state.settings.isOpenRootDrawer,
+    tutorialDrawerOpen: state.tutorial.drawerOpen,
+    impersonation,
     activeNamespace,
-    isAdmin,
-    entity,
+    email,
   };
 };
 
@@ -123,9 +134,16 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  renderAuthEntity() {
-    const { entity } = this.props;
+  renderAuth() {
+    const { impersonation, email, dispatch } = this.props;
     const { authMenuAnchorElement } = this.state;
+
+    let emailForDisplay: string = email;
+
+    if (email.length > 15) {
+      emailForDisplay = email.slice(0, 15) + "...";
+    }
+
     return (
       <div>
         <IconButtonWithTooltip
@@ -137,7 +155,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           }}
           color="inherit"
         >
-          <KalmUserIcon />
+          {!impersonation ? <KalmUserIcon /> : <ImpersonateIcon style={{ color: deepOrange[400] }} />}
         </IconButtonWithTooltip>
         <Menu
           id="menu-appbar"
@@ -156,9 +174,19 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             this.setState({ authMenuAnchorElement: null });
           }}
         >
-          <MenuItem disabled>Auth as {entity}</MenuItem>
-          {entity.indexOf("localhost") < 0 ? <Divider /> : null}
-          {entity.indexOf("localhost") < 0 ? (
+          <MenuItem disabled>Auth as {emailForDisplay}</MenuItem>
+          {!!impersonation ? (
+            <MenuItem
+              onClick={async () => {
+                stopImpersonating();
+                await dispatch(push("/"));
+                window.location.reload();
+              }}
+            >
+              Stop impersonating {impersonation}
+            </MenuItem>
+          ) : null}
+          {email.indexOf("localhost") < 0 ? (
             <Box>
               <Divider />
               <MenuItem
@@ -279,7 +307,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           </div>
 
           <div className={classes.barRight}>
-            {clusterInfo.get("canBeInitialized") && (
+            {clusterInfo.canBeInitialized && (
               <Box mr={2}>
                 <Button to="/setup" component={Link} onClick={console.log} variant="outlined" color="secondary">
                   Finish the setup steps
@@ -291,7 +319,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             <Divider orientation="vertical" flexItem color="inherit" />
             <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
             <Divider orientation="vertical" flexItem color="inherit" />
-            <div className={classes.barAvatar}>{this.renderAuthEntity()}</div>
+            <div className={classes.barAvatar}>{this.renderAuth()}</div>
           </div>
         </div>
       </AppBar>

@@ -10,12 +10,20 @@ import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 import copy from "copy-to-clipboard";
 import { setSuccessNotificationAction } from "actions/notification";
 import { regExpIp } from "forms/validator";
+import { Domain } from "types/domain";
 
 const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
   const regResultIp = regExpIp.exec(ownProps.domain);
+  let domainStatus: Domain | undefined;
+  const domainState = state.domain;
+  for (let domainKey in domainState) {
+    if (domainKey === ownProps.domain) {
+      domainStatus = domainState[domainKey];
+    }
+  }
   return {
-    domainStatus: state.get("domain").find((status) => status.get("domain") === ownProps.domain),
-    ingressIP: state.get("cluster").get("info").get("ingressIP"),
+    domainStatus,
+    ingressIP: state.cluster.info.ingressIP,
     isIPDomain: regResultIp !== null,
   };
 };
@@ -95,19 +103,19 @@ class DomainStatus extends React.PureComponent<Props> {
 
   private getError = (): boolean => {
     const { domainStatus, cnameDomain, nsDomain } = this.props;
-    const isLoaded = domainStatus?.get("isLoaded");
+    const isLoaded = domainStatus?.isLoaded;
     let isError = true;
     try {
       if (domainStatus) {
-        if (isLoaded && cnameDomain && domainStatus.get("cname")) {
-          // console.log("cname check", domain, cnameDomain, domainStatus.get("cname"));
-          isError = !(domainStatus.get("cname") === cnameDomain);
-        } else if (isLoaded && nsDomain && domainStatus.get("ns")) {
-          // console.log("ns check", domain, nsDomain, domainStatus.get("ns"));
-          isError = !domainStatus.get("ns").includes(nsDomain + ".");
-        } else if (isLoaded && domainStatus.get("aRecords")) {
-          // console.log("aRecords", domain, ipAddress, domainStatus.get("aRecords"), this.getIPAddress());
-          isError = !domainStatus.get("aRecords").includes(this.getIPAddress());
+        if (isLoaded && cnameDomain && domainStatus.cname) {
+          // console.log("cname check", domain, cnameDomain, domainStatus.cname);
+          isError = !(domainStatus.cname === cnameDomain);
+        } else if (isLoaded && nsDomain && domainStatus.ns) {
+          // console.log("ns check", domain, nsDomain, domainStatus.ns);
+          isError = !domainStatus.ns.includes(nsDomain + ".");
+        } else if (isLoaded && domainStatus.aRecords) {
+          // console.log("aRecords", domain, ipAddress, domainStatus.aRecords, this.getIPAddress());
+          isError = !domainStatus.aRecords.includes(this.getIPAddress());
         }
       }
     } catch (error) {
@@ -145,7 +153,7 @@ class DomainStatus extends React.PureComponent<Props> {
           ),
       };
     }
-    if (!domainStatus || !domainStatus?.get("isLoaded")) {
+    if (!domainStatus || !domainStatus?.isLoaded) {
       return {
         icon: <CircularProgress size={24} style={{ padding: 2 }} />,
         body: <Box p={2}>checking domain status</Box>,
@@ -155,7 +163,7 @@ class DomainStatus extends React.PureComponent<Props> {
     const isError = this.getError();
 
     if (isError) {
-      const cnameRecords = domainStatus?.get("cname");
+      const cnameRecords = domainStatus?.cname;
       const copyContent = cnameRecords !== undefined ? cnameDomain! : ip;
       return {
         icon: <WarningIcon color="action" />,

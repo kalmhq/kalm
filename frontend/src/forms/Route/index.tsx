@@ -7,15 +7,17 @@ import { Field, Form, FormikProps, withFormik } from "formik";
 import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KFormikBoolCheckboxRender, KFormikCheckboxGroupRender } from "forms/Basic/checkbox";
 import { KFormikRadioGroupRender } from "forms/Basic/radio";
+import { ROUTE_FORM_ID } from "forms/formIDs";
 import { KValidatorHostsWithWildcardPrefix, KValidatorPaths, ValidatorArrayNotEmpty } from "forms/validator";
 import routesGif from "images/routes.gif";
-import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { Link as RouteLink } from "react-router-dom";
 import { RootState } from "reducers";
+import { FormMidware } from "tutorials/formMidware";
+import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
-import { httpMethods, HttpRouteFormType, methodsModeAll, methodsModeSpecific } from "types/route";
+import { httpMethods, HttpRoute, methodsModeAll, methodsModeSpecific } from "types/route";
 import { isArray } from "util";
 import { arraysMatch } from "utils";
 import { includesForceHttpsDomain } from "utils/domain";
@@ -27,24 +29,19 @@ import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
-import { ROUTE_FORM_ID } from "forms/formIDs";
-import { FormMidware } from "tutorials/formMidware";
-import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 
 const mapStateToProps = (state: RootState) => {
-  const certifications = state.get("certificates").get("certificates");
+  const certifications = state.certificates.certificates;
   const domains: Set<string> = new Set();
 
   certifications.forEach((x) => {
-    x.get("domains")
-      .filter((x) => x !== "*")
-      .forEach((domain) => domains.add(domain));
+    x.domains.filter((x) => x !== "*").forEach((domain) => domains.add(domain));
   });
 
   return {
-    tutorialState: state.get("tutorial"),
+    tutorialState: state.tutorial,
     domains: Array.from(domains),
-    ingressIP: state.get("cluster").get("info").get("ingressIP"),
+    ingressIP: state.cluster.info.ingressIP,
     certifications,
     form: ROUTE_FORM_ID,
   };
@@ -81,12 +78,12 @@ const styles = (theme: Theme) =>
 interface OwnProps {
   isEdit?: boolean;
   onSubmit: any;
-  initial: HttpRouteFormType;
+  initial: HttpRoute;
 }
 
 export interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props extends ConnectedProps, OwnProps, FormikProps<HttpRouteFormType>, WithStyles<typeof styles> {}
+export interface Props extends ConnectedProps, OwnProps, FormikProps<HttpRoute>, WithStyles<typeof styles> {}
 
 interface State {
   isAdvancedPartUnfolded: boolean;
@@ -128,9 +125,9 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     }
   }
 
-  private canCertDomainsSuiteForHost = (domains: Immutable.List<string>, host: string) => {
-    for (let i = 0; i < domains.size; i++) {
-      const domain = domains.get(i)!;
+  private canCertDomainsSuiteForHost = (domains: string[], host: string) => {
+    for (let i = 0; i < domains.length; i++) {
+      const domain = domains[i]!;
       if (domain === "*") {
         return false;
       }
@@ -166,7 +163,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     let hostCertResults: any[] = [];
 
     hosts.forEach((host) => {
-      const cert = certifications.find((c) => this.canCertDomainsSuiteForHost(c.get("domains"), host));
+      const cert = certifications.find((c) => this.canCertDomainsSuiteForHost(c.domains, host));
 
       hostCertResults.push({
         host,
@@ -231,7 +228,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
               <Typography key={host}>
                 <strong>{host}</strong> will use{" "}
                 <Link href="#" variant="body2">
-                  <strong>{cert.get("name")}</strong>
+                  <strong>{cert.name}</strong>
                 </Link>{" "}
                 certification.
               </Typography>
@@ -462,12 +459,15 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             </Grid>
           </Grid>
         </Form>
+        {process.env.REACT_APP_DEBUG === "true" ? (
+          <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
+        ) : null}
       </div>
     );
   }
 }
 
-const form = withFormik<OwnProps & ConnectedProps & WithStyles<typeof styles>, HttpRouteFormType>({
+const form = withFormik<OwnProps & ConnectedProps & WithStyles<typeof styles>, HttpRoute>({
   mapPropsToValues: (props) => {
     return props.initial;
   },

@@ -30,18 +30,16 @@ export class StorageType extends React.PureComponent<Props> {
               }}
             >
               <VerticalHeadTable
-                items={storageClasses
-                  .map((x) => ({
-                    name: "Type: " + x.get("name"),
-                    content: (
-                      <Box>
-                        <Button variant="text" href={x.get("docLink")} target="_blank">
-                          Details
-                        </Button>
-                      </Box>
-                    ),
-                  }))
-                  .toArray()}
+                items={storageClasses.map((x) => ({
+                  name: "Type: " + x.name,
+                  content: (
+                    <Box>
+                      <Button variant="text" href={x.docLink} target="_blank">
+                        Details
+                      </Button>
+                    </Box>
+                  ),
+                }))}
               />
             </Popover>
           </>

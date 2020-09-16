@@ -6,7 +6,11 @@ import (
 )
 
 func (h *ApiHandler) handleListRegistries(c echo.Context) error {
-	list, err := h.Builder(c).GetDockerRegistries()
+	if !h.clientManager.CanView(getCurrentUser(c), "*", "registries") {
+		return resources.NoRegistriesViewPermissionError
+	}
+
+	list, err := h.resourceManager.GetDockerRegistries()
 
 	if err != nil {
 		return err
@@ -16,7 +20,11 @@ func (h *ApiHandler) handleListRegistries(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleGetRegistry(c echo.Context) error {
-	registry, err := h.Builder(c).GetDockerRegistry(c.Param("name"))
+	if !h.clientManager.CanView(getCurrentUser(c), "*", "registries") {
+		return resources.NoRegistriesViewPermissionError
+	}
+
+	registry, err := h.resourceManager.GetDockerRegistry(c.Param("name"))
 
 	if err != nil {
 		return err
@@ -26,13 +34,17 @@ func (h *ApiHandler) handleGetRegistry(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateRegistry(c echo.Context) (err error) {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
+		return resources.NoClusterEditorRoleError
+	}
+
 	var registry *resources.DockerRegistry
 
 	if registry, err = getDockerRegistryFromContext(c); err != nil {
 		return err
 	}
 
-	if registry, err = h.Builder(c).CreateDockerRegistry(registry); err != nil {
+	if registry, err = h.resourceManager.CreateDockerRegistry(registry); err != nil {
 		return err
 	}
 
@@ -40,13 +52,17 @@ func (h *ApiHandler) handleCreateRegistry(c echo.Context) (err error) {
 }
 
 func (h *ApiHandler) handleUpdateRegistry(c echo.Context) (err error) {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
+		return resources.NoClusterEditorRoleError
+	}
+
 	var registry *resources.DockerRegistry
 
 	if registry, err = getDockerRegistryFromContext(c); err != nil {
 		return err
 	}
 
-	if registry, err = h.Builder(c).UpdateDockerRegistry(registry); err != nil {
+	if registry, err = h.resourceManager.UpdateDockerRegistry(registry); err != nil {
 		return err
 	}
 
@@ -54,10 +70,16 @@ func (h *ApiHandler) handleUpdateRegistry(c echo.Context) (err error) {
 }
 
 func (h *ApiHandler) handleDeleteRegistry(c echo.Context) error {
-	err := h.Builder(c).DeleteDockerRegistry(c.Param("name"))
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
+		return resources.NoClusterEditorRoleError
+	}
+
+	err := h.resourceManager.DeleteDockerRegistry(c.Param("name"))
+
 	if err != nil {
 		return err
 	}
+
 	return c.NoContent(200)
 }
 

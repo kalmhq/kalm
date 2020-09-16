@@ -33,71 +33,128 @@ func (suite *ComponentTestSuite) TeardownSuite() {
 }
 
 func (suite *ComponentTestSuite) TestGetEmptyComponentList() {
-	rec := suite.NewRequest(http.MethodGet, fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace), nil)
-
-	var res []resources.Component
-	rec.BodyAsJSON(&res)
-
-	suite.Equal(200, rec.Code)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetViewerRoleOfNs(suite.namespace),
+		},
+		Namespace: suite.namespace,
+		Method:    http.MethodGet,
+		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace),
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", suite.namespace)
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res []resources.Component
+			rec.BodyAsJSON(&res)
+			suite.Equal(200, rec.Code)
+		},
+	})
 }
 
 func (suite *ComponentTestSuite) TestBasicRequestOfComponents() {
 	// Create
-	rec := suite.NewRequest(
-		http.MethodPost,
-		fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace),
-		resources.Component{
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetEditorRoleOfNs(suite.namespace),
+		},
+		Namespace: suite.namespace,
+		Method:    http.MethodPost,
+		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace),
+		Body: resources.Component{
 			Name: "foobar",
 			ComponentSpec: v1alpha1.ComponentSpec{
 				Image: "foo",
 			},
 		},
-	)
-	var res resources.Component
-	rec.BodyAsJSON(&res)
-	suite.Equal(201, rec.Code)
-	suite.Equal("foo", res.Image)
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res resources.Component
+			rec.BodyAsJSON(&res)
+			suite.Equal(201, rec.Code)
+			suite.Equal("foo", res.Image)
+		},
+	})
 
 	// Get
-	rec = suite.NewRequest(http.MethodGet,
-		fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
-		nil,
-	)
-	rec.BodyAsJSON(&res)
-	suite.Equal(200, rec.Code)
-	suite.Equal("foo", res.Image)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetEditorRoleOfNs(suite.namespace),
+		},
+		Namespace: suite.namespace,
+		Method:    http.MethodGet,
+		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", suite.namespace)
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res resources.Component
+			rec.BodyAsJSON(&res)
+			suite.Equal(200, rec.Code)
+			suite.Equal("foo", res.Image)
+		},
+	})
 
 	// Update
-	rec = suite.NewRequest(http.MethodPut,
-		fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
-		resources.Component{
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetEditorRoleOfNs(suite.namespace),
+		},
+		Namespace: suite.namespace,
+		Method:    http.MethodPut,
+		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
+		Body: resources.Component{
 			Name: "foobar",
 			ComponentSpec: v1alpha1.ComponentSpec{
 				Image: "foo2",
 			},
 		},
-	)
-	rec.BodyAsJSON(&res)
-	suite.Equal(200, rec.Code)
-	suite.Equal("foo2", res.Image)
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res resources.Component
+			rec.BodyAsJSON(&res)
+			suite.Equal(200, rec.Code)
+			suite.Equal("foo2", res.Image)
+		},
+	})
 
 	// Delete
-	rec = suite.NewRequest(http.MethodDelete,
-		fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
-		nil,
-	)
-	suite.Equal(204, rec.Code)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetEditorRoleOfNs(suite.namespace),
+		},
+		Namespace: suite.namespace,
+		Method:    http.MethodDelete,
+		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.Equal(204, rec.Code)
+		},
+	})
 
-	// Get
-	rec = suite.NewRequest(http.MethodGet,
-		fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
-		nil,
-	)
-	suite.Equal(404, rec.Code)
+	// Get Again
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetEditorRoleOfNs(suite.namespace),
+		},
+		Namespace: suite.namespace,
+		Method:    http.MethodGet,
+		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", suite.namespace)
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.Equal(404, rec.Code)
+		},
+	})
 }
 
 func (suite *ComponentTestSuite) TestCreateComponentWithPVCAsVolume() {
-
 	sc := "kalm-standard"
 	reqComp := resources.Component{
 		Name: "foobar-create-new-pv",
@@ -114,31 +171,48 @@ func (suite *ComponentTestSuite) TestCreateComponentWithPVCAsVolume() {
 		},
 	}
 
-	compInJSON, err := json.Marshal(reqComp)
-	suite.Nil(err)
+	// create component
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetEditorRoleOfNs(suite.namespace),
+		},
+		Namespace: suite.namespace,
+		Method:    http.MethodPost,
+		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace),
+		Body:      reqComp,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res resources.Component
+			rec.BodyAsJSON(&res)
+			suite.Equal(201, rec.Code)
+		},
+	})
 
-	apiURL := fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace)
+	// Get List
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetViewerRoleOfNs(suite.namespace),
+		},
+		Namespace: suite.namespace,
+		Method:    http.MethodGet,
+		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace),
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", suite.namespace)
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res []resources.ComponentDetails
+			rec.BodyAsJSON(&res)
+			suite.Equal(200, rec.Code)
 
-	rec := suite.NewRequest(http.MethodPost, apiURL, string(compInJSON))
+			suite.Len(res, 1)
+			suite.Len(res[0].Volumes, 1)
 
-	var res resources.Component
-	rec.BodyAsJSON(&res)
-
-	suite.Equal(201, rec.Code)
-
-	// check if volume in Comp is as expected
-	compList, err := suite.getComponentList(suite.namespace)
-	suite.Nil(err)
-	suite.Equal(1, len(compList.Items))
-
-	comp := compList.Items[0]
-	suite.Equal(1, len(comp.Spec.Volumes))
-
-	expectedPVCName := res.Volumes[0].PVC
-	suite.Equal(expectedPVCName, comp.Spec.Volumes[0].PVC)
-
-	suite.Equal(sc, *comp.Spec.Volumes[0].StorageClassName)
-	suite.Equal("", comp.Spec.Volumes[0].PVToMatch)
+			suite.Equal(sc, *res[0].Volumes[0].StorageClassName)
+			suite.Equal("", res[0].Volumes[0].PVToMatch)
+		},
+	})
 }
 
 func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
@@ -184,27 +258,34 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 		},
 	}
 
-	compInJSON, err := json.Marshal(reqComp)
-	suite.Nil(err)
+	// create component
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetEditorRoleOfNs(suite.namespace),
+		},
+		Namespace: suite.namespace,
+		Method:    http.MethodPost,
+		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace),
+		Body:      reqComp,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res resources.Component
+			rec.BodyAsJSON(&res)
+			suite.Equal(201, rec.Code)
 
-	apiURL := fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace)
+			// check if volume in Comp is as expected
+			comp, err := suite.getComponent(suite.namespace, reqComp.Name)
+			suite.Nil(err)
 
-	rec := suite.NewRequest(http.MethodPost, apiURL, string(compInJSON))
+			expectedPVCName := res.Volumes[0].PVC
+			suite.Equal(expectedPVCName, comp.Spec.Volumes[0].PVC)
 
-	var res resources.Component
-	rec.BodyAsJSON(&res)
-
-	suite.Equal(201, rec.Code)
-
-	// check if volume in Comp is as expected
-	comp, err := suite.getComponent(suite.namespace, reqComp.Name)
-	suite.Nil(err)
-
-	expectedPVCName := res.Volumes[0].PVC
-	suite.Equal(expectedPVCName, comp.Spec.Volumes[0].PVC)
-
-	suite.Equal(scName, *comp.Spec.Volumes[0].StorageClassName)
-	suite.Equal(reqComp.Volumes[0].PVToMatch, comp.Spec.Volumes[0].PVToMatch)
+			suite.Equal(scName, *comp.Spec.Volumes[0].StorageClassName)
+			suite.Equal(reqComp.Volumes[0].PVToMatch, comp.Spec.Volumes[0].PVToMatch)
+		},
+	})
 }
 
 //func (suite *ComponentTestSuite) TestCreateComponentWithReusePVInvalid() {
@@ -230,22 +311,31 @@ func (suite *ComponentTestSuite) TestCreateComponentWithResourceRequirements() {
 		},
 	}
 
-	compInJSON, err := json.Marshal(component)
-	suite.Nil(err)
+	// create component
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetEditorRoleOfNs(suite.namespace),
+		},
+		Namespace: suite.namespace,
+		Method:    http.MethodPost,
+		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace),
+		Body:      component,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.Equal(201, rec.Code)
 
-	apiURL := fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace)
+			recBytes := rec.bytes
+			respMap := make(map[string]interface{})
+			//fmt.Println("recBytes:", string(recBytes))
+			err := json.Unmarshal(recBytes, &respMap)
+			suite.Nil(err)
 
-	rec := suite.NewRequest(http.MethodPost, apiURL, string(compInJSON))
-	suite.Equal(201, rec.Code)
-
-	recBytes := rec.bytes
-	respMap := make(map[string]interface{})
-	//fmt.Println("recBytes:", string(recBytes))
-	err = json.Unmarshal(recBytes, &respMap)
-	suite.Nil(err)
-
-	suite.Equal("100m", respMap["cpuLimit"])
-	suite.Equal("107374183", respMap["memoryLimit"])
-	suite.Equal("10000m", respMap["cpuRequest"])
-	suite.Equal("10485760", respMap["memoryRequest"])
+			suite.Equal("100m", respMap["cpuLimit"])
+			suite.Equal("107374183", respMap["memoryLimit"])
+			suite.Equal("10000m", respMap["cpuRequest"])
+			suite.Equal("10485760", respMap["memoryRequest"])
+		},
+	})
 }
