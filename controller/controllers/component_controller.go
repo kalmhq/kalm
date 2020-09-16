@@ -248,18 +248,15 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 }
 
 const (
-	KalmLabelComponentKey   = "kalm-component"
-	KalmLabelComponentNSKey = "kalm-component-namespace"
+	KalmLabelComponentKey = "kalm-component"
+	KalmLabelNamespaceKey = "kalm-namespace"
 )
 
 func (r *ComponentReconcilerTask) GetLabels() map[string]string {
 	res := map[string]string{
-		// deprecated
-		"kalm-namespace": r.component.Namespace,
-
-		KalmLabelComponentNSKey: r.component.Namespace,
-		KalmLabelComponentKey:   r.component.Name,
-		KalmLabelManaged:        "true",
+		KalmLabelNamespaceKey: r.component.Namespace,
+		KalmLabelComponentKey: r.component.Name,
+		KalmLabelManaged:      "true",
 	}
 
 	if r.component.Spec.Labels != nil {

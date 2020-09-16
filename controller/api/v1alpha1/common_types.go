@@ -63,7 +63,7 @@ type Port struct {
 	Protocol PortProtocol `json:"protocol"`
 }
 
-// +kubebuilder:validation:Enum=emptyDirMemory;emptyDir;pvc;pvcTemplate;hostPath
+// +kubebuilder:validation:Enum=emptyDirMemory;emptyDir;pvc;pvcTemplate;hostpath
 type VolumeType string
 
 const (
@@ -73,7 +73,7 @@ const (
 
 	VolumeTypePersistentVolumeClaimTemplate VolumeType = "pvcTemplate"
 
-	VolumeTypeHostPath VolumeType = "hostPath"
+	VolumeTypeHostPath VolumeType = "hostpath"
 )
 
 type Volume struct {

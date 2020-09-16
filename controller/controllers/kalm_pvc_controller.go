@@ -97,7 +97,7 @@ func (r *KalmPVCReconciler) reconcileForPVCOwnerChange(pvc corev1.PersistentVolu
 			}
 
 			copiedPVC.Labels[KalmLabelComponentKey] = expectedComp
-			copiedPVC.Labels[KalmLabelComponentNSKey] = expectedNS
+			copiedPVC.Labels[KalmLabelNamespaceKey] = expectedNS
 			copiedPVC.Labels[KalmLabelManaged] = "true"
 
 			err := r.Update(r.ctx, copiedPVC)

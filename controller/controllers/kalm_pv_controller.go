@@ -170,7 +170,7 @@ func (r *KalmPVReconciler) reconcilePV(pvName string) error {
 	pv.Labels[KalmLabelManaged] = "true"
 	// descriptive information
 	pv.Labels[KalmLabelComponentKey] = pvc.Labels[KalmLabelComponentKey]
-	pv.Labels[KalmLabelComponentNSKey] = pvc.Labels[KalmLabelComponentNSKey]
+	pv.Labels[KalmLabelNamespaceKey] = pvc.Labels[KalmLabelNamespaceKey]
 	// to be selectable by PV
 	pv.Labels[KalmLabelPV] = pv.Name
 
@@ -281,9 +281,9 @@ func (r *KalmPVReconciler) reconcileOrphanPV(orphanPV *corev1.PersistentVolume) 
 			Name:      pvcName,
 			Namespace: NamespaceKalmSystem,
 			Labels: map[string]string{
-				KalmLabelManaged:        "true",
-				KalmLabelComponentKey:   orphanPV.Labels[KalmLabelComponentKey],
-				KalmLabelComponentNSKey: orphanPV.Labels[KalmLabelComponentNSKey],
+				KalmLabelManaged:      "true",
+				KalmLabelComponentKey: orphanPV.Labels[KalmLabelComponentKey],
+				KalmLabelNamespaceKey: orphanPV.Labels[KalmLabelNamespaceKey],
 			},
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{
