@@ -18,6 +18,14 @@ const styles = (theme: Theme) =>
       "&expanded": {
         margin: "auto",
       },
+      "& .MuiExpansionPanelSummary-root": {
+        height: "48px",
+      },
+      "& .MuiExpansionPanelSummary-root.Mui-expanded": {
+        height: 48,
+        minHeight: 48,
+        borderBottom: `1px solid ${theme.palette.divider}`,
+      },
     },
     heading: {
       flexBasis: "40%",
@@ -62,7 +70,7 @@ class ExpansionRaw extends React.PureComponent<ExpansionProps, State> {
     if (typeof title === "string") {
       return (
         <>
-          <Typography className={classes.heading}>{title}</Typography>
+          <Box className={classes.heading}>{title}</Box>
           {subTitle ? <Typography className={classes.secondaryHeading}>{subTitle}</Typography> : null}
         </>
       );

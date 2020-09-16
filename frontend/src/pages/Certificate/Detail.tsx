@@ -1,15 +1,15 @@
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles, Grid, Box } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles, Grid, Box, Button } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { Certificate, dns01Issuer, http01Issuer } from "types/certificate";
 import { BasePage } from "pages/BasePage";
 import { RootState } from "reducers";
-import { withRouter, RouteComponentProps } from "react-router-dom";
+import { withRouter, RouteComponentProps, Link } from "react-router-dom";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { KPanel } from "widgets/KPanel";
 import { Alert } from "@material-ui/lab";
-import DomainStatus from "widgets/DomainStatus";
+import DomainStatus, { acmePrefix } from "widgets/DomainStatus";
 import { Expansion } from "forms/Route/expansion";
 import { Loading } from "widgets/Loading";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
@@ -47,7 +47,7 @@ interface State {}
 
 class CertificateDetailRaw extends React.PureComponent<Props, State> {
   private renderDomainGuide = (cert: Certificate | undefined) => {
-    const { classes, ingressIP } = this.props;
+    const { classes, ingressIP, acmeServer } = this.props;
     if (cert === undefined) {
       return null;
     } else {
@@ -85,39 +85,61 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
           </Box>
         );
       } else if (cert.get("httpsCertIssuer") === dns01Issuer) {
-        const domains = cert.get("wildcardCertDNSChallengeDomainMap");
-        return (
-          <Box>
-            <Box className={classes.key}>Domains</Box>
-            <Box pl={0} pt={1}>
-              {domains
-                ?.map((cname, domain) => {
-                  return (
-                    <>
-                      <CollapseWrapper
-                        title={
-                          <FlexRowItemCenterBox>
-                            <DomainStatus domain={domain} cnameDomain={cname} mr={1} />
-                            {domain}
-                          </FlexRowItemCenterBox>
-                        }
-                        defaultOpen={true}
-                        showIcon={true}
-                      >
-                        <Box p={1}>
-                          Add a CNAME Record
-                          <pre className={classes.action}>
-                            {domain} CNAME {cname}{" "}
-                          </pre>
-                        </Box>
-                      </CollapseWrapper>
-                    </>
-                  );
-                })
-                .toList()}
+        if (!acmeServer || !acmeServer.get("ready")) {
+          const domains = cert.get("domains");
+          return (
+            <Box>
+              <Box className={classes.key}>Domains</Box>
+              <Box pl={0} pt={1}>
+                {domains
+                  ?.map((domain) => {
+                    return (
+                      <FlexRowItemCenterBox key={domain}>
+                        <DomainStatus domain={acmePrefix + domain} cnameDomain={""} mr={1} />
+                        {domain}
+                      </FlexRowItemCenterBox>
+                    );
+                  })
+                  .toList()}
+              </Box>
             </Box>
-          </Box>
-        );
+          );
+        } else {
+          const domains = cert.get("wildcardCertDNSChallengeDomainMap");
+          return (
+            <Box>
+              <Box className={classes.key}>Domains</Box>
+              <Box pl={0} pt={1}>
+                {domains
+                  ?.map((ns, domain) => {
+                    return (
+                      <Box key={domain}>
+                        <CollapseWrapper
+                          title={
+                            <FlexRowItemCenterBox>
+                              <DomainStatus domain={acmePrefix + domain} nsDomain={ns} mr={1} />
+                              {domain}
+                            </FlexRowItemCenterBox>
+                          }
+                          defaultOpen={true}
+                          showIcon={true}
+                        >
+                          <Box p={1}>
+                            Add a NS Record
+                            <pre className={classes.action}>
+                              {acmePrefix}
+                              {domain} NS {ns}{" "}
+                            </pre>
+                          </Box>
+                        </CollapseWrapper>
+                      </Box>
+                    );
+                  })
+                  .toList()}
+              </Box>
+            </Box>
+          );
+        }
       } else {
         const domains = cert.get("domains");
         return (
@@ -154,6 +176,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
             <Box p={2}>
               <Expansion title="ACME DNS Server" defaultUnfold>
                 <Loading />
+                Waiting for staring.
               </Expansion>
             </Box>
           );
@@ -161,35 +184,38 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
 
         return (
           <Box p={2}>
-            <Expansion title="ACME DNS Server" defaultUnfold={!acmeServer.get("ready")}>
+            <Expansion title="ACME DNS Server is running" defaultUnfold={!acmeServer.get("ready")}>
               <Box p={2}>
                 {acmeServer.get("ready") ? (
                   <Alert severity="success">Kalm DNS server is running well, you don't need to do any more.</Alert>
                 ) : (
-                  <>
-                    <Alert severity="info">
-                      You simply need to do the following to get your DNS server up and running.
-                    </Alert>
-                    <Box p={1}>
-                      DNS Server Domain: {acmeServer.get("acmeDomain")}
-                      <Box p={1}>
-                        Add a CNAME Record
-                        <pre className={classes.action}>
-                          {acmeServer.get("acmeDomain")} CNAME {acmeServer.get("nsDomain")}
-                        </pre>
-                      </Box>
-                    </Box>
-                    <Box p={1}>
-                      Shadow Domain: {acmeServer.get("nsDomain")}
-                      <Box p={1}>
-                        Add a A Record
-                        <pre className={classes.action}>
-                          {acmeServer.get("nsDomain")} A {acmeServer.get("ipForNameServer")}
-                        </pre>
-                      </Box>
-                    </Box>
-                  </>
+                  <Alert severity="info">
+                    You simply need to do the following to get your DNS server up and running.
+                  </Alert>
                 )}
+                <>
+                  <Box p={1}>
+                    DNS Server Domain:
+                    <Box p={1}>
+                      NS Record:
+                      <pre className={classes.action}>
+                        {acmeServer.get("acmeDomain")} NS {acmeServer.get("nsDomain")}
+                      </pre>
+                    </Box>
+                  </Box>
+                  <Box p={1}>
+                    Shadow Domain:
+                    <Box p={1}>
+                      A Record:
+                      <pre className={classes.action}>
+                        {acmeServer.get("nsDomain")} A {acmeServer.get("ipForNameServer")}
+                      </pre>
+                    </Box>
+                  </Box>
+                  <Button color="primary" variant="outlined" size="small" component={Link} to="/certificates/acme/edit">
+                    Edit
+                  </Button>
+                </>
               </Box>
             </Expansion>
           </Box>
@@ -225,7 +251,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                     <FlexRowItemCenterBox>
                       <Box className={classes.key}>Status</Box>
                       <Box pl={2} />
-                      {certInfo?.get("ready") ? "Ready" : "Not Ready"}
+                      {certInfo?.get("ready") ? certInfo?.get("ready") : "Not Ready"}
                     </FlexRowItemCenterBox>
 
                     {this.renderDomainGuide(certInfo)}

@@ -220,6 +220,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
         return "Edit";
       case "sso":
         return "SSO";
+      case "acme":
+        return "ACME DNS Server";
       case "ci":
         return "CI";
       case "metrics":

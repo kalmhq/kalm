@@ -11,12 +11,15 @@ import copy from "copy-to-clipboard";
 import { setSuccessNotificationAction } from "actions/notification";
 import { regExpIp } from "forms/validator";
 
+export const acmePrefix = "_acme-challenge.";
+
 const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
   const regResultIp = regExpIp.exec(ownProps.domain);
   return {
     domainStatus: state.get("domain").find((status) => status.get("domain") === ownProps.domain),
     ingressIP: state.get("cluster").get("info").get("ingressIP"),
     isIPDomain: regResultIp !== null,
+    acmeServer: state.get("certificates").get("acmeServer"),
   };
 };
 
@@ -71,26 +74,51 @@ class DomainStatus extends React.PureComponent<Props> {
   };
 
   private getHelperText = (cnameDomain: string | undefined, cnameRecords: string): React.ReactElement => {
-    const helper =
-      cnameDomain !== undefined ? (
-        cnameRecords && cnameRecords.length > 0 ? (
+    const { domain, nsDomain } = this.props;
+    if (cnameDomain !== undefined) {
+      if (cnameDomain.length > 0 && cnameRecords && cnameRecords.length > 0) {
+        return (
           <>
             <Box>
               current CNAME record is <strong>{cnameRecords}</strong>
             </Box>
-            please add an CNAME record with your dns provider, point to <strong>{cnameDomain}</strong>{" "}
+            please add an CNAME record with your dns provider, <strong>{domain}</strong> CNAME{" "}
+            <strong>{cnameDomain}</strong>{" "}
           </>
-        ) : (
-          <>
-            please add an CNAME record with your dns provider, point to <strong>{cnameDomain}</strong>{" "}
-          </>
-        )
-      ) : (
+        );
+      } else {
+        if (cnameDomain.length > 0) {
+          return (
+            <>
+              please add an CNAME record with your dns provider, <strong>{domain}</strong> CNAME{" "}
+              <strong>{cnameDomain}</strong>{" "}
+            </>
+          );
+        } else {
+          return (
+            <>
+              Please configure the Kalm DNS server first, and then check the domain status after Kalm DNS server is
+              running.
+            </>
+          );
+        }
+      }
+    } else if (nsDomain !== undefined) {
+      return (
+        <>
+          please add an NS record with your dns provider,
+          <strong>
+            {domain} NS {nsDomain}.
+          </strong>{" "}
+        </>
+      );
+    } else {
+      return (
         <>
           please add an A record with your dns provider, point to <strong>{this.getIPAddress()}</strong>{" "}
         </>
       );
-    return helper;
+    }
   };
 
   private getError = (): boolean => {
@@ -119,7 +147,7 @@ class DomainStatus extends React.PureComponent<Props> {
   };
 
   private getIconAndBody = () => {
-    const { domainStatus, domain, dispatch, isIPDomain, cnameDomain } = this.props;
+    const { domainStatus, domain, dispatch, isIPDomain, cnameDomain, acmeServer } = this.props;
     const ip = this.getIPAddress();
     if (isIPDomain) {
       return {
@@ -156,7 +184,12 @@ class DomainStatus extends React.PureComponent<Props> {
 
     if (isError) {
       const cnameRecords = domainStatus?.get("cname");
-      const copyContent = cnameRecords !== undefined ? cnameDomain! : ip;
+      let copyContent = "";
+      if (cnameRecords === "" && acmeServer === undefined) {
+      } else {
+        copyContent = cnameRecords !== undefined ? cnameDomain! : ip;
+      }
+
       return {
         icon: <WarningIcon color="action" />,
         body: (
@@ -167,6 +200,9 @@ class DomainStatus extends React.PureComponent<Props> {
               aria-label="copy"
               size="small"
               onClick={(e) => {
+                if (copyContent.length === 0) {
+                  return;
+                }
                 copy(copyContent);
                 dispatch(setSuccessNotificationAction("Copied successful!"));
               }}
