@@ -179,13 +179,6 @@ func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 				return nil, fmt.Errorf("no wildcard: '*' is allowed in domain for http01 cert")
 			}
 		}
-	} else if cert.HttpsCertIssuer == v1alpha1.DefaultDNS01IssuerName {
-		// for wildcard cert, 1 domain & no prefix: '*.' is needed
-		for _, domain := range cert.Domains {
-			if strings.HasPrefix(strings.TrimSpace(domain), "*.") {
-				return nil, fmt.Errorf("no prefix: '*.' is needed for wildcard cert")
-			}
-		}
 	}
 
 	res := v1alpha1.HttpsCert{

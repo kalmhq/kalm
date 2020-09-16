@@ -371,7 +371,11 @@ func (r *ACMEServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 func (r *ACMEServerReconciler) registerDomainsInACMEServer(
 	httpsCertIssuer corev1alpha1.HttpsCertIssuer,
-) (needRegister map[string]corev1alpha1.DNS01IssuerConfig, needCleanDomains []string, err error) {
+) (
+	newlyRegisteredDomainConfigs map[string]corev1alpha1.DNS01IssuerConfig,
+	needCleanDomains []string,
+	err error,
+) {
 
 	dns01Certs, err := r.getCertsUsingDNSIssuer(r.ctx)
 	if err != nil {
@@ -382,7 +386,9 @@ func (r *ACMEServerReconciler) registerDomainsInACMEServer(
 	domainsInCertsUsingDNSIssuer := make(map[string]interface{})
 
 	for _, dns01Cert := range dns01Certs {
-		domains := dns01Cert.Spec.Domains
+		// for both *.example.com & example.com
+		// only 1 domain: example.com need to be registered
+		domains := trimPrefixOfWildcardDomains(dns01Cert.Spec.Domains)
 
 		for _, domain := range domains {
 			domainsInCertsUsingDNSIssuer[domain] = true
@@ -397,7 +403,7 @@ func (r *ACMEServerReconciler) registerDomainsInACMEServer(
 
 	r.Log.Info("updateConfigsForIssuer", "needRegisterDomains", needRegisterDomains)
 
-	needRegister, err = r.registerACMEDNS(needRegisterDomains)
+	newlyRegisteredDomainConfigs, err = r.registerACMEDNS(needRegisterDomains)
 	if err != nil {
 		r.Log.Error(err, "fail to registerACMEDNS")
 		return nil, nil, err
@@ -408,15 +414,34 @@ func (r *ACMEServerReconciler) registerDomainsInACMEServer(
 	}
 
 	for domainInIssuerSpec := range httpsCertIssuer.Spec.DNS01.Configs {
-		_, domainInIssuerSpecStillBeingUsingByCert := domainsInCertsUsingDNSIssuer[domainInIssuerSpec]
-		if domainInIssuerSpecStillBeingUsingByCert {
+		_, isDomainInIssuerSpecStillBeingUsedByCert := domainsInCertsUsingDNSIssuer[domainInIssuerSpec]
+		if isDomainInIssuerSpecStillBeingUsedByCert {
 			continue
 		}
 
 		needCleanDomains = append(needCleanDomains, domainInIssuerSpec)
 	}
 
-	return needRegister, needCleanDomains, nil
+	return newlyRegisteredDomainConfigs, needCleanDomains, nil
+}
+
+// turn: *.example.com -> example.com
+func trimPrefixOfWildcardDomains(domains []string) []string {
+	m := make(map[string]interface{})
+	for _, domain := range domains {
+		if strings.HasPrefix(domain, "*.") {
+			domain = domain[2:]
+		}
+
+		m[domain] = true
+	}
+
+	var rst []string
+	for domain := range m {
+		rst = append(rst, domain)
+	}
+
+	return rst
 }
 
 func getNameForLoadBalanceServiceForNSDomain() string {
@@ -506,7 +531,7 @@ func (r *ACMEServerReconciler) reconcileIssuer(acmeServer corev1alpha1.ACMEServe
 		}
 	}
 
-	needRegisterDomainConfigs, needCleanDomains, err := r.registerDomainsInACMEServer(issuer)
+	newlyRegisteredDomainConfigs, needCleanDomains, err := r.registerDomainsInACMEServer(issuer)
 	if err != nil {
 		r.Log.Error(err, "registerDomainsInACMEServer fail")
 		return err
@@ -518,16 +543,14 @@ func (r *ACMEServerReconciler) reconcileIssuer(acmeServer corev1alpha1.ACMEServe
 			return err
 		}
 
-		issuer.Spec.DNS01.Configs = needRegisterDomainConfigs
+		issuer.Spec.DNS01.Configs = newlyRegisteredDomainConfigs
 		issuer.Spec.DNS01.BaseACMEDomain = acmeServer.Spec.ACMEDomain
 
 		err = r.Create(r.ctx, &issuer)
 	} else {
 		copiedIssuer := issuer.DeepCopy()
-		for domain, config := range needRegisterDomainConfigs {
-			// ? both example.com & *.example.com is needed
+		for domain, config := range newlyRegisteredDomainConfigs {
 			issuer.Spec.DNS01.Configs[domain] = config
-			//copiedIssuer.Spec.DNS01.Configs["*."+domain] = config
 		}
 
 		for _, needClean := range needCleanDomains {
