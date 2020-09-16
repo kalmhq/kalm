@@ -7,6 +7,7 @@ import {
   SET_TUTORIAL_HIGHLIGHT_STATUS,
   SET_TUTORIAL_STEP_COMPLETION_STATUS,
   Tutorial,
+  SET_TUTORIAL_FORM_VALUES,
 } from "types/tutorial";
 import { Actions } from "types";
 import { ImmutableMap } from "typings";
@@ -17,6 +18,7 @@ export type State = ImmutableMap<{
   tutorialStepStatus: Immutable.Map<string, boolean>;
   latestHighlight?: string;
   currentStepIndex: number;
+  formValues?: ImmutableMap<any>;
 }>;
 
 const DISABLE_TUTORIAL_AUTO_OPEN = "DISABLE_TUTORIAL_AUTO_OPEN";
@@ -63,6 +65,10 @@ const reducer = (state: State = initialState, action: Actions): State => {
       .set("drawerOpen", state.get("drawerOpen"))
       .set("tutorial", action.payload.tutorial)
       .set("currentStepIndex", 0);
+  }
+
+  if (action.type === SET_TUTORIAL_FORM_VALUES) {
+    return state.setIn(["formValues", action.payload.form], action.payload.values);
   }
 
   const tutorial = state.get("tutorial");

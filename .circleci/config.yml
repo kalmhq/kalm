@@ -33,7 +33,7 @@ jobs:
           name: upload coverage
           working_directory: ./api
           command: bash <(curl -s https://codecov.io/bash)
-  build-dashboard-image:
+  build-push-dashboard-image:
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
@@ -44,28 +44,12 @@ jobs:
           name: Build Docker image
           command: docker build -t kalmhq/kalm:latest .
       - run:
-          name: Archive Docker image
-          command: docker save -o image.tar kalmhq/kalm:latest
-      - persist_to_workspace:
-          root: .
-          paths:
-            - ./image.tar
-  push-dashboard-image:
-    docker:
-      - image: circleci/buildpack-deps:stretch
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - setup_remote_docker
-      - checkout
-      - run:
-          name: Load archived Docker image
-          command: docker load -i /tmp/workspace/image.tar
-      - run:
           name: Publish Docker Image to DOCKER HUB
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             docker push kalmhq/kalm:latest
+            docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_SHA1
+            docker push kalmhq/kalm:$CIRCLE_SHA1
             TAG=$(git tag --points-at HEAD)
 
             if [ "$TAG" != "" ]
@@ -118,6 +102,8 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             docker push kalmhq/kalm-controller:latest
+            docker tag kalmhq/kalm-controller:latest kalmhq/kalm-controller:$CIRCLE_SHA1
+            docker push kalmhq/kalm-controller:$CIRCLE_SHA1
             TAG=$(git tag --points-at HEAD)
 
             if [ "$TAG" != "" ]
@@ -145,6 +131,8 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             docker push kalmhq/kalm-operator:latest
+            docker tag kalmhq/kalm-operator:latest kalmhq/kalm-operator:$CIRCLE_SHA1
+            docker push kalmhq/kalm-operator:$CIRCLE_SHA1
 
             TAG=$(git tag --points-at HEAD)
             if [ "$TAG" != "" ]
@@ -210,18 +198,17 @@ workflows:
           filters:
             tags:
               only: /^v.*/
-      - build-dashboard-image:
-          filters:
-            branches:
-              only:
-                - master
-            tags:
-              only: /^v.*/
-      - push-dashboard-image:
+      - hold:
+          type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
+      - build-push-dashboard-image:
+          name: manual-build-push-dashboard-image
+          context: kalm-ci
+          requires:
+            - hold
+      - build-push-dashboard-image:
           context: kalm-ci
           requires:
             - test-dashboard
-            - build-dashboard-image
           filters:
             branches:
               only:
@@ -231,7 +218,7 @@ workflows:
       - deploy-dashboard:
           context: deploy-demo-cluster
           requires:
-            - push-dashboard-image
+            - build-push-dashboard-image
           filters:
             branches:
               only:
@@ -239,7 +226,7 @@ workflows:
       - deploy-auth-proxy:
           context: deploy-demo-cluster
           requires:
-            - push-dashboard-image
+            - build-push-dashboard-image
           filters:
             branches:
               only:
@@ -250,6 +237,13 @@ workflows:
           filters:
             tags:
               only: /^v.*/
+      - hold:
+          type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
+      - build-push-controller-image:
+          name: manual-build-push-controller-image
+          context: kalm-ci
+          requires:
+            - hold
       - build-push-controller-image:
           context: kalm-ci
           requires:
@@ -277,6 +271,13 @@ workflows:
                 - master
             tags:
               only: /^v.*/
+      - hold:
+          type: approval
+      - build-push-operator-image:
+          name: manual-build-push-operator-image
+          context: kalm-ci
+          requires:
+            - hold
       - deploy-operator:
           context: deploy-demo-cluster
           requires:

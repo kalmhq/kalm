@@ -7,7 +7,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { RegistryType } from "types/registry";
+import { RegistryFormType } from "types/registry";
 import { H6 } from "widgets/Label";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
 
@@ -30,12 +30,9 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 interface State {}
 
 class RegistryEditPageRaw extends React.PureComponent<Props, State> {
-  private submit = async (registryValue: RegistryType) => {
+  private submit = async (registryValue: RegistryFormType) => {
     const { dispatch } = this.props;
     await dispatch(updateRegistryAction(registryValue));
-  };
-
-  private onSubmitSuccess = () => {
     this.props.dispatch(push("/cluster/registries"));
   };
 
@@ -59,12 +56,7 @@ class RegistryEditPageRaw extends React.PureComponent<Props, State> {
       <BasePage secondHeaderRight={<H6>Edit Registry</H6>}>
         <Grid container spacing={2}>
           <Grid item xs={8} sm={8} md={8}>
-            <RegistryForm
-              isEdit
-              onSubmit={this.submit}
-              onSubmitSuccess={this.onSubmitSuccess}
-              initialValues={initialValues}
-            />
+            <RegistryForm isEdit onSubmit={this.submit} initial={initialValues.toJS() as RegistryFormType} />
           </Grid>
         </Grid>
       </BasePage>

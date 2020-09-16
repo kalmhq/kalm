@@ -3,12 +3,13 @@ import React from "react";
 import { BasePage } from "pages/BasePage";
 import { SSOConfigForm } from "forms/SSOConfig";
 import { SSOImplementDetails } from "pages/SSO/Details";
-import { newEmptySSOConfig, SSOConfig } from "types/sso";
+import { newEmptySSOConfig, SSOConfig, SSOConfigFormType } from "types/sso";
 import { createSSOConfigAction, updateSSOConfigAction } from "actions/sso";
 import { Loading } from "widgets/Loading";
 import { push } from "connected-react-router";
 import { setSuccessNotificationAction } from "actions/notification";
 import { withSSO, WithSSOProps } from "hoc/withSSO";
+import Immutable from "immutable";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -20,18 +21,15 @@ interface Props extends WithStyles<typeof styles>, WithSSOProps {}
 interface State {}
 
 class SSOConfigFormPageRaw extends React.PureComponent<Props, State> {
-  private submit = async (config: SSOConfig) => {
+  private submit = async (configForm: SSOConfigFormType) => {
     const { dispatch } = this.props;
 
+    const config = Immutable.fromJS(configForm) as SSOConfig;
     if (this.isEdit()) {
-      return await dispatch(updateSSOConfigAction(config));
+      await dispatch(updateSSOConfigAction(config));
     } else {
-      return await dispatch(createSSOConfigAction(config));
+      await dispatch(createSSOConfigAction(config));
     }
-  };
-
-  private onSubmitSuccess = async () => {
-    const { dispatch } = this.props;
 
     if (this.isEdit()) {
       dispatch(setSuccessNotificationAction("Update SSO Config Successfully"));
@@ -62,8 +60,7 @@ class SSOConfigFormPageRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           <SSOConfigForm
             onSubmit={this.submit}
-            initialValues={ssoConfig || newEmptySSOConfig()}
-            onSubmitSuccess={this.onSubmitSuccess}
+            initial={ssoConfig ? (ssoConfig.toJS() as SSOConfigFormType) : newEmptySSOConfig()}
           />
           <Box mt={2}>
             <SSOImplementDetails />

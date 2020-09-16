@@ -301,36 +301,15 @@ func (r *HttpsCertReconciler) isACMEServerReadyForWildcardCert() (bool, error) {
 }
 
 func pickCommonName(names []string) string {
-	for _, n := range names {
-		if strings.HasPrefix(n, "*.") {
-			continue
-		}
-
-		return n
+	if len(names) <= 0 {
+		return ""
 	}
 
-	return ""
+	return names[0]
 }
 
 func getDNSNames(httpsCert corev1alpha1.HttpsCert) (dnsNames []string) {
-	dnsNameMap := make(map[string]interface{})
-	if httpsCert.Spec.HttpsCertIssuer == corev1alpha1.DefaultDNS01IssuerName {
-		for _, domain := range httpsCert.Spec.Domains {
-			if !strings.HasPrefix(domain, "*.") {
-				dnsNameMap["*."+domain] = true
-			}
-
-			dnsNameMap[domain] = true
-		}
-
-		for k := range dnsNameMap {
-			dnsNames = append(dnsNames, k)
-		}
-	} else {
-		dnsNames = httpsCert.Spec.Domains
-	}
-
-	return dnsNames
+	return httpsCert.Spec.Domains
 }
 
 // todo a buggy way to tell is issuer is trusted

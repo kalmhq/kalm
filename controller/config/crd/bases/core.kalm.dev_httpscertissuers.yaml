@@ -52,6 +52,8 @@ spec:
               type: object
             dns01:
               properties:
+                baseACMEDomain:
+                  type: string
                 configs:
                   additionalProperties:
                     properties:
@@ -75,6 +77,7 @@ spec:
                     type: object
                   type: object
               required:
+              - baseACMEDomain
               - configs
               type: object
             http01:

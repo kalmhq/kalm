@@ -1,8 +1,23 @@
-export const NormalizePort = (value: string, _previousValue?: any, _allValues?: any, _previousAllValues?: any) => {
-  const portInteger = parseInt(value, 10);
+export const NormalizeNumber = (
+  value: string,
+  _previousValue?: any,
+  _allValues?: any,
+  _previousAllValues?: any,
+): number | any => {
+  const integerValue = parseInt(value, 10);
+  return isNaN(integerValue) ? null : integerValue;
+};
+
+export const FormikNormalizeNumber = (event: React.ChangeEvent<HTMLInputElement>): number | any => {
+  const integerValue = parseInt(event.target.value, 10);
+  return isNaN(integerValue) ? null : integerValue;
+};
+
+export const FormikNormalizePort = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const portInteger = parseInt(event.target.value, 10);
 
   if (isNaN(portInteger)) {
-    return null;
+    return "";
   }
 
   if (portInteger < 0) {
@@ -14,16 +29,6 @@ export const NormalizePort = (value: string, _previousValue?: any, _allValues?: 
   }
 
   return portInteger;
-};
-
-export const NormalizeNumber = (
-  value: string,
-  _previousValue?: any,
-  _allValues?: any,
-  _previousAllValues?: any,
-): number | any => {
-  const integerValue = parseInt(value, 10);
-  return isNaN(integerValue) ? null : integerValue;
 };
 
 export const NormalizeCPU = (value: string) => {

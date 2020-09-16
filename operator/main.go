@@ -41,6 +41,7 @@ var (
 )
 
 func init() {
+
 	_ = clientgoscheme.AddToScheme(scheme)
 	_ = installv1alpha1.AddToScheme(scheme)
 	_ = cmv1alpha2.AddToScheme(scheme)

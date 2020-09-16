@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"fmt"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,19 +40,64 @@ func (builder *Builder) CreateACMEServer(server ACMEServer) (ACMEServer, error) 
 	}, err
 }
 
-func (builder *Builder) GetACMEServer() (ACMEServerResp, error) {
+func (builder *Builder) UpdateACMEServer(server ACMEServer) (ACMEServer, error) {
+	expectedACMEServer := v1alpha1.ACMEServer{
+		ObjectMeta: controllerruntime.ObjectMeta{
+			Name: controllers.ACMEServerName,
+		},
+		Spec: v1alpha1.ACMEServerSpec{
+			ACMEDomain: server.ACMEDomain,
+			NSDomain:   server.NSDomain,
+		},
+	}
+
+	acmeServer, err := builder.GetACMEServer()
+	if err != nil {
+		return ACMEServer{}, err
+	}
+
+	if acmeServer.Name != controllers.ACMEServerName {
+		return ACMEServer{}, fmt.Errorf("should only 1 acmeServer named as %s exist", controllers.ACMEServerName)
+	}
+
+	acmeServer.Spec = expectedACMEServer.Spec
+	err = builder.Update(&acmeServer)
+
+	return ACMEServer{
+		Name:       acmeServer.Name,
+		ACMEDomain: acmeServer.Spec.ACMEDomain,
+		NSDomain:   acmeServer.Spec.NSDomain,
+	}, err
+}
+
+func (builder *Builder) GetACMEServer() (v1alpha1.ACMEServer, error) {
 	var acmeServerList v1alpha1.ACMEServerList
 	err := builder.List(&acmeServerList)
 	if err != nil {
-		return ACMEServerResp{}, err
+		return v1alpha1.ACMEServer{}, err
 	}
 
 	size := len(acmeServerList.Items)
 	if size == 0 {
-		return ACMEServerResp{}, nil
+		return v1alpha1.ACMEServer{}, err
 	}
 
-	server := acmeServerList.Items[0]
+	for _, acmeServer := range acmeServerList.Items {
+		if acmeServer.Name != controllers.ACMEServerName {
+			continue
+		}
+
+		return acmeServer, nil
+	}
+
+	return v1alpha1.ACMEServer{}, fmt.Errorf("expected acme-server not exist yet")
+}
+
+func (builder *Builder) GetACMEServerAsResp() (ACMEServerResp, error) {
+	server, err := builder.GetACMEServer()
+	if err != nil {
+		return ACMEServerResp{}, err
+	}
 
 	return ACMEServerResp{
 		ACMEServer: ACMEServer{

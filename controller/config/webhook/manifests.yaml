@@ -83,6 +83,24 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-core-kalm-dev-v1alpha1-httpscert
+  failurePolicy: Fail
+  name: mhttpscert.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - httpscerts
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-core-kalm-dev-v1alpha1-logsystem
   failurePolicy: Fail
   name: mlogsystem.kb.io

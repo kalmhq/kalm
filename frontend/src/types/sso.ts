@@ -61,14 +61,22 @@ export type ProtectedEndpoint = ImmutableMap<{
   groups?: Immutable.List<string>;
 }>;
 
-export const newEmptyProtectedEndpoint = (): ProtectedEndpoint => {
-  return Immutable.Map({
+export interface ProtectedEndpointFormType {
+  name: string;
+  namespace: string;
+  endpointName: string;
+  ports?: number[];
+  groups?: string[];
+}
+
+export const newEmptyProtectedEndpoint = (): ProtectedEndpointFormType => {
+  return {
     name: "",
     namespace: "",
     endpointName: "",
-    groups: Immutable.List(),
-    ports: Immutable.List(),
-  });
+    groups: [],
+    ports: [],
+  };
 };
 
 export interface LoadSSOConfigAction {
@@ -126,6 +134,13 @@ export type SSO_CONNECTOR_TYPE = string;
 export const SSO_CONNECTOR_TYPE_GITHUB: SSO_CONNECTOR_TYPE = "github";
 export const SSO_CONNECTOR_TYPE_GITLAB: SSO_CONNECTOR_TYPE = "gitlab";
 
+export interface GitlabConfigFormType {
+  baseURL: string;
+  clientID: string;
+  clientSecret: string;
+  groups: string[];
+}
+
 export type GitlabConfig = ImmutableMap<{
   baseURL: string;
   clientID: string;
@@ -133,16 +148,34 @@ export type GitlabConfig = ImmutableMap<{
   groups: Immutable.List<string>;
 }>;
 
+export interface GithubOrgFormType {
+  name: string;
+  teams: string[];
+}
+
 export type GithubOrg = ImmutableMap<{
   name: string;
   teams: Immutable.List<string>;
 }>;
+
+export interface GithubConfigFormType {
+  clientID: string;
+  clientSecret: string;
+  orgs: GithubOrgFormType[];
+}
 
 export type GithubConfig = ImmutableMap<{
   clientID: string;
   clientSecret: string;
   orgs: Immutable.List<GithubOrg>;
 }>;
+
+export interface SSOGithubConnectorFormType {
+  id: string;
+  name: string;
+  type: typeof SSO_CONNECTOR_TYPE_GITHUB;
+  config: GithubConfigFormType;
+}
 
 export type SSOGithubConnector = ImmutableMap<{
   id: string;
@@ -151,6 +184,13 @@ export type SSOGithubConnector = ImmutableMap<{
   config: GithubConfig;
 }>;
 
+export interface SSOGitlabConnectorFormType {
+  id: string;
+  name: string;
+  type: typeof SSO_CONNECTOR_TYPE_GITLAB;
+  config: GitlabConfigFormType;
+}
+
 export type SSOGitlabConnector = ImmutableMap<{
   id: string;
   name: string;
@@ -158,41 +198,46 @@ export type SSOGitlabConnector = ImmutableMap<{
   config: GitlabConfig;
 }>;
 
+export interface SSOConfigFormType {
+  domain: string;
+  connectors?: Array<SSOGithubConnectorFormType | SSOGitlabConnectorFormType>;
+}
+
 export type SSOConfig = ImmutableMap<{
   domain: string;
   connectors?: Immutable.List<SSOGithubConnector | SSOGitlabConnector>;
 }>;
 
-export const newEmptyGithubConnector = (): SSOGithubConnector => {
-  return Immutable.Map({
+export const newEmptyGithubConnector = (): SSOGithubConnectorFormType => {
+  return {
     id: ID(),
     name: "",
     type: SSO_CONNECTOR_TYPE_GITHUB,
-    config: Immutable.Map({
+    config: {
       clientID: "",
       clientSecret: "",
-      orgs: Immutable.List([]),
-    }),
-  });
+      orgs: [],
+    },
+  };
 };
 
-export const newEmptyGitlabConnector = (): SSOGitlabConnector => {
-  return Immutable.Map({
+export const newEmptyGitlabConnector = (): SSOGitlabConnectorFormType => {
+  return {
     id: ID(),
     name: "",
     type: SSO_CONNECTOR_TYPE_GITLAB,
-    config: Immutable.Map({
+    config: {
       baseURL: "https://gitlab.com",
       clientID: "",
       clientSecret: "",
-      groups: Immutable.List([]),
-    }),
-  });
+      groups: [],
+    },
+  };
 };
 
-export const newEmptySSOConfig = (): SSOConfig => {
-  return Immutable.Map({
+export const newEmptySSOConfig = (): SSOConfigFormType => {
+  return {
     domain: "",
-    connectors: Immutable.List(),
-  });
+    connectors: [],
+  };
 };

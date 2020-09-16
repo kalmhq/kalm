@@ -1,19 +1,16 @@
-import { createStyles, Grid, WithStyles, withStyles, Box } from "@material-ui/core";
+import { Box, createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import Immutable from "immutable";
+import { FormikProps, withFormik, Field, Form } from "formik";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { change, InjectedFormProps } from "redux-form";
-import { Field, getFormValues, reduxForm } from "redux-form/immutable";
 import { RootState } from "reducers";
-import { newEmptyRegistry, RegistryType } from "types/registry";
-import { KRenderDebounceTextField } from "../Basic/textfield";
-import { RequireNoSuffix, RequirePrefix, ValidatorName, ValidatorRequired } from "../validator";
-import { Prompt } from "widgets/Prompt";
-import { REGISTRY_FORM_ID } from "../formIDs";
+import { RegistryFormType } from "types/registry";
 import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
+import { Prompt } from "widgets/Prompt";
+import { KRenderDebounceFormikTextField } from "../Basic/textfield";
+import { RequireNoSuffix, RequirePrefix, ValidatorName, ValidatorRequired } from "../validator";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -23,19 +20,17 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const fieldValues = (getFormValues(REGISTRY_FORM_ID)(state) as RegistryType) || (Immutable.Map() as RegistryType);
-
   return {
-    fieldValues,
     isSubmittingRegistry: state.get("registries").get("isSubmittingRegistry"),
   };
 };
 
 export interface Props {
   isEdit?: boolean;
+  onSubmit: any;
+  initial: RegistryFormType;
 }
 
-const validateName = [ValidatorRequired, ValidatorName];
 const validateHost = (value: any, _allValues?: any, _props?: any, _name?: any) => {
   if (!value) return undefined;
 
@@ -43,22 +38,14 @@ const validateHost = (value: any, _allValues?: any, _props?: any, _name?: any) =
 };
 
 class RegistryFormRaw extends React.PureComponent<
-  Props &
-    InjectedFormProps<RegistryType, Props> &
-    ReturnType<typeof mapStateToProps> &
-    WithStyles<typeof styles> &
-    DispatchProp
+  Props & FormikProps<RegistryFormType> & ReturnType<typeof mapStateToProps> & WithStyles<typeof styles> & DispatchProp
 > {
-  private setDockerRegistry = () => {
-    this.props.dispatch(change(REGISTRY_FORM_ID, "host", "https://registry-1.docker.io"));
-  };
-
   public render() {
-    const { handleSubmit, classes, isEdit, dirty, submitSucceeded, isSubmittingRegistry } = this.props;
+    const { classes, isEdit, dirty, values, isSubmittingRegistry, isSubmitting } = this.props;
 
     return (
-      <form onSubmit={handleSubmit} className={classes.root}>
-        <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+      <Form className={classes.root} id="registry-form">
+        <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
         <KPanel
           content={
             <Box p={2}>
@@ -68,8 +55,8 @@ class RegistryFormRaw extends React.PureComponent<
                     name="name"
                     label="Name"
                     disabled={isEdit}
-                    component={KRenderDebounceTextField}
-                    validate={validateName}
+                    component={KRenderDebounceFormikTextField}
+                    validate={ValidatorName}
                     helperText={isEdit ? "Can't modify name" : sc.NAME_RULE}
                     placeholder="Please type the registry name"
                   />
@@ -79,7 +66,7 @@ class RegistryFormRaw extends React.PureComponent<
                     name="username"
                     label="Username"
                     autoComplete="off"
-                    component={KRenderDebounceTextField}
+                    component={KRenderDebounceFormikTextField}
                     validate={ValidatorRequired}
                     placeholder="Please type the registry username"
                   />
@@ -90,7 +77,7 @@ class RegistryFormRaw extends React.PureComponent<
                     name="password"
                     label="Password"
                     autoComplete="off"
-                    component={KRenderDebounceTextField}
+                    component={KRenderDebounceFormikTextField}
                     validate={ValidatorRequired}
                     placeholder="Please type the registry password"
                   />
@@ -99,7 +86,7 @@ class RegistryFormRaw extends React.PureComponent<
                   <Field
                     name="host"
                     label="Host"
-                    component={KRenderDebounceTextField}
+                    component={KRenderDebounceFormikTextField}
                     validate={validateHost}
                     placeholder="Please type the registry host"
                     helperText={<span>Leave blank for private docker hub registry</span>}
@@ -108,29 +95,42 @@ class RegistryFormRaw extends React.PureComponent<
               </Grid>
 
               {process.env.REACT_APP_DEBUG === "true" ? (
-                <pre style={{ maxWidth: 1500, background: "#eee" }}>
-                  {JSON.stringify(this.props.fieldValues, undefined, 2)}
-                </pre>
+                <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
               ) : null}
             </Box>
           }
         />
         <Box pt={2}>
-          <CustomizedButton disabled={isSubmittingRegistry} onClick={handleSubmit} color="primary" variant="contained">
+          <CustomizedButton disabled={isSubmittingRegistry} type="submit" color="primary" variant="contained">
             Save
           </CustomizedButton>
         </Box>
-      </form>
+      </Form>
     );
   }
 }
 
-export const RegistryForm = reduxForm<RegistryType, Props>({
-  form: REGISTRY_FORM_ID,
-  enableReinitialize: true,
-  keepDirtyOnReinitialize: false,
-  initialValues: newEmptyRegistry(),
-  onSubmitFail: (...args) => {
-    console.log("submit failed", args);
+// export const RegistryForm = reduxForm<RegistryType, Props>({
+//   form: REGISTRY_FORM_ID,
+//   enableReinitialize: true,
+//   keepDirtyOnReinitialize: false,
+//   initialValues: newEmptyRegistry(),
+//   onSubmitFail: (...args) => {
+//     console.log("submit failed", args);
+//   },
+// })(connect(mapStateToProps)(withStyles(styles)(RegistryFormRaw)));
+
+const connectedForm = connect(mapStateToProps)(withStyles(styles)(RegistryFormRaw));
+
+export const RegistryForm = withFormik<Props, RegistryFormType>({
+  mapPropsToValues: (props) => {
+    return props.initial;
   },
-})(connect(mapStateToProps)(withStyles(styles)(RegistryFormRaw)));
+  validate: (values: RegistryFormType) => {
+    let errors = {};
+    return errors;
+  },
+  handleSubmit: async (formValues, { props: { onSubmit } }) => {
+    await onSubmit(formValues);
+  },
+})(connectedForm);

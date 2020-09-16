@@ -2,7 +2,7 @@ import React from "react";
 import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { newEmptyCertificateUploadForm, CertificateFormType } from "types/certificate";
+import { newEmptyCertificateUploadForm, CertificateFormTypeContent } from "types/certificate";
 import { createCertificateAction } from "actions/certificate";
 import { CertificateUploadForm } from "forms/Certificate/uploadForm";
 import { BasePage } from "pages/BasePage";
@@ -17,10 +17,11 @@ const styles = (theme: Theme) =>
 export interface Props extends WithStyles<typeof styles>, TDispatchProp {}
 
 class CertificateUploadRaw extends React.PureComponent<Props> {
-  private submit = async (certificate: CertificateFormType) => {
+  private submit = async (certificate: CertificateFormTypeContent) => {
     try {
       const { dispatch } = this.props;
       await dispatch(createCertificateAction(certificate, false));
+      this.onSubmitSuccess();
     } catch (e) {
       console.log(e);
     }
@@ -37,11 +38,7 @@ class CertificateUploadRaw extends React.PureComponent<Props> {
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>
-              <CertificateUploadForm
-                onSubmitSuccess={this.onSubmitSuccess}
-                onSubmit={this.submit}
-                initialValues={newEmptyCertificateUploadForm}
-              />
+              <CertificateUploadForm onSubmit={this.submit} initialValues={newEmptyCertificateUploadForm} />
             </Grid>
           </Grid>
         </div>

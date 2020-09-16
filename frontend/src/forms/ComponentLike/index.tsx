@@ -18,27 +18,23 @@ import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 import clsx from "clsx";
 import { push } from "connected-react-router";
+import { Field, FastField, FormikProps, withFormik, getIn } from "formik";
 import { KTooltip } from "forms/Application/KTooltip";
-import { KBoolCheckboxRender } from "forms/Basic/checkbox";
-import { shouldError } from "forms/common";
+import { KFormikBoolCheckboxRender } from "forms/Basic/checkbox";
 import { Disks } from "forms/ComponentLike/Disks";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
 import Immutable from "immutable";
 import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
-import queryString from "qs";
 import React from "react";
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
-import { InjectedFormProps } from "redux-form";
-import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
 import { getNodeLabels } from "selectors/node";
-import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import { ApplicationDetails } from "types/application";
 import {
-  ComponentLike,
-  ComponentLikeContent,
+  ComponentLikeFormContent,
   workloadTypeCronjob,
   workloadTypeDaemonSet,
   workloadTypeServer,
@@ -52,14 +48,13 @@ import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle1 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
-import { KRadioGroupRender } from "../Basic/radio";
-import { makeSelectOption, RenderSelectField } from "../Basic/select";
+import { KFormikRadioGroupRender } from "../Basic/radio";
+import { makeSelectOption, RenderFormikSelectField } from "../Basic/select";
 import {
-  KRenderCommandTextField,
-  KRenderDebounceTextField,
-  RenderComplexValueTextDebounceField,
+  KRenderFormikCommandTextField,
+  KRenderDebounceFormikTextField,
+  RenderFormikComplexValueTextField,
 } from "../Basic/textfield";
-import { NormalizeNumber } from "../normalizer";
 import {
   ValidatorCPU,
   ValidatorMemory,
@@ -69,10 +64,11 @@ import {
   ValidatorSchedule,
 } from "../validator";
 import { Envs } from "./Envs";
-import { RenderSelectLabels } from "./NodeSelector";
+import { KFormikRenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
+import { FormMidware } from "tutorials/formMidware";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -98,13 +94,8 @@ const Deploy = "Deployment Strategy";
 const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy];
 
 const mapStateToProps = (state: RootState) => {
-  const fieldValues = (getFormValues(COMPONENT_FORM_ID)(state) as ComponentLike) || (Immutable.Map() as ComponentLike);
-  const syncValidationErrors = getFormSyncErrors(COMPONENT_FORM_ID)(state) as {
-    [x in keyof ComponentLikeContent]: any;
-  };
-  const nodeLabels = getNodeLabels(state);
+  const nodeLabels = getNodeLabels(state).toArray();
 
-  const search = queryString.parse(window.location.search.replace("?", ""));
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");
   let currentTabIndex = tabs.map((t) => t.replace(/\s/g, "")).indexOf(`${anchor}`);
@@ -115,12 +106,10 @@ const mapStateToProps = (state: RootState) => {
   return {
     registries: state.get("registries").get("registries"),
     tutorialState: state.get("tutorial"),
-    search,
-    fieldValues,
     isSubmittingApplicationComponent: state.get("components").get("isSubmittingApplicationComponent"),
-    syncValidationErrors,
     nodeLabels,
     currentTabIndex,
+    form: COMPONENT_FORM_ID,
   };
 };
 
@@ -172,7 +161,7 @@ const styles = (theme: Theme) =>
  */
 const HelperTextSection: React.FC<{}> = ({ children }) => (
   <Grid item xs={8}>
-    <Body2>{children}</Body2>
+    {children}
   </Grid>
 );
 
@@ -181,6 +170,8 @@ interface RawProps {
   showSubmitButton?: boolean;
   submitButtonText?: string;
   application?: ApplicationDetails;
+  _initialValues: ComponentLikeFormContent;
+  onSubmit: (formValues: ComponentLikeFormContent) => void;
 }
 
 interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {
@@ -188,7 +179,7 @@ interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchPr
 }
 
 export interface Props
-  extends InjectedFormProps<ComponentLike, ConnectedProps>,
+  extends FormikProps<ComponentLikeFormContent>,
     RouteComponentProps,
     WithStyles<typeof styles>,
     ConnectedProps,
@@ -196,7 +187,9 @@ export interface Props
 
 interface State {}
 
-const nameValidators = [ValidatorRequired, ValidatorName];
+const nameValidators = (value: any) => {
+  return ValidatorRequired(value) || ValidatorName(value);
+};
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
@@ -213,32 +206,19 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderReplicasOrSchedule = () => {
-    const workloadType = this.props.fieldValues.get("workloadType");
+    const workloadType = this.props.values.workloadType;
     if (workloadType === workloadTypeServer || workloadType === workloadTypeStatefulSet) {
       return (
-        <Field
-          component={RenderComplexValueTextDebounceField}
+        <FastField
+          component={KRenderDebounceFormikTextField}
           validate={ValidatorNaturalNumber}
           name="replicas"
           margin
           label="Replicas"
           helperText={sc.REPLICA_INPUT_HELPER}
-          format={(value: any) => {
-            let displayValue;
-            if (value !== null && value !== undefined) {
-              displayValue = `${value}`.length > 0 ? value : 1;
-            } else {
-              displayValue = 1;
-            }
-
-            return displayValue;
-          }}
-          parse={(value: any) => {
-            return value;
-          }}
           type="number"
           min="0"
-          normalize={NormalizeNumber}
+          // normalize={NormalizeNumber}
         />
       );
     }
@@ -246,9 +226,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     if (workloadType === workloadTypeCronjob) {
       return (
         <>
-          <Field
+          <FastField
             name="schedule"
-            component={KRenderDebounceTextField}
+            component={KRenderDebounceFormikTextField}
             placeholder="* * * * *"
             label="Cronjob Schedule"
             required
@@ -290,7 +270,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </HelperTextSection>
         </Grid>
         <Grid item xs={12}>
-          <PreInjectedFiles formID={COMPONENT_FORM_ID} />
+          <PreInjectedFiles />
         </Grid>
       </>
     );
@@ -417,7 +397,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <Field component={KRadioGroupRender} name="dnsPolicy" options={this.getDnsPolicyOptions()} />
+          <Field component={KFormikRadioGroupRender} name="dnsPolicy" options={this.getDnsPolicyOptions()} />
         </Grid>
       </>
     );
@@ -481,8 +461,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <HelperTextSection>{sc.COMMAND_HELPER}</HelperTextSection>
         </Grid>
         <Grid item xs={12}>
-          <Field
-            component={KRenderCommandTextField}
+          <FastField
+            component={KRenderFormikCommandTextField}
             name="command"
             label="Command"
             placeholder={sc.COMMAND_INPUT_PLACEHOLDER}
@@ -572,8 +552,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
-            component={RenderComplexValueTextDebounceField}
+          <FastField
+            component={RenderFormikComplexValueTextField}
             name="cpuLimit"
             label="CPU Limit"
             validate={ValidatorCPU}
@@ -584,7 +564,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
             }}
             parse={(value: any) => {
-              return !value ? "" : value + "m";
+              return !value ? undefined : value + "m";
             }}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
@@ -598,8 +578,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
-            component={RenderComplexValueTextDebounceField}
+          <FastField
+            component={RenderFormikComplexValueTextField}
             name="memoryLimit"
             label="Memory Limit"
             margin
@@ -611,7 +591,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               return !value ? "" : sizeStringToMi(value);
             }}
             parse={(value: any) => {
-              return !value ? "" : value + "Mi";
+              return !value ? undefined : value + "Mi";
             }}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
@@ -625,8 +605,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
-            component={RenderComplexValueTextDebounceField}
+          <FastField
+            component={RenderFormikComplexValueTextField}
             name="cpuRequest"
             label="CPU Request"
             validate={ValidatorCPU}
@@ -637,7 +617,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
             }}
             parse={(value: any) => {
-              return !value ? "" : value + "m";
+              return !value ? undefined : value + "m";
             }}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
@@ -651,8 +631,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
-            component={RenderComplexValueTextDebounceField}
+          <FastField
+            component={RenderFormikComplexValueTextField}
             name="memoryRequest"
             label="Memory Request"
             margin
@@ -664,7 +644,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               return !value ? "" : sizeStringToMi(value);
             }}
             parse={(value: any) => {
-              return !value ? "" : value + "Mi";
+              return !value ? undefined : value + "Mi";
             }}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
@@ -686,10 +666,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
+          <FastField name="nodeSelectorLabels" component={KFormikRenderSelectLabels} nodeLabels={nodeLabels} />
         </Grid>
         <Grid item xs={12}>
-          <Field name="preferNotCoLocated" component={KBoolCheckboxRender} label={sc.SCHEDULING_COLOCATE_CHECKBOX} />
+          <FastField
+            name="preferNotCoLocated"
+            component={KFormikBoolCheckboxRender}
+            label={sc.SCHEDULING_COLOCATE_CHECKBOX}
+          />
         </Grid>
         {/* <Grid item xs={6}>
           <Field name="podAffinityType" component={KRadioGroupRender} options={this.getPodAffinityOptions()} />
@@ -707,10 +691,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={8}>
-          <Field
-            defaultValue="RollingUpdate"
-            component={KRadioGroupRender}
+          <KFormikRadioGroupRender
+            onChange={this.props.handleChange}
             name="restartStrategy"
+            value={this.props.values.restartStrategy || "RollingUpdate"}
             options={[
               {
                 value: "RollingUpdate",
@@ -747,12 +731,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </Link>
         </HelperTextSection>
         <Grid item xs={6}>
-          <Field
-            component={KRenderDebounceTextField}
+          <FastField
+            component={KRenderDebounceFormikTextField}
             name="terminationGracePeriodSeconds"
             label="Termination Grace Period (seconds)"
             // validate={ValidatorRequired}
-            normalize={NormalizeNumber}
+            // normalize={NormalizeNumber}
             placeholder={sc.GRACEFUL_TERM_INPUT_PLACEHOLDER}
           />
         </Grid>
@@ -797,8 +781,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     dispatch(push(`${pathname}#${tab ? tab.replace(/\s/g, "") : ""}`));
   }
 
+  private showError(fieldName: string): boolean {
+    const { touched, errors } = this.props;
+
+    return !!getIn(touched, fieldName) && !!getIn(errors, fieldName);
+  }
+
   private renderTabs() {
-    const { classes, syncValidationErrors, submitFailed, currentTabIndex } = this.props;
+    const { classes, currentTabIndex } = this.props;
     return (
       <Tabs
         className={clsx(classes.borderBottom, classes.tabsRoot)}
@@ -815,16 +805,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       >
         {this.tabs.map((tab) => {
           if (
-            submitFailed &&
-            ((tab === Configurations &&
-              (syncValidationErrors.preInjectedFiles || syncValidationErrors.env || syncValidationErrors.command)) ||
-              (tab === DisksTab && syncValidationErrors.volumes) ||
-              (tab === HealthTab && (syncValidationErrors.livenessProbe || syncValidationErrors.readinessProbe)) ||
-              (tab === NetworkingTab && syncValidationErrors.ports) ||
-              (tab === Scheduling &&
-                (syncValidationErrors.cpuLimit ||
-                  syncValidationErrors.memoryLimit ||
-                  syncValidationErrors.nodeSelectorLabels)))
+            (tab === Configurations &&
+              (this.showError("preInjectedFiles") || this.showError("env") || this.showError("command"))) ||
+            (tab === DisksTab && this.showError("volumes")) ||
+            (tab === HealthTab && (this.showError("livenessProbe") || this.showError("readinessProbe"))) ||
+            (tab === NetworkingTab && this.showError("ports")) ||
+            (tab === Scheduling &&
+              (this.showError("cpuLimit") || this.showError("memoryLimit") || this.showError("nodeSelectorLabels")))
           ) {
             return <Tab key={tab} label={tab} className={classes.hasError} />;
           }
@@ -836,34 +823,39 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderMain() {
-    const { initialValues } = this.props;
+    const { initialValues, values } = this.props;
     let isEdit = false;
-    // @ts-ignore
-    if (initialValues && initialValues!.get("name")) {
+    if (initialValues && initialValues.name) {
       isEdit = true;
+    }
+
+    let hasVolumes = false;
+    if (values.volumes && values.volumes.length > 0) {
+      hasVolumes = true;
     }
 
     return (
       <Grid container spacing={2}>
         <Grid item xs={6}>
-          <Field
-            component={KRenderDebounceTextField}
-            autoFocus={true}
+          <FastField
+            autoFocus
+            component={KRenderDebounceFormikTextField}
+            id="component-name"
             name="name"
             label="Name"
-            margin
             validate={nameValidators}
             disabled={isEdit}
             helperText={isEdit ? "Name can't be changed." : sc.NAME_RULE}
           />
         </Grid>
         <Grid item xs={6}>
-          <Field
-            component={KRenderDebounceTextField}
+          <FastField
+            component={KRenderDebounceFormikTextField}
+            id="component-image"
             name="image"
+            spellCheck={false}
             label="Image"
             placeholder={sc.IMAGE_PLACEHOLDER}
-            margin
             validate={ValidatorRequired}
             helperText={sc.IMAGE_INPUT_HELPER}
           />
@@ -872,16 +864,17 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={6}>
           <Field
             name="workloadType"
-            component={RenderSelectField}
+            component={RenderFormikSelectField}
             label="Type"
             validate={ValidatorRequired}
-            disabled={isEdit}
+            disabled={isEdit || hasVolumes}
             options={[
               makeSelectOption(workloadTypeServer, "Service Component", sc.COMPONENT_TYPE_SERVICE_OPTION),
               makeSelectOption(workloadTypeCronjob, "CronJob", sc.COMPONENT_TYPE_CRONJOB_OPTION),
               makeSelectOption(workloadTypeDaemonSet, "DaemonSet", sc.COMPONENT_TYPE_DAEMON_OPTION),
               makeSelectOption(workloadTypeStatefulSet, "StatefulSet", sc.COMPONENT_TYPE_STATEFUL_SET_OPTION),
             ]}
+            helperText={!isEdit && hasVolumes ? "Type can't be changed after created disks" : ""}
           />
         </Grid>
         <Grid item xs={6}>
@@ -916,8 +909,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   };
 
   private renderPrivateRegistryAlert = () => {
-    const { fieldValues } = this.props;
-    const image = fieldValues.get("image");
+    const { values } = this.props;
+    const image = values.image;
 
     if (!image || !this.isUnknownPrivateRegistry(image)) {
       return null;
@@ -947,10 +940,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   };
 
   private renderDeployButton() {
-    const { classes, handleSubmit, isSubmittingApplicationComponent, initialValues } = this.props;
+    const { classes, isSubmittingApplicationComponent, initialValues } = this.props;
 
     // @ts-ignore
-    const isEdit = initialValues && initialValues!.get("name");
+    const isEdit = initialValues && initialValues.name;
 
     return (
       <Grid container spacing={2}>
@@ -960,31 +953,28 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             disabled={isSubmittingApplicationComponent}
             variant="contained"
             color="primary"
+            type="submit"
             className={classes.deployBtn}
-            onClick={handleSubmit}
             id="add-component-submit-button"
           >
             {isEdit ? "Update" : "Deploy"} Component
           </CustomizedButton>
-
-          {/* <Button variant="contained" color="primary" type="submit" className={classes.deployBtn}>
-            Deploy
-          </Button> */}
         </Grid>
       </Grid>
     );
   }
 
   public renderDirtyPrompt = () => {
-    const { dirty, submitSucceeded } = this.props;
-    return <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />;
+    const { dirty, isSubmitting } = this.props;
+    return <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />;
   };
 
   public render() {
-    const { handleSubmit, classes } = this.props;
+    const { handleSubmit, classes, values, form } = this.props;
     return (
-      <form onSubmit={handleSubmit} className={classes.root}>
+      <form onSubmit={handleSubmit} className={classes.root} id="component-form">
         {this.renderDirtyPrompt()}
+        <FormMidware values={values} form={form} />
         <KPanel
           content={
             <Box p={2} tutorial-anchor-id="component-from-basic">
@@ -1004,11 +994,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Box>
         {process.env.REACT_APP_DEBUG === "true" ? (
           <pre style={{ maxWidth: 1500, background: "#eee" }}>
-            {JSON.stringify(
-              (this.props.fieldValues as any).delete("metrics").delete("pods").delete("services"),
-              undefined,
-              2,
-            )}
+            {JSON.stringify(Immutable.fromJS(values).delete("metrics").delete("pods").delete("services"), undefined, 2)}
           </pre>
         ) : null}
         {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
@@ -1018,12 +1004,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
-const form = reduxForm<ComponentLike, RawProps & ConnectedProps>({
-  form: COMPONENT_FORM_ID,
+const form = withFormik<
+  ConnectedProps & RawProps & WithStyles<typeof styles> & RouteComponentProps,
+  ComponentLikeFormContent
+>({
+  mapPropsToValues: (props) => props._initialValues,
   enableReinitialize: true,
-  validate: formValidateOrNotBlockByTutorial,
-  shouldError: shouldError,
-  onSubmitFail: console.log,
-})(withStyles(styles)(withRouter(ComponentLikeFormRaw)));
+  validate: formikValidateOrNotBlockByTutorial,
+  handleSubmit: async (formValues, { props: { onSubmit } }) => {
+    await onSubmit(formValues);
+  },
+})(ComponentLikeFormRaw);
 
-export const ComponentLikeForm = connect(mapStateToProps)(form);
+export const ComponentLikeForm = connect(mapStateToProps)(withStyles(styles)(withRouter(form)));

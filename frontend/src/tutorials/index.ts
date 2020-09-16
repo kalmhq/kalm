@@ -22,6 +22,8 @@ export const tutorialConfigs = [
   //       name: "Configure https certs",
   //       factory: ConfigureHttpsCertsTutorialFactory,
   //     },
+  //   ],
+  // },
   // {
   //   name: "Connect to private image registry",
   //   factory: BasicApplicationCreationTutorialFactory,

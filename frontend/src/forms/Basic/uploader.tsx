@@ -1,13 +1,22 @@
 import { Button, makeStyles, OutlinedTextFieldProps, TextField } from "@material-ui/core";
 import React from "react";
-import { WrappedFieldProps } from "redux-form";
 import { grey } from "@material-ui/core/colors";
 
-export const Uploader = ({
-  input,
-  meta: { touched, invalid, error },
+export const FormikUploader = ({
+  handleChange,
+  touched,
+  errorText,
+  value,
   ...textFieldProps
-}: WrappedFieldProps & Partial<OutlinedTextFieldProps> & { inputid: string; inputlabel: string }) => {
+}: {
+  inputid: string;
+  inputlabel: string;
+  handleChange: any;
+  touched?: boolean;
+  value: any;
+  errorText?: string;
+  helperText?: string;
+} & Partial<OutlinedTextFieldProps>) => {
   const onChange = (target: any) => {
     const file = target.files && target.files[0];
     if (file) {
@@ -15,11 +24,11 @@ export const Uploader = ({
       reader.readAsText(file, "UTF-8");
       reader.onload = function (evt) {
         if (evt.target) {
-          input.onChange(evt.target.result);
+          handleChange(evt.target.result);
         }
       };
       reader.onerror = function (evt) {
-        input.onChange("error reading file");
+        handleChange("error reading file");
       };
     }
   };
@@ -66,15 +75,15 @@ export const Uploader = ({
           className: classes.fileInput,
         }}
         autoComplete="off"
-        error={touched && invalid}
-        helperText={(touched && error) || textFieldProps.helperText}
+        error={touched && !!errorText}
+        helperText={(touched && errorText) || textFieldProps.helperText}
         fullWidth
         type="file"
         size="small"
         margin="dense"
         variant="outlined"
-        onChange={(event: any) => input.onChange(event.target.value)}
-        value={input.value}
+        onChange={handleChange}
+        value={value}
       />
     </div>
   );

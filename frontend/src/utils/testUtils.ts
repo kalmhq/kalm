@@ -1,5 +1,7 @@
-import { Store } from "redux";
-
-export const getTestFormSyncErrors = (store: Store, formID: string) => {
-  return store.getState().get("form").get(formID).get("syncErrors");
+export const sleep = async (time: number) => {
+  await new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve();
+    }, time);
+  });
 };

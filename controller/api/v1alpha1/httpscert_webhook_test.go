@@ -70,8 +70,6 @@ func TestHttpsCertValidateDNS01Cert(t *testing.T) {
 		{"abc.example.com"},
 		{"x.y.com"},
 		{"abc.example.com", "x.y.com"},
-	}
-	wrongDomainsList := [][]string{
 		{"*.example.com"},
 		{"a.com", "*.abc.example.com"},
 	}
@@ -89,11 +87,6 @@ func TestHttpsCertValidateDNS01Cert(t *testing.T) {
 	for _, domains := range okDomainsList {
 		cert.Spec.Domains = domains
 		assert.Nil(t, cert.validate())
-	}
-
-	for _, domains := range wrongDomainsList {
-		cert.Spec.Domains = domains
-		assert.NotNil(t, cert.validate())
 	}
 }
 

@@ -1,44 +1,44 @@
 import { FormLabel } from "@material-ui/core";
-import FormControl, { FormControlProps } from "@material-ui/core/FormControl";
+import FormControl from "@material-ui/core/FormControl";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import React from "react";
-import { WrappedFieldProps } from "redux-form";
 import { Body2 } from "widgets/Label";
 
 interface KRadioGroupRenderOption {
   value: string;
-  label: string;
+  label: React.ReactNode;
   explain?: string;
 }
 
-interface KRadioGroupRenderProps extends WrappedFieldProps {
+interface KFormikRadioGroupRenderProps {
   options: KRadioGroupRenderOption[];
   title?: string;
-  formControlProps?: FormControlProps;
-  defaultValue?: string;
+  error?: boolean;
+  name: string;
+  value: any;
+  onChange: any;
 }
 
-export const KRadioGroupRender = ({
-  input,
-  meta,
+export const KFormikRadioGroupRender = ({
   title,
   options,
-  formControlProps,
-  defaultValue,
-}: KRadioGroupRenderProps) => {
-  const { error } = meta;
+  error,
+  name,
+  value,
+  onChange,
+}: KFormikRadioGroupRenderProps) => {
   return (
     <FormControl component="fieldset" fullWidth margin="dense" error={error}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}
-      <RadioGroup aria-label="gender" name="gender1" value={input.value || defaultValue} onChange={input.onChange}>
+      <RadioGroup aria-label={name} name={name} value={value || options[0].value} onChange={onChange}>
         {options.map((option) => {
           return (
-            <React.Fragment key={option.value}>
+            <span key={option.value}>
               <FormControlLabel key={option.value} value={option.value} control={<Radio />} label={option.label} />
               {option.explain ? <Body2 style={{ padding: "0 16px 0 32px" }}>{option.explain}</Body2> : null}
-            </React.Fragment>
+            </span>
           );
         })}
       </RadioGroup>
