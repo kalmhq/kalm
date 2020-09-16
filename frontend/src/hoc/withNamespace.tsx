@@ -8,6 +8,7 @@ import { setCurrentNamespaceAction } from "actions/namespaces";
 import { Box } from "@material-ui/core";
 import { BasePage } from "pages/BasePage";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
+import { LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
 
 const mapStateToProps = (
   state: RootState,
@@ -55,7 +56,7 @@ export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
 
       if (!isNamespaceFirstLoaded) {
         return (
-          <Box flex="1">
+          <Box flex="1" width={LEFT_SECTION_OPEN_WIDTH}>
             <Loading />
           </Box>
         );
