@@ -92,7 +92,16 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 
 	// reconcile LoadBalancer Service for NSDomain
 	if err := r.reconcileACMEComponent(acmeServer); err != nil {
-		r.Log.Error(err, "")
+
+		if err == ErrLBSvcForACMEServerNotReady {
+			r.Log.Info("lbService for ACMEServer not ready yet, reconciling skipped",
+				"err",
+				err)
+
+			return ctrl.Result{}, nil
+		}
+
+		r.Log.Error(err, "fail reconcileACMEComponent()")
 		return ctrl.Result{}, err
 	}
 
@@ -607,6 +616,8 @@ func (r *ACMEServerReconciler) reconcileStatus(server corev1alpha1.ACMEServer) e
 	return r.Status().Update(r.ctx, &server)
 }
 
+var ErrLBSvcForACMEServerNotReady = fmt.Errorf("LoadBalancer service for ACMEServer not ready yet")
+
 func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.ACMEServer) error {
 	// find if lb-svc IP is ready
 	var lbSvc corev1.Service
@@ -622,7 +633,7 @@ func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.AC
 		lbSvc.Status.LoadBalancer.Ingress[0].IP == "" {
 
 		r.Log.Info("loadBalancer for ACME DNS not ready yet")
-		return nil
+		return ErrLBSvcForACMEServerNotReady
 	}
 
 	ip := lbSvc.Status.LoadBalancer.Ingress[0].IP
