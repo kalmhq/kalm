@@ -156,13 +156,6 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
       {
         name: "Cluster",
         items: [
-          canEditCluster()
-            ? {
-                icon: PeopleIcon,
-                text: "Members",
-                to: "/cluster/members",
-              }
-            : null,
           canViewCluster()
             ? {
                 icon: KalmNodeIcon,
@@ -208,6 +201,13 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
           //   text: "System",
           //   to: "/system",
           // },
+          canEditCluster()
+            ? {
+                icon: PeopleIcon,
+                text: "Members",
+                to: "/cluster/members",
+              }
+            : null,
         ],
       },
     ];
