@@ -90,8 +90,10 @@ class DomainStatus extends React.PureComponent<Props> {
         if (cnameDomain.length > 0) {
           return (
             <>
-              please add an CNAME record with your dns provider, <strong>{domain}</strong> CNAME{" "}
-              <strong>{cnameDomain}</strong>{" "}
+              <Box>please add an CNAME record with your dns provider</Box>
+              <>
+                <strong>{domain}</strong> CNAME <strong>{cnameDomain}</strong>{" "}
+              </>
             </>
           );
         } else {
@@ -106,10 +108,12 @@ class DomainStatus extends React.PureComponent<Props> {
     } else if (nsDomain !== undefined) {
       return (
         <>
-          please add an NS record with your dns provider,
-          <strong>
-            {domain} NS {nsDomain}.
-          </strong>{" "}
+          <Box>please add an NS record with your dns provider</Box>
+          <>
+            <strong>
+              {domain} NS {nsDomain}.{" "}
+            </strong>
+          </>
         </>
       );
     } else {
