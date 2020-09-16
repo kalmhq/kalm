@@ -6,6 +6,7 @@ import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { KalmConsoleIcon } from "widgets/Icon";
 import { inputOnChangeWithDebounce, withDebounceField, withDebounceProps } from "./debounce";
+import { isNumber } from "util";
 
 interface Props {
   endAdornment?: React.ReactNode;
@@ -50,14 +51,15 @@ export const KRenderDebounceFormikTextField = withDebounceField(
       form: { errors, handleChange, handleBlur, setFieldValue },
       showError,
       dispatch,
+      autoComplete,
       ...custom
     } = props;
     const [innerValue, setInnerValue] = useState("");
     const error = getIn(errors, name);
 
     useEffect(() => {
-      if (value) {
-        setInnerValue(value as string);
+      if (value || isNumber(value)) {
+        setInnerValue(String(value));
       } else {
         setInnerValue("");
       }
@@ -90,6 +92,7 @@ export const KRenderDebounceFormikTextField = withDebounceField(
     return (
       <TextField
         {...custom}
+        autoComplete={"off" || autoComplete}
         fullWidth
         name={name}
         onBlur={onBlur || handleBlur}

@@ -61,7 +61,7 @@ export const ValidatorRequired = (value: any, _allValues?: any, _props?: any, _n
     return value.length > 0 ? undefined : "Required";
   }
 
-  return !!value ? undefined : `Required`;
+  return !!value || value === 0 ? undefined : `Required`;
 };
 
 export const ValidatorContainerPortRequired = (value: any) => {

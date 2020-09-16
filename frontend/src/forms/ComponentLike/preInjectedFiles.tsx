@@ -120,6 +120,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
           fullWidth: true,
           maxWidth: "sm",
         }}
+        closeCallback={this.handleDiscard.bind(this, isInvalidFile)}
         actions={
           <>
             <Button onClick={this.handleDiscard.bind(this, isInvalidFile)} color="primary">

@@ -54,20 +54,13 @@ import {
   KRenderFormikCommandTextField,
   RenderFormikComplexValueTextField,
 } from "../Basic/textfield";
-import {
-  ValidatorCPU,
-  ValidatorMemory,
-  ValidatorName,
-  ValidatorNaturalNumber,
-  ValidatorRequired,
-  ValidatorSchedule,
-} from "../validator";
+import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Envs } from "./Envs";
 import { KFormikRenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { FormikNormalizeNumber } from "forms/normalizer";
+import { FormikNormalizepositiveNumber } from "forms/normalizer";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -186,9 +179,6 @@ const nameValidators = (value: any) => {
   return ValidatorRequired(value) || ValidatorName(value);
 };
 
-const numberValidators = (value: any) => {
-  return ValidatorRequired(value) || ValidatorNaturalNumber(value);
-};
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
 
@@ -209,14 +199,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       return (
         <FastField
           component={KRenderDebounceFormikTextField}
-          validate={numberValidators}
+          validate={ValidatorRequired}
           name="replicas"
           margin
           label="Replicas"
           helperText={sc.REPLICA_INPUT_HELPER}
           type="number"
           min="0"
-          normalize={FormikNormalizeNumber}
+          normalize={FormikNormalizepositiveNumber}
         />
       );
     }
