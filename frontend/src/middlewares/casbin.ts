@@ -29,7 +29,8 @@ export const createCasbinEnforcerMiddleware = () => {
       const withSubjects = (fn: (...args: string[]) => boolean, ...args: string[]) => {
         for (let i = 0; i < subjects.length; i++) {
           const subject = subjects[i];
-          if (fn(subject, ...args)) {
+
+          if (fn.call(enforcer, subject, ...args)) {
             return true;
           }
         }
