@@ -12,11 +12,8 @@ import sc from "utils/stringConstants";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const mapStateToProps = (state: RootState) => {
-  const auth = state.auth;
-  const isAdmin = auth.isAdmin;
   return {
     activeNamespaceName: state.namespaces.active,
-    isAdmin,
   };
 };
 
