@@ -58,7 +58,6 @@ class RegistryFormRaw extends React.PureComponent<
                     component={KRenderDebounceFormikTextField}
                     validate={ValidatorName}
                     helperText={isEdit ? "Can't modify name" : sc.NAME_RULE}
-                    placeholder="Please type the registry name"
                   />
                 </Grid>
                 <Grid item md={12}>
@@ -68,7 +67,6 @@ class RegistryFormRaw extends React.PureComponent<
                     autoComplete="off"
                     component={KRenderDebounceFormikTextField}
                     validate={ValidatorRequired}
-                    placeholder="Please type the registry username"
                   />
                 </Grid>
                 <Grid item md={12}>
@@ -79,7 +77,6 @@ class RegistryFormRaw extends React.PureComponent<
                     autoComplete="off"
                     component={KRenderDebounceFormikTextField}
                     validate={ValidatorRequired}
-                    placeholder="Please type the registry password"
                   />
                 </Grid>
                 <Grid item md={12}>
@@ -88,7 +85,7 @@ class RegistryFormRaw extends React.PureComponent<
                     label="Host"
                     component={KRenderDebounceFormikTextField}
                     validate={validateHost}
-                    placeholder="Please type the registry host"
+                    placeholder="E.g. https://registry.kalm.dev"
                     helperText={<span>Leave blank for private docker hub registry</span>}
                   />
                 </Grid>
