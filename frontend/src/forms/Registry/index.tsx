@@ -9,7 +9,7 @@ import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
-import { KRenderDebounceFormikTextField } from "../Basic/textfield";
+import { KRenderThrottleFormikTextField } from "../Basic/textfield";
 import { RequireNoSuffix, RequirePrefix, ValidatorName, ValidatorRequired } from "../validator";
 
 const styles = (theme: Theme) =>
@@ -55,7 +55,7 @@ class RegistryFormRaw extends React.PureComponent<
                     name="name"
                     label="Name"
                     disabled={isEdit}
-                    component={KRenderDebounceFormikTextField}
+                    component={KRenderThrottleFormikTextField}
                     validate={ValidatorName}
                     helperText={isEdit ? "Can't modify name" : sc.NAME_RULE}
                   />
@@ -65,7 +65,7 @@ class RegistryFormRaw extends React.PureComponent<
                     name="username"
                     label="Username"
                     autoComplete="off"
-                    component={KRenderDebounceFormikTextField}
+                    component={KRenderThrottleFormikTextField}
                     validate={ValidatorRequired}
                   />
                 </Grid>
@@ -75,7 +75,7 @@ class RegistryFormRaw extends React.PureComponent<
                     name="password"
                     label="Password"
                     autoComplete="off"
-                    component={KRenderDebounceFormikTextField}
+                    component={KRenderThrottleFormikTextField}
                     validate={ValidatorRequired}
                   />
                 </Grid>
@@ -83,7 +83,7 @@ class RegistryFormRaw extends React.PureComponent<
                   <Field
                     name="host"
                     label="Host"
-                    component={KRenderDebounceFormikTextField}
+                    component={KRenderThrottleFormikTextField}
                     validate={validateHost}
                     placeholder="E.g. https://registry.kalm.dev"
                     helperText={<span>Leave blank for private docker hub registry</span>}
