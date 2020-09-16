@@ -774,7 +774,8 @@ func (r *ACMEServerReconciler) updateStatusOfCertsUsingDNSIssuer(httpsCertIssuer
 			cert.Status.WildcardCertDNSChallengeDomainMap = make(map[string]string)
 		}
 
-		for _, domain := range cert.Spec.Domains {
+		trimmedDomains := trimPrefixOfWildcardDomains(cert.Spec.Domains)
+		for _, domain := range trimmedDomains {
 			config, exist := httpsCertIssuer.Spec.DNS01.Configs[domain]
 			if !exist {
 				continue
