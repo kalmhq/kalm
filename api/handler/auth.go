@@ -10,12 +10,13 @@ import (
 )
 
 type LoginStatusResponse struct {
-	Authorized    bool   `json:"authorized"`
-	Entity        string `json:"entity"`
-	Impersonation string `json:"impersonation"`
-	Policies      string `json:"policies"`
-	RBACModel     string `json:"rbacModel"`
-	CSRF          string `json:"csrf"`
+	Authorized bool `json:"authorized"`
+	// deprecated
+	Entity        string   `json:"entity"`
+	Email         string   `json:"email"`
+	Groups        []string `json:"groups"`
+	Impersonation string   `json:"impersonation"`
+	Policies      string   `json:"policies"`
 }
 
 func (h *ApiHandler) handleValidateToken(c echo.Context) error {
@@ -55,6 +56,8 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		}
 
 		res.Entity = clientInfo.Email
+		res.Email = clientInfo.Email
+		res.Groups = clientInfo.Groups
 		res.Authorized = true
 
 		var subjects []string
