@@ -31,6 +31,8 @@ import (
 // log is for logging in this package.
 var singlesignonconfiglog = logf.Log.WithName("singlesignonconfig-resource")
 
+var SSODefaultIDTokenExpirySeconds = uint32(300)
+
 func (r *SingleSignOnConfig) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
@@ -77,6 +79,10 @@ var _ webhook.Defaulter = &SingleSignOnConfig{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *SingleSignOnConfig) Default() {
 	singlesignonconfiglog.Info("default", "name", r.Name)
+
+	if r.Spec.IDTokenExpirySeconds == nil {
+		r.Spec.IDTokenExpirySeconds = &SSODefaultIDTokenExpirySeconds
+	}
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-singlesignonconfig,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=singlesignonconfigs,versions=v1alpha1,name=vsinglesignonconfig.kb.io
