@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/kalmhq/kalm/api/client"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"net/http"
 
 	"github.com/kalmhq/kalm/api/auth"
@@ -10,12 +11,14 @@ import (
 )
 
 type LoginStatusResponse struct {
-	Authorized    bool   `json:"authorized"`
-	Entity        string `json:"entity"`
-	Impersonation string `json:"impersonation"`
-	Policies      string `json:"policies"`
-	RBACModel     string `json:"rbacModel"`
-	CSRF          string `json:"csrf"`
+	Authorized bool `json:"authorized"`
+	// deprecated
+	Entity            string   `json:"entity"`
+	Email             string   `json:"email"`
+	Groups            []string `json:"groups"`
+	Impersonation     string   `json:"impersonation"`
+	ImpersonationType string   `json:"impersonationType"`
+	Policies          string   `json:"policies"`
 }
 
 func (h *ApiHandler) handleValidateToken(c echo.Context) error {
@@ -55,19 +58,22 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		}
 
 		res.Entity = clientInfo.Email
+		res.Email = clientInfo.Email
+		res.Groups = clientInfo.Groups
 		res.Authorized = true
 
 		var subjects []string
 		if clientInfo.Impersonation == "" {
 			subjects = make([]string, len(clientInfo.Groups)+1)
-			subjects[0] = client.ToSafeSubject(clientInfo.Email)
+			subjects[0] = client.ToSafeSubject(clientInfo.Email, v1alpha1.SubjectTypeUser)
 
 			for i, role := range clientInfo.Groups {
-				subjects[i+1] = client.ToSafeSubject(role)
+				subjects[i+1] = client.ToSafeSubject(role, v1alpha1.SubjectTypeGroup)
 			}
 		} else {
 			res.Impersonation = clientInfo.Impersonation
-			subjects = []string{client.ToSafeSubject(clientInfo.Impersonation)}
+			res.ImpersonationType = clientInfo.ImpersonationType
+			subjects = []string{client.ToSafeSubject(clientInfo.Impersonation, clientInfo.ImpersonationType)}
 		}
 
 		res.Policies = h.clientManager.GetRBACEnforcer().GetCompletePoliciesFor(subjects...)

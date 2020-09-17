@@ -116,7 +116,7 @@ func GrantUserRoles(email string, roles ...string) string {
 	sb.WriteString("\n")
 
 	for i := range roles {
-		sb.WriteString(fmt.Sprintf("g, %s, %s\n", client2.ToSafeSubject(email), roles[i]))
+		sb.WriteString(fmt.Sprintf("g, %s, %s\n", client2.ToSafeSubject(email, v1alpha1.SubjectTypeUser), roles[i]))
 	}
 
 	return sb.String()

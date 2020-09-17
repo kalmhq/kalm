@@ -15,11 +15,12 @@ export type State = {
   firstLoaded: boolean;
   isLoading: boolean;
   authorized: boolean;
-  isAdmin: boolean;
   token: string;
-  entity: string;
-  policies: string; // casbin policies
+  email: string;
+  groups: string[];
+  policies: string;
   impersonation: string;
+  impersonationType: string;
   permissionMethods: PermissionMethods;
 };
 
@@ -30,10 +31,11 @@ const initialState: State = {
   firstLoaded: false,
   isLoading: false,
   token: window.localStorage.getItem(AUTHORIZED_TOKEN_KEY) || "",
-  entity: "",
-  isAdmin: false,
+  email: "",
+  groups: [],
   policies: "",
   impersonation: "",
+  impersonationType: "",
   permissionMethods: emptyPermissionMethods,
 };
 
@@ -41,10 +43,11 @@ const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOAD_LOGIN_STATUS_FULFILLED: {
       state.authorized = action.payload.loginStatus.authorized;
-      state.isAdmin = action.payload.loginStatus.isAdmin;
-      state.entity = action.payload.loginStatus.entity;
+      state.email = action.payload.loginStatus.email;
       state.policies = action.payload.loginStatus.policies;
       state.impersonation = action.payload.loginStatus.impersonation;
+      state.groups = action.payload.loginStatus.groups;
+      state.impersonationType = action.payload.loginStatus.impersonationType;
       state.firstLoaded = true;
       state.isLoading = false;
       return;

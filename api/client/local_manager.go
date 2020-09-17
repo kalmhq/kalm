@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 	"github.com/kalmhq/kalm/api/rbac"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/rest"
@@ -41,7 +42,7 @@ p, role_admin, manage, *, *
 p, role_admin, view, *, *
 p, role_admin, edit, *, *
 g, %s, role_admin
-`, ToSafeSubject(localhostAdminUser)),
+`, ToSafeSubject(localhostAdminUser, v1alpha1.SubjectTypeUser)),
 		)),
 		ClusterConfig: cfg,
 	}
