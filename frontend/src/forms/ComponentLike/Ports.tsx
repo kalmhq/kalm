@@ -15,7 +15,7 @@ import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { PortChart } from "widgets/PortChart";
 import { RenderFormikSelectField } from "../Basic/select";
-import { KRenderDebounceFormikTextField } from "../Basic/textfield";
+import { KRenderThrottleFormikTextField } from "../Basic/textfield";
 import { ValidatorContainerPortRequired, ValidatorPort, ValidatorRequired } from "../validator";
 import { FormikNormalizePort } from "forms/normalizer";
 import { Alert } from "@material-ui/lab";
@@ -98,7 +98,7 @@ class RenderPorts extends React.PureComponent<Props> {
                           <FastField
                             onFocus={popupState.open}
                             onBlur={this.handleBlur.bind(this, popupState.close)}
-                            component={KRenderDebounceFormikTextField}
+                            component={KRenderThrottleFormikTextField}
                             name={`${name}.${index}.containerPort`}
                             label="Container port"
                             placeholder="1~65535,not 443"
@@ -140,7 +140,7 @@ class RenderPorts extends React.PureComponent<Props> {
                           <FastField
                             onFocus={popupState.open}
                             onBlur={this.handleBlur.bind(this, popupState.close)}
-                            component={KRenderDebounceFormikTextField}
+                            component={KRenderThrottleFormikTextField}
                             name={`${name}.${index}.servicePort`}
                             label="Service Port"
                             placeholder="Default to equal publish port"

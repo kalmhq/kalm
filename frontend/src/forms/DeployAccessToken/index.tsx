@@ -3,7 +3,7 @@ import { Theme } from "@material-ui/core/styles";
 import { Field, Form, FormikProps, withFormik } from "formik";
 import { KAutoCompleteOption, KFormikAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
 import { KFormikRadioGroupRender } from "forms/Basic/radio";
-import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
+import { KRenderThrottleFormikTextField } from "forms/Basic/textfield";
 import { RequireString, ValidatorRequired } from "forms/validator";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import React from "react";
@@ -99,7 +99,7 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
               label="Memo"
               autoFocus
               autoComplete="off"
-              component={KRenderDebounceFormikTextField}
+              component={KRenderThrottleFormikTextField}
               id="deployKey-name"
               validate={ValidatorRequired}
             />

@@ -165,10 +165,14 @@ export const ValidatorOneof = (...options: (string | RegExp)[]) => {
 };
 
 export const ValidatorVolumeSize = (value: string) => {
-  if (!value) return undefined;
+  if (!value) return "Required";
 
   if (value === "Gi") {
     return "Required";
+  }
+
+  if (!value.match(new RegExp(`(^\\d+(\\.\\d+)?)([eEinumkKMGTP]*[-+]?[0-9]*)$`)) || value === "0Gi") {
+    return "Invalid Value";
   }
   // if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
   //   return "Invalid Value";

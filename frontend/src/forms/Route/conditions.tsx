@@ -5,7 +5,7 @@ import { HttpRouteCondition } from "types/route";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { RenderFormikSelectField } from "../Basic/select";
-import { KRenderDebounceFormikTextField } from "../Basic/textfield";
+import { KRenderThrottleFormikTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
 
 export interface Props {
@@ -68,7 +68,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                   <Grid item md={2}>
                     <Field
                       name={`conditions.${index}.name`}
-                      component={KRenderDebounceFormikTextField}
+                      component={KRenderThrottleFormikTextField}
                       label="Name"
                       validate={ValidatorRequired}
                     />
@@ -89,7 +89,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                   <Grid item md={2}>
                     <Field
                       name={`conditions.${index}.value`}
-                      component={KRenderDebounceFormikTextField}
+                      component={KRenderThrottleFormikTextField}
                       label="Value"
                       validate={ValidatorRequired}
                     />

@@ -50,7 +50,7 @@ import { SectionTitle } from "widgets/SectionTitle";
 import { KFormikRadioGroupRender } from "../Basic/radio";
 import { makeSelectOption, RenderFormikSelectField } from "../Basic/select";
 import {
-  KRenderDebounceFormikTextField,
+  KRenderThrottleFormikTextField,
   KRenderFormikCommandTextField,
   RenderFormikComplexValueTextField,
 } from "../Basic/textfield";
@@ -225,7 +225,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     if (workloadType === workloadTypeServer || workloadType === workloadTypeStatefulSet) {
       return (
         <FastField
-          component={KRenderDebounceFormikTextField}
+          component={KRenderThrottleFormikTextField}
           validate={ValidatorRequired}
           name="replicas"
           margin
@@ -243,7 +243,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <>
           <FastField
             name="schedule"
-            component={KRenderDebounceFormikTextField}
+            component={KRenderThrottleFormikTextField}
             placeholder="* * * * *"
             label="Cronjob Schedule"
             required
@@ -747,7 +747,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </HelperTextSection>
         <Grid item xs={6}>
           <FastField
-            component={KRenderDebounceFormikTextField}
+            component={KRenderThrottleFormikTextField}
             name="terminationGracePeriodSeconds"
             label="Termination Grace Period (seconds)"
             normalize={FormikNormalizePositiveNumber}
@@ -854,7 +854,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={6}>
           <FastField
             autoFocus
-            component={KRenderDebounceFormikTextField}
+            component={KRenderThrottleFormikTextField}
             id="component-name"
             name="name"
             label="Name"
@@ -865,7 +865,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={6}>
           <FastField
-            component={KRenderDebounceFormikTextField}
+            component={KRenderThrottleFormikTextField}
             id="component-image"
             name="image"
             spellCheck={false}

@@ -222,6 +222,27 @@ func GetOIDCProviderInfo(ssoConfig *corev1alpha1.SingleSignOnConfig) *OIDCProvid
 func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilter(req ctrl.Request) *v1alpha3.EnvoyFilter {
 	name := fmt.Sprintf("kalm-sso-%s", req.Name)
 	namespace := req.Namespace
+
+	patches := r.BuildEnvoyFilterListenerPatches(req)
+	patches = append(patches, r.BuildEnvoyFilterHttpRoutePatches(req)...)
+
+	return &v1alpha3.EnvoyFilter{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: v1alpha32.EnvoyFilter{
+			WorkloadSelector: &v1alpha32.WorkloadSelector{
+				Labels: map[string]string{
+					KalmLabelComponentKey: r.endpoint.Spec.EndpointName,
+				},
+			},
+			ConfigPatches: patches,
+		},
+	}
+}
+
+func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterListenerPatches(req ctrl.Request) []*v1alpha32.EnvoyFilter_EnvoyConfigObjectPatch {
 	oidcProviderInfo := GetOIDCProviderInfo(r.ssoConfig)
 
 	var grantedGroups string
@@ -268,7 +289,7 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilter(req ctrl.Request) *v1
 						"allowedUpstreamHeaders": map[string]interface{}{
 							"patterns": []interface{}{
 								map[string]interface{}{
-									"exact": "cookie",
+									"exact": KALM_SSO_SET_COOKIE_PAYLOAD_HEADER,
 								},
 								map[string]interface{}{
 									"exact": KALM_SSO_USERINFO_HEADER,
@@ -320,20 +341,54 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilter(req ctrl.Request) *v1
 		}
 	}
 
-	return &v1alpha3.EnvoyFilter{
-		ObjectMeta: metaV1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: v1alpha32.EnvoyFilter{
-			WorkloadSelector: &v1alpha32.WorkloadSelector{
-				Labels: map[string]string{
-					KalmLabelComponentKey: r.endpoint.Spec.EndpointName,
+	return configPatches
+}
+
+func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterHttpRoutePatches(req ctrl.Request) []*v1alpha32.EnvoyFilter_EnvoyConfigObjectPatch {
+	patch := &v1alpha32.EnvoyFilter_Patch{
+		Operation: v1alpha32.EnvoyFilter_Patch_MERGE,
+		Value: golangMapToProtoStruct(map[string]interface{}{
+			"response_headers_to_add": []interface{}{
+				map[string]interface{}{
+					"header": map[string]interface{}{
+						"key":   "set-cookie",
+						"value": fmt.Sprintf("%%REQ(%s)%%", KALM_SSO_SET_COOKIE_PAYLOAD_HEADER),
+					},
 				},
 			},
-			ConfigPatches: configPatches,
+		}),
+	}
+
+	var matches []*v1alpha32.EnvoyFilter_EnvoyConfigObjectMatch
+
+	baseMatch := &v1alpha32.EnvoyFilter_EnvoyConfigObjectMatch{
+		Context: v1alpha32.EnvoyFilter_SIDECAR_INBOUND,
+		ObjectTypes: &v1alpha32.EnvoyFilter_EnvoyConfigObjectMatch_RouteConfiguration{
+			RouteConfiguration: &v1alpha32.EnvoyFilter_RouteConfigurationMatch{},
 		},
 	}
+
+	if len(r.endpoint.Spec.Ports) > 0 {
+		for _, port := range r.endpoint.Spec.Ports {
+			match := baseMatch.DeepCopy()
+			match.ObjectTypes.(*v1alpha32.EnvoyFilter_EnvoyConfigObjectMatch_RouteConfiguration).RouteConfiguration.PortNumber = uint32(port)
+			matches = append(matches, match)
+		}
+	} else {
+		matches = append(matches, baseMatch.DeepCopy())
+	}
+
+	configPatches := make([]*v1alpha32.EnvoyFilter_EnvoyConfigObjectPatch, len(matches))
+
+	for i := range matches {
+		configPatches[i] = &v1alpha32.EnvoyFilter_EnvoyConfigObjectPatch{
+			ApplyTo: v1alpha32.EnvoyFilter_HTTP_ROUTE,
+			Match:   matches[i],
+			Patch:   patch,
+		}
+	}
+
+	return configPatches
 }
 
 func (r *ProtectedEndpointReconcilerTask) BuildAuthorizationPolicy(req ctrl.Request) *v1beta1.AuthorizationPolicy {

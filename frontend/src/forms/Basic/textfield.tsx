@@ -2,10 +2,9 @@ import { InputAdornment, OutlinedInputProps, useTheme } from "@material-ui/core"
 import TextField, { TextFieldProps } from "@material-ui/core/TextField";
 import { FieldProps, getIn } from "formik";
 import { TextField as FormikTextField } from "formik-material-ui";
-import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
-import { useDebouncedCallback } from "use-debounce";
+import throttle from "lodash/throttle";
+import React, { useCallback, useEffect, useState } from "react";
 import { KalmConsoleIcon } from "widgets/Icon";
-import { inputOnChangeWithDebounce, withDebounceField, withDebounceProps } from "./debounce";
 import { isNumber } from "util";
 
 interface Props {
@@ -37,84 +36,77 @@ export const KRenderFormikTextField = (props: TextFieldProps & FieldProps) => {
   );
 };
 
-export const INPUT_DELAY = 100;
+export const KRenderThrottleFormikTextField = (props: TextFieldProps & FieldProps & Props) => {
+  const {
+    helperText,
+    endAdornment,
+    onBlur,
+    normalize,
+    field: { name, value },
+    form: { errors, touched, handleBlur, setFieldValue },
+    ...custom
+  } = props;
+  const [innerValue, setInnerValue] = useState("");
+  const error = getIn(errors, name);
+  const showError = !!getIn(errors, name) && !!getIn(touched, name);
 
-export const KRenderDebounceFormikTextField = withDebounceField(
-  (props: TextFieldProps & FieldProps & Props & withDebounceProps) => {
-    const {
-      helperText,
-      endAdornment,
-      meta,
-      field: { name, value },
-      onBlur,
-      normalize,
-      form: { errors, handleChange, handleBlur, setFieldValue },
-      showError,
-      dispatch,
-      autoComplete,
-      ...custom
-    } = props;
-    const [innerValue, setInnerValue] = useState("");
-    const error = getIn(errors, name);
-
-    useEffect(() => {
-      if (value || isNumber(value)) {
-        setInnerValue(String(value));
-      } else {
-        setInnerValue("");
-      }
-    }, [value]);
-
-    const [debouncedHandleOnChange] = useDebouncedCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-      if (normalize) {
-        setFieldValue(name, normalize(event));
-      } else {
-        handleChange(event);
-      }
-    }, INPUT_DELAY);
-
-    const handleOnChange = useCallback(
-      (event: React.ChangeEvent<HTMLInputElement>) => {
-        event.persist();
-
-        const newValue = normalize ? normalize(event) : event.currentTarget.value;
-        setInnerValue(newValue);
-        debouncedHandleOnChange(event);
-      },
-      [debouncedHandleOnChange, normalize],
-    );
-
-    const inputProps: Partial<OutlinedInputProps> = {};
-    if (endAdornment) {
-      inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
+  useEffect(() => {
+    if (value || isNumber(value)) {
+      setInnerValue(String(value));
+    } else {
+      setInnerValue("");
     }
+  }, [value]);
 
-    return (
-      <TextField
-        {...custom}
-        autoComplete={"off" || autoComplete}
-        fullWidth
-        name={name}
-        onBlur={onBlur || handleBlur}
-        error={showError}
-        InputLabelProps={{
-          shrink: true,
-        }}
-        helperText={showError ? error : helperText ? helperText : ""}
-        margin="dense"
-        variant="outlined"
-        InputProps={inputProps}
-        inputProps={{
-          required: false, // bypass html5 required feature
-        }}
-        value={innerValue}
-        onChange={(event: ChangeEvent<HTMLInputElement>) => {
-          inputOnChangeWithDebounce(dispatch, () => handleOnChange(event), name);
-        }}
-      />
-    );
-  },
-);
+  const throttleOnChangeCallback = useCallback(
+    throttle(
+      (newValue: any) => {
+        setFieldValue(name, newValue);
+      },
+      1000,
+      { leading: true, trailing: true },
+    ),
+    [],
+  );
+
+  const handleOnChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      event.persist();
+
+      const newValue = normalize ? normalize(event) : event.currentTarget.value;
+      setInnerValue(newValue);
+      throttleOnChangeCallback(newValue);
+    },
+    [throttleOnChangeCallback, normalize],
+  );
+
+  const inputProps: Partial<OutlinedInputProps> = {};
+  if (endAdornment) {
+    inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
+  }
+
+  return (
+    <TextField
+      {...custom}
+      fullWidth
+      name={name}
+      onBlur={onBlur || handleBlur}
+      error={showError}
+      InputLabelProps={{
+        shrink: true,
+      }}
+      helperText={showError ? error : helperText ? helperText : " "}
+      margin="dense"
+      variant="outlined"
+      InputProps={inputProps}
+      inputProps={{
+        required: false, // bypass html5 required feature
+      }}
+      value={innerValue}
+      onChange={handleOnChange}
+    />
+  );
+};
 
 interface ComplexValueTextFieldProps {
   endAdornment?: React.ReactNode;
@@ -138,7 +130,7 @@ export class RenderFormikComplexValueTextField extends React.PureComponent<
       min,
       endAdornment,
       field: { name, value },
-      form: { touched, errors, setFieldValue },
+      form: { touched, errors, setFieldValue, setFieldTouched },
       format,
       parse,
     } = this.props;
@@ -173,8 +165,11 @@ export class RenderFormikComplexValueTextField extends React.PureComponent<
         defaultValue={format ? format(value) : value}
         // value={format ? format(value) : value}
         onBlur={(e) => {
+          setFieldTouched(name, true);
+        }}
+        onChange={(e) => {
           const value = e.target.value;
-          return parse ? setFieldValue(name, parse(value)) : setFieldValue(name, value);
+          parse ? setFieldValue(name, parse(value)) : setFieldValue(name, value);
         }}
       />
     );
