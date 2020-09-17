@@ -63,7 +63,7 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
 		Path:   "/v1alpha1/httpscerts",
 		Body: `{
   "name":    "foobar-cert",
-  "httpsCertIssuer":  "%s",
+  "httpsCertIssuer":  "foobar-issuer",
   "domains": ["example.com"]
 }`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
@@ -384,7 +384,7 @@ func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
 		Path:   "/v1alpha1/httpscerts",
 		Body: `{
   "name":    "foobar-cert",
-  "httpsCertIssuer":  "%s",
+  "httpsCertIssuer":  "foobar-issuer",
   "domains": ["example.com"]
 }`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
