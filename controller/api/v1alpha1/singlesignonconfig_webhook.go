@@ -77,6 +77,11 @@ var _ webhook.Defaulter = &SingleSignOnConfig{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *SingleSignOnConfig) Default() {
 	singlesignonconfiglog.Info("default", "name", r.Name)
+
+	if r.Spec.IDTokenExpirySeconds == nil {
+		expiry := uint32(300)
+		r.Spec.IDTokenExpirySeconds = &expiry
+	}
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-singlesignonconfig,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=singlesignonconfigs,versions=v1alpha1,name=vsinglesignonconfig.kb.io

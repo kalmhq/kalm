@@ -234,7 +234,7 @@ func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *corev1a
 			"http": "0.0.0.0:5556",
 		},
 		"expiry": map[string]interface{}{
-			"idTokens": "300s", // 5min
+			"idTokens": fmt.Sprintf("%ds", *ssoConfig.Spec.IDTokenExpirySeconds),
 		},
 		"frontend": map[string]interface{}{
 			"issuer": "kalm",
