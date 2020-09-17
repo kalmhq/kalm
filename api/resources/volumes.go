@@ -74,6 +74,13 @@ func (resourceManager *ResourceManager) GetPVs() ([]coreV1.PersistentVolume, err
 	return pvList.Items, err
 }
 
+func (resourceManager *ResourceManager) GetPV(pvName string) (coreV1.PersistentVolume, error) {
+	var pv coreV1.PersistentVolume
+	err := resourceManager.Get("", pvName, &pv)
+
+	return pv, err
+}
+
 func (resourceManager *ResourceManager) GetPVCs(opts ...client.ListOption) ([]coreV1.PersistentVolumeClaim, error) {
 	var pvcList coreV1.PersistentVolumeClaimList
 
@@ -121,4 +128,44 @@ func isPVCInUse(pvc coreV1.PersistentVolumeClaim, podList []coreV1.Pod) bool {
 	}
 
 	return isInUse
+}
+
+func (resourceManager *ResourceManager) GetBoundingPVC(pv coreV1.PersistentVolume) (*coreV1.PersistentVolumeClaim, error) {
+	claimRef := pv.Spec.ClaimRef
+	if claimRef == nil {
+		return nil, nil
+	}
+
+	// list all, performance issue when there are too many PVCs
+	pvcList, err := resourceManager.GetPVCs()
+	if err != nil {
+		return nil, err
+	}
+
+	pvc, exist := FindBoundingPVCFromList(pv, pvcList)
+	if exist {
+		return &pvc, nil
+	}
+
+	return nil, nil
+}
+
+func FindBoundingPVCFromList(
+	pv coreV1.PersistentVolume, pvcList []coreV1.PersistentVolumeClaim,
+) (
+	pvc coreV1.PersistentVolumeClaim, exist bool,
+) {
+
+	ref := pv.Spec.ClaimRef
+	if ref == nil {
+		return
+	}
+
+	for _, pvc := range pvcList {
+		if pvc.Name == ref.Name && pvc.Namespace == ref.Namespace {
+			return pvc, true
+		}
+	}
+
+	return
 }

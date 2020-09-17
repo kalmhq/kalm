@@ -74,6 +74,10 @@ func (r *Component) Default() {
 			if vol.HostPath != "" && vol.Path == "" {
 				vol.Path = vol.HostPath
 			}
+
+			if vol.HostPath == "" && vol.Path != "" {
+				vol.HostPath = vol.Path
+			}
 		}
 	}
 }

@@ -2,6 +2,8 @@ package handler
 
 import (
 	"fmt"
+	client2 "github.com/kalmhq/kalm/api/client"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"math/rand"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -129,6 +131,43 @@ func (h *ApiHandler) getComponentList(c echo.Context) (*v1alpha1.ComponentList, 
 	return &fetched, nil
 }
 
+func (h *ApiHandler) checkPermissionOnVolume(c *client2.ClientInfo, vols []v1alpha1.Volume) error {
+	for _, vol := range vols {
+		if vol.Type != v1alpha1.VolumeTypePersistentVolumeClaim {
+			continue
+		}
+
+		if vol.PVToMatch == "" {
+			continue
+		}
+
+		pv, err := h.resourceManager.GetPV(vol.PVToMatch)
+		if err != nil {
+			if errors.IsNotFound(err) {
+				//ignore
+				continue
+			}
+
+			return err
+		}
+
+		boundingPVC, err := h.resourceManager.GetBoundingPVC(pv)
+		if err != nil {
+			return err
+		}
+
+		if boundingPVC == nil {
+			continue
+		}
+
+		if !h.clientManager.CanEditNamespace(c, boundingPVC.Namespace) {
+			return resources.NoNamespaceEditorRoleError(boundingPVC.Namespace)
+		}
+	}
+
+	return nil
+}
+
 func (h *ApiHandler) createComponent(c echo.Context) (*v1alpha1.Component, error) {
 	if !h.clientManager.CanEditNamespace(getCurrentUser(c), c.Param("applicationName")) {
 		return nil, resources.NoNamespaceEditorRoleError(c.Param("applicationName"))
@@ -139,7 +178,11 @@ func (h *ApiHandler) createComponent(c echo.Context) (*v1alpha1.Component, error
 		return nil, err
 	}
 
-	//todo permission, check if component try to re-use disk from other ns
+	//permission, check if component try to re-use disk from other ns
+	err = h.checkPermissionOnVolume(getCurrentUser(c), crdComponent.Spec.Volumes)
+	if err != nil {
+		return nil, err
+	}
 
 	crdComponent.Namespace = c.Param("applicationName")
 	err = h.resourceManager.Create(crdComponent)

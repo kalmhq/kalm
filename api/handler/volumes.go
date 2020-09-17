@@ -205,7 +205,7 @@ func (h *ApiHandler) findAvailableVolsForSimpleWorkload(c *kalmclient.ClientInfo
 		}
 
 		// make sure bounded pvc still exists
-		if _, exist := findPVCByClaimRef(pv.Spec.ClaimRef, pvcList); !exist {
+		if _, exist := resources.FindBoundingPVCFromList(pv, pvcList); !exist {
 			continue
 			//unboundPVs = append(unboundPVs, pv)
 		}
@@ -218,7 +218,7 @@ func (h *ApiHandler) findAvailableVolsForSimpleWorkload(c *kalmclient.ClientInfo
 
 	// find if boundedPV's pvc is in use
 	for _, boundedPV := range boundedPVs {
-		pvc, _ := findPVCByClaimRef(boundedPV.Spec.ClaimRef, pvcList)
+		pvc, _ := resources.FindBoundingPVCFromList(boundedPV, pvcList)
 		isInUse, err := h.resourceManager.IsPVCInUse(pvc)
 		if err != nil {
 			return nil, err
@@ -328,23 +328,6 @@ type volPair struct {
 	pvc v1.PersistentVolumeClaim
 }
 
-func findPVCByClaimRef(ref *v1.ObjectReference, list []v1.PersistentVolumeClaim) (
-	rst v1.PersistentVolumeClaim,
-	exist bool,
-) {
-
-	if ref == nil {
-		return
-	}
-
-	for _, pvc := range list {
-		if pvc.Name == ref.Name && pvc.Namespace == ref.Namespace {
-			return pvc, true
-		}
-	}
-
-	return
-}
 
 func divideAccordingToNs(pairs []volPair, ns string) (sameNs []volPair, diffNs []volPair) {
 	for _, p := range pairs {
