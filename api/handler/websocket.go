@@ -227,7 +227,8 @@ func wsReadLoop(conn *WSConn, clientManager client.ClientManager) (err error) {
 				continue
 			}
 
-			if clientInfo, err := clientManager.GetClientInfoFromToken(m.AuthToken, m.Impersonation); err == nil {
+			if clientInfo, err := clientManager.GetClientInfoFromToken(m.AuthToken); err == nil {
+				clientManager.SetImpersonation(clientInfo, m.Impersonation)
 				conn.clientInfo = clientInfo
 				res.Status = StatusOK
 				res.Message = "Auth Successfully"
@@ -573,7 +574,7 @@ func (h *ApiHandler) prepareWSConnection(c echo.Context) (*WSConn, error) {
 		clientManager:      h.clientManager,
 	}
 
-	clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
+	clientInfo, err := h.clientManager.GetClientInfoFromContext(c)
 
 	if err == nil && clientInfo != nil {
 		conn.clientInfo = clientInfo

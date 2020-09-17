@@ -30,8 +30,9 @@ type ClientInfo struct {
 
 type ClientManager interface {
 	GetDefaultClusterConfig() *rest.Config
-	GetClientInfoFromToken(token string, impersonation string) (*ClientInfo, error)
-	GetConfigForClientRequestContext(c echo.Context) (*ClientInfo, error)
+	GetClientInfoFromToken(token string) (*ClientInfo, error)
+	GetClientInfoFromContext(c echo.Context) (*ClientInfo, error)
+	SetImpersonation(client *ClientInfo, impersonation string)
 
 	Can(client *ClientInfo, verb, scope, obj string) bool
 	CanView(client *ClientInfo, scope string, obj string) bool

@@ -46,7 +46,7 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 		return fmt.Errorf("componentName can't be blank")
 	}
 
-	clientInfo, err := h.clientManager.GetClientInfoFromToken(callParams.DeployKey, "")
+	clientInfo, err := h.clientManager.GetClientInfoFromToken(callParams.DeployKey)
 
 	if err != nil {
 		return err
