@@ -8,7 +8,7 @@ export const validator = () => {
   return errors;
 };
 
-export const ValidatorListNotEmpty = (value: Array<any>, _allValues?: any, _props?: any, _name?: any) => {
+export const ValidatorListNotEmpty = (value: Array<any>) => {
   if (!value || value.length <= 0) {
     return "Select at least one option";
   }
@@ -16,7 +16,7 @@ export const ValidatorListNotEmpty = (value: Array<any>, _allValues?: any, _prop
   return undefined;
 };
 
-export const ValidatorArrayNotEmpty = (value: any[], _allValues?: any, _props?: any, _name?: any) => {
+export const ValidatorArrayNotEmpty = (value: any[]) => {
   if (!value || value.length <= 0) {
     return "Select at least one option";
   }
@@ -56,7 +56,7 @@ export const ValidatorHttpRouteDestinations = (
   return undefined;
 };
 
-export const ValidatorRequired = (value: any, _allValues?: any, _props?: any, _name?: any) => {
+export const ValidatorRequired = (value: any) => {
   if (Array.isArray(value)) {
     return value.length > 0 ? undefined : "Required";
   }
@@ -76,7 +76,7 @@ export const ValidatorContainerPortRequired = (value: any) => {
   return !!value ? undefined : `Required`;
 };
 
-export const ValidatorPort = (value: any, _allValues?: any, _props?: any, _name?: any) => {
+export const ValidatorPort = (value: any) => {
   if (!!value !== undefined) {
     const portInteger = parseInt(value, 10);
 
@@ -87,7 +87,7 @@ export const ValidatorPort = (value: any, _allValues?: any, _props?: any, _name?
   return undefined;
 };
 
-export const ValidatorNumberOrAlphabet = (value: any, _allValues?: any, _props?: any, _name?: any) => {
+export const ValidatorNumberOrAlphabet = (value: any) => {
   const portInteger = parseInt(value, 10);
   if (isNaN(portInteger) && portInteger > 0) {
     if (portInteger.toString().length !== value.toString().length) {
@@ -291,7 +291,7 @@ export const KValidatorWildcardHost = (
   return errors.filter((x) => !!x).length > 0 ? errors : undefined;
 };
 
-export const KValidatorInjectedFilePath = (value: string, _allValues?: any, _props?: any, _name?: any) => {
+export const KValidatorInjectedFilePath = (value: string) => {
   if (!value) {
     return undefined;
   }

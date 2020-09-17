@@ -13,7 +13,7 @@ export const FormikNormalizeNumber = (event: React.ChangeEvent<HTMLInputElement>
   return isNaN(integerValue) ? null : integerValue;
 };
 
-export const FormikNormalizepositiveNumber = (event: React.ChangeEvent<HTMLInputElement>): number | any => {
+export const FormikNormalizePositiveNumber = (event: React.ChangeEvent<HTMLInputElement>): number | any => {
   const integerValue = parseInt(event.target.value, 10);
 
   if (integerValue < 0) {

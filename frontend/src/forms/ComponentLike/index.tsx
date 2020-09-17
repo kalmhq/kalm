@@ -60,7 +60,7 @@ import { KFormikRenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { FormikNormalizepositiveNumber } from "forms/normalizer";
+import { FormikNormalizePositiveNumber } from "forms/normalizer";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -206,7 +206,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           helperText={sc.REPLICA_INPUT_HELPER}
           type="number"
           min="0"
-          normalize={FormikNormalizepositiveNumber}
+          normalize={FormikNormalizePositiveNumber}
         />
       );
     }
@@ -723,8 +723,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             component={KRenderDebounceFormikTextField}
             name="terminationGracePeriodSeconds"
             label="Termination Grace Period (seconds)"
-            // validate={ValidatorRequired}
-            // normalize={NormalizeNumber}
+            validate={ValidatorRequired}
+            normalize={FormikNormalizePositiveNumber}
             placeholder={sc.GRACEFUL_TERM_INPUT_PLACEHOLDER}
           />
         </Grid>
@@ -775,6 +775,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return !!getIn(touched, fieldName) && !!getIn(errors, fieldName);
   }
 
+  private handleChangeTab(event: React.ChangeEvent<{}>, value: number) {
+    this.pushToTab(value);
+  }
+
   private renderTabs() {
     const { classes, currentTabIndex } = this.props;
     return (
@@ -785,10 +789,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         scrollButtons="auto"
         indicatorColor="primary"
         textColor="primary"
-        onChange={(event: React.ChangeEvent<{}>, value: number) => {
-          this.pushToTab(value);
-          // this.setState({ currentTabIndex: value });
-        }}
+        onChange={this.handleChangeTab.bind(this)}
         aria-label="component form tabs"
       >
         {this.tabs.map((tab) => {
