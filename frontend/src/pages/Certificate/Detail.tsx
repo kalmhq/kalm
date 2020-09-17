@@ -158,7 +158,9 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
   };
 
   private renderAcmeServerGuide = (cert: Certificate | undefined) => {
-    const { classes } = this.props;
+    const { classes, location } = this.props;
+    const coms = location.pathname.split("/");
+    const certName = coms[coms.length - 1];
     if (cert === undefined) {
       return null;
     } else {
@@ -207,7 +209,13 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                       </pre>
                     </Box>
                   </Box>
-                  <Button color="primary" variant="outlined" size="small" component={Link} to="/acme/edit">
+                  <Button
+                    color="primary"
+                    variant="outlined"
+                    size="small"
+                    component={Link}
+                    to={`/acme/edit?from=${certName}`}
+                  >
                     Edit
                   </Button>
                 </>
