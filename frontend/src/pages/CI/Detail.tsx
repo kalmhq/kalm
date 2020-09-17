@@ -1,4 +1,4 @@
-import { Button, createStyles, Tab, Tabs, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Tab, Tabs, Theme, withStyles, WithStyles } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
 import { deleteDeployAccessTokenAction } from "actions/deployAccessToken";
 import { setSuccessNotificationAction } from "actions/notification";
@@ -9,7 +9,7 @@ import { withDeployAccessTokens, WithDeployAccessTokensProps } from "hoc/withDep
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
-import { Link, RouteComponentProps, withRouter } from "react-router-dom";
+import { RouteComponentProps, withRouter } from "react-router-dom";
 import {
   DeployAccessToken,
   DeployAccessTokenScopeCluster,
@@ -373,7 +373,7 @@ workflows:
       <BasePage
         secondHeaderRight={
           <>
-            <Button
+            {/* <Button
               component={Link}
               color="primary"
               variant="outlined"
@@ -381,7 +381,7 @@ workflows:
               to={`/ci/keys/${deployAccessToken.name}/edit`}
             >
               Edit
-            </Button>
+            </Button> */}
             <DeleteButtonWithConfirmPopover
               useText
               popupId="delete-ci-popup"
