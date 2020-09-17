@@ -8,7 +8,7 @@ import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
-import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
+import { KRenderThrottleFormikTextField } from "forms/Basic/textfield";
 import { ValidatorRequired } from "../validator";
 import { AcmeServerFormType } from "types/certificate";
 
@@ -51,7 +51,7 @@ class AcmeFormRaw extends React.PureComponent<
                   <Field
                     name="acmeDomain"
                     label="ACME Domain"
-                    component={KRenderDebounceFormikTextField}
+                    component={KRenderThrottleFormikTextField}
                     validate={ValidatorRequired}
                     helperText={sc.NAME_RULE}
                     placeholder="Please type the a domain for ACME DNS server"
@@ -62,7 +62,7 @@ class AcmeFormRaw extends React.PureComponent<
                     name="nsDomain"
                     label="NS Domain"
                     autoComplete="off"
-                    component={KRenderDebounceFormikTextField}
+                    component={KRenderThrottleFormikTextField}
                     validate={ValidatorRequired}
                     placeholder="Please type the a domain as ACME Domain's CNAME record"
                   />
