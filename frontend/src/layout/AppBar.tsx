@@ -27,21 +27,23 @@ import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
 import { stopImpersonating } from "api/realApi/index";
 import { push } from "connected-react-router";
 import deepOrange from "@material-ui/core/colors/deepOrange";
+import { SubjectTypeUser } from "types/member";
 
 const mapStateToProps = (state: RootState) => {
   const activeNamespace = state.namespaces.active;
 
   const auth = state.auth;
-  const isAdmin = auth.isAdmin;
-  const entity = auth.entity;
+  const email = auth.email;
   const impersonation = auth.impersonation;
+  const impersonationType = auth.impersonationType;
+
   return {
     isOpenRootDrawer: state.settings.isOpenRootDrawer,
     tutorialDrawerOpen: state.tutorial.drawerOpen,
     impersonation,
+    impersonationType,
     activeNamespace,
-    isAdmin,
-    entity,
+    email,
   };
 };
 
@@ -136,14 +138,14 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  renderAuthEntity() {
-    const { impersonation, entity, dispatch } = this.props;
+  renderAuth() {
+    const { impersonation, impersonationType, email, dispatch } = this.props;
     const { authMenuAnchorElement } = this.state;
 
-    let entityForDisplay: string = entity;
+    let emailForDisplay: string = email;
 
-    if (entity.length > 15) {
-      entityForDisplay = entity.slice(0, 15) + "...";
+    if (email.length > 15) {
+      emailForDisplay = email.slice(0, 15) + "...";
     }
 
     return (
@@ -176,7 +178,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             this.setState({ authMenuAnchorElement: null });
           }}
         >
-          <MenuItem disabled>Auth as {entityForDisplay}</MenuItem>
+          <MenuItem disabled>Auth as {emailForDisplay}</MenuItem>
           {!!impersonation ? (
             <MenuItem
               onClick={async () => {
@@ -185,10 +187,12 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                 window.location.reload();
               }}
             >
-              Stop impersonating {impersonation}
+              {impersonationType === SubjectTypeUser
+                ? `Stop impersonating ${impersonation}`
+                : `Stop impersonating as member in ${impersonation} group`}
             </MenuItem>
           ) : null}
-          {entity.indexOf("localhost") < 0 ? (
+          {email.indexOf("localhost") < 0 ? (
             <Box>
               <Divider />
               <MenuItem
@@ -321,7 +325,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             <Divider orientation="vertical" flexItem color="inherit" />
             <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
             <Divider orientation="vertical" flexItem color="inherit" />
-            <div className={classes.barAvatar}>{this.renderAuthEntity()}</div>
+            <div className={classes.barAvatar}>{this.renderAuth()}</div>
           </div>
         </div>
       </AppBar>

@@ -17,7 +17,7 @@ import { ImpersonateIcon, PeopleIcon } from "widgets/Icon";
 import { KRTable } from "widgets/KRTable";
 import { WithRoleBindingProps, withRoleBindings } from "hoc/withRoleBinding";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
-import { RoleBinding } from "types/member";
+import { RoleBinding, SubjectTypeGroup, SubjectTypeUser } from "types/member";
 import { deleteRoleBindingsAction, updateRoleBindingsAction } from "actions/user";
 import MenuItem from "@material-ui/core/MenuItem";
 import TextField from "@material-ui/core/TextField";
@@ -63,20 +63,25 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
           variant="outlined"
           to={this.isClusterLevel() ? `/cluster/members/new` : `/applications/${activeNamespaceName}/members/new`}
         >
-          Add member
+          Grant permissions
         </Button>
       </>
     );
   };
 
-  private renderEmpty() {
+  private renderEmpty = () => {
     const { dispatch, activeNamespaceName } = this.props;
+    const isClusterLevel = this.isClusterLevel();
 
     return (
       <EmptyInfoBox
         image={<PeopleIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"This App doesn't have any members yet."}
-        content="Authorize other members to manage this application together."
+        title={
+          isClusterLevel
+            ? "Your cluster has not been authorized to other members"
+            : "This application has not been authorized to other members"
+        }
+        content="Authorize other members to manage this cluster together."
         button={
           <CustomizedButton
             variant="contained"
@@ -90,17 +95,21 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
               );
             }}
           >
-            Add member
+            Grant permissions
           </CustomizedButton>
         }
       />
     );
-  }
+  };
 
   private getKRTableColumns() {
     return [
       {
-        Header: "Subject",
+        Header: "Type",
+        accessor: "type",
+      },
+      {
+        Header: "Name",
         accessor: "subject",
       },
       {
@@ -175,6 +184,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
         data.push({
           name: roleBinding.name,
           subject: roleBinding.subject,
+          type: this.renderSubjectType(roleBinding),
           role: this.renderRole(roleBinding),
           actions: this.renderActions(roleBinding),
         });
@@ -189,13 +199,23 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     return roleBindings.filter((x) => x.namespace === filterNamespace);
   };
 
+  private renderSubjectType = (roleBinding: RoleBinding) => {
+    if (roleBinding.subjectType === SubjectTypeUser) {
+      return "User";
+    } else if (roleBinding.subjectType === SubjectTypeGroup) {
+      return "Group";
+    } else {
+      return "Unknown-" + roleBinding.subjectType;
+    }
+  };
+
   private renderActions = (roleBinding: RoleBinding) => {
     const { dispatch } = this.props;
     return (
       <>
         <IconButtonWithTooltip
           onClick={async () => {
-            impersonate(roleBinding.subject);
+            impersonate(roleBinding.subject, roleBinding.subjectType);
             await dispatch(push("/"));
             window.location.reload();
           }}

@@ -10,10 +10,14 @@ export const DELETE_ROLE_BINDINGS_PENDING = "DELETE_ROLE_BINDINGS_PENDING";
 export const DELETE_ROLE_BINDINGS_FAILED = "DELETE_ROLE_BINDINGS_FAILED";
 export const DELETE_ROLE_BINDINGS_FULFILLED = "DELETE_ROLE_BINDINGS_FULFILLED";
 
+export const SubjectTypeUser = "user";
+export const SubjectTypeGroup = "group";
+
 export interface RoleBinding {
   name: string;
   namespace: string;
   subject: string;
+  subjectType: string;
   role: string;
   expiredAtTimestamp: number;
 }
@@ -23,6 +27,7 @@ export const newEmptyRoleBinding = (isClusterLevel: boolean = false): RoleBindin
     name: "",
     namespace: "",
     subject: "",
+    subjectType: SubjectTypeUser,
     role: isClusterLevel ? "clusterViewer" : "viewer",
     expiredAtTimestamp: 1,
   };

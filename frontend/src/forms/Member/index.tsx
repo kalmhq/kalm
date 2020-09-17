@@ -8,7 +8,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { RoleBinding } from "types/member";
+import { RoleBinding, SubjectTypeGroup, SubjectTypeUser } from "types/member";
 import { default as sc } from "utils/stringConstants";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
@@ -44,7 +44,7 @@ class MemberFormRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { dirty, isSubmitting, isClusterLevel } = this.props;
+    const { dirty, isSubmitting, isClusterLevel, values } = this.props;
 
     const rolesOptions = isClusterLevel
       ? [
@@ -63,22 +63,45 @@ class MemberFormRaw extends React.PureComponent<Props, State> {
         <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
         <Box mb={2}>
           <KPanel
-            title="Member"
+            title="Grant role permissions to a user or a group"
             content={
               <Box p={2}>
                 <Box mb={2}>
                   <FastField
+                    name="subjectType"
                     autoFocus
+                    component={KRenderThrottleFormikTextField}
+                    required
+                    label="Subject Type"
+                    validate={ValidatorRequired}
+                    helperText="Please select the subject type you want to grant permissions to"
+                    options={[
+                      { value: SubjectTypeUser, text: "User" },
+                      { value: SubjectTypeGroup, text: "Group" },
+                    ]}
+                  />
+                </Box>
+
+                <Box mb={2}>
+                  <Field
                     component={KRenderThrottleFormikTextField}
                     name="subject"
                     label="Subject"
                     validate={ValidatorRequired}
-                    placeholder="e.g. user@example.com, <github-group>:<abc>"
-                    helperText={"The owner can be the email of a specific user or the name of a group"}
+                    placeholder={
+                      values.subjectType === SubjectTypeUser
+                        ? "e.g. user@example.com"
+                        : "e.g. <github-org-name>:<team-name> or <gitlab-group-name>"
+                    }
+                    helperText={
+                      values.subjectType === SubjectTypeUser
+                        ? "Please type the user email"
+                        : "Please type the group name"
+                    }
                   />
                 </Box>
 
-                <Field
+                <FastField
                   name="role"
                   component={RenderFormikSelectField}
                   label="Role"
@@ -91,7 +114,7 @@ class MemberFormRaw extends React.PureComponent<Props, State> {
           />
           <Box mt={2}>
             <Button color="primary" variant="contained" type="submit">
-              Add Member
+              {values.subjectType === SubjectTypeUser ? "Grant permissions to User" : "Grant permissions to Group"}
             </Button>
           </Box>
         </Box>

@@ -17,9 +17,7 @@ export const resetStore = () => {
     payload: {
       loginStatus: {
         authorized: true,
-        isAdmin: true,
-        entity: "system:serviceaccount:default:kalm-sample-user",
-        csrf: "",
+        email: "system:serviceaccount:default:kalm-sample-user",
       },
     },
   });

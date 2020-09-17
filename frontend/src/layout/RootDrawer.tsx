@@ -25,23 +25,18 @@ import {
   KalmRegistryIcon,
   KalmRoutesIcon,
   KalmVolumeIcon,
-  SettingIcon,
   PeopleIcon,
+  SettingIcon,
 } from "widgets/Icon";
 import { blinkTopProgressAction } from "actions/settings";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 
 const mapStateToProps = (state: RootState) => {
-  const auth = state.auth;
-  const isAdmin = auth.isAdmin;
-  const entity = auth.entity;
   return {
     pathname: window.location.pathname,
     isOpenRootDrawer: state.settings.isOpenRootDrawer,
     activeNamespaceName: state.namespaces.active,
-    isAdmin,
-    entity,
   };
 };
 

@@ -1,7 +1,13 @@
 import produce from "immer";
 import { ApplicationComponentDetails, ApplicationDetails, PodStatus } from "types/application";
 import { LoginStatus } from "types/authorization";
-import { AcmeServerInfo } from "types/certificate";
+import {
+  AcmeServerInfo,
+  Certificate,
+  CertificateFormType,
+  CertificateIssuer,
+  CertificateIssuerFormType,
+} from "types/certificate";
 import { ClusterInfo } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import { NodesListResponse } from "types/node";
@@ -9,7 +15,6 @@ import { Registry, RegistryFormType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { SSOConfig } from "types/sso";
-import { Certificate, CertificateIssuer, CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 
 interface MockStoreData {
   mockRegistries: Registry[];
@@ -8387,12 +8392,11 @@ export default class MockStore {
       },
       mockLoginStatus: {
         authorized: true,
-        csrf: "",
-        entity: "023ff5a27659178bc79bea4d289da5110c5cbbd381b2fa5089cff8f40f48b834",
+        email: "023ff5a27659178bc79bea4d289da5110c5cbbd381b2fa5089cff8f40f48b834",
+        groups: [],
         impersonation: "",
         policies:
           "p, sub-023ff5a27659178bc79bea4d289da5110c5cbbd381b2fa5089cff8f40f48b834, view, *, *↵p, sub-023ff5a27659178bc79bea4d289da5110c5cbbd381b2fa5089cff8f40f48b834, edit, *, *↵p, sub-023ff5a27659178bc79bea4d289da5110c5cbbd381b2fa5089cff8f40f48b834, manage, *, *",
-        rbacModel: "",
       },
       mockServices: [
         {
