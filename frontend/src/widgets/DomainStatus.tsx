@@ -27,7 +27,7 @@ const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
     domainStatus,
     ingressIP: state.cluster.info.ingressIP,
     isIPDomain: regResultIp !== null,
-    acmeServer: state.get("certificates").get("acmeServer"),
+    acmeServer: state.certificates.acmeServer,
   };
 };
 

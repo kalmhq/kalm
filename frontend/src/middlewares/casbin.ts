@@ -13,7 +13,7 @@ const toSafeSubject = (sub: string, type: string) => {
     return "group-" + sub;
   }
 
-  throw "unknown subject type: " + type;
+  throw new Error("unknown subject type: " + type);
 };
 
 export const createCasbinEnforcerMiddleware = () => {
@@ -30,7 +30,7 @@ export const createCasbinEnforcerMiddleware = () => {
         subjects = [toSafeSubject(clientInfo.impersonation, clientInfo.impersonationType)];
       } else {
         subjects = [toSafeSubject(action.payload.loginStatus.email, SubjectTypeUser)];
-        subjects = subjects.concat(clientInfo.groups.map((group) => toSafeSubject(group, SubjectTypeGroup)));
+        subjects = subjects.concat(clientInfo.groups.map((group: string) => toSafeSubject(group, SubjectTypeGroup)));
       }
 
       const withSubjects = (fn: (...args: string[]) => boolean, ...args: string[]) => {

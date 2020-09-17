@@ -10,7 +10,7 @@ import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
 import { KRenderDebounceFormikTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
-import { AcmeServerFormTypeContent } from "types/certificate";
+import { AcmeServerFormType } from "types/certificate";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -21,18 +21,18 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    isSubmittingCreateAcmeServer: state.get("certificates").get("isSubmittingCreateAcmeServer"),
+    isSubmittingCreateAcmeServer: state.certificates.isSubmittingCreateAcmeServer,
   };
 };
 
 export interface Props {
   onSubmit: any;
-  initial: AcmeServerFormTypeContent;
+  initial: AcmeServerFormType;
 }
 
 class AcmeFormRaw extends React.PureComponent<
   Props &
-    FormikProps<AcmeServerFormTypeContent> &
+    FormikProps<AcmeServerFormType> &
     ReturnType<typeof mapStateToProps> &
     WithStyles<typeof styles> &
     DispatchProp
@@ -87,11 +87,11 @@ class AcmeFormRaw extends React.PureComponent<
 
 const connectedForm = connect(mapStateToProps)(withStyles(styles)(AcmeFormRaw));
 
-export const AcmeForm = withFormik<Props, AcmeServerFormTypeContent>({
+export const AcmeForm = withFormik<Props, AcmeServerFormType>({
   mapPropsToValues: (props) => {
     return props.initial;
   },
-  validate: (values: AcmeServerFormTypeContent) => {
+  validate: (values: AcmeServerFormType) => {
     let errors = {};
     return errors;
   },

@@ -1,11 +1,5 @@
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
-import {
-  AcmeServerFormTypeContent,
-  AcmeServerFormType,
-  AcmeServerInfo,
-  CertificateFormType,
-  CertificateIssuerFormType,
-} from "types/certificate";
+import { AcmeServerFormType, AcmeServerInfo, CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import { DeployAccessToken } from "types/deployAccessToken";
 import { RoleBinding } from "types/member";
@@ -284,7 +278,7 @@ export default class MockApi extends Api {
     return;
   };
 
-  public editAcmeServer = async (acmeServer: AcmeServerFormTypeContent): Promise<void> => {
+  public editAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
     return;
   };
 

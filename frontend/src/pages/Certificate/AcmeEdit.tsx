@@ -6,17 +6,17 @@ import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { editAcmeServerAction } from "actions/certificate";
 import { RootState } from "reducers";
-import { AcmeServerFormTypeContent } from "types/certificate";
+import { AcmeServerFormType } from "types/certificate";
 import { H6 } from "widgets/Label";
 import { AcmeForm } from "forms/Certificate/acmeForm";
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
-  const acmeServer = state.get("certificates").get("acmeServer");
+  const acmeServer = state.certificates.acmeServer;
   return {
     acmeServer: acmeServer,
     initialValues: {
-      acmeDomain: acmeServer!.get("acmeDomain"),
-      nsDomain: acmeServer!.get("nsDomain"),
+      acmeDomain: acmeServer!.acmeDomain,
+      nsDomain: acmeServer!.nsDomain,
     },
   };
 };
@@ -29,7 +29,7 @@ const styles = (theme: Theme) =>
 export interface Props extends WithStyles<typeof styles>, TDispatchProp, ReturnType<typeof mapStateToProps> {}
 
 class CertificateAcmeEditRaw extends React.PureComponent<Props> {
-  private submit = async (acmeServer: AcmeServerFormTypeContent) => {
+  private submit = async (acmeServer: AcmeServerFormType) => {
     try {
       const { dispatch } = this.props;
       await dispatch(editAcmeServerAction(acmeServer));

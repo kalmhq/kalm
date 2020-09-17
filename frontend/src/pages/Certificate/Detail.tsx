@@ -83,33 +83,32 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
           </Box>
         );
       } else if (cert.httpsCertIssuer === dns01Issuer) {
-        if (!acmeServer || !acmeServer.get("ready")) {
-          const domains = cert.get("domains");
+        if (!acmeServer || !acmeServer.ready) {
+          const domains = cert.domains;
           return (
             <Box>
               <Box className={classes.key}>Domains</Box>
               <Box pl={0} pt={1}>
-                {domains
-                  ?.map((domain) => {
-                    return (
-                      <FlexRowItemCenterBox key={domain}>
-                        <DomainStatus domain={acmePrefix + domain} cnameDomain={""} mr={1} />
-                        {domain}
-                      </FlexRowItemCenterBox>
-                    );
-                  })
-                  .toList()}
+                {domains?.map((domain) => {
+                  return (
+                    <FlexRowItemCenterBox key={domain}>
+                      <DomainStatus domain={acmePrefix + domain} cnameDomain={""} mr={1} />
+                      {domain}
+                    </FlexRowItemCenterBox>
+                  );
+                })}
               </Box>
             </Box>
           );
         } else {
-          const domains = cert.get("wildcardCertDNSChallengeDomainMap");
-          return (
-            <Box>
-              <Box className={classes.key}>Domains</Box>
-              <Box pl={0} pt={1}>
-                {domains
-                  ?.map((ns, domain) => {
+          const domains = cert.wildcardCertDNSChallengeDomainMap;
+          if (domains) {
+            return (
+              <Box>
+                <Box className={classes.key}>Domains</Box>
+                <Box pl={0} pt={1}>
+                  {Object.keys(domains).map((domain: string) => {
+                    const ns = domains[domain];
                     return (
                       <Box key={domain}>
                         <CollapseWrapper
@@ -132,11 +131,11 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                         </CollapseWrapper>
                       </Box>
                     );
-                  })
-                  .toList()}
+                  })}
+                </Box>
               </Box>
-            </Box>
-          );
+            );
+          }
         }
       } else {
         const domains = cert.domains;

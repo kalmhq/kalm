@@ -86,26 +86,25 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       if (isSelfManaged) {
         return null;
       }
-      const cnameMap = cert.get("wildcardCertDNSChallengeDomainMap");
+      const cnameMap = cert.wildcardCertDNSChallengeDomainMap;
+
       const cleanDomain = domain.replace("*.", "");
-      return isWildcardDomain ? (
-        <DomainStatus mr={1} domain={acmePrefix + cleanDomain} nsDomain={cnameMap?.get(cleanDomain)} />
+      return cnameMap && isWildcardDomain ? (
+        <DomainStatus mr={1} domain={acmePrefix + cleanDomain} nsDomain={cnameMap[cleanDomain]} />
       ) : (
         <DomainStatus mr={1} domain={domain} />
       );
     };
     return (
       <Box className={classes.domainsColumn}>
-        {cert.domains
-          ?.map((domain) => {
-            return (
-              <FlexRowItemCenterBox key={domain}>
-                {domainStatus(`${domain}`)}
-                {`${domain}`}
-              </FlexRowItemCenterBox>
-            );
-          })
-          .toArray()}
+        {cert.domains?.map((domain) => {
+          return (
+            <FlexRowItemCenterBox key={domain}>
+              {domainStatus(`${domain}`)}
+              {`${domain}`}
+            </FlexRowItemCenterBox>
+          );
+        })}
       </Box>
     );
   };

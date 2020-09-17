@@ -3,13 +3,7 @@ import Axios, { AxiosRequestConfig } from "axios";
 import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
 
-import {
-  AcmeServerFormTypeContent,
-  AcmeServerFormType,
-  AcmeServerInfo,
-  CertificateFormType,
-  CertificateIssuerFormType,
-} from "types/certificate";
+import { AcmeServerFormType, AcmeServerInfo, CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import {
   AccessTokenToDeployAccessToken,
@@ -324,7 +318,7 @@ export default class RealApi extends Api {
     return res.data;
   };
 
-  public editAcmeServer = async (acmeServer: AcmeServerFormTypeContent): Promise<void> => {
+  public editAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
     await axiosRequest({ method: "put", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
     return; //Immutable.fromJS(res.data);
   };
