@@ -24,7 +24,7 @@ func (h *ApiHandler) RequireUserMiddleware(next echo.HandlerFunc) echo.HandlerFu
 
 func (h *ApiHandler) GetCurrentUserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
+		clientInfo, err := h.clientManager.GetClientInfoFromContext(c)
 
 		if err != nil {
 			return err

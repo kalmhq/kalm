@@ -160,7 +160,7 @@ func (m *StandardClientManager) GetDefaultClusterConfig() *rest.Config {
 	return m.ClusterConfig
 }
 
-func (m *StandardClientManager) GetClientInfoFromToken(tokenString, impersonationRawString string) (*ClientInfo, error) {
+func (m *StandardClientManager) GetClientInfoFromToken(tokenString string) (*ClientInfo, error) {
 	m.mut.RLock()
 	defer m.mut.RUnlock()
 
@@ -182,9 +182,12 @@ func (m *StandardClientManager) GetClientInfoFromToken(tokenString, impersonatio
 		Groups:        []string{},
 	}
 
-	// Only cluster manager can impersonate
-	if impersonationRawString != "" && m.CanManageCluster(clientInfo) {
-		impersonation, impersonationType, err := parseImpersonationString(impersonationRawString)
+	return clientInfo, nil
+}
+
+func (m *StandardClientManager) SetImpersonation(clientInfo *ClientInfo, rawImpersonation string) {
+	if rawImpersonation != "" && m.CanManageCluster(clientInfo) {
+		impersonation, impersonationType, err := parseImpersonationString(rawImpersonation)
 
 		if err == nil {
 			clientInfo.Impersonation = impersonation
@@ -193,14 +196,18 @@ func (m *StandardClientManager) GetClientInfoFromToken(tokenString, impersonatio
 			log.Error(err, "parse impersonation raw string failed")
 		}
 	}
-
-	return clientInfo, nil
 }
 
-func (m *StandardClientManager) GetConfigForClientRequestContext(c echo.Context) (*ClientInfo, error) {
+func (m *StandardClientManager) GetClientInfoFromContext(c echo.Context) (*ClientInfo, error) {
 	// If the Authorization Header is not empty, use the bearer token as k8s token.
 	if token := extractAuthTokenFromClientRequestContext(c); token != "" {
-		return m.GetClientInfoFromToken(token, c.Request().Header.Get("Kalm-Impersonation"))
+		clientInfo, err := m.GetClientInfoFromToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		m.SetImpersonation(clientInfo, c.Request().Header.Get("Kalm-Impersonation"))
+		return clientInfo, nil
 	}
 
 	// And the kalm-sso-userinfo header is not empty.
@@ -223,17 +230,7 @@ func (m *StandardClientManager) GetConfigForClientRequestContext(c echo.Context)
 		clientInfo.Cfg = m.ClusterConfig
 		clientInfo.Impersonation = ""
 
-		if c.Request().Header.Get("Kalm-Impersonation") != "" && m.CanManageCluster(&clientInfo) {
-			impersonation, impersonationType, err := parseImpersonationString(c.Request().Header.Get("Kalm-Impersonation"))
-
-			if err == nil {
-				clientInfo.Impersonation = impersonation
-				clientInfo.ImpersonationType = impersonationType
-			} else {
-				log.Error(err, "parse impersonation raw string failed")
-			}
-		}
-
+		m.SetImpersonation(&clientInfo, c.Request().Header.Get("Kalm-Impersonation"))
 		return &clientInfo, nil
 	}
 
