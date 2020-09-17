@@ -102,7 +102,7 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
       icons,
       disabled,
       field: { name, value },
-      form: { touched, errors, setFieldValue, handleBlur },
+      form: { errors, setFieldValue, handleBlur },
       placeholder,
       helperText,
       classes,
@@ -112,7 +112,7 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
     const errorsArray = getIn(errors, name) as (string | undefined)[];
     let errorText: string | undefined = undefined;
 
-    if (getIn(touched, name) && errorsIsArray) {
+    if (errorsIsArray) {
       errorText = errorsArray.find((x) => x !== undefined);
     }
 
@@ -160,10 +160,10 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
               margin="dense"
               variant="outlined"
               disabled={disabled}
-              error={!!getIn(touched, name) && !!errorText}
+              error={!!errorText}
               label={label}
               placeholder={placeholder}
-              helperText={(getIn(touched, name) && errorText) || helperText}
+              helperText={errorText || helperText}
               InputLabelProps={{
                 shrink: true,
               }}

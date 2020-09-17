@@ -54,20 +54,14 @@ import {
   KRenderFormikCommandTextField,
   RenderFormikComplexValueTextField,
 } from "../Basic/textfield";
-import {
-  ValidatorCPU,
-  ValidatorMemory,
-  ValidatorName,
-  ValidatorNaturalNumber,
-  ValidatorRequired,
-  ValidatorSchedule,
-} from "../validator";
+import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Envs } from "./Envs";
 import { KFormikRenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { FormikNormalizeNumber } from "forms/normalizer";
+import { FormikNormalizePositiveNumber } from "forms/normalizer";
+import { object, array } from "yup";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -186,9 +180,32 @@ const nameValidators = (value: any) => {
   return ValidatorRequired(value) || ValidatorName(value);
 };
 
-const numberValidators = (value: any) => {
-  return ValidatorRequired(value) || ValidatorNaturalNumber(value);
+const validate = (values: ComponentLike) => {
+  let errors: any = {};
+  const ports = values.ports;
+  if (ports && ports.length > 0) {
+    const protocolServicePorts = new Set<string>();
+
+    for (let i = 0; i < ports.length; i++) {
+      const port = ports[i]!;
+      const servicePort = port.servicePort || port.containerPort;
+
+      if (servicePort) {
+        const protocol = port.protocol;
+        const protocolServicePort = protocol + "-" + servicePort;
+
+        if (!protocolServicePorts.has(protocolServicePort)) {
+          protocolServicePorts.add(protocolServicePort);
+        } else if (protocolServicePort !== "") {
+          errors.ports = "Listening port on a protocol should be unique.  " + protocol + " - " + servicePort;
+        }
+      }
+    }
+    console.log(errors);
+  }
+  return errors;
 };
+
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
 
@@ -209,14 +226,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       return (
         <FastField
           component={KRenderThrottleFormikTextField}
-          validate={numberValidators}
+          validate={ValidatorRequired}
           name="replicas"
           margin
           label="Replicas"
           helperText={sc.REPLICA_INPUT_HELPER}
           type="number"
           min="0"
-          normalize={FormikNormalizeNumber}
+          normalize={FormikNormalizePositiveNumber}
         />
       );
     }
@@ -733,8 +750,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             component={KRenderThrottleFormikTextField}
             name="terminationGracePeriodSeconds"
             label="Termination Grace Period (seconds)"
-            // validate={ValidatorRequired}
-            // normalize={NormalizeNumber}
+            normalize={FormikNormalizePositiveNumber}
             placeholder={sc.GRACEFUL_TERM_INPUT_PLACEHOLDER}
           />
         </Grid>
@@ -785,6 +801,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return !!getIn(touched, fieldName) && !!getIn(errors, fieldName);
   }
 
+  private handleChangeTab(event: React.ChangeEvent<{}>, value: number) {
+    this.pushToTab(value);
+  }
+
   private renderTabs() {
     const { classes, currentTabIndex } = this.props;
     return (
@@ -795,10 +815,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         scrollButtons="auto"
         indicatorColor="primary"
         textColor="primary"
-        onChange={(event: React.ChangeEvent<{}>, value: number) => {
-          this.pushToTab(value);
-          // this.setState({ currentTabIndex: value });
-        }}
+        onChange={this.handleChangeTab.bind(this)}
         aria-label="component form tabs"
       >
         {this.tabs.map((tab) => {
@@ -1003,10 +1020,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 const form = withFormik<ConnectedProps & RawProps & WithStyles<typeof styles> & RouteComponentProps, ComponentLike>({
   mapPropsToValues: (props) => props._initialValues,
   enableReinitialize: true,
-  validate: formikValidateOrNotBlockByTutorial,
+  validate: (values, props) => {
+    return validate(values) || formikValidateOrNotBlockByTutorial(values, props);
+  },
   handleSubmit: async (formValues, { props: { onSubmit } }) => {
     await onSubmit(formValues);
   },
+  validationSchema: object().shape({
+    // @ts-ignore
+    env: array().of(object().unique("name", "Env names should be unique.")),
+  }),
 })(ComponentLikeFormRaw);
 
 export const ComponentLikeForm = connect(mapStateToProps)(withStyles(styles)(withRouter(form)));

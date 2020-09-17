@@ -20,11 +20,14 @@ func (m *LocalClientManager) GetDefaultClusterConfig() *rest.Config {
 	return m.ClusterConfig
 }
 
-func (m *LocalClientManager) GetClientInfoFromToken(_, _ string) (*ClientInfo, error) {
+func (m *LocalClientManager) GetClientInfoFromToken(_ string) (*ClientInfo, error) {
 	return nil, errors.NewUnauthorized("auth via token is not allowed in local client manager")
 }
 
-func (m *LocalClientManager) GetConfigForClientRequestContext(_ echo.Context) (*ClientInfo, error) {
+func (m *LocalClientManager) SetImpersonation(_ *ClientInfo, _ string) {
+}
+
+func (m *LocalClientManager) GetClientInfoFromContext(_ echo.Context) (*ClientInfo, error) {
 	return &ClientInfo{
 		Cfg:           m.ClusterConfig,
 		Name:          localhostAdminUser,
