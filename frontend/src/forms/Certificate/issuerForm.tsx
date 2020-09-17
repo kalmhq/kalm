@@ -3,7 +3,7 @@ import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Field, FormikProps, withFormik } from "formik";
 import { RenderFormikSelectField } from "forms/Basic/select";
-import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
+import { KRenderThrottleFormikTextField } from "forms/Basic/textfield";
 import { ValidatorRequired } from "forms/validator";
 import React from "react";
 import { connect } from "react-redux";
@@ -50,7 +50,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
         <Grid item md={12}>
           <Field
             label="Email"
-            component={KRenderDebounceFormikTextField}
+            component={KRenderThrottleFormikTextField}
             name="acmeCloudFlare.account"
             margin="normal"
             validate={ValidatorRequired}
@@ -59,7 +59,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
         <Grid item md={12}>
           <Field
             label="Token Secret"
-            component={KRenderDebounceFormikTextField}
+            component={KRenderThrottleFormikTextField}
             name="acmeCloudFlare.secret"
             margin="normal"
             validate={ValidatorRequired}
@@ -94,7 +94,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
             <Grid item md={12}>
               <Field
                 label="Issuer name"
-                component={KRenderDebounceFormikTextField}
+                component={KRenderThrottleFormikTextField}
                 name="name"
                 margin="normal"
                 validate={ValidatorRequired}

@@ -1,4 +1,4 @@
-import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { createCertificateAction } from "actions/certificate";
 import { push } from "connected-react-router";
 import { CertificateUploadForm } from "forms/Certificate/uploadForm";
@@ -9,6 +9,8 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { CertificateFormType, selfManaged } from "types/certificate";
 import { H6 } from "widgets/Label";
+import { Loading } from "widgets/Loading";
+import { ResourceNotFound } from "widgets/ResourceNotFound";
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
   const certificate = state.certificates.certificates.find(
@@ -18,6 +20,8 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
     initialValues: (certificate ? Object.assign(certificate, { managedType: selfManaged }) : undefined) as
       | CertificateFormType
       | undefined,
+    isLoading: state.certificates.isLoading,
+    isFirstLoaded: state.certificates.isFirstLoaded,
   };
 };
 
@@ -40,9 +44,23 @@ class CertificateEditRaw extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { initialValues, classes } = this.props;
+    const { initialValues, classes, isLoading, isFirstLoaded } = this.props;
+    if (isLoading && !isFirstLoaded) {
+      return <Loading />;
+    }
+
     if (!initialValues) {
-      return "Certificate not found";
+      return (
+        <BasePage>
+          <Box p={2}>
+            <ResourceNotFound
+              text="Certificate not found"
+              redirect={`/applications`}
+              redirectText="Go back to Apps List"
+            ></ResourceNotFound>
+          </Box>
+        </BasePage>
+      );
     }
 
     return (

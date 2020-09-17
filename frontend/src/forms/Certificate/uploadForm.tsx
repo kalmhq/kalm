@@ -2,7 +2,7 @@ import { Button, Grid, Box } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Field, Form, Formik, FormikProps } from "formik";
 import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
-import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
+import { KRenderThrottleFormikTextField } from "forms/Basic/textfield";
 import { FormikUploader } from "forms/Basic/uploader";
 import { ValidateHost } from "forms/validator";
 import { extractDomainsFromCertificateContent } from "permission/utils";
@@ -167,7 +167,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
                     <Grid container spacing={2}>
                       <Grid item md={12}>
                         <Field
-                          component={KRenderDebounceFormikTextField}
+                          component={KRenderThrottleFormikTextField}
                           label="Certificate name"
                           name="name"
                           disabled={isEdit}

@@ -1,7 +1,7 @@
 import { RBACEnforcer } from "rbac/model";
+import { RootState } from "reducers";
 import { Store } from "redux";
 import { Actions } from "types";
-import { RootState } from "reducers";
 import { LOAD_LOGIN_STATUS_FULFILLED, SET_AUTH_METHODS } from "types/common";
 import { SubjectTypeGroup, SubjectTypeUser } from "types/member";
 
@@ -13,7 +13,7 @@ const toSafeSubject = (sub: string, type: string) => {
     return "group-" + sub;
   }
 
-  throw "unknown subject type: " + type;
+  throw new Error("unknown subject type: " + type);
 };
 
 export const createCasbinEnforcerMiddleware = () => {
