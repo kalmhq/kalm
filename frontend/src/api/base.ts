@@ -119,6 +119,8 @@ export abstract class Api {
 
   public abstract deleteAcmeServer(acmeServer: AcmeServerFormType): Promise<void>;
 
+  public abstract editAcmeServer(acmeServer: AcmeServerFormType): Promise<void>;
+
   public abstract getAcmeServer(): Promise<AcmeServerInfo>;
 
   // services

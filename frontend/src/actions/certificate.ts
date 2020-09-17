@@ -109,7 +109,7 @@ export const createCertificateAction = (
         if (d.startsWith("*.")) {
           hasWildcardDomains = true;
         }
-        return d.replace("*.", "");
+        return d;
       });
       if (hasWildcardDomains) {
         certContent.httpsCertIssuer = dns01Mananged;
@@ -177,6 +177,22 @@ export const deleteAcmeServerAction = (acmeServerContent: AcmeServerFormType): T
     dispatch(setIsSubmittingAcmeServer(false));
 
     dispatch({ type: DELETE_ACME_SERVER, payload: { acmeServer: null } });
+  };
+};
+
+export const editAcmeServerAction = (acmeServerContent: AcmeServerFormType): ThunkResult<Promise<void>> => {
+  return async (dispatch) => {
+    dispatch(setIsSubmittingAcmeServer(true));
+
+    try {
+      await api.editAcmeServer(acmeServerContent);
+    } catch (e) {
+      dispatch(setIsSubmittingAcmeServer(false));
+      throw e;
+    }
+    dispatch(setIsSubmittingAcmeServer(false));
+
+    dispatch(loadCertificateAcmeServerAction());
   };
 };
 

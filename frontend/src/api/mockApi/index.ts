@@ -278,6 +278,10 @@ export default class MockApi extends Api {
     return;
   };
 
+  public editAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
+    return;
+  };
+
   public getAcmeServer = async (): Promise<AcmeServerInfo> => {
     return mockStore.data.mockAcmeServer;
   };

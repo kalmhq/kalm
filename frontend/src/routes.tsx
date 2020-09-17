@@ -31,6 +31,7 @@ import { EditEndpointPage } from "pages/SSO/EditEndpoint";
 import { CertificateNewPage } from "pages/Certificate/New";
 import { CertificateUploadPage } from "pages/Certificate/Upload";
 import { CertificateEditPage } from "pages/Certificate/Edit";
+import { CertificateAcmeEditPage } from "pages/Certificate/AcmeEdit";
 import { RegistryNewPage } from "pages/Registry/New";
 import { RegistryEditPage } from "pages/Registry/Edit";
 import { DeployAccessTokenDetailPage } from "pages/CI/Detail";
@@ -103,6 +104,7 @@ export const KalmRoutes = (
           <Route exact path="/certificates/upload" component={CertificateUploadPage} />
           <Route exact path="/certificates/:name/edit" component={CertificateEditPage} />
           <Route exact path="/certificates/:name" component={CertificateDetailPage} />
+          <Route exact path="/acme/edit" component={CertificateAcmeEditPage} />
           <Route component={NoMatch} />
         </Switch>
       </RequireAuthorizatedDashboard>
