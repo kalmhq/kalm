@@ -7,6 +7,10 @@ import (
 )
 
 func (h *ApiHandler) handleCreateACMEServer(c echo.Context) error {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
+		return resources.NoClusterEditorRoleError
+	}
+
 	acmeServer, err := getACMEServerFromContext(c)
 	if err != nil {
 		return err
@@ -29,6 +33,10 @@ func (h *ApiHandler) handleCreateACMEServer(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUpdateACMEServer(c echo.Context) error {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
+		return resources.NoClusterEditorRoleError
+	}
+
 	acmeServer, err := getACMEServerFromContext(c)
 	if err != nil {
 		return err
@@ -51,6 +59,9 @@ func (h *ApiHandler) handleUpdateACMEServer(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleGetACMEServer(c echo.Context) error {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
+		return resources.NoClusterViewerRoleError
+	}
 
 	acmeServerResp, err := h.resourceManager.GetACMEServerAsResp()
 	if err != nil {
@@ -61,6 +72,9 @@ func (h *ApiHandler) handleGetACMEServer(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteACMEServer(c echo.Context) error {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
+		return resources.NoClusterEditorRoleError
+	}
 
 	err := h.resourceManager.DeleteACMEServer()
 

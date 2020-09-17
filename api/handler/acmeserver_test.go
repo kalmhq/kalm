@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/stretchr/testify/suite"
@@ -10,6 +11,7 @@ import (
 
 type ACMEServerHandlerTestSuite struct {
 	WithControllerTestSuite
+	namespace string
 }
 
 func TestACMEServerTestSuite(t *testing.T) {
@@ -18,48 +20,115 @@ func TestACMEServerTestSuite(t *testing.T) {
 
 func (suite *ACMEServerHandlerTestSuite) SetupSuite() {
 	suite.WithControllerTestSuite.SetupSuite()
+	suite.namespace = "kalm-test"
+	suite.ensureNamespaceExist(suite.namespace)
 }
 
 func (suite *ACMEServerHandlerTestSuite) TestGetEmpty() {
-	rec := suite.NewRequest(http.MethodGet, "/v1alpha1/acmeserver", nil)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterViewerRole(),
+		},
+		Namespace: suite.namespace,
+		Method:    http.MethodGet,
+		Path:      fmt.Sprintf("/v1alpha1/acmeserver"),
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "view", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res resources.ACMEServerResp
+			rec.BodyAsJSON(&res)
 
-	var res resources.ACMEServerResp
-	rec.BodyAsJSON(&res)
-
-	suite.Equal(200, rec.Code)
-	suite.Equal("", res.Name)
+			suite.Equal(200, rec.Code)
+			suite.Equal("", res.Name)
+		},
+	})
 }
 
 func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
-	s := resources.ACMEServer{
-		ACMEDomain: "acme.example.com",
-		NSDomain:   "ns.example.com",
-	}
+	acmeDomain := "acme.example.com"
+	nsDomain := "ns.example.com"
 
-	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/acmeserver", s)
+	// create
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Namespace: suite.namespace,
+		Method:    http.MethodPost,
+		Path:      fmt.Sprintf("/v1alpha1/acmeserver"),
+		Body: resources.ACMEServer{
+			ACMEDomain: acmeDomain,
+			NSDomain:   nsDomain,
+		},
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res resources.ACMEServer
+			rec.BodyAsJSON(&res)
 
-	var res resources.ACMEServer
-	rec.BodyAsJSON(&res)
+			suite.Equal(201, rec.Code)
+			suite.Equal(controllers.ACMEServerName, res.Name)
+		},
+	})
 
-	suite.Equal(201, rec.Code)
-	suite.Equal(controllers.ACMEServerName, res.Name)
+	// GET
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterViewerRole(),
+		},
+		Namespace: suite.namespace,
+		Method:    http.MethodGet,
+		Path:      fmt.Sprintf("/v1alpha1/acmeserver"),
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var acmeResp resources.ACMEServerResp
+			rec.BodyAsJSON(&acmeResp)
 
-	// Get
-	var acmeResp resources.ACMEServerResp
-	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/acmeserver", nil)
-	rec.BodyAsJSON(&acmeResp)
+			suite.Equal(controllers.ACMEServerName, acmeResp.Name)
+			suite.Equal(acmeDomain, acmeResp.ACMEDomain)
+			suite.Equal(nsDomain, acmeResp.NSDomain)
+			suite.Equal("", acmeResp.IPForNameServer)
+			suite.Equal(false, acmeResp.Ready)
+		},
+	})
 
-	suite.Equal(controllers.ACMEServerName, acmeResp.Name)
-	suite.Equal(s.ACMEDomain, acmeResp.ACMEDomain)
-	suite.Equal(s.NSDomain, acmeResp.NSDomain)
-	suite.Equal("", acmeResp.IPForNameServer)
-	suite.Equal(false, acmeResp.Ready)
+	// DELETE
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Namespace: suite.namespace,
+		Method:    http.MethodDelete,
+		Path:      fmt.Sprintf("/v1alpha1/acmeserver"),
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.Equal(200, rec.Code)
+		},
+	})
 
-	// Delete
-	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/acmeserver", nil)
-	suite.Equal(200, rec.Code)
+	// GET after DELETE
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterViewerRole(),
+		},
+		Namespace: suite.namespace,
+		Method:    http.MethodGet,
+		Path:      fmt.Sprintf("/v1alpha1/acmeserver"),
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res resources.ACMEServerResp
+			rec.BodyAsJSON(&res)
 
-	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/acmeserver", nil)
-	rec.BodyAsJSON(&acmeResp)
-	suite.Equal("", acmeResp.Name)
+			suite.Equal(200, rec.Code)
+			suite.Equal("", res.Name)
+		},
+	})
 }
