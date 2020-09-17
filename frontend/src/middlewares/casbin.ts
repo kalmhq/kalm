@@ -13,7 +13,7 @@ const toSafeSubject = (sub: string, type: string) => {
     return "group-" + sub;
   }
 
-  throw "unknown subject type: " + type;
+  throw new Error("unknown subject type: " + type);
 };
 
 export const createCasbinEnforcerMiddleware = () => {

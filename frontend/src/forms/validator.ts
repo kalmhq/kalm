@@ -1,6 +1,33 @@
 import { HttpRoute, HttpRouteDestination } from "types/route";
 import sc from "utils/stringConstants";
-import { string, array } from "yup";
+import { string, array, addMethod, object } from "yup";
+
+addMethod(object, "unique", function (propertyName, message) {
+  //@ts-ignore
+  return this.test("unique", message, function (value) {
+    if (!value || !value[propertyName]) {
+      return true;
+    }
+
+    //@ts-ignore
+    const { path } = this;
+    //@ts-ignore
+    const options = [...this.parent];
+    const currentIndex = options.indexOf(value);
+
+    const subOptions = options.slice(0, currentIndex);
+
+    if (subOptions.some((option) => option[propertyName] === value[propertyName])) {
+      //@ts-ignore
+      throw this.createError({
+        path: `${path}.${propertyName}`,
+        message,
+      });
+    }
+
+    return true;
+  });
+});
 
 export const validator = () => {
   const errors = {};

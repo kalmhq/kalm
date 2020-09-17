@@ -61,6 +61,7 @@ import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { FormikNormalizePositiveNumber } from "forms/normalizer";
+import { object, array } from "yup";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -177,6 +178,32 @@ interface State {}
 
 const nameValidators = (value: any) => {
   return ValidatorRequired(value) || ValidatorName(value);
+};
+
+const validate = (values: ComponentLike) => {
+  let errors: any = {};
+  const ports = values.ports;
+  if (ports && ports.length > 0) {
+    const protocolServicePorts = new Set<string>();
+
+    for (let i = 0; i < ports.length; i++) {
+      const port = ports[i]!;
+      const servicePort = port.servicePort || port.containerPort;
+
+      if (servicePort) {
+        const protocol = port.protocol;
+        const protocolServicePort = protocol + "-" + servicePort;
+
+        if (!protocolServicePorts.has(protocolServicePort)) {
+          protocolServicePorts.add(protocolServicePort);
+        } else if (protocolServicePort !== "") {
+          errors.ports = "Listening port on a protocol should be unique.  " + protocol + " - " + servicePort;
+        }
+      }
+    }
+    console.log(errors);
+  }
+  return errors;
 };
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
@@ -723,7 +750,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             component={KRenderDebounceFormikTextField}
             name="terminationGracePeriodSeconds"
             label="Termination Grace Period (seconds)"
-            validate={ValidatorRequired}
             normalize={FormikNormalizePositiveNumber}
             placeholder={sc.GRACEFUL_TERM_INPUT_PLACEHOLDER}
           />
@@ -994,10 +1020,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 const form = withFormik<ConnectedProps & RawProps & WithStyles<typeof styles> & RouteComponentProps, ComponentLike>({
   mapPropsToValues: (props) => props._initialValues,
   enableReinitialize: true,
-  validate: formikValidateOrNotBlockByTutorial,
+  validate: (values, props) => {
+    return validate(values) || formikValidateOrNotBlockByTutorial(values, props);
+  },
   handleSubmit: async (formValues, { props: { onSubmit } }) => {
     await onSubmit(formValues);
   },
+  validationSchema: object().shape({
+    // @ts-ignore
+    env: array().of(object().unique("name", "Env names should be unique.")),
+  }),
 })(ComponentLikeFormRaw);
 
 export const ComponentLikeForm = connect(mapStateToProps)(withStyles(styles)(withRouter(form)));

@@ -18,29 +18,9 @@ import { RenderFormikSelectField } from "../Basic/select";
 import { KRenderDebounceFormikTextField } from "../Basic/textfield";
 import { ValidatorContainerPortRequired, ValidatorPort, ValidatorRequired } from "../validator";
 import { FormikNormalizePort } from "forms/normalizer";
+import { Alert } from "@material-ui/lab";
 
 interface Props extends FieldArrayRenderProps {}
-
-// const ValidatorPorts = (values: ComponentLikePort[], _allValues?: any, _props?: any, _name?: any) => {
-//   if (!values) return undefined;
-//   const protocolServicePorts = new Set<string>();
-
-//   for (let i = 0; i < values.length; i++) {
-//     const port = values[i]!;
-//     const servicePort = port.servicePort || port.containerPort;
-
-//     if (servicePort) {
-//       const protocol = port.protocol;
-//       const protocolServicePort = protocol + "-" + servicePort;
-
-//       if (!protocolServicePorts.has(protocolServicePort)) {
-//         protocolServicePorts.add(protocolServicePort);
-//       } else if (protocolServicePort !== "") {
-//         return "Listening port on a protocol should be unique.  " + protocol + " - " + servicePort;
-//       }
-//     }
-//   }
-// };
 
 class RenderPorts extends React.PureComponent<Props> {
   private handlePush() {
@@ -59,7 +39,7 @@ class RenderPorts extends React.PureComponent<Props> {
   public render() {
     const {
       name,
-      form: { values },
+      form: { values, errors },
     } = this.props;
     return (
       <>
@@ -76,11 +56,11 @@ class RenderPorts extends React.PureComponent<Props> {
             </Button>
 
             {/* {submitFailed && error && <span>{error}</span>} */}
-            {/* {error ? (
+            {errors.ports && typeof errors.ports === "string" ? (
               <Box mt={2}>
-                <Alert severity="error">{error}</Alert>
+                <Alert severity="error">{errors.ports}</Alert>
               </Box>
-            ) : null} */}
+            ) : null}
           </Grid>
         </Box>
 

@@ -91,21 +91,6 @@ class RenderEnvs extends React.PureComponent<Props> {
   }
 }
 
-// const ValidatorEnvs = (values: EnvItem[]) => {
-//   if (!values) return undefined;
-//   const names = new Set<string>();
-
-//   for (let i = 0; i < values.length; i++) {
-//     const env = values[i]!;
-//     const name = env.name;
-//     if (!names.has(name)) {
-//       names.add(name);
-//     } else if (name !== "") {
-//       return "Env names should be unique.  " + name + "";
-//     }
-//   }
-// };
-
 export const Envs = (props: any) => {
   return <FieldArray name="env" component={RenderEnvs} {...props} />;
 };
