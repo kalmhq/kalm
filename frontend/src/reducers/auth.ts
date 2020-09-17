@@ -20,6 +20,7 @@ export type State = {
   groups: string[];
   policies: string;
   impersonation: string;
+  impersonationType: string;
   permissionMethods: PermissionMethods;
 };
 
@@ -34,6 +35,7 @@ const initialState: State = {
   groups: [],
   policies: "",
   impersonation: "",
+  impersonationType: "",
   permissionMethods: emptyPermissionMethods,
 };
 
@@ -45,6 +47,7 @@ const reducer = produce((state: State, action: Actions) => {
       state.policies = action.payload.loginStatus.policies;
       state.impersonation = action.payload.loginStatus.impersonation;
       state.groups = action.payload.loginStatus.groups;
+      state.impersonationType = action.payload.loginStatus.impersonationType;
       state.firstLoaded = true;
       state.isLoading = false;
       return;

@@ -4,4 +4,5 @@ export interface LoginStatus {
   groups: string[];
   policies: string;
   impersonation: string;
+  impersonationType: string;
 }

@@ -82,7 +82,7 @@ func GetPoliciesFromAccessToken(accessToken *resources.AccessToken) [][]string {
 		}
 
 		res = append(res, []string{
-			ToSafeSubject(accessToken.Name),
+			ToSafeSubject(accessToken.Name, v1alpha1.SubjectTypeUser),
 			string(rule.Verb),
 			rule.Namespace,
 			obj,
@@ -143,7 +143,7 @@ func (m *StandardClientManager) UpdatePolicies() {
 		sb.WriteString(fmt.Sprintf("# policies for rolebinding %s\n", roleBinding.Name))
 		sb.WriteString(fmt.Sprintf(
 			"g, %s, %s\n",
-			ToSafeSubject(roleBinding.Spec.Subject),
+			ToSafeSubject(roleBinding.Spec.Subject, roleBinding.Spec.SubjectType),
 			roleValueToPolicyValue(roleBinding.Spec.Role, roleBinding.Namespace)),
 		)
 	}
@@ -160,7 +160,7 @@ func (m *StandardClientManager) GetDefaultClusterConfig() *rest.Config {
 	return m.ClusterConfig
 }
 
-func (m *StandardClientManager) GetClientInfoFromToken(tokenString, impersonation string) (*ClientInfo, error) {
+func (m *StandardClientManager) GetClientInfoFromToken(tokenString, impersonationRawString string) (*ClientInfo, error) {
 	m.mut.RLock()
 	defer m.mut.RUnlock()
 
@@ -183,8 +183,15 @@ func (m *StandardClientManager) GetClientInfoFromToken(tokenString, impersonatio
 	}
 
 	// Only cluster manager can impersonate
-	if impersonation != "" && m.CanManageCluster(clientInfo) {
-		clientInfo.Impersonation = impersonation
+	if impersonationRawString != "" && m.CanManageCluster(clientInfo) {
+		impersonation, impersonationType, err := parseImpersonationString(impersonationRawString)
+
+		if err == nil {
+			clientInfo.Impersonation = impersonation
+			clientInfo.ImpersonationType = impersonationType
+		} else {
+			log.Error(err, "parse impersonation raw string failed")
+		}
 	}
 
 	return clientInfo, nil
@@ -217,7 +224,14 @@ func (m *StandardClientManager) GetConfigForClientRequestContext(c echo.Context)
 		clientInfo.Impersonation = ""
 
 		if c.Request().Header.Get("Kalm-Impersonation") != "" && m.CanManageCluster(&clientInfo) {
-			clientInfo.Impersonation = c.Request().Header.Get("Kalm-Impersonation")
+			impersonation, impersonationType, err := parseImpersonationString(c.Request().Header.Get("Kalm-Impersonation"))
+
+			if err == nil {
+				clientInfo.Impersonation = impersonation
+				clientInfo.ImpersonationType = impersonationType
+			} else {
+				log.Error(err, "parse impersonation raw string failed")
+			}
 		}
 
 		return &clientInfo, nil

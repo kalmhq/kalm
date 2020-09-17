@@ -3,10 +3,17 @@ import { Store } from "redux";
 import { Actions } from "types";
 import { RootState } from "reducers";
 import { LOAD_LOGIN_STATUS_FULFILLED, SET_AUTH_METHODS } from "types/common";
+import { SubjectTypeGroup, SubjectTypeUser } from "types/member";
 
 // a different prefix will do the trick.
-const toSafeSubject = (sub: string) => {
-  return "sub-" + sub;
+const toSafeSubject = (sub: string, type: string) => {
+  if (type === SubjectTypeUser) {
+    return "user-" + sub;
+  } else if (type === SubjectTypeGroup) {
+    return "group-" + sub;
+  }
+
+  throw "unknown subject type: " + type;
 };
 
 export const createCasbinEnforcerMiddleware = () => {
@@ -20,10 +27,10 @@ export const createCasbinEnforcerMiddleware = () => {
       let subjects: string[];
 
       if (clientInfo.impersonation !== "") {
-        subjects = [toSafeSubject(clientInfo.impersonation)];
+        subjects = [toSafeSubject(clientInfo.impersonation, clientInfo.impersonationType)];
       } else {
-        subjects = [toSafeSubject(action.payload.loginStatus.email)];
-        subjects = subjects.concat(clientInfo.groups.map(toSafeSubject));
+        subjects = [toSafeSubject(action.payload.loginStatus.email, SubjectTypeUser)];
+        subjects = subjects.concat(clientInfo.groups.map((group) => toSafeSubject(group, SubjectTypeGroup)));
       }
 
       const withSubjects = (fn: (...args: string[]) => boolean, ...args: string[]) => {

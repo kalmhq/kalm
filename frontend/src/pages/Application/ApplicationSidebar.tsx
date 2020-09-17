@@ -71,7 +71,6 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
       menus.push({
         text: sc.APP_MEMBERS_PAGE_NAME,
         to: "/applications/" + activeNamespaceName + "/members",
-        highlightWhenExact: true,
         icon: <PeopleIcon />,
       });
     }

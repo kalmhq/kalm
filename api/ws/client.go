@@ -89,6 +89,7 @@ func (c *Client) read() {
 
 			if err != nil {
 				log.Error(err, "new config error")
+				continue
 			}
 
 			c.clientInfo = clientInfo

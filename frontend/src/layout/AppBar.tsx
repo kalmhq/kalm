@@ -27,6 +27,7 @@ import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
 import { stopImpersonating } from "api/realApi/index";
 import { push } from "connected-react-router";
 import deepOrange from "@material-ui/core/colors/deepOrange";
+import { SubjectTypeUser } from "types/member";
 
 const mapStateToProps = (state: RootState) => {
   const activeNamespace = state.namespaces.active;
@@ -34,10 +35,13 @@ const mapStateToProps = (state: RootState) => {
   const auth = state.auth;
   const email = auth.email;
   const impersonation = auth.impersonation;
+  const impersonationType = auth.impersonationType;
+
   return {
     isOpenRootDrawer: state.settings.isOpenRootDrawer,
     tutorialDrawerOpen: state.tutorial.drawerOpen,
     impersonation,
+    impersonationType,
     activeNamespace,
     email,
   };
@@ -135,7 +139,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   }
 
   renderAuth() {
-    const { impersonation, email, dispatch } = this.props;
+    const { impersonation, impersonationType, email, dispatch } = this.props;
     const { authMenuAnchorElement } = this.state;
 
     let emailForDisplay: string = email;
@@ -183,7 +187,9 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                 window.location.reload();
               }}
             >
-              Stop impersonating {impersonation}
+              {impersonationType === SubjectTypeUser
+                ? `Stop impersonating ${impersonation}`
+                : `Stop impersonating as member in ${impersonation} group`}
             </MenuItem>
           ) : null}
           {email.indexOf("localhost") < 0 ? (

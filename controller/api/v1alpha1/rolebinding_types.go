@@ -26,11 +26,17 @@ const (
 	ClusterRoleViewer = "clusterViewer"
 	ClusterRoleEditor = "clusterEditor"
 	ClusterRoleOwner  = "clusterOwner"
+
+	SubjectTypeUser  = "user"
+	SubjectTypeGroup = "group"
 )
 
 type RoleBindingSpec struct {
 	// +kubebuilder:validation:MinLength=1
 	Subject string `json:"subject"`
+
+	// +kubebuilder:validation:Enum=user;group
+	SubjectType string `json:"subjectType"`
 
 	// +kubebuilder:validation:Enum=viewer;editor;owner;clusterViewer;clusterEditor;clusterOwner
 	Role string `json:"role"`

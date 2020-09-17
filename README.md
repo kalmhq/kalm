@@ -18,7 +18,9 @@ In addition, Kalm simplifies the processes for many common Kubernetes integratio
 - Configuring private image registries
 - Plugin log systems such as PLG(Loki) and ELK
 
-![Kalm](https://kalm.dev/gif/kalm_short.gif)
+[![Kalm](https://kalm.dev/gif/kalm_short.gif)](https://www.youtube.com/watch?v=F5wuQaPQ50s&ab_channel=KalmHQ)
+
+[overview video with voiceover](https://www.youtube.com/watch?v=F5wuQaPQ50s&ab_channel=KalmHQ)
 
 Kalm is intended as an alternative to writing and maintaining scripts and internal tools. Since Kalm is implemented as a Kubernetes operator and a set of Custom Resource Definitions, it can be used alongside existing Kubernetes tooling. Kalm tries to minimize the amount of time you have to spend writing yaml files and executing one off kubectl commands, but doesn't prevent you from doing so if necessary.
 
