@@ -4,7 +4,7 @@ import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
 import { Field, Form, Formik } from "formik";
 import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
-import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
+import { KRenderThrottleFormikTextField } from "forms/Basic/textfield";
 import { ValidateHost } from "forms/validator";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
@@ -123,7 +123,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                       </Grid>
                       <Grid item md={12}>
                         <Field
-                          component={KRenderDebounceFormikTextField}
+                          component={KRenderThrottleFormikTextField}
                           label="Certificate name"
                           name="name"
                           disabled={isEdit}

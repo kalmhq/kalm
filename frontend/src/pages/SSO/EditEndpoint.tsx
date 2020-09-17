@@ -8,6 +8,7 @@ import { RouteComponentProps, withRouter } from "react-router-dom";
 import { push } from "connected-react-router";
 import { ProtectedEndpoint } from "types/sso";
 import { updateProtectedEndpointAction } from "actions/sso";
+import { ResourceNotFound } from "widgets/ResourceNotFound";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -44,7 +45,17 @@ class EditEndpointPageRaw extends React.PureComponent<Props, State> {
     const protectedEndpoint = protectedEndpoints.find((x) => x.name === match.params.name);
 
     if (!protectedEndpoint) {
-      return <Box p={2}>No such endpoint.</Box>;
+      return (
+        <BasePage>
+          <Box p={2}>
+            <ResourceNotFound
+              text={`Endpoint not found.`}
+              redirect={`/applications`}
+              redirectText="Go back to Apps List"
+            ></ResourceNotFound>
+          </Box>
+        </BasePage>
+      );
     }
 
     return (

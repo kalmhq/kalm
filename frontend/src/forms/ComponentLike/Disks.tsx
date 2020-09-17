@@ -25,7 +25,7 @@ import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Caption, H6 } from "widgets/Label";
 import { RenderFormikSelectField } from "../Basic/select";
-import { KRenderDebounceFormikTextField, RenderFormikComplexValueTextField } from "../Basic/textfield";
+import { KRenderThrottleFormikTextField, RenderFormikComplexValueTextField } from "../Basic/textfield";
 import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
@@ -242,7 +242,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
         disabled={shouldDisabledStatefulSetPvcTemplate}
       />,
       <Field
-        component={KRenderDebounceFormikTextField}
+        component={KRenderThrottleFormikTextField}
         name={`${name}.${index}.path`}
         label="Mount Path"
         validate={ValidatorRequired}
@@ -318,7 +318,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
     } else if (disk.type === VolumeTypeHostPath) {
       fieldComponents.push(
         <Field
-          component={KRenderDebounceFormikTextField}
+          component={KRenderThrottleFormikTextField}
           name={`${name}.${index}.hostPath`}
           label="Host Path"
           validate={ValidatorRequired}

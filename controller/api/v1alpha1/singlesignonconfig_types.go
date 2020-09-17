@@ -65,6 +65,8 @@ type SingleSignOnConfigSpec struct {
 
 	// Create service entry if the ext_authz service is running out of istio mesh
 	ExternalEnvoyExtAuthz *ExtAuthzEndpoint `json:"externalEnvoyExtAuthz,omitempty"`
+
+	IDTokenExpirySeconds *uint32 `json:"idTokenExpirySeconds,omitempty"`
 }
 
 // SingleSignOnConfigStatus defines the observed state of SingleSignOnConfig

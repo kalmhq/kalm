@@ -205,15 +205,24 @@ func handleExtAuthz(c echo.Context) error {
 		if strings.Contains(strings.ToLower(err.Error()), "expire") {
 
 			// use refresh token to fetch the id_token
-			if err := refreshIDToken(token); err != nil {
+			idToken, err = refreshIDToken(token)
+
+			if err != nil {
 				logger.Error(err, "refresh token error")
 				clearTokenInCookie(c)
 				return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client. (After refresh)")
 			}
 
 			encodedToken, _ := token.Encode()
-			setTokenInCookie(c, encodedToken)
-			return c.Redirect(302, getOriginalURL(c))
+
+			// ext_authz doesn't allow set response header to client when the auth is successful.
+			// Kalm set the new cookie in a payload heaader, which will be picked up by a envoy filter, and set it into response header to client.
+			c.Response().Header().Set(
+				controllers.KALM_SSO_SET_COOKIE_PAYLOAD_HEADER,
+				newTokenCookie(encodedToken).String(),
+			)
+
+			logger.V(1).Info("[refresh] Set Kalm-Set-Cookie payload.", "X-Request-Id", c.Request().Header.Get("X-Request-Id"))
 		} else {
 			clearTokenInCookie(c)
 			return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client.")
@@ -238,18 +247,18 @@ func handleExtAuthz(c echo.Context) error {
 // So a condition variable is used to ensure that only one process sends a refresh request,
 // and other processes wait for the result. This is enough if there is the auth-proxy service only has one replica.
 // If you deploy auth-proxy with scaling, make sure use sticky load balancing strategy.
-func refreshIDToken(token *auth_proxy.ThinToken) (err error) {
+func refreshIDToken(token *auth_proxy.ThinToken) (idToken *oidc.IDToken, err error) {
 	refreshContext, isProducer := auth_proxy.GetRefreshTokenCond(token.RefreshToken)
 
 	if isProducer {
-		logger.V(1).Info("[refresh token producer] do refresh")
-		err := doRefresh(token, refreshContext)
-		logger.V(1).Info(fmt.Sprintf("[refresh writer] refresh done, error: %+v", err))
+		logger.V(1).Info("[refresh] Producer. Do refresh. ", "token", token.RefreshToken[:10])
+		err = doRefresh(token, refreshContext)
+		logger.V(1).Info(fmt.Sprintf("[refresh] Producer. Done. error: %+v", err))
 
 		auth_proxy.RemoveRefreshTokenCond(token.RefreshToken, 60)
 	} else {
 		refreshContext.Cond.L.Lock()
-		logger.V(1).Info("[refresh token consumer] wait")
+		logger.V(1).Info("[refresh] Consumer. Wait. ", "token", token.RefreshToken[:10])
 
 		for refreshContext.IDToken == nil && refreshContext.Error == nil {
 			refreshContext.Cond.Wait()
@@ -257,19 +266,19 @@ func refreshIDToken(token *auth_proxy.ThinToken) (err error) {
 
 		err = refreshContext.Error
 
-		logger.V(1).Info(fmt.Sprintf("[refresh token consumer] got result. error: %+v", err))
+		logger.V(1).Info(fmt.Sprintf("[refresh] Consumer. Got result. error: %+v", err))
 
 		refreshContext.Cond.L.Unlock()
 	}
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	token.IDTokenString = refreshContext.IDTokenString
 	token.RefreshToken = refreshContext.RefreshToken
 
-	return nil
+	return refreshContext.IDToken, nil
 }
 
 func doRefresh(token *auth_proxy.ThinToken, refreshContext *auth_proxy.RefreshContext) (err error) {
@@ -281,8 +290,6 @@ func doRefresh(token *auth_proxy.ThinToken, refreshContext *auth_proxy.RefreshCo
 
 		refreshContext.Cond.Broadcast()
 	}()
-
-	logger.V(1).Info("IDToken Expired, try refresh")
 
 	t := &oauth2.Token{
 		RefreshToken: token.RefreshToken,
@@ -396,7 +403,7 @@ func clearTokenInCookie(c echo.Context) {
 	})
 }
 
-func setTokenInCookie(c echo.Context, token string) {
+func newTokenCookie(token string) *http.Cookie {
 	cookie := new(http.Cookie)
 	cookie.Name = KALM_TOKEN_KEY_NAME
 	cookie.Expires = time.Now().Add(24 * 7 * time.Hour)
@@ -404,11 +411,11 @@ func setTokenInCookie(c echo.Context, token string) {
 	cookie.SameSite = http.SameSiteLaxMode
 	cookie.Path = "/"
 	cookie.Value = token
-	c.SetCookie(cookie)
+	return cookie
 }
 
 func handleSetIDToken(c echo.Context) error {
-	setTokenInCookie(c, c.QueryParam(KALM_TOKEN_KEY_NAME))
+	c.SetCookie(newTokenCookie(c.QueryParam(KALM_TOKEN_KEY_NAME)))
 
 	requestURI := c.Request().Header.Get("X-Envoy-Original-Path")
 

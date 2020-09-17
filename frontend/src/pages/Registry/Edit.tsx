@@ -10,6 +10,7 @@ import { TDispatchProp } from "types";
 import { RegistryFormType } from "types/registry";
 import { H6 } from "widgets/Label";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
+import { Loading } from "widgets/Loading";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -19,6 +20,8 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState, ownProps: any) => {
   return {
     initialValues: state.registries.registries.find((registry) => registry.name === ownProps.match.params.name),
+    isLoading: state.registries.isLoading,
+    isFirstLoaded: state.registries.isFirstLoaded,
   };
 };
 
@@ -34,7 +37,11 @@ class RegistryEditPageRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { initialValues } = this.props;
+    const { initialValues, isLoading, isFirstLoaded } = this.props;
+    if (isLoading && !isFirstLoaded) {
+      return <Loading />;
+    }
+
     if (!initialValues) {
       return (
         <BasePage>

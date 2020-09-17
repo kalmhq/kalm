@@ -6,8 +6,9 @@ import { TDispatchProp } from "types";
 const mapStateToProps = (state: RootState) => {
   const permissionMethods = state.auth.permissionMethods;
   const impersonation = state.auth.impersonation;
+  const impersonationType = state.auth.impersonationType;
   const authToken = state.auth.token;
-  return { authToken, impersonation, ...permissionMethods };
+  return { authToken, impersonation, impersonationType, ...permissionMethods };
 };
 
 export interface WithUserAuthProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
