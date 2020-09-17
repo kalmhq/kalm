@@ -205,15 +205,22 @@ func handleExtAuthz(c echo.Context) error {
 		if strings.Contains(strings.ToLower(err.Error()), "expire") {
 
 			// use refresh token to fetch the id_token
-			if err := refreshIDToken(token); err != nil {
+			idToken, err = refreshIDToken(token)
+
+			if err != nil {
 				logger.Error(err, "refresh token error")
 				clearTokenInCookie(c)
 				return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client. (After refresh)")
 			}
 
 			encodedToken, _ := token.Encode()
-			setTokenInCookie(c, encodedToken)
-			return c.Redirect(302, getOriginalURL(c))
+
+			// ext_authz doesn't allow set response header to client when the auth is successful.
+			// Kalm set the new cookie in a payload heaader, which will be picked up by a envoy filter, and set it into response header to client.
+			c.Response().Header().Set(
+				controllers.KALM_SSO_SET_COOKIE_PAYLOAD_HEADER,
+				newTokenCookie(encodedToken).String(),
+			)
 		} else {
 			clearTokenInCookie(c)
 			return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client.")
@@ -238,12 +245,12 @@ func handleExtAuthz(c echo.Context) error {
 // So a condition variable is used to ensure that only one process sends a refresh request,
 // and other processes wait for the result. This is enough if there is the auth-proxy service only has one replica.
 // If you deploy auth-proxy with scaling, make sure use sticky load balancing strategy.
-func refreshIDToken(token *auth_proxy.ThinToken) (err error) {
+func refreshIDToken(token *auth_proxy.ThinToken) (idToken *oidc.IDToken, err error) {
 	refreshContext, isProducer := auth_proxy.GetRefreshTokenCond(token.RefreshToken)
 
 	if isProducer {
 		logger.V(1).Info("[refresh token producer] do refresh")
-		err := doRefresh(token, refreshContext)
+		err = doRefresh(token, refreshContext)
 		logger.V(1).Info(fmt.Sprintf("[refresh writer] refresh done, error: %+v", err))
 
 		auth_proxy.RemoveRefreshTokenCond(token.RefreshToken, 60)
@@ -263,13 +270,13 @@ func refreshIDToken(token *auth_proxy.ThinToken) (err error) {
 	}
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	token.IDTokenString = refreshContext.IDTokenString
 	token.RefreshToken = refreshContext.RefreshToken
 
-	return nil
+	return refreshContext.IDToken, nil
 }
 
 func doRefresh(token *auth_proxy.ThinToken, refreshContext *auth_proxy.RefreshContext) (err error) {
@@ -396,7 +403,7 @@ func clearTokenInCookie(c echo.Context) {
 	})
 }
 
-func setTokenInCookie(c echo.Context, token string) {
+func newTokenCookie(token string) *http.Cookie {
 	cookie := new(http.Cookie)
 	cookie.Name = KALM_TOKEN_KEY_NAME
 	cookie.Expires = time.Now().Add(24 * 7 * time.Hour)
@@ -404,11 +411,11 @@ func setTokenInCookie(c echo.Context, token string) {
 	cookie.SameSite = http.SameSiteLaxMode
 	cookie.Path = "/"
 	cookie.Value = token
-	c.SetCookie(cookie)
+	return cookie
 }
 
 func handleSetIDToken(c echo.Context) error {
-	setTokenInCookie(c, c.QueryParam(KALM_TOKEN_KEY_NAME))
+	c.SetCookie(newTokenCookie(c.QueryParam(KALM_TOKEN_KEY_NAME)))
 
 	requestURI := c.Request().Header.Get("X-Envoy-Original-Path")
 
