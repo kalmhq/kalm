@@ -15,10 +15,11 @@ import (
 
 // actually list pvc-pv pairs
 // if pvc is not used by any pod, it can be deleted
+//
+// Permission:
+//   nsView, nsEditor and nsOwner can see same ns PVCs
+//   clusterViewer and above can see all PVCs
 func (h *ApiHandler) handleListVolumes(c echo.Context) error {
-	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
-		return resources.NoClusterViewerRoleError
-	}
 
 	var kalmPVCList v1.PersistentVolumeClaimList
 	if err := h.resourceManager.List(&kalmPVCList, client.MatchingLabels{"kalm-managed": "true"}); err != nil {
@@ -27,17 +28,17 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 		}
 	}
 
-	var kalmPVList v1.PersistentVolumeList
-	if err := h.resourceManager.List(&kalmPVList, client.MatchingLabels{"kalm-managed": "true"}); err != nil {
-		if !errors.IsNotFound(err) {
-			return err
-		}
-	}
-
-	kalmPVMap := make(map[string]v1.PersistentVolume)
-	for _, kalmPV := range kalmPVList.Items {
-		kalmPVMap[kalmPV.Name] = kalmPV
-	}
+	//var kalmPVList v1.PersistentVolumeList
+	//if err := h.resourceManager.List(&kalmPVList, client.MatchingLabels{"kalm-managed": "true"}); err != nil {
+	//	if !errors.IsNotFound(err) {
+	//		return err
+	//	}
+	//}
+	//
+	//kalmPVMap := make(map[string]v1.PersistentVolume)
+	//for _, kalmPV := range kalmPVList.Items {
+	//	kalmPVMap[kalmPV.Name] = kalmPV
+	//}
 
 	respVolumes := []resources.Volume{}
 	for _, kalmPVC := range kalmPVCList.Items {
@@ -45,8 +46,7 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 			continue
 		}
 
-		// TODO the second param seems not used.
-		respVolume, err := h.resourceManager.BuildVolumeResponse(kalmPVC, kalmPVMap[kalmPVC.Spec.VolumeName])
+		respVolume, err := h.resourceManager.BuildVolumeResponse(kalmPVC)
 
 		if err != nil {
 			return err
@@ -75,6 +75,8 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 	pvcNamespace := c.Param("namespace")
 	pvcName := c.Param("name")
 
+	// MARK: diff with doc https://kalm.dev/docs/next/auth/roles (delete disk(pv))
+	// nsEditor should be able to delete same ns pvc & pv
 	if !h.clientManager.CanEditNamespace(getCurrentUser(c), pvcNamespace) {
 		return resources.NoNamespaceEditorRoleError(pvcNamespace)
 	}

@@ -33,7 +33,6 @@ type Volume struct {
 
 func (resourceManager *ResourceManager) BuildVolumeResponse(
 	pvc coreV1.PersistentVolumeClaim,
-	_ coreV1.PersistentVolume,
 ) (*Volume, error) {
 
 	isInUse, err := resourceManager.IsPVCInUse(pvc)

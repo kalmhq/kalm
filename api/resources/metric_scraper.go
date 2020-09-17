@@ -101,7 +101,7 @@ func update(client *mclientv1beta1.MetricsV1beta1Client, restClient *kubernetes.
 		return err
 	}
 
-	log.Debug("Database updated: %d nodes, %d pods", len(nodeMetrics.Items), len(podMetrics.Items))
+	log.Debug(fmt.Sprintf("Database updated: %d nodes, %d pods", len(nodeMetrics.Items), len(podMetrics.Items)))
 	return nil
 }
 
