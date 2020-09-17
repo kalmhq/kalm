@@ -12,11 +12,8 @@ import sc from "utils/stringConstants";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const mapStateToProps = (state: RootState) => {
-  const auth = state.auth;
-  const isAdmin = auth.isAdmin;
   return {
     activeNamespaceName: state.namespaces.active,
-    isAdmin,
   };
 };
 
@@ -74,7 +71,6 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
       menus.push({
         text: sc.APP_MEMBERS_PAGE_NAME,
         to: "/applications/" + activeNamespaceName + "/members",
-        highlightWhenExact: true,
         icon: <PeopleIcon />,
       });
     }

@@ -68,10 +68,16 @@ spec:
             subject:
               minLength: 1
               type: string
+            subjectType:
+              enum:
+              - user
+              - group
+              type: string
           required:
           - creator
           - role
           - subject
+          - subjectType
           type: object
         status:
           description: RoleBindingStatus defines the observed state of RoleBinding

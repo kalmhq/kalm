@@ -25,6 +25,7 @@ type ClientInfo struct {
 	EmailVerified     bool         `json:"email_verified"`
 	Groups            []string     `json:"groups"`
 	Impersonation     string       `json:"impersonation"`
+	ImpersonationType string       `json:"impersonationType"`
 }
 
 type ClientManager interface {
@@ -87,17 +88,17 @@ func (m *BaseClientManager) wrapper(client *ClientInfo, authFunc interface{}, ar
 	fn := reflect.ValueOf(authFunc)
 
 	if client.Impersonation != "" {
-		values[0] = reflect.ValueOf(ToSafeSubject(client.Impersonation))
+		values[0] = reflect.ValueOf(ToSafeSubject(client.Impersonation, client.ImpersonationType))
 		return fn.Call(values)[0].Interface().(bool)
 	}
 
-	values[0] = reflect.ValueOf(ToSafeSubject(client.Email))
+	values[0] = reflect.ValueOf(ToSafeSubject(client.Email, v1alpha1.SubjectTypeUser))
 	if fn.Call(values)[0].Interface().(bool) {
 		return true
 	}
 
 	for i := range client.Groups {
-		values[0] = reflect.ValueOf(ToSafeSubject(client.Groups[i]))
+		values[0] = reflect.ValueOf(ToSafeSubject(client.Groups[i], v1alpha1.SubjectTypeGroup))
 
 		if fn.Call(values)[0].Interface().(bool) {
 			return true

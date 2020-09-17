@@ -438,8 +438,8 @@ export default class RealApi extends Api {
 
 export const IMPERSONATION_KEY = "KALM_IMPERSONATION";
 
-export const impersonate = (subject: string) => {
-  window.localStorage.setItem(IMPERSONATION_KEY, subject);
+export const impersonate = (subject: string, subjectType: string) => {
+  window.localStorage.setItem(IMPERSONATION_KEY, `subject=${subject}; type=${subjectType}`);
 };
 
 export const stopImpersonating = () => {
