@@ -14,8 +14,15 @@ const nameValidators = (value: any) => {
 };
 
 class RenderEnvs extends React.PureComponent<Props> {
+  private handlePush() {
+    this.props.push({ type: "static", name: "", value: "" });
+  }
+
+  private handleRemove(index: number) {
+    this.props.remove(index);
+  }
+
   private renderAddButton = () => {
-    const { push } = this.props;
     return (
       <Box mb={2}>
         <Button
@@ -23,7 +30,7 @@ class RenderEnvs extends React.PureComponent<Props> {
           color="primary"
           startIcon={<AddIcon />}
           size="small"
-          onClick={() => push({ type: "static", name: "", value: "" })}
+          onClick={this.handlePush.bind(this)}
         >
           New Variable
         </Button>
@@ -35,7 +42,6 @@ class RenderEnvs extends React.PureComponent<Props> {
     const {
       name,
       form: { values },
-      remove,
     } = this.props;
     return (
       <>
@@ -70,7 +76,7 @@ class RenderEnvs extends React.PureComponent<Props> {
                       tooltipPlacement="top"
                       tooltipTitle="Delete"
                       aria-label="delete"
-                      onClick={() => remove(index)}
+                      onClick={this.handleRemove.bind(this, index)}
                     >
                       <DeleteIcon />
                     </IconButtonWithTooltip>
@@ -84,21 +90,6 @@ class RenderEnvs extends React.PureComponent<Props> {
     );
   }
 }
-
-// const ValidatorEnvs = (values: EnvItem[]) => {
-//   if (!values) return undefined;
-//   const names = new Set<string>();
-
-//   for (let i = 0; i < values.length; i++) {
-//     const env = values[i]!;
-//     const name = env.name;
-//     if (!names.has(name)) {
-//       names.add(name);
-//     } else if (name !== "") {
-//       return "Env names should be unique.  " + name + "";
-//     }
-//   }
-// };
 
 export const Envs = (props: any) => {
   return <FieldArray name="env" component={RenderEnvs} {...props} />;
