@@ -21,7 +21,7 @@ type ErrDetail struct {
 }
 
 func CustomHTTPErrorHandler(err error, c echo.Context) {
-	log.Error(err, "request error")
+	log.Debug("return error message to client", "err", err)
 
 	statusError, ok := err.(*errors.StatusError)
 	if ok && statusError.Status().Code > 0 {

@@ -40,13 +40,24 @@ func (suite *ServicesHandlerTestSuite) TestServicesHandler() {
 	err := suite.Create(&service)
 	suite.Nil(err)
 
-	// list all services
-	var services []*resources.Service
-	rec := suite.NewRequest(http.MethodGet, "/v1alpha1/services", "")
-	rec.BodyAsJSON(&services)
-	suite.NotNil(rec)
-	suite.EqualValues(2, len(services)) // default service named kubernetes
-	suite.EqualValues("test-services", services[1].Name)
+	// list all services in cluster level
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterViewerRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/services",
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var services []*resources.Service
+			rec.BodyAsJSON(&services)
+			suite.NotNil(rec)
+			suite.EqualValues(2, len(services)) // default service named kubernetes
+			suite.EqualValues("test-services", services[1].Name)
+		},
+	})
 }
 
 func TestServicesHandlerTestSuite(t *testing.T) {

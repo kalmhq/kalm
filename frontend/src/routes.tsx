@@ -22,12 +22,10 @@ import { ComponentNewPage } from "pages/Components/New";
 import { ComponentEditPage } from "pages/Components/Edit";
 import { ComponentShowPage } from "pages/Components/Show";
 import { RequireAuthorizated, RequireNotAuthorizated } from "permission/Authorization";
-import { RequireNamespaceReader, RequireNamespaceWriter } from "permission/Namespace";
-import { RequireAdmin } from "permission/Role";
 import { SSOPage } from "pages/SSO";
 import { SSOConfigPage } from "pages/SSO/Config";
 import { CIPage } from "pages/CI";
-import { DeployKeyNewPage } from "pages/CI/New";
+import { DeployAccessTokenNewPage } from "pages/CI/New";
 import { NewEndpointPage } from "pages/SSO/NewEndpoint";
 import { EditEndpointPage } from "pages/SSO/EditEndpoint";
 import { CertificateNewPage } from "pages/Certificate/New";
@@ -36,10 +34,12 @@ import { CertificateEditPage } from "pages/Certificate/Edit";
 import { CertificateAcmeEditPage } from "pages/Certificate/AcmeEdit";
 import { RegistryNewPage } from "pages/Registry/New";
 import { RegistryEditPage } from "pages/Registry/Edit";
-import { DeployKeyDetailPage } from "pages/CI/Detail";
+import { DeployAccessTokenDetailPage } from "pages/CI/Detail";
 import { RouteRedirectList } from "pages/Route/Redirect";
 import { SystemPage } from "pages/System";
 import { SetupPage } from "pages/Setup";
+import { RolesListPage } from "pages/Members";
+import { MemberNewPage } from "pages/Members/New";
 import { CertificateDetailPage } from "pages/Certificate/Detail";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
@@ -68,22 +68,22 @@ export const KalmRoutes = (
           <Route exact path="/cluster/registries/new" component={RegistryNewPage} />
           <Route exact path="/cluster/registries/:name/edit" component={RegistryEditPage} />
 
+          <Route exact path="/cluster/members" component={RolesListPage} />
+          <Route exact path="/cluster/members/new" component={MemberNewPage} />
+          <Route exact path="/cluster/members/:name/edit" component={RolesListPage} />
+
           <Route exact path="/ci" component={CIPage} />
           <Redirect exact path="/ci/keys" to="/ci" />
-          <Route exact path="/ci/keys/new" component={DeployKeyNewPage} />
-          <Route exact path="/ci/keys/:name" component={DeployKeyDetailPage} />
+          <Route exact path="/ci/keys/new" component={DeployAccessTokenNewPage} />
+          <Route exact path="/ci/keys/:name" component={DeployAccessTokenDetailPage} />
 
-          <Route exact path="/applications" component={RequireAdmin(ApplicationListPage)} />
-          <Route exact path="/applications/new" component={RequireAdmin(ApplicationNewPage)} />
+          <Route exact path="/applications" component={ApplicationListPage} />
+          <Route exact path="/applications/new" component={ApplicationNewPage} />
           <Route exact path="/applications/:applicationName/" component={ComponentListPage} />
-          <Route
-            exact
-            path="/applications/:applicationName/metrics"
-            component={RequireNamespaceReader(ApplicationShowPage)}
-          />
+          <Route exact path="/applications/:applicationName/metrics" component={ApplicationShowPage} />
 
-          <Route exact path="/routes" component={RequireNamespaceReader(RouteListPage)} />
-          <Route exact path="/routes/new" component={RequireNamespaceReader(RouteNewPage)} />
+          <Route exact path="/routes" component={RouteListPage} />
+          <Route exact path="/routes/new" component={RouteNewPage} />
           <Route exact path="/routes/:name/edit" component={RouteEditPage} />
           <Route exact path="/routes/:name" component={RouteRedirectList} />
 
@@ -92,8 +92,12 @@ export const KalmRoutes = (
           <Route exact path="/applications/:applicationName/components/:name" component={ComponentShowPage} />
           <Route exact path="/applications/:applicationName/components/:name/edit" component={ComponentEditPage} />
 
-          <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(Log)} />
-          <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(Log)} />
+          <Route exact path="/applications/:applicationName/members" component={RolesListPage} />
+          <Route exact path="/applications/:applicationName/members/new" component={MemberNewPage} />
+          <Route exact path="/applications/:applicationName/members/:name/edit" component={RolesListPage} />
+
+          <Route exact path="/applications/:applicationName/logs" component={Log} />
+          <Route exact path="/applications/:applicationName/shells" component={Log} />
 
           <Route exact path="/certificates" component={CertificateListPage} />
           <Route exact path="/certificates/new" component={CertificateNewPage} />

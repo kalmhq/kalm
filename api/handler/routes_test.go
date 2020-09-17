@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
@@ -36,28 +35,57 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 		Name:      "test-routes",
 		Namespace: "test-routes",
 	}
-	req, err := json.Marshal(route)
-	suite.Nil(err)
 
-	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/httproutes/test-routes", string(req))
-	suite.NotNil(rec)
-	suite.EqualValues(201, rec.Code)
+	// create a route
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodPost,
+		Path:   "/v1alpha1/httproutes/test-routes",
+		Body:   route,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.NotNil(rec)
+			suite.EqualValues(201, rec.Code)
+		},
+	})
 
-	// list routes
-	var routesRes []*resources.HttpRoute
-	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/httproutes/test-routes", "")
-	rec.BodyAsJSON(&routesRes)
-	suite.NotNil(rec)
-	suite.EqualValues(1, len(routesRes))
-	suite.EqualValues("test-routes", routesRes[0].Name)
+	// list route
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/httproutes/test-routes",
+		Body:   route,
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var routesRes []*resources.HttpRoute
+			rec.BodyAsJSON(&routesRes)
+			suite.NotNil(rec)
+			suite.EqualValues(1, len(routesRes))
+			suite.EqualValues("test-routes", routesRes[0].Name)
+		},
+	})
 
 	// list all routes
-	var allRoutesRes []*resources.HttpRoute
-	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/httproutes", "")
-	rec.BodyAsJSON(&allRoutesRes)
-	suite.NotNil(rec)
-	suite.EqualValues(1, len(allRoutesRes))
-	suite.EqualValues("test-routes", allRoutesRes[0].Name)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/httproutes",
+		Body:   route,
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var routesRes []*resources.HttpRoute
+			rec.BodyAsJSON(&routesRes)
+			suite.NotNil(rec)
+			suite.EqualValues(1, len(routesRes))
+			suite.EqualValues("test-routes", routesRes[0].Name)
+		},
+	})
 
 	// update a route
 	routeForUpdate := resources.HttpRoute{
@@ -77,30 +105,70 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 		Name:      "test-routes",
 		Namespace: "test-routes",
 	}
-	reqForUpdate, err := json.Marshal(routeForUpdate)
-	suite.Nil(err)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodPut,
+		Path:   "/v1alpha1/httproutes/test-routes/test-routes",
+		Body:   routeForUpdate,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.NotNil(rec)
+			suite.EqualValues(200, rec.Code)
+		},
+	})
 
-	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/httproutes/test-routes/test-routes", string(reqForUpdate))
-	suite.NotNil(rec)
-	suite.EqualValues(200, rec.Code)
-
-	var routesResForUpdate []*resources.HttpRoute
-	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/httproutes/test-routes", "")
-	rec.BodyAsJSON(&routesResForUpdate)
-	suite.NotNil(rec)
-	suite.EqualValues(1, len(routesResForUpdate))
-	suite.EqualValues("test-routes2.test", routesResForUpdate[0].HttpRouteSpec.Hosts[0])
+	// list route
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/httproutes/test-routes",
+		Body:   route,
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var routesResForUpdate []*resources.HttpRoute
+			rec.BodyAsJSON(&routesResForUpdate)
+			suite.NotNil(rec)
+			suite.EqualValues(1, len(routesResForUpdate))
+			suite.EqualValues("test-routes2.test", routesResForUpdate[0].HttpRouteSpec.Hosts[0])
+		},
+	})
 
 	// delete a route
-	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/httproutes/test-routes/test-routes", "")
-	suite.NotNil(rec)
-	suite.EqualValues(200, rec.Code)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodDelete,
+		Path:   "/v1alpha1/httproutes/test-routes/test-routes",
+		Body:   routeForUpdate,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.NotNil(rec)
+			suite.EqualValues(200, rec.Code)
+		},
+	})
 
-	var routesResForDelete []*resources.HttpRoute
-	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/httproutes", "")
-	rec.BodyAsJSON(&routesResForDelete)
-	suite.NotNil(rec)
-	suite.EqualValues(0, len(routesResForDelete))
+	// list route
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/httproutes",
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var routesResForDelete []*resources.HttpRoute
+			rec.BodyAsJSON(&routesResForDelete)
+			suite.NotNil(rec)
+			suite.EqualValues(0, len(routesResForDelete))
+		},
+	})
 }
 
 func TestRoutesHandlerTestSuite(t *testing.T) {

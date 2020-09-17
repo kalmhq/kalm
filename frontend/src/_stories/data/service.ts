@@ -1,7 +1,5 @@
-import Immutable from "immutable";
-
 export const createServices = () => {
-  return Immutable.fromJS([
+  return [
     {
       name: "cert-manager",
       namespace: "cert-manager",
@@ -187,5 +185,5 @@ export const createServices = () => {
       type: "ClusterIP",
       sessionAffinity: "None",
     },
-  ]);
+  ];
 };

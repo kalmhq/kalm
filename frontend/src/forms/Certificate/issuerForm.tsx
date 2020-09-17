@@ -8,13 +8,13 @@ import { ValidatorRequired } from "forms/validator";
 import React from "react";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { caForTest, CertificateIssuerFormTypeContent, cloudFlare } from "types/certificate";
+import { caForTest, CertificateIssuerFormType, cloudFlare } from "types/certificate";
 
 interface OwnProps {
   form?: string;
   isEdit?: boolean;
-  _initialValues: CertificateIssuerFormTypeContent;
-  onSubmit: (formValues: CertificateIssuerFormTypeContent) => void;
+  _initialValues: CertificateIssuerFormType;
+  onSubmit: (formValues: CertificateIssuerFormType) => void;
 }
 
 const styles = (theme: Theme) =>
@@ -32,7 +32,7 @@ export interface Props
   extends WithStyles<typeof styles>,
     OwnProps,
     TDispatchProp,
-    FormikProps<CertificateIssuerFormTypeContent> {
+    FormikProps<CertificateIssuerFormType> {
   isEdit?: boolean;
 }
 
@@ -122,7 +122,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const CertificateIssuerForm = withFormik<Props, CertificateIssuerFormTypeContent>({
+export const CertificateIssuerForm = withFormik<Props, CertificateIssuerFormType>({
   mapPropsToValues: (props) => props._initialValues,
   enableReinitialize: true,
   handleSubmit: async (formValues, { props: { onSubmit } }) => {

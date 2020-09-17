@@ -109,12 +109,14 @@ const stringConstants = {
   APP_TUTORIAL_TOOLTIPS: "Toggle tutorial",
   APP_AUTH_TOOLTIPS: "Auth menu",
   APP_DASHBOARD_PAGE_NAME: "Dashboard",
+  APP_MEMBERS_PAGE_NAME: "Members",
   PROTECTED_ENDPOINT_PORT:
     "Select the ports you want to protect. Leave blank to protected any ports of the selected component.",
   PROTECTED_ENDPOINT_SPECIFIC_GROUPS:
     "Select the groups you want to grant access permissions for the selected component. Leave blank to allow any sso member.",
   CANT_NOT_EDIT: "Can NOT edit this field",
   REGISTRY_VERIFIED_ERROR: "Error",
+  NO_PERMISSION_TIPS: "No permission to view this, please contact with admin.",
 };
 
 export default stringConstants;

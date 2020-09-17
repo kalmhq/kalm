@@ -7,15 +7,13 @@ import { NavLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { blinkTopProgressAction } from "actions/settings";
-import { DashboardIcon, KalmComponentsIcon } from "widgets/Icon";
+import { DashboardIcon, KalmComponentsIcon, PeopleIcon } from "widgets/Icon";
 import sc from "utils/stringConstants";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const mapStateToProps = (state: RootState) => {
-  const auth = state.get("auth");
-  const isAdmin = auth.get("isAdmin");
   return {
-    activeNamespaceName: state.get("namespaces").get("active"),
-    isAdmin,
+    activeNamespaceName: state.namespaces.active,
   };
 };
 
@@ -30,7 +28,7 @@ const styles = (theme: Theme) =>
       },
       borderLeft: `4px solid transparent`,
     },
-    listItemSeleted: {
+    listItemSelected: {
       borderLeft: `4px solid ${
         theme.palette.type === "light" ? theme.palette.primary.dark : theme.palette.primary.light
       }`,
@@ -45,9 +43,11 @@ const styles = (theme: Theme) =>
 
 interface Props
   extends WithStyles<typeof styles>,
+    WithUserAuthProps,
     ReturnType<typeof mapStateToProps>,
     RouteComponentProps<{ applicationName: string }> {
   dispatch: TDispatch;
+  // canEdit?: boolean;
 }
 
 interface State {}
@@ -60,21 +60,27 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private getMenuData() {
-    const { activeNamespaceName } = this.props;
-    return [
-      {
-        text: "Components",
-        to: "/applications/" + activeNamespaceName + "/components",
-        icon: <KalmComponentsIcon />,
-      },
-
-      {
-        text: sc.APP_DASHBOARD_PAGE_NAME,
-        to: "/applications/" + activeNamespaceName + "/metrics",
-        highlightWhenExact: true,
-        icon: <DashboardIcon />,
-      },
-    ];
+    const { activeNamespaceName, canManageNamespace, canEditCluster } = this.props;
+    const menus = [];
+    menus.push({
+      text: "Components",
+      to: "/applications/" + activeNamespaceName + "/components",
+      icon: <KalmComponentsIcon />,
+    });
+    if (canManageNamespace(activeNamespaceName) || canEditCluster()) {
+      menus.push({
+        text: sc.APP_MEMBERS_PAGE_NAME,
+        to: "/applications/" + activeNamespaceName + "/members",
+        icon: <PeopleIcon />,
+      });
+    }
+    menus.push({
+      text: sc.APP_DASHBOARD_PAGE_NAME,
+      to: "/applications/" + activeNamespaceName + "/metrics",
+      highlightWhenExact: true,
+      icon: <DashboardIcon />,
+    });
+    return menus;
   }
 
   render() {
@@ -91,7 +97,7 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
             onClick={() => blinkTopProgressAction()}
             className={classes.listItem}
             classes={{
-              selected: classes.listItemSeleted,
+              selected: classes.listItemSelected,
             }}
             button
             component={NavLink}
@@ -108,4 +114,6 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ApplicationSidebar = withRouter(connect(mapStateToProps)(withStyles(styles)(ApplicationViewDrawerRaw)));
+export const ApplicationSidebar = withUserAuth(
+  withRouter(connect(mapStateToProps)(withStyles(styles)(ApplicationViewDrawerRaw))),
+);

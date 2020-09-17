@@ -12,14 +12,14 @@ const mapStateToProps = (
     },
   }: RouteComponentProps<{ name?: string }>,
 ) => {
-  const routeState = state.get("routes");
-  const httpRoutes = routeState.get("httpRoutes");
+  const routeState = state.routes;
+  const httpRoutes = routeState.httpRoutes;
 
   return {
-    isRoutesLoading: routeState.get("isLoading"),
-    isRoutesFirstLoaded: routeState.get("isFirstLoaded"),
+    isRoutesLoading: routeState.isLoading,
+    isRoutesFirstLoaded: routeState.isFirstLoaded,
     httpRoutes: httpRoutes,
-    httpRoute: httpRoutes.find((x) => x.get("name") === name),
+    httpRoute: httpRoutes.find((x) => x.name === name),
   };
 };
 

@@ -11,7 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"regexp"
+	"k8s.io/client-go/kubernetes"
 	"strconv"
 	"strings"
 	"sync"
@@ -53,8 +53,6 @@ func isPrivateIP(ip string) bool {
 }
 
 func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
-	builder := h.Builder(c)
-
 	info := &ClusterInfo{}
 
 	httpPort := 80
@@ -67,7 +65,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	info.TLSPort = &tlsPort
 
 	var ingressService coreV1.Service
-	err := builder.Get("istio-system", "istio-ingressgateway", &ingressService)
+	err := h.resourceManager.Get("istio-system", "istio-ingressgateway", &ingressService)
 
 	if err == nil {
 		if len(ingressService.Status.LoadBalancer.Ingress) > 0 {
@@ -80,23 +78,13 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 		}
 	}
 
-	if info.IngressIP == "" && info.IngressHostname == "" && !h.clientManager.IsInCluster() {
-		r := regexp.MustCompile(`(\d+)\.(\d+)\.(\d+)\.(\d+)`)
-		cfg := getK8sClientConfig(c)
-		matches := r.FindStringSubmatch(cfg.Host)
-
-		if len(matches) > 0 && isPrivateIP(matches[0]) {
-			info.IngressIP = matches[0]
-		}
-	}
-
 	var certNotFound, routeNotFound, ssoNotFound bool
 
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		certNotFound = errors.IsNotFound(builder.Get(
+		certNotFound = errors.IsNotFound(h.resourceManager.Get(
 			"",
 			KalmRouteCertName,
 			&v1alpha1.HttpsCert{},
@@ -106,7 +94,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		routeNotFound = errors.IsNotFound(builder.Get(
+		routeNotFound = errors.IsNotFound(h.resourceManager.Get(
 			controllers.KALM_DEX_NAMESPACE,
 			KalmRouteName,
 			&v1alpha1.HttpRoute{},
@@ -116,7 +104,7 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		ssoNotFound = errors.IsNotFound(builder.Get(
+		ssoNotFound = errors.IsNotFound(h.resourceManager.Get(
 			controllers.KALM_DEX_NAMESPACE,
 			resources.SSO_NAME,
 			&v1alpha1.SingleSignOnConfig{},
@@ -131,16 +119,31 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 		info.CanBeInitialized = routeNotFound && ssoNotFound
 	}
 
-	version, err := getK8sClient(c).ServerVersion()
+	k8sClient, err := kubernetes.NewForConfig(getCurrentUser(c).Cfg)
+
+	if err != nil {
+		panic(err)
+	}
+
+	version, err := k8sClient.ServerVersion()
 
 	if err == nil {
 		info.Version = version.GitVersion
+	}
+
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
+		info.IngressHostname = ""
+		info.IngressIP = ""
 	}
 
 	return info
 }
 
 func (h *ApiHandler) handleClusterInfo(c echo.Context) error {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
+		return resources.NoClusterViewerRoleError
+	}
+
 	return c.JSON(200, h.getClusterInfo(c))
 }
 
@@ -169,6 +172,11 @@ type SetupClusterResponse struct {
 }
 
 func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
+
+	if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
+		return resources.NoClusterOwnerRoleError
+	}
+
 	clusterInfo := h.getClusterInfo(c)
 
 	if !clusterInfo.CanBeInitialized {
@@ -180,8 +188,6 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 	if err := c.Bind(&body); err != nil {
 		return err
 	}
-
-	builder := h.Builder(c)
 
 	route := &resources.HttpRoute{
 		HttpRouteSpec: &v1alpha1.HttpRouteSpec{
@@ -202,7 +208,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 			},
 		},
 		Name:      KalmRouteName,
-		Namespace: controllers.NamespaceKalmSystem,
+		Namespace: controllers.KalmSystemNamespace,
 	}
 
 	temporaryAdmin := &TemporaryAdmin{
@@ -236,7 +242,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 	}
 
 	protectedEndpoint := &resources.ProtectedEndpoint{
-		Namespace:                   controllers.NamespaceKalmSystem,
+		Namespace:                   controllers.KalmSystemNamespace,
 		EndpointName:                KalmProtectedEndpointName,
 		Ports:                       []uint32{3001},
 		AllowToPassIfHasBearerToken: true,
@@ -249,25 +255,25 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 		route.HttpRouteSpec.HttpRedirectToHttps = false
 		route.HttpRouteSpec.Schemes = []v1alpha1.HttpRouteScheme{"http"}
 	} else {
-		_, err := builder.CreateAutoManagedHttpsCert(httpsCertForKalm)
+		_, err := h.resourceManager.CreateAutoManagedHttpsCert(httpsCertForKalm)
 		if err != nil {
 			return err
 		}
 	}
 
-	_, err = builder.CreateHttpRoute(route)
+	_, err = h.resourceManager.CreateHttpRoute(route)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = h.Builder(c).CreateProtectedEndpoint(protectedEndpoint)
+	_, err = h.resourceManager.CreateProtectedEndpoint(protectedEndpoint)
 
 	if err != nil {
 		return err
 	}
 
-	ssoConfig, err = h.Builder(c).CreateSSOConfig(ssoConfig)
+	ssoConfig, err = h.resourceManager.CreateSSOConfig(ssoConfig)
 
 	if err != nil {
 		return err
@@ -283,33 +289,36 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleResetCluster(c echo.Context) error {
-	builder := h.Builder(c)
+
+	if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
+		return resources.NoClusterOwnerRoleError
+	}
 
 	wg := sync.WaitGroup{}
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_ = builder.DeleteHttpRoute(controllers.NamespaceKalmSystem, KalmRouteName)
+		_ = h.resourceManager.DeleteHttpRoute(controllers.KalmSystemNamespace, KalmRouteName)
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_ = builder.DeleteHttpsCert(KalmRouteCertName)
+		_ = h.resourceManager.DeleteHttpsCert(KalmRouteCertName)
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_ = builder.DeleteSSOConfig()
+		_ = h.resourceManager.DeleteSSOConfig()
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		_ = builder.DeleteProtectedEndpoints(&resources.ProtectedEndpoint{
-			Namespace:    controllers.NamespaceKalmSystem,
+		_ = h.resourceManager.DeleteProtectedEndpoints(&resources.ProtectedEndpoint{
+			Namespace:    controllers.KalmSystemNamespace,
 			EndpointName: KalmProtectedEndpointName,
 		})
 	}()

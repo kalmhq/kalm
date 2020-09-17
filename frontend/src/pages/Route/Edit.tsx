@@ -5,11 +5,11 @@ import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import React from "react";
-import { AllHttpMethods, HttpRoute, HttpRouteFormType, methodsModeAll, methodsModeSpecific } from "types/route";
+import { AllHttpMethods, HttpRoute, methodsModeAll, methodsModeSpecific } from "types/route";
 import { Loading } from "widgets/Loading";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
 import { BasePage } from "../BasePage";
-import Immutable from "immutable";
+import produce from "immer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -21,12 +21,11 @@ const styles = (theme: Theme) =>
 interface Props extends WithStyles<typeof styles>, WithRoutesDataProps {}
 
 class RouteEditRaw extends React.PureComponent<Props> {
-  private onSubmit = async (routeForm: HttpRouteFormType) => {
+  private onSubmit = async (route: HttpRoute) => {
     const { dispatch } = this.props;
-    let route = Immutable.fromJS(routeForm) as HttpRoute;
     try {
-      if (route.get("methodsMode") === methodsModeAll) {
-        route = route.set("methods", AllHttpMethods);
+      if (route.methodsMode === methodsModeAll) {
+        route.methods = AllHttpMethods;
       }
 
       await dispatch(updateRouteAction(route));
@@ -62,10 +61,15 @@ class RouteEditRaw extends React.PureComponent<Props> {
       );
     }
 
-    let routeForm = httpRoute as HttpRoute;
-    routeForm = routeForm.set("methodsMode", httpRoute.get("methods").size >= 7 ? methodsModeAll : methodsModeSpecific);
+    let initial = produce(httpRoute, (draft) => {
+      if (httpRoute.methods.length >= 7) {
+        draft.methodsMode = methodsModeAll;
+      } else {
+        draft.methodsMode = methodsModeSpecific;
+      }
+    });
 
-    return <RouteForm isEdit onSubmit={this.onSubmit} initial={routeForm.toJS() as HttpRouteFormType} />;
+    return <RouteForm isEdit onSubmit={this.onSubmit} initial={initial} />;
   }
 
   public render() {

@@ -4,7 +4,6 @@ import { createApplicationAction } from "actions/application";
 import { push } from "connected-react-router";
 import { Field, FormikProps, withFormik } from "formik";
 import { APPLICATION_FORM_ID } from "forms/formIDs";
-import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -12,7 +11,7 @@ import { theme } from "theme/theme";
 import { FormMidware } from "tutorials/formMidware";
 import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
-import { ApplicationContent } from "types/application";
+import { Application } from "types/application";
 import stringConstants from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
@@ -41,8 +40,8 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    tutorialState: state.get("tutorial"),
-    isSubmittingApplication: state.get("applications").get("isSubmittingApplication"),
+    tutorialState: state.tutorial,
+    isSubmittingApplication: state.applications.isSubmittingApplication,
     form: APPLICATION_FORM_ID,
   };
 };
@@ -54,7 +53,7 @@ interface OwnProps {
 
 interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props extends ConnectedProps, FormikProps<ApplicationContent>, WithStyles<typeof styles>, OwnProps {}
+export interface Props extends ConnectedProps, FormikProps<Application>, WithStyles<typeof styles>, OwnProps {}
 
 class ApplicationFormRaw extends React.PureComponent<Props> {
   private renderBasic() {
@@ -137,10 +136,10 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
   }
 }
 
-const form = withFormik<ConnectedProps & OwnProps & WithStyles<typeof styles>, ApplicationContent>({
+const form = withFormik<ConnectedProps & OwnProps & WithStyles<typeof styles>, Application>({
   mapPropsToValues: () => ({ name: "" }),
   handleSubmit: async (applicationFormValue, { props: { dispatch } }) => {
-    await dispatch(createApplicationAction(Immutable.fromJS(applicationFormValue)));
+    await dispatch(createApplicationAction(applicationFormValue));
     dispatch(push(`/applications/${applicationFormValue.name}/components/new`));
   },
   validate: formikValidateOrNotBlockByTutorial,

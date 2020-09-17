@@ -30,133 +30,202 @@ func (suite *HttpsCertIssuerTestSuite) TearDownTest() {
 }
 
 func (suite *HttpsCertIssuerTestSuite) TestGetEmptyHCIssuerList() {
-	rec := suite.NewRequest(http.MethodGet, "/v1alpha1/httpscertissuers", nil)
-
-	var res []resources.HttpsCertIssuer
-	rec.BodyAsJSON(&res)
-
-	suite.Equal(200, rec.Code)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/httpscertissuers",
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res []resources.HttpsCertIssuer
+			rec.BodyAsJSON(&res)
+			suite.Equal(200, rec.Code)
+		},
+	})
 }
 
 func (suite *HttpsCertIssuerTestSuite) TestCreateHttpsCertIssuer() {
-	body := `{
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodPost,
+		Path:   "/v1alpha1/httpscertissuers",
+		Body: `{
   "name": "my-foobar-issuer",
   "caForTest": {}
-}`
+}`,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var issuer resources.HttpsCertIssuer
+			rec.BodyAsJSON(&issuer)
 
-	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/httpscertissuers", body)
+			suite.Equal(201, rec.Code)
+			suite.Equal("my-foobar-issuer", issuer.Name)
 
-	var issuer resources.HttpsCertIssuer
-	rec.BodyAsJSON(&issuer)
+			var res v1alpha1.HttpsCertIssuerList
+			err := suite.List(&res)
+			suite.Nil(err)
 
-	suite.Equal(201, rec.Code)
-	suite.Equal("my-foobar-issuer", issuer.Name)
+			suite.Equal(1, len(res.Items))
+			suite.Equal("my-foobar-issuer", res.Items[0].Name)
+			suite.NotNil(res.Items[0].Spec.CAForTest)
+			suite.Nil(res.Items[0].Spec.ACMECloudFlare)
+		},
+	})
 
-	var res v1alpha1.HttpsCertIssuerList
-	err := suite.List(&res)
-	suite.Nil(err)
-
-	suite.Equal(1, len(res.Items))
-	suite.Equal("my-foobar-issuer", res.Items[0].Name)
-	suite.NotNil(res.Items[0].Spec.CAForTest)
-	suite.Nil(res.Items[0].Spec.ACMECloudFlare)
 }
 
 func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
-	body := `{
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodPost,
+		Path:   "/v1alpha1/httpscertissuers",
+		Body: `{
   "name": "my-foobar-issuer",
   "acmeCloudFlare": {
     "account": "foo@bar.com",
     "secret": "foobar"
   }
-}`
+}`,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var issuer resources.HttpsCertIssuer
+			var res v1alpha1.HttpsCertIssuerList
+			var sec coreV1.Secret
 
-	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/httpscertissuers", body)
+			rec.BodyAsJSON(&issuer)
 
-	var issuer resources.HttpsCertIssuer
-	rec.BodyAsJSON(&issuer)
+			suite.Equal(201, rec.Code)
+			suite.Equal("my-foobar-issuer", issuer.Name)
 
-	suite.Equal(201, rec.Code)
-	suite.Equal("my-foobar-issuer", issuer.Name)
+			err := suite.List(&res)
+			suite.Nil(err)
 
-	var res v1alpha1.HttpsCertIssuerList
-	err := suite.List(&res)
-	suite.Nil(err)
+			secName := resources.GenerateSecretNameForACME(issuer)
+			secNs := controllers.CertManagerNamespace
 
-	secName := resources.GenerateSecretNameForACME(issuer)
-	secNs := controllers.CertManagerNamespace
+			suite.Equal(1, len(res.Items))
+			suite.Equal("my-foobar-issuer", res.Items[0].Name)
+			suite.Nil(res.Items[0].Spec.CAForTest)
+			suite.NotNil(res.Items[0].Spec.ACMECloudFlare)
+			suite.Equal("foo@bar.com", res.Items[0].Spec.ACMECloudFlare.Email)
+			suite.Equal(secName, res.Items[0].Spec.ACMECloudFlare.APITokenSecretName)
 
-	suite.Equal(1, len(res.Items))
-	suite.Equal("my-foobar-issuer", res.Items[0].Name)
-	suite.Nil(res.Items[0].Spec.CAForTest)
-	suite.NotNil(res.Items[0].Spec.ACMECloudFlare)
-	suite.Equal("foo@bar.com", res.Items[0].Spec.ACMECloudFlare.Email)
-	suite.Equal(secName, res.Items[0].Spec.ACMECloudFlare.APITokenSecretName)
+			// check content of secret
+			err = suite.Get(secNs, secName, &sec)
+			suite.Nil(err)
+			suite.Equal("foobar", string(sec.Data["content"]))
+		},
+	})
 
-	// check content of secret
-	var sec coreV1.Secret
-	err = suite.Get(secNs, secName, &sec)
-	suite.Nil(err)
-	suite.Equal("foobar", string(sec.Data["content"]))
-
-	// update
-	body = `{
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodPut,
+		Path:   "/v1alpha1/httpscertissuers/my-foobar-issuer",
+		Body: `{
   "name": "my-foobar-issuer",
   "acmeCloudFlare": {
     "account": "foo@bar2.com",
     "secret": "foobar2"
   }
-}`
-	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/httpscertissuers/my-foobar-issuer", body)
+}`,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res v1alpha1.HttpsCertIssuerList
+			var issuer resources.HttpsCertIssuer
+			var sec coreV1.Secret
 
-	rec.BodyAsJSON(&issuer)
+			rec.BodyAsJSON(&issuer)
 
-	suite.Equal(200, rec.Code)
-	suite.Equal("my-foobar-issuer", issuer.Name)
+			secName := resources.GenerateSecretNameForACME(issuer)
+			secNs := controllers.CertManagerNamespace
 
-	err = suite.List(&res)
-	suite.Nil(err)
+			suite.Equal(200, rec.Code)
+			suite.Equal("my-foobar-issuer", issuer.Name)
 
-	suite.Equal(1, len(res.Items))
-	suite.Equal("my-foobar-issuer", res.Items[0].Name)
-	suite.Nil(res.Items[0].Spec.CAForTest)
-	suite.NotNil(res.Items[0].Spec.ACMECloudFlare)
-	suite.Equal("foo@bar2.com", res.Items[0].Spec.ACMECloudFlare.Email)
-	suite.Equal(resources.GenerateSecretNameForACME(issuer), res.Items[0].Spec.ACMECloudFlare.APITokenSecretName)
+			err := suite.List(&res)
+			suite.Nil(err)
 
-	err = suite.Get(secNs, secName, &sec)
-	suite.Nil(err)
-	suite.Equal("foobar2", string(sec.Data["content"]))
+			suite.Equal(1, len(res.Items))
+			suite.Equal("my-foobar-issuer", res.Items[0].Name)
+			suite.Nil(res.Items[0].Spec.CAForTest)
+			suite.NotNil(res.Items[0].Spec.ACMECloudFlare)
+			suite.Equal("foo@bar2.com", res.Items[0].Spec.ACMECloudFlare.Email)
+			suite.Equal(resources.GenerateSecretNameForACME(issuer), res.Items[0].Spec.ACMECloudFlare.APITokenSecretName)
+
+			err = suite.Get(secNs, secName, &sec)
+			suite.Nil(err)
+			suite.Equal("foobar2", string(sec.Data["content"]))
+		},
+	})
 }
 
 func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCertIssuer() {
-	body := `{
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodPost,
+		Path:   "/v1alpha1/httpscertissuers",
+		Body: `{
   "name": "my-foobar-issuer",
   "acmeCloudFlare": {
     "account": "foo@bar.com",
     "apiTokenSecretName": "foobar"
   }
-}`
+}`,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var issuer resources.HttpsCertIssuer
+			var res v1alpha1.HttpsCertIssuerList
 
-	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/httpscertissuers", body)
+			rec.BodyAsJSON(&issuer)
 
-	var issuer resources.HttpsCertIssuer
-	rec.BodyAsJSON(&issuer)
+			suite.Equal(201, rec.Code)
+			suite.Equal("my-foobar-issuer", issuer.Name)
 
-	suite.Equal(201, rec.Code)
-	suite.Equal("my-foobar-issuer", issuer.Name)
+			err := suite.List(&res)
+			suite.Nil(err)
 
-	var res v1alpha1.HttpsCertIssuerList
-	err := suite.List(&res)
-	suite.Nil(err)
+			suite.Equal(1, len(res.Items))
+			suite.Equal("my-foobar-issuer", res.Items[0].Name)
+		},
+	})
 
-	suite.Equal(1, len(res.Items))
-	suite.Equal("my-foobar-issuer", res.Items[0].Name)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodDelete,
+		Path:   "/v1alpha1/httpscertissuers/my-foobar-issuer",
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res v1alpha1.HttpsCertIssuerList
 
-	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/httpscertissuers/my-foobar-issuer", nil)
-	suite.Equal(200, rec.Code)
+			suite.Equal(200, rec.Code)
 
-	err = suite.List(&res)
-	suite.Nil(err)
-	suite.Equal(0, len(res.Items))
+			err := suite.List(&res)
+			suite.Nil(err)
+			suite.Equal(0, len(res.Items))
+		},
+	})
+
 }

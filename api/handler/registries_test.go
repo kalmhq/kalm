@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
@@ -19,7 +18,6 @@ func (suite *RegistriesHandlerTestSuite) SetupSuite() {
 }
 
 func (suite *RegistriesHandlerTestSuite) TestRegistriesHandler() {
-	// create a registry
 	registry := resources.DockerRegistry{
 		DockerRegistrySpec: &v1alpha1.DockerRegistrySpec{
 			Host: "docker.registry.host",
@@ -28,60 +26,137 @@ func (suite *RegistriesHandlerTestSuite) TestRegistriesHandler() {
 		Username: "admin",
 		Password: "password",
 	}
-	req, err := json.Marshal(registry)
-	suite.Nil(err)
 
-	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/registries", string(req))
-	suite.NotNil(rec)
-	suite.EqualValues(201, rec.Code)
+	// create a registry
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodPost,
+		Path:   "/v1alpha1/registries",
+		Body:   registry,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.NotNil(rec)
+			suite.EqualValues(201, rec.Code)
+		},
+	})
 
 	// get a registry
-	var registryRes resources.DockerRegistry
-	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/registries/test-registry", "")
-	rec.BodyAsJSON(&registryRes)
-	suite.NotNil(rec)
-	suite.EqualValues("test-registry", registryRes.Name)
-	suite.EqualValues("admin", registryRes.Username)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterViewerRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/registries/test-registry",
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, resources.NoRegistriesViewPermissionError.Error())
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var registryRes resources.DockerRegistry
+			rec.BodyAsJSON(&registryRes)
+			suite.NotNil(rec)
+			suite.EqualValues("test-registry", registryRes.Name)
+			suite.EqualValues("admin", registryRes.Username)
+		},
+	})
 
 	// list registries
-	var registries []*resources.DockerRegistry
-	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/registries", "")
-	rec.BodyAsJSON(&registries)
-	suite.NotNil(rec)
-	suite.EqualValues(1, len(registries))
-	suite.EqualValues("test-registry", registries[0].Name)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterViewerRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/registries",
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, resources.NoRegistriesViewPermissionError.Error())
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var registries []*resources.DockerRegistry
+			rec.BodyAsJSON(&registries)
+			suite.NotNil(rec)
+			suite.EqualValues(1, len(registries))
+			suite.EqualValues("test-registry", registries[0].Name)
+		},
+	})
 
 	// update a registry
-	registryForUpdate := resources.DockerRegistry{
-		DockerRegistrySpec: &v1alpha1.DockerRegistrySpec{
-			Host: "docker.registry.host",
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
 		},
-		Name:     "test-registry",
-		Username: "admin2",
-		Password: "password",
-	}
-	reqForUpdate, err := json.Marshal(registryForUpdate)
-	suite.Nil(err)
+		Method: http.MethodPut,
+		Path:   "/v1alpha1/registries/test-registry",
+		Body: resources.DockerRegistry{
+			DockerRegistrySpec: &v1alpha1.DockerRegistrySpec{
+				Host: "docker.registry.host",
+			},
+			Name:     "test-registry",
+			Username: "admin2",
+			Password: "password",
+		},
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.NotNil(rec)
+			suite.EqualValues(200, rec.Code)
+		},
+	})
 
-	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/registries/test-registry", string(reqForUpdate))
-	suite.NotNil(rec)
-	suite.EqualValues(200, rec.Code)
-
-	var registryResForUpdate resources.DockerRegistry
-	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/registries/test-registry", "")
-	rec.BodyAsJSON(&registryResForUpdate)
-	suite.NotNil(rec)
-	suite.EqualValues("admin2", registryResForUpdate.Username)
+	// get a registry
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterViewerRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/registries/test-registry",
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, resources.NoRegistriesViewPermissionError.Error())
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var registryResForUpdate resources.DockerRegistry
+			rec.BodyAsJSON(&registryResForUpdate)
+			suite.NotNil(rec)
+			suite.EqualValues("admin2", registryResForUpdate.Username)
+		},
+	})
 
 	// delete a registry
-	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/registries/test-registry", "")
-	suite.NotNil(rec)
-	suite.EqualValues(200, rec.Code)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method: http.MethodDelete,
+		Path:   "/v1alpha1/registries/test-registry",
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.EqualValues(200, rec.Code)
+		},
+	})
 
-	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/registries", "")
-	rec.BodyAsJSON(&registries)
-	suite.NotNil(rec)
-	suite.EqualValues(0, len(registries))
+	// list registries
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterViewerRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/registries",
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, resources.NoRegistriesViewPermissionError.Error())
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var registries []*resources.DockerRegistry
+			rec.BodyAsJSON(&registries)
+			suite.NotNil(rec)
+			suite.EqualValues(0, len(registries))
+		},
+	})
+
 }
 
 func TestRegistriesHandlerTestSuite(t *testing.T) {

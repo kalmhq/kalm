@@ -24,6 +24,7 @@ import { KRTable } from "widgets/KRTable";
 import { Loading } from "widgets/Loading";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
 import { KLink } from "widgets/Link";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -41,14 +42,15 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    isLoading: state.get("certificates").get("isLoading"),
-    isFirstLoaded: state.get("certificates").get("isFirstLoaded"),
-    certificates: state.get("certificates").get("certificates"),
+    isLoading: state.certificates.isLoading,
+    isFirstLoaded: state.certificates.isFirstLoaded,
+    certificates: state.certificates.certificates,
   };
 };
 
 interface Props
   extends WithCertificatesDataProps,
+    WithUserAuthProps,
     WithStyles<typeof styles>,
     ReturnType<typeof mapStateToProps>,
     TDispatchProp {}
@@ -70,15 +72,15 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   private renderName = (cert: Certificate) => {
     return (
       <Typography variant={"subtitle2"}>
-        <KLink to={`/certificates/${cert.get("name")}`}>{cert.get("name")}</KLink>
+        <KLink to={`/certificates/${cert.name}`}>{cert.name}</KLink>
       </Typography>
     );
   };
 
   private renderDomains = (cert: Certificate) => {
     const { classes } = this.props;
-    const isWildcardDomain = cert.get("httpsCertIssuer") === dns01Issuer;
-    const isSelfManaged = cert.get("isSelfManaged");
+    const isWildcardDomain = cert.httpsCertIssuer === dns01Issuer;
+    const isSelfManaged = cert.isSelfManaged;
 
     const domainStatus = (domain: string) => {
       if (isSelfManaged) {
@@ -94,8 +96,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     };
     return (
       <Box className={classes.domainsColumn}>
-        {cert
-          .get("domains")
+        {cert.domains
           ?.map((domain) => {
             return (
               <FlexRowItemCenterBox key={domain}>
@@ -110,18 +111,24 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderMoreActions = (cert: Certificate) => {
+    const { canEditCluster } = this.props;
     return (
       <>
-        {cert.get("isSelfManaged") && (
-          <IconLinkWithToolTip tooltipTitle="Edit" aria-label="edit" to={`/certificates/${cert.get("name")}/edit`}>
-            <EditIcon />
-          </IconLinkWithToolTip>
+        {canEditCluster() && (
+          <>
+            {cert.isSelfManaged && (
+              <IconLinkWithToolTip tooltipTitle="Edit" aria-label="edit" to={`/certificates/${cert.name}/edit`}>
+                <EditIcon />
+              </IconLinkWithToolTip>
+            )}
+            <DeleteButtonWithConfirmPopover
+              popupId="delete-certificate-popup"
+              popupTitle="DELETE CERTIFICATE?"
+              confirmedAction={() => this.confirmDelete(cert)}
+            />
+          </>
         )}
-        <DeleteButtonWithConfirmPopover
-          popupId="delete-certificate-popup"
-          popupTitle="DELETE CERTIFICATE?"
-          confirmedAction={() => this.confirmDelete(cert)}
-        />
+
         {/* <IconButtonWithTooltip
           tooltipTitle="Delete"
           aria-label="delete"
@@ -135,20 +142,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       </>
     );
   };
-
-  // private renderDeleteConfirmDialog = () => {
-  //   const { isDeleteConfirmDialogOpen, deletingCertificate } = this.state;
-  //   const certName = deletingCertificate ? ` '${deletingCertificate.get("name")}'` : "";
-  //   return (
-  //     <ConfirmDialog
-  //       open={isDeleteConfirmDialogOpen}
-  //       onClose={this.closeDeleteConfirmDialog}
-  //       title={`Are you sure you want to delete the certificate${certName}?`}
-  //       content=""
-  //       onAgree={this.confirmDelete}
-  //     />
-  //   );
-  // };
 
   private closeDeleteConfirmDialog = () => {
     this.setState({
@@ -166,7 +159,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   private confirmDelete = async (cert: Certificate) => {
     const { dispatch } = this.props;
     try {
-      const certName = cert.get("name");
+      const certName = cert.name;
       await dispatch(deleteCertificateAction(certName));
       await dispatch(setSuccessNotificationAction(`Successfully deleted certificate '${certName}'`));
     } catch {
@@ -176,7 +169,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
 
   private renderStatus = (cert: Certificate) => {
     const { classes } = this.props;
-    const ready = cert.get("ready");
+    const ready = cert.ready;
 
     if (ready === "True") {
       // why the ready field is a string value ?????
@@ -185,13 +178,13 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
           <FlexRowItemCenterBox className={classes.normalStatus}>Normal</FlexRowItemCenterBox>
         </FlexRowItemCenterBox>
       );
-    } else if (!!cert.get("reason")) {
+    } else if (!!cert.reason) {
       return (
         <FlexRowItemCenterBox>
           <FlexRowItemCenterBox mr={1}>
             <PendingBadge />
           </FlexRowItemCenterBox>
-          <FlexRowItemCenterBox className={classes.warningStatus}>{cert.get("reason")}</FlexRowItemCenterBox>
+          <FlexRowItemCenterBox className={classes.warningStatus}>{cert.reason}</FlexRowItemCenterBox>
         </FlexRowItemCenterBox>
       );
     } else {
@@ -200,15 +193,15 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderType = (cert: Certificate) => {
-    return cert.get("isSelfManaged") ? "Externally Uploaded" : "Let's Encrypt";
+    return cert.isSelfManaged ? "Externally Uploaded" : "Let's Encrypt";
   };
 
   private renderIsSignedByTrustedCA = (cert: Certificate) => {
-    return cert.get("isSignedByTrustedCA") ? "Yes" : "No";
+    return cert.isSignedByTrustedCA ? "Yes" : "No";
   };
 
   private renderExpireTimestamp = (cert: Certificate) => {
-    return cert.get("expireTimestamp") ? formatDate(new Date(cert.get("expireTimestamp")! * 1000)) : "-";
+    return cert.expireTimestamp ? formatDate(new Date(cert.expireTimestamp! * 1000)) : "-";
   };
 
   private getKRTableColumns() {
@@ -270,15 +263,18 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderEmpty() {
+    const { canEditCluster } = this.props;
     return (
       <EmptyInfoBox
         image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={sc.EMPTY_CERT_TITLE}
         content={sc.EMPTY_CERT_SUBTITLE}
         button={
-          <CustomizedButton variant="contained" color="primary" component={Link} to="/certificates/new">
-            New Certificate
-          </CustomizedButton>
+          canEditCluster() ? (
+            <CustomizedButton variant="contained" color="primary" component={Link} to="/certificates/new">
+              New Certificate
+            </CustomizedButton>
+          ) : null
         }
       />
     );
@@ -291,40 +287,42 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isFirstLoaded, isLoading, certificates } = this.props;
+    const { isFirstLoaded, isLoading, certificates, canEditCluster } = this.props;
     return (
       <BasePage
         secondHeaderRight={
-          <>
-            {/* <H6>Certificates</H6> */}
-            <Button
-              color="primary"
-              variant="outlined"
-              size="small"
-              component={Link}
-              tutorial-anchor-id="add-certificate"
-              to="/certificates/new"
-            >
-              New Certificate
-            </Button>
-            <Button
-              color="primary"
-              variant="outlined"
-              size="small"
-              component={Link}
-              tutorial-anchor-id="upload-certificate"
-              to="/certificates/upload"
-            >
-              Upload Certificate
-            </Button>
-          </>
+          canEditCluster() ? (
+            <>
+              {/* <H6>Certificates</H6> */}
+              <Button
+                color="primary"
+                variant="outlined"
+                size="small"
+                component={Link}
+                tutorial-anchor-id="add-certificate"
+                to="/certificates/new"
+              >
+                New Certificate
+              </Button>
+              <Button
+                color="primary"
+                variant="outlined"
+                size="small"
+                component={Link}
+                tutorial-anchor-id="upload-certificate"
+                to="/certificates/upload"
+              >
+                Upload Certificate
+              </Button>
+            </>
+          ) : null
         }
       >
         {/* {this.renderDeleteConfirmDialog()} */}
         <Box p={2}>
           {isLoading && !isFirstLoaded ? (
             <Loading />
-          ) : certificates && certificates.size > 0 ? (
+          ) : certificates && certificates.length > 0 ? (
             this.renderKRTable()
           ) : (
             this.renderEmpty()
@@ -336,6 +334,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const CertificateListPage = withStyles(styles)(
-  connect(mapStateToProps)(CertificateDataWrapper(CertificateListPageRaw)),
+export const CertificateListPage = withUserAuth(
+  withStyles(styles)(connect(mapStateToProps)(CertificateDataWrapper(CertificateListPageRaw))),
 );

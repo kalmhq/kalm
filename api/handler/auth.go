@@ -1,31 +1,35 @@
 package handler
 
 import (
-	"github.com/kalmhq/kalm/api/resources"
+	"github.com/kalmhq/kalm/api/client"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"net/http"
 
 	"github.com/kalmhq/kalm/api/auth"
 	"github.com/labstack/echo/v4"
-	authorizationV1 "k8s.io/api/authorization/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
 type LoginStatusResponse struct {
-	Authorized bool   `json:"authorized"`
-	IsAdmin    bool   `json:"isAdmin"`
-	Entity     string `json:"entity"`
-	CSRF       string `json:"csrf"`
+	Authorized bool `json:"authorized"`
+	// deprecated
+	Entity            string   `json:"entity"`
+	Email             string   `json:"email"`
+	Groups            []string `json:"groups"`
+	Impersonation     string   `json:"impersonation"`
+	ImpersonationType string   `json:"impersonationType"`
+	Policies          string   `json:"policies"`
 }
 
 func (h *ApiHandler) handleValidateToken(c echo.Context) error {
-	authInfo, err := auth.GetAuthInfo(c)
+	token := auth.ExtractTokenFromHeader(c.Request().Header.Get(echo.HeaderAuthorization))
+
+	_, err := h.clientManager.GetClientInfoFromToken(token, "")
+
 	if err != nil {
 		return err
 	}
-	err = h.clientManager.IsAuthInfoWorking(authInfo)
-	if err != nil {
-		return err
-	}
+
 	return c.NoContent(http.StatusOK)
 }
 
@@ -40,38 +44,40 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		return c.JSON(http.StatusOK, res)
 	}
 
-	k8sClient, err := kubernetes.NewForConfig(clientInfo.Cfg)
-	if err != nil {
-		return c.JSON(http.StatusOK, res)
+	if clientInfo != nil {
+		k8sClient, err := kubernetes.NewForConfig(clientInfo.Cfg)
+
+		if err != nil {
+			return c.JSON(http.StatusOK, res)
+		}
+
+		_, err = k8sClient.ServerVersion()
+
+		if err != nil {
+			return c.JSON(http.StatusOK, res)
+		}
+
+		res.Entity = clientInfo.Email
+		res.Email = clientInfo.Email
+		res.Groups = clientInfo.Groups
+		res.Authorized = true
+
+		var subjects []string
+		if clientInfo.Impersonation == "" {
+			subjects = make([]string, len(clientInfo.Groups)+1)
+			subjects[0] = client.ToSafeSubject(clientInfo.Email, v1alpha1.SubjectTypeUser)
+
+			for i, role := range clientInfo.Groups {
+				subjects[i+1] = client.ToSafeSubject(role, v1alpha1.SubjectTypeGroup)
+			}
+		} else {
+			res.Impersonation = clientInfo.Impersonation
+			res.ImpersonationType = clientInfo.ImpersonationType
+			subjects = []string{client.ToSafeSubject(clientInfo.Impersonation, clientInfo.ImpersonationType)}
+		}
+
+		res.Policies = h.clientManager.GetRBACEnforcer().GetCompletePoliciesFor(subjects...)
 	}
-
-	_, err = k8sClient.ServerVersion()
-
-	if err != nil {
-		return c.JSON(http.StatusOK, res)
-	}
-
-	// Check if current user is an admin. Any better solution?
-	review := &authorizationV1.SelfSubjectAccessReview{
-		Spec: authorizationV1.SelfSubjectAccessReviewSpec{
-			ResourceAttributes: &authorizationV1.ResourceAttributes{
-				Namespace: "",
-				Resource:  "clusterrolebindings",
-				Verb:      "create",
-			},
-		},
-	}
-
-	builder := resources.NewBuilder(clientInfo.Cfg, h.logger)
-	err = builder.Create(review)
-
-	if err != nil {
-		return err
-	}
-
-	res.Entity = clientInfo.Name
-	res.IsAdmin = review.Status.Allowed
-	res.Authorized = review.Status.Allowed
 
 	return c.JSON(http.StatusOK, res)
 }

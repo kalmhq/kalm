@@ -1,11 +1,9 @@
-import { ImmutableMap } from "typings";
-
 interface Debounce {
   timer: number;
   debouncing: boolean;
 }
 
-export type DebounceType = ImmutableMap<{ [key: string]: ImmutableMap<Debounce> }>;
+export type DebouncesMap = { [key: string]: Debounce };
 
 export const SET_DEBOUNCING = "SET_DEBOUNCING";
 export const SET_TIMER = "SET_TIMER";

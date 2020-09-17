@@ -9,6 +9,25 @@ minikube addons enable metrics-server
 
 2. Install CRD and Start Controller
 
+Kalm needs two components as dependencies, please install it first:
+
+1. kong-controller
+2. cert-manager
+
+You have to install them manually for now:
+
+```bash
+# intall kong-controller, ref: https://github.com/Kong/kubernetes-ingress-controller#get-started
+kubectl apply -f https://bit.ly/k4k8s
+
+# install cert-manager, ref: https://cert-manager.io/docs/installation/kubernetes/#installing-with-regular-manifests
+kubectl create namespace cert-manager
+
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.13.1/cert-manager.yaml
+```
+
+and after cert-manager running, you can install controller.
+
 ```bash
 cd controller
 make install
@@ -20,6 +39,7 @@ make run
 ```bash
 kubectl apply -f config/samples/___.yaml
 ```
+
 3. install istio
 
 ```bash
@@ -64,6 +84,7 @@ kubectl get pods -n istio-system
 # kiali-7ff568c949-ql8dc                  1/1     Running   0          5h10m
 # prometheus-fd997976c-qzqr5              2/2     Running   0          9h
 ```
+
 4. Start Api Server
 
 ```bash

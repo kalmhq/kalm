@@ -10,6 +10,7 @@ import {
   SET_AUTH_TOKEN,
 } from "types/common";
 import { setErrorNotificationAction } from "./notification";
+import { stopImpersonating } from "api/realApi";
 
 export const loadLoginStatusAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
@@ -50,6 +51,7 @@ export const validateTokenAction = (token: string): ThunkResult<Promise<string>>
 };
 
 export const logoutAction = (): LogoutAction => {
+  stopImpersonating();
   return {
     type: LOGOUT,
   };

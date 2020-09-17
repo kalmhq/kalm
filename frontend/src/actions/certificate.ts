@@ -2,7 +2,6 @@ import { api } from "api";
 import { ThunkResult } from "types";
 import {
   Certificate,
-  CertificateFormTypeContent,
   CertificateIssuer,
   CREATE_CERTIFICATE,
   CREATE_CERTIFICATE_ISSUER,
@@ -25,8 +24,8 @@ import {
   SetIsSubmittingAcmeServer,
   dns01Mananged,
   SET_IS_SUBMITTING_CERTIFICATE,
-  CertificateIssuerFormTypeContent,
-  AcmeServerFormTypeContent,
+  CertificateFormType,
+  CertificateIssuerFormType,
 } from "types/certificate";
 
 export const deleteCertificateAction = (name: string): ThunkResult<Promise<void>> => {
@@ -95,17 +94,16 @@ export const loadCertificateAcmeServerAction = (): ThunkResult<Promise<void>> =>
 };
 
 export const createCertificateAction = (
-  certificateContent: CertificateFormTypeContent,
+  certificateForm: CertificateFormType,
   isEdit?: boolean,
 ): ThunkResult<Promise<Certificate>> => {
   return async (dispatch) => {
     dispatch(setIsSubmittingCertificateAction(true));
 
     let certificate: Certificate;
-    certificateContent.isSelfManaged = certificateContent.managedType === selfManaged;
     try {
-      certificateContent.isSelfManaged = certificateContent.managedType === selfManaged;
-      let certContent = certificateContent;
+      certificateForm.isSelfManaged = certificateForm.managedType === selfManaged;
+      let certContent = certificateForm;
       let hasWildcardDomains = false;
       const domains = certContent.domains.map((d) => {
         if (d.startsWith("*.")) {
@@ -130,7 +128,7 @@ export const createCertificateAction = (
 };
 
 export const createCertificateIssuerAction = (
-  certificateIssuerContent: CertificateIssuerFormTypeContent,
+  certificateIssuerForm: CertificateIssuerFormType,
   isEdit?: boolean,
 ): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
@@ -138,7 +136,7 @@ export const createCertificateIssuerAction = (
 
     let certificateIssuer: CertificateIssuer;
     try {
-      certificateIssuer = await api.createCertificateIssuer(certificateIssuerContent, isEdit);
+      certificateIssuer = await api.createCertificateIssuer(certificateIssuerForm, isEdit);
     } catch (e) {
       dispatch(setIsSubmittingCertificateAction(false));
       throw e;
@@ -182,7 +180,7 @@ export const deleteAcmeServerAction = (acmeServerContent: AcmeServerFormType): T
   };
 };
 
-export const editAcmeServerAction = (acmeServerContent: AcmeServerFormTypeContent): ThunkResult<Promise<void>> => {
+export const editAcmeServerAction = (acmeServerContent: AcmeServerFormType): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     dispatch(setIsSubmittingAcmeServer(true));
 

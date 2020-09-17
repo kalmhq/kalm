@@ -1,18 +1,17 @@
-import Immutable from "immutable";
 import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import {
-  CertificateFormTypeContent,
-  CertificateIssuerFormTypeContent,
-  AcmeServerInfo,
-  AcmeServerFormType,
   AcmeServerFormTypeContent,
+  AcmeServerFormType,
+  AcmeServerInfo,
+  CertificateFormType,
+  CertificateIssuerFormType,
 } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
-import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
-import { RegistryType } from "types/registry";
+import { DeployAccessToken } from "types/deployAccessToken";
+import { RoleBinding } from "types/member";
+import { Registry, RegistryFormType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { RoleBindingsRequestBody } from "types/user";
 import { Api } from "../base";
 import MockStore from "../mockStore";
 
@@ -20,11 +19,11 @@ export const mockStore = new MockStore();
 
 export default class MockApi extends Api {
   public getClusterInfo = async () => {
-    return mockStore.data.get("mockClusterInfo");
+    return mockStore.data.mockClusterInfo;
   };
 
   public getLoginStatus = async () => {
-    return mockStore.data.get("mockLoginStatus");
+    return mockStore.data.mockLoginStatus;
   };
 
   public validateToken = async (token: string): Promise<boolean> => {
@@ -32,135 +31,135 @@ export default class MockApi extends Api {
   };
 
   public getNodes = async () => {
-    return mockStore.data.get("mockNodes");
+    return mockStore.data.mockNodes;
   };
 
   public cordonNode = async () => {
-    return mockStore.data.get("mockNodes").get("nodes").get(0)!;
+    return mockStore.data.mockNodes.nodes[0];
   };
 
   public uncordonNode = async () => {
-    return mockStore.data.get("mockNodes").get("nodes").get(0)!;
+    return mockStore.data.mockNodes.nodes[0];
   };
 
   public getPersistentVolumes = async () => {
-    return mockStore.data.get("mockVolumes");
+    return mockStore.data.mockVolumes;
   };
 
   public getStorageClasses = async () => {
-    return mockStore.data.get("mockStorageClasses");
+    return mockStore.data.mockStorageClasses;
   };
 
   public getSimpleOptions = async (namespace: string) => {
-    return mockStore.data.get("mockSimpleOptions");
+    return mockStore.data.mockSimpleOptions;
   };
 
   public getStatefulSetOptions = async (namespace: string) => {
-    return mockStore.data.get("mockStatefulSetOptions");
+    return mockStore.data.mockStatefulSetOptions;
   };
 
-  public getRegistries = async () => {
-    return mockStore.data.get("mockRegistries");
+  public getRegistries = async (): Promise<Registry[]> => {
+    return mockStore.data.mockRegistries;
   };
 
   public getApplicationList = async () => {
-    return mockStore.data.get("mockApplications");
+    return mockStore.data.mockApplications;
   };
 
   public getApplication = async (name: string) => {
-    return mockStore.data.get("mockApplications").find((application) => application.get("name") === name)!;
+    return mockStore.data.mockApplications.find((application) => application.name === name)!;
   };
 
   public getApplicationComponentList = async (applicationName: string) => {
-    return mockStore.data.getIn(["mockApplicationComponents", applicationName]);
+    return mockStore.data.mockApplicationComponents[applicationName];
   };
 
   public getApplicationComponent = async (applicationName: string, name: string) => {
-    return mockStore.data
-      .get("mockApplicationComponents")
-      .get(applicationName)
-      ?.find((component) => component.get("name") === name)!;
+    return mockStore.data.mockApplicationComponents[applicationName].find(
+      (c) => c.name === name,
+    ) as ApplicationComponentDetails;
   };
 
   public getHttpRoutes = async () => {
-    return mockStore.data.get("mockHttpRoutes");
+    return mockStore.data.mockHttpRoutes;
   };
 
   public createHttpRoute = async (httpRoute: HttpRoute) => {
-    await mockStore.updateHttpRoute(httpRoute.get("namespace"), httpRoute);
+    await mockStore.updateHttpRoute(httpRoute.namespace, httpRoute);
     return httpRoute;
   };
 
   public updateHttpRoute = async (httpRoute: HttpRoute) => {
-    await mockStore.updateHttpRoute(httpRoute.get("namespace"), httpRoute);
-    return Immutable.fromJS(httpRoute);
+    await mockStore.updateHttpRoute(httpRoute.namespace, httpRoute);
+    return httpRoute;
   };
 
   public deleteHttpRoute = async (httpRoute: HttpRoute) => {
-    await mockStore.deleteHttpRoute(httpRoute.get("namespace"), httpRoute.get("name"));
+    await mockStore.deleteHttpRoute(httpRoute.namespace, httpRoute.name);
     return true;
   };
 
   public mockLoadRolebindings = async () => {
-    return Immutable.fromJS([]);
+    return [];
   };
 
   public getCertificateList = async () => {
-    return mockStore.data.get("mockCertificates");
+    return mockStore.data.mockCertificates;
   };
 
   public getCertificateIssuerList = async () => {
-    return mockStore.data.get("mockCertificateIssuers");
+    return mockStore.data.mockCertificateIssuers;
   };
 
-  public createCertificate = async (certificate: CertificateFormTypeContent, isEdit?: boolean) => {
+  public createCertificate = async (certificate: CertificateFormType, isEdit?: boolean) => {
     await mockStore.updateCertificate(certificate);
     return certificate as any;
   };
 
-  public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormTypeContent, isEdit?: boolean) => {
+  public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormType, isEdit?: boolean) => {
     await mockStore.updateCertificateIssuer(certificateIssuer);
-    return Immutable.fromJS(certificateIssuer);
+    return certificateIssuer;
   };
 
   public createApplication = async (application: Application) => {
     let applicationDetails = application as ApplicationDetails;
-    applicationDetails = applicationDetails.set(
-      "metrics",
-      Immutable.fromJS({
-        cpu: null,
-        memory: null,
-      }),
-    );
-    applicationDetails = applicationDetails.set("roles", Immutable.fromJS(["writer", "reader"]));
-    applicationDetails = applicationDetails.set("status", "Active");
-    applicationDetails = applicationDetails.set("istioMetricHistories", Immutable.fromJS({}));
+
+    applicationDetails.metrics = {
+      isMetricServerEnabled: true,
+      cpu: [],
+      memory: [],
+    };
+    applicationDetails.roles = ["writer", "reader"];
+    applicationDetails.status = "Active";
+    applicationDetails.istioMetricHistories = {};
+
     await mockStore.updateApplication(applicationDetails);
     return applicationDetails;
   };
 
   public createApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
     let componentDetails = component as ApplicationComponentDetails;
-    componentDetails = componentDetails.set(
-      "metrics",
-      Immutable.fromJS({
-        cpu: null,
-        memory: null,
-      }),
-    );
-    componentDetails = componentDetails.set("services", Immutable.fromJS([]));
-    componentDetails = componentDetails.set("pods", Immutable.List([mockStore.data.get("mockErrorPod")]));
+
+    componentDetails.metrics = {
+      isMetricServerEnabled: true,
+      cpu: [],
+      memory: [],
+    };
+    componentDetails.services = [];
+    componentDetails.pods = [mockStore.data.mockErrorPod];
+
     await mockStore.updateApplicationComponent(applicationName, componentDetails);
     return componentDetails;
   };
 
-  public createRegistry = async (registry: RegistryType) => {
+  public createRegistry = async (registry: RegistryFormType) => {
     await mockStore.updateRegistry(registry);
-    return Immutable.fromJS(registry);
+    return registry as Registry;
   };
 
   // TODO (has not been used)
-  public createRoleBindings = async (roleBindingRequestBody: RoleBindingsRequestBody) => {};
+  public createRoleBinding = async (roleBinding: RoleBinding) => {};
+  public updateRoleBinding = async (roleBinding: RoleBinding) => {};
 
   public deleteCertificate = async (name: string) => {
     await mockStore.deleteCertificate(name);
@@ -175,7 +174,7 @@ export default class MockApi extends Api {
   };
 
   public loadServices = async (name: string) => {
-    return mockStore.data.get("mockServices");
+    return mockStore.data.mockServices;
   };
 
   public deletePersistentVolume = async (name: string): Promise<void> => {
@@ -191,91 +190,86 @@ export default class MockApi extends Api {
   };
 
   // TODO
-  public deleteRoleBindings = async (namespace: string, bindingName: string) => {};
+  public deleteRoleBinding = async (namespace: string, bindingName: string) => {};
 
   // TODO (has not been used)
   public getApplicationPlugins = async () => {
     return [];
   };
 
-  public getComponentPlugins = async () => {
-    return mockStore.data.get("mockComponentPlugins").toArray();
-  };
-
   public getRegistry = async (name: string) => {
-    return mockStore.data.get("mockRegistries").find((c) => c.get("name") === name)!;
+    return mockStore.data.mockRegistries.find((x) => x.name === name)!;
   };
 
   // TODO
+  public loadRoleBindings = async () => {
+    return [];
+  };
+
   public getServiceAccountSecret = async (name: string) => {
     return "";
   };
 
-  // TODO
-  public loadRolebindings = async () => {
-    return Immutable.fromJS([]);
-  };
-
   public updateApplication = async (application: Application) => {
     await mockStore.updateApplication(application as ApplicationDetails);
-    return Immutable.fromJS(application);
+    return application as ApplicationDetails;
   };
 
   public updateApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
     await mockStore.updateApplicationComponent(applicationName, component as ApplicationComponentDetails);
-    return Immutable.fromJS(component);
+    return component as ApplicationComponentDetails;
   };
 
-  public updateRegistry = async (registry: RegistryType) => {
+  public updateRegistry = async (registry: RegistryFormType) => {
     await mockStore.updateRegistry(registry);
-    return Immutable.fromJS(registry);
+    return registry as Registry;
   };
 
   // TODO
   public getSSOConfig = async (): Promise<SSOConfig> => {
-    return mockStore.data.get("mockSSO");
+    return mockStore.data.mockSSO;
   };
 
   public createSSOConfig = async (ssoConfig: SSOConfig): Promise<SSOConfig> => {
-    return Immutable.Map();
+    return {} as any;
   };
 
   public updateSSOConfig = async (ssoConfig: SSOConfig): Promise<SSOConfig> => {
-    return Immutable.Map();
+    return {} as any;
   };
 
   public deleteSSOConfig = async (): Promise<void> => {};
 
-  public listProtectedEndpoints = async (): Promise<Immutable.List<ProtectedEndpoint>> => {
-    return Immutable.List();
+  public listProtectedEndpoints = async (): Promise<ProtectedEndpoint[]> => {
+    return [];
   };
 
   public createProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint> => {
-    return Immutable.Map();
+    return {} as any;
   };
 
   public updateProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint> => {
-    return Immutable.Map();
+    return {} as any;
   };
 
   public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {};
 
-  public listDeployKeys = async (): Promise<Immutable.List<DeployKeyFormType>> => {
-    return Immutable.List();
+  public listDeployAccessTokens = async (): Promise<DeployAccessToken[]> => {
+    return [];
   };
 
-  public createDeployKey = async (protectedEndpoint: DeployKeyFormTypeContent): Promise<DeployKeyFormType> => {
-    return Immutable.Map();
+  public createDeployAccessToken = async (protectedEndpoint: DeployAccessToken): Promise<DeployAccessToken> => {
+    return {} as any;
   };
 
-  public deleteDeployKey = async (deployKey: DeployKeyFormType): Promise<void> => {};
+  public deleteDeployAccessToken = async (protectedEndpoint: DeployAccessToken): Promise<void> => {};
 
   public resolveDomain = async (domain: string, type: "A" | "CNAME", timeout: number = 5000): Promise<string[]> => {
     return ["1.1.1.1"];
   };
 
   public initializeCluster = async (domain: string): Promise<InitializeClusterResponse> => {
-    return Immutable.Map({});
+    return {} as any;
   };
 
   public resetCluster = async (): Promise<any> => {
@@ -283,7 +277,7 @@ export default class MockApi extends Api {
   };
 
   public createAcmeServer = async (acmeServer: AcmeServerFormType): Promise<AcmeServerInfo> => {
-    return mockStore.data.get("mockAcmeServer");
+    return mockStore.data.mockAcmeServer;
   };
 
   public deleteAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
@@ -295,6 +289,6 @@ export default class MockApi extends Api {
   };
 
   public getAcmeServer = async (): Promise<AcmeServerInfo> => {
-    return mockStore.data.get("mockAcmeServer");
+    return mockStore.data.mockAcmeServer;
   };
 }

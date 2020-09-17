@@ -16,9 +16,9 @@ import { CollapseWrapper } from "widgets/CollapseWrapper";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    certificates: state.get("certificates").get("certificates"),
-    acmeServer: state.get("certificates").get("acmeServer"),
-    ingressIP: state.get("cluster").get("info").get("ingressIP", "---.---.---.---"),
+    certificates: state.certificates.certificates,
+    acmeServer: state.certificates.acmeServer,
+    ingressIP: state.cluster.info.ingressIP || "---.---.---.---",
   };
 };
 
@@ -51,40 +51,38 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
     if (cert === undefined) {
       return null;
     } else {
-      if (cert.get("httpsCertIssuer") === http01Issuer) {
-        const domains = cert.get("domains");
+      if (cert.httpsCertIssuer === http01Issuer) {
+        const domains = cert.domains;
         return (
           <Box>
             <Box className={classes.key}>Domains</Box>
             <Box pl={0} pt={1}>
-              {domains
-                ?.map((domain) => {
-                  return (
-                    <Box key={domain}>
-                      <CollapseWrapper
-                        title={
-                          <FlexRowItemCenterBox>
-                            <DomainStatus domain={domain} ipAddress={ingressIP} mr={1} />
-                            {domain}
-                          </FlexRowItemCenterBox>
-                        }
-                        showIcon={true}
-                      >
-                        <Box p={1}>
-                          Add a A Record
-                          <pre className={classes.action}>
-                            {domain} A {ingressIP}{" "}
-                          </pre>
-                        </Box>
-                      </CollapseWrapper>
-                    </Box>
-                  );
-                })
-                .toList()}
+              {domains?.map((domain) => {
+                return (
+                  <Box key={domain}>
+                    <CollapseWrapper
+                      title={
+                        <FlexRowItemCenterBox>
+                          <DomainStatus domain={domain} ipAddress={ingressIP} mr={1} />
+                          {domain}
+                        </FlexRowItemCenterBox>
+                      }
+                      showIcon={true}
+                    >
+                      <Box p={1}>
+                        Add a A Record
+                        <pre className={classes.action}>
+                          {domain} A {ingressIP}{" "}
+                        </pre>
+                      </Box>
+                    </CollapseWrapper>
+                  </Box>
+                );
+              })}
             </Box>
           </Box>
         );
-      } else if (cert.get("httpsCertIssuer") === dns01Issuer) {
+      } else if (cert.httpsCertIssuer === dns01Issuer) {
         if (!acmeServer || !acmeServer.get("ready")) {
           const domains = cert.get("domains");
           return (
@@ -141,20 +139,18 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
           );
         }
       } else {
-        const domains = cert.get("domains");
+        const domains = cert.domains;
         return (
           <Box>
             <Box className={classes.key}>Domains</Box>
             <Box pl={10} pt={1}>
-              {domains
-                ?.map((domain) => {
-                  return (
-                    <Box key={domain}>
-                      <FlexRowItemCenterBox>{domain}</FlexRowItemCenterBox>
-                    </Box>
-                  );
-                })
-                .toList()}
+              {domains?.map((domain) => {
+                return (
+                  <Box key={domain}>
+                    <FlexRowItemCenterBox>{domain}</FlexRowItemCenterBox>
+                  </Box>
+                );
+              })}
             </Box>
           </Box>
         );
@@ -167,7 +163,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
     if (cert === undefined) {
       return null;
     } else {
-      if (cert.get("httpsCertIssuer") !== dns01Issuer) {
+      if (cert.httpsCertIssuer !== dns01Issuer) {
         return null;
       } else {
         const { acmeServer } = this.props;
@@ -184,9 +180,9 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
 
         return (
           <Box p={2}>
-            <Expansion title="ACME DNS Server is running" defaultUnfold={!acmeServer.get("ready")}>
+            <Expansion title="ACME DNS Server is running" defaultUnfold={!acmeServer.ready}>
               <Box p={2}>
-                {acmeServer.get("ready") ? (
+                {acmeServer.ready ? (
                   <Alert severity="success">Kalm DNS server is running well, you don't need to do any more.</Alert>
                 ) : (
                   <Alert severity="info">
@@ -199,7 +195,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                     <Box p={1}>
                       NS Record:
                       <pre className={classes.action}>
-                        {acmeServer.get("acmeDomain")} NS {acmeServer.get("nsDomain")}
+                        {acmeServer.acmeDomain} NS {acmeServer.nsDomain}
                       </pre>
                     </Box>
                   </Box>
@@ -208,7 +204,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                     <Box p={1}>
                       A Record:
                       <pre className={classes.action}>
-                        {acmeServer.get("nsDomain")} A {acmeServer.get("ipForNameServer")}
+                        {acmeServer.nsDomain} A {acmeServer.ipForNameServer}
                       </pre>
                     </Box>
                   </Box>
@@ -227,8 +223,8 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
     const { classes, certificates, location } = this.props;
     const coms = location.pathname.split("/");
     const certName = coms[coms.length - 1];
-    const certInfoList = certificates.filter((item) => item.get("name") === certName);
-    const certInfo = certInfoList.get(0);
+    const certInfoList = certificates.filter((item) => item.name === certName);
+    const certInfo = certInfoList[0];
     return (
       <BasePage>
         <div className={classes.root}>
@@ -245,13 +241,13 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                     <FlexRowItemCenterBox>
                       <Box className={classes.key}>Type</Box>
                       <Box pl={2} />
-                      {certInfo?.get("isSelfManaged") ? "Externally Uploaded" : certInfo?.get("httpsCertIssuer")}
+                      {certInfo?.isSelfManaged ? "Externally Uploaded" : certInfo?.httpsCertIssuer}
                     </FlexRowItemCenterBox>
 
                     <FlexRowItemCenterBox>
                       <Box className={classes.key}>Status</Box>
                       <Box pl={2} />
-                      {certInfo?.get("ready") ? certInfo?.get("ready") : "Not Ready"}
+                      {certInfo?.ready ? certInfo?.ready : "Not Ready"}
                     </FlexRowItemCenterBox>
 
                     {this.renderDomainGuide(certInfo)}

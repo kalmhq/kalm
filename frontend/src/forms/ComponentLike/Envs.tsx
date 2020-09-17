@@ -1,8 +1,7 @@
 import { Box, Button, Fade, Grid } from "@material-ui/core";
 import { FastField, FieldArray, FieldArrayRenderProps, getIn } from "formik";
 import React from "react";
-import { SharedEnv } from "types/application";
-import { ComponentLikeEnvContent } from "types/componentTemplate";
+import { ComponentLikeEnv } from "types/componentTemplate";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorEnvName, ValidatorRequired } from "../validator";
@@ -46,7 +45,7 @@ class RenderEnvs extends React.PureComponent<Props> {
           </Box>
         ) : null} */}
         {getIn(values, name) &&
-          getIn(values, name).map((env: ComponentLikeEnvContent, index: number) => {
+          getIn(values, name).map((env: ComponentLikeEnv, index: number) => {
             return (
               <Fade in key={index}>
                 <Grid container spacing={2}>
@@ -56,15 +55,6 @@ class RenderEnvs extends React.PureComponent<Props> {
                       label="Name"
                       component={KRenderDebounceFormikTextField}
                       validate={nameValidators}
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                      margin="dense"
-                      fullWidth
-                      variant="outlined"
-                      inputProps={{
-                        required: false, // bypass html5 required feature
-                      }}
                     />
                   </Grid>
                   <Grid item xs={5}>
@@ -73,15 +63,6 @@ class RenderEnvs extends React.PureComponent<Props> {
                       label="Value"
                       validate={ValidatorRequired}
                       component={KRenderDebounceFormikTextField}
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                      margin="dense"
-                      fullWidth
-                      variant="outlined"
-                      inputProps={{
-                        required: false, // bypass html5 required feature
-                      }}
                     />
                   </Grid>
                   <Grid item xs={2}>
@@ -104,21 +85,21 @@ class RenderEnvs extends React.PureComponent<Props> {
   }
 }
 
-const ValidatorEnvs = (values: SharedEnv[]) => {
-  if (!values) return undefined;
-  const names = new Set<string>();
+// const ValidatorEnvs = (values: EnvItem[]) => {
+//   if (!values) return undefined;
+//   const names = new Set<string>();
 
-  for (let i = 0; i < values.length; i++) {
-    const env = values[i]!;
-    const name = env.name;
-    if (!names.has(name)) {
-      names.add(name);
-    } else if (name !== "") {
-      return "Env names should be unique.  " + name + "";
-    }
-  }
-};
+//   for (let i = 0; i < values.length; i++) {
+//     const env = values[i]!;
+//     const name = env.name;
+//     if (!names.has(name)) {
+//       names.add(name);
+//     } else if (name !== "") {
+//       return "Env names should be unique.  " + name + "";
+//     }
+//   }
+// };
 
 export const Envs = (props: any) => {
-  return <FieldArray name="env" component={RenderEnvs} validate={ValidatorEnvs} {...props} />;
+  return <FieldArray name="env" component={RenderEnvs} {...props} />;
 };

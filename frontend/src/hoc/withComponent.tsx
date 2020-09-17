@@ -11,6 +11,7 @@ import { Actions } from "types";
 import { Namespaces } from "widgets/Namespaces";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
 import { withNamespace, WithNamespaceProps } from "./withNamespace";
+import { ApplicationComponentDetails } from "types/application";
 
 const mapStateToProps = (
   state: RootState,
@@ -23,7 +24,7 @@ const mapStateToProps = (
 ) => {
   return {
     applicationName,
-    component: components?.find((c) => c.get("name") === name)!,
+    component: components?.find((c: ApplicationComponentDetails) => c.name === name)!,
   };
 };
 

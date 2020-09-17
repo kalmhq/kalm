@@ -2,6 +2,7 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
+- bases/core.kalm.dev_accesstokens.yaml
 - bases/core.kalm.dev_components.yaml
 - bases/core.kalm.dev_componentplugins.yaml
 - bases/core.kalm.dev_componentpluginbindings.yaml
@@ -15,6 +16,7 @@ resources:
 - bases/core.kalm.dev_protectedendpoints.yaml
 - bases/core.kalm.dev_deploykeys.yaml
 - bases/core.kalm.dev_logsystems.yaml
+- bases/core.kalm.dev_rolebindings.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:

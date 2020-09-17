@@ -10,7 +10,7 @@ type ReplicaSetListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetReplicaSetListChannel(namespaces string) *ReplicaSetListChannel {
+func (resourceManager *ResourceManager) GetReplicaSetListChannel(namespaces string) *ReplicaSetListChannel {
 	channel := &ReplicaSetListChannel{
 		List:  make(chan *appsV1.ReplicaSetList, 1),
 		Error: make(chan error, 1),
@@ -18,7 +18,7 @@ func (builder *Builder) GetReplicaSetListChannel(namespaces string) *ReplicaSetL
 
 	go func() {
 		list := &appsV1.ReplicaSetList{}
-		err := builder.List(list, client.InNamespace(namespaces))
+		err := resourceManager.List(list, client.InNamespace(namespaces))
 		channel.List <- list
 		channel.Error <- err
 	}()

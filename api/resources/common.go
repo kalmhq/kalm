@@ -30,7 +30,6 @@ type ResourceChannels struct {
 	PodList                    *PodListChannel
 	EventList                  *EventListChannel
 	ServiceList                *ServiceListChannel
-	RoleBindingList            *RoleBindingListChannel
 	NamespaceList              *NamespaceListChannel
 	ComponentList              *ComponentListChannel
 	ComponentPluginList        *ComponentPluginListChannel
@@ -109,14 +108,6 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 			return nil, err
 		}
 		resources.Services = <-c.ServiceList.List
-	}
-
-	if c.RoleBindingList != nil {
-		err = <-c.RoleBindingList.Error
-		if err != nil {
-			return nil, err
-		}
-		resources.RoleBindings = <-c.RoleBindingList.List
 	}
 
 	if c.NamespaceList != nil {
@@ -238,52 +229,54 @@ func labelsBelongsToApplication(name string) metaV1.ListOptions {
 	return matchLabel("kalm-application", name)
 }
 
-type Builder struct {
+type ResourceManager struct {
 	ctx    context.Context
+	Cfg    *rest.Config
 	Client client.Client
 	Logger logr.Logger
 }
 
-func NewBuilder(cfg *rest.Config, logger logr.Logger) *Builder {
+func NewResourceManager(cfg *rest.Config, logger logr.Logger) *ResourceManager {
 	c, err := client.New(cfg, client.Options{Scheme: scheme.Scheme})
 
 	if err != nil {
 		return nil
 	}
 
-	return &Builder{
+	return &ResourceManager{
+		Cfg:    cfg,
 		ctx:    context.Background(), // TODO
 		Client: c,
 		Logger: logger,
 	}
 }
 
-func (builder *Builder) Get(namespace, name string, obj runtime.Object) error {
-	return builder.Client.Get(builder.ctx, types.NamespacedName{Namespace: namespace, Name: name}, obj)
+func (resourceManager *ResourceManager) Get(namespace, name string, obj runtime.Object) error {
+	return resourceManager.Client.Get(resourceManager.ctx, types.NamespacedName{Namespace: namespace, Name: name}, obj)
 }
 
-func (builder *Builder) List(obj runtime.Object, opts ...client.ListOption) error {
-	return builder.Client.List(builder.ctx, obj, opts...)
+func (resourceManager *ResourceManager) List(obj runtime.Object, opts ...client.ListOption) error {
+	return resourceManager.Client.List(resourceManager.ctx, obj, opts...)
 }
 
-func (builder *Builder) Create(obj runtime.Object, opts ...client.CreateOption) error {
-	return builder.Client.Create(builder.ctx, obj, opts...)
+func (resourceManager *ResourceManager) Create(obj runtime.Object, opts ...client.CreateOption) error {
+	return resourceManager.Client.Create(resourceManager.ctx, obj, opts...)
 }
 
-func (builder *Builder) Delete(obj runtime.Object, opts ...client.DeleteOption) error {
-	return builder.Client.Delete(builder.ctx, obj, opts...)
+func (resourceManager *ResourceManager) Delete(obj runtime.Object, opts ...client.DeleteOption) error {
+	return resourceManager.Client.Delete(resourceManager.ctx, obj, opts...)
 }
 
-func (builder *Builder) Update(obj runtime.Object, opts ...client.UpdateOption) error {
-	return builder.Client.Update(builder.ctx, obj, opts...)
+func (resourceManager *ResourceManager) Update(obj runtime.Object, opts ...client.UpdateOption) error {
+	return resourceManager.Client.Update(resourceManager.ctx, obj, opts...)
 }
 
-func (builder *Builder) Patch(obj runtime.Object, patch client.Patch, opts ...client.PatchOption) error {
-	return builder.Client.Patch(builder.ctx, obj, patch, opts...)
+func (resourceManager *ResourceManager) Patch(obj runtime.Object, patch client.Patch, opts ...client.PatchOption) error {
+	return resourceManager.Client.Patch(resourceManager.ctx, obj, patch, opts...)
 }
 
 // client Side apply
-func (builder *Builder) Apply(obj runtime.Object) error {
+func (resourceManager *ResourceManager) Apply(obj runtime.Object) error {
 	fetched, err := scheme.Scheme.New(obj.GetObjectKind().GroupVersionKind())
 
 	if err != nil {
@@ -296,7 +289,7 @@ func (builder *Builder) Apply(obj runtime.Object) error {
 		return err
 	}
 
-	if err := builder.Get(objectKey.Namespace, objectKey.Name, fetched); err != nil {
+	if err := resourceManager.Get(objectKey.Namespace, objectKey.Name, fetched); err != nil {
 		return err
 	}
 
@@ -305,7 +298,7 @@ func (builder *Builder) Apply(obj runtime.Object) error {
 	setSpec(obj, fetchedCopy)
 	obj = fetchedCopy
 
-	return builder.Patch(obj, client.MergeFrom(fetched))
+	return resourceManager.Patch(obj, client.MergeFrom(fetched))
 }
 
 // setField sets field of v with given name to given value.

@@ -22,7 +22,7 @@ type ComponentPluginBindingListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetComponentPluginBindingListChannel(opts ...client.ListOption) *ComponentPluginBindingListChannel {
+func (resourceManager *ResourceManager) GetComponentPluginBindingListChannel(opts ...client.ListOption) *ComponentPluginBindingListChannel {
 	channel := &ComponentPluginBindingListChannel{
 		List:  make(chan []v1alpha1.ComponentPluginBinding, 1),
 		Error: make(chan error, 1),
@@ -30,7 +30,7 @@ func (builder *Builder) GetComponentPluginBindingListChannel(opts ...client.List
 
 	go func() {
 		var list v1alpha1.ComponentPluginBindingList
-		err := builder.List(&list, opts...)
+		err := resourceManager.List(&list, opts...)
 		res := make([]v1alpha1.ComponentPluginBinding, len(list.Items))
 
 		for i, binding := range list.Items {
@@ -44,13 +44,13 @@ func (builder *Builder) GetComponentPluginBindingListChannel(opts ...client.List
 	return channel
 }
 
-func (builder *Builder) UpdateComponentPluginBindingsForObject(namespace, componentName string, plugins []runtime.RawExtension) (err error) {
+func (resourceManager *ResourceManager) UpdateComponentPluginBindingsForObject(namespace, componentName string, plugins []runtime.RawExtension) (err error) {
 	var oldPluginList v1alpha1.ComponentPluginBindingList
 	selector := labels.NewSelector()
 	requirement, _ := labels.NewRequirement("kalm-component", selection.Equals, []string{componentName})
 	selector = selector.Add(*requirement)
 
-	err = builder.List(&oldPluginList, client.MatchingLabelsSelector{selector})
+	err = resourceManager.List(&oldPluginList, client.MatchingLabelsSelector{selector})
 
 	if err != nil {
 		return err
@@ -102,7 +102,7 @@ func (builder *Builder) UpdateComponentPluginBindingsForObject(namespace, compon
 	}
 
 	for _, np := range shouldCreate {
-		err := builder.Create(np)
+		err := resourceManager.Create(np)
 
 		if errors.IsAlreadyExists(err) {
 			continue
@@ -114,7 +114,7 @@ func (builder *Builder) UpdateComponentPluginBindingsForObject(namespace, compon
 	}
 
 	for name := range shouldDelete {
-		err := builder.Delete(&v1alpha1.ComponentPluginBinding{ObjectMeta: metaV1.ObjectMeta{
+		err := resourceManager.Delete(&v1alpha1.ComponentPluginBinding{ObjectMeta: metaV1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		}})

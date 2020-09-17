@@ -5,6 +5,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/net/http2"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -99,7 +101,36 @@ func main() {
 	}
 }
 
-func startMainServer(runningConfig *config.Config) {
+func initClusterK8sClientConfiguration(config *config.Config) (cfg *rest.Config, err error) {
+	if config.IsInCluster() {
+		cfg, err = rest.InClusterConfig()
+	} else {
+		if config.KubernetesApiServerAddress != "" {
+			TLSClientConfig := rest.TLSClientConfig{}
+
+			if config.KubernetesApiServerCAFilePath != "" {
+				TLSClientConfig.CAFile = config.KubernetesApiServerCAFilePath
+			}
+
+			cfg = &rest.Config{
+				Host:            config.KubernetesApiServerAddress,
+				TLSClientConfig: TLSClientConfig,
+			}
+		} else if config.KubeConfigPath != "" {
+			cfg, err = clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+				&clientcmd.ClientConfigLoadingRules{ExplicitPath: config.KubeConfigPath},
+				&clientcmd.ConfigOverrides{}).ClientConfig()
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return
+}
+
+func startMainServer(runningConfig *config.Config, k8sClientConfig *rest.Config) {
 	e := server.NewEchoInstance()
 
 	// in production docker build, all things are in a single docker
@@ -115,11 +146,21 @@ func startMainServer(runningConfig *config.Config) {
 	}
 
 	e.Validator = &server.CustomValidator{Validator: validator.New()}
+	var clientManager client.ClientManager
 
-	clientManager := client.NewClientManager(runningConfig)
+	if runningConfig.PrivilegedLocalhostAccess {
+		clientManager = client.NewLocalClientManager(k8sClientConfig)
+	} else {
+		clientManager = client.NewStandardClientManager(k8sClientConfig)
+	}
+
 	apiHandler := handler.NewApiHandler(clientManager)
 	apiHandler.InstallMainRoutes(e)
 	apiHandler.InstallWebhookRoutes(e)
+
+	if runningConfig.PrivilegedLocalhostAccess {
+		apiHandler.InstallAdminRoutes(e)
+	}
 
 	err := e.StartH2CServer(runningConfig.GetServerAddress(), &http2.Server{
 		MaxConcurrentStreams: 250,
@@ -132,9 +173,8 @@ func startMainServer(runningConfig *config.Config) {
 	}
 }
 
-func startMetricServer(runningConfig *config.Config) {
-	clientManager := client.NewClientManager(runningConfig)
-	resources.StartMetricScraper(context.Background(), clientManager.ClusterConfig)
+func startMetricServer(cfg *rest.Config) {
+	_ = resources.StartMetricScraper(context.Background(), cfg)
 }
 
 func run(runningConfig *config.Config) {
@@ -142,16 +182,22 @@ func run(runningConfig *config.Config) {
 		panic(err)
 	}
 
-	go startMetricServer(runningConfig)
+	k8sClientConfig, err := initClusterK8sClientConfiguration(runningConfig)
+
+	if err != nil {
+		panic(err)
+	}
+
+	go startMetricServer(k8sClientConfig)
 
 	// run localhost server with privilege
 	clonedConfig := runningConfig.DeepCopy()
 	clonedConfig.PrivilegedLocalhostAccess = true
 	clonedConfig.BindAddress = "127.0.0.1"
 	clonedConfig.Port = 3010
-	go startMainServer(clonedConfig)
+	go startMainServer(clonedConfig, k8sClientConfig)
 
 	// real server serve
 	runningConfig.PrivilegedLocalhostAccess = false
-	startMainServer(runningConfig)
+	startMainServer(runningConfig, k8sClientConfig)
 }

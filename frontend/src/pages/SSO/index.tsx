@@ -1,7 +1,6 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteProtectedEndpointAction } from "actions/sso";
 import { withSSO, WithSSOProps } from "hoc/withSSO";
-import Immutable from "immutable";
 import { BasePage } from "pages/BasePage";
 import { SSOImplementDetails } from "pages/SSO/Details";
 import React from "react";
@@ -23,82 +22,78 @@ import { KRTable } from "widgets/KRTable";
 import { Body, Subtitle1 } from "widgets/Label";
 import { KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
   });
 
-interface Props extends WithStyles<typeof styles>, WithSSOProps {}
+interface Props extends WithStyles<typeof styles>, WithSSOProps, WithUserAuthProps, WithNamespaceProps {}
 
 interface State {}
 
 class SSOPageRaw extends React.PureComponent<Props, State> {
   private renderConnectorDetails = (connector: SSOGitlabConnector | SSOGithubConnector) => {
-    // @ts-ignore
-    const type = connector.get("type") as SSO_CONNECTOR_TYPE;
+    const type = connector.type as SSO_CONNECTOR_TYPE;
 
     switch (type) {
       case SSO_CONNECTOR_TYPE_GITLAB: {
         const cnt = connector as SSOGitlabConnector;
-        const baseURL = cnt.get("config").get("baseURL");
-        const groups = cnt.get("config").get("groups") || Immutable.List();
+        const baseURL = cnt.config.baseURL;
+        const groups = cnt.config.groups || [];
         return (
-          <Box key={cnt.get("id")} mt={2}>
+          <Box key={cnt.id} mt={2}>
             <Subtitle1>
-              Gitlab {cnt.get("name")} (
+              Gitlab {cnt.name} (
               <KMLink href={baseURL} target="_blank" rel="noopener noreferrer">
                 {baseURL}
               </KMLink>
               )
             </Subtitle1>
             Users in groups{" "}
-            {groups
-              .map((g, index) => (
-                <React.Fragment key={index}>
-                  <KMLink target="_blank" rel="noopener noreferrer" href={baseURL + "/" + g}>
-                    {g}
-                  </KMLink>
-                  {index < cnt.get("config").get("groups").size - 1 ? ", " : " "}
-                </React.Fragment>
-              ))
-              .toArray()}
+            {groups.map((g, index) => (
+              <React.Fragment key={index}>
+                <KMLink target="_blank" rel="noopener noreferrer" href={baseURL + "/" + g}>
+                  {g}
+                </KMLink>
+                {index < cnt.config.groups.length - 1 ? ", " : " "}
+              </React.Fragment>
+            ))}
           </Box>
         );
       }
       case SSO_CONNECTOR_TYPE_GITHUB: {
         const cnt = connector as SSOGithubConnector;
         return (
-          <Box key={cnt.get("id")} mt={2}>
+          <Box key={cnt.id} mt={2}>
             <Subtitle1>
               <Box display="inline-block" style={{ verticalAlign: "middle" }} mr={1}>
                 <GithubIcon />
               </Box>
-              Github {cnt.get("name")}
+              Github {cnt.name}
             </Subtitle1>
-            {cnt
-              .get("config")
-              .get("orgs")
-              .map((org, index) => {
-                const teams = org.get("teams");
-                if (teams && teams.size > 0) {
-                  return (
-                    <Box key={org.get("name")}>
-                      Users in organization {org.get("name")} and teams{" "}
-                      {org.get("teams").map((team, index) => (
-                        <>
-                          <a target="_blank" rel="noopener noreferrer" href={"https://github.com/" + team}>
-                            {team}
-                          </a>
-                          {index < teams.size - 1 ? ", " : " "}
-                        </>
-                      ))}
-                    </Box>
-                  );
-                } else {
-                  return <Box key={org.get("name")}>Users in organization {org.get("name")}</Box>;
-                }
-              })}
+            {cnt.config.orgs.map((org, index) => {
+              const teams = org.teams;
+              if (teams && teams.length > 0) {
+                return (
+                  <Box key={org.name}>
+                    Users in organization {org.name} and teams{" "}
+                    {org.teams.map((team, index) => (
+                      <>
+                        <a target="_blank" rel="noopener noreferrer" href={"https://github.com/" + team}>
+                          {team}
+                        </a>
+                        {index < teams.length - 1 ? ", " : " "}
+                      </>
+                    ))}
+                  </Box>
+                );
+              } else {
+                return <Box key={org.name}>Users in organization {org.name}</Box>;
+              }
+            })}
           </Box>
         );
       }
@@ -106,7 +101,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderConfigDetails = () => {
-    const { ssoConfig } = this.props;
+    const { ssoConfig, canEditCluster } = this.props;
 
     if (!ssoConfig) {
       return null;
@@ -116,14 +111,15 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
       <>
         <KPanel title={"Single Sign-on configuration Details"}>
           <Box p={2}>
-            <pre>Dex OIDC Issuer: https://{ssoConfig.get("domain")}/dex</pre>
-            {ssoConfig.get("connectors") && ssoConfig.get("connectors")!.map(this.renderConnectorDetails)}
+            <pre>Dex OIDC Issuer: https://{ssoConfig.domain}/dex</pre>
+            {ssoConfig.connectors && ssoConfig.connectors!.map(this.renderConnectorDetails)}
           </Box>
           <Box p={2} display="inline-block">
-            <CustomizedButton component={Link} size="small" to="/sso/config" variant="outlined" color="primary">
-              Edit
-            </CustomizedButton>
-            {/*{loaded && ssoConfig ? <DangerButton>Delete Single Sign-On Config</DangerButton> : null}*/}
+            {canEditCluster() ? (
+              <CustomizedButton component={Link} size="small" to="/sso/config" variant="outlined" color="primary">
+                Edit
+              </CustomizedButton>
+            ) : null}
           </Box>
         </KPanel>
         {this.renderProtectedComponents()}
@@ -132,28 +128,29 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderNamespace = (rowData: ProtectedEndpoint) => {
-    return rowData.get("namespace");
+    return rowData.namespace;
   };
 
   private renderComponentName = (rowData: ProtectedEndpoint) => {
-    return rowData.get("endpointName");
+    return rowData.endpointName;
   };
 
   private renderComponentPorts = (rowData: ProtectedEndpoint) => {
-    return !!rowData.get("ports") && rowData.get("ports")!.size > 0 ? rowData.get("ports")!.join(", ") : "All";
+    return !!rowData.ports && rowData.ports!.length > 0 ? rowData.ports!.join(", ") : "All";
   };
 
   private renderGrantedGroups = (rowData: ProtectedEndpoint) => {
-    return !!rowData.get("groups") && rowData.get("groups")!.size > 0 ? rowData.get("groups")!.join(", ") : "All";
+    return !!rowData.groups && rowData.groups!.length > 0 ? rowData.groups!.join(", ") : "All";
   };
 
   private renderProtectedComponentActions = (rowData: ProtectedEndpoint) => {
-    const { dispatch } = this.props;
-    return (
+    const { dispatch, canEditNamespace } = this.props;
+
+    return canEditNamespace(rowData.name) ? (
       <>
         <IconButtonWithTooltip
           component={Link}
-          to={"/sso/endpoints/" + rowData.get("name") + "/edit"}
+          to={"/sso/endpoints/" + rowData.name + "/edit"}
           size="small"
           tooltipPlacement="top"
           tooltipTitle="Edit"
@@ -167,7 +164,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
           confirmedAction={() => dispatch(deleteProtectedEndpointAction(rowData))}
         />
       </>
-    );
+    ) : null;
   };
 
   private getKRTableColumns() {
@@ -214,20 +211,23 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderProtectedComponents() {
+    const { canEditCluster } = this.props;
     return (
       <Box mt={2}>
         <KPanel title="Protected Component">
           <Box p={2}>
             <Box display="inline-block" mb={2}>
-              <CustomizedButton
-                size="small"
-                component={Link}
-                to="/sso/endpoints/new"
-                variant="outlined"
-                color="primary"
-              >
-                New Protected Endpoint
-              </CustomizedButton>
+              {canEditCluster() ? (
+                <CustomizedButton
+                  size="small"
+                  component={Link}
+                  to="/sso/endpoints/new"
+                  variant="outlined"
+                  color="primary"
+                >
+                  New Protected Endpoint
+                </CustomizedButton>
+              ) : null}
             </Box>
             {this.renderKRTable()}
           </Box>
@@ -237,19 +237,24 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderEmptyText = () => {
+    const { canEditCluster } = this.props;
     return (
-      <Body>
-        The <strong>single sign-on</strong> feature allows you to configure access permissions for private components.
-        Only users with the permissions you configured can access the resources behind. <br />
-        Kalm SSO will integrate with your existing user system, such as <strong>github</strong>, <strong>gitlab</strong>
-        , <strong>google</strong>, etc.
-        <Box mt={2} width={300}>
-          <CustomizedButton component={Link} to="/sso/config" variant="contained" color="primary">
-            Enable Single Sign-on
-          </CustomizedButton>
-          {/*{loaded && ssoConfig ? <DangerButton>Delete Single Sign-On Config</DangerButton> : null}*/}
-        </Box>
-      </Body>
+      <Box>
+        <Body>
+          The <strong>single sign-on</strong> feature allows you to configure access permissions for private components.
+          Only users with the permissions you configured can access the resources behind. <br />
+          Kalm SSO will integrate with your existing user system, such as <strong>github</strong>,{" "}
+          <strong>gitlab</strong>, <strong>google</strong>, etc.
+        </Body>
+        {canEditCluster() ? (
+          <Box mt={2} width={300}>
+            <CustomizedButton component={Link} to="/sso/config" variant="contained" color="primary">
+              Enable Single Sign-on
+            </CustomizedButton>
+            {/*{loaded && ssoConfig ? <DangerButton>Delete Single Sign-On Config</DangerButton> : null}*/}
+          </Box>
+        ) : null}
+      </Box>
     );
   };
 
@@ -278,4 +283,4 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const SSOPage = withStyles(styles)(withSSO(SSOPageRaw));
+export const SSOPage = withNamespace(withUserAuth(withStyles(styles)(withSSO(SSOPageRaw))));

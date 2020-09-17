@@ -33,7 +33,7 @@ class NodeStatusRaw extends React.PureComponent<Props, State> {
 
     let statusBadge = <SuccessBadge />;
 
-    if (node.get("statusTexts").size === 1 && node.get("statusTexts").get(0) === "Ready") {
+    if (node.statusTexts.length === 1 && node.statusTexts[0] === "Ready") {
       statusBadge = <SuccessBadge />;
     } else {
       statusBadge = <WarningBadge />;

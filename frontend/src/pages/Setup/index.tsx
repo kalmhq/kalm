@@ -68,7 +68,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
     if (!ignoreDNSResult) {
       try {
         const result = await api.resolveDomain(values.domain, "A");
-        if (result.length <= 0 || result.indexOf(clusterInfo.get("ingressIP")) < 0) {
+        if (result.length <= 0 || result.indexOf(clusterInfo.ingressIP) < 0) {
           this.setState({ showDNSWarning: true });
           errors.domain = dnsCheckError;
           return errors;
@@ -93,7 +93,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
         activeStep: 1,
 
         // If it's not production. We don't need to wait cert to be ready
-        kalmCertReady: !res.get("clusterInfo").get("isProduction"),
+        kalmCertReady: !res.clusterInfo.isProduction,
         initializeResponse: res,
       });
     } catch (e) {
@@ -130,8 +130,8 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
   }
 
   private getKalmCertReady = (props: Props): boolean => {
-    const cert = props.certs.find((x) => x.get("name") === "kalm-cert");
-    return !!cert && cert.get("ready") === "True";
+    const cert = props.certs.find((x) => x.name === "kalm-cert");
+    return !!cert && cert.ready === "True";
   };
 
   private isKalmCertChangedToReady = (prevProps: Props) => {
@@ -141,14 +141,14 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
   private getKalmSystemComponentReady = (props: Props, componentName: string): boolean => {
     const { componentsMap } = props;
 
-    const components = componentsMap.get("kalm-system");
-    if (!components || components.size === 0) return false;
+    const components = componentsMap["kalm-system"];
+    if (!components || components.length === 0) return false;
 
-    const component = components.find((x) => x.get("name") === componentName);
+    const component = components.find((x) => x.name === componentName);
 
     if (!component) return false;
 
-    return !!component.get("pods").find((x) => x.get("phase") === "Running" && x.get("status") === "Running");
+    return !!component.pods.find((x) => x.phase === "Running" && x.status === "Running");
   };
 
   private isKalmDexChangedToReady = (prevProps: Props) => {
@@ -163,7 +163,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
   };
 
   private getKalmRouteReady = (props: Props): boolean => {
-    return !!props.httpRoutes.find((x) => x.get("name") === "kalm-route");
+    return !!props.httpRoutes.find((x) => x.name === "kalm-route");
   };
 
   private isKalmRouteChangedToReady = (prevProps: Props) => {
@@ -179,7 +179,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
         cluster load balancer IP{" "}
         <Box display="inline-block" style={{ verticalAlign: "bottom" }}>
           <H5>
-            <strong>{clusterInfo.get("ingressIP")}</strong>
+            <strong>{clusterInfo.ingressIP}</strong>
           </H5>
         </Box>
         . This domain name will be your address to access the kalm dashboard in the future.
@@ -315,13 +315,13 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
       return null;
     }
 
-    const temporaryAdmin = initializeResponse!.get("temporaryAdmin");
-    const clusterInfo = initializeResponse!.get("clusterInfo");
+    const temporaryAdmin = initializeResponse!.temporaryAdmin;
+    const clusterInfo = initializeResponse!.clusterInfo;
 
-    const email = temporaryAdmin.get("email");
-    const password = temporaryAdmin.get("password");
-    const scheme = clusterInfo.get("isProduction") ? "https" : "http";
-    const domain = initializeResponse!.get("sso").get("domain");
+    const email = temporaryAdmin.email;
+    const password = temporaryAdmin.password;
+    const scheme = clusterInfo.isProduction ? "https" : "http";
+    const domain = initializeResponse!.sso.domain;
 
     const url = `${scheme}://${domain}`;
 
@@ -367,7 +367,7 @@ Password: ${password}`}</pre>
       );
     }
 
-    if (!clusterInfo.get("canBeInitialized")) {
+    if (!clusterInfo.canBeInitialized) {
       return (
         <Box p={2}>
           Your cluster has been initialized already.

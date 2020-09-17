@@ -4,14 +4,14 @@ import { Field } from "formik";
 import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { SSOGitlabConnectorFormType } from "types/sso";
+import { SSOGitlabConnector } from "types/sso";
 import { capitalize } from "utils/string";
 import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
 import { KRenderDebounceFormikTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
 
 interface Props extends DispatchProp {
-  connector: SSOGitlabConnectorFormType;
+  connector: SSOGitlabConnector;
   form: any;
   fieldName: string;
 }

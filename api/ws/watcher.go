@@ -15,7 +15,8 @@ import (
 )
 
 func StartWatching(c *Client) {
-	informerCache, err := cache.New(c.K8SClientConfig, cache.Options{})
+	informerCache, err := cache.New(c.clientInfo.Cfg, cache.Options{})
+
 	if err != nil {
 		log.Error(err, "new cache error")
 		return
@@ -33,9 +34,10 @@ func StartWatching(c *Client) {
 	registerWatchHandler(c, &informerCache, &coreV1.PersistentVolumeClaim{}, buildVolumeResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.SingleSignOnConfig{}, buildSSOConfigResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.ProtectedEndpoint{}, buildProtectEndpointResMessage)
-	registerWatchHandler(c, &informerCache, &v1alpha1.DeployKey{}, buildDeployKeyResMessage)
+	registerWatchHandler(c, &informerCache, &v1alpha1.AccessToken{}, buildAccessTokenResMessage)
+	registerWatchHandler(c, &informerCache, &v1alpha1.RoleBinding{}, buildRoleBindingResMessage)
 
-	informerCache.Start(c.StopWatcher)
+	informerCache.Start(c.stopWatcher)
 }
 
 func registerWatchHandler(c *Client,
@@ -56,7 +58,10 @@ func registerWatchHandler(c *Client,
 				log.Error(err, "build res message error")
 				return
 			}
-			c.sendWatchResMessage(resMessage)
+
+			if resMessage != nil {
+				c.sendWatchResMessage(resMessage)
+			}
 		},
 		DeleteFunc: func(obj interface{}) {
 			resMessage, err := buildResMessage(c, "Delete", obj)
@@ -64,7 +69,9 @@ func registerWatchHandler(c *Client,
 				log.Error(err, "build res message error")
 				return
 			}
-			c.sendWatchResMessage(resMessage)
+			if resMessage != nil {
+				c.sendWatchResMessage(resMessage)
+			}
 		},
 		UpdateFunc: func(oldObj, obj interface{}) {
 			resMessage, err := buildResMessage(c, "Update", obj)
@@ -72,7 +79,9 @@ func registerWatchHandler(c *Client,
 				log.Error(err, "build res message error")
 				return
 			}
-			c.sendWatchResMessage(resMessage)
+			if resMessage != nil {
+				c.sendWatchResMessage(resMessage)
+			}
 		},
 	})
 
@@ -85,15 +94,20 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 	}
 
 	if namespace.Name == resources.KALM_SYSTEM_NAMESPACE {
-		return &ResMessage{}, nil
+		return nil, nil
 	}
 
 	if _, exist := namespace.Labels[controllers.KalmEnableLabelName]; !exist {
-		return &ResMessage{}, nil
+		return nil, nil
 	}
 
-	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
+	if !c.clientManager.CanViewNamespace(c.clientInfo, namespace.Name) {
+		return nil, nil
+	}
+
+	builder := c.Builder()
 	applicationDetails, err := builder.BuildApplicationDetails(namespace)
+
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +121,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 }
 
 func componentToResMessage(c *Client, action string, component *v1alpha1.Component) (*ResMessage, error) {
-	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
+	builder := c.Builder()
 	componentDetails, err := builder.BuildComponentDetails(component, nil)
 	if err != nil {
 		return nil, err
@@ -123,8 +137,13 @@ func componentToResMessage(c *Client, action string, component *v1alpha1.Compone
 
 func buildComponentResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
 	component, ok := objWatched.(*v1alpha1.Component)
+
 	if !ok {
 		return nil, errors.New("convert watch obj to Component failed")
+	}
+
+	if !c.clientManager.CanViewNamespace(c.clientInfo, component.Namespace) {
+		return nil, nil
 	}
 
 	return componentToResMessage(c, action, component)
@@ -137,11 +156,17 @@ func buildComponentResMessageCausedByService(c *Client, action string, objWatche
 	}
 
 	componentName := service.Labels["kalm-component"]
+
 	if componentName == "" {
-		return &ResMessage{}, nil
+		return nil, nil
+	}
+
+	if !c.clientManager.CanViewNamespace(c.clientInfo, service.Namespace) {
+		return nil, nil
 	}
 
 	component, err := c.Builder().GetComponent(service.Namespace, componentName)
+
 	if err != nil {
 		return nil, err
 	}
@@ -151,8 +176,13 @@ func buildComponentResMessageCausedByService(c *Client, action string, objWatche
 
 func buildServiceResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
 	service, ok := objWatched.(*coreV1.Service)
+
 	if !ok {
 		return nil, errors.New("convert watch obj to Service failed")
+	}
+
+	if !c.clientManager.CanViewNamespace(c.clientInfo, service.Namespace) {
+		return nil, nil
 	}
 
 	return &ResMessage{
@@ -173,6 +203,10 @@ func buildPodResMessage(c *Client, action string, objWatched interface{}) (*ResM
 		return &ResMessage{}, nil
 	}
 
+	if !c.clientManager.CanViewNamespace(c.clientInfo, pod.Namespace) {
+		return nil, nil
+	}
+
 	component, err := c.Builder().GetComponent(pod.Namespace, componentName)
 	if err != nil {
 		return nil, err
@@ -181,11 +215,19 @@ func buildPodResMessage(c *Client, action string, objWatched interface{}) (*ResM
 	return componentToResMessage(c, "Update", component)
 }
 
-func buildHttpRouteResMessage(_ *Client, action string, objWatched interface{}) (*ResMessage, error) {
+func buildHttpRouteResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
 	route, ok := objWatched.(*v1alpha1.HttpRoute)
 
 	if !ok {
 		return nil, errors.New("convert watch obj to Node failed")
+	}
+
+	if !c.clientManager.CanOperateHttpRoute(c.clientInfo, "view", &resources.HttpRoute{
+		Namespace:     route.Namespace,
+		Name:          route.Name,
+		HttpRouteSpec: &route.Spec,
+	}) {
+		return nil, nil
 	}
 
 	return &ResMessage{
@@ -203,6 +245,10 @@ func buildNodeResMessage(c *Client, action string, objWatched interface{}) (*Res
 		return nil, errors.New("convert watch obj to Node failed")
 	}
 
+	if !c.clientManager.CanViewCluster(c.clientInfo) {
+		return nil, nil
+	}
+
 	return &ResMessage{
 		Kind:   "Node",
 		Action: action,
@@ -216,6 +262,10 @@ func buildHttpsCertResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, errors.New("convert watch obj to HttpsCert failed")
 	}
 
+	if !c.clientManager.CanViewCluster(c.clientInfo) {
+		return nil, nil
+	}
+
 	return &ResMessage{
 		Kind:   "HttpsCert",
 		Action: action,
@@ -225,12 +275,18 @@ func buildHttpsCertResMessage(c *Client, action string, objWatched interface{}) 
 
 func buildRegistryResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
 	registry, ok := objWatched.(*v1alpha1.DockerRegistry)
+
 	if !ok {
 		return nil, errors.New("convert watch obj to Registry failed")
 	}
 
-	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
+	if !c.clientManager.CanViewCluster(c.clientInfo) {
+		return nil, nil
+	}
+
+	builder := c.Builder()
 	registryRes, err := builder.GetDockerRegistry(registry.Name)
+
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +309,7 @@ func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*R
 		return &ResMessage{}, nil
 	}
 
-	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
+	builder := c.Builder()
 
 	var pv coreV1.PersistentVolume
 	if action == "Delete" {
@@ -262,6 +318,10 @@ func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*R
 		if err := builder.Get("", pvc.Spec.VolumeName, &pv); err != nil {
 			return nil, err
 		}
+	}
+
+	if !c.clientManager.CanViewCluster(c.clientInfo) {
+		return nil, nil
 	}
 
 	volume, err := builder.BuildVolumeResponse(*pvc, pv)
@@ -288,7 +348,11 @@ func buildSSOConfigResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, nil
 	}
 
-	builder := resources.NewBuilder(c.K8SClientConfig, log.DefaultLogger())
+	if !c.clientManager.CanViewCluster(c.clientInfo) {
+		return nil, nil
+	}
+
+	builder := c.Builder()
 	ssoConfigRes, err := builder.GetSSOConfig()
 	if err != nil {
 		return nil, err
@@ -301,11 +365,15 @@ func buildSSOConfigResMessage(c *Client, action string, objWatched interface{}) 
 	}, nil
 }
 
-func buildProtectEndpointResMessage(_ *Client, action string, objWatched interface{}) (*ResMessage, error) {
+func buildProtectEndpointResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
 	endpoint, ok := objWatched.(*v1alpha1.ProtectedEndpoint)
 
 	if !ok {
 		return nil, errors.New("convert watch obj to ProtectedEndpoint failed")
+	}
+
+	if !c.clientManager.CanViewNamespace(c.clientInfo, endpoint.Namespace) {
+		return nil, nil
 	}
 
 	return &ResMessage{
@@ -315,16 +383,49 @@ func buildProtectEndpointResMessage(_ *Client, action string, objWatched interfa
 	}, nil
 }
 
-func buildDeployKeyResMessage(_ *Client, action string, objWatched interface{}) (*ResMessage, error) {
-	deployKey, ok := objWatched.(*v1alpha1.DeployKey)
+func buildAccessTokenResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	accessToken, ok := objWatched.(*v1alpha1.AccessToken)
 
 	if !ok {
 		return nil, errors.New("convert watch obj to DeployKey failed")
 	}
 
+	if accessToken.Labels != nil && accessToken.Labels[resources.AccessTokenTypeLabelKey] == resources.DeployAccessTokenLabelValue {
+		if !c.clientManager.PermissionsGreaterThanOrEqualAccessToken(c.clientInfo, &resources.AccessToken{
+			Name:            accessToken.Name,
+			AccessTokenSpec: &accessToken.Spec,
+		}) {
+			return nil, nil
+		}
+
+		return &ResMessage{
+			Kind:   "DeployAccessToken",
+			Action: action,
+			Data:   resources.BuildAccessTokenFromResource(accessToken),
+		}, nil
+	}
+
+	return nil, nil
+}
+
+func buildRoleBindingResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	roleBinding, ok := objWatched.(*v1alpha1.RoleBinding)
+
+	if !ok {
+		return nil, errors.New("convert watch obj to RoleBinding failed")
+	}
+
+	if !c.clientManager.CanManageRoleBinding(c.clientInfo, roleBinding) {
+		return nil, nil
+	}
+
 	return &ResMessage{
-		Kind:   "DeployKey",
+		Kind:   "RoleBinding",
 		Action: action,
-		Data:   resources.BuildDeployKeyFromResource(deployKey),
+		Data: &resources.RoleBinding{
+			Name:            roleBinding.Name,
+			Namespace:       roleBinding.Namespace,
+			RoleBindingSpec: &roleBinding.Spec,
+		},
 	}, nil
 }

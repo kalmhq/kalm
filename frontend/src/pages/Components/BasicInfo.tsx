@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Box,
   createStyles,
@@ -15,28 +14,28 @@ import {
   withStyles,
   WithStyles,
 } from "@material-ui/core";
-import { TDispatchProp } from "types";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import { setSuccessNotificationAction } from "actions/notification";
+import clsx from "clsx";
+import { push } from "connected-react-router";
+import copy from "copy-to-clipboard";
+import { HealthTab, NetworkingTab } from "forms/ComponentLike";
+import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
+import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { VerticalHeadTable } from "widgets/VerticalHeadTable";
+import { TDispatchProp } from "types";
 import { ApplicationComponentDetails } from "types/application";
+import { Probe } from "types/componentTemplate";
 import { getComponentCreatedFromAndAtString } from "utils/application";
-import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
-import { HealthTab, NetworkingTab } from "forms/ComponentLike";
-import { ComponentLikePort, Probe } from "types/componentTemplate";
-import { List } from "immutable";
-import { CopyIcon, WrenchIcon } from "widgets/Icon";
-import copy from "copy-to-clipboard";
-import { setSuccessNotificationAction } from "actions/notification";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { push } from "connected-react-router";
-import clsx from "clsx";
-import { SecretValueLabel } from "widgets/Label";
-import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
-import { sizeStringToMi, sizeStringToGi } from "utils/sizeConv";
+import { sizeStringToGi, sizeStringToMi } from "utils/sizeConv";
 import stringConsts from "utils/stringConstants";
+import { CopyIcon, WrenchIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
+import { SecretValueLabel } from "widgets/Label";
+import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
+import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -122,9 +121,7 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  return {
-    // xxx: state.get("xxx").get("xxx"),
-  };
+  return {};
 };
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
@@ -152,11 +149,11 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     let pending = 0;
     let error = 0;
 
-    component.get("pods").forEach((pod) => {
-      if (pod.get("isTerminating")) {
+    component.pods?.forEach((pod) => {
+      if (pod.isTerminating) {
         pending = pending + 1;
       } else {
-        switch (pod.get("status")) {
+        switch (pod.status) {
           case "Pending": {
             pending = pending + 1;
             break;
@@ -194,13 +191,13 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
-          {component.get("cpuLimit") ? `Limit: ${component.get("cpuLimit")}` : stringConsts.LIMIT_NOT_SET}
+          {component.cpuLimit ? `Limit: ${component.cpuLimit}` : stringConsts.LIMIT_NOT_SET}
         </Grid>
         <Grid item md={2}>
-          {component.get("cpuRequest") ? `Request: ${component.get("cpuRequest")}` : stringConsts.REQUEST_NOT_SET}
+          {component.cpuRequest ? `Request: ${component.cpuRequest}` : stringConsts.REQUEST_NOT_SET}
         </Grid>
         <Grid item md={8}>
-          Usage: <SmallCPULineChart data={component.get("metrics").get("cpu")!} />
+          Usage: <SmallCPULineChart data={component.metrics?.cpu} />
         </Grid>
       </Grid>
     );
@@ -211,17 +208,17 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
-          {component.get("memoryLimit")
-            ? `Limit: ${sizeStringToMi(`${component.get("memoryLimit")}`)}Mi`
+          {component.memoryLimit
+            ? `Limit: ${sizeStringToMi(`${component.memoryLimit}`)}Mi`
             : stringConsts.LIMIT_NOT_SET}
         </Grid>
         <Grid item md={2}>
-          {component.get("memoryRequest")
-            ? `Request: ${sizeStringToMi(`${component.get("memoryRequest")}`)}Mi`
+          {component.memoryRequest
+            ? `Request: ${sizeStringToMi(`${component.memoryRequest}`)}Mi`
             : stringConsts.REQUEST_NOT_SET}
         </Grid>
         <Grid item md={8}>
-          Usage: <SmallMemoryLineChart data={component.get("metrics").get("memory")!} />
+          Usage: <SmallMemoryLineChart data={component.metrics?.memory} />
         </Grid>
       </Grid>
     );
@@ -238,10 +235,10 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
   private renderPorts = () => {
     const { classes, activeNamespaceName, component } = this.props;
 
-    if (component.get("ports") && component.get("ports")!.size > 0) {
-      const ports = component.get("ports", List<ComponentLikePort>())?.map((port, index) => {
-        const portString = port.get("servicePort") ?? port.get("containerPort");
-        return this.renderPort(index, port.get("protocol"), portString);
+    if (component.ports && component.ports!.length > 0) {
+      const ports = component.ports?.map((port, index) => {
+        const portString = port.servicePort ?? port.containerPort;
+        return this.renderPort(index, port.protocol, portString);
       });
       return <div className={classes.portContainer}>{ports}</div>;
     } else {
@@ -254,9 +251,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
               aria-label="add-exposed-ports"
               onClick={() =>
                 this.props.dispatch(
-                  push(
-                    `/applications/${activeNamespaceName}/components/${component.get("name")}/edit#${NetworkingTab}`,
-                  ),
+                  push(`/applications/${activeNamespaceName}/components/${component.name}/edit#${NetworkingTab}`),
                 )
               }
             >
@@ -273,15 +268,15 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
   };
 
   private getProbeType = (probe: Probe) => {
-    if (probe.get("httpGet")) {
+    if (probe.httpGet) {
       return "httpGet";
     }
 
-    if (probe.get("exec")) {
+    if (probe.exec) {
       return "exec";
     }
 
-    if (probe.get("tcpSocket")) {
+    if (probe.tcpSocket) {
       return "tcpSocket";
     }
 
@@ -290,8 +285,8 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
 
   private renderHealth = () => {
     const { component, activeNamespaceName, dispatch } = this.props;
-    const readinessProbe = component.get("readinessProbe");
-    const livenessProbe = component.get("livenessProbe");
+    const readinessProbe = component.readinessProbe;
+    const livenessProbe = component.livenessProbe;
     const icon =
       !readinessProbe || !livenessProbe ? (
         <IconButtonWithTooltip
@@ -299,7 +294,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
           tooltipTitle="Add Health Probes"
           aria-label="add-health-probes"
           onClick={() =>
-            dispatch(push(`/applications/${activeNamespaceName}/components/${component.get("name")}/edit#${HealthTab}`))
+            dispatch(push(`/applications/${activeNamespaceName}/components/${component.name}/edit#${HealthTab}`))
           }
         >
           <WrenchIcon fontSize="small" />
@@ -352,13 +347,13 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
 
   private renderEnvs = () => {
     const { component, classes } = this.props;
-    const envs = component.get("env");
-    if (envs === undefined || envs?.size === 0) {
+    const envs = component.env;
+    if (envs === undefined || envs?.length === 0) {
       return "-";
     }
     return (
-      <ExpansionPanel square className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={envs.size <= 1}>
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>{envs.size} variables</ExpansionPanelSummary>
+      <ExpansionPanel square className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={envs.length <= 1}>
+        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>{envs.length} variables</ExpansionPanelSummary>
         <ExpansionPanelDetails>
           <Table size="small" aria-label="Envs-Table">
             <TableHead key="title">
@@ -371,9 +366,9 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
               {envs?.map((env, index) => {
                 return (
                   <TableRow key={index}>
-                    <TableCell className={classes.envKey}>{env.get("name")}</TableCell>
+                    <TableCell className={classes.envKey}>{env.name}</TableCell>
                     <TableCell className={classes.envValue}>
-                      <SecretValueLabel>{env.get("value")}</SecretValueLabel>
+                      <SecretValueLabel>{env.value}</SecretValueLabel>
                     </TableCell>
                   </TableRow>
                 );
@@ -387,8 +382,8 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
 
   private renderConfigFiles = () => {
     const { component, classes } = this.props;
-    const configs = component.get("preInjectedFiles");
-    if (configs === undefined || configs?.size === 0) {
+    const configs = component.preInjectedFiles;
+    if (configs === undefined || configs?.length === 0) {
       return <>-</>;
     }
     return configs?.map((config, index) => {
@@ -397,7 +392,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
           <div className={classes.rowWrapper}>
             <div className={classes.envKey}>MountPath:</div>
             <div className={clsx(index % 2 === 0 ? classes.rowEven : classes.rowOdd, classes.envValue)}>
-              {config.get("mountPath")}
+              {config.mountPath}
             </div>
           </div>
         </Box>
@@ -407,29 +402,27 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
 
   private renderRestartStrategy = () => {
     const { component } = this.props;
-    return component.get("restartStrategy") ?? "Rolling Update";
+    return component.restartStrategy ?? "Rolling Update";
   };
 
   private renderGracefulTermination = () => {
     const { component } = this.props;
     const duration =
-      component.get("terminationGracePeriodSeconds") === undefined
-        ? "30"
-        : component.get("terminationGracePeriodSeconds");
+      component.terminationGracePeriodSeconds === undefined ? "30" : component.terminationGracePeriodSeconds;
 
     return duration + "s";
   };
 
   private renderDisks = () => {
     const { component, classes } = this.props;
-    const disks = component.get("volumes");
-    if (disks === undefined || disks?.size === 0) {
+    const disks = component.volumes;
+    if (disks === undefined || disks?.length === 0) {
       return "-";
     }
     return (
       <ExpansionPanel square className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={true}>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-          {disks?.size} {disks?.size > 1 ? "disks" : "disk"}
+          {disks?.length} {disks?.length > 1 ? "disks" : "disk"}
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
           <Table size="small" aria-label="Envs-Table">
@@ -446,11 +439,11 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
               {disks?.map((disk, index) => {
                 return (
                   <TableRow key={index}>
-                    <TableCell>{disk.get("type")}</TableCell>
-                    <TableCell>{disk.get("pvc")}</TableCell>
-                    <TableCell>{disk.get("storageClassName")}</TableCell>
-                    <TableCell>{disk.get("path")}</TableCell>
-                    <TableCell>{`${sizeStringToGi(disk.get("size"))}Gi`}</TableCell>
+                    <TableCell>{disk.type}</TableCell>
+                    <TableCell>{disk.pvc}</TableCell>
+                    <TableCell>{disk.storageClassName}</TableCell>
+                    <TableCell>{disk.path}</TableCell>
+                    <TableCell>{`${sizeStringToGi(disk.size)}Gi`}</TableCell>
                   </TableRow>
                 );
               })}
@@ -467,12 +460,12 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
       <VerticalHeadTable
         items={[
           { name: "Created At", content: this.renderCreatedAt() },
-          { name: "Name", content: component.get("name") },
+          { name: "Name", content: component.name },
           { name: "Namespace", content: activeNamespaceName },
-          { name: "Workload Type", content: component.get("workloadType") },
+          { name: "Workload Type", content: component.workloadType },
           { name: "Pod Status", content: this.renderComponentStatus() },
-          { name: "Image", content: this.renderCopiableValue(component.get("image")) },
-          { name: "Command", content: this.renderCopiableValue(component.get("command")) },
+          { name: "Image", content: this.renderCopiableValue(component.image) },
+          { name: "Command", content: this.renderCopiableValue(component.command) },
           { name: "Environment Variables", content: this.renderEnvs() },
           { name: "Configuration Files", content: this.renderConfigFiles() },
           { name: "Exposed Ports", content: this.renderPorts() },

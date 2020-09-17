@@ -5,11 +5,11 @@ import { RootState } from "reducers";
 import { Actions } from "types";
 
 const mapStateToProps = (state: RootState) => {
-  const certificates = state.get("certificates");
+  const certificates = state.certificates;
   return {
-    componentTemplates: certificates.get("certificates"),
-    isLoading: certificates.get("isLoading"),
-    isFirstLoaded: certificates.get("isFirstLoaded"),
+    componentTemplates: certificates.certificates,
+    isLoading: certificates.isLoading,
+    isFirstLoaded: certificates.isFirstLoaded,
   };
 };
 
