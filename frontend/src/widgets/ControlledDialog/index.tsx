@@ -83,6 +83,7 @@ interface Props extends DispatchProp, OwnProps, ReturnType<typeof mapStateToProp
   children?: React.ReactNode;
   actions?: React.ReactNode;
   dialogProps?: Omit<DialogProps, "open">;
+  closeCallback?: any;
 }
 
 class ControlledDialogRaw extends React.PureComponent<Props & WithStyles<typeof dialogStyles>> {
@@ -97,7 +98,10 @@ class ControlledDialogRaw extends React.PureComponent<Props & WithStyles<typeof 
   }
 
   private handleClose = () => {
-    const { dispatch, dialogID } = this.props;
+    const { dispatch, dialogID, closeCallback } = this.props;
+    if (closeCallback) {
+      closeCallback();
+    }
     dispatch(closeDialogAction(dialogID));
   };
 
