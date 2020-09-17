@@ -212,7 +212,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                       </pre>
                     </Box>
                   </Box>
-                  <Button color="primary" variant="outlined" size="small" component={Link} to="/certificates/acme/edit">
+                  <Button color="primary" variant="outlined" size="small" component={Link} to="/acme/edit">
                     Edit
                   </Button>
                 </>

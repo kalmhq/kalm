@@ -5,6 +5,7 @@ import {
   CertificateIssuerFormTypeContent,
   AcmeServerInfo,
   AcmeServerFormType,
+  AcmeServerFormTypeContent,
 } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
@@ -286,6 +287,10 @@ export default class MockApi extends Api {
   };
 
   public deleteAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
+    return;
+  };
+
+  public editAcmeServer = async (acmeServer: AcmeServerFormTypeContent): Promise<void> => {
     return;
   };
 

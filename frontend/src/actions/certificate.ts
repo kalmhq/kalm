@@ -26,6 +26,7 @@ import {
   dns01Mananged,
   SET_IS_SUBMITTING_CERTIFICATE,
   CertificateIssuerFormTypeContent,
+  AcmeServerFormTypeContent,
 } from "types/certificate";
 
 export const deleteCertificateAction = (name: string): ThunkResult<Promise<void>> => {
@@ -178,6 +179,22 @@ export const deleteAcmeServerAction = (acmeServerContent: AcmeServerFormType): T
     dispatch(setIsSubmittingAcmeServer(false));
 
     dispatch({ type: DELETE_ACME_SERVER, payload: { acmeServer: null } });
+  };
+};
+
+export const editAcmeServerAction = (acmeServerContent: AcmeServerFormTypeContent): ThunkResult<Promise<void>> => {
+  return async (dispatch) => {
+    dispatch(setIsSubmittingAcmeServer(true));
+
+    try {
+      await api.editAcmeServer(acmeServerContent);
+    } catch (e) {
+      dispatch(setIsSubmittingAcmeServer(false));
+      throw e;
+    }
+    dispatch(setIsSubmittingAcmeServer(false));
+
+    dispatch(loadCertificateAcmeServerAction());
   };
 };
 

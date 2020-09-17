@@ -8,6 +8,7 @@ import {
   CertificateIssuerFormTypeContent,
   AcmeServerInfo,
   AcmeServerFormType,
+  AcmeServerFormTypeContent,
 } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
@@ -311,6 +312,11 @@ export default class RealApi extends Api {
     const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
 
     return Immutable.fromJS(res.data);
+  };
+
+  public editAcmeServer = async (acmeServer: AcmeServerFormTypeContent): Promise<void> => {
+    await axiosRequest({ method: "put", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
+    return; //Immutable.fromJS(res.data);
   };
 
   public deleteAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {

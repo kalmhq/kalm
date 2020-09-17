@@ -17,6 +17,7 @@ import {
   AcmeServerInfo,
   AcmeServerFormType,
   CertificateIssuerFormTypeContent,
+  AcmeServerFormTypeContent,
 } from "types/certificate";
 import { ClusterInfo, InitializeClusterResponse } from "types/cluster";
 import { DeployKeyFormType, DeployKeyFormTypeContent } from "types/deployKey";
@@ -134,6 +135,8 @@ export abstract class Api {
   public abstract createAcmeServer(acmeServer: AcmeServerFormType): Promise<AcmeServerInfo>;
 
   public abstract deleteAcmeServer(acmeServer: AcmeServerFormType): Promise<void>;
+
+  public abstract editAcmeServer(acmeServer: AcmeServerFormTypeContent): Promise<void>;
 
   public abstract getAcmeServer(): Promise<AcmeServerInfo>;
 

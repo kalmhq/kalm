@@ -100,7 +100,7 @@ export const KalmRoutes = (
           <Route exact path="/certificates/upload" component={CertificateUploadPage} />
           <Route exact path="/certificates/:name/edit" component={CertificateEditPage} />
           <Route exact path="/certificates/:name" component={CertificateDetailPage} />
-          <Route exact path="/certificates/acme/edit" component={CertificateAcmeEditPage} />
+          <Route exact path="/acme/edit" component={CertificateAcmeEditPage} />
           <Route component={NoMatch} />
         </Switch>
       </RequireAuthorizatedDashboard>
