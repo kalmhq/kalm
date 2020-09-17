@@ -129,7 +129,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                           disabled={isEdit}
                           placeholder="Please type a certificate name"
                           id="certificate-name"
-                          helperText={!!errors.name && touched.name ? errors.name : " "}
+                          helperText={!!errors.name && touched.name ? errors.name : ""}
                         />
                       </Grid>
                       <Grid item md={12}>
