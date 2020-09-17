@@ -38,6 +38,7 @@ import { setErrorNotificationAction } from "actions/notification";
 import { loadDeployAccessTokensAction } from "actions/deployAccessToken";
 import { AccessTokenToDeployAccessToken } from "types/deployAccessToken";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
+import { generateKalmImpersonnation } from "api/realApi";
 
 export interface WatchResMessage {
   namespace: string;
@@ -47,10 +48,7 @@ export interface WatchResMessage {
 }
 
 const mapStateToProps = (state: RootState) => {
-  return {
-    token: state.auth.token,
-    impersonation: state.auth.impersonation,
-  };
+  return {};
 };
 
 interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp, WithUserAuthProps {}
@@ -85,7 +83,7 @@ class WithDataRaw extends React.PureComponent<Props> {
   }
 
   private connectWebsocket() {
-    const { dispatch, token, impersonation, canViewCluster } = this.props;
+    const { dispatch, authToken, impersonation, impersonationType, canViewCluster } = this.props;
     let rws: any;
     if (process.env.REACT_APP_USE_MOCK_API === "true" || process.env.NODE_ENV === "test") {
       rws = mockStore;
@@ -94,8 +92,8 @@ class WithDataRaw extends React.PureComponent<Props> {
       rws.addEventListener("open", () => {
         const message = {
           method: "StartWatching",
-          token,
-          impersonation,
+          token: authToken,
+          impersonation: generateKalmImpersonnation(impersonation, impersonationType),
         };
         rws.send(JSON.stringify(message));
       });
