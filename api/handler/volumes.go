@@ -3,9 +3,12 @@ package handler
 import (
 	"fmt"
 	"github.com/kalmhq/kalm/controller/controllers"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"regexp"
 	"sort"
 	"strings"
 
+	kalmclient "github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 	v1 "k8s.io/api/core/v1"
@@ -151,7 +154,7 @@ func (h *ApiHandler) handleAvailableVolsForSimpleWorkload(c echo.Context) error 
 		return resources.NoNamespaceViewerRoleError(ns)
 	}
 
-	vols, err := h.resourceManager.FindAvailableVolsForSimpleWorkload(ns)
+	vols, err := h.findAvailableVolsForSimpleWorkload(getCurrentUser(c), ns)
 	if err != nil {
 		return err
 	}
@@ -169,10 +172,309 @@ func (h *ApiHandler) handleAvailableVolsForSts(c echo.Context) error {
 		return resources.NoNamespaceViewerRoleError(ns)
 	}
 
-	vols, err := h.resourceManager.FindAvailableVolsForSts(ns)
+	vols, err := h.findAvailableVolsForSts(ns)
 	if err != nil {
 		return err
 	}
 
 	return c.JSON(200, vols)
+}
+
+// 1. list all kalm pvcs
+// 2. filter all available kalmPVCs
+// 3. separate into 2 groups: same-ns pvc & diff-ns pvc (pv reclaimType must be Retain)
+// 4. resp: same-ns pvc: pvcName, diff-ns pvc: pvName
+func (h *ApiHandler) findAvailableVolsForSimpleWorkload(c *kalmclient.ClientInfo, ns string) ([]resources.Volume, error) {
+	pvList, err := h.resourceManager.GetPVs()
+	if err != nil {
+		return nil, err
+	}
+
+	pvcList, err := h.resourceManager.GetPVCs()
+	if err != nil {
+		return nil, err
+	}
+
+	//var unboundPVs []v1.PersistentVolume
+	var boundedPVs []v1.PersistentVolume
+	for _, pv := range pvList {
+		if pv.Spec.ClaimRef == nil {
+			//unboundPVs = append(unboundPVs, pv)
+			continue
+		}
+
+		// make sure bounded pvc still exists
+		if _, exist := findPVCByClaimRef(pv.Spec.ClaimRef, pvcList); !exist {
+			continue
+			//unboundPVs = append(unboundPVs, pv)
+		}
+
+		boundedPVs = append(boundedPVs, pv)
+	}
+
+	var freePairs []volPair
+	var curNsInUsePairs []volPair
+
+	// find if boundedPV's pvc is in use
+	for _, boundedPV := range boundedPVs {
+		pvc, _ := findPVCByClaimRef(boundedPV.Spec.ClaimRef, pvcList)
+		isInUse, err := h.resourceManager.IsPVCInUse(pvc)
+		if err != nil {
+			return nil, err
+		}
+
+		if isInUse {
+			if pvc.Namespace == ns {
+				curNsInUsePairs = append(curNsInUsePairs, volPair{
+					pv:  boundedPV,
+					pvc: pvc,
+				})
+			}
+
+			continue
+		}
+
+		freePairs = append(freePairs, volPair{
+			pv:  boundedPV,
+			pvc: pvc,
+		})
+	}
+
+	sameNsFreePairs, diffNsFreePairs := divideAccordingToNs(freePairs, ns)
+
+	rst := []resources.Volume{}
+	for _, sameNsFreePair := range sameNsFreePairs {
+		pvc := sameNsFreePair.pvc
+		compName, compNs := GetComponentNameAndNsFromObjLabels(&pvc)
+
+		// re-use pvc
+		rst = append(rst, resources.Volume{
+			Name:               pvc.Name,
+			IsInUse:            false,
+			ComponentNamespace: compNs,
+			ComponentName:      compName,
+			StorageClassName:   getValOfString(pvc.Spec.StorageClassName),
+			Capacity:           getCapacityOfPVC(pvc),
+			PVC:                sameNsFreePair.pvc.Name,
+			PV:                 "",
+		})
+	}
+
+	// re-use pv
+	for _, diffNsFreePair := range diffNsFreePairs {
+		pvc := diffNsFreePair.pvc
+		pv := diffNsFreePair.pv
+
+		// permission: if no edit permission in this ns, skip
+		if !h.clientManager.CanEditNamespace(c, pvc.Namespace) {
+			continue
+		}
+
+		compName, compNs := GetComponentNameAndNsFromObjLabels(&pvc)
+
+		// re-use pvc
+		rst = append(rst, resources.Volume{
+			Name:               pvc.Name,
+			IsInUse:            false,
+			ComponentNamespace: compNs,
+			ComponentName:      compName,
+			StorageClassName:   getValOfString(pvc.Spec.StorageClassName),
+			Capacity:           getCapacityOfPVC(pvc),
+			PVC:                "",
+			PV:                 pv.Name,
+		})
+	}
+
+	//for _, unboundPV := range unboundPVs {
+	//	compName, compNs := GetComponentNameAndNsFromObjLabels(&unboundPV)
+	//
+	//	// re-use pvc
+	//	rst = append(rst, resources.Volume{
+	//		Name:               unboundPV.Name,
+	//		IsInUse:            false,
+	//		ComponentNamespace: compNs,
+	//		ComponentName:      compName,
+	//		StorageClassName:   unboundPV.Spec.StorageClassName,
+	//		Capacity:           GetCapacityOfPV(unboundPV),
+	//		PVC:                "",
+	//		PV:                 unboundPV.Name,
+	//	})
+	//}
+
+	// for frontend convenient, also append curNs in use PVC in response
+	for _, curNsInUsePair := range curNsInUsePairs {
+		pvc := curNsInUsePair.pvc
+
+		compNs, compName := GetComponentNameAndNsFromObjLabels(&pvc)
+
+		rst = append(rst, resources.Volume{
+			Name:               pvc.Name,
+			IsInUse:            true,
+			ComponentNamespace: compNs,
+			ComponentName:      compName,
+			StorageClassName:   getValOfString(pvc.Spec.StorageClassName),
+			Capacity:           getCapacityOfPVC(pvc),
+			PVC:                pvc.Name,
+			PV:                 "",
+		})
+	}
+
+	return rst, nil
+}
+
+type volPair struct {
+	pv  v1.PersistentVolume
+	pvc v1.PersistentVolumeClaim
+}
+
+func findPVCByClaimRef(ref *v1.ObjectReference, list []v1.PersistentVolumeClaim) (
+	rst v1.PersistentVolumeClaim,
+	exist bool,
+) {
+
+	if ref == nil {
+		return
+	}
+
+	for _, pvc := range list {
+		if pvc.Name == ref.Name && pvc.Namespace == ref.Namespace {
+			return pvc, true
+		}
+	}
+
+	return
+}
+
+func divideAccordingToNs(pairs []volPair, ns string) (sameNs []volPair, diffNs []volPair) {
+	for _, p := range pairs {
+		if p.pvc.Namespace == ns {
+			sameNs = append(sameNs, p)
+		} else {
+			diffNs = append(diffNs, p)
+		}
+	}
+
+	return
+}
+
+func getCapacityOfPVC(pvc v1.PersistentVolumeClaim) string {
+	var capInStr string
+	if cap, exist := pvc.Spec.Resources.Requests[v1.ResourceStorage]; exist {
+		capInStr = cap.String()
+	}
+	return capInStr
+}
+
+//func GetCapacityOfPV(pv v1.PersistentVolume) string {
+//	var capInStr string
+//	if cap, exist := pv.Spec.Capacity[v1.ResourceStorage]; exist {
+//		capInStr = cap.String()
+//	}
+//	return capInStr
+//}
+
+func (h *ApiHandler) findAvailableVolsForSts(ns string) ([]resources.Volume, error) {
+	pvcList, err := h.resourceManager.GetPVCs(
+		client.InNamespace(ns),
+		client.MatchingLabels{controllers.KalmLabelManaged: "true"},
+	)
+
+	if client.IgnoreNotFound(err) != nil {
+		return nil, err
+	}
+
+	pvcNamePrefix2PVCsMap := make(map[string][]v1.PersistentVolumeClaim)
+	pvcNamePrefixHasInUsePVC := make(map[string]interface{})
+
+	//format of pvc generated from volClaimTemplate is: <volClaimTplName>-<stsName>-{0,1,2}
+	for _, pvc := range pvcList {
+		componentName, _ := GetComponentNameAndNsFromObjLabels(&pvc)
+		if componentName == "" {
+			continue
+		}
+
+		stsPVCPattern := `^*.-[0-9]+$`
+		stsPVCRegex := regexp.MustCompile(stsPVCPattern)
+
+		if match := stsPVCRegex.Match([]byte(pvc.Name)); !match {
+			continue
+		}
+
+		idx := strings.LastIndex(pvc.Name, "-")
+		if idx == -1 {
+			continue
+		}
+
+		pvcNamePrefix := pvc.Name[:idx]
+
+		isInUse, err := h.resourceManager.IsPVCInUse(pvc)
+		if err != nil {
+			return nil, err
+		}
+
+		if isInUse {
+			pvcNamePrefixHasInUsePVC[pvcNamePrefix] = true
+		}
+
+		pvcNamePrefix2PVCsMap[pvcNamePrefix] = append(pvcNamePrefix2PVCsMap[pvcNamePrefix], pvc)
+	}
+
+	rst := []resources.Volume{}
+	for pvcNamePrefix, pvcs := range pvcNamePrefix2PVCsMap {
+		pvc := pvcs[0]
+		capacity := getCapacityOfPVC(pvc)
+		compName, compNs := GetComponentNameAndNsFromObjLabels(&pvc)
+
+		isInUse := false
+		if pvcNamePrefixHasInUsePVC[pvcNamePrefix] == true {
+			isInUse = true
+		}
+
+		idx := strings.LastIndex(pvcNamePrefix, "-"+compName)
+		if idx == -1 {
+			continue
+		}
+
+		volClaimTplName := pvcNamePrefix[:idx]
+
+		rst = append(rst, resources.Volume{
+			Name:               volClaimTplName,
+			IsInUse:            isInUse,
+			ComponentName:      compName,
+			ComponentNamespace: compNs,
+			StorageClassName:   getValOfString(pvc.Spec.StorageClassName),
+			Capacity:           capacity,
+			PVC:                volClaimTplName,
+			PV:                 "",
+		})
+	}
+
+	sort.Slice(rst, func(i, j int) bool {
+		// free vol comes first
+		if rst[i].IsInUse != rst[j].IsInUse {
+			return !rst[i].IsInUse
+		}
+
+		return false
+	})
+	return rst, nil
+}
+
+func GetComponentNameAndNsFromObjLabels(metaObj metav1.Object) (compName, compNamespace string) {
+	compName = metaObj.GetLabels()[controllers.KalmLabelComponentKey]
+	compNamespace = metaObj.GetLabels()[controllers.KalmLabelNamespaceKey]
+
+	return
+}
+
+func getValOfString(s *string, fallbackOpt ...string) string {
+	if s == nil {
+		if len(fallbackOpt) == 0 {
+			return ""
+		}
+
+		return fallbackOpt[0]
+	}
+
+	return *s
 }

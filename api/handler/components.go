@@ -139,6 +139,8 @@ func (h *ApiHandler) createComponent(c echo.Context) (*v1alpha1.Component, error
 		return nil, err
 	}
 
+	//todo permission, check if component try to re-use disk from other ns
+
 	crdComponent.Namespace = c.Param("applicationName")
 	err = h.resourceManager.Create(crdComponent)
 	if err != nil {

@@ -36,7 +36,7 @@ func (suite *VolumeTestSuite) TestGetAvailableVolsForDP() {
 	//prepare pvc & pv
 
 	// a unbound pv
-	unboundPV := suite.createPV()
+	//unboundPV := suite.createPV()
 
 	// a free bounded pvc & pv pair
 	pvc, pv := suite.createBoundedPVCAndPV(suite.NS)
@@ -64,13 +64,13 @@ func (suite *VolumeTestSuite) TestGetAvailableVolsForDP() {
 			rec.BodyAsJSON(&resList)
 
 			suite.Equal(200, rec.Code)
-			suite.Equal(4, len(resList))
+			suite.Equal(3, len(resList))
 
-			suite.True(volExists(resources.Volume{
-				Name: unboundPV.Name,
-				PVC:  "",
-				PV:   unboundPV.Name,
-			}, resList))
+			//suite.True(volExists(resources.Volume{
+			//	Name: unboundPV.Name,
+			//	PVC:  "",
+			//	PV:   unboundPV.Name,
+			//}, resList))
 			suite.True(volExists(resources.Volume{
 				Name: pvc.Name,
 				PVC:  pvc.Name,
@@ -108,13 +108,13 @@ func (suite *VolumeTestSuite) TestGetAvailableVolsForDP() {
 			rec.BodyAsJSON(&resList)
 
 			suite.Equal(200, rec.Code)
-			suite.Equal(4, len(resList))
+			suite.Equal(3, len(resList))
 
-			suite.True(volExists(resources.Volume{
-				Name: unboundPV.Name,
-				PVC:  "",
-				PV:   unboundPV.Name,
-			}, resList))
+			//suite.True(volExists(resources.Volume{
+			//	Name: unboundPV.Name,
+			//	PVC:  "",
+			//	PV:   unboundPV.Name,
+			//}, resList))
 			suite.True(volExists(resources.Volume{
 				Name: pvc.Name,
 				PVC:  "",
