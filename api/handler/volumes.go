@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/kalmhq/kalm/controller/controllers"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"regexp"
 	"sort"
@@ -357,21 +358,13 @@ func divideAccordingToNs(pairs []volPair, ns string) (sameNs []volPair, diffNs [
 	return
 }
 
-func getCapacityOfPVC(pvc v1.PersistentVolumeClaim) string {
-	var capInStr string
+func getCapacityOfPVC(pvc v1.PersistentVolumeClaim) resource.Quantity {
+	var capInQuantity resource.Quantity
 	if cap, exist := pvc.Spec.Resources.Requests[v1.ResourceStorage]; exist {
-		capInStr = cap.String()
+		capInQuantity = cap
 	}
-	return capInStr
+	return capInQuantity
 }
-
-//func GetCapacityOfPV(pv v1.PersistentVolume) string {
-//	var capInStr string
-//	if cap, exist := pv.Spec.Capacity[v1.ResourceStorage]; exist {
-//		capInStr = cap.String()
-//	}
-//	return capInStr
-//}
 
 func (h *ApiHandler) findAvailableVolsForSts(ns string) ([]resources.Volume, error) {
 	pvcList, err := h.resourceManager.GetPVCs(

@@ -1,30 +1,29 @@
 package resources
 
 import (
+	"k8s.io/apimachinery/pkg/api/resource"
+	"strconv"
+
 	"github.com/kalmhq/kalm/controller/controllers"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strconv"
-
-	//v1 "k8s.io/apiserver/pkg/apis/example/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // actual aggregation info of PVC & PV
 type Volume struct {
-	Name                string `json:"name"`
-	IsInUse             bool   `json:"isInUse"`                      // can be reused or not
-	ComponentNamespace  string `json:"componentNamespace,omitempty"` // ns of latest component using this Volume
-	ComponentName       string `json:"componentName,omitempty"`      // name of latest component using this Volume
-	StorageClassName    string `json:"storageClassName"`
-	Capacity            string `json:"capacity"` // size, e.g. 1Gi
-	RequestedCapacity   string `json:"requestedCapacity"`
-	AllocatedCapacity   string `json:"allocatedCapacity"`
-	PVC                 string `json:"pvc"`
-	PV                  string `json:"pvToMatch"`
-	StsVolClaimTemplate string `json:"stsVolClaimTemplate,omitempty"`
+	Name                string            `json:"name"`
+	IsInUse             bool              `json:"isInUse"`                      // can be reused or not
+	ComponentNamespace  string            `json:"componentNamespace,omitempty"` // ns of latest component using this Volume
+	ComponentName       string            `json:"componentName,omitempty"`      // name of latest component using this Volume
+	StorageClassName    string            `json:"storageClassName"`
+	Capacity            resource.Quantity `json:"capacity"` // size, e.g. 1Gi
+	RequestedCapacity   resource.Quantity `json:"requestedCapacity"`
+	AllocatedCapacity   resource.Quantity `json:"allocatedCapacity"`
+	PVC                 string            `json:"pvc"`
+	PV                  string            `json:"pvToMatch"`
+	StsVolClaimTemplate string            `json:"stsVolClaimTemplate,omitempty"`
 }
 
 func (resourceManager *ResourceManager) BuildVolumeResponse(
@@ -36,14 +35,14 @@ func (resourceManager *ResourceManager) BuildVolumeResponse(
 		return nil, err
 	}
 
-	var capInStr string
+	var capInQuantity resource.Quantity
 	if cap, exist := pvc.Spec.Resources.Requests[coreV1.ResourceStorage]; exist {
-		capInStr = formatQuantity(cap)
+		capInQuantity = cap
 	}
 
-	var allocatedQuantity string
+	var allocatedQuantity resource.Quantity
 	if storage := pvc.Status.Capacity.Storage(); storage != nil {
-		allocatedQuantity = formatQuantity(*storage)
+		allocatedQuantity = *storage
 	}
 
 	compName := pvc.Labels[controllers.KalmLabelComponentKey]
@@ -55,8 +54,8 @@ func (resourceManager *ResourceManager) BuildVolumeResponse(
 		ComponentName:       compName,
 		ComponentNamespace:  pvc.Namespace,
 		IsInUse:             isInUse,
-		Capacity:            capInStr,
-		RequestedCapacity:   capInStr,
+		Capacity:            capInQuantity,
+		RequestedCapacity:   capInQuantity,
 		AllocatedCapacity:   allocatedQuantity,
 		StsVolClaimTemplate: stsVolClaimTemplate,
 	}, nil
@@ -89,7 +88,6 @@ func GetComponentNameAndNsFromObjLabels(metaObj metav1.Object) (compName, compNa
 
 	return
 }
-
 
 func (resourceManager *ResourceManager) IsPVCInUse(pvc coreV1.PersistentVolumeClaim) (bool, error) {
 	var podList coreV1.PodList

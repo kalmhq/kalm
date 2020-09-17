@@ -29,10 +29,6 @@ export const SelectField = ({
     root: {
       display: "flex",
     },
-    inputLabel: {
-      fontWeight: 500,
-      fontSize: 13,
-    },
   }))();
 
   const [labelWidth, setLabelWidth] = React.useState(0);
@@ -55,7 +51,7 @@ export const SelectField = ({
       style={{ pointerEvents: "auto" }}
       margin="dense"
     >
-      <InputLabel ref={inputLabel} htmlFor={id} id={labelId} classes={{ root: classes.inputLabel }}>
+      <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
         {label}
       </InputLabel>
       <Select
@@ -99,7 +95,12 @@ export const SelectField = ({
 };
 
 interface Props {
-  options: { text: React.ReactNode; value: string; selectedText?: string }[];
+  options: {
+    text: React.ReactNode;
+    value: string;
+    selectedText?: string;
+    disabled?: boolean;
+  }[];
   helperText?: any;
 }
 
@@ -148,10 +149,6 @@ export const RenderFormikSelectField = (props: FieldProps & SelectProps & Props)
     root: {
       display: "flex",
     },
-    inputLabel: {
-      fontWeight: 500,
-      fontSize: 13,
-    },
   }))();
   const inputLabel = React.useRef<HTMLLabelElement>(null);
 
@@ -169,7 +166,7 @@ export const RenderFormikSelectField = (props: FieldProps & SelectProps & Props)
       style={{ pointerEvents: "auto" }}
       margin="dense"
     >
-      <InputLabel ref={inputLabel} htmlFor={id} id={labelId} classes={{ root: classes.inputLabel }}>
+      <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
         {label}
       </InputLabel>
       <FormikSelect
@@ -194,7 +191,7 @@ export const RenderFormikSelectField = (props: FieldProps & SelectProps & Props)
         {options &&
           options.map((option) => {
             return (
-              <MenuItem value={option.value} key={option.value}>
+              <MenuItem value={option.value} key={option.value} disabled={option.disabled}>
                 {option.text}
               </MenuItem>
             );
