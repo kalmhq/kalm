@@ -4,7 +4,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
 import { FastField, Field, FieldArray, FieldArrayRenderProps, getIn } from "formik";
 import { KFormikBoolCheckboxRender } from "forms/Basic/checkbox";
-import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
+import { KRenderThrottleFormikTextField } from "forms/Basic/textfield";
 import React from "react";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
@@ -108,7 +108,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
             <Field
               name={`preInjectedFiles.${editingFileIndex}.mountPathTmp`}
               label="Mount Path"
-              component={KRenderDebounceFormikTextField}
+              component={KRenderThrottleFormikTextField}
               validate={validateMountPath}
             />
           </Grid>
@@ -144,7 +144,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
               <Grid item xs={4}>
                 <FastField
                   name={`${name}.${index}.mountPath`}
-                  component={KRenderDebounceFormikTextField}
+                  component={KRenderThrottleFormikTextField}
                   disabled={true}
                   label="Mount Path"
                   file={injectedFile}

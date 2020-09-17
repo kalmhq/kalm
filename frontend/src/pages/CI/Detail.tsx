@@ -23,6 +23,7 @@ import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle2 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { RichEdtor } from "widgets/RichEditor";
+import { ResourceNotFound } from "widgets/ResourceNotFound";
 
 const TAB_CURL = "curl";
 const TAB_GITHUB_ACTION = "Github Action";
@@ -355,7 +356,17 @@ workflows:
     const deployAccessToken = deployAccessTokens.find((x) => x.name === match.params.name);
 
     if (!deployAccessToken) {
-      return <Box p={2}>Deploy key "${match.params.name}" not found.</Box>;
+      return (
+        <BasePage>
+          <Box p={2}>
+            <ResourceNotFound
+              text={`Deploy key ${match.params.name} not found.`}
+              redirect={`/applications`}
+              redirectText="Go back to Apps List"
+            ></ResourceNotFound>
+          </Box>
+        </BasePage>
+      );
     }
 
     return (

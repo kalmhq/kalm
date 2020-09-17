@@ -13,12 +13,15 @@ import DomainStatus from "widgets/DomainStatus";
 import { Expansion } from "forms/Route/expansion";
 import { Loading } from "widgets/Loading";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
+import { ResourceNotFound } from "widgets/ResourceNotFound";
 
 const mapStateToProps = (state: RootState) => {
   return {
     certificates: state.certificates.certificates,
     acmeServer: state.certificates.acmeServer,
     ingressIP: state.cluster.info.ingressIP || "---.---.---.---",
+    isLoading: state.certificates.isLoading,
+    isFirstLoaded: state.certificates.isFirstLoaded,
   };
 };
 
@@ -197,11 +200,30 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
     }
   };
   public render() {
-    const { classes, certificates, location } = this.props;
+    const { classes, certificates, location, isLoading, isFirstLoaded } = this.props;
+    if (isLoading && !isFirstLoaded) {
+      return <Loading />;
+    }
+
     const coms = location.pathname.split("/");
     const certName = coms[coms.length - 1];
     const certInfoList = certificates.filter((item) => item.name === certName);
     const certInfo = certInfoList[0];
+
+    if (!certInfo) {
+      return (
+        <BasePage>
+          <Box p={2}>
+            <ResourceNotFound
+              text="Certificate not found"
+              redirect={`/applications`}
+              redirectText="Go back to Apps List"
+            ></ResourceNotFound>
+          </Box>
+        </BasePage>
+      );
+    }
+
     return (
       <BasePage>
         <div className={classes.root}>

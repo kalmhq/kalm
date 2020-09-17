@@ -5,7 +5,7 @@ import { ComponentLikeEnv } from "types/componentTemplate";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorEnvName, ValidatorRequired } from "../validator";
-import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
+import { KRenderThrottleFormikTextField } from "forms/Basic/textfield";
 
 interface Props extends FieldArrayRenderProps {}
 
@@ -53,7 +53,7 @@ class RenderEnvs extends React.PureComponent<Props> {
                     <FastField
                       name={`${name}.${index}.name`}
                       label="Name"
-                      component={KRenderDebounceFormikTextField}
+                      component={KRenderThrottleFormikTextField}
                       validate={nameValidators}
                     />
                   </Grid>
@@ -62,7 +62,7 @@ class RenderEnvs extends React.PureComponent<Props> {
                       name={`${name}.${index}.value`}
                       label="Value"
                       validate={ValidatorRequired}
-                      component={KRenderDebounceFormikTextField}
+                      component={KRenderThrottleFormikTextField}
                     />
                   </Grid>
                   <Grid item xs={2}>

@@ -9,7 +9,7 @@ import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
-import { KRenderDebounceFormikTextField } from "../Basic/textfield";
+import { KRenderThrottleFormikTextField } from "../Basic/textfield";
 import { RequireNoSuffix, RequirePrefix, ValidatorName, ValidatorRequired } from "../validator";
 
 const styles = (theme: Theme) =>
@@ -55,10 +55,9 @@ class RegistryFormRaw extends React.PureComponent<
                     name="name"
                     label="Name"
                     disabled={isEdit}
-                    component={KRenderDebounceFormikTextField}
+                    component={KRenderThrottleFormikTextField}
                     validate={ValidatorName}
                     helperText={isEdit ? "Can't modify name" : sc.NAME_RULE}
-                    placeholder="Please type the registry name"
                   />
                 </Grid>
                 <Grid item md={12}>
@@ -66,9 +65,8 @@ class RegistryFormRaw extends React.PureComponent<
                     name="username"
                     label="Username"
                     autoComplete="off"
-                    component={KRenderDebounceFormikTextField}
+                    component={KRenderThrottleFormikTextField}
                     validate={ValidatorRequired}
-                    placeholder="Please type the registry username"
                   />
                 </Grid>
                 <Grid item md={12}>
@@ -77,18 +75,17 @@ class RegistryFormRaw extends React.PureComponent<
                     name="password"
                     label="Password"
                     autoComplete="off"
-                    component={KRenderDebounceFormikTextField}
+                    component={KRenderThrottleFormikTextField}
                     validate={ValidatorRequired}
-                    placeholder="Please type the registry password"
                   />
                 </Grid>
                 <Grid item md={12}>
                   <Field
                     name="host"
                     label="Host"
-                    component={KRenderDebounceFormikTextField}
+                    component={KRenderThrottleFormikTextField}
                     validate={validateHost}
-                    placeholder="Please type the registry host"
+                    placeholder="E.g. https://registry.kalm.dev"
                     helperText={<span>Leave blank for private docker hub registry</span>}
                   />
                 </Grid>

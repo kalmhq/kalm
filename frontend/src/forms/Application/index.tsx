@@ -16,7 +16,7 @@ import stringConstants from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
-import { KRenderDebounceFormikTextField } from "../Basic/textfield";
+import { KRenderThrottleFormikTextField } from "../Basic/textfield";
 import { ValidatorName } from "../validator";
 
 const styles = (theme: Theme) =>
@@ -65,7 +65,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           label="App Name"
           id="application-name"
           disabled={isEdit}
-          component={KRenderDebounceFormikTextField}
+          component={KRenderThrottleFormikTextField}
           autoFocus={true}
           validate={ValidatorName}
           helperText={isEdit ? "Can't modify name" : stringConstants.NAME_RULE}
