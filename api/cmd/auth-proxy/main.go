@@ -221,6 +221,8 @@ func handleExtAuthz(c echo.Context) error {
 				controllers.KALM_SSO_SET_COOKIE_PAYLOAD_HEADER,
 				newTokenCookie(encodedToken).String(),
 			)
+
+			logger.V(1).Info("[refresh] Set Kalm-Set-Cookie payload.", "X-Request-Id", c.Request().Header.Get("X-Request-Id"))
 		} else {
 			clearTokenInCookie(c)
 			return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client.")
@@ -249,14 +251,14 @@ func refreshIDToken(token *auth_proxy.ThinToken) (idToken *oidc.IDToken, err err
 	refreshContext, isProducer := auth_proxy.GetRefreshTokenCond(token.RefreshToken)
 
 	if isProducer {
-		logger.V(1).Info("[refresh token producer] do refresh")
+		logger.V(1).Info("[refresh] Producer. Do refresh. ", "token", token.RefreshToken[:10])
 		err = doRefresh(token, refreshContext)
-		logger.V(1).Info(fmt.Sprintf("[refresh writer] refresh done, error: %+v", err))
+		logger.V(1).Info(fmt.Sprintf("[refresh] Producer. Done. error: %+v", err))
 
 		auth_proxy.RemoveRefreshTokenCond(token.RefreshToken, 60)
 	} else {
 		refreshContext.Cond.L.Lock()
-		logger.V(1).Info("[refresh token consumer] wait")
+		logger.V(1).Info("[refresh] Consumer. Wait. ", "token", token.RefreshToken[:10])
 
 		for refreshContext.IDToken == nil && refreshContext.Error == nil {
 			refreshContext.Cond.Wait()
@@ -264,7 +266,7 @@ func refreshIDToken(token *auth_proxy.ThinToken) (idToken *oidc.IDToken, err err
 
 		err = refreshContext.Error
 
-		logger.V(1).Info(fmt.Sprintf("[refresh token consumer] got result. error: %+v", err))
+		logger.V(1).Info(fmt.Sprintf("[refresh] Consumer. Got result. error: %+v", err))
 
 		refreshContext.Cond.L.Unlock()
 	}
@@ -288,8 +290,6 @@ func doRefresh(token *auth_proxy.ThinToken, refreshContext *auth_proxy.RefreshCo
 
 		refreshContext.Cond.Broadcast()
 	}()
-
-	logger.V(1).Info("IDToken Expired, try refresh")
 
 	t := &oauth2.Token{
 		RefreshToken: token.RefreshToken,
