@@ -2,7 +2,7 @@ import { Button, createStyles, Theme, withStyles, WithStyles } from "@material-u
 import Box from "@material-ui/core/Box";
 import { FastField, Field, Form, FormikProps, withFormik } from "formik";
 import { RenderFormikSelectField } from "forms/Basic/select";
-import { KRenderDebounceFormikTextField } from "forms/Basic/textfield";
+import { KRenderThrottleFormikTextField } from "forms/Basic/textfield";
 import { ValidatorRequired } from "forms/validator";
 import React from "react";
 import { connect } from "react-redux";
@@ -69,7 +69,7 @@ class MemberFormRaw extends React.PureComponent<Props, State> {
                 <Box mb={2}>
                   <FastField
                     autoFocus
-                    component={KRenderDebounceFormikTextField}
+                    component={KRenderThrottleFormikTextField}
                     name="subject"
                     label="Subject"
                     validate={ValidatorRequired}

@@ -16,6 +16,7 @@
     "@types/enzyme": "^3.10.5",
     "@types/enzyme-adapter-react-16": "^1.0.6",
     "@types/jest": "^24.0.25",
+    "@types/lodash": "^4.14.161",
     "@types/node": "^12.12.24",
     "@types/node-forge": "^0.9.4",
     "@types/qs": "^6.9.3",
@@ -46,6 +47,7 @@
     "formik-material-ui": "^3.0.0-alpha.0",
     "hoist-non-react-statics": "^3.3.2",
     "immer": "^7.0.8",
+    "lodash": "^4.17.20",
     "material-table": "^1.57.2",
     "material-ui-popup-state": "^1.6.1",
     "node-forge": "^0.9.1",
@@ -85,8 +87,16 @@
     "build-storybook": "NODE_ENV=test build-storybook --docs -s public"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "jest": {
     "moduleNameMapper": {
