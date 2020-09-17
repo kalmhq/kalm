@@ -31,6 +31,8 @@ import (
 // log is for logging in this package.
 var singlesignonconfiglog = logf.Log.WithName("singlesignonconfig-resource")
 
+var SSODefaultIDTokenExpirySeconds = uint32(300)
+
 func (r *SingleSignOnConfig) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
@@ -79,8 +81,7 @@ func (r *SingleSignOnConfig) Default() {
 	singlesignonconfiglog.Info("default", "name", r.Name)
 
 	if r.Spec.IDTokenExpirySeconds == nil {
-		expiry := uint32(300)
-		r.Spec.IDTokenExpirySeconds = &expiry
+		r.Spec.IDTokenExpirySeconds = &SSODefaultIDTokenExpirySeconds
 	}
 }
 

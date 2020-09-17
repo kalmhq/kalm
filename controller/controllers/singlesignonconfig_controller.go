@@ -222,6 +222,14 @@ func (r *SingleSignOnConfigReconcilerTask) DeleteResources() error {
 func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *corev1alpha1.SingleSignOnConfig) (string, error) {
 	oidcProviderInfo := GetOIDCProviderInfo(ssoConfig)
 
+	var expirySeconds uint32
+
+	if ssoConfig.Spec.IDTokenExpirySeconds != nil {
+		expirySeconds = *ssoConfig.Spec.IDTokenExpirySeconds
+	} else {
+		expirySeconds = corev1alpha1.SSODefaultIDTokenExpirySeconds
+	}
+
 	config := map[string]interface{}{
 		"issuer": oidcProviderInfo.Issuer,
 		"storage": map[string]interface{}{
@@ -234,7 +242,7 @@ func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *corev1a
 			"http": "0.0.0.0:5556",
 		},
 		"expiry": map[string]interface{}{
-			"idTokens": fmt.Sprintf("%ds", *ssoConfig.Spec.IDTokenExpirySeconds),
+			"idTokens": fmt.Sprintf("%ds", expirySeconds),
 		},
 		"frontend": map[string]interface{}{
 			"issuer": "kalm",
