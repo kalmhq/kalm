@@ -162,8 +162,7 @@ export class RenderFormikComplexValueTextField extends React.PureComponent<
         }}
         margin="dense"
         variant="outlined"
-        defaultValue={format ? format(value) : value}
-        // value={format ? format(value) : value}
+        value={format ? format(value) : value}
         onBlur={(e) => {
           setFieldTouched(name, true);
         }}

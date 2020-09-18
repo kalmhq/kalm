@@ -311,6 +311,10 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
             return !value ? "" : sizeStringToGi(value);
           }}
           parse={(value: any) => {
+            const integerValue = parseInt(value, 10);
+            if (!isNaN(integerValue) && integerValue < 0) {
+              return 0;
+            }
             return !value ? "" : value + "Gi";
           }}
         />,
@@ -337,6 +341,10 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
             return !value ? "" : sizeStringToGi(value);
           }}
           parse={(value: any) => {
+            const integerValue = parseInt(value, 10);
+            if (!isNaN(integerValue) && integerValue < 0) {
+              return 0;
+            }
             return !value ? "" : value + "Gi";
           }}
         />,
