@@ -87,7 +87,6 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
             handleChange={(value: string) => {
               setFieldValue("selfManagedCertContent", value);
               const domains = extractDomainsFromCertificateContent(value);
-              console.log("domains", domains);
               setFieldValue("domains", domains);
             }}
             multiline={true}
@@ -164,7 +163,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
               <KPanel
                 content={
                   <Box p={2}>
-                    <Grid container spacing={2}>
+                    <Grid container spacing={0}>
                       <Grid item md={12}>
                         <Field
                           component={KRenderThrottleFormikTextField}
