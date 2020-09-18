@@ -11,6 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"strconv"
 	"strings"
@@ -276,6 +277,25 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 	ssoConfig, err = h.resourceManager.CreateSSOConfig(ssoConfig)
 
 	if err != nil {
+		return err
+	}
+
+	//bind clusterOwner for this tmpUser
+	roleBinding := v1alpha1.RoleBinding{
+		ObjectMeta: v1.ObjectMeta{
+			Namespace: v1alpha1.KalmSystemNamespace,
+		},
+		Spec: v1alpha1.RoleBindingSpec{
+			Subject:     temporaryAdmin.Email,
+			SubjectType: v1alpha1.SubjectTypeUser,
+			Role:        v1alpha1.ClusterRoleOwner,
+			Creator:     getCurrentUser(c).Name,
+		},
+	}
+
+	roleBinding.Name = roleBinding.GetNameBaseOnRoleAndSubject()
+
+	if err := h.resourceManager.Create(&roleBinding); err != nil {
 		return err
 	}
 
