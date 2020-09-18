@@ -14,6 +14,8 @@ import { Expansion } from "forms/Route/expansion";
 import { Loading } from "widgets/Loading";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
+import { InfoBox } from "widgets/InfoBox";
+import { KLink } from "widgets/Link";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -182,7 +184,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
           );
         }
 
-        return (
+        return !acmeServer.ready ? (
           <Box p={2}>
             <Expansion title="ACME DNS Server is running" defaultUnfold={!acmeServer.ready}>
               <Box p={2}>
@@ -225,10 +227,29 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
               </Box>
             </Expansion>
           </Box>
+        ) : (
+          this.renderInfoBox()
         );
       }
     }
   };
+
+  private renderInfoBox() {
+    const title = "Kalm DNS Server is running";
+
+    const options = [
+      {
+        title: <KLink to="/acme">Check and config Kalm DNS Server</KLink>,
+        content: "",
+      },
+    ];
+
+    return (
+      <Box p={2}>
+        <InfoBox title={title} options={options}></InfoBox>
+      </Box>
+    );
+  }
   public render() {
     const { classes, certificates, location, isLoading, isFirstLoaded } = this.props;
     if (isLoading && !isFirstLoaded) {

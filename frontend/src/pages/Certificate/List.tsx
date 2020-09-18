@@ -1,4 +1,13 @@
-import { Box, Button, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  createStyles,
+  Theme,
+  Typography,
+  WithStyles,
+  withStyles,
+  Link as KMLink,
+} from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -282,7 +291,23 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   private renderInfoBox() {
     const title = "Certificates";
 
-    return <InfoBox title={title} options={[]} guideLink="https://kalm.dev/docs/certs"></InfoBox>;
+    const options = [
+      {
+        title: (
+          <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+            Certificate Docs
+          </KMLink>
+        ),
+        content: "",
+      },
+
+      {
+        title: <KLink to="/acme">Kalm DNS Server</KLink>,
+        content: "",
+      },
+    ];
+
+    return <InfoBox title={title} options={options}></InfoBox>;
   }
 
   public render() {

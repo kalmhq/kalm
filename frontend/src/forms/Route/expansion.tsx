@@ -19,11 +19,24 @@ const styles = (theme: Theme) =>
         margin: "auto",
       },
       "& .MuiExpansionPanelSummary-root": {
-        height: "48px",
+        height: 48,
       },
       "& .MuiExpansionPanelSummary-root.Mui-expanded": {
         height: 48,
         minHeight: 48,
+        borderBottom: `1px solid ${theme.palette.divider}`,
+      },
+    },
+    highRoot: {
+      "&expanded": {
+        margin: "auto",
+      },
+      "& .MuiExpansionPanelSummary-root": {
+        // height: 48,
+      },
+      "& .MuiExpansionPanelSummary-root.Mui-expanded": {
+        // height: 48,
+        // minHeight: 48,
         borderBottom: `1px solid ${theme.palette.divider}`,
       },
     },
@@ -50,6 +63,7 @@ export interface ExpansionProps extends WithStyles<typeof styles> {
   children?: React.ReactNode;
   defaultUnfold?: boolean;
   nested?: boolean;
+  high?: boolean;
 }
 
 interface State {
@@ -81,11 +95,11 @@ class ExpansionRaw extends React.PureComponent<ExpansionProps, State> {
 
   public render() {
     const { isUnfolded } = this.state;
-    const { classes, children, hasError, nested } = this.props;
+    const { classes, children, hasError, nested, high } = this.props;
     return (
       <ExpansionPanel
         square
-        className={clsx(classes.root)}
+        className={clsx(high ? classes.highRoot : classes.root)}
         variant={nested ? "elevation" : "outlined"}
         elevation={0}
         expanded={isUnfolded}

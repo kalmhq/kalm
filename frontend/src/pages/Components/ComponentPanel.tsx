@@ -159,7 +159,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     }
 
     return (
-      <Expansion defaultUnfold={defaultUnfold} title={this.renderSummary(component)}>
+      <Expansion defaultUnfold={defaultUnfold} title={this.renderSummary(component)} high={true}>
         {this.renderPods()}
       </Expansion>
     );
