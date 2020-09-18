@@ -48,7 +48,9 @@ export interface WatchResMessage {
 }
 
 const mapStateToProps = (state: RootState) => {
-  return {};
+  return {
+    activeNamespaceName: state.namespaces.active,
+  };
 };
 
 interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp, WithUserAuthProps {}
@@ -61,13 +63,16 @@ class WithDataRaw extends React.PureComponent<Props> {
   }
 
   private loadData() {
-    const { dispatch, canViewCluster } = this.props;
+    const { dispatch, canViewCluster, canEditNamespace, activeNamespaceName } = this.props;
 
     dispatch(loadRoutesAction()); // all namespaces
     dispatch(loadApplicationsAction());
-    dispatch(loadRegistriesAction());
     dispatch(loadDeployAccessTokensAction());
     dispatch(loadProtectedEndpointAction());
+
+    if (canEditNamespace(activeNamespaceName) || canViewCluster()) {
+      dispatch(loadRegistriesAction());
+    }
 
     if (canViewCluster()) {
       dispatch(loadCertificatesAction());
