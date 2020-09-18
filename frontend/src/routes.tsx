@@ -40,6 +40,7 @@ import { SetupPage } from "pages/Setup";
 import { RolesListPage } from "pages/Members";
 import { MemberNewPage } from "pages/Members/New";
 import { CertificateDetailPage } from "pages/Certificate/Detail";
+import { ProfilePage } from "pages/Profile";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -50,6 +51,8 @@ export const KalmRoutes = (
     <Route path="/">
       <RequireAuthorizatedDashboard>
         <Switch>
+          <Route exact path="/profile" component={ProfilePage} />
+
           <Route exact path="/system" component={SystemPage} />
           <Route exact path="/setup" component={SetupPage} />
 

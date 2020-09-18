@@ -1,6 +1,14 @@
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: kalm-system
+  labels:
+    istio-injection: enabled
+    kalm-enabled: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: kalm-hello-world
   labels:
     istio-injection: enabled
