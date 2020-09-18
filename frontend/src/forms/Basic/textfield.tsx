@@ -90,7 +90,15 @@ export const KRenderThrottleFormikTextField = (props: TextFieldProps & FieldProp
       {...custom}
       fullWidth
       name={name}
-      onBlur={onBlur || handleBlur}
+      onBlur={(event: React.FocusEvent<any>) => {
+        const newValue = normalize ? normalize(event) : event.currentTarget.value;
+        setFieldValue(name, newValue);
+        if (onBlur) {
+          onBlur(event);
+        } else {
+          handleBlur(event);
+        }
+      }}
       error={showError}
       InputLabelProps={{
         shrink: true,
