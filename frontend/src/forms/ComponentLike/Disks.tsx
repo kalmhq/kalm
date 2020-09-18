@@ -361,11 +361,17 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
     return "Kalm uses Mi as the base unit of disk. 1 Gi equals 1024 Mi.";
   }
 
+  private handleRemove(index: number) {
+    this.props.remove(index);
+  }
+
+  private handlePush() {
+    this.props.push(this.getDefaultAddValues());
+  }
+
   public render() {
     const {
       name,
-      push,
-      remove,
       form: { values },
     } = this.props;
 
@@ -378,9 +384,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
               color="primary"
               startIcon={<AddIcon />}
               size="small"
-              onClick={() => {
-                push(this.getDefaultAddValues());
-              }}
+              onClick={this.handlePush.bind(this)}
             >
               Add
             </Button>
@@ -405,7 +409,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
                     tooltipTitle="Delete"
                     aria-label="delete"
                     disabled={this.shouldDisabledStatefulSetPvcTemplate(disk.type)}
-                    onClick={() => remove(index)}
+                    onClick={this.handleRemove.bind(this, index)}
                   >
                     <DeleteIcon />
                   </IconButtonWithTooltip>

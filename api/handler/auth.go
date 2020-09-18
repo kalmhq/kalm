@@ -24,7 +24,7 @@ type LoginStatusResponse struct {
 func (h *ApiHandler) handleValidateToken(c echo.Context) error {
 	token := auth.ExtractTokenFromHeader(c.Request().Header.Get(echo.HeaderAuthorization))
 
-	_, err := h.clientManager.GetClientInfoFromToken(token, "")
+	_, err := h.clientManager.GetClientInfoFromToken(token)
 
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func (h *ApiHandler) handleValidateToken(c echo.Context) error {
 // This handler is for frontend to know if it's authorized.
 // The kalm api server may be behind some proxies that will provide auth info for the client.
 func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
-	clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
+	clientInfo, err := h.clientManager.GetClientInfoFromContext(c)
 
 	var res LoginStatusResponse
 

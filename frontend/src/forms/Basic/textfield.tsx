@@ -5,6 +5,7 @@ import { TextField as FormikTextField } from "formik-material-ui";
 import throttle from "lodash/throttle";
 import React, { useCallback, useEffect, useState } from "react";
 import { KalmConsoleIcon } from "widgets/Icon";
+import { isNumber } from "util";
 
 interface Props {
   endAdornment?: React.ReactNode;
@@ -50,8 +51,8 @@ export const KRenderThrottleFormikTextField = (props: TextFieldProps & FieldProp
   const showError = !!getIn(errors, name) && !!getIn(touched, name);
 
   useEffect(() => {
-    if (value) {
-      setInnerValue(value as string);
+    if (value || isNumber(value)) {
+      setInnerValue(String(value));
     } else {
       setInnerValue("");
     }
@@ -59,7 +60,7 @@ export const KRenderThrottleFormikTextField = (props: TextFieldProps & FieldProp
 
   const throttleOnChangeCallback = useCallback(
     throttle(
-      (newValue) => {
+      (newValue: any) => {
         setFieldValue(name, newValue);
       },
       1000,

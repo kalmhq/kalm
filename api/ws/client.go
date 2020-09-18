@@ -85,13 +85,17 @@ func (c *Client) read() {
 		_ = json.Unmarshal(messageBytes, &reqMessage)
 
 		if c.clientInfo == nil {
-			clientInfo, err := c.clientManager.GetClientInfoFromToken(reqMessage.Token, reqMessage.Impersonation)
+			clientInfo, err := c.clientManager.GetClientInfoFromToken(reqMessage.Token)
 
 			if err != nil {
 				log.Error(err, "new config error")
+				continue
 			}
 
+			c.clientManager.SetImpersonation(clientInfo, reqMessage.Impersonation)
 			c.clientInfo = clientInfo
+		} else {
+			c.clientManager.SetImpersonation(c.clientInfo, reqMessage.Impersonation)
 		}
 
 		if reqMessage.Method == "StartWatching" && !c.isWatching {
