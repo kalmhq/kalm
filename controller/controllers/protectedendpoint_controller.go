@@ -368,15 +368,18 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterHttpRoutePatches(req c
 		},
 	}
 
-	if len(r.endpoint.Spec.Ports) > 0 {
-		for _, port := range r.endpoint.Spec.Ports {
-			match := baseMatch.DeepCopy()
-			match.ObjectTypes.(*v1alpha32.EnvoyFilter_EnvoyConfigObjectMatch_RouteConfiguration).RouteConfiguration.PortNumber = uint32(port)
-			matches = append(matches, match)
-		}
-	} else {
-		matches = append(matches, baseMatch.DeepCopy())
-	}
+	// Port should be service port, not component port
+	// The spec ports are all component ports.
+	// Before we find a solution, set the http route filter for all for now.
+	//if len(r.endpoint.Spec.Ports) > 0 {
+	//	for _, port := range r.endpoint.Spec.Ports {
+	//		match := baseMatch.DeepCopy()
+	//		match.ObjectTypes.(*v1alpha32.EnvoyFilter_EnvoyConfigObjectMatch_RouteConfiguration).RouteConfiguration.PortNumber = uint32(port)
+	//		matches = append(matches, match)
+	//	}
+	//} else {
+	matches = append(matches, baseMatch.DeepCopy())
+	//}
 
 	configPatches := make([]*v1alpha32.EnvoyFilter_EnvoyConfigObjectPatch, len(matches))
 
