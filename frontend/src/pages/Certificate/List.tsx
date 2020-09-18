@@ -90,7 +90,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
 
       const cleanDomain = domain.replace("*.", "");
       return cnameMap && isWildcardDomain ? (
-        <DomainStatus mr={1} domain={acmePrefix + cleanDomain} nsDomain={cnameMap[cleanDomain]} />
+        <DomainStatus mr={1} domain={acmePrefix + cleanDomain} cnameDomain={cnameMap[cleanDomain]} />
       ) : (
         <DomainStatus mr={1} domain={domain} />
       );

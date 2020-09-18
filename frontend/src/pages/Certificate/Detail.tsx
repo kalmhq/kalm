@@ -117,7 +117,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                         <CollapseWrapper
                           title={
                             <FlexRowItemCenterBox>
-                              <DomainStatus domain={acmePrefix + domain} nsDomain={ns} mr={1} />
+                              <DomainStatus domain={acmePrefix + domain} cnameDomain={ns} mr={1} />
                               {domain}
                             </FlexRowItemCenterBox>
                           }
@@ -125,10 +125,10 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                           showIcon={true}
                         >
                           <Box p={1}>
-                            Add a NS Record
+                            Add a CNAME Record
                             <pre className={classes.action}>
                               {acmePrefix}
-                              {domain} NS {ns}{" "}
+                              {domain} CNAME {ns}{" "}
                             </pre>
                           </Box>
                         </CollapseWrapper>
