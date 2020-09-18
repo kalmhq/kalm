@@ -19,7 +19,7 @@ ifeq (, $(shell which go-bindata))
 endif
 ifeq (, $(shell which kustomize))
 	OSTYPE=linux
-	curl -s "https://raw.githubusercontent.com/kalmhq/kalm/master/scripts/intall-kustomize.sh" | bash
+	curl -s "https://raw.githubusercontent.com/kalmhq/kalm/master/scripts/install-kustomize.sh" | bash
 	sudo mv ./kustomize /usr/local/bin/kustomize
 endif
 	go generate ./...
