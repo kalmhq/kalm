@@ -23,6 +23,7 @@ import { KPanel } from "widgets/KPanel";
 import { Loading } from "widgets/Loading";
 import { Prompt } from "widgets/Prompt";
 import { object } from "yup";
+import { WithUserAuthProps, withUserAuth } from "hoc/withUserAuth";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -46,6 +47,7 @@ export interface Props
   extends ConnectedProps,
     OwnProps,
     WithNamespaceProps,
+    WithUserAuthProps,
     FormikProps<DeployAccessToken>,
     WithStyles<typeof styles> {}
 
@@ -55,7 +57,18 @@ const schema = object().shape({
 
 class DeployKeyFormikRaw extends React.PureComponent<Props> {
   public render() {
-    const { classes, isNamespaceLoading, isNamespaceFirstLoaded, applications, allComponents } = this.props;
+    const {
+      classes,
+      isNamespaceLoading,
+      isNamespaceFirstLoaded,
+      applications,
+      allComponents,
+      canEditCluster,
+      values,
+      dirty,
+      setFieldValue,
+      isSubmitting,
+    } = this.props;
 
     if (isNamespaceLoading && !isNamespaceFirstLoaded) {
       return (
@@ -74,7 +87,6 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
     );
 
     let componentOptions: KAutoCompleteOption[] = [];
-
     applications.forEach((application: Application) => {
       const components = allComponents[application.name] || ([] as ApplicationComponentDetails[]);
 
@@ -87,8 +99,22 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
       });
     });
 
-    const { values, errors, dirty, setFieldValue, isSubmitting } = this.props;
-    console.log(errors);
+    const scopeOptinons: { value: string; label: string }[] = [];
+    if (canEditCluster()) {
+      scopeOptinons.push({
+        value: DeployAccessTokenScopeCluster,
+        label: "Cluster - Can update all components on this cluster",
+      });
+    }
+    scopeOptinons.push({
+      value: DeployAccessTokenScopeNamespace,
+      label: "Specific Applications - Can update all components in selected applications",
+    });
+    scopeOptinons.push({
+      value: DeployAccessTokenScopeComponent,
+      label: "Specific Components - Can only update selected components",
+    });
+
     return (
       <Form className={classes.root} id="deployKey-form">
         <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
@@ -112,21 +138,7 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
                 setFieldValue("scope", value);
                 setFieldValue("resources", []);
               }}
-              options={[
-                {
-                  value: DeployAccessTokenScopeCluster,
-                  label: "Cluster - Can update all components on this cluster",
-                },
-                {
-                  value: DeployAccessTokenScopeNamespace,
-                  label: "Specific Applications - Can update all components in selected applications",
-                },
-
-                {
-                  value: DeployAccessTokenScopeComponent,
-                  label: "Specific Components - Can only update selected components",
-                },
-              ]}
+              options={scopeOptinons}
             />
 
             <Box mt={2}>
@@ -180,7 +192,7 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
 //   },
 // })(connect(mapStateToProps)(withNamespace(withStyles(styles)(DeployKeyFormikRaw))));
 
-const DeployKeyForm = withNamespace(connect(mapStateToProps)(withStyles(styles)(DeployKeyFormikRaw)));
+const DeployKeyForm = withUserAuth(withNamespace(connect(mapStateToProps)(withStyles(styles)(DeployKeyFormikRaw))));
 export const DeployAccessTokenForm = withFormik<OwnProps, DeployAccessToken>({
   mapPropsToValues: newEmptyDeployAccessToken,
   validationSchema: schema,

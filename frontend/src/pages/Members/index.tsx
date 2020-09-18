@@ -239,7 +239,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     const options = [
       {
         title: (
-          <KLink to="#" target="_blank">
+          <KLink to="https://kalm.dev/docs/next/auth/overview" target="_blank">
             How kalm permission works?
           </KLink>
         ),
@@ -247,7 +247,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
       },
       {
         title: (
-          <KLink to="#" target="_blank">
+          <KLink to="https://kalm.dev/docs/next/auth/roles" target="_blank">
             What's the permissions of a role?
           </KLink>
         ),

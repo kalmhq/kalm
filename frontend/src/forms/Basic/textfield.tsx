@@ -85,12 +85,26 @@ export const KRenderThrottleFormikTextField = (props: TextFieldProps & FieldProp
     inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
   }
 
+  const handleBlurCallback = useCallback(
+    (event: React.FocusEvent<any>) => {
+      const newValue = normalize ? normalize(event) : event.currentTarget.value;
+      setInnerValue(newValue);
+      setFieldValue(name, newValue);
+      if (onBlur) {
+        onBlur(event);
+      } else {
+        handleBlur(event);
+      }
+    },
+    [handleBlur, name, normalize, onBlur, setFieldValue],
+  );
+
   return (
     <TextField
       {...custom}
       fullWidth
       name={name}
-      onBlur={onBlur || handleBlur}
+      onBlur={handleBlurCallback}
       error={showError}
       InputLabelProps={{
         shrink: true,
