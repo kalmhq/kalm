@@ -30,7 +30,6 @@ import {
 } from "widgets/Icon";
 import { blinkTopProgressAction } from "actions/settings";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -102,11 +101,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props
-  extends WithStyles<typeof styles>,
-    ReturnType<typeof mapStateToProps>,
-    WithNamespaceProps,
-    WithUserAuthProps {
+interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, WithUserAuthProps {
   dispatch: TDispatch;
 }
 
@@ -120,7 +115,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private getSideBarData() {
-    const { activeNamespaceName, canViewCluster, canEditNamespace, canEditCluster } = this.props;
+    const { activeNamespaceName, canViewCluster, canEditNamespace, canEditCluster, canManageCluster } = this.props;
 
     return [
       {
@@ -196,7 +191,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
           //   text: "System",
           //   to: "/system",
           // },
-          canEditCluster()
+          canManageCluster()
             ? {
                 icon: PeopleIcon,
                 text: "Members",
@@ -283,4 +278,4 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const RootDrawer = withNamespace(withUserAuth(connect(mapStateToProps)(withStyles(styles)(RootDrawerRaw))));
+export const RootDrawer = withUserAuth(connect(mapStateToProps)(withStyles(styles)(RootDrawerRaw)));
