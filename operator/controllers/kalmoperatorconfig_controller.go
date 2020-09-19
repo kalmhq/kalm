@@ -603,8 +603,8 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 				ObjectMeta: ctrl.ObjectMeta{
 					Labels: map[string]string{
 						"control-plane":                "controller",
-						"sidecar.istio.io/proxyCPU":    "10m",
-						"sidecar.istio.io/proxyMemory": "50m",
+						"sidecar.istio.io/proxyCPU":    "100m",
+						"sidecar.istio.io/proxyMemory": "512m",
 					},
 				},
 				Spec: corev1.PodSpec{
