@@ -1027,8 +1027,8 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	}
 
 	// TODO are these values reasonable?
-	template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPULimit"] = "100m"
-	template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemoryLimit"] = "50Mi"
+	template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPULimit"] = "1000m"
+	template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemoryLimit"] = "512Mi"
 
 	//if component.Spec.EnableResourcesRequests {
 	//	template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPU"] = "10m"
