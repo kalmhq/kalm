@@ -273,6 +273,9 @@ workflows:
               only: /^v.*/
       - hold:
           type: approval
+          filters:
+            branches:
+              only: ^(?!master$)
       - build-push-operator-image:
           name: manual-build-push-operator-image
           context: kalm-ci
