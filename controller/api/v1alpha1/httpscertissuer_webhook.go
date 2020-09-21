@@ -66,17 +66,20 @@ func (r *HttpsCertIssuer) validate() error {
 	if r.Spec.HTTP01 != nil {
 		setConfigCnt += 1
 	}
+	if r.Spec.DNS01 != nil {
+		setConfigCnt += 1
+	}
 
 	if setConfigCnt == 0 {
 		rst = append(rst, KalmValidateError{
-			Err:  "should provide at least 1 among: acmeCloudFlare, caForTest and http01",
+			Err:  "should provide at least 1 among: acmeCloudFlare, caForTest, http01 and dns01",
 			Path: "spec",
 		})
 	}
 
 	if setConfigCnt > 1 {
 		rst = append(rst, KalmValidateError{
-			Err:  "should provide at most 1 among: acmeCloudFlare, caForTest and http01",
+			Err:  "should provide at most 1 among: acmeCloudFlare, caForTest, http01 and dns01",
 			Path: "spec",
 		})
 	}

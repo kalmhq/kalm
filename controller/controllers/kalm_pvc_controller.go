@@ -27,8 +27,10 @@ import (
 )
 
 const (
-	KalmLabelPV      = "kalm-pv"
-	KalmLabelManaged = "kalm-managed"
+	KalmLabelPV = "kalm-pv"
+	//KalmLabelPVLocker             = "kalm-pv-locker"
+	KalmLabelManaged              = "kalm-managed"
+	KalmLabelVolClaimTemplateName = "kalm-vol-claim-template-name"
 )
 
 // KalmPVCReconciler reconciles a KalmPVC object

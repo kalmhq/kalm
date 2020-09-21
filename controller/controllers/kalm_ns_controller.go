@@ -152,11 +152,10 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 }
 
 func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
-	defaultCAIssuerName := "default-cert-issuer"
 
 	expectedCAIssuer := v1alpha1.HttpsCertIssuer{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: defaultCAIssuerName,
+			Name: v1alpha1.DefaultCAIssuerName,
 		},
 		Spec: v1alpha1.HttpsCertIssuerSpec{
 			CAForTest: &v1alpha1.CAForTestIssuer{},
@@ -164,7 +163,9 @@ func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 	}
 
 	currentCAIssuer := v1alpha1.HttpsCertIssuer{}
-	err := r.Get(r.ctx, types.NamespacedName{Name: defaultCAIssuerName}, &currentCAIssuer)
+	err := r.Get(r.ctx, types.NamespacedName{
+		Name: v1alpha1.DefaultCAIssuerName,
+	}, &currentCAIssuer)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			return err
@@ -186,7 +187,7 @@ func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 			Name: defaultCertName,
 		},
 		Spec: v1alpha1.HttpsCertSpec{
-			HttpsCertIssuer: defaultCAIssuerName,
+			HttpsCertIssuer: v1alpha1.DefaultCAIssuerName,
 			Domains:         []string{"*"},
 		},
 	}
@@ -204,13 +205,11 @@ func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 	}
 }
 
-var DefaultHTTP01IssuerName = "default-http01-issuer"
-
 func (r *KalmNSReconciler) reconcileDefaultHTTP01Issuer() error {
 
 	expectedHTTP01Issuer := v1alpha1.HttpsCertIssuer{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: DefaultHTTP01IssuerName,
+			Name: v1alpha1.DefaultHTTP01IssuerName,
 		},
 		Spec: v1alpha1.HttpsCertIssuerSpec{
 			HTTP01: &v1alpha1.HTTP01Issuer{},
@@ -218,7 +217,7 @@ func (r *KalmNSReconciler) reconcileDefaultHTTP01Issuer() error {
 	}
 
 	currentIssuer := v1alpha1.HttpsCertIssuer{}
-	err := r.Get(r.ctx, types.NamespacedName{Name: DefaultHTTP01IssuerName}, &currentIssuer)
+	err := r.Get(r.ctx, types.NamespacedName{Name: v1alpha1.DefaultHTTP01IssuerName}, &currentIssuer)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			return err

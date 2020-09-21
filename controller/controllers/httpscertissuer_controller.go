@@ -24,6 +24,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"github.com/jetstack/cert-manager/pkg/apis/acme/v1alpha2"
@@ -83,6 +84,11 @@ func (r *HttpsCertIssuerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 	if httpsCertIssuer.Spec.HTTP01 != nil {
 		return r.ReconcileHTTP01(ctx, httpsCertIssuer)
 	}
+
+	if httpsCertIssuer.Spec.DNS01 != nil {
+		return r.ReconcileDNS01(ctx, httpsCertIssuer)
+	}
+
 	return ctrl.Result{}, nil
 }
 
@@ -485,4 +491,130 @@ func (r *HttpsCertIssuerReconciler) ReconcileHTTP01(ctx context.Context, issuer 
 		err = r.Update(ctx, &clusterIssuer)
 		return ctrl.Result{}, err
 	}
+}
+
+func (r *HttpsCertIssuerReconciler) ReconcileDNS01(
+	ctx context.Context,
+	issuer corev1alpha1.HttpsCertIssuer,
+) (ctrl.Result, error) {
+
+	expectedClusterIssuer := cmv1alpha2.ClusterIssuer{
+		ObjectMeta: v1.ObjectMeta{
+			Name: issuer.Name,
+		},
+		Spec: cmv1alpha2.IssuerSpec{
+			IssuerConfig: cmv1alpha2.IssuerConfig{
+				ACME: &v1alpha2.ACMEIssuer{
+					Server: letsEncryptACMEIssuerServerURL,
+					PrivateKey: cmmetav1.SecretKeySelector{ // prv key for this acme account
+						LocalObjectReference: cmmetav1.LocalObjectReference{
+							Name: getPrvKeyNameForIssuer(issuer),
+						},
+					},
+					Solvers: []v1alpha2.ACMEChallengeSolver{
+						{
+							DNS01: &v1alpha2.ACMEChallengeSolverDNS01{
+								AcmeDNS: &v1alpha2.ACMEIssuerDNS01ProviderAcmeDNS{
+									Host: fmt.Sprintf("http://%s", getSVCNameForACMEDNS()),
+									AccountSecret: cmmetav1.SecretKeySelector{
+										LocalObjectReference: cmmetav1.LocalObjectReference{
+											Name: "cert-manager-acme-secret",
+										},
+										Key: "acmedns.json",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	clusterIssuer := cmv1alpha2.ClusterIssuer{}
+	isNew := false
+
+	err := r.Get(ctx, client.ObjectKey{Name: expectedClusterIssuer.Name}, &clusterIssuer)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			isNew = true
+		} else {
+			return ctrl.Result{}, err
+		}
+	}
+
+	if isNew {
+		clusterIssuer = expectedClusterIssuer
+
+		if err := ctrl.SetControllerReference(&issuer, &clusterIssuer, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		err = r.Create(ctx, &clusterIssuer)
+	} else {
+		clusterIssuer.Spec = expectedClusterIssuer.Spec
+		err = r.Update(ctx, &clusterIssuer)
+	}
+
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	dns01 := issuer.Spec.DNS01
+	if dns01 == nil {
+		return ctrl.Result{}, fmt.Errorf("dns01 is empty")
+	}
+
+	err = r.reconcileSecForDNS01Issuer(ctx, issuer)
+	return ctrl.Result{}, err
+}
+
+func (r *HttpsCertIssuerReconciler) reconcileSecForDNS01Issuer(
+	ctx context.Context, issuer corev1alpha1.HttpsCertIssuer) error {
+
+	dns01 := issuer.Spec.DNS01
+	if dns01 == nil {
+		return fmt.Errorf("dns01 is empty")
+	}
+
+	secCertMgrName := "cert-manager-acme-secret"
+	secCertMgrKey := "acmedns.json"
+	content, _ := json.Marshal(dns01.Configs)
+
+	expectedSec := corev1.Secret{
+		ObjectMeta: ctrl.ObjectMeta{
+			Namespace: CertManagerNamespace,
+			Name:      secCertMgrName,
+		},
+		Data: map[string][]byte{
+			secCertMgrKey: content,
+		},
+	}
+
+	//ensure sec is updated
+	sec := corev1.Secret{}
+	isNew := false
+
+	err := r.Get(ctx, client.ObjectKey{Namespace: CertManagerNamespace, Name: secCertMgrName}, &sec)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			isNew = true
+		} else {
+			return err
+		}
+	}
+
+	if isNew {
+		sec = expectedSec
+		if err := ctrl.SetControllerReference(&issuer, &sec, r.Scheme); err != nil {
+			return err
+		}
+
+		err = r.Create(ctx, &sec)
+	} else {
+		sec.Data = expectedSec.Data
+		err = r.Update(ctx, &sec)
+	}
+
+	return err
 }

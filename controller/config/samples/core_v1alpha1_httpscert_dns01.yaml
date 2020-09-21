@@ -1,0 +1,8 @@
+apiVersion: core.kalm.dev/v1alpha1
+kind: HttpsCert
+metadata:
+  name: httpscert-dns01-sample
+spec:
+  httpsCertIssuer: default-dns01-issuer
+  domains:
+    - need-wildcard.example.com
