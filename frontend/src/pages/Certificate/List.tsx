@@ -281,7 +281,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       },
 
       {
-        title: <KLink to="/acme">Kalm DNS Server</KLink>,
+        title: <KLink to="/acme">Kalm DNS Server Config Panel</KLink>,
         content: "",
       },
     ];
