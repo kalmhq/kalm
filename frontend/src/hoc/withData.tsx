@@ -105,7 +105,6 @@ class WithDataRaw extends React.PureComponent<Props> {
     }
 
     const reloadResouces = () => {
-      console.log("canViewCluster", canViewCluster());
       if (canViewCluster()) {
         dispatch(loadPersistentVolumesAction()); // is in use can't watch
         dispatch(loadServicesAction("")); // for routes destinations
