@@ -43,6 +43,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -1022,15 +1023,21 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	}
 
 	pullImageSecretRefs := make([]coreV1.LocalObjectReference, len(pullImageSecrets.Items))
-	for i, secret := range pullImageSecrets.Items {
+
+	pullImgSecs := pullImageSecrets.Items
+	sort.Slice(pullImgSecs, func(i, j int) bool {
+		return strings.Compare(pullImgSecs[i].Name, pullImgSecs[j].Name) < 0
+	})
+
+	for i, secret := range pullImgSecs {
 		pullImageSecretRefs[i] = coreV1.LocalObjectReference{
 			Name: secret.Name,
 		}
 	}
 
-	if len(pullImageSecretRefs) > 0 {
-		template.Spec.ImagePullSecrets = pullImageSecretRefs
-	}
+	//if len(pullImageSecretRefs) > 0 {
+	template.Spec.ImagePullSecrets = pullImageSecretRefs
+	//}
 
 	//decide affinity
 	if affinity, exist := r.decideAffinity(); exist {
