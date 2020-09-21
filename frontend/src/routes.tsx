@@ -42,6 +42,7 @@ import { SetupPage } from "pages/Setup";
 import { RolesListPage } from "pages/Members";
 import { MemberNewPage } from "pages/Members/New";
 import { CertificateDetailPage } from "pages/Certificate/Detail";
+import { VersionPage } from "pages/Version";
 import { ProfilePage } from "pages/Profile";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
@@ -63,6 +64,8 @@ export const KalmRoutes = (
           <Redirect exact path="/sso/endpoints" to="/sso" />
           <Route exact path="/sso/endpoints/new" component={NewEndpointPage} />
           <Route exact path="/sso/endpoints/:name/edit" component={EditEndpointPage} />
+
+          <Route exact path="/version" component={VersionPage} />
 
           <Redirect exact path="/cluster" to="/" />
           <Route exact path="/cluster/nodes" component={NodeListPage} />

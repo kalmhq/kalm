@@ -67,10 +67,10 @@ class MemberFormRaw extends React.PureComponent<Props, State> {
             content={
               <Box p={2}>
                 <Box mb={2}>
-                  <FastField
+                  <Field
                     name="subjectType"
                     autoFocus
-                    component={KRenderThrottleFormikTextField}
+                    component={RenderFormikSelectField}
                     required
                     label="Subject Type"
                     validate={ValidatorRequired}
