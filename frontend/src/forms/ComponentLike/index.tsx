@@ -201,7 +201,6 @@ const validate = (values: ComponentLike) => {
         }
       }
     }
-    console.log(errors);
   }
   return errors;
 };
@@ -572,13 +571,17 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="cpuLimit"
             label="CPU Limit"
             validate={ValidatorCPU}
-            // normalize={NormalizeCPU}
             placeholder={sc.CPU_INPUT_PLACEHOLDER}
             type="number"
+            min="0"
             format={(value: any) => {
               return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
             }}
             parse={(value: any) => {
+              const integerValue = parseInt(value, 10);
+              if (!isNaN(integerValue) && integerValue < 0) {
+                return 0;
+              }
               return !value ? undefined : value + "m";
             }}
             endAdornment={
@@ -599,13 +602,17 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             label="Memory Limit"
             margin
             validate={ValidatorMemory}
-            // normalize={NormalizeMemory}
             placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
             type="number"
+            min="0"
             format={(value: any) => {
               return !value ? "" : sizeStringToMi(value);
             }}
             parse={(value: any) => {
+              const integerValue = parseInt(value, 10);
+              if (!isNaN(integerValue) && integerValue < 0) {
+                return 0;
+              }
               return !value ? undefined : value + "Mi";
             }}
             endAdornment={
@@ -625,13 +632,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="cpuRequest"
             label="CPU Request"
             validate={ValidatorCPU}
-            // normalize={NormalizeCPU}
             placeholder={sc.CPU_INPUT_PLACEHOLDER}
             type="number"
             format={(value: any) => {
               return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
             }}
             parse={(value: any) => {
+              const integerValue = parseInt(value, 10);
+              if (!isNaN(integerValue) && integerValue < 0) {
+                return 0;
+              }
               return !value ? undefined : value + "m";
             }}
             endAdornment={
@@ -652,13 +662,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             label="Memory Request"
             margin
             validate={ValidatorMemory}
-            // normalize={NormalizeMemory}
             placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
             type="number"
             format={(value: any) => {
               return !value ? "" : sizeStringToMi(value);
             }}
             parse={(value: any) => {
+              const integerValue = parseInt(value, 10);
+              if (!isNaN(integerValue) && integerValue < 0) {
+                return 0;
+              }
               return !value ? undefined : value + "Mi";
             }}
             endAdornment={
