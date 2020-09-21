@@ -249,7 +249,7 @@ func getComponentFromContext(c echo.Context) (*v1alpha1.Component, []runtime.Raw
 
 	// for pvc & template volumes, check if pvcName is set
 	for i, vol := range crdComponent.Spec.Volumes {
-		if vol.Type != v1alpha1.VolumeTypePersistentVolumeClaim ||
+		if vol.Type != v1alpha1.VolumeTypePersistentVolumeClaim &&
 			vol.Type != v1alpha1.VolumeTypePersistentVolumeClaimTemplate {
 			continue
 		}
