@@ -41,6 +41,9 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
     switch (type) {
       case SSO_CONNECTOR_TYPE_GITLAB: {
         const cnt = connector as SSOGitlabConnector;
+        if (!cnt.config) {
+          return null;
+        }
         const baseURL = cnt.config.baseURL;
         const groups = cnt.config.groups || [];
         return (
@@ -103,7 +106,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   private renderConfigDetails = () => {
     const { ssoConfig, canEditCluster } = this.props;
 
-    if (!ssoConfig) {
+    if (!ssoConfig || !ssoConfig.connectors) {
       return null;
     }
 
@@ -112,7 +115,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
         <KPanel title={"Single Sign-on configuration Details"}>
           <Box p={2}>
             <pre>Dex OIDC Issuer: https://{ssoConfig.domain}/dex</pre>
-            {ssoConfig.connectors && ssoConfig.connectors!.map(this.renderConnectorDetails)}
+            {ssoConfig.connectors && ssoConfig.connectors.map(this.renderConnectorDetails)}
           </Box>
           <Box p={2} display="inline-block">
             {canEditCluster() ? (

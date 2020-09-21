@@ -91,6 +91,7 @@ export interface KFreeSoloFormikAutoCompleteMultiValuesProps<T>
   InputLabelProps?: {};
   disabled?: boolean;
   icons?: any[];
+  normalize?: any;
 }
 
 export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCompleteMultiValuesStyles)(
@@ -106,6 +107,7 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
       placeholder,
       helperText,
       classes,
+      normalize,
     } = props;
 
     const errorsIsArray = Array.isArray(getIn(errors, name));
@@ -133,10 +135,7 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
         onBlur={handleBlur}
         value={value}
         onChange={(e, value) => {
-          setFieldValue(
-            name,
-            value.map((v) => v.trim()),
-          );
+          setFieldValue(name, normalize ? normalize(value.map((v) => v.trim())) : value.map((v) => v.trim()));
         }}
         // @ts-ignore
         renderTags={(value: string[], getTagProps) => {

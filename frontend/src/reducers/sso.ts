@@ -91,7 +91,7 @@ const reducer = produce((state: State, action: Actions) => {
         const endpoint = action.payload.data;
 
         const findIndex = (arr: ProtectedEndpoint[]) => {
-          return arr.findIndex((x) => x.endpointName === endpoint.name && x.namespace === endpoint.namespace);
+          return arr.findIndex((x) => x.name === endpoint.name && x.namespace === endpoint.namespace);
         };
 
         switch (action.payload.action) {
