@@ -73,3 +73,35 @@ func TestComponentValidate2(t *testing.T) {
 
 	assert.Nil(t, component.validate())
 }
+
+func TestComponentVolSTSMustSetPVC(t *testing.T) {
+	sc := "standard"
+
+	component := Component{
+		ObjectMeta: ctrl.ObjectMeta{
+			Namespace: "kalm-system",
+			Name:      "kalm-comp-sts",
+		},
+		Spec: ComponentSpec{
+			Image:        fmt.Sprintf("%s:%s", "foo", "bar"),
+			Command:      "./kalm-api-server",
+			WorkloadType: WorkloadTypeStatefulSet,
+			Volumes: []Volume{
+				{
+					Path:             "/data",
+					Size:             resource.MustParse("1Mi"),
+					Type:             VolumeTypePersistentVolumeClaimTemplate,
+					StorageClassName: &sc,
+				},
+			},
+		},
+	}
+
+	component.Default()
+
+	errList := component.validate()
+	assert.NotNil(t, errList)
+	assert.Equal(t, 1, len(errList))
+	assert.Equal(t, "must set pvc for this volume", errList[0].Err)
+	assert.Equal(t, ".spec.volumes[0]", errList[0].Path)
+}
