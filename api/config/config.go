@@ -20,6 +20,15 @@ type Config struct {
 	CorsAllowedOrigins            cli.StringSlice
 }
 
+// Built-time env
+var (
+	GIT_VERSION string
+	GIT_COMMIT  string
+	BUILD_TIME  string
+	PLATFORM    string
+	GO_VERSION  string
+)
+
 func fileExists(filename string) bool {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
