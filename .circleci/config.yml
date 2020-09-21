@@ -200,6 +200,10 @@ workflows:
               only: /^v.*/
       - hold:
           type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
+          filters:
+            branches:
+              only: 
+                - ^(?!master$)
       - build-push-dashboard-image:
           name: manual-build-push-dashboard-image
           context: kalm-ci
@@ -243,7 +247,6 @@ workflows:
             branches:
               only: 
                 - ^(?!master$)
-                - ^(?!hotfix-reconcile$)
       - build-push-controller-image:
           name: manual-build-push-controller-image
           context: kalm-ci
@@ -282,7 +285,6 @@ workflows:
             branches:
               only: 
                 - ^(?!master$)
-                - ^(?!hotfix-reconcile$)
       - build-push-operator-image:
           name: manual-build-push-operator-image
           context: kalm-ci
