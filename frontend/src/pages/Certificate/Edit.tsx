@@ -11,15 +11,19 @@ import { CertificateFormType, selfManaged } from "types/certificate";
 import { H6 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
+import produce from "immer";
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
   const certificate = state.certificates.certificates.find(
     (certificate) => certificate.name === ownProps.match.params.name,
   );
+
   return {
-    initialValues: (certificate ? Object.assign(certificate, { managedType: selfManaged }) : undefined) as
-      | CertificateFormType
-      | undefined,
+    initialValues: (certificate
+      ? produce(certificate, (draft: CertificateFormType) => {
+          draft.managedType = selfManaged;
+        })
+      : undefined) as CertificateFormType | undefined,
     isLoading: state.certificates.isLoading,
     isFirstLoaded: state.certificates.isFirstLoaded,
   };

@@ -331,7 +331,9 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
             this.renderEmpty()
           )}
         </Box>
-        <Box p={2}>{this.renderInfoBox()}</Box>
+        <Box p={2} pt={0}>
+          {this.renderInfoBox()}
+        </Box>
       </BasePage>
     );
   }
