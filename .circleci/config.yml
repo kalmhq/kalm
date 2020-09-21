@@ -275,7 +275,9 @@ workflows:
           type: approval
           filters:
             branches:
-              only: ^(?!master$)
+              only: 
+                - ^(?!master$)
+                - ^(?!hotfix-reconcile$)
       - build-push-operator-image:
           name: manual-build-push-operator-image
           context: kalm-ci
