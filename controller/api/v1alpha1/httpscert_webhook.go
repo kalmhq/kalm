@@ -21,15 +21,50 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"strings"
 )
 
 // log is for logging in this package.
 var httpscertlog = logf.Log.WithName("httpscert-resource")
 
+var validIssuers = []string{
+	DefaultDNS01IssuerName,
+	DefaultHTTP01IssuerName,
+	DefaultCAIssuerName,
+}
+
 func (r *HttpsCert) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
+}
+
+// +kubebuilder:webhook:path=/mutate-core-kalm-dev-v1alpha1-httpscert,mutating=true,failurePolicy=fail,groups=core.kalm.dev,resources=httpscerts,verbs=create;update,versions=v1alpha1,name=mhttpscert.kb.io
+
+var _ webhook.Defaulter = &HttpsCert{}
+
+// Default implements webhook.Defaulter so a webhook will be registered for the type
+// spec.domains
+//  1. trim space
+//  2. rm duplicates
+func (r *HttpsCert) Default() {
+	var processedDomains []string
+
+	uniqDomainMap := make(map[string]interface{})
+	for _, domain := range r.Spec.Domains {
+		domain = strings.TrimSpace(domain)
+		if len(domain) <= 0 {
+			continue
+		}
+
+		uniqDomainMap[domain] = true
+	}
+
+	for domain := range uniqDomainMap {
+		processedDomains = append(processedDomains, domain)
+	}
+
+	r.Spec.Domains = processedDomains
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-httpscert,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=httpscerts,versions=v1alpha1,name=vhttpscert.kb.io
@@ -70,10 +105,16 @@ func (r *HttpsCert) validate() error {
 			Err:  "invalid domain:" + domain,
 			Path: fmt.Sprintf("spec.domains[%d]", i),
 		})
-
 	}
 
 	if r.Spec.IsSelfManaged {
+		if r.Spec.HttpsCertIssuer != DefaultCAIssuerName {
+			rst = append(rst, KalmValidateError{
+				Err:  "issuer for selfManaged cert must be:" + DefaultCAIssuerName,
+				Path: "spec.httpsCertIssuer",
+			})
+		}
+
 		if r.Spec.SelfManagedCertSecretName == "" {
 			rst = append(rst, KalmValidateError{
 				Err:  "need secretName for selfManaged cert",
@@ -81,9 +122,38 @@ func (r *HttpsCert) validate() error {
 			})
 		}
 	} else {
-		if r.Spec.HttpsCertIssuer == "" {
+		switch r.Spec.HttpsCertIssuer {
+		case DefaultHTTP01IssuerName:
+			if len(r.Spec.Domains) <= 0 {
+				rst = append(rst, KalmValidateError{
+					Err:  "http01 cert should have at lease 1 domain",
+					Path: "spec.domains",
+				})
+			}
+
+			for _, d := range r.Spec.Domains {
+				if strings.Contains(d, "*") {
+					rst = append(rst, KalmValidateError{
+						Err:  fmt.Sprintf("http01 cert should not have '*' in domain: %s", d),
+						Path: "spec.domains",
+					})
+				}
+			}
+		case DefaultDNS01IssuerName:
+			//nothing
+		case DefaultCAIssuerName:
+			//nothing
+		default:
+
+			validIssuers := []string{
+				DefaultDNS01IssuerName,
+				DefaultHTTP01IssuerName,
+				DefaultCAIssuerName,
+			}
+
 			rst = append(rst, KalmValidateError{
-				Err:  "need httpsCertIssuer",
+				Err: fmt.Sprintf("for auto managed cert, httpsCertIssuer should be one of: %s, but: %s",
+					validIssuers, r.Spec.HttpsCertIssuer),
 				Path: "spec.httpsCertIssuer",
 			})
 		}

@@ -19,6 +19,7 @@ export type State = {
   email: string;
   groups: string[];
   policies: string;
+  avatarUrl: string;
   impersonation: string;
   impersonationType: string;
   permissionMethods: PermissionMethods;
@@ -34,6 +35,7 @@ const initialState: State = {
   email: "",
   groups: [],
   policies: "",
+  avatarUrl: "",
   impersonation: "",
   impersonationType: "",
   permissionMethods: emptyPermissionMethods,
@@ -48,6 +50,7 @@ const reducer = produce((state: State, action: Actions) => {
       state.impersonation = action.payload.loginStatus.impersonation;
       state.groups = action.payload.loginStatus.groups;
       state.impersonationType = action.payload.loginStatus.impersonationType;
+      state.avatarUrl = action.payload.loginStatus.avatarUrl;
       state.firstLoaded = true;
       state.isLoading = false;
       return;

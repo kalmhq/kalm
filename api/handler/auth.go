@@ -1,19 +1,20 @@
 package handler
 
 import (
+	"crypto/md5"
+	"fmt"
+	"github.com/kalmhq/kalm/api/auth"
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
-	"net/http"
-
-	"github.com/kalmhq/kalm/api/auth"
 	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/kubernetes"
+	"net/http"
+	"strings"
 )
 
 type LoginStatusResponse struct {
-	Authorized bool `json:"authorized"`
-	// deprecated
-	Entity            string   `json:"entity"`
+	Authorized        bool     `json:"authorized"`
+	AvatarURL         string   `json:"avatarUrl"`
 	Email             string   `json:"email"`
 	Groups            []string `json:"groups"`
 	Impersonation     string   `json:"impersonation"`
@@ -57,7 +58,6 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 			return c.JSON(http.StatusOK, res)
 		}
 
-		res.Entity = clientInfo.Email
 		res.Email = clientInfo.Email
 		res.Groups = clientInfo.Groups
 		res.Authorized = true
@@ -77,6 +77,19 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		}
 
 		res.Policies = h.clientManager.GetRBACEnforcer().GetCompletePoliciesFor(subjects...)
+
+		var avatarEmail string
+		if strings.Contains(res.Impersonation, "@") {
+			avatarEmail = res.Impersonation
+		} else if strings.Contains(res.Email, "@") {
+			avatarEmail = res.Email
+		}
+
+		if avatarEmail != "" {
+			// gavatar hash https://en.gravatar.com/site/implement/hash/
+			emailMD5 := md5.Sum([]byte(strings.ToLower(strings.TrimSpace(avatarEmail))))
+			res.AvatarURL = fmt.Sprintf("https://www.gravatar.com/avatar/%x", emailMD5[:])
+		}
 	}
 
 	return c.JSON(http.StatusOK, res)

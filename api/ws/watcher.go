@@ -311,20 +311,20 @@ func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*R
 
 	builder := c.Builder()
 
-	var pv coreV1.PersistentVolume
-	if action == "Delete" {
-		pv = coreV1.PersistentVolume{}
-	} else {
-		if err := builder.Get("", pvc.Spec.VolumeName, &pv); err != nil {
-			return nil, err
-		}
-	}
+	//var pv coreV1.PersistentVolume
+	//if action == "Delete" {
+	//	pv = coreV1.PersistentVolume{}
+	//} else {
+	//	if err := builder.Get("", pvc.Spec.VolumeName, &pv); err != nil {
+	//		return nil, err
+	//	}
+	//}
 
 	if !c.clientManager.CanViewCluster(c.clientInfo) {
 		return nil, nil
 	}
 
-	volume, err := builder.BuildVolumeResponse(*pvc, pv)
+	volume, err := builder.BuildVolumeResponse(*pvc)
 	if err != nil {
 		return nil, err
 	}

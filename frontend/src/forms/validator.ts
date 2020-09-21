@@ -253,7 +253,8 @@ export const ValidateHost = (value: string) => {
   }
 
   var regResultHostname = regExpHostname.exec(value);
-  if (regResultHostname === null) {
+  var regResultWildcardname = regExpWildcardname.exec(value);
+  if (regResultHostname === null && regResultWildcardname === null) {
     return "Domain is invalid.";
   }
 
@@ -268,7 +269,9 @@ export const regExpHostname = new RegExp(
   /^([a-z0-9*])(([a-z0-9-]{1,61})?[a-z0-9]{1})?(\.[a-z0-9](([a-z0-9-]{1,61})?[a-z0-9]{1})?)?(\.[a-zA-Z]{2,4})+$/,
 );
 
-export const regExpWildcardname = new RegExp(/^(([\w-]+\.)|(\*\.))+[\w-]+$/);
+export const regExpWildcardname = new RegExp(
+  /(?:[a-z0-9*](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]/,
+);
 
 const validateHostWithWildcardPrefix = (value: string) => {
   if (value.length === 0 || value.length > 511) {
