@@ -106,7 +106,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   private renderConfigDetails = () => {
     const { ssoConfig, canEditCluster } = this.props;
 
-    if (!ssoConfig || !ssoConfig.connectors) {
+    if (!ssoConfig) {
       return null;
     }
 
