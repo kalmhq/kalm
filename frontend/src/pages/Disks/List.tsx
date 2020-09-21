@@ -31,6 +31,7 @@ const mapStateToProps = (state: RootState) => {
   return {
     persistentVolumes: state.persistentVolumes.persistentVolumes,
     storageClasses: state.persistentVolumes.storageClasses,
+    componentsMap: state.components.components,
   };
 };
 
@@ -68,11 +69,31 @@ export class VolumesRaw extends React.Component<Props, States> {
     }
   };
 
+  private isInUseAndHasComponent = (disk: Disk) => {
+    if (!disk.isInUse) {
+      return false;
+    }
+
+    const { componentsMap } = this.props;
+
+    const components = componentsMap[disk.componentNamespace as string];
+    if (!components || components.length === 0) {
+      return false;
+    }
+
+    const componentIndex = components.findIndex((c) => c.name === disk.componentName);
+    if (componentIndex === -1) {
+      return false;
+    }
+
+    return true;
+  };
+
   private renderActions = (disk: Disk) => {
     const { canEditCluster } = this.props;
     return canEditCluster() ? (
       <>
-        {disk.isInUse ? (
+        {this.isInUseAndHasComponent(disk) ? (
           <IconButtonWithTooltip
             disabled
             tooltipTitle={"The disk must be unmounted(removed) from all associated components before it can be deleted"}
@@ -97,7 +118,7 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 
   private renderApplication = (disk: Disk) => {
-    if (!disk.isInUse) {
+    if (!this.isInUseAndHasComponent(disk)) {
       return (
         <KTooltip title={"Last used by"}>
           <Box>{disk.componentNamespace}</Box>
@@ -116,7 +137,7 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private renderComponent = (disk: Disk) => {
-    if (!disk.isInUse) {
+    if (!this.isInUseAndHasComponent(disk)) {
       return (
         <KTooltip title={"Last used by"}>
           <Box> {disk.componentName}</Box>
@@ -139,7 +160,7 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private renderUse = (disk: Disk) => {
-    return disk.isInUse ? "Yes" : "No";
+    return this.isInUseAndHasComponent(disk) ? "Yes" : "No";
   };
 
   private renderCapacity = (disk: Disk) => {

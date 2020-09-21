@@ -24,6 +24,7 @@ import { ComponentShowPage } from "pages/Components/Show";
 import { RequireAuthorizated, RequireNotAuthorizated } from "permission/Authorization";
 import { SSOPage } from "pages/SSO";
 import { SSOConfigPage } from "pages/SSO/Config";
+import { EndpointsPage } from "pages/SSO/EndpointsPage";
 import { CIPage } from "pages/CI";
 import { DeployAccessTokenNewPage } from "pages/CI/New";
 import { NewEndpointPage } from "pages/SSO/NewEndpoint";
@@ -61,9 +62,9 @@ export const KalmRoutes = (
 
           <Route exact path="/sso" component={SSOPage} />
           <Route exact path="/sso/config" component={SSOConfigPage} />
-          <Redirect exact path="/sso/endpoints" to="/sso" />
-          <Route exact path="/sso/endpoints/new" component={NewEndpointPage} />
-          <Route exact path="/sso/endpoints/:name/edit" component={EditEndpointPage} />
+          <Route exact path="/endpoints" component={EndpointsPage} />
+          <Route exact path="/endpoints/new" component={NewEndpointPage} />
+          <Route exact path="/endpoints/:name/edit" component={EditEndpointPage} />
 
           <Route exact path="/version" component={VersionPage} />
 
