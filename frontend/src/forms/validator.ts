@@ -252,44 +252,61 @@ export const ValidateHost = (value: string) => {
     return "Host length must be between 1 and 511 characters.";
   }
 
-  var regResultHostname = regExpHostname.exec(value);
-  var regResultWildcardname = regExpWildcardname.exec(value);
-  if (regResultHostname === null && regResultWildcardname === null) {
+  let regResultWildcardname = regExpWildcardDomain.exec(value);
+  if (regResultWildcardname === null) {
     return "Domain is invalid.";
   }
 
   return undefined;
 };
 
+export const ValidatorHosts = (
+  values: string[],
+  _allValues?: any,
+  _props?: any,
+  _name?: any,
+): string | (undefined | string)[] | undefined => {
+  if (!values || values.length === 0) {
+    return "Required";
+  }
+
+  const errors = values.map((host) => (host === "*" ? undefined : ValidateHost(host)));
+
+  return errors.filter((x) => !!x).length > 0 ? errors : undefined;
+};
+
 export const regExpIp = new RegExp(
   "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
 );
 
-export const regExpHostname = new RegExp(
-  /^([a-z0-9*])(([a-z0-9-]{1,61})?[a-z0-9]{1})?(\.[a-z0-9](([a-z0-9-]{1,61})?[a-z0-9]{1})?)?(\.[a-zA-Z]{2,4})+$/,
-);
-
-export const regExpWildcardname = new RegExp(
-  /(?:[a-z0-9*](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]/,
-);
+// correct:
+// *.test.com
+// test.com
+// abc.test.com
+// 1.2.3.4.com
+// *.1.2.2.3.4.com
+// Incorrect:
+// *test.com
+// test.com*
+// test.*.com
+// test.abc*.com
+export const regExpWildcardDomain = new RegExp(/^(\*\.)?([\w]+\.)+[a-zA-Z]+$/);
 
 const validateHostWithWildcardPrefix = (value: string) => {
   if (value.length === 0 || value.length > 511) {
     return "Host length must be between 1 and 511 characters.";
   }
 
-  var regResultIp = regExpIp.exec(value);
-
-  var regResultHostname = regExpHostname.exec(value);
-  var regResultWildcardname = regExpWildcardname.exec(value);
-  if (regResultIp === null && regResultHostname === null && regResultWildcardname == null) {
+  let regResultIp = regExpIp.exec(value);
+  let regResultWildcardname = regExpWildcardDomain.exec(value);
+  if (regResultIp === null && regResultWildcardname == null) {
     return "Host must be a valid IP address or hostname.";
   }
 
   return undefined;
 };
 
-export const KValidatorHostsWithWildcardPrefix = (
+export const ValidatorIpAndHosts = (
   values: string[],
   _allValues?: any,
   _props?: any,
@@ -300,27 +317,6 @@ export const KValidatorHostsWithWildcardPrefix = (
   }
 
   const errors = values.map((host) => (host === "*" ? undefined : validateHostWithWildcardPrefix(host)));
-
-  return errors.filter((x) => !!x).length > 0 ? errors : undefined;
-};
-
-export const KValidatorWildcardHost = (
-  values: string[],
-  _allValues?: any,
-  _props?: any,
-  _name?: any,
-): (undefined | string)[] | undefined => {
-  if (!values || values.length === 0) {
-    return undefined;
-  }
-
-  if (!values || values.length > 1) {
-    return ["You only can input one wildcard domain"];
-  }
-
-  const errors = values.map((host) =>
-    host === "*" ? "You can't use * as domain." : validateHostWithWildcardPrefix(host),
-  );
 
   return errors.filter((x) => !!x).length > 0 ? errors : undefined;
 };
