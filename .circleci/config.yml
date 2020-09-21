@@ -39,7 +39,6 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: cd api
       - run:
           name: Build Docker image
           command: >

@@ -1,7 +1,3 @@
-# ============== Global ARG ============
-ARG KALM_BUILD_ENV_GIT_COMMIT
-ARG KALM_BUILD_ENV_GIT_VERSION
-
 # ============== Frontend ==============
 FROM node:10 as frontend-builder
 WORKDIR /workspace
@@ -37,6 +33,9 @@ RUN go mod download
 
 # Copy the go source
 COPY api/ .
+
+ARG KALM_BUILD_ENV_GIT_VERSION
+ARG KALM_BUILD_ENV_GIT_COMMIT
 
 ENV KALM_BUILD_ENV_GIT_VERSION=$KALM_BUILD_ENV_GIT_VERSION
 ENV KALM_BUILD_ENV_GIT_COMMIT=$KALM_BUILD_ENV_GIT_COMMIT
