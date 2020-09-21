@@ -44,7 +44,7 @@ var _ webhook.Defaulter = &Component{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *Component) Default() {
-	componentlog.Info("default", "name", r.Name)
+	componentlog.Info("default", "ns", r.Namespace, "name", r.Name)
 
 	if r.Spec.WorkloadType == "" {
 		r.Spec.WorkloadType = WorkloadTypeServer
@@ -88,7 +88,7 @@ var _ webhook.Validator = &Component{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateCreate() error {
-	componentlog.Info("validate create", "name", r.Name)
+	componentlog.Info("validate create", "ns", r.Namespace, "name", r.Name)
 	errList := r.validate()
 
 	if errList == nil || len(errList) == 0 {
@@ -100,7 +100,7 @@ func (r *Component) ValidateCreate() error {
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateUpdate(old runtime.Object) error {
-	componentlog.Info("validate update", "name", r.Name)
+	componentlog.Info("validate update", "ns", r.Namespace, "name", r.Name)
 
 	var volErrList KalmValidateErrorList
 

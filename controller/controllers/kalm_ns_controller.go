@@ -66,7 +66,7 @@ func (r *KalmNSReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1.Namespace{}).
 		Watches(genSourceForObject(&v1alpha1.HttpsCertIssuer{}), genEnqueueAllEventHandler()).
-		Watches(genSourceForObject(&v1alpha1.HttpsCert{}), genEnqueueAllEventHandler()).
+		//Watches(genSourceForObject(&v1alpha1.HttpsCert{}), genEnqueueAllEventHandler()).
 		Complete(r)
 }
 
@@ -138,6 +138,8 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			}
 		}
 	}
+
+	// todo weird here
 
 	// check if default caIssuer & cert is created
 	if err := r.reconcileDefaultCAIssuerAndCert(); err != nil {
