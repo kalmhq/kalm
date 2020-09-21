@@ -63,7 +63,7 @@ class CertificateAcmeRaw extends React.PureComponent<Props> {
               <Box p={1}>
                 DNS Server Domain:
                 <Box p={1}>
-                  NS Record:
+                  <Box mb={1}>NS Record:</Box>
                   <pre className={classes.action}>
                     {acmeServer.acmeDomain} NS {acmeServer.nsDomain}
                   </pre>
@@ -72,7 +72,7 @@ class CertificateAcmeRaw extends React.PureComponent<Props> {
               <Box p={1}>
                 Shadow Domain:
                 <Box p={1}>
-                  A Record:
+                  <Box mb={1}>A Record:</Box>
                   <pre className={classes.action}>
                     {acmeServer.nsDomain} A {acmeServer.ipForNameServer}
                   </pre>

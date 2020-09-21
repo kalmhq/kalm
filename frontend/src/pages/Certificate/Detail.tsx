@@ -59,7 +59,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
       if (cert.httpsCertIssuer === http01Issuer) {
         const domains = cert.domains;
         return (
-          <Box>
+          <Box mt={1}>
             <Box className={classes.key}>Domains</Box>
             <Box pl={0} pt={1}>
               {domains?.map((domain) => {
@@ -75,7 +75,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                       showIcon={true}
                     >
                       <Box p={1}>
-                        Add a A Record
+                        <Box mb={1}>Add a A Record</Box>
                         <pre className={classes.action}>
                           {domain} A {ingressIP}{" "}
                         </pre>
@@ -127,7 +127,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                           showIcon={true}
                         >
                           <Box p={1}>
-                            Add a CNAME Record
+                            <Box mb={1}>Add a CNAME Record</Box>
                             <pre className={classes.action}>
                               {acmePrefix}
                               {domain} CNAME {ns}{" "}
@@ -199,7 +199,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                   <Box p={1}>
                     DNS Server Domain:
                     <Box p={1}>
-                      NS Record:
+                      <Box mb={1}>NS Record:</Box>
                       <pre className={classes.action}>
                         {acmeServer.acmeDomain} NS {acmeServer.nsDomain}
                       </pre>
@@ -208,7 +208,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                   <Box p={1}>
                     Shadow Domain:
                     <Box p={1}>
-                      A Record:
+                      <Box mb={1}>A Record:</Box>
                       <pre className={classes.action}>
                         {acmeServer.nsDomain} A {acmeServer.ipForNameServer}
                       </pre>
