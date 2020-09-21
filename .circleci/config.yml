@@ -42,7 +42,11 @@ jobs:
       - run: cd api
       - run:
           name: Build Docker image
-          command: docker build -t kalmhq/kalm:latest .
+          command: >
+            docker build
+            --build-arg KALM_BUILD_ENV_GIT_COMMIT $CIRCLE_SHA1
+            --build-arg KALM_BUILD_ENV_GIT_VERSION $CIRCLE_TAG
+            -t kalmhq/kalm:latest .
       - run:
           name: Publish Docker Image to DOCKER HUB
           command: |

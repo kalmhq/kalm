@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/kalmhq/kalm/api/config"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/api/utils"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -12,6 +13,7 @@ import (
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
 	"strconv"
 	"strings"
@@ -19,14 +21,29 @@ import (
 )
 
 type ClusterInfo struct {
-	Version          string `json:"version"`
-	IngressIP        string `json:"ingressIP"`
-	IngressHostname  string `json:"ingressHostname"`
-	IsProduction     bool   `json:"isProduction"`
-	HttpPort         *int   `json:"httpPort"`
-	HttpsPort        *int   `json:"httpsPort"`
-	TLSPort          *int   `json:"tlsPort"`
-	CanBeInitialized bool   `json:"canBeInitialized"`
+	Version           string        `json:"version"`
+	IngressIP         string        `json:"ingressIP"`
+	IngressHostname   string        `json:"ingressHostname"`
+	IsProduction      bool          `json:"isProduction"`
+	HttpPort          *int          `json:"httpPort"`
+	HttpsPort         *int          `json:"httpsPort"`
+	TLSPort           *int          `json:"tlsPort"`
+	CanBeInitialized  bool          `json:"canBeInitialized"`
+	KubernetesVersion *version.Info `json:"kubernetesVersion"`
+	KalmVersion       *version.Info `json:"kalmVersion"`
+}
+
+var KubernetesVersion *version.Info
+var KalmVersion *version.Info
+
+func init() {
+	KalmVersion = &version.Info{
+		GitCommit:  config.GIT_COMMIT,
+		GitVersion: config.GIT_VERSION,
+		Platform:   config.PLATFORM,
+		GoVersion:  config.GO_VERSION,
+		BuildDate:  config.BUILD_TIME,
+	}
 }
 
 func isPrivateIP(ip string) bool {
@@ -126,11 +143,19 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 		panic(err)
 	}
 
-	version, err := k8sClient.ServerVersion()
+	if KubernetesVersion == nil {
+		v, err := k8sClient.ServerVersion()
 
-	if err == nil {
-		info.Version = version.GitVersion
+		if err == nil {
+			info.Version = v.GitVersion
+			info.KubernetesVersion = v
+		}
+	} else {
+		info.Version = KubernetesVersion.GitVersion
+		info.KubernetesVersion = KubernetesVersion
 	}
+
+	info.KalmVersion = KalmVersion
 
 	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		info.IngressHostname = ""

@@ -1,3 +1,7 @@
+# ============== Global ARG ============
+ARG KALM_BUILD_ENV_GIT_COMMIT
+ARG KALM_BUILD_ENV_GIT_VERSION
+
 # ============== Frontend ==============
 FROM node:10 as frontend-builder
 WORKDIR /workspace
@@ -34,10 +38,16 @@ RUN go mod download
 # Copy the go source
 COPY api/ .
 
+ENV KALM_BUILD_ENV_GIT_VERSION=$KALM_BUILD_ENV_GIT_VERSION
+ENV KALM_BUILD_ENV_GIT_COMMIT=$KALM_BUILD_ENV_GIT_COMMIT
+
 # Build
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -installsuffix 'static' -ldflags '-extldflags "-static"' -o kalm-api-server main.go
-RUN GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o auth-proxy ./cmd/auth-proxy
-RUN GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o imgconv ./cmd/imgconv
+RUN CGO_ENABLED=1 go build -installsuffix 'static' \
+    -ldflags "-X github.com/kalmhq/kalm/api/config.GIT_VERSION=$KALM_BUILD_ENV_GIT_VERSION -X github.com/kalmhq/kalm/api/config.GIT_COMMIT=$KALM_BUILD_ENV_GIT_COMMIT -X 'github.com/kalmhq/kalm/api/config.BUILD_TIME=$(date -Iseconds)' -X 'github.com/kalmhq/kalm/api/config.PLATFORM=$(go version | cut -d ' ' -f 4)' -X 'github.com/kalmhq/kalm/api/config.GO_VERSION=$(go version | cut -d ' ' -f 3)' -extldflags '-static'" \
+    -o kalm-api-server main.go
+
+RUN go build -ldflags "-s -w" -o auth-proxy ./cmd/auth-proxy
+RUN go build -ldflags "-s -w" -o imgconv ./cmd/imgconv
 
 # ============== Finial ==============
 FROM alpine
