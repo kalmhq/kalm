@@ -751,8 +751,6 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 		r.NormalEvent("DeploymentUpdated", deployment.Name+" is updated.")
 	}
 
-
-
 	return nil
 }
 

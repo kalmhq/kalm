@@ -286,8 +286,7 @@ func (r *Component) validateVolumesOfComponent() (rst KalmValidateErrorList) {
 	}
 
 	// for simpleWorkload using pvc, constraints on replicas
-	if r.isSimpleWorkload() && r.Spec.Replicas != nil && *r.Spec.Replicas > 1 {
-
+	if r.isStatelessWorkload() && r.Spec.Replicas != nil && *r.Spec.Replicas > 1 {
 		usingPVC := false
 		for _, vol := range r.Spec.Volumes {
 			if vol.Type != VolumeTypePersistentVolumeClaim {
@@ -300,7 +299,7 @@ func (r *Component) validateVolumesOfComponent() (rst KalmValidateErrorList) {
 
 		if usingPVC {
 			rst = append(rst, KalmValidateError{
-				Err: fmt.Sprintf("for simple workload: %s using PVC, replicas should <= 1",
+				Err: fmt.Sprintf("stateless workload %s that has more than 1 replicas can't use ReadWriteOnce PVC",
 					r.Spec.WorkloadType,
 				),
 				Path: ".spec.replicas",
@@ -311,24 +310,13 @@ func (r *Component) validateVolumesOfComponent() (rst KalmValidateErrorList) {
 	return rst
 }
 
-func (r *Component) isSimpleWorkload() bool {
-	simpleWorkloads := []WorkloadType{
-		WorkloadTypeServer,
-		WorkloadTypeDaemonSet,
-		WorkloadTypeCronjob,
+func (r *Component) isStatelessWorkload() bool {
+	switch r.Spec.WorkloadType {
+	case WorkloadTypeServer, WorkloadTypeDaemonSet, WorkloadTypeCronjob:
+		return true
+	default:
+		return false
 	}
-
-	isSimpleWorkload := false
-	for _, workload := range simpleWorkloads {
-		if r.Spec.WorkloadType != workload {
-			continue
-		}
-
-		isSimpleWorkload = true
-		break
-	}
-
-	return isSimpleWorkload
 }
 
 func (r *Component) validateScheduleOfComponentIfIsCronJob() (rst KalmValidateErrorList) {
