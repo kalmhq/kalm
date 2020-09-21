@@ -1,4 +1,13 @@
-import { Box, Button, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  createStyles,
+  Theme,
+  Typography,
+  WithStyles,
+  withStyles,
+  Link as KMLink,
+} from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -14,7 +23,7 @@ import sc from "utils/stringConstants";
 import { PendingBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
-import DomainStatus from "widgets/DomainStatus";
+import DomainStatus, { acmePrefix } from "widgets/DomainStatus";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { EditIcon, KalmCertificatesIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
@@ -80,22 +89,28 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   private renderDomains = (cert: Certificate) => {
     const { classes } = this.props;
     const isWildcardDomain = cert.httpsCertIssuer === dns01Issuer;
+    const isSelfManaged = cert.isSelfManaged;
+
     const domainStatus = (domain: string) => {
-      const cname = cert.wildcardCertDNSChallengeDomain;
-      return isWildcardDomain ? (
-        <DomainStatus mr={1} domain={domain} cnameDomain={cname} />
+      if (isSelfManaged) {
+        return null;
+      }
+      const cnameMap = cert.wildcardCertDNSChallengeDomainMap;
+
+      const cleanDomain = domain.replace("*.", "");
+      return cnameMap && isWildcardDomain ? (
+        <DomainStatus mr={1} domain={acmePrefix + cleanDomain} cnameDomain={cnameMap[cleanDomain]} />
       ) : (
         <DomainStatus mr={1} domain={domain} />
       );
     };
-    const prefix = isWildcardDomain ? "*." : "";
     return (
       <Box className={classes.domainsColumn}>
         {cert.domains?.map((domain) => {
           return (
             <FlexRowItemCenterBox key={domain}>
               {domainStatus(`${domain}`)}
-              {`${prefix}${domain}`}
+              {`${domain}`}
             </FlexRowItemCenterBox>
           );
         })}
@@ -276,7 +291,23 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   private renderInfoBox() {
     const title = "Certificates";
 
-    return <InfoBox title={title} options={[]} guideLink="https://kalm.dev/docs/certs"></InfoBox>;
+    const options = [
+      {
+        title: (
+          <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+            Certificate Docs
+          </KMLink>
+        ),
+        content: "",
+      },
+
+      {
+        title: <KLink to="/acme">Kalm DNS Server</KLink>,
+        content: "",
+      },
+    ];
+
+    return <InfoBox title={title} options={options}></InfoBox>;
   }
 
   public render() {

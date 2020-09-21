@@ -50,6 +50,36 @@ spec:
               type: object
             caForTest:
               type: object
+            dns01:
+              properties:
+                baseACMEDomain:
+                  type: string
+                configs:
+                  additionalProperties:
+                    properties:
+                      allowfrom:
+                        items:
+                          type: string
+                        type: array
+                      fulldomain:
+                        type: string
+                      password:
+                        type: string
+                      subdomain:
+                        type: string
+                      username:
+                        type: string
+                    required:
+                    - fulldomain
+                    - password
+                    - subdomain
+                    - username
+                    type: object
+                  type: object
+              required:
+              - baseACMEDomain
+              - configs
+              type: object
             http01:
               properties:
                 email:

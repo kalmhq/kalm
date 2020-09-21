@@ -25,11 +25,12 @@ type HttpsCert struct {
 }
 
 type HttpsCertResp struct {
-	HttpsCert                 `json:",inline"`
-	Ready                     string `json:"ready"`
-	Reason                    string `json:"reason"`
-	IsSignedByPublicTrustedCA bool   `json:"isSignedByTrustedCA,omitempty"`
-	ExpireTimestamp           int64  `json:"expireTimestamp,omitempty"`
+	HttpsCert                         `json:",inline"`
+	Ready                             string            `json:"ready"`
+	Reason                            string            `json:"reason"`
+	IsSignedByPublicTrustedCA         bool              `json:"isSignedByTrustedCA,omitempty"`
+	ExpireTimestamp                   int64             `json:"expireTimestamp,omitempty"`
+	WildcardCertDNSChallengeDomainMap map[string]string `json:"wildcardCertDNSChallengeDomainMap,omitempty"`
 }
 
 var ReasonForNoReadyConditions = "no feedback on cert status yet"
@@ -80,6 +81,8 @@ func BuildHttpsCertResponse(httpsCert v1alpha1.HttpsCert) *HttpsCertResp {
 		//todo show content of cert?
 	}
 
+	resp.WildcardCertDNSChallengeDomainMap = httpsCert.Status.WildcardCertDNSChallengeDomainMap
+
 	return &resp
 }
 
@@ -100,9 +103,10 @@ func (resourceManager *ResourceManager) GetHttpsCerts() ([]HttpsCertResp, error)
 }
 
 func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert, error) {
+
 	// by default, cert use our default http01Issuer
 	if cert.HttpsCertIssuer == "" {
-		cert.HttpsCertIssuer = controllers.DefaultHTTP01IssuerName
+		cert.HttpsCertIssuer = v1alpha1.DefaultHTTP01IssuerName
 	}
 
 	if cert.Name == "" {
@@ -118,9 +122,6 @@ func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCe
 				cert.Name = name
 				break
 			}
-
-			// otherwise retry
-			cnt += 1
 		}
 	}
 
@@ -140,7 +141,6 @@ func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCe
 	}
 
 	err := resourceManager.Create(&res)
-
 	if err != nil {
 		return nil, err
 	}
@@ -150,10 +150,19 @@ func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCe
 
 func autoGenCertName(cert *HttpsCert) string {
 	var prefix string
+
+	if cert.HttpsCertIssuer == v1alpha1.DefaultDNS01IssuerName {
+		prefix += "wildcard-"
+	}
+
+	if cert.IsSelfManaged {
+		prefix += "self-managed-"
+	}
+
 	if len(cert.Domains) >= 1 {
-		prefix = cert.Domains[0]
+		prefix += cert.Domains[0]
 	} else {
-		prefix = "cert"
+		prefix += "cert"
 	}
 
 	name := fmt.Sprintf("%s-%s", prefix, rand.String(6))
@@ -196,6 +205,11 @@ func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (
 		return nil, err
 	}
 
+	domains := getDomainsInCert(x509Cert)
+	if len(domains) <= 0 {
+		return nil, fmt.Errorf("fail to find domain name in cert")
+	}
+
 	var err1 error
 	wg1 := sync.WaitGroup{}
 	wg1.Add(1)
@@ -232,7 +246,7 @@ func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (
 			return
 		}
 
-		if strings.Join(res.Spec.Domains, ",") == strings.Join(x509Cert.DNSNames, ",") {
+		if strings.Join(res.Spec.Domains, ",") == strings.Join(domains, ",") {
 			return
 		}
 
@@ -260,12 +274,8 @@ func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCe
 		return nil, err
 	}
 
-	var domains []string
-	if len(x509Cert.DNSNames) > 0 {
-		domains = x509Cert.DNSNames
-	} else if x509Cert.Subject.CommonName != "" {
-		domains = []string{x509Cert.Subject.CommonName}
-	} else {
+	domains := getDomainsInCert(x509Cert)
+	if len(domains) <= 0 {
 		return nil, fmt.Errorf("fail to find domain name in cert")
 	}
 
@@ -299,6 +309,17 @@ func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCe
 	cert.Domains = x509Cert.DNSNames
 
 	return cert, nil
+}
+
+func getDomainsInCert(x509Cert *x509.Certificate) []string {
+	var domains []string
+	if len(x509Cert.DNSNames) > 0 {
+		domains = x509Cert.DNSNames
+	} else if x509Cert.Subject.CommonName != "" {
+		domains = []string{x509Cert.Subject.CommonName}
+	}
+
+	return domains
 }
 
 func checkPrivateKey(cert *x509.Certificate, prvKey string) bool {

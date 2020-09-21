@@ -187,7 +187,7 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCertWithoutSetIssuer() {
 
 			suite.Equal(1, len(res.Items))
 			suite.Equal("foobar-cert", res.Items[0].Name)
-			suite.Equal(controllers.DefaultHTTP01IssuerName, res.Items[0].Spec.HttpsCertIssuer)
+			suite.Equal(v1alpha1.DefaultHTTP01IssuerName, res.Items[0].Spec.HttpsCertIssuer)
 			suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
 		},
 	})

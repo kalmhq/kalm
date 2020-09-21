@@ -88,6 +88,10 @@ spec:
               type: integer
             isSignedByTrustedCA:
               type: boolean
+            wildcardCertDNSChallengeDomainMap:
+              additionalProperties:
+                type: string
+              type: object
           type: object
       type: object
   version: v1alpha1

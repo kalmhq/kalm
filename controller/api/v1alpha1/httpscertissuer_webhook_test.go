@@ -27,3 +27,16 @@ func TestHttpsCertIssuer_Validate(t *testing.T) {
 	issuer.Spec.CAForTest = &CAForTestIssuer{}
 	assert.Nil(t, issuer.validate())
 }
+
+func TestHttpsCertIssuer_Validate2(t *testing.T) {
+	issuer := HttpsCertIssuer{
+		ObjectMeta: ctrl.ObjectMeta{
+			Name: "test-name",
+		},
+		Spec: HttpsCertIssuerSpec{
+			DNS01: &DNS01Issuer{},
+		},
+	}
+
+	assert.Nil(t, issuer.validate())
+}

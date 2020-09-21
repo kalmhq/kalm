@@ -109,6 +109,13 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             const domains = extractDomainsFromCertificateContent(values.selfManagedCertContent);
             setFieldValue("domains", domains);
           }
+          let hasWildcardDomains = false;
+          values.domains.map((domain) => {
+            if (domain.startsWith("*.")) {
+              hasWildcardDomains = true;
+            }
+            return domain;
+          });
           return (
             <Form className={classes.root} tutorial-anchor-id="certificate-form" id="certificate-form">
               <FormMidware values={values} form={CERTIFICATE_FORM_ID} />
@@ -147,17 +154,24 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                           }
                           helperText={
                             <Caption color="textSecondary">
-                              Your cluster ip is{" "}
-                              <Link
-                                to="#"
-                                onClick={() => {
-                                  copy(ingressIP);
-                                  dispatch(setSuccessNotificationAction("Copied successful!"));
-                                }}
-                              >
-                                {ingressIP}
-                              </Link>
-                              . {sc.ROUTE_HOSTS_INPUT_HELPER}
+                              {hasWildcardDomains ? (
+                                "Kalm will use DNS Challenge to make certficate, Kalm DNS Serve will automatic run for this."
+                              ) : (
+                                <>
+                                  {" "}
+                                  Kalm will use HTTP Challenge to make certficate Your cluster ip is{" "}
+                                  <Link
+                                    to="#"
+                                    onClick={() => {
+                                      copy(ingressIP);
+                                      dispatch(setSuccessNotificationAction("Copied successful!"));
+                                    }}
+                                  >
+                                    {ingressIP}
+                                  </Link>
+                                  .{sc.ROUTE_HOSTS_INPUT_HELPER}
+                                </>
+                              )}
                             </Caption>
                           }
                         />

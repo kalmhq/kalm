@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kalmhq/kalm/controller/controllers"
-	authorizationV1 "k8s.io/api/authorization/v1"
-
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/controllers"
 	coreV1 "k8s.io/api/core/v1"
 )
 
@@ -132,58 +130,13 @@ func (resourceManager *ResourceManager) DeleteNamespace(ns *coreV1.Namespace) er
 
 func (resourceManager *ResourceManager) BuildApplicationDetails(namespace *coreV1.Namespace) (*ApplicationDetails, error) {
 	nsName := namespace.Name
-	roles := make([]string, 0, 2)
-
-	writeReview := &authorizationV1.SelfSubjectAccessReview{
-		Spec: authorizationV1.SelfSubjectAccessReviewSpec{
-			ResourceAttributes: &authorizationV1.ResourceAttributes{
-				Namespace: nsName,
-				Resource:  "applications",
-				Verb:      "create",
-				Group:     "core.kalm.dev",
-			},
-		},
-	}
-
-	// TODO Is there a better way?
-	// Infer user roles with some specific access review. This is not accurate but a trade off.
-	err := resourceManager.Create(writeReview)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if writeReview.Status.Allowed {
-		roles = append(roles, "writer")
-	}
-
-	readReview := &authorizationV1.SelfSubjectAccessReview{
-		Spec: authorizationV1.SelfSubjectAccessReviewSpec{
-			ResourceAttributes: &authorizationV1.ResourceAttributes{
-				Namespace: nsName,
-				Resource:  "applications",
-				Verb:      "get",
-				Group:     "core.kalm.dev",
-			},
-		},
-	}
-
-	err = resourceManager.Create(readReview)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if readReview.Status.Allowed {
-		roles = append(roles, "reader")
-	}
 
 	applicationMetric := GetApplicationMetric(nsName)
 
 	istioMetricHistories := &IstioMetricHistories{}
 
 	istioMetricListChan := resourceManager.GetIstioMetricsListChannel(nsName)
-	err = <-istioMetricListChan.Error
+	err := <-istioMetricListChan.Error
 
 	if err != nil {
 		fmt.Printf("fail to GetIstioMetricsListChannel for ns: %s, ignored, err: %s", nsName, err)
@@ -205,7 +158,6 @@ func (resourceManager *ResourceManager) BuildApplicationDetails(namespace *coreV
 			Memory: applicationMetric.Memory,
 		},
 		IstioMetricHistories: istioMetricHistories,
-		Roles:                roles,
 		Status:               string(namespace.Status.Phase),
 	}, nil
 }

@@ -178,7 +178,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             this.setState({ authMenuAnchorElement: null });
           }}
         >
-          <MenuItem disabled>Auth as {emailForDisplay}</MenuItem>
+          <MenuItem disabled>{emailForDisplay}</MenuItem>
+          <MenuItem onClick={() => dispatch(push("/profile"))}>Profile</MenuItem>
           {!!impersonation ? (
             <MenuItem
               onClick={async () => {
@@ -254,6 +255,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
         return "Edit";
       case "sso":
         return "SSO";
+      case "acme":
+        return "ACME DNS Server";
       case "ci":
         return "CI";
       case "metrics":

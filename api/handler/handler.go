@@ -155,7 +155,11 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	gv1Alpha1WithAuth.GET("/volumes", h.handleListVolumes)
 	gv1Alpha1WithAuth.DELETE("/volumes/:namespace/:name", h.handleDeletePVC)
+
+	// deprecated
 	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload", h.handleAvailableVolsForSimpleWorkload)
+	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload/:namespace", h.handleAvailableVolsForSimpleWorkload)
+
 	gv1Alpha1WithAuth.GET("/volumes/available/sts/:namespace", h.handleAvailableVolsForSts)
 
 	// general access token handler
@@ -177,6 +181,11 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.DELETE("/protectedendpoints", h.handleDeleteProtectedEndpoints)
 	gv1Alpha1WithAuth.POST("/protectedendpoints", h.handleCreateProtectedEndpoints)
 	gv1Alpha1WithAuth.PUT("/protectedendpoints", h.handleUpdateProtectedEndpoints)
+
+	gv1Alpha1WithAuth.POST("/acmeserver", h.handleCreateACMEServer)
+	gv1Alpha1WithAuth.GET("/acmeserver", h.handleGetACMEServer)
+	gv1Alpha1WithAuth.PUT("/acmeserver", h.handleUpdateACMEServer)
+	gv1Alpha1WithAuth.DELETE("/acmeserver", h.handleDeleteACMEServer)
 }
 
 func NewApiHandler(clientManager client.ClientManager) *ApiHandler {

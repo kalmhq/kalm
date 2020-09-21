@@ -23,6 +23,10 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+var DefaultHTTP01IssuerName = "default-http01-issuer"
+var DefaultDNS01IssuerName = "default-dns01-issuer"
+var DefaultCAIssuerName = "default-cert-issuer"
+
 // HttpsCertSpec defines the desired state of HttpsCert
 type HttpsCertSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
@@ -47,6 +51,8 @@ type HttpsCertStatus struct {
 	ExpireTimestamp int64 `json:"expireTimestamp"`
 	// +optional
 	IsSignedByPublicTrustedCA bool `json:"isSignedByTrustedCA"`
+	// +optional
+	WildcardCertDNSChallengeDomainMap map[string]string `json:"wildcardCertDNSChallengeDomainMap,omitempty"`
 }
 
 type HttpsCertConditionType string

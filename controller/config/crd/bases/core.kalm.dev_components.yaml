@@ -530,6 +530,8 @@ spec:
             volumes:
               items:
                 properties:
+                  hostPath:
+                    type: string
                   path:
                     description: the path we use to mount this volume to container
                     type: string

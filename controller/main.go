@@ -165,6 +165,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (controllers.NewACMEServerReconciler(mgr)).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ACMEServer")
+		os.Exit(1)
+	}
+
 	if err = (controllers.NewLogSystemReconciler(mgr)).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "LogSystem")
 		os.Exit(1)
@@ -226,6 +231,12 @@ func main() {
 			setupLog.Error(err, "unable to create webhook", "webhook", "LogSystem")
 			os.Exit(1)
 		}
+
+		if err = (&corev1alpha1.ACMEServer{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "ACMEServer")
+			os.Exit(1)
+		}
+
 		setupLog.Info("WEBHOOK enabled")
 	} else {
 		setupLog.Info("WEBHOOK not enabled")
