@@ -124,6 +124,9 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private changeRole = async (roleBinding: RoleBinding, newRole: string) => {
+    if (roleBinding.role === newRole) {
+      return;
+    }
     const { dispatch } = this.props;
     await dispatch(
       updateRoleBindingsAction(
