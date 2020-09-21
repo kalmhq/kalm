@@ -1036,7 +1036,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	}
 
 	//if len(pullImageSecretRefs) > 0 {
-		template.Spec.ImagePullSecrets = pullImageSecretRefs
+	template.Spec.ImagePullSecrets = pullImageSecretRefs
 	//}
 
 	//decide affinity
