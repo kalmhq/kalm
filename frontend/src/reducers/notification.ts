@@ -17,7 +17,7 @@ const reducer = produce((state: State, action: Actions) => {
     }
   }
 
-  return state;
+  return;
 }, initialState);
 
 export default reducer;

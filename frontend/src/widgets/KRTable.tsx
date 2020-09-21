@@ -235,6 +235,12 @@ const cellIncludes = (cellValue: any, filterValue: string): boolean => {
             }
           }
         }
+
+        if (typeof cellValue.props.children === "object") {
+          if (cellIncludes(cellValue.props.children, filterValue)) {
+            return true;
+          }
+        }
       } else {
         for (let key in cellValue.props) {
           if (typeof cellValue.props[key] === "string") {
