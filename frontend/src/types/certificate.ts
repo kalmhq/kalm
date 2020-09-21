@@ -36,6 +36,13 @@ export interface CreateAcmeServerAction {
   };
 }
 
+export interface EditAcmeServerAction {
+  type: typeof CREATE_ACME_SERVER;
+  payload: {
+    acmeServer: AcmeServerInfo;
+  };
+}
+
 export interface DeleteAcmeServerAction {
   type: typeof DELETE_ACME_SERVER;
   payload: {
@@ -174,7 +181,6 @@ export interface Certificate {
   domains: string[];
   ready?: string; // why is a string??
   reason?: string;
-  wildcardCertDNSChallengeDomain?: string;
   wildcardCertDNSChallengeDomainMap?: { [key: string]: string };
 }
 
@@ -205,6 +211,7 @@ export type CertificateActions =
   | CreateCertificateAction
   | CreateAcmeServerAction
   | DeleteAcmeServerAction
+  | EditAcmeServerAction
   | CreateCertificateIssuerAction;
 
 export interface AcmeServerInfo {

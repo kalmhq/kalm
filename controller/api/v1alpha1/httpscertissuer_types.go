@@ -33,6 +33,8 @@ type HttpsCertIssuerSpec struct {
 	ACMECloudFlare *ACMECloudFlareIssuer `json:"acmeCloudFlare,omitempty"`
 	// +optional
 	HTTP01 *HTTP01Issuer `json:"http01,omitempty"`
+	// +optional
+	DNS01 *DNS01Issuer `json:"dns01,omitempty"`
 }
 
 type CAForTestIssuer struct{}
@@ -47,6 +49,20 @@ type ACMECloudFlareIssuer struct {
 type HTTP01Issuer struct {
 	// +optional
 	Email string `json:"email"`
+}
+
+type DNS01Issuer struct {
+	BaseACMEDomain string                       `json:"baseACMEDomain"`
+	Configs        map[string]DNS01IssuerConfig `json:"configs"`
+}
+
+type DNS01IssuerConfig struct {
+	UserName   string `json:"username"`
+	Password   string `json:"password"`
+	FullDomain string `json:"fulldomain"`
+	SubDomain  string `json:"subdomain"`
+	// +optional
+	AllowFrom []string `json:"allowfrom,omitempty"`
 }
 
 // HttpsCertIssuerStatus defines the observed state of HttpsCertIssuer

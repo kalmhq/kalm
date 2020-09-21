@@ -30,6 +30,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"strings"
 )
 
@@ -106,6 +108,19 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 		r.Status().Update(ctx, &httpsCert)
 	} else {
+		// if is wildcard cert, check if acme-dns is ready
+		if httpsCert.Spec.HttpsCertIssuer == corev1alpha1.DefaultDNS01IssuerName {
+			ready, err := r.isACMEServerReadyForWildcardCert()
+			if err != nil {
+				return ctrl.Result{}, err
+			}
+
+			if !ready {
+				r.Log.Info("acme server not ready yet, skipped for httpsCert:" + httpsCert.Name)
+				return ctrl.Result{}, nil
+			}
+		}
+
 		err = r.reconcileForAutoManagedHttpsCert(ctx, httpsCert)
 	}
 
@@ -118,15 +133,53 @@ func NewHttpsCertReconciler(mgr ctrl.Manager) *HttpsCertReconciler {
 	}
 }
 
+type ACMEServerMapper struct {
+	HttpsCertReconciler
+}
+
+func (m ACMEServerMapper) Map(object handler.MapObject) []reconcile.Request {
+	if ready, err := m.isACMEServerReadyForWildcardCert(); err != nil || !ready {
+		return nil
+	}
+
+	ctx := context.Background()
+
+	var certList corev1alpha1.HttpsCertList
+	if err := m.List(ctx, &certList); err != nil {
+		return nil
+	}
+
+	var rst []reconcile.Request
+	for _, cert := range certList.Items {
+		if cert.Spec.HttpsCertIssuer != corev1alpha1.DefaultDNS01IssuerName {
+			continue
+		}
+
+		rst = append(rst, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name: cert.Name,
+			},
+		})
+	}
+
+	return rst
+}
+
 func (r *HttpsCertReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.HttpsCert{}).
 		Owns(&cmv1alpha2.Certificate{}).
+		Watches(genSourceForObject(&corev1alpha1.ACMEServer{}), &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: ACMEServerMapper{*r},
+		}).
 		Complete(r)
 }
 
 func (r *HttpsCertReconciler) reconcileForAutoManagedHttpsCert(ctx context.Context, httpsCert corev1alpha1.HttpsCert) error {
 	certName, certSecretName := getCertAndCertSecretName(httpsCert)
+
+	dnsNames := getDNSNames(httpsCert)
+	commonName := pickCommonName(dnsNames)
 
 	desiredCert := cmv1alpha2.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
@@ -135,7 +188,8 @@ func (r *HttpsCertReconciler) reconcileForAutoManagedHttpsCert(ctx context.Conte
 		},
 		Spec: cmv1alpha2.CertificateSpec{
 			SecretName: certSecretName,
-			DNSNames:   httpsCert.Spec.Domains,
+			CommonName: commonName,
+			DNSNames:   dnsNames,
 			IssuerRef: cmmeta.ObjectReference{
 				Name: httpsCert.Spec.HttpsCertIssuer,
 				Kind: "ClusterIssuer",
@@ -178,7 +232,8 @@ func (r *HttpsCertReconciler) reconcileForAutoManagedHttpsCert(ctx context.Conte
 		}
 	} else {
 		// check status of underlining cert
-		if err := r.Get(ctx, types.NamespacedName{Namespace: istioNamespace, Name: certName}, &cert); err != nil {
+		err := r.Get(ctx, types.NamespacedName{Namespace: istioNamespace, Name: certName}, &cert)
+		if err != nil {
 			httpsCert.Status.Conditions = []corev1alpha1.HttpsCertCondition{
 				genConditionWithErr(err),
 			}
@@ -222,6 +277,39 @@ func (r *HttpsCertReconciler) reconcileForAutoManagedHttpsCert(ctx context.Conte
 	r.Status().Update(ctx, &httpsCert)
 
 	return err
+}
+
+func (r *HttpsCertReconciler) isACMEServerReadyForWildcardCert() (bool, error) {
+	ctx := context.Background()
+
+	var acmeServerList corev1alpha1.ACMEServerList
+	err := r.List(ctx, &acmeServerList)
+	if err != nil {
+		return false, err
+	}
+
+	if len(acmeServerList.Items) != 1 {
+		return false, nil
+	}
+
+	server := acmeServerList.Items[0]
+	if !server.Status.Ready {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func pickCommonName(names []string) string {
+	if len(names) <= 0 {
+		return ""
+	}
+
+	return names[0]
+}
+
+func getDNSNames(httpsCert corev1alpha1.HttpsCert) (dnsNames []string) {
+	return httpsCert.Spec.Domains
 }
 
 // todo a buggy way to tell is issuer is trusted

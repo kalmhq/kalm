@@ -2,6 +2,7 @@ import { Api } from "api/base";
 import Axios, { AxiosRequestConfig } from "axios";
 import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
+
 import { AcmeServerFormType, AcmeServerInfo, CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import {
@@ -315,6 +316,11 @@ export default class RealApi extends Api {
     const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
 
     return res.data;
+  };
+
+  public editAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
+    await axiosRequest({ method: "put", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
+    return; //Immutable.fromJS(res.data);
   };
 
   public deleteAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {

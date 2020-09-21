@@ -8,6 +8,7 @@ import {
   LOADED_DOMAIN_STATUS,
 } from "types/domain";
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse, GoogleDNSNSResponse } from "types/dns";
+import { acmePrefix } from "widgets/DomainStatus";
 
 export const loadDomainDNSInfo = (domain: string): ThunkResult<void> => {
   return async (dispatch, getState) => {
@@ -18,6 +19,7 @@ export const loadDomainDNSInfo = (domain: string): ThunkResult<void> => {
     dispatch({ type: INIT_DOMAIN_STATUS, payload: { domain } });
     await dispatch(loadDomainDNSInfoWithType(domain, "A"));
     await dispatch(loadDomainDNSInfoWithType(domain, "CNAME"));
+    await dispatch(loadDomainDNSInfoWithType(acmePrefix + domain, "CNAME"));
     await dispatch(loadDomainDNSInfoWithType(domain, "NS"));
   };
 };

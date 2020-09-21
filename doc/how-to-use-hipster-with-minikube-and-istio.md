@@ -38,7 +38,7 @@ kubectl get pods -n istio-operator
 launch istio in our cluster
 
 ```bash
-# go to kalm root dir, install istio config. The operator will intall istio components for us.
+# go to kalm root dir, install istio config. The operator will install istio components for us.
 kubectl apply -f resources/istiocontrolplane.yaml
 
 # check istio components status

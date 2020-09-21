@@ -1,7 +1,6 @@
 package resources
 
 import (
-	authorizationV1 "k8s.io/api/authorization/v1"
 	coreV1 "k8s.io/api/core/v1"
 	"strings"
 )
@@ -52,63 +51,6 @@ func (resourceManager *ResourceManager) GetNamespaceListChannel() *NamespaceList
 			if item.DeletionTimestamp != nil {
 				continue
 			}
-
-			roles := make([]string, 0, 2)
-
-			writerReview := &authorizationV1.SelfSubjectAccessReview{
-				Spec: authorizationV1.SelfSubjectAccessReviewSpec{
-					ResourceAttributes: &authorizationV1.ResourceAttributes{
-						Namespace: item.Name,
-						Resource:  "applications",
-						Verb:      "create",
-						Group:     "core.kalm.dev",
-					},
-				},
-			}
-
-			// TODO Is there a better way?
-			// Infer user roles with some specific access review. This is not accurate but a trade off.
-			err := resourceManager.Create(writerReview)
-
-			if err != nil {
-				channel.List <- nil
-				channel.Error <- err
-				return
-			}
-
-			if writerReview.Status.Allowed {
-				roles = append(roles, "writer")
-			}
-
-			readerReview := &authorizationV1.SelfSubjectAccessReview{
-				Spec: authorizationV1.SelfSubjectAccessReviewSpec{
-					ResourceAttributes: &authorizationV1.ResourceAttributes{
-						Namespace: item.Name,
-						Resource:  "applications",
-						Verb:      "get",
-						Group:     "core.kalm.dev",
-					},
-				},
-			}
-
-			err = resourceManager.Create(readerReview)
-
-			if err != nil {
-				channel.List <- nil
-				channel.Error <- err
-				return
-			}
-
-			if readerReview.Status.Allowed {
-				roles = append(roles, "reader")
-			}
-
-			if len(roles) > 0 {
-				list = append(list, Namespace{
-					Name:  item.Name,
-					Roles: roles,
-				})
-			}
 		}
 
 		channel.List <- list
@@ -130,11 +72,4 @@ func (resourceManager *ResourceManager) ListNamespaces() ([]Namespace, error) {
 	}
 
 	return resources.Namespaces, nil
-}
-
-func formatNamespaceName(name string) string {
-	if strings.HasPrefix(name, KALM_NAMESPACE_PREFIX) {
-		name = strings.ReplaceAll(name, KALM_NAMESPACE_PREFIX, "")
-	}
-	return KALM_NAMESPACE_PREFIX + name
 }
