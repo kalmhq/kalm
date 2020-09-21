@@ -67,7 +67,7 @@ class MemberFormRaw extends React.PureComponent<Props, State> {
             content={
               <Box p={2}>
                 <Box mb={2}>
-                  <FastField
+                  <Field
                     name="subjectType"
                     autoFocus
                     component={RenderFormikSelectField}
