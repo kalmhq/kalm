@@ -1,21 +1,18 @@
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles, Grid, Box, Button } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles, Grid, Box } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { Certificate, dns01Issuer, http01Issuer } from "types/certificate";
 import { BasePage } from "pages/BasePage";
 import { RootState } from "reducers";
-import { withRouter, RouteComponentProps, Link } from "react-router-dom";
+import { withRouter, RouteComponentProps } from "react-router-dom";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { KPanel } from "widgets/KPanel";
-import { Alert } from "@material-ui/lab";
 import DomainStatus, { acmePrefix } from "widgets/DomainStatus";
-import { Expansion } from "forms/Route/expansion";
 import { Loading } from "widgets/Loading";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
-import { InfoBox } from "widgets/InfoBox";
-import { KLink } from "widgets/Link";
+import { AcmeServerGuide } from "widgets/AcmeServerGuide";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -162,96 +159,8 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderAcmeServerGuide = (cert: Certificate | undefined) => {
-    const { classes, location } = this.props;
-    const coms = location.pathname.split("/");
-    const certName = coms[coms.length - 1];
-    if (cert === undefined) {
-      return null;
-    } else {
-      if (cert.httpsCertIssuer !== dns01Issuer) {
-        return null;
-      } else {
-        const { acmeServer } = this.props;
-        if (acmeServer == null) {
-          return (
-            <Box p={2}>
-              <Expansion title="ACME DNS Server" defaultUnfold>
-                <Loading />
-                Waiting for staring.
-              </Expansion>
-            </Box>
-          );
-        }
-
-        return !acmeServer.ready ? (
-          <Box p={2}>
-            <Expansion title="ACME DNS Server is running" defaultUnfold={!acmeServer.ready}>
-              <Box p={2}>
-                {acmeServer.ready ? (
-                  <Alert severity="success">Kalm DNS server is running well, you don't need to do any more.</Alert>
-                ) : (
-                  <Alert severity="info">
-                    You simply need to do the following to get your DNS server up and running.
-                  </Alert>
-                )}
-                <>
-                  <Box p={1}>
-                    DNS Server Domain:
-                    <Box p={1}>
-                      NS Record:
-                      <pre className={classes.action}>
-                        {acmeServer.acmeDomain} NS {acmeServer.nsDomain}
-                      </pre>
-                    </Box>
-                  </Box>
-                  <Box p={1}>
-                    Shadow Domain:
-                    <Box p={1}>
-                      A Record:
-                      <pre className={classes.action}>
-                        {acmeServer.nsDomain} A {acmeServer.ipForNameServer}
-                      </pre>
-                    </Box>
-                  </Box>
-                  <Button
-                    color="primary"
-                    variant="outlined"
-                    size="small"
-                    component={Link}
-                    to={`/acme/edit?from=${certName}`}
-                  >
-                    Edit
-                  </Button>
-                </>
-              </Box>
-            </Expansion>
-          </Box>
-        ) : (
-          this.renderInfoBox()
-        );
-      }
-    }
-  };
-
-  private renderInfoBox() {
-    const title = "Kalm DNS Server is running";
-
-    const options = [
-      {
-        title: <KLink to="/acme">Check and config Kalm DNS Server</KLink>,
-        content: "",
-      },
-    ];
-
-    return (
-      <Box p={2}>
-        <InfoBox title={title} options={options}></InfoBox>
-      </Box>
-    );
-  }
   public render() {
-    const { classes, certificates, location, isLoading, isFirstLoaded } = this.props;
+    const { classes, certificates, location, isLoading, isFirstLoaded, acmeServer } = this.props;
     if (isLoading && !isFirstLoaded) {
       return <Loading />;
     }
@@ -304,8 +213,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                   </Box>
                 </KPanel>
               </Box>
-
-              {this.renderAcmeServerGuide(certInfo)}
+              <AcmeServerGuide acmeServer={acmeServer} cert={certInfo} />
             </Grid>
           </Grid>
         </div>
