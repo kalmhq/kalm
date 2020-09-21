@@ -25,13 +25,11 @@ const styles = (_theme: Theme) =>
 interface AcemServerGuideProps extends WithStyles<typeof styles> {
   acmeServer: AcmeServerInfo | null;
   cert?: Certificate | undefined;
+  showPanel?: boolean;
 }
 
 export const AcmeServerGuide = withStyles(styles)((props: AcemServerGuideProps) => {
-  const { acmeServer, classes, cert } = props;
-  // if (cert === undefined) {
-  //   return null;
-  // }
+  const { acmeServer, classes, cert, showPanel } = props;
   if (cert && cert.httpsCertIssuer !== dns01Issuer) {
     return null;
   }
@@ -59,7 +57,7 @@ export const AcmeServerGuide = withStyles(styles)((props: AcemServerGuideProps) 
     },
   ];
 
-  return !acmeServer.ready ? (
+  return !acmeServer.ready || showPanel ? (
     <Box p={2}>
       <Expansion title="Kalm DNS Server needs config" defaultUnfold>
         <Box p={2}>
