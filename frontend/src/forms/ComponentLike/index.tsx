@@ -1,16 +1,4 @@
-import {
-  Box,
-  Button,
-  Collapse,
-  Divider,
-  Grid,
-  Link,
-  List as MList,
-  ListItem,
-  ListItemText,
-  Tab,
-  Tabs,
-} from "@material-ui/core";
+import { Box, Button, Collapse, Divider, Grid, Link, Tab, Tabs } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import HelpIcon from "@material-ui/icons/Help";
@@ -18,20 +6,19 @@ import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 import clsx from "clsx";
 import { push } from "connected-react-router";
-import { FastField, Field, FormikProps, getIn, withFormik } from "formik";
+// import { Field, Field, FormikProps, getIn, withFormik } from "formik";
 import { KTooltip } from "forms/Application/KTooltip";
-import { KFormikBoolCheckboxRender } from "forms/Basic/checkbox";
 import { Disks } from "forms/ComponentLike/Disks";
+import { FinalSelectField } from "forms/Final/select";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
+import { FormikNormalizePositiveNumber } from "forms/normalizer";
 import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 import React from "react";
+import { Field, Form, FormRenderProps } from "react-final-form";
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
-import { FormMidware } from "tutorials/formMidware";
-import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
-import { ApplicationDetails } from "types/application";
 import {
   ComponentLike,
   workloadTypeCronjob,
@@ -44,24 +31,16 @@ import { sizeStringToMi, sizeStringToNumber } from "utils/sizeConv";
 import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
-import { Body2, Subtitle1 } from "widgets/Label";
+import { Subtitle1 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
-import { KFormikRadioGroupRender } from "../Basic/radio";
-import { makeSelectOption, RenderFormikSelectField } from "../Basic/select";
-import {
-  KRenderThrottleFormikTextField,
-  KRenderFormikCommandTextField,
-  RenderFormikComplexValueTextField,
-} from "../Basic/textfield";
+import { makeSelectOption } from "../Basic/select";
+import { FinalTextField } from "../Final/textfield";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Envs } from "./Envs";
-import { KFormikRenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { FormikNormalizePositiveNumber } from "forms/normalizer";
-import { object, array } from "yup";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -100,7 +79,7 @@ const mapStateToProps = (state: RootState) => {
     isSubmittingApplicationComponent: state.components.isSubmittingApplicationComponent,
     nodeLabels: state.nodes.labels,
     currentTabIndex,
-    form: COMPONENT_FORM_ID,
+    formId: COMPONENT_FORM_ID,
   };
 };
 
@@ -157,53 +136,47 @@ const HelperTextSection: React.FC<{}> = ({ children }) => (
 );
 
 interface RawProps {
-  showDataView?: boolean;
-  showSubmitButton?: boolean;
-  submitButtonText?: string;
-  application?: ApplicationDetails;
   _initialValues: ComponentLike;
-  onSubmit: (formValues: ComponentLike) => void;
+  onSubmit: (values: ComponentLike) => Promise<void>;
 }
 
 interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props
-  extends FormikProps<ComponentLike>,
-    RouteComponentProps,
-    WithStyles<typeof styles>,
-    ConnectedProps,
-    RawProps {}
+export interface Props extends RouteComponentProps, WithStyles<typeof styles>, ConnectedProps, RawProps {}
 
 interface State {}
+
+type RenderProps = FormRenderProps<ComponentLike>;
 
 const nameValidators = (value: any) => {
   return ValidatorRequired(value) || ValidatorName(value);
 };
 
-const validate = (values: ComponentLike) => {
-  let errors: any = {};
-  const ports = values.ports;
-  if (ports && ports.length > 0) {
-    const protocolServicePorts = new Set<string>();
+// TODO
+// const validate = (values: ComponentLike) => {
+//   let errors: any = {};
+//   const ports = values.ports;
+//   if (ports && ports.length > 0) {
+//     const protocolServicePorts = new Set<string>();
 
-    for (let i = 0; i < ports.length; i++) {
-      const port = ports[i]!;
-      const servicePort = port.servicePort || port.containerPort;
+//     for (let i = 0; i < ports.length; i++) {
+//       const port = ports[i]!;
+//       const servicePort = port.servicePort || port.containerPort;
 
-      if (servicePort) {
-        const protocol = port.protocol;
-        const protocolServicePort = protocol + "-" + servicePort;
+//       if (servicePort) {
+//         const protocol = port.protocol;
+//         const protocolServicePort = protocol + "-" + servicePort;
 
-        if (!protocolServicePorts.has(protocolServicePort)) {
-          protocolServicePorts.add(protocolServicePort);
-        } else if (protocolServicePort !== "") {
-          errors.ports = "Listening port on a protocol should be unique.  " + protocol + " - " + servicePort;
-        }
-      }
-    }
-  }
-  return errors;
-};
+//         if (!protocolServicePorts.has(protocolServicePort)) {
+//           protocolServicePorts.add(protocolServicePort);
+//         } else if (protocolServicePort !== "") {
+//           errors.ports = "Listening port on a protocol should be unique.  " + protocol + " - " + servicePort;
+//         }
+//       }
+//     }
+//   }
+//   return errors;
+// };
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
@@ -219,12 +192,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     this.loadRequiredData();
   }
 
-  private renderReplicasOrSchedule = () => {
-    const workloadType = this.props.values.workloadType;
+  private renderReplicasOrSchedule = (workloadType?: string) => {
     if (workloadType === workloadTypeServer || workloadType === workloadTypeStatefulSet) {
       return (
-        <FastField
-          component={KRenderThrottleFormikTextField}
+        <Field
+          component={FinalTextField}
           validate={ValidatorRequired}
           name="replicas"
           margin
@@ -240,9 +212,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     if (workloadType === workloadTypeCronjob) {
       return (
         <>
-          <FastField
+          <Field
             name="schedule"
-            component={KRenderThrottleFormikTextField}
+            component={FinalTextField}
             placeholder="* * * * *"
             label="Cronjob Schedule"
             required
@@ -349,120 +321,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private getDnsPolicyOptions() {
-    return [
-      {
-        value: "Default",
-        label: "Default",
-        explain: (
-          <>
-            The Pod inherits the name resolution configuration from the node that the pods run on. See{" "}
-            <a
-              target="_blank"
-              href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#inheriting-dns-from-the-node"
-              rel="noopener noreferrer"
-            >
-              related discussion
-            </a>{" "}
-            for more details.
-          </>
-        ),
-      },
-      {
-        value: "ClusterFirst",
-        label: "ClusterFirst",
-        explain: (
-          <>
-            Any DNS query that does not match the configured cluster domain suffix, such as “www.kubernetes.io”, is
-            forwarded to the upstream nameserver inherited from the node. Cluster administrators may have extra
-            stub-domain and upstream DNS servers configured. See{" "}
-            <a
-              target="_blank"
-              href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#impacts-on-pods"
-              rel="noopener noreferrer"
-            >
-              related discussion
-            </a>{" "}
-            for details on how DNS queries are handled in those cases.
-          </>
-        ),
-      },
-      {
-        value: "ClusterFirstWithHostNet",
-        label: "ClusterFirstWithHostNet",
-        explain: (
-          <>For Pods running with hostNetwork, you should explicitly set its DNS policy “ClusterFirstWithHostNet”.</>
-        ),
-      },
-      {
-        value: "None",
-        label: "None",
-        explain: <>It allows a Pod to ignore DNS settings from the Kubernetes environment.</>,
-      },
-    ];
-  }
-
-  private renderDnsPolicy() {
-    return (
-      <>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>DNS Policy</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <Grid item xs={12}>
-          <Field component={KFormikRadioGroupRender} name="dnsPolicy" options={this.getDnsPolicyOptions()} />
-        </Grid>
-      </>
-    );
-  }
-
-  private renderAdvancedHelper = (options: { title: string; content: React.ReactNode }[]) => {
-    return (
-      <MList dense={true}>
-        {options.map((x, index) => (
-          <ListItem key={index}>
-            <ListItemText
-              primary={x.title}
-              key={index}
-              secondary={x.content}
-              secondaryTypographyProps={{ color: "inherit" }}
-            />
-          </ListItem>
-        ))}
-      </MList>
-    );
-  };
-
-  // private renderPlugins() {
-  //   const { classes } = this.props;
-
-  //   const helper = (
-  //     <HelperContainer>
-  //       <Typography>
-  //         Plugins can affect running state of a program, or provide extra functionality for the programs.
-  //       </Typography>
-  //     </HelperContainer>
-  //   );
-
-  //   return (
-  //     <>
-  //       <SectionTitle>
-  //         <Subtitle1>Plugins</Subtitle1>
-  //         <KTooltip title={helper}>
-  //           <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-  //         </KTooltip>
-  //       </SectionTitle>
-
-  //       <Grid container spacing={2}>
-  //         <Grid item xs={12}>
-  //           <Plugins />
-  //         </Grid>
-  //       </Grid>
-  //     </>
-  //   );
-  // }
-
   private renderCommandAndArgs() {
     return (
       <>
@@ -475,12 +333,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <HelperTextSection>{sc.COMMAND_HELPER}</HelperTextSection>
         </Grid>
         <Grid item xs={12}>
-          <FastField
-            component={KRenderFormikCommandTextField}
-            name="command"
-            label="Command"
-            placeholder={sc.COMMAND_INPUT_PLACEHOLDER}
-          />
+          <Field component={FinalTextField} name="command" label="Command" placeholder={sc.COMMAND_INPUT_PLACEHOLDER} />
         </Grid>
       </>
     );
@@ -529,13 +382,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderNetworking() {
     return (
       <Grid container spacing={2}>
-        {/* <Grid item xs={12}>
-          <SectionTitle>
-          <Subtitle1>Networking</Subtitle1>
-          </SectionTitle>
-        </Grid> */}
         {this.renderPorts()}
-        {/* {this.renderDnsPolicy()} */}
       </Grid>
     );
   }
@@ -556,7 +403,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderScheduling() {
-    const { nodeLabels, classes } = this.props;
+    const { classes } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
@@ -566,8 +413,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <FastField
-            component={RenderFormikComplexValueTextField}
+          <Field
+            component={FinalTextField}
             name="cpuLimit"
             label="CPU Limit"
             validate={ValidatorCPU}
@@ -577,13 +424,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             format={(value: any) => {
               return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
             }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return 0;
-              }
-              return !value ? undefined : value + "m";
-            }}
+            // TODO
+            // parse={(value: any) => {
+            //   const integerValue = parseInt(value, 10);
+            //   if (!isNaN(integerValue) && integerValue < 0) {
+            //     return 0;
+            //   }
+            //   return !value ? undefined : value + "m";
+            // }}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -596,8 +444,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <FastField
-            component={RenderFormikComplexValueTextField}
+          <Field
+            component={FinalTextField}
             name="memoryLimit"
             label="Memory Limit"
             margin
@@ -608,13 +456,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             format={(value: any) => {
               return !value ? "" : sizeStringToMi(value);
             }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return 0;
-              }
-              return !value ? undefined : value + "Mi";
-            }}
+            // TODO
+            // parse={(value: any) => {
+            //   const integerValue = parseInt(value, 10);
+            //   if (!isNaN(integerValue) && integerValue < 0) {
+            //     return 0;
+            //   }
+            //   return !value ? undefined : value + "Mi";
+            // }}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -627,8 +476,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <FastField
-            component={RenderFormikComplexValueTextField}
+          <Field
+            component={FinalTextField}
             name="cpuRequest"
             label="CPU Request"
             validate={ValidatorCPU}
@@ -637,13 +486,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             format={(value: any) => {
               return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
             }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return 0;
-              }
-              return !value ? undefined : value + "m";
-            }}
+            // TODO
+            // parse={(value: any) => {
+            //   const integerValue = parseInt(value, 10);
+            //   if (!isNaN(integerValue) && integerValue < 0) {
+            //     return 0;
+            //   }
+            //   return !value ? undefined : value + "m";
+            // }}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -656,8 +506,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <FastField
-            component={RenderFormikComplexValueTextField}
+          <Field
+            component={FinalTextField}
             name="memoryRequest"
             label="Memory Request"
             margin
@@ -667,13 +517,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             format={(value: any) => {
               return !value ? "" : sizeStringToMi(value);
             }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return 0;
-              }
-              return !value ? undefined : value + "Mi";
-            }}
+            // TODO
+            // parse={(value: any) => {
+            //   const integerValue = parseInt(value, 10);
+            //   if (!isNaN(integerValue) && integerValue < 0) {
+            //     return 0;
+            //   }
+            //   return !value ? undefined : value + "Mi";
+            // }}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -685,114 +536,111 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
+        {/* TODO */}
         {/* <Grid item xs={12}>
-          <Field name="enableResourcesRequests" component={KBoolCheckboxRender} label={sc.SCHEDULING_RR_CHECKBOX} />
-        </Grid> */}
-        <Grid item xs={12}>
           <SectionTitle>
             <Subtitle1>Nodes</Subtitle1>
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <FastField name="nodeSelectorLabels" component={KFormikRenderSelectLabels} nodeLabels={nodeLabels} />
+          <Field name="nodeSelectorLabels" component={KFormikRenderSelectLabels} nodeLabels={nodeLabels} />
         </Grid>
         <Grid item xs={12}>
-          <FastField
+          <Field
             name="preferNotCoLocated"
             component={KFormikBoolCheckboxRender}
             label={sc.SCHEDULING_COLOCATE_CHECKBOX}
           />
-        </Grid>
-        {/* <Grid item xs={6}>
-          <Field name="podAffinityType" component={KRadioGroupRender} options={this.getPodAffinityOptions()} />
         </Grid> */}
       </Grid>
     );
   }
 
-  private renderUpgradePolicy() {
-    return (
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Deployment Strategy</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <Grid item xs={8}>
-          <KFormikRadioGroupRender
-            onChange={this.props.handleChange}
-            name="restartStrategy"
-            value={this.props.values.restartStrategy || "RollingUpdate"}
-            options={[
-              {
-                value: "RollingUpdate",
-                label: (
-                  <Body2>
-                    <strong>Rolling Update</strong> - {sc.DEPLOYMENT_ROLLING}
-                  </Body2>
-                ),
-              },
-              {
-                value: "Recreate",
-                label: (
-                  <Body2>
-                    <strong>Recreate</strong> - {sc.DEPLOYMENT_RECREATE}
-                  </Body2>
-                ),
-              },
-            ]}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Graceful Terimination Period</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <HelperTextSection>
-          {sc.GRACEFUL_TERM_HELPER}
-          &nbsp;
-          <Link
-            href="https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution"
-            target="_blank"
-          >
-            {sc.LEARN_MORE_LABEL}
-          </Link>
-        </HelperTextSection>
-        <Grid item xs={6}>
-          <FastField
-            component={KRenderThrottleFormikTextField}
-            name="terminationGracePeriodSeconds"
-            label="Termination Grace Period (seconds)"
-            normalize={FormikNormalizePositiveNumber}
-            placeholder={sc.GRACEFUL_TERM_INPUT_PLACEHOLDER}
-          />
-        </Grid>
-      </Grid>
-    );
-  }
+  // TODO
+  // private renderUpgradePolicy() {
+  //   return (
+  //     <Grid container spacing={2}>
+  //       <Grid item xs={12}>
+  //         <SectionTitle>
+  //           <Subtitle1>Deployment Strategy</Subtitle1>
+  //         </SectionTitle>
+  //       </Grid>
+  //       <Grid item xs={8}>
+  //         <KFormikRadioGroupRender
+  //           onChange={this.props.handleChange}
+  //           name="restartStrategy"
+  //           value={this.props.values.restartStrategy || "RollingUpdate"}
+  //           options={[
+  //             {
+  //               value: "RollingUpdate",
+  //               label: (
+  //                 <Body2>
+  //                   <strong>Rolling Update</strong> - {sc.DEPLOYMENT_ROLLING}
+  //                 </Body2>
+  //               ),
+  //             },
+  //             {
+  //               value: "Recreate",
+  //               label: (
+  //                 <Body2>
+  //                   <strong>Recreate</strong> - {sc.DEPLOYMENT_RECREATE}
+  //                 </Body2>
+  //               ),
+  //             },
+  //           ]}
+  //         />
+  //       </Grid>
+  //       <Grid item xs={12}>
+  //         <SectionTitle>
+  //           <Subtitle1>Graceful Terimination Period</Subtitle1>
+  //         </SectionTitle>
+  //       </Grid>
+  //       <HelperTextSection>
+  //         {sc.GRACEFUL_TERM_HELPER}
+  //         &nbsp;
+  //         <Link
+  //           href="https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution"
+  //           target="_blank"
+  //         >
+  //           {sc.LEARN_MORE_LABEL}
+  //         </Link>
+  //       </HelperTextSection>
+  //       <Grid item xs={6}>
+  //         <Field
+  //           component={FinalTextField}
+  //           name="terminationGracePeriodSeconds"
+  //           label="Termination Grace Period (seconds)"
+  //           normalize={FormikNormalizePositiveNumber}
+  //           placeholder={sc.GRACEFUL_TERM_INPUT_PLACEHOLDER}
+  //         />
+  //       </Grid>
+  //     </Grid>
+  //   );
+  // }
 
   private renderTabDetails() {
     const { classes, currentTabIndex } = this.props;
 
+    // TODO
     return (
       <>
         <div className={`${this.tabs[currentTabIndex] === Configurations ? "" : classes.displayNone}`}>
-          {this.renderConfigurations()}
+          {/* {this.renderConfigurations()} */}
         </div>
         <div className={`${this.tabs[currentTabIndex] === NetworkingTab ? "" : classes.displayNone}`}>
-          {this.renderNetworking()}
+          {/* {this.renderNetworking()} */}
         </div>
         <div className={`${this.tabs[currentTabIndex] === DisksTab ? "" : classes.displayNone}`}>
-          {this.renderDisks()}
+          {/* {this.renderDisks()} */}
         </div>
         <div className={`${this.tabs[currentTabIndex] === HealthTab ? "" : classes.displayNone}`}>
-          {this.renderHealth()}
+          {/* {this.renderHealth()} */}
         </div>
         <div className={`${this.tabs[currentTabIndex] === Scheduling ? "" : classes.displayNone}`}>
-          {this.renderScheduling()}
+          {/* {this.renderScheduling()} */}
         </div>
         <div className={`${this.tabs[currentTabIndex] === Deploy ? "" : classes.displayNone}`}>
-          {this.renderUpgradePolicy()}
+          {/* {this.renderUpgradePolicy()} */}
         </div>
       </>
     );
@@ -808,11 +656,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     dispatch(push(`${pathname}#${tab ? tab.replace(/\s/g, "") : ""}`));
   }
 
-  private showError(fieldName: string): boolean {
-    const { touched, errors } = this.props;
+  // TODO
+  // private showError(fieldName: string): boolean {
+  //   const { touched, errors } = this.props;
 
-    return !!getIn(touched, fieldName) && !!getIn(errors, fieldName);
-  }
+  //   return !!getIn(touched, fieldName) && !!getIn(errors, fieldName);
+  // }
 
   private handleChangeTab(event: React.ChangeEvent<{}>, value: number) {
     this.pushToTab(value);
@@ -832,17 +681,18 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         aria-label="component form tabs"
       >
         {this.tabs.map((tab) => {
-          if (
-            (tab === Configurations &&
-              (this.showError("preInjectedFiles") || this.showError("env") || this.showError("command"))) ||
-            (tab === DisksTab && this.showError("volumes")) ||
-            (tab === HealthTab && (this.showError("livenessProbe") || this.showError("readinessProbe"))) ||
-            (tab === NetworkingTab && this.showError("ports")) ||
-            (tab === Scheduling &&
-              (this.showError("cpuLimit") || this.showError("memoryLimit") || this.showError("nodeSelectorLabels")))
-          ) {
-            return <Tab key={tab} label={tab} className={classes.hasError} />;
-          }
+          // TODO
+          // if (
+          //   (tab === Configurations &&
+          //     (this.showError("preInjectedFiles") || this.showError("env") || this.showError("command"))) ||
+          //   (tab === DisksTab && this.showError("volumes")) ||
+          //   (tab === HealthTab && (this.showError("livenessProbe") || this.showError("readinessProbe"))) ||
+          //   (tab === NetworkingTab && this.showError("ports")) ||
+          //   (tab === Scheduling &&
+          //     (this.showError("cpuLimit") || this.showError("memoryLimit") || this.showError("nodeSelectorLabels")))
+          // ) {
+          //   return <Tab key={tab} label={tab} className={classes.hasError} />;
+          // }
 
           return <Tab key={tab} label={tab} tutorial-anchor-id={tab} />;
         })}
@@ -850,8 +700,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderMain() {
-    const { initialValues, values } = this.props;
+  private renderMain(values: ComponentLike, initialValues: Partial<ComponentLike>) {
     let isEdit = false;
     if (initialValues && initialValues.name) {
       isEdit = true;
@@ -865,9 +714,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container spacing={2}>
         <Grid item xs={6}>
-          <FastField
+          <Field
             autoFocus
-            component={KRenderThrottleFormikTextField}
+            component={FinalTextField}
             id="component-name"
             name="name"
             label="Name"
@@ -877,8 +726,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
         <Grid item xs={6}>
-          <FastField
-            component={KRenderThrottleFormikTextField}
+          <Field
+            component={FinalTextField}
             id="component-image"
             name="image"
             spellCheck={false}
@@ -892,7 +741,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={6}>
           <Field
             name="workloadType"
-            component={RenderFormikSelectField}
+            component={FinalSelectField}
             label="Type"
             validate={ValidatorRequired}
             disabled={isEdit || hasVolumes}
@@ -906,9 +755,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
         <Grid item xs={6}>
-          {this.renderReplicasOrSchedule()}
+          {this.renderReplicasOrSchedule(values.workloadType)}
         </Grid>
-        {this.renderPrivateRegistryAlert()}
+        {this.renderPrivateRegistryAlert(values)}
       </Grid>
     );
   }
@@ -936,8 +785,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return !registries.find((r) => r.host.includes(parts[0]));
   };
 
-  private renderPrivateRegistryAlert = () => {
-    const { values } = this.props;
+  private renderPrivateRegistryAlert = (values: ComponentLike) => {
     const image = values.image;
 
     if (!image || !this.isUnknownPrivateRegistry(image)) {
@@ -967,8 +815,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderDeployButton() {
-    const { classes, isSubmittingApplicationComponent, initialValues } = this.props;
+  private renderDeployButton(initialValues: Partial<ComponentLike>) {
+    const { classes, isSubmittingApplicationComponent } = this.props;
 
     // @ts-ignore
     const isEdit = initialValues && initialValues.name;
@@ -992,57 +840,58 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  public renderDirtyPrompt = () => {
-    const { dirty, isSubmitting } = this.props;
-    return <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />;
-  };
-
   public render() {
-    const { handleSubmit, classes, values, form } = this.props;
+    const { classes, _initialValues, onSubmit } = this.props;
     return (
-      <form onSubmit={handleSubmit} className={classes.root} id="component-form">
-        {this.renderDirtyPrompt()}
-        <FormMidware values={values} form={form} />
-        <KPanel
-          content={
-            <Box p={2} tutorial-anchor-id="component-from-basic">
-              {this.renderMain()}
+      <Form
+        initialValues={_initialValues}
+        onSubmit={onSubmit}
+        render={({ handleSubmit, form, submitting, pristine, values, dirty, initialValues }: RenderProps) => (
+          <form onSubmit={handleSubmit} className={classes.root} id="component-form">
+            {<Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />}
+            {/* <FormMidware values={values} form={form} /> */}
+            <KPanel
+              content={
+                <Box p={2} tutorial-anchor-id="component-from-basic">
+                  {this.renderMain(values, initialValues)}
+                </Box>
+              }
+            />
+            <Box mt={2}>
+              <KPanel
+                content={
+                  <>
+                    {this.renderTabs()}
+                    <Box p={2}>{this.renderTabDetails()}</Box>
+                  </>
+                }
+              />
             </Box>
-          }
-        />
-        <Box mt={2}>
-          <KPanel
-            content={
-              <>
-                {this.renderTabs()}
-                <Box p={2}>{this.renderTabDetails()}</Box>
-              </>
-            }
-          />
-        </Box>
-        {process.env.REACT_APP_DEBUG === "true" ? (
-          <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
-        ) : null}
-        {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
-        {this.renderDeployButton()}
-      </form>
+            {process.env.REACT_APP_DEBUG === "true" ? (
+              <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
+            ) : null}
+            {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
+            {this.renderDeployButton(initialValues)}
+          </form>
+        )}
+      />
     );
   }
 }
 
-const form = withFormik<ConnectedProps & RawProps & WithStyles<typeof styles> & RouteComponentProps, ComponentLike>({
-  mapPropsToValues: (props) => props._initialValues,
-  enableReinitialize: true,
-  validate: (values, props) => {
-    return validate(values) || formikValidateOrNotBlockByTutorial(values, props);
-  },
-  handleSubmit: async (formValues, { props: { onSubmit } }) => {
-    await onSubmit(formValues);
-  },
-  validationSchema: object().shape({
-    // @ts-ignore
-    env: array().of(object().unique("name", "Env names should be unique.")),
-  }),
-})(ComponentLikeFormRaw);
+// const form = withFormik<ConnectedProps & RawProps & WithStyles<typeof styles> & RouteComponentProps, ComponentLike>({
+//   mapPropsToValues: (props) => props._initialValues,
+//   enableReinitialize: true,
+//   validate: (values, props) => {
+//     return validate(values) || formikValidateOrNotBlockByTutorial(values, props);
+//   },
+//   handleSubmit: async (formValues, { props: { onSubmit } }) => {
+//     await onSubmit(formValues);
+//   },
+//   validationSchema: object().shape({
+//     // @ts-ignore
+//     env: array().of(object().unique("name", "Env names should be unique.")),
+//   }),
+// })(ComponentLikeFormRaw);
 
-export const ComponentLikeForm = connect(mapStateToProps)(withStyles(styles)(withRouter(form)));
+export const ComponentLikeForm = connect(mapStateToProps)(withStyles(styles)(withRouter(ComponentLikeFormRaw)));
