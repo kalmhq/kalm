@@ -23,8 +23,8 @@ export const FormikNormalizePositiveNumber = (event: React.ChangeEvent<HTMLInput
   return isNaN(integerValue) ? undefined : integerValue;
 };
 
-export const FormikNormalizePort = (event: React.ChangeEvent<HTMLInputElement>) => {
-  const portInteger = parseInt(event.target.value, 10);
+const normalizePort = (value: string) => {
+  const portInteger = parseInt(value, 10);
 
   if (isNaN(portInteger)) {
     return "";
@@ -39,6 +39,15 @@ export const FormikNormalizePort = (event: React.ChangeEvent<HTMLInputElement>) 
   }
 
   return portInteger;
+};
+
+export const FormikNormalizePort = (event: React.ChangeEvent<HTMLInputElement>) => {
+  return normalizePort(event.target.value);
+};
+
+export const FormikNormalizePorts = (values: string[]) => {
+  console.log("formik normalize ports")
+  return values.map(normalizePort);
 };
 
 export const NormalizeCPU = (value: string) => {

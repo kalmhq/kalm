@@ -53,9 +53,10 @@ func (resourceManager *ResourceManager) GetComponentListChannel(namespaces strin
 }
 
 type Component struct {
-	v1alpha1.ComponentSpec `json:",inline"`
-	Plugins                []runtime.RawExtension `json:"plugins,omitempty"`
-	Name                   string                 `json:"name"`
+	Name                            string                 `json:"name"`
+	Plugins                         []runtime.RawExtension `json:"plugins,omitempty"`
+	*v1alpha1.ComponentSpec         `json:",inline"`
+	*v1alpha1.ProtectedEndpointSpec `json:"protectedEndpoint,omitempty"`
 }
 
 type CPUQuantity struct {
@@ -79,7 +80,8 @@ func (m *MemoryQuantity) MarshalJSON() ([]byte, error) {
 type ComponentDetails struct {
 	Name string `json:"name"`
 
-	v1alpha1.ComponentSpec `json:",inline"`
+	v1alpha1.ComponentSpec          `json:",inline"`
+	*v1alpha1.ProtectedEndpointSpec `json:"protectedEndpoint,omitempty"`
 
 	// hack to override & ignore field in ComponentSpec
 	//ResourceRequirements interface{} `json:"resourceRequirements,omitempty"`
@@ -113,6 +115,7 @@ func (resourceManager *ResourceManager) BuildComponentDetails(
 			EventList:                  resourceManager.GetEventListChannel(nsListOption),
 			ServiceList:                resourceManager.GetServiceListChannel(nsListOption, belongsToComponent),
 			ComponentPluginBindingList: resourceManager.GetComponentPluginBindingListChannel(nsListOption, belongsToComponent),
+			ProtectedEndpointList:      resourceManager.GetProtectedEndpointsChannel(nsListOption),
 		}
 
 		resources, err = resourceChannels.ToResources()
@@ -196,6 +199,14 @@ func (resourceManager *ResourceManager) BuildComponentDetails(
 		Pods:                 podsStatus,
 	}
 
+	for _, protectedEndpoint := range resources.ProtectedEndpoints {
+		if protectedEndpoint.Spec.EndpointName == component.Name {
+			details.ProtectedEndpointSpec = &protectedEndpoint.Spec
+			break
+		}
+		continue
+	}
+
 	resRequirements := component.Spec.ResourceRequirements
 	if resRequirements != nil && resRequirements.Requests != nil {
 		if cpuReq, exist := resRequirements.Requests[coreV1.ResourceCPU]; exist {
@@ -251,6 +262,7 @@ func (resourceManager *ResourceManager) BuildComponentDetailsResponse(
 		EventList:                  resourceManager.GetEventListChannel(nsListOption),
 		ServiceList:                resourceManager.GetServiceListChannel(nsListOption),
 		ComponentPluginBindingList: resourceManager.GetComponentPluginBindingListChannel(nsListOption),
+		ProtectedEndpointList:      resourceManager.GetProtectedEndpointsChannel(nsListOption),
 	}
 
 	resources, err := resourceChannels.ToResources()
