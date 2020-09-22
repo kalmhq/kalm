@@ -159,7 +159,7 @@ class DomainStatus extends React.PureComponent<Props> {
   };
 
   private getIconAndBody = () => {
-    const { domainStatus, domain, dispatch, isIPDomain, cnameDomain, acmeServer } = this.props;
+    const { domainStatus, domain, dispatch, isIPDomain, cnameDomain, acmeServer, nsDomain } = this.props;
     const ip = this.getIPAddress();
     if (isIPDomain) {
       return {
@@ -202,25 +202,28 @@ class DomainStatus extends React.PureComponent<Props> {
         copyContent = cnameRecords !== undefined ? cnameDomain! : ip;
       }
 
+      if (cnameDomain === undefined && nsDomain === undefined) {
+        copyContent = ip;
+      }
+
       return {
         icon: <WarningIcon color="action" />,
         body: (
           <Box p={2}>
             {this.getHelperText(cnameDomain, cnameRecords)}
-            <IconButtonWithTooltip
-              tooltipTitle="Copy"
-              aria-label="copy"
-              size="small"
-              onClick={(e) => {
-                if (!copyContent || copyContent.length === 0) {
-                  return;
-                }
-                copy(copyContent);
-                dispatch(setSuccessNotificationAction("Copied successful!"));
-              }}
-            >
-              <CopyIcon fontSize="small" />
-            </IconButtonWithTooltip>
+            {!copyContent || copyContent.length === 0 ? null : (
+              <IconButtonWithTooltip
+                tooltipTitle="Copy"
+                aria-label="copy"
+                size="small"
+                onClick={(e) => {
+                  copy(copyContent);
+                  dispatch(setSuccessNotificationAction("Copied successful!"));
+                }}
+              >
+                <CopyIcon fontSize="small" />
+              </IconButtonWithTooltip>
+            )}
           </Box>
         ),
       };
