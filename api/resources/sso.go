@@ -273,6 +273,10 @@ func (resourceManager *ResourceManager) UpdateProtectedEndpointForComponent(comp
 
 	if errors.IsNotFound(err) {
 		endpoint := &v1alpha1.ProtectedEndpoint{
+			TypeMeta: metaV1.TypeMeta{
+				Kind:       "ProtectedEndpoint",
+				APIVersion: "core.kalm.dev/v1alpha1",
+			},
 			ObjectMeta: metaV1.ObjectMeta{
 				Namespace: namespace,
 				Name:      name,
@@ -290,6 +294,11 @@ func (resourceManager *ResourceManager) UpdateProtectedEndpointForComponent(comp
 	}
 
 	endpoint.Spec = *protectedEndpointSpec
+
+	endpoint.TypeMeta = metaV1.TypeMeta{
+		Kind:       "ProtectedEndpoint",
+		APIVersion: "core.kalm.dev/v1alpha1",
+	}
 
 	if err := resourceManager.Apply(&endpoint); err != nil {
 		return err
