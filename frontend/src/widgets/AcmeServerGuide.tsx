@@ -54,14 +54,14 @@ export const AcmeServerGuide = connect()(
 
     const options = [
       {
-        title: <KLink to="/acme">Check and config Kalm DNS Server</KLink>,
+        title: <KLink to="/acme">Check and config ACME DNS Server</KLink>,
         content: "",
       },
     ];
 
     return !acmeServer.ready || showPanel ? (
       <Box p={2}>
-        <Expansion title="Kalm DNS Server needs config" defaultUnfold>
+        <Expansion title="ACME DNS Server needs config" defaultUnfold>
           <Box p={2}>
             {acmeServer.ready ? (
               <Alert severity="info">
@@ -94,7 +94,7 @@ export const AcmeServerGuide = connect()(
       </Box>
     ) : (
       <Box p={2}>
-        <InfoBox title="Kalm DNS Server is running" options={options}></InfoBox>
+        <InfoBox title="ACME DNS Server is running" options={options}></InfoBox>
       </Box>
     );
   }),

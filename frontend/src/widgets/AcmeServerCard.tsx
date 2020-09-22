@@ -25,7 +25,7 @@ const KAcmeServerForm = (props: FormikProps<{ acmeDomain: string; nsDomain: stri
   const { errors, handleChange, handleSubmit, handleBlur, values, touched } = props;
   return (
     <Form onSubmit={handleSubmit}>
-      <KPanel title={"Kalm DNS Server"}>
+      <KPanel title={"ACME DNS Server"}>
         <Box p={2}>
           <pre>Before add wildcard domain, DNS server needs setup and running first.</pre>
           <Box pt={3} pb={2}>
@@ -33,7 +33,7 @@ const KAcmeServerForm = (props: FormikProps<{ acmeDomain: string; nsDomain: stri
               key={"acmeDomain"}
               fullWidth
               error={!!errors.acmeDomain && touched.acmeDomain}
-              label="Kalm DNS Server Domain"
+              label="ACME DNS Server Domain"
               variant="outlined"
               size="small"
               name="acmeDomain"
@@ -41,7 +41,7 @@ const KAcmeServerForm = (props: FormikProps<{ acmeDomain: string; nsDomain: stri
               onBlur={handleBlur}
               value={values.acmeDomain}
               InputLabelProps={{ shrink: true }}
-              placeholder="Please type domain for Kalm DNS Server"
+              placeholder="Please type domain for ACME DNS Server"
               helperText={errors.acmeDomain && touched.acmeDomain && errors.acmeDomain}
             />
           </Box>
@@ -58,7 +58,7 @@ const KAcmeServerForm = (props: FormikProps<{ acmeDomain: string; nsDomain: stri
               onBlur={handleBlur}
               value={values.nsDomain}
               InputLabelProps={{ shrink: true }}
-              placeholder="Please type shadow domain for Kalm DNS Server"
+              placeholder="Please type shadow domain for ACME DNS Server"
               helperText={errors.nsDomain && touched.nsDomain && errors.nsDomain}
             />
           </Box>
@@ -102,7 +102,7 @@ export const KAcmeServerCard = connect(mapStateToProps)((props: KAcmeServerCardP
         {isReady ? (
           <>
             <Box mt={1} mb={1}>
-              <Body2>Kalm DNS Server Domain</Body2>
+              <Body2>ACME DNS Server Domain</Body2>
             </Box>
             <FlexRowItemCenterBox>
               <DomainStatus domain={acmeDomain} mr={1} nsDomain={nsDomain} />
@@ -160,7 +160,7 @@ export const KAcmeServerCard = connect(mapStateToProps)((props: KAcmeServerCardP
   };
 
   return userHasSetup ? (
-    <KPanel title={"Kalm DNS Server"}>
+    <KPanel title={"ACME DNS Server"}>
       <Box p={2}>{renderServer()}</Box>
     </KPanel>
   ) : null;
