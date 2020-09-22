@@ -5,10 +5,12 @@ import { FieldRenderProps } from "react-final-form";
 
 type FinalTextFieldProps = TextFieldProps &
   FieldRenderProps<string | number, any> & {
+    startAdornment?: React.ReactNode;
     endAdornment?: React.ReactNode;
   };
 
 export const FinalTextField = ({
+  startAdornment,
   endAdornment,
   helperText,
   handleBlur,
@@ -19,6 +21,9 @@ export const FinalTextField = ({
   const showError = touched && !!error;
 
   const inputProps: Partial<OutlinedInputProps> = {};
+  if (startAdornment) {
+    inputProps.startAdornment = <InputAdornment position="start">{startAdornment}</InputAdornment>;
+  }
   if (endAdornment) {
     inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
   }
