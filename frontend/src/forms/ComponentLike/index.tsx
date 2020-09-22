@@ -1,6 +1,5 @@
-import { Box, Button, Collapse, Divider, Grid, Link, Tab, Tabs } from "@material-ui/core";
-import { grey } from "@material-ui/core/colors";
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
+import { Box, Button, createStyles, Divider, Grid, Link, Tab, Tabs, Theme } from "@material-ui/core";
+import { withStyles, WithStyles } from "@material-ui/core/styles";
 import HelpIcon from "@material-ui/icons/Help";
 import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
@@ -10,14 +9,11 @@ import { push } from "connected-react-router";
 import { KTooltip } from "forms/Application/KTooltip";
 import { Disks } from "forms/ComponentLike/Disks";
 import { FinalSelectField } from "forms/Final/select";
-import { COMPONENT_FORM_ID } from "forms/formIDs";
 import { FormikNormalizePositiveNumber } from "forms/normalizer";
-import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 import React from "react";
 import { Field, Form, FormRenderProps } from "react-final-form";
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
-import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import {
   ComponentLike,
@@ -41,6 +37,12 @@ import { Envs } from "./Envs";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
+import { ComponentAccess } from "./Access";
+import Collapse from "@material-ui/core/Collapse";
+import { RootState } from "reducers";
+import { COMPONENT_FORM_ID } from "forms/formIDs";
+import grey from "@material-ui/core/colors/grey";
+import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -63,7 +65,8 @@ export const HealthTab = "Health";
 export const NetworkingTab = "Networking";
 const Scheduling = "Pod Scheduling";
 const Deploy = "Deployment Strategy";
-const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy];
+const Access = "Access";
+const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy, Access];
 
 const mapStateToProps = (state: RootState) => {
   const hash = window.location.hash;
@@ -618,6 +621,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   //   );
   // }
 
+  private renderAccess = () => {
+    return <ComponentAccess />;
+  };
+
   private renderTabDetails() {
     const { classes, currentTabIndex } = this.props;
 
@@ -641,6 +648,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </div>
         <div className={`${this.tabs[currentTabIndex] === Deploy ? "" : classes.displayNone}`}>
           {/* {this.renderUpgradePolicy()} */}
+        </div>
+        <div className={`${this.tabs[currentTabIndex] === Access ? "" : classes.displayNone}`}>
+          {/*{this.renderAccess()}*/}
         </div>
       </>
     );

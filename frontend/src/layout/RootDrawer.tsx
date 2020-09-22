@@ -116,14 +116,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private getSideBarData() {
-    const {
-      activeNamespaceName,
-      canViewCluster,
-      canEditNamespace,
-      canEditCluster,
-      canManageCluster,
-      canViewNamespace,
-    } = this.props;
+    const { activeNamespaceName, canViewCluster, canEditNamespace, canEditCluster, canManageCluster } = this.props;
 
     return [
       {
@@ -194,13 +187,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
                 to: "/sso",
               }
             : null,
-          canViewNamespace(activeNamespaceName)
-            ? {
-                icon: SettingIcon,
-                text: "Endpoints",
-                to: "/endpoints",
-              }
-            : null,
+
           // {
           //   icon: SettingIcon,
           //   text: "System",
