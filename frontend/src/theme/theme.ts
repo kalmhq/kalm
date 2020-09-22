@@ -20,6 +20,13 @@ const lightTheme = createMuiTheme({
 });
 
 const darkTheme = createMuiTheme({
+  overrides: {
+    MuiPopover: {
+      paper: {
+        border: "1px solid rgba(255, 255, 255, 0.12)",
+      },
+    },
+  },
   palette: {
     primary: {
       light: indigo[200],
@@ -48,6 +55,7 @@ export const theme = themeRaw;
 export const getTheme = (themeColor: PaletteType) => {
   const themePalette = themeColor === "light" ? lightTheme : darkTheme;
   themeRaw.palette = themePalette.palette;
+  themeRaw.overrides = themePalette.overrides;
   return {
     ...themeRaw,
     palette: {
