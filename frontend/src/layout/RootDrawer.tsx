@@ -18,6 +18,7 @@ import { TDispatch } from "types";
 import { APP_BAR_HEIGHT, LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
 import {
   CIIcon,
+  InfoIcon,
   KalmApplicationIcon,
   KalmCertificatesIcon,
   KalmIngressIcon,
@@ -115,7 +116,14 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private getSideBarData() {
-    const { activeNamespaceName, canViewCluster, canEditNamespace, canEditCluster, canManageCluster } = this.props;
+    const {
+      activeNamespaceName,
+      canViewCluster,
+      canEditNamespace,
+      canEditCluster,
+      canManageCluster,
+      canViewNamespace,
+    } = this.props;
 
     return [
       {
@@ -186,6 +194,13 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
                 to: "/sso",
               }
             : null,
+          canViewNamespace(activeNamespaceName)
+            ? {
+                icon: SettingIcon,
+                text: "Endpoints",
+                to: "/endpoints",
+              }
+            : null,
           // {
           //   icon: SettingIcon,
           //   text: "System",
@@ -196,6 +211,13 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
                 icon: PeopleIcon,
                 text: "Members",
                 to: "/cluster/members",
+              }
+            : null,
+          canManageCluster()
+            ? {
+                icon: InfoIcon,
+                text: "Version",
+                to: "/version",
               }
             : null,
         ],

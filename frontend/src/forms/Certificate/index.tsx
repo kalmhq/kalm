@@ -5,7 +5,7 @@ import copy from "copy-to-clipboard";
 import { Field, Form, Formik } from "formik";
 import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KRenderThrottleFormikTextField } from "forms/Basic/textfield";
-import { ValidateHost } from "forms/validator";
+import { ValidatorHosts } from "forms/validator";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
 import { connect } from "react-redux";
@@ -77,16 +77,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
       return errors;
     }
 
-    errors.domains = values.domains.map(ValidateHost);
-    if (errors.domains.filter((e: string | undefined) => e).length < 1) {
-      delete errors.domains;
-    }
-
-    if (values.domains.length < 1) {
-      errors.domains = "Required";
-      return errors;
-    }
-
     return errors;
   };
 
@@ -145,6 +135,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                           disabled={values.managedType === selfManaged}
                           label="Domains"
                           name="domains"
+                          validate={ValidatorHosts}
                           icons={icons}
                           id="certificate-domains"
                           placeholder={

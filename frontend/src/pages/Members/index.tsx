@@ -24,9 +24,9 @@ import TextField from "@material-ui/core/TextField";
 import { setSuccessNotificationAction } from "actions/notification";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { InfoBox } from "widgets/InfoBox";
-import { KLink } from "widgets/Link";
 import { impersonate } from "api/realApi";
 import produce from "immer";
+import { BlankTargetLink } from "widgets/BlankTargetLink";
 
 const styles = (theme: Theme) => createStyles({});
 
@@ -124,6 +124,9 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private changeRole = async (roleBinding: RoleBinding, newRole: string) => {
+    if (roleBinding.role === newRole) {
+      return;
+    }
     const { dispatch } = this.props;
     await dispatch(
       updateRoleBindingsAction(
@@ -239,17 +242,15 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     const options = [
       {
         title: (
-          <KLink to="https://kalm.dev/docs/next/auth/overview" target="_blank">
-            How kalm permission works?
-          </KLink>
+          <BlankTargetLink href="https://kalm.dev/docs/next/auth/overview">How kalm permission works?</BlankTargetLink>
         ),
         content: "",
       },
       {
         title: (
-          <KLink to="https://kalm.dev/docs/next/auth/roles" target="_blank">
+          <BlankTargetLink href="https://kalm.dev/docs/next/auth/roles">
             What's the permissions of a role?
-          </KLink>
+          </BlankTargetLink>
         ),
         content: "",
       },

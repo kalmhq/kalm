@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, LinkProps } from "react-router-dom";
-import { useTheme, Link as MLink, LinkProps as MLinkProps } from "@material-ui/core";
+import { Link as MLink, LinkProps as MLinkProps, useTheme } from "@material-ui/core";
 
 export function KLink(props: LinkProps) {
   const theme = useTheme();
@@ -8,7 +8,7 @@ export function KLink(props: LinkProps) {
     <Link
       {...props}
       style={{ color: theme.palette.type === "light" ? theme.palette.primary.dark : theme.palette.primary.light }}
-    ></Link>
+    />
   );
 }
 
@@ -19,6 +19,6 @@ export function KMLink(props: MLinkProps | { component: any }) {
     <MLink
       {...props}
       style={{ color: theme.palette.type === "light" ? theme.palette.primary.dark : theme.palette.primary.light }}
-    ></MLink>
+    />
   );
 }

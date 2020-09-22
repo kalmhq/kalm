@@ -39,10 +39,13 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: cd api
       - run:
           name: Build Docker image
-          command: docker build -t kalmhq/kalm:latest .
+          command: >
+            docker build
+            --build-arg KALM_BUILD_ENV_GIT_COMMIT=$CIRCLE_SHA1
+            --build-arg KALM_BUILD_ENV_GIT_VERSION=$CIRCLE_TAG
+            -t kalmhq/kalm:latest .
       - run:
           name: Publish Docker Image to DOCKER HUB
           command: |
@@ -200,6 +203,9 @@ workflows:
               only: /^v.*/
       - hold:
           type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
+          filters:
+            branches:
+              ignore: master
       - build-push-dashboard-image:
           name: manual-build-push-dashboard-image
           context: kalm-ci
@@ -239,6 +245,9 @@ workflows:
               only: /^v.*/
       - hold:
           type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
+          filters:
+            branches:
+              ignore: master
       - build-push-controller-image:
           name: manual-build-push-controller-image
           context: kalm-ci
@@ -273,6 +282,9 @@ workflows:
               only: /^v.*/
       - hold:
           type: approval
+          filters:
+            branches:
+              ignore: master
       - build-push-operator-image:
           name: manual-build-push-operator-image
           context: kalm-ci

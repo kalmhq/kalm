@@ -2,11 +2,11 @@ import {
   Box,
   Button,
   createStyles,
+  Link as KMLink,
   Theme,
   Typography,
-  WithStyles,
   withStyles,
-  Link as KMLink,
+  WithStyles,
 } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import { deleteCertificateAction } from "actions/certificate";
@@ -17,13 +17,12 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { Certificate, dns01Issuer } from "types/certificate";
+import { Certificate } from "types/certificate";
 import { formatDate } from "utils/date";
 import sc from "utils/stringConstants";
 import { PendingBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
-import DomainStatus, { acmePrefix } from "widgets/DomainStatus";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { EditIcon, KalmCertificatesIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
@@ -88,31 +87,11 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
 
   private renderDomains = (cert: Certificate) => {
     const { classes } = this.props;
-    const isWildcardDomain = cert.httpsCertIssuer === dns01Issuer;
-    const isSelfManaged = cert.isSelfManaged;
 
-    const domainStatus = (domain: string) => {
-      if (isSelfManaged) {
-        return null;
-      }
-      const cnameMap = cert.wildcardCertDNSChallengeDomainMap;
-
-      const cleanDomain = domain.replace("*.", "");
-      return cnameMap && isWildcardDomain ? (
-        <DomainStatus mr={1} domain={acmePrefix + cleanDomain} cnameDomain={cnameMap[cleanDomain]} />
-      ) : (
-        <DomainStatus mr={1} domain={domain} />
-      );
-    };
     return (
       <Box className={classes.domainsColumn}>
         {cert.domains?.map((domain) => {
-          return (
-            <FlexRowItemCenterBox key={domain}>
-              {domainStatus(`${domain}`)}
-              {`${domain}`}
-            </FlexRowItemCenterBox>
-          );
+          return <FlexRowItemCenterBox key={domain}>{`${domain}`}</FlexRowItemCenterBox>;
         })}
       </Box>
     );
@@ -352,7 +331,9 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
             this.renderEmpty()
           )}
         </Box>
-        <Box p={2}>{this.renderInfoBox()}</Box>
+        <Box p={2} pt={0}>
+          {this.renderInfoBox()}
+        </Box>
       </BasePage>
     );
   }

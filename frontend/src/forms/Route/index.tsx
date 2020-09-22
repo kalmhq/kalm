@@ -8,7 +8,7 @@ import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete
 import { KFormikBoolCheckboxRender, KFormikCheckboxGroupRender } from "forms/Basic/checkbox";
 import { KFormikRadioGroupRender } from "forms/Basic/radio";
 import { ROUTE_FORM_ID } from "forms/formIDs";
-import { KValidatorHostsWithWildcardPrefix, KValidatorPaths, ValidatorArrayNotEmpty } from "forms/validator";
+import { ValidatorIpAndHosts, KValidatorPaths, ValidatorArrayNotEmpty } from "forms/validator";
 import routesGif from "images/routes.gif";
 import React from "react";
 import { connect } from "react-redux";
@@ -306,7 +306,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         icons={icons}
                         label="Hosts"
                         name="hosts"
-                        validate={KValidatorHostsWithWildcardPrefix}
+                        validate={ValidatorIpAndHosts}
                         placeholder="e.g. www.example.com"
                         helperText={
                           <Caption color="textSecondary">

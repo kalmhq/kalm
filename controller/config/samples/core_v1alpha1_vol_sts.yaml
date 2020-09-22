@@ -18,7 +18,7 @@ spec:
     volumes:
       - path: /data
         size: 1Mi
-        type: pvc
+        type: pvcTemplate
         storageClassName: kalm-standard
         pvc: my-pvc
       - path: /tmp

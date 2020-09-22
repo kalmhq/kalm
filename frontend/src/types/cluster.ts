@@ -13,6 +13,24 @@ export interface ClusterInfo {
   version: string;
   canBeInitialized: boolean;
   isProduction: boolean;
+  kubernetesVersion: {
+    buildDate: string;
+    compiler: string;
+    gitCommit: string;
+    gitTreeState: string;
+    gitVersion: string;
+    goVersion: string;
+    platform: string;
+  };
+  kalmVersion: {
+    buildDate: string;
+    compiler: string;
+    gitCommit: string;
+    gitTreeState: string;
+    gitVersion: string;
+    goVersion: string;
+    platform: string;
+  };
 }
 
 export type TemporaryAdmin = {

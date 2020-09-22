@@ -186,6 +186,8 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/acmeserver", h.handleGetACMEServer)
 	gv1Alpha1WithAuth.PUT("/acmeserver", h.handleUpdateACMEServer)
 	gv1Alpha1WithAuth.DELETE("/acmeserver", h.handleDeleteACMEServer)
+
+	gv1Alpha1WithAuth.GET("/settings", h.handleListSettings)
 }
 
 func NewApiHandler(clientManager client.ClientManager) *ApiHandler {

@@ -66,18 +66,3 @@ export const arraysMatch = (arr1: any[], arr2: any[]) => {
   // Otherwise, return true
   return true;
 };
-
-export let loadingMap = new Map();
-export const throttle = (key: string, func: any, timeout: number) => {
-  return (...args: any) => {
-    if (loadingMap.get(key)) {
-      return;
-    }
-    loadingMap.set(key, true);
-    setTimeout(() => {
-      loadingMap.set(key, false);
-      // func(...args);
-    }, timeout);
-    func(...args);
-  };
-};

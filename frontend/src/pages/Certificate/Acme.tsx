@@ -42,7 +42,7 @@ class CertificateAcmeRaw extends React.PureComponent<Props> {
           <div className={classes.root}>
             <Grid container spacing={2}>
               <Grid item xs={8} sm={8} md={8}>
-                <AcmeServerGuide acmeServer={acmeServer} />
+                <AcmeServerGuide acmeServer={acmeServer} showPanel />
               </Grid>
             </Grid>
           </div>
