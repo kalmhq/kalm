@@ -1,20 +1,24 @@
-import { Box, Button, createStyles, Divider, Grid, Link, Tab, Tabs, Theme } from "@material-ui/core";
-import { withStyles, WithStyles } from "@material-ui/core/styles";
+import { Box, Button, Collapse, Divider, Grid, Link, Tab, Tabs } from "@material-ui/core";
+import { createStyles, Theme, useTheme, withStyles, WithStyles } from "@material-ui/core/styles";
 import HelpIcon from "@material-ui/icons/Help";
 import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 import clsx from "clsx";
 import { push } from "connected-react-router";
-// import { Field, Field, FormikProps, getIn, withFormik } from "formik";
+import arrayMutators from "final-form-arrays";
 import { KTooltip } from "forms/Application/KTooltip";
 import { Disks } from "forms/ComponentLike/Disks";
 import { FinalSelectField } from "forms/Final/select";
-import { FormikNormalizePositiveNumber } from "forms/normalizer";
+import { COMPONENT_FORM_ID } from "forms/formIDs";
+import { NormalizePositiveNumber } from "forms/normalizer";
+import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 import React from "react";
-import { Field, Form, FormRenderProps } from "react-final-form";
+import { Field, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
+import { RootState } from "reducers";
 import { TDispatchProp } from "types";
+
 import {
   ComponentLike,
   workloadTypeCronjob,
@@ -26,6 +30,7 @@ import { PublicRegistriesList } from "types/registry";
 import { sizeStringToMi, sizeStringToNumber } from "utils/sizeConv";
 import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
+import { KalmConsoleIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
 import { Subtitle1 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
@@ -33,17 +38,12 @@ import { SectionTitle } from "widgets/SectionTitle";
 import { makeSelectOption } from "../Basic/select";
 import { FinalTextField } from "../Final/textfield";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
+import { ComponentAccess } from "./Access";
 import { Envs } from "./Envs";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { ComponentAccess } from "./Access";
-import Collapse from "@material-ui/core/Collapse";
-import { RootState } from "reducers";
-import { COMPONENT_FORM_ID } from "forms/formIDs";
 import grey from "@material-ui/core/colors/grey";
-import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
-import { FormApi } from "final-form";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -208,7 +208,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           helperText={sc.REPLICA_INPUT_HELPER}
           type="number"
           min="0"
-          normalize={FormikNormalizePositiveNumber}
+          parse={NormalizePositiveNumber}
         />
       );
     }
@@ -309,7 +309,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderDisks() {
+  private renderDisks(isEdit: boolean) {
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
@@ -319,13 +319,19 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <HelperTextSection>{sc.DISKS_HELPER}</HelperTextSection>
         <Grid item xs={12}>
-          <Disks />
+          <FormSpy subscription={{ values: true }}>
+            {({ values }: { values: ComponentLike }) => {
+              return <Disks isEdit={isEdit} workloadType={values.workloadType} componentName={values.name} />;
+            }}
+          </FormSpy>
         </Grid>
       </Grid>
     );
   }
 
   private renderCommandAndArgs() {
+    const theme = useTheme();
+
     return (
       <>
         <Grid item xs={12}>
@@ -337,7 +343,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <HelperTextSection>{sc.COMMAND_HELPER}</HelperTextSection>
         </Grid>
         <Grid item xs={12}>
-          <Field component={FinalTextField} name="command" label="Command" placeholder={sc.COMMAND_INPUT_PLACEHOLDER} />
+          <Field
+            component={FinalTextField}
+            startAdornment={<KalmConsoleIcon color={theme.palette.type === "light" ? "default" : "inherit"} />}
+            name="command"
+            label="Command"
+            placeholder={sc.COMMAND_INPUT_PLACEHOLDER}
+          />
         </Grid>
       </>
     );
@@ -347,8 +359,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container spacing={2}>
         {this.renderCommandAndArgs()}
-        {this.renderEnvs()}
-        {this.preInjectedFiles()}
+        {/* {this.renderEnvs()} */}
+        {/* {this.preInjectedFiles()} */}
       </Grid>
     );
   }
@@ -614,7 +626,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   //           component={FinalTextField}
   //           name="terminationGracePeriodSeconds"
   //           label="Termination Grace Period (seconds)"
-  //           normalize={FormikNormalizePositiveNumber}
+  //           normalize={NormalizePositiveNumber}
   //           placeholder={sc.GRACEFUL_TERM_INPUT_PLACEHOLDER}
   //         />
   //       </Grid>
@@ -622,20 +634,20 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   //   );
   // }
 
-  private renderTabDetails(values: ComponentLike, change: FormApi["change"]) {
+  private renderTabDetails(isEdit: boolean) {
     const { classes, currentTabIndex } = this.props;
 
     // TODO
     return (
       <>
         <div className={`${this.tabs[currentTabIndex] === Configurations ? "" : classes.displayNone}`}>
-          {/* {this.renderConfigurations()} */}
+          {this.renderConfigurations()}
         </div>
         <div className={`${this.tabs[currentTabIndex] === NetworkingTab ? "" : classes.displayNone}`}>
           {/* {this.renderNetworking()} */}
         </div>
         <div className={`${this.tabs[currentTabIndex] === DisksTab ? "" : classes.displayNone}`}>
-          {/* {this.renderDisks()} */}
+          {this.renderDisks(isEdit)}
         </div>
         <div className={`${this.tabs[currentTabIndex] === HealthTab ? "" : classes.displayNone}`}>
           {/* {this.renderHealth()} */}
@@ -647,7 +659,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {/* {this.renderUpgradePolicy()} */}
         </div>
         <div className={`${this.tabs[currentTabIndex] === Access ? "" : classes.displayNone}`}>
-          <ComponentAccess ports={values.ports} change={change} protectedEndpoint={values.protectedEndpoint} />
+          <FormSpy subscription={{ pristine: true, values: true }}>
+            {({ form: { change }, values }: FormSpyRenderProps<ComponentLike>) => (
+              <ComponentAccess ports={values.ports} change={change} protectedEndpoint={values.protectedEndpoint} />
+            )}
+          </FormSpy>
         </div>
       </>
     );
@@ -707,17 +723,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderMain(values: ComponentLike, initialValues: Partial<ComponentLike>) {
-    let isEdit = false;
-    if (initialValues && initialValues.name) {
-      isEdit = true;
-    }
-
-    let hasVolumes = false;
-    if (values.volumes && values.volumes.length > 0) {
-      hasVolumes = true;
-    }
-
+  private renderMain(isEdit: boolean) {
     return (
       <Grid container spacing={2}>
         <Grid item xs={6}>
@@ -746,25 +752,45 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
-            name="workloadType"
-            component={FinalSelectField}
-            label="Type"
-            validate={ValidatorRequired}
-            disabled={isEdit || hasVolumes}
-            options={[
-              makeSelectOption(workloadTypeServer, "Service Component", sc.COMPONENT_TYPE_SERVICE_OPTION),
-              makeSelectOption(workloadTypeCronjob, "CronJob", sc.COMPONENT_TYPE_CRONJOB_OPTION),
-              makeSelectOption(workloadTypeDaemonSet, "DaemonSet", sc.COMPONENT_TYPE_DAEMON_OPTION),
-              makeSelectOption(workloadTypeStatefulSet, "StatefulSet", sc.COMPONENT_TYPE_STATEFUL_SET_OPTION),
-            ]}
-            helperText={!isEdit && hasVolumes ? "Type can't be changed after created disks" : ""}
-          />
+          <FormSpy subscription={{ values: true }}>
+            {({ values }: { values: ComponentLike }) => {
+              let hasVolumes = false;
+              if (values.volumes && values.volumes.length > 0) {
+                hasVolumes = true;
+              }
+
+              return (
+                <Field
+                  name="workloadType"
+                  component={FinalSelectField}
+                  label="Type"
+                  validate={ValidatorRequired}
+                  disabled={isEdit || hasVolumes}
+                  options={[
+                    makeSelectOption(workloadTypeServer, "Service Component", sc.COMPONENT_TYPE_SERVICE_OPTION),
+                    makeSelectOption(workloadTypeCronjob, "CronJob", sc.COMPONENT_TYPE_CRONJOB_OPTION),
+                    makeSelectOption(workloadTypeDaemonSet, "DaemonSet", sc.COMPONENT_TYPE_DAEMON_OPTION),
+                    makeSelectOption(workloadTypeStatefulSet, "StatefulSet", sc.COMPONENT_TYPE_STATEFUL_SET_OPTION),
+                  ]}
+                  helperText={!isEdit && hasVolumes ? "Type can't be changed after created disks" : ""}
+                />
+              );
+            }}
+          </FormSpy>
         </Grid>
-        <Grid item xs={6}>
-          {this.renderReplicasOrSchedule(values.workloadType)}
-        </Grid>
-        {this.renderPrivateRegistryAlert(values)}
+
+        <FormSpy subscription={{ values: true }}>
+          {({ values }: { values: ComponentLike }) => {
+            return (
+              <>
+                <Grid item xs={6}>
+                  {this.renderReplicasOrSchedule(values.workloadType)}
+                </Grid>
+                {this.renderPrivateRegistryAlert(values.image)}
+              </>
+            );
+          }}
+        </FormSpy>
       </Grid>
     );
   }
@@ -792,9 +818,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return !registries.find((r) => r.host.includes(parts[0]));
   };
 
-  private renderPrivateRegistryAlert = (values: ComponentLike) => {
-    const image = values.image;
-
+  private renderPrivateRegistryAlert = (image: string) => {
     if (!image || !this.isUnknownPrivateRegistry(image)) {
       return null;
     }
@@ -822,11 +846,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderDeployButton(initialValues: Partial<ComponentLike>) {
+  private renderDeployButton(isEdit: boolean) {
     const { classes, isSubmittingApplicationComponent } = this.props;
-
-    // @ts-ignore
-    const isEdit = initialValues && initialValues.name;
 
     return (
       <Grid container spacing={2}>
@@ -849,27 +870,25 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { classes, _initialValues, onSubmit } = this.props;
+    const isEdit = !!_initialValues.name;
     return (
       <Form
         debug={process.env.REACT_APP_DEBUG === "true" ? console.log : undefined}
         initialValues={_initialValues}
         onSubmit={onSubmit}
-        render={({
-          handleSubmit,
-          form: { change },
-          submitting,
-          pristine,
-          values,
-          dirty,
-          initialValues,
-        }: RenderProps) => (
+        subscription={{ submitting: true, pristine: true }}
+        keepDirtyOnReinitialize={true}
+        mutators={{
+          ...arrayMutators,
+        }}
+        render={({ handleSubmit, submitting, pristine, dirty }: RenderProps) => (
           <form onSubmit={handleSubmit} className={classes.root} id="component-form">
             {<Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />}
             {/* <FormMidware values={values} form={form} /> */}
             <KPanel
               content={
                 <Box p={2} tutorial-anchor-id="component-from-basic">
-                  {this.renderMain(values, initialValues)}
+                  {this.renderMain(isEdit)}
                 </Box>
               }
             />
@@ -878,36 +897,26 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 content={
                   <>
                     {this.renderTabs()}
-                    <Box p={2}>{this.renderTabDetails(values, change)}</Box>
+                    <Box p={2}>{this.renderTabDetails(isEdit)}</Box>
                   </>
                 }
               />
             </Box>
             {process.env.REACT_APP_DEBUG === "true" ? (
-              <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
+              <FormSpy subscription={{ values: true }}>
+                {({ values }: { values: ComponentLike }) => {
+                  return (
+                    <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
+                  );
+                }}
+              </FormSpy>
             ) : null}
-            {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
-            {this.renderDeployButton(initialValues)}
+            {this.renderDeployButton(isEdit)}
           </form>
         )}
       />
     );
   }
 }
-
-// const form = withFormik<ConnectedProps & RawProps & WithStyles<typeof styles> & RouteComponentProps, ComponentLike>({
-//   mapPropsToValues: (props) => props._initialValues,
-//   enableReinitialize: true,
-//   validate: (values, props) => {
-//     return validate(values) || formikValidateOrNotBlockByTutorial(values, props);
-//   },
-//   handleSubmit: async (formValues, { props: { onSubmit } }) => {
-//     await onSubmit(formValues);
-//   },
-//   validationSchema: object().shape({
-//     // @ts-ignore
-//     env: array().of(object().unique("name", "Env names should be unique.")),
-//   }),
-// })(ComponentLikeFormRaw);
 
 export const ComponentLikeForm = connect(mapStateToProps)(withStyles(styles)(withRouter(ComponentLikeFormRaw)));

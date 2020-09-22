@@ -29,6 +29,7 @@ export const FinalSelectField = ({
   autoFocus,
   meta: { touched, error },
   input: { value, onChange, onBlur },
+  disabled,
 }: FinalSelectFieldProps) => {
   const id = ID();
   const labelId = ID();
@@ -60,6 +61,7 @@ export const FinalSelectField = ({
         {label}
       </InputLabel>
       <Select
+        disabled={disabled}
         label={label}
         labelWidth={labelWidth}
         autoFocus={autoFocus}
