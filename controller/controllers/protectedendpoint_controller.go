@@ -21,10 +21,7 @@ import (
 	protoTypes "github.com/gogo/protobuf/types"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	v1alpha32 "istio.io/api/networking/v1alpha3"
-	v1beta12 "istio.io/api/security/v1beta1"
-	v1beta13 "istio.io/api/type/v1beta1"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
-	"istio.io/client-go/pkg/apis/security/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -44,35 +41,17 @@ type ProtectedEndpointReconciler struct {
 
 type ProtectedEndpointReconcilerTask struct {
 	*ProtectedEndpointReconciler
-	ctx                   context.Context
-	endpoint              *corev1alpha1.ProtectedEndpoint
-	ssoConfig             *corev1alpha1.SingleSignOnConfig
-	envoyFilter           *v1alpha3.EnvoyFilter
-	authorizationPolicy   *v1beta1.AuthorizationPolicy
-	requestAuthentication *v1beta1.RequestAuthentication
+	ctx         context.Context
+	endpoint    *corev1alpha1.ProtectedEndpoint
+	ssoConfig   *corev1alpha1.SingleSignOnConfig
+	envoyFilter *v1alpha3.EnvoyFilter
 }
 
 func (r *ProtectedEndpointReconcilerTask) LoadResources(req ctrl.Request) error {
 
 	name := fmt.Sprintf("kalm-sso-%s", req.Name)
-
-	var authorizationPolicy v1beta1.AuthorizationPolicy
-	err := r.Get(r.ctx, types.NamespacedName{
-		Name:      name,
-		Namespace: req.Namespace,
-	}, &authorizationPolicy)
-
-	if err != nil {
-		if !errors.IsNotFound(err) {
-			r.Log.Error(err, "get authorizationPolicy failed.")
-			return err
-		}
-	} else {
-		r.authorizationPolicy = &authorizationPolicy
-	}
-
 	var envoyFilter v1alpha3.EnvoyFilter
-	err = r.Get(r.ctx, types.NamespacedName{
+	err := r.Get(r.ctx, types.NamespacedName{
 		Name:      name,
 		Namespace: req.Namespace,
 	}, &envoyFilter)
@@ -84,21 +63,6 @@ func (r *ProtectedEndpointReconcilerTask) LoadResources(req ctrl.Request) error 
 		}
 	} else {
 		r.envoyFilter = &envoyFilter
-	}
-
-	var requestAuthentication v1beta1.RequestAuthentication
-	err = r.Get(r.ctx, types.NamespacedName{
-		Name:      name,
-		Namespace: req.Namespace,
-	}, &requestAuthentication)
-
-	if err != nil {
-		if !errors.IsNotFound(err) {
-			r.Log.Error(err, "get requestAuthentication failed.")
-			return err
-		}
-	} else {
-		r.requestAuthentication = &requestAuthentication
 	}
 
 	return nil
@@ -127,7 +91,7 @@ func (r *ProtectedEndpointReconcilerTask) Run(req ctrl.Request) error {
 
 	if len(ssoList.Items) == 0 {
 		r.Log.Info("No sso config, skip.")
-		return r.DeleteResources()
+		return nil
 	}
 
 	if len(ssoList.Items) > 1 {
@@ -155,21 +119,6 @@ func (r *ProtectedEndpointReconcilerTask) DeleteResources() error {
 			return err
 		}
 	}
-
-	if r.authorizationPolicy != nil {
-		if err := r.Delete(r.ctx, r.authorizationPolicy); err != nil {
-			r.Log.Error(err, "delete authorizationPolicy error")
-			return err
-		}
-	}
-
-	if r.requestAuthentication != nil {
-		if err := r.Delete(r.ctx, r.requestAuthentication); err != nil {
-			r.Log.Error(err, "delete requestAuthentication error")
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -394,85 +343,6 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterHttpRoutePatches(req c
 	return configPatches
 }
 
-func (r *ProtectedEndpointReconcilerTask) BuildAuthorizationPolicy(req ctrl.Request) *v1beta1.AuthorizationPolicy {
-	name := fmt.Sprintf("kalm-sso-%s", req.Name)
-	namespace := req.Namespace
-	oidcProviderInfo := GetOIDCProviderInfo(r.ssoConfig)
-
-	policy := &v1beta1.AuthorizationPolicy{
-		ObjectMeta: metaV1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: v1beta12.AuthorizationPolicy{
-			Selector: &v1beta13.WorkloadSelector{
-				MatchLabels: map[string]string{
-					KalmLabelComponentKey: r.endpoint.Spec.EndpointName,
-				},
-			},
-			Action: v1beta12.AuthorizationPolicy_DENY,
-			Rules: []*v1beta12.Rule{
-				{
-
-					When: []*v1beta12.Condition{
-						{
-							Key: "request.auth.claims[iss]",
-							NotValues: []string{
-								oidcProviderInfo.Issuer,
-							},
-						},
-						// Check group here
-					},
-				},
-			},
-		},
-	}
-
-	if len(r.endpoint.Spec.Ports) > 0 {
-		ports := make([]string, len(r.endpoint.Spec.Ports))
-
-		for i := range r.endpoint.Spec.Ports {
-			ports[i] = strconv.Itoa(int(r.endpoint.Spec.Ports[i]))
-		}
-
-		policy.Spec.Rules[0].To = []*v1beta12.Rule_To{
-			{
-				Operation: &v1beta12.Operation{
-					Ports: ports,
-				},
-			},
-		}
-	}
-
-	return policy
-}
-
-func (r *ProtectedEndpointReconcilerTask) BuildRequestAuthentication(req ctrl.Request) *v1beta1.RequestAuthentication {
-	name := fmt.Sprintf("kalm-sso-%s", req.Name)
-	namespace := req.Namespace
-	oidcProviderInfo := GetOIDCProviderInfo(r.ssoConfig)
-	requestAuthentication := &v1beta1.RequestAuthentication{
-		ObjectMeta: metaV1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: v1beta12.RequestAuthentication{
-			Selector: &v1beta13.WorkloadSelector{
-				MatchLabels: map[string]string{
-					KalmLabelComponentKey: r.endpoint.Spec.EndpointName,
-				},
-			},
-			JwtRules: []*v1beta12.JWTRule{
-				{
-					Issuer: oidcProviderInfo.Issuer,
-				},
-			},
-		},
-	}
-
-	return requestAuthentication
-}
-
 func (r *ProtectedEndpointReconcilerTask) ReconcileResources(req ctrl.Request) error {
 	envoyFilter := r.BuildEnvoyFilter(req)
 
@@ -499,18 +369,6 @@ func (r *ProtectedEndpointReconcilerTask) ReconcileResources(req ctrl.Request) e
 			r.Log.Error(err, "Create envoyFilter failed.")
 			return err
 		}
-	}
-
-	// requestAuthentication policy can't satisfy our demands
-	// Clean old resources created by old logic
-	if r.requestAuthentication != nil {
-		r.Delete(r.ctx, r.requestAuthentication)
-	}
-
-	// authorization policy can't satisfy our demands
-	// Clean old resources created by old logic
-	if r.authorizationPolicy != nil {
-		r.Delete(r.ctx, r.authorizationPolicy)
 	}
 
 	return nil
@@ -634,8 +492,6 @@ func (r *ProtectedEndpointReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.ProtectedEndpoint{}).
 		Owns(&v1alpha3.EnvoyFilter{}).
-		Owns(&v1beta1.AuthorizationPolicy{}).
-		Owns(&v1beta1.RequestAuthentication{}).
 		Watches(
 			&source.Kind{Type: &corev1alpha1.SingleSignOnConfig{}},
 			&handler.EnqueueRequestsFromMapFunc{

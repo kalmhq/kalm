@@ -27,7 +27,7 @@ const normalizePort = (value: string) => {
   const portInteger = parseInt(value, 10);
 
   if (isNaN(portInteger)) {
-    return "";
+    return 0;
   }
 
   if (portInteger < 0) {
@@ -45,9 +45,12 @@ export const FormikNormalizePort = (event: React.ChangeEvent<HTMLInputElement>) 
   return normalizePort(event.target.value);
 };
 
-export const FormikNormalizePorts = (values: string[]) => {
-  console.log("formik normalize ports")
-  return values.map(normalizePort);
+export const NormalizePorts = (values: string[]) => {
+  return Array.from(new Set(values.map(normalizePort))).filter((x) => x <= 65535 && x > 0);
+};
+
+export const NormalizeComponentAccessGroups = (values: string[]) => {
+  return values.map((x) => x.trim()).filter((x) => !!x);
 };
 
 export const NormalizeCPU = (value: string) => {

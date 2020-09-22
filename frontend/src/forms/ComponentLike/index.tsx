@@ -43,6 +43,7 @@ import { RootState } from "reducers";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
 import grey from "@material-ui/core/colors/grey";
 import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
+import { FormApi } from "final-form";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -621,11 +622,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   //   );
   // }
 
-  private renderAccess = () => {
-    return <ComponentAccess />;
-  };
-
-  private renderTabDetails() {
+  private renderTabDetails(values: ComponentLike, change: FormApi["change"]) {
     const { classes, currentTabIndex } = this.props;
 
     // TODO
@@ -650,7 +647,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {/* {this.renderUpgradePolicy()} */}
         </div>
         <div className={`${this.tabs[currentTabIndex] === Access ? "" : classes.displayNone}`}>
-          {/*{this.renderAccess()}*/}
+          <ComponentAccess ports={values.ports} change={change} protectedEndpoint={values.protectedEndpoint} />
         </div>
       </>
     );
@@ -854,9 +851,18 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { classes, _initialValues, onSubmit } = this.props;
     return (
       <Form
+        debug={process.env.REACT_APP_DEBUG === "true" ? console.log : undefined}
         initialValues={_initialValues}
         onSubmit={onSubmit}
-        render={({ handleSubmit, form, submitting, pristine, values, dirty, initialValues }: RenderProps) => (
+        render={({
+          handleSubmit,
+          form: { change },
+          submitting,
+          pristine,
+          values,
+          dirty,
+          initialValues,
+        }: RenderProps) => (
           <form onSubmit={handleSubmit} className={classes.root} id="component-form">
             {<Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />}
             {/* <FormMidware values={values} form={form} /> */}
@@ -872,7 +878,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 content={
                   <>
                     {this.renderTabs()}
-                    <Box p={2}>{this.renderTabDetails()}</Box>
+                    <Box p={2}>{this.renderTabDetails(values, change)}</Box>
                   </>
                 }
               />
