@@ -184,14 +184,6 @@ class DeployKeyFormikRaw extends React.PureComponent<Props> {
   }
 }
 
-// export const DeployAccessTokenForm = reduxForm<DeployAccessToken, Props>({
-//   form: DEPLOY_ACCESS_TOKEN_ID,
-//   initialValues: newEmptyDeployAccessToken(),
-//   onSubmitFail: (...args) => {
-//     console.log("submit failed", args);
-//   },
-// })(connect(mapStateToProps)(withNamespace(withStyles(styles)(DeployKeyFormikRaw))));
-
 const DeployKeyForm = withUserAuth(withNamespace(connect(mapStateToProps)(withStyles(styles)(DeployKeyFormikRaw))));
 export const DeployAccessTokenForm = withFormik<OwnProps, DeployAccessToken>({
   mapPropsToValues: newEmptyDeployAccessToken,

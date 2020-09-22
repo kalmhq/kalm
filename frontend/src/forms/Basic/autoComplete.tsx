@@ -103,7 +103,7 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
       icons,
       disabled,
       field: { name, value },
-      form: { errors, setFieldValue, handleBlur },
+      form: { errors, setFieldValue },
       placeholder,
       helperText,
       classes,
@@ -121,6 +121,12 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
     if (typeof getIn(errors, name) === "string") {
       errorText = getIn(errors, name) as string;
     }
+
+    // input value is not in store or state, when props changed, will clear.
+    // so, use state here to prevent clearing
+    // issue here: https://github.com/mui-org/material-ui/issues/19423#issuecomment-641463808
+    const [inputText, setInputText] = React.useState("");
+
     return (
       <Autocomplete
         // {...props}
@@ -132,10 +138,25 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
         disabled={disabled}
         size="small"
         id={id}
-        onBlur={handleBlur}
+        onBlur={(e) => {
+          if (!value || value.length === 0) {
+            if (inputText) {
+              setFieldValue(name, normalize ? [normalize(inputText.trim())] : [inputText.trim()]);
+            }
+          }
+        }}
         value={value}
         onChange={(e, value) => {
           setFieldValue(name, normalize ? normalize(value.map((v) => v.trim())) : value.map((v) => v.trim()));
+          if (value.length !== 0) {
+            setInputText("");
+          }
+        }}
+        inputValue={inputText}
+        onInputChange={(_, value, reason) => {
+          if (reason === "input") {
+            setInputText(value);
+          }
         }}
         // @ts-ignore
         renderTags={(value: string[], getTagProps) => {

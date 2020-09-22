@@ -16,7 +16,6 @@ import sc from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { CopyAsCurl } from "widgets/CopyAsCurl";
-import DomainStatus from "widgets/DomainStatus";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { EditIcon, ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
@@ -52,7 +51,6 @@ const HostCellRaw = ({ row, clusterInfo }: HostCellProps) => {
         const url = getRouteUrl(row as HttpRoute, clusterInfo, h);
         return (
           <FlexRowItemCenterBox key={h}>
-            <DomainStatus mr={1} domain={h} />
             <ItemWithHoverIcon icon={<CopyAsCurl route={row as HttpRoute} showIconButton={true} host={h} />}>
               <KMLink href={url} target="_blank" rel="noopener noreferrer">
                 {h}

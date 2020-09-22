@@ -1,43 +1,18 @@
-import { Box, createStyles, Grid, Theme, withStyles, WithStyles, Button } from "@material-ui/core";
+import { Box, createStyles, Grid, Theme, WithStyles, withStyles } from "@material-ui/core";
 import React from "react";
-import { connect } from "react-redux";
-import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { KPanel } from "widgets/KPanel";
 import { BasePage } from "pages/BasePage";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
-import { KMLink } from "widgets/Link";
-
-// TODO fake data for temporary
-const kalmVersionInfo = {
-  version: "v0.1.0",
-  buildDate: "2020-09-18",
-};
-
-const kalmLatestVersionInfo = {
-  version: "v0.1.1",
-  buildDate: "2020-09-19",
-};
-
-const k8sVersionInfo = {
-  gitVersion: "v2.21.0",
-  gitCommit: "xxxxxxxxxxxxxxxxxxxx",
-  platform: "linux/amd64",
-  compiler: "gc",
-  goVerison: "go1.13.10",
-  buildDate: "2020-9-18",
-};
+import { withClusterInfo, WithClusterInfoProps } from "../../hoc/withClusterInfo";
+import { Loading } from "../../widgets/Loading";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
   });
 
-const mapStateToProps = (state: RootState) => {
-  return {};
-};
-
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
+interface Props extends WithStyles<typeof styles>, WithClusterInfoProps, TDispatchProp {}
 
 interface State {}
 
@@ -47,81 +22,51 @@ class VersionPageRaw extends React.PureComponent<Props, State> {
     this.state = {};
   }
 
-  private handleUpgrade = () => {
-    alert("WIP");
-  };
-
   public render() {
+    const { clusterInfo, isClusterInfoLoaded, isClusterInfoLoading } = this.props;
+
+    if (isClusterInfoLoading && !isClusterInfoLoaded) {
+      return <Loading />;
+    }
+
     return (
       <BasePage>
         <Box p={2}>
           <Grid container spacing={2}>
-            <Grid item xs={6} sm={6} md={6}>
-              <KPanel title="Kalm Version">
-                <Box p={2}>
-                  <Box textAlign="center" mb={1}>
-                    Current Version
+            {clusterInfo.kalmVersion && (
+              <Grid item xs={6} sm={6} md={6}>
+                <KPanel title="Kalm Version">
+                  <Box p={2}>
+                    <VerticalHeadTable
+                      items={[
+                        { name: "Git Version", content: clusterInfo.kalmVersion.gitVersion },
+                        { name: "Git Commit", content: clusterInfo.kalmVersion.gitCommit },
+                        { name: "Platform", content: clusterInfo.kalmVersion.platform },
+                        { name: "Go Version", content: clusterInfo.kalmVersion.goVersion },
+                        { name: "Build Date", content: clusterInfo.kalmVersion.buildDate },
+                      ]}
+                    />
                   </Box>
-                  <VerticalHeadTable
-                    items={[
-                      { name: "Version", content: kalmVersionInfo.version },
-                      { name: "Build Date", content: kalmVersionInfo.buildDate },
-                    ]}
-                  />
-
-                  {kalmLatestVersionInfo.version === kalmVersionInfo.version ? (
-                    <Box textAlign="center" mt={2}>
-                      Kalm is Up to date.
-                    </Box>
-                  ) : (
-                    <>
-                      <Box textAlign="center" mt={2} mb={1}>
-                        Latest Version
-                      </Box>
-                      <VerticalHeadTable
-                        items={[
-                          {
-                            name: "Version",
-                            content: (
-                              <Box display="flex" alignItems="center">
-                                {kalmLatestVersionInfo.version}
-                                <Box ml={2}>
-                                  <KMLink target="_blank" href="https://github.com/kalmhq/kalm/releases">
-                                    Relaese Note
-                                  </KMLink>
-                                </Box>
-                                <Box ml={2}>
-                                  <Button variant="outlined" color="primary" size="small" onClick={this.handleUpgrade}>
-                                    Upgrade
-                                  </Button>
-                                </Box>
-                              </Box>
-                            ),
-                          },
-                          { name: "Build Date", content: kalmLatestVersionInfo.buildDate },
-                        ]}
-                      />
-                    </>
-                  )}
-                </Box>
-              </KPanel>
-            </Grid>
-            <Grid item xs={6} sm={6} md={6}>
-              <KPanel title="Kubernetes Version">
-                <Box p={2}>
-                  <VerticalHeadTable
-                    items={[
-                      { name: "Git Version", content: k8sVersionInfo.gitVersion },
-                      { name: "Git Commit", content: k8sVersionInfo.gitCommit },
-                      { name: "Platform", content: k8sVersionInfo.platform },
-                      { name: "Compiler", content: k8sVersionInfo.compiler },
-                      { name: "Go Version", content: k8sVersionInfo.goVerison },
-                      { name: "Build Date", content: k8sVersionInfo.buildDate },
-                    ]}
-                  />
-                </Box>
-              </KPanel>
-            </Grid>
+                </KPanel>
+              </Grid>
+            )}
+            {clusterInfo.kubernetesVersion && (
+              <Grid item xs={6} sm={6} md={6}>
+                <KPanel title="Kubernetes Version">
+                  <Box p={2}>
+                    <VerticalHeadTable
+                      items={[
+                        { name: "Git Version", content: clusterInfo.kubernetesVersion.gitVersion },
+                        { name: "Git Commit", content: clusterInfo.kubernetesVersion.gitCommit },
+                        { name: "Platform", content: clusterInfo.kubernetesVersion.platform },
+                        { name: "Go Version", content: clusterInfo.kubernetesVersion.goVersion },
+                        { name: "Build Date", content: clusterInfo.kubernetesVersion.buildDate },
+                      ]}
+                    />
+                  </Box>
+                </KPanel>
+              </Grid>
+            )}
           </Grid>
         </Box>
       </BasePage>
@@ -129,4 +74,4 @@ class VersionPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const VersionPage = withStyles(styles)(connect(mapStateToProps)(VersionPageRaw));
+export const VersionPage = withStyles(styles)(withClusterInfo(VersionPageRaw));

@@ -1,11 +1,11 @@
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles, Grid, Box } from "@material-ui/core";
+import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { Certificate, dns01Issuer, http01Issuer } from "types/certificate";
 import { BasePage } from "pages/BasePage";
 import { RootState } from "reducers";
-import { withRouter, RouteComponentProps } from "react-router-dom";
+import { RouteComponentProps, withRouter } from "react-router-dom";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { KPanel } from "widgets/KPanel";
 import DomainStatus, { acmePrefix } from "widgets/DomainStatus";
@@ -56,7 +56,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
       if (cert.httpsCertIssuer === http01Issuer) {
         const domains = cert.domains;
         return (
-          <Box>
+          <Box mt={1}>
             <Box className={classes.key}>Domains</Box>
             <Box pl={0} pt={1}>
               {domains?.map((domain) => {
@@ -73,7 +73,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                       defaultOpen={true}
                     >
                       <Box p={1}>
-                        Add a A Record
+                        <Box mb={1}>Add a A Record</Box>
                         <DNSConfigGuide domain={domain} type="A" aRecord={ingressIP} />
                       </Box>
                     </CollapseWrapper>
@@ -123,7 +123,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                           showIcon={true}
                         >
                           <Box p={1}>
-                            Add a CNAME Record
+                            <Box mb={1}>Add a CNAME Record</Box>
                             <DNSConfigGuide domain={domain} type="NS" cnameRecord={ns} />
                           </Box>
                         </CollapseWrapper>
@@ -174,7 +174,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
               text="Certificate not found"
               redirect={`/applications`}
               redirectText="Go back to Apps List"
-            ></ResourceNotFound>
+            />
           </Box>
         </BasePage>
       );

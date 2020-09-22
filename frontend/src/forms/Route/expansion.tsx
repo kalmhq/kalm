@@ -108,7 +108,7 @@ class ExpansionRaw extends React.PureComponent<ExpansionProps, State> {
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} className={clsx({ [classes.error]: hasError })}>
           {this.renderHeader()}
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails classes={{ root: classes.detailsRoot }} style={nested ? { padding: 0 } : {}}>
+        <ExpansionPanelDetails classes={{ root: classes.detailsRoot }} style={nested ? { padding: 0 } : { padding: 8 }}>
           <Box width={1}>{children}</Box>
         </ExpansionPanelDetails>
       </ExpansionPanel>

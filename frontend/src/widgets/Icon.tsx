@@ -29,6 +29,7 @@ import BrightnessDark from "@material-ui/icons/Brightness4";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import Forward from "@material-ui/icons/Forward";
 import People from "@material-ui/icons/People";
+import Info from "@material-ui/icons/Info";
 import PeopleAdd from "@material-ui/icons/GroupAdd";
 import Impersonate from "@material-ui/icons/AccountCircle";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
@@ -549,6 +550,12 @@ export const ImpersonateIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
   return <Impersonate className={className} fontSize={fontSize} style={style} />;
+});
+
+export const InfoIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <Info className={className} fontSize={fontSize} style={style} />;
 });
 
 export const CIIcon = withStyles(styles)((props: ColorIconsProps) => {

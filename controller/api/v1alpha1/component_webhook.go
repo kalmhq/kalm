@@ -44,7 +44,7 @@ var _ webhook.Defaulter = &Component{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *Component) Default() {
-	componentlog.Info("default", "name", r.Name)
+	componentlog.Info("default", "ns", r.Namespace, "name", r.Name)
 
 	if r.Spec.WorkloadType == "" {
 		r.Spec.WorkloadType = WorkloadTypeServer
@@ -88,7 +88,7 @@ var _ webhook.Validator = &Component{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateCreate() error {
-	componentlog.Info("validate create", "name", r.Name)
+	componentlog.Info("validate create", "ns", r.Namespace, "name", r.Name)
 	errList := r.validate()
 
 	if errList == nil || len(errList) == 0 {
@@ -100,7 +100,7 @@ func (r *Component) ValidateCreate() error {
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateUpdate(old runtime.Object) error {
-	componentlog.Info("validate update", "name", r.Name)
+	componentlog.Info("validate update", "ns", r.Namespace, "name", r.Name)
 
 	var volErrList KalmValidateErrorList
 
@@ -231,15 +231,16 @@ func (r *Component) validateVolumesOfComponent() (rst KalmValidateErrorList) {
 		errList := ValidateResourceQuantityValue(vol.Size, fld, true)
 		rst = append(rst, toKalmValidateErrors(errList)...)
 
-		// for pvc vol, field: pvc must be set
-		if vol.Type == VolumeTypePersistentVolumeClaim &&
-			vol.PVC == "" {
+		// for pvc && pvcTemplate vol, field: pvc must be set
+		if vol.Type == VolumeTypePersistentVolumeClaim ||
+			vol.Type == VolumeTypePersistentVolumeClaimTemplate {
 
-			rst = append(rst, KalmValidateError{
-				Err:  "must set pvc for this volume",
-				Path: fmt.Sprintf(".spec.volumes[%d]", i),
-			})
-
+			if vol.PVC == "" {
+				rst = append(rst, KalmValidateError{
+					Err:  "must set pvc for this volume",
+					Path: fmt.Sprintf(".spec.volumes[%d]", i),
+				})
+			}
 		}
 
 		if vol.Type == VolumeTypeHostPath {
@@ -286,8 +287,7 @@ func (r *Component) validateVolumesOfComponent() (rst KalmValidateErrorList) {
 	}
 
 	// for simpleWorkload using pvc, constraints on replicas
-	if r.isSimpleWorkload() && r.Spec.Replicas != nil && *r.Spec.Replicas > 1 {
-
+	if r.isStatelessWorkload() && r.Spec.Replicas != nil && *r.Spec.Replicas > 1 {
 		usingPVC := false
 		for _, vol := range r.Spec.Volumes {
 			if vol.Type != VolumeTypePersistentVolumeClaim {
@@ -300,7 +300,7 @@ func (r *Component) validateVolumesOfComponent() (rst KalmValidateErrorList) {
 
 		if usingPVC {
 			rst = append(rst, KalmValidateError{
-				Err: fmt.Sprintf("for simple workload: %s using PVC, replicas should <= 1",
+				Err: fmt.Sprintf("stateless workload %s that has more than 1 replicas can't use ReadWriteOnce PVC",
 					r.Spec.WorkloadType,
 				),
 				Path: ".spec.replicas",
@@ -311,24 +311,13 @@ func (r *Component) validateVolumesOfComponent() (rst KalmValidateErrorList) {
 	return rst
 }
 
-func (r *Component) isSimpleWorkload() bool {
-	simpleWorkloads := []WorkloadType{
-		WorkloadTypeServer,
-		WorkloadTypeDaemonSet,
-		WorkloadTypeCronjob,
+func (r *Component) isStatelessWorkload() bool {
+	switch r.Spec.WorkloadType {
+	case WorkloadTypeServer, WorkloadTypeDaemonSet, WorkloadTypeCronjob:
+		return true
+	default:
+		return false
 	}
-
-	isSimpleWorkload := false
-	for _, workload := range simpleWorkloads {
-		if r.Spec.WorkloadType != workload {
-			continue
-		}
-
-		isSimpleWorkload = true
-		break
-	}
-
-	return isSimpleWorkload
 }
 
 func (r *Component) validateScheduleOfComponentIfIsCronJob() (rst KalmValidateErrorList) {

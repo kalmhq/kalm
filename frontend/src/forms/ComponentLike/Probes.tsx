@@ -17,7 +17,7 @@ import { connect, DispatchProp } from "react-redux";
 import { PortProtocolHTTP, PortProtocolTCP, Probe, ComponentLikePort } from "types/componentTemplate";
 import sc from "../../utils/stringConstants";
 import { makeSelectOption, SelectField } from "../Basic/select";
-import { ValidatorOneof, ValidatorRequired } from "../validator";
+import { ValidatorOneof, ValidatorRequired, ValidateHost } from "../validator";
 
 interface FieldComponentHackType {
   component: any;
@@ -61,8 +61,8 @@ class RenderProbe extends React.PureComponent<Props> {
     const { classes } = this.props;
     return (
       <TextField
-        error={!!getIn(touched, name) && !!getIn(errors, name)}
-        helperText={!!getIn(touched, name) && !!getIn(errors, name) ? getIn(errors, name) : undefined}
+        error={!!getIn(errors, name)}
+        helperText={getIn(errors, name)}
         InputProps={{ classes: { input: classes.input } }}
         onChange={(e) => {
           if (normalize) {
@@ -121,6 +121,7 @@ class RenderProbe extends React.PureComponent<Props> {
               name={`${name}.httpGet.host`}
               component={this.renderNestedTextfield}
               placeholder="0.0.0.0"
+              validate={ValidateHost}
               style={{ width: 80 }}
             />
             :

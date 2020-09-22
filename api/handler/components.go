@@ -247,9 +247,11 @@ func getComponentFromContext(c echo.Context) (*v1alpha1.Component, []runtime.Raw
 		Spec: component.ComponentSpec,
 	}
 
-	// for pvc volumes, check if pvcName is set
+	// todo move to webhook defaulting
+	// for pvc & template volumes, check if pvcName is set
 	for i, vol := range crdComponent.Spec.Volumes {
-		if vol.Type != v1alpha1.VolumeTypePersistentVolumeClaim {
+		if vol.Type != v1alpha1.VolumeTypePersistentVolumeClaim &&
+			vol.Type != v1alpha1.VolumeTypePersistentVolumeClaimTemplate {
 			continue
 		}
 

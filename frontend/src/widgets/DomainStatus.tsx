@@ -212,7 +212,7 @@ class DomainStatus extends React.PureComponent<Props> {
               aria-label="copy"
               size="small"
               onClick={(e) => {
-                if (copyContent.length === 0) {
+                if (!copyContent || copyContent.length === 0) {
                   return;
                 }
                 copy(copyContent);

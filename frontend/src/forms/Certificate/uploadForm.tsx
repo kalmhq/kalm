@@ -4,7 +4,7 @@ import { Field, Form, Formik, FormikProps } from "formik";
 import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KRenderThrottleFormikTextField } from "forms/Basic/textfield";
 import { FormikUploader } from "forms/Basic/uploader";
-import { ValidateHost } from "forms/validator";
+import { ValidatorHosts } from "forms/validator";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
 import { RootState } from "reducers";
@@ -124,16 +124,6 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
       return errors;
     }
 
-    errors.domains = values.domains.map(ValidateHost);
-    if (errors.domains.filter((e: string | undefined) => e).length < 1) {
-      delete errors.domains;
-    }
-
-    if (values.domains.length < 1) {
-      errors.domains = "Required";
-      return errors;
-    }
-
     return errors;
   };
 
@@ -172,7 +162,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
                           disabled={isEdit}
                           placeholder="Please type a certificate name"
                           id="certificate-name"
-                          helperText={!!errors.name && touched.name ? errors.name : " "}
+                          helperText={!!errors.name && touched.name ? errors.name : ""}
                         />
                       </Grid>
                       <Grid item md={12}>
@@ -180,6 +170,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
                           component={KFreeSoloFormikAutoCompleteMultiValues}
                           disabled={values.managedType === selfManaged}
                           name="domains"
+                          validate={ValidatorHosts}
                           icons={icons}
                           value={values.domains}
                           id="certificate-domains"

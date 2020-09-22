@@ -1,12 +1,12 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { deleteProtectedEndpointAction } from "actions/sso";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withSSO, WithSSOProps } from "hoc/withSSO";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
 import { SSOImplementDetails } from "pages/SSO/Details";
 import React from "react";
 import { Link } from "react-router-dom";
 import {
-  ProtectedEndpoint,
   SSOGithubConnector,
   SSOGitlabConnector,
   SSO_CONNECTOR_TYPE,
@@ -14,16 +14,11 @@ import {
   SSO_CONNECTOR_TYPE_GITLAB,
 } from "types/sso";
 import { CustomizedButton } from "widgets/Button";
-import { EditIcon, GithubIcon } from "widgets/Icon";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { GithubIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
-import { KRTable } from "widgets/KRTable";
 import { Body, Subtitle1 } from "widgets/Label";
 import { KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -106,7 +101,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   private renderConfigDetails = () => {
     const { ssoConfig, canEditCluster } = this.props;
 
-    if (!ssoConfig || !ssoConfig.connectors) {
+    if (!ssoConfig) {
       return null;
     }
 
@@ -125,119 +120,9 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
             ) : null}
           </Box>
         </KPanel>
-        {this.renderProtectedComponents()}
       </>
     );
   };
-
-  private renderNamespace = (rowData: ProtectedEndpoint) => {
-    return rowData.namespace;
-  };
-
-  private renderComponentName = (rowData: ProtectedEndpoint) => {
-    return rowData.endpointName;
-  };
-
-  private renderComponentPorts = (rowData: ProtectedEndpoint) => {
-    return !!rowData.ports && rowData.ports!.length > 0 ? rowData.ports!.join(", ") : "All";
-  };
-
-  private renderGrantedGroups = (rowData: ProtectedEndpoint) => {
-    return !!rowData.groups && rowData.groups!.length > 0 ? rowData.groups!.join(", ") : "All";
-  };
-
-  private renderProtectedComponentActions = (rowData: ProtectedEndpoint) => {
-    const { dispatch, canEditNamespace } = this.props;
-
-    return canEditNamespace(rowData.name) ? (
-      <>
-        <IconButtonWithTooltip
-          component={Link}
-          to={"/sso/endpoints/" + rowData.name + "/edit"}
-          size="small"
-          tooltipPlacement="top"
-          tooltipTitle="Edit"
-          aria-label="edit"
-        >
-          <EditIcon />
-        </IconButtonWithTooltip>
-        <DeleteButtonWithConfirmPopover
-          popupId="delete-sso-popup"
-          popupTitle="DELETE SSO?"
-          confirmedAction={() => dispatch(deleteProtectedEndpointAction(rowData))}
-        />
-      </>
-    ) : null;
-  };
-
-  private getKRTableColumns() {
-    return [
-      {
-        Header: "Namespace",
-        accessor: "namespace",
-      },
-      {
-        Header: "Component",
-        accessor: "component",
-      },
-      {
-        Header: "Ports",
-        accessor: "ports",
-      },
-      {
-        Header: "Granted groups",
-        accessor: "grantedGroups",
-      },
-      { Header: "Actions", accessor: "actions" },
-    ];
-  }
-
-  private getKRTableData() {
-    const { protectedEndpoints } = this.props;
-    const data: any[] = [];
-
-    protectedEndpoints.forEach((rowData, index) => {
-      data.push({
-        namespace: this.renderNamespace(rowData),
-        component: this.renderComponentName(rowData),
-        ports: this.renderComponentPorts(rowData),
-        grantedGroups: this.renderGrantedGroups(rowData),
-        actions: this.renderProtectedComponentActions(rowData),
-      });
-    });
-
-    return data;
-  }
-
-  private renderKRTable() {
-    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
-  }
-
-  private renderProtectedComponents() {
-    const { canEditCluster } = this.props;
-    return (
-      <Box mt={2}>
-        <KPanel title="Protected Component">
-          <Box p={2}>
-            <Box display="inline-block" mb={2}>
-              {canEditCluster() ? (
-                <CustomizedButton
-                  size="small"
-                  component={Link}
-                  to="/sso/endpoints/new"
-                  variant="outlined"
-                  color="primary"
-                >
-                  New Protected Endpoint
-                </CustomizedButton>
-              ) : null}
-            </Box>
-            {this.renderKRTable()}
-          </Box>
-        </KPanel>
-      </Box>
-    );
-  }
 
   private renderEmptyText = () => {
     const { canEditCluster } = this.props;
