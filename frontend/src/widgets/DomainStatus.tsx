@@ -107,7 +107,7 @@ class DomainStatus extends React.PureComponent<Props> {
         } else {
           return (
             <>
-              Please configure the Kalm DNS server first, and then check the domain status after Kalm DNS server is
+              Please configure the ACME DNS Server first, and then check the domain status after ACME DNS Server is
               running.
             </>
           );
