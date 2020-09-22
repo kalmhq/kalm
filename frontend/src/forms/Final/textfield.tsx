@@ -7,6 +7,7 @@ type FinalTextFieldProps = TextFieldProps &
   FieldRenderProps<string | number, any> & {
     startAdornment?: React.ReactNode;
     endAdornment?: React.ReactNode;
+    htmlType?: string;
   };
 
 export const FinalTextField = ({
@@ -16,6 +17,7 @@ export const FinalTextField = ({
   handleBlur,
   input: { value, onChange, onBlur },
   meta: { touched, error },
+  htmlType,
   ...rest
 }: FinalTextFieldProps) => {
   const showError = touched && !!error;
@@ -31,6 +33,7 @@ export const FinalTextField = ({
   return (
     <TextField
       {...rest}
+      type={htmlType}
       fullWidth
       value={value}
       onChange={onChange}
