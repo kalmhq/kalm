@@ -12,7 +12,7 @@ import DomainStatus, { acmePrefix } from "widgets/DomainStatus";
 import { Loading } from "widgets/Loading";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
-import { AcmeServerGuide } from "widgets/AcmeServerGuide";
+import { AcmeServerGuide, DNSConfigGuide } from "widgets/AcmeServerGuide";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -65,17 +65,16 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                     <CollapseWrapper
                       title={
                         <FlexRowItemCenterBox>
-                          <DomainStatus domain={domain} ipAddress={ingressIP} mr={1} />
+                          {/* <DomainStatus domain={domain} ipAddress={ingressIP} mr={1} /> */}
                           {domain}
                         </FlexRowItemCenterBox>
                       }
                       showIcon={true}
+                      defaultOpen={true}
                     >
                       <Box p={1}>
                         <Box mb={1}>Add a A Record</Box>
-                        <pre className={classes.action}>
-                          {domain} A {ingressIP}{" "}
-                        </pre>
+                        <DNSConfigGuide domain={domain} type="A" aRecord={ingressIP} />
                       </Box>
                     </CollapseWrapper>
                   </Box>
@@ -116,7 +115,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                         <CollapseWrapper
                           title={
                             <FlexRowItemCenterBox>
-                              <DomainStatus domain={acmePrefix + domain} cnameDomain={ns} mr={1} />
+                              {/* <DomainStatus domain={acmePrefix + domain} cnameDomain={ns} mr={1} /> */}
                               {domain}
                             </FlexRowItemCenterBox>
                           }
@@ -125,10 +124,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                         >
                           <Box p={1}>
                             <Box mb={1}>Add a CNAME Record</Box>
-                            <pre className={classes.action}>
-                              {acmePrefix}
-                              {domain} CNAME {ns}{" "}
-                            </pre>
+                            <DNSConfigGuide domain={domain} type="NS" cnameRecord={ns} />
                           </Box>
                         </CollapseWrapper>
                       </Box>
@@ -188,7 +184,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
       <BasePage>
         <div className={classes.root}>
           <Grid container spacing={2}>
-            <Grid item xs={8} sm={8} md={8}>
+            <Grid item xs={12} sm={12} md={12}>
               <Box p={2}>
                 <KPanel title="Certificate Info">
                   <Box p={2}>

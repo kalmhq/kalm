@@ -83,7 +83,7 @@ const stringConstants = {
   CERT_DNS01_WILDCARD: "Automatic certification for wildcard domains with Let's Encrypt",
   CERT_DNS01_WILDCARD_DESC:
     "Use a certificate signed by Let's Encrypt for wildcard domains. Safe and fast. Renewing and updating are fully-automatic.",
-  CERT_DNS01_SERVER_NOT_READY: "Please config and runing kalm dns server first.",
+  CERT_DNS01_SERVER_NOT_READY: "Please config and runing ACME DNS Server first.",
   NODES_INFO_BOX_TEXT:
     "Data and metrics regarding nodes in the cluster is displayed here. For cluster administration operations, please see platform specific instructions.",
   ROUTE_HOSTS_INPUT_HELPER:
