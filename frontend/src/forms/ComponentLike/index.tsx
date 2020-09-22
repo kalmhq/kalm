@@ -6,6 +6,7 @@ import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 import clsx from "clsx";
 import { push } from "connected-react-router";
+import arrayMutators from "final-form-arrays";
 import { KTooltip } from "forms/Application/KTooltip";
 import { Disks } from "forms/ComponentLike/Disks";
 import { FinalSelectField } from "forms/Final/select";
@@ -37,11 +38,11 @@ import { SectionTitle } from "widgets/SectionTitle";
 import { makeSelectOption } from "../Basic/select";
 import { FinalTextField } from "../Final/textfield";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
+import { ComponentAccess } from "./Access";
 import { Envs } from "./Envs";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import arrayMutators from "final-form-arrays";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -64,7 +65,8 @@ export const HealthTab = "Health";
 export const NetworkingTab = "Networking";
 const Scheduling = "Pod Scheduling";
 const Deploy = "Deployment Strategy";
-const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy];
+const Access = "Access";
+const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy, Access];
 
 const mapStateToProps = (state: RootState) => {
   const hash = window.location.hash;
@@ -631,6 +633,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   //   );
   // }
 
+  private renderAccess = () => {
+    return <ComponentAccess />;
+  };
+
   private renderTabDetails(isEdit: boolean) {
     const { classes, currentTabIndex } = this.props;
 
@@ -654,6 +660,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </div>
         <div className={`${this.tabs[currentTabIndex] === Deploy ? "" : classes.displayNone}`}>
           {/* {this.renderUpgradePolicy()} */}
+        </div>
+        <div className={`${this.tabs[currentTabIndex] === Access ? "" : classes.displayNone}`}>
+          {/*{this.renderAccess()}*/}
         </div>
       </>
     );

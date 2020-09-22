@@ -237,7 +237,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderInfoBox = () => {
-    const title = "Member References";
+    const title = "References";
 
     const options = [
       {

@@ -1,6 +1,6 @@
 import { HttpRoute, HttpRouteDestination } from "types/route";
 import sc from "utils/stringConstants";
-import { string, array, addMethod, object } from "yup";
+import { addMethod, array, object, string } from "yup";
 
 addMethod(object, "unique", function (propertyName, message) {
   //@ts-ignore
@@ -112,6 +112,24 @@ export const ValidatorPort = (value: any) => {
     }
   }
   return undefined;
+};
+
+export const validatePorts = (values?: number[]) => {
+  console.log("formik validate ports");
+
+  if (!values || values.length === 0) {
+    return undefined;
+  }
+
+  const errors = values.map((port) => {
+    if (!port) {
+      return "Invalid port";
+    }
+
+    return port > 65535 || port <= 0 ? "Port should be in range of (0,65536)" : undefined;
+  });
+
+  return errors.filter((x) => !!x).length > 0 ? errors : undefined;
 };
 
 export const ValidatorNumberOrAlphabet = (value: any) => {

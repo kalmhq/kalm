@@ -148,6 +148,7 @@ export const KFreeSoloFormikAutoCompleteMultiValues = withStyles(KFreeSoloAutoCo
         value={value}
         onChange={(e, value) => {
           setFieldValue(name, normalize ? normalize(value.map((v) => v.trim())) : value.map((v) => v.trim()));
+
           if (value.length !== 0) {
             setInputText("");
           }
