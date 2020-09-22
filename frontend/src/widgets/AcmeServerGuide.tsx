@@ -72,9 +72,7 @@ export const AcmeServerGuide = connect()(
                 <KLink to={""}>[Learn More]</KLink>
               </Alert>
             ) : (
-              <Alert severity="warning">
-                You simply need to do the following to get your DNS server up and running.
-              </Alert>
+              <Alert severity="warning">Waiting for acme dns server launching.</Alert>
             )}
             <>
               <Box p={1}>DNS Server Domain:</Box>
