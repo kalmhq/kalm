@@ -97,13 +97,16 @@ func TestComponentVolSTSMustSetPVC(t *testing.T) {
 		},
 	}
 
-	component.Default()
-
 	errList := component.validate()
 	assert.NotNil(t, errList)
 	assert.Equal(t, 1, len(errList))
 	assert.Equal(t, "must set pvc for this volume", errList[0].Err)
 	assert.Equal(t, ".spec.volumes[0]", errList[0].Path)
+
+	// default will set pvc
+	component.Default()
+	errList = component.validate()
+	assert.Nil(t, errList)
 }
 
 func TestSTSVolOK2UpdateMountPathAndTmpVol(t *testing.T) {
@@ -162,7 +165,7 @@ func TestSTSVolOK2UpdateMountPathAndTmpVol(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestSTSForbiddenUpdate(t *testing.T) {
+func TestSTSForbiddenUpdatePersistVol(t *testing.T) {
 	sc := "standard"
 
 	componentOld := Component{

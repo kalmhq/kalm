@@ -1,19 +1,15 @@
 package handler
 
 import (
-	"fmt"
 	client2 "github.com/kalmhq/kalm/api/client"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"math/rand"
-	"net/http"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
-
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"net/http"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (h *ApiHandler) handleListComponents(c echo.Context) error {
@@ -245,22 +241,6 @@ func getComponentFromContext(c echo.Context) (*v1alpha1.Component, []runtime.Raw
 			Namespace: c.Param("applicationName"),
 		},
 		Spec: component.ComponentSpec,
-	}
-
-	// todo move to webhook defaulting
-	// for pvc & template volumes, check if pvcName is set
-	for i, vol := range crdComponent.Spec.Volumes {
-		if vol.Type != v1alpha1.VolumeTypePersistentVolumeClaim &&
-			vol.Type != v1alpha1.VolumeTypePersistentVolumeClaimTemplate {
-			continue
-		}
-
-		if vol.PVC == "" {
-			genPVCName := fmt.Sprintf("pvc-%s-%d-%d", crdComponent.Name, time.Now().Unix(), rand.Intn(10000))
-			vol.PVC = genPVCName
-		}
-
-		crdComponent.Spec.Volumes[i] = vol
 	}
 
 	return crdComponent, component.Plugins, nil
