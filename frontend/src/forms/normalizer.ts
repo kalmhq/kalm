@@ -8,21 +8,6 @@ export const NormalizeNumber = (
   return isNaN(integerValue) ? null : integerValue;
 };
 
-export const FormikNormalizeNumber = (event: React.ChangeEvent<HTMLInputElement>): number | any => {
-  const integerValue = parseInt(event.target.value, 10);
-  return isNaN(integerValue) ? null : integerValue;
-};
-
-export const FormikNormalizePositiveNumber = (event: React.ChangeEvent<HTMLInputElement>): number | any => {
-  const integerValue = parseInt(event.target.value, 10);
-
-  if (integerValue < 0) {
-    return 0;
-  }
-
-  return isNaN(integerValue) ? undefined : integerValue;
-};
-
 export const NormalizePositiveNumber = (value?: number | string): any => {
   if (value === undefined) {
     return;
@@ -53,10 +38,6 @@ export const normalizePort = (value: string) => {
   }
 
   return portInteger;
-};
-
-export const FormikNormalizePort = (event: React.ChangeEvent<HTMLInputElement>) => {
-  return normalizePort(event.target.value);
 };
 
 export const NormalizePorts = (values: string[]) => {

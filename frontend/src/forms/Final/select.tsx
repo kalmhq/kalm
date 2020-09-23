@@ -1,4 +1,4 @@
-import { FormControl, InputLabel, makeStyles, MenuItem, Select, SelectProps } from "@material-ui/core";
+import { Box, FormControl, InputLabel, makeStyles, MenuItem, Select, SelectProps, Typography } from "@material-ui/core";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import React from "react";
 import { FieldRenderProps } from "react-final-form";
@@ -8,6 +8,7 @@ type FinalSelectFieldProps = FieldRenderProps<string> &
   SelectProps & {
     options: {
       text: React.ReactNode;
+      desc?: string;
       value: string;
       selectedText?: string;
       disabled?: boolean;
@@ -88,7 +89,16 @@ export const FinalSelectField = ({
           options.map((option) => {
             return (
               <MenuItem value={option.value} key={option.value}>
-                {option.text}
+                {option.desc ? (
+                  <Box pt={1} pb={1}>
+                    <Typography color="textPrimary">{option.text}</Typography>
+                    <Typography color="textSecondary" variant="caption">
+                      {option.desc}
+                    </Typography>
+                  </Box>
+                ) : (
+                  option.text
+                )}
               </MenuItem>
             );
           })}
