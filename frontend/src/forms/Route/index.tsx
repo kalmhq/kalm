@@ -414,6 +414,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                               <Field
                                 component={FinalBoolCheckboxRender}
                                 name="httpRedirectToHttps"
+                                type="checkbox"
                                 label={
                                   <span>
                                     Redirect all <strong>http</strong> request to <strong>https</strong> with 301 status
