@@ -43,7 +43,7 @@ type ComponentSpec struct {
 	// labels will add to pods
 	Labels map[string]string `json:"Labels,omitempty"`
 
-	// labels will add to pods
+	// annotations will add to pods
 	Annotations map[string]string `json:"Annotations,omitempty"`
 
 	Env []EnvVar `json:"env,omitempty"`
@@ -78,10 +78,11 @@ type ComponentSpec struct {
 	// +optional
 	ReadinessProbe *v1.Probe `json:"readinessProbe,omitempty"`
 
+	// Deprecated
 	BeforeStart []string `json:"beforeStart,omitempty"`
-
+	// Deprecated
 	AfterStart []string `json:"afterStart,omitempty"`
-
+	// Deprecated
 	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
 
 	// +optional
