@@ -1,6 +1,6 @@
 import { OutlinedTextFieldProps, TextField, Theme } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import { UseAutocompleteMultipleProps } from "@material-ui/lab";
+import { AutocompleteProps, UseAutocompleteMultipleProps, UseAutocompleteSingleProps } from "@material-ui/lab";
 import clsx from "clsx";
 import React from "react";
 import { theme } from "theme/theme";
@@ -58,12 +58,6 @@ export const SelectStyles = makeStyles((_theme: Theme) => ({
     marginLeft: 32,
   },
 }));
-
-export interface KAutoCompleteOption {
-  value: string;
-  label: string;
-  group: string;
-}
 
 export interface AutoCompleteMultiValuesFreeSoloProps<T>
   extends FieldRenderProps<T[]>,
@@ -151,16 +145,16 @@ export const AutoCompleteMultiValuesFreeSolo: X = function <T>(props: AutoComple
     />
   );
 };
-//
-// // formik single value
-// export interface KFormikAutoCompleteSingleValueProps<T>
-//   extends FieldProps,
-//     WithStyles<typeof SelectStyles>,
-//     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText">,
-//     Pick<AutocompleteProps<T>, "noOptionsText">,
-//     UseAutocompleteSingleProps<T> {}
-//
-// function AutoCompleteSingleValueRaw<T>(props: KFormikAutoCompleteSingleValueProps<KAutoCompleteOption>): JSX.Element {
+
+export interface AutoCompleteSingleValueProps<T>
+  extends FieldRenderProps<T>,
+    Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText">,
+    Pick<AutocompleteProps<T>, "noOptionsText">,
+    UseAutocompleteSingleProps<T> {}
+
+// export const AutoCompleteSingleValue = function <T>(
+//   props: AutoCompleteSingleValueProps<KAutoCompleteOption>,
+// ): JSX.Element {
 //   const {
 //     label,
 //     helperText,
@@ -249,74 +243,78 @@ export const AutoCompleteMultiValuesFreeSolo: X = function <T>(props: AutoComple
 //       }}
 //     />
 //   );
-// }
-//
-// export const AutoCompleteSingleValue = withStyles(SelectStyles)(AutoCompleteSingleValueRaw);
-//
-// interface AutoCompleteMultipleValuesProps<T>
-//   extends FieldPgops,
-//     UseAutocompleteMultipleProps<T>,
-//     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
-//   InputLabelProps?: {};
-//   disabled?: boolean;
-//   icons?: any[];
-// }
-//
-// export const AutoCompleteMultipleValueField = (props: AutoCompleteMultipleValuesProps<string>) => {
-//   const {
-//     placeholder,
-//     label,
-//     helperText,
-//     options,
-//     field: { name, value },
-//     form: { touched, errors, setFieldValue, handleBlur },
-//   } = props;
-//
-//   return (
-//     <Autocomplete
-//       multiple
-//       size="small"
-//       options={options}
-//       filterSelectedOptions
-//       openOnFocus
-//       groupBy={(option): string => option.group}
-//       filterOptions={createFilterOptions({
-//         ignoreCase: true,
-//         matchFrom: "any",
-//         stringify: (option): string => {
-//           return option.value;
-//         },
-//       })}
-//       getOptionLabel={(option): string => {
-//         return option.label;
-//       }}
-//       renderTags={(value: string[], getTagProps) => {
-//         return value.map((option: string, index: number) => {
-//           return <Chip variant="outlined" label={option} size="small" {...getTagProps({ index })} />;
-//         });
-//       }}
-//       onBlur={handleBlur}
-//       value={value}
-//       onChange={(e, value) => {
-//         setFieldValue(
-//           name,
-//           value.map((option) => option.value),
-//         );
-//       }}
-//       renderInput={(params) => (
-//         <TextField
-//           name={name}
-//           {...params}
-//           InputLabelProps={{
-//             shrink: true,
-//           }}
-//           label={label}
-//           variant="outlined"
-//           placeholder={placeholder}
-//           error={!!touched[name] && !!errors[name]}
-//           helperText={helperText}
-//         />
-//       )}
-//     />
-//   );
 // };
+
+interface AutoCompleteMultipleValuesProps<T>
+  extends FieldRenderProps<T[]>,
+    Omit<UseAutocompleteMultipleProps<T>, "multiple">,
+    Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
+  InputLabelProps?: {};
+  disabled?: boolean;
+  icons?: any[];
+}
+
+export const AutoCompleteMultipleValueField = (props: AutoCompleteMultipleValuesProps<string>) => {
+  const {
+    placeholder,
+    label,
+    helperText,
+    options,
+    input: { name, onChange, value, onBlur },
+    meta: { touched, error },
+  } = props;
+
+  return (
+    <Autocomplete
+      multiple
+      size="small"
+      options={options}
+      // filterSelectedOptions
+      openOnFocus
+      // groupBy={(option): string => option.group}
+      // renderGroup={({ key, children }) => (
+      //   <div>
+      //     {key}
+      //     {children}
+      //   </div>
+      // )}
+      // renderOption={(value) => {
+      //   return <div>{value}</div>;
+      // }}
+      // filterOptions={createFilterOptions({
+      //   ignoreCase: true,
+      //   matchFrom: "any",
+      //   stringify: (option): string => {
+      //     return option.value;
+      //   },
+      // })}
+      // getOptionLabel={(option): string => {
+      //   return option.label;
+      // }}
+      renderTags={(value: string[], getTagProps) => {
+        return value.map((option: string, index: number) => {
+          return <Chip variant="outlined" label={option} size="small" {...getTagProps({ index })} />;
+        });
+      }}
+      onBlur={onBlur}
+      value={value}
+      onChange={(e, value) => {
+        onChange(value);
+      }}
+      renderInput={(params) => (
+        <TextField
+          name={name}
+          {...params}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          label={label}
+          variant="outlined"
+          placeholder={placeholder}
+          error={!!touched && !!error}
+          helperText={helperText}
+        />
+      )}
+    />
+  );
+};
