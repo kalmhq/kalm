@@ -16,11 +16,11 @@ export const FinalTextField = ({
   helperText,
   handleBlur,
   input: { value, onChange, onBlur },
-  meta: { touched, error },
+  meta: { touched, error, submitError },
   htmlType,
   ...rest
 }: FinalTextFieldProps) => {
-  const showError = touched && !!error;
+  const showError = touched && (!!error || !!submitError);
 
   const inputProps: Partial<OutlinedInputProps> = {};
   if (startAdornment) {
@@ -47,7 +47,7 @@ export const FinalTextField = ({
       onChange={onChange}
       onBlur={onBlurCallback}
       error={showError}
-      helperText={showError ? error : helperText ? helperText : ""}
+      helperText={showError ? error || submitError : helperText ? helperText : ""}
       InputLabelProps={{
         shrink: true,
       }}
