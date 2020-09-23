@@ -22,10 +22,13 @@ import { validateHostWithWildcardPrefix, ValidatorOneof, ValidatorRequired } fro
 const ValidatorScheme = ValidatorOneof(/^https?$/i);
 
 interface OwnProps {
+  name: "livenessProbe" | "readinessProbe";
+  value?: Probe;
+  change: any;
   ports?: ComponentLikePort[];
 }
 
-interface Props extends FieldRenderProps<Probe>, WithStyles<typeof styles>, OwnProps {}
+interface Props extends WithStyles<typeof styles>, OwnProps {}
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -78,10 +81,8 @@ const RenderNestedTextfield = ({
 
 class RenderProbe extends React.PureComponent<Props> {
   private renderHttpGet() {
-    const {
-      classes,
-      input: { name },
-    } = this.props;
+    const { classes, name } = this.props;
+
     return (
       <Box p={1}>
         <Typography component="div">
@@ -154,8 +155,8 @@ class RenderProbe extends React.PureComponent<Props> {
   }
 
   private renderExec() {
-    const name = this.props.input.name;
-    const { classes } = this.props;
+    const { classes, name } = this.props;
+
     return (
       <Box p={1}>
         <Typography component="div">
@@ -196,8 +197,8 @@ class RenderProbe extends React.PureComponent<Props> {
   }
 
   private renderTcpSocket() {
-    const name = this.props.input.name;
-    const { classes } = this.props;
+    const { classes, name } = this.props;
+
     return (
       <Box p={1}>
         <Typography component="div">
@@ -246,7 +247,7 @@ class RenderProbe extends React.PureComponent<Props> {
   }
 
   private renderCommon() {
-    const name = this.props.input.name;
+    const { name } = this.props;
     const type = this.getProbeType();
 
     return (
@@ -305,14 +306,11 @@ class RenderProbe extends React.PureComponent<Props> {
   }
 
   private handleChangeType(type: string) {
-    const {
-      input: { onChange },
-      ports,
-    } = this.props;
+    const { change, ports, name } = this.props;
 
     if (type === "httpGet") {
       const potentialPort = ports ? ports.find((x) => x.protocol === PortProtocolHTTP && !!x.containerPort) : null;
-      onChange({
+      change(name, {
         httpGet: {
           scheme: "HTTP",
           host: "0.0.0.0",
@@ -326,7 +324,7 @@ class RenderProbe extends React.PureComponent<Props> {
         initialDelaySeconds: 10,
       });
     } else if (type === "exec") {
-      onChange({
+      change(name, {
         exec: {
           command: [""],
         },
@@ -338,7 +336,7 @@ class RenderProbe extends React.PureComponent<Props> {
       });
     } else if (type === "tcpSocket") {
       const potentialPort = ports ? ports.find((x: any) => x.protocol === PortProtocolTCP && !!x.containerPort) : null;
-      onChange({
+      change(name, {
         tcpSocket: {
           port: potentialPort ? potentialPort.containerPort : 8080,
           host: "0.0.0.0",
@@ -350,12 +348,13 @@ class RenderProbe extends React.PureComponent<Props> {
         initialDelaySeconds: 10,
       });
     } else {
-      onChange(null);
+      change(name, null);
     }
   }
 
   private getProbeType = () => {
-    const probe = this.props.input.value;
+    const { value: probe } = this.props;
+
     return !probe
       ? "none"
       : !!probe.httpGet
@@ -369,7 +368,7 @@ class RenderProbe extends React.PureComponent<Props> {
 
   public render() {
     const type = this.getProbeType();
-    console.log("render-------", this.props.input.name, type);
+
     return (
       <Grid container spacing={2}>
         <Grid item xs={6}>
@@ -401,10 +400,4 @@ class RenderProbe extends React.PureComponent<Props> {
   }
 }
 
-export const LivenessProbe = (props: any) => {
-  return <Field name="livenessProbe" component={withStyles(styles)(RenderProbe)} {...props} />;
-};
-
-export const ReadinessProbe = (props: any) => {
-  return <Field name="readinessProbe" component={withStyles(styles)(RenderProbe)} {...props} />;
-};
+export const ProbeFields = withStyles(styles)(RenderProbe);
