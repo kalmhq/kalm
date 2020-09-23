@@ -141,6 +141,10 @@ export interface ComponentLike {
   nodeSelectorLabels?: NodeSelectorLabels;
   preferNotCoLocated?: boolean;
   podAffinityType?: PodAffinityType;
+  protectedEndpoint?: {
+    ports?: string[];
+    groups?: string[];
+  };
 }
 
 export const newEmptyComponentLike: ComponentLike = {

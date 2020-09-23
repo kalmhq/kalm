@@ -7,7 +7,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -19,7 +18,7 @@ func (h *ApiHandler) handleListComponents(c echo.Context) error {
 		return err
 	}
 
-	res, err := h.componentListResponse(c, componentList)
+	res, err := h.componentListResponse(componentList)
 
 	if err != nil {
 		return err
@@ -35,7 +34,7 @@ func (h *ApiHandler) handleCreateComponent(c echo.Context) error {
 		return err
 	}
 
-	res, err := h.componentResponse(c, component)
+	res, err := h.componentResponse(component)
 
 	if err != nil {
 		return err
@@ -51,7 +50,7 @@ func (h *ApiHandler) handleUpdateComponent(c echo.Context) error {
 		return err
 	}
 
-	res, err := h.componentResponse(c, component)
+	res, err := h.componentResponse(component)
 
 	if err != nil {
 		return err
@@ -67,7 +66,7 @@ func (h *ApiHandler) handleGetComponent(c echo.Context) error {
 		return err
 	}
 
-	res, err := h.componentResponse(c, component)
+	res, err := h.componentResponse(component)
 
 	if err != nil {
 		return err
@@ -169,37 +168,44 @@ func (h *ApiHandler) createComponent(c echo.Context) (*v1alpha1.Component, error
 		return nil, resources.NoNamespaceEditorRoleError(c.Param("applicationName"))
 	}
 
-	crdComponent, plugins, err := getComponentFromContext(c)
+	component, err := getResourcesComponentFromContext(c)
+
 	if err != nil {
 		return nil, err
 	}
 
+	crdComponent := getCrdComponentFromResourcesComponentAndContext(c, component)
+
 	//permission, check if component try to re-use disk from other ns
-	err = h.checkPermissionOnVolume(getCurrentUser(c), crdComponent.Spec.Volumes)
-	if err != nil {
+	if err := h.checkPermissionOnVolume(getCurrentUser(c), crdComponent.Spec.Volumes); err != nil {
 		return nil, err
 	}
 
 	crdComponent.Namespace = c.Param("applicationName")
-	err = h.resourceManager.Create(crdComponent)
-	if err != nil {
+
+	if err := h.resourceManager.Create(crdComponent); err != nil {
 		return nil, err
 	}
 
-	err = h.resourceManager.UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, plugins)
-
-	if err != nil {
+	if err := h.resourceManager.UpdateProtectedEndpointForComponent(crdComponent, component.ProtectedEndpointSpec); err != nil {
 		return nil, err
 	}
+
+	if err := h.resourceManager.UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, component.Plugins); err != nil {
+		return nil, err
+	}
+
 	return crdComponent, nil
 }
 
 func (h *ApiHandler) updateComponent(c echo.Context) (*v1alpha1.Component, error) {
-	crdComponent, plugins, err := getComponentFromContext(c)
+	component, err := getResourcesComponentFromContext(c)
 
 	if err != nil {
 		return nil, err
 	}
+
+	crdComponent := getCrdComponentFromResourcesComponentAndContext(c, component)
 
 	if !h.clientManager.CanEditNamespace(getCurrentUser(c), crdComponent.Namespace) {
 		return nil, resources.NoNamespaceEditorRoleError(crdComponent.Namespace)
@@ -209,22 +215,18 @@ func (h *ApiHandler) updateComponent(c echo.Context) (*v1alpha1.Component, error
 		return nil, err
 	}
 
-	err = h.resourceManager.UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, plugins)
+	if err := h.resourceManager.UpdateProtectedEndpointForComponent(crdComponent, component.ProtectedEndpointSpec); err != nil {
+		return nil, err
+	}
 
-	if err != nil {
+	if err := h.resourceManager.UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, component.Plugins); err != nil {
 		return nil, err
 	}
 
 	return crdComponent, nil
 }
 
-func getComponentFromContext(c echo.Context) (*v1alpha1.Component, []runtime.RawExtension, error) {
-	var component resources.Component
-
-	if err := c.Bind(&component); err != nil {
-		return nil, nil, err
-	}
-
+func getCrdComponentFromResourcesComponentAndContext(c echo.Context, component *resources.Component) *v1alpha1.Component {
 	name := c.Param("name")
 
 	if name == "" {
@@ -240,16 +242,26 @@ func getComponentFromContext(c echo.Context) (*v1alpha1.Component, []runtime.Raw
 			Name:      name,
 			Namespace: c.Param("applicationName"),
 		},
-		Spec: component.ComponentSpec,
+		Spec: *component.ComponentSpec,
 	}
 
-	return crdComponent, component.Plugins, nil
+	return crdComponent
 }
 
-func (h *ApiHandler) componentResponse(c echo.Context, component *v1alpha1.Component) (*resources.ComponentDetails, error) {
+func getResourcesComponentFromContext(c echo.Context) (*resources.Component, error) {
+	var component resources.Component
+
+	if err := c.Bind(&component); err != nil {
+		return nil, err
+	}
+
+	return &component, nil
+}
+
+func (h *ApiHandler) componentResponse(component *v1alpha1.Component) (*resources.ComponentDetails, error) {
 	return h.resourceManager.BuildComponentDetails(component, nil)
 }
 
-func (h *ApiHandler) componentListResponse(c echo.Context, componentList *v1alpha1.ComponentList) ([]resources.ComponentDetails, error) {
+func (h *ApiHandler) componentListResponse(componentList *v1alpha1.ComponentList) ([]resources.ComponentDetails, error) {
 	return h.resourceManager.BuildComponentDetailsResponse(componentList)
 }

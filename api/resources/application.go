@@ -178,10 +178,6 @@ func (resourceManager *ResourceManager) BuildApplicationListResponse(namespaces 
 	for i := range namespaces {
 		ns := namespaces[i]
 
-		if ns.Name == KALM_SYSTEM_NAMESPACE {
-			continue
-		}
-
 		if _, exist := ns.Labels[controllers.KalmEnableLabelName]; !exist {
 			continue
 		}

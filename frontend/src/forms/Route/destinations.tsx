@@ -47,7 +47,6 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
         // TODO should we ignore the system namespaces??
         return (
           ns !== "default" &&
-          ns !== "kalm-system" &&
           ns !== "kalm-operator" &&
           ns !== "kalm-imgconv" &&
           ns !== "kube-system" &&

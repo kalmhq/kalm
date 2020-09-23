@@ -96,7 +96,16 @@ class DeployAccessTokenDetailPageRaw extends React.PureComponent<Props> {
         </KPanel>
 
         <Box mt={2}>
-          <KPanel title={`Webhook`}>
+          <KPanel>
+            {this.renderTabs()}
+            <Box p={2}>
+              <Box mt={2}>{this.renderTabDetails(deployAccessToken)}</Box>
+            </Box>
+          </KPanel>
+        </Box>
+
+        <Box mt={2}>
+          <KPanel title={`Webhook api spec`}>
             <Box p={2}>
               <Box>
                 <Body2>Send a POST http request to the webhook endpoint to restart a component.</Body2>
@@ -131,15 +140,6 @@ class DeployAccessTokenDetailPageRaw extends React.PureComponent<Props> {
                   <pre>{`404 Not Found.    The application or component doesn't exist.`}</pre>
                 </Box>
               </Box>
-            </Box>
-          </KPanel>
-        </Box>
-
-        <Box mt={2}>
-          <KPanel>
-            {this.renderTabs()}
-            <Box p={2}>
-              <Box mt={2}>{this.renderTabDetails(deployAccessToken)}</Box>
             </Box>
           </KPanel>
         </Box>

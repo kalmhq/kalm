@@ -37,7 +37,7 @@ type ResourceChannels struct {
 	DockerRegistryList         *DockerRegistryListChannel
 	SecretList                 *SecretListChannel
 	IstioMetricList            *IstioMetricListChannel
-	ProtectedEndpoint          *ProtectedEndpointsChannel
+	ProtectedEndpointList      *ProtectedEndpointListChannel
 }
 
 type Resources struct {
@@ -53,10 +53,10 @@ type Resources struct {
 	ComponentPluginBindings []v1alpha1.ComponentPluginBinding
 	//ApplicationPlugins        []v1alpha1.ApplicationPlugin
 	//ApplicationPluginBindings []v1alpha1.ApplicationPluginBinding
-	DockerRegistries  []v1alpha1.DockerRegistry
-	Secrets           []coreV1.Secret
-	HttpsCertIssuers  []v1alpha1.HttpsCertIssuer
-	ProtectedEndpoint []v1alpha1.ProtectedEndpoint
+	DockerRegistries   []v1alpha1.DockerRegistry
+	Secrets            []coreV1.Secret
+	HttpsCertIssuers   []v1alpha1.HttpsCertIssuer
+	ProtectedEndpoints []v1alpha1.ProtectedEndpoint
 }
 
 var ListAll = metaV1.ListOptions{
@@ -158,12 +158,12 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 		resources.Secrets = <-c.SecretList.List
 	}
 
-	if c.ProtectedEndpoint != nil {
-		err = <-c.ProtectedEndpoint.Error
+	if c.ProtectedEndpointList != nil {
+		err = <-c.ProtectedEndpointList.Error
 		if err != nil {
 			return nil, err
 		}
-		resources.ProtectedEndpoint = <-c.ProtectedEndpoint.List
+		resources.ProtectedEndpoints = <-c.ProtectedEndpointList.List
 	}
 
 	return resources, nil
