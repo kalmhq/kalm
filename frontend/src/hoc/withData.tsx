@@ -111,7 +111,7 @@ class WithDataRaw extends React.PureComponent<Props> {
       }
     };
 
-    const throttledReloadResouces = throttle(reloadResouces, 5000, { leading: false, trailing: true });
+    const throttledReloadResouces = throttle(reloadResouces, 10000, { leading: true, trailing: true });
 
     rws.onmessage = async (event: any) => {
       const data: WatchResMessage = JSON.parse(event.data);

@@ -1,13 +1,16 @@
 import { Box, Button, Fade, Grid } from "@material-ui/core";
-import { FastField, FieldArray, FieldArrayRenderProps, getIn } from "formik";
+import { Field } from "react-final-form";
+import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import React from "react";
 import { ComponentLikeEnv } from "types/componentTemplate";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorEnvName, ValidatorRequired } from "../validator";
-import { KRenderThrottleFormikTextField } from "forms/Basic/textfield";
+import { FinalTextField } from "forms/Final/textfield";
+import { EnvItem } from "types/application";
+import Alert from "@material-ui/lab/Alert";
 
-interface Props extends FieldArrayRenderProps {}
+interface Props extends FieldArrayRenderProps<ComponentLikeEnv, any> {}
 
 const nameValidators = (value: any) => {
   return ValidatorRequired(value) || ValidatorEnvName(value);
@@ -15,16 +18,16 @@ const nameValidators = (value: any) => {
 
 class RenderEnvs extends React.PureComponent<Props> {
   private handlePush() {
-    this.props.push({ type: "static", name: "", value: "" });
+    this.props.fields.push({ type: "static", name: "", value: "" });
   }
 
   private handleRemove(index: number) {
-    this.props.remove(index);
+    this.props.fields.remove(index);
   }
 
   private renderAddButton = () => {
     return (
-      <Box mb={2}>
+      <Box mb={2} mt={2}>
         <Button
           variant="outlined"
           color="primary"
@@ -40,35 +43,36 @@ class RenderEnvs extends React.PureComponent<Props> {
 
   public render() {
     const {
-      name,
-      form: { values },
+      fields,
+      meta: { touched, error },
     } = this.props;
+    const name = fields.name;
     return (
       <>
-        {/* {getIn(errors, name) ? (
+        {touched && error ? (
           <Box mb={2}>
-            <Alert severity="error">{getIn(errors, name)}</Alert>
+            <Alert severity="error">{error}</Alert>
           </Box>
-        ) : null} */}
-        {getIn(values, name) &&
-          getIn(values, name).map((env: ComponentLikeEnv, index: number) => {
+        ) : null}
+        {fields.value &&
+          fields.value.map((env: ComponentLikeEnv, index: number) => {
             return (
               <Fade in key={index}>
                 <Grid container spacing={2}>
                   <Grid item xs={5}>
-                    <FastField
+                    <Field
                       name={`${name}.${index}.name`}
                       label="Name"
-                      component={KRenderThrottleFormikTextField}
+                      component={FinalTextField}
                       validate={nameValidators}
                     />
                   </Grid>
                   <Grid item xs={5}>
-                    <FastField
+                    <Field
                       name={`${name}.${index}.value`}
                       label="Value"
                       validate={ValidatorRequired}
-                      component={KRenderThrottleFormikTextField}
+                      component={FinalTextField}
                     />
                   </Grid>
                   <Grid item xs={2}>
@@ -91,6 +95,21 @@ class RenderEnvs extends React.PureComponent<Props> {
   }
 }
 
-export const Envs = (props: any) => {
-  return <FieldArray name="env" component={RenderEnvs} {...props} />;
+const ValidatorEnvs = (values: EnvItem[]) => {
+  if (!values) return undefined;
+  const names = new Set<string>();
+
+  for (let i = 0; i < values.length; i++) {
+    const env = values[i]!;
+    const name = env.name;
+    if (!names.has(name)) {
+      names.add(name);
+    } else if (name !== "") {
+      return "Env names should be unique.  " + name + "";
+    }
+  }
+};
+
+export const Envs = () => {
+  return <FieldArray name="env" component={RenderEnvs} validate={ValidatorEnvs} />;
 };

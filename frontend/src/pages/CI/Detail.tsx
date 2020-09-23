@@ -22,7 +22,7 @@ import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle2 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
-import { RichEdtor } from "widgets/RichEditor";
+import { RichEditor } from "widgets/RichEditor";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
 
 const TAB_CURL = "curl";
@@ -271,7 +271,7 @@ workflows:
             Copy the following command and modify the content in angle brackets. Then try the edited command in a shell.
           </Body2>
           <Box mt={2}>
-            <RichEdtor mode="bash" value={curl} height="280px" wrapEnabled />
+            <RichEditor mode="bash" value={curl} height="280px" wrapEnabled />
           </Box>
         </Box>
         <Box display={tabs[currentTabIndex] === TAB_GITHUB_ACTION ? "block" : "none"}>
@@ -283,7 +283,7 @@ workflows:
           </Body2>
           {this.renderCopy(deployAccessToken)}
           <Box mt={2}>
-            <RichEdtor mode="yaml" value={githubAction} height="400px" wrapEnabled tabSize={2} />
+            <RichEditor mode="yaml" value={githubAction} height="400px" wrapEnabled tabSize={2} />
           </Box>
         </Box>
         <Box display={tabs[currentTabIndex] === TAB_CIRCLE_CI_ORD ? "block" : "none"}>
@@ -295,7 +295,7 @@ workflows:
           </Body2>
           {this.renderCopy(deployAccessToken)}
           <Box mt={2}>
-            <RichEdtor mode="yaml" value={circleCIOrb} height="350px" wrapEnabled tabSize={2} />
+            <RichEditor mode="yaml" value={circleCIOrb} height="350px" wrapEnabled tabSize={2} />
           </Box>
         </Box>
       </>

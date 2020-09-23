@@ -37,7 +37,7 @@ export const NormalizePositiveNumber = (value?: number | string): any => {
   return isNaN(integerValue) ? undefined : integerValue;
 };
 
-const normalizePort = (value: string) => {
+export const normalizePort = (value: string) => {
   const portInteger = parseInt(value, 10);
 
   if (isNaN(portInteger)) {

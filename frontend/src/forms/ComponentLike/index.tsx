@@ -1,24 +1,24 @@
-import React from "react";
-import { Box, Button, Collapse, Divider, Grid, Link, Tab, Tabs } from "@material-ui/core";
+import { Box, Button, Divider, Grid, Link, Tab, Tabs } from "@material-ui/core";
+import grey from "@material-ui/core/colors/grey";
 import { createStyles, Theme, useTheme, withStyles, WithStyles } from "@material-ui/core/styles";
 import HelpIcon from "@material-ui/icons/Help";
 import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 import clsx from "clsx";
 import { push } from "connected-react-router";
+import arrayMutators from "final-form-arrays";
 import { KTooltip } from "forms/Application/KTooltip";
 import { Disks } from "forms/ComponentLike/Disks";
+import { FinalSelectField } from "forms/Final/select";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
 import { NormalizePositiveNumber } from "forms/normalizer";
 import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
-import { FinalSelectField } from "forms/Final/select";
-import arrayMutators from "final-form-arrays";
+import React from "react";
 import { Field, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-
 import {
   ComponentLike,
   workloadTypeCronjob,
@@ -32,7 +32,7 @@ import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KalmConsoleIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
-import { Subtitle1 } from "widgets/Label";
+import { Subtitle1, Body2 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
 import { makeSelectOption } from "../Basic/select";
@@ -40,25 +40,12 @@ import { FinalTextField } from "../Final/textfield";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 import { ComponentAccess } from "./Access";
 import { Envs } from "./Envs";
-import { Ports } from "./Ports";
+import { IngressHint, Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import grey from "@material-ui/core/colors/grey";
-
-const IngressHint = () => {
-  const [open, setOpen] = React.useState(false);
-
-  return (
-    <>
-      <Link style={{ cursor: "pointer" }} onClick={() => setOpen(!open)}>
-        {sc.PORT_ROUTE_QUESTION}
-      </Link>
-      <Box pt={1}>
-        <Collapse in={open}>{sc.PORT_ROUTE_ANSWER}</Collapse>
-      </Box>
-    </>
-  );
-};
+import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
+import { RenderSelectLabels } from "./NodeSelector";
+import { FinalRadioGroupRender } from "forms/Final/radio";
 
 const Configurations = "Config";
 const DisksTab = "Disks";
@@ -151,36 +138,6 @@ export interface Props extends RouteComponentProps, WithStyles<typeof styles>, C
 interface State {}
 
 type RenderProps = FormRenderProps<ComponentLike>;
-
-const nameValidators = (value: any) => {
-  return ValidatorRequired(value) || ValidatorName(value);
-};
-
-// TODO
-// const validate = (values: ComponentLike) => {
-//   let errors: any = {};
-//   const ports = values.ports;
-//   if (ports && ports.length > 0) {
-//     const protocolServicePorts = new Set<string>();
-
-//     for (let i = 0; i < ports.length; i++) {
-//       const port = ports[i]!;
-//       const servicePort = port.servicePort || port.containerPort;
-
-//       if (servicePort) {
-//         const protocol = port.protocol;
-//         const protocolServicePort = protocol + "-" + servicePort;
-
-//         if (!protocolServicePorts.has(protocolServicePort)) {
-//           protocolServicePorts.add(protocolServicePort);
-//         } else if (protocolServicePort !== "") {
-//           errors.ports = "Listening port on a protocol should be unique.  " + protocol + " - " + servicePort;
-//         }
-//       }
-//     }
-//   }
-//   return errors;
-// };
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
@@ -359,39 +316,45 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container spacing={2}>
         {this.renderCommandAndArgs()}
-        {/* {this.renderEnvs()} */}
-        {/* {this.preInjectedFiles()} */}
+        {this.renderEnvs()}
+        {this.preInjectedFiles()}
       </Grid>
     );
   }
 
   private renderHealth() {
     return (
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Readiness Probe</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <Grid item xs={8}>
-          {sc.READINESS_PROBE_HELPER}
-        </Grid>
-        <Grid item xs={12}>
-          <ReadinessProbe />
-        </Grid>
-        <Grid item xs={12}>
-          <Divider orientation="horizontal" color="inherit" />
-        </Grid>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Liveness Probe</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <HelperTextSection>{sc.LIVENESS_PROBE_HELPER}</HelperTextSection>
-        <Grid item xs={12}>
-          <LivenessProbe />
-        </Grid>
-      </Grid>
+      <FormSpy subscription={{ values: true }}>
+        {({ values: { ports } }: { values: ComponentLike }) => {
+          return (
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <SectionTitle>
+                  <Subtitle1>Readiness Probe</Subtitle1>
+                </SectionTitle>
+              </Grid>
+              <Grid item xs={8}>
+                {sc.READINESS_PROBE_HELPER}
+              </Grid>
+              <Grid item xs={12}>
+                <ReadinessProbe ports={ports} />
+              </Grid>
+              <Grid item xs={12}>
+                <Divider orientation="horizontal" color="inherit" />
+              </Grid>
+              <Grid item xs={12}>
+                <SectionTitle>
+                  <Subtitle1>Liveness Probe</Subtitle1>
+                </SectionTitle>
+              </Grid>
+              <HelperTextSection>{sc.LIVENESS_PROBE_HELPER}</HelperTextSection>
+              <Grid item xs={12}>
+                <LivenessProbe ports={ports} />
+              </Grid>
+            </Grid>
+          );
+        }}
+      </FormSpy>
     );
   }
 
@@ -419,7 +382,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderScheduling() {
-    const { classes } = this.props;
+    const { classes, nodeLabels } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
@@ -429,25 +392,23 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
+          <Field<string>
             component={FinalTextField}
             name="cpuLimit"
             label="CPU Limit"
             validate={ValidatorCPU}
             placeholder={sc.CPU_INPUT_PLACEHOLDER}
-            type="number"
             min="0"
             format={(value: any) => {
               return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
             }}
-            // TODO
-            // parse={(value: any) => {
-            //   const integerValue = parseInt(value, 10);
-            //   if (!isNaN(integerValue) && integerValue < 0) {
-            //     return 0;
-            //   }
-            //   return !value ? undefined : value + "m";
-            // }}
+            parse={(value: any) => {
+              const integerValue = parseInt(value, 10);
+              if (!isNaN(integerValue) && integerValue < 0) {
+                return "";
+              }
+              return !value ? "" : value + "m";
+            }}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -467,19 +428,17 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             margin
             validate={ValidatorMemory}
             placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
-            type="number"
             min="0"
             format={(value: any) => {
               return !value ? "" : sizeStringToMi(value);
             }}
-            // TODO
-            // parse={(value: any) => {
-            //   const integerValue = parseInt(value, 10);
-            //   if (!isNaN(integerValue) && integerValue < 0) {
-            //     return 0;
-            //   }
-            //   return !value ? undefined : value + "Mi";
-            // }}
+            parse={(value: any) => {
+              const integerValue = parseInt(value, 10);
+              if (!isNaN(integerValue) && integerValue < 0) {
+                return "";
+              }
+              return !value ? "" : value + "Mi";
+            }}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -498,18 +457,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             label="CPU Request"
             validate={ValidatorCPU}
             placeholder={sc.CPU_INPUT_PLACEHOLDER}
-            type="number"
             format={(value: any) => {
               return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
             }}
-            // TODO
-            // parse={(value: any) => {
-            //   const integerValue = parseInt(value, 10);
-            //   if (!isNaN(integerValue) && integerValue < 0) {
-            //     return 0;
-            //   }
-            //   return !value ? undefined : value + "m";
-            // }}
+            parse={(value: any) => {
+              const integerValue = parseInt(value, 10);
+              if (!isNaN(integerValue) && integerValue < 0) {
+                return "";
+              }
+              return !value ? "" : value + "m";
+            }}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -529,18 +486,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             margin
             validate={ValidatorMemory}
             placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
-            type="number"
             format={(value: any) => {
               return !value ? "" : sizeStringToMi(value);
             }}
-            // TODO
-            // parse={(value: any) => {
-            //   const integerValue = parseInt(value, 10);
-            //   if (!isNaN(integerValue) && integerValue < 0) {
-            //     return 0;
-            //   }
-            //   return !value ? undefined : value + "Mi";
-            // }}
+            parse={(value: any) => {
+              const integerValue = parseInt(value, 10);
+              if (!isNaN(integerValue) && integerValue < 0) {
+                return "";
+              }
+              return !value ? "" : value + "Mi";
+            }}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -552,111 +507,109 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        {/* TODO */}
-        {/* <Grid item xs={12}>
+        <Grid item xs={12}>
           <SectionTitle>
             <Subtitle1>Nodes</Subtitle1>
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <Field name="nodeSelectorLabels" component={KFormikRenderSelectLabels} nodeLabels={nodeLabels} />
+          <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
         </Grid>
         <Grid item xs={12}>
           <Field
             name="preferNotCoLocated"
-            component={KFormikBoolCheckboxRender}
+            component={FinalBoolCheckboxRender}
             label={sc.SCHEDULING_COLOCATE_CHECKBOX}
           />
-        </Grid> */}
+        </Grid>
       </Grid>
     );
   }
 
-  // TODO
-  // private renderUpgradePolicy() {
-  //   return (
-  //     <Grid container spacing={2}>
-  //       <Grid item xs={12}>
-  //         <SectionTitle>
-  //           <Subtitle1>Deployment Strategy</Subtitle1>
-  //         </SectionTitle>
-  //       </Grid>
-  //       <Grid item xs={8}>
-  //         <KFormikRadioGroupRender
-  //           onChange={this.props.handleChange}
-  //           name="restartStrategy"
-  //           value={this.props.values.restartStrategy || "RollingUpdate"}
-  //           options={[
-  //             {
-  //               value: "RollingUpdate",
-  //               label: (
-  //                 <Body2>
-  //                   <strong>Rolling Update</strong> - {sc.DEPLOYMENT_ROLLING}
-  //                 </Body2>
-  //               ),
-  //             },
-  //             {
-  //               value: "Recreate",
-  //               label: (
-  //                 <Body2>
-  //                   <strong>Recreate</strong> - {sc.DEPLOYMENT_RECREATE}
-  //                 </Body2>
-  //               ),
-  //             },
-  //           ]}
-  //         />
-  //       </Grid>
-  //       <Grid item xs={12}>
-  //         <SectionTitle>
-  //           <Subtitle1>Graceful Terimination Period</Subtitle1>
-  //         </SectionTitle>
-  //       </Grid>
-  //       <HelperTextSection>
-  //         {sc.GRACEFUL_TERM_HELPER}
-  //         &nbsp;
-  //         <Link
-  //           href="https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution"
-  //           target="_blank"
-  //         >
-  //           {sc.LEARN_MORE_LABEL}
-  //         </Link>
-  //       </HelperTextSection>
-  //       <Grid item xs={6}>
-  //         <Field
-  //           component={FinalTextField}
-  //           name="terminationGracePeriodSeconds"
-  //           label="Termination Grace Period (seconds)"
-  //           normalize={NormalizePositiveNumber}
-  //           placeholder={sc.GRACEFUL_TERM_INPUT_PLACEHOLDER}
-  //         />
-  //       </Grid>
-  //     </Grid>
-  //   );
-  // }
+  private renderUpgradePolicy() {
+    return (
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <SectionTitle>
+            <Subtitle1>Deployment Strategy</Subtitle1>
+          </SectionTitle>
+        </Grid>
+        <Grid item xs={8}>
+          <Field
+            // won't fix, https://github.com/final-form/react-final-form/issues/392
+            // type="radio"
+            name="restartStrategy"
+            component={FinalRadioGroupRender}
+            options={[
+              {
+                value: "RollingUpdate",
+                label: (
+                  <Body2>
+                    <strong>Rolling Update</strong> - {sc.DEPLOYMENT_ROLLING}
+                  </Body2>
+                ),
+              },
+              {
+                value: "Recreate",
+                label: (
+                  <Body2>
+                    <strong>Recreate</strong> - {sc.DEPLOYMENT_RECREATE}
+                  </Body2>
+                ),
+              },
+            ]}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <SectionTitle>
+            <Subtitle1>Graceful Terimination Period</Subtitle1>
+          </SectionTitle>
+        </Grid>
+        <HelperTextSection>
+          {sc.GRACEFUL_TERM_HELPER}
+          &nbsp;
+          <Link
+            href="https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution"
+            target="_blank"
+          >
+            {sc.LEARN_MORE_LABEL}
+          </Link>
+        </HelperTextSection>
+        <Grid item xs={6}>
+          <Field
+            component={FinalTextField}
+            name="terminationGracePeriodSeconds"
+            label="Termination Grace Period (seconds)"
+            parse={NormalizePositiveNumber}
+            placeholder={sc.GRACEFUL_TERM_INPUT_PLACEHOLDER}
+          />
+        </Grid>
+      </Grid>
+    );
+  }
 
   private renderTabDetails(isEdit: boolean) {
     const { classes, currentTabIndex } = this.props;
 
-    // TODO
     return (
       <>
         <div className={`${this.tabs[currentTabIndex] === Configurations ? "" : classes.displayNone}`}>
           {this.renderConfigurations()}
         </div>
         <div className={`${this.tabs[currentTabIndex] === NetworkingTab ? "" : classes.displayNone}`}>
-          {/* {this.renderNetworking()} */}
+          {this.renderNetworking()}
         </div>
         <div className={`${this.tabs[currentTabIndex] === DisksTab ? "" : classes.displayNone}`}>
           {this.renderDisks(isEdit)}
         </div>
         <div className={`${this.tabs[currentTabIndex] === HealthTab ? "" : classes.displayNone}`}>
-          {/* {this.renderHealth()} */}
+          {this.renderHealth()}
         </div>
         <div className={`${this.tabs[currentTabIndex] === Scheduling ? "" : classes.displayNone}`}>
-          {/* {this.renderScheduling()} */}
+          {this.renderScheduling()}
         </div>
         <div className={`${this.tabs[currentTabIndex] === Deploy ? "" : classes.displayNone}`}>
-          {/* {this.renderUpgradePolicy()} */}
+          {this.renderUpgradePolicy()}
         </div>
         <div className={`${this.tabs[currentTabIndex] === Access ? "" : classes.displayNone}`}>
           <FormSpy subscription={{ pristine: true, values: true }}>
@@ -733,7 +686,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             id="component-name"
             name="name"
             label="Name"
-            validate={nameValidators}
+            validate={ValidatorName}
             disabled={isEdit}
             helperText={isEdit ? "Name can't be changed." : sc.NAME_RULE}
           />
@@ -873,7 +826,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const isEdit = !!_initialValues.name;
     return (
       <Form
-        debug={process.env.REACT_APP_DEBUG === "true" ? console.log : undefined}
+        // debug={process.env.REACT_APP_DEBUG === "true" ? console.log : undefined}
         initialValues={_initialValues}
         onSubmit={onSubmit}
         subscription={{ submitting: true, pristine: true }}
