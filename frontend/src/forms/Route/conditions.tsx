@@ -1,11 +1,12 @@
 import { Box, Button, Grid } from "@material-ui/core";
-import { Field, FieldArray } from "formik";
+import { FinalSelectField } from "forms/Final/select";
+import { FinalTextField } from "forms/Final/textfield";
 import React from "react";
+import { Field } from "react-final-form";
+import { FieldArray } from "react-final-form-arrays";
 import { HttpRouteCondition } from "types/route";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { RenderFormikSelectField } from "../Basic/select";
-import { KRenderThrottleFormikTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
 
 export interface Props {
@@ -29,7 +30,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                   startIcon={<AddIcon />}
                   size="small"
                   onClick={() => {
-                    arrayHelpers.push({
+                    arrayHelpers.fields.push({
                       type: "header",
                       operator: "equal",
                       name: "",
@@ -47,7 +48,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                   startIcon={<AddIcon />}
                   size="small"
                   onClick={() => {
-                    arrayHelpers.push({
+                    arrayHelpers.fields.push({
                       type: "query",
                       operator: "equal",
                       name: "",
@@ -68,7 +69,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                   <Grid item md={2}>
                     <Field
                       name={`conditions.${index}.name`}
-                      component={KRenderThrottleFormikTextField}
+                      component={FinalTextField}
                       label="Name"
                       validate={ValidatorRequired}
                     />
@@ -76,7 +77,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                   <Grid item md={2}>
                     <Field
                       name={`conditions.${index}.operator`}
-                      component={RenderFormikSelectField}
+                      component={FinalSelectField}
                       label="operator"
                       validate={ValidatorRequired}
                       options={[
@@ -89,7 +90,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                   <Grid item md={2}>
                     <Field
                       name={`conditions.${index}.value`}
-                      component={KRenderThrottleFormikTextField}
+                      component={FinalTextField}
                       label="Value"
                       validate={ValidatorRequired}
                     />
@@ -99,7 +100,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                       tooltipPlacement="top"
                       tooltipTitle="Delete"
                       aria-label="delete"
-                      onClick={() => arrayHelpers.remove(index)}
+                      onClick={() => arrayHelpers.fields.remove(index)}
                     >
                       <DeleteIcon />
                     </IconButtonWithTooltip>

@@ -57,6 +57,7 @@ export const FinalCheckboxGroupRender = (props: FinalCheckboxGroupRenderProps & 
     helperText,
     options,
   } = props;
+
   return (
     <FormControl fullWidth error={!!error}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}
