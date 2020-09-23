@@ -829,7 +829,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         // debug={process.env.REACT_APP_DEBUG === "true" ? console.log : undefined}
         initialValues={_initialValues}
         onSubmit={onSubmit}
-        subscription={{ submitting: true, pristine: true }}
+        subscription={{ submitting: true, pristine: true, dirty: true }}
         keepDirtyOnReinitialize={true}
         mutators={{
           ...arrayMutators,
