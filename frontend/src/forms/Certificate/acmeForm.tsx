@@ -1,4 +1,4 @@
-import { Box, Grid, WithStyles } from "@material-ui/core";
+import { Box, Grid } from "@material-ui/core";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { RootState } from "reducers";
@@ -22,9 +22,7 @@ export interface Props {
   initial: AcmeServerFormType;
 }
 
-class AcmeFormRaw extends React.PureComponent<
-  Props & ReturnType<typeof mapStateToProps> & WithStyles<typeof styles> & DispatchProp
-> {
+class AcmeFormRaw extends React.PureComponent<Props & ReturnType<typeof mapStateToProps> & DispatchProp> {
   public render() {
     const { isSubmittingCreateAcmeServer, initial, onSubmit } = this.props;
 
