@@ -12,6 +12,7 @@ import { Prompt } from "widgets/Prompt";
 import { Field, Form, FormRenderProps } from "react-final-form";
 import { FinalSelectField } from "forms/Final/select";
 import { FinalTextField } from "forms/Final/textfield";
+import Grid from "@material-ui/core/Grid";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -29,15 +30,23 @@ interface OwnProps {
 }
 
 const clusterRolesOptions = [
-  { text: "Cluster Viewer", value: "clusterViewer" },
-  { text: "Cluster Editor", value: "clusterEditor" },
-  { text: "Cluster Owner", value: "clusterOwner" },
+  { text: "Cluster Viewer", value: "clusterViewer", desc: "Read-only access in cluster scope" },
+  {
+    text: "Cluster Editor",
+    value: "clusterEditor",
+    desc: "All permissions except authorize cluster-level permissions to others",
+  },
+  { text: "Cluster Owner", value: "clusterOwner", desc: "All permissions" },
 ];
 
 const applicationRolesOptions = [
-  { text: "Viewer", value: "viewer" },
-  { text: "Editor", value: "editor" },
-  { text: "Owner", value: "owner" },
+  { text: "Viewer", value: "viewer", desc: "Read-only access in this application" },
+  {
+    text: "Editor",
+    value: "editor",
+    desc: "All permissions in this application except authorize to others",
+  },
+  { text: "Owner", value: "owner", desc: "All permissions in this application" },
 ];
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp, OwnProps {}
@@ -58,27 +67,48 @@ class MemberFormRaw extends React.PureComponent<Props> {
                 title="Grant role permissions to a user or a group"
                 content={
                   <Box p={2}>
-                    <Box mb={2}>
-                      <Field
-                        name="subjectType"
-                        autoFocus
-                        component={FinalSelectField}
-                        required
-                        label="Subject Type"
-                        validate={ValidatorRequired}
-                        helperText="Please select the subject type you want to grant permissions to"
-                        options={[
-                          { value: SubjectTypeUser, text: "User" },
-                          { value: SubjectTypeGroup, text: "Group" },
-                        ]}
-                      />
-                    </Box>
+                    <Grid container spacing={2}>
+                      <Grid item sm={6}>
+                        <Field
+                          name="subjectType"
+                          autoFocus
+                          component={FinalSelectField}
+                          required
+                          label="Subject Type"
+                          validate={ValidatorRequired}
+                          helperText="Please select the subject type you want to grant permissions to"
+                          options={[
+                            {
+                              value: SubjectTypeUser,
+                              text: "User",
+                              desc: "Grant permission for a single user. You need to provide the user's email address.",
+                            },
+                            {
+                              value: SubjectTypeGroup,
+                              text: "Group",
+                              desc:
+                                "Grant permission for every member in a group. You need to provide the group's name.",
+                            },
+                          ]}
+                        />
+                      </Grid>
+                      <Grid item sm={6}>
+                        <Field
+                          name="role"
+                          component={FinalSelectField}
+                          label="Role"
+                          placeholder="Select a role"
+                          validate={ValidatorRequired}
+                          options={rolesOptions}
+                        />
+                      </Grid>
+                    </Grid>
 
                     <Box mb={2}>
                       <Field
                         component={FinalTextField}
                         name="subject"
-                        label="Subject"
+                        label={values.subjectType === SubjectTypeUser ? "User Email" : "Group Name"}
                         validate={ValidatorRequired}
                         placeholder={
                           values.subjectType === SubjectTypeUser
@@ -92,15 +122,6 @@ class MemberFormRaw extends React.PureComponent<Props> {
                         }
                       />
                     </Box>
-
-                    <Field
-                      name="role"
-                      component={FinalSelectField}
-                      label="Role"
-                      placeholder="Select a role"
-                      validate={ValidatorRequired}
-                      options={rolesOptions}
-                    />
                   </Box>
                 }
               />
