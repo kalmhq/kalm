@@ -30,6 +30,14 @@ export const FinalTextField = ({
     inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
   }
 
+  const onBlurCallback = React.useCallback(
+    (e) => {
+      handleBlur && handleBlur(e); // custom handleBlur eg. Ports close popupState
+      onBlur(e);
+    },
+    [onBlur, handleBlur],
+  );
+
   return (
     <TextField
       {...rest}
@@ -37,7 +45,7 @@ export const FinalTextField = ({
       fullWidth
       value={value}
       onChange={onChange}
-      onBlur={onBlur}
+      onBlur={onBlurCallback}
       error={showError}
       helperText={showError ? error : helperText ? helperText : ""}
       InputLabelProps={{

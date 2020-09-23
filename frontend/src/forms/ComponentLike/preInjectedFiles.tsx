@@ -2,18 +2,19 @@ import { Box, Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
-import { FastField, Field, FieldArray, FieldArrayRenderProps, getIn } from "formik";
-import { KFormikBoolCheckboxRender } from "forms/Basic/checkbox";
-import { KRenderThrottleFormikTextField } from "forms/Basic/textfield";
+import { FinalTextField } from "forms/Final/textfield";
 import React from "react";
+import { Field } from "react-final-form";
+import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { PreInjectedFile } from "types/componentTemplate";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { RichEdtor } from "widgets/RichEditor";
+import { RichEditor } from "widgets/RichEditor";
 import { KValidatorInjectedFilePath, ValidatorRequired } from "../validator";
+import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
 
 interface State {
   editingFileIndex: number;
@@ -21,7 +22,7 @@ interface State {
   activeIndex: number;
 }
 
-interface Props extends FieldArrayRenderProps, TDispatchProp {}
+interface Props extends FieldArrayRenderProps<PreInjectedFile, any>, TDispatchProp {}
 
 const updateContentDialogID = "update-content-dialog";
 const validateMountPath = (value: any) => ValidatorRequired(value) || KValidatorInjectedFilePath(value);
@@ -29,14 +30,12 @@ const validateMountPath = (value: any) => ValidatorRequired(value) || KValidator
 class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
-    const {
-      name,
-      form: { values },
-    } = props;
+    const { fields } = props;
+
     this.state = {
       editingFileIndex: -1,
       fileContentValue: "",
-      activeIndex: getIn(values, name) ? getIn(values, name).length : 0,
+      activeIndex: fields.value ? fields.value.length : 0,
     };
   }
 
@@ -47,22 +46,22 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
   };
 
   private handleDiscard(isInvalidFile: boolean | undefined) {
-    const { remove, dispatch } = this.props;
+    const { fields, dispatch } = this.props;
     const { editingFileIndex } = this.state;
     if (isInvalidFile) {
-      remove(editingFileIndex);
+      fields.remove(editingFileIndex);
     }
     dispatch(closeDialogAction(updateContentDialogID));
   }
 
   private handleSave(isInvalidFile: boolean | undefined, file: any, mountPathTmp: string) {
-    const { replace, dispatch } = this.props;
+    const { fields, dispatch } = this.props;
     const { editingFileIndex, activeIndex, fileContentValue } = this.state;
     if (isInvalidFile) {
       return;
     }
 
-    replace(editingFileIndex, { ...file, content: fileContentValue, mountPath: mountPathTmp });
+    fields.update(editingFileIndex, { ...file, content: fileContentValue, mountPath: mountPathTmp });
     if (editingFileIndex === activeIndex) {
       this.setState({ activeIndex: activeIndex + 1 });
     }
@@ -74,39 +73,31 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
   }
 
   private handleRemove(index: number) {
-    const { remove } = this.props;
+    const { fields } = this.props;
     const { activeIndex } = this.state;
-    remove(index);
+    fields.remove(index);
     this.setState({ activeIndex: activeIndex - 1 });
   }
 
   private handlePush() {
     const { activeIndex } = this.state;
-    const {
-      form: { values },
-      name,
-      push,
-      pop,
-    } = this.props;
+    const { fields } = this.props;
     const initFile = { readonly: true, content: "", mountPath: "" };
-    if (!getIn(values, name) || getIn(values, name).length <= activeIndex) {
-      push(initFile);
+    if (!fields.value || fields.value.length <= activeIndex) {
+      fields.push(initFile);
     } else {
-      pop();
-      push(initFile);
+      fields.pop();
+      fields.push(initFile);
     }
     this.privateOpenEditDialog(initFile, activeIndex);
   }
 
   private renderEditContentDialog = () => {
-    const {
-      name,
-      form: { values, errors },
-    } = this.props;
-    const syncErrors = getIn(errors, name) as { [key: string]: string }[] | undefined;
+    const { fields } = this.props;
+    const syncErrors = fields.error as { [key: string]: string }[] | undefined;
     const { editingFileIndex, fileContentValue } = this.state;
-    const file = editingFileIndex > -1 ? getIn(values, name)[editingFileIndex] : null;
-    const mountPathTmp = file ? file.mountPathTmp : "";
+    const file = editingFileIndex > -1 ? fields.value[editingFileIndex] : null;
+    const mountPathTmp = file && file.mountPathTmp ? file.mountPathTmp : "";
     const isInvalidFile =
       !mountPathTmp ||
       !fileContentValue ||
@@ -141,39 +132,37 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
             <Field
               name={`preInjectedFiles.${editingFileIndex}.mountPathTmp`}
               label="Mount Path"
-              component={KRenderThrottleFormikTextField}
+              component={FinalTextField}
               validate={validateMountPath}
             />
           </Grid>
           <Grid item xs={1}></Grid>
           <Grid item xs={3}>
-            <FastField
+            <Field
               name={`preInjectedFiles.${editingFileIndex}.readonly`}
-              component={KFormikBoolCheckboxRender}
+              component={FinalBoolCheckboxRender}
               label="Read Only"
             />
           </Grid>
         </Grid>
-        <RichEdtor value={fileContentValue} onChange={this.handleChangeEditor.bind(this)} />
+        <RichEditor value={fileContentValue} onChange={this.handleChangeEditor.bind(this)} />
       </ControlledDialog>
     );
   };
 
   public render() {
-    const {
-      name,
-      form: { values },
-    } = this.props;
+    const { fields } = this.props;
+    const name = fields.name;
     let fieldsNodes: any = [];
-    if (getIn(values, name)) {
-      getIn(values, name).forEach((injectedFile: PreInjectedFile, index: number) => {
+    if (fields.value) {
+      fields.value.forEach((injectedFile: PreInjectedFile, index: number) => {
         if (injectedFile.mountPath) {
           fieldsNodes.push(
             <Grid container spacing={1} key={index}>
               <Grid item xs={4}>
-                <FastField
+                <Field
                   name={`${name}.${index}.mountPath`}
-                  component={KRenderThrottleFormikTextField}
+                  component={FinalTextField}
                   disabled={true}
                   label="Mount Path"
                   file={injectedFile}
@@ -231,6 +220,6 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
 
 const RenderPreInjectedFile = connect()(RenderPreInjectedFileRaw);
 
-export const PreInjectedFiles = (props: any) => {
-  return <FieldArray name="preInjectedFiles" component={RenderPreInjectedFile} {...props} />;
+export const PreInjectedFiles = () => {
+  return <FieldArray name="preInjectedFiles" component={RenderPreInjectedFile} />;
 };

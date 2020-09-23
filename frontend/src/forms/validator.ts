@@ -220,7 +220,7 @@ export const ValidatorHttpHeaders = (value: any) => {
 };
 
 // https://regex101.com/r/cJ74bX/1/
-export const ValidatorCPU = (value: number) => {
+export const ValidatorCPU = (value: number | string) => {
   if (!value) return undefined;
 
   if (parseFloat(`${value}`) < 0.001) {
@@ -310,8 +310,8 @@ export const regExpIp = new RegExp(
 // test.abc*.com
 export const regExpWildcardDomain = new RegExp(/^(\*\.)?([\w]+\.)+[a-zA-Z]+$/);
 
-const validateHostWithWildcardPrefix = (value: string) => {
-  if (value.length === 0 || value.length > 511) {
+export const validateHostWithWildcardPrefix = (value: string) => {
+  if (!value || value.length === 0 || value.length > 511) {
     return "Host length must be between 1 and 511 characters.";
   }
 
