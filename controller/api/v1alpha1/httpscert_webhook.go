@@ -108,13 +108,6 @@ func (r *HttpsCert) validate() error {
 	}
 
 	if r.Spec.IsSelfManaged {
-		if r.Spec.HttpsCertIssuer != DefaultCAIssuerName {
-			rst = append(rst, KalmValidateError{
-				Err:  "issuer for selfManaged cert must be:" + DefaultCAIssuerName,
-				Path: "spec.httpsCertIssuer",
-			})
-		}
-
 		if r.Spec.SelfManagedCertSecretName == "" {
 			rst = append(rst, KalmValidateError{
 				Err:  "need secretName for selfManaged cert",
