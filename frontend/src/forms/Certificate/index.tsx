@@ -2,16 +2,15 @@ import { Box, Button, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
-import { Field, Form, Formik } from "formik";
-import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
-import { KRenderThrottleFormikTextField } from "forms/Basic/textfield";
+import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
+import { FinalTextField } from "forms/Final/textfield";
 import { ValidatorHosts } from "forms/validator";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
+import { Field, FieldRenderProps, Form } from "react-final-form";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
-import { FormMidware } from "tutorials/formMidware";
 import { TDispatchProp } from "types";
 import { CertificateFormType, selfManaged } from "types/certificate";
 import DomainStatus from "widgets/DomainStatus";
@@ -19,7 +18,6 @@ import { KPanel } from "widgets/KPanel";
 import { Body, Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import sc from "../../utils/stringConstants";
-import { CERTIFICATE_FORM_ID } from "../formIDs";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -83,21 +81,23 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   public render() {
     const { onSubmit, initialValues, classes, isEdit, ingressIP, dispatch } = this.props;
     return (
-      <Formik
-        onSubmit={onSubmit}
-        initialValues={initialValues}
-        validate={this.validate}
-        enableReinitialize={false}
-        handleReset={console.log}
-      >
-        {(formikProps) => {
-          const { values, dirty, touched, errors, setFieldValue, isSubmitting } = formikProps;
+      <Form onSubmit={onSubmit} initialValues={initialValues} validate={this.validate}>
+        {(props) => {
+          const {
+            values,
+            dirty,
+            touched,
+            errors,
+            form: { change },
+            submitting,
+            handleSubmit,
+          } = props;
           const icons = values.domains.map((domain, index) =>
             Array.isArray(errors.domains) && errors.domains[index] ? undefined : <DomainStatus domain={domain} />,
           );
           if (!dirty && values.selfManagedCertContent && values.domains.length <= 0) {
             const domains = extractDomainsFromCertificateContent(values.selfManagedCertContent);
-            setFieldValue("domains", domains);
+            change("domains", domains);
           }
           let hasWildcardDomains = false;
           values.domains.map((domain) => {
@@ -107,9 +107,14 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             return domain;
           });
           return (
-            <Form className={classes.root} tutorial-anchor-id="certificate-form" id="certificate-form">
-              <FormMidware values={values} form={CERTIFICATE_FORM_ID} />
-              <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <form
+              className={classes.root}
+              onSubmit={handleSubmit}
+              tutorial-anchor-id="certificate-form"
+              id="certificate-form"
+            >
+              {/* <FormMidware values={values} form={CERTIFICATE_FORM_ID} /> */}
+              <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
               <KPanel
                 content={
                   <Box p={2}>
@@ -120,18 +125,20 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                       </Grid>
                       <Grid item md={12}>
                         <Field
-                          component={KRenderThrottleFormikTextField}
+                          component={FinalTextField}
                           label="Certificate name"
                           name="name"
                           disabled={isEdit}
                           placeholder="Please type a certificate name"
                           id="certificate-name"
-                          helperText={!!errors.name && touched.name ? errors.name : ""}
+                          helperText={!!errors.name && touched && touched.name ? errors.name : ""}
                         />
                       </Grid>
                       <Grid item md={12}>
                         <Field
-                          component={KFreeSoloFormikAutoCompleteMultiValues}
+                          render={(props: FieldRenderProps<string[]>) => (
+                            <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
+                          )}
                           disabled={values.managedType === selfManaged}
                           label="Domains"
                           name="domains"
@@ -179,10 +186,10 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               {process.env.REACT_APP_DEBUG === "true" ? (
                 <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
               ) : null}
-            </Form>
+            </form>
           );
         }}
-      </Formik>
+      </Form>
     );
   }
 }
