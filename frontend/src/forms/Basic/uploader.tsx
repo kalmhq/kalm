@@ -82,7 +82,7 @@ export const FormikUploader = ({
         size="small"
         margin="dense"
         variant="outlined"
-        onChange={handleChange}
+        onChange={(event) => handleChange(event.target.value)}
         value={value}
       />
     </div>
