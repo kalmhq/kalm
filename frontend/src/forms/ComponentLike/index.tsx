@@ -9,6 +9,8 @@ import { push } from "connected-react-router";
 import arrayMutators from "final-form-arrays";
 import { KTooltip } from "forms/Application/KTooltip";
 import { Disks } from "forms/ComponentLike/Disks";
+import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
+import { FinalRadioGroupRender } from "forms/Final/radio";
 import { FinalSelectField } from "forms/Final/select";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
 import { NormalizePositiveNumber } from "forms/normalizer";
@@ -32,7 +34,7 @@ import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KalmConsoleIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
-import { Subtitle1, Body2 } from "widgets/Label";
+import { Body2, Subtitle1 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
 import { makeSelectOption } from "../Basic/select";
@@ -40,12 +42,10 @@ import { FinalTextField } from "../Final/textfield";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 import { ComponentAccess } from "./Access";
 import { Envs } from "./Envs";
+import { RenderSelectLabels } from "./NodeSelector";
 import { IngressHint, Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
-import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
-import { RenderSelectLabels } from "./NodeSelector";
-import { FinalRadioGroupRender } from "forms/Final/radio";
+import { ProbeFields } from "./Probes";
 
 const Configurations = "Config";
 const DisksTab = "Disks";
@@ -325,7 +325,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderHealth() {
     return (
       <FormSpy subscription={{ values: true }}>
-        {({ values: { ports } }: { values: ComponentLike }) => {
+        {({
+          values: { ports, readinessProbe, livenessProbe },
+          form: { change },
+        }: FormSpyRenderProps<ComponentLike>) => {
           return (
             <Grid container spacing={2}>
               <Grid item xs={12}>
@@ -337,7 +340,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 {sc.READINESS_PROBE_HELPER}
               </Grid>
               <Grid item xs={12}>
-                <ReadinessProbe ports={ports} />
+                <ProbeFields name="readinessProbe" value={readinessProbe} ports={ports} change={change} />
               </Grid>
               <Grid item xs={12}>
                 <Divider orientation="horizontal" color="inherit" />
@@ -349,7 +352,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               </Grid>
               <HelperTextSection>{sc.LIVENESS_PROBE_HELPER}</HelperTextSection>
               <Grid item xs={12}>
-                <LivenessProbe ports={ports} />
+                <ProbeFields name="livenessProbe" value={livenessProbe} ports={ports} change={change} />
               </Grid>
             </Grid>
           );
@@ -829,7 +832,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         // debug={process.env.REACT_APP_DEBUG === "true" ? console.log : undefined}
         initialValues={_initialValues}
         onSubmit={onSubmit}
-        subscription={{ submitting: true, pristine: true }}
+        subscription={{ submitting: true, pristine: true, dirty: true }}
         keepDirtyOnReinitialize={true}
         mutators={{
           ...arrayMutators,

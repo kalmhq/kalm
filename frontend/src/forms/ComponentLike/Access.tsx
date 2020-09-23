@@ -46,14 +46,16 @@ class ComponentAccessRaw extends React.PureComponent<Props> {
     let allGroups: string[] = [];
 
     ssoConfig.connectors?.forEach((x) => {
-      if ("orgs" in x.config) {
-        x.config.orgs.forEach((org) => {
-          org.teams.forEach((team) => {
-            allGroups.push(`${org.name}:${team}`);
+      if (x.config) {
+        if ("orgs" in x.config) {
+          x.config.orgs.forEach((org) => {
+            org.teams.forEach((team) => {
+              allGroups.push(`${org.name}:${team}`);
+            });
           });
-        });
-      } else if ("groups" in x.config) {
-        allGroups = allGroups.concat(x.config.groups);
+        } else if ("groups" in x.config) {
+          allGroups = allGroups.concat(x.config.groups);
+        }
       }
     });
 

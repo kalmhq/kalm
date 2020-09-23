@@ -2,7 +2,7 @@ import { Button, makeStyles, OutlinedTextFieldProps, TextField } from "@material
 import React from "react";
 import { grey } from "@material-ui/core/colors";
 
-export const FormikUploader = ({
+export const Uploader = ({
   handleChange,
   touched,
   errorText,

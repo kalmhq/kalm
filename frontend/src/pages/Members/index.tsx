@@ -27,6 +27,7 @@ import { InfoBox } from "widgets/InfoBox";
 import { impersonate } from "api/realApi";
 import produce from "immer";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const styles = (theme: Theme) => createStyles({});
 
@@ -41,6 +42,7 @@ interface Props
     ReturnType<typeof mapStateToProps>,
     TDispatchProp,
     WithNamespaceProps,
+    WithUserAuthProps,
     WithRoleBindingProps {}
 
 interface State {}
@@ -139,6 +141,8 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderRole = (roleBinding: RoleBinding) => {
+    const { canManageCluster, canManageNamespace, activeNamespaceName } = this.props;
+
     const items = this.isClusterLevel()
       ? [
           <MenuItem key="clusterViewer" value="clusterViewer">
@@ -171,6 +175,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
         size="small"
         SelectProps={{ displayEmpty: true }}
         value={roleBinding.role}
+        disabled={this.isClusterLevel() ? !canManageCluster() : !canManageNamespace(activeNamespaceName)}
         onChange={(event) => this.changeRole(roleBinding, event.target.value)}
       >
         {items}
@@ -286,5 +291,5 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
 }
 
 export const RolesListPage = withStyles(styles)(
-  withNamespace(withRoleBindings(connect(mapStateToProps)(withRouter(RolesListPageRaw)))),
+  withNamespace(withUserAuth(withRoleBindings(connect(mapStateToProps)(withRouter(RolesListPageRaw))))),
 );

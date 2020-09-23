@@ -5,12 +5,10 @@ import { Theme } from "@material-ui/core/styles";
 import { Alert } from "@material-ui/lab";
 import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
-import { Field, Form, FormikProps, withFormik } from "formik";
 import { Connectors } from "forms/SSOConfig/Connectors";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import {
   newEmptyGithubConnector,
@@ -26,8 +24,10 @@ import { CopyIconDefault, GithubIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
-import { KRenderThrottleFormikTextField } from "../Basic/textfield";
+import { FinalTextField } from "../Final/textfield";
 import { ValidateHost } from "../validator";
+import { Field, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
+import arrayMutators from "final-form-arrays";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -49,35 +49,27 @@ interface OwnProps {
   initial: SSOConfig;
 }
 
-export interface Props extends ConnectedProps, FormikProps<SSOConfig>, WithStyles<typeof styles>, OwnProps {}
+export interface Props extends ConnectedProps, WithStyles<typeof styles>, OwnProps {}
 
 class SSOConfigFormRaw extends React.PureComponent<Props> {
-  private renderButtons() {
-    const { initialValues, isSubmitting } = this.props;
+  private renderButtons(initialValues: SSOConfig, submitting: boolean) {
     const isEdit = (initialValues.connectors && initialValues.connectors?.length > 0) || initialValues.domain !== "";
 
     return (
       <>
-        <CustomizedButton variant="contained" color="primary" pending={isSubmitting} type="submit">
+        <CustomizedButton variant="contained" color="primary" pending={submitting} type="submit">
           {isEdit ? "Update Single Sign-On Config" : "Enable Single Sign-On"}
         </CustomizedButton>
       </>
     );
   }
 
-  private copyCallback = () => {
-    copy(`https://${this.props.values.domain}/dex/callback`);
+  private copyCallback = (domain?: string) => {
+    copy(`https://${domain}/dex/callback`);
     this.props.dispatch(setSuccessNotificationAction("Copied successful!"));
   };
 
-  private renderPrompt = () => {
-    const { dirty, isSubmitting } = this.props;
-    return <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />;
-  };
-
-  private addConnector = (type: SSO_CONNECTOR_TYPE) => {
-    const { values, setFieldValue } = this.props;
-
+  private addConnector = (type: SSO_CONNECTOR_TYPE, values: SSOConfig, change: any) => {
     let connector;
     if (type === SSO_CONNECTOR_TYPE_GITLAB) {
       connector = newEmptyGitlabConnector();
@@ -85,133 +77,152 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
       connector = newEmptyGithubConnector();
     }
 
-    setFieldValue(
+    change(
       "connectors",
       values.connectors && values.connectors.length > 0 ? [...values.connectors, connector] : [connector],
     );
   };
 
   public render() {
-    const { values } = this.props;
+    const { initial, onSubmit } = this.props;
 
     return (
-      <Form>
-        {this.renderPrompt()}
-        <KPanel
-          title="Setup Domain"
-          content={
-            <Box p={2}>
-              <Grid container spacing={2}>
-                <Grid md={8} item>
-                  <Field
-                    name="domain"
-                    label="Domain"
-                    component={KRenderThrottleFormikTextField}
-                    validate={ValidateHost}
-                    autoFocus
-                    placeholder="Please type a domain for your Single Sign-on configuration"
-                    helperText="A valid domain name is required."
-                  />
-                </Grid>
-              </Grid>
+      <Form
+        initialValues={initial}
+        onSubmit={onSubmit}
+        subscription={{ submitting: true, pristine: true }}
+        keepDirtyOnReinitialize={true}
+        mutators={{
+          ...arrayMutators,
+        }}
+        render={({ handleSubmit, submitting, pristine, dirty }: FormRenderProps<SSOConfig>) => (
+          <form onSubmit={handleSubmit}>
+            <Prompt when={dirty && submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <KPanel
+              title="Setup Domain"
+              content={
+                <Box p={2}>
+                  <Grid container spacing={2}>
+                    <Grid md={8} item>
+                      <Field
+                        name="domain"
+                        label="Domain"
+                        component={FinalTextField}
+                        validate={ValidateHost}
+                        autoFocus
+                        placeholder="Please type a domain for your Single Sign-on configuration"
+                        helperText="A valid domain name is required."
+                      />
+                    </Grid>
+                  </Grid>
 
-              <Box mt={2} style={{ color: "#797979" }}>
-                <Body>
-                  The callback is generated based on your domain. This url is required in the following steps. Please
-                  make sure your domain name has pointed to your cluster ip.
-                </Body>
-                <Box p={1}>
-                  <pre>
-                    https://<strong style={{ color: "black" }}>{values.domain || "<domain>"}</strong>/dex/callback
-                    <Box
-                      display="inline-block"
-                      ml={1}
-                      style={{ verticalAlign: "middle", cursor: "pointer" }}
-                      onClick={this.copyCallback}
-                    >
-                      <CopyIconDefault fontSize="small" />
+                  <Box mt={2} style={{ color: "#797979" }}>
+                    <Body>
+                      The callback is generated based on your domain. This url is required in the following steps.
+                      Please make sure your domain name has pointed to your cluster ip.
+                    </Body>
+                    <Box p={1}>
+                      <pre>
+                        <FormSpy subscription={{ values: true }}>
+                          {({ values }: FormSpyRenderProps<SSOConfig>) => (
+                            <>
+                              https://<strong style={{ color: "black" }}>{values.domain || "<domain>"}</strong>
+                              /dex/callback
+                              <Box
+                                display="inline-block"
+                                ml={1}
+                                style={{ verticalAlign: "middle", cursor: "pointer" }}
+                                onClick={() => this.copyCallback(values.domain)}
+                              >
+                                <CopyIconDefault fontSize="small" />
+                              </Box>
+                            </>
+                          )}
+                        </FormSpy>
+                      </pre>
                     </Box>
-                  </pre>
+                  </Box>
                 </Box>
-              </Box>
+              }
+            />
+
+            <Box mt={2}>
+              <KPanel
+                title="Setup Identity Provider Connectors"
+                content={
+                  <Box p={2}>
+                    <FormSpy subscription={{ values: true }}>
+                      {({ values, form: { change } }: FormSpyRenderProps<SSOConfig>) => {
+                        return (
+                          <>
+                            <Box mr={2} display="inline-block">
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                color="primary"
+                                endIcon={<GithubIcon />}
+                                onClick={() => this.addConnector(SSO_CONNECTOR_TYPE_GITHUB, values, change)}
+                              >
+                                Add Github connector
+                              </Button>
+                            </Box>
+                            <Box mr={2} display="inline-block">
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                color="primary"
+                                onClick={() => this.addConnector(SSO_CONNECTOR_TYPE_GITLAB, values, change)}
+                              >
+                                Add Gitlab connector
+                              </Button>
+                            </Box>
+                          </>
+                        );
+                      }}
+                    </FormSpy>
+                    <Body style={{ color: "#797979" }}>
+                      No connector you are looking for? Fire an{" "}
+                      <a href="https://github.com/kalmhq/kalm/issues/new" rel="noopener noreferrer" target="_blank">
+                        issue
+                      </a>{" "}
+                      on kalm github. Also, pull request is well welcomed.
+                    </Body>
+                    <Connectors />
+                  </Box>
+                }
+              />
             </Box>
-          }
-        />
 
-        <Box mt={2}>
-          <KPanel
-            title="Setup Identity Provider Connectors"
-            content={
-              <Box p={2}>
-                <Box mr={2} display="inline-block">
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="primary"
-                    endIcon={<GithubIcon />}
-                    onClick={() => this.addConnector(SSO_CONNECTOR_TYPE_GITHUB)}
-                  >
-                    Add Github connector
-                  </Button>
-                </Box>
-                <Box mr={2} display="inline-block">
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => this.addConnector(SSO_CONNECTOR_TYPE_GITLAB)}
-                  >
-                    Add Gitlab connector
-                  </Button>
-                </Box>
-                <Body style={{ color: "#797979" }}>
-                  No connector you are looking for? Fire an{" "}
-                  <a href="https://github.com/kalmhq/kalm/issues/new" rel="noopener noreferrer" target="_blank">
-                    issue
-                  </a>{" "}
-                  on kalm github. Also, pull request is well welcomed.
-                </Body>
-                <Connectors connectors={values.connectors} />
-              </Box>
-            }
-          />
-        </Box>
-
-        {/* {error && submitFailed ? (
+            {/* {error && submitFailed ? (
           <Box pt={2}>
             <Alert severity="error">{error}</Alert>
           </Box>
         ) : null} */}
 
-        <Box mt={2}>
-          <Alert severity="info">
-            After modifying the Single Sign-on configuration, kalm takes a few minutes to restart the corresponding
-            components.
-          </Alert>
-        </Box>
+            <Box mt={2}>
+              <Alert severity="info">
+                After modifying the Single Sign-on configuration, kalm takes a few minutes to restart the corresponding
+                components.
+              </Alert>
+            </Box>
 
-        <Box pt={2} display="flex">
-          {this.renderButtons()}
-        </Box>
-        {process.env.REACT_APP_DEBUG === "true" ? (
-          <Box mt={2}>
-            <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values as any, undefined, 2)}</pre>
-          </Box>
-        ) : null}
-      </Form>
+            <Box pt={2} display="flex">
+              {this.renderButtons(initial, submitting)}
+            </Box>
+            {process.env.REACT_APP_DEBUG === "true" ? (
+              <FormSpy subscription={{ values: true }}>
+                {({ values }) => {
+                  return (
+                    <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
+                  );
+                }}
+              </FormSpy>
+            ) : null}
+          </form>
+        )}
+      />
     );
   }
 }
 
-const connectedForm = connect(mapStateToProps)(withStyles(styles)(SSOConfigFormRaw));
-
-export const SSOConfigForm = withFormik<OwnProps, SSOConfig>({
-  mapPropsToValues: (props) => {
-    return props.initial;
-  },
-  // @ts-ignore
-  validate: formikValidateOrNotBlockByTutorial,
-  handleSubmit: async (formValues, { props: { onSubmit } }) => {
-    await onSubmit(formValues);
-  },
-})(connectedForm);
+export const SSOConfigForm = connect(mapStateToProps)(withStyles(styles)(SSOConfigFormRaw));

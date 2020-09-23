@@ -2,21 +2,19 @@ import { Box, createStyles, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import { createApplicationAction } from "actions/application";
 import { push } from "connected-react-router";
-import { Field, FormikProps, withFormik } from "formik";
+import { FinalTextField } from "forms/Final/textfield";
 import { APPLICATION_FORM_ID } from "forms/formIDs";
 import React from "react";
+import { Field, Form, FormRenderProps } from "react-final-form";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { theme } from "theme/theme";
-import { FormMidware } from "tutorials/formMidware";
-import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import { Application } from "types/application";
 import stringConstants from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
-import { KRenderThrottleFormikTextField } from "../Basic/textfield";
 import { ValidatorName } from "../validator";
 
 const styles = (theme: Theme) =>
@@ -46,37 +44,31 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface OwnProps {
-  isEdit?: boolean;
-  currentTab: "basic" | "applicationPlugins";
-}
+interface OwnProps {}
 
 interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props extends ConnectedProps, FormikProps<Application>, WithStyles<typeof styles>, OwnProps {}
+export interface Props extends ConnectedProps, WithStyles<typeof styles>, OwnProps {}
 
 class ApplicationFormRaw extends React.PureComponent<Props> {
-  private renderBasic() {
-    const { isEdit, values } = this.props;
+  private renderBasic(name: string) {
     return (
       <>
         <Field
           name="name"
           label="App Name"
           id="application-name"
-          disabled={isEdit}
-          component={KRenderThrottleFormikTextField}
+          component={FinalTextField}
           autoFocus={true}
           validate={ValidatorName}
-          helperText={isEdit ? "Can't modify name" : stringConstants.NAME_RULE}
+          helperText={stringConstants.NAME_RULE}
         />
 
         <Box mt={2} style={{ color: theme.palette.text.secondary }}>
           <Body>The App Name becomes part of the DNS name for its resources:</Body>
           <Box p={1}>
             <code id="application-name-code">
-              {"<COMPONENT_NAME>"}.
-              <strong style={{ color: theme.palette.text.primary }}>{values.name || "<APP_NAME>"}</strong>
+              {"<COMPONENT_NAME>"}.<strong style={{ color: theme.palette.text.primary }}>{name || "<APP_NAME>"}</strong>
               .svc.cluster.local
             </code>
           </Box>
@@ -85,64 +77,56 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
     );
   }
 
-  private renderButtons() {
-    const { handleSubmit, classes, currentTab, isSubmittingApplication } = this.props;
-
-    return (
-      <>
-        <CustomizedButton
-          pending={isSubmittingApplication}
-          disabled={isSubmittingApplication}
-          tutorial-anchor-id="application-form-submit-button"
-          variant="contained"
-          color="primary"
-          className={`${currentTab === "basic" ? classes.submitButton : classes.displayNone}`}
-          onClick={(event: any) => {
-            handleSubmit(event);
-          }}
-          id="add-application-submit-button"
-        >
-          Create App
-        </CustomizedButton>
-      </>
-    );
-  }
+  private onSubmit = async (applicationFormValue: Application) => {
+    const { dispatch } = this.props;
+    await dispatch(createApplicationAction(applicationFormValue));
+    dispatch(push(`/applications/${applicationFormValue.name}/components/new`));
+  };
 
   public render() {
-    const { handleSubmit, classes, values, form } = this.props;
+    const { classes, form } = this.props;
 
     return (
-      <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">
-        <FormMidware values={values} form={form} />
-        <KPanel
-          content={
-            <Box p={2} tutorial-anchor-id="application-form-name-field">
-              {this.renderBasic()}
-            </Box>
-          }
-        />
+      <Form
+        initialValues={{ name: "" }}
+        onSubmit={this.onSubmit}
+        render={({ handleSubmit, submitting, dirty, values }: FormRenderProps<Application>) => (
+          <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">
+            {/* TODO */}
+            {/* <FormMidware values={values} form={form} /> */}
+            <KPanel
+              content={
+                <Box p={2} tutorial-anchor-id="application-form-name-field">
+                  {this.renderBasic(values.name)}
+                </Box>
+              }
+            />
 
-        {/* {errors.name && touched.name ? (
+            {/* {errors.name && touched.name ? (
           <Box pt={2}>
             <Alert severity="error">{errors.name}</Alert>
           </Box>
         ) : null} */}
 
-        <Box pt={3} className={classes.displayFlex}>
-          {this.renderButtons()}
-        </Box>
-      </form>
+            <Box pt={3} className={classes.displayFlex}>
+              <CustomizedButton
+                pending={submitting}
+                disabled={submitting}
+                tutorial-anchor-id="application-form-submit-button"
+                variant="contained"
+                color="primary"
+                className={`${classes.submitButton}`}
+                type="submit"
+                id="add-application-submit-button"
+              >
+                Create App
+              </CustomizedButton>
+            </Box>
+          </form>
+        )}
+      />
     );
   }
 }
 
-const form = withFormik<ConnectedProps & OwnProps & WithStyles<typeof styles>, Application>({
-  mapPropsToValues: () => ({ name: "" }),
-  handleSubmit: async (applicationFormValue, { props: { dispatch } }) => {
-    await dispatch(createApplicationAction(applicationFormValue));
-    dispatch(push(`/applications/${applicationFormValue.name}/components/new`));
-  },
-  validate: formikValidateOrNotBlockByTutorial,
-})(ApplicationFormRaw);
-
-export default connect(mapStateToProps)(withStyles(styles)(form));
+export default connect(mapStateToProps)(withStyles(styles)(ApplicationFormRaw));
