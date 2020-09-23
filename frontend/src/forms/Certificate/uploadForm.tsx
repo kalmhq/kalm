@@ -2,7 +2,7 @@ import { Box, Button, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
-import { Uploader } from "forms/Basic/uploader";
+import { Uploader } from "forms/Final/uploader";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalTextField } from "forms/Final/textfield";
 import { ValidatorHosts } from "forms/validator";
