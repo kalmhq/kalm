@@ -6,7 +6,7 @@ import { DeployAccessTokenForm } from "forms/DeployAccessToken";
 import { withDeployAccessTokens, WithDeployAccessTokensProps } from "hoc/withDeployAccessTokens";
 import { BasePage } from "pages/BasePage";
 import React from "react";
-import { DeployAccessToken } from "types/deployAccessToken";
+import { DeployAccessToken, newEmptyDeployAccessToken } from "types/deployAccessToken";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -21,14 +21,11 @@ class DeployAccessTokenNewPageRaw extends React.PureComponent<Props, State> {
   private submit = async (config: DeployAccessToken) => {
     const { dispatch } = this.props;
     await dispatch(createDeployAccessTokenAction(config));
-    this.onSubmitSuccess(config);
-    return;
-  };
 
-  private onSubmitSuccess = async (config: DeployAccessToken) => {
-    const { dispatch } = this.props;
     dispatch(setSuccessNotificationAction("Create Deploy key Successfully"));
     dispatch(push("/ci/keys/" + config.name));
+
+    return;
   };
 
   public render() {
@@ -37,7 +34,8 @@ class DeployAccessTokenNewPageRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item md={8}>
-              <DeployAccessTokenForm onSubmit={this.submit} />
+              {/* @ts-ignore */}
+              <DeployAccessTokenForm _initialValues={newEmptyDeployAccessToken()} onSubmit={this.submit} />
             </Grid>
           </Grid>
         </Box>
