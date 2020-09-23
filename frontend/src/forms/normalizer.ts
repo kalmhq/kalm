@@ -63,8 +63,12 @@ export const NormalizePorts = (values: string[]) => {
   return Array.from(new Set(values.map(normalizePort))).filter((x) => x <= 65535 && x > 0);
 };
 
-export const NormalizeComponentAccessGroups = (values: string[]) => {
+export const NormalizeStringArray = (values: string[]) => {
   return values.map((x) => x.trim()).filter((x) => !!x);
+};
+
+export const NormalizeString = (value: string) => {
+  return value.trim();
 };
 
 export const NormalizeCPU = (value: string) => {

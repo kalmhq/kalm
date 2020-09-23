@@ -1,6 +1,11 @@
-import { OutlinedTextFieldProps, TextField, Theme } from "@material-ui/core";
+import { OutlinedTextFieldProps, TextField, Theme, Typography } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import { AutocompleteProps, UseAutocompleteMultipleProps, UseAutocompleteSingleProps } from "@material-ui/lab";
+import {
+  AutocompleteProps,
+  createFilterOptions,
+  UseAutocompleteMultipleProps,
+  UseAutocompleteSingleProps,
+} from "@material-ui/lab";
 import clsx from "clsx";
 import React from "react";
 import { theme } from "theme/theme";
@@ -8,6 +13,15 @@ import { FieldRenderProps } from "react-final-form";
 import Chip from "@material-ui/core/Chip";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import Autocomplete from "@material-ui/lab/Autocomplete";
+import { KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
+import { Caption } from "widgets/Label";
+import Divider from "@material-ui/core/Divider";
+
+export interface AutoCompleteForRenderOption {
+  value: string;
+  label: string;
+  group: string;
+}
 
 const FreeSoloStyles = makeStyles((theme: Theme) => ({
   root: {},
@@ -17,8 +31,7 @@ const FreeSoloStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-export const SelectStyles = makeStyles((_theme: Theme) => ({
-  root: {},
+export const AutoCompleteSingleValueStyle = makeStyles((_theme: Theme) => ({
   groupLabel: {
     background: theme.palette.type === "light" ? theme.palette.grey[50] : theme.palette.background.paper,
     borderBottom: `1px solid ${theme.palette.divider}`,
@@ -93,6 +106,8 @@ export const AutoCompleteMultiValuesFreeSolo: X = function <T>(props: AutoComple
 
   if (errorsIsArray) {
     errorText = error.find((x: string | undefined) => x !== undefined);
+  } else {
+    errorText = error;
   }
 
   return (
@@ -150,100 +165,150 @@ export interface AutoCompleteSingleValueProps<T>
   extends FieldRenderProps<T>,
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText">,
     Pick<AutocompleteProps<T>, "noOptionsText">,
-    UseAutocompleteSingleProps<T> {}
+    UseAutocompleteSingleProps<T> {
+  optionsForRender?: AutoCompleteForRenderOption[];
+}
 
-// export const AutoCompleteSingleValue = function <T>(
-//   props: AutoCompleteSingleValueProps<KAutoCompleteOption>,
-// ): JSX.Element {
-//   const {
-//     label,
-//     helperText,
-//     field: { name, value: fieldValue },
-//     form: { touched, errors, setFieldValue, handleBlur },
-//     classes,
-//     options,
-//     placeholder,
-//     noOptionsText,
-//   } = props;
-//
-//   const value = options.find((x) => x.value === fieldValue) || null;
-//
-//   const { groupLabelDefault, groupIcon, logoIcon, groupLabelCurrent, ...autocompleteClasses } = classes;
-//
-//   return (
-//     <Autocomplete
-//       classes={autocompleteClasses}
-//       openOnFocus
-//       noOptionsText={noOptionsText}
-//       groupBy={(option) => option.group}
-//       options={options}
-//       size="small"
-//       filterOptions={createFilterOptions({
-//         ignoreCase: true,
-//         matchFrom: "any",
-//         stringify: (option) => {
-//           return option.label;
-//         },
-//       })}
-//       renderGroup={(group: RenderGroupParams) => {
-//         if (group.key === "default") {
-//           return (
-//             <div key={group.key}>
-//               <div className={groupLabelDefault}>
-//                 <KalmLogoIcon className={clsx(groupIcon, logoIcon)} />
-//                 <Caption>{group.key}</Caption>
-//               </div>
-//               {group.children}
-//               <Divider />
-//             </div>
-//           );
-//         } else {
-//           return (
-//             <div key={group.key}>
-//               <div className={classes.groupLabel}>
-//                 <KalmApplicationIcon className={groupIcon} />
-//                 <Caption className={clsx(group.key.includes("Current") ? groupLabelCurrent : {})}>{group.key}</Caption>
-//               </div>
-//               {group.children}
-//               <Divider />
-//             </div>
-//           );
-//         }
-//       }}
-//       renderOption={(option: KAutoCompleteOption) => {
-//         return (
-//           <div className={classes.groupUl}>
-//             <Typography>{option.label}</Typography>
-//           </div>
-//         );
-//       }}
-//       value={value}
-//       getOptionLabel={(option: KAutoCompleteOption) => option.label}
-//       onBlur={handleBlur}
-//       forcePopupIcon={true}
-//       onChange={(_event: any, value: KAutoCompleteOption | null) => {
-//         if (value) {
-//           setFieldValue(name, value.value);
-//         } else {
-//           setFieldValue(name, "");
-//         }
-//       }}
-//       renderInput={(params) => {
-//         return (
-//           <TextField
-//             {...params}
-//             fullWidth
-//             variant="outlined"
-//             error={!!(getIn(touched, name) && getIn(errors, name))}
-//             label={label}
-//             placeholder={placeholder}
-//             helperText={(getIn(touched, name) && getIn(errors, name)) || helperText}
-//           />
-//         );
-//       }}
-//     />
-//   );
-// };
+const NO_GROUP = "__no__group__";
+
+export const AutoCompleteSingleValue = function <T>(props: AutoCompleteSingleValueProps<string>): JSX.Element {
+  const {
+    label,
+    helperText,
+    input: { value, onChange, onBlur },
+    meta: { touched, error },
+    options,
+    placeholder,
+    noOptionsText,
+    optionsForRender,
+  } = props;
+
+  const {
+    groupLabelDefault,
+    groupIcon,
+    logoIcon,
+    groupLabelCurrent,
+    groupLabel,
+    groupUl,
+  } = AutoCompleteSingleValueStyle();
+
+  return (
+    <Autocomplete
+      openOnFocus
+      noOptionsText={noOptionsText}
+      options={options}
+      size="small"
+      groupBy={(value) => {
+        if (!optionsForRender) {
+          return NO_GROUP;
+        }
+
+        const option = optionsForRender?.find((x) => x.value === value);
+
+        if (!option) {
+          return value;
+        }
+
+        return option.group;
+      }}
+      filterOptions={createFilterOptions({
+        ignoreCase: true,
+        matchFrom: "any",
+        stringify: (value: string) => {
+          if (!optionsForRender) {
+            return value;
+          }
+
+          const option = optionsForRender?.find((x) => x.value === value);
+
+          if (!option) {
+            return value;
+          }
+
+          return option.label;
+        },
+      })}
+      getOptionLabel={(value: string) => {
+        if (!optionsForRender) {
+          return value;
+        }
+
+        const option = optionsForRender?.find((x) => x.value === value);
+
+        if (!option) {
+          return value;
+        }
+
+        return option.label;
+      }}
+      renderOption={(value) => {
+        if (!optionsForRender) {
+          return value;
+        }
+
+        const option = optionsForRender?.find((x) => x.value === value);
+
+        if (!option) {
+          return null;
+        }
+
+        return (
+          <div className={groupUl}>
+            <Typography>{option!.label}</Typography>
+          </div>
+        );
+      }}
+      renderGroup={({ key, children }) => {
+        if (key === NO_GROUP) {
+          return children;
+        }
+
+        if (key === "default") {
+          return (
+            <div key={key}>
+              <div className={groupLabelDefault}>
+                <KalmLogoIcon className={clsx(groupIcon, logoIcon)} />
+                <Caption>{key}</Caption>
+              </div>
+              {children}
+              <Divider />
+            </div>
+          );
+        } else {
+          return (
+            <div key={key}>
+              <div className={groupLabel}>
+                <KalmApplicationIcon className={groupIcon} />
+                <Caption className={clsx(key.includes("Current") ? groupLabelCurrent : {})}>{key}</Caption>
+              </div>
+              {children}
+              <Divider />
+            </div>
+          );
+        }
+      }}
+      value={value}
+      onBlur={onBlur}
+      forcePopupIcon={true}
+      onChange={(_: any, value: string | null) => {
+        onChange(value);
+      }}
+      renderInput={(params) => {
+        return (
+          <TextField
+            {...params}
+            fullWidth
+            variant="outlined"
+            error={!!touched && !!error}
+            label={label}
+            placeholder={placeholder}
+            helperText={(!!touched && error) || helperText}
+          />
+        );
+      }}
+    />
+  );
+};
 
 interface AutoCompleteMultipleValuesProps<T>
   extends FieldRenderProps<T[]>,
@@ -254,13 +319,13 @@ interface AutoCompleteMultipleValuesProps<T>
   icons?: any[];
 }
 
-export const AutoCompleteMultipleValueField = (props: AutoCompleteMultipleValuesProps<string>) => {
+export const AutoCompleteMultipleValue = (props: AutoCompleteMultipleValuesProps<string>) => {
   const {
     placeholder,
     label,
     helperText,
     options,
-    input: { name, onChange, value, onBlur },
+    input: { onChange, value, onBlur },
     meta: { touched, error },
   } = props;
 
@@ -297,13 +362,12 @@ export const AutoCompleteMultipleValueField = (props: AutoCompleteMultipleValues
         });
       }}
       onBlur={onBlur}
-      value={value}
+      value={value || []}
       onChange={(e, value) => {
         onChange(value);
       }}
       renderInput={(params) => (
         <TextField
-          name={name}
           {...params}
           InputLabelProps={{
             shrink: true,
@@ -312,7 +376,7 @@ export const AutoCompleteMultipleValueField = (props: AutoCompleteMultipleValues
           variant="outlined"
           placeholder={placeholder}
           error={!!touched && !!error}
-          helperText={helperText}
+          helperText={!!touched && !!error ? error : helperText}
         />
       )}
     />
