@@ -2,7 +2,7 @@ import { Box, Button, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
-import { FormikUploader } from "forms/Basic/uploader";
+import { Uploader } from "forms/Basic/uploader";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalTextField } from "forms/Final/textfield";
 import { ValidatorHosts } from "forms/validator";
@@ -80,7 +80,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <Grid item md={12}>
-          <FormikUploader
+          <Uploader
             touched={touched && touched.selfManagedCertContent}
             errorText={errors.selfManagedCertContent}
             inputlabel="Certificate file"
@@ -100,7 +100,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
         <Grid item md={12}>
-          <FormikUploader
+          <Uploader
             touched={touched && touched.selfManagedCertPrivateKey}
             errorText={errors.selfManagedCertPrivateKey}
             inputlabel="Private Key"
