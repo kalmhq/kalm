@@ -80,7 +80,7 @@ export const AutoCompleteMultiValuesFreeSolo: X = function <T>(props: AutoComple
     options,
     icons,
     disabled,
-    input: { value, onBlur },
+    input: { value, onChange, onBlur },
     meta: { error },
     placeholder,
     helperText,
