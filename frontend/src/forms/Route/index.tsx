@@ -27,6 +27,7 @@ import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
+import { RenderHttpRouteDestinations } from "forms/Route/destinations";
 
 const mapStateToProps = (state: RootState) => {
   const certifications = state.certificates.certificates;
@@ -235,18 +236,14 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderTargets = (
-    values: HttpRoute,
-    errors: { [key: string]: string },
-    touched?: { [key: string]: boolean },
-  ) => {
+  private renderTargets = () => {
     // const { destinations } = values;
 
     return (
       <Box p={2}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={12} md={12}>
-            {/* <RenderHttpRouteDestinations destinations={destinations} errors={errors} touched={touched} /> */}
+            <RenderHttpRouteDestinations />
           </Grid>
           <Grid item xs={8} sm={8} md={8}>
             <CollapseWrapper title={stringConstants.ROUTE_MULTIPLE_TARGETS_HELPER}>
@@ -447,7 +444,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                     </Box>
 
                     <Box mb={2}>
-                      <KPanel title="Targets" content={this.renderTargets(values, errors, touched)} />
+                      <KPanel title="Targets" content={this.renderTargets()} />
                     </Box>
 
                     <Box mb={2}>
@@ -477,7 +474,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
               </form>
             );
           }}
-        ></Form>
+        />
       </div>
     );
   }
