@@ -1,12 +1,13 @@
 import { Box, Button, createStyles, WithStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import { Field, FieldRenderProps, Form, FormRenderProps, FormSpy } from "react-final-form";
+import { Field, FieldRenderProps, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
 import { ValidatorRequired } from "forms/validator";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import React from "react";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Application, ApplicationComponentDetails } from "types/application";
+import { OnChange } from "react-final-form-listeners";
 import {
   DeployAccessToken,
   DeployAccessTokenScopeCluster,
@@ -22,6 +23,7 @@ import { FinalTextField } from "forms/Final/textfield";
 import { AutoCompleteMultipleValue } from "forms/Final/autoComplete";
 import { connect } from "react-redux";
 import withStyles from "@material-ui/core/styles/withStyles";
+import { FinalRadioGroupRender } from "forms/Final/radio";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -80,18 +82,18 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
       });
     });
 
-    const scopeOptinons: { value: string; label: string }[] = [];
+    const scopeOptions: { value: string; label: string; explain?: string }[] = [];
     if (canEditCluster()) {
-      scopeOptinons.push({
+      scopeOptions.push({
         value: DeployAccessTokenScopeCluster,
         label: "Cluster - Can update all components on this cluster",
       });
     }
-    scopeOptinons.push({
+    scopeOptions.push({
       value: DeployAccessTokenScopeNamespace,
       label: "Specific Applications - Can update all components in selected applications",
     });
-    scopeOptinons.push({
+    scopeOptions.push({
       value: DeployAccessTokenScopeComponent,
       label: "Specific Components - Can only update selected components",
     });
@@ -113,32 +115,30 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
                   autoFocus
                   autoComplete="off"
                   component={FinalTextField}
-                  id="deployKey-name"
                   validate={ValidatorRequired}
                 />
 
-                {/*<KFormikRadioGroupRender*/}
-                {/*  title="Permission Scope"*/}
-                {/*  name="scope"*/}
-                {/*  value={values.scope}*/}
-                {/*  onChange={(event: any, value: string) => {*/}
-                {/*    setFieldValue("scope", value);*/}
-                {/*    setFieldValue("resources", []);*/}
-                {/*  }}*/}
-                {/*  options={scopeOptinons}*/}
-                {/*/>*/}
+                <Field
+                  title="Permission Scope"
+                  name="scope"
+                  render={(props: FieldRenderProps<string>) => (
+                    <FinalRadioGroupRender {...props} options={scopeOptions} />
+                  )}
+                />
 
                 <Box mt={2}>
                   {values.scope === DeployAccessTokenScopeNamespace ? (
                     <Field
-                      render={(props: FieldRenderProps<string[]>) => (
-                        <AutoCompleteMultipleValue {...props} options={applicationOptions} />
-                      )}
+                      render={(props: FieldRenderProps<string[]>) => {
+                        console.log(values);
+                        return <AutoCompleteMultipleValue {...props} options={applicationOptions} />;
+                      }}
                       // parse={(options: AutoCompleteOption[]) => options.map((option) => option.value)}
                       name="resources"
                       label="Applications"
-                      id="certificate-resources"
+                      key="applications"
                       placeholder={"Select an application"}
+                      validate={ValidatorRequired}
                       helperText={""}
                     />
                   ) : null}
@@ -149,15 +149,30 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
                         <AutoCompleteMultipleValue {...props} options={componentOptions} />
                       )}
                       name="resources"
-                      label="Component"
-                      id="certificate-resources"
+                      key="Components"
+                      label="Components"
                       placeholder={"Select a component"}
+                      validate={ValidatorRequired}
                       helperText={""}
                     />
                   ) : null}
                 </Box>
               </Box>
             </KPanel>
+
+            <FormSpy>
+              {({ form: { change } }: FormSpyRenderProps<DeployAccessToken>) => (
+                <OnChange name="scope">
+                  {(value: string, previous: string) => {
+                    if (value !== previous) {
+                      // has to use set timeout
+                      // https://github.com/final-form/react-final-form-listeners/issues/25
+                      setTimeout(() => change("resources", []), 30);
+                    }
+                  }}
+                </OnChange>
+              )}
+            </FormSpy>
 
             <Box mt={2}>
               <Button id="save-deployKey-button" color="primary" variant="contained" type="submit">

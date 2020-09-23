@@ -290,7 +290,7 @@ export const AutoCompleteSingleValue = function <T>(props: AutoCompleteSingleVal
       value={value}
       onBlur={onBlur}
       forcePopupIcon={true}
-      onChange={(_, value: string | null) => {
+      onChange={(_: any, value: string | null) => {
         onChange(value);
       }}
       renderInput={(params) => {
@@ -325,7 +325,7 @@ export const AutoCompleteMultipleValue = (props: AutoCompleteMultipleValuesProps
     label,
     helperText,
     options,
-    input: { name, onChange, value, onBlur },
+    input: { onChange, value, onBlur },
     meta: { touched, error },
   } = props;
 
@@ -368,7 +368,6 @@ export const AutoCompleteMultipleValue = (props: AutoCompleteMultipleValuesProps
       }}
       renderInput={(params) => (
         <TextField
-          name={name}
           {...params}
           InputLabelProps={{
             shrink: true,
@@ -377,7 +376,7 @@ export const AutoCompleteMultipleValue = (props: AutoCompleteMultipleValuesProps
           variant="outlined"
           placeholder={placeholder}
           error={!!touched && !!error}
-          helperText={helperText}
+          helperText={!!touched && !!error ? error : helperText}
         />
       )}
     />
