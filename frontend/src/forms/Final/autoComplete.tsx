@@ -94,7 +94,7 @@ export const AutoCompleteMultiValuesFreeSolo: X = function <T>(props: AutoComple
     icons,
     disabled,
     input: { value, onChange, onBlur },
-    meta: { error },
+    meta: { error, touched },
     placeholder,
     helperText,
   } = props;
@@ -147,10 +147,10 @@ export const AutoCompleteMultiValuesFreeSolo: X = function <T>(props: AutoComple
             margin="dense"
             variant="outlined"
             disabled={disabled}
-            error={!!errorText}
+            error={!!errorText && touched}
             label={label}
             placeholder={placeholder}
-            helperText={errorText || helperText}
+            helperText={errorText && touched ? errorText : helperText}
             InputLabelProps={{
               shrink: true,
             }}

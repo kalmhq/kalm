@@ -7,7 +7,7 @@ import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalBoolCheckboxRender, FinalCheckboxGroupRender } from "forms/Final/checkbox";
 import { FinalRadioGroupRender } from "forms/Final/radio";
 import { ROUTE_FORM_ID } from "forms/formIDs";
-import { KValidatorPaths, ValidatorIpAndHosts } from "forms/validator";
+import { KValidatorPaths, ValidatorArrayNotEmpty, ValidatorIpAndHosts } from "forms/validator";
 import routesGif from "images/routes.gif";
 import React from "react";
 import { Field, FieldRenderProps, Form, FormRenderProps } from "react-final-form";
@@ -90,6 +90,17 @@ interface State {
 }
 
 class RouteFormRaw extends React.PureComponent<Props, State> {
+  private schemaOptions = [
+    {
+      value: "http",
+      label: "http",
+    },
+    {
+      value: "https",
+      label: "https",
+      htmlColor: "#9CCC65",
+    },
+  ];
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -97,30 +108,6 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       isValidCertificationUnfolded: false,
     };
   }
-
-  // componentDidUpdate(prevProps: Props) {
-  // const { values, dispatch, setFieldValue } = this.props;
-  // const { hosts, schemes, httpRedirectToHttps } = values;
-  // if (hosts !== prevProps.values.hosts) {
-  //   hosts.forEach((host) => {
-  //     dispatch(loadDomainDNSInfo(host));
-  //   });
-  // }
-  // // for dev, app domains auto enable https
-  // if (!schemes.includes("https")) {
-  //   if (includesForceHttpsDomain(hosts).length > 0) {
-  //     if (schemes.includes("http")) {
-  //       setFieldValue("schemes", ["http", "https"]);
-  //     } else {
-  //       setFieldValue("schemes", ["https"]);
-  //     }
-  //   }
-  // }
-  // // set httpRedirectToHttps to false if http or https is not in schemes
-  // if (!(schemes.includes("http") && schemes.includes("https")) && httpRedirectToHttps) {
-  //   setFieldValue("httpRedirectToHttps", false);
-  // }
-  // }
 
   private canCertDomainsSuiteForHost = (domains: string[], host: string) => {
     for (let i = 0; i < domains.length; i++) {
@@ -259,6 +246,17 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       </Box>
     );
   };
+
+  private validate(values: HttpRoute) {
+    let errors: any = {};
+    const { methods, methodsMode, schemes } = values;
+    if (methodsMode === methodsModeSpecific) {
+      errors.methods = ValidatorArrayNotEmpty(methods);
+    }
+    errors.schemes = ValidatorArrayNotEmpty(schemes);
+    return errors;
+  }
+
   public render() {
     const { classes, ingressIP, isEdit, initial, onSubmit } = this.props;
     return (
@@ -266,6 +264,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
         <Form
           onSubmit={onSubmit}
           initialValues={initial}
+          validate={this.validate}
+          validateOnBlur
           mutators={{
             ...arrayMutators,
           }}
@@ -278,7 +278,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             form: { change },
             touched,
           }: FormRenderProps<HttpRoute>) => {
-            const { hosts, methodsMode } = values;
+            const { hosts, methodsMode, schemes, httpRedirectToHttps } = values;
             const hstsDomains = includesForceHttpsDomain(hosts);
             const icons = hosts.map((host, index) => {
               if (isArray(errors.hosts) && errors.hosts[index]) {
@@ -288,24 +288,27 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
               }
             });
             const methodOptions = httpMethods.map((m) => ({ value: m, label: m }));
-            const schemaOptions = [
-              {
-                value: "http",
-                label: "http",
-              },
-              {
-                value: "https",
-                label: "https",
-                htmlColor: "#9CCC65",
-              },
-            ];
+
+            if (!schemes.includes("https")) {
+              if (hstsDomains.length > 0) {
+                if (schemes.includes("http")) {
+                  change("schemes", ["http", "https"]);
+                } else {
+                  change("schemes", ["https"]);
+                }
+              }
+            }
+            // set httpRedirectToHttps to false if http or https is not in schemes
+            if (!(schemes.includes("http") && schemes.includes("https")) && httpRedirectToHttps) {
+              change("httpRedirectToHttps", false);
+            }
 
             return (
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} id="route-form">
                 {/* <FormMidware values={values} form={ROUTE_FORM_ID} /> */}
+                <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
                     <Box mb={2}>
                       <KPanel
                         title="Hosts and paths"
@@ -386,7 +389,6 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                                 render={(props: FieldArrayRenderProps<string, any>) => {
                                   return <FinalCheckboxGroupRender {...props} options={methodOptions} />;
                                 }}
-                                // validate={methodsMode === methodsModeSpecific ? ValidatorArrayNotEmpty : []}
                                 name="methods"
                               />
                             </Collapse>
@@ -396,11 +398,10 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                                   <FinalCheckboxGroupRender
                                     {...props}
                                     title="Allow traffic through"
-                                    options={schemaOptions}
+                                    options={this.schemaOptions}
                                   />
                                 );
                               }}
-                              // validate={ValidatorArrayNotEmpty}
                               name="schemes"
                             />
                             <Collapse
