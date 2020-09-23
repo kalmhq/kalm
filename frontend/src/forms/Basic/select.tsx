@@ -1,7 +1,5 @@
 import { Box, FormControl, InputLabel, makeStyles, MenuItem, Select, SelectProps, Typography } from "@material-ui/core";
 import FormHelperText from "@material-ui/core/FormHelperText";
-import { FieldProps, getIn } from "formik";
-import { Select as FormikSelect } from "formik-material-ui";
 import React from "react";
 import { ID } from "utils";
 
@@ -104,17 +102,6 @@ interface Props {
   helperText?: any;
 }
 
-// const ITEM_HEIGHT = 48;
-// const ITEM_PADDING_TOP = 8;
-// const MenuProps = {
-//   PaperProps: {
-//     style: {
-//       maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-//       width: 250,
-//     },
-//   },
-// };
-
 /**
  * Helper method to generate a single option for a select input
  * @param value
@@ -134,71 +121,4 @@ export const makeSelectOption = (value: string, itemName: string, itemDesc: stri
       </Box>
     ),
   };
-};
-
-export const RenderFormikSelectField = (props: FieldProps & SelectProps & Props) => {
-  const {
-    options,
-    label,
-    field: { name },
-    form: { touched, errors },
-  } = props;
-  const id = ID();
-  const labelId = ID();
-  const classes = makeStyles((theme) => ({
-    root: {
-      display: "flex",
-    },
-  }))();
-  const inputLabel = React.useRef<HTMLLabelElement>(null);
-
-  const { helperText, field, ...formikSelectProps } = props;
-  if (field.value === undefined) {
-    field.value = "";
-  }
-
-  return (
-    <FormControl
-      classes={{ root: classes.root }}
-      error={!!getIn(touched, name) && !!getIn(errors, name)}
-      variant="outlined"
-      size="small"
-      style={{ pointerEvents: "auto" }}
-      margin="dense"
-    >
-      <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
-        {label}
-      </InputLabel>
-      <FormikSelect
-        field={field}
-        {...formikSelectProps}
-        labelId={labelId}
-        renderValue={(value: any) => {
-          const option = options.find((x) => x.value === value);
-
-          if (!option) {
-            return value;
-          }
-
-          if (option.selectedText) {
-            return option.selectedText;
-          }
-
-          return option.text;
-        }}
-        inputProps={{ id }}
-      >
-        {options &&
-          options.map((option) => {
-            return (
-              <MenuItem value={option.value} key={option.value} disabled={option.disabled}>
-                {option.text}
-              </MenuItem>
-            );
-          })}
-      </FormikSelect>
-
-      {renderFormHelper({ touched: !!getIn(touched, name), error: getIn(errors, name), helperText })}
-    </FormControl>
-  );
 };
