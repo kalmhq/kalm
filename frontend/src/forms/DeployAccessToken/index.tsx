@@ -19,7 +19,7 @@ import { Loading } from "widgets/Loading";
 import { Prompt } from "widgets/Prompt";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { FinalTextField } from "forms/Final/textfield";
-import { AutoCompleteMultipleValueField } from "forms/Final/autoComplete";
+import { AutoCompleteMultipleValue } from "forms/Final/autoComplete";
 import { connect } from "react-redux";
 import withStyles from "@material-ui/core/styles/withStyles";
 
@@ -132,7 +132,7 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
                   {values.scope === DeployAccessTokenScopeNamespace ? (
                     <Field
                       render={(props: FieldRenderProps<string[]>) => (
-                        <AutoCompleteMultipleValueField {...props} options={applicationOptions} />
+                        <AutoCompleteMultipleValue {...props} options={applicationOptions} />
                       )}
                       // parse={(options: AutoCompleteOption[]) => options.map((option) => option.value)}
                       name="resources"
@@ -146,7 +146,7 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
                   {values.scope === DeployAccessTokenScopeComponent ? (
                     <Field
                       render={(props: FieldRenderProps<string[]>) => (
-                        <AutoCompleteMultipleValueField {...props} options={componentOptions} />
+                        <AutoCompleteMultipleValue {...props} options={componentOptions} />
                       )}
                       name="resources"
                       label="Component"
