@@ -10,6 +10,7 @@ import { ValidatorRequired } from "../validator";
 import { AcmeServerFormType } from "types/certificate";
 import { Field, Form } from "react-final-form";
 import { FinalTextField } from "forms/Final/textfield";
+import { FormDataPreview } from "forms/Final/util";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -61,9 +62,7 @@ class AcmeFormRaw extends React.PureComponent<Props & ReturnType<typeof mapState
                       </Grid>
                     </Grid>
 
-                    {process.env.REACT_APP_DEBUG === "true" ? (
-                      <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
-                    ) : null}
+                    <FormDataPreview />
                   </Box>
                 }
               />

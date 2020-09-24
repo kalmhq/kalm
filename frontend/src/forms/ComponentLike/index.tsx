@@ -46,6 +46,7 @@ import { RenderSelectLabels } from "./NodeSelector";
 import { IngressHint, Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { ProbeFields } from "./Probes";
+import { FormDataPreview } from "forms/Final/util";
 
 const Configurations = "Config";
 const DisksTab = "Disks";
@@ -858,15 +859,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 }
               />
             </Box>
-            {process.env.REACT_APP_DEBUG === "true" ? (
-              <FormSpy subscription={{ values: true }}>
-                {({ values }: { values: ComponentLike }) => {
-                  return (
-                    <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
-                  );
-                }}
-              </FormSpy>
-            ) : null}
+            <FormDataPreview />
             {this.renderDeployButton(isEdit)}
           </form>
         )}

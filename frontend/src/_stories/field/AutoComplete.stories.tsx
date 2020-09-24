@@ -8,6 +8,7 @@ import {
 import { NormalizePorts, NormalizeString, NormalizeStringArray } from "forms/normalizer";
 import { storiesOf } from "@storybook/react";
 import { ValidatorHosts } from "forms/validator";
+import { FormDataPreview } from "forms/Final/util";
 
 export const MultipleNumberValuesFreeSolo = () => (
   <Form
@@ -25,7 +26,7 @@ export const MultipleNumberValuesFreeSolo = () => (
           parse={NormalizePorts}
         />
 
-        <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
+        <FormDataPreview />
       </form>
     )}
   />
@@ -58,7 +59,7 @@ export const MultipleStringValuesFreeSolo = () => (
           parse={NormalizeStringArray}
         />
 
-        <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
+        <FormDataPreview />
       </form>
     )}
   />
@@ -80,7 +81,7 @@ export const MultipleValueSelect = () => (
           parse={NormalizeStringArray}
         />
 
-        <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
+        <FormDataPreview />
       </form>
     )}
   />
@@ -142,7 +143,7 @@ export const SingleValueSelect = () => (
           parse={NormalizeString}
         />
 
-        <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
+        <FormDataPreview />
       </form>
     )}
   />

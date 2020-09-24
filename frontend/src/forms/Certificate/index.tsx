@@ -18,6 +18,7 @@ import { KPanel } from "widgets/KPanel";
 import { Body, Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import sc from "../../utils/stringConstants";
+import { FormDataPreview } from "forms/Final/util";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -183,9 +184,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                   {isEdit ? "Update" : "Create"}
                 </Button>
               </Box>
-              {process.env.REACT_APP_DEBUG === "true" ? (
-                <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
-              ) : null}
+              <FormDataPreview />
             </form>
           );
         }}

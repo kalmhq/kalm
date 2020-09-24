@@ -1,6 +1,6 @@
 import { HttpRoute, HttpRouteDestination } from "types/route";
 import sc from "utils/stringConstants";
-import { addMethod, array, object, string } from "yup";
+import { addMethod, array, mixed, object, Schema, string, ValidationError } from "yup";
 
 addMethod(object, "unique", function (propertyName, message) {
   //@ts-ignore
@@ -111,54 +111,6 @@ export const ValidatorPort = (value: any) => {
       return `Can't use 443 port`;
     }
   }
-  return undefined;
-};
-
-export const validatePorts = (values?: number[]) => {
-  console.log("formik validate ports");
-
-  if (!values || values.length === 0) {
-    return undefined;
-  }
-
-  const errors = values.map((port) => {
-    if (!port) {
-      return "Invalid port";
-    }
-
-    return port > 65535 || port <= 0 ? "Port should be in range of (0,65536)" : undefined;
-  });
-
-  return errors.filter((x) => !!x).length > 0 ? errors : undefined;
-};
-
-export const ValidatorNumberOrAlphabet = (value: any) => {
-  const portInteger = parseInt(value, 10);
-  if (isNaN(portInteger) && portInteger > 0) {
-    if (portInteger.toString().length !== value.toString().length) {
-      return "Not a valid port value";
-    }
-    return undefined;
-  } else {
-    if (value.match && value.match(/^([a-zA-Z]*)$/)) {
-      return undefined;
-    }
-  }
-  return "Not a valid port value";
-};
-
-export const ValidatorNaturalNumber = (value: string) => {
-  if (!value) return undefined;
-
-  const integerValue = parseInt(value, 10);
-  if (isNaN(integerValue)) {
-    return undefined;
-  }
-
-  if (integerValue < 0) {
-    return 'Number can\'t be negative';
-  }
-
   return undefined;
 };
 
@@ -397,6 +349,44 @@ export const RequireNoSuffix = (suffix: string) => (value: string) => {
   return undefined;
 };
 
-export const RequireString = string().required("Required");
+const yupValidatorWrap = function <T>(...v: Schema<T>[]) {
+  return function (value: T) {
+    let schema: Schema<T>;
+
+    if (v.length === 1) {
+      schema = v[0];
+    } else {
+      schema = mixed();
+
+      for (let i = 0; i < v.length; i++) {
+        schema = schema.concat(v[i]);
+      }
+    }
+
+    try {
+      schema.validateSync(value);
+      return undefined;
+    } catch (e) {
+      if (!ValidationError.isError(e)) {
+        throw e;
+      }
+
+      return e.errors[0] || "Unknown error";
+    }
+  };
+};
+
+// Basic yup validator
+
+const RequireString = string().required("Required");
+
+const RequireMatchDNS1123Label = string()
+  .required("Required")
+  .max(63, "Max length is 63")
+  .matches(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/, "Not a valid DNS1123 label. Regex is /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/");
+
+// Kalm Validators
+
+export const ValidatorApplicationName = yupValidatorWrap<string>(RequireMatchDNS1123Label);
 
 export const RequireArray = array().min(1, "Required");

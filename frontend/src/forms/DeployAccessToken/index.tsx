@@ -24,6 +24,7 @@ import { AutoCompleteMultipleValue } from "forms/Final/autoComplete";
 import { connect } from "react-redux";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { FinalRadioGroupRender } from "forms/Final/radio";
+import { FormDataPreview } from "forms/Final/util";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -180,17 +181,7 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
               </Button>
             </Box>
 
-            {process.env.REACT_APP_DEBUG === "true" ? (
-              <FormSpy subscription={{ values: true }}>
-                {({ values }: { values: DeployAccessToken }) => {
-                  return (
-                    <Box mt={2}>
-                      <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
-                    </Box>
-                  );
-                }}
-              </FormSpy>
-            ) : null}
+            <FormDataPreview />
           </form>
         )}
       />
