@@ -30,14 +30,6 @@ addMethod(object, "unique", function (propertyName, message) {
   });
 });
 
-export const ValidatorArrayNotEmpty = (value: any[]) => {
-  if (!value || value.length <= 0) {
-    return "Select at least one option";
-  }
-
-  return undefined;
-};
-
 export const ValidatorHttpRouteDestinations = (value: Array<HttpRouteDestination>) => {
   if (!value || value.length <= 0) {
     return "Please define at least one target.";
@@ -283,6 +275,10 @@ const yupValidatorWrapForArray = function <T>(arraySchema: ArraySchema<T>, ...v:
       return e.errors[0] || "Unknown error";
     }
 
+    if (v.length === 0) {
+      return undefined;
+    }
+
     const validateFunction = yupValidatorWrap<T>(...v);
 
     const errors = values.map((value) => validateFunction(value));
@@ -328,12 +324,9 @@ const IsWildcardDNS1123SubDomain = Yup.string()
   .matches(new RegExp(`^${wildcardDNS1123SubDomainFmt}$`), "Not a valid wildcard DNS123 SubDomain")
   .max(253);
 
-// const RequireString = string().required("Required");
-
-// Kalm Validators
+// ================= Kalm Validators ==================
 
 export const ValidatorIsEnvVarName = yupValidatorWrap<string>(IsEnvVarName);
-
 export const ValidatorIsDNS123Label = yupValidatorWrap<string>(IsDNS1123Label);
 export const ValidatorIsDNS1123SubDomain = yupValidatorWrap<string>(IsDNS1123SubDomain);
 export const ValidatorArrayOfIsDNS1123SubDomain = yupValidatorWrapForArray<string>(
@@ -379,4 +372,8 @@ export const ValidatorCPU = yupValidatorWrap<string | undefined>(
     "The minimum support is 0.001 Core",
     (value) => value === undefined || parseFloat(`${value}`) >= 0.001,
   ),
+);
+
+export const ValidatorArrayNotEmpty = yupValidatorWrapForArray(
+  Yup.array<string>().required("Should have at least one item"),
 );

@@ -1,4 +1,5 @@
 import {
+  ValidatorArrayNotEmpty,
   ValidatorArrayOfDIsWildcardDNS1123SubDomain,
   ValidatorArrayOfIsDNS1123SubDomain,
   ValidatorContainerPortRequired,
@@ -236,4 +237,10 @@ test("ValidatorArrayOfDIsWildcardDNS1123SubDomain", () => {
     "Not a valid wildcard DNS123 SubDomain",
     "Not a valid wildcard DNS123 SubDomain",
   ]);
+});
+
+test("ValidatorArrayNotEmpty", () => {
+  expect(ValidatorArrayNotEmpty([])).toEqual("Should have at least one item");
+
+  expect(ValidatorArrayNotEmpty(["a"])).toBeUndefined();
 });
