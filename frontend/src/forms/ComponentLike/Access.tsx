@@ -9,7 +9,7 @@ import sc from "../../utils/stringConstants";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
 import Checkbox from "@material-ui/core/Checkbox";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
-import { NormalizePorts, NormalizeStringArray } from "forms/normalizer";
+import { NormalizePorts, stringArrayTrimParse } from "forms/normalizer";
 import { ComponentLike } from "types/componentTemplate";
 import { FormApi } from "final-form";
 
@@ -91,7 +91,7 @@ class ComponentAccessRaw extends React.PureComponent<Props> {
                 label="Grant to specific groups"
                 name="protectedEndpoint.groups"
                 placeholder="e.g. my-github-org:a-team-name. a-gitlab-group-name"
-                parse={NormalizeStringArray}
+                parse={stringArrayTrimParse}
                 helperText={sc.PROTECTED_ENDPOINT_SPECIFIC_GROUPS}
               />
             </Grid>

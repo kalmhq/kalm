@@ -1,7 +1,10 @@
 import {
+  NoPrefixSlashError,
+  PathArrayCantBeBlankError,
   ValidatorArrayNotEmpty,
   ValidatorArrayOfDIsWildcardDNS1123SubDomain,
   ValidatorArrayOfIsDNS1123SubDomain,
+  ValidatorArrayOfPath,
   ValidatorContainerPortRequired,
   ValidatorIsDNS1123SubDomain,
   ValidatorIsDNS123Label,
@@ -237,6 +240,12 @@ test("ValidatorArrayOfDIsWildcardDNS1123SubDomain", () => {
     "Not a valid wildcard DNS123 SubDomain",
     "Not a valid wildcard DNS123 SubDomain",
   ]);
+});
+
+test("ValidatorArrayOfPath", () => {
+  expect(ValidatorArrayOfPath([])).toEqual(PathArrayCantBeBlankError);
+  expect(ValidatorArrayOfPath(["/", "bbq"])).toEqual([undefined, NoPrefixSlashError]);
+  expect(ValidatorArrayOfPath(["/foo.bar-FOO/:name"])).toBeUndefined();
 });
 
 test("ValidatorArrayNotEmpty", () => {

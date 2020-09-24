@@ -169,21 +169,6 @@ export const KValidatorInjectedFilePath = (value: string) => {
   return undefined;
 };
 
-export const KValidatorPaths = (
-  values: string[],
-  _allValues?: any,
-  _props?: any,
-  _name?: any,
-): string | (undefined | string)[] | undefined => {
-  if (!values || values.length === 0) {
-    return "Required";
-  }
-
-  const errors = values.map((x) => (x.startsWith("/") ? undefined : 'path should start with a "/"'));
-
-  return errors.filter((x) => !!x).length > 0 ? errors : undefined;
-};
-
 export const ValidatorEnvName = (value: string) => {
   if (value === undefined) return undefined;
 
@@ -318,6 +303,25 @@ export const ValidatorIsWildcardDNS1123SubDomain = yupValidatorWrap<string>(IsWi
 export const ValidatorArrayOfDIsWildcardDNS1123SubDomain = yupValidatorWrapForArray<string>(
   Yup.array<string>().required("Should have at least one item"),
   IsWildcardDNS1123SubDomain,
+);
+
+// Allowed characters in an HTTP Path as defined by RFC 3986. A HTTP path may
+// contain:
+// * unreserved characters (alphanumeric, '-', '.', '_', '~')
+// * percent-encoded octets
+// * sub-delims ("!", "$", "&", "'", "(", ")", "*", "+", ",", ";", "=")
+// * a colon character (":")
+const httpPathFmt = `[A-Za-z0-9\/\-\._~%!$&'()*+,;=:]+`;
+
+export const NotValidPathPrefixError = "Not a valid path prefix";
+export const NoPrefixSlashError = 'Should start with a "/"';
+export const PathArrayCantBeBlankError = "Should have at least one path prefix";
+export const ValidatorArrayOfPath = yupValidatorWrapForArray<string>(
+  Yup.array<string>().required(PathArrayCantBeBlankError),
+  Yup.string()
+    .required("Path Prefix can'b be blank")
+    .matches(/^\//, NoPrefixSlashError)
+    .matches(/^\/[A-Za-z0-9\/\-\._~%!$&'()*+,;=:]*$/, NotValidPathPrefixError),
 );
 
 export const ValidatorContainerPortRequired = yupValidatorWrap<number | undefined>(
