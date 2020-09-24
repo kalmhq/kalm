@@ -18,7 +18,7 @@ import { FormMidware } from "tutorials/formMidware";
 import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { ValidatorIsDNS123Label } from "../validator";
 import { FormDataPreview } from "forms/Final/util";
-import { combineParsers, toLowerCaseStringParse, trimParse } from "forms/normalizer";
+import { trimAndToLowerParse } from "forms/normalizer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -53,8 +53,6 @@ interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchPr
 
 export interface Props extends ConnectedProps, WithStyles<typeof styles>, OwnProps {}
 
-const applicationNameParse = combineParsers(trimParse, toLowerCaseStringParse);
-
 class ApplicationFormRaw extends React.PureComponent<Props> {
   private renderBasic(name: string) {
     return (
@@ -66,7 +64,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           component={FinalTextField}
           autoFocus={true}
           validate={ValidatorIsDNS123Label}
-          parse={applicationNameParse}
+          parse={trimAndToLowerParse}
           placeholder={"e.g. my-application; production"}
           helperText={
             "Must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"

@@ -57,26 +57,6 @@ export const ValidatorHttpRouteDestinations = (value: Array<HttpRouteDestination
   return undefined;
 };
 
-export const ValidatorOneof = (...options: (string | RegExp)[]) => {
-  return (value: string) => {
-    if (!value) return undefined;
-
-    for (let i = 0; i < options.length; i++) {
-      if (typeof options[i] === "string" && value === options[i]) {
-        return undefined;
-      } else if (
-        typeof options[i] === "object" &&
-        options[i].constructor.name === "RegExp" &&
-        value.match(options[i])
-      ) {
-        return undefined;
-      }
-    }
-
-    return `Must be one of ${options.map((x) => x.toString()).join(", ")}`;
-  };
-};
-
 export const ValidatorName = (value: string) => {
   if (!value) return "Required";
 
@@ -377,3 +357,5 @@ export const ValidatorCPU = yupValidatorWrap<string | undefined>(
 export const ValidatorArrayNotEmpty = yupValidatorWrapForArray(
   Yup.array<string>().required("Should have at least one item"),
 );
+
+export const ValidatorOneOfFactory = (values: any[]) => yupValidatorWrap(Yup.string().oneOf(values));

@@ -2,13 +2,13 @@ import {
   Box,
   createStyles,
   Grid,
+  makeStyles,
   MenuItem,
   StandardTextFieldProps,
   TextField,
   Theme,
   Typography,
   withStyles,
-  makeStyles,
 } from "@material-ui/core";
 import { WithStyles } from "@material-ui/styles";
 import { NormalizePositiveNumber } from "forms/normalizer";
@@ -17,9 +17,9 @@ import { Field, FieldRenderProps } from "react-final-form";
 import { ComponentLikePort, PortProtocolHTTP, PortProtocolTCP, Probe } from "types/componentTemplate";
 import sc from "../../utils/stringConstants";
 import { makeSelectOption, SelectField } from "../Basic/select";
-import { validateHostWithWildcardPrefix, ValidatorOneof, ValidatorRequired } from "../validator";
+import { validateHostWithWildcardPrefix, ValidatorOneOfFactory, ValidatorRequired } from "../validator";
 
-const ValidatorScheme = ValidatorOneof(/^https?$/i);
+const ValidatorScheme = ValidatorOneOfFactory(["HTTP", "HTTPS"]);
 
 interface OwnProps {
   name: "livenessProbe" | "readinessProbe";

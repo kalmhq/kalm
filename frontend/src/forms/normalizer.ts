@@ -194,3 +194,5 @@ export const combineParsers = function (...fns: StringParser[]): StringParser {
     return value;
   };
 };
+
+export const trimAndToLowerParse = combineParsers(trimParse, toLowerCaseStringParse);
