@@ -104,6 +104,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       htmlColor: "#9CCC65",
     },
   ];
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -268,6 +269,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
         <Form
           onSubmit={onSubmit}
           initialValues={initial}
+          keepDirtyOnReinitialize
           validate={this.validate}
           mutators={{
             ...arrayMutators,
