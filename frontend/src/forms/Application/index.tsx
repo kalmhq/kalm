@@ -14,6 +14,8 @@ import { Application } from "types/application";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
+import { FormMidware } from "tutorials/formMidware";
+import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { ValidatorIsDNS123Label } from "../validator";
 import { FormDataPreview } from "forms/Final/util";
 import { combineParsers, toLowerCaseStringParse, trimParse } from "forms/normalizer";
@@ -91,16 +93,16 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { classes, form } = this.props;
+    const { classes, form, tutorialState } = this.props;
 
     return (
       <Form
         initialValues={{ name: "" }}
         onSubmit={this.onSubmit}
+        validate={(values) => finalValidateOrNotBlockByTutorial(values, tutorialState, form)}
         render={({ handleSubmit, submitting, dirty, values }: FormRenderProps<Application>) => (
           <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">
-            {/* TODO */}
-            {/* <FormMidware values={values} form={form} /> */}
+            <FormMidware values={values} form={form} />
             <KPanel
               content={
                 <Box p={2} tutorial-anchor-id="application-form-name-field">

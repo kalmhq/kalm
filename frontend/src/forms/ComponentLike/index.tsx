@@ -46,6 +46,8 @@ import { RenderSelectLabels } from "./NodeSelector";
 import { IngressHint, Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { ProbeFields } from "./Probes";
+import { FormMidware } from "tutorials/formMidware";
+import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 
 const Configurations = "Config";
 const DisksTab = "Disks";
@@ -70,7 +72,7 @@ const mapStateToProps = (state: RootState) => {
     isSubmittingApplicationComponent: state.components.isSubmittingApplicationComponent,
     nodeLabels: state.nodes.labels,
     currentTabIndex,
-    formId: COMPONENT_FORM_ID,
+    form: COMPONENT_FORM_ID,
   };
 };
 
@@ -789,8 +791,18 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderFormMidware = () => {
+    return (
+      <FormSpy subscription={{ values: true }}>
+        {({ values }: { values: ComponentLike }) => {
+          return <FormMidware values={values} form={this.props.form} />;
+        }}
+      </FormSpy>
+    );
+  };
+
   public render() {
-    const { classes, _initialValues, onSubmit } = this.props;
+    const { classes, _initialValues, onSubmit, form, tutorialState } = this.props;
     const isEdit = !!_initialValues.name;
     return (
       <Form
@@ -799,13 +811,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         onSubmit={onSubmit}
         subscription={{ submitting: true, pristine: true, dirty: true }}
         keepDirtyOnReinitialize={true}
+        validate={(values) => finalValidateOrNotBlockByTutorial(values, tutorialState, form)}
         mutators={{
           ...arrayMutators,
         }}
-        render={({ handleSubmit, submitting, pristine, dirty }: RenderProps) => (
+        render={({ handleSubmit, submitting, dirty }: RenderProps) => (
           <form onSubmit={handleSubmit} className={classes.root} id="component-form">
-            {<Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />}
-            {/* <FormMidware values={values} form={form} /> */}
+            {this.renderFormMidware()}
+            <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
             <KPanel
               content={
                 <Box p={2} tutorial-anchor-id="component-from-basic">
