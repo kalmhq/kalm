@@ -1,6 +1,6 @@
 import { Box, createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import { Field, Form, FormRenderProps, FormSpy } from "react-final-form";
+import { Field, Form, FormRenderProps } from "react-final-form";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { RootState } from "reducers";
@@ -11,6 +11,7 @@ import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
 import { RequireNoSuffix, RequirePrefix, ValidatorName, ValidatorRequired } from "../validator";
 import { FinalTextField } from "../Final/textfield";
+import { FormDataPreview } from "forms/Final/util";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -100,17 +101,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
                     </Grid>
                   </Grid>
 
-                  {process.env.REACT_APP_DEBUG === "true" ? (
-                    <FormSpy subscription={{ values: true }}>
-                      {({ values }: { values: RegistryFormType }) => {
-                        return (
-                          <pre style={{ maxWidth: 1500, background: "#eee" }}>
-                            {JSON.stringify(values, undefined, 2)}
-                          </pre>
-                        );
-                      }}
-                    </FormSpy>
-                  ) : null}
+                  <FormDataPreview />
                 </Box>
               }
             />

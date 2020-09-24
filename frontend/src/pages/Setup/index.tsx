@@ -18,9 +18,14 @@ import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { withCerts, WithCertsProps } from "hoc/withCerts";
 import { withComponents, WithComponentsProps } from "hoc/withComponents";
 import { InitializeClusterResponse } from "types/cluster";
-import { Form, Formik } from "formik";
-import TextField from "@material-ui/core/TextField";
+import { Field, Form, FormRenderProps, FormSpy } from "react-final-form";
+import { FinalTextField } from "../../forms//Final/textfield";
 import { Alert } from "@material-ui/lab";
+
+interface SetupFormType {
+  domain: string;
+}
+type RenderProps = FormRenderProps<SetupFormType>;
 
 interface Props extends WithClusterInfoProps, WithRoutesDataProps, WithCertsProps, WithComponentsProps {}
 
@@ -60,7 +65,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
 
     let errors: { domain?: string } = {};
 
-    if (!values.domain) {
+    if (!values.domain || values?.domain.length === 0) {
       errors.domain = "Required";
       return errors;
     }
@@ -86,7 +91,10 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
 
   private submit = async (values: { domain: string }) => {
     const { dispatch } = this.props;
-
+    const errors = await this.validate(values);
+    if (errors.domain) {
+      return errors;
+    }
     try {
       const res = await api.initializeCluster(values.domain);
       this.setState({
@@ -184,77 +192,103 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
         </Box>
         . This domain name will be your address to access the kalm dashboard in the future.
         <Box mt={2}>
-          <Formik
+          <Form
+            debug={process.env.REACT_APP_DEBUG === "true" ? console.log : undefined}
             initialValues={initialValues}
-            validate={this.validate}
-            validateOnChange={false}
-            validateOnBlur={false}
+            subscription={{ submitting: true, pristine: true, errors: true, touched: true }}
             onSubmit={this.submit}
-            enableReinitialize={false}
-            handleReset={console.log}
-          >
-            {({ values, errors, touched, handleChange, handleBlur, isSubmitting, submitForm }) => (
-              <Form>
-                <TextField
-                  key={"abc"}
-                  fullWidth
-                  error={!!errors.domain && errors.domain !== dnsCheckError && touched.domain}
-                  label="Domain"
-                  variant="outlined"
-                  size="small"
-                  name="domain"
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.domain}
-                  InputLabelProps={{ shrink: true }}
-                  placeholder="e.g. mydomain.org kalm.mydomain.com"
-                  helperText={errors.domain && errors.domain !== dnsCheckError && touched.domain && errors.domain}
-                />
-
-                {showDNSWarning && (
-                  <Box mt={2}>
-                    <Alert severity="warning">
-                      DNS check failed. After the DNS record is modified, it takes some time to take effect. <br />
-                      If your load balancer is behind another proxy (such as cloudflare), your DNS records will not
-                      resolve to the address of the load balancer. In this case, you can ignore this warning and
-                      continue.
-                    </Alert>
-                  </Box>
-                )}
-
+            keepDirtyOnReinitialize={true}
+            render={({ handleSubmit, submitting }: RenderProps) => (
+              <form onSubmit={handleSubmit}>
+                <FormSpy subscription={{ values: true, submitErrors: true, errors: true, touched: true }}>
+                  {({ submitErrors }) => {
+                    return (
+                      <Field
+                        name="domain"
+                        label="Domain"
+                        error={submitErrors?.domain && submitErrors?.domain !== dnsCheckError ? true : false}
+                        size="small"
+                        variant="outlined"
+                        fullWidth
+                        placeholder="e.g. mydomain.org kalm.mydomain.com"
+                        component={FinalTextField}
+                        helperText={
+                          submitErrors?.domain && submitErrors?.domain !== dnsCheckError ? submitErrors.domain : ""
+                        }
+                      />
+                    );
+                  }}
+                </FormSpy>
+                <FormSpy subscription={{ values: true, errors: true, touched: true }}>
+                  {(props) => {
+                    return (
+                      showDNSWarning && (
+                        <Box mt={2}>
+                          <Alert severity="warning">
+                            DNS check failed. After the DNS record is modified, it takes some time to take effect.{" "}
+                            <br />
+                            If your load balancer is behind another proxy (such as cloudflare), your DNS records will
+                            not resolve to the address of the load balancer. In this case, you can ignore this warning
+                            and continue.
+                          </Alert>
+                        </Box>
+                      )
+                    );
+                  }}
+                </FormSpy>
                 <Box mt={2}>
-                  <Box display={"inline-block"} mr={2}>
-                    <CustomizedButton
-                      variant="contained"
-                      color="primary"
-                      type="submit"
-                      disabled={isSubmitting}
-                      pending={isSubmitting}
-                    >
-                      Check and continue
-                    </CustomizedButton>
-                  </Box>
-
+                  <FormSpy subscription={{ values: true, errors: true, touched: true }}>
+                    {(props) => {
+                      return (
+                        <Box display={"inline-block"} mr={2}>
+                          <CustomizedButton
+                            variant="contained"
+                            color="primary"
+                            type="submit"
+                            disabled={submitting}
+                            pending={submitting}
+                            onClick={async () => {
+                              await this.setState({ ignoreDNSResult: false });
+                              handleSubmit();
+                            }}
+                          >
+                            Check and continue
+                          </CustomizedButton>
+                        </Box>
+                      );
+                    }}
+                  </FormSpy>
                   {showDNSWarning && (
                     <Box display={"inline-block"} mr={2}>
                       <CustomizedButton
                         variant="contained"
                         color="default"
-                        disabled={isSubmitting}
-                        pending={isSubmitting}
+                        disabled={submitting}
+                        pending={submitting}
                         onClick={async () => {
                           await this.setState({ ignoreDNSResult: true });
-                          submitForm();
+                          handleSubmit();
                         }}
                       >
                         Continue anyway
                       </CustomizedButton>
                     </Box>
                   )}
+                  {process.env.REACT_APP_DEBUG === "true" ? (
+                    <FormSpy subscription={{ values: true }}>
+                      {({ values }: { values: SetupFormType }) => {
+                        return (
+                          <pre style={{ maxWidth: 1500, background: "#eee" }}>
+                            {JSON.stringify(values, undefined, 2)}
+                          </pre>
+                        );
+                      }}
+                    </FormSpy>
+                  ) : null}
                 </Box>
-              </Form>
+              </form>
             )}
-          </Formik>
+          />
         </Box>
       </Box>
     );
