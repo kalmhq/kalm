@@ -1,7 +1,5 @@
-import { HttpRouteDestination } from "types/route";
-import sc from "utils/stringConstants";
 import * as Yup from "yup";
-import { addMethod, array, ArraySchema, mixed, number, object, Schema, string, ValidationError } from "yup";
+import { addMethod, ArraySchema, mixed, number, object, Schema, string, ValidationError } from "yup";
 
 addMethod(object, "unique", function (propertyName, message) {
   //@ts-ignore
@@ -38,33 +36,6 @@ export const ValidatorArrayNotEmpty = (value: any[]) => {
   return undefined;
 };
 
-export const ValidatorHttpRouteDestinations = (value: Array<HttpRouteDestination>) => {
-  if (!value || value.length <= 0) {
-    return "Please define at least one target.";
-  }
-
-  if (value.length === 1) {
-    return undefined;
-  }
-
-  let valid = false;
-
-  for (let i = 0; i < value.length; i++) {
-    const target = value[i]!;
-
-    if (target.weight > 0) {
-      valid = true;
-      break;
-    }
-  }
-
-  if (!valid) {
-    return "Please define at least one target with non-zero weight.";
-  }
-
-  return undefined;
-};
-
 export const ValidatorOneof = (...options: (string | RegExp)[]) => {
   return (value: string) => {
     if (!value) return undefined;
@@ -83,16 +54,6 @@ export const ValidatorOneof = (...options: (string | RegExp)[]) => {
 
     return `Must be one of ${options.map((x) => x.toString()).join(", ")}`;
   };
-};
-
-export const ValidatorName = (value: string) => {
-  if (!value) return "Required";
-
-  if (!value.match(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/) || value === "0") {
-    return sc.NAME_RULE;
-  }
-
-  return undefined;
 };
 
 export const ValidatorHttpHeaders = (value: any) => {
@@ -344,8 +305,6 @@ export const ValidatorArrayOfDIsWildcardDNS1123SubDomain = yupValidatorWrapForAr
   Yup.array<string>().required("Should have at least one item"),
   IsWildcardDNS1123SubDomain,
 );
-
-export const RequireArray = array().min(1, "Required");
 
 export const ValidatorContainerPortRequired = yupValidatorWrap<number | undefined>(
   number()
