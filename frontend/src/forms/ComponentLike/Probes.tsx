@@ -42,13 +42,14 @@ const styles = (theme: Theme) =>
 
 const RenderNestedTextfield = ({
   input: { value, onChange, onBlur },
-  meta: { error, touched },
+  meta: { error, touched, active },
   placeholder,
   style,
   select,
   children,
   type,
-}: FieldRenderProps<string | number> & StandardTextFieldProps & { style?: any; type?: string; normalize?: any }) => {
+}: FieldRenderProps<string | number | undefined> &
+  StandardTextFieldProps & { style?: any; type?: string; normalize?: any }) => {
   const classes = makeStyles((theme) => ({
     input: {
       padding: 2,
@@ -62,8 +63,8 @@ const RenderNestedTextfield = ({
 
   return (
     <TextField
-      error={!!error}
-      helperText={error}
+      error={!!error && touched}
+      helperText={touched && error}
       InputProps={{ classes: { input: classes.input } }}
       onChange={onChange}
       onBlur={onBlur}
@@ -114,7 +115,7 @@ class RenderProbe extends React.PureComponent<Props> {
               </MenuItem>
             </Field>
             ://
-            <Field
+            <Field<string | undefined>
               name={`${name}.httpGet.host`}
               component={RenderNestedTextfield}
               placeholder="0.0.0.0"

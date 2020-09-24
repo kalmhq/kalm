@@ -268,7 +268,6 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
           onSubmit={onSubmit}
           initialValues={initial}
           validate={this.validate}
-          validateOnBlur
           mutators={{
             ...arrayMutators,
           }}
