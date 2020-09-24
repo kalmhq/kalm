@@ -57,26 +57,6 @@ export const ValidatorHttpRouteDestinations = (value: Array<HttpRouteDestination
   return undefined;
 };
 
-export const ValidatorOneof = (...options: (string | RegExp)[]) => {
-  return (value: string) => {
-    if (!value) return undefined;
-
-    for (let i = 0; i < options.length; i++) {
-      if (typeof options[i] === "string" && value === options[i]) {
-        return undefined;
-      } else if (
-        typeof options[i] === "object" &&
-        options[i].constructor.name === "RegExp" &&
-        value.match(options[i])
-      ) {
-        return undefined;
-      }
-    }
-
-    return `Must be one of ${options.map((x) => x.toString()).join(", ")}`;
-  };
-};
-
 export const ValidatorName = (value: string) => {
   if (!value) return "Required";
 
@@ -112,21 +92,6 @@ export const ValidatorSchedule = (value: string) => {
 
 export const ValidatorStringLength = () => {};
 
-export const ValidatorHostsOld = (
-  values: string[],
-  _allValues?: any,
-  _props?: any,
-  _name?: any,
-): string | (undefined | string)[] | undefined => {
-  if (!values || values.length === 0) {
-    return "Required";
-  }
-
-  const errors = values.map((host) => (host === "*" ? undefined : ValidateHost(host)));
-
-  return errors.filter((x) => !!x).length > 0 ? errors : undefined;
-};
-
 export const regExpIp = new RegExp(
   "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
 );
@@ -143,21 +108,6 @@ export const KValidatorInjectedFilePath = (value: string) => {
   if (value.endsWith("/")) return 'File name mush not end with "/"';
 
   return undefined;
-};
-
-export const KValidatorPaths = (
-  values: string[],
-  _allValues?: any,
-  _props?: any,
-  _name?: any,
-): string | (undefined | string)[] | undefined => {
-  if (!values || values.length === 0) {
-    return "Required";
-  }
-
-  const errors = values.map((x) => (x.startsWith("/") ? undefined : 'path should start with a "/"'));
-
-  return errors.filter((x) => !!x).length > 0 ? errors : undefined;
 };
 
 export const ValidatorEnvName = (value: string) => {
@@ -296,6 +246,26 @@ export const ValidatorArrayOfDIsWildcardDNS1123SubDomain = yupValidatorWrapForAr
   IsWildcardDNS1123SubDomain,
 );
 
+// Allowed characters in an HTTP Path as defined by RFC 3986. A HTTP path may
+// contain:
+// * unreserved characters (alphanumeric, '-', '.', '_', '~')
+// * percent-encoded octets
+// * sub-delims ("!", "$", "&", "'", "(", ")", "*", "+", ",", ";", "=")
+// * a colon character (":")
+// const httpPathFmt = `[A-Za-z0-9\/\-\._~%!$&'()*+,;=:]+`;
+
+export const NotValidPathPrefixError = "Not a valid path prefix";
+export const NoPrefixSlashError = 'Should start with a "/"';
+export const PathArrayCantBeBlankError = "Should have at least one path prefix";
+export const InvalidHostError = "Host must be a valid IP address or hostname.";
+export const ValidatorArrayOfPath = yupValidatorWrapForArray<string>(
+  Yup.array<string>().required(PathArrayCantBeBlankError),
+  Yup.string()
+    .required("Path Prefix can'b be blank")
+    .matches(/^\//, NoPrefixSlashError)
+    .matches(/^\/[A-Za-z0-9/\-._~%!$&'()*+,;=:]*$/, NotValidPathPrefixError),
+);
+
 export const ValidatorContainerPortRequired = yupValidatorWrap<number | undefined>(
   number()
     .required("Required")
@@ -340,7 +310,7 @@ export const validateHostWithWildcardPrefix = yupValidatorWrap<string | undefine
     .max(511)
     .test(
       "",
-      "Host must be a valid IP address or hostname.",
+      InvalidHostError,
       (value) => value === undefined || !!String(value).match(regExpIp) || !!String(value).match(regExpWildcardDomain),
     ),
 );
@@ -352,7 +322,7 @@ export const ValidatorIpAndHosts = yupValidatorWrapForArray(
     .max(511)
     .test(
       "",
-      "Host must be a valid IP address or hostname.",
+      InvalidHostError,
       (value) =>
         value === undefined ||
         value === "*" ||
@@ -367,3 +337,17 @@ export const ValidateHost = yupValidatorWrap<string | undefined>(
     .max(511)
     .test("", "Domain is invalid.", (value) => value === undefined || !!String(value).match(regExpWildcardDomain)),
 );
+
+export const ValidatorHostsOld = yupValidatorWrapForArray(
+  Yup.array<string>().required("Required"),
+  string()
+    .required("Required")
+    .max(511)
+    .test(
+      "",
+      "Domain is invalid.",
+      (value) => value === undefined || value === "*" || !!String(value).match(regExpWildcardDomain),
+    ),
+);
+
+export const ValidatorOneOfFactory = (values: any[]) => yupValidatorWrap(Yup.string().oneOf(values));

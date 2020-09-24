@@ -7,7 +7,7 @@ import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalBoolCheckboxRender, FinalCheckboxGroupRender } from "forms/Final/checkbox";
 import { FinalRadioGroupRender } from "forms/Final/radio";
 import { ROUTE_FORM_ID } from "forms/formIDs";
-import { KValidatorPaths, ValidatorArrayNotEmpty, ValidatorIpAndHosts } from "forms/validator";
+import { ValidatorArrayNotEmpty, ValidatorArrayOfPath, ValidatorIpAndHosts } from "forms/validator";
 import routesGif from "images/routes.gif";
 import React from "react";
 import { Field, FieldRenderProps, Form, FormRenderProps } from "react-final-form";
@@ -30,6 +30,7 @@ import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "forms/Route/destinations";
 import { FormMidware } from "tutorials/formMidware";
 import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { stringArrayTrimParse } from "forms/normalizer";
 
 const mapStateToProps = (state: RootState) => {
   const certifications = state.certificates.certificates;
@@ -350,8 +351,9 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                               )}
                               label="Path Prefixes"
                               name="paths"
-                              validate={KValidatorPaths}
-                              placeholder="e.g. /some/path/to/app"
+                              validate={ValidatorArrayOfPath}
+                              parse={stringArrayTrimParse}
+                              placeholder="e.g. /api/v1; /blogs; /assets"
                               helperText={sc.ROUTE_PATHS_INPUT_HELPER}
                             />
                             <Field

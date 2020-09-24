@@ -7,7 +7,7 @@ import {
   UseAutocompleteSingleProps,
 } from "@material-ui/lab";
 import clsx from "clsx";
-import React from "react";
+import React, { ReactNode } from "react";
 import { theme } from "theme/theme";
 import { FieldRenderProps } from "react-final-form";
 import Chip from "@material-ui/core/Chip";
@@ -102,12 +102,23 @@ export const AutoCompleteMultiValuesFreeSolo: X = function <T>(props: AutoComple
   const classes = FreeSoloStyles();
   const errorsIsArray = Array.isArray(error);
 
-  let errorText: string | undefined = undefined;
+  let realHelperText: ReactNode = "";
+  let shouldShowError: boolean = false;
 
-  if (errorsIsArray) {
-    errorText = error.find((x: string | undefined) => x !== undefined);
-  } else {
-    errorText = error;
+  if (!!error) {
+    if (errorsIsArray) {
+      realHelperText = error.find((x: string | undefined) => x !== undefined);
+      shouldShowError = true;
+    } else {
+      if (touched) {
+        realHelperText = error;
+        shouldShowError = touched;
+      }
+    }
+  }
+
+  if (!realHelperText) {
+    realHelperText = helperText;
   }
 
   return (
@@ -147,10 +158,10 @@ export const AutoCompleteMultiValuesFreeSolo: X = function <T>(props: AutoComple
             margin="dense"
             variant="outlined"
             disabled={disabled}
-            error={!!errorText && touched}
+            error={shouldShowError}
             label={label}
             placeholder={placeholder}
-            helperText={errorText && touched ? errorText : helperText}
+            helperText={realHelperText}
             InputLabelProps={{
               shrink: true,
             }}
