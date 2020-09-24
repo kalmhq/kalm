@@ -39,7 +39,13 @@ import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
 import { makeSelectOption } from "../Basic/select";
 import { FinalTextField } from "../Final/textfield";
-import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
+import {
+  ValidatorCPU,
+  ValidatorMemory,
+  ValidatorIsDNS123Label,
+  ValidatorRequired,
+  ValidatorSchedule,
+} from "../validator";
 import { ComponentAccess } from "./Access";
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
@@ -656,7 +662,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             id="component-name"
             name="name"
             label="Name"
-            validate={ValidatorName}
+            validate={ValidatorIsDNS123Label}
             disabled={isEdit}
             helperText={isEdit ? "Name can't be changed." : sc.NAME_RULE}
           />

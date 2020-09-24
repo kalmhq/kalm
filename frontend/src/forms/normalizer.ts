@@ -49,30 +49,6 @@ export const NormalizeString = (value: string) => {
   return value.trim();
 };
 
-export const NormalizeCPU = (value: string) => {
-  if (!value || value === "") {
-    return null;
-  }
-
-  return value;
-};
-
-export const NormalizeMemory = (value: string) => {
-  if (!value || value === "") {
-    return null;
-  }
-
-  while (value.length > 0 && value[0] === "0") {
-    value = value.slice(1);
-  }
-
-  if (!value || value === "") {
-    return null;
-  }
-
-  return value;
-};
-
 export const NormalizeBoolean = (value: string): boolean => {
   return !!value;
 };

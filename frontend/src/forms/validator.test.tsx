@@ -10,6 +10,12 @@ import {
   ValidatorIsDNS123Label,
   ValidatorIsEnvVarName,
   ValidatorIsWildcardDNS1123SubDomain,
+  ValidatorVolumeSize,
+  ValidatorMemory,
+  ValidatorCPU,
+  ValidatorSchedule,
+  ValidatorInjectedFilePath,
+  ValidatorRegistryHost,
 } from "forms/validator";
 
 test("ValidatorIsEnvVarName", () => {
@@ -240,6 +246,86 @@ test("ValidatorArrayOfDIsWildcardDNS1123SubDomain", () => {
     "Not a valid wildcard DNS123 SubDomain",
     "Not a valid wildcard DNS123 SubDomain",
   ]);
+});
+
+test("ValidatorVolumeSize", () => {
+  const testCases = [
+    [undefined, "Required"],
+    ["0Gi", "Invalid Value"],
+    ["10", "Invalid Value"],
+    ["10Gi", undefined],
+  ];
+
+  testCases.forEach((testCase) => {
+    expect(ValidatorVolumeSize(testCase[0])).toEqual(testCase[1]);
+  });
+});
+
+test("ValidatorMemory", () => {
+  const testCases = [
+    [undefined, undefined],
+    ["0Mi", "Invalid Value"],
+    ["10", "Invalid Value"],
+    ["10Mi", undefined],
+  ];
+
+  testCases.forEach((testCase) => {
+    expect(ValidatorMemory(testCase[0])).toEqual(testCase[1]);
+  });
+});
+
+test("ValidatorCPU", () => {
+  const testCases = [
+    [undefined, undefined],
+    ["10m", undefined],
+    ["0.00001m", "The minimum support is 0.001 Core"],
+  ];
+
+  testCases.forEach((testCase) => {
+    expect(ValidatorCPU(testCase[0])).toEqual(testCase[1]);
+  });
+});
+
+test("ValidatorSchedule", () => {
+  expect(ValidatorSchedule(undefined)).toEqual("Required");
+
+  const goodCases = ["* * * * *", "0 2 * * *"];
+  goodCases.forEach((testCase) => {
+    expect(ValidatorSchedule(testCase)).toEqual(undefined);
+  });
+
+  const badCases = ["*", "abc"];
+  badCases.forEach((testCase) => {
+    expect(ValidatorSchedule(testCase)).toEqual("Invalid Schedule Rule");
+  });
+});
+
+test("ValidatorInjectedFilePath", () => {
+  expect(ValidatorInjectedFilePath(undefined)).toEqual("Required");
+
+  const goodCases = ["/path1", "/abc/def"];
+  goodCases.forEach((testCase) => {
+    expect(ValidatorInjectedFilePath(testCase)).toEqual(undefined);
+  });
+
+  const badCases = ["xyz", "/xyz/", "xyz/"];
+  badCases.forEach((testCase) => {
+    expect(ValidatorInjectedFilePath(testCase)).not.toBeUndefined();
+  });
+});
+
+test("ValidatorRegistryHost", () => {
+  expect(ValidatorRegistryHost(undefined)).toEqual(undefined);
+
+  const goodCases = ["https://registry.abc.com", "https://xxx.gcr.io"];
+  goodCases.forEach((testCase) => {
+    expect(ValidatorRegistryHost(testCase)).toEqual(undefined);
+  });
+
+  const badCases = ["xxx.gcr.io", "https://xxx.gcr.io/"];
+  badCases.forEach((testCase) => {
+    expect(ValidatorRegistryHost(testCase)).not.toBeUndefined();
+  });
 });
 
 test("ValidatorArrayOfPath", () => {

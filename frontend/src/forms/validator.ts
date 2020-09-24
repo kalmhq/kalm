@@ -1,4 +1,3 @@
-import sc from "utils/stringConstants";
 import * as Yup from "yup";
 import { addMethod, ArraySchema, mixed, number, object, Schema, string, ValidationError } from "yup";
 
@@ -29,27 +28,24 @@ addMethod(object, "unique", function (propertyName, message) {
   });
 });
 
-export const ValidatorName = (value: string) => {
-  if (!value) return "Required";
+export const ValidatorOneof = (...options: (string | RegExp)[]) => {
+  return (value: string) => {
+    if (!value) return undefined;
 
-  if (!value.match(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/) || value === "0") {
-    return sc.NAME_RULE;
-  }
+    for (let i = 0; i < options.length; i++) {
+      if (typeof options[i] === "string" && value === options[i]) {
+        return undefined;
+      } else if (
+        typeof options[i] === "object" &&
+        options[i].constructor.name === "RegExp" &&
+        value.match(options[i])
+      ) {
+        return undefined;
+      }
+    }
 
-  return undefined;
-};
-
-export const ValidatorSchedule = (value: string) => {
-  if (
-    !value ||
-    !value.match(
-      /^(\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?(1?[0-9]|2[0-3]))) (\*|((\*\/)?([1-9]|[12][0-9]|3[0-1]))) (\*|((\*\/)?([1-9]|1[0-2])))$/,
-    )
-  ) {
-    return "Invalid Schedule Rule";
-  }
-
-  return undefined;
+    return `Must be one of ${options.map((x) => x.toString()).join(", ")}`;
+  };
 };
 
 export const regExpIp = new RegExp(
@@ -59,17 +55,6 @@ export const regExpIp = new RegExp(
 // https://regex101.com/r/wG1nZ3/37
 export const regExpWildcardDomain = new RegExp(/^(\*\.)?([\w-]+\.)+[a-zA-Z]+$/);
 
-export const KValidatorInjectedFilePath = (value: string) => {
-  if (!value) {
-    return undefined;
-  }
-
-  if (!value.startsWith("/")) return 'Must be an absolute path, which starts with a "/"';
-  if (value.endsWith("/")) return 'File name mush not end with "/"';
-
-  return undefined;
-};
-
 export const ValidatorEnvName = (value: string) => {
   if (value === undefined) return undefined;
 
@@ -77,18 +62,6 @@ export const ValidatorEnvName = (value: string) => {
     return "Env name is invalid. regex used for validation is '[-._a-zA-Z][-._a-zA-Z0-9]*'";
   }
 
-  return undefined;
-};
-
-export const RequirePrefix = (prefix: string) => (value: string) => {
-  if (value === undefined) return undefined;
-  if (!value.startsWith(prefix)) return `Require prefix "${prefix}"`;
-  return undefined;
-};
-
-export const RequireNoSuffix = (suffix: string) => (value: string) => {
-  if (value === undefined) return undefined;
-  if (value.endsWith(suffix)) return `Require no suffix "${suffix}"`;
   return undefined;
 };
 
@@ -249,6 +222,28 @@ export const ValidatorCPU = yupValidatorWrap<string | undefined>(
   ),
 );
 
+export const ValidatorSchedule = yupValidatorWrap<string | undefined>(
+  string()
+    .required("Required")
+    .matches(
+      /^(\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?(1?[0-9]|2[0-3]))) (\*|((\*\/)?([1-9]|[12][0-9]|3[0-1]))) (\*|((\*\/)?([1-9]|1[0-2])))$/,
+      "Invalid Schedule Rule",
+    ),
+);
+
+export const ValidatorInjectedFilePath = yupValidatorWrap<string | undefined>(
+  string()
+    .required("Required")
+    .test("", 'Must be an absolute path, which starts with a "/"', (value) => !value || value.startsWith("/"))
+    .test("", 'File name mush not end with "/"', (value) => !value || !value.endsWith("/")),
+);
+
+export const ValidatorRegistryHost = yupValidatorWrap<string | undefined>(
+  string()
+    .notRequired()
+    .test("", 'Require prefix "https://"', (value) => !value || value.startsWith("https://"))
+    .test("", 'Require no suffix "/"', (value) => !value || !value.endsWith("/")),
+);
 export const ValidatorArrayNotEmpty = yupValidatorWrapForArray(
   Yup.array<string>().required("Should have at least one item"),
 );

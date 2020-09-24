@@ -9,7 +9,7 @@ import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
-import { RequireNoSuffix, RequirePrefix, ValidatorName, ValidatorRequired } from "../validator";
+import { ValidatorRegistryHost, ValidatorIsDNS123Label, ValidatorRequired } from "../validator";
 import { FinalTextField } from "../Final/textfield";
 import { FormDataPreview } from "forms/Final/util";
 
@@ -24,12 +24,6 @@ const mapStateToProps = (state: RootState) => {
   return {
     isSubmittingRegistry: state.registries.isSubmittingRegistry,
   };
-};
-
-const validateHost = (value: any, _allValues?: any, _props?: any, _name?: any) => {
-  if (!value) return undefined;
-
-  return RequirePrefix("https://")(value) || RequireNoSuffix("/")(value);
 };
 
 type RenderProps = FormRenderProps<RegistryFormType>;
@@ -66,7 +60,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
                         label="Name"
                         disabled={isEdit}
                         component={FinalTextField}
-                        validate={ValidatorName}
+                        validate={ValidatorIsDNS123Label}
                         helperText={isEdit ? "Can't modify name" : sc.NAME_RULE}
                       />
                     </Grid>
@@ -95,7 +89,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
                         name="host"
                         label="Host"
                         component={FinalTextField}
-                        validate={validateHost}
+                        validate={ValidatorRegistryHost}
                         placeholder="E.g. https://registry.kalm.dev"
                         helperText={<span>Leave blank for private docker hub registry</span>}
                       />
