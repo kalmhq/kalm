@@ -15,8 +15,9 @@ import stringConstants from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
-import { ValidatorApplicationName } from "../validator";
+import { ValidatorIsDNS123Label } from "../validator";
 import { FormDataPreview } from "forms/Final/util";
+import { NormalizerToLowerString } from "forms/normalizer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -61,7 +62,8 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           id="application-name"
           component={FinalTextField}
           autoFocus={true}
-          validate={ValidatorApplicationName}
+          validate={ValidatorIsDNS123Label}
+          parse={NormalizerToLowerString}
           helperText={stringConstants.NAME_RULE}
         />
 

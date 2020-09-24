@@ -1,11 +1,20 @@
 import {
-  ValidatorApplicationName,
   ValidatorArrayOfDIsWildcardDNS1123SubDomain,
   ValidatorArrayOfIsDNS1123SubDomain,
   ValidatorContainerPortRequired,
   ValidatorIsDNS1123SubDomain,
+  ValidatorIsDNS123Label,
+  ValidatorIsEnvVarName,
   ValidatorIsWildcardDNS1123SubDomain,
 } from "forms/validator";
+
+test("ValidatorIsEnvVarName", () => {
+  const goodValues = ["my.env-name", "MY_ENV.NAME", "MyEnvName1"];
+
+  for (let val of goodValues) {
+    expect(ValidatorIsEnvVarName(val)).toBeUndefined();
+  }
+});
 
 test("ValidatorContainerPortRequired", () => {
   const testCases = [
@@ -28,7 +37,7 @@ test("ValidatorApplicationName", () => {
   ];
 
   testCases.forEach((testCase) => {
-    expect(ValidatorApplicationName(testCase[0])).toEqual(testCase[1]);
+    expect(ValidatorIsDNS123Label(testCase[0])).toEqual(testCase[1]);
   });
 
   const badCases = [
@@ -68,13 +77,13 @@ test("ValidatorApplicationName", () => {
   ];
 
   badCases.forEach((testCase) => {
-    expect(ValidatorApplicationName(testCase)).toEqual(expect.anything());
+    expect(ValidatorIsDNS123Label(testCase)).toEqual(expect.anything());
   });
 
   // good Cases
   const goodCases = ["a", "ab", "abc", "a1", "a-1", "a--1--2--b", "0", "01", "012", "1a", "1-a", "1--a--b--2"];
   goodCases.forEach((testCase) => {
-    expect(ValidatorApplicationName(testCase)).toEqual(undefined);
+    expect(ValidatorIsDNS123Label(testCase)).toEqual(undefined);
   });
 });
 

@@ -99,3 +99,8 @@ export const NormalizeNumberOrAlphabet = (value: string): string | number => {
   }
   return "";
 };
+
+export const NormalizerToLowerString = (value: string) => {
+  if (!value) return value;
+  return value.toLowerCase();
+};

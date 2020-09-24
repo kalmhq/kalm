@@ -362,8 +362,22 @@ const yupValidatorWrapForArray = function <T>(arraySchema: ArraySchema<T>, ...v:
 };
 
 // Basic yup validator
+const envVarNameFmt = "[-._a-zA-Z][-._a-zA-Z0-9]*";
+const envVarNameFmtErrMsg =
+  "a valid environment variable name must consist of alphabetic characters, digits, '_', '-', or '.', and must not start with a digit";
+const IsEnvVarName = string()
+  .required("Required")
+  .matches(new RegExp(`^${envVarNameFmt}$`), envVarNameFmtErrMsg);
 
 const dns1123LabelFmt = "[a-z0-9]([-a-z0-9]*[a-z0-9])?";
+const IsDNS1123Label = string()
+  .required("Required")
+  .max(63, "Max length is 63")
+  .matches(
+    new RegExp(`^${dns1123LabelFmt}$`),
+    "Not a valid DNS1123 label. Regex is " + new RegExp(`^${dns1123LabelFmt}$`),
+  );
+
 const dns1123SubDomainFmt = dns1123LabelFmt + "(\\." + dns1123LabelFmt + ")*";
 const IsDNS1123SubDomain = string()
   .required("Required")
@@ -382,16 +396,11 @@ const IsWildcardDNS1123SubDomain = Yup.string()
 
 const RequireString = string().required("Required");
 
-const RequireMatchDNS1123Label = string()
-  .required("Required")
-  .max(63, "Max length is 63")
-  .matches(
-    new RegExp(`^${dns1123LabelFmt}$`),
-    "Not a valid DNS1123 label. Regex is " + new RegExp(`^${dns1123LabelFmt}$`),
-  );
-
 // Kalm Validators
-export const ValidatorApplicationName = yupValidatorWrap<string>(RequireMatchDNS1123Label);
+
+export const ValidatorIsEnvVarName = yupValidatorWrap<string>(IsEnvVarName);
+
+export const ValidatorIsDNS123Label = yupValidatorWrap<string>(IsDNS1123Label);
 export const ValidatorIsDNS1123SubDomain = yupValidatorWrap<string>(IsDNS1123SubDomain);
 export const ValidatorArrayOfIsDNS1123SubDomain = yupValidatorWrapForArray<string>(
   Yup.array<string>().required("Should have at least one item"),
