@@ -4,7 +4,7 @@ import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalTextField } from "forms/Final/textfield";
-import { ValidatorHosts } from "forms/validator";
+import { ValidatorHostsOld } from "forms/validator";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
 import { Field, FieldRenderProps, Form } from "react-final-form";
@@ -143,7 +143,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                           disabled={values.managedType === selfManaged}
                           label="Domains"
                           name="domains"
-                          validate={ValidatorHosts}
+                          validate={ValidatorHostsOld}
                           icons={icons}
                           id="certificate-domains"
                           placeholder={
