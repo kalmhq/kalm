@@ -1,3 +1,5 @@
+import { sizeStringToGi, sizeStringToMi, sizeStringToNumber } from "utils/sizeConv";
+
 export const NormalizeNumber = (value: string): number | any => {
   const integerValue = parseInt(value, 10);
   return isNaN(integerValue) ? null : integerValue;
@@ -100,7 +102,76 @@ export const NormalizeNumberOrAlphabet = (value: string): string | number => {
   return "";
 };
 
-export const NormalizerToLowerString = (value: string) => {
+export const diskSizeFormat = (value: any) => {
+  return !value ? "" : sizeStringToGi(value);
+};
+
+export const diskSizeParse = (value: any) => {
+  if (!value) {
+    return "";
+  }
+  const valueNum = parseFloat(value);
+  if (isNaN(valueNum)) {
+    return "";
+  }
+  if (valueNum < 0) {
+    return String(0 - valueNum) + "Gi";
+  }
+  if (value.endsWith("0") || value.endsWith(".")) {
+    return value + "Gi";
+  }
+  return valueNum + "Gi";
+};
+
+export const memoryFormat = (value: any) => {
+  return !value ? "" : sizeStringToMi(value);
+};
+
+export const memoryParse = (value: any) => {
+  if (!value) {
+    return undefined;
+  }
+  const valueNum = parseFloat(value);
+  if (isNaN(valueNum)) {
+    return "";
+  }
+  if (valueNum < 0) {
+    return String(0 - valueNum) + "Mi";
+  }
+  if (value.endsWith("0") || value.endsWith(".")) {
+    return value + "Mi";
+  }
+  return valueNum + "Mi";
+};
+
+export const cpuFormat = (value: any) => {
+  if (!value) {
+    return "";
+  }
+  if (value.endsWith("m")) {
+    return value.replace("m", "");
+  }
+  return (sizeStringToNumber(value) * 1000).toFixed();
+};
+
+export const cpuParse = (value: any) => {
+  if (!value) {
+    return undefined;
+  }
+  const valueNum = parseFloat(value);
+  if (isNaN(valueNum)) {
+    return "";
+  }
+  if (valueNum < 0) {
+    return String(0 - valueNum) + "m";
+  }
+  if (value.endsWith("0") || value.endsWith(".")) {
+    return value + "m";
+  }
+  return valueNum + "m";
+};
+
+export const toLowerCaseStringParse = (value: string) => {
   if (!value) return value;
   return value.toLowerCase();
 };

@@ -35,17 +35,12 @@ const unitMap: { [key: string]: number } = {
 
 export const sizeStringToNumber = (str: string) => {
   const matches = str.match(new RegExp(`^(?<value>\\d+(\\.\\d+)?)(?<unit>${Object.keys(unitMap).join("|")})?$`));
-  // eg. 1.23Gi
-  // matches:
-  // 1.23Gi
-  // 1.23
-  // .23
-  // Gi
+
   if (!matches || !matches.groups) {
     return 0;
   }
 
-  let base = parseInt(matches.groups.value, 10);
+  let base = parseFloat(matches.groups.value);
 
   if (matches.groups.unit && unitMap[matches.groups.unit]) {
     base = base * unitMap[matches.groups.unit];
@@ -55,6 +50,9 @@ export const sizeStringToNumber = (str: string) => {
 };
 
 export const sizeStringToGi = (str: string) => {
+  if (str.endsWith("Gi")) {
+    return str.replace("Gi", "");
+  }
   const num = sizeStringToNumber(str);
   if (num === 0) {
     return str.replace(new RegExp(Object.keys(unitMap).join("|")), "");
@@ -64,7 +62,10 @@ export const sizeStringToGi = (str: string) => {
 };
 
 export const sizeStringToMi = (str: string) => {
+  if (str.endsWith("Mi")) {
+    return str.replace("Mi", "");
+  }
   const num = sizeStringToNumber(str);
   const MiBytes = 1024 * 1024;
-  return (num / MiBytes).toFixed(0);
+  return num / MiBytes;
 };

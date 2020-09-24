@@ -12,8 +12,9 @@ import { Disks } from "forms/ComponentLike/Disks";
 import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
 import { FinalRadioGroupRender } from "forms/Final/radio";
 import { FinalSelectField } from "forms/Final/select";
+import { FormDataPreview } from "forms/Final/util";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
-import { NormalizePositiveNumber } from "forms/normalizer";
+import { cpuFormat, cpuParse, memoryFormat, memoryParse, NormalizePositiveNumber } from "forms/normalizer";
 import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 import React from "react";
 import { Field, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
@@ -29,7 +30,6 @@ import {
   workloadTypeStatefulSet,
 } from "types/componentTemplate";
 import { PublicRegistriesList } from "types/registry";
-import { sizeStringToMi, sizeStringToNumber } from "utils/sizeConv";
 import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KalmConsoleIcon } from "widgets/Icon";
@@ -46,7 +46,6 @@ import { RenderSelectLabels } from "./NodeSelector";
 import { IngressHint, Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { ProbeFields } from "./Probes";
-import { FormDataPreview } from "forms/Final/util";
 
 const Configurations = "Config";
 const DisksTab = "Disks";
@@ -396,23 +395,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field<string>
+          <Field<string | undefined>
             component={FinalTextField}
             name="cpuLimit"
             label="CPU Limit"
             validate={ValidatorCPU}
             placeholder={sc.CPU_INPUT_PLACEHOLDER}
             min="0"
-            format={(value: any) => {
-              return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
-            }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return "";
-              }
-              return !value ? "" : value + "m";
-            }}
+            format={cpuFormat}
+            parse={cpuParse}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -425,7 +416,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
+          <Field<string | undefined>
             component={FinalTextField}
             name="memoryLimit"
             label="Memory Limit"
@@ -433,16 +424,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             validate={ValidatorMemory}
             placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
             min="0"
-            format={(value: any) => {
-              return !value ? "" : sizeStringToMi(value);
-            }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return "";
-              }
-              return !value ? "" : value + "Mi";
-            }}
+            format={memoryFormat}
+            parse={memoryParse}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -455,22 +438,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
+          <Field<string | undefined>
             component={FinalTextField}
             name="cpuRequest"
             label="CPU Request"
             validate={ValidatorCPU}
             placeholder={sc.CPU_INPUT_PLACEHOLDER}
-            format={(value: any) => {
-              return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
-            }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return "";
-              }
-              return !value ? "" : value + "m";
-            }}
+            format={cpuFormat}
+            parse={cpuParse}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -483,23 +458,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
+          <Field<string | undefined>
             component={FinalTextField}
             name="memoryRequest"
             label="Memory Request"
             margin
             validate={ValidatorMemory}
             placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
-            format={(value: any) => {
-              return !value ? "" : sizeStringToMi(value);
-            }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return "";
-              }
-              return !value ? "" : value + "Mi";
-            }}
+            format={memoryFormat}
+            parse={memoryParse}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
