@@ -17,7 +17,7 @@ import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
 import { ValidatorIsDNS123Label } from "../validator";
 import { FormDataPreview } from "forms/Final/util";
-import { NormalizerToLowerString } from "forms/normalizer";
+import { toLowerCaseStringParse } from "forms/normalizer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -63,7 +63,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           component={FinalTextField}
           autoFocus={true}
           validate={ValidatorIsDNS123Label}
-          parse={NormalizerToLowerString}
+          parse={toLowerCaseStringParse}
           helperText={stringConstants.NAME_RULE}
         />
 
