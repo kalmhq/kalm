@@ -15,7 +15,7 @@ export interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp
   values: any;
 }
 
-class FormMidwareRaw extends React.PureComponent<Props> {
+class FormValueToReudxStoreListenerRaw extends React.PureComponent<Props> {
   componentDidMount() {
     const { dispatch, tutorialDrawerOpen, values, form } = this.props;
     if (tutorialDrawerOpen) {
@@ -34,4 +34,4 @@ class FormMidwareRaw extends React.PureComponent<Props> {
   }
 }
 
-export const FormMidware = connect(mapStateToProps)(FormMidwareRaw);
+export const FormValueToReudxStoreListener = connect(mapStateToProps)(FormValueToReudxStoreListenerRaw);

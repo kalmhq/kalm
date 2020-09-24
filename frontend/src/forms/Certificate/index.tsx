@@ -18,7 +18,7 @@ import { KPanel } from "widgets/KPanel";
 import { Body, Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import sc from "../../utils/stringConstants";
-import { FormMidware } from "tutorials/formMidware";
+import { FormValueToReudxStoreListener } from "tutorials/formValueToReudxStoreListener";
 import { CERTIFICATE_FORM_ID } from "forms/formIDs";
 import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { FormDataPreview } from "forms/Final/util";
@@ -119,7 +119,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               tutorial-anchor-id="certificate-form"
               id="certificate-form"
             >
-              <FormMidware values={values} form={form} />
+              <FormValueToReudxStoreListener values={values} form={form} />
               <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
               <KPanel
                 content={

@@ -46,7 +46,7 @@ import { RenderSelectLabels } from "./NodeSelector";
 import { IngressHint, Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { ProbeFields } from "./Probes";
-import { FormMidware } from "tutorials/formMidware";
+import { FormValueToReudxStoreListener } from "tutorials/formValueToReudxStoreListener";
 import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 
 const Configurations = "Config";
@@ -791,11 +791,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderFormMidware = () => {
+  private renderFormValueToReudxStoreListener = () => {
     return (
       <FormSpy subscription={{ values: true }}>
         {({ values }: { values: ComponentLike }) => {
-          return <FormMidware values={values} form={this.props.form} />;
+          return <FormValueToReudxStoreListener values={values} form={this.props.form} />;
         }}
       </FormSpy>
     );
@@ -817,7 +817,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         }}
         render={({ handleSubmit, submitting, dirty }: RenderProps) => (
           <form onSubmit={handleSubmit} className={classes.root} id="component-form">
-            {this.renderFormMidware()}
+            {this.renderFormValueToReudxStoreListener()}
             <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
             <KPanel
               content={
