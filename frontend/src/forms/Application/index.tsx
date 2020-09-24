@@ -11,7 +11,6 @@ import { RootState } from "reducers";
 import { theme } from "theme/theme";
 import { TDispatchProp } from "types";
 import { Application } from "types/application";
-import stringConstants from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
@@ -19,7 +18,7 @@ import { FormMidware } from "tutorials/formMidware";
 import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { ValidatorIsDNS123Label } from "../validator";
 import { FormDataPreview } from "forms/Final/util";
-import { toLowerCaseStringParse } from "forms/normalizer";
+import { trimAndToLowerParse } from "forms/normalizer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -65,8 +64,11 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           component={FinalTextField}
           autoFocus={true}
           validate={ValidatorIsDNS123Label}
-          parse={toLowerCaseStringParse}
-          helperText={stringConstants.NAME_RULE}
+          parse={trimAndToLowerParse}
+          placeholder={"e.g. my-application; production"}
+          helperText={
+            "Must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"
+          }
         />
 
         <Box mt={2} style={{ color: theme.palette.text.secondary }}>
@@ -95,6 +97,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
       <Form
         initialValues={{ name: "" }}
         onSubmit={this.onSubmit}
+        keepDirtyOnReinitialize
         validate={(values) => finalValidateOrNotBlockByTutorial(values, tutorialState, form)}
         render={({ handleSubmit, submitting, dirty, values }: FormRenderProps<Application>) => (
           <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">

@@ -5,7 +5,7 @@ import {
   AutoCompleteMultiValuesFreeSolo,
   AutoCompleteSingleValue,
 } from "forms/Final/autoComplete";
-import { NormalizePorts, NormalizeString, NormalizeStringArray } from "forms/normalizer";
+import { NormalizePorts, NormalizeString, stringArrayTrimParse } from "forms/normalizer";
 import { storiesOf } from "@storybook/react";
 import { ValidatorHostsOld } from "forms/validator";
 import { FormDataPreview } from "forms/Final/util";
@@ -13,7 +13,7 @@ import { FormDataPreview } from "forms/Final/util";
 export const MultipleNumberValuesFreeSolo = () => (
   <Form
     onSubmit={console.log}
-    keepDirtyOnReinitialize={true}
+    keepDirtyOnReinitialize
     render={({ values }) => (
       <form>
         <Field
@@ -35,7 +35,7 @@ export const MultipleNumberValuesFreeSolo = () => (
 export const MultipleStringValuesFreeSolo = () => (
   <Form
     onSubmit={console.log}
-    keepDirtyOnReinitialize={true}
+    keepDirtyOnReinitialize
     render={({ values }) => (
       <form>
         <Field
@@ -45,7 +45,7 @@ export const MultipleStringValuesFreeSolo = () => (
           label="Value type is string"
           name="values"
           placeholder={"Select string values"}
-          parse={NormalizeStringArray}
+          parse={stringArrayTrimParse}
         />
 
         <Field
@@ -56,7 +56,7 @@ export const MultipleStringValuesFreeSolo = () => (
           name="hosts"
           placeholder={"Select or type"}
           validate={ValidatorHostsOld}
-          parse={NormalizeStringArray}
+          parse={stringArrayTrimParse}
         />
 
         <FormDataPreview />
@@ -68,7 +68,7 @@ export const MultipleStringValuesFreeSolo = () => (
 export const MultipleValueSelect = () => (
   <Form
     onSubmit={console.log}
-    keepDirtyOnReinitialize={true}
+    keepDirtyOnReinitialize
     render={({ values }) => (
       <form>
         <Field
@@ -78,7 +78,7 @@ export const MultipleValueSelect = () => (
           label="Value type is string"
           name="values"
           placeholder={"Select specific values"}
-          parse={NormalizeStringArray}
+          parse={stringArrayTrimParse}
         />
 
         <FormDataPreview />
@@ -90,7 +90,7 @@ export const MultipleValueSelect = () => (
 export const SingleValueSelect = () => (
   <Form
     onSubmit={console.log}
-    keepDirtyOnReinitialize={true}
+    keepDirtyOnReinitialize
     render={({ values }) => (
       <form>
         <Field

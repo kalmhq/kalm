@@ -41,7 +41,7 @@ export const NormalizePorts = (values: string[]) => {
   return Array.from(new Set(values.map(normalizePort))).filter((x) => x !== undefined && x <= 65535 && x > 0);
 };
 
-export const NormalizeStringArray = (values: string[]) => {
+export const stringArrayTrimParse = (values: string[]) => {
   return values.map((x) => x.trim()).filter((x) => !!x);
 };
 
@@ -151,3 +151,24 @@ export const toLowerCaseStringParse = (value: string) => {
   if (!value) return value;
   return value.toLowerCase();
 };
+
+export const trimParse = (value: string) => {
+  if (!value) return value;
+  return value.trim();
+};
+
+interface StringParser {
+  (value: string): string;
+}
+
+export const combineParsers = function (...fns: StringParser[]): StringParser {
+  return function (value: string) {
+    for (let i = 0; i < fns.length; i++) {
+      value = fns[i](value);
+    }
+
+    return value;
+  };
+};
+
+export const trimAndToLowerParse = combineParsers(trimParse, toLowerCaseStringParse);

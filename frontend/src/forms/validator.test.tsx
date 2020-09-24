@@ -1,6 +1,10 @@
 import {
+  NoPrefixSlashError,
+  PathArrayCantBeBlankError,
+  ValidatorArrayNotEmpty,
   ValidatorArrayOfDIsWildcardDNS1123SubDomain,
   ValidatorArrayOfIsDNS1123SubDomain,
+  ValidatorArrayOfPath,
   ValidatorContainerPortRequired,
   ValidatorIsDNS1123SubDomain,
   ValidatorIsDNS123Label,
@@ -24,7 +28,6 @@ test("ValidatorIsEnvVarName", () => {
 
 test("ValidatorContainerPortRequired", () => {
   const testCases = [
-    [undefined, "Required"],
     [443, "Can't use 443 port"],
     [8080, undefined],
   ];
@@ -36,7 +39,6 @@ test("ValidatorContainerPortRequired", () => {
 
 test("ValidatorApplicationName", () => {
   const testCases = [
-    [undefined, "Required"],
     ["", "Required"],
     ["n".repeat(100), "Max length is 63"],
     ["&^#$", "Not a valid DNS1123 label. Regex is /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/"],
@@ -324,4 +326,16 @@ test("ValidatorRegistryHost", () => {
   badCases.forEach((testCase) => {
     expect(ValidatorRegistryHost(testCase)).not.toBeUndefined();
   });
+});
+
+test("ValidatorArrayOfPath", () => {
+  expect(ValidatorArrayOfPath([])).toEqual(PathArrayCantBeBlankError);
+  expect(ValidatorArrayOfPath(["/", "bbq"])).toEqual([undefined, NoPrefixSlashError]);
+  expect(ValidatorArrayOfPath(["/foo.bar-FOO/:name"])).toBeUndefined();
+});
+
+test("ValidatorArrayNotEmpty", () => {
+  expect(ValidatorArrayNotEmpty([])).toEqual("Should have at least one item");
+
+  expect(ValidatorArrayNotEmpty(["a"])).toBeUndefined();
 });

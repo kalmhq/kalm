@@ -59,6 +59,7 @@ class MemberFormRaw extends React.PureComponent<Props> {
     return (
       <Form
         initialValues={initial}
+        keepDirtyOnReinitialize
         onSubmit={onSubmit}
         render={({ handleSubmit, submitting, dirty, values }: FormRenderProps<RoleBinding>) => (
           <form onSubmit={handleSubmit}>

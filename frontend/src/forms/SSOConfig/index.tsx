@@ -92,7 +92,7 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
         initialValues={initial}
         onSubmit={onSubmit}
         subscription={{ submitting: true, pristine: true }}
-        keepDirtyOnReinitialize={true}
+        keepDirtyOnReinitialize
         mutators={{
           ...arrayMutators,
         }}

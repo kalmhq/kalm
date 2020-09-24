@@ -2,13 +2,13 @@ import {
   Box,
   createStyles,
   Grid,
+  makeStyles,
   MenuItem,
   StandardTextFieldProps,
   TextField,
   Theme,
   Typography,
   withStyles,
-  makeStyles,
 } from "@material-ui/core";
 import { WithStyles } from "@material-ui/styles";
 import { NormalizePositiveNumber } from "forms/normalizer";
@@ -17,9 +17,9 @@ import { Field, FieldRenderProps } from "react-final-form";
 import { ComponentLikePort, PortProtocolHTTP, PortProtocolTCP, Probe } from "types/componentTemplate";
 import sc from "../../utils/stringConstants";
 import { makeSelectOption, SelectField } from "../Basic/select";
-import { validateHostWithWildcardPrefix, ValidatorOneof, ValidatorRequired } from "../validator";
+import { validateHostWithWildcardPrefix, ValidatorOneOfFactory, ValidatorRequired } from "../validator";
 
-const ValidatorScheme = ValidatorOneof(/^https?$/i);
+const ValidatorScheme = ValidatorOneOfFactory(["HTTP", "HTTPS"]);
 
 interface OwnProps {
   name: "livenessProbe" | "readinessProbe";
@@ -42,13 +42,14 @@ const styles = (theme: Theme) =>
 
 const RenderNestedTextfield = ({
   input: { value, onChange, onBlur },
-  meta: { error, touched },
+  meta: { error, touched, active },
   placeholder,
   style,
   select,
   children,
   type,
-}: FieldRenderProps<string | number> & StandardTextFieldProps & { style?: any; type?: string; normalize?: any }) => {
+}: FieldRenderProps<string | number | undefined> &
+  StandardTextFieldProps & { style?: any; type?: string; normalize?: any }) => {
   const classes = makeStyles((theme) => ({
     input: {
       padding: 2,
@@ -62,8 +63,8 @@ const RenderNestedTextfield = ({
 
   return (
     <TextField
-      error={!!error}
-      helperText={error}
+      error={!!error && touched}
+      helperText={touched && error}
       InputProps={{ classes: { input: classes.input } }}
       onChange={onChange}
       onBlur={onBlur}
@@ -114,7 +115,7 @@ class RenderProbe extends React.PureComponent<Props> {
               </MenuItem>
             </Field>
             ://
-            <Field
+            <Field<string | undefined>
               name={`${name}.httpGet.host`}
               component={RenderNestedTextfield}
               placeholder="0.0.0.0"

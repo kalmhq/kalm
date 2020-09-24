@@ -96,7 +96,7 @@ describe("add certificate", () => {
 test("add application", async () => {
   const WrappedApplicationForm = class extends React.Component {
     public render() {
-      return <ApplicationForm currentTab={"basic"} />;
+      return <ApplicationForm />;
     }
   };
   const component = mount(
