@@ -297,18 +297,8 @@ export const regExpIp = new RegExp(
   "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
 );
 
-// correct:
-// *.test.com
-// test.com
-// abc.test.com
-// 1.2.3.4.com
-// *.1.2.2.3.4.com
-// Incorrect:
-// *test.com
-// test.com*
-// test.*.com
-// test.abc*.com
-export const regExpWildcardDomain = new RegExp(/^(\*\.)?([\w]+\.)+[a-zA-Z]+$/);
+// https://regex101.com/r/wG1nZ3/37
+export const regExpWildcardDomain = new RegExp(/^(\*\.)?([\w-]+\.)+[a-zA-Z]+$/);
 
 export const validateHostWithWildcardPrefix = (value: string) => {
   if (!value || value.length === 0 || value.length > 511) {
