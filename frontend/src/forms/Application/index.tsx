@@ -97,6 +97,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
       <Form
         initialValues={{ name: "" }}
         onSubmit={this.onSubmit}
+        keepDirtyOnReinitialize
         validate={(values) => finalValidateOrNotBlockByTutorial(values, tutorialState, form)}
         render={({ handleSubmit, submitting, dirty, values }: FormRenderProps<Application>) => (
           <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">

@@ -1,4 +1,3 @@
-import { HttpRouteDestination } from "types/route";
 import sc from "utils/stringConstants";
 import * as Yup from "yup";
 import { addMethod, ArraySchema, mixed, number, object, Schema, string, ValidationError } from "yup";
@@ -30,48 +29,11 @@ addMethod(object, "unique", function (propertyName, message) {
   });
 });
 
-export const ValidatorHttpRouteDestinations = (value: Array<HttpRouteDestination>) => {
-  if (!value || value.length <= 0) {
-    return "Please define at least one target.";
-  }
-
-  if (value.length === 1) {
-    return undefined;
-  }
-
-  let valid = false;
-
-  for (let i = 0; i < value.length; i++) {
-    const target = value[i]!;
-
-    if (target.weight > 0) {
-      valid = true;
-      break;
-    }
-  }
-
-  if (!valid) {
-    return "Please define at least one target with non-zero weight.";
-  }
-
-  return undefined;
-};
-
 export const ValidatorName = (value: string) => {
   if (!value) return "Required";
 
   if (!value.match(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/) || value === "0") {
     return sc.NAME_RULE;
-  }
-
-  return undefined;
-};
-
-export const ValidatorHttpHeaders = (value: any) => {
-  if (!value) return undefined;
-
-  if (typeof value === "string") {
-    return "Invalid JSON";
   }
 
   return undefined;
@@ -89,8 +51,6 @@ export const ValidatorSchedule = (value: string) => {
 
   return undefined;
 };
-
-export const ValidatorStringLength = () => {};
 
 export const regExpIp = new RegExp(
   "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
@@ -115,16 +75,6 @@ export const ValidatorEnvName = (value: string) => {
 
   if (!value.match(/^[-._a-zA-Z][-._a-zA-Z0-9]*$/)) {
     return "Env name is invalid. regex used for validation is '[-._a-zA-Z][-._a-zA-Z0-9]*'";
-  }
-
-  return undefined;
-};
-
-export const ValidatorServiceName = (value: string) => {
-  if (value === undefined) return undefined;
-
-  if (!value.match(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/)) {
-    return `Port name must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character. (e.g. 'my-name',  or '123-abc', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?')`;
   }
 
   return undefined;
@@ -252,7 +202,6 @@ export const ValidatorArrayOfDIsWildcardDNS1123SubDomain = yupValidatorWrapForAr
 // * percent-encoded octets
 // * sub-delims ("!", "$", "&", "'", "(", ")", "*", "+", ",", ";", "=")
 // * a colon character (":")
-// const httpPathFmt = `[A-Za-z0-9\/\-\._~%!$&'()*+,;=:]+`;
 
 export const NotValidPathPrefixError = "Not a valid path prefix";
 export const NoPrefixSlashError = 'Should start with a "/"';
@@ -294,7 +243,7 @@ export const ValidatorMemory = yupValidatorWrap<string | undefined>(
 
 export const ValidatorCPU = yupValidatorWrap<string | undefined>(
   string().test(
-    "",
+    "Validate CPU",
     "The minimum support is 0.001 Core",
     (value) => value === undefined || parseFloat(`${value}`) >= 0.001,
   ),

@@ -87,7 +87,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   public render() {
     const { onSubmit, initialValues, classes, isEdit, ingressIP, dispatch, form } = this.props;
     return (
-      <Form onSubmit={onSubmit} initialValues={initialValues} validate={this.validate}>
+      <Form onSubmit={onSubmit} initialValues={initialValues} keepDirtyOnReinitialize validate={this.validate}>
         {(props) => {
           const {
             values,

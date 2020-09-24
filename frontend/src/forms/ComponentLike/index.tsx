@@ -810,7 +810,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         initialValues={_initialValues}
         onSubmit={onSubmit}
         subscription={{ submitting: true, pristine: true, dirty: true }}
-        keepDirtyOnReinitialize={true}
+        keepDirtyOnReinitialize
         validate={(values) => finalValidateOrNotBlockByTutorial(values, tutorialState, form)}
         mutators={{
           ...arrayMutators,
