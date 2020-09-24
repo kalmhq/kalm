@@ -18,7 +18,6 @@ test("ValidatorIsEnvVarName", () => {
 
 test("ValidatorContainerPortRequired", () => {
   const testCases = [
-    [undefined, "Required"],
     [443, "Can't use 443 port"],
     [8080, undefined],
   ];
@@ -30,7 +29,6 @@ test("ValidatorContainerPortRequired", () => {
 
 test("ValidatorApplicationName", () => {
   const testCases = [
-    [undefined, "Required"],
     ["", "Required"],
     ["n".repeat(100), "Max length is 63"],
     ["&^#$", "Not a valid DNS1123 label. Regex is /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/"],

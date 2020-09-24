@@ -175,3 +175,22 @@ export const toLowerCaseStringParse = (value: string) => {
   if (!value) return value;
   return value.toLowerCase();
 };
+
+export const trimParse = (value: string) => {
+  if (!value) return value;
+  return value.trim();
+};
+
+interface StringParser {
+  (value: string): string;
+}
+
+export const combineParsers = function (...fns: StringParser[]): StringParser {
+  return function (value: string) {
+    for (let i = 0; i < fns.length; i++) {
+      value = fns[i](value);
+    }
+
+    return value;
+  };
+};

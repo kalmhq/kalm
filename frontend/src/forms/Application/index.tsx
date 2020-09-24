@@ -11,13 +11,12 @@ import { RootState } from "reducers";
 import { theme } from "theme/theme";
 import { TDispatchProp } from "types";
 import { Application } from "types/application";
-import stringConstants from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
 import { ValidatorIsDNS123Label } from "../validator";
 import { FormDataPreview } from "forms/Final/util";
-import { toLowerCaseStringParse } from "forms/normalizer";
+import { combineParsers, toLowerCaseStringParse, trimParse } from "forms/normalizer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -52,6 +51,8 @@ interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchPr
 
 export interface Props extends ConnectedProps, WithStyles<typeof styles>, OwnProps {}
 
+const applicationNameParse = combineParsers(trimParse, toLowerCaseStringParse);
+
 class ApplicationFormRaw extends React.PureComponent<Props> {
   private renderBasic(name: string) {
     return (
@@ -63,8 +64,11 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           component={FinalTextField}
           autoFocus={true}
           validate={ValidatorIsDNS123Label}
-          parse={toLowerCaseStringParse}
-          helperText={stringConstants.NAME_RULE}
+          parse={applicationNameParse}
+          placeholder={"e.g. my-application; production"}
+          helperText={
+            "Must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"
+          }
         />
 
         <Box mt={2} style={{ color: theme.palette.text.secondary }}>

@@ -1,7 +1,7 @@
 import { HttpRouteDestination } from "types/route";
 import sc from "utils/stringConstants";
 import * as Yup from "yup";
-import { addMethod, array, ArraySchema, mixed, number, object, Schema, string, ValidationError } from "yup";
+import { addMethod, ArraySchema, mixed, number, object, Schema, string, ValidationError } from "yup";
 
 addMethod(object, "unique", function (propertyName, message) {
   //@ts-ignore
@@ -346,8 +346,6 @@ export const ValidatorArrayOfDIsWildcardDNS1123SubDomain = yupValidatorWrapForAr
   Yup.array<string>().required("Should have at least one item"),
   IsWildcardDNS1123SubDomain,
 );
-
-export const RequireArray = array().min(1, "Required");
 
 export const ValidatorContainerPortRequired = yupValidatorWrap<number | undefined>(
   number()
