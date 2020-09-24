@@ -28,6 +28,8 @@ import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "forms/Route/destinations";
+import { FormMidware } from "tutorials/formMidware";
+import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 
 const mapStateToProps = (state: RootState) => {
   const certifications = state.certificates.certificates;
@@ -247,18 +249,19 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private validate(values: HttpRoute) {
+  private validate = (values: HttpRoute) => {
+    const { form, tutorialState } = this.props;
     let errors: any = {};
     const { methods, methodsMode, schemes } = values;
     if (methodsMode === methodsModeSpecific) {
       errors.methods = ValidatorArrayNotEmpty(methods);
     }
     errors.schemes = ValidatorArrayNotEmpty(schemes);
-    return errors;
-  }
+    return Object.keys(errors).length > 0 ? errors : finalValidateOrNotBlockByTutorial(values, tutorialState, form);
+  };
 
   public render() {
-    const { classes, ingressIP, isEdit, initial, onSubmit } = this.props;
+    const { classes, ingressIP, isEdit, initial, onSubmit, form } = this.props;
     return (
       <div className={classes.root}>
         <Form
@@ -276,7 +279,6 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             submitting,
             handleSubmit,
             form: { change },
-            touched,
           }: FormRenderProps<HttpRoute>) => {
             const { hosts, methodsMode, schemes, httpRedirectToHttps } = values;
             const hstsDomains = includesForceHttpsDomain(hosts);
@@ -305,7 +307,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
             return (
               <form onSubmit={handleSubmit} id="route-form">
-                {/* <FormMidware values={values} form={ROUTE_FORM_ID} /> */}
+                <FormMidware values={values} form={form} />
                 <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
                 <Grid container spacing={2}>
                   <Grid item xs={12}>

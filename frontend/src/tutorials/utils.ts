@@ -1,13 +1,13 @@
-import { getIn } from "formik";
 import { APPLICATION_FORM_ID, CERTIFICATE_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
 import { RootState } from "reducers";
 import { State as TutorialState } from "reducers/tutorial";
+import { getIn } from "final-form";
 
-export const formikValidateOrNotBlockByTutorial = (
+export const finalValidateOrNotBlockByTutorial = (
   values: { [key: string]: any },
-  props: { tutorialState: TutorialState; form: string },
+  tutorialState: TutorialState,
+  form: string,
 ) => {
-  const { tutorialState, form } = props;
   const errors: { [key: string]: any } = {};
   const state = tutorialState;
 

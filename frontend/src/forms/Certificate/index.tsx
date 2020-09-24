@@ -18,14 +18,19 @@ import { KPanel } from "widgets/KPanel";
 import { Body, Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import sc from "../../utils/stringConstants";
+import { FormMidware } from "tutorials/formMidware";
+import { CERTIFICATE_FORM_ID } from "forms/formIDs";
+import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 
 const mapStateToProps = (state: RootState) => {
   return {
+    tutorialState: state.tutorial,
     certificateIssuers: state.certificates.certificateIssuers,
     ingressIP: state.cluster.info.ingressIP || "---.---.---.---",
     acmeServer: state.certificates.acmeServer,
     acmeServerIsReady: state.certificates.acmeServer !== null ? state.certificates.acmeServer?.ready : null,
     isLoadingAcmeServer: state.certificates.isAcmeServerLoading,
+    form: CERTIFICATE_FORM_ID,
   };
 };
 
@@ -68,18 +73,18 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   public componentDidUpdate = (prevProps: Props) => {};
 
   private validate = async (values: CertificateFormType) => {
+    const { form, tutorialState } = this.props;
     let errors: any = {};
-
     if (values.managedType === selfManaged && (!values.domains || values.domains.length < 1)) {
       errors.selfManagedCertContent = "Invalid Certificate";
       return errors;
     }
 
-    return errors;
+    return Object.keys(errors).length > 0 ? errors : finalValidateOrNotBlockByTutorial(values, tutorialState, form);
   };
 
   public render() {
-    const { onSubmit, initialValues, classes, isEdit, ingressIP, dispatch } = this.props;
+    const { onSubmit, initialValues, classes, isEdit, ingressIP, dispatch, form } = this.props;
     return (
       <Form onSubmit={onSubmit} initialValues={initialValues} validate={this.validate}>
         {(props) => {
@@ -113,7 +118,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               tutorial-anchor-id="certificate-form"
               id="certificate-form"
             >
-              {/* <FormMidware values={values} form={CERTIFICATE_FORM_ID} /> */}
+              <FormMidware values={values} form={form} />
               <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
               <KPanel
                 content={
