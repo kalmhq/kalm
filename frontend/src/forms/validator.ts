@@ -147,18 +147,6 @@ export const ValidatorEnvName = (value: string) => {
   return undefined;
 };
 
-export const RequirePrefix = (prefix: string) => (value: string) => {
-  if (value === undefined) return undefined;
-  if (!value.startsWith(prefix)) return `Require prefix "${prefix}"`;
-  return undefined;
-};
-
-export const RequireNoSuffix = (suffix: string) => (value: string) => {
-  if (value === undefined) return undefined;
-  if (value.endsWith(suffix)) return `Require no suffix "${suffix}"`;
-  return undefined;
-};
-
 const yupValidatorWrap = function <T>(...v: Schema<T>[]) {
   return function (value: T) {
     let schema: Schema<T>;
@@ -310,4 +298,11 @@ export const ValidatorInjectedFilePath = yupValidatorWrap<string | undefined>(
     .required("Required")
     .test("", 'Must be an absolute path, which starts with a "/"', (value) => !value || value.startsWith("/"))
     .test("", 'File name mush not end with "/"', (value) => !value || !value.endsWith("/")),
+);
+
+export const ValidatorRegistryHost = yupValidatorWrap<string | undefined>(
+  string()
+    .notRequired()
+    .test("", 'Require prefix "https://"', (value) => !value || value.startsWith("https://"))
+    .test("", 'Require no suffix "/"', (value) => !value || !value.endsWith("/")),
 );

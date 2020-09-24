@@ -11,6 +11,7 @@ import {
   ValidatorCPU,
   ValidatorSchedule,
   ValidatorInjectedFilePath,
+  ValidatorRegistryHost,
 } from "forms/validator";
 
 test("ValidatorIsEnvVarName", () => {
@@ -308,5 +309,19 @@ test("ValidatorInjectedFilePath", () => {
   const badCases = ["xyz", "/xyz/", "xyz/"];
   badCases.forEach((testCase) => {
     expect(ValidatorInjectedFilePath(testCase)).not.toBeUndefined();
+  });
+});
+
+test("ValidatorRegistryHost", () => {
+  expect(ValidatorRegistryHost(undefined)).toEqual(undefined);
+
+  const goodCases = ["https://registry.abc.com", "https://xxx.gcr.io"];
+  goodCases.forEach((testCase) => {
+    expect(ValidatorRegistryHost(testCase)).toEqual(undefined);
+  });
+
+  const badCases = ["xxx.gcr.io", "https://xxx.gcr.io/"];
+  badCases.forEach((testCase) => {
+    expect(ValidatorRegistryHost(testCase)).not.toBeUndefined();
   });
 });
