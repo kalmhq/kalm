@@ -1,7 +1,7 @@
-import { HttpRoute, HttpRouteDestination } from "types/route";
+import { HttpRouteDestination } from "types/route";
 import sc from "utils/stringConstants";
 import * as Yup from "yup";
-import { addMethod, array, ArraySchema, mixed, object, Schema, string, ValidationError } from "yup";
+import { addMethod, array, ArraySchema, mixed, number, object, Schema, string, ValidationError } from "yup";
 
 addMethod(object, "unique", function (propertyName, message) {
   //@ts-ignore
@@ -30,20 +30,6 @@ addMethod(object, "unique", function (propertyName, message) {
   });
 });
 
-export const validator = () => {
-  const errors = {};
-
-  return errors;
-};
-
-export const ValidatorListNotEmpty = (value: Array<any>) => {
-  if (!value || value.length <= 0) {
-    return "Select at least one option";
-  }
-
-  return undefined;
-};
-
 export const ValidatorArrayNotEmpty = (value: any[]) => {
   if (!value || value.length <= 0) {
     return "Select at least one option";
@@ -52,12 +38,7 @@ export const ValidatorArrayNotEmpty = (value: any[]) => {
   return undefined;
 };
 
-export const ValidatorHttpRouteDestinations = (
-  value: Array<HttpRouteDestination>,
-  _allValues?: HttpRoute,
-  _props?: any,
-  _name?: any,
-) => {
+export const ValidatorHttpRouteDestinations = (value: Array<HttpRouteDestination>) => {
   if (!value || value.length <= 0) {
     return "Please define at least one target.";
   }
@@ -92,28 +73,17 @@ export const ValidatorRequired = (value: any) => {
   return !!value || value === 0 ? undefined : `Required`;
 };
 
-export const ValidatorContainerPortRequired = (value: any) => {
-  if (!!value !== undefined) {
-    const portInteger = parseInt(value, 10);
+// export const ValidatorContainerPortRequired = (value: any) => {
+//   if (!!value !== undefined) {
+//     const portInteger = parseInt(value, 10);
 
-    if (portInteger === 443) {
-      return `Can't use 443 port`;
-    }
-  }
+//     if (portInteger === 443) {
+//       return `Can't use 443 port`;
+//     }
+//   }
 
-  return !!value ? undefined : `Required`;
-};
-
-export const ValidatorPort = (value: any) => {
-  if (!!value !== undefined) {
-    const portInteger = parseInt(value, 10);
-
-    if (portInteger === 443) {
-      return `Can't use 443 port`;
-    }
-  }
-  return undefined;
-};
+//   return !!value ? undefined : `Required`;
+// };
 
 export const ValidatorOneof = (...options: (string | RegExp)[]) => {
   return (value: string) => {
@@ -250,18 +220,8 @@ export const regExpIp = new RegExp(
   "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
 );
 
-// correct:
-// *.test.com
-// test.com
-// abc.test.com
-// 1.2.3.4.com
-// *.1.2.2.3.4.com
-// Incorrect:
-// *test.com
-// test.com*
-// test.*.com
-// test.abc*.com
-export const regExpWildcardDomain = new RegExp(/^(\*\.)?([\w]+\.)+[a-zA-Z]+$/);
+// https://regex101.com/r/wG1nZ3/37
+export const regExpWildcardDomain = new RegExp(/^(\*\.)?([\w-]+\.)+[a-zA-Z]+$/);
 
 export const validateHostWithWildcardPrefix = (value: string) => {
   if (!value || value.length === 0 || value.length > 511) {
@@ -445,3 +405,13 @@ export const ValidatorArrayOfDIsWildcardDNS1123SubDomain = yupValidatorWrapForAr
 );
 
 export const RequireArray = array().min(1, "Required");
+
+export const ValidatorContainerPortRequired = yupValidatorWrap<number | undefined>(
+  number()
+    .required("Required")
+    .test("", "Can't use 443 port", (value) => value !== 443),
+);
+
+export const ValidatorPort = yupValidatorWrap<number | undefined>(
+  number().test("", "Can't use 443 port", (value) => value !== 443),
+);

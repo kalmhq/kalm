@@ -278,7 +278,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <HelperTextSection>{sc.DISKS_HELPER}</HelperTextSection>
         <Grid item xs={12}>
           <FormSpy subscription={{ values: true }}>
-            {({ values }: { values: ComponentLike }) => {
+            {({ values }: FormSpyRenderProps<ComponentLike>) => {
               return <Disks isEdit={isEdit} workloadType={values.workloadType} componentName={values.name} />;
             }}
           </FormSpy>
@@ -636,13 +636,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     dispatch(push(`${pathname}#${tab ? tab.replace(/\s/g, "") : ""}`));
   }
 
-  // TODO
-  // private showError(fieldName: string): boolean {
-  //   const { touched, errors } = this.props;
-
-  //   return !!getIn(touched, fieldName) && !!getIn(errors, fieldName);
-  // }
-
   private handleChangeTab(event: React.ChangeEvent<{}>, value: number) {
     this.pushToTab(value);
   }
@@ -650,33 +643,37 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderTabs() {
     const { classes, currentTabIndex } = this.props;
     return (
-      <Tabs
-        className={clsx(classes.borderBottom, classes.tabsRoot)}
-        value={currentTabIndex}
-        variant="scrollable"
-        scrollButtons="auto"
-        indicatorColor="primary"
-        textColor="primary"
-        onChange={this.handleChangeTab.bind(this)}
-        aria-label="component form tabs"
-      >
-        {this.tabs.map((tab) => {
-          // TODO
-          // if (
-          //   (tab === Configurations &&
-          //     (this.showError("preInjectedFiles") || this.showError("env") || this.showError("command"))) ||
-          //   (tab === DisksTab && this.showError("volumes")) ||
-          //   (tab === HealthTab && (this.showError("livenessProbe") || this.showError("readinessProbe"))) ||
-          //   (tab === NetworkingTab && this.showError("ports")) ||
-          //   (tab === Scheduling &&
-          //     (this.showError("cpuLimit") || this.showError("memoryLimit") || this.showError("nodeSelectorLabels")))
-          // ) {
-          //   return <Tab key={tab} label={tab} className={classes.hasError} />;
-          // }
+      <FormSpy subscription={{ errors: true }}>
+        {({ errors }: FormSpyRenderProps<ComponentLike>) => {
+          return (
+            <Tabs
+              className={clsx(classes.borderBottom, classes.tabsRoot)}
+              value={currentTabIndex}
+              variant="scrollable"
+              scrollButtons="auto"
+              indicatorColor="primary"
+              textColor="primary"
+              onChange={this.handleChangeTab.bind(this)}
+              aria-label="component form tabs"
+            >
+              {this.tabs.map((tab) => {
+                if (
+                  this.tabs[currentTabIndex] !== tab &&
+                  ((tab === Configurations && (errors.preInjectedFiles || errors.env || errors.command)) ||
+                    (tab === NetworkingTab && errors.ports) ||
+                    (tab === DisksTab && errors.volumes) ||
+                    (tab === HealthTab && (errors.livenessProbe || errors.readinessProbe)) ||
+                    (tab === Scheduling && (errors.cpuLimit || errors.memoryLimit || errors.nodeSelectorLabels)))
+                ) {
+                  return <Tab key={tab} label={tab} className={classes.hasError} />;
+                }
 
-          return <Tab key={tab} label={tab} tutorial-anchor-id={tab} />;
-        })}
-      </Tabs>
+                return <Tab key={tab} label={tab} tutorial-anchor-id={tab} />;
+              })}
+            </Tabs>
+          );
+        }}
+      </FormSpy>
     );
   }
 
@@ -710,7 +707,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
         <Grid item xs={6}>
           <FormSpy subscription={{ values: true }}>
-            {({ values }: { values: ComponentLike }) => {
+            {({ values }: FormSpyRenderProps<ComponentLike>) => {
               let hasVolumes = false;
               if (values.volumes && values.volumes.length > 0) {
                 hasVolumes = true;
@@ -737,7 +734,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <FormSpy subscription={{ values: true }}>
-          {({ values }: { values: ComponentLike }) => {
+          {({ values }: FormSpyRenderProps<ComponentLike>) => {
             return (
               <>
                 <Grid item xs={6}>

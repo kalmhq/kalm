@@ -96,7 +96,7 @@ class RenderPorts extends React.PureComponent<Props> {
                             anchorRef(popupState)(c);
                           }}
                         >
-                          <Field
+                          <Field<number | undefined>
                             onFocus={popupState.open}
                             handleBlur={popupState.close}
                             component={FinalTextField}

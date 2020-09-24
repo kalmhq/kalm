@@ -1,9 +1,4 @@
-export const NormalizeNumber = (
-  value: string,
-  _previousValue?: any,
-  _allValues?: any,
-  _previousAllValues?: any,
-): number | any => {
+export const NormalizeNumber = (value: string): number | any => {
   const integerValue = parseInt(value, 10);
   return isNaN(integerValue) ? null : integerValue;
 };
@@ -26,7 +21,7 @@ export const normalizePort = (value: string) => {
   const portInteger = parseInt(value, 10);
 
   if (isNaN(portInteger)) {
-    return 0;
+    return undefined;
   }
 
   if (portInteger < 0) {
@@ -41,7 +36,7 @@ export const normalizePort = (value: string) => {
 };
 
 export const NormalizePorts = (values: string[]) => {
-  return Array.from(new Set(values.map(normalizePort))).filter((x) => x <= 65535 && x > 0);
+  return Array.from(new Set(values.map(normalizePort))).filter((x) => x !== undefined && x <= 65535 && x > 0);
 };
 
 export const NormalizeStringArray = (values: string[]) => {

@@ -4,7 +4,7 @@ import React from "react";
 import { FieldRenderProps } from "react-final-form";
 
 type FinalTextFieldProps = TextFieldProps &
-  FieldRenderProps<string | number, any> & {
+  FieldRenderProps<string | number | undefined, any> & {
     startAdornment?: React.ReactNode;
     endAdornment?: React.ReactNode;
     htmlType?: string;
