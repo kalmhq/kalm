@@ -6,6 +6,9 @@ import {
   ValidatorIsDNS123Label,
   ValidatorIsEnvVarName,
   ValidatorIsWildcardDNS1123SubDomain,
+  ValidatorVolumeSize,
+  ValidatorMemory,
+  ValidatorCPU,
 } from "forms/validator";
 
 test("ValidatorIsEnvVarName", () => {
@@ -238,4 +241,42 @@ test("ValidatorArrayOfDIsWildcardDNS1123SubDomain", () => {
     "Not a valid wildcard DNS123 SubDomain",
     "Not a valid wildcard DNS123 SubDomain",
   ]);
+});
+
+test("ValidatorVolumeSize", () => {
+  const testCases = [
+    [undefined, "Required"],
+    ["0Gi", "Invalid Value"],
+    ["10", "Invalid Value"],
+    ["10Gi", undefined],
+  ];
+
+  testCases.forEach((testCase) => {
+    expect(ValidatorVolumeSize(testCase[0])).toEqual(testCase[1]);
+  });
+});
+
+test("ValidatorMemory", () => {
+  const testCases = [
+    [undefined, undefined],
+    ["0Mi", "Invalid Value"],
+    ["10", "Invalid Value"],
+    ["10Mi", undefined],
+  ];
+
+  testCases.forEach((testCase) => {
+    expect(ValidatorMemory(testCase[0])).toEqual(testCase[1]);
+  });
+});
+
+test("ValidatorCPU", () => {
+  const testCases = [
+    [undefined, undefined],
+    ["10m", undefined],
+    ["0.00001m", "The minimum support is 0.001 Core"],
+  ];
+
+  testCases.forEach((testCase) => {
+    expect(ValidatorCPU(testCase[0])).toEqual(testCase[1]);
+  });
 });

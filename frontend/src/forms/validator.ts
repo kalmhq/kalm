@@ -118,8 +118,6 @@ export const ValidatorSchedule = (value: string) => {
   return undefined;
 };
 
-export const ValidatorStringLength = () => {};
-
 export const ValidateHost = (value: string) => {
   if (!value) return "Required";
 
