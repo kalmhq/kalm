@@ -10,6 +10,7 @@ import {
   ValidatorMemory,
   ValidatorCPU,
   ValidatorSchedule,
+  ValidatorInjectedFilePath,
 } from "forms/validator";
 
 test("ValidatorIsEnvVarName", () => {
@@ -293,5 +294,19 @@ test("ValidatorSchedule", () => {
   const badCases = ["*", "abc"];
   badCases.forEach((testCase) => {
     expect(ValidatorSchedule(testCase)).toEqual("Invalid Schedule Rule");
+  });
+});
+
+test("ValidatorInjectedFilePath", () => {
+  expect(ValidatorInjectedFilePath(undefined)).toEqual("Required");
+
+  const goodCases = ["/path1", "/abc/def"];
+  goodCases.forEach((testCase) => {
+    expect(ValidatorInjectedFilePath(testCase)).toEqual(undefined);
+  });
+
+  const badCases = ["xyz", "/xyz/", "xyz/"];
+  badCases.forEach((testCase) => {
+    expect(ValidatorInjectedFilePath(testCase)).not.toBeUndefined();
   });
 });

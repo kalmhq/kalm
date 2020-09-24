@@ -122,17 +122,6 @@ export const ValidatorIpAndHosts = (
   return errors.filter((x) => !!x).length > 0 ? errors : undefined;
 };
 
-export const KValidatorInjectedFilePath = (value: string) => {
-  if (!value) {
-    return undefined;
-  }
-
-  if (!value.startsWith("/")) return 'Must be an absolute path, which starts with a "/"';
-  if (value.endsWith("/")) return 'File name mush not end with "/"';
-
-  return undefined;
-};
-
 export const KValidatorPaths = (
   values: string[],
   _allValues?: any,
@@ -314,4 +303,11 @@ export const ValidatorSchedule = yupValidatorWrap<string | undefined>(
       /^(\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?(1?[0-9]|2[0-3]))) (\*|((\*\/)?([1-9]|[12][0-9]|3[0-1]))) (\*|((\*\/)?([1-9]|1[0-2])))$/,
       "Invalid Schedule Rule",
     ),
+);
+
+export const ValidatorInjectedFilePath = yupValidatorWrap<string | undefined>(
+  string()
+    .required("Required")
+    .test("", 'Must be an absolute path, which starts with a "/"', (value) => !value || value.startsWith("/"))
+    .test("", 'File name mush not end with "/"', (value) => !value || !value.endsWith("/")),
 );
