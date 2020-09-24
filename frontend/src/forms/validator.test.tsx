@@ -9,6 +9,7 @@ import {
   ValidatorVolumeSize,
   ValidatorMemory,
   ValidatorCPU,
+  ValidatorSchedule,
 } from "forms/validator";
 
 test("ValidatorIsEnvVarName", () => {
@@ -278,5 +279,19 @@ test("ValidatorCPU", () => {
 
   testCases.forEach((testCase) => {
     expect(ValidatorCPU(testCase[0])).toEqual(testCase[1]);
+  });
+});
+
+test("ValidatorSchedule", () => {
+  expect(ValidatorSchedule(undefined)).toEqual("Required");
+
+  const goodCases = ["* * * * *", "0 2 * * *"];
+  goodCases.forEach((testCase) => {
+    expect(ValidatorSchedule(testCase)).toEqual(undefined);
+  });
+
+  const badCases = ["*", "abc"];
+  badCases.forEach((testCase) => {
+    expect(ValidatorSchedule(testCase)).toEqual("Invalid Schedule Rule");
   });
 });

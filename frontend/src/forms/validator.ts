@@ -56,29 +56,6 @@ export const ValidatorOneof = (...options: (string | RegExp)[]) => {
   };
 };
 
-export const ValidatorHttpHeaders = (value: any) => {
-  if (!value) return undefined;
-
-  if (typeof value === "string") {
-    return "Invalid JSON";
-  }
-
-  return undefined;
-};
-
-export const ValidatorSchedule = (value: string) => {
-  if (
-    !value ||
-    !value.match(
-      /^(\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?(1?[0-9]|2[0-3]))) (\*|((\*\/)?([1-9]|[12][0-9]|3[0-1]))) (\*|((\*\/)?([1-9]|1[0-2])))$/,
-    )
-  ) {
-    return "Invalid Schedule Rule";
-  }
-
-  return undefined;
-};
-
 export const ValidateHost = (value: string) => {
   if (!value) return "Required";
 
@@ -176,16 +153,6 @@ export const ValidatorEnvName = (value: string) => {
 
   if (!value.match(/^[-._a-zA-Z][-._a-zA-Z0-9]*$/)) {
     return "Env name is invalid. regex used for validation is '[-._a-zA-Z][-._a-zA-Z0-9]*'";
-  }
-
-  return undefined;
-};
-
-export const ValidatorServiceName = (value: string) => {
-  if (value === undefined) return undefined;
-
-  if (!value.match(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/)) {
-    return `Port name must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character. (e.g. 'my-name',  or '123-abc', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?')`;
   }
 
   return undefined;
@@ -338,4 +305,13 @@ export const ValidatorCPU = yupValidatorWrap<string | undefined>(
     "The minimum support is 0.001 Core",
     (value) => value === undefined || parseFloat(`${value}`) >= 0.001,
   ),
+);
+
+export const ValidatorSchedule = yupValidatorWrap<string | undefined>(
+  string()
+    .required("Required")
+    .matches(
+      /^(\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?(1?[0-9]|2[0-3]))) (\*|((\*\/)?([1-9]|[12][0-9]|3[0-1]))) (\*|((\*\/)?([1-9]|1[0-2])))$/,
+      "Invalid Schedule Rule",
+    ),
 );
