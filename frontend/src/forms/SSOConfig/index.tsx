@@ -13,10 +13,10 @@ import { TDispatchProp } from "types";
 import {
   newEmptyGithubConnector,
   newEmptyGitlabConnector,
-  SSOConfig,
   SSO_CONNECTOR_TYPE,
   SSO_CONNECTOR_TYPE_GITHUB,
   SSO_CONNECTOR_TYPE_GITLAB,
+  SSOConfig,
 } from "types/sso";
 import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
@@ -28,6 +28,7 @@ import { FinalTextField } from "../Final/textfield";
 import { ValidateHost } from "../validator";
 import { Field, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
 import arrayMutators from "final-form-arrays";
+import { FormDataPreview } from "forms/Final/util";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -209,15 +210,7 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
             <Box pt={2} display="flex">
               {this.renderButtons(initial, submitting)}
             </Box>
-            {process.env.REACT_APP_DEBUG === "true" ? (
-              <FormSpy subscription={{ values: true }}>
-                {({ values }) => {
-                  return (
-                    <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
-                  );
-                }}
-              </FormSpy>
-            ) : null}
+            <FormDataPreview />
           </form>
         )}
       />

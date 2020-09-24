@@ -12,8 +12,9 @@ import { Disks } from "forms/ComponentLike/Disks";
 import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
 import { FinalRadioGroupRender } from "forms/Final/radio";
 import { FinalSelectField } from "forms/Final/select";
+import { FormDataPreview } from "forms/Final/util";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
-import { NormalizePositiveNumber } from "forms/normalizer";
+import { cpuFormat, cpuParse, memoryFormat, memoryParse, NormalizePositiveNumber } from "forms/normalizer";
 import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 import React from "react";
 import { Field, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
@@ -29,7 +30,6 @@ import {
   workloadTypeStatefulSet,
 } from "types/componentTemplate";
 import { PublicRegistriesList } from "types/registry";
-import { sizeStringToMi, sizeStringToNumber } from "utils/sizeConv";
 import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KalmConsoleIcon } from "widgets/Icon";
@@ -279,7 +279,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <HelperTextSection>{sc.DISKS_HELPER}</HelperTextSection>
         <Grid item xs={12}>
           <FormSpy subscription={{ values: true }}>
-            {({ values }: { values: ComponentLike }) => {
+            {({ values }: FormSpyRenderProps<ComponentLike>) => {
               return <Disks isEdit={isEdit} workloadType={values.workloadType} componentName={values.name} />;
             }}
           </FormSpy>
@@ -397,23 +397,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field<string>
+          <Field<string | undefined>
             component={FinalTextField}
             name="cpuLimit"
             label="CPU Limit"
             validate={ValidatorCPU}
             placeholder={sc.CPU_INPUT_PLACEHOLDER}
             min="0"
-            format={(value: any) => {
-              return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
-            }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return "";
-              }
-              return !value ? "" : value + "m";
-            }}
+            format={cpuFormat}
+            parse={cpuParse}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -426,7 +418,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
+          <Field<string | undefined>
             component={FinalTextField}
             name="memoryLimit"
             label="Memory Limit"
@@ -434,16 +426,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             validate={ValidatorMemory}
             placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
             min="0"
-            format={(value: any) => {
-              return !value ? "" : sizeStringToMi(value);
-            }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return "";
-              }
-              return !value ? "" : value + "Mi";
-            }}
+            format={memoryFormat}
+            parse={memoryParse}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -456,22 +440,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
+          <Field<string | undefined>
             component={FinalTextField}
             name="cpuRequest"
             label="CPU Request"
             validate={ValidatorCPU}
             placeholder={sc.CPU_INPUT_PLACEHOLDER}
-            format={(value: any) => {
-              return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
-            }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return "";
-              }
-              return !value ? "" : value + "m";
-            }}
+            format={cpuFormat}
+            parse={cpuParse}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -484,23 +460,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
+          <Field<string | undefined>
             component={FinalTextField}
             name="memoryRequest"
             label="Memory Request"
             margin
             validate={ValidatorMemory}
             placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
-            format={(value: any) => {
-              return !value ? "" : sizeStringToMi(value);
-            }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return "";
-              }
-              return !value ? "" : value + "Mi";
-            }}
+            format={memoryFormat}
+            parse={memoryParse}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -637,13 +605,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     dispatch(push(`${pathname}#${tab ? tab.replace(/\s/g, "") : ""}`));
   }
 
-  // TODO
-  // private showError(fieldName: string): boolean {
-  //   const { touched, errors } = this.props;
-
-  //   return !!getIn(touched, fieldName) && !!getIn(errors, fieldName);
-  // }
-
   private handleChangeTab(event: React.ChangeEvent<{}>, value: number) {
     this.pushToTab(value);
   }
@@ -651,33 +612,37 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderTabs() {
     const { classes, currentTabIndex } = this.props;
     return (
-      <Tabs
-        className={clsx(classes.borderBottom, classes.tabsRoot)}
-        value={currentTabIndex}
-        variant="scrollable"
-        scrollButtons="auto"
-        indicatorColor="primary"
-        textColor="primary"
-        onChange={this.handleChangeTab.bind(this)}
-        aria-label="component form tabs"
-      >
-        {this.tabs.map((tab) => {
-          // TODO
-          // if (
-          //   (tab === Configurations &&
-          //     (this.showError("preInjectedFiles") || this.showError("env") || this.showError("command"))) ||
-          //   (tab === DisksTab && this.showError("volumes")) ||
-          //   (tab === HealthTab && (this.showError("livenessProbe") || this.showError("readinessProbe"))) ||
-          //   (tab === NetworkingTab && this.showError("ports")) ||
-          //   (tab === Scheduling &&
-          //     (this.showError("cpuLimit") || this.showError("memoryLimit") || this.showError("nodeSelectorLabels")))
-          // ) {
-          //   return <Tab key={tab} label={tab} className={classes.hasError} />;
-          // }
+      <FormSpy subscription={{ errors: true }}>
+        {({ errors }: FormSpyRenderProps<ComponentLike>) => {
+          return (
+            <Tabs
+              className={clsx(classes.borderBottom, classes.tabsRoot)}
+              value={currentTabIndex}
+              variant="scrollable"
+              scrollButtons="auto"
+              indicatorColor="primary"
+              textColor="primary"
+              onChange={this.handleChangeTab.bind(this)}
+              aria-label="component form tabs"
+            >
+              {this.tabs.map((tab) => {
+                if (
+                  this.tabs[currentTabIndex] !== tab &&
+                  ((tab === Configurations && (errors.preInjectedFiles || errors.env || errors.command)) ||
+                    (tab === NetworkingTab && errors.ports) ||
+                    (tab === DisksTab && errors.volumes) ||
+                    (tab === HealthTab && (errors.livenessProbe || errors.readinessProbe)) ||
+                    (tab === Scheduling && (errors.cpuLimit || errors.memoryLimit || errors.nodeSelectorLabels)))
+                ) {
+                  return <Tab key={tab} label={tab} className={classes.hasError} />;
+                }
 
-          return <Tab key={tab} label={tab} tutorial-anchor-id={tab} />;
-        })}
-      </Tabs>
+                return <Tab key={tab} label={tab} tutorial-anchor-id={tab} />;
+              })}
+            </Tabs>
+          );
+        }}
+      </FormSpy>
     );
   }
 
@@ -711,7 +676,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
         <Grid item xs={6}>
           <FormSpy subscription={{ values: true }}>
-            {({ values }: { values: ComponentLike }) => {
+            {({ values }: FormSpyRenderProps<ComponentLike>) => {
               let hasVolumes = false;
               if (values.volumes && values.volumes.length > 0) {
                 hasVolumes = true;
@@ -738,7 +703,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <FormSpy subscription={{ values: true }}>
-          {({ values }: { values: ComponentLike }) => {
+          {({ values }: FormSpyRenderProps<ComponentLike>) => {
             return (
               <>
                 <Grid item xs={6}>
@@ -871,15 +836,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 }
               />
             </Box>
-            {process.env.REACT_APP_DEBUG === "true" ? (
-              <FormSpy subscription={{ values: true }}>
-                {({ values }: { values: ComponentLike }) => {
-                  return (
-                    <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
-                  );
-                }}
-              </FormSpy>
-            ) : null}
+            <FormDataPreview />
             {this.renderDeployButton(isEdit)}
           </form>
         )}

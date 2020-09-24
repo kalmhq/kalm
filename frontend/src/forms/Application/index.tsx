@@ -15,9 +15,11 @@ import stringConstants from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
-import { ValidatorName } from "../validator";
 import { FormMidware } from "tutorials/formMidware";
 import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { ValidatorIsDNS123Label } from "../validator";
+import { FormDataPreview } from "forms/Final/util";
+import { toLowerCaseStringParse } from "forms/normalizer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -62,7 +64,8 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           id="application-name"
           component={FinalTextField}
           autoFocus={true}
-          validate={ValidatorName}
+          validate={ValidatorIsDNS123Label}
+          parse={toLowerCaseStringParse}
           helperText={stringConstants.NAME_RULE}
         />
 
@@ -109,6 +112,8 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
             <Alert severity="error">{errors.name}</Alert>
           </Box>
         ) : null} */}
+
+            <FormDataPreview />
 
             <Box pt={3} className={classes.displayFlex}>
               <CustomizedButton

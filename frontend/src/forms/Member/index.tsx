@@ -13,6 +13,7 @@ import { Field, Form, FormRenderProps } from "react-final-form";
 import { FinalSelectField } from "forms/Final/select";
 import { FinalTextField } from "forms/Final/textfield";
 import Grid from "@material-ui/core/Grid";
+import { FormDataPreview } from "forms/Final/util";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -126,9 +127,7 @@ class MemberFormRaw extends React.PureComponent<Props> {
                 }
               />
 
-              {process.env.REACT_APP_DEBUG === "true" ? (
-                <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
-              ) : null}
+              <FormDataPreview />
 
               <Box mt={2}>
                 <Button color="primary" variant="contained" type="submit">

@@ -4,7 +4,7 @@ import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalTextField } from "forms/Final/textfield";
-import { ValidatorHosts } from "forms/validator";
+import { ValidatorHostsOld } from "forms/validator";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
 import { Field, FieldRenderProps, Form } from "react-final-form";
@@ -21,6 +21,7 @@ import sc from "../../utils/stringConstants";
 import { FormMidware } from "tutorials/formMidware";
 import { CERTIFICATE_FORM_ID } from "forms/formIDs";
 import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { FormDataPreview } from "forms/Final/util";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -147,7 +148,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                           disabled={values.managedType === selfManaged}
                           label="Domains"
                           name="domains"
-                          validate={ValidatorHosts}
+                          validate={ValidatorHostsOld}
                           icons={icons}
                           id="certificate-domains"
                           placeholder={
@@ -188,9 +189,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                   {isEdit ? "Update" : "Create"}
                 </Button>
               </Box>
-              {process.env.REACT_APP_DEBUG === "true" ? (
-                <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
-              ) : null}
+              <FormDataPreview />
             </form>
           );
         }}

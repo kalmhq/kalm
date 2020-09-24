@@ -1,9 +1,6 @@
-export const NormalizeNumber = (
-  value: string,
-  _previousValue?: any,
-  _allValues?: any,
-  _previousAllValues?: any,
-): number | any => {
+import { sizeStringToGi, sizeStringToMi, sizeStringToNumber } from "utils/sizeConv";
+
+export const NormalizeNumber = (value: string): number | any => {
   const integerValue = parseInt(value, 10);
   return isNaN(integerValue) ? null : integerValue;
 };
@@ -26,7 +23,7 @@ export const normalizePort = (value: string) => {
   const portInteger = parseInt(value, 10);
 
   if (isNaN(portInteger)) {
-    return 0;
+    return undefined;
   }
 
   if (portInteger < 0) {
@@ -41,7 +38,7 @@ export const normalizePort = (value: string) => {
 };
 
 export const NormalizePorts = (values: string[]) => {
-  return Array.from(new Set(values.map(normalizePort))).filter((x) => x <= 65535 && x > 0);
+  return Array.from(new Set(values.map(normalizePort))).filter((x) => x !== undefined && x <= 65535 && x > 0);
 };
 
 export const NormalizeStringArray = (values: string[]) => {
@@ -103,4 +100,78 @@ export const NormalizeNumberOrAlphabet = (value: string): string | number => {
     }
   }
   return "";
+};
+
+export const diskSizeFormat = (value: any) => {
+  return !value ? "" : sizeStringToGi(value);
+};
+
+export const diskSizeParse = (value: any) => {
+  if (!value) {
+    return "";
+  }
+  const valueNum = parseFloat(value);
+  if (isNaN(valueNum)) {
+    return "";
+  }
+  if (valueNum < 0) {
+    return String(0 - valueNum) + "Gi";
+  }
+  if (value.endsWith("0") || value.endsWith(".")) {
+    return value + "Gi";
+  }
+  return valueNum + "Gi";
+};
+
+export const memoryFormat = (value: any) => {
+  return !value ? "" : sizeStringToMi(value);
+};
+
+export const memoryParse = (value: any) => {
+  if (!value) {
+    return undefined;
+  }
+  const valueNum = parseFloat(value);
+  if (isNaN(valueNum)) {
+    return "";
+  }
+  if (valueNum < 0) {
+    return String(0 - valueNum) + "Mi";
+  }
+  if (value.endsWith("0") || value.endsWith(".")) {
+    return value + "Mi";
+  }
+  return valueNum + "Mi";
+};
+
+export const cpuFormat = (value: any) => {
+  if (!value) {
+    return "";
+  }
+  if (value.endsWith("m")) {
+    return value.replace("m", "");
+  }
+  return (sizeStringToNumber(value) * 1000).toFixed();
+};
+
+export const cpuParse = (value: any) => {
+  if (!value) {
+    return undefined;
+  }
+  const valueNum = parseFloat(value);
+  if (isNaN(valueNum)) {
+    return "";
+  }
+  if (valueNum < 0) {
+    return String(0 - valueNum) + "m";
+  }
+  if (value.endsWith("0") || value.endsWith(".")) {
+    return value + "m";
+  }
+  return valueNum + "m";
+};
+
+export const toLowerCaseStringParse = (value: string) => {
+  if (!value) return value;
+  return value.toLowerCase();
 };
