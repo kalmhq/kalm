@@ -28,6 +28,7 @@ import { Caption, H6 } from "widgets/Label";
 import { FinalSelectField } from "../Final/select";
 import { FinalTextField } from "../Final/textfield";
 import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
+import { diskSizeFormat, diskSizeParse } from "forms/normalizer";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -299,19 +300,8 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           margin
           validate={ValidatorVolumeSize}
           endAdornment={this.getSizeEndAdornment()}
-          format={(value: any) => {
-            return !value ? "" : sizeStringToGi(value);
-          }}
-          parse={(value: any) => {
-            const integerValue = parseInt(value, 10);
-            if (isNaN(integerValue)) {
-              return "";
-            }
-            if (integerValue < 0) {
-              return "";
-            }
-            return !value ? "" : value + "Gi";
-          }}
+          format={diskSizeFormat}
+          parse={diskSizeParse}
         />,
       );
     } else if (disk.type === VolumeTypeHostPath) {
@@ -332,19 +322,8 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           margin
           validate={ValidatorVolumeSize}
           endAdornment={this.getSizeEndAdornment()}
-          format={(value: any) => {
-            return !value ? "" : sizeStringToGi(value);
-          }}
-          parse={(value: any) => {
-            const integerValue = parseInt(value, 10);
-            if (isNaN(integerValue)) {
-              return "";
-            }
-            if (integerValue < 0) {
-              return "";
-            }
-            return !value ? "" : value + "Gi";
-          }}
+          format={diskSizeFormat}
+          parse={diskSizeParse}
         />,
       );
     }

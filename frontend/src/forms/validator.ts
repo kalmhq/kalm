@@ -64,26 +64,6 @@ export const ValidatorHttpRouteDestinations = (value: Array<HttpRouteDestination
   return undefined;
 };
 
-export const ValidatorRequired = (value: any) => {
-  if (Array.isArray(value)) {
-    return value.length > 0 ? undefined : "Required";
-  }
-
-  return !!value || value === 0 ? undefined : `Required`;
-};
-
-// export const ValidatorContainerPortRequired = (value: any) => {
-//   if (!!value !== undefined) {
-//     const portInteger = parseInt(value, 10);
-
-//     if (portInteger === 443) {
-//       return `Can't use 443 port`;
-//     }
-//   }
-
-//   return !!value ? undefined : `Required`;
-// };
-
 export const ValidatorOneof = (...options: (string | RegExp)[]) => {
   return (value: string) => {
     if (!value) return undefined;
@@ -104,23 +84,6 @@ export const ValidatorOneof = (...options: (string | RegExp)[]) => {
   };
 };
 
-export const ValidatorVolumeSize = (value: string) => {
-  if (!value) return "Required";
-
-  if (value === "Gi") {
-    return "Required";
-  }
-
-  if (!value.match(new RegExp(`(^\\d+(\\.\\d+)?)([eEinumkKMGTP]*[-+]?[0-9]*)$`)) || value === "0Gi") {
-    return "Invalid Value";
-  }
-  // if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
-  //   return "Invalid Value";
-  // }
-
-  return undefined;
-};
-
 export const ValidatorName = (value: string) => {
   if (!value) return "Required";
 
@@ -137,35 +100,6 @@ export const ValidatorHttpHeaders = (value: any) => {
   if (typeof value === "string") {
     return "Invalid JSON";
   }
-
-  return undefined;
-};
-
-// https://regex101.com/r/cJ74bX/1/
-export const ValidatorCPU = (value: number | string) => {
-  if (!value) return undefined;
-
-  if (parseFloat(`${value}`) < 0.001) {
-    return "The minimum support is 0.001 Core";
-  }
-
-  // if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
-  //   return "Invalid CPU Value";
-  // }
-
-  return undefined;
-};
-
-export const ValidatorMemory = (value: string) => {
-  if (!value) return undefined;
-
-  if (value === "Gi") {
-    return "Required";
-  }
-
-  // if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
-  //   return "Invalid Memory Value";
-  // }
 
   return undefined;
 };
@@ -338,8 +272,6 @@ const yupValidatorWrap = function <T>(...v: Schema<T>[]) {
 
 // Basic yup validator
 
-const RequireString = string().required("Required");
-
 const RequireMatchDNS1123Label = string()
   .required("Required")
   .max(63, "Max length is 63")
@@ -358,4 +290,28 @@ export const ValidatorContainerPortRequired = yupValidatorWrap<number | undefine
 
 export const ValidatorPort = yupValidatorWrap<number | undefined>(
   number().test("", "Can't use 443 port", (value) => value !== 443),
+);
+
+export const ValidatorRequired = yupValidatorWrap<any>(mixed().required("Required"));
+
+export const ValidatorVolumeSize = yupValidatorWrap<string>(
+  string()
+    .required("Required")
+    .notOneOf(["0Gi"], "Invalid Value")
+    .matches(/(^\d+(\.\d+)?)(Gi)$/, "Invalid Value"),
+);
+
+export const ValidatorMemory = yupValidatorWrap<string | undefined>(
+  string()
+    .notRequired()
+    .notOneOf(["0Mi"], "Invalid Value")
+    .matches(/(^\d+(\.\d+)?)(Mi)$/, "Invalid Value"),
+);
+
+export const ValidatorCPU = yupValidatorWrap<string | undefined>(
+  string().test(
+    "",
+    "The minimum support is 0.001 Core",
+    (value) => value === undefined || parseFloat(`${value}`) >= 0.001,
+  ),
 );
