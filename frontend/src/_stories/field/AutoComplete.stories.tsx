@@ -13,7 +13,7 @@ import { FormDataPreview } from "forms/Final/util";
 export const MultipleNumberValuesFreeSolo = () => (
   <Form
     onSubmit={console.log}
-    keepDirtyOnReinitialize={true}
+    keepDirtyOnReinitialize
     render={({ values }) => (
       <form>
         <Field
@@ -35,7 +35,7 @@ export const MultipleNumberValuesFreeSolo = () => (
 export const MultipleStringValuesFreeSolo = () => (
   <Form
     onSubmit={console.log}
-    keepDirtyOnReinitialize={true}
+    keepDirtyOnReinitialize
     render={({ values }) => (
       <form>
         <Field
@@ -68,7 +68,7 @@ export const MultipleStringValuesFreeSolo = () => (
 export const MultipleValueSelect = () => (
   <Form
     onSubmit={console.log}
-    keepDirtyOnReinitialize={true}
+    keepDirtyOnReinitialize
     render={({ values }) => (
       <form>
         <Field
@@ -90,7 +90,7 @@ export const MultipleValueSelect = () => (
 export const SingleValueSelect = () => (
   <Form
     onSubmit={console.log}
-    keepDirtyOnReinitialize={true}
+    keepDirtyOnReinitialize
     render={({ values }) => (
       <form>
         <Field

@@ -41,6 +41,7 @@ export interface Props extends ConnectedProps, WithStyles<typeof styles> {
   onSubmit: any;
   initial: RegistryFormType;
 }
+
 class RegistryFormRaw extends React.PureComponent<Props> {
   public render() {
     const { classes, isEdit, onSubmit, isSubmittingRegistry, initial } = this.props;
@@ -49,7 +50,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
       <Form
         debug={process.env.REACT_APP_DEBUG === "true" ? console.log : undefined}
         subscription={{ submitting: true, pristine: true }}
-        keepDirtyOnReinitialize={true}
+        keepDirtyOnReinitialize
         initialValues={initial}
         onSubmit={onSubmit}
         render={({ handleSubmit, submitting, pristine, dirty }: RenderProps) => (
