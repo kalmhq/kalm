@@ -1,4 +1,16 @@
-import { ValidatorApplicationName } from "forms/validator";
+import { ValidatorApplicationName, ValidatorContainerPortRequired } from "forms/validator";
+
+test("ValidatorContainerPortRequired", () => {
+  const testCases = [
+    [undefined, "Required"],
+    [443, "Can't use 443 port"],
+    [8080, undefined],
+  ];
+
+  testCases.forEach((testCase) => {
+    expect(ValidatorContainerPortRequired(testCase[0])).toEqual(testCase[1]);
+  });
+});
 
 test("ValidatorApplicationName", () => {
   const testCases = [

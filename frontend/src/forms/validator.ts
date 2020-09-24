@@ -1,6 +1,6 @@
-import { HttpRoute, HttpRouteDestination } from "types/route";
+import { HttpRouteDestination } from "types/route";
 import sc from "utils/stringConstants";
-import { addMethod, array, mixed, object, Schema, string, ValidationError } from "yup";
+import { addMethod, array, mixed, object, Schema, string, ValidationError, number } from "yup";
 
 addMethod(object, "unique", function (propertyName, message) {
   //@ts-ignore
@@ -29,20 +29,6 @@ addMethod(object, "unique", function (propertyName, message) {
   });
 });
 
-export const validator = () => {
-  const errors = {};
-
-  return errors;
-};
-
-export const ValidatorListNotEmpty = (value: Array<any>) => {
-  if (!value || value.length <= 0) {
-    return "Select at least one option";
-  }
-
-  return undefined;
-};
-
 export const ValidatorArrayNotEmpty = (value: any[]) => {
   if (!value || value.length <= 0) {
     return "Select at least one option";
@@ -51,12 +37,7 @@ export const ValidatorArrayNotEmpty = (value: any[]) => {
   return undefined;
 };
 
-export const ValidatorHttpRouteDestinations = (
-  value: Array<HttpRouteDestination>,
-  _allValues?: HttpRoute,
-  _props?: any,
-  _name?: any,
-) => {
+export const ValidatorHttpRouteDestinations = (value: Array<HttpRouteDestination>) => {
   if (!value || value.length <= 0) {
     return "Please define at least one target.";
   }
@@ -91,28 +72,17 @@ export const ValidatorRequired = (value: any) => {
   return !!value || value === 0 ? undefined : `Required`;
 };
 
-export const ValidatorContainerPortRequired = (value: any) => {
-  if (!!value !== undefined) {
-    const portInteger = parseInt(value, 10);
+// export const ValidatorContainerPortRequired = (value: any) => {
+//   if (!!value !== undefined) {
+//     const portInteger = parseInt(value, 10);
 
-    if (portInteger === 443) {
-      return `Can't use 443 port`;
-    }
-  }
+//     if (portInteger === 443) {
+//       return `Can't use 443 port`;
+//     }
+//   }
 
-  return !!value ? undefined : `Required`;
-};
-
-export const ValidatorPort = (value: any) => {
-  if (!!value !== undefined) {
-    const portInteger = parseInt(value, 10);
-
-    if (portInteger === 443) {
-      return `Can't use 443 port`;
-    }
-  }
-  return undefined;
-};
+//   return !!value ? undefined : `Required`;
+// };
 
 export const ValidatorOneof = (...options: (string | RegExp)[]) => {
   return (value: string) => {
@@ -376,7 +346,16 @@ const RequireMatchDNS1123Label = string()
   .matches(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/, "Not a valid DNS1123 label. Regex is /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/");
 
 // Kalm Validators
-
 export const ValidatorApplicationName = yupValidatorWrap<string>(RequireMatchDNS1123Label);
 
 export const RequireArray = array().min(1, "Required");
+
+export const ValidatorContainerPortRequired = yupValidatorWrap<number | undefined>(
+  number()
+    .required("Required")
+    .test("", "Can't use 443 port", (value) => value !== 443),
+);
+
+export const ValidatorPort = yupValidatorWrap<number | undefined>(
+  number().test("", "Can't use 443 port", (value) => value !== 443),
+);
