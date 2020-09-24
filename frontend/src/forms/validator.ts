@@ -1,6 +1,7 @@
 import { HttpRoute, HttpRouteDestination } from "types/route";
 import sc from "utils/stringConstants";
-import { addMethod, array, mixed, object, Schema, string, ValidationError } from "yup";
+import * as Yup from "yup";
+import { addMethod, array, ArraySchema, mixed, object, Schema, string, ValidationError } from "yup";
 
 addMethod(object, "unique", function (propertyName, message) {
   //@ts-ignore
@@ -230,7 +231,7 @@ export const ValidateHost = (value: string) => {
   return undefined;
 };
 
-export const ValidatorHosts = (
+export const ValidatorHostsOld = (
   values: string[],
   _allValues?: any,
   _props?: any,
@@ -376,17 +377,71 @@ const yupValidatorWrap = function <T>(...v: Schema<T>[]) {
   };
 };
 
+const yupValidatorWrapForArray = function <T>(arraySchema: ArraySchema<T>, ...v: Schema<T>[]) {
+  return function (values: T[]) {
+    try {
+      arraySchema.validateSync(values);
+    } catch (e) {
+      if (!ValidationError.isError(e)) {
+        throw e;
+      }
+
+      return e.errors[0] || "Unknown error";
+    }
+
+    const validateFunction = yupValidatorWrap<T>(...v);
+
+    const errors = values.map((value) => validateFunction(value));
+
+    if (errors.findIndex((x) => !!x) < 0) {
+      return undefined;
+    }
+
+    return errors;
+  };
+};
+
 // Basic yup validator
+
+const dns1123LabelFmt = "[a-z0-9]([-a-z0-9]*[a-z0-9])?";
+const dns1123SubDomainFmt = dns1123LabelFmt + "(\\." + dns1123LabelFmt + ")*";
+const IsDNS1123SubDomain = string()
+  .required("Required")
+  .matches(new RegExp(`^${dns1123SubDomainFmt}$`), "Not a valid DNS123 SubDomain")
+  .max(253);
+
+// wildcard definition - RFC 1034 section 4.3.3.
+// examples:
+// - valid: *.bar.com, *.foo.bar.com
+// - invalid: *.*.bar.com, *.foo.*.com, *bar.com, f*.bar.com, *
+const wildcardDNS1123SubDomainFmt = "\\*\\." + dns1123SubDomainFmt;
+const IsWildcardDNS1123SubDomain = Yup.string()
+  .required("Required")
+  .matches(new RegExp(`^${wildcardDNS1123SubDomainFmt}$`), "Not a valid wildcard DNS123 SubDomain")
+  .max(253);
 
 const RequireString = string().required("Required");
 
 const RequireMatchDNS1123Label = string()
   .required("Required")
   .max(63, "Max length is 63")
-  .matches(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/, "Not a valid DNS1123 label. Regex is /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/");
+  .matches(
+    new RegExp(`^${dns1123LabelFmt}$`),
+    "Not a valid DNS1123 label. Regex is " + new RegExp(`^${dns1123LabelFmt}$`),
+  );
 
 // Kalm Validators
-
 export const ValidatorApplicationName = yupValidatorWrap<string>(RequireMatchDNS1123Label);
+export const ValidatorIsDNS1123SubDomain = yupValidatorWrap<string>(IsDNS1123SubDomain);
+export const ValidatorArrayOfIsDNS1123SubDomain = yupValidatorWrapForArray<string>(
+  Yup.array<string>().required("Should have at least one item"),
+  IsDNS1123SubDomain,
+);
+
+export const ValidatorIsWildcardDNS1123SubDomain = yupValidatorWrap<string>(IsWildcardDNS1123SubDomain);
+export const ValidatorArrayOfDIsWildcardDNS1123SubDomain = yupValidatorWrapForArray<string>(
+  Yup.array<string>().required("Should have at least one item"),
+  IsWildcardDNS1123SubDomain,
+);
 
 export const RequireArray = array().min(1, "Required");
