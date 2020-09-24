@@ -140,7 +140,6 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
           const {
             values,
             dirty,
-            touched,
             errors,
             form: { change },
             submitting,
@@ -169,7 +168,6 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
                           disabled={isEdit}
                           placeholder="Please type a certificate name"
                           id="certificate-name"
-                          helperText={!!errors.name && touched && touched.name ? errors.name : ""}
                         />
                       </Grid>
                       <Grid item md={12}>
