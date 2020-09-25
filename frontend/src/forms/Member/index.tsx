@@ -63,7 +63,7 @@ class MemberFormRaw extends React.PureComponent<Props> {
         onSubmit={onSubmit}
         render={({ handleSubmit, submitting, dirty, values }: FormRenderProps<RoleBinding>) => (
           <form onSubmit={handleSubmit}>
-            <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
             <Box mb={2}>
               <KPanel
                 title="Grant role permissions to a user or a group"

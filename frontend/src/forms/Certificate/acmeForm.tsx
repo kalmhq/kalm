@@ -32,10 +32,10 @@ class AcmeFormRaw extends React.PureComponent<Props & ReturnType<typeof mapState
         initialValues={initial}
         onSubmit={onSubmit}
         keepDirtyOnReinitialize={true}
-        render={({ handleSubmit, submitting, dirty, values }) => (
+        render={({ handleSubmit }) => (
           <form id="acme-form" onSubmit={handleSubmit}>
             <Box p={2}>
-              <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+              <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
               <KPanel
                 content={
                   <Box p={2}>

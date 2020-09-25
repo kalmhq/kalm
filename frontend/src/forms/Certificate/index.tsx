@@ -94,7 +94,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             dirty,
             errors,
             form: { change },
-            submitting,
             handleSubmit,
           } = props;
           const icons = values.domains.map((domain, index) =>
@@ -119,7 +118,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               id="certificate-form"
             >
               <FormValueToReudxStoreListener values={values} form={form} />
-              <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+              <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
               <KPanel
                 content={
                   <Box p={2}>

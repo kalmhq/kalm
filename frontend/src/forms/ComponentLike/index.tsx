@@ -821,10 +821,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         mutators={{
           ...arrayMutators,
         }}
-        render={({ handleSubmit, submitting, dirty }: RenderProps) => (
+        render={({ handleSubmit }: RenderProps) => (
           <form onSubmit={handleSubmit} className={classes.root} id="component-form">
             {this.renderFormValueToReudxStoreListener()}
-            <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
             <KPanel
               content={
                 <Box p={2} tutorial-anchor-id="component-from-basic">

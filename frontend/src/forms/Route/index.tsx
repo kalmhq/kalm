@@ -310,7 +310,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             return (
               <form onSubmit={handleSubmit} id="route-form">
                 <FormValueToReudxStoreListener values={values} form={form} />
-                <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+                <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <Box mb={2}>
