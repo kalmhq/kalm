@@ -5,30 +5,29 @@ import { Theme } from "@material-ui/core/styles";
 import { Alert } from "@material-ui/lab";
 import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
+import arrayMutators from "final-form-arrays";
+import { FormDataPreview } from "forms/Final/util";
 import { Connectors } from "forms/SSOConfig/Connectors";
 import React from "react";
+import { Field, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import {
   newEmptyGithubConnector,
   newEmptyGitlabConnector,
+  SSOConfig,
   SSO_CONNECTOR_TYPE,
   SSO_CONNECTOR_TYPE_GITHUB,
   SSO_CONNECTOR_TYPE_GITLAB,
-  SSOConfig,
 } from "types/sso";
-import sc from "utils/stringConstants";
-import { CustomizedButton } from "widgets/Button";
+import { SubmitButton } from "widgets/Button";
 import { CopyIconDefault, GithubIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { FinalTextField } from "../Final/textfield";
 import { ValidateHost } from "../validator";
-import { Field, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
-import arrayMutators from "final-form-arrays";
-import { FormDataPreview } from "forms/Final/util";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -58,9 +57,7 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
 
     return (
       <>
-        <CustomizedButton variant="contained" color="primary" pending={submitting} type="submit">
-          {isEdit ? "Update Single Sign-On Config" : "Enable Single Sign-On"}
-        </CustomizedButton>
+        <SubmitButton>{isEdit ? "Update Single Sign-On Config" : "Enable Single Sign-On"}</SubmitButton>
       </>
     );
   }
@@ -98,7 +95,7 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
         }}
         render={({ handleSubmit, submitting }: FormRenderProps<SSOConfig>) => (
           <form onSubmit={handleSubmit}>
-            <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <Prompt />
             <KPanel
               title="Setup Domain"
               content={

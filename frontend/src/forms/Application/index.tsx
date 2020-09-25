@@ -3,22 +3,22 @@ import { Theme } from "@material-ui/core/styles";
 import { createApplicationAction } from "actions/application";
 import { push } from "connected-react-router";
 import { FinalTextField } from "forms/Final/textfield";
+import { FormDataPreview } from "forms/Final/util";
 import { APPLICATION_FORM_ID } from "forms/formIDs";
+import { trimAndToLowerParse } from "forms/normalizer";
 import React from "react";
 import { Field, Form, FormRenderProps } from "react-final-form";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { theme } from "theme/theme";
-import { TDispatchProp } from "types";
-import { Application } from "types/application";
-import { CustomizedButton } from "widgets/Button";
-import { KPanel } from "widgets/KPanel";
-import { Body } from "widgets/Label";
 import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
 import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { TDispatchProp } from "types";
+import { Application } from "types/application";
+import { SubmitButton } from "widgets/Button";
+import { KPanel } from "widgets/KPanel";
+import { Body } from "widgets/Label";
 import { ValidatorIsDNS123Label } from "../validator";
-import { FormDataPreview } from "forms/Final/util";
-import { trimAndToLowerParse } from "forms/normalizer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -99,7 +99,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
         onSubmit={this.onSubmit}
         keepDirtyOnReinitialize
         validate={(values) => finalValidateOrNotBlockByTutorial(values, tutorialState, form)}
-        render={({ handleSubmit, submitting, dirty, values }: FormRenderProps<Application>) => (
+        render={({ handleSubmit, values }: FormRenderProps<Application>) => (
           <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">
             <FormTutorialHelper form={form} />
             <KPanel
@@ -119,18 +119,13 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
             <FormDataPreview />
 
             <Box pt={3} className={classes.displayFlex}>
-              <CustomizedButton
-                pending={submitting}
-                disabled={submitting}
+              <SubmitButton
                 tutorial-anchor-id="application-form-submit-button"
-                variant="contained"
-                color="primary"
                 className={`${classes.submitButton}`}
-                type="submit"
                 id="add-application-submit-button"
               >
                 Create App
-              </CustomizedButton>
+              </SubmitButton>
             </Box>
           </form>
         )}

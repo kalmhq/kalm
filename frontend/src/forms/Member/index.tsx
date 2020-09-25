@@ -1,19 +1,19 @@
-import { Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
+import Grid from "@material-ui/core/Grid";
+import { FinalSelectField } from "forms/Final/select";
+import { FinalTextField } from "forms/Final/textfield";
+import { FormDataPreview } from "forms/Final/util";
 import { ValidatorRequired } from "forms/validator";
 import React from "react";
+import { Field, Form, FormRenderProps } from "react-final-form";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { RoleBinding, SubjectTypeGroup, SubjectTypeUser } from "types/member";
-import { default as sc } from "utils/stringConstants";
+import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
-import { Field, Form, FormRenderProps } from "react-final-form";
-import { FinalSelectField } from "forms/Final/select";
-import { FinalTextField } from "forms/Final/textfield";
-import Grid from "@material-ui/core/Grid";
-import { FormDataPreview } from "forms/Final/util";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -61,9 +61,9 @@ class MemberFormRaw extends React.PureComponent<Props> {
         initialValues={initial}
         keepDirtyOnReinitialize
         onSubmit={onSubmit}
-        render={({ handleSubmit, submitting, dirty, values }: FormRenderProps<RoleBinding>) => (
+        render={({ handleSubmit, values }: FormRenderProps<RoleBinding>) => (
           <form onSubmit={handleSubmit}>
-            <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <Prompt />
             <Box mb={2}>
               <KPanel
                 title="Grant role permissions to a user or a group"
@@ -131,9 +131,9 @@ class MemberFormRaw extends React.PureComponent<Props> {
               <FormDataPreview />
 
               <Box mt={2}>
-                <Button color="primary" variant="contained" type="submit">
+                <SubmitButton>
                   {values.subjectType === SubjectTypeUser ? "Grant permissions to User" : "Grant permissions to Group"}
-                </Button>
+                </SubmitButton>
               </Box>
             </Box>
           </form>

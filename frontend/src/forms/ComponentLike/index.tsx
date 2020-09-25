@@ -7,7 +7,6 @@ import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/p
 import clsx from "clsx";
 import { push } from "connected-react-router";
 import arrayMutators from "final-form-arrays";
-import { KTooltip } from "widgets/KTooltip";
 import { Disks } from "forms/ComponentLike/Disks";
 import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
 import { FinalRadioGroupRender } from "forms/Final/radio";
@@ -21,6 +20,8 @@ import { Field, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
+import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
+import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import {
   ComponentLike,
@@ -31,9 +32,10 @@ import {
 } from "types/componentTemplate";
 import { PublicRegistriesList } from "types/registry";
 import sc from "utils/stringConstants";
-import { CustomizedButton } from "widgets/Button";
+import { SubmitButton } from "widgets/Button";
 import { KalmConsoleIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
+import { KTooltip } from "widgets/KTooltip";
 import { Body2, Subtitle1 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
@@ -41,8 +43,8 @@ import { makeSelectOption } from "../Final/select";
 import { FinalTextField } from "../Final/textfield";
 import {
   ValidatorCPU,
-  ValidatorMemory,
   ValidatorIsDNS123Label,
+  ValidatorMemory,
   ValidatorRequired,
   ValidatorSchedule,
 } from "../validator";
@@ -52,8 +54,6 @@ import { RenderSelectLabels } from "./NodeSelector";
 import { IngressHint, Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { ProbeFields } from "./Probes";
-import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
-import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 
 const Configurations = "Config";
 const DisksTab = "Disks";
@@ -781,17 +781,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container spacing={2}>
         <Grid item xs={6} sm={6} md={6}>
-          <CustomizedButton
+          <SubmitButton
             pending={isSubmittingApplicationComponent}
             disabled={isSubmittingApplicationComponent}
-            variant="contained"
-            color="primary"
-            type="submit"
             className={classes.deployBtn}
             id="add-component-submit-button"
           >
             {isEdit ? "Update" : "Deploy"} Component
-          </CustomizedButton>
+          </SubmitButton>
         </Grid>
       </Grid>
     );
@@ -814,7 +811,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         render={({ handleSubmit }: RenderProps) => (
           <form onSubmit={handleSubmit} className={classes.root} id="component-form">
             <FormTutorialHelper form={form} />
-            <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <Prompt />
             <KPanel
               content={
                 <Box p={2} tutorial-anchor-id="component-from-basic">

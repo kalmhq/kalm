@@ -1,16 +1,16 @@
 import { Box, Grid } from "@material-ui/core";
+import { FinalTextField } from "forms/Final/textfield";
+import { FormDataPreview } from "forms/Final/util";
 import React from "react";
+import { Field, Form } from "react-final-form";
 import { connect, DispatchProp } from "react-redux";
 import { RootState } from "reducers";
+import { AcmeServerFormType } from "types/certificate";
 import sc from "utils/stringConstants";
-import { CustomizedButton } from "widgets/Button";
+import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
 import { ValidatorRequired } from "../validator";
-import { AcmeServerFormType } from "types/certificate";
-import { Field, Form } from "react-final-form";
-import { FinalTextField } from "forms/Final/textfield";
-import { FormDataPreview } from "forms/Final/util";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -35,7 +35,7 @@ class AcmeFormRaw extends React.PureComponent<Props & ReturnType<typeof mapState
         render={({ handleSubmit }) => (
           <form id="acme-form" onSubmit={handleSubmit}>
             <Box p={2}>
-              <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+              <Prompt />
               <KPanel
                 content={
                   <Box p={2}>
@@ -67,15 +67,8 @@ class AcmeFormRaw extends React.PureComponent<Props & ReturnType<typeof mapState
                 }
               />
               <Box pt={2}>
-                <CustomizedButton
-                  disabled={isSubmittingCreateAcmeServer}
-                  type="submit"
-                  color="primary"
-                  variant="contained"
-                >
-                  Save
-                </CustomizedButton>
-              </Box>{" "}
+                <SubmitButton disabled={isSubmittingCreateAcmeServer}>Save</SubmitButton>
+              </Box>
             </Box>
           </form>
         )}

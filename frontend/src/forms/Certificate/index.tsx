@@ -1,21 +1,21 @@
 import { Box, Grid } from "@material-ui/core";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
+import { FormDataPreview } from "forms/Final/util";
+import { CERTIFICATE_FORM_ID } from "forms/formIDs";
+import { stringArrayTrimAndToLowerCaseParse } from "forms/normalizer";
 import { ValidatorArrayOfIsValidHostInCertificate } from "forms/validator";
 import React from "react";
 import { Field, FieldRenderProps, Form } from "react-final-form";
+import { connect } from "react-redux";
 import { RootState } from "reducers";
+import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
 import { TDispatchProp } from "types";
 import { CertificateFormType } from "types/certificate";
+import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body, Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import sc from "../../utils/stringConstants";
-import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
-import { CERTIFICATE_FORM_ID } from "forms/formIDs";
-import { stringArrayTrimAndToLowerCaseParse } from "forms/normalizer";
-import { FormDataPreview } from "forms/Final/util";
-import Button from "@material-ui/core/Button";
-import { connect } from "react-redux";
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -69,9 +69,7 @@ class CertificateFormRaw extends React.PureComponent<Props> {
                 <FormDataPreview />
 
                 <Box pt={2}>
-                  <Button id="save-certificate-button" type="submit" color="primary" variant="contained">
-                    {isEdit ? "Update" : "Create"}
-                  </Button>
+                  <SubmitButton id="save-certificate-button">{isEdit ? "Update" : "Create"}</SubmitButton>
                 </Box>
               </Box>
             </form>

@@ -1,26 +1,26 @@
-import React from "react";
-import { BasePage } from "pages/BasePage";
 import Box from "@material-ui/core/Box";
-import Stepper from "@material-ui/core/Stepper";
 import Step from "@material-ui/core/Step";
-import StepLabel from "@material-ui/core/StepLabel";
 import StepContent from "@material-ui/core/StepContent";
-import { KPanel } from "widgets/KPanel";
-import { Body, H5 } from "widgets/Label";
-import { CustomizedButton, DangerButton } from "widgets/Button";
+import StepLabel from "@material-ui/core/StepLabel";
+import Stepper from "@material-ui/core/Stepper";
+import { Alert } from "@material-ui/lab";
+import { setErrorNotificationAction } from "actions/notification";
 import { api } from "api";
+import { withCerts, WithCertsProps } from "hoc/withCerts";
 import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
+import { withComponents, WithComponentsProps } from "hoc/withComponents";
+import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
+import { BasePage } from "pages/BasePage";
+import React from "react";
+import { Field, Form, FormRenderProps, FormSpy } from "react-final-form";
+import { InitializeClusterResponse } from "types/cluster";
 import { PendingBadge, SuccessBadge } from "widgets/Badge";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
+import { CustomizedButton, DangerButton, SubmitButton } from "widgets/Button";
+import { KPanel } from "widgets/KPanel";
+import { Body, H5 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
-import { setErrorNotificationAction } from "actions/notification";
-import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
-import { withCerts, WithCertsProps } from "hoc/withCerts";
-import { withComponents, WithComponentsProps } from "hoc/withComponents";
-import { InitializeClusterResponse } from "types/cluster";
-import { Field, Form, FormRenderProps, FormSpy } from "react-final-form";
 import { FinalTextField } from "../../forms//Final/textfield";
-import { Alert } from "@material-ui/lab";
 
 interface SetupFormType {
   domain: string;
@@ -237,27 +237,16 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
                   }}
                 </FormSpy>
                 <Box mt={2}>
-                  <FormSpy subscription={{ values: true, errors: true, touched: true }}>
-                    {(props) => {
-                      return (
-                        <Box display={"inline-block"} mr={2}>
-                          <CustomizedButton
-                            variant="contained"
-                            color="primary"
-                            type="submit"
-                            disabled={submitting}
-                            pending={submitting}
-                            onClick={async () => {
-                              await this.setState({ ignoreDNSResult: false });
-                              handleSubmit();
-                            }}
-                          >
-                            Check and continue
-                          </CustomizedButton>
-                        </Box>
-                      );
-                    }}
-                  </FormSpy>
+                  <Box display={"inline-block"} mr={2}>
+                    <SubmitButton
+                      onClick={async () => {
+                        await this.setState({ ignoreDNSResult: false });
+                        handleSubmit();
+                      }}
+                    >
+                      Check and continue
+                    </SubmitButton>
+                  </Box>
                   {showDNSWarning && (
                     <Box display={"inline-block"} mr={2}>
                       <CustomizedButton

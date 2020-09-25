@@ -1,4 +1,4 @@
-import { Box, Button, Collapse, Grid, Link } from "@material-ui/core";
+import { Box, Collapse, Grid, Link } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
@@ -7,6 +7,8 @@ import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalBoolCheckboxRender, FinalCheckboxGroupRender } from "forms/Final/checkbox";
 import { FinalRadioGroupRender } from "forms/Final/radio";
 import { ROUTE_FORM_ID } from "forms/formIDs";
+import { stringArrayTrimParse } from "forms/normalizer";
+import { RenderHttpRouteDestinations } from "forms/Route/destinations";
 import { ValidatorArrayNotEmpty, ValidatorArrayOfPath, ValidatorIpAndHosts } from "forms/validator";
 import routesGif from "images/routes.gif";
 import React from "react";
@@ -15,22 +17,21 @@ import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { connect } from "react-redux";
 import { Link as RouteLink } from "react-router-dom";
 import { RootState } from "reducers";
+import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
+import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import { httpMethods, HttpRoute, methodsModeAll, methodsModeSpecific } from "types/route";
 import { isArray } from "util";
 import { arraysMatch } from "utils";
 import { includesForceHttpsDomain } from "utils/domain";
 import { default as sc, default as stringConstants } from "utils/stringConstants";
+import { SubmitButton } from "widgets/Button";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
 import DomainStatus from "widgets/DomainStatus";
 import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
-import { RenderHttpRouteDestinations } from "forms/Route/destinations";
-import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
-import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
-import { stringArrayTrimParse } from "forms/normalizer";
 
 const mapStateToProps = (state: RootState) => {
   const certifications = state.certificates.certificates;
@@ -274,14 +275,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
           mutators={{
             ...arrayMutators,
           }}
-          render={({
-            values,
-            errors,
-            dirty,
-            submitting,
-            handleSubmit,
-            form: { change },
-          }: FormRenderProps<HttpRoute>) => {
+          render={({ values, errors, handleSubmit, form: { change } }: FormRenderProps<HttpRoute>) => {
             const { hosts, methodsMode, schemes, httpRedirectToHttps } = values;
             const hstsDomains = includesForceHttpsDomain(hosts);
             const icons = hosts.map((host, index) => {
@@ -310,7 +304,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             return (
               <form onSubmit={handleSubmit} id="route-form">
                 <FormTutorialHelper form={form} />
-                <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+                <Prompt />
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <Box mb={2}>
@@ -359,6 +353,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                               helperText={sc.ROUTE_PATHS_INPUT_HELPER}
                             />
                             <Field
+                              type="checkbox"
                               component={FinalBoolCheckboxRender}
                               name="stripPath"
                               label={sc.ROUTE_STRIP_PATH_LABEL}
@@ -470,9 +465,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       />
                     </Box>
 
-                    <Button id="add-route-submit-button" type="submit" color="primary" variant="contained">
-                      {isEdit ? "Update" : "Create"} Route
-                    </Button>
+                    <SubmitButton id="add-route-submit-button">{isEdit ? "Update" : "Create"} Route</SubmitButton>
                   </Grid>
                 </Grid>
                 {process.env.REACT_APP_DEBUG === "true" ? (

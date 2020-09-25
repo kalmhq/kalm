@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { FormSpy } from "react-final-form";
+import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -25,7 +26,7 @@ interface Props
 }
 
 interface OuterProps {
-  message: string;
+  message?: string;
 }
 
 class PromptRaw extends React.PureComponent<Props> {
@@ -55,7 +56,7 @@ class PromptRaw extends React.PureComponent<Props> {
         return;
       }
 
-      return message;
+      return message || sc.CONFIRM_LEAVE_WITHOUT_SAVING;
     });
   }
 

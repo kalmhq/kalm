@@ -1,8 +1,7 @@
-import { Box, Button, Grid } from "@material-ui/core";
+import { Box, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
-import { Uploader } from "forms/Final/uploader";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalTextField } from "forms/Final/textfield";
 import { ValidatorArrayOfIsValidHostInCertificate } from "forms/validator";
@@ -14,11 +13,13 @@ import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { CertificateFormType, selfManaged } from "types/certificate";
+import { StringConstants } from "utils/stringConstants";
+import { SubmitButton } from "widgets/Button";
 import DomainStatus from "widgets/DomainStatus";
 import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
-import { StringConstants } from "utils/stringConstants";
+import { Uploader } from "forms/Final/uploader";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   return {
@@ -153,7 +154,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
           }
           return (
             <form className={classes.root} onSubmit={handleSubmit} tutorial-anchor-id="certificate-form-upload">
-              <Prompt message={StringConstants.CONFIRM_LEAVE_WITHOUT_SAVING} />
+              <Prompt />
               <KPanel
                 content={
                   <Box p={2}>
@@ -207,9 +208,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
                 }
               />
               <Box pt={2}>
-                <Button id="save-certificate-button" type="submit" color="primary" variant="contained">
-                  {isEdit ? "Update" : "Create"}
-                </Button>
+                <SubmitButton id="save-certificate-button">{isEdit ? "Update" : "Create"}</SubmitButton>
               </Box>
             </form>
           );

@@ -1,17 +1,17 @@
 import { Box, createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import { Field, Form, FormRenderProps } from "react-final-form";
+import { FormDataPreview } from "forms/Final/util";
 import React from "react";
+import { Field, Form, FormRenderProps } from "react-final-form";
 import { connect, DispatchProp } from "react-redux";
 import { RootState } from "reducers";
 import { RegistryFormType } from "types/registry";
 import sc from "utils/stringConstants";
-import { CustomizedButton } from "widgets/Button";
+import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
-import { ValidatorRegistryHost, ValidatorIsDNS123Label, ValidatorRequired } from "../validator";
 import { FinalTextField } from "../Final/textfield";
-import { FormDataPreview } from "forms/Final/util";
+import { ValidatorIsDNS123Label, ValidatorRegistryHost, ValidatorRequired } from "../validator";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -47,9 +47,9 @@ class RegistryFormRaw extends React.PureComponent<Props> {
         keepDirtyOnReinitialize
         initialValues={initial}
         onSubmit={onSubmit}
-        render={({ handleSubmit, submitting, pristine, dirty }: RenderProps) => (
+        render={({ handleSubmit }: RenderProps) => (
           <form onSubmit={handleSubmit} className={classes.root} id="registry-form">
-            <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <Prompt />
             <KPanel
               content={
                 <Box p={2}>
@@ -101,9 +101,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
               }
             />
             <Box pt={2}>
-              <CustomizedButton disabled={isSubmittingRegistry} type="submit" color="primary" variant="contained">
-                Save
-              </CustomizedButton>
+              <SubmitButton disabled={isSubmittingRegistry}>Save</SubmitButton>
             </Box>
           </form>
         )}
