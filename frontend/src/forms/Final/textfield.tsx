@@ -55,6 +55,7 @@ export const FinalTextField = ({
       variant="outlined"
       InputProps={inputProps}
       inputProps={{
+        autocomplete: "off",
         required: false, // bypass html5 required feature
       }}
     />

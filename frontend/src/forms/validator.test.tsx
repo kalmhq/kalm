@@ -1,21 +1,23 @@
 import {
+  InvalidHostInCertificateErrorMessage,
   NoPrefixSlashError,
   PathArrayCantBeBlankError,
   ValidatorArrayNotEmpty,
   ValidatorArrayOfDIsWildcardDNS1123SubDomain,
   ValidatorArrayOfIsDNS1123SubDomain,
+  ValidatorArrayOfIsValidHostInCertificate,
   ValidatorArrayOfPath,
   ValidatorContainerPortRequired,
+  ValidatorCPU,
+  ValidatorInjectedFilePath,
   ValidatorIsDNS1123SubDomain,
   ValidatorIsDNS123Label,
   ValidatorIsEnvVarName,
   ValidatorIsWildcardDNS1123SubDomain,
-  ValidatorVolumeSize,
   ValidatorMemory,
-  ValidatorCPU,
-  ValidatorSchedule,
-  ValidatorInjectedFilePath,
   ValidatorRegistryHost,
+  ValidatorSchedule,
+  ValidatorVolumeSize,
 } from "forms/validator";
 
 test("ValidatorIsEnvVarName", () => {
@@ -232,6 +234,39 @@ test("ValidatorIsWildcardDNS1123SubDomain", () => {
   for (let val of badValues) {
     expect(ValidatorIsWildcardDNS1123SubDomain(val)).not.toBeUndefined();
   }
+});
+
+test("ValidatorArrayOfIsValidHostInCertificate", () => {
+  expect(ValidatorArrayOfIsValidHostInCertificate([])).not.toBeUndefined();
+  expect(
+    ValidatorArrayOfIsValidHostInCertificate([
+      "*.example.com",
+      "*.bar.com",
+      "a.com",
+      "*.foo.bar.com",
+      "___.foo.bar",
+      "_-_.foo.bar",
+      "_0_.foo.bar",
+      "*._.foo.bar",
+      "*._-_.foo.bar",
+    ]),
+  ).toBeUndefined();
+
+  const badCases = [
+    "*.*.bar.com",
+    "*.foo.*.com",
+    "*bar.com",
+    "f*.bar.com",
+    "*",
+    "__.com",
+    "-.foo.com",
+    "_-.foo.com",
+    "*.abc.-_.com",
+  ];
+
+  expect(ValidatorArrayOfIsValidHostInCertificate(badCases)).toEqual(
+    Array(badCases.length).fill(InvalidHostInCertificateErrorMessage),
+  );
 });
 
 test("ValidatorArrayOfDIsWildcardDNS1123SubDomain", () => {

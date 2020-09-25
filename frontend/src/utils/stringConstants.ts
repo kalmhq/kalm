@@ -4,7 +4,7 @@
  * This flat strings map is probably sufficient for now, but we should
  * replace this with a sophisticated solution if Localization is ever needed.
  */
-const stringConstants = {
+export const StringConstants = {
   APP_NAME: "Kalm",
   LIMIT_NOT_SET: "Limit Not Set",
   REQUEST_NOT_SET: "Request Not Set",
@@ -77,12 +77,12 @@ const stringConstants = {
   NEW_APP_BUTTON: "Create App",
   CERT_AUTO: "Automatic Certification with Let's Encrypt",
   CERT_AUTO_DESC:
-    "Use a certificate signed by Let's Encrypt. Safe and fast. Renewing and updating are fully-automatic.",
+    "Use a certificate signed by Let's Encrypt. Safe and fast. Renewing and updating are fully-automatic. Wildcard certificate is supported.",
   CERT_UPLOAD: "Use an existing certificate",
   CERT_UPLOAD_DESC: "Use an existing certificate. You are responsible for renewal.",
-  CERT_DNS01_WILDCARD: "Automatic certification for wildcard domains with Let's Encrypt",
-  CERT_DNS01_WILDCARD_DESC:
-    "Use a certificate signed by Let's Encrypt for wildcard domains. Safe and fast. Renewing and updating are fully-automatic.",
+  CERT_DNS01: "Automatic certification for domains with Let's Encrypt",
+  CERT_DNS01_DESC:
+    "Use a certificate signed by Let's Encrypt for domains. Safe and fast. Renewing and updating are fully-automatic.",
   CERT_DNS01_SERVER_NOT_READY: "Please config and runing ACME DNS Server first.",
   NODES_INFO_BOX_TEXT:
     "Data and metrics regarding nodes in the cluster is displayed here. For cluster administration operations, please see platform specific instructions.",
@@ -119,4 +119,4 @@ const stringConstants = {
   NO_PERMISSION_TIPS: "No permission to view this, please contact with admin.",
 };
 
-export default stringConstants;
+export default StringConstants;

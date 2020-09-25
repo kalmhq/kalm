@@ -1,18 +1,21 @@
 import React from "react";
-import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { Certificate, dns01Issuer, http01Issuer } from "types/certificate";
 import { BasePage } from "pages/BasePage";
 import { RootState } from "reducers";
 import { RouteComponentProps, withRouter } from "react-router-dom";
-import { FlexRowItemCenterBox } from "widgets/Box";
 import { KPanel } from "widgets/KPanel";
 import DomainStatus, { acmePrefix } from "widgets/DomainStatus";
 import { Loading } from "widgets/Loading";
-import { CollapseWrapper } from "widgets/CollapseWrapper";
-import { ResourceNotFound } from "widgets/ResourceNotFound";
 import { AcmeServerGuide, DNSConfigGuide } from "widgets/AcmeServerGuide";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { deleteCertificateAction } from "actions/certificate";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { push } from "connected-react-router";
+import { CertificateNotFound } from "pages/Certificate/NotFound";
+import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -24,20 +27,7 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-const styles = (theme: Theme) =>
-  createStyles({
-    root: {},
-    action: {
-      padding: theme.spacing(1),
-      borderRadius: 4,
-      color: "#FFF",
-      backgroundColor: "#000",
-      overflowX: "auto",
-    },
-    key: {
-      width: 60,
-    },
-  });
+const styles = (theme: Theme) => createStyles({});
 
 export interface Props
   extends ReturnType<typeof mapStateToProps>,
@@ -49,114 +39,86 @@ interface State {}
 
 class CertificateDetailRaw extends React.PureComponent<Props, State> {
   private renderDomainGuide = (cert: Certificate | undefined) => {
-    const { classes, ingressIP, acmeServer } = this.props;
+    const { ingressIP, acmeServer } = this.props;
+
     if (cert === undefined) {
       return null;
     } else {
       if (cert.httpsCertIssuer === http01Issuer) {
         const domains = cert.domains;
         return (
-          <Box mt={1}>
-            <Box className={classes.key}>Domains</Box>
-            <Box pl={0} pt={1}>
-              {domains?.map((domain) => {
-                return (
-                  <Box key={domain}>
-                    <CollapseWrapper
-                      title={
-                        <FlexRowItemCenterBox>
-                          {/* <DomainStatus domain={domain} ipAddress={ingressIP} mr={1} /> */}
-                          {domain}
-                        </FlexRowItemCenterBox>
-                      }
-                      showIcon={true}
-                      defaultOpen={true}
-                    >
-                      <Box p={1}>
-                        <Box mb={1}>Add a A Record</Box>
-                        <DNSConfigGuide domain={domain} type="A" aRecord={ingressIP} />
-                      </Box>
-                    </CollapseWrapper>
-                  </Box>
-                );
-              })}
-            </Box>
-          </Box>
+          <>
+            {domains?.map((domain) => {
+              return <DNSConfigGuide domain={domain} type="A" aRecord={ingressIP} />;
+            })}
+          </>
         );
       } else if (cert.httpsCertIssuer === dns01Issuer) {
         if (!acmeServer || !acmeServer.ready) {
           const domains = cert.domains;
           return (
-            <Box>
-              <Box className={classes.key}>Domains</Box>
-              <Box pl={0} pt={1}>
-                {domains?.map((domain) => {
-                  return (
-                    <FlexRowItemCenterBox key={domain}>
-                      <DomainStatus domain={acmePrefix + domain} cnameDomain={""} mr={1} />
-                      {domain}
-                    </FlexRowItemCenterBox>
-                  );
-                })}
-              </Box>
-            </Box>
+            <>
+              {domains?.map((domain) => {
+                return <DomainStatus domain={acmePrefix + domain} cnameDomain={""} mr={1} />;
+              })}
+            </>
           );
         } else {
           const domains = cert.wildcardCertDNSChallengeDomainMap;
           if (domains) {
             return (
-              <Box>
-                <Box className={classes.key}>Domains</Box>
-                <Box pl={0} pt={1}>
-                  {Object.keys(domains).map((domain: string) => {
-                    const ns = domains[domain];
-                    return (
-                      <Box key={domain}>
-                        <CollapseWrapper
-                          title={
-                            <FlexRowItemCenterBox>
-                              {/* <DomainStatus domain={acmePrefix + domain} cnameDomain={ns} mr={1} /> */}
-                              {domain}
-                            </FlexRowItemCenterBox>
-                          }
-                          defaultOpen={true}
-                          showIcon={true}
-                        >
-                          <Box p={1}>
-                            <Box mb={1}>Add a CNAME Record</Box>
-                            <DNSConfigGuide domain={domain} type="NS" cnameRecord={ns} />
-                          </Box>
-                        </CollapseWrapper>
-                      </Box>
-                    );
-                  })}
-                </Box>
-              </Box>
+              <>
+                {Object.keys(domains).map((domain: string) => {
+                  const ns = domains[domain];
+                  return (
+                    <Box key={domain}>
+                      <DNSConfigGuide domain={domain} type="NS" cnameRecord={ns} />
+                    </Box>
+                  );
+                })}
+              </>
             );
           }
         }
       } else {
         const domains = cert.domains;
+
         return (
-          <Box>
-            <Box className={classes.key}>Domains</Box>
-            <Box pl={10} pt={1}>
-              {domains?.map((domain) => {
-                return (
-                  <Box key={domain}>
-                    <FlexRowItemCenterBox>{domain}</FlexRowItemCenterBox>
-                  </Box>
-                );
-              })}
-            </Box>
-          </Box>
+          <>
+            {domains?.map((domain) => {
+              return <Box key={domain}>{domain}</Box>;
+            })}
+          </>
         );
       }
     }
   };
 
+  private renderSecondaryHeader() {
+    const { dispatch, location } = this.props;
+    const coms = location.pathname.split("/");
+    const certName = coms[coms.length - 1];
+
+    return (
+      <DeleteButtonWithConfirmPopover
+        useText
+        popupId="delete-certificate-popup"
+        popupTitle="DELETE CERTIFICATE?"
+        confirmedAction={async () => {
+          try {
+            await dispatch(deleteCertificateAction(certName));
+            await dispatch(setSuccessNotificationAction(`Successfully deleted certificate '${certName}'`));
+            dispatch(push("/certifications"));
+          } catch {
+            dispatch(setErrorNotificationAction());
+          }
+        }}
+      />
+    );
+  }
+
   public render() {
-    const { classes, certificates, location, isLoading, isFirstLoaded, acmeServer } = this.props;
+    const { certificates, location, isLoading, isFirstLoaded, acmeServer } = this.props;
     if (isLoading && !isFirstLoaded) {
       return <Loading />;
     }
@@ -167,52 +129,35 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
     const certInfo = certInfoList[0];
 
     if (!certInfo) {
-      return (
-        <BasePage>
-          <Box p={2}>
-            <ResourceNotFound
-              text="Certificate not found"
-              redirect={`/applications`}
-              redirectText="Go back to Apps List"
-            />
-          </Box>
-        </BasePage>
-      );
+      return <CertificateNotFound />;
     }
 
     return (
-      <BasePage>
-        <div className={classes.root}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={12} md={12}>
-              <Box p={2}>
-                <KPanel title="Certificate Info">
-                  <Box p={2}>
-                    <FlexRowItemCenterBox>
-                      <Box className={classes.key}>Name</Box>
-                      <Box pl={2} />
-                      {certName}
-                    </FlexRowItemCenterBox>
-                    <FlexRowItemCenterBox>
-                      <Box className={classes.key}>Type</Box>
-                      <Box pl={2} />
-                      {certInfo?.isSelfManaged ? "Externally Uploaded" : certInfo?.httpsCertIssuer}
-                    </FlexRowItemCenterBox>
+      <BasePage secondHeaderRight={this.renderSecondaryHeader()}>
+        <Box p={2}>
+          <KPanel title="Certificate Info">
+            <Box p={2}>
+              <VerticalHeadTable
+                items={[
+                  { name: "Name", content: certName },
+                  {
+                    name: "Type",
+                    content: certInfo?.isSelfManaged ? "Externally Uploaded" : certInfo?.httpsCertIssuer,
+                  },
+                  { name: "Status", content: certInfo?.ready ? certInfo?.ready : "Not Ready" },
+                ]}
+              />
+            </Box>
+          </KPanel>
 
-                    <FlexRowItemCenterBox>
-                      <Box className={classes.key}>Status</Box>
-                      <Box pl={2} />
-                      {certInfo?.ready ? certInfo?.ready : "Not Ready"}
-                    </FlexRowItemCenterBox>
+          <Box mt={2}>
+            <KPanel title="Domains">
+              <Box p={2}>{this.renderDomainGuide(certInfo)}</Box>
+            </KPanel>
+          </Box>
+        </Box>
 
-                    {this.renderDomainGuide(certInfo)}
-                  </Box>
-                </KPanel>
-              </Box>
-              <AcmeServerGuide acmeServer={acmeServer} cert={certInfo} />
-            </Grid>
-          </Grid>
-        </div>
+        <AcmeServerGuide acmeServer={acmeServer} cert={certInfo} />
       </BasePage>
     );
   }

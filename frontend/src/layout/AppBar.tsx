@@ -21,7 +21,7 @@ import {
 } from "widgets/Icon";
 import { ThemeToggle } from "theme/ThemeToggle";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import stringConstants from "utils/stringConstants";
+import StringConstants from "utils/stringConstants";
 import Button from "@material-ui/core/Button";
 import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
 import { stopImpersonating } from "api/realApi/index";
@@ -151,8 +151,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     return (
       <div>
         <IconButtonWithTooltip
-          tooltipTitle={stringConstants.APP_AUTH_TOOLTIPS}
-          aria-label={stringConstants.APP_AUTH_TOOLTIPS}
+          tooltipTitle={StringConstants.APP_AUTH_TOOLTIPS}
+          aria-label={StringConstants.APP_AUTH_TOOLTIPS}
           aria-haspopup="true"
           onClick={(event: React.MouseEvent<HTMLElement>) => {
             this.setState({ authMenuAnchorElement: event.currentTarget });
@@ -209,6 +209,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
       </div>
     );
   }
+
   renderThemeIcon = () => {
     return <ThemeToggle />;
   };
@@ -217,8 +218,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     const { tutorialDrawerOpen, dispatch } = this.props;
     return (
       <IconButtonWithTooltip
-        tooltipTitle={stringConstants.APP_TUTORIAL_TOOLTIPS}
-        aria-label={stringConstants.APP_TUTORIAL_TOOLTIPS}
+        tooltipTitle={StringConstants.APP_TUTORIAL_TOOLTIPS}
+        aria-label={StringConstants.APP_TUTORIAL_TOOLTIPS}
         onClick={(event: React.MouseEvent<HTMLElement>) => {
           tutorialDrawerOpen ? dispatch(closeTutorialDrawerAction()) : dispatch(openTutorialDrawerAction());
         }}
@@ -260,7 +261,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
       case "ci":
         return "CI";
       case "metrics":
-        return stringConstants.APP_DASHBOARD_PAGE_NAME;
+        return StringConstants.APP_DASHBOARD_PAGE_NAME;
       default:
         return path;
     }

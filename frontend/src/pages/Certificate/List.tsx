@@ -115,17 +115,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
             />
           </>
         )}
-
-        {/* <IconButtonWithTooltip
-          tooltipTitle="Delete"
-          aria-label="delete"
-          onClick={() => {
-            blinkTopProgressAction();
-            this.showDeleteConfirmDialog(cert);
-          }}
-        >
-          <DeleteIcon />
-        </IconButtonWithTooltip> */}
       </>
     );
   };
