@@ -13,7 +13,7 @@ import { KalmLogo2Icon, KalmTextLogoIcon } from "widgets/Icon";
 const styles = (theme: Theme) =>
   createStyles({
     loginPaper: {
-      backgroundColor: theme.palette.type === "light" ? theme.palette.primary.main : "#110460",
+      backgroundColor: theme.palette.type === "light" ? theme.palette.primary.main : "",
       height: "286px",
       width: "100%",
       position: "fixed",
