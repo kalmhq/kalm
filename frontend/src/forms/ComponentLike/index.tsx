@@ -37,7 +37,7 @@ import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle1 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
-import { makeSelectOption } from "../Basic/select";
+import { makeSelectOption } from "../Final/select";
 import { FinalTextField } from "../Final/textfield";
 import {
   ValidatorCPU,
