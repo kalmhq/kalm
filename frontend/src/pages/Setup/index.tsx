@@ -389,6 +389,12 @@ Password: ${password}`}</pre>
       dispatch(setErrorNotificationAction(e.toString()));
     }
   };
+  private canReset = () => {
+    if (window.location.hostname === "localhost") {
+      return true;
+    }
+    return false;
+  };
 
   public render() {
     const { clusterInfo, isClusterInfoLoaded, isClusterInfoLoading } = this.props;
@@ -402,17 +408,43 @@ Password: ${password}`}</pre>
     }
 
     if (!clusterInfo.canBeInitialized) {
+      if (!this.canReset()) {
+        return (
+          <Box p={2}>
+            <Alert severity="error">
+              You cannot reconfigure Kalm in domain access mode, please open kalm with kubectl port-forward to localhost
+              and try agian.
+            </Alert>
+          </Box>
+        );
+      }
       return (
         <Box p={2}>
           Your cluster has been initialized already.
           <Box mt={2}>
-            If your cluster is not initialized properly, you can reset the initialization process. Note that your kalm
-            Single Sign-on configuration, kalm's own routing, and kalm's own certificate will be deleted. The remaining
-            applications will not be affected in any way.
-          </Box>{" "}
+            If you want to reset kalm, If your cluster is not initialized properly, you can reset the initialization
+            process.
+            <Box pt={2}>
+              <Alert severity="warning">
+                Note that reconfigurion will affect your Kalm's following configuration:
+                <Box pl={2} pt={2}>
+                  Single Sign-on will be reset
+                </Box>
+                <Box pl={2} pt={0}>
+                  Kalm's instance's domain may be changed
+                </Box>
+                <Box pl={2} pt={0}>
+                  Current Kalm's certificate will be delete
+                </Box>
+                <Box pl={2} pt={2}>
+                  All applications will safe in any way.
+                </Box>
+              </Alert>
+            </Box>
+          </Box>
           <Box mt={2}>
             <DangerButton onClick={this.reset}>Re-configure</DangerButton>
-          </Box>{" "}
+          </Box>
         </Box>
       );
     }

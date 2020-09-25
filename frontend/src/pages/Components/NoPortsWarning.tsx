@@ -1,7 +1,7 @@
 import { Box } from "@material-ui/core";
 import HelpIcon from "@material-ui/icons/Help";
 import React from "react";
-import { KTooltip } from "forms/Application/KTooltip";
+import { KTooltip } from "widgets/KTooltip";
 
 const Warning = ({ title, tooltip }: { title: string; tooltip: string }) => {
   return (
