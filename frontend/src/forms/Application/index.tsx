@@ -14,7 +14,7 @@ import { Application } from "types/application";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
-import { FormValueToReudxStoreListener } from "tutorials/formValueToReudxStoreListener";
+import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
 import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { ValidatorIsDNS123Label } from "../validator";
 import { FormDataPreview } from "forms/Final/util";
@@ -101,7 +101,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
         validate={(values) => finalValidateOrNotBlockByTutorial(values, tutorialState, form)}
         render={({ handleSubmit, submitting, dirty, values }: FormRenderProps<Application>) => (
           <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">
-            <FormValueToReudxStoreListener values={values} form={form} />
+            <FormTutorialHelper form={form} />
             <KPanel
               content={
                 <Box p={2} tutorial-anchor-id="application-form-name-field">
