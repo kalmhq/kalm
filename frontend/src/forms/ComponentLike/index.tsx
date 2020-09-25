@@ -7,7 +7,7 @@ import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/p
 import clsx from "clsx";
 import { push } from "connected-react-router";
 import arrayMutators from "final-form-arrays";
-import { KTooltip } from "forms/Application/KTooltip";
+import { KTooltip } from "widgets/KTooltip";
 import { Disks } from "forms/ComponentLike/Disks";
 import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
 import { FinalRadioGroupRender } from "forms/Final/radio";

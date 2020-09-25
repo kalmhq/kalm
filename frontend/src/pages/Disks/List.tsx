@@ -6,7 +6,7 @@ import { deletePersistentVolumeAction } from "actions/persistentVolume";
 import { blinkTopProgressAction } from "actions/settings";
 import { K8sApiPrefix } from "api/realApi";
 import { push } from "connected-react-router";
-import { KTooltip } from "forms/Application/KTooltip";
+import { KTooltip } from "widgets/KTooltip";
 import { StorageType } from "pages/Disks/StorageType";
 import React from "react";
 import { connect } from "react-redux";

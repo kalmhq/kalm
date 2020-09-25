@@ -3,7 +3,7 @@ import { grey } from "@material-ui/core/colors";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import * as chartjs from "chart.js";
 import { format } from "date-fns";
-import { KTooltip } from "forms/Application/KTooltip";
+import { KTooltip } from "widgets/KTooltip";
 import React from "react";
 // @ts-ignore
 import { ChartData, Line } from "react-chartjs-2";

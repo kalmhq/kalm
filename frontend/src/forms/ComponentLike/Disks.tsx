@@ -1,7 +1,7 @@
 import { Box, Button, Grid, TextField } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import HelpIcon from "@material-ui/icons/Help";
-import { KTooltip } from "forms/Application/KTooltip";
+import { KTooltip } from "widgets/KTooltip";
 import React from "react";
 import { Field } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
