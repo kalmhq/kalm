@@ -27,7 +27,7 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>
-              <ApplicationForm currentTab={"basic"} />
+              <ApplicationForm />
             </Grid>
           </Grid>
         </div>

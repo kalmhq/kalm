@@ -1,8 +1,5 @@
 import { Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
-import { FastField, Field, Form, FormikProps, withFormik } from "formik";
-import { RenderFormikSelectField } from "forms/Basic/select";
-import { KRenderThrottleFormikTextField } from "forms/Basic/textfield";
 import { ValidatorRequired } from "forms/validator";
 import React from "react";
 import { connect } from "react-redux";
@@ -12,6 +9,11 @@ import { RoleBinding, SubjectTypeGroup, SubjectTypeUser } from "types/member";
 import { default as sc } from "utils/stringConstants";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
+import { Field, Form, FormRenderProps } from "react-final-form";
+import { FinalSelectField } from "forms/Final/select";
+import { FinalTextField } from "forms/Final/textfield";
+import Grid from "@material-ui/core/Grid";
+import { FormDataPreview } from "forms/Final/util";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -28,108 +30,117 @@ interface OwnProps {
   isClusterLevel?: boolean;
 }
 
-interface Props
-  extends FormikProps<RoleBinding>,
-    WithStyles<typeof styles>,
-    ReturnType<typeof mapStateToProps>,
-    TDispatchProp,
-    OwnProps {}
+const clusterRolesOptions = [
+  { text: "Cluster Viewer", value: "clusterViewer", desc: "Read-only access in cluster scope" },
+  {
+    text: "Cluster Editor",
+    value: "clusterEditor",
+    desc: "All permissions except authorize cluster-level permissions to others",
+  },
+  { text: "Cluster Owner", value: "clusterOwner", desc: "All permissions" },
+];
 
-interface State {}
+const applicationRolesOptions = [
+  { text: "Viewer", value: "viewer", desc: "Read-only access in this application" },
+  {
+    text: "Editor",
+    value: "editor",
+    desc: "All permissions in this application except authorize to others",
+  },
+  { text: "Owner", value: "owner", desc: "All permissions in this application" },
+];
 
-class MemberFormRaw extends React.PureComponent<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {};
-  }
+interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp, OwnProps {}
 
+class MemberFormRaw extends React.PureComponent<Props> {
   public render() {
-    const { dirty, isSubmitting, isClusterLevel, values } = this.props;
-
-    const rolesOptions = isClusterLevel
-      ? [
-          { text: "Cluster Viewer", value: "clusterViewer" },
-          { text: "Cluster Editor", value: "clusterEditor" },
-          { text: "Cluster Owner", value: "clusterOwner" },
-        ]
-      : [
-          { text: "Viewer", value: "viewer" },
-          { text: "Editor", value: "editor" },
-          { text: "Owner", value: "owner" },
-        ];
-
+    const { isClusterLevel, initial, onSubmit } = this.props;
+    const rolesOptions = isClusterLevel ? clusterRolesOptions : applicationRolesOptions;
     return (
-      <Form>
-        <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
-        <Box mb={2}>
-          <KPanel
-            title="Grant role permissions to a user or a group"
-            content={
-              <Box p={2}>
-                <Box mb={2}>
-                  <Field
-                    name="subjectType"
-                    autoFocus
-                    component={RenderFormikSelectField}
-                    required
-                    label="Subject Type"
-                    validate={ValidatorRequired}
-                    helperText="Please select the subject type you want to grant permissions to"
-                    options={[
-                      { value: SubjectTypeUser, text: "User" },
-                      { value: SubjectTypeGroup, text: "Group" },
-                    ]}
-                  />
-                </Box>
+      <Form
+        initialValues={initial}
+        keepDirtyOnReinitialize
+        onSubmit={onSubmit}
+        render={({ handleSubmit, submitting, dirty, values }: FormRenderProps<RoleBinding>) => (
+          <form onSubmit={handleSubmit}>
+            <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <Box mb={2}>
+              <KPanel
+                title="Grant role permissions to a user or a group"
+                content={
+                  <Box p={2}>
+                    <Grid container spacing={2}>
+                      <Grid item sm={6}>
+                        <Field
+                          name="subjectType"
+                          autoFocus
+                          component={FinalSelectField}
+                          required
+                          label="Subject Type"
+                          validate={ValidatorRequired}
+                          helperText="Please select the subject type you want to grant permissions to"
+                          options={[
+                            {
+                              value: SubjectTypeUser,
+                              text: "User",
+                              desc: "Grant permission for a single user. You need to provide the user's email address.",
+                            },
+                            {
+                              value: SubjectTypeGroup,
+                              text: "Group",
+                              desc:
+                                "Grant permission for every member in a group. You need to provide the group's name.",
+                            },
+                          ]}
+                        />
+                      </Grid>
+                      <Grid item sm={6}>
+                        <Field
+                          name="role"
+                          component={FinalSelectField}
+                          label="Role"
+                          placeholder="Select a role"
+                          validate={ValidatorRequired}
+                          options={rolesOptions}
+                        />
+                      </Grid>
+                    </Grid>
 
-                <Box mb={2}>
-                  <Field
-                    component={KRenderThrottleFormikTextField}
-                    name="subject"
-                    label="Subject"
-                    validate={ValidatorRequired}
-                    placeholder={
-                      values.subjectType === SubjectTypeUser
-                        ? "e.g. user@example.com"
-                        : "e.g. <github-org-name>:<team-name> or <gitlab-group-name>"
-                    }
-                    helperText={
-                      values.subjectType === SubjectTypeUser
-                        ? "Please type the user email"
-                        : "Please type the group name"
-                    }
-                  />
-                </Box>
+                    <Box mb={2}>
+                      <Field
+                        component={FinalTextField}
+                        name="subject"
+                        label={values.subjectType === SubjectTypeUser ? "User Email" : "Group Name"}
+                        validate={ValidatorRequired}
+                        placeholder={
+                          values.subjectType === SubjectTypeUser
+                            ? "e.g. user@example.com"
+                            : "e.g. <github-org-name>:<team-name> or <gitlab-group-name>"
+                        }
+                        helperText={
+                          values.subjectType === SubjectTypeUser
+                            ? "Please type the user email"
+                            : "Please type the group name"
+                        }
+                      />
+                    </Box>
+                  </Box>
+                }
+              />
 
-                <FastField
-                  name="role"
-                  component={RenderFormikSelectField}
-                  label="Role"
-                  placeholder="Select a role"
-                  validate={ValidatorRequired}
-                  options={rolesOptions}
-                />
+              <FormDataPreview />
+
+              <Box mt={2}>
+                <Button color="primary" variant="contained" type="submit">
+                  {values.subjectType === SubjectTypeUser ? "Grant permissions to User" : "Grant permissions to Group"}
+                </Button>
               </Box>
-            }
-          />
-          <Box mt={2}>
-            <Button color="primary" variant="contained" type="submit">
-              {values.subjectType === SubjectTypeUser ? "Grant permissions to User" : "Grant permissions to Group"}
-            </Button>
-          </Box>
-        </Box>
-      </Form>
+            </Box>
+          </form>
+        )}
+      />
     );
   }
 }
 
-const ConnectedForm = connect(mapStateToProps)(withStyles(styles)(MemberFormRaw));
-
-export const MemberForm = withFormik<OwnProps, RoleBinding>({
-  mapPropsToValues: (props) => {
-    return props.initial;
-  },
-  handleSubmit: async (formValues, { props: { onSubmit } }) => {
-    await onSubmit(formValues);
-  },
-})(ConnectedForm);
+export const MemberForm = connect(mapStateToProps)(withStyles(styles)(MemberFormRaw));

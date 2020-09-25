@@ -1,37 +1,27 @@
-import {
-  Box,
-  Button,
-  Collapse,
-  Divider,
-  Grid,
-  Link,
-  List as MList,
-  ListItem,
-  ListItemText,
-  Tab,
-  Tabs,
-} from "@material-ui/core";
-import { grey } from "@material-ui/core/colors";
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
+import { Box, Button, Divider, Grid, Link, Tab, Tabs } from "@material-ui/core";
+import grey from "@material-ui/core/colors/grey";
+import { createStyles, Theme, useTheme, withStyles, WithStyles } from "@material-ui/core/styles";
 import HelpIcon from "@material-ui/icons/Help";
 import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 import clsx from "clsx";
 import { push } from "connected-react-router";
-import { FastField, Field, FormikProps, getIn, withFormik } from "formik";
+import arrayMutators from "final-form-arrays";
 import { KTooltip } from "forms/Application/KTooltip";
-import { KFormikBoolCheckboxRender } from "forms/Basic/checkbox";
 import { Disks } from "forms/ComponentLike/Disks";
+import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
+import { FinalRadioGroupRender } from "forms/Final/radio";
+import { FinalSelectField } from "forms/Final/select";
+import { FormDataPreview } from "forms/Final/util";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
+import { cpuFormat, cpuParse, memoryFormat, memoryParse, NormalizePositiveNumber } from "forms/normalizer";
 import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 import React from "react";
+import { Field, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
-import { FormMidware } from "tutorials/formMidware";
-import { formikValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
-import { ApplicationDetails } from "types/application";
 import {
   ComponentLike,
   workloadTypeCronjob,
@@ -40,43 +30,30 @@ import {
   workloadTypeStatefulSet,
 } from "types/componentTemplate";
 import { PublicRegistriesList } from "types/registry";
-import { sizeStringToMi, sizeStringToNumber } from "utils/sizeConv";
 import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
+import { KalmConsoleIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle1 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
-import { KFormikRadioGroupRender } from "../Basic/radio";
-import { makeSelectOption, RenderFormikSelectField } from "../Basic/select";
+import { makeSelectOption } from "../Basic/select";
+import { FinalTextField } from "../Final/textfield";
 import {
-  KRenderThrottleFormikTextField,
-  KRenderFormikCommandTextField,
-  RenderFormikComplexValueTextField,
-} from "../Basic/textfield";
-import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
+  ValidatorCPU,
+  ValidatorMemory,
+  ValidatorIsDNS123Label,
+  ValidatorRequired,
+  ValidatorSchedule,
+} from "../validator";
+import { ComponentAccess } from "./Access";
 import { Envs } from "./Envs";
-import { KFormikRenderSelectLabels } from "./NodeSelector";
-import { Ports } from "./Ports";
+import { RenderSelectLabels } from "./NodeSelector";
+import { IngressHint, Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
-import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { FormikNormalizePositiveNumber } from "forms/normalizer";
-import { object, array } from "yup";
-
-const IngressHint = () => {
-  const [open, setOpen] = React.useState(false);
-
-  return (
-    <>
-      <Link style={{ cursor: "pointer" }} onClick={() => setOpen(!open)}>
-        {sc.PORT_ROUTE_QUESTION}
-      </Link>
-      <Box pt={1}>
-        <Collapse in={open}>{sc.PORT_ROUTE_ANSWER}</Collapse>
-      </Box>
-    </>
-  );
-};
+import { ProbeFields } from "./Probes";
+import { FormValueToReudxStoreListener } from "tutorials/formValueToReudxStoreListener";
+import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 
 const Configurations = "Config";
 const DisksTab = "Disks";
@@ -84,7 +61,8 @@ export const HealthTab = "Health";
 export const NetworkingTab = "Networking";
 const Scheduling = "Pod Scheduling";
 const Deploy = "Deployment Strategy";
-const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy];
+const Access = "Access";
+const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy, Access];
 
 const mapStateToProps = (state: RootState) => {
   const hash = window.location.hash;
@@ -157,53 +135,17 @@ const HelperTextSection: React.FC<{}> = ({ children }) => (
 );
 
 interface RawProps {
-  showDataView?: boolean;
-  showSubmitButton?: boolean;
-  submitButtonText?: string;
-  application?: ApplicationDetails;
   _initialValues: ComponentLike;
-  onSubmit: (formValues: ComponentLike) => void;
+  onSubmit: (values: ComponentLike) => Promise<void>;
 }
 
 interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props
-  extends FormikProps<ComponentLike>,
-    RouteComponentProps,
-    WithStyles<typeof styles>,
-    ConnectedProps,
-    RawProps {}
+export interface Props extends RouteComponentProps, WithStyles<typeof styles>, ConnectedProps, RawProps {}
 
 interface State {}
 
-const nameValidators = (value: any) => {
-  return ValidatorRequired(value) || ValidatorName(value);
-};
-
-const validate = (values: ComponentLike) => {
-  let errors: any = {};
-  const ports = values.ports;
-  if (ports && ports.length > 0) {
-    const protocolServicePorts = new Set<string>();
-
-    for (let i = 0; i < ports.length; i++) {
-      const port = ports[i]!;
-      const servicePort = port.servicePort || port.containerPort;
-
-      if (servicePort) {
-        const protocol = port.protocol;
-        const protocolServicePort = protocol + "-" + servicePort;
-
-        if (!protocolServicePorts.has(protocolServicePort)) {
-          protocolServicePorts.add(protocolServicePort);
-        } else if (protocolServicePort !== "") {
-          errors.ports = "Listening port on a protocol should be unique.  " + protocol + " - " + servicePort;
-        }
-      }
-    }
-  }
-  return errors;
-};
+type RenderProps = FormRenderProps<ComponentLike>;
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
@@ -219,12 +161,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     this.loadRequiredData();
   }
 
-  private renderReplicasOrSchedule = () => {
-    const workloadType = this.props.values.workloadType;
+  private renderReplicasOrSchedule = (workloadType?: string) => {
     if (workloadType === workloadTypeServer || workloadType === workloadTypeStatefulSet) {
       return (
-        <FastField
-          component={KRenderThrottleFormikTextField}
+        <Field
+          component={FinalTextField}
           validate={ValidatorRequired}
           name="replicas"
           margin
@@ -232,7 +173,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           helperText={sc.REPLICA_INPUT_HELPER}
           type="number"
           min="0"
-          normalize={FormikNormalizePositiveNumber}
+          parse={NormalizePositiveNumber}
         />
       );
     }
@@ -240,9 +181,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     if (workloadType === workloadTypeCronjob) {
       return (
         <>
-          <FastField
+          <Field
             name="schedule"
-            component={KRenderThrottleFormikTextField}
+            component={FinalTextField}
             placeholder="* * * * *"
             label="Cronjob Schedule"
             required
@@ -333,7 +274,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderDisks() {
+  private renderDisks(isEdit: boolean) {
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
@@ -343,127 +284,19 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <HelperTextSection>{sc.DISKS_HELPER}</HelperTextSection>
         <Grid item xs={12}>
-          <Disks />
+          <FormSpy subscription={{ values: true }}>
+            {({ values }: FormSpyRenderProps<ComponentLike>) => {
+              return <Disks isEdit={isEdit} workloadType={values.workloadType} componentName={values.name} />;
+            }}
+          </FormSpy>
         </Grid>
       </Grid>
     );
   }
 
-  private getDnsPolicyOptions() {
-    return [
-      {
-        value: "Default",
-        label: "Default",
-        explain: (
-          <>
-            The Pod inherits the name resolution configuration from the node that the pods run on. See{" "}
-            <a
-              target="_blank"
-              href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#inheriting-dns-from-the-node"
-              rel="noopener noreferrer"
-            >
-              related discussion
-            </a>{" "}
-            for more details.
-          </>
-        ),
-      },
-      {
-        value: "ClusterFirst",
-        label: "ClusterFirst",
-        explain: (
-          <>
-            Any DNS query that does not match the configured cluster domain suffix, such as “www.kubernetes.io”, is
-            forwarded to the upstream nameserver inherited from the node. Cluster administrators may have extra
-            stub-domain and upstream DNS servers configured. See{" "}
-            <a
-              target="_blank"
-              href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#impacts-on-pods"
-              rel="noopener noreferrer"
-            >
-              related discussion
-            </a>{" "}
-            for details on how DNS queries are handled in those cases.
-          </>
-        ),
-      },
-      {
-        value: "ClusterFirstWithHostNet",
-        label: "ClusterFirstWithHostNet",
-        explain: (
-          <>For Pods running with hostNetwork, you should explicitly set its DNS policy “ClusterFirstWithHostNet”.</>
-        ),
-      },
-      {
-        value: "None",
-        label: "None",
-        explain: <>It allows a Pod to ignore DNS settings from the Kubernetes environment.</>,
-      },
-    ];
-  }
-
-  private renderDnsPolicy() {
-    return (
-      <>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>DNS Policy</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <Grid item xs={12}>
-          <Field component={KFormikRadioGroupRender} name="dnsPolicy" options={this.getDnsPolicyOptions()} />
-        </Grid>
-      </>
-    );
-  }
-
-  private renderAdvancedHelper = (options: { title: string; content: React.ReactNode }[]) => {
-    return (
-      <MList dense={true}>
-        {options.map((x, index) => (
-          <ListItem key={index}>
-            <ListItemText
-              primary={x.title}
-              key={index}
-              secondary={x.content}
-              secondaryTypographyProps={{ color: "inherit" }}
-            />
-          </ListItem>
-        ))}
-      </MList>
-    );
-  };
-
-  // private renderPlugins() {
-  //   const { classes } = this.props;
-
-  //   const helper = (
-  //     <HelperContainer>
-  //       <Typography>
-  //         Plugins can affect running state of a program, or provide extra functionality for the programs.
-  //       </Typography>
-  //     </HelperContainer>
-  //   );
-
-  //   return (
-  //     <>
-  //       <SectionTitle>
-  //         <Subtitle1>Plugins</Subtitle1>
-  //         <KTooltip title={helper}>
-  //           <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-  //         </KTooltip>
-  //       </SectionTitle>
-
-  //       <Grid container spacing={2}>
-  //         <Grid item xs={12}>
-  //           <Plugins />
-  //         </Grid>
-  //       </Grid>
-  //     </>
-  //   );
-  // }
-
   private renderCommandAndArgs() {
+    const theme = useTheme();
+
     return (
       <>
         <Grid item xs={12}>
@@ -475,8 +308,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <HelperTextSection>{sc.COMMAND_HELPER}</HelperTextSection>
         </Grid>
         <Grid item xs={12}>
-          <FastField
-            component={KRenderFormikCommandTextField}
+          <Field
+            component={FinalTextField}
+            startAdornment={<KalmConsoleIcon color={theme.palette.type === "light" ? "default" : "inherit"} />}
             name="command"
             label="Command"
             placeholder={sc.COMMAND_INPUT_PLACEHOLDER}
@@ -498,44 +332,47 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
   private renderHealth() {
     return (
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Readiness Probe</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <Grid item xs={8}>
-          {sc.READINESS_PROBE_HELPER}
-        </Grid>
-        <Grid item xs={12}>
-          <ReadinessProbe />
-        </Grid>
-        <Grid item xs={12}>
-          <Divider orientation="horizontal" color="inherit" />
-        </Grid>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Liveness Probe</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <HelperTextSection>{sc.LIVENESS_PROBE_HELPER}</HelperTextSection>
-        <Grid item xs={12}>
-          <LivenessProbe />
-        </Grid>
-      </Grid>
+      <FormSpy subscription={{ values: true }}>
+        {({
+          values: { ports, readinessProbe, livenessProbe },
+          form: { change },
+        }: FormSpyRenderProps<ComponentLike>) => {
+          return (
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <SectionTitle>
+                  <Subtitle1>Readiness Probe</Subtitle1>
+                </SectionTitle>
+              </Grid>
+              <Grid item xs={8}>
+                {sc.READINESS_PROBE_HELPER}
+              </Grid>
+              <Grid item xs={12}>
+                <ProbeFields name="readinessProbe" value={readinessProbe} ports={ports} change={change} />
+              </Grid>
+              <Grid item xs={12}>
+                <Divider orientation="horizontal" color="inherit" />
+              </Grid>
+              <Grid item xs={12}>
+                <SectionTitle>
+                  <Subtitle1>Liveness Probe</Subtitle1>
+                </SectionTitle>
+              </Grid>
+              <HelperTextSection>{sc.LIVENESS_PROBE_HELPER}</HelperTextSection>
+              <Grid item xs={12}>
+                <ProbeFields name="livenessProbe" value={livenessProbe} ports={ports} change={change} />
+              </Grid>
+            </Grid>
+          );
+        }}
+      </FormSpy>
     );
   }
 
   private renderNetworking() {
     return (
       <Grid container spacing={2}>
-        {/* <Grid item xs={12}>
-          <SectionTitle>
-          <Subtitle1>Networking</Subtitle1>
-          </SectionTitle>
-        </Grid> */}
         {this.renderPorts()}
-        {/* {this.renderDnsPolicy()} */}
       </Grid>
     );
   }
@@ -556,7 +393,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderScheduling() {
-    const { nodeLabels, classes } = this.props;
+    const { classes, nodeLabels } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
@@ -566,24 +403,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <FastField
-            component={RenderFormikComplexValueTextField}
+          <Field<string | undefined>
+            component={FinalTextField}
             name="cpuLimit"
             label="CPU Limit"
             validate={ValidatorCPU}
             placeholder={sc.CPU_INPUT_PLACEHOLDER}
-            type="number"
             min="0"
-            format={(value: any) => {
-              return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
-            }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return 0;
-              }
-              return !value ? undefined : value + "m";
-            }}
+            format={cpuFormat}
+            parse={cpuParse}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -596,25 +424,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <FastField
-            component={RenderFormikComplexValueTextField}
+          <Field<string | undefined>
+            component={FinalTextField}
             name="memoryLimit"
             label="Memory Limit"
             margin
             validate={ValidatorMemory}
             placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
-            type="number"
             min="0"
-            format={(value: any) => {
-              return !value ? "" : sizeStringToMi(value);
-            }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return 0;
-              }
-              return !value ? undefined : value + "Mi";
-            }}
+            format={memoryFormat}
+            parse={memoryParse}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -627,23 +446,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <FastField
-            component={RenderFormikComplexValueTextField}
+          <Field<string | undefined>
+            component={FinalTextField}
             name="cpuRequest"
             label="CPU Request"
             validate={ValidatorCPU}
             placeholder={sc.CPU_INPUT_PLACEHOLDER}
-            type="number"
-            format={(value: any) => {
-              return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
-            }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return 0;
-              }
-              return !value ? undefined : value + "m";
-            }}
+            format={cpuFormat}
+            parse={cpuParse}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -656,24 +466,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <FastField
-            component={RenderFormikComplexValueTextField}
+          <Field<string | undefined>
+            component={FinalTextField}
             name="memoryRequest"
             label="Memory Request"
             margin
             validate={ValidatorMemory}
             placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
-            type="number"
-            format={(value: any) => {
-              return !value ? "" : sizeStringToMi(value);
-            }}
-            parse={(value: any) => {
-              const integerValue = parseInt(value, 10);
-              if (!isNaN(integerValue) && integerValue < 0) {
-                return 0;
-              }
-              return !value ? undefined : value + "Mi";
-            }}
+            format={memoryFormat}
+            parse={memoryParse}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -685,27 +486,21 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        {/* <Grid item xs={12}>
-          <Field name="enableResourcesRequests" component={KBoolCheckboxRender} label={sc.SCHEDULING_RR_CHECKBOX} />
-        </Grid> */}
         <Grid item xs={12}>
           <SectionTitle>
             <Subtitle1>Nodes</Subtitle1>
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <FastField name="nodeSelectorLabels" component={KFormikRenderSelectLabels} nodeLabels={nodeLabels} />
+          <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
         </Grid>
         <Grid item xs={12}>
-          <FastField
+          <Field
             name="preferNotCoLocated"
-            component={KFormikBoolCheckboxRender}
+            component={FinalBoolCheckboxRender}
             label={sc.SCHEDULING_COLOCATE_CHECKBOX}
           />
         </Grid>
-        {/* <Grid item xs={6}>
-          <Field name="podAffinityType" component={KRadioGroupRender} options={this.getPodAffinityOptions()} />
-        </Grid> */}
       </Grid>
     );
   }
@@ -719,10 +514,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={8}>
-          <KFormikRadioGroupRender
-            onChange={this.props.handleChange}
+          <Field
+            // won't fix, https://github.com/final-form/react-final-form/issues/392
+            // type="radio"
             name="restartStrategy"
-            value={this.props.values.restartStrategy || "RollingUpdate"}
+            component={FinalRadioGroupRender}
             options={[
               {
                 value: "RollingUpdate",
@@ -759,11 +555,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </Link>
         </HelperTextSection>
         <Grid item xs={6}>
-          <FastField
-            component={KRenderThrottleFormikTextField}
+          <Field
+            component={FinalTextField}
             name="terminationGracePeriodSeconds"
             label="Termination Grace Period (seconds)"
-            normalize={FormikNormalizePositiveNumber}
+            parse={NormalizePositiveNumber}
             placeholder={sc.GRACEFUL_TERM_INPUT_PLACEHOLDER}
           />
         </Grid>
@@ -771,7 +567,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderTabDetails() {
+  private renderTabDetails(isEdit: boolean) {
     const { classes, currentTabIndex } = this.props;
 
     return (
@@ -783,7 +579,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {this.renderNetworking()}
         </div>
         <div className={`${this.tabs[currentTabIndex] === DisksTab ? "" : classes.displayNone}`}>
-          {this.renderDisks()}
+          {this.renderDisks(isEdit)}
         </div>
         <div className={`${this.tabs[currentTabIndex] === HealthTab ? "" : classes.displayNone}`}>
           {this.renderHealth()}
@@ -793,6 +589,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </div>
         <div className={`${this.tabs[currentTabIndex] === Deploy ? "" : classes.displayNone}`}>
           {this.renderUpgradePolicy()}
+        </div>
+        <div className={`${this.tabs[currentTabIndex] === Access ? "" : classes.displayNone}`}>
+          <FormSpy subscription={{ pristine: true, values: true }}>
+            {({ form: { change }, values }: FormSpyRenderProps<ComponentLike>) => (
+              <ComponentAccess ports={values.ports} change={change} protectedEndpoint={values.protectedEndpoint} />
+            )}
+          </FormSpy>
         </div>
       </>
     );
@@ -808,12 +611,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     dispatch(push(`${pathname}#${tab ? tab.replace(/\s/g, "") : ""}`));
   }
 
-  private showError(fieldName: string): boolean {
-    const { touched, errors } = this.props;
-
-    return !!getIn(touched, fieldName) && !!getIn(errors, fieldName);
-  }
-
   private handleChangeTab(event: React.ChangeEvent<{}>, value: number) {
     this.pushToTab(value);
   }
@@ -821,64 +618,58 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderTabs() {
     const { classes, currentTabIndex } = this.props;
     return (
-      <Tabs
-        className={clsx(classes.borderBottom, classes.tabsRoot)}
-        value={currentTabIndex}
-        variant="scrollable"
-        scrollButtons="auto"
-        indicatorColor="primary"
-        textColor="primary"
-        onChange={this.handleChangeTab.bind(this)}
-        aria-label="component form tabs"
-      >
-        {this.tabs.map((tab) => {
-          if (
-            (tab === Configurations &&
-              (this.showError("preInjectedFiles") || this.showError("env") || this.showError("command"))) ||
-            (tab === DisksTab && this.showError("volumes")) ||
-            (tab === HealthTab && (this.showError("livenessProbe") || this.showError("readinessProbe"))) ||
-            (tab === NetworkingTab && this.showError("ports")) ||
-            (tab === Scheduling &&
-              (this.showError("cpuLimit") || this.showError("memoryLimit") || this.showError("nodeSelectorLabels")))
-          ) {
-            return <Tab key={tab} label={tab} className={classes.hasError} />;
-          }
+      <FormSpy subscription={{ errors: true }}>
+        {({ errors }: FormSpyRenderProps<ComponentLike>) => {
+          return (
+            <Tabs
+              className={clsx(classes.borderBottom, classes.tabsRoot)}
+              value={currentTabIndex}
+              variant="scrollable"
+              scrollButtons="auto"
+              indicatorColor="primary"
+              textColor="primary"
+              onChange={this.handleChangeTab.bind(this)}
+              aria-label="component form tabs"
+            >
+              {this.tabs.map((tab) => {
+                if (
+                  this.tabs[currentTabIndex] !== tab &&
+                  ((tab === Configurations && (errors.preInjectedFiles || errors.env || errors.command)) ||
+                    (tab === NetworkingTab && errors.ports) ||
+                    (tab === DisksTab && errors.volumes) ||
+                    (tab === HealthTab && (errors.livenessProbe || errors.readinessProbe)) ||
+                    (tab === Scheduling && (errors.cpuLimit || errors.memoryLimit || errors.nodeSelectorLabels)))
+                ) {
+                  return <Tab key={tab} label={tab} className={classes.hasError} />;
+                }
 
-          return <Tab key={tab} label={tab} tutorial-anchor-id={tab} />;
-        })}
-      </Tabs>
+                return <Tab key={tab} label={tab} tutorial-anchor-id={tab} />;
+              })}
+            </Tabs>
+          );
+        }}
+      </FormSpy>
     );
   }
 
-  private renderMain() {
-    const { initialValues, values } = this.props;
-    let isEdit = false;
-    if (initialValues && initialValues.name) {
-      isEdit = true;
-    }
-
-    let hasVolumes = false;
-    if (values.volumes && values.volumes.length > 0) {
-      hasVolumes = true;
-    }
-
+  private renderMain(isEdit: boolean) {
     return (
       <Grid container spacing={2}>
         <Grid item xs={6}>
-          <FastField
+          <Field
             autoFocus
-            component={KRenderThrottleFormikTextField}
+            component={FinalTextField}
             id="component-name"
             name="name"
             label="Name"
-            validate={nameValidators}
+            validate={ValidatorIsDNS123Label}
             disabled={isEdit}
             helperText={isEdit ? "Name can't be changed." : sc.NAME_RULE}
           />
         </Grid>
         <Grid item xs={6}>
-          <FastField
-            component={KRenderThrottleFormikTextField}
+          <Field
+            component={FinalTextField}
             id="component-image"
             name="image"
             spellCheck={false}
@@ -890,25 +681,45 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
-            name="workloadType"
-            component={RenderFormikSelectField}
-            label="Type"
-            validate={ValidatorRequired}
-            disabled={isEdit || hasVolumes}
-            options={[
-              makeSelectOption(workloadTypeServer, "Service Component", sc.COMPONENT_TYPE_SERVICE_OPTION),
-              makeSelectOption(workloadTypeCronjob, "CronJob", sc.COMPONENT_TYPE_CRONJOB_OPTION),
-              makeSelectOption(workloadTypeDaemonSet, "DaemonSet", sc.COMPONENT_TYPE_DAEMON_OPTION),
-              makeSelectOption(workloadTypeStatefulSet, "StatefulSet", sc.COMPONENT_TYPE_STATEFUL_SET_OPTION),
-            ]}
-            helperText={!isEdit && hasVolumes ? "Type can't be changed after created disks" : ""}
-          />
+          <FormSpy subscription={{ values: true }}>
+            {({ values }: FormSpyRenderProps<ComponentLike>) => {
+              let hasVolumes = false;
+              if (values.volumes && values.volumes.length > 0) {
+                hasVolumes = true;
+              }
+
+              return (
+                <Field
+                  name="workloadType"
+                  component={FinalSelectField}
+                  label="Type"
+                  validate={ValidatorRequired}
+                  disabled={isEdit || hasVolumes}
+                  options={[
+                    makeSelectOption(workloadTypeServer, "Service Component", sc.COMPONENT_TYPE_SERVICE_OPTION),
+                    makeSelectOption(workloadTypeCronjob, "CronJob", sc.COMPONENT_TYPE_CRONJOB_OPTION),
+                    makeSelectOption(workloadTypeDaemonSet, "DaemonSet", sc.COMPONENT_TYPE_DAEMON_OPTION),
+                    makeSelectOption(workloadTypeStatefulSet, "StatefulSet", sc.COMPONENT_TYPE_STATEFUL_SET_OPTION),
+                  ]}
+                  helperText={!isEdit && hasVolumes ? "Type can't be changed after created disks" : ""}
+                />
+              );
+            }}
+          </FormSpy>
         </Grid>
-        <Grid item xs={6}>
-          {this.renderReplicasOrSchedule()}
-        </Grid>
-        {this.renderPrivateRegistryAlert()}
+
+        <FormSpy subscription={{ values: true }}>
+          {({ values }: FormSpyRenderProps<ComponentLike>) => {
+            return (
+              <>
+                <Grid item xs={6}>
+                  {this.renderReplicasOrSchedule(values.workloadType)}
+                </Grid>
+                {this.renderPrivateRegistryAlert(values.image)}
+              </>
+            );
+          }}
+        </FormSpy>
       </Grid>
     );
   }
@@ -936,10 +747,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return !registries.find((r) => r.host.includes(parts[0]));
   };
 
-  private renderPrivateRegistryAlert = () => {
-    const { values } = this.props;
-    const image = values.image;
-
+  private renderPrivateRegistryAlert = (image: string) => {
     if (!image || !this.isUnknownPrivateRegistry(image)) {
       return null;
     }
@@ -967,11 +775,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderDeployButton() {
-    const { classes, isSubmittingApplicationComponent, initialValues } = this.props;
-
-    // @ts-ignore
-    const isEdit = initialValues && initialValues.name;
+  private renderDeployButton(isEdit: boolean) {
+    const { classes, isSubmittingApplicationComponent } = this.props;
 
     return (
       <Grid container spacing={2}>
@@ -992,57 +797,58 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  public renderDirtyPrompt = () => {
-    const { dirty, isSubmitting } = this.props;
-    return <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />;
+  private renderFormValueToReudxStoreListener = () => {
+    return (
+      <FormSpy subscription={{ values: true }}>
+        {({ values }: { values: ComponentLike }) => {
+          return <FormValueToReudxStoreListener values={values} form={this.props.form} />;
+        }}
+      </FormSpy>
+    );
   };
 
   public render() {
-    const { handleSubmit, classes, values, form } = this.props;
+    const { classes, _initialValues, onSubmit, form, tutorialState } = this.props;
+    const isEdit = !!_initialValues.name;
     return (
-      <form onSubmit={handleSubmit} className={classes.root} id="component-form">
-        {this.renderDirtyPrompt()}
-        <FormMidware values={values} form={form} />
-        <KPanel
-          content={
-            <Box p={2} tutorial-anchor-id="component-from-basic">
-              {this.renderMain()}
+      <Form
+        // debug={process.env.REACT_APP_DEBUG === "true" ? console.log : undefined}
+        initialValues={_initialValues}
+        onSubmit={onSubmit}
+        subscription={{ submitting: true, pristine: true, dirty: true }}
+        keepDirtyOnReinitialize
+        validate={(values) => finalValidateOrNotBlockByTutorial(values, tutorialState, form)}
+        mutators={{
+          ...arrayMutators,
+        }}
+        render={({ handleSubmit, submitting, dirty }: RenderProps) => (
+          <form onSubmit={handleSubmit} className={classes.root} id="component-form">
+            {this.renderFormValueToReudxStoreListener()}
+            <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <KPanel
+              content={
+                <Box p={2} tutorial-anchor-id="component-from-basic">
+                  {this.renderMain(isEdit)}
+                </Box>
+              }
+            />
+            <Box mt={2}>
+              <KPanel
+                content={
+                  <>
+                    {this.renderTabs()}
+                    <Box p={2}>{this.renderTabDetails(isEdit)}</Box>
+                  </>
+                }
+              />
             </Box>
-          }
-        />
-        <Box mt={2}>
-          <KPanel
-            content={
-              <>
-                {this.renderTabs()}
-                <Box p={2}>{this.renderTabDetails()}</Box>
-              </>
-            }
-          />
-        </Box>
-        {process.env.REACT_APP_DEBUG === "true" ? (
-          <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
-        ) : null}
-        {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
-        {this.renderDeployButton()}
-      </form>
+            <FormDataPreview />
+            {this.renderDeployButton(isEdit)}
+          </form>
+        )}
+      />
     );
   }
 }
 
-const form = withFormik<ConnectedProps & RawProps & WithStyles<typeof styles> & RouteComponentProps, ComponentLike>({
-  mapPropsToValues: (props) => props._initialValues,
-  enableReinitialize: true,
-  validate: (values, props) => {
-    return validate(values) || formikValidateOrNotBlockByTutorial(values, props);
-  },
-  handleSubmit: async (formValues, { props: { onSubmit } }) => {
-    await onSubmit(formValues);
-  },
-  validationSchema: object().shape({
-    // @ts-ignore
-    env: array().of(object().unique("name", "Env names should be unique.")),
-  }),
-})(ComponentLikeFormRaw);
-
-export const ComponentLikeForm = connect(mapStateToProps)(withStyles(styles)(withRouter(form)));
+export const ComponentLikeForm = connect(mapStateToProps)(withStyles(styles)(withRouter(ComponentLikeFormRaw)));

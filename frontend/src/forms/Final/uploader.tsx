@@ -2,7 +2,7 @@ import { Button, makeStyles, OutlinedTextFieldProps, TextField } from "@material
 import React from "react";
 import { grey } from "@material-ui/core/colors";
 
-export const FormikUploader = ({
+export const Uploader = ({
   handleChange,
   touched,
   errorText,
@@ -82,7 +82,7 @@ export const FormikUploader = ({
         size="small"
         margin="dense"
         variant="outlined"
-        onChange={handleChange}
+        onChange={(event) => handleChange(event.target.value)}
         value={value}
       />
     </div>

@@ -29,7 +29,7 @@ class RegistryNewPageRaw extends React.PureComponent<Props, State> {
     return (
       <BasePage secondHeaderRight={<H6>{"Add Registry"}</H6>}>
         <Grid container spacing={2}>
-          <Grid item xs={8} sm={8} md={8}>
+          <Grid item xs={12} sm={12} md={8}>
             <RegistryForm onSubmit={this.submit} initial={newEmptyRegistry()} />
           </Grid>
         </Grid>

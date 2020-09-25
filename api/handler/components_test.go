@@ -62,7 +62,7 @@ func (suite *ComponentTestSuite) TestBasicRequestOfComponents() {
 		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace),
 		Body: resources.Component{
 			Name: "foobar",
-			ComponentSpec: v1alpha1.ComponentSpec{
+			ComponentSpec: &v1alpha1.ComponentSpec{
 				Image: "foo",
 			},
 		},
@@ -106,7 +106,7 @@ func (suite *ComponentTestSuite) TestBasicRequestOfComponents() {
 		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
 		Body: resources.Component{
 			Name: "foobar",
-			ComponentSpec: v1alpha1.ComponentSpec{
+			ComponentSpec: &v1alpha1.ComponentSpec{
 				Image: "foo2",
 			},
 		},
@@ -158,7 +158,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithPVCAsVolume() {
 	sc := "kalm-standard"
 	reqComp := resources.Component{
 		Name: "foobar-create-new-pv",
-		ComponentSpec: v1alpha1.ComponentSpec{
+		ComponentSpec: &v1alpha1.ComponentSpec{
 			Image: "foo",
 			Volumes: []v1alpha1.Volume{
 				{
@@ -244,7 +244,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 
 	reqComp := resources.Component{
 		Name: "foobar-reuse-pv",
-		ComponentSpec: v1alpha1.ComponentSpec{
+		ComponentSpec: &v1alpha1.ComponentSpec{
 			Image: "foo",
 			Volumes: []v1alpha1.Volume{
 				{
@@ -296,7 +296,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 func (suite *ComponentTestSuite) TestCreateComponentWithResourceRequirements() {
 	component := resources.Component{
 		Name: "component-with-resource-requirements",
-		ComponentSpec: v1alpha1.ComponentSpec{
+		ComponentSpec: &v1alpha1.ComponentSpec{
 			Image: "foo",
 			ResourceRequirements: &coreV1.ResourceRequirements{
 				Limits: map[coreV1.ResourceName]resource.Quantity{

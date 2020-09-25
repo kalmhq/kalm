@@ -8,7 +8,7 @@ const stringConstants = {
   APP_NAME: "Kalm",
   LIMIT_NOT_SET: "Limit Not Set",
   REQUEST_NOT_SET: "Request Not Set",
-  NAME_RULE: "Names can only use digits(0-9), lowercase letters(a-z), and dashes(-). Maximum length is 180 characters.",
+  NAME_RULE: "Names can only use digits(0-9), lowercase letters(a-z), and dashes(-). Maximum length is 63 characters.",
   PORT_ROUTE_QUESTION: "Want to have your container accessible to external sources?",
   COMPONENT_TYPE_SERVICE_OPTION: "Default choice - Suitable for most continuous services",
   COMPONENT_TYPE_CRONJOB_OPTION: "Scheduled tasks to be ran at specific times",
@@ -111,9 +111,9 @@ const stringConstants = {
   APP_DASHBOARD_PAGE_NAME: "Dashboard",
   APP_MEMBERS_PAGE_NAME: "Members",
   PROTECTED_ENDPOINT_PORT:
-    "Select the ports you want to protect. Leave blank to protected any ports of the selected component.",
+    "Select the ports you want to protect. Leave blank to protected all ports of this component.",
   PROTECTED_ENDPOINT_SPECIFIC_GROUPS:
-    "Select the groups you want to grant access permissions for the selected component. Leave blank to allow any sso member.",
+    "Select the groups you want to grant access permissions for this component. Leave blank to allow any sso member.",
   CANT_NOT_EDIT: "Can NOT edit this field",
   REGISTRY_VERIFIED_ERROR: "Error",
   NO_PERMISSION_TIPS: "No permission to view this, please contact with admin.",

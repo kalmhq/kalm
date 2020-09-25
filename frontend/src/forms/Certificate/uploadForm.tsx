@@ -1,24 +1,24 @@
-import { Button, Grid, Box } from "@material-ui/core";
+import { Box, Button, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
-import { Field, Form, Formik, FormikProps } from "formik";
-import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
-import { KRenderThrottleFormikTextField } from "forms/Basic/textfield";
-import { FormikUploader } from "forms/Basic/uploader";
-import { ValidatorHosts } from "forms/validator";
+import { setSuccessNotificationAction } from "actions/notification";
+import copy from "copy-to-clipboard";
+import { Uploader } from "forms/Final/uploader";
+import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
+import { FinalTextField } from "forms/Final/textfield";
+import { ValidatorHostsOld } from "forms/validator";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
+import { Field, FieldRenderProps, Form, FormRenderProps } from "react-final-form";
+import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import sc from "../../utils/stringConstants";
-import { selfManaged, CertificateFormType } from "types/certificate";
+import { CertificateFormType, selfManaged } from "types/certificate";
 import DomainStatus from "widgets/DomainStatus";
-import { connect } from "react-redux";
-import { Prompt } from "widgets/Prompt";
-import { Caption } from "widgets/Label";
-import { Link } from "react-router-dom";
 import { KPanel } from "widgets/KPanel";
-import copy from "copy-to-clipboard";
-import { setSuccessNotificationAction } from "actions/notification";
+import { Caption } from "widgets/Label";
+import { Prompt } from "widgets/Prompt";
+import sc from "../../utils/stringConstants";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   return {
@@ -69,14 +69,19 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  private renderSelfManagedFields = (formikProps: FormikProps<CertificateFormType>) => {
+  private renderSelfManagedFields = (props: FormRenderProps<CertificateFormType>) => {
     const { classes } = this.props;
-    const { setFieldValue, values, errors, touched } = formikProps;
+    const {
+      form: { change },
+      values,
+      errors,
+      touched,
+    } = props;
     return (
       <>
         <Grid item md={12}>
-          <FormikUploader
-            touched={touched.selfManagedCertContent}
+          <Uploader
+            touched={touched && touched.selfManagedCertContent}
             errorText={errors.selfManagedCertContent}
             inputlabel="Certificate file"
             inputid="upload-certificate"
@@ -84,10 +89,10 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
             name="selfManagedCertContent"
             margin="normal"
             id="certificate-selfManagedCertContent"
-            handleChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              setFieldValue("selfManagedCertContent", event.target.value);
-              const domains = extractDomainsFromCertificateContent(event.target.value);
-              setFieldValue("domains", domains);
+            handleChange={(value: string) => {
+              change("selfManagedCertContent", value);
+              const domains = extractDomainsFromCertificateContent(value);
+              change("domains", domains);
             }}
             multiline={true}
             rows={12}
@@ -95,8 +100,8 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
         <Grid item md={12}>
-          <FormikUploader
-            touched={touched.selfManagedCertPrivateKey}
+          <Uploader
+            touched={touched && touched.selfManagedCertPrivateKey}
             errorText={errors.selfManagedCertPrivateKey}
             inputlabel="Private Key"
             inputid="upload-private-key"
@@ -106,8 +111,8 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
             id="certificate-selfManagedCertPrivateKey"
             name="selfManagedCertPrivateKey"
             margin="normal"
-            handleChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              setFieldValue("selfManagedCertPrivateKey", event.target.value);
+            handleChange={(value: string) => {
+              change("selfManagedCertPrivateKey", value);
             }}
             value={values.selfManagedCertPrivateKey}
           />
@@ -130,47 +135,49 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
   public render() {
     const { onSubmit, initialValues, classes, isEdit, ingressIP, dispatch } = this.props;
     return (
-      <Formik
-        onSubmit={onSubmit}
-        initialValues={initialValues}
-        validate={this.validate}
-        enableReinitialize={false}
-        handleReset={console.log}
-      >
-        {(formikProps) => {
-          const { values, dirty, touched, errors, setFieldValue, isSubmitting } = formikProps;
+      <Form onSubmit={onSubmit} initialValues={initialValues} validate={this.validate}>
+        {(props) => {
+          const {
+            values,
+            dirty,
+            errors,
+            form: { change },
+            submitting,
+            handleSubmit,
+          } = props;
           const icons = values.domains.map((domain, index) =>
             Array.isArray(errors.domains) && errors.domains[index] ? undefined : <DomainStatus domain={domain} />,
           );
 
           if (!dirty && values.selfManagedCertContent && values.domains.length <= 0) {
             const domains = extractDomainsFromCertificateContent(values.selfManagedCertContent);
-            setFieldValue("domains", domains);
+            change("domains", domains);
           }
           return (
-            <Form className={classes.root} tutorial-anchor-id="certificate-form-upload">
-              <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <form className={classes.root} onSubmit={handleSubmit} tutorial-anchor-id="certificate-form-upload">
+              <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
               <KPanel
                 content={
                   <Box p={2}>
                     <Grid container spacing={0}>
                       <Grid item md={12}>
                         <Field
-                          component={KRenderThrottleFormikTextField}
+                          component={FinalTextField}
                           label="Certificate name"
                           name="name"
                           disabled={isEdit}
                           placeholder="Please type a certificate name"
                           id="certificate-name"
-                          helperText={!!errors.name && touched.name ? errors.name : ""}
                         />
                       </Grid>
                       <Grid item md={12}>
                         <Field
-                          component={KFreeSoloFormikAutoCompleteMultiValues}
+                          render={(props: FieldRenderProps<string[]>) => (
+                            <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
+                          )}
                           disabled={values.managedType === selfManaged}
                           name="domains"
-                          validate={ValidatorHosts}
+                          validate={ValidatorHostsOld}
                           icons={icons}
                           value={values.domains}
                           id="certificate-domains"
@@ -197,7 +204,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
                         />
                       </Grid>
                     </Grid>
-                    {values.managedType === selfManaged ? this.renderSelfManagedFields(formikProps) : null}
+                    {values.managedType === selfManaged ? this.renderSelfManagedFields(props) : null}
                   </Box>
                 }
               />
@@ -206,10 +213,10 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
                   {isEdit ? "Update" : "Create"}
                 </Button>
               </Box>
-            </Form>
+            </form>
           );
         }}
-      </Formik>
+      </Form>
     );
   }
 }

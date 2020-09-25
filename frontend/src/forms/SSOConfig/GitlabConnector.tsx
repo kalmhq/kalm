@@ -1,18 +1,17 @@
 import { Grid } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
-import { Field } from "formik";
-import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
+import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import React from "react";
+import { Field } from "react-final-form";
 import { connect, DispatchProp } from "react-redux";
 import { SSOGitlabConnector } from "types/sso";
 import { capitalize } from "utils/string";
 import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
-import { KRenderThrottleFormikTextField } from "../Basic/textfield";
+import { FinalTextField } from "../Final/textfield";
 import { ValidatorRequired } from "../validator";
 
 interface Props extends DispatchProp {
   connector: SSOGitlabConnector;
-  form: any;
   fieldName: string;
 }
 
@@ -35,7 +34,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
               <Grid container spacing={2}>
                 <Grid item xs>
                   <Field
-                    component={KRenderThrottleFormikTextField}
+                    component={FinalTextField}
                     name={`${fieldName}.name`}
                     label="Name"
                     placeholder="Give a name of this connector"
@@ -46,7 +45,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                 </Grid>
                 <Grid item xs>
                   <Field
-                    component={KRenderThrottleFormikTextField}
+                    component={FinalTextField}
                     name={`${fieldName}.config.baseURL`}
                     label="Gitlab Base URL"
                     placeholder="Please type Gitlab Base URL"
@@ -58,7 +57,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
               <Grid container spacing={2}>
                 <Grid item xs>
                   <Field
-                    component={KRenderThrottleFormikTextField}
+                    component={FinalTextField}
                     name={`${fieldName}.config.clientID`}
                     label="Client ID"
                     autoComplete={"false"}
@@ -70,7 +69,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                 </Grid>
                 <Grid item xs>
                   <Field
-                    component={KRenderThrottleFormikTextField}
+                    component={FinalTextField}
                     autoComplete={"false"}
                     name={`${fieldName}.config.clientSecret`}
                     label="Client Secret"
@@ -92,7 +91,8 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
               {/*</Box>*/}
               <Box mt={1}>
                 <Field
-                  component={KFreeSoloFormikAutoCompleteMultiValues}
+                  component={AutoCompleteMultiValuesFreeSolo}
+                  options={[]}
                   label="Groups"
                   name={`${fieldName}.config.groups`}
                   validate={ValidatorRequired}

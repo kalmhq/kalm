@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
@@ -44,6 +45,11 @@ func (h *ApiHandler) handleCreateRoleBinding(c echo.Context) (err error) {
 	roleBinding.Name = roleBinding.GetNameBaseOnRoleAndSubject()
 	roleBinding.Spec.Creator = getCurrentUser(c).Name
 
+	switch roleBinding.Spec.Role {
+	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
+		roleBinding.Namespace = controllers.KalmSystemNamespace
+	}
+
 	if err := h.resourceManager.Create(roleBinding); err != nil {
 		return err
 	}
@@ -60,6 +66,11 @@ func (h *ApiHandler) handleUpdateRoleBinding(c echo.Context) error {
 
 	if !h.clientManager.CanManageRoleBinding(getCurrentUser(c), roleBinding) {
 		return resources.InsufficientPermissionsError
+	}
+
+	switch roleBinding.Spec.Role {
+	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
+		roleBinding.Namespace = controllers.KalmSystemNamespace
 	}
 
 	var fetched v1alpha1.RoleBinding

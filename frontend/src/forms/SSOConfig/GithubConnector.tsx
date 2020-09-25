@@ -1,17 +1,18 @@
 import { Grid } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
-import { Field, FieldArray, getIn } from "formik";
-import { KFreeSoloFormikAutoCompleteMultiValues } from "forms/Basic/autoComplete";
+import { Alert } from "@material-ui/lab";
+import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import React from "react";
-import { GithubOrg, SSOGithubConnector } from "types/sso";
+import { Field, FormSpy, FormSpyRenderProps } from "react-final-form";
+import { FieldArray } from "react-final-form-arrays";
+import { GithubOrg, SSOConfig, SSOGithubConnector } from "types/sso";
 import { capitalize } from "utils/string";
 import { DeleteIcon, GithubIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
-import { KRenderThrottleFormikTextField } from "../Basic/textfield";
+import { FinalTextField } from "../Final/textfield";
 import { ValidatorRequired } from "../validator";
-import { Alert } from "@material-ui/lab";
 
 export const ValidatorOrgs = (values: any[], _allValues?: any, _props?: any, _name?: any) => {
   if (!values) return undefined;
@@ -23,63 +24,62 @@ export const ValidatorOrgs = (values: any[], _allValues?: any, _props?: any, _na
 
 class RenderGithubConnectorOrganizations extends React.Component<{
   name: string;
-  orgs?: GithubOrg[];
 }> {
   public render() {
-    const { name, orgs } = this.props;
+    const { name } = this.props;
 
     return (
-      <FieldArray
+      <FieldArray<GithubOrg>
         name={name}
-        render={(arrayHelpers) => (
+        render={({ fields }) => (
           <>
-            {orgs && orgs.length === 0 ? (
+            {fields.value && fields.value.length === 0 ? (
               <Box mt={2} mb={2}>
                 <Alert severity="error">{"You should at least configure one organization."}</Alert>
               </Box>
             ) : null}
 
-            {orgs &&
-              orgs.map((org, index) => {
-                let fieldName = `${name}.${index}`;
-                return (
-                  <Grid container spacing={2} key={fieldName}>
-                    <Grid item xs={3}>
-                      <Field
-                        component={KRenderThrottleFormikTextField}
-                        name={`${fieldName}.name`}
-                        label="Organization Name"
-                        placeholder="Please type a organization name"
-                        validate={ValidatorRequired}
-                        required
-                      />
-                    </Grid>
-
-                    <Grid item xs={8}>
-                      <Field
-                        component={KFreeSoloFormikAutoCompleteMultiValues}
-                        label="Teams"
-                        name={`${fieldName}.teams`}
-                        placeholder="Please type a team name"
-                        helperText="Multiple teams are allowed. After entering a team name, try to press enter."
-                      />
-                    </Grid>
-                    <Grid item xs={1}>
-                      <Box pt={1.5}>
-                        <IconButtonWithTooltip
-                          tooltipPlacement="top"
-                          tooltipTitle="Delete"
-                          aria-label="delete"
-                          size="small"
-                          onClick={() => arrayHelpers.remove(index)}
-                        >
-                          <DeleteIcon />
-                        </IconButtonWithTooltip>
-                      </Box>
-                    </Grid>
+            {fields.map((_, index) => {
+              let fieldName = `${name}.${index}`;
+              return (
+                <Grid container spacing={2} key={fieldName}>
+                  <Grid item xs={3}>
+                    <Field
+                      component={FinalTextField}
+                      name={`${fieldName}.name`}
+                      label="Organization Name"
+                      placeholder="Please type a organization name"
+                      validate={ValidatorRequired}
+                      required
+                    />
                   </Grid>
-                );
-              })}
+
+                  <Grid item xs={8}>
+                    <Field
+                      component={AutoCompleteMultiValuesFreeSolo}
+                      options={[]}
+                      label="Teams"
+                      name={`${fieldName}.teams`}
+                      placeholder="Please type a team name"
+                      helperText="Multiple teams are allowed. After entering a team name, try to press enter."
+                    />
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Box pt={1.5}>
+                      <IconButtonWithTooltip
+                        tooltipPlacement="top"
+                        tooltipTitle="Delete"
+                        aria-label="delete"
+                        size="small"
+                        onClick={() => fields.remove(index)}
+                      >
+                        <DeleteIcon />
+                      </IconButtonWithTooltip>
+                    </Box>
+                  </Grid>
+                </Grid>
+              );
+            })}
           </>
         )}
       />
@@ -89,28 +89,22 @@ class RenderGithubConnectorOrganizations extends React.Component<{
 
 interface Props {
   connector: SSOGithubConnector;
-  form: any;
   fieldName: string;
 }
 
 class RenderGithubConnectorRaw extends React.PureComponent<Props> {
-  private addOrganization = () => {
-    const {
-      fieldName,
-      form: { setFieldValue, values },
-    } = this.props;
-
-    const prevOrgs = getIn(values, `${fieldName}.config.orgs`);
+  private addOrganization = (prevOrgs: any[], change: any) => {
+    const { fieldName } = this.props;
 
     prevOrgs && prevOrgs.length > 0
-      ? setFieldValue(`${fieldName}.config.orgs`, [
+      ? change(`${fieldName}.config.orgs`, [
           ...prevOrgs,
           {
             name: "",
             teams: [],
           },
         ])
-      : setFieldValue(`${fieldName}.config.orgs`, [
+      : change(`${fieldName}.config.orgs`, [
           {
             name: "",
             teams: [],
@@ -119,11 +113,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
   };
 
   public render() {
-    const {
-      connector,
-      fieldName,
-      form: { values },
-    } = this.props;
+    const { connector, fieldName } = this.props;
 
     return (
       <Box p={2}>
@@ -138,7 +128,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
           <Grid container spacing={2}>
             <Grid item xs={8}>
               <Field
-                component={KRenderThrottleFormikTextField}
+                component={FinalTextField}
                 name={`${fieldName}.name`}
                 label="Name"
                 placeholder="Give a name of this connector"
@@ -150,7 +140,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
               <Grid container spacing={2}>
                 <Grid item xs>
                   <Field
-                    component={KRenderThrottleFormikTextField}
+                    component={FinalTextField}
                     name={`${fieldName}.config.clientID`}
                     label="Client ID"
                     autoComplete="disabled"
@@ -162,7 +152,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
                 </Grid>
                 <Grid item xs>
                   <Field
-                    component={KRenderThrottleFormikTextField}
+                    component={FinalTextField}
                     autoComplete={"false"}
                     name={`${fieldName}.config.clientSecret`}
                     label="Client Secret"
@@ -189,15 +179,23 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
               {/*</Box>*/}
 
               <Box mt={1}>
-                <RenderGithubConnectorOrganizations
-                  name={`${fieldName}.config.orgs`}
-                  orgs={getIn(values, `${fieldName}.config.orgs`)}
-                />
+                <RenderGithubConnectorOrganizations name={`${fieldName}.config.orgs`} />
               </Box>
 
-              <Button variant="outlined" color="primary" onClick={this.addOrganization} size="small">
-                Add an organization
-              </Button>
+              <FormSpy subscription={{ pristine: true }}>
+                {({ form: { change } }: FormSpyRenderProps<SSOConfig>) => {
+                  return (
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => this.addOrganization(connector.config.orgs, change)}
+                      size="small"
+                    >
+                      Add an organization
+                    </Button>
+                  );
+                }}
+              </FormSpy>
             </Grid>
             <Grid item xs={4}>
               <Subtitle1>Steps to get Client ID and Client Secret on Github</Subtitle1>

@@ -1,10 +1,7 @@
-import { Box, Button, Collapse, Grid } from "@material-ui/core";
+import { Box, Grid } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import Warning from "@material-ui/icons/Warning";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import { Field, FieldArray, getIn } from "formik";
-import { KAutoCompleteOption, KFormikAutoCompleteSingleValue } from "forms/Basic/autoComplete";
-import { KFormikRenderSlider } from "forms/Basic/slider";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -15,16 +12,16 @@ import {
   PortProtocolHTTP2,
   PortProtocolHTTPS,
 } from "types/componentTemplate";
-import { HttpRouteDestination } from "types/route";
+import { HttpRoute, HttpRouteDestination } from "types/route";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorRequired } from "../validator";
-
-interface FieldArrayComponentHackType {
-  destinations: HttpRouteDestination[];
-  errors: any;
-  touched: any;
-}
+import { Field, FieldRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
+import Button from "@material-ui/core/Button";
+import Collapse from "@material-ui/core/Collapse";
+import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
+import { AutoCompleteForRenderOption, AutoCompleteSingleValue } from "forms/Final/autoComplete";
+import { FinialSliderRender } from "forms/Final/slicer";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -33,21 +30,19 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface Props extends FieldArrayComponentHackType, ReturnType<typeof mapStateToProps> {}
+interface Props extends ReturnType<typeof mapStateToProps> {}
 
 class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
   private renderRows() {
-    const { services, activeNamespace, destinations } = this.props;
+    const { services, activeNamespace } = this.props;
 
-    const options: KAutoCompleteOption[] = [];
+    const options: AutoCompleteForRenderOption[] = [];
     services
       .filter((x) => {
         const ns = x.namespace;
 
-        // TODO should we ignore the system namespaces??
         return (
           ns !== "default" &&
-          ns !== "kalm-system" &&
           ns !== "kalm-operator" &&
           ns !== "kalm-imgconv" &&
           ns !== "kube-system" &&
@@ -80,7 +75,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
     return (
       <FieldArray
         name="destinations"
-        render={(arrayHelpers) => (
+        render={({ fields }: FieldArrayRenderProps<HttpRouteDestination, any>) => (
           <div>
             <Box mt={2} mr={2} mb={2}>
               <Button
@@ -90,7 +85,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
                 size="small"
                 id="add-target-button"
                 onClick={() =>
-                  arrayHelpers.push({
+                  fields.push({
                     host: "",
                     weight: 1,
                   })
@@ -99,18 +94,24 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
                 Add a target
               </Button>
             </Box>
-            <Collapse in={destinations.length > 1}>
+            <Collapse in={fields.value.length > 1}>
               <Alert className="alert" severity="info">
                 There are more than one target, traffic will be forwarded to each target by weight.
               </Alert>
             </Collapse>
-            {destinations &&
-              destinations.map((destination, index) => (
+            {fields.value &&
+              fields.value.map((destination, index) => (
                 <Grid container spacing={2} key={index} alignItems="center">
                   <Grid item xs={8} sm={8} md={6} lg={4} xl={4}>
                     <Field
                       name={`destinations.${index}.host`}
-                      component={KFormikAutoCompleteSingleValue}
+                      render={(props: FieldRenderProps<string>) => (
+                        <AutoCompleteSingleValue
+                          {...props}
+                          options={options.map((x) => x.value)}
+                          optionsForRender={options}
+                        />
+                      )}
                       label="Choose a target"
                       validate={ValidatorRequired}
                       options={options}
@@ -125,16 +126,14 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
                       }
                     />
                   </Grid>
-                  {destinations.length > 1 ? (
+                  {fields.value.length > 1 ? (
                     <Grid item md={2}>
                       <Field
                         name={`destinations.${index}.weight`}
-                        component={KFormikRenderSlider}
+                        render={(props: FieldRenderProps<number>) => (
+                          <FinialSliderRender {...props} step={1} min={0} max={10} />
+                        )}
                         label="Weight"
-                        step={1}
-                        min={0}
-                        max={10}
-                        disabled={destinations.length <= 1}
                       />
                     </Grid>
                   ) : null}
@@ -143,7 +142,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
                       tooltipPlacement="top"
                       tooltipTitle="Delete"
                       aria-label="delete"
-                      onClick={() => arrayHelpers.remove(index)}
+                      onClick={() => fields.remove(index)}
                     >
                       <DeleteIcon />
                     </IconButtonWithTooltip>
@@ -162,14 +161,17 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
   }
 
   public render() {
-    const { destinations, touched } = this.props;
     return (
       <div>
-        {getIn(touched, "destinations") && destinations && destinations.length === 0 ? (
-          <Box>
-            <Alert severity="error">{"You should at least configure one Targets."}</Alert>
-          </Box>
-        ) : null}
+        <FormSpy>
+          {({ touched, values }: FormSpyRenderProps<HttpRoute>) => {
+            return touched && touched["destinations"] && values.destinations.length === 0 ? (
+              <Box>
+                <Alert severity="error">{"You should at least configure one Targets."}</Alert>
+              </Box>
+            ) : null;
+          }}
+        </FormSpy>
         {this.renderRows()}
       </div>
     );

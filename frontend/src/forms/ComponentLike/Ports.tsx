@@ -1,5 +1,8 @@
-import { Box, Button, Fade, Grid, Paper, Popper } from "@material-ui/core";
-import { FastField, FieldArray, FieldArrayRenderProps, getIn } from "formik";
+import { Box, Button, Collapse, Fade, Grid, Link, Paper, Popper } from "@material-ui/core";
+import { Alert } from "@material-ui/lab";
+import { Field } from "react-final-form";
+import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
+import { normalizePort } from "forms/normalizer";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { anchorRef, bindPopper, InjectedProps } from "material-ui-popup-state";
 import React from "react";
@@ -11,36 +14,34 @@ import {
   PortProtocolTCP,
   PortProtocolUDP,
 } from "types/componentTemplate";
+import sc from "utils/stringConstants";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { PortChart } from "widgets/PortChart";
-import { RenderFormikSelectField } from "../Basic/select";
-import { KRenderThrottleFormikTextField } from "../Basic/textfield";
+import { FinalSelectField } from "../Final/select";
+import { FinalTextField } from "../Final/textfield";
 import { ValidatorContainerPortRequired, ValidatorPort, ValidatorRequired } from "../validator";
-import { FormikNormalizePort } from "forms/normalizer";
-import { Alert } from "@material-ui/lab";
 
-interface Props extends FieldArrayRenderProps {}
+interface Props extends FieldArrayRenderProps<ComponentLikePort, any> {}
 
 class RenderPorts extends React.PureComponent<Props> {
   private handlePush() {
-    this.props.push({ protocol: PortProtocolHTTP });
+    this.props.fields.push({ protocol: PortProtocolHTTP } as any);
   }
 
   private handleRemove(index: number) {
-    this.props.remove(index);
+    this.props.fields.remove(index);
   }
 
   private handleBlur(close: any, e: any) {
+    console.log("handleBlur", close);
     close();
-    this.props.form.handleBlur(e);
   }
 
   public render() {
-    const {
-      name,
-      form: { values, errors },
-    } = this.props;
+    const { fields } = this.props;
+    const name = fields.name;
+
     return (
       <>
         <Box mb={2}>
@@ -56,22 +57,22 @@ class RenderPorts extends React.PureComponent<Props> {
             </Button>
 
             {/* {submitFailed && error && <span>{error}</span>} */}
-            {errors.ports && typeof errors.ports === "string" ? (
+            {fields.error && typeof fields.error === "string" ? (
               <Box mt={2}>
-                <Alert severity="error">{errors.ports}</Alert>
+                <Alert severity="error">{fields.error}</Alert>
               </Box>
             ) : null}
           </Grid>
         </Box>
 
-        {getIn(values, name) &&
-          getIn(values, name).map((field: ComponentLikePort, index: number) => {
+        {fields.value &&
+          fields.value.map((field: ComponentLikePort, index: number) => {
             return (
               <Grid container spacing={2} key={index}>
                 <Grid item xs>
-                  <FastField
+                  <Field
                     name={`${name}.${index}.protocol`}
-                    component={RenderFormikSelectField}
+                    component={FinalSelectField}
                     required
                     label="Protocol"
                     validate={ValidatorRequired}
@@ -95,14 +96,14 @@ class RenderPorts extends React.PureComponent<Props> {
                             anchorRef(popupState)(c);
                           }}
                         >
-                          <FastField
+                          <Field<number | undefined>
                             onFocus={popupState.open}
-                            onBlur={this.handleBlur.bind(this, popupState.close)}
-                            component={KRenderThrottleFormikTextField}
+                            handleBlur={popupState.close}
+                            component={FinalTextField}
                             name={`${name}.${index}.containerPort`}
                             label="Container port"
                             placeholder="1~65535,not 443"
-                            normalize={FormikNormalizePort}
+                            parse={normalizePort}
                             validate={ValidatorContainerPortRequired}
                           />
                         </Grid>
@@ -137,14 +138,14 @@ class RenderPorts extends React.PureComponent<Props> {
                             anchorRef(popupState)(c);
                           }}
                         >
-                          <FastField
+                          <Field
                             onFocus={popupState.open}
-                            onBlur={this.handleBlur.bind(this, popupState.close)}
-                            component={KRenderThrottleFormikTextField}
+                            handleBlur={popupState.close}
+                            component={FinalTextField}
                             name={`${name}.${index}.servicePort`}
                             label="Service Port"
                             placeholder="Default to equal publish port"
-                            normalize={FormikNormalizePort}
+                            parse={normalizePort}
                             validate={ValidatorPort}
                           />
                         </Grid>
@@ -187,6 +188,42 @@ class RenderPorts extends React.PureComponent<Props> {
   }
 }
 
-export const Ports = (props: any) => {
-  return <FieldArray name="ports" component={RenderPorts} {...props} />;
+const ValidatorPorts = (values: ComponentLikePort[], _allValues?: any, _props?: any, _name?: any) => {
+  if (!values) return undefined;
+  const protocolServicePorts = new Set<string>();
+
+  for (let i = 0; i < values.length; i++) {
+    const port = values[i]!;
+    const servicePort = port.servicePort || port.containerPort;
+
+    if (servicePort) {
+      const protocol = port.protocol;
+      const protocolServicePort = protocol + "-" + servicePort;
+
+      if (!protocolServicePorts.has(protocolServicePort)) {
+        protocolServicePorts.add(protocolServicePort);
+      } else if (protocolServicePort !== "") {
+        return "Listening port on a protocol should be unique.  " + protocol + " - " + servicePort;
+      }
+    }
+  }
+};
+
+export const Ports = () => {
+  return <FieldArray name="ports" component={RenderPorts} validate={ValidatorPorts} />;
+};
+
+export const IngressHint = () => {
+  const [open, setOpen] = React.useState(false);
+
+  return (
+    <>
+      <Link style={{ cursor: "pointer" }} onClick={() => setOpen(!open)}>
+        {sc.PORT_ROUTE_QUESTION}
+      </Link>
+      <Box pt={1}>
+        <Collapse in={open}>{sc.PORT_ROUTE_ANSWER}</Collapse>
+      </Box>
+    </>
+  );
 };

@@ -1,6 +1,6 @@
 import { Box, createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import { FormikProps, withFormik, Field, Form } from "formik";
+import { Field, Form, FormRenderProps } from "react-final-form";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { RootState } from "reducers";
@@ -9,8 +9,9 @@ import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
-import { KRenderThrottleFormikTextField } from "../Basic/textfield";
-import { RequireNoSuffix, RequirePrefix, ValidatorName, ValidatorRequired } from "../validator";
+import { ValidatorRegistryHost, ValidatorIsDNS123Label, ValidatorRequired } from "../validator";
+import { FinalTextField } from "../Final/textfield";
+import { FormDataPreview } from "forms/Final/util";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -25,99 +26,90 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-export interface Props {
+type RenderProps = FormRenderProps<RegistryFormType>;
+
+interface ConnectedProps extends ReturnType<typeof mapStateToProps>, DispatchProp {}
+
+export interface Props extends ConnectedProps, WithStyles<typeof styles> {
   isEdit?: boolean;
   onSubmit: any;
   initial: RegistryFormType;
 }
 
-const validateHost = (value: any, _allValues?: any, _props?: any, _name?: any) => {
-  if (!value) return undefined;
-
-  return RequirePrefix("https://")(value) || RequireNoSuffix("/")(value);
-};
-
-class RegistryFormRaw extends React.PureComponent<
-  Props & FormikProps<RegistryFormType> & ReturnType<typeof mapStateToProps> & WithStyles<typeof styles> & DispatchProp
-> {
+class RegistryFormRaw extends React.PureComponent<Props> {
   public render() {
-    const { classes, isEdit, dirty, values, isSubmittingRegistry, isSubmitting } = this.props;
+    const { classes, isEdit, onSubmit, isSubmittingRegistry, initial } = this.props;
 
     return (
-      <Form className={classes.root} id="registry-form">
-        <Prompt when={dirty && !isSubmitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
-        <KPanel
-          content={
-            <Box p={2}>
-              <Grid container spacing={2}>
-                <Grid item md={12}>
-                  <Field
-                    name="name"
-                    label="Name"
-                    disabled={isEdit}
-                    component={KRenderThrottleFormikTextField}
-                    validate={ValidatorName}
-                    helperText={isEdit ? "Can't modify name" : sc.NAME_RULE}
-                  />
-                </Grid>
-                <Grid item md={12}>
-                  <Field
-                    name="username"
-                    label="Username"
-                    autoComplete="off"
-                    component={KRenderThrottleFormikTextField}
-                    validate={ValidatorRequired}
-                  />
-                </Grid>
-                <Grid item md={12}>
-                  <Field
-                    type="password"
-                    name="password"
-                    label="Password"
-                    autoComplete="off"
-                    component={KRenderThrottleFormikTextField}
-                    validate={ValidatorRequired}
-                  />
-                </Grid>
-                <Grid item md={12}>
-                  <Field
-                    name="host"
-                    label="Host"
-                    component={KRenderThrottleFormikTextField}
-                    validate={validateHost}
-                    placeholder="E.g. https://registry.kalm.dev"
-                    helperText={<span>Leave blank for private docker hub registry</span>}
-                  />
-                </Grid>
-              </Grid>
+      <Form
+        debug={process.env.REACT_APP_DEBUG === "true" ? console.log : undefined}
+        subscription={{ submitting: true, pristine: true }}
+        keepDirtyOnReinitialize
+        initialValues={initial}
+        onSubmit={onSubmit}
+        render={({ handleSubmit, submitting, pristine, dirty }: RenderProps) => (
+          <form onSubmit={handleSubmit} className={classes.root} id="registry-form">
+            <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <KPanel
+              content={
+                <Box p={2}>
+                  <Grid container spacing={2}>
+                    <Grid item md={12}>
+                      <Field
+                        name="name"
+                        label="Name"
+                        disabled={isEdit}
+                        component={FinalTextField}
+                        validate={ValidatorIsDNS123Label}
+                        helperText={isEdit ? "Can't modify name" : sc.NAME_RULE}
+                      />
+                    </Grid>
+                    <Grid item md={12}>
+                      <Field
+                        name="username"
+                        label="Username"
+                        autoComplete="off"
+                        component={FinalTextField}
+                        validate={ValidatorRequired}
+                      />
+                    </Grid>
+                    <Grid item md={12}>
+                      <Field
+                        name="password"
+                        htmlType="password"
+                        label="Password"
+                        title="Password"
+                        autoComplete="off"
+                        component={FinalTextField}
+                        validate={ValidatorRequired}
+                      />
+                    </Grid>
+                    <Grid item md={12}>
+                      <Field
+                        name="host"
+                        label="Host"
+                        component={FinalTextField}
+                        validate={ValidatorRegistryHost}
+                        placeholder="E.g. https://registry.kalm.dev"
+                        helperText={<span>Leave blank for private docker hub registry</span>}
+                      />
+                    </Grid>
+                  </Grid>
 
-              {process.env.REACT_APP_DEBUG === "true" ? (
-                <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
-              ) : null}
+                  <FormDataPreview />
+                </Box>
+              }
+            />
+            <Box pt={2}>
+              <CustomizedButton disabled={isSubmittingRegistry} type="submit" color="primary" variant="contained">
+                Save
+              </CustomizedButton>
             </Box>
-          }
-        />
-        <Box pt={2}>
-          <CustomizedButton disabled={isSubmittingRegistry} type="submit" color="primary" variant="contained">
-            Save
-          </CustomizedButton>
-        </Box>
-      </Form>
+          </form>
+        )}
+      />
     );
   }
 }
 
-const connectedForm = connect(mapStateToProps)(withStyles(styles)(RegistryFormRaw));
-
-export const RegistryForm = withFormik<Props, RegistryFormType>({
-  mapPropsToValues: (props) => {
-    return props.initial;
-  },
-  validate: (values: RegistryFormType) => {
-    let errors = {};
-    return errors;
-  },
-  handleSubmit: async (formValues, { props: { onSubmit } }) => {
-    await onSubmit(formValues);
-  },
-})(connectedForm);
+export const RegistryForm = connect(mapStateToProps)(withStyles(styles)(RegistryFormRaw));

@@ -22,7 +22,8 @@ import { newEmptyCertificateForm } from "types/certificate";
 import { newEmptyComponentLike } from "types/componentTemplate";
 import { newEmptyRouteForm } from "types/route";
 import { sleep } from "utils/testUtils";
-import { INPUT_DELAY } from "forms/Basic/textfield";
+
+const INPUT_DELAY = 500;
 
 configure({ adapter: new Adapter() });
 
@@ -95,7 +96,7 @@ describe("add certificate", () => {
 test("add application", async () => {
   const WrappedApplicationForm = class extends React.Component {
     public render() {
-      return <ApplicationForm currentTab={"basic"} />;
+      return <ApplicationForm />;
     }
   };
   const component = mount(

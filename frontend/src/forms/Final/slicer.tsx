@@ -1,26 +1,16 @@
-import { Slider, SliderProps, Typography } from "@material-ui/core";
-import { FieldProps } from "formik";
-import React from "react";
-import { ID } from "utils";
-
-interface Props {
-  label?: string;
-  min: number;
-  max: number;
-  step: number;
-  disabled?: boolean;
-}
-
 // value type is string
-export const KFormikRenderSlider = ({
+import { Slider, SliderProps, Typography } from "@material-ui/core";
+import { ID } from "utils";
+import React from "react";
+import { FieldRenderProps } from "react-final-form";
+
+export const FinialSliderRender = ({
   label,
   min,
   max,
   step,
-  disabled,
-  field: { name, value },
-  form: { setFieldValue },
-}: SliderProps & FieldProps & Props) => {
+  input: { onChange, value },
+}: SliderProps & FieldRenderProps<number>) => {
   const id = ID();
   return (
     <div>
@@ -31,14 +21,13 @@ export const KFormikRenderSlider = ({
       ) : null}
       <Slider
         value={value || 0}
-        onChangeCommitted={(_event: React.ChangeEvent<{}>, value: number | number[]) => setFieldValue(name, value)}
+        onChangeCommitted={(_event: React.ChangeEvent<{}>, value: number | number[]) => onChange(value)}
         aria-labelledby={id}
         valueLabelDisplay="auto"
         step={step}
         marks
         min={min}
         max={max}
-        disabled={disabled}
       />
     </div>
   );

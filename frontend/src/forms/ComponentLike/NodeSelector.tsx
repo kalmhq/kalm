@@ -3,7 +3,7 @@ import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import { FieldProps } from "formik";
+import { FieldRenderProps } from "react-final-form";
 import React from "react";
 import { NodeSelectorLabels } from "types/componentTemplate";
 
@@ -14,11 +14,10 @@ interface Props {
   nodeLabels: string[];
 }
 
-export const KFormikRenderSelectLabels = ({
+export const RenderSelectLabels = ({
   nodeLabels,
-  field: { name, value },
-  form: { values, setFieldValue },
-}: FilledTextFieldProps & FieldProps & Props) => {
+  input: { value, onChange },
+}: FilledTextFieldProps & FieldRenderProps<NodeSelectorLabels> & Props) => {
   const defaultValue: string[] = [];
   const inputValue = value as NodeSelectorLabels;
 
@@ -53,7 +52,7 @@ export const KFormikRenderSelectLabels = ({
           size={"small"}
         />
       )}
-      defaultValue={defaultValue}
+      value={defaultValue}
       onChange={(_, v: any) => {
         const value = v as string[];
 
@@ -65,7 +64,7 @@ export const KFormikRenderSelectLabels = ({
           nodeSelectorLabels[kv[0]] = kv[1];
         });
 
-        setFieldValue(name, nodeSelectorLabels);
+        onChange(nodeSelectorLabels);
       }}
     />
   );

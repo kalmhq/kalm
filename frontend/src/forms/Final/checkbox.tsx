@@ -1,35 +1,29 @@
 import { Box, Checkbox, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel } from "@material-ui/core";
-import { FieldProps, getIn } from "formik";
 import React from "react";
 import { KChip } from "widgets/Chip";
-import produce from "immer";
+import { FieldRenderProps } from "react-final-form";
+import { FieldArrayRenderProps } from "react-final-form-arrays";
 
-interface KFormikBoolCheckboxRenderProps {
+interface FinalBoolCheckboxRenderProps {
   label: React.ReactNode;
   title?: string;
   helperText?: string;
 }
 
-// For bool
-export const KFormikBoolCheckboxRender = ({
+export const FinalBoolCheckboxRender = ({
   title,
   helperText,
   label,
-  field: { name, value },
-  form: { setFieldValue, errors, touched },
-}: KFormikBoolCheckboxRenderProps & FieldProps) => {
-  const checked: boolean = !!value;
-  const error = getIn(errors, name);
-  const showError = !!error && !!getIn(touched, name);
+  input: { onChange, checked },
+  meta: { error, touched },
+}: FinalBoolCheckboxRenderProps & FieldRenderProps<string>) => {
+  const showError = !!error && touched;
 
   return (
     <FormControl fullWidth error={showError} style={{ marginTop: 8 }}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}
       <FormGroup row>
-        <FormControlLabel
-          control={<Checkbox checked={checked} onChange={(e) => setFieldValue(name, e.target.checked)} />}
-          label={label}
-        />
+        <FormControlLabel control={<Checkbox checked={checked} onChange={onChange} />} label={label} />
       </FormGroup>
       {showError ? (
         <FormHelperText>{error}</FormHelperText>
@@ -40,49 +34,43 @@ export const KFormikBoolCheckboxRender = ({
   );
 };
 
-interface KFormikCheckboxGroupRenderOption {
+interface FinalCheckboxGroupRenderOption {
   value: string;
   label: string;
   htmlColor?: string;
 }
 
-interface KFormikCheckboxGroupRenderProps extends FieldProps {
+interface FinalCheckboxGroupRenderProps {
   title?: string;
   helperText?: string;
-  options: KFormikCheckboxGroupRenderOption[];
+  options: FinalCheckboxGroupRenderOption[];
   componentType?: "Checkbox" | "Chip";
 }
 
 // For value type is string[]
-export const KFormikCheckboxGroupRender = ({
-  title,
-  options,
-  helperText,
-  componentType,
-  field: { name, value },
-  form: { setFieldValue, errors },
-}: KFormikCheckboxGroupRenderProps) => {
-  const showError = !!getIn(errors, name);
+export const FinalCheckboxGroupRender = (props: FinalCheckboxGroupRenderProps & FieldArrayRenderProps<string, any>) => {
+  const {
+    title,
+    meta: { error },
+    fields: { value, push, remove },
+    componentType,
+    helperText,
+    options,
+  } = props;
 
   return (
-    <FormControl fullWidth error={showError}>
+    <FormControl fullWidth error={!!error}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}
-      {showError ? <FormHelperText>{getIn(errors, name)}</FormHelperText> : null}
+      {error ? <FormHelperText>{error}</FormHelperText> : null}
       <FormGroup row>
         {options.map((x) => {
           const onCheckChange = (_: any, checked: boolean) => {
-            const newValue = produce(value, (draft: any[]) => {
-              if (checked) {
-                draft.push(x.value);
-              } else {
-                const index = value.indexOf(x.value);
-                if (index > -1) {
-                  draft.splice(index, 1);
-                }
-              }
-            });
-
-            setFieldValue(name, newValue);
+            if (checked) {
+              push(x.value);
+            } else {
+              const index = value.indexOf(x.value);
+              remove(index);
+            }
           };
 
           if (componentType === "Chip") {
@@ -115,9 +103,3 @@ export const KFormikCheckboxGroupRender = ({
     </FormControl>
   );
 };
-
-interface KCheckboxGroupRenderOption {
-  value: string;
-  label: string;
-  htmlColor?: string;
-}
