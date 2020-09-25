@@ -45,7 +45,6 @@ export const NormalizeCPU = (value: string) => {
   if (!value || value === "") {
     return null;
   }
-
   return value;
 };
 
