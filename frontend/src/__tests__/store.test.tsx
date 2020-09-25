@@ -21,9 +21,6 @@ import { theme } from "theme/theme";
 import { newEmptyCertificateForm } from "types/certificate";
 import { newEmptyComponentLike } from "types/componentTemplate";
 import { newEmptyRouteForm } from "types/route";
-import { sleep } from "utils/testUtils";
-
-const INPUT_DELAY = 500;
 
 configure({ adapter: new Adapter() });
 
@@ -54,7 +51,7 @@ describe("add certificate", () => {
         return <CertificateForm isEdit={false} onSubmit={onSubmit} initialValues={initialValues} />;
       }
     };
-    const component = mount(
+    const component = await mount(
       <Provider store={store}>
         <ThemeProvider theme={theme}>
           <ConnectedRouter history={history}>
@@ -66,8 +63,10 @@ describe("add certificate", () => {
     await act(async () => {
       component.find("form#certificate-form").simulate("submit");
     });
-    // fix me
-    // expect(component.find("p#certificate-domains-helper-text").getDOMNode().textContent).toBe(requiredError);
+    component.update();
+    expect(component.find("p#certificate-domains-helper-text").getDOMNode().textContent).toBe(
+      "Should have at least one item",
+    );
     expect(onSubmit).toHaveBeenCalledTimes(0);
   });
 
@@ -109,9 +108,6 @@ test("add application", async () => {
   );
   component.find("input#application-name").getDOMNode().setAttribute("value", applicationName);
   component.find("input#application-name").simulate("change");
-  await act(async () => {
-    await sleep(INPUT_DELAY);
-  });
 
   expect(component.find("code#application-name-code").text()).toContain(applicationName);
 });
@@ -145,7 +141,6 @@ test("add component", async () => {
   component.find("input#component-image").getDOMNode().setAttribute("value", "test-image");
   component.find("input#component-image").simulate("change");
   await act(async () => {
-    await sleep(INPUT_DELAY);
     component.find("form#component-form").simulate("submit");
   });
   expect(onSubmit).toHaveBeenCalledTimes(1);
