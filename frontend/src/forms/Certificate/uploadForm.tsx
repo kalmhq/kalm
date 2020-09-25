@@ -1,10 +1,10 @@
-import { Box, Button, Grid } from "@material-ui/core";
+import { Box, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
-import { Uploader } from "forms/Final/uploader";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalTextField } from "forms/Final/textfield";
+import { Uploader } from "forms/Final/uploader";
 import { ValidatorHostsOld } from "forms/validator";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { CertificateFormType, selfManaged } from "types/certificate";
+import { SubmitButton } from "widgets/Button";
 import DomainStatus from "widgets/DomainStatus";
 import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
@@ -154,7 +155,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
           }
           return (
             <form className={classes.root} onSubmit={handleSubmit} tutorial-anchor-id="certificate-form-upload">
-              <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+              <Prompt />
               <KPanel
                 content={
                   <Box p={2}>
@@ -208,9 +209,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
                 }
               />
               <Box pt={2}>
-                <Button id="save-certificate-button" type="submit" color="primary" variant="contained">
-                  {isEdit ? "Update" : "Create"}
-                </Button>
+                <SubmitButton id="save-certificate-button">{isEdit ? "Update" : "Create"}</SubmitButton>
               </Box>
             </form>
           );

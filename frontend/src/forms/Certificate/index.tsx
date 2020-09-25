@@ -1,9 +1,11 @@
-import { Box, Button, Grid } from "@material-ui/core";
+import { Box, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalTextField } from "forms/Final/textfield";
+import { FormDataPreview } from "forms/Final/util";
+import { CERTIFICATE_FORM_ID } from "forms/formIDs";
 import { ValidatorHostsOld } from "forms/validator";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
@@ -11,17 +13,16 @@ import { Field, FieldRenderProps, Form } from "react-final-form";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
+import { FormValueToReudxStoreListener } from "tutorials/formValueToReudxStoreListener";
+import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import { CertificateFormType, selfManaged } from "types/certificate";
+import { SubmitButton } from "widgets/Button";
 import DomainStatus from "widgets/DomainStatus";
 import { KPanel } from "widgets/KPanel";
 import { Body, Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import sc from "../../utils/stringConstants";
-import { FormValueToReudxStoreListener } from "tutorials/formValueToReudxStoreListener";
-import { CERTIFICATE_FORM_ID } from "forms/formIDs";
-import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
-import { FormDataPreview } from "forms/Final/util";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -118,7 +119,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               id="certificate-form"
             >
               <FormValueToReudxStoreListener values={values} form={form} />
-              <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+              <Prompt />
               <KPanel
                 content={
                   <Box p={2}>
@@ -182,9 +183,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                 }
               />
               <Box pt={2}>
-                <Button id="save-certificate-button" type="submit" color="primary" variant="contained">
-                  {isEdit ? "Update" : "Create"}
-                </Button>
+                <SubmitButton id="save-certificate-button">{isEdit ? "Update" : "Create"}</SubmitButton>
               </Box>
               <FormDataPreview />
             </form>

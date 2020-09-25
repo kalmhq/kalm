@@ -16,6 +16,7 @@ import { primaryColor } from "theme/theme";
 import { makeStyles } from "@material-ui/core/styles";
 import CloseIcon from "@material-ui/icons/Close";
 import CheckIcon from "@material-ui/icons/Check";
+import { FormSpy } from "react-final-form";
 
 const customizedButtonStyle = (theme: Theme) => {
   return createStyles({
@@ -102,6 +103,27 @@ export const CustomizedButton = withStyles(customizedButtonStyle)((props: Custom
     </Button>
   );
 });
+
+type SubmitButtonProps = ButtonProps & {
+  pending?: boolean;
+};
+
+export const SubmitButton = (props: SubmitButtonProps) => {
+  return (
+    <FormSpy>
+      {({ submitting }) => (
+        <CustomizedButton
+          pending={submitting}
+          disabled={submitting}
+          type="submit"
+          color="primary"
+          variant="contained"
+          {...props}
+        />
+      )}
+    </FormSpy>
+  );
+};
 
 export const RaisedButton = (props: RaisedButtonProps) => {
   return (

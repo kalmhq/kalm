@@ -1,30 +1,30 @@
-import { Box, Button, createStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, WithStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import { Field, FieldRenderProps, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
+import withStyles from "@material-ui/core/styles/withStyles";
+import { AutoCompleteMultipleValue } from "forms/Final/autoComplete";
+import { FinalRadioGroupRender } from "forms/Final/radio";
+import { FinalTextField } from "forms/Final/textfield";
+import { FormDataPreview } from "forms/Final/util";
 import { ValidatorRequired } from "forms/validator";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
+import { Field, FieldRenderProps, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
+import { OnChange } from "react-final-form-listeners";
+import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Application, ApplicationComponentDetails } from "types/application";
-import { OnChange } from "react-final-form-listeners";
 import {
   DeployAccessToken,
   DeployAccessTokenScopeCluster,
   DeployAccessTokenScopeComponent,
   DeployAccessTokenScopeNamespace,
 } from "types/deployAccessToken";
-import sc from "utils/stringConstants";
+import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Loading } from "widgets/Loading";
 import { Prompt } from "widgets/Prompt";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
-import { FinalTextField } from "forms/Final/textfield";
-import { AutoCompleteMultipleValue } from "forms/Final/autoComplete";
-import { connect } from "react-redux";
-import withStyles from "@material-ui/core/styles/withStyles";
-import { FinalRadioGroupRender } from "forms/Final/radio";
-import { FormDataPreview } from "forms/Final/util";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -105,9 +105,9 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
         initialValues={_initialValues}
         onSubmit={onSubmit}
         keepDirtyOnReinitialize
-        render={({ handleSubmit, submitting, pristine, dirty, values }: FormRenderProps) => (
+        render={({ handleSubmit, values }: FormRenderProps) => (
           <form onSubmit={handleSubmit} id="deployKey-form">
-            <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <Prompt />
             <KPanel>
               <Box p={2}>
                 <Field
@@ -176,9 +176,7 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
             </FormSpy>
 
             <Box mt={2}>
-              <Button id="save-deployKey-button" color="primary" variant="contained" type="submit">
-                Create Deploy Key
-              </Button>
+              <SubmitButton id="save-deployKey-button">Create Deploy Key</SubmitButton>
             </Box>
 
             <FormDataPreview />
