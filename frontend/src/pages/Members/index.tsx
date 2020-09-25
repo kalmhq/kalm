@@ -265,8 +265,10 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private isClusterLevel() {
-    const { location } = this.props;
-    return location.pathname.startsWith("/cluster/members");
+    const {
+      location: { pathname },
+    } = this.props;
+    return pathname.startsWith("/cluster/members") || pathname.startsWith("/applications/kalm-system");
   }
 
   public render() {

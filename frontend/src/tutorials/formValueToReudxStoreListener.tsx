@@ -1,8 +1,9 @@
+import { setTutorialFormValues } from "actions/tutorial";
 import React from "react";
+import { FormSpy } from "react-final-form";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { setTutorialFormValues } from "actions/tutorial";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -34,4 +35,12 @@ class FormValueToReudxStoreListenerRaw extends React.PureComponent<Props> {
   }
 }
 
-export const FormValueToReudxStoreListener = connect(mapStateToProps)(FormValueToReudxStoreListenerRaw);
+const FormValueToReudxStoreListener = connect(mapStateToProps)(FormValueToReudxStoreListenerRaw);
+
+export const FormTutorialHelper = (props: { form: string }) => (
+  <FormSpy subscription={{ values: true }}>
+    {({ values }) => {
+      return <FormValueToReudxStoreListener values={values} form={props.form} />;
+    }}
+  </FormSpy>
+);

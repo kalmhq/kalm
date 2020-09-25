@@ -17,7 +17,7 @@ import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { connect } from "react-redux";
 import { Link as RouteLink } from "react-router-dom";
 import { RootState } from "reducers";
-import { FormValueToReudxStoreListener } from "tutorials/formValueToReudxStoreListener";
+import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
 import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import { httpMethods, HttpRoute, methodsModeAll, methodsModeSpecific } from "types/route";
@@ -303,7 +303,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
             return (
               <form onSubmit={handleSubmit} id="route-form">
-                <FormValueToReudxStoreListener values={values} form={form} />
+                <FormTutorialHelper form={form} />
                 <Prompt />
                 <Grid container spacing={2}>
                   <Grid item xs={12}>

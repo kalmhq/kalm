@@ -1,21 +1,21 @@
 import { Box, Grid } from "@material-ui/core";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
+import { FormDataPreview } from "forms/Final/util";
+import { CERTIFICATE_FORM_ID } from "forms/formIDs";
+import { stringArrayTrimAndToLowerCaseParse } from "forms/normalizer";
 import { ValidatorArrayOfIsValidHostInCertificate } from "forms/validator";
 import React from "react";
 import { Field, FieldRenderProps, Form } from "react-final-form";
+import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { FormValueToReudxStoreListener } from "tutorials/formValueToReudxStoreListener";
+import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
 import { TDispatchProp } from "types";
 import { CertificateFormType } from "types/certificate";
+import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body, Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import sc from "../../utils/stringConstants";
-import { CERTIFICATE_FORM_ID } from "forms/formIDs";
-import { stringArrayTrimAndToLowerCaseParse } from "forms/normalizer";
-import { FormDataPreview } from "forms/Final/util";
-import { connect } from "react-redux";
-import { SubmitButton } from "widgets/Button";
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -34,12 +34,11 @@ class CertificateFormRaw extends React.PureComponent<Props> {
     const { onSubmit, initialValues, isEdit } = this.props;
     return (
       <Form onSubmit={onSubmit} initialValues={initialValues} keepDirtyOnReinitialize>
-        {(props) => {
-          const { values, handleSubmit } = props;
+        {({ handleSubmit }) => {
           return (
             <form onSubmit={handleSubmit} tutorial-anchor-id="certificate-form" id="certificate-form">
               <Box p={2}>
-                <FormValueToReudxStoreListener values={values} form={CERTIFICATE_FORM_ID} />
+                <FormTutorialHelper form={CERTIFICATE_FORM_ID} />
                 <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
                 <KPanel
                   content={

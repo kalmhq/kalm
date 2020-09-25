@@ -20,7 +20,7 @@ import { Field, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
-import { FormValueToReudxStoreListener } from "tutorials/formValueToReudxStoreListener";
+import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
 import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import {
@@ -794,16 +794,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderFormValueToReudxStoreListener = () => {
-    return (
-      <FormSpy subscription={{ values: true }}>
-        {({ values }: { values: ComponentLike }) => {
-          return <FormValueToReudxStoreListener values={values} form={this.props.form} />;
-        }}
-      </FormSpy>
-    );
-  };
-
   public render() {
     const { classes, _initialValues, onSubmit, form, tutorialState } = this.props;
     const isEdit = !!_initialValues.name;
@@ -820,7 +810,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         }}
         render={({ handleSubmit }: RenderProps) => (
           <form onSubmit={handleSubmit} className={classes.root} id="component-form">
-            {this.renderFormValueToReudxStoreListener()}
+            <FormTutorialHelper form={form} />
             <Prompt />
             <KPanel
               content={

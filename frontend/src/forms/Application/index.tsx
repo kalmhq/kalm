@@ -11,7 +11,7 @@ import { Field, Form, FormRenderProps } from "react-final-form";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { theme } from "theme/theme";
-import { FormValueToReudxStoreListener } from "tutorials/formValueToReudxStoreListener";
+import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
 import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import { Application } from "types/application";
@@ -101,7 +101,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
         validate={(values) => finalValidateOrNotBlockByTutorial(values, tutorialState, form)}
         render={({ handleSubmit, values }: FormRenderProps<Application>) => (
           <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">
-            <FormValueToReudxStoreListener values={values} form={form} />
+            <FormTutorialHelper form={form} />
             <KPanel
               content={
                 <Box p={2} tutorial-anchor-id="application-form-name-field">

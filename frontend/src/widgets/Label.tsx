@@ -11,7 +11,8 @@ const styles = () =>
       overflow: "hidden",
     },
     body1: {
-      paddingTop: theme.spacing(1),
+      paddingTop: theme.spacing(0.5),
+      paddingBottom: theme.spacing(0.5),
     },
     alignCenter: {
       display: "flex",
