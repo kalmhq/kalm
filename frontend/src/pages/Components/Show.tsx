@@ -54,7 +54,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
     const hasService = component.ports && component.ports!.length > 0;
     return (
       <Expansion title={"Networking"} defaultUnfold>
-        <Box pb={2}>
+        <Box p={2}>
           <Body>
             Cluster FQDN DNS:{" "}
             <strong>{hasService ? `${component.name}.${activeNamespaceName}.svc.cluster.local` : "none"}</strong>
