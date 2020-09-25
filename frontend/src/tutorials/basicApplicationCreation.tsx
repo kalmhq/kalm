@@ -181,7 +181,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
               {
                 form: COMPONENT_FORM_ID,
                 field: "ports.0.containerPort",
-                validate: (value) => (value === "8001" ? undefined : `Please use "8001"`),
+                validate: (value) => (value === 8001 ? undefined : `Please use "8001"`),
               },
             ],
             shouldCompleteByState: (state: RootState) => {
@@ -210,7 +210,6 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           {
             title: "Deploy!",
             shouldCompleteByAction: (action: Actions) => {
-              console.log(action);
               return action.type === CREATE_COMPONENT;
             },
           },

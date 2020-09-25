@@ -13,7 +13,7 @@ import { ControlledDialog } from "widgets/ControlledDialog";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { RichEditor } from "widgets/RichEditor";
-import { KValidatorInjectedFilePath, ValidatorRequired } from "../validator";
+import { ValidatorInjectedFilePath, ValidatorRequired } from "../validator";
 import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
 
 interface State {
@@ -25,7 +25,6 @@ interface State {
 interface Props extends FieldArrayRenderProps<PreInjectedFile, any>, TDispatchProp {}
 
 const updateContentDialogID = "update-content-dialog";
-const validateMountPath = (value: any) => ValidatorRequired(value) || KValidatorInjectedFilePath(value);
 
 class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
@@ -133,7 +132,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
               name={`preInjectedFiles.${editingFileIndex}.mountPathTmp`}
               label="Mount Path"
               component={FinalTextField}
-              validate={validateMountPath}
+              validate={ValidatorInjectedFilePath}
             />
           </Grid>
           <Grid item xs={1}></Grid>

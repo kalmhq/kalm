@@ -1,6 +1,6 @@
 import { Box, createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import { Field, Form, FormRenderProps, FormSpy } from "react-final-form";
+import { Field, Form, FormRenderProps } from "react-final-form";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { RootState } from "reducers";
@@ -9,8 +9,9 @@ import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
-import { RequireNoSuffix, RequirePrefix, ValidatorName, ValidatorRequired } from "../validator";
+import { ValidatorRegistryHost, ValidatorIsDNS123Label, ValidatorRequired } from "../validator";
 import { FinalTextField } from "../Final/textfield";
+import { FormDataPreview } from "forms/Final/util";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -25,12 +26,6 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-const validateHost = (value: any, _allValues?: any, _props?: any, _name?: any) => {
-  if (!value) return undefined;
-
-  return RequirePrefix("https://")(value) || RequireNoSuffix("/")(value);
-};
-
 type RenderProps = FormRenderProps<RegistryFormType>;
 
 interface ConnectedProps extends ReturnType<typeof mapStateToProps>, DispatchProp {}
@@ -40,6 +35,7 @@ export interface Props extends ConnectedProps, WithStyles<typeof styles> {
   onSubmit: any;
   initial: RegistryFormType;
 }
+
 class RegistryFormRaw extends React.PureComponent<Props> {
   public render() {
     const { classes, isEdit, onSubmit, isSubmittingRegistry, initial } = this.props;
@@ -48,7 +44,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
       <Form
         debug={process.env.REACT_APP_DEBUG === "true" ? console.log : undefined}
         subscription={{ submitting: true, pristine: true }}
-        keepDirtyOnReinitialize={true}
+        keepDirtyOnReinitialize
         initialValues={initial}
         onSubmit={onSubmit}
         render={({ handleSubmit, submitting, pristine, dirty }: RenderProps) => (
@@ -64,7 +60,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
                         label="Name"
                         disabled={isEdit}
                         component={FinalTextField}
-                        validate={ValidatorName}
+                        validate={ValidatorIsDNS123Label}
                         helperText={isEdit ? "Can't modify name" : sc.NAME_RULE}
                       />
                     </Grid>
@@ -93,24 +89,14 @@ class RegistryFormRaw extends React.PureComponent<Props> {
                         name="host"
                         label="Host"
                         component={FinalTextField}
-                        validate={validateHost}
+                        validate={ValidatorRegistryHost}
                         placeholder="E.g. https://registry.kalm.dev"
                         helperText={<span>Leave blank for private docker hub registry</span>}
                       />
                     </Grid>
                   </Grid>
 
-                  {process.env.REACT_APP_DEBUG === "true" ? (
-                    <FormSpy subscription={{ values: true }}>
-                      {({ values }: { values: RegistryFormType }) => {
-                        return (
-                          <pre style={{ maxWidth: 1500, background: "#eee" }}>
-                            {JSON.stringify(values, undefined, 2)}
-                          </pre>
-                        );
-                      }}
-                    </FormSpy>
-                  ) : null}
+                  <FormDataPreview />
                 </Box>
               }
             />

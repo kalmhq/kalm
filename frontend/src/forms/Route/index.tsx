@@ -7,7 +7,7 @@ import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalBoolCheckboxRender, FinalCheckboxGroupRender } from "forms/Final/checkbox";
 import { FinalRadioGroupRender } from "forms/Final/radio";
 import { ROUTE_FORM_ID } from "forms/formIDs";
-import { KValidatorPaths, ValidatorArrayNotEmpty, ValidatorIpAndHosts } from "forms/validator";
+import { ValidatorArrayNotEmpty, ValidatorArrayOfPath, ValidatorIpAndHosts } from "forms/validator";
 import routesGif from "images/routes.gif";
 import React from "react";
 import { Field, FieldRenderProps, Form, FormRenderProps } from "react-final-form";
@@ -28,6 +28,9 @@ import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "forms/Route/destinations";
+import { FormValueToReudxStoreListener } from "tutorials/formValueToReudxStoreListener";
+import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { stringArrayTrimParse } from "forms/normalizer";
 
 const mapStateToProps = (state: RootState) => {
   const certifications = state.certificates.certificates;
@@ -101,6 +104,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       htmlColor: "#9CCC65",
     },
   ];
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -247,25 +251,26 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private validate(values: HttpRoute) {
+  private validate = (values: HttpRoute) => {
+    const { form, tutorialState } = this.props;
     let errors: any = {};
     const { methods, methodsMode, schemes } = values;
     if (methodsMode === methodsModeSpecific) {
       errors.methods = ValidatorArrayNotEmpty(methods);
     }
     errors.schemes = ValidatorArrayNotEmpty(schemes);
-    return errors;
-  }
+    return Object.keys(errors).length > 0 ? errors : finalValidateOrNotBlockByTutorial(values, tutorialState, form);
+  };
 
   public render() {
-    const { classes, ingressIP, isEdit, initial, onSubmit } = this.props;
+    const { classes, ingressIP, isEdit, initial, onSubmit, form } = this.props;
     return (
       <div className={classes.root}>
         <Form
           onSubmit={onSubmit}
           initialValues={initial}
+          keepDirtyOnReinitialize
           validate={this.validate}
-          validateOnBlur
           mutators={{
             ...arrayMutators,
           }}
@@ -276,7 +281,6 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             submitting,
             handleSubmit,
             form: { change },
-            touched,
           }: FormRenderProps<HttpRoute>) => {
             const { hosts, methodsMode, schemes, httpRedirectToHttps } = values;
             const hstsDomains = includesForceHttpsDomain(hosts);
@@ -305,7 +309,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
             return (
               <form onSubmit={handleSubmit} id="route-form">
-                {/* <FormMidware values={values} form={ROUTE_FORM_ID} /> */}
+                <FormValueToReudxStoreListener values={values} form={form} />
                 <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
@@ -349,8 +353,9 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                               )}
                               label="Path Prefixes"
                               name="paths"
-                              validate={KValidatorPaths}
-                              placeholder="e.g. /some/path/to/app"
+                              validate={ValidatorArrayOfPath}
+                              parse={stringArrayTrimParse}
+                              placeholder="e.g. /api/v1; /blogs; /assets"
                               helperText={sc.ROUTE_PATHS_INPUT_HELPER}
                             />
                             <Field

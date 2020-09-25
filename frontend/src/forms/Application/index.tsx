@@ -11,11 +11,14 @@ import { RootState } from "reducers";
 import { theme } from "theme/theme";
 import { TDispatchProp } from "types";
 import { Application } from "types/application";
-import stringConstants from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
-import { ValidatorName } from "../validator";
+import { FormValueToReudxStoreListener } from "tutorials/formValueToReudxStoreListener";
+import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { ValidatorIsDNS123Label } from "../validator";
+import { FormDataPreview } from "forms/Final/util";
+import { trimAndToLowerParse } from "forms/normalizer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -60,8 +63,12 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           id="application-name"
           component={FinalTextField}
           autoFocus={true}
-          validate={ValidatorName}
-          helperText={stringConstants.NAME_RULE}
+          validate={ValidatorIsDNS123Label}
+          parse={trimAndToLowerParse}
+          placeholder={"e.g. my-application; production"}
+          helperText={
+            "Must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"
+          }
         />
 
         <Box mt={2} style={{ color: theme.palette.text.secondary }}>
@@ -84,16 +91,17 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { classes, form } = this.props;
+    const { classes, form, tutorialState } = this.props;
 
     return (
       <Form
         initialValues={{ name: "" }}
         onSubmit={this.onSubmit}
+        keepDirtyOnReinitialize
+        validate={(values) => finalValidateOrNotBlockByTutorial(values, tutorialState, form)}
         render={({ handleSubmit, submitting, dirty, values }: FormRenderProps<Application>) => (
           <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">
-            {/* TODO */}
-            {/* <FormMidware values={values} form={form} /> */}
+            <FormValueToReudxStoreListener values={values} form={form} />
             <KPanel
               content={
                 <Box p={2} tutorial-anchor-id="application-form-name-field">
@@ -107,6 +115,8 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
             <Alert severity="error">{errors.name}</Alert>
           </Box>
         ) : null} */}
+
+            <FormDataPreview />
 
             <Box pt={3} className={classes.displayFlex}>
               <CustomizedButton

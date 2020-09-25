@@ -5,7 +5,7 @@ import copy from "copy-to-clipboard";
 import { Uploader } from "forms/Final/uploader";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalTextField } from "forms/Final/textfield";
-import { ValidatorHosts } from "forms/validator";
+import { ValidatorHostsOld } from "forms/validator";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
 import { Field, FieldRenderProps, Form, FormRenderProps } from "react-final-form";
@@ -140,7 +140,6 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
           const {
             values,
             dirty,
-            touched,
             errors,
             form: { change },
             submitting,
@@ -169,7 +168,6 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
                           disabled={isEdit}
                           placeholder="Please type a certificate name"
                           id="certificate-name"
-                          helperText={!!errors.name && touched && touched.name ? errors.name : ""}
                         />
                       </Grid>
                       <Grid item md={12}>
@@ -179,7 +177,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
                           )}
                           disabled={values.managedType === selfManaged}
                           name="domains"
-                          validate={ValidatorHosts}
+                          validate={ValidatorHostsOld}
                           icons={icons}
                           value={values.domains}
                           id="certificate-domains"

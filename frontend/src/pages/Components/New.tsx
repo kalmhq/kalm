@@ -18,7 +18,9 @@ class ComponentNewRaw extends React.PureComponent<Props> {
   private submit = async (formValues: ComponentLike) => {
     const { dispatch, activeNamespaceName } = this.props;
 
-    formValues.preInjectedFiles = formValues.preInjectedFiles?.filter((file) => file.mountPath || file.content);
+    if (formValues.preInjectedFiles) {
+      formValues.preInjectedFiles = formValues.preInjectedFiles?.filter((file) => file.mountPath || file.content);
+    }
 
     await dispatch(createComponentAction(formValues, activeNamespaceName));
     dispatch(push(`/applications/${activeNamespaceName}/components`));
