@@ -3,10 +3,9 @@ import { Box, Button, createStyles, Grid, Theme, withStyles } from "@material-ui
 import { WithStyles } from "@material-ui/styles";
 import { Alert } from "@material-ui/lab";
 import { Expansion } from "forms/Route/expansion";
-import { AcmeServerInfo } from "types/certificate";
+import { AcmeServerInfo, Certificate, dns01Issuer } from "types/certificate";
 import { Loading } from "./Loading";
 import { Link } from "react-router-dom";
-import { Certificate, dns01Issuer } from "types/certificate";
 import { InfoBox } from "./InfoBox";
 import { KLink } from "./Link";
 import DomainStatus from "./DomainStatus";
@@ -124,7 +123,7 @@ export const DNSConfigGuide = connect()(
     const { domain, type, nsRecord, cnameRecord, aRecord, dispatch, classes } = props;
     const record = nsRecord || cnameRecord || aRecord || "";
     return (
-      <Box p={1} justifyContent="center" display="flex" flexDirection="row" alignItems="center">
+      <Box justifyContent="center" display="flex" flexDirection="row" alignItems="center">
         <Grid container spacing={1}>
           <Grid item xs={1} sm={1} md={1} className={classes.cell}>
             <Box>Status</Box>

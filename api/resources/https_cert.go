@@ -151,32 +151,18 @@ func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCe
 func autoGenCertName(cert *HttpsCert) string {
 	var prefix string
 
-	if cert.HttpsCertIssuer == v1alpha1.DefaultDNS01IssuerName {
-		prefix += "wildcard-"
+	switch cert.HttpsCertIssuer {
+	case v1alpha1.DefaultDNS01IssuerName:
+		prefix += "dns01"
+	case v1alpha1.DefaultHTTP01IssuerName:
+		prefix += "http01"
 	}
 
 	if cert.IsSelfManaged {
-		prefix += "self-managed-"
+		prefix += "self-managed"
 	}
 
-	if len(cert.Domains) >= 1 {
-		prefix += cert.Domains[0]
-	} else {
-		prefix += "cert"
-	}
-
-	name := fmt.Sprintf("%s-%s", prefix, rand.String(6))
-	name = cleanToResName(name)
-
-	return name
-}
-
-func cleanToResName(s string) string {
-	s = strings.ToLower(s)
-
-	s = strings.ReplaceAll(s, "*", "wildcard")
-	s = strings.ReplaceAll(s, ".", "-")
-	return s
+	return fmt.Sprintf("%s-%s", prefix, rand.String(8))
 }
 
 func (resourceManager *ResourceManager) UpdateAutoManagedCert(cert *HttpsCert) (*HttpsCert, error) {

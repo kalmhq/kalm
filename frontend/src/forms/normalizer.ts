@@ -45,6 +45,10 @@ export const stringArrayTrimParse = (values: string[]) => {
   return values.map((x) => x.trim()).filter((x) => !!x);
 };
 
+export const stringArrayTrimAndToLowerCaseParse = (values: string[]) => {
+  return values.map((x) => x.trim().toLowerCase()).filter((x) => !!x);
+};
+
 export const NormalizeString = (value: string) => {
   return value.trim();
 };

@@ -7,7 +7,7 @@ import {
 } from "forms/Final/autoComplete";
 import { NormalizePorts, NormalizeString, stringArrayTrimParse } from "forms/normalizer";
 import { storiesOf } from "@storybook/react";
-import { ValidatorHostsOld } from "forms/validator";
+import { ValidatorArrayOfIsValidHostInCertificate } from "forms/validator";
 import { FormDataPreview } from "forms/Final/util";
 
 export const MultipleNumberValuesFreeSolo = () => (
@@ -55,7 +55,7 @@ export const MultipleStringValuesFreeSolo = () => (
           label="Validate hosts"
           name="hosts"
           placeholder={"Select or type"}
-          validate={ValidatorHostsOld}
+          validate={ValidatorArrayOfIsValidHostInCertificate}
           parse={stringArrayTrimParse}
         />
 

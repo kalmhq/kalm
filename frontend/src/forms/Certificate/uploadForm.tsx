@@ -4,8 +4,7 @@ import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalTextField } from "forms/Final/textfield";
-import { Uploader } from "forms/Final/uploader";
-import { ValidatorHostsOld } from "forms/validator";
+import { ValidatorArrayOfIsValidHostInCertificate } from "forms/validator";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
 import { Field, FieldRenderProps, Form, FormRenderProps } from "react-final-form";
@@ -14,17 +13,17 @@ import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { CertificateFormType, selfManaged } from "types/certificate";
+import { StringConstants } from "utils/stringConstants";
 import { SubmitButton } from "widgets/Button";
 import DomainStatus from "widgets/DomainStatus";
 import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
-import sc from "../../utils/stringConstants";
+import { Uploader } from "forms/Final/uploader";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   return {
     managedType: selfManaged as string,
-    certificateIssuers: state.certificates.certificateIssuers,
     ingressIP: state.cluster.info.ingressIP || "---.---.---.---",
   };
 };
@@ -177,7 +176,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
                           )}
                           disabled={values.managedType === selfManaged}
                           name="domains"
-                          validate={ValidatorHostsOld}
+                          validate={ValidatorArrayOfIsValidHostInCertificate}
                           icons={icons}
                           value={values.domains}
                           id="certificate-domains"
@@ -198,7 +197,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
                               >
                                 {ingressIP}
                               </Link>
-                              . {sc.ROUTE_HOSTS_INPUT_HELPER}
+                              . {StringConstants.ROUTE_HOSTS_INPUT_HELPER}
                             </Caption>
                           }
                         />

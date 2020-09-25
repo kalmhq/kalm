@@ -1,4 +1,4 @@
-import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { createCertificateAction } from "actions/certificate";
 import { push } from "connected-react-router";
 import { CertificateUploadForm } from "forms/Certificate/uploadForm";
@@ -10,8 +10,8 @@ import { TDispatchProp } from "types";
 import { CertificateFormType, selfManaged } from "types/certificate";
 import { H6 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
-import { ResourceNotFound } from "widgets/ResourceNotFound";
 import produce from "immer";
+import { CertificateNotFound } from "pages/Certificate/NotFound";
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
   const certificate = state.certificates.certificates.find(
@@ -54,17 +54,7 @@ class CertificateEditRaw extends React.PureComponent<Props> {
     }
 
     if (!initialValues) {
-      return (
-        <BasePage>
-          <Box p={2}>
-            <ResourceNotFound
-              text="Certificate not found"
-              redirect={`/applications`}
-              redirectText="Go back to Apps List"
-            ></ResourceNotFound>
-          </Box>
-        </BasePage>
-      );
+      return <CertificateNotFound />;
     }
 
     return (
