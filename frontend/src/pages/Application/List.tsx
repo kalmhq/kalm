@@ -67,7 +67,6 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   private confirmDelete = async (applicationDetails: ApplicationDetails) => {
     const { dispatch } = this.props;
     try {
-      console.log("confirmDelete", applicationDetails.name);
       await dispatch(deleteApplicationAction(applicationDetails.name));
       await dispatch(setSuccessNotificationAction("Successfully delete an application"));
     } catch {

@@ -141,7 +141,6 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
             dirty,
             errors,
             form: { change },
-            submitting,
             handleSubmit,
           } = props;
           const icons = values.domains.map((domain, index) =>
@@ -154,7 +153,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
           }
           return (
             <form className={classes.root} onSubmit={handleSubmit} tutorial-anchor-id="certificate-form-upload">
-              <Prompt when={dirty && !submitting} message={StringConstants.CONFIRM_LEAVE_WITHOUT_SAVING} />
+              <Prompt message={StringConstants.CONFIRM_LEAVE_WITHOUT_SAVING} />
               <KPanel
                 content={
                   <Box p={2}>

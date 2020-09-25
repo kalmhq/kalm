@@ -133,7 +133,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
               {...TransitionProps}
               style={{ transformOrigin: placement === "bottom" ? "center top" : "center bottom" }}
             >
-              <Paper>
+              <Paper variant="outlined" square>
                 <ClickAwayListener onClickAway={this.handleClose}>
                   <MenuList
                     autoFocusItem={open}

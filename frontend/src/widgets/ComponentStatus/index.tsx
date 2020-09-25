@@ -28,7 +28,7 @@ const styles = (theme: Theme) =>
       background: "rgba(0, 0, 0, 0.04)",
     },
     chartWrapperOpen: {
-      height: 120,
+      minHeight: 120,
       width: 120,
       margin: "0 auto",
     },

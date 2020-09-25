@@ -49,7 +49,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
         onSubmit={onSubmit}
         render={({ handleSubmit, submitting, pristine, dirty }: RenderProps) => (
           <form onSubmit={handleSubmit} className={classes.root} id="registry-form">
-            <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
             <KPanel
               content={
                 <Box p={2}>

@@ -1,9 +1,8 @@
-import { Box, Button, Grid } from "@material-ui/core";
+import { Box, Grid } from "@material-ui/core";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { ValidatorArrayOfIsValidHostInCertificate } from "forms/validator";
 import React from "react";
 import { Field, FieldRenderProps, Form } from "react-final-form";
-import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { CertificateFormType } from "types/certificate";
@@ -13,8 +12,10 @@ import { Prompt } from "widgets/Prompt";
 import sc from "../../utils/stringConstants";
 import { FormValueToReudxStoreListener } from "tutorials/formValueToReudxStoreListener";
 import { CERTIFICATE_FORM_ID } from "forms/formIDs";
-import { FormDataPreview } from "forms/Final/util";
 import { stringArrayTrimAndToLowerCaseParse } from "forms/normalizer";
+import { FormDataPreview } from "forms/Final/util";
+import Button from "@material-ui/core/Button";
+import { connect } from "react-redux";
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -34,13 +35,12 @@ class CertificateFormRaw extends React.PureComponent<Props> {
     return (
       <Form onSubmit={onSubmit} initialValues={initialValues} keepDirtyOnReinitialize>
         {(props) => {
-          const { values, dirty, submitting, handleSubmit } = props;
-
+          const { values, handleSubmit } = props;
           return (
             <form onSubmit={handleSubmit} tutorial-anchor-id="certificate-form" id="certificate-form">
               <Box p={2}>
                 <FormValueToReudxStoreListener values={values} form={CERTIFICATE_FORM_ID} />
-                <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+                <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
                 <KPanel
                   content={
                     <Box p={2}>

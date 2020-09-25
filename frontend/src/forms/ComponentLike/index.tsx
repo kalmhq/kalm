@@ -7,7 +7,7 @@ import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/p
 import clsx from "clsx";
 import { push } from "connected-react-router";
 import arrayMutators from "final-form-arrays";
-import { KTooltip } from "forms/Application/KTooltip";
+import { KTooltip } from "widgets/KTooltip";
 import { Disks } from "forms/ComponentLike/Disks";
 import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
 import { FinalRadioGroupRender } from "forms/Final/radio";
@@ -37,7 +37,7 @@ import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle1 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
-import { makeSelectOption } from "../Basic/select";
+import { makeSelectOption } from "../Final/select";
 import { FinalTextField } from "../Final/textfield";
 import {
   ValidatorCPU,
@@ -821,10 +821,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         mutators={{
           ...arrayMutators,
         }}
-        render={({ handleSubmit, submitting, dirty }: RenderProps) => (
+        render={({ handleSubmit }: RenderProps) => (
           <form onSubmit={handleSubmit} className={classes.root} id="component-form">
             {this.renderFormValueToReudxStoreListener()}
-            <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
             <KPanel
               content={
                 <Box p={2} tutorial-anchor-id="component-from-basic">

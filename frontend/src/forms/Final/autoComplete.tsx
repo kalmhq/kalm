@@ -98,7 +98,7 @@ export const AutoCompleteMultiValuesFreeSolo: X = function <T>(props: AutoComple
     placeholder,
     helperText,
   } = props;
-  console.log(error);
+
   const classes = FreeSoloStyles();
   const errorsIsArray = Array.isArray(error);
 

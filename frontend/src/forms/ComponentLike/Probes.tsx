@@ -16,7 +16,7 @@ import React from "react";
 import { Field, FieldRenderProps } from "react-final-form";
 import { ComponentLikePort, PortProtocolHTTP, PortProtocolTCP, Probe } from "types/componentTemplate";
 import sc from "../../utils/stringConstants";
-import { makeSelectOption, SelectField } from "../Basic/select";
+import { makeSelectOption, KSelect } from "../Final/select";
 import { validateHostWithWildcardPrefix, ValidatorOneOfFactory, ValidatorRequired } from "../validator";
 
 const ValidatorScheme = ValidatorOneOfFactory(["HTTP", "HTTPS"]);
@@ -373,15 +373,11 @@ class RenderProbe extends React.PureComponent<Props> {
     return (
       <Grid container spacing={2}>
         <Grid item xs={6}>
-          <SelectField
+          <KSelect
             label="Type"
             value={type}
             onChange={(event: any) => {
               this.handleChangeType(event.target.value);
-            }}
-            meta={{
-              touched: true,
-              error: undefined,
             }}
             options={[
               makeSelectOption("none", "None", sc.PROBE_NONE_OPTION),

@@ -96,9 +96,9 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
         mutators={{
           ...arrayMutators,
         }}
-        render={({ handleSubmit, submitting, pristine, dirty }: FormRenderProps<SSOConfig>) => (
+        render={({ handleSubmit, submitting }: FormRenderProps<SSOConfig>) => (
           <form onSubmit={handleSubmit}>
-            <Prompt when={dirty && submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
             <KPanel
               title="Setup Domain"
               content={

@@ -4,6 +4,7 @@ import { TDispatchProp } from "types";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { RouteComponentProps, withRouter } from "react-router-dom";
+import { FormSpy } from "react-final-form";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -18,9 +19,13 @@ interface Props
   extends WithStyles<typeof styles>,
     ReturnType<typeof mapStateToProps>,
     TDispatchProp,
-    RouteComponentProps {
-  message: string;
+    RouteComponentProps,
+    OuterProps {
   when?: boolean;
+}
+
+interface OuterProps {
+  message: string;
 }
 
 class PromptRaw extends React.PureComponent<Props> {
@@ -78,4 +83,16 @@ class PromptRaw extends React.PureComponent<Props> {
   }
 }
 
-export const Prompt = withStyles(styles)(connect(mapStateToProps)(withRouter(PromptRaw)));
+const PromptWrapper = withStyles(styles)(connect(mapStateToProps)(withRouter(PromptRaw)));
+
+export class Prompt extends React.PureComponent<OuterProps> {
+  render() {
+    return (
+      <FormSpy>
+        {({ dirty, submitting }) => {
+          return <PromptWrapper when={dirty && !submitting} message={this.props.message} />;
+        }}
+      </FormSpy>
+    );
+  }
+}

@@ -30,7 +30,9 @@ export const createCasbinEnforcerMiddleware = () => {
         subjects = [toSafeSubject(clientInfo.impersonation, clientInfo.impersonationType)];
       } else {
         subjects = [toSafeSubject(action.payload.loginStatus.email, SubjectTypeUser)];
-        subjects = subjects.concat(clientInfo.groups.map((group: string) => toSafeSubject(group, SubjectTypeGroup)));
+        if (clientInfo.groups) {
+          subjects = subjects.concat(clientInfo.groups.map((group: string) => toSafeSubject(group, SubjectTypeGroup)));
+        }
       }
 
       const withSubjects = (fn: (...args: string[]) => boolean, ...args: string[]) => {

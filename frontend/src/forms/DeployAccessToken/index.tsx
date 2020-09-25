@@ -107,7 +107,7 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
         keepDirtyOnReinitialize
         render={({ handleSubmit, submitting, pristine, dirty, values }: FormRenderProps) => (
           <form onSubmit={handleSubmit} id="deployKey-form">
-            <Prompt when={dirty && !submitting} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+            <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
             <KPanel>
               <Box p={2}>
                 <Field

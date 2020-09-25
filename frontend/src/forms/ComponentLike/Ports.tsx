@@ -115,7 +115,7 @@ class RenderPorts extends React.PureComponent<Props> {
                         >
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={350}>
-                              <Paper elevation={2}>
+                              <Paper elevation={2} variant="outlined" square>
                                 <Box p={2}>
                                   <PortChart highlightContainerPort />
                                 </Box>
@@ -157,7 +157,7 @@ class RenderPorts extends React.PureComponent<Props> {
                         >
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={350}>
-                              <Paper elevation={2}>
+                              <Paper elevation={2} variant="outlined" square>
                                 <Box p={2}>
                                   <PortChart highlightServicePort />
                                 </Box>
