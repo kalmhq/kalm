@@ -6,26 +6,13 @@ import { RouteComponentProps, withRouter } from "react-router-dom";
 import { TDispatchProp } from "types";
 import { RootState } from "reducers";
 import { H6 } from "widgets/Label";
-import { ACNEServer } from "widgets/ACNEServer";
+import { ACMEServer } from "widgets/ACMEServer";
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
-  const acmeServer = state.certificates.acmeServer;
-  return {
-    acmeServer: acmeServer,
-  };
+  return {};
 };
 
-const styles = (theme: Theme) =>
-  createStyles({
-    root: {},
-    action: {
-      padding: theme.spacing(1),
-      borderRadius: 4,
-      color: "#FFF",
-      backgroundColor: "#000",
-      overflowX: "auto",
-    },
-  });
+const styles = (theme: Theme) => createStyles({});
 
 export interface Props
   extends WithStyles<typeof styles>,
@@ -35,17 +22,14 @@ export interface Props
 
 class CertificateAcmeRaw extends React.PureComponent<Props> {
   public render() {
-    const { classes, acmeServer } = this.props;
     return (
       <BasePage secondHeaderRight={<H6>ACME DNS Server</H6>}>
         <Box p={2}>
-          <div className={classes.root}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={12} md={12}>
-                <ACNEServer showPanel />
-              </Grid>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={12} md={12}>
+              <ACMEServer showPanel />
             </Grid>
-          </div>
+          </Grid>
         </Box>
       </BasePage>
     );

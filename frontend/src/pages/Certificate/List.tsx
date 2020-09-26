@@ -6,7 +6,7 @@ import {
   Theme,
   Typography,
   withStyles,
-  WithStyles
+  WithStyles,
 } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import { deleteCertificateAction } from "actions/certificate";
@@ -33,7 +33,7 @@ import { Loading } from "widgets/Loading";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
 import { KLink } from "widgets/Link";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
-import { ACNEServer } from "widgets/ACNEServer";
+import { ACMEServer } from "widgets/ACMEServer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -307,7 +307,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         }
       >
         <Box p={2}>
-          <ACNEServer />
+          <ACMEServer />
           <Box mt={2}>
             {isLoading && !isFirstLoaded ? (
               <Loading />

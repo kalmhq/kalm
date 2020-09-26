@@ -9,7 +9,7 @@ import { RouteComponentProps, withRouter } from "react-router-dom";
 import { KPanel } from "widgets/KPanel";
 import DomainStatus, { acmePrefix } from "widgets/DomainStatus";
 import { Loading } from "widgets/Loading";
-import { ACNEServer, DNSConfigItems } from "widgets/ACNEServer";
+import { ACMEServer, DNSConfigItems } from "widgets/ACMEServer";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -130,7 +130,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { certificates, location, isLoading, isFirstLoaded, acmeServer } = this.props;
+    const { certificates, location, isLoading, isFirstLoaded } = this.props;
     if (isLoading && !isFirstLoaded) {
       return <Loading />;
     }
@@ -182,7 +182,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
           </Box>
 
           <Box mt={2}>
-            <ACNEServer />
+            <ACMEServer />
           </Box>
         </Box>
       </BasePage>

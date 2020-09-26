@@ -99,7 +99,7 @@ class ACNEServerRaw extends React.PureComponent<ACMEServerGuideProps> {
   }
 }
 
-export const ACNEServer = connect(mapStateToProps)(withStyles(styles)(ACNEServerRaw));
+export const ACMEServer = connect(mapStateToProps)(withStyles(styles)(ACNEServerRaw));
 
 interface DNSConfigGuideProps extends TDispatchProp {
   items: {

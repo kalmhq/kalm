@@ -1,4 +1,5 @@
 import {
+  InvalidDNS1123SubDomain,
   InvalidHostInCertificateErrorMessage,
   NoPrefixSlashError,
   PathArrayCantBeBlankError,
@@ -216,10 +217,7 @@ test("DNS1123SubDomain", () => {
 
 test("ValidatorArrayOfDNS1123SubDomain", () => {
   expect(ValidatorArrayOfIsDNS1123SubDomain([])).not.toBeUndefined();
-  expect(ValidatorArrayOfIsDNS1123SubDomain(["1--a--b--2.1", "_1"])).toEqual([
-    undefined,
-    "Not a valid DNS123 SubDomain",
-  ]);
+  expect(ValidatorArrayOfIsDNS1123SubDomain(["1--a--b--2.1", "_1"])).toEqual([undefined, InvalidDNS1123SubDomain]);
 });
 
 test("ValidatorIsWildcardDNS1123SubDomain", () => {
