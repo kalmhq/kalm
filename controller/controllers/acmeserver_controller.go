@@ -752,9 +752,12 @@ func (r *ACMEServerReconciler) installACMEServer(cert corev1alpha1.HttpsCert) er
 		return fmt.Errorf("spec.domains is empty")
 	}
 
-	baseDomain := domains[0]
+	baseDomain := rmWildcardPrefixIfExist(domains[0])
+
+	// acme-xxyyzz.example.com
 	acmeDomain := fmt.Sprintf("acme-%s.%s", sha1String(baseDomain)[:6], baseDomain)
-	nsDomain := fmt.Sprintf("name-server-%s.%s", sha1String(baseDomain)[:6], baseDomain)
+	// ns.acme-xxyyzz.example.com
+	nsDomain := fmt.Sprintf("ns.%s", acmeDomain)
 
 	expectedACMEServer := corev1alpha1.ACMEServer{
 		ObjectMeta: ctrl.ObjectMeta{
@@ -767,6 +770,15 @@ func (r *ACMEServerReconciler) installACMEServer(cert corev1alpha1.HttpsCert) er
 	}
 
 	return r.Create(r.ctx, &expectedACMEServer)
+}
+
+func rmWildcardPrefixIfExist(domain string) string {
+	domain = strings.TrimSpace(domain)
+	if strings.HasPrefix(domain, "*.") {
+		domain = domain[2:]
+	}
+
+	return domain
 }
 
 func (r *ACMEServerReconciler) updateStatusOfCertsUsingDNSIssuer(httpsCertIssuer corev1alpha1.HttpsCertIssuer) error {
