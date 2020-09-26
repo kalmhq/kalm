@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/go-playground/validator/v10"
+	"github.com/kalmhq/kalm/api/log"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/net/http2"
 	"k8s.io/client-go/rest"
@@ -188,7 +189,13 @@ func run(runningConfig *config.Config) {
 		panic(err)
 	}
 
-	go startMetricServer(k8sClientConfig)
+	go func() {
+		if runningConfig.IsInCluster() {
+			startMetricServer(k8sClientConfig)
+		} else {
+			log.Info("not running in cluster, skip running metric server")
+		}
+	}()
 
 	// run localhost server with privilege
 	clonedConfig := runningConfig.DeepCopy()

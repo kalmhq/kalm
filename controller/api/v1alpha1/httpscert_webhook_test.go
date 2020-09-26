@@ -21,7 +21,6 @@ func TestHttpsCertValidateSelfCACert(t *testing.T) {
 		Spec: HttpsCertSpec{
 			IsSelfManaged:             true,
 			SelfManagedCertSecretName: "fake-sec-name",
-			HttpsCertIssuer:           DefaultCAIssuerName,
 		},
 	}
 

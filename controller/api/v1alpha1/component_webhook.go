@@ -23,10 +23,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	apimachineryval "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"math/rand"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"strings"
+	"time"
 )
 
 // log is for logging in this package.
@@ -69,8 +71,9 @@ func (r *Component) Default() {
 		r.Spec.TerminationGracePeriodSeconds = &x
 	}
 
-	for _, vol := range r.Spec.Volumes {
-		if vol.Type == VolumeTypeHostPath {
+	for i, vol := range r.Spec.Volumes {
+		switch vol.Type {
+		case VolumeTypeHostPath:
 			if vol.HostPath != "" && vol.Path == "" {
 				vol.Path = vol.HostPath
 			}
@@ -78,7 +81,14 @@ func (r *Component) Default() {
 			if vol.HostPath == "" && vol.Path != "" {
 				vol.HostPath = vol.Path
 			}
+		case VolumeTypePersistentVolumeClaimTemplate, VolumeTypePersistentVolumeClaim:
+			if vol.PVC == "" {
+				genPVCName := fmt.Sprintf("pvc-%s-%d-%d", r.Name, time.Now().Unix(), rand.Intn(10000))
+				vol.PVC = genPVCName
+			}
 		}
+
+		r.Spec.Volumes[i] = vol
 	}
 }
 

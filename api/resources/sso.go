@@ -143,6 +143,22 @@ func (resourceManager *ResourceManager) DeleteSSOConfig() error {
 	return resourceManager.Delete(&v1alpha1.SingleSignOnConfig{ObjectMeta: metaV1.ObjectMeta{Name: SSO_NAME, Namespace: controllers.KALM_DEX_NAMESPACE}})
 }
 
+func (resourceManager *ResourceManager) DeleteAllRoleBindings() error {
+	var rbList v1alpha1.RoleBindingList
+	if err := resourceManager.List(&rbList); err != nil {
+		return err
+	}
+
+	for i := range rbList.Items {
+		rb := rbList.Items[i]
+		if err := resourceManager.Delete(&rb); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func ProtectedEndpointCRDToProtectedEndpoint(endpoint *v1alpha1.ProtectedEndpoint) *ProtectedEndpoint {
 	ep := &ProtectedEndpoint{
 		Name:                        endpoint.Name,

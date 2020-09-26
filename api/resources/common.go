@@ -238,9 +238,8 @@ type ResourceManager struct {
 
 func NewResourceManager(cfg *rest.Config, logger logr.Logger) *ResourceManager {
 	c, err := client.New(cfg, client.Options{Scheme: scheme.Scheme})
-
 	if err != nil {
-		return nil
+		panic(err)
 	}
 
 	return &ResourceManager{
