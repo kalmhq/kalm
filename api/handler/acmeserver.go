@@ -42,13 +42,12 @@ func (h *ApiHandler) handleUpdateACMEServer(c echo.Context) error {
 		return err
 	}
 
-	if acmeServer.NSDomain == "" {
-		return fmt.Errorf("must set nsDomain")
-	}
-
 	if acmeServer.ACMEDomain == "" {
 		return fmt.Errorf("must set acmeDomain")
 	}
+
+	// ns.<acme-xyz>.<your-domain.com>
+	acmeServer.NSDomain = fmt.Sprintf("ns.%s", acmeServer.ACMEDomain)
 
 	acmeServer, err = h.resourceManager.UpdateACMEServer(acmeServer)
 	if err != nil {
