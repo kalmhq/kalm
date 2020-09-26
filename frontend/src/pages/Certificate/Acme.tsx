@@ -1,12 +1,12 @@
-import { createStyles, Theme, withStyles, WithStyles, Grid, Box } from "@material-ui/core";
+import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
-import { withRouter, RouteComponentProps } from "react-router-dom";
+import { RouteComponentProps, withRouter } from "react-router-dom";
 import { TDispatchProp } from "types";
 import { RootState } from "reducers";
 import { H6 } from "widgets/Label";
-import { AcmeServerGuide } from "widgets/AcmeServerGuide";
+import { ACNEServer } from "widgets/ACNEServer";
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
   const acmeServer = state.certificates.acmeServer;
@@ -42,7 +42,7 @@ class CertificateAcmeRaw extends React.PureComponent<Props> {
           <div className={classes.root}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={12} md={12}>
-                <AcmeServerGuide acmeServer={acmeServer} showPanel />
+                <ACNEServer showPanel />
               </Grid>
             </Grid>
           </div>

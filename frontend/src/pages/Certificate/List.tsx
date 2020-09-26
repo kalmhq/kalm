@@ -6,7 +6,7 @@ import {
   Theme,
   Typography,
   withStyles,
-  WithStyles,
+  WithStyles
 } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import { deleteCertificateAction } from "actions/certificate";
@@ -33,6 +33,7 @@ import { Loading } from "widgets/Loading";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
 import { KLink } from "widgets/Link";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
+import { ACNEServer } from "widgets/ACNEServer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -268,14 +269,9 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         ),
         content: "",
       },
-
-      {
-        title: <KLink to="/acme">Kalm DNS Server Config Panel</KLink>,
-        content: "",
-      },
     ];
 
-    return <InfoBox title={title} options={options}></InfoBox>;
+    return <InfoBox title={title} options={options} />;
   }
 
   public render() {
@@ -310,18 +306,18 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
           ) : null
         }
       >
-        {/* {this.renderDeleteConfirmDialog()} */}
         <Box p={2}>
-          {isLoading && !isFirstLoaded ? (
-            <Loading />
-          ) : certificates && certificates.length > 0 ? (
-            this.renderKRTable()
-          ) : (
-            this.renderEmpty()
-          )}
-        </Box>
-        <Box p={2} pt={0}>
-          {this.renderInfoBox()}
+          <ACNEServer />
+          <Box mt={2}>
+            {isLoading && !isFirstLoaded ? (
+              <Loading />
+            ) : certificates && certificates.length > 0 ? (
+              this.renderKRTable()
+            ) : (
+              this.renderEmpty()
+            )}
+          </Box>
+          <Box mt={2}>{this.renderInfoBox()}</Box>
         </Box>
       </BasePage>
     );

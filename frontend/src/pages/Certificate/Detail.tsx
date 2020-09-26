@@ -9,13 +9,16 @@ import { RouteComponentProps, withRouter } from "react-router-dom";
 import { KPanel } from "widgets/KPanel";
 import DomainStatus, { acmePrefix } from "widgets/DomainStatus";
 import { Loading } from "widgets/Loading";
-import { AcmeServerGuide, DNSConfigGuide } from "widgets/AcmeServerGuide";
+import { ACNEServer, DNSConfigItems } from "widgets/ACNEServer";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { push } from "connected-react-router";
 import { CertificateNotFound } from "pages/Certificate/NotFound";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
+import { FlexRowItemCenterBox } from "widgets/Box";
+import { PendingBadge } from "widgets/Badge";
+import { BlankTargetLink } from "widgets/BlankTargetLink";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -46,13 +49,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
     } else {
       if (cert.httpsCertIssuer === http01Issuer) {
         const domains = cert.domains;
-        return (
-          <>
-            {domains?.map((domain) => {
-              return <DNSConfigGuide domain={domain} type="A" aRecord={ingressIP} />;
-            })}
-          </>
-        );
+        return <DNSConfigItems items={domains?.map((domain) => ({ domain, type: "A", aRecord: ingressIP }))} />;
       } else if (cert.httpsCertIssuer === dns01Issuer) {
         if (!acmeServer || !acmeServer.ready) {
           const domains = cert.domains;
@@ -67,16 +64,9 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
           const domains = cert.wildcardCertDNSChallengeDomainMap;
           if (domains) {
             return (
-              <>
-                {Object.keys(domains).map((domain: string) => {
-                  const ns = domains[domain];
-                  return (
-                    <Box key={domain}>
-                      <DNSConfigGuide domain={domain} type="NS" cnameRecord={ns} />
-                    </Box>
-                  );
-                })}
-              </>
+              <DNSConfigItems
+                items={Object.keys(domains).map((domain) => ({ domain, type: "NS", cnameRecord: domains[domain] }))}
+              />
             );
           }
         }
@@ -117,6 +107,28 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderStatus = (cert: Certificate) => {
+    if (cert.ready === "True") {
+      // why the ready field is a string value ?????
+      return (
+        <FlexRowItemCenterBox>
+          <FlexRowItemCenterBox>Normal</FlexRowItemCenterBox>
+        </FlexRowItemCenterBox>
+      );
+    } else if (!!cert.reason) {
+      return (
+        <FlexRowItemCenterBox>
+          <FlexRowItemCenterBox mr={1}>
+            <PendingBadge />
+          </FlexRowItemCenterBox>
+          <FlexRowItemCenterBox>{cert.reason}</FlexRowItemCenterBox>
+        </FlexRowItemCenterBox>
+      );
+    } else {
+      return <PendingBadge />;
+    }
+  };
+
   public render() {
     const { certificates, location, isLoading, isFirstLoaded, acmeServer } = this.props;
     if (isLoading && !isFirstLoaded) {
@@ -126,9 +138,9 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
     const coms = location.pathname.split("/");
     const certName = coms[coms.length - 1];
     const certInfoList = certificates.filter((item) => item.name === certName);
-    const certInfo = certInfoList[0];
+    const cert = certInfoList[0];
 
-    if (!certInfo) {
+    if (!cert) {
       return <CertificateNotFound />;
     }
 
@@ -142,9 +154,22 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                   { name: "Name", content: certName },
                   {
                     name: "Type",
-                    content: certInfo?.isSelfManaged ? "Externally Uploaded" : certInfo?.httpsCertIssuer,
+                    content: cert?.isSelfManaged ? "Externally Uploaded" : "Let's Encrypt",
                   },
-                  { name: "Status", content: certInfo?.ready ? certInfo?.ready : "Not Ready" },
+                  {
+                    name: "Challenge Type",
+                    content:
+                      !cert.isSelfManaged && cert.httpsCertIssuer === "default-http01-issuer" ? (
+                        <BlankTargetLink href={"https://letsencrypt.org/docs/challenge-types/#http-01-challenge"}>
+                          HTTP-01 challenge
+                        </BlankTargetLink>
+                      ) : (
+                        <BlankTargetLink href={"https://letsencrypt.org/docs/challenge-types/#dns-01-challenge"}>
+                          DNS-01 challenge
+                        </BlankTargetLink>
+                      ),
+                  },
+                  { name: "Status", content: this.renderStatus(cert) },
                 ]}
               />
             </Box>
@@ -152,12 +177,14 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
 
           <Box mt={2}>
             <KPanel title="Domains">
-              <Box p={2}>{this.renderDomainGuide(certInfo)}</Box>
+              <Box p={2}>{this.renderDomainGuide(cert)}</Box>
             </KPanel>
           </Box>
-        </Box>
 
-        <AcmeServerGuide acmeServer={acmeServer} cert={certInfo} />
+          <Box mt={2}>
+            <ACNEServer />
+          </Box>
+        </Box>
       </BasePage>
     );
   }

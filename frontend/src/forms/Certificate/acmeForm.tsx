@@ -6,11 +6,11 @@ import { Field, Form } from "react-final-form";
 import { connect, DispatchProp } from "react-redux";
 import { RootState } from "reducers";
 import { AcmeServerFormType } from "types/certificate";
-import sc from "utils/stringConstants";
 import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
-import { ValidatorRequired } from "../validator";
+import { ValidatorIsDNS1123SubDomain } from "forms/validator";
+import { trimAndToLowerParse } from "forms/normalizer";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -45,19 +45,10 @@ class AcmeFormRaw extends React.PureComponent<Props & ReturnType<typeof mapState
                           name="acmeDomain"
                           label="ACME Domain"
                           component={FinalTextField}
-                          validate={ValidatorRequired}
-                          helperText={sc.NAME_RULE}
-                          placeholder="Please type the a domain for ACME DNS server"
-                        />
-                      </Grid>
-                      <Grid item md={12}>
-                        <Field
-                          name="nsDomain"
-                          label="NS Domain"
-                          autoComplete="off"
-                          component={FinalTextField}
-                          validate={ValidatorRequired}
-                          placeholder="Please type the a domain as ACME Domain's CNAME record"
+                          validate={ValidatorIsDNS1123SubDomain}
+                          parse={trimAndToLowerParse}
+                          helperText={"The domain name of your ACME server"}
+                          placeholder="e.g. acme-random-suffix.your-domain.com"
                         />
                       </Grid>
                     </Grid>
