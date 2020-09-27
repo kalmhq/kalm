@@ -1,7 +1,7 @@
 import { Box, Button, Grid, TextField } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import HelpIcon from "@material-ui/icons/Help";
-import { KTooltip } from "widgets/KTooltip";
+import { diskSizeFormat, diskSizeParse, trimParse } from "forms/normalizer";
 import React from "react";
 import { Field } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
@@ -22,13 +22,14 @@ import {
   workloadTypeStatefulSet,
 } from "types/componentTemplate";
 import { sizeStringToGi } from "utils/sizeConv";
+import StringConstants from "utils/stringConstants";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { KTooltip } from "widgets/KTooltip";
 import { Caption, H6 } from "widgets/Label";
 import { FinalSelectField } from "../Final/select";
 import { FinalTextField } from "../Final/textfield";
-import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
-import { diskSizeFormat, diskSizeParse } from "forms/normalizer";
+import { ValidatorStringRequired, ValidatorVolumeSize } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -227,9 +228,6 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
         name={`${name}.${index}.type`}
         component={FinalSelectField}
         label="Type"
-        validate={ValidatorRequired}
-        placeholder="Select a volume type"
-        // defaultValue={typeOptions[0].value}
         value={disk.type || typeOptions[0].value}
         options={typeOptions}
         disabled={shouldDisabledStatefulSetPvcTemplate}
@@ -238,7 +236,9 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
         component={FinalTextField}
         name={`${name}.${index}.path`}
         label="Mount Path"
-        validate={ValidatorRequired}
+        validate={ValidatorStringRequired}
+        parse={trimParse}
+        placeholder={StringConstants.MOUNT_PATH_PLACEHOLDER}
       />,
     ];
 
@@ -251,8 +251,6 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           name={`${name}.${index}.claimName`}
           component={FinalSelectField}
           label="Claim Name"
-          // validate={ValidatorRequired}
-          placeholder="Select a Claim Name"
           options={this.getClaimNameOptions(disk)}
           disabled={shouldDisabledStatefulSetPvcTemplate}
         />,
@@ -310,7 +308,8 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           component={FinalTextField}
           name={`${name}.${index}.hostPath`}
           label="Host Path"
-          validate={ValidatorRequired}
+          validate={ValidatorStringRequired}
+          parse={trimParse}
         />,
       );
     } else {

@@ -11,7 +11,7 @@ import {
   withStyles,
 } from "@material-ui/core";
 import { WithStyles } from "@material-ui/styles";
-import { NormalizePositiveNumber } from "forms/normalizer";
+import { NormalizePositiveNumber, trimParse } from "forms/normalizer";
 import React from "react";
 import { Field, FieldRenderProps } from "react-final-form";
 import { ComponentLikePort, PortProtocolHTTP, PortProtocolTCP, Probe } from "types/componentTemplate";
@@ -92,6 +92,7 @@ class RenderProbe extends React.PureComponent<Props> {
             name={`${name}.initialDelaySeconds`}
             component={RenderNestedTextfield}
             parse={NormalizePositiveNumber}
+            validate={ValidatorRequired}
             placeholder="10"
             type="number"
             min="1"
@@ -144,6 +145,7 @@ class RenderProbe extends React.PureComponent<Props> {
             name={`${name}.periodSeconds`}
             component={RenderNestedTextfield}
             parse={NormalizePositiveNumber}
+            validate={ValidatorRequired}
             placeholder="10"
             type="number"
             min="1"
@@ -176,7 +178,7 @@ class RenderProbe extends React.PureComponent<Props> {
             <Field
               name={`${name}.exec.command[0]`}
               component={RenderNestedTextfield}
-              validate={ValidatorRequired}
+              parse={trimParse}
               placeholder="command"
               style={{ width: 300 }}
             />
@@ -260,6 +262,7 @@ class RenderProbe extends React.PureComponent<Props> {
             component={RenderNestedTextfield}
             placeholder="1"
             parse={NormalizePositiveNumber}
+            validate={ValidatorRequired}
             style={{ width: 60 }}
             type="number"
             min="1"
@@ -283,6 +286,7 @@ class RenderProbe extends React.PureComponent<Props> {
                 component={RenderNestedTextfield}
                 placeholder="1"
                 parse={NormalizePositiveNumber}
+                validate={ValidatorRequired}
                 style={{ width: 60 }}
                 type="number"
                 min="1"
@@ -296,6 +300,7 @@ class RenderProbe extends React.PureComponent<Props> {
             component={RenderNestedTextfield}
             placeholder="3"
             parse={NormalizePositiveNumber}
+            validate={ValidatorRequired}
             type="number"
             min="1"
             style={{ width: 60 }}

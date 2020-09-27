@@ -55,16 +55,6 @@ export const regExpIp = new RegExp(
 // https://regex101.com/r/wG1nZ3/37
 export const regExpWildcardDomain = new RegExp(/^(\*\.)?([\w-]+\.)+[a-zA-Z]+$/);
 
-export const ValidatorEnvName = (value: string) => {
-  if (value === undefined) return undefined;
-
-  if (!value.match(/^[-._a-zA-Z][-._a-zA-Z0-9]*$/)) {
-    return "Env name is invalid. regex used for validation is '[-._a-zA-Z][-._a-zA-Z0-9]*'";
-  }
-
-  return undefined;
-};
-
 const yupValidatorWrap = function <T>(...v: Schema<T>[]) {
   return function (value: T) {
     let schema: Schema<T>;
@@ -215,6 +205,7 @@ export const ValidatorPort = yupValidatorWrap<number | undefined>(
 );
 
 export const ValidatorRequired = yupValidatorWrap<any>(mixed().required("Required"));
+export const ValidatorStringRequired = yupValidatorWrap<any>(string().required("Required"));
 
 export const ValidatorVolumeSize = yupValidatorWrap<string>(
   string()
@@ -299,3 +290,12 @@ export const ValidateHost = yupValidatorWrap<string | undefined>(
 );
 
 export const ValidatorOneOfFactory = (values: any[]) => yupValidatorWrap(Yup.string().oneOf(values));
+
+export const ValidatorEnvName = yupValidatorWrap<string>(
+  string()
+    .required()
+    .matches(
+      /^[-._a-zA-Z][-._a-zA-Z0-9]*$/,
+      "Env name is invalid. regex used for validation is '[-._a-zA-Z][-._a-zA-Z0-9]*'",
+    ),
+);

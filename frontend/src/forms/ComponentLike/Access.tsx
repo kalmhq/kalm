@@ -78,7 +78,7 @@ class ComponentAccessRaw extends React.PureComponent<Props> {
                 )}
                 label="Ports"
                 name="protectedEndpoint.ports"
-                placeholder={"Select specific ports"}
+                placeholder="Select specific ports"
                 parse={NormalizePorts}
                 helperText={sc.PROTECTED_ENDPOINT_PORT}
               />

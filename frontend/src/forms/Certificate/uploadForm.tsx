@@ -14,6 +14,7 @@ import DomainStatus from "widgets/DomainStatus";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
 import { Uploader } from "forms/Final/uploader";
+import { stringArrayTrimAndToLowerCaseParse } from "forms/normalizer";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   return {
@@ -88,7 +89,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
               const domains = extractDomainsFromCertificateContent(value);
               change("domains", domains);
             }}
-            multiline={true}
+            multiline
             rows={12}
             value={values.selfManagedCertContent}
           />
@@ -99,7 +100,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
             errorText={errors.selfManagedCertPrivateKey}
             inputlabel="PrivateKey (PEM file format)"
             inputid="upload-private-key"
-            multiline={true}
+            multiline
             className={classes.fileInput}
             rows={12}
             id="certificate-selfManagedCertPrivateKey"
@@ -159,6 +160,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
                     disabled={true}
                     name="domains"
                     validate={ValidatorArrayOfIsValidHostInCertificate}
+                    parse={stringArrayTrimAndToLowerCaseParse}
                     icons={icons}
                     value={values.domains}
                     id="certificate-domains"

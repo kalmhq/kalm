@@ -13,7 +13,7 @@ import { FinalRadioGroupRender } from "forms/Final/radio";
 import { FinalSelectField } from "forms/Final/select";
 import { FormDataPreview } from "forms/Final/util";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
-import { cpuFormat, cpuParse, memoryFormat, memoryParse, NormalizePositiveNumber } from "forms/normalizer";
+import { cpuFormat, cpuParse, memoryFormat, memoryParse, NormalizePositiveNumber, trimParse } from "forms/normalizer";
 import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 import React from "react";
 import { Field, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
@@ -47,6 +47,7 @@ import {
   ValidatorMemory,
   ValidatorRequired,
   ValidatorSchedule,
+  ValidatorStringRequired,
 } from "../validator";
 import { ComponentAccess } from "./Access";
 import { Envs } from "./Envs";
@@ -161,6 +162,22 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     this.loadRequiredData();
   }
 
+  private renderScheduleHelperText = () => {
+    return (
+      <span>
+        <a href="https://en.wikipedia.org/wiki/Cron" target="_blank" rel="noopener noreferrer">
+          Cron
+        </a>
+        {" \n"}
+        format string. You can create schedule expressions with{" "}
+        <a href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">
+          Crontab Guru
+        </a>
+        .
+      </span>
+    );
+  };
+
   private renderReplicasOrSchedule = (workloadType?: string) => {
     if (workloadType === workloadTypeServer || workloadType === workloadTypeStatefulSet) {
       return (
@@ -188,19 +205,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             label="Cronjob Schedule"
             required
             validate={ValidatorSchedule}
-            helperText={
-              <span>
-                <a href="https://en.wikipedia.org/wiki/Cron" target="_blank" rel="noopener noreferrer">
-                  Cron
-                </a>
-                {" \n"}
-                format string. You can create schedule expressions with{" "}
-                <a href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">
-                  Crontab Guru
-                </a>
-                .
-              </span>
-            }
+            parse={trimParse}
+            helperText={this.renderScheduleHelperText()}
           />
         </>
       );
@@ -663,6 +669,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="name"
             label="Name"
             validate={ValidatorIsDNS123Label}
+            parse={trimParse}
             disabled={isEdit}
             helperText={isEdit ? "Name can't be changed." : sc.NAME_RULE}
           />
@@ -674,8 +681,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="image"
             spellCheck={false}
             label="Image"
+            parse={trimParse}
             placeholder={sc.IMAGE_PLACEHOLDER}
-            validate={ValidatorRequired}
+            validate={ValidatorStringRequired}
             helperText={sc.IMAGE_INPUT_HELPER}
           />
         </Grid>
@@ -693,7 +701,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                   name="workloadType"
                   component={FinalSelectField}
                   label="Type"
-                  validate={ValidatorRequired}
                   disabled={isEdit || hasVolumes}
                   options={[
                     makeSelectOption(workloadTypeServer, "Service Component", sc.COMPONENT_TYPE_SERVICE_OPTION),

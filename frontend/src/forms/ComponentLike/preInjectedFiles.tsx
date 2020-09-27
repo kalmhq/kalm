@@ -2,19 +2,21 @@ import { Box, Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
+import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
 import { FinalTextField } from "forms/Final/textfield";
+import { trimParse } from "forms/normalizer";
 import React from "react";
 import { Field } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { PreInjectedFile } from "types/componentTemplate";
+import StringConstants from "utils/stringConstants";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { RichEditor } from "widgets/RichEditor";
-import { ValidatorInjectedFilePath, ValidatorRequired } from "../validator";
-import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
+import { ValidatorInjectedFilePath } from "../validator";
 
 interface State {
   editingFileIndex: number;
@@ -133,6 +135,8 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
               label="Mount Path"
               component={FinalTextField}
               validate={ValidatorInjectedFilePath}
+              parse={trimParse}
+              placeholder={StringConstants.MOUNT_PATH_PLACEHOLDER}
             />
           </Grid>
           <Grid item xs={1}></Grid>
@@ -162,11 +166,11 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
                 <Field
                   name={`${name}.${index}.mountPath`}
                   component={FinalTextField}
-                  disabled={true}
+                  disabled
                   label="Mount Path"
                   file={injectedFile}
-                  validate={ValidatorRequired}
                   index={index}
+                  placeholder={StringConstants.MOUNT_PATH_PLACEHOLDER}
                 />
               </Grid>
               <Grid item xs={4}>
@@ -206,11 +210,6 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
           >
             New File
           </Button>
-          {/* {error ? (
-            <Box mb={2}>
-              <Alert severity="error">{error}</Alert>
-            </Box>
-          ) : null} */}
         </Box>
       </>
     );
