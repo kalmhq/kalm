@@ -36,11 +36,8 @@ func (suite *ACMEServerHandlerTestSuite) TestGetEmpty() {
 			suite.IsMissingRoleError(rec, "view", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
-			var res resources.ACMEServerResp
-			rec.BodyAsJSON(&res)
-
 			suite.Equal(200, rec.Code)
-			suite.Equal("", res.Name)
+			suite.Equal("null\n", rec.BodyAsString())
 		},
 	})
 }
@@ -124,9 +121,8 @@ func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 			suite.IsMissingRoleError(rec, "viewer", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
-			var res resources.ACMEServerResp
-			rec.BodyAsJSON(&res)
-			suite.Equal(404, rec.Code)
+			suite.Equal(200, rec.Code)
+			suite.Equal("null\n", rec.BodyAsString())
 		},
 	})
 }

@@ -50,6 +50,7 @@ func (h *ApiHandler) handleUpdateACMEServer(c echo.Context) error {
 	acmeServer.NSDomain = fmt.Sprintf("ns.%s", acmeServer.ACMEDomain)
 
 	acmeServer, err = h.resourceManager.UpdateACMEServer(acmeServer)
+
 	if err != nil {
 		return err
 	}
@@ -63,6 +64,7 @@ func (h *ApiHandler) handleGetACMEServer(c echo.Context) error {
 	}
 
 	acmeServerResp, err := h.resourceManager.GetACMEServerAsResp()
+
 	if err != nil {
 		return err
 	}

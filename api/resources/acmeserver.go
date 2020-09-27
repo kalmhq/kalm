@@ -2,7 +2,6 @@ package resources
 
 import (
 	"fmt"
-	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -58,6 +57,10 @@ func (resourceManager *ResourceManager) UpdateACMEServer(server *ACMEServer) (*A
 		return nil, err
 	}
 
+	if acmeServer == nil {
+		return nil, nil
+	}
+
 	if acmeServer.Name != controllers.ACMEServerName {
 		return nil, fmt.Errorf("should only 1 acmeServer named as %s exist", controllers.ACMEServerName)
 	}
@@ -81,7 +84,7 @@ func (resourceManager *ResourceManager) GetACMEServer() (*v1alpha1.ACMEServer, e
 	}
 
 	if size := len(acmeServerList.Items); size == 0 {
-		return nil, errors.NewNotFound("")
+		return nil, nil
 	}
 
 	for i := range acmeServerList.Items {
@@ -114,6 +117,10 @@ func (resourceManager *ResourceManager) GetACMEServerAsResp() (*ACMEServerResp, 
 
 	if err != nil {
 		return nil, err
+	}
+
+	if server == nil {
+		return nil, nil
 	}
 
 	return &ACMEServerResp{
