@@ -1,10 +1,12 @@
 package resources
 
 import (
+	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
+	"golang.org/x/crypto/ssh"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -266,13 +268,28 @@ func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCe
 	}
 
 	domains := getDomainsInCert(x509Cert)
+
 	if len(domains) <= 0 {
 		return nil, fmt.Errorf("fail to find domain name in cert")
 	}
 
-	ok := checkPrivateKey(x509Cert, cert.SelfManagedCertPrvKey)
+	pki, err := ssh.ParseRawPrivateKey([]byte(cert.SelfManagedCertPrvKey))
+
+	rsaPrivateKey, ok := pki.(*rsa.PrivateKey)
+
 	if !ok {
-		return nil, fmt.Errorf("privateKey and cert not match")
+		return nil, fmt.Errorf("Only support RSA algorithm in private key")
+	}
+
+	rsaPublicKey, ok := x509Cert.PublicKey.(*rsa.PublicKey)
+
+	if !ok {
+		return nil, fmt.Errorf("Only support RSA algorithm in public key")
+	}
+
+	if rsaPrivateKey.PublicKey.N.Cmp(rsaPublicKey.N) != 0 ||
+		rsaPrivateKey.PublicKey.E != rsaPublicKey.E {
+		return nil, fmt.Errorf("Private key and cert not match")
 	}
 
 	// create secret in istio-system
@@ -313,24 +330,6 @@ func getDomainsInCert(x509Cert *x509.Certificate) []string {
 
 	return domains
 }
-
-func checkPrivateKey(cert *x509.Certificate, prvKey string) bool {
-	//todo check if cert & prvKey matches
-	return true
-}
-
-//func parseCert(certPEM string) (*x509.Certificate, error) {
-//	block, _ := pem.Decode([]byte(certPEM))
-//	if block == nil {
-//		panic("failed to parse certificate PEM")
-//	}
-//	cert, err := x509.ParseCertificate(block.Bytes)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	return cert, nil
-//}
 
 func (resourceManager *ResourceManager) DeleteHttpsCert(name string) error {
 	return resourceManager.Delete(&v1alpha1.HttpsCert{ObjectMeta: v1.ObjectMeta{Name: name}})
