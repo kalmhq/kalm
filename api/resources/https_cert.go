@@ -275,6 +275,10 @@ func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCe
 
 	pki, err := ssh.ParseRawPrivateKey([]byte(cert.SelfManagedCertPrvKey))
 
+	if err != nil {
+		return nil, err
+	}
+
 	rsaPrivateKey, ok := pki.(*rsa.PrivateKey)
 
 	if !ok {
