@@ -7,7 +7,7 @@ import { FieldArray } from "react-final-form-arrays";
 import { HttpRouteCondition } from "types/route";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { ValidatorRequired } from "../validator";
+import { ValidatorStringRequired } from "../validator";
 
 export interface Props {
   conditions?: HttpRouteCondition[];
@@ -71,7 +71,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                       name={`conditions.${index}.name`}
                       component={FinalTextField}
                       label="Name"
-                      validate={ValidatorRequired}
+                      validate={ValidatorStringRequired}
                     />
                   </Grid>
                   <Grid item md={2}>
@@ -79,7 +79,6 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                       name={`conditions.${index}.operator`}
                       component={FinalSelectField}
                       label="operator"
-                      validate={ValidatorRequired}
                       options={[
                         { value: "equal", text: "Equal" },
                         { value: "withPrifix", text: "With Prifix" },
@@ -92,7 +91,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                       name={`conditions.${index}.value`}
                       component={FinalTextField}
                       label="Value"
-                      validate={ValidatorRequired}
+                      validate={ValidatorStringRequired}
                     />
                   </Grid>
                   <Grid item md={2}>

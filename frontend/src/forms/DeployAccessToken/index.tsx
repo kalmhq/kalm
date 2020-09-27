@@ -5,7 +5,7 @@ import { AutoCompleteMultipleValue } from "forms/Final/autoComplete";
 import { FinalRadioGroupRender } from "forms/Final/radio";
 import { FinalTextField } from "forms/Final/textfield";
 import { FormDataPreview } from "forms/Final/util";
-import { ValidatorRequired } from "forms/validator";
+import { ValidatorRequired, ValidatorStringRequired } from "forms/validator";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
@@ -116,7 +116,7 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
                   autoFocus
                   autoComplete="off"
                   component={FinalTextField}
-                  validate={ValidatorRequired}
+                  validate={ValidatorStringRequired}
                 />
 
                 <Field
@@ -131,16 +131,14 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
                   {values.scope === DeployAccessTokenScopeNamespace ? (
                     <Field
                       render={(props: FieldRenderProps<string[]>) => {
-                        console.log(values);
                         return <AutoCompleteMultipleValue {...props} options={applicationOptions} />;
                       }}
                       // parse={(options: AutoCompleteOption[]) => options.map((option) => option.value)}
                       name="resources"
                       label="Applications"
                       key="applications"
-                      placeholder={"Select an application"}
+                      placeholder="Select an application"
                       validate={ValidatorRequired}
-                      helperText={""}
                     />
                   ) : null}
 
@@ -154,7 +152,6 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
                       label="Components"
                       placeholder={"Select a component"}
                       validate={ValidatorRequired}
-                      helperText={""}
                     />
                   ) : null}
                 </Box>
