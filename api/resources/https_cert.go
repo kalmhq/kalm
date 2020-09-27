@@ -110,9 +110,8 @@ func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCe
 	}
 
 	if cert.Name == "" {
-		cnt := 0
 		maxCnt := 5
-		for cnt < maxCnt {
+		for cnt := 0; cnt < maxCnt; cnt++ {
 			name := autoGenCertName(cert)
 
 			// check if exist
