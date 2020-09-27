@@ -7,7 +7,6 @@ import { BasePage } from "pages/BasePage";
 import { RootState } from "reducers";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { KPanel } from "widgets/KPanel";
-import DomainStatus, { acmePrefix } from "widgets/DomainStatus";
 import { Loading } from "widgets/Loading";
 import { ACMEServer, DNSConfigItems } from "widgets/ACMEServer";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
@@ -19,6 +18,9 @@ import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { PendingBadge } from "widgets/Badge";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
+import { Alert, AlertTitle } from "@material-ui/lab";
+import Typography from "@material-ui/core/Typography";
+import { DNS01ChallengeLink } from "widgets/Link";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -46,42 +48,50 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
 
     if (cert === undefined) {
       return null;
-    } else {
-      if (cert.httpsCertIssuer === http01Issuer) {
-        const domains = cert.domains;
-        return <DNSConfigItems items={domains?.map((domain) => ({ domain, type: "A", aRecord: ingressIP }))} />;
-      } else if (cert.httpsCertIssuer === dns01Issuer) {
-        if (!acmeServer || !acmeServer.ready) {
-          const domains = cert.domains;
-          return (
-            <>
-              {domains?.map((domain) => {
-                return <DomainStatus domain={acmePrefix + domain} cnameDomain={""} mr={1} />;
-              })}
-            </>
-          );
-        } else {
-          const domains = cert.wildcardCertDNSChallengeDomainMap;
-          if (domains) {
-            return (
-              <DNSConfigItems
-                items={Object.keys(domains).map((domain) => ({ domain, type: "NS", cnameRecord: domains[domain] }))}
-              />
-            );
-          }
-        }
-      } else {
-        const domains = cert.domains;
+    }
 
+    if (cert.httpsCertIssuer === http01Issuer) {
+      const domains = cert.domains;
+      return <DNSConfigItems items={domains?.map((domain) => ({ domain, type: "A", aRecord: ingressIP }))} />;
+    }
+
+    if (cert.httpsCertIssuer === dns01Issuer) {
+      const domains = cert.wildcardCertDNSChallengeDomainMap;
+
+      const warning = (
+        <Box mb={2}>
+          <Alert severity="warning">
+            <AlertTitle>Your ACME DNS server is not ready yet.</AlertTitle>
+            <Typography>
+              <DNS01ChallengeLink /> requires your ACME DNS server working correctly. Please wait the server to start.
+            </Typography>
+          </Alert>
+        </Box>
+      );
+
+      if (domains) {
         return (
           <>
-            {domains?.map((domain) => {
-              return <Box key={domain}>{domain}</Box>;
-            })}
+            {!acmeServer || !acmeServer?.ready ? warning : null}
+            <DNSConfigItems
+              items={Object.keys(domains).map((domain) => ({ domain, type: "NS", cnameRecord: domains[domain] }))}
+            />
           </>
         );
+      } else {
+        return warning;
       }
     }
+
+    const domains = cert.domains;
+
+    return (
+      <>
+        {domains?.map((domain) => {
+          return <Box key={domain}>{domain}</Box>;
+        })}
+      </>
+    );
   };
 
   private renderSecondaryHeader() {
@@ -164,9 +174,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                           HTTP-01 challenge
                         </BlankTargetLink>
                       ) : (
-                        <BlankTargetLink href={"https://letsencrypt.org/docs/challenge-types/#dns-01-challenge"}>
-                          DNS-01 challenge
-                        </BlankTargetLink>
+                        <DNS01ChallengeLink />
                       ),
                   },
                   { name: "Status", content: this.renderStatus(cert) },

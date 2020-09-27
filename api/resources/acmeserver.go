@@ -15,13 +15,13 @@ type ACMEServer struct {
 }
 
 type ACMEServerResp struct {
-	ACMEServer      `json:",inline"`
+	*ACMEServer     `json:",inline"`
 	IPForNameServer string `json:"ipForNameServer"`
 	Ready           bool   `json:"ready"`
 }
 
-func (resourceManager *ResourceManager) CreateACMEServer(server ACMEServer) (ACMEServer, error) {
-	resource := v1alpha1.ACMEServer{
+func (resourceManager *ResourceManager) CreateACMEServer(server *ACMEServer) (*ACMEServer, error) {
+	resource := &v1alpha1.ACMEServer{
 		ObjectMeta: controllerruntime.ObjectMeta{
 			Name: controllers.ACMEServerName,
 		},
@@ -31,16 +31,16 @@ func (resourceManager *ResourceManager) CreateACMEServer(server ACMEServer) (ACM
 		},
 	}
 
-	err := resourceManager.Create(&resource)
+	err := resourceManager.Create(resource)
 
-	return ACMEServer{
+	return &ACMEServer{
 		Name:       resource.Name,
 		ACMEDomain: resource.Spec.ACMEDomain,
 		NSDomain:   resource.Spec.NSDomain,
 	}, err
 }
 
-func (resourceManager *ResourceManager) UpdateACMEServer(server ACMEServer) (ACMEServer, error) {
+func (resourceManager *ResourceManager) UpdateACMEServer(server *ACMEServer) (*ACMEServer, error) {
 	expectedACMEServer := v1alpha1.ACMEServer{
 		ObjectMeta: controllerruntime.ObjectMeta{
 			Name: controllers.ACMEServerName,
@@ -53,36 +53,38 @@ func (resourceManager *ResourceManager) UpdateACMEServer(server ACMEServer) (ACM
 
 	acmeServer, err := resourceManager.GetACMEServer()
 	if err != nil {
-		return ACMEServer{}, err
+		return nil, err
 	}
 
 	if acmeServer.Name != controllers.ACMEServerName {
-		return ACMEServer{}, fmt.Errorf("should only 1 acmeServer named as %s exist", controllers.ACMEServerName)
+		return nil, fmt.Errorf("should only 1 acmeServer named as %s exist", controllers.ACMEServerName)
 	}
 
 	acmeServer.Spec = expectedACMEServer.Spec
-	err = resourceManager.Update(&acmeServer)
 
-	return ACMEServer{
+	err = resourceManager.Update(acmeServer)
+
+	return &ACMEServer{
 		Name:       acmeServer.Name,
 		ACMEDomain: acmeServer.Spec.ACMEDomain,
 		NSDomain:   acmeServer.Spec.NSDomain,
 	}, err
 }
 
-func (resourceManager *ResourceManager) GetACMEServer() (v1alpha1.ACMEServer, error) {
+func (resourceManager *ResourceManager) GetACMEServer() (*v1alpha1.ACMEServer, error) {
 	var acmeServerList v1alpha1.ACMEServerList
-	err := resourceManager.List(&acmeServerList)
-	if err != nil {
-		return v1alpha1.ACMEServer{}, err
+
+	if err := resourceManager.List(&acmeServerList); err != nil {
+		return nil, err
 	}
 
-	size := len(acmeServerList.Items)
-	if size == 0 {
-		return v1alpha1.ACMEServer{}, err
+	if size := len(acmeServerList.Items); size == 0 {
+		return nil, fmt.Errorf("acme server list length is zero")
 	}
 
-	for _, acmeServer := range acmeServerList.Items {
+	for i := range acmeServerList.Items {
+		acmeServer := &acmeServerList.Items[i]
+
 		if acmeServer.Name != controllers.ACMEServerName {
 			continue
 		}
@@ -90,17 +92,18 @@ func (resourceManager *ResourceManager) GetACMEServer() (v1alpha1.ACMEServer, er
 		return acmeServer, nil
 	}
 
-	return v1alpha1.ACMEServer{}, fmt.Errorf("expected acme-server not exist yet")
+	return nil, fmt.Errorf("expected acme-server not exist yet")
 }
 
-func (resourceManager *ResourceManager) GetACMEServerAsResp() (ACMEServerResp, error) {
+func (resourceManager *ResourceManager) GetACMEServerAsResp() (*ACMEServerResp, error) {
 	server, err := resourceManager.GetACMEServer()
+
 	if err != nil {
-		return ACMEServerResp{}, err
+		return nil, err
 	}
 
-	return ACMEServerResp{
-		ACMEServer: ACMEServer{
+	return &ACMEServerResp{
+		ACMEServer: &ACMEServer{
 			Name:       server.Name,
 			ACMEDomain: server.Spec.ACMEDomain,
 			NSDomain:   server.Spec.NSDomain,

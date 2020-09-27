@@ -377,7 +377,7 @@ export class NodeListRaw extends React.Component<Props, States> {
           </Box>
         }
         options={options}
-      ></InfoBox>
+      />
     );
   }
 

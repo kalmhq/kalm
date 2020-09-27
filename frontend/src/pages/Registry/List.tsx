@@ -122,10 +122,6 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     }
   }
 
-  private renderRepositories(row: Registry) {
-    return row.repositories?.map((x) => x.name).join(",");
-  }
-
   private renderActions(row: Registry) {
     const { canEditCluster } = this.props;
     return canEditCluster() ? (
@@ -239,7 +235,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderInfoBox() {
-    return <InfoBox title={pageObjectName} options={[]} guideLink={"https://kalm.dev/docs/registry"}></InfoBox>;
+    return <InfoBox title={pageObjectName} options={[]} guideLink={"https://kalm.dev/docs/registry"} />;
   }
 
   public render() {

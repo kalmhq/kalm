@@ -84,12 +84,12 @@ func (h *ApiHandler) handleDeleteACMEServer(c echo.Context) error {
 	return c.NoContent(200)
 }
 
-func getACMEServerFromContext(c echo.Context) (resources.ACMEServer, error) {
+func getACMEServerFromContext(c echo.Context) (*resources.ACMEServer, error) {
 	var acmeServer resources.ACMEServer
 
 	if err := c.Bind(&acmeServer); err != nil {
-		return resources.ACMEServer{}, err
+		return nil, err
 	}
 
-	return acmeServer, nil
+	return &acmeServer, nil
 }

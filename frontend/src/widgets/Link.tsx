@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, LinkProps } from "react-router-dom";
 import { Link as MLink, LinkProps as MLinkProps, useTheme } from "@material-ui/core";
+import { BlankTargetLink } from "widgets/BlankTargetLink";
 
 export function KLink(props: LinkProps) {
   const theme = useTheme();
@@ -22,3 +23,11 @@ export function KMLink(props: MLinkProps | { component: any }) {
     />
   );
 }
+
+export const DNS01ChallengeLink = () => {
+  return (
+    <BlankTargetLink href={"https://letsencrypt.org/docs/challenge-types/#dns-01-challenge"}>
+      DNS-01 challenge
+    </BlankTargetLink>
+  );
+};
