@@ -459,7 +459,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                               accepted.
                             </Caption>
 
-                            <RenderHttpRouteConditions conditions={values.conditions} />
+                            <RenderHttpRouteConditions />
                           </Box>
                         }
                       />

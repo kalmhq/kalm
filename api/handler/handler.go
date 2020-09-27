@@ -145,7 +145,8 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.PUT("/httpscertissuers/:name", h.handleUpdateHttpsCertIssuer)
 	gv1Alpha1WithAuth.DELETE("/httpscertissuers/:name", h.handleDeleteHttpsCertIssuer)
 
-	gv1Alpha1WithAuth.GET("/httpscerts", h.handleGetHttpsCerts)
+	gv1Alpha1WithAuth.GET("/httpscerts", h.handleListHttpsCerts)
+	gv1Alpha1WithAuth.GET("/httpscerts/:name", h.handleGetHttpsCert)
 	gv1Alpha1WithAuth.POST("/httpscerts", h.handleCreateHttpsCert)
 	gv1Alpha1WithAuth.POST("/httpscerts/upload", h.handleUploadHttpsCert)
 	gv1Alpha1WithAuth.PUT("/httpscerts/:name", h.handleUpdateHttpsCert)
@@ -172,7 +173,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.POST("/deploy_access_tokens", h.handleCreateDeployAccessToken)
 	gv1Alpha1WithAuth.DELETE("/deploy_access_tokens", h.handleDeleteAccessToken)
 
-	gv1Alpha1WithAuth.GET("/sso", h.handleListSSOConfig)
+	gv1Alpha1WithAuth.GET("/sso", h.handleGetSSOConfig)
 	gv1Alpha1WithAuth.DELETE("/sso", h.handleDeleteSSOConfig)
 	gv1Alpha1WithAuth.PUT("/sso", h.handleUpdateSSOConfig)
 	gv1Alpha1WithAuth.POST("/sso", h.handleCreateSSOConfig)

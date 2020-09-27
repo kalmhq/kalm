@@ -1,5 +1,5 @@
 import React from "react";
-import { IconButton, IconButtonProps, Tooltip, withStyles, WithStyles, Theme } from "@material-ui/core";
+import { IconButton, IconButtonProps, Theme, Tooltip, WithStyles, withStyles } from "@material-ui/core";
 import { Link } from "react-router-dom";
 
 const styles = (theme: Theme) => ({
@@ -50,7 +50,7 @@ export const IconButtonWithTooltip = withStyles(styles)(
     if (props.disabled) {
       return (
         <Tooltip title={tooltipTitle} placement={tooltipPlacement}>
-          <div>{tooltipChild}</div>
+          {tooltipChild}
         </Tooltip>
       );
     }

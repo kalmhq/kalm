@@ -3,6 +3,7 @@ import { updateComponentAction } from "actions/component";
 import { push } from "connected-react-router";
 import { ComponentLikeForm } from "forms/ComponentLike";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
+import produce from "immer";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { BasePage } from "pages/BasePage";
 import React from "react";
@@ -29,7 +30,11 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
 class ComponentEditRaw extends React.PureComponent<Props> {
   private submit = async (formValues: ComponentLike) => {
     const { dispatch, activeNamespaceName, component } = this.props;
-    formValues.preInjectedFiles = formValues.preInjectedFiles?.filter((file) => file.mountPath || file.content);
+    if (formValues.preInjectedFiles) {
+      formValues = produce(formValues, (draft) => {
+        draft.preInjectedFiles = formValues.preInjectedFiles?.filter((file) => file.mountPath || file.content);
+      });
+    }
     await dispatch(updateComponentAction(formValues, activeNamespaceName));
     dispatch(push(`/applications/${activeNamespaceName}/components/${component.name}`));
   };

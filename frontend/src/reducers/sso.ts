@@ -23,7 +23,7 @@ import produce, { original } from "immer";
 export type State = {
   isLoading: boolean;
   loaded: boolean;
-  config?: SSOConfig;
+  config: SSOConfig | null;
   isProtectedEndpointsLoaded: boolean;
   isProtectedEndpointsLoading: boolean;
   protectedEndpoints: ProtectedEndpoint[];
@@ -32,7 +32,7 @@ export type State = {
 const initialState: State = {
   isLoading: false,
   loaded: false,
-  config: undefined,
+  config: null,
   isProtectedEndpointsLoaded: false,
   isProtectedEndpointsLoading: false,
   protectedEndpoints: [],
@@ -79,7 +79,7 @@ const reducer = produce((state: State, action: Actions) => {
             return;
           }
           case RESOURCE_ACTION_DELETE: {
-            state.config = undefined;
+            state.config = null;
             return;
           }
           case RESOURCE_ACTION_UPDATE: {

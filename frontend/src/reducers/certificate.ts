@@ -74,7 +74,7 @@ const reducer = produce((state: State, action: Actions) => {
     }
     case LOAD_ACME_SERVER_FULFILLED: {
       state.isAcmeServerLoading = false;
-      state.acmeServer = action.payload.acmeServer || null;
+      state.acmeServer = action.payload.acmeServer;
       break;
     }
     case LOAD_CERTIFICATE_ISSUERS_FULFILLED: {

@@ -108,7 +108,7 @@ export class NodeListRaw extends React.Component<Props, States> {
       <Expansion
         high
         title={
-          <Grid container spacing={2}>
+          <Grid container spacing={2} alignItems="center">
             <Grid item>
               <Box display="flex">
                 <NodeStatus node={node} enableMarginRight /> <Subtitle1>{node.name}</Subtitle1>
@@ -389,40 +389,6 @@ export class NodeListRaw extends React.Component<Props, States> {
     return (
       <BasePage>
         <Box p={2}>
-          {/* <Grid container spacing={2}>
-            <Grid item xs={10}></Grid>
-            <Grid item xs={2}>
-              <KSelect
-                label="Filter"
-                value={this.state.chartDateFilter}
-                options={[
-                  {
-                    value: "1h",
-                    text: "1h",
-                  },
-                  {
-                    value: "12h",
-                    text: "12h",
-                  },
-                  {
-                    value: "24h",
-                    text: "24h",
-                  },
-                  {
-                    value: "7days",
-                    text: "7days",
-                  },
-                  {
-                    value: "all",
-                    text: "all",
-                  },
-                ]}
-                onChange={(x) => {
-                  this.setState({ chartDateFilter: x as string });
-                }}
-              />
-            </Grid>
-          </Grid> */}
           <Grid container spacing={2}>
             <Grid item md={6}>
               <InfoPaper elevation={0} style={{ overflow: "hidden" }}>

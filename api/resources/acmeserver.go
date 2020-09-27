@@ -52,8 +52,13 @@ func (resourceManager *ResourceManager) UpdateACMEServer(server *ACMEServer) (*A
 	}
 
 	acmeServer, err := resourceManager.GetACMEServer()
+
 	if err != nil {
 		return nil, err
+	}
+
+	if acmeServer == nil {
+		return nil, nil
 	}
 
 	if acmeServer.Name != controllers.ACMEServerName {
@@ -79,7 +84,7 @@ func (resourceManager *ResourceManager) GetACMEServer() (*v1alpha1.ACMEServer, e
 	}
 
 	if size := len(acmeServerList.Items); size == 0 {
-		return nil, fmt.Errorf("acme server list length is zero")
+		return nil, nil
 	}
 
 	for i := range acmeServerList.Items {
@@ -112,6 +117,10 @@ func (resourceManager *ResourceManager) GetACMEServerAsResp() (*ACMEServerResp, 
 
 	if err != nil {
 		return nil, err
+	}
+
+	if server == nil {
+		return nil, nil
 	}
 
 	return &ACMEServerResp{

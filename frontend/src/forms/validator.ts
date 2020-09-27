@@ -214,7 +214,11 @@ export const ValidatorPort = yupValidatorWrap<number | undefined>(
   number().test("", "Can't use 443 port", (value) => value !== 443),
 );
 
-export const ValidatorRequired = yupValidatorWrap<any>(mixed().required("Required"));
+export const ValidatorRequired = yupValidatorWrap<any>(
+  mixed()
+    .required("Required") // mixed.required() will not validate empty string
+    .test("", "Required", (value) => typeof value !== "string" || value !== ""),
+);
 
 export const ValidatorVolumeSize = yupValidatorWrap<string>(
   string()
@@ -261,7 +265,7 @@ export const ValidatorRegistryHost = yupValidatorWrap<string | undefined>(
     .test("", 'Require no suffix "/"', (value) => !value || !value.endsWith("/")),
 );
 export const ValidatorArrayNotEmpty = yupValidatorWrapForArray(
-  Yup.array<string>().required("Should have at least one item"),
+  Yup.array<any>().required("Should have at least one item"),
 );
 
 export const validateHostWithWildcardPrefix = yupValidatorWrap<string | undefined>(

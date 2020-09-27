@@ -173,7 +173,7 @@ describe("add route", () => {
   });
 
   test("test route submit", async () => {
-    const initial = { ...newEmptyRouteForm(), hosts: ["test.com"] };
+    const initial = { ...newEmptyRouteForm(), hosts: ["test.com"], destinations: [{ host: "abc", weight: 1 }] };
     const WrappedRouteForm = class extends React.Component {
       public render() {
         return <RouteForm isEdit={false} onSubmit={onSubmit} initial={initial} />;
