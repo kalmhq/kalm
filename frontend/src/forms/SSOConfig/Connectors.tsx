@@ -3,6 +3,7 @@ import Paper from "@material-ui/core/Paper";
 import { Alert } from "@material-ui/lab";
 import { RenderGithubConnector } from "forms/SSOConfig/GithubConnector";
 import { RenderGitlabConnector } from "forms/SSOConfig/GitlabConnector";
+import { ValidatorArrayNotEmpty } from "forms/validator";
 import React from "react";
 import { FieldArray } from "react-final-form-arrays";
 import {
@@ -19,8 +20,9 @@ export class Connectors extends React.PureComponent<Props> {
   public render() {
     return (
       <FieldArray<SSOGithubConnector | SSOGitlabConnector>
+        validate={ValidatorArrayNotEmpty}
         name="connectors"
-        render={({ fields }) => (
+        render={({ fields, meta: { error, touched } }) => (
           <>
             <Box mt={2}>
               {fields.value &&
@@ -65,9 +67,9 @@ export class Connectors extends React.PureComponent<Props> {
                   );
                 })}
             </Box>
-            {fields.value && fields.value.length === 0 ? (
+            {touched && error && typeof error === "string" ? (
               <Box mt={2}>
-                <Alert severity="error">{"You should at least configure one connector."}</Alert>
+                <Alert severity="error">{error}</Alert>
               </Box>
             ) : null}
           </>

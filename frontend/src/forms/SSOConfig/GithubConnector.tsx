@@ -12,7 +12,7 @@ import { DeleteIcon, GithubIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
 import { FinalTextField } from "../Final/textfield";
-import { ValidatorRequired } from "../validator";
+import { ValidatorArrayNotEmpty, ValidatorRequired } from "../validator";
 
 export const ValidatorOrgs = (values: any[], _allValues?: any, _props?: any, _name?: any) => {
   if (!values) return undefined;
@@ -31,11 +31,12 @@ class RenderGithubConnectorOrganizations extends React.Component<{
     return (
       <FieldArray<GithubOrg>
         name={name}
-        render={({ fields }) => (
+        validate={ValidatorArrayNotEmpty}
+        render={({ fields, meta: { error, touched } }) => (
           <>
-            {fields.value && fields.value.length === 0 ? (
+            {touched && error && typeof error === "string" ? (
               <Box mt={2} mb={2}>
-                <Alert severity="error">{"You should at least configure one organization."}</Alert>
+                <Alert severity="error">{error}</Alert>
               </Box>
             ) : null}
 
