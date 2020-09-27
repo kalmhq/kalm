@@ -1,23 +1,17 @@
 import { Box, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
-import { setSuccessNotificationAction } from "actions/notification";
-import copy from "copy-to-clipboard";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
-import { FinalTextField } from "forms/Final/textfield";
 import { ValidatorArrayOfIsValidHostInCertificate } from "forms/validator";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
 import { Field, FieldRenderProps, Form, FormRenderProps } from "react-final-form";
 import { connect } from "react-redux";
-import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { CertificateFormType, selfManaged } from "types/certificate";
-import { StringConstants } from "utils/stringConstants";
 import { SubmitButton } from "widgets/Button";
 import DomainStatus from "widgets/DomainStatus";
 import { KPanel } from "widgets/KPanel";
-import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { Uploader } from "forms/Final/uploader";
 
@@ -83,7 +77,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
           <Uploader
             touched={touched && touched.selfManagedCertContent}
             errorText={errors.selfManagedCertContent}
-            inputlabel="Certificate file"
+            inputlabel="Certificate (PEM file format)"
             inputid="upload-certificate"
             className={classes.fileInput}
             name="selfManagedCertContent"
@@ -103,7 +97,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
           <Uploader
             touched={touched && touched.selfManagedCertPrivateKey}
             errorText={errors.selfManagedCertPrivateKey}
-            inputlabel="Private Key"
+            inputlabel="PrivateKey (PEM file format)"
             inputid="upload-private-key"
             multiline={true}
             className={classes.fileInput}
@@ -124,7 +118,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
   private validate = async (values: CertificateFormType) => {
     let errors: any = {};
 
-    if (values.managedType === selfManaged && (!values.domains || values.domains.length < 1)) {
+    if (!values.domains || values.domains.length < 1) {
       errors.selfManagedCertContent = "Invalid Certificate";
       return errors;
     }
@@ -133,7 +127,7 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { onSubmit, initialValues, classes, isEdit, ingressIP, dispatch } = this.props;
+    const { onSubmit, initialValues, classes, isEdit } = this.props;
     return (
       <Form onSubmit={onSubmit} initialValues={initialValues} validate={this.validate}>
         {(props) => {
@@ -155,58 +149,23 @@ class CertificateUploadFormRaw extends React.PureComponent<Props, State> {
           return (
             <form className={classes.root} onSubmit={handleSubmit} tutorial-anchor-id="certificate-form-upload">
               <Prompt />
-              <KPanel
-                content={
-                  <Box p={2}>
-                    <Grid container spacing={0}>
-                      <Grid item md={12}>
-                        <Field
-                          component={FinalTextField}
-                          label="Certificate name"
-                          name="name"
-                          disabled={isEdit}
-                          placeholder="Please type a certificate name"
-                          id="certificate-name"
-                        />
-                      </Grid>
-                      <Grid item md={12}>
-                        <Field
-                          render={(props: FieldRenderProps<string[]>) => (
-                            <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
-                          )}
-                          disabled={values.managedType === selfManaged}
-                          name="domains"
-                          validate={ValidatorArrayOfIsValidHostInCertificate}
-                          icons={icons}
-                          value={values.domains}
-                          id="certificate-domains"
-                          placeholder={
-                            values.managedType === selfManaged
-                              ? "Extract domains information when you upload a certificate file"
-                              : "Please type domains"
-                          }
-                          helperText={
-                            <Caption color="textSecondary">
-                              Your cluster ip is{" "}
-                              <Link
-                                to="#"
-                                onClick={() => {
-                                  copy(ingressIP);
-                                  dispatch(setSuccessNotificationAction("Copied successful!"));
-                                }}
-                              >
-                                {ingressIP}
-                              </Link>
-                              . {StringConstants.ROUTE_HOSTS_INPUT_HELPER}
-                            </Caption>
-                          }
-                        />
-                      </Grid>
-                    </Grid>
-                    {values.managedType === selfManaged ? this.renderSelfManagedFields(props) : null}
-                  </Box>
-                }
-              />
+              <KPanel>
+                <Box p={2}>
+                  {this.renderSelfManagedFields(props)}
+                  <Field
+                    render={(props: FieldRenderProps<string[]>) => (
+                      <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
+                    )}
+                    disabled={true}
+                    name="domains"
+                    validate={ValidatorArrayOfIsValidHostInCertificate}
+                    icons={icons}
+                    value={values.domains}
+                    id="certificate-domains"
+                    placeholder="Extract domains information when you upload a certificate file"
+                  />
+                </Box>
+              </KPanel>
               <Box pt={2}>
                 <SubmitButton id="save-certificate-button">{isEdit ? "Update" : "Create"}</SubmitButton>
               </Box>

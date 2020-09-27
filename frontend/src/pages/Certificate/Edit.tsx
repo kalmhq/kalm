@@ -58,7 +58,7 @@ class CertificateEditRaw extends React.PureComponent<Props> {
     }
 
     return (
-      <BasePage secondHeaderRight={<H6>New Certificate</H6>}>
+      <BasePage secondHeaderRight={<H6>Edit Certificate</H6>}>
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>

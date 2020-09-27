@@ -164,7 +164,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                   { name: "Name", content: certName },
                   {
                     name: "Type",
-                    content: cert?.isSelfManaged ? "Externally Uploaded" : "Let's Encrypt",
+                    content: cert?.isSelfManaged ? "Uploaded" : "Let's Encrypt",
                   },
                   {
                     name: "Challenge Type",

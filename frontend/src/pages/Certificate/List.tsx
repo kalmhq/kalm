@@ -170,7 +170,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderType = (cert: Certificate) => {
-    return cert.isSelfManaged ? "Externally Uploaded" : "Let's Encrypt";
+    return cert.isSelfManaged ? "Uploaded" : "Let's Encrypt";
   };
 
   private renderIsSignedByTrustedCA = (cert: Certificate) => {

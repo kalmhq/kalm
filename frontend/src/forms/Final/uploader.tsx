@@ -43,8 +43,11 @@ export const Uploader = ({
       fontWeight: 500,
     },
     textfield: {
+      marginTop: 0,
       "& > div": {
         background: "#212121",
+        borderTopLeftRadius: 0,
+        borderTopRightRadius: 0,
       },
     },
     fileInput: {

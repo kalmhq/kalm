@@ -158,7 +158,7 @@ func autoGenCertName(cert *HttpsCert) string {
 	}
 
 	if cert.IsSelfManaged {
-		prefix += "self-managed"
+		prefix += "uploaded"
 	}
 
 	return fmt.Sprintf("%s-%s", prefix, rand.String(8))
@@ -185,6 +185,7 @@ func (resourceManager *ResourceManager) UpdateAutoManagedCert(cert *HttpsCert) (
 
 func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, error) {
 	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
+
 	if err != nil {
 		resourceManager.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
 		return nil, err
@@ -203,7 +204,7 @@ func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (
 
 		// update sec
 		var sec coreV1.Secret
-		if err := resourceManager.Get(nsIstioSystem, getSecNameForSelfManagedCert(cert), &sec); err != nil {
+		if err := resourceManager.Get(nsIstioSystem, cert.Name, &sec); err != nil {
 			err1 = err
 			return
 		}
@@ -254,6 +255,11 @@ func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (
 
 func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCert, error) {
 	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
+
+	if cert.Name == "" {
+		cert.Name = autoGenCertName(cert)
+	}
+
 	if err != nil {
 		resourceManager.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
 		return nil, err
@@ -271,6 +277,7 @@ func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCe
 
 	// create secret in istio-system
 	certSecretName, err := resourceManager.createCertSecretInNSIstioSystem(cert)
+
 	if err != nil {
 		return nil, err
 	}
@@ -331,22 +338,13 @@ func (resourceManager *ResourceManager) DeleteHttpsCert(name string) error {
 
 const nsIstioSystem = "istio-system"
 
-func getSecNameForSelfManagedCert(cert *HttpsCert) string {
-	certSecName := "kalm-self-managed-" + cert.Name
-	return certSecName
-}
-
 func (resourceManager *ResourceManager) createCertSecretInNSIstioSystem(cert *HttpsCert) (string, error) {
-
-	certSecName := getSecNameForSelfManagedCert(cert)
-
 	tlsCert := cert.SelfManagedCertContent
 	tlsKey := cert.SelfManagedCertPrvKey
 
 	certSec := coreV1.Secret{
 		ObjectMeta: v1.ObjectMeta{
-			//todo avoid conflict here
-			Name:      certSecName,
+			Name:      cert.Name,
 			Namespace: nsIstioSystem,
 		},
 		Data: map[string][]byte{
@@ -360,5 +358,5 @@ func (resourceManager *ResourceManager) createCertSecretInNSIstioSystem(cert *Ht
 		return "", err
 	}
 
-	return certSecName, nil
+	return cert.Name, nil
 }
