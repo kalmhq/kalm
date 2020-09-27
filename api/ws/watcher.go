@@ -36,6 +36,7 @@ func StartWatching(c *Client) {
 	registerWatchHandler(c, &informerCache, &v1alpha1.ProtectedEndpoint{}, buildProtectEndpointResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.AccessToken{}, buildAccessTokenResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.RoleBinding{}, buildRoleBindingResMessage)
+	registerWatchHandler(c, &informerCache, &v1alpha1.ACMEServer{}, buildAcmeServerResMessage)
 
 	informerCache.Start(c.stopWatcher)
 }
@@ -427,5 +428,23 @@ func buildRoleBindingResMessage(c *Client, action string, objWatched interface{}
 			Namespace:       roleBinding.Namespace,
 			RoleBindingSpec: &roleBinding.Spec,
 		},
+	}, nil
+}
+
+func buildAcmeServerResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	acmeServer, ok := objWatched.(*v1alpha1.ACMEServer)
+
+	if !ok {
+		return nil, errors.New("convert watch obj to AcmeServer failed")
+	}
+
+	if !c.clientManager.CanEditCluster(c.clientInfo) {
+		return nil, nil
+	}
+
+	return &ResMessage{
+		Kind:   "ACMEServer",
+		Action: action,
+		Data:   resources.BuildACMEServerResponse(acmeServer),
 	}, nil
 }

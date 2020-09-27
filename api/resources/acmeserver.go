@@ -95,6 +95,18 @@ func (resourceManager *ResourceManager) GetACMEServer() (*v1alpha1.ACMEServer, e
 	return nil, fmt.Errorf("expected acme-server not exist yet")
 }
 
+func BuildACMEServerResponse(server *v1alpha1.ACMEServer) *ACMEServerResp {
+	return &ACMEServerResp{
+		ACMEServer: &ACMEServer{
+			Name:       server.Name,
+			ACMEDomain: server.Spec.ACMEDomain,
+			NSDomain:   server.Spec.NSDomain,
+		},
+		IPForNameServer: server.Status.IPForNameServer,
+		Ready:           server.Status.Ready,
+	}
+}
+
 func (resourceManager *ResourceManager) GetACMEServerAsResp() (*ACMEServerResp, error) {
 	server, err := resourceManager.GetACMEServer()
 

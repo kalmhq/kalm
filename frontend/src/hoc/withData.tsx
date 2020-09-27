@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import {
+  RESOURCE_TYPE_ACME_SERVER,
   RESOURCE_TYPE_APPLICATION,
   RESOURCE_TYPE_COMPONENT,
   RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN,
@@ -24,9 +25,9 @@ import { loadApplicationsAction } from "actions/application";
 import { loadRoutesAction } from "actions/routes";
 import { loadNodesAction } from "actions/node";
 import {
+  loadCertificateAcmeServerAction,
   loadCertificateIssuersAction,
   loadCertificatesAction,
-  loadCertificateAcmeServerAction,
 } from "actions/certificate";
 import { loadClusterInfoAction } from "actions/cluster";
 import { loadPersistentVolumesAction, loadStorageClassesAction } from "actions/persistentVolume";
@@ -249,6 +250,17 @@ class WithDataRaw extends React.PureComponent<Props> {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
             kind: RESOURCE_TYPE_ROLE_BINDING,
+            payload: {
+              action: data.action,
+              data: data.data,
+            },
+          });
+          break;
+        }
+        case RESOURCE_TYPE_ACME_SERVER: {
+          dispatch({
+            type: WATCHED_RESOURCE_CHANGE,
+            kind: RESOURCE_TYPE_ACME_SERVER,
             payload: {
               action: data.action,
               data: data.data,

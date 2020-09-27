@@ -4,7 +4,7 @@ import { Node } from "types/node";
 import { Service } from "types/service";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 import { ApplicationComponentDetails, ApplicationDetails } from "./application";
-import { Certificate } from "./certificate";
+import { AcmeServerInfo, Certificate } from "./certificate";
 import { Disk } from "./disk";
 import { Registry } from "./registry";
 import { HttpRoute } from "./route";
@@ -27,6 +27,7 @@ export const RESOURCE_TYPE_PROTECTED_ENDPOINT = "ProtectedEndpoint";
 export const RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN = "DeployAccessToken";
 export const RESOURCE_TYPE_SERVICE = "Service";
 export const RESOURCE_TYPE_ROLE_BINDING = "RoleBinding";
+export const RESOURCE_TYPE_ACME_SERVER = "ACMEServer";
 
 export type ResourceActionType =
   | typeof RESOURCE_ACTION_UPDATE
@@ -143,6 +144,15 @@ export interface RoleBindingResourceAction {
   };
 }
 
+export interface ACMEServerResourceAction {
+  type: typeof WATCHED_RESOURCE_CHANGE;
+  kind: typeof RESOURCE_TYPE_ACME_SERVER;
+  payload: {
+    action: ResourceActionType;
+    data: AcmeServerInfo;
+  };
+}
+
 export type ResourceActions =
   | NodeResourceAction
   | ApplicationResourceAction
@@ -155,4 +165,5 @@ export type ResourceActions =
   | ProtectedEndpointResourceAction
   | DeployAccessTokenResourceAction
   | ServiceResourceAction
-  | RoleBindingResourceAction;
+  | RoleBindingResourceAction
+  | ACMEServerResourceAction;
