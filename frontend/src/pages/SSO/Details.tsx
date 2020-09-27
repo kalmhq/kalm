@@ -4,6 +4,7 @@ import { ReactComponent as SSOArchitecture } from "images/SSO.svg";
 import { ReactComponent as SSOFlow } from "images/sso-oidc-flow.svg";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
 import React from "react";
+import { KMLink } from "widgets/Link";
 
 export const SSOImplementDetails = () => {
   return (
@@ -12,23 +13,23 @@ export const SSOImplementDetails = () => {
         <H6>Standing on the shoulders of giants</H6>
         <Body>
           Kalm SSO solution is based on{" "}
-          <a href="https://openid.net/connect/" rel="noopener noreferrer" target="_blank">
+          <KMLink href="https://openid.net/connect/" rel="noopener noreferrer" target="_blank">
             OIDC
-          </a>{" "}
+          </KMLink>{" "}
           standard. It built on top of widely used components, such as{" "}
-          <a href="https://istio.io/" rel="noopener noreferrer" target="_blank">
+          <KMLink href="https://istio.io/" rel="noopener noreferrer" target="_blank">
             Istio
-          </a>
+          </KMLink>
           ,{" "}
-          <a href={"https://www.envoyproxy.io/"} target={"_blank"} rel={"noopener noreferrer"}>
+          <KMLink href={"https://www.envoyproxy.io/"} target={"_blank"} rel={"noopener noreferrer"}>
             Envoy
-          </a>{" "}
+          </KMLink>{" "}
           and{" "}
-          <a href={"https://github.com/dexidp/dex"} target={"_blank"} rel={"noopener noreferrer"}>
+          <KMLink href={"https://github.com/dexidp/dex"} target={"_blank"} rel={"noopener noreferrer"}>
             dex
-          </a>
+          </KMLink>
           . Kalm use Istio CRDs to configure Envoy, add{" "}
-          <a
+          <KMLink
             href={
               "https://www.envoyproxy.io/docs/envoy/latest/api-v2/config/filter/http/jwt_authn/v2alpha/config.proto"
             }
@@ -36,15 +37,15 @@ export const SSOImplementDetails = () => {
             rel={"noopener noreferrer"}
           >
             jwt_authn
-          </a>
+          </KMLink>
           ,{" "}
-          <a
+          <KMLink
             href={"https://www.envoyproxy.io/docs/envoy/latest/api-v2/config/filter/http/ext_authz/v2/ext_authz.proto"}
             target={"_blank"}
             rel={"noopener noreferrer"}
           >
             ext_authz
-          </a>{" "}
+          </KMLink>{" "}
           filters for private endpoints. Dex acts as a portal to other identity providers.
         </Body>
       </Box>

@@ -7,6 +7,7 @@ import { connect, DispatchProp } from "react-redux";
 import { SSOGitlabConnector } from "types/sso";
 import { capitalize } from "utils/string";
 import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
+import { KMLink } from "widgets/Link";
 import { FinalTextField } from "../Final/textfield";
 import { ValidatorRequired } from "../validator";
 
@@ -108,9 +109,9 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                 <Body>
                   To get Client ID and Client Secret, you must create an oauth application first. Go to application
                   creation page by clicking{" "}
-                  <a href="https://gitlab.com/profile/applications" rel="noopener noreferrer" target="_blank">
+                  <KMLink href="https://gitlab.com/profile/applications" rel="noopener noreferrer" target="_blank">
                     HERE
-                  </a>
+                  </KMLink>
                   . If you are using a private deployed gitlab. Go to the same path under your domain.
                 </Body>
               </Box>
