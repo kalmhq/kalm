@@ -272,6 +272,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
           <DeleteButtonWithConfirmPopover
             popupId="delete-application-popup"
             popupTitle="DELETE APPLICATION?"
+            disabled={applicationDetails.name === "kalm-system"}
             confirmedAction={() => this.confirmDelete(applicationDetails)}
           />
         )}
