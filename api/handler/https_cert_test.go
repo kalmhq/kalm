@@ -1,12 +1,9 @@
 package handler
 
 import (
-	"fmt"
-	client2 "github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
-	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,77 +43,15 @@ func (suite *HttpsCertTestSuite) TestGetEmptyHttpsCertList() {
 			suite.IsMissingRoleError(rec, "viewer", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.Equal(200, rec.Code)
+
 			var res []resources.HttpsCert
 			rec.BodyAsJSON(&res)
-
-			suite.Equal(200, rec.Code)
 		},
 	})
 }
 
 func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
-	suite.DoTestRequest(&TestRequestContext{
-		Roles: []string{
-			GetClusterEditorRole(),
-		},
-		Method: http.MethodPost,
-		Path:   "/v1alpha1/httpscerts",
-		Body: `{
-  "name":    "foobar-cert",
-  "httpsCertIssuer":  "foobar-issuer",
-  "domains": ["example.com"]
-}`,
-		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
-		},
-		TestWithRoles: func(rec *ResponseRecorder) {
-			var httpsCert resources.HttpsCert
-			var res v1alpha1.HttpsCertList
-
-			rec.BodyAsJSON(&httpsCert)
-
-			suite.Equal(201, rec.Code)
-			suite.Equal("foobar-cert", httpsCert.Name)
-
-			err := suite.List(&res)
-			suite.Nil(err)
-
-			suite.Equal(1, len(res.Items))
-			suite.Equal("foobar-cert", res.Items[0].Name)
-			//fmt.Println("item:", res.Items[0])
-			suite.Equal("foobar-issuer", res.Items[0].Spec.HttpsCertIssuer)
-			suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
-		},
-	})
-
-	suite.DoTestRequest(&TestRequestContext{
-		Roles: []string{
-			GetClusterViewerRole(),
-		},
-		Method: http.MethodGet,
-		Path:   "/v1alpha1/httpscerts",
-		Body: `{
-  "name":    "foobar-cert",
-  "httpsCertIssuer":  "foobar-issuer",
-  "domains": ["example.com"]
-}`,
-		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
-		},
-		TestWithRoles: func(rec *ResponseRecorder) {
-			var resList []resources.HttpsCertResp
-			rec.BodyAsJSON(&resList)
-
-			suite.Equal(200, rec.Code)
-			suite.Equal(1, len(resList))
-			suite.Equal(string(coreV1.ConditionUnknown), resList[0].Ready)
-			suite.Equal(resources.ReasonForNoReadyConditions, resList[0].Reason)
-		},
-	})
-
-}
-
-func (suite *HttpsCertTestSuite) TestCreateHttpsCertWithoutName() {
 	var httpsCert resources.HttpsCert
 
 	suite.DoTestRequest(&TestRequestContext{
@@ -133,30 +68,33 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCertWithoutName() {
 			suite.IsMissingRoleError(rec, "editor", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
-			var res v1alpha1.HttpsCertList
+			suite.Equal(201, rec.Code)
 			rec.BodyAsJSON(&httpsCert)
 
-			suite.Equal(201, rec.Code)
-			suite.NotEqual("", httpsCert.Name)
-
-			err := suite.List(&res)
-			suite.Nil(err)
-
-			suite.Equal(1, len(res.Items))
-			fmt.Println(res.Items[0].Name)
-			suite.True(strings.HasPrefix(res.Items[0].Name, "example-com-"))
-			suite.Equal("foobar-issuer", res.Items[0].Spec.HttpsCertIssuer)
-			suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
-
-		},
-		CleanUp: func(rc *TestRequestContext, s *echo.Echo) {
-			rec := BaseRequest(s, http.MethodDelete, "/v1alpha1/httpscerts/"+httpsCert.Name, nil, map[string]string{
-				echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(rc.User),
-			})
-
-			suite.Equal(200, rec.Code)
+			//fmt.Println("item:", res.Items[0])
+			suite.Equal("foobar-issuer", httpsCert.HttpsCertIssuer)
+			suite.Equal("example.com", strings.Join(httpsCert.Domains, ""))
 		},
 	})
+
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterViewerRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/httpscerts/" + httpsCert.Name,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.Equal(200, rec.Code)
+			rec.BodyAsJSON(&httpsCert)
+
+			suite.Equal("foobar-issuer", httpsCert.HttpsCertIssuer)
+			suite.Equal("example.com", strings.Join(httpsCert.Domains, ""))
+		},
+	})
+
 }
 
 func (suite *HttpsCertTestSuite) TestCreateHttpsCertWithoutSetIssuer() {
@@ -167,62 +105,40 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCertWithoutSetIssuer() {
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/httpscerts",
 		Body: `{
-  "name":    "foobar-cert",
   "domains": ["example.com"]
 }`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsMissingRoleError(rec, "editor", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
-			var httpsCert resources.HttpsCert
-			var res v1alpha1.HttpsCertList
+			suite.Equal(201, rec.Code)
 
+			var httpsCert resources.HttpsCert
 			rec.BodyAsJSON(&httpsCert)
 
-			suite.Equal(201, rec.Code)
-			suite.Equal("foobar-cert", httpsCert.Name)
-
-			err := suite.List(&res)
-			suite.Nil(err)
-
-			suite.Equal(1, len(res.Items))
-			suite.Equal("foobar-cert", res.Items[0].Name)
-			suite.Equal(v1alpha1.DefaultHTTP01IssuerName, res.Items[0].Spec.HttpsCertIssuer)
-			suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
+			suite.Equal(v1alpha1.DefaultHTTP01IssuerName, httpsCert.HttpsCertIssuer)
+			suite.Equal("example.com", strings.Join(httpsCert.Domains, ""))
 		},
 	})
 }
 
 const tlsCert = `-----BEGIN CERTIFICATE-----
-MIIFVjCCBD6gAwIBAgISBPNCxpUJsb9iD+AX7DviehGrMA0GCSqGSIb3DQEBCwUA
-MEoxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MSMwIQYDVQQD
-ExpMZXQncyBFbmNyeXB0IEF1dGhvcml0eSBYMzAeFw0yMDA1MjAwMzI5MzNaFw0y
-MDA4MTgwMzI5MzNaMBoxGDAWBgNVBAMTD2hlbGxvLmthcHAubGl2ZTCCASIwDQYJ
-KoZIhvcNAQEBBQADggEPADCCAQoCggEBAJ48RtSGIUl66BXE5H7TF81dm2JHWxS9
-WaPLB9fw+7aE7Q80MqNemxC9919eiLsY43/5vE+oGyqCxy5OA+NjNhqkRyfRtLOy
-C+qT30s+bSGVc7iwRqyBSA/1tVjvlio+bD3jmiKP8G4fX0MswJmUIhUqDjrgcz73
-7WCn0SxfJrxRVihgQ0BYdwn7rhXd9owQK5KIYG80a/oLwnsplJCzI3MeDzhLz/oK
-pcaPI8qoLH4Bxb7Od/tKODpp80ub6c4x+M+qI62Goo50+Sm6vwVzc8CsSlz2lGDN
-608tBWDZ6HJrn0ogBa/qUFdSFXrQcpeVNVi+/suT/+wGJ1KtiDInM0ECAwEAAaOC
-AmQwggJgMA4GA1UdDwEB/wQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYB
-BQUHAwIwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQU88bxblZUQdX7RYMsUnKxUTwK
-Z04wHwYDVR0jBBgwFoAUqEpqYwR93brm0Tm3pkVl7/Oo7KEwbwYIKwYBBQUHAQEE
-YzBhMC4GCCsGAQUFBzABhiJodHRwOi8vb2NzcC5pbnQteDMubGV0c2VuY3J5cHQu
-b3JnMC8GCCsGAQUFBzAChiNodHRwOi8vY2VydC5pbnQteDMubGV0c2VuY3J5cHQu
-b3JnLzAaBgNVHREEEzARgg9oZWxsby5rYXBwLmxpdmUwTAYDVR0gBEUwQzAIBgZn
-gQwBAgEwNwYLKwYBBAGC3xMBAQEwKDAmBggrBgEFBQcCARYaaHR0cDovL2Nwcy5s
-ZXRzZW5jcnlwdC5vcmcwggEEBgorBgEEAdZ5AgQCBIH1BIHyAPAAdgDwlaRZ8gDR
-gkAQLS+TiI6tS/4dR+OZ4dA0prCoqo6ycwAAAXIwWAAmAAAEAwBHMEUCIQD/weuk
-7dWqw7iswofV7vt4ANxIvVFKfynHik1tDWGX2QIgUZwvdLxNjduE15kPB5G3zpbp
-7I8Y2VIWIgxyZIGR3BEAdgCyHgXMi6LNiiBOh2b5K7mKJSBna9r6cOeySVMt74uQ
-XgAAAXIwWAAVAAAEAwBHMEUCIGJwq3BvFcWn8CwRwXsMkOR2FUKAV1XcDwcJsbJa
-jFsgAiEA5dqDJ0oL2V2ItThyNQRGTD7WvVKjghCL+EIO5yaYZaswDQYJKoZIhvcN
-AQELBQADggEBAJJ8mKQ+IyuFlOMijD5RhU3U7l8rR5R/f9ITRUK5Q3NgkmhvNG8t
-wBCcnVr3nNnKFYloLJ0rBSPyqs/nE9KljHzhZoootkP8PfXHe7A6FOR8xohzqHR0
-u54xd1p+jTluVOE+Ofwa32VZ4VkIUIezyoSpLz1xk00tVtFlIrBn1Bk2vskTA5XK
-znkm2KnVBuj75tteXjjMthi+yKW1Bfd1I2mCuSz8sylKyXx+2sX6YVR5o1+NamBi
-7mK92Uhdb4Zq21RpDNYWrITAjVIunofNSgGjFu165ZGvPCMG0DwhvFnzWb97dsB5
-fZLKGiQmUq6JTawO7JIZDdVDK7zZQTsEQG8=
+MIIC1DCCAbwCCQCbDQZHa+cxEDANBgkqhkiG9w0BAQsFADArMSkwJwYDVQQDDCBo
+ZWxsby13b3JsZC5rYWxtLWhlbGxvLXdvcmxkLnN2YzAgFw0yMDA4MTUxNjI4MDVa
+GA8yMTIwMDcyMjE2MjgwNVowKzEpMCcGA1UEAwwgaGVsbG8td29ybGQua2FsbS1o
+ZWxsby13b3JsZC5zdmMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDF
+RZz9sILZfMa2pYT21hyBb7FB+ldaXhXug1r637dSNXQgaeYE7ZJ2kbMpJyEZFLpb
+lQC80zxmasWIkULPlgN3esSY5WSxD1Kn0QX4YAyaiibFnV9rHZALUhtexJ611n8n
+zOm1SFfFK4Pb1dCRWZ0QMB8Z1olbUGViPKGXC5fPfpVEXKxwyAIIfMXUfIT1XHE6
+PcQbl4N9Sr7LuBPRVao7252T/DNXA/xk7q3vrMQE2Rar9CMXqi9Io0rNXq+DbSWH
+yr/h0u7G7s676JP1TBtDNFk5xFYEKopBLhCnpCmsnRpcboKZCUKr4hCMWmOZv/Y/
+bVAtTB/y4FQeQipuUnZdAgMBAAEwDQYJKoZIhvcNAQELBQADggEBADfDQz4yYJAC
+fBYDzxvennHMR7W0zV+WuoPs3FazuwJgW/Y1WiyOQFA0rXVh1LrcXfPrRYvmGMzs
+55UUvhiACOHqWRfRBGdsAqDnkeLPEFW/6+RcfhEWonqg7qB8xbOL9XndFDoIS0v2
+AQCd6NQcbTdwuhVuYaTdk3sqy65sjfhur0QpM1g7VEVdvCE73l6ElSGPNOSVktQz
+wLaL/U7MHVfnFz7h4uRbLUCKhqhX8XPly0ciFdKMBNgLwmx7quvcmFs8883Z3rFJ
+19r2aid5gMI9N4igzkvKXUtxXsfkHx3S0Alnt8KG5Ve/faAV1fEgzHT8r1J9hN4j
+2SBi9zyW37U=
 -----END CERTIFICATE-----
 -----BEGIN CERTIFICATE-----
 MIIEkjCCA3qgAwIBAgIQCgFBQgAAAVOFc2oLheynCDANBgkqhkiG9w0BAQsFADA/
@@ -252,7 +168,37 @@ PfZ+G6Z6h7mjem0Y+iWlkYcV4PIWL1iwBi8saCbGS5jN2p8M+X+Q7UNKEkROb3N6
 KOqkqm57TH2H3eDJAkSnh6/DNFu0Qg==
 -----END CERTIFICATE-----`
 
+const tlsPK = `-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEAxUWc/bCC2XzGtqWE9tYcgW+xQfpXWl4V7oNa+t+3UjV0IGnm
+BO2SdpGzKSchGRS6W5UAvNM8ZmrFiJFCz5YDd3rEmOVksQ9Sp9EF+GAMmoomxZ1f
+ax2QC1IbXsSetdZ/J8zptUhXxSuD29XQkVmdEDAfGdaJW1BlYjyhlwuXz36VRFys
+cMgCCHzF1HyE9VxxOj3EG5eDfUq+y7gT0VWqO9udk/wzVwP8ZO6t76zEBNkWq/Qj
+F6ovSKNKzV6vg20lh8q/4dLuxu7Ou+iT9UwbQzRZOcRWBCqKQS4Qp6QprJ0aXG6C
+mQlCq+IQjFpjmb/2P21QLUwf8uBUHkIqblJ2XQIDAQABAoIBAAdukPSJwtQ4vC/D
+WpgGBvrlX1MyADp6Uu8yaaoL5ZcmRmK2OqEy5hKreIlzXO7Z9g9fNLDocF0XZqu3
+dUHmz+ifamqsMbft8No7qLLrw23LCJznSeH6MiQLCtbuJ2CIXS/9q0xWFmBqPER6
+8KmZK66hcXqCt5gGFlu2FwxetnBtrl/bg4FK1HVNX4hi63bgxUHneqU5U9JF0bRX
+FBH4HrVk2MVZ1ZdXRGal99vts7C6yzD7xB8uiTXUxPjWVh2gt4Svvow4UVafi1j0
+UrhO0NtWLkjU22ms6g9gSjJebwwj3XsDqvJpWIy+SlymtKbELbax3btM2RFXCXBc
+kzWV8e0CgYEA+l2ry/qie3N0a0CDfkpdPK2++WBeyFDLJ5lmRMjwvncsGBcKTyrP
+AqtnbuOUFwCV+f2GJyR+TlrAshDZPle6qwhC3tUTAURfnD7wzCXgEKwgTRLIgL74
+J9BkMaA1P3LCkh3qRs6n12/K0kn6j503aBXQoqGPjtnULCfd6fBYl5MCgYEAybYS
+7QcQgN2hTq3Y5iGxUsFMcoaNVX/mI1z096wyqrQ+5tQU8W0g/axs9hAvhrY9hW1R
+xVAb+VxqjIrS5nFkLj9SdOjI4/ofAyfgRxIj2+pwDlQSg9JiAPIm6+vkI+tfZJa8
+2ZeLT9o6YbnQMSalvrNZpxmfSg28IjfrZh0DkE8CgYEA2cKjbFVhAZMYDTkdpbi0
+g9RzKKADkKOFL7oi020ax+8LcSCJHPaU+zNuUWqsIZ2m1LsH9f+txCT3OWmiKrFP
+cPdMglg9oXqA1nuAIXBIBPhRV/ggYKq5WJfOrcM0zSzZwxE19cRFBAL+HA2wWz1Z
+NbTTtMBlBtC71HQQditQQvUCgYBsMdaK/zwR809/1W4/Wpkzy21HDPcoglceZtEb
+PGlc+Ru4Us/9A80rZF55ygrEFmJ/fDjdPnAS3EhmpFwlsXLL/7kp7mc7KcGSvsPl
+O0yyvFhoxx27SZC58yl/aGNSBQGBAf3ANTJLncGtA68xfgpvdOJE6FBxt1ZPgHEq
+r6tmrwKBgF2T8cSj4UrwdHFQpAXd4t/QHWLMDEHUytPmEMz4PmRCSDnxob91kqoC
+4S6ED+g3h85CT5tQPPG3MApj1mPgLtHOFgORIU4rueBNrMV6faqfuCNFBJ9cw7rr
+6U4SX+2hFV3TmA9coUiFUcaH2ggKTpXSFJOx9iXhobBMSV5pYalP
+-----END RSA PRIVATE KEY-----`
+
 func (suite *HttpsCertTestSuite) TestUploadHttpsCert() {
+	var httpsCert resources.HttpsCert
+
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
 			GetClusterEditorRole(),
@@ -260,38 +206,28 @@ func (suite *HttpsCertTestSuite) TestUploadHttpsCert() {
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/httpscerts/upload",
 		Body: map[string]interface{}{
-			"name":                      "foobar-cert",
 			"isSelfManaged":             true,
 			"selfManagedCertContent":    tlsCert,
-			"selfManagedCertPrivateKey": "",
+			"selfManagedCertPrivateKey": tlsPK,
 		},
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsMissingRoleError(rec, "editor", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
-			var httpsCert resources.HttpsCert
+			suite.Equal(201, rec.Code)
+
 			rec.BodyAsJSON(&httpsCert)
 
-			suite.Equal(201, rec.Code)
-			suite.Equal("foobar-cert", httpsCert.Name)
-
-			var res v1alpha1.HttpsCertList
-			err := suite.List(&res)
-			suite.Nil(err)
-
-			suite.Equal(1, len(res.Items))
-			suite.Equal("foobar-cert", res.Items[0].Name)
-			//fmt.Println("item:", res.Items[0])
-			suite.Equal(true, res.Items[0].Spec.IsSelfManaged)
-			suite.Equal("", res.Items[0].Spec.HttpsCertIssuer)
-			suite.Equal("hello.kapp.live", strings.Join(res.Items[0].Spec.Domains, ""))
-			suite.Equal("kalm-self-managed-foobar-cert", res.Items[0].Spec.SelfManagedCertSecretName)
+			suite.Equal(true, httpsCert.IsSelfManaged)
+			suite.Equal("", httpsCert.HttpsCertIssuer)
+			suite.Equal("hello-world.kalm-hello-world.svc", strings.Join(httpsCert.Domains, ""))
 
 			// sec
 			var sec coreV1.Secret
-			err = suite.Get("istio-system", "kalm-self-managed-foobar-cert", &sec)
+			err := suite.Get("istio-system", httpsCert.Name, &sec)
 			suite.Nil(err)
-			suite.Equal(sec.Data["tls.key"], []byte(""))
+
+			suite.Equal(sec.Data["tls.key"], []byte(tlsPK))
 			suite.Equal(sec.Data["tls.crt"], []byte(tlsCert))
 		},
 	})
@@ -301,21 +237,21 @@ func (suite *HttpsCertTestSuite) TestUploadHttpsCert() {
 			GetClusterViewerRole(),
 		},
 		Method: http.MethodGet,
-		Path:   "/v1alpha1/httpscerts",
+		Path:   "/v1alpha1/httpscerts/" + httpsCert.Name,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsMissingRoleError(rec, "viewer", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
-			var resList []resources.HttpsCert
-			rec.BodyAsJSON(&resList)
 			suite.Equal(200, rec.Code)
-			suite.Equal(1, len(resList))
-			suite.Equal("hello.kapp.live", strings.Join(resList[0].Domains, ""))
+			rec.BodyAsJSON(&httpsCert)
+			suite.Equal("hello-world.kalm-hello-world.svc", strings.Join(httpsCert.Domains, ""))
 		},
 	})
 }
 
 func (suite *HttpsCertTestSuite) TestUpdateSelfManagedHttpsCert() {
+	var httpsCert resources.HttpsCert
+
 	// Upload
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
@@ -324,16 +260,16 @@ func (suite *HttpsCertTestSuite) TestUpdateSelfManagedHttpsCert() {
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/httpscerts/upload",
 		Body: map[string]interface{}{
-			"name":                      "foobar-cert",
 			"isSelfManaged":             true,
 			"selfManagedCertContent":    tlsCert,
-			"selfManagedCertPrivateKey": "",
+			"selfManagedCertPrivateKey": tlsPK,
 		},
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsMissingRoleError(rec, "editor", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(201, rec.Code)
+			rec.BodyAsJSON(&httpsCert)
 		},
 	})
 
@@ -343,39 +279,24 @@ func (suite *HttpsCertTestSuite) TestUpdateSelfManagedHttpsCert() {
 			GetClusterEditorRole(),
 		},
 		Method: http.MethodPut,
-		Path:   "/v1alpha1/httpscerts/foobar-cert",
+		Path:   "/v1alpha1/httpscerts/" + httpsCert.Name,
 		Body: map[string]interface{}{
-			"name":                      "foobar-cert",
 			"isSelfManaged":             true,
 			"selfManagedCertContent":    tlsCert,
-			"selfManagedCertPrivateKey": "updatedPrvKey",
+			"selfManagedCertPrivateKey": tlsPK,
 		},
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsMissingRoleError(rec, "editor", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)
-			var res v1alpha1.HttpsCertList
-			err := suite.List(&res)
-			suite.Nil(err)
-
-			suite.Equal(1, len(res.Items))
-			suite.Equal("foobar-cert", res.Items[0].Name)
-			suite.Equal(true, res.Items[0].Spec.IsSelfManaged)
-			suite.Equal("", res.Items[0].Spec.HttpsCertIssuer)
-			suite.Equal("hello.kapp.live", strings.Join(res.Items[0].Spec.Domains, ""))
-			suite.Equal("kalm-self-managed-foobar-cert", res.Items[0].Spec.SelfManagedCertSecretName)
-
-			// sec
-			var sec coreV1.Secret
-			err = suite.Get("istio-system", "kalm-self-managed-foobar-cert", &sec)
-			suite.Nil(err)
-			suite.Equal(sec.Data["tls.key"], []byte("updatedPrvKey"))
 		},
 	})
 }
 
 func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
+	var httpsCert resources.HttpsCert
+
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
 			GetClusterEditorRole(),
@@ -383,7 +304,6 @@ func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/httpscerts",
 		Body: `{
-  "name":    "foobar-cert",
   "httpsCertIssuer":  "foobar-issuer",
   "domains": ["example.com"]
 }`,
@@ -391,21 +311,8 @@ func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
 			suite.IsMissingRoleError(rec, "editor", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
-			var httpsCert resources.HttpsCert
 			rec.BodyAsJSON(&httpsCert)
-
 			suite.Equal(201, rec.Code)
-			suite.Equal("foobar-cert", httpsCert.Name)
-
-			var res v1alpha1.HttpsCertList
-			err := suite.List(&res)
-			suite.Nil(err)
-
-			suite.Equal(1, len(res.Items))
-			suite.Equal("foobar-cert", res.Items[0].Name)
-			//fmt.Println("item:", res.Items[0])
-			suite.Equal("foobar-issuer", res.Items[0].Spec.HttpsCertIssuer)
-			suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
 		},
 	})
 
@@ -415,17 +322,27 @@ func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
 			GetClusterEditorRole(),
 		},
 		Method: http.MethodDelete,
-		Path:   "/v1alpha1/httpscerts/foobar-cert",
+		Path:   "/v1alpha1/httpscerts/" + httpsCert.Name,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsMissingRoleError(rec, "editor", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)
+		},
+	})
 
-			var res v1alpha1.HttpsCertList
-			err := suite.List(&res)
-			suite.Nil(err)
-			suite.Equal(0, len(res.Items))
+	// get
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterViewerRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/httpscerts/" + httpsCert.Name,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.Equal(404, rec.Code)
 		},
 	})
 }

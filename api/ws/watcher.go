@@ -270,7 +270,7 @@ func buildHttpsCertResMessage(c *Client, action string, objWatched interface{}) 
 	return &ResMessage{
 		Kind:   "HttpsCert",
 		Action: action,
-		Data:   resources.BuildHttpsCertResponse(*httpsCert),
+		Data:   resources.BuildHttpsCertResponse(httpsCert),
 	}, nil
 }
 

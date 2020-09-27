@@ -126,9 +126,7 @@ func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res resources.ACMEServerResp
 			rec.BodyAsJSON(&res)
-
-			suite.Equal(200, rec.Code)
-			suite.Equal("", res.Name)
+			suite.Equal(404, rec.Code)
 		},
 	})
 }

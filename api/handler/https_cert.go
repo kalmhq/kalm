@@ -2,11 +2,12 @@ package handler
 
 import (
 	"fmt"
+	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 )
 
-func (h *ApiHandler) handleGetHttpsCerts(c echo.Context) error {
+func (h *ApiHandler) handleListHttpsCerts(c echo.Context) error {
 	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}
@@ -17,6 +18,20 @@ func (h *ApiHandler) handleGetHttpsCerts(c echo.Context) error {
 	}
 
 	return c.JSON(200, httpsCerts)
+}
+
+func (h *ApiHandler) handleGetHttpsCert(c echo.Context) error {
+	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
+		return resources.NoClusterViewerRoleError
+	}
+
+	httpsCert, err := h.resourceManager.GetHttpsCert(c.Param("name"))
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, httpsCert)
 }
 
 func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
@@ -34,12 +49,13 @@ func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
 		return fmt.Errorf("for selfManaged certs, use /upload instead")
 	}
 
-	httpsCert, err = h.resourceManager.CreateAutoManagedHttpsCert(httpsCert)
+	httpsCertResp, err := h.resourceManager.CreateAutoManagedHttpsCert(httpsCert)
+
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(201, httpsCert)
+	return c.JSON(201, httpsCertResp)
 }
 
 func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
@@ -57,13 +73,13 @@ func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
 		return fmt.Errorf("can only upload selfManaged certs")
 	}
 
-	httpsCert, err = h.resourceManager.CreateSelfManagedHttpsCert(httpsCert)
+	httpsCertResp, err := h.resourceManager.CreateSelfManagedHttpsCert(httpsCert)
 
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(201, httpsCert)
+	return c.JSON(201, httpsCertResp)
 }
 
 func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
@@ -76,19 +92,17 @@ func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
 		return err
 	}
 
-	if httpsCert.IsSelfManaged {
-		httpsCert, err = h.resourceManager.UpdateSelfManagedCert(httpsCert)
-		if err != nil {
-			return err
-		}
-	} else {
-		httpsCert, err = h.resourceManager.UpdateAutoManagedCert(httpsCert)
-		if err != nil {
-			return err
-		}
+	if !httpsCert.IsSelfManaged {
+		return errors.NewBadRequest("Only uploaded cert is editable.")
 	}
 
-	return c.JSON(200, httpsCert)
+	httpsCertResp, err := h.resourceManager.UpdateSelfManagedCert(httpsCert)
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, httpsCertResp)
 }
 
 func (h *ApiHandler) handleDeleteHttpsCert(c echo.Context) error {

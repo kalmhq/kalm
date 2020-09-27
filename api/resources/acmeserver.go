@@ -2,6 +2,7 @@ package resources
 
 import (
 	"fmt"
+	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -52,6 +53,7 @@ func (resourceManager *ResourceManager) UpdateACMEServer(server *ACMEServer) (*A
 	}
 
 	acmeServer, err := resourceManager.GetACMEServer()
+
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +81,7 @@ func (resourceManager *ResourceManager) GetACMEServer() (*v1alpha1.ACMEServer, e
 	}
 
 	if size := len(acmeServerList.Items); size == 0 {
-		return nil, fmt.Errorf("acme server list length is zero")
+		return nil, errors.NewNotFound("")
 	}
 
 	for i := range acmeServerList.Items {
