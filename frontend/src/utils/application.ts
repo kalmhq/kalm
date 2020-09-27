@@ -142,6 +142,19 @@ export const correctComponentFormValuesForInit = (
 
     component = produce(component, (draft) => {
       draft.volumes = correctedVolumes;
+
+      if (component.cpuLimit) {
+        draft.cpuLimit = component.resourceRequirements?.limits?.cpu;
+      }
+      if (component.cpuRequest) {
+        draft.cpuRequest = component.resourceRequirements?.requests?.cpu;
+      }
+      if (component.memoryLimit) {
+        draft.memoryLimit = component.resourceRequirements?.limits?.memory;
+      }
+      if (component.memoryRequest) {
+        draft.memoryRequest = component.resourceRequirements?.requests?.memory;
+      }
     });
   }
 
