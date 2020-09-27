@@ -2,16 +2,16 @@ import React from "react";
 import PopupState, { bindTrigger } from "material-ui-popup-state";
 import { FlexRowItemCenterBox } from "./Box";
 import {
-  Popper,
-  Paper,
-  Grid,
-  Button,
-  Popover,
-  withStyles,
-  createStyles,
-  Theme,
-  WithStyles,
   Box,
+  Button,
+  createStyles,
+  Grid,
+  Paper,
+  Popover,
+  Popper,
+  Theme,
+  withStyles,
+  WithStyles,
 } from "@material-ui/core";
 import { POPPER_ZINDEX } from "layout/Constants";
 import { customBindHover, customBindPopover } from "utils/popper";
@@ -57,6 +57,7 @@ interface ConfirmPopoverProps {
   popupTitle: string;
   useText?: boolean;
   iconSize?: "medium" | "small";
+  disabled?: boolean;
 }
 
 const styles = (theme: Theme) =>
@@ -69,7 +70,7 @@ const styles = (theme: Theme) =>
 
 class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopoverProps & WithStyles<typeof styles>> {
   render() {
-    const { popupId, popupTitle, confirmedAction, classes, useText, iconSize } = this.props;
+    const { popupId, popupTitle, confirmedAction, classes, useText, iconSize, disabled } = this.props;
     return (
       <PopupState variant="popover" popupId={popupId}>
         {(popupState) => {
@@ -83,6 +84,7 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                   variant="outlined"
                   component="span"
                   size="small"
+                  disabled={disabled}
                   {...trigger}
                   onClick={(e: React.SyntheticEvent<any, Event>) => {
                     e.stopPropagation();
@@ -92,7 +94,13 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                   Delete
                 </Button>
               ) : (
-                <IconButtonWithTooltip size={iconSize} tooltipTitle="Delete" aria-label="delete" {...trigger}>
+                <IconButtonWithTooltip
+                  size={iconSize}
+                  tooltipTitle="Delete"
+                  aria-label="delete"
+                  disabled={disabled}
+                  {...trigger}
+                >
                   <DeleteIcon />
                 </IconButtonWithTooltip>
               )}

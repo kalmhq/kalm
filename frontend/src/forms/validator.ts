@@ -261,7 +261,7 @@ export const ValidatorRegistryHost = yupValidatorWrap<string | undefined>(
     .test("", 'Require no suffix "/"', (value) => !value || !value.endsWith("/")),
 );
 export const ValidatorArrayNotEmpty = yupValidatorWrapForArray(
-  Yup.array<string>().required("Should have at least one item"),
+  Yup.array<any>().required("Should have at least one item"),
 );
 
 export const validateHostWithWildcardPrefix = yupValidatorWrap<string | undefined>(
