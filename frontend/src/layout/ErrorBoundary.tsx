@@ -1,5 +1,4 @@
 import { Box, createStyles, Link, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
-import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -40,7 +39,7 @@ class ErrorBoundaryRaw extends React.PureComponent<Props, State> {
 
   private jumpToDashBoard = (event: React.MouseEvent) => {
     event.preventDefault();
-    this.props.dispatch(push("/"));
+    window.location.href = "/";
   };
 
   render() {
