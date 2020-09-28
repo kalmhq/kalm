@@ -9,7 +9,7 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {},
     borderBottom: {
-      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+      borderBottom: `1px solid ${theme.palette.divider}`,
       height: "40px",
       padding: `0 ${theme.spacing(2)}px`,
       display: "flex",

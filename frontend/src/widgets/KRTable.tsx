@@ -175,7 +175,7 @@ const GlobalFilter = ({ preGlobalFilteredRows, globalFilter, setGlobalFilter }: 
           setValue(e.target.value);
           onChange(e.target.value);
         }}
-        placeholder={`Filter`}
+        placeholder="Filter"
       />
       <FilterListIcon />
     </Box>

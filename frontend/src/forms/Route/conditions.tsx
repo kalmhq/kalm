@@ -75,7 +75,6 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                       name={`conditions.${index}.operator`}
                       component={FinalSelectField}
                       label="operator"
-                      validate={ValidatorRequired}
                       options={[
                         { value: "equal", text: "Equal" },
                         { value: "withPrifix", text: "With Prifix" },

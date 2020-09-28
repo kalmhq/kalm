@@ -9,12 +9,9 @@ import { ValidatorEnvName, ValidatorRequired } from "../validator";
 import { FinalTextField } from "forms/Final/textfield";
 import { EnvItem } from "types/application";
 import Alert from "@material-ui/lab/Alert";
+import { trimParse } from "forms/normalizer";
 
 interface Props extends FieldArrayRenderProps<ComponentLikeEnv, any> {}
-
-const nameValidators = (value: any) => {
-  return ValidatorRequired(value) || ValidatorEnvName(value);
-};
 
 class RenderEnvs extends React.PureComponent<Props> {
   private handlePush() {
@@ -64,7 +61,8 @@ class RenderEnvs extends React.PureComponent<Props> {
                       name={`${name}.${index}.name`}
                       label="Name"
                       component={FinalTextField}
-                      validate={nameValidators}
+                      validate={ValidatorEnvName}
+                      parse={trimParse}
                     />
                   </Grid>
                   <Grid item xs={5}>

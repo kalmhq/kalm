@@ -11,7 +11,7 @@ import {
   withStyles,
 } from "@material-ui/core";
 import { WithStyles } from "@material-ui/styles";
-import { NormalizePositiveNumber } from "forms/normalizer";
+import { NormalizePositiveNumber, trimParse } from "forms/normalizer";
 import React from "react";
 import { Field, FieldRenderProps } from "react-final-form";
 import { ComponentLikePort, PortProtocolHTTP, PortProtocolTCP, Probe } from "types/componentTemplate";
@@ -176,7 +176,7 @@ class RenderProbe extends React.PureComponent<Props> {
             <Field
               name={`${name}.exec.command[0]`}
               component={RenderNestedTextfield}
-              validate={ValidatorRequired}
+              parse={trimParse}
               placeholder="command"
               style={{ width: 300 }}
             />

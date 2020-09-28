@@ -131,16 +131,13 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
                   {values.scope === DeployAccessTokenScopeNamespace ? (
                     <Field
                       render={(props: FieldRenderProps<string[]>) => {
-                        console.log(values);
                         return <AutoCompleteMultipleValue {...props} options={applicationOptions} />;
                       }}
                       // parse={(options: AutoCompleteOption[]) => options.map((option) => option.value)}
                       name="resources"
                       label="Applications"
                       key="applications"
-                      placeholder={"Select an application"}
                       validate={ValidatorRequired}
-                      helperText={""}
                     />
                   ) : null}
 
@@ -152,9 +149,7 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
                       name="resources"
                       key="Components"
                       label="Components"
-                      placeholder={"Select a component"}
                       validate={ValidatorRequired}
-                      helperText={""}
                     />
                   ) : null}
                 </Box>

@@ -11,6 +11,7 @@ import { Body, H6, Subtitle1, Subtitle2 } from "widgets/Label";
 import { KMLink } from "widgets/Link";
 import { FinalTextField } from "../Final/textfield";
 import { ValidatorRequired } from "../validator";
+import { trimParse } from "forms/normalizer";
 
 interface Props extends DispatchProp {
   connector: SSOGitlabConnector;
@@ -41,6 +42,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                     label="Name"
                     placeholder="Give a name of this connector"
                     validate={ValidatorRequired}
+                    parse={trimParse}
                     helperText="The name of this connector."
                     required
                   />
@@ -52,7 +54,6 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                     label="Gitlab Base URL"
                     placeholder="Please type Gitlab Base URL"
                     validate={ValidatorRequired}
-                    required
                   />
                 </Grid>
               </Grid>
@@ -62,17 +63,14 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                     component={FinalTextField}
                     name={`${fieldName}.config.clientID`}
                     label="Client ID"
-                    autoComplete={"false"}
                     placeholder="Oauth Client ID"
                     validate={ValidatorRequired}
                     helperText="Follow the right steps to get Client ID."
-                    required
                   />
                 </Grid>
                 <Grid item xs>
                   <Field
                     component={FinalTextField}
-                    autoComplete={"false"}
                     name={`${fieldName}.config.clientSecret`}
                     label="Client Secret"
                     placeholder="Oauth Client Secret"
@@ -100,7 +98,6 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                   label="Groups"
                   name={`${fieldName}.config.groups`}
                   validate={ValidatorRequired}
-                  placeholder="Please type a group name"
                   helperText="Multiple groups are allowed. After entering a group name, try to press enter."
                 />
               </Box>
