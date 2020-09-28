@@ -7,6 +7,17 @@ export const primaryColor = indigo[700];
 let themeRaw = createMuiTheme({});
 
 const lightTheme = createMuiTheme({
+  overrides: {
+    MuiTableCell: {
+      head: {
+        color: "rgba(0, 0, 0, 0.5)",
+      },
+      root: {
+        paddingTop: 8,
+        paddingBottom: 8,
+      },
+    },
+  },
   palette: {
     primary: indigo,
     secondary: {
@@ -24,6 +35,11 @@ const darkTheme = createMuiTheme({
     MuiPopover: {
       paper: {
         border: "1px solid rgba(255, 255, 255, 0.12)",
+      },
+    },
+    MuiTableCell: {
+      head: {
+        color: "rgba(0, 0, 0, 0.5)",
       },
     },
   },

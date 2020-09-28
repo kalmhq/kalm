@@ -38,7 +38,7 @@ export const loadDomainDNSInfoWithType = (domain: string, type: "A" | "CNAME" | 
     }
     if (type === "CNAME") {
       try {
-        const cname = (res.data.Authority as GoogleDNSCNAMEResponse[])[0].data;
+        const cname = (res.data.Answer as GoogleDNSCNAMEResponse[])[0].data;
         dispatch({ type: SET_DOMAIN_CNAME, payload: { domain, cname } });
       } catch (error) {
         // console.log("loadDomainDNSInfoWithType exception: CNAME ", domain, res.data, error);

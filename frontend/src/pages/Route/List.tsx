@@ -144,14 +144,14 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions = (row: HttpRoute) => {
-    const { dispatch, activeNamespaceName, canEditNamespace } = this.props;
-    return canEditNamespace(activeNamespaceName) ? (
+    const { dispatch, canEditNamespace } = this.props;
+
+    return canEditNamespace(row.namespace) ? (
       <>
         <IconLinkWithToolTip
           onClick={() => {
             blinkTopProgressAction();
           }}
-          // size="small"
           tooltipTitle="Edit"
           to={`/routes/${row.name}/edit`}
         >
@@ -192,8 +192,19 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private showActions() {
+    const { httpRoutes, canEditNamespace } = this.props;
+    let show = false;
+    httpRoutes.forEach((route) => {
+      if (canEditNamespace(route.namespace)) {
+        show = true;
+      }
+    });
+    return show;
+  }
+
   private getKRTableColumns() {
-    return [
+    const columns = [
       {
         Header: "Domain",
         accessor: "host",
@@ -218,11 +229,16 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         Header: "Targets",
         accessor: "targets",
       },
-      {
+    ];
+
+    if (this.showActions()) {
+      columns.push({
         Header: "Actions",
         accessor: "actions",
-      },
-    ];
+      });
+    }
+
+    return columns;
   }
 
   private getKRTableData() {

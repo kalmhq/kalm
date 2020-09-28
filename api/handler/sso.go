@@ -5,7 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h *ApiHandler) handleListSSOConfig(c echo.Context) error {
+func (h *ApiHandler) handleGetSSOConfig(c echo.Context) error {
 	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		return resources.NoClusterViewerRoleError
 	}

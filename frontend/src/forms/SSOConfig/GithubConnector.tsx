@@ -11,9 +11,10 @@ import { GithubOrg, SSOConfig, SSOGithubConnector } from "types/sso";
 import { capitalize } from "utils/string";
 import { DeleteIcon, GithubIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
+import { Body, H6, Subtitle1, Subtitle2 } from "widgets/Label";
+import { KMLink } from "widgets/Link";
 import { FinalTextField } from "../Final/textfield";
-import { ValidatorStringRequired } from "../validator";
+import { ValidatorArrayNotEmpty, ValidatorRequired } from "../validator";
 
 export const ValidatorOrgs = (values: any[], _allValues?: any, _props?: any, _name?: any) => {
   if (!values) return undefined;
@@ -32,11 +33,12 @@ class RenderGithubConnectorOrganizations extends React.Component<{
     return (
       <FieldArray<GithubOrg>
         name={name}
-        render={({ fields }) => (
+        validate={ValidatorArrayNotEmpty}
+        render={({ fields, meta: { error, touched } }) => (
           <>
-            {fields.value && fields.value.length === 0 ? (
+            {touched && error && typeof error === "string" ? (
               <Box mt={2} mb={2}>
-                <Alert severity="error">{"You should at least configure one organization."}</Alert>
+                <Alert severity="error">{error}</Alert>
               </Box>
             ) : null}
 
@@ -49,7 +51,7 @@ class RenderGithubConnectorOrganizations extends React.Component<{
                       component={FinalTextField}
                       name={`${fieldName}.name`}
                       label="Organization Name"
-                      validate={ValidatorStringRequired}
+                      validate={ValidatorRequired}
                       parse={trimParse}
                     />
                   </Grid>
@@ -131,7 +133,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
                 name={`${fieldName}.name`}
                 label="Name"
                 placeholder="Give a name of this connector"
-                validate={ValidatorStringRequired}
+                validate={ValidatorRequired}
                 parse={trimParse}
                 helperText="The name of this connector."
               />
@@ -143,7 +145,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
                     name={`${fieldName}.config.clientID`}
                     label="Client ID"
                     placeholder="Oauth Client ID"
-                    validate={ValidatorStringRequired}
+                    validate={ValidatorRequired}
                     helperText="Follow the right steps to get Client ID."
                   />
                 </Grid>
@@ -153,17 +155,17 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
                     name={`${fieldName}.config.clientSecret`}
                     label="Client Secret"
                     placeholder="Oauth Client Secret"
-                    validate={ValidatorStringRequired}
+                    validate={ValidatorRequired}
                   />
                 </Grid>
               </Grid>
 
               <Box mt={1}>
-                <Body2>
+                <Alert severity="info">
                   User MUST be a member of at least one of the specified orgs to authenticate with kalm. If teams are
                   set, only members belongs to these teams will have right to access kalm. Otherwise all members in the
                   org will have right.
-                </Body2>
+                </Alert>
               </Box>
 
               {/*<Box mt={1}>*/}
@@ -199,9 +201,9 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
                 <Body>
                   To get Client ID and Client Secret, you must create an oauth application first. Github oauth
                   application can be created under an organization or a user. Create a user oauth application{" "}
-                  <a href="https://github.com/settings/applications/new" rel="noopener noreferrer" target="_blank">
+                  <KMLink href="https://github.com/settings/applications/new" rel="noopener noreferrer" target="_blank">
                     HERE
-                  </a>
+                  </KMLink>
                   . Or create an org oauth application{" "}
                   <a
                     href="https://github.com/organizations/YOUR-ORGANIZATION-NAME/settings/applications/new"

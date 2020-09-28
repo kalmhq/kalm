@@ -29,7 +29,7 @@ import { KTooltip } from "widgets/KTooltip";
 import { Caption, H6 } from "widgets/Label";
 import { FinalSelectField } from "../Final/select";
 import { FinalTextField } from "../Final/textfield";
-import { ValidatorStringRequired, ValidatorVolumeSize } from "../validator";
+import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -236,7 +236,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
         component={FinalTextField}
         name={`${name}.${index}.path`}
         label="Mount Path"
-        validate={ValidatorStringRequired}
+        validate={ValidatorRequired}
         parse={trimParse}
         placeholder={StringConstants.MOUNT_PATH_PLACEHOLDER}
       />,
@@ -308,7 +308,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           component={FinalTextField}
           name={`${name}.${index}.hostPath`}
           label="Host Path"
-          validate={ValidatorStringRequired}
+          validate={ValidatorRequired}
           parse={trimParse}
         />,
       );

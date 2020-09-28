@@ -71,7 +71,7 @@ export const newEmptyProtectedEndpoint = (): ProtectedEndpoint => {
 
 export interface LoadSSOConfigAction {
   type: typeof LOAD_SSO_CONFIG_FULFILLED;
-  payload: SSOConfig;
+  payload: SSOConfig | null;
 }
 
 export interface DeleteSSOConfigAction {

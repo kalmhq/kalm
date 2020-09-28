@@ -1,10 +1,12 @@
 package resources
 
 import (
+	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
+	"golang.org/x/crypto/ssh"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,7 +37,7 @@ type HttpsCertResp struct {
 
 var ReasonForNoReadyConditions = "no feedback on cert status yet"
 
-func BuildHttpsCertResponse(httpsCert v1alpha1.HttpsCert) *HttpsCertResp {
+func BuildHttpsCertResponse(httpsCert *v1alpha1.HttpsCert) *HttpsCertResp {
 	var readyCond *v1alpha1.HttpsCertCondition
 	for i := range httpsCert.Status.Conditions {
 		cond := httpsCert.Status.Conditions[i]
@@ -86,6 +88,16 @@ func BuildHttpsCertResponse(httpsCert v1alpha1.HttpsCert) *HttpsCertResp {
 	return &resp
 }
 
+func (resourceManager *ResourceManager) GetHttpsCert(name string) (*HttpsCertResp, error) {
+	var fetched v1alpha1.HttpsCert
+
+	if err := resourceManager.Get("", name, &fetched); err != nil {
+		return nil, err
+	}
+
+	return BuildHttpsCertResponse(&fetched), nil
+}
+
 func (resourceManager *ResourceManager) GetHttpsCerts() ([]HttpsCertResp, error) {
 	var fetched v1alpha1.HttpsCertList
 	if err := resourceManager.List(&fetched); err != nil {
@@ -93,8 +105,8 @@ func (resourceManager *ResourceManager) GetHttpsCerts() ([]HttpsCertResp, error)
 	}
 
 	var httpsCerts []HttpsCertResp
-	for _, ele := range fetched.Items {
-		cur := BuildHttpsCertResponse(ele)
+	for _, item := range fetched.Items {
+		cur := BuildHttpsCertResponse(&item)
 
 		httpsCerts = append(httpsCerts, *cur)
 	}
@@ -102,7 +114,7 @@ func (resourceManager *ResourceManager) GetHttpsCerts() ([]HttpsCertResp, error)
 	return httpsCerts, nil
 }
 
-func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert, error) {
+func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCertResp, error) {
 
 	// by default, cert use our default http01Issuer
 	if cert.HttpsCertIssuer == "" {
@@ -140,11 +152,12 @@ func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCe
 	}
 
 	err := resourceManager.Create(&res)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return cert, nil
+	return BuildHttpsCertResponse(&res), nil
 }
 
 func autoGenCertName(cert *HttpsCert) string {
@@ -152,16 +165,16 @@ func autoGenCertName(cert *HttpsCert) string {
 
 	switch cert.HttpsCertIssuer {
 	case v1alpha1.DefaultDNS01IssuerName:
-		prefix += "dns01"
+		prefix = "dns01-"
 	case v1alpha1.DefaultHTTP01IssuerName:
-		prefix += "http01"
+		prefix = "http01-"
 	}
 
 	if cert.IsSelfManaged {
-		prefix += "uploaded"
+		prefix = "uploaded-"
 	}
 
-	return fmt.Sprintf("%s-%s", prefix, rand.String(8))
+	return fmt.Sprintf("%s%s", prefix, rand.String(8))
 }
 
 func (resourceManager *ResourceManager) UpdateAutoManagedCert(cert *HttpsCert) (*HttpsCert, error) {
@@ -183,7 +196,7 @@ func (resourceManager *ResourceManager) UpdateAutoManagedCert(cert *HttpsCert) (
 	return cert, nil
 }
 
-func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, error) {
+func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCertResp, error) {
 	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
 
 	if err != nil {
@@ -220,6 +233,7 @@ func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (
 		err1 = resourceManager.Update(&sec)
 	}()
 
+	var res v1alpha1.HttpsCert
 	var err2 error
 	wg2 := sync.WaitGroup{}
 	wg2.Add(1)
@@ -227,7 +241,6 @@ func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (
 		defer wg2.Done()
 
 		// update domains
-		var res v1alpha1.HttpsCert
 		if err2 = resourceManager.Get("", cert.Name, &res); err2 != nil {
 			return
 		}
@@ -250,10 +263,10 @@ func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (
 		return nil, err2
 	}
 
-	return cert, nil
+	return BuildHttpsCertResponse(&res), nil
 }
 
-func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCert, error) {
+func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCertResp, error) {
 	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
 
 	if cert.Name == "" {
@@ -266,13 +279,32 @@ func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCe
 	}
 
 	domains := getDomainsInCert(x509Cert)
+
 	if len(domains) <= 0 {
 		return nil, fmt.Errorf("fail to find domain name in cert")
 	}
 
-	ok := checkPrivateKey(x509Cert, cert.SelfManagedCertPrvKey)
+	pki, err := ssh.ParseRawPrivateKey([]byte(cert.SelfManagedCertPrvKey))
+
+	if err != nil {
+		return nil, err
+	}
+
+	rsaPrivateKey, ok := pki.(*rsa.PrivateKey)
+
 	if !ok {
-		return nil, fmt.Errorf("privateKey and cert not match")
+		return nil, fmt.Errorf("Only support RSA algorithm in private key")
+	}
+
+	rsaPublicKey, ok := x509Cert.PublicKey.(*rsa.PublicKey)
+
+	if !ok {
+		return nil, fmt.Errorf("Only support RSA algorithm in public key")
+	}
+
+	if rsaPrivateKey.PublicKey.N.Cmp(rsaPublicKey.N) != 0 ||
+		rsaPrivateKey.PublicKey.E != rsaPublicKey.E {
+		return nil, fmt.Errorf("Private key and cert not match")
 	}
 
 	// create secret in istio-system
@@ -294,13 +326,12 @@ func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCe
 	}
 
 	err = resourceManager.Create(&res)
+
 	if err != nil {
 		return nil, err
 	}
 
-	cert.Domains = x509Cert.DNSNames
-
-	return cert, nil
+	return BuildHttpsCertResponse(&res), nil
 }
 
 func getDomainsInCert(x509Cert *x509.Certificate) []string {
@@ -313,24 +344,6 @@ func getDomainsInCert(x509Cert *x509.Certificate) []string {
 
 	return domains
 }
-
-func checkPrivateKey(cert *x509.Certificate, prvKey string) bool {
-	//todo check if cert & prvKey matches
-	return true
-}
-
-//func parseCert(certPEM string) (*x509.Certificate, error) {
-//	block, _ := pem.Decode([]byte(certPEM))
-//	if block == nil {
-//		panic("failed to parse certificate PEM")
-//	}
-//	cert, err := x509.ParseCertificate(block.Bytes)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	return cert, nil
-//}
 
 func (resourceManager *ResourceManager) DeleteHttpsCert(name string) error {
 	return resourceManager.Delete(&v1alpha1.HttpsCert{ObjectMeta: v1.ObjectMeta{Name: name}})

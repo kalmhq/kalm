@@ -76,7 +76,7 @@ export interface LoadAcmeServerFailedAction {
 export interface LoadAcmeServerAction {
   type: typeof LOAD_ACME_SERVER_FULFILLED;
   payload: {
-    acmeServer: AcmeServerInfo;
+    acmeServer: AcmeServerInfo | null;
   };
 }
 

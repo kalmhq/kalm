@@ -37,6 +37,7 @@ import { KalmConsoleIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
 import { KTooltip } from "widgets/KTooltip";
 import { Body2, Subtitle1 } from "widgets/Label";
+import { KMLink } from "widgets/Link";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
 import { makeSelectOption } from "../Final/select";
@@ -45,9 +46,8 @@ import {
   ValidatorCPU,
   ValidatorIsDNS123Label,
   ValidatorMemory,
-  ValidatorRequired,
   ValidatorSchedule,
-  ValidatorStringRequired,
+  ValidatorRequired,
 } from "../validator";
 import { ComponentAccess } from "./Access";
 import { Envs } from "./Envs";
@@ -205,8 +205,19 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             label="Cronjob Schedule"
             required
             validate={ValidatorSchedule}
-            parse={trimParse}
-            helperText={this.renderScheduleHelperText()}
+            helperText={
+              <span>
+                <KMLink href="https://en.wikipedia.org/wiki/Cron" rel="noopener noreferrer" target="_blank">
+                  Cron
+                </KMLink>
+                {" \n"}
+                format string. You can create schedule expressions with{" "}
+                <KMLink href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">
+                  Crontab Guru
+                </KMLink>
+                .
+              </span>
+            }
           />
         </>
       );
@@ -683,7 +694,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             label="Image"
             parse={trimParse}
             placeholder={sc.IMAGE_PLACEHOLDER}
-            validate={ValidatorStringRequired}
+            validate={ValidatorRequired}
             helperText={sc.IMAGE_INPUT_HELPER}
           />
         </Grid>

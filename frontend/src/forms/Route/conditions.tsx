@@ -7,20 +7,16 @@ import { FieldArray } from "react-final-form-arrays";
 import { HttpRouteCondition } from "types/route";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { ValidatorStringRequired } from "../validator";
+import { ValidatorRequired } from "../validator";
 
-export interface Props {
-  conditions?: HttpRouteCondition[];
-}
+export interface Props {}
 
 export class RenderHttpRouteConditions extends React.PureComponent<Props> {
   public render() {
-    const { conditions } = this.props;
-
     return (
-      <FieldArray
+      <FieldArray<HttpRouteCondition, any>
         name="conditions"
-        render={(arrayHelpers) => (
+        render={({ fields }) => (
           <div>
             <Box display="flex">
               <Box mt={2} mr={2} mb={2}>
@@ -30,7 +26,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                   startIcon={<AddIcon />}
                   size="small"
                   onClick={() => {
-                    arrayHelpers.fields.push({
+                    fields.push({
                       type: "header",
                       operator: "equal",
                       name: "",
@@ -48,7 +44,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                   startIcon={<AddIcon />}
                   size="small"
                   onClick={() => {
-                    arrayHelpers.fields.push({
+                    fields.push({
                       type: "query",
                       operator: "equal",
                       name: "",
@@ -60,8 +56,8 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                 </Button>
               </Box>
             </Box>
-            {conditions &&
-              conditions.map((condition, index) => (
+            {fields.value &&
+              fields.value.map((condition, index) => (
                 <Grid container spacing={1} key={index}>
                   <Grid item md={2}>
                     <div style={{ padding: "12px 0" }}>{condition.type} Rule</div>
@@ -71,7 +67,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                       name={`conditions.${index}.name`}
                       component={FinalTextField}
                       label="Name"
-                      validate={ValidatorStringRequired}
+                      validate={ValidatorRequired}
                     />
                   </Grid>
                   <Grid item md={2}>
@@ -91,7 +87,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                       name={`conditions.${index}.value`}
                       component={FinalTextField}
                       label="Value"
-                      validate={ValidatorStringRequired}
+                      validate={ValidatorRequired}
                     />
                   </Grid>
                   <Grid item md={2}>
@@ -99,7 +95,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                       tooltipPlacement="top"
                       tooltipTitle="Delete"
                       aria-label="delete"
-                      onClick={() => arrayHelpers.fields.remove(index)}
+                      onClick={() => fields.remove(index)}
                     >
                       <DeleteIcon />
                     </IconButtonWithTooltip>

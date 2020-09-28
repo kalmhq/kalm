@@ -5,7 +5,7 @@ import { AutoCompleteMultipleValue } from "forms/Final/autoComplete";
 import { FinalRadioGroupRender } from "forms/Final/radio";
 import { FinalTextField } from "forms/Final/textfield";
 import { FormDataPreview } from "forms/Final/util";
-import { ValidatorRequired, ValidatorStringRequired } from "forms/validator";
+import { ValidatorRequired } from "forms/validator";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
@@ -116,7 +116,7 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
                   autoFocus
                   autoComplete="off"
                   component={FinalTextField}
-                  validate={ValidatorStringRequired}
+                  validate={ValidatorRequired}
                 />
 
                 <Field

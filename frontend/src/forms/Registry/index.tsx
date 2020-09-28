@@ -12,7 +12,7 @@ import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
 import { FinalTextField } from "../Final/textfield";
-import { ValidatorIsDNS123Label, ValidatorRegistryHost, ValidatorStringRequired } from "../validator";
+import { ValidatorIsDNS123Label, ValidatorRegistryHost, ValidatorRequired } from "../validator";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -72,7 +72,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
                         label="Username"
                         autoComplete="off"
                         component={FinalTextField}
-                        validate={ValidatorStringRequired}
+                        validate={ValidatorRequired}
                       />
                     </Grid>
                     <Grid item md={12}>
@@ -83,7 +83,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
                         title="Password"
                         autoComplete="off"
                         component={FinalTextField}
-                        validate={ValidatorStringRequired}
+                        validate={ValidatorRequired}
                       />
                     </Grid>
                     <Grid item md={12}>

@@ -24,7 +24,7 @@ import {
 import { SubmitButton } from "widgets/Button";
 import { CopyIconDefault, GithubIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
-import { Body } from "widgets/Label";
+import { KMLink } from "widgets/Link";
 import { Prompt } from "widgets/Prompt";
 import { FinalTextField } from "../Final/textfield";
 import { ValidateHost } from "../validator";
@@ -34,6 +34,12 @@ const styles = (theme: Theme) =>
   createStyles({
     submitButton: {
       marginRight: theme.spacing(4),
+    },
+    secondaryText: {
+      color: theme.palette.grey[600],
+    },
+    inlineHelperText: {
+      color: theme.palette.grey[500],
     },
   });
 
@@ -83,7 +89,7 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { initial, onSubmit } = this.props;
+    const { initial, onSubmit, classes } = this.props;
 
     return (
       <Form
@@ -116,31 +122,29 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
                     </Grid>
                   </Grid>
 
-                  <Box mt={2} style={{ color: "#797979" }}>
-                    <Body>
-                      The callback is generated based on your domain. This url is required in the following steps.
-                      Please make sure your domain name has pointed to your cluster ip.
-                    </Body>
-                    <Box p={1}>
-                      <pre>
-                        <FormSpy subscription={{ values: true }}>
-                          {({ values }: FormSpyRenderProps<SSOConfig>) => (
-                            <>
-                              https://<strong style={{ color: "black" }}>{values.domain || "<domain>"}</strong>
-                              /dex/callback
-                              <Box
-                                display="inline-block"
-                                ml={1}
-                                style={{ verticalAlign: "middle", cursor: "pointer" }}
-                                onClick={() => this.copyCallback(values.domain)}
-                              >
-                                <CopyIconDefault fontSize="small" />
-                              </Box>
-                            </>
-                          )}
-                        </FormSpy>
-                      </pre>
-                    </Box>
+                  <Box mt={2} className={classes.inlineHelperText}>
+                    The callback is generated based on your domain. This url is required in the following steps. Please
+                    make sure your domain name has pointed to your cluster ip.
+                  </Box>
+                  <Box pl={2} pt={1} className={classes.secondaryText}>
+                    <pre>
+                      <FormSpy subscription={{ values: true }}>
+                        {({ values }: FormSpyRenderProps<SSOConfig>) => (
+                          <>
+                            https://<strong style={{ color: "black" }}>{values.domain || "<domain>"}</strong>
+                            /dex/callback
+                            <Box
+                              display="inline-block"
+                              ml={1}
+                              style={{ verticalAlign: "middle", cursor: "pointer" }}
+                              onClick={() => this.copyCallback(values.domain)}
+                            >
+                              <CopyIconDefault fontSize="small" />
+                            </Box>
+                          </>
+                        )}
+                      </FormSpy>
+                    </pre>
                   </Box>
                 </Box>
               }
@@ -180,13 +184,17 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
                         );
                       }}
                     </FormSpy>
-                    <Body style={{ color: "#797979" }}>
+                    <Box pt={2} className={classes.inlineHelperText}>
                       No connector you are looking for? Fire an{" "}
-                      <a href="https://github.com/kalmhq/kalm/issues/new" rel="noopener noreferrer" target="_blank">
+                      <KMLink
+                        href="https://github.com/kalmhq/kalm/issues/new"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
                         issue
-                      </a>{" "}
+                      </KMLink>{" "}
                       on kalm github. Also, pull request is well welcomed.
-                    </Body>
+                    </Box>
                     <Connectors />
                   </Box>
                 }

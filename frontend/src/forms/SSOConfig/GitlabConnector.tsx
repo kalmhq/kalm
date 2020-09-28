@@ -1,14 +1,16 @@
 import { Grid } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
+import { Alert } from "@material-ui/lab";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import React from "react";
 import { Field } from "react-final-form";
 import { connect, DispatchProp } from "react-redux";
 import { SSOGitlabConnector } from "types/sso";
 import { capitalize } from "utils/string";
-import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
+import { Body, H6, Subtitle1, Subtitle2 } from "widgets/Label";
+import { KMLink } from "widgets/Link";
 import { FinalTextField } from "../Final/textfield";
-import { ValidatorStringRequired } from "../validator";
+import { ValidatorRequired } from "../validator";
 import { trimParse } from "forms/normalizer";
 
 interface Props extends DispatchProp {
@@ -39,7 +41,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                     name={`${fieldName}.name`}
                     label="Name"
                     placeholder="Give a name of this connector"
-                    validate={ValidatorStringRequired}
+                    validate={ValidatorRequired}
                     parse={trimParse}
                     helperText="The name of this connector."
                     required
@@ -51,7 +53,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                     name={`${fieldName}.config.baseURL`}
                     label="Gitlab Base URL"
                     placeholder="Please type Gitlab Base URL"
-                    validate={ValidatorStringRequired}
+                    validate={ValidatorRequired}
                   />
                 </Grid>
               </Grid>
@@ -62,7 +64,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                     name={`${fieldName}.config.clientID`}
                     label="Client ID"
                     placeholder="Oauth Client ID"
-                    validate={ValidatorStringRequired}
+                    validate={ValidatorRequired}
                     helperText="Follow the right steps to get Client ID."
                   />
                 </Grid>
@@ -72,13 +74,15 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                     name={`${fieldName}.config.clientSecret`}
                     label="Client Secret"
                     placeholder="Oauth Client Secret"
-                    validate={ValidatorStringRequired}
+                    validate={ValidatorRequired}
                     required
                   />
                 </Grid>
               </Grid>
               <Box mt={1}>
-                <Body2>User MUST be a member of at least one of the specified groups to authenticate with kalm.</Body2>
+                <Alert severity="info">
+                  User MUST be a member of at least one of the specified groups to authenticate with kalm.
+                </Alert>
               </Box>
 
               {/*<Box mt={1}>*/}
@@ -93,7 +97,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                   options={[]}
                   label="Groups"
                   name={`${fieldName}.config.groups`}
-                  validate={ValidatorStringRequired}
+                  validate={ValidatorRequired}
                   helperText="Multiple groups are allowed. After entering a group name, try to press enter."
                 />
               </Box>
@@ -105,9 +109,9 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                 <Body>
                   To get Client ID and Client Secret, you must create an oauth application first. Go to application
                   creation page by clicking{" "}
-                  <a href="https://gitlab.com/profile/applications" rel="noopener noreferrer" target="_blank">
+                  <KMLink href="https://gitlab.com/profile/applications" rel="noopener noreferrer" target="_blank">
                     HERE
-                  </a>
+                  </KMLink>
                   . If you are using a private deployed gitlab. Go to the same path under your domain.
                 </Body>
               </Box>

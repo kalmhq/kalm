@@ -5,7 +5,7 @@ import React from "react";
 import { ComponentLikeEnv } from "types/componentTemplate";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { ValidatorEnvName, ValidatorStringRequired } from "../validator";
+import { ValidatorEnvName, ValidatorRequired } from "../validator";
 import { FinalTextField } from "forms/Final/textfield";
 import { EnvItem } from "types/application";
 import Alert from "@material-ui/lab/Alert";
@@ -69,7 +69,7 @@ class RenderEnvs extends React.PureComponent<Props> {
                     <Field
                       name={`${name}.${index}.value`}
                       label="Value"
-                      validate={ValidatorStringRequired}
+                      validate={ValidatorRequired}
                       component={FinalTextField}
                     />
                   </Grid>

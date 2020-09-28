@@ -12,11 +12,11 @@ import {
   PortProtocolHTTP2,
   PortProtocolHTTPS,
 } from "types/componentTemplate";
-import { HttpRoute, HttpRouteDestination } from "types/route";
+import { HttpRouteDestination } from "types/route";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { ValidatorRequired } from "../validator";
-import { Field, FieldRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
+import { ValidatorArrayNotEmpty, ValidatorRequired } from "../validator";
+import { Field, FieldRenderProps } from "react-final-form";
 import Button from "@material-ui/core/Button";
 import Collapse from "@material-ui/core/Collapse";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
@@ -33,7 +33,7 @@ const mapStateToProps = (state: RootState) => {
 interface Props extends ReturnType<typeof mapStateToProps> {}
 
 class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
-  private renderRows() {
+  public render() {
     const { services, activeNamespace } = this.props;
 
     const options: AutoCompleteForRenderOption[] = [];
@@ -74,8 +74,9 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
 
     return (
       <FieldArray
+        validate={ValidatorArrayNotEmpty}
         name="destinations"
-        render={({ fields }: FieldArrayRenderProps<HttpRouteDestination, any>) => (
+        render={({ fields, meta: { error, touched } }: FieldArrayRenderProps<HttpRouteDestination, any>) => (
           <div>
             <Box mt={2} mr={2} mb={2}>
               <Button
@@ -94,7 +95,8 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
                 Add a target
               </Button>
             </Box>
-            <Collapse in={fields.value.length > 1}>
+            {touched && error && typeof error === "string" ? <Alert severity="error">{error}</Alert> : null}
+            <Collapse in={fields.value && fields.value.length > 1}>
               <Alert className="alert" severity="info">
                 There are more than one target, traffic will be forwarded to each target by weight.
               </Alert>
@@ -157,23 +159,6 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
           </div>
         )}
       />
-    );
-  }
-
-  public render() {
-    return (
-      <div>
-        <FormSpy>
-          {({ touched, values }: FormSpyRenderProps<HttpRoute>) => {
-            return touched && touched["destinations"] && values.destinations.length === 0 ? (
-              <Box>
-                <Alert severity="error">{"You should at least configure one Targets."}</Alert>
-              </Box>
-            ) : null;
-          }}
-        </FormSpy>
-        {this.renderRows()}
-      </div>
     );
   }
 }
