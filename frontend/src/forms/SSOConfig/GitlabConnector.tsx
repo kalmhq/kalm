@@ -8,7 +8,8 @@ import { SSOGitlabConnector } from "types/sso";
 import { capitalize } from "utils/string";
 import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
 import { FinalTextField } from "../Final/textfield";
-import { ValidatorRequired } from "../validator";
+import { ValidatorStringRequired } from "../validator";
+import { trimParse } from "forms/normalizer";
 
 interface Props extends DispatchProp {
   connector: SSOGitlabConnector;
@@ -38,7 +39,8 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                     name={`${fieldName}.name`}
                     label="Name"
                     placeholder="Give a name of this connector"
-                    validate={ValidatorRequired}
+                    validate={ValidatorStringRequired}
+                    parse={trimParse}
                     helperText="The name of this connector."
                     required
                   />
@@ -49,8 +51,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                     name={`${fieldName}.config.baseURL`}
                     label="Gitlab Base URL"
                     placeholder="Please type Gitlab Base URL"
-                    validate={ValidatorRequired}
-                    required
+                    validate={ValidatorStringRequired}
                   />
                 </Grid>
               </Grid>
@@ -60,21 +61,18 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                     component={FinalTextField}
                     name={`${fieldName}.config.clientID`}
                     label="Client ID"
-                    autoComplete={"false"}
                     placeholder="Oauth Client ID"
-                    validate={ValidatorRequired}
+                    validate={ValidatorStringRequired}
                     helperText="Follow the right steps to get Client ID."
-                    required
                   />
                 </Grid>
                 <Grid item xs>
                   <Field
                     component={FinalTextField}
-                    autoComplete={"false"}
                     name={`${fieldName}.config.clientSecret`}
                     label="Client Secret"
                     placeholder="Oauth Client Secret"
-                    validate={ValidatorRequired}
+                    validate={ValidatorStringRequired}
                     required
                   />
                 </Grid>
@@ -95,8 +93,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                   options={[]}
                   label="Groups"
                   name={`${fieldName}.config.groups`}
-                  validate={ValidatorRequired}
-                  placeholder="Please type a group name"
+                  validate={ValidatorStringRequired}
                   helperText="Multiple groups are allowed. After entering a group name, try to press enter."
                 />
               </Box>

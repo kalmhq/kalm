@@ -137,7 +137,6 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
                       name="resources"
                       label="Applications"
                       key="applications"
-                      placeholder="Select an application"
                       validate={ValidatorRequired}
                     />
                   ) : null}
@@ -150,7 +149,6 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
                       name="resources"
                       key="Components"
                       label="Components"
-                      placeholder={"Select a component"}
                       validate={ValidatorRequired}
                     />
                   ) : null}

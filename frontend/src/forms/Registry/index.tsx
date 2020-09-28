@@ -1,6 +1,7 @@
 import { Box, createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import { FormDataPreview } from "forms/Final/util";
+import { trimAndToLowerParse, trimParse } from "forms/normalizer";
 import React from "react";
 import { Field, Form, FormRenderProps } from "react-final-form";
 import { connect, DispatchProp } from "react-redux";
@@ -11,7 +12,7 @@ import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
 import { FinalTextField } from "../Final/textfield";
-import { ValidatorIsDNS123Label, ValidatorRegistryHost, ValidatorRequired } from "../validator";
+import { ValidatorIsDNS123Label, ValidatorRegistryHost, ValidatorStringRequired } from "../validator";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -61,6 +62,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
                         disabled={isEdit}
                         component={FinalTextField}
                         validate={ValidatorIsDNS123Label}
+                        parse={trimParse}
                         helperText={isEdit ? "Can't modify name" : sc.NAME_RULE}
                       />
                     </Grid>
@@ -70,7 +72,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
                         label="Username"
                         autoComplete="off"
                         component={FinalTextField}
-                        validate={ValidatorRequired}
+                        validate={ValidatorStringRequired}
                       />
                     </Grid>
                     <Grid item md={12}>
@@ -81,7 +83,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
                         title="Password"
                         autoComplete="off"
                         component={FinalTextField}
-                        validate={ValidatorRequired}
+                        validate={ValidatorStringRequired}
                       />
                     </Grid>
                     <Grid item md={12}>
@@ -90,6 +92,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
                         label="Host"
                         component={FinalTextField}
                         validate={ValidatorRegistryHost}
+                        parse={trimAndToLowerParse}
                         placeholder="E.g. https://registry.kalm.dev"
                         helperText={<span>Leave blank for private docker hub registry</span>}
                       />
