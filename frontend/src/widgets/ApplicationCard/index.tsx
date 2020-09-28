@@ -35,14 +35,14 @@ import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 const ApplicationCardStyles = (theme: Theme) =>
   createStyles({
     root: {
-      border: "1px solid rgba(0, 0, 0, 0.12)",
+      border: `1px solid ${theme.palette.divider}`,
       background: theme.palette.background.paper,
       maxWidth: 310,
       minWidth: 290,
     },
     avatar: {},
     actionArea: {
-      borderTop: "1px solid rgba(0, 0, 0, 0.12)",
+      borderTop: `1px solid ${theme.palette.divider}`,
       paddingLeft: theme.spacing(2),
     },
     actionContainer: {
