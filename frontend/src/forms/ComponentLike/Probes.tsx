@@ -144,7 +144,6 @@ class RenderProbe extends React.PureComponent<Props> {
             name={`${name}.periodSeconds`}
             component={RenderNestedTextfield}
             parse={NormalizePositiveNumber}
-            validate={ValidatorRequired}
             placeholder="10"
             type="number"
             min="1"
@@ -261,7 +260,6 @@ class RenderProbe extends React.PureComponent<Props> {
             component={RenderNestedTextfield}
             placeholder="1"
             parse={NormalizePositiveNumber}
-            validate={ValidatorRequired}
             style={{ width: 60 }}
             type="number"
             min="1"
@@ -285,7 +283,6 @@ class RenderProbe extends React.PureComponent<Props> {
                 component={RenderNestedTextfield}
                 placeholder="1"
                 parse={NormalizePositiveNumber}
-                validate={ValidatorRequired}
                 style={{ width: 60 }}
                 type="number"
                 min="1"
@@ -299,7 +296,6 @@ class RenderProbe extends React.PureComponent<Props> {
             component={RenderNestedTextfield}
             placeholder="3"
             parse={NormalizePositiveNumber}
-            validate={ValidatorRequired}
             type="number"
             min="1"
             style={{ width: 60 }}
