@@ -92,7 +92,6 @@ class RenderProbe extends React.PureComponent<Props> {
             name={`${name}.initialDelaySeconds`}
             component={RenderNestedTextfield}
             parse={NormalizePositiveNumber}
-            validate={ValidatorRequired}
             placeholder="10"
             type="number"
             min="1"
