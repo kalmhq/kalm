@@ -100,6 +100,9 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.POST("/reset", h.handleResetCluster)
 
 	gv1Alpha1WithAuth.GET("/cluster", h.handleClusterInfo)
+
+	gv1Alpha1WithAuth.GET("/loadbalancers", h.handleLoadBalancers)
+
 	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
 	gv1Alpha1WithAuth.POST("/applications", h.handleCreateApplication)
 	gv1Alpha1WithAuth.GET("/applications/:name", h.handleGetApplicationDetails)
@@ -190,6 +193,8 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	gv1Alpha1WithAuth.GET("/settings", h.handleListSettings)
 }
+
+
 
 func NewApiHandler(clientManager client.ClientManager) *ApiHandler {
 	return &ApiHandler{
