@@ -37,6 +37,7 @@ import { grey } from "@material-ui/core/colors";
 import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
 import clsx from "clsx";
 import SettingsBackupRestoreIcon from "@material-ui/icons/SettingsBackupRestore";
+import VpnKey from "@material-ui/icons/VpnKey";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -568,4 +569,10 @@ export const CIIcon = withStyles(styles)((props: ColorIconsProps) => {
       style={{ ...style, transform: "scaleX(-1)" }}
     />
   );
+});
+
+export const SSOIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <VpnKey className={className} fontSize={fontSize} style={{ ...style, transform: "scaleX(-1)" }} />;
 });

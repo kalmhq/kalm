@@ -10,7 +10,8 @@ import { GithubOrg, SSOConfig, SSOGithubConnector } from "types/sso";
 import { capitalize } from "utils/string";
 import { DeleteIcon, GithubIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
+import { Body, H6, Subtitle1, Subtitle2 } from "widgets/Label";
+import { KMLink } from "widgets/Link";
 import { FinalTextField } from "../Final/textfield";
 import { ValidatorArrayNotEmpty, ValidatorRequired } from "../validator";
 
@@ -165,11 +166,11 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
               </Grid>
 
               <Box mt={1}>
-                <Body2>
+                <Alert severity="info">
                   User MUST be a member of at least one of the specified orgs to authenticate with kalm. If teams are
                   set, only members belongs to these teams will have right to access kalm. Otherwise all members in the
                   org will have right.
-                </Body2>
+                </Alert>
               </Box>
 
               {/*<Box mt={1}>*/}
@@ -205,9 +206,9 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
                 <Body>
                   To get Client ID and Client Secret, you must create an oauth application first. Github oauth
                   application can be created under an organization or a user. Create a user oauth application{" "}
-                  <a href="https://github.com/settings/applications/new" rel="noopener noreferrer" target="_blank">
+                  <KMLink href="https://github.com/settings/applications/new" rel="noopener noreferrer" target="_blank">
                     HERE
-                  </a>
+                  </KMLink>
                   . Or create an org oauth application{" "}
                   <a
                     href="https://github.com/organizations/YOUR-ORGANIZATION-NAME/settings/applications/new"

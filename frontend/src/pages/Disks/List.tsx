@@ -168,17 +168,24 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private getKRTableColumns() {
-    return [
+    const { canEditCluster } = this.props;
+
+    const columns = [
       { Header: "Volume Name", accessor: "name" },
       { Header: "Mounted", accessor: "isInUse" },
       { Header: "App", accessor: "componentNamespace" },
       { Header: "Component", accessor: "componentName" },
       { Header: "Size", accessor: "capacity" },
-      {
+    ];
+
+    if (canEditCluster()) {
+      columns.push({
         Header: "Actions",
         accessor: "actions",
-      },
-    ];
+      });
+    }
+
+    return columns;
   }
 
   private getKRTableData() {

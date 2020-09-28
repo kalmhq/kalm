@@ -134,19 +134,19 @@ class DomainStatus extends React.PureComponent<Props> {
   };
 
   private getError = (): boolean => {
-    const { domainStatus, cnameDomain, nsDomain } = this.props;
+    const { domainStatus, cnameDomain, nsDomain, domain, ipAddress } = this.props;
     const isLoaded = domainStatus?.isLoaded;
     let isError = true;
     try {
       if (domainStatus) {
         if (isLoaded && cnameDomain && domainStatus.cname) {
           // console.log("cname check", domain, cnameDomain, domainStatus.cname);
-          isError = !(domainStatus.cname === cnameDomain);
+          isError = !(domainStatus.cname.indexOf(cnameDomain) > -1);
         } else if (isLoaded && nsDomain && domainStatus.ns) {
           // console.log("ns check", domain, nsDomain, domainStatus.ns);
           isError = !domainStatus.ns.includes(nsDomain + ".");
-        } else if (isLoaded && domainStatus.aRecords) {
-          // console.log("aRecords", domain, ipAddress, domainStatus.aRecords, this.getIPAddress());
+        } else if (isLoaded && domainStatus.aRecords && ipAddress) {
+          console.log("aRecords", domain, ipAddress, domainStatus.aRecords, this.getIPAddress());
           isError = !domainStatus.aRecords.includes(this.getIPAddress());
         }
       }
@@ -163,7 +163,14 @@ class DomainStatus extends React.PureComponent<Props> {
     const ip = this.getIPAddress();
     if (isIPDomain) {
       return {
-        icon: domain === ip ? <CheckCircleIcon /> : <WarningIcon color="action" />,
+        icon:
+          domain === ip ? (
+            <CheckCircleIcon />
+          ) : domainStatus?.aRecords.includes(ip) ? (
+            <WarningIcon color="action" />
+          ) : (
+            <CheckCircleIcon />
+          ),
         body:
           domain === ip ? (
             <Box p={2}>the domain is successfully configured!</Box>
