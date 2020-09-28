@@ -1,5 +1,6 @@
 import { Box } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
+import { Uploader } from "forms/Final/uploader";
 import React from "react";
 import { Form } from "react-final-form";
 import { connect } from "react-redux";
@@ -9,7 +10,6 @@ import { CertificateFormType, selfManaged } from "types/certificate";
 import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
-import { Uploader } from "forms/Final/uploader";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   return {

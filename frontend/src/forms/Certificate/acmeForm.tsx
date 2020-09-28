@@ -47,7 +47,7 @@ class AcmeFormRaw extends React.PureComponent<Props & ReturnType<typeof mapState
                           component={FinalTextField}
                           validate={ValidatorIsDNS1123SubDomain}
                           parse={trimAndToLowerParse}
-                          helperText={"The domain name of your ACME server"}
+                          helperText="The domain name of your ACME server"
                           placeholder="e.g. acme-random-suffix.your-domain.com"
                         />
                       </Grid>

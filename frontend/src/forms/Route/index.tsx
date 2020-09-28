@@ -7,7 +7,7 @@ import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalBoolCheckboxRender, FinalCheckboxGroupRender } from "forms/Final/checkbox";
 import { FinalRadioGroupRender } from "forms/Final/radio";
 import { ROUTE_FORM_ID } from "forms/formIDs";
-import { stringArrayTrimParse } from "forms/normalizer";
+import { stringArrayTrimParse, stringArrayTrimAndToLowerCaseParse } from "forms/normalizer";
 import { RenderHttpRouteDestinations } from "forms/Route/destinations";
 import { ValidatorArrayNotEmpty, ValidatorArrayOfPath, ValidatorIpAndHosts } from "forms/validator";
 import routesGif from "images/routes.gif";
@@ -321,6 +321,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                               label="Hosts"
                               name="hosts"
                               validate={ValidatorIpAndHosts}
+                              parse={stringArrayTrimAndToLowerCaseParse}
                               placeholder="e.g. www.example.com"
                               helperText={
                                 <Caption color="textSecondary">

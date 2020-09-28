@@ -28,6 +28,7 @@ import { KMLink } from "widgets/Link";
 import { Prompt } from "widgets/Prompt";
 import { FinalTextField } from "../Final/textfield";
 import { ValidateHost } from "../validator";
+import { trimAndToLowerParse } from "forms/normalizer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -113,6 +114,7 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
                         label="Domain"
                         component={FinalTextField}
                         validate={ValidateHost}
+                        parse={trimAndToLowerParse}
                         autoFocus
                         placeholder="Please type a domain for your Single Sign-on configuration"
                         helperText="A valid domain name is required."

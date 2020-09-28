@@ -1,6 +1,7 @@
 import { Box, createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import { FormDataPreview } from "forms/Final/util";
+import { trimAndToLowerParse, trimParse } from "forms/normalizer";
 import React from "react";
 import { Field, Form, FormRenderProps } from "react-final-form";
 import { connect, DispatchProp } from "react-redux";
@@ -61,6 +62,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
                         disabled={isEdit}
                         component={FinalTextField}
                         validate={ValidatorIsDNS123Label}
+                        parse={trimParse}
                         helperText={isEdit ? "Can't modify name" : sc.NAME_RULE}
                       />
                     </Grid>
@@ -90,6 +92,7 @@ class RegistryFormRaw extends React.PureComponent<Props> {
                         label="Host"
                         component={FinalTextField}
                         validate={ValidatorRegistryHost}
+                        parse={trimAndToLowerParse}
                         placeholder="E.g. https://registry.kalm.dev"
                         helperText={<span>Leave blank for private docker hub registry</span>}
                       />
