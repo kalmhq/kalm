@@ -7,11 +7,11 @@ import { BasePage } from "pages/BasePage";
 import React from "react";
 import { Link } from "react-router-dom";
 import {
-  SSOGithubConnector,
-  SSOGitlabConnector,
   SSO_CONNECTOR_TYPE,
   SSO_CONNECTOR_TYPE_GITHUB,
   SSO_CONNECTOR_TYPE_GITLAB,
+  SSOGithubConnector,
+  SSOGitlabConnector,
 } from "types/sso";
 import { CustomizedButton } from "widgets/Button";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
@@ -31,8 +31,6 @@ const styles = (theme: Theme) =>
 interface Props extends WithStyles<typeof styles>, WithSSOProps, WithUserAuthProps, WithNamespaceProps {}
 
 interface State {}
-
-const pageObjectName: string = "Single Sign-On";
 
 class SSOPageRaw extends React.PureComponent<Props, State> {
   private renderConnectorDetails = (connector: SSOGitlabConnector | SSOGithubConnector) => {
@@ -175,7 +173,30 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderInfoBox() {
-    return <InfoBox title={pageObjectName} options={[]} guideLink={"https://kalm.dev/docs/next/auth/sso"} />;
+    return (
+      <InfoBox
+        title="Reference"
+        options={[
+          {
+            title: (
+              <KMLink href="https://kalm.dev/docs/next/auth/sso" target="_blank">
+                Single Sign-On Guide
+              </KMLink>
+            ),
+            content: "",
+          },
+          {
+            title: (
+              <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+                How to add a new user?(TODO)
+              </KMLink>
+            ),
+            draft: true,
+            content: "",
+          },
+        ]}
+      />
+    );
   }
 
   public render() {
@@ -192,7 +213,9 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
     return (
       <BasePage>
         <Box p={2}>{!!ssoConfig ? this.renderConfigDetails() : this.renderEmpty()}</Box>
-        <Box p={2}>{this.renderInfoBox()}</Box>
+        <Box pb={2} pl={2} pr={2}>
+          {this.renderInfoBox()}
+        </Box>
       </BasePage>
     );
   }

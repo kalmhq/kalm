@@ -1,4 +1,13 @@
-import { Box, Button, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  createStyles,
+  Link as KMLink,
+  Theme,
+  Typography,
+  WithStyles,
+  withStyles,
+} from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import { deleteDeployAccessTokenAction } from "actions/deployAccessToken";
 import { blinkTopProgressAction } from "actions/settings";
@@ -15,7 +24,6 @@ import {
   DeployAccessTokenScopeNamespace,
 } from "types/deployAccessToken";
 import sc from "utils/stringConstants";
-import { BlankTargetLink } from "widgets/BlankTargetLink";
 import { CustomizedButton } from "widgets/Button";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { CIIcon, KalmDetailsIcon } from "widgets/Icon";
@@ -125,34 +133,6 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     ) : null;
   };
 
-  private renderInfoBox() {
-    return (
-      <Box mt={2}>
-        <InfoBox
-          title={sc.CI_INFO_BOX_TEXT}
-          options={[
-            {
-              title: <BlankTargetLink href="https://kalm.dev">Use webhook (fix the link)</BlankTargetLink>,
-              content: "",
-            },
-            {
-              title: <BlankTargetLink href="https://kalm.dev">Use Kalm orb in CircleCI (fix the link)</BlankTargetLink>,
-              content: "",
-            },
-            {
-              title: (
-                <BlankTargetLink href="https://kalm.dev">
-                  Use Kalm action in Github Actions (fix the link)
-                </BlankTargetLink>
-              ),
-              content: "",
-            },
-          ]}
-        />
-      </Box>
-    );
-  }
-
   private getKRTableColumns() {
     const columns = [
       {
@@ -220,6 +200,28 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     return canEditNamespace(activeNamespaceName) || canEditCluster();
   }
 
+  private renderInfoBox() {
+    const title = "References";
+
+    const options = [
+      {
+        title: (
+          <KMLink href="https://kalm.dev/docs/next/crd/component" target="_blank">
+            How a deploy token works?
+          </KMLink>
+        ),
+        draft: true,
+        content: "",
+      },
+    ];
+
+    return (
+      <Box pl={2} pr={2}>
+        <InfoBox title={title} options={options} />
+      </Box>
+    );
+  }
+
   public render() {
     return (
       <BasePage
@@ -234,6 +236,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
         }
       >
         {this.renderContent()}
+        {this.renderInfoBox()}
       </BasePage>
     );
   }
