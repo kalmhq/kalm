@@ -3,14 +3,12 @@ package controllers
 import (
 	"context"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"testing"
-	"time"
 )
 
 type HttpsCertControllerSuite struct {
