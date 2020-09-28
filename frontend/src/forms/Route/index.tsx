@@ -21,7 +21,6 @@ import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
 import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import { httpMethods, HttpRoute, methodsModeAll, methodsModeSpecific } from "types/route";
-import { isArray } from "util";
 import { arraysMatch } from "utils";
 import { includesForceHttpsDomain } from "utils/domain";
 import { default as sc, default as stringConstants } from "utils/stringConstants";
@@ -279,7 +278,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             const { hosts, methodsMode, schemes, httpRedirectToHttps } = values;
             const hstsDomains = includesForceHttpsDomain(hosts);
             const icons = hosts.map((host, index) => {
-              if (isArray(errors.hosts) && errors.hosts[index]) {
+              if (Array.isArray(errors.hosts) && errors.hosts[index]) {
                 return undefined;
               } else {
                 return <DomainStatus domain={host} />;

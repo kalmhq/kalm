@@ -55,11 +55,7 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface Props
-  extends WithStyles<typeof styles>,
-    React.Props<any>,
-    ReturnType<typeof mapStateToProps>,
-    TDispatchProp {}
+interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
 class DashboardLayoutRaw extends React.PureComponent<Props> {
   render() {

@@ -11,6 +11,23 @@ import "./index.css";
 import * as serviceWorker from "./serviceWorker";
 import { setStore } from "store";
 import { App } from "app/index";
+import * as Sentry from "@sentry/react";
+import { Integrations } from "@sentry/tracing";
+
+console.log("process.env.REACT_APP_VERSION---------", process.env.REACT_APP_VERSION);
+console.log("process.env.REACT_APP_NAME---------", process.env.REACT_APP_NAME);
+if (process.env.REACT_APP_SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.REACT_APP_SENTRY_DSN,
+    // https://docs.sentry.io/platforms/javascript/guides/react/integrations/default/
+    defaultIntegrations: false,
+    integrations: [
+      new Sentry.Integrations.GlobalHandlers({ onerror: true, onunhandledrejection: true }),
+      new Integrations.BrowserTracing(),
+    ],
+    release: process.env.REACT_APP_NAME + "@" + process.env.REACT_APP_VERSION,
+  });
+}
 
 export const history = createBrowserHistory({
   getUserConfirmation: HistoryUserConfirmation,

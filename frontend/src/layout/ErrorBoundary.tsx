@@ -1,9 +1,9 @@
 import { Box, createStyles, Link, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
-import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
+import * as Sentry from "@sentry/react";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -36,11 +36,15 @@ class ErrorBoundaryRaw extends React.PureComponent<Props, State> {
     return { hasError: true };
   }
 
-  componentDidCatch(error: any, info: any) {}
+  componentDidCatch(error: any, info: any) {
+    if (process.env.REACT_APP_SENTRY_DSN) {
+      Sentry.captureException(error);
+    }
+  }
 
   private jumpToDashBoard = (event: React.MouseEvent) => {
     event.preventDefault();
-    this.props.dispatch(push("/"));
+    window.location.href = "/";
   };
 
   render() {

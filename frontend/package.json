@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "kalm-frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -8,6 +8,8 @@
     "@material-ui/lab": "^4.0.0-alpha.46",
     "@rjsf/core": "^2.0.0",
     "@rjsf/material-ui": "^2.0.0",
+    "@sentry/react": "^5.24.2",
+    "@sentry/tracing": "^5.24.2",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.4.0",
     "@testing-library/user-event": "^7.2.1",
@@ -89,16 +91,8 @@
     "build-storybook": "NODE_ENV=test build-storybook --docs -s public"
   },
   "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "production": [">0.2%", "not dead", "not op_mini all"],
+    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
   },
   "jest": {
     "moduleNameMapper": {
