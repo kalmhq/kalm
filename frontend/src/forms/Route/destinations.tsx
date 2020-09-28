@@ -96,7 +96,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
               </Button>
             </Box>
             {touched && error && typeof error === "string" ? <Alert severity="error">{error}</Alert> : null}
-            <Collapse in={fields.value.length > 1}>
+            <Collapse in={fields.value && fields.value.length > 1}>
               <Alert className="alert" severity="info">
                 There are more than one target, traffic will be forwarded to each target by weight.
               </Alert>
