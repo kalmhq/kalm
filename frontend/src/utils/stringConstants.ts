@@ -71,6 +71,7 @@ export const StringConstants = {
   EMPTY_REGISTRY_TITLE: "You haven't configured any Private Registries.",
   EMPTY_REGISTRY_SUBTITLE:
     "To pull images hosted on a private registry, first add an entry with your login info here. Public registries such as Docker Hub can be used directly.",
+  EMPTY_SSO_TITLE: "You haven't configured Single Sign-On.",
   EMPTY_ROUTES_TITLE: "You don't have any Routes",
   EMPTY_ROUTES_SUBTITLE:
     "Add a Route to allow external requests to access your Application. You can use Routes to specify how hosts and paths map to components, configure HTTPS, and setup canary or blue-green deployments.",

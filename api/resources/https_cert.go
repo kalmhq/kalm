@@ -197,7 +197,7 @@ func (resourceManager *ResourceManager) UpdateAutoManagedCert(cert *HttpsCert) (
 }
 
 func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCertResp, error) {
-	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
+	x509Cert, _, err := controllers.ParseCert(cert.SelfManagedCertContent)
 
 	if err != nil {
 		resourceManager.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
@@ -267,7 +267,7 @@ func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (
 }
 
 func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCertResp, error) {
-	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
+	x509Cert, _, err := controllers.ParseCert(cert.SelfManagedCertContent)
 
 	if cert.Name == "" {
 		cert.Name = autoGenCertName(cert)

@@ -37,6 +37,7 @@ import { KalmConsoleIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
 import { KTooltip } from "widgets/KTooltip";
 import { Body2, Subtitle1 } from "widgets/Label";
+import { KMLink } from "widgets/Link";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
 import { makeSelectOption } from "../Final/select";
@@ -190,14 +191,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             validate={ValidatorSchedule}
             helperText={
               <span>
-                <a href="https://en.wikipedia.org/wiki/Cron" target="_blank" rel="noopener noreferrer">
+                <KMLink href="https://en.wikipedia.org/wiki/Cron" rel="noopener noreferrer" target="_blank">
                   Cron
-                </a>
+                </KMLink>
                 {" \n"}
                 format string. You can create schedule expressions with{" "}
-                <a href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">
+                <KMLink href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">
                   Crontab Guru
-                </a>
+                </KMLink>
                 .
               </span>
             }

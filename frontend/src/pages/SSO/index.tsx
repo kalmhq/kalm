@@ -1,9 +1,9 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { indigo } from "@material-ui/core/colors";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withSSO, WithSSOProps } from "hoc/withSSO";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
-import { SSOImplementDetails } from "pages/SSO/Details";
 import React from "react";
 import { Link } from "react-router-dom";
 import {
@@ -14,11 +14,14 @@ import {
   SSO_CONNECTOR_TYPE_GITLAB,
 } from "types/sso";
 import { CustomizedButton } from "widgets/Button";
-import { GithubIcon } from "widgets/Icon";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
+import { GithubIcon, SSOIcon } from "widgets/Icon";
+import { InfoBox } from "widgets/InfoBox";
 import { KPanel } from "widgets/KPanel";
 import { Body, Subtitle1 } from "widgets/Label";
 import { KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
+import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -28,6 +31,8 @@ const styles = (theme: Theme) =>
 interface Props extends WithStyles<typeof styles>, WithSSOProps, WithUserAuthProps, WithNamespaceProps {}
 
 interface State {}
+
+const pageObjectName: string = "Single Sign-On";
 
 class SSOPageRaw extends React.PureComponent<Props, State> {
   private renderConnectorDetails = (connector: SSOGitlabConnector | SSOGithubConnector) => {
@@ -146,6 +151,33 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
     );
   };
 
+  private renderEmpty() {
+    const { canEditCluster } = this.props;
+    return canEditCluster() ? (
+      <EmptyInfoBox
+        image={<SSOIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        title={sc.EMPTY_SSO_TITLE}
+        content={
+          <>
+            The <strong>single sign-on</strong> feature allows you to configure access permissions for private
+            components. Only users with the permissions you configured can access the resources behind. <br />
+            Kalm SSO will integrate with your existing user system, such as <strong>github</strong>,{" "}
+            <strong>gitlab</strong>, <strong>google</strong>, etc.
+          </>
+        }
+        button={
+          <CustomizedButton component={Link} to="/sso/config" variant="contained" color="primary">
+            Enable Single Sign-on
+          </CustomizedButton>
+        }
+      />
+    ) : null;
+  }
+
+  private renderInfoBox() {
+    return <InfoBox title={pageObjectName} options={[]} guideLink={"https://kalm.dev/docs/next/auth/sso"} />;
+  }
+
   public render() {
     const { ssoConfig, isSSOConfigLoaded } = this.props;
 
@@ -159,13 +191,8 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
 
     return (
       <BasePage>
-        <Box p={2}>
-          {!!ssoConfig ? this.renderConfigDetails() : this.renderEmptyText()}
-
-          <Box mt={2}>
-            <SSOImplementDetails />
-          </Box>
-        </Box>
+        <Box p={2}>{!!ssoConfig ? this.renderConfigDetails() : this.renderEmpty()}</Box>
+        <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>
     );
   }

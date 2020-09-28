@@ -56,52 +56,53 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
                 </Button>
               </Box>
             </Box>
-            {fields.value.map((condition, index) => (
-              <Grid container spacing={1} key={index}>
-                <Grid item md={2}>
-                  <div style={{ padding: "12px 0" }}>{condition.type} Rule</div>
+            {fields.value &&
+              fields.value.map((condition, index) => (
+                <Grid container spacing={1} key={index}>
+                  <Grid item md={2}>
+                    <div style={{ padding: "12px 0" }}>{condition.type} Rule</div>
+                  </Grid>
+                  <Grid item md={2}>
+                    <Field
+                      name={`conditions.${index}.name`}
+                      component={FinalTextField}
+                      label="Name"
+                      validate={ValidatorRequired}
+                    />
+                  </Grid>
+                  <Grid item md={2}>
+                    <Field
+                      name={`conditions.${index}.operator`}
+                      component={FinalSelectField}
+                      label="operator"
+                      validate={ValidatorRequired}
+                      options={[
+                        { value: "equal", text: "Equal" },
+                        { value: "withPrifix", text: "With Prifix" },
+                        { value: "matchRegexp", text: "Match Regexp" },
+                      ]}
+                    ></Field>
+                  </Grid>
+                  <Grid item md={2}>
+                    <Field
+                      name={`conditions.${index}.value`}
+                      component={FinalTextField}
+                      label="Value"
+                      validate={ValidatorRequired}
+                    />
+                  </Grid>
+                  <Grid item md={2}>
+                    <IconButtonWithTooltip
+                      tooltipPlacement="top"
+                      tooltipTitle="Delete"
+                      aria-label="delete"
+                      onClick={() => fields.remove(index)}
+                    >
+                      <DeleteIcon />
+                    </IconButtonWithTooltip>
+                  </Grid>
                 </Grid>
-                <Grid item md={2}>
-                  <Field
-                    name={`conditions.${index}.name`}
-                    component={FinalTextField}
-                    label="Name"
-                    validate={ValidatorRequired}
-                  />
-                </Grid>
-                <Grid item md={2}>
-                  <Field
-                    name={`conditions.${index}.operator`}
-                    component={FinalSelectField}
-                    label="operator"
-                    validate={ValidatorRequired}
-                    options={[
-                      { value: "equal", text: "Equal" },
-                      { value: "withPrifix", text: "With Prifix" },
-                      { value: "matchRegexp", text: "Match Regexp" },
-                    ]}
-                  ></Field>
-                </Grid>
-                <Grid item md={2}>
-                  <Field
-                    name={`conditions.${index}.value`}
-                    component={FinalTextField}
-                    label="Value"
-                    validate={ValidatorRequired}
-                  />
-                </Grid>
-                <Grid item md={2}>
-                  <IconButtonWithTooltip
-                    tooltipPlacement="top"
-                    tooltipTitle="Delete"
-                    aria-label="delete"
-                    onClick={() => fields.remove(index)}
-                  >
-                    <DeleteIcon />
-                  </IconButtonWithTooltip>
-                </Grid>
-              </Grid>
-            ))}
+              ))}
           </div>
         )}
       />
