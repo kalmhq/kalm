@@ -14,8 +14,6 @@ import { App } from "app/index";
 import * as Sentry from "@sentry/react";
 import { Integrations } from "@sentry/tracing";
 
-console.log("process.env.REACT_APP_VERSION---------", process.env.REACT_APP_VERSION);
-console.log("process.env.REACT_APP_NAME---------", process.env.REACT_APP_NAME);
 if (process.env.REACT_APP_SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.REACT_APP_SENTRY_DSN,
