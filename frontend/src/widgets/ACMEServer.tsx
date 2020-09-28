@@ -61,7 +61,7 @@ class ACNEServerRaw extends React.PureComponent<ACMEServerGuideProps> {
             {
               domain: acmeServer.nsDomain,
               type: "A",
-              nsRecord: acmeServer.ipForNameServer,
+              aRecord: acmeServer.ipForNameServer,
             },
           ]}
         />
@@ -145,7 +145,9 @@ export const DNSConfigItems = connect()((props: DNSConfigGuideProps) => {
               return (
                 <TableRow key={index}>
                   <TableCell>
-                    <DomainStatus domain={domain} nsDomain={nsRecord} cnameDomain={cnameRecord} ipAddress={aRecord} />
+                    {type === "NS" && <DomainStatus domain={domain} nsDomain={nsRecord} />}
+                    {type === "A" && <DomainStatus domain={domain} ipAddress={aRecord} />}
+                    {type === "CNAME" && <DomainStatus domain={domain} cnameDomain={cnameRecord} />}
                   </TableCell>
                   <TableCell>{type}</TableCell>
                   <TableCell>

@@ -4,8 +4,9 @@ import StepContent from "@material-ui/core/StepContent";
 import StepLabel from "@material-ui/core/StepLabel";
 import Stepper from "@material-ui/core/Stepper";
 import { Alert } from "@material-ui/lab";
-import { setErrorNotificationAction } from "actions/notification";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { api } from "api";
+import copy from "copy-to-clipboard";
 import { withCerts, WithCertsProps } from "hoc/withCerts";
 import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
 import { withComponents, WithComponentsProps } from "hoc/withComponents";
@@ -17,8 +18,11 @@ import { InitializeClusterResponse } from "types/cluster";
 import { PendingBadge, SuccessBadge } from "widgets/Badge";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
 import { CustomizedButton, DangerButton, SubmitButton } from "widgets/Button";
+import { CopyIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { KPanel } from "widgets/KPanel";
 import { Body, H5 } from "widgets/Label";
+import { KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
 import { FinalTextField } from "../../forms//Final/textfield";
 
@@ -386,7 +390,7 @@ Password: ${password}`}</pre>
   };
 
   public render() {
-    const { clusterInfo, isClusterInfoLoaded, isClusterInfoLoading } = this.props;
+    const { clusterInfo, isClusterInfoLoaded, isClusterInfoLoading, dispatch } = this.props;
 
     if (!isClusterInfoLoaded && isClusterInfoLoading) {
       return (
@@ -397,14 +401,43 @@ Password: ${password}`}</pre>
     }
 
     if (!clusterInfo.canBeInitialized) {
-      if (!this.canReset()) {
+      if (true) {
+        //!this.canReset()
+        const cmd = `kubectl port-forward -n kalm-system $(kubectl get pod -n kalm-system -l app=kalm -o=jsonpath="{.items[0].metadata.name}" ) 3010:3010`;
+
         return (
-          <Box p={2}>
-            <Alert severity="error">
-              You cannot reconfigure Kalm in domain access mode, please open kalm with kubectl port-forward to localhost
-              and try agian.
-            </Alert>
-          </Box>
+          <BasePage>
+            <Box p={2}>
+              <Alert severity="error">
+                You cannot reconfigure Kalm in domain access mode
+                <Box pt={1}>
+                  please run following command in terminal and open{" "}
+                  <KMLink href="http://localhost:3010/" rel="noopener noreferrer" target="_blank">
+                    http://localhost:3010/
+                  </KMLink>{" "}
+                  to continue setup.
+                </Box>
+              </Alert>
+            </Box>
+            <Box pl={3} pt={1}>
+              <pre>
+                {cmd}
+                <Box ml={2} mt={0} display="inline-block">
+                  <IconButtonWithTooltip
+                    tooltipTitle="Copy"
+                    size="small"
+                    aria-label="copy"
+                    onClick={() => {
+                      copy(cmd);
+                      dispatch(setSuccessNotificationAction("Copied successful!"));
+                    }}
+                  >
+                    <CopyIcon fontSize="small" />
+                  </IconButtonWithTooltip>
+                </Box>
+              </pre>
+            </Box>
+          </BasePage>
         );
       }
       return (

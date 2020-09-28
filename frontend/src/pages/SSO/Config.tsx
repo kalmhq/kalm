@@ -5,9 +5,9 @@ import { push } from "connected-react-router";
 import { SSOConfigForm } from "forms/SSOConfig";
 import { withSSO, WithSSOProps } from "hoc/withSSO";
 import { BasePage } from "pages/BasePage";
-import { SSOImplementDetails } from "pages/SSO/Details";
 import React from "react";
 import { newEmptySSOConfig, SSOConfig } from "types/sso";
+import { InfoBox } from "widgets/InfoBox";
 import { Loading } from "widgets/Loading";
 
 const styles = (theme: Theme) =>
@@ -18,6 +18,8 @@ const styles = (theme: Theme) =>
 interface Props extends WithStyles<typeof styles>, WithSSOProps {}
 
 interface State {}
+
+const pageObjectName: string = "Single Sign-On";
 
 class SSOConfigFormPageRaw extends React.PureComponent<Props, State> {
   private submit = async (config: SSOConfig) => {
@@ -41,6 +43,9 @@ class SSOConfigFormPageRaw extends React.PureComponent<Props, State> {
   private isEdit = () => {
     return !!this.props.ssoConfig;
   };
+  private renderInfoBox() {
+    return <InfoBox title={pageObjectName} options={[]} guideLink={"https://kalm.dev/docs/next/auth/sso"} />;
+  }
 
   public render() {
     const { ssoConfig, isSSOConfigLoaded } = this.props;
@@ -57,10 +62,8 @@ class SSOConfigFormPageRaw extends React.PureComponent<Props, State> {
       <BasePage>
         <Box p={2}>
           <SSOConfigForm onSubmit={this.submit} initial={ssoConfig ? ssoConfig : newEmptySSOConfig()} />
-          <Box mt={2}>
-            <SSOImplementDetails />
-          </Box>
         </Box>
+        <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>
     );
   }
