@@ -95,7 +95,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     const { fields } = this.props;
     const syncErrors = fields.error as { [key: string]: string }[] | undefined;
     const { editingFileIndex, fileContentValue } = this.state;
-    const file = editingFileIndex > -1 ? fields.value[editingFileIndex] : null;
+    const file = editingFileIndex > -1 && fields.value ? fields.value[editingFileIndex] : null;
     const mountPathTmp = file && file.mountPathTmp ? file.mountPathTmp : "";
     const isInvalidFile =
       !mountPathTmp ||

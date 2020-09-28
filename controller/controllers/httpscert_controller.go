@@ -18,7 +18,6 @@ package controllers
 import (
 	"context"
 	"crypto/x509"
-	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
@@ -32,7 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"strings"
+	"time"
 )
 
 // HttpsCertReconciler reconciles a HttpsCert object
@@ -94,12 +93,12 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 				},
 			}
 
-			cert, err := ParseCert(string(certSec.Data[SecretKeyOfTLSCert]))
+			cert, intermediateCert, err := ParseCert(string(certSec.Data[SecretKeyOfTLSCert]))
 			if err != nil {
 				httpsCert.Status.ExpireTimestamp = 0
 				httpsCert.Status.IsSignedByPublicTrustedCA = false
 			} else {
-				isTrusted := checkIfIssuerIsTrusted(cert.Issuer)
+				isTrusted := checkIfCertIssuedByTrustedCA(cert, intermediateCert)
 
 				httpsCert.Status.ExpireTimestamp = cert.NotAfter.Unix()
 				httpsCert.Status.IsSignedByPublicTrustedCA = isTrusted
@@ -256,10 +255,10 @@ func (r *HttpsCertReconciler) reconcileForAutoManagedHttpsCert(ctx context.Conte
 						return err
 					}
 
-					cert, err := ParseCert(string(certSec.Data[SecretKeyOfTLSCert]))
+					cert, interCert, err := ParseCert(string(certSec.Data[SecretKeyOfTLSCert]))
 
 					expireAt := cert.NotAfter
-					isTrusted := checkIfIssuerIsTrusted(cert.Issuer)
+					isTrusted := checkIfCertIssuedByTrustedCA(cert, interCert)
 
 					httpsCert.Status.ExpireTimestamp = expireAt.Unix()
 					httpsCert.Status.IsSignedByPublicTrustedCA = isTrusted
@@ -312,21 +311,33 @@ func getDNSNames(httpsCert corev1alpha1.HttpsCert) (dnsNames []string) {
 	return httpsCert.Spec.Domains
 }
 
-// todo a buggy way to tell is issuer is trusted
-func checkIfIssuerIsTrusted(issuer pkix.Name) bool {
-	trustedList := []string{
-		"Let's Encrypt Authority",
+func checkIfCertIssuedByTrustedCA(cert, intermediateCert *x509.Certificate, fakeTimeOpt ...time.Time) bool {
+	roots, err := x509.SystemCertPool()
+	if err != nil {
+		return false
 	}
 
-	for _, one := range trustedList {
-		if !strings.Contains(issuer.CommonName, one) {
-			continue
-		}
-
-		return true
+	interPool := x509.NewCertPool()
+	if intermediateCert != nil {
+		interPool.AddCert(intermediateCert)
 	}
 
-	return false
+	opts := x509.VerifyOptions{
+		DNSName:       cert.Subject.CommonName,
+		Intermediates: interPool,
+		Roots:         roots,
+	}
+
+	if len(fakeTimeOpt) > 1 {
+		opts.CurrentTime = fakeTimeOpt[0]
+	}
+
+	if _, err := cert.Verify(opts); err != nil {
+		fmt.Println(err, "failed to verify certificate")
+		return false
+	}
+
+	return true
 }
 
 func genConditionWithErr(err error) corev1alpha1.HttpsCertCondition {
@@ -347,17 +358,29 @@ func transCertCondition(cond cmv1alpha2.CertificateCondition) corev1alpha1.Https
 	}
 }
 
-func ParseCert(certPEM string) (*x509.Certificate, error) {
-	block, _ := pem.Decode([]byte(certPEM))
+func ParseCert(certPEM string) (cert, intermediateCert *x509.Certificate, err error) {
+
+	block, rest := pem.Decode([]byte(certPEM))
 	if block == nil {
-		return nil, fmt.Errorf("failed to parse certificate PEM")
+		return nil, nil, fmt.Errorf("failed to parse certificate PEM")
 	}
 
-	cert, err := x509.ParseCertificate(block.Bytes)
-
+	cert, err = x509.ParseCertificate(block.Bytes)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return cert, nil
+	if rest != nil && len(rest) > 0 {
+		restBlock, _ := pem.Decode(rest)
+
+		if restBlock != nil {
+			if intermediateCert, err := x509.ParseCertificate(restBlock.Bytes); err != nil {
+				return cert, nil, nil
+			} else {
+				return cert, intermediateCert, nil
+			}
+		}
+	}
+
+	return cert, nil, nil
 }

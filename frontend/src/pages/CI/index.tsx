@@ -154,7 +154,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
   }
 
   private getKRTableColumns() {
-    return [
+    const columns = [
       {
         Header: "Memo",
         accessor: "memo",
@@ -167,11 +167,16 @@ class CIPageRaw extends React.PureComponent<Props, State> {
         Header: "Resources",
         accessor: "resources",
       },
-      {
+    ];
+
+    if (this.canEdit()) {
+      columns.push({
         Header: "Action",
         accessor: "actions",
-      },
-    ];
+      });
+    }
+
+    return columns;
   }
 
   private getKRTableData() {
