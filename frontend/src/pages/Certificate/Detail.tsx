@@ -108,7 +108,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
           try {
             await dispatch(deleteCertificateAction(certName));
             await dispatch(setSuccessNotificationAction(`Successfully deleted certificate '${certName}'`));
-            dispatch(push("/certifications"));
+            dispatch(push("/certificates"));
           } catch {
             dispatch(setErrorNotificationAction());
           }
