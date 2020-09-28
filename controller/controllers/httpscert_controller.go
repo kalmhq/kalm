@@ -328,7 +328,7 @@ func checkIfCertIssuedByTrustedCA(cert, intermediateCert *x509.Certificate, fake
 		Roots:         roots,
 	}
 
-	if len(fakeTimeOpt) > 1 {
+	if len(fakeTimeOpt) >= 1 {
 		opts.CurrentTime = fakeTimeOpt[0]
 	}
 
