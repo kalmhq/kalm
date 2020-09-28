@@ -1,12 +1,13 @@
 import { Grid } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
+import { Alert } from "@material-ui/lab";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import React from "react";
 import { Field } from "react-final-form";
 import { connect, DispatchProp } from "react-redux";
 import { SSOGitlabConnector } from "types/sso";
 import { capitalize } from "utils/string";
-import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
+import { Body, H6, Subtitle1, Subtitle2 } from "widgets/Label";
 import { KMLink } from "widgets/Link";
 import { FinalTextField } from "../Final/textfield";
 import { ValidatorRequired } from "../validator";
@@ -81,7 +82,9 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                 </Grid>
               </Grid>
               <Box mt={1}>
-                <Body2>User MUST be a member of at least one of the specified groups to authenticate with kalm.</Body2>
+                <Alert severity="info">
+                  User MUST be a member of at least one of the specified groups to authenticate with kalm.
+                </Alert>
               </Box>
 
               {/*<Box mt={1}>*/}
