@@ -74,7 +74,11 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
           <>
             {!acmeServer || !acmeServer?.ready ? warning : null}
             <DNSConfigItems
-              items={Object.keys(domains).map((domain) => ({ domain, type: "NS", cnameRecord: domains[domain] }))}
+              items={Object.keys(domains).map((domain) => ({
+                domain: `_acme-challenge.${domain}`,
+                type: "CNAME",
+                cnameRecord: domains[domain],
+              }))}
             />
           </>
         );
@@ -154,9 +158,17 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
       return <CertificateNotFound />;
     }
 
+    const isDNS01ChallengeType = !(!cert.isSelfManaged && cert.httpsCertIssuer === "default-http01-issuer");
+
     return (
       <BasePage secondHeaderRight={this.renderSecondaryHeader()}>
         <Box p={2}>
+          {false && (
+            <Box mt={2} mb={2}>
+              <ACMEServer />
+            </Box>
+          )}
+
           <KPanel title="Certificate Info">
             <Box p={2}>
               <VerticalHeadTable
@@ -168,14 +180,13 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
                   },
                   {
                     name: "Challenge Type",
-                    content:
-                      !cert.isSelfManaged && cert.httpsCertIssuer === "default-http01-issuer" ? (
-                        <BlankTargetLink href={"https://letsencrypt.org/docs/challenge-types/#http-01-challenge"}>
-                          HTTP-01 challenge
-                        </BlankTargetLink>
-                      ) : (
-                        <DNS01ChallengeLink />
-                      ),
+                    content: !isDNS01ChallengeType ? (
+                      <BlankTargetLink href={"https://letsencrypt.org/docs/challenge-types/#http-01-challenge"}>
+                        HTTP-01 challenge
+                      </BlankTargetLink>
+                    ) : (
+                      <DNS01ChallengeLink />
+                    ),
                   },
                   { name: "Status", content: this.renderStatus(cert) },
                 ]}
@@ -187,10 +198,6 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
             <KPanel title="Domains">
               <Box p={2}>{this.renderDomainGuide(cert)}</Box>
             </KPanel>
-          </Box>
-
-          <Box mt={2}>
-            <ACMEServer />
           </Box>
         </Box>
       </BasePage>
