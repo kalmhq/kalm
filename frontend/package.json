@@ -82,7 +82,7 @@
   },
   "scripts": {
     "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
+    "build": "UPLOAD_SOURCE_MAP=true react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-app-rewired eject",
     "lint": "eslint -c .eslintrc.json --ext tx,tsx src --max-warnings 0",
@@ -100,6 +100,7 @@
     }
   },
   "devDependencies": {
+    "@sentry/webpack-plugin": "^1.13.0",
     "@storybook/addon-a11y": "^5.3.19",
     "@storybook/addon-actions": "^5.3.19",
     "@storybook/addon-backgrounds": "^5.3.19",
