@@ -343,7 +343,7 @@ type ACMEDNSServiceMapper struct {
 
 func (A ACMEDNSServiceMapper) Map(object handler.MapObject) []reconcile.Request {
 	if object.Meta.GetNamespace() != KalmSystemNamespace ||
-		object.Meta.GetName() != getNameForLoadBalanceServiceForNSDomain() {
+		object.Meta.GetName() != GetNameForLoadBalanceServiceForNSDomain() {
 		return nil
 	}
 
@@ -453,7 +453,7 @@ func trimPrefixOfWildcardDomains(domains []string) []string {
 	return rst
 }
 
-func getNameForLoadBalanceServiceForNSDomain() string {
+func GetNameForLoadBalanceServiceForNSDomain() string {
 	return "lb-svc-" + ACMEServerName
 }
 
@@ -461,7 +461,7 @@ func (r *ACMEServerReconciler) reconcileLoadBalanceServiceForNSDomain(acmeServer
 	expectedLBService := corev1.Service{
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: KalmSystemNamespace,
-			Name:      getNameForLoadBalanceServiceForNSDomain(),
+			Name:      GetNameForLoadBalanceServiceForNSDomain(),
 		},
 		Spec: corev1.ServiceSpec{
 			Type: corev1.ServiceTypeLoadBalancer,
@@ -594,10 +594,10 @@ func (r *ACMEServerReconciler) reconcileStatus(server corev1alpha1.ACMEServer) e
 	var svc corev1.Service
 	err := r.Get(r.ctx, client.ObjectKey{
 		Namespace: KalmSystemNamespace,
-		Name:      getNameForLoadBalanceServiceForNSDomain(),
+		Name:      GetNameForLoadBalanceServiceForNSDomain(),
 	}, &svc)
 	if err != nil {
-		r.Log.Error(err, "fail to get lb-svc:"+getNameForLoadBalanceServiceForNSDomain())
+		r.Log.Error(err, "fail to get lb-svc:"+GetNameForLoadBalanceServiceForNSDomain())
 		return nil
 	}
 
@@ -623,7 +623,7 @@ func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.AC
 	var lbSvc corev1.Service
 	err := r.Get(r.ctx, client.ObjectKey{
 		Namespace: KalmSystemNamespace,
-		Name:      getNameForLoadBalanceServiceForNSDomain(),
+		Name:      GetNameForLoadBalanceServiceForNSDomain(),
 	}, &lbSvc)
 	if err != nil {
 		return err
