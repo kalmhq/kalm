@@ -173,35 +173,6 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
 
   private getKRTableColumns() {
     return [
-      // {
-      //   // Build our expander column
-      //   id: "expander", // Make sure it has an ID
-      //   accessor: "expander",
-      //   Header: ({ getToggleAllRowsExpandedProps, isAllRowsExpanded }: any) => (
-      //     <span {...getToggleAllRowsExpandedProps()}>{isAllRowsExpanded ? "👇" : "👉"}</span>
-      //   ),
-      //   Cell: ({ row }: any) => {
-      //     console.log("row", row);
-      //     // Use the row.canExpand and row.getToggleRowExpandedProps prop getter
-      //     // to build the toggle for expanding a row
-      //     return row.canExpand ? (
-      //       <span
-      //         {...row.getToggleRowExpandedProps({
-      //           style: {
-      //             // We can even use the row.depth property
-      //             // and paddingLeft to indicate the depth
-      //             // of the row
-      //             paddingLeft: `${row.depth * 2}rem`,
-      //           },
-      //         })}
-      //       >
-      //         {row.isExpanded ? "👇" : "👉"}
-      //       </span>
-      //     ) : (
-      //       <div>{row.expandContent || "test-col"}</div>
-      //     );
-      //   },
-      // },
       { Header: "", accessor: "statusIcon" },
       { Header: "Pod Name", accessor: "name" },
       { Header: "Node", accessor: "node" },
@@ -219,22 +190,16 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
     const data: any[] = [];
 
     pods?.forEach((pod, index) => {
-      const rowData = pod as PodStatus;
       data.push({
-        statusIcon: this.renderPodStatusIcon(rowData),
-        name: this.renderPodName(rowData),
-        node: this.renderPodNode(rowData),
-        restarts: this.renderPodRestarts(rowData),
-        status: this.renderPodStatusText(rowData),
-        age: this.renderPodAGE(rowData),
-        cpu: this.renderPodCPU(rowData),
-        memory: this.renderPodMemory(rowData),
-        actions: this.renderPodActions(rowData),
-        // subRows: [
-        //   {
-        //     expandContent: <div style={{ width: "100%", height: "10px", background: "red" }}>dfsfdsf</div>,
-        //   },
-        // ],
+        statusIcon: this.renderPodStatusIcon(pod),
+        name: this.renderPodName(pod),
+        node: this.renderPodNode(pod),
+        restarts: this.renderPodRestarts(pod),
+        status: this.renderPodStatusText(pod),
+        age: this.renderPodAGE(pod),
+        cpu: this.renderPodCPU(pod),
+        memory: this.renderPodMemory(pod),
+        actions: this.renderPodActions(pod),
       });
     });
 

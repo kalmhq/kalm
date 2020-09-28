@@ -227,7 +227,6 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
             await dispatch(push("/"));
             window.location.reload();
           }}
-          // size="small"
           tooltipTitle="Impersonate"
         >
           <ImpersonateIcon />

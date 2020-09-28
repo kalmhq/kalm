@@ -139,7 +139,9 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private getKRTableColumns() {
-    return [
+    const { canEditCluster } = this.props;
+
+    const columns = [
       {
         Header: "Name",
         accessor: "name",
@@ -160,12 +162,16 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
         Header: "Verified",
         accessor: "verified",
       },
+    ];
 
-      {
+    if (canEditCluster()) {
+      columns.push({
         Header: "Actions",
         accessor: "actions",
-      },
-    ];
+      });
+    }
+
+    return columns;
   }
 
   private getKRTableData() {

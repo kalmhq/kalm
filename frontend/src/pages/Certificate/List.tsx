@@ -98,7 +98,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderMoreActions = (cert: Certificate) => {
+  private renderActions = (cert: Certificate) => {
     const { canEditCluster } = this.props;
     return (
       <>
@@ -182,7 +182,9 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private getKRTableColumns() {
-    return [
+    const { canEditCluster } = this.props;
+
+    const columns = [
       {
         Header: "Cert Name",
         accessor: "name",
@@ -207,11 +209,16 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         Header: "Expiration Time",
         accessor: "expireTimestamp",
       },
-      {
+    ];
+
+    if (canEditCluster()) {
+      columns.push({
         Header: "Actions",
         accessor: "actions",
-      },
-    ];
+      });
+    }
+
+    return columns;
   }
 
   private getKRTableData() {
@@ -226,7 +233,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         isSelfManaged: this.renderType(cert),
         isSignedByTrustedCA: this.renderIsSignedByTrustedCA(cert),
         expireTimestamp: this.renderExpireTimestamp(cert),
-        actions: this.renderMoreActions(cert),
+        actions: this.renderActions(cert),
       });
     });
 
