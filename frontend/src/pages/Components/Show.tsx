@@ -1,5 +1,5 @@
 import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { Expansion } from "forms/Route/expansion";
+import { Expansion } from "widgets/expansion";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
