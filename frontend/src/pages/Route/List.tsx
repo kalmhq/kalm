@@ -28,6 +28,7 @@ import { Targets } from "widgets/Targets";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { InfoBox } from "widgets/InfoBox";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -241,6 +242,36 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     return columns;
   }
 
+  private renderInfoBox() {
+    const title = "References";
+
+    const options = [
+      {
+        title: (
+          <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+            How a http route works?
+          </KMLink>
+        ),
+        content: "",
+      },
+      {
+        title: (
+          <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+            HttpRoute CRD
+          </KMLink>
+        ),
+        draft: true,
+        content: "",
+      },
+    ];
+
+    return (
+      <Box mt={2}>
+        <InfoBox title={title} options={options} />
+      </Box>
+    );
+  }
+
   private getKRTableData() {
     const { httpRoutes } = this.props;
     const data: any[] = [];
@@ -298,7 +329,10 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           {isRoutesLoading && !isRoutesFirstLoaded ? (
             <Loading />
           ) : filteredRoutes && filteredRoutes.length > 0 ? (
-            this.renderKRTable()
+            <>
+              {this.renderKRTable()}
+              {this.renderInfoBox()}
+            </>
           ) : (
             this.renderEmpty()
           )}

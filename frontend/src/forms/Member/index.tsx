@@ -64,77 +64,71 @@ class MemberFormRaw extends React.PureComponent<Props> {
         render={({ handleSubmit, values }: FormRenderProps<RoleBinding>) => (
           <form onSubmit={handleSubmit}>
             <Prompt />
-            <Box mb={2}>
-              <KPanel
-                title="Grant role permissions to a user or a group"
-                content={
-                  <Box p={2}>
-                    <Grid container spacing={2}>
-                      <Grid item sm={6}>
-                        <Field
-                          name="subjectType"
-                          autoFocus
-                          component={FinalSelectField}
-                          required
-                          label="Subject Type"
-                          validate={ValidatorRequired}
-                          helperText="Please select the subject type you want to grant permissions to"
-                          options={[
-                            {
-                              value: SubjectTypeUser,
-                              text: "User",
-                              desc: "Grant permission for a single user. You need to provide the user's email address.",
-                            },
-                            {
-                              value: SubjectTypeGroup,
-                              text: "Group",
-                              desc:
-                                "Grant permission for every member in a group. You need to provide the group's name.",
-                            },
-                          ]}
-                        />
-                      </Grid>
-                      <Grid item sm={6}>
-                        <Field
-                          name="role"
-                          component={FinalSelectField}
-                          label="Role"
-                          placeholder="Select a role"
-                          validate={ValidatorRequired}
-                          options={rolesOptions}
-                        />
-                      </Grid>
-                    </Grid>
+            <KPanel title="Grant role permissions to a user or a group">
+              <Box p={2}>
+                <Grid container spacing={2}>
+                  <Grid item sm={6}>
+                    <Field
+                      name="subjectType"
+                      autoFocus
+                      component={FinalSelectField}
+                      required
+                      label="Subject Type"
+                      validate={ValidatorRequired}
+                      helperText="Please select the subject type you want to grant permissions to"
+                      options={[
+                        {
+                          value: SubjectTypeUser,
+                          text: "User",
+                          desc: "Grant permission for a single user. You need to provide the user's email address.",
+                        },
+                        {
+                          value: SubjectTypeGroup,
+                          text: "Group",
+                          desc: "Grant permission for every member in a group. You need to provide the group's name.",
+                        },
+                      ]}
+                    />
+                  </Grid>
+                  <Grid item sm={6}>
+                    <Field
+                      name="role"
+                      component={FinalSelectField}
+                      label="Role"
+                      placeholder="Select a role"
+                      validate={ValidatorRequired}
+                      options={rolesOptions}
+                    />
+                  </Grid>
+                </Grid>
 
-                    <Box mb={2}>
-                      <Field
-                        component={FinalTextField}
-                        name="subject"
-                        label={values.subjectType === SubjectTypeUser ? "User Email" : "Group Name"}
-                        validate={ValidatorRequired}
-                        placeholder={
-                          values.subjectType === SubjectTypeUser
-                            ? "e.g. user@example.com"
-                            : "e.g. <github-org-name>:<team-name> or <gitlab-group-name>"
-                        }
-                        helperText={
-                          values.subjectType === SubjectTypeUser
-                            ? "Please type the user email"
-                            : "Please type the group name"
-                        }
-                      />
-                    </Box>
-                  </Box>
-                }
-              />
-
-              <FormDataPreview />
-
-              <Box mt={2}>
-                <SubmitButton>
-                  {values.subjectType === SubjectTypeUser ? "Grant permissions to User" : "Grant permissions to Group"}
-                </SubmitButton>
+                <Box mt={2}>
+                  <Field
+                    component={FinalTextField}
+                    name="subject"
+                    label={values.subjectType === SubjectTypeUser ? "User Email" : "Group Name"}
+                    validate={ValidatorRequired}
+                    placeholder={
+                      values.subjectType === SubjectTypeUser
+                        ? "e.g. user@example.com"
+                        : "e.g. <github-org-name>:<team-name> or <gitlab-group-name>"
+                    }
+                    helperText={
+                      values.subjectType === SubjectTypeUser
+                        ? "Please type the user email"
+                        : "Please type the group name"
+                    }
+                  />
+                </Box>
               </Box>
+            </KPanel>
+
+            <FormDataPreview />
+
+            <Box mt={2}>
+              <SubmitButton>
+                {values.subjectType === SubjectTypeUser ? "Grant permissions to User" : "Grant permissions to Group"}
+              </SubmitButton>
             </Box>
           </form>
         )}

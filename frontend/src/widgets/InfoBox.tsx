@@ -1,4 +1,4 @@
-import { Link as MLink, createStyles, Paper, Theme, withStyles, WithStyles, Box, Grid } from "@material-ui/core";
+import { Box, createStyles, Grid, Link as MLink, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
 import React from "react";
 import { Body, Body2 } from "widgets/Label";
 
@@ -10,6 +10,7 @@ const styles = (theme: Theme) =>
 interface InfoBoxOption {
   title: string | React.ReactNode;
   content: string | React.ReactNode;
+  draft?: boolean;
 }
 
 interface Props extends WithStyles<typeof styles> {
@@ -22,6 +23,14 @@ class InfoBoxRaw extends React.PureComponent<Props> {
   public render() {
     const { classes, title, options, guideLink } = this.props;
     const gridItems = guideLink ? wrapGuideLink(guideLink, title) : options;
+    const filteredOptions = Array.from(gridItems).filter(
+      (option: InfoBoxOption) => !option.draft || process.env.REACT_APP_DEBUG === "true",
+    );
+
+    if (filteredOptions.length === 0) {
+      return null;
+    }
+
     return (
       <Paper square variant="outlined" className={classes.root}>
         <Box p={2}>
@@ -31,7 +40,7 @@ class InfoBoxRaw extends React.PureComponent<Props> {
             </Grid>
           </Grid>
           <Grid container spacing={2}>
-            {gridItems.map((option, index) => {
+            {filteredOptions.map((option, index) => {
               return (
                 <Grid item md={4} key={index}>
                   {typeof option.title === "string" ? <Body>{option.title}</Body> : option.title}

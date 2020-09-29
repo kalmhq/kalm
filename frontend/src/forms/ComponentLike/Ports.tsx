@@ -1,11 +1,11 @@
 import { Box, Button, Collapse, Fade, Grid, Link, Paper, Popper } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
-import { Field } from "react-final-form";
-import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { normalizePort } from "forms/normalizer";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { anchorRef, bindPopper, InjectedProps } from "material-ui-popup-state";
 import React from "react";
+import { Field } from "react-final-form";
+import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import {
   ComponentLikePort,
   PortProtocolGRPC,
@@ -20,7 +20,7 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { PortChart } from "widgets/PortChart";
 import { FinalSelectField } from "../Final/select";
 import { FinalTextField } from "../Final/textfield";
-import { ValidatorContainerPortRequired, ValidatorPort, ValidatorRequired } from "../validator";
+import { ValidatorContainerPortRequired, ValidatorPort } from "../validator";
 
 interface Props extends FieldArrayRenderProps<ComponentLikePort, any> {}
 
@@ -73,9 +73,7 @@ class RenderPorts extends React.PureComponent<Props> {
                   <Field
                     name={`${name}.${index}.protocol`}
                     component={FinalSelectField}
-                    required
                     label="Protocol"
-                    validate={ValidatorRequired}
                     options={[
                       { value: PortProtocolHTTP, text: PortProtocolHTTP },
                       { value: PortProtocolHTTP2, text: PortProtocolHTTP2 },

@@ -1,17 +1,18 @@
-import { BoxProps, Theme, WithStyles } from "@material-ui/core";
-import { createStyles, withStyles } from "@material-ui/styles";
+import { BoxProps, Theme } from "@material-ui/core";
 import React from "react";
+import makeStyles from "@material-ui/core/styles/makeStyles";
 
-const styles = (theme: Theme) =>
-  createStyles({
-    root: {
-      padding: theme.spacing(2),
-      background: theme.palette.background.default,
-    },
-  });
+const styles = makeStyles((theme: Theme) => ({
+  root: {
+    padding: theme.spacing(2),
+    background: theme.palette.background.default,
+  },
+}));
 
-interface Props extends WithStyles<typeof styles>, React.ComponentProps<any>, BoxProps {}
+interface Props extends React.ComponentProps<any>, BoxProps {}
 
-export const CodeBlock = withStyles(styles)(({ classes, children }: Props) => {
+export const CodeBlock = ({ children }: Props) => {
+  const classes = styles();
+
   return <pre className={classes.root}>{children}</pre>;
-});
+};

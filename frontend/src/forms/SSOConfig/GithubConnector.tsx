@@ -3,6 +3,7 @@ import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
 import { Alert } from "@material-ui/lab";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
+import { trimParse } from "forms/normalizer";
 import React from "react";
 import { Field, FormSpy, FormSpyRenderProps } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
@@ -50,9 +51,8 @@ class RenderGithubConnectorOrganizations extends React.Component<{
                       component={FinalTextField}
                       name={`${fieldName}.name`}
                       label="Organization Name"
-                      placeholder="Please type a organization name"
                       validate={ValidatorRequired}
-                      required
+                      parse={trimParse}
                     />
                   </Grid>
 
@@ -62,7 +62,6 @@ class RenderGithubConnectorOrganizations extends React.Component<{
                       options={[]}
                       label="Teams"
                       name={`${fieldName}.teams`}
-                      placeholder="Please type a team name"
                       helperText="Multiple teams are allowed. After entering a team name, try to press enter."
                     />
                   </Grid>
@@ -135,8 +134,8 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
                 label="Name"
                 placeholder="Give a name of this connector"
                 validate={ValidatorRequired}
+                parse={trimParse}
                 helperText="The name of this connector."
-                required
               />
 
               <Grid container spacing={2}>
@@ -145,22 +144,18 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
                     component={FinalTextField}
                     name={`${fieldName}.config.clientID`}
                     label="Client ID"
-                    autoComplete="disabled"
                     placeholder="Oauth Client ID"
                     validate={ValidatorRequired}
                     helperText="Follow the right steps to get Client ID."
-                    required
                   />
                 </Grid>
                 <Grid item xs>
                   <Field
                     component={FinalTextField}
-                    autoComplete={"false"}
                     name={`${fieldName}.config.clientSecret`}
                     label="Client Secret"
                     placeholder="Oauth Client Secret"
                     validate={ValidatorRequired}
-                    required
                   />
                 </Grid>
               </Grid>

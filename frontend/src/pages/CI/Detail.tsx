@@ -24,6 +24,7 @@ import { Body2, Subtitle2 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { RichEditor } from "widgets/RichEditor";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
+import { CodeBlock } from "widgets/CodeBlock";
 
 const TAB_CURL = "curl";
 const TAB_GITHUB_ACTION = "Github Action";
@@ -40,7 +41,7 @@ const styles = (theme: Theme) =>
       },
     },
     borderBottom: {
-      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+      borderBottom: `1px solid ${theme.palette.divider}`,
     },
   });
 
@@ -113,31 +114,35 @@ class DeployAccessTokenDetailPageRaw extends React.PureComponent<Props> {
               <Box mt={2}>
                 <Subtitle2>Endpoint</Subtitle2>
                 <Box mt={2} ml={2}>
-                  <pre>{`POST https://<your-kalm-host>/webhook/components`}</pre>
+                  <CodeBlock>{`POST https://<your-kalm-host>/webhook/components`}</CodeBlock>
                 </Box>
               </Box>
               <Box mt={2}>
                 <Subtitle2>Content-Type</Subtitle2>
                 <Box mt={2} ml={2}>
-                  <pre>application/json</pre>
+                  <CodeBlock>application/json</CodeBlock>
                 </Box>
               </Box>
               <Box mt={2}>
                 <Subtitle2>Body Params</Subtitle2>
                 <Box mt={2} ml={2}>
-                  <pre>{`{
+                  <CodeBlock>{`{
   "application":   "<application-name>",     // (Required) application name of this component.
   "componentName": "<component-name>",       // (Required) component name.
   "imageTag":      "v1.2"                    // (Optional) If not blank, the component image tag will be updated.
-}`}</pre>
+}`}</CodeBlock>
                 </Box>
               </Box>
               <Box mt={2}>
                 <Subtitle2>Response status code</Subtitle2>
                 <Box mt={2} ml={2}>
-                  <pre>{`200 Success.      The component is successfully restart.`}</pre>
-                  <pre>{`401 Unauthorized. Wrong key or the key is not granted for the component.`}</pre>
-                  <pre>{`404 Not Found.    The application or component doesn't exist.`}</pre>
+                  <CodeBlock>
+                    {`
+                    200 Success.      The component is successfully restart.
+                    401 Unauthorized. Wrong key or the key is not granted for the component.
+                    404 Not Found.    The application or component doesn't exist.
+                    `}
+                  </CodeBlock>
                 </Box>
               </Box>
             </Box>

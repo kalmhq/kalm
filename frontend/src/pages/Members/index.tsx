@@ -83,7 +83,11 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
             ? "Your cluster has not been authorized to other members"
             : "This application has not been authorized to other members"
         }
-        content="Authorize other members to manage this cluster together."
+        content={
+          isClusterLevel
+            ? "Authorize other members to manage this cluster together."
+            : "Authorize other members to manage this application together."
+        }
         button={
           <CustomizedButton
             variant="contained"

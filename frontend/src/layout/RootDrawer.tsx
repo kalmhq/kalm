@@ -96,7 +96,7 @@ const styles = (theme: Theme) =>
       },
     },
     itemBorder: {
-      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+      borderBottom: `1px solid ${theme.palette.divider}`,
       height: 48,
       paddingLeft: 12,
     },

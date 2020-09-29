@@ -276,6 +276,25 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         ),
         content: "",
       },
+      {
+        title: (
+          <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+            What's an ACME DNS server?(TODO)
+          </KMLink>
+        ),
+        draft: true,
+
+        content: "",
+      },
+      {
+        title: (
+          <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+            HttpCert CRD
+          </KMLink>
+        ),
+        draft: true,
+        content: "",
+      },
     ];
 
     return <InfoBox title={title} options={options} />;
