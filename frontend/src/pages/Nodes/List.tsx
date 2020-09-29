@@ -13,7 +13,7 @@ import {
   withStyles,
 } from "@material-ui/core";
 import { api } from "api";
-import { Expansion } from "forms/Route/expansion";
+import { Expansion } from "widgets/expansion";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { bindTrigger } from "material-ui-popup-state";
 import { NodeStatus } from "pages/Nodes/NodeStatus";
