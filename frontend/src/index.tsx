@@ -14,7 +14,7 @@ import { App } from "app/index";
 import * as Sentry from "@sentry/react";
 import { Integrations } from "@sentry/tracing";
 
-if (process.env.REACT_APP_SENTRY_DSN) {
+if (process.env.REACT_APP_ENABLE_SENTRY && process.env.REACT_APP_SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.REACT_APP_SENTRY_DSN,
     // https://docs.sentry.io/platforms/javascript/guides/react/integrations/default/

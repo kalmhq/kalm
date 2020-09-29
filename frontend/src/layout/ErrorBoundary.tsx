@@ -37,9 +37,10 @@ class ErrorBoundaryRaw extends React.PureComponent<Props, State> {
   }
 
   componentDidCatch(error: any, info: any) {
-    if (process.env.REACT_APP_SENTRY_DSN) {
+    if (process.env.REACT_APP_ENABLE_SENTRY && process.env.REACT_APP_SENTRY_DSN) {
       Sentry.captureException(error);
     }
+    console.error(error);
   }
 
   private jumpToDashBoard = (event: React.MouseEvent) => {
