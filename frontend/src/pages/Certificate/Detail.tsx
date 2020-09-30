@@ -241,7 +241,7 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
     return (
       <BasePage secondHeaderRight={this.renderSecondaryHeader()}>
         <Box p={2}>
-          {false && (
+          {isDNS01ChallengeType && (
             <Box mt={2} mb={2}>
               <ACMEServer />
             </Box>
