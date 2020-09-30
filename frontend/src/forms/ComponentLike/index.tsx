@@ -762,7 +762,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       return false;
     }
 
-    return !registries.find((r) => r.host.includes(parts[0]));
+    return !registries.find((r) => r.host && r.host.includes(parts[0]));
   };
 
   private renderPrivateRegistryAlert = (image: string) => {
