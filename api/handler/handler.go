@@ -6,15 +6,67 @@ import (
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/api/ws"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/rand"
 )
 
 type ApiHandler struct {
-	clientManager *client.ClientManager
-	logger        logr.Logger
+	resourceManager *resources.ResourceManager
+	clientManager   client.ClientManager
+	logger          logr.Logger
 }
 
 type H map[string]interface{}
+
+func (h *ApiHandler) InstallAdminRoutes(e *echo.Echo) {
+
+	e.GET("/routes", func(c echo.Context) error {
+		return c.JSON(200, e.Routes())
+	})
+
+	e.POST("/temporary_cluster_owner_access_tokens", func(c echo.Context) error {
+		token := rand.String(128)
+
+		accessToken := &v1alpha1.AccessToken{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name: v1alpha1.GetAccessTokenNameFromToken(token),
+			},
+			Spec: v1alpha1.AccessTokenSpec{
+				Token: token,
+				Rules: []v1alpha1.AccessTokenRule{
+					{
+						Verb:      "view",
+						Namespace: "*",
+						Kind:      "*",
+						Name:      "*",
+					},
+					{
+						Verb:      "edit",
+						Namespace: "*",
+						Kind:      "*",
+						Name:      "*",
+					},
+					{
+						Verb:      "manage",
+						Namespace: "*",
+						Kind:      "*",
+						Name:      "*",
+					},
+				},
+				Creator:   getCurrentUser(c).Name,
+				ExpiredAt: nil,
+			},
+		}
+
+		if err := h.resourceManager.Create(accessToken); err != nil {
+			return err
+		}
+
+		return c.JSON(200, accessToken)
+	}, h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
+}
 
 func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
 	e.GET("/ping", handlePing)
@@ -23,6 +75,7 @@ func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
 
 func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	e.GET("/ping", handlePing)
+	e.GET("/policies", h.handlePolicies, h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
 
 	// watch
 	wsHandler := ws.NewWsHandler(h.clientManager)
@@ -30,23 +83,26 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	// login
 	e.POST("/login/token", h.handleValidateToken)
-	e.GET("/login/status", h.handleLoginStatus)
+	e.GET("/login/status", h.handleLoginStatus, h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
 
 	// original resources routes
-	gV1 := e.Group("/v1", h.AuthClientMiddleware)
+	gV1 := e.Group("/v1", h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
 	gV1.GET("/persistentvolumes", h.handleGetPVs)
 
 	gv1Alpha1 := e.Group("/v1alpha1")
 	gv1Alpha1.GET("/logs", h.logWebsocketHandler)
 	gv1Alpha1.GET("/exec", h.execWebsocketHandler)
 
-	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.AuthClientMiddleware)
+	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
 
 	// initialize the cluster
 	gv1Alpha1WithAuth.POST("/initialize", h.handleInitializeCluster)
 	gv1Alpha1WithAuth.POST("/reset", h.handleResetCluster)
 
 	gv1Alpha1WithAuth.GET("/cluster", h.handleClusterInfo)
+
+	gv1Alpha1WithAuth.GET("/loadbalancers", h.handleLoadBalancers)
+
 	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
 	gv1Alpha1WithAuth.POST("/applications", h.handleCreateApplication)
 	gv1Alpha1WithAuth.GET("/applications/:name", h.handleGetApplicationDetails)
@@ -72,6 +128,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	gv1Alpha1WithAuth.GET("/rolebindings", h.handleListRoleBindings)
 	gv1Alpha1WithAuth.POST("/rolebindings", h.handleCreateRoleBinding)
+	gv1Alpha1WithAuth.PUT("/rolebindings", h.handleUpdateRoleBinding)
 	gv1Alpha1WithAuth.DELETE("/rolebindings/:namespace/:name", h.handleDeleteRoleBinding)
 
 	gv1Alpha1WithAuth.GET("/serviceaccounts/:name", h.handleGetServiceAccount)
@@ -91,7 +148,8 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.PUT("/httpscertissuers/:name", h.handleUpdateHttpsCertIssuer)
 	gv1Alpha1WithAuth.DELETE("/httpscertissuers/:name", h.handleDeleteHttpsCertIssuer)
 
-	gv1Alpha1WithAuth.GET("/httpscerts", h.handleGetHttpsCerts)
+	gv1Alpha1WithAuth.GET("/httpscerts", h.handleListHttpsCerts)
+	gv1Alpha1WithAuth.GET("/httpscerts/:name", h.handleGetHttpsCert)
 	gv1Alpha1WithAuth.POST("/httpscerts", h.handleCreateHttpsCert)
 	gv1Alpha1WithAuth.POST("/httpscerts/upload", h.handleUploadHttpsCert)
 	gv1Alpha1WithAuth.PUT("/httpscerts/:name", h.handleUpdateHttpsCert)
@@ -101,14 +159,24 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	gv1Alpha1WithAuth.GET("/volumes", h.handleListVolumes)
 	gv1Alpha1WithAuth.DELETE("/volumes/:namespace/:name", h.handleDeletePVC)
+
+	// deprecated
 	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload", h.handleAvailableVolsForSimpleWorkload)
+	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload/:namespace", h.handleAvailableVolsForSimpleWorkload)
+
 	gv1Alpha1WithAuth.GET("/volumes/available/sts/:namespace", h.handleAvailableVolsForSts)
 
-	gv1Alpha1WithAuth.GET("/deploykeys", h.handleListDeployKeys)
-	gv1Alpha1WithAuth.POST("/deploykeys", h.handleCreateDeployKey)
-	gv1Alpha1WithAuth.DELETE("/deploykeys", h.handleDeleteDeployKey)
+	// general access token handler
+	gv1Alpha1WithAuth.GET("/access_tokens", h.handleListAccessTokens)
+	gv1Alpha1WithAuth.POST("/access_tokens", h.handleCreateAccessToken)
+	gv1Alpha1WithAuth.DELETE("/access_tokens", h.handleDeleteAccessToken)
 
-	gv1Alpha1WithAuth.GET("/sso", h.handleListSSOConfig)
+	// deploy access token is just access token that only has update component permissions
+	gv1Alpha1WithAuth.GET("/deploy_access_tokens", h.handleListDeployAccessTokens)
+	gv1Alpha1WithAuth.POST("/deploy_access_tokens", h.handleCreateDeployAccessToken)
+	gv1Alpha1WithAuth.DELETE("/deploy_access_tokens", h.handleDeleteAccessToken)
+
+	gv1Alpha1WithAuth.GET("/sso", h.handleGetSSOConfig)
 	gv1Alpha1WithAuth.DELETE("/sso", h.handleDeleteSSOConfig)
 	gv1Alpha1WithAuth.PUT("/sso", h.handleUpdateSSOConfig)
 	gv1Alpha1WithAuth.POST("/sso", h.handleCreateSSOConfig)
@@ -117,23 +185,21 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.DELETE("/protectedendpoints", h.handleDeleteProtectedEndpoints)
 	gv1Alpha1WithAuth.POST("/protectedendpoints", h.handleCreateProtectedEndpoints)
 	gv1Alpha1WithAuth.PUT("/protectedendpoints", h.handleUpdateProtectedEndpoints)
+
+	gv1Alpha1WithAuth.POST("/acmeserver", h.handleCreateACMEServer)
+	gv1Alpha1WithAuth.GET("/acmeserver", h.handleGetACMEServer)
+	gv1Alpha1WithAuth.PUT("/acmeserver", h.handleUpdateACMEServer)
+	gv1Alpha1WithAuth.DELETE("/acmeserver", h.handleDeleteACMEServer)
+
+	gv1Alpha1WithAuth.GET("/settings", h.handleListSettings)
 }
 
-// use user token and permission
-func (h *ApiHandler) Builder(c echo.Context) *resources.Builder {
-	k8sClientConfig := getK8sClientConfig(c)
-	return resources.NewBuilder(k8sClientConfig, h.logger)
-}
 
-// use server account name permission
-func (h *ApiHandler) KalmBuilder() *resources.Builder {
-	cfg := h.clientManager.ClusterConfig
-	return resources.NewBuilder(cfg, h.logger)
-}
 
-func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {
+func NewApiHandler(clientManager client.ClientManager) *ApiHandler {
 	return &ApiHandler{
-		clientManager: clientManager,
-		logger:        log.DefaultLogger(),
+		clientManager:   clientManager,
+		logger:          log.DefaultLogger(),
+		resourceManager: resources.NewResourceManager(clientManager.GetDefaultClusterConfig(), log.DefaultLogger()),
 	}
 }

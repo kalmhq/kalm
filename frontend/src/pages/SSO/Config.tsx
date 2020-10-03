@@ -1,14 +1,14 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import React from "react";
-import { BasePage } from "pages/BasePage";
-import { SSOConfigForm } from "forms/SSOConfig";
-import { SSOImplementDetails } from "pages/SSO/Details";
-import { newEmptySSOConfig, SSOConfig } from "types/sso";
-import { createSSOConfigAction, updateSSOConfigAction } from "actions/sso";
-import { Loading } from "widgets/Loading";
-import { push } from "connected-react-router";
 import { setSuccessNotificationAction } from "actions/notification";
+import { createSSOConfigAction, updateSSOConfigAction } from "actions/sso";
+import { push } from "connected-react-router";
+import { SSOConfigForm } from "forms/SSOConfig";
 import { withSSO, WithSSOProps } from "hoc/withSSO";
+import { BasePage } from "pages/BasePage";
+import React from "react";
+import { newEmptySSOConfig, SSOConfig } from "types/sso";
+import { InfoBox } from "widgets/InfoBox";
+import { Loading } from "widgets/Loading";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -19,19 +19,17 @@ interface Props extends WithStyles<typeof styles>, WithSSOProps {}
 
 interface State {}
 
+const pageObjectName: string = "Single Sign-On";
+
 class SSOConfigFormPageRaw extends React.PureComponent<Props, State> {
   private submit = async (config: SSOConfig) => {
     const { dispatch } = this.props;
 
     if (this.isEdit()) {
-      return await dispatch(updateSSOConfigAction(config));
+      await dispatch(updateSSOConfigAction(config));
     } else {
-      return await dispatch(createSSOConfigAction(config));
+      await dispatch(createSSOConfigAction(config));
     }
-  };
-
-  private onSubmitSuccess = async () => {
-    const { dispatch } = this.props;
 
     if (this.isEdit()) {
       dispatch(setSuccessNotificationAction("Update SSO Config Successfully"));
@@ -45,6 +43,9 @@ class SSOConfigFormPageRaw extends React.PureComponent<Props, State> {
   private isEdit = () => {
     return !!this.props.ssoConfig;
   };
+  private renderInfoBox() {
+    return <InfoBox title={pageObjectName} options={[]} guideLink={"https://kalm.dev/docs/next/auth/sso"} />;
+  }
 
   public render() {
     const { ssoConfig, isSSOConfigLoaded } = this.props;
@@ -60,15 +61,9 @@ class SSOConfigFormPageRaw extends React.PureComponent<Props, State> {
     return (
       <BasePage>
         <Box p={2}>
-          <SSOConfigForm
-            onSubmit={this.submit}
-            initialValues={ssoConfig || newEmptySSOConfig()}
-            onSubmitSuccess={this.onSubmitSuccess}
-          />
-          <Box mt={2}>
-            <SSOImplementDetails />
-          </Box>
+          <SSOConfigForm onSubmit={this.submit} initial={ssoConfig ? ssoConfig : newEmptySSOConfig()} />
         </Box>
+        <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>
     );
   }

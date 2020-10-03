@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kalmhq/kalm/controller/controllers"
-	authorizationV1 "k8s.io/api/authorization/v1"
-
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/controllers"
 	coreV1 "k8s.io/api/core/v1"
 )
 
@@ -86,60 +84,59 @@ type Application struct {
 	Name string `json:"name"`
 }
 
-func (builder *Builder) BuildApplicationDetails(namespace *coreV1.Namespace) (*ApplicationDetails, error) {
+func (resourceManager *ResourceManager) GetNamespace(name string) (*coreV1.Namespace, error) {
+	namespace := new(coreV1.Namespace)
+
+	err := resourceManager.Get("", name, namespace)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return namespace, nil
+}
+
+func (resourceManager *ResourceManager) GetNamespaces() ([]*coreV1.Namespace, error) {
+	var fetched coreV1.NamespaceList
+
+	if err := resourceManager.List(&fetched); err != nil {
+		return nil, err
+	}
+
+	res := make([]*coreV1.Namespace, 0, len(fetched.Items))
+
+	for i := range fetched.Items {
+		res = append(res, &fetched.Items[i])
+	}
+
+	return res, nil
+}
+
+func (resourceManager *ResourceManager) CreateNamespace(ns *coreV1.Namespace) error {
+	if err := resourceManager.Create(ns); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (resourceManager *ResourceManager) DeleteNamespace(ns *coreV1.Namespace) error {
+	if err := resourceManager.Delete(ns); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (resourceManager *ResourceManager) BuildApplicationDetails(namespace *coreV1.Namespace) (*ApplicationDetails, error) {
 	nsName := namespace.Name
-	roles := make([]string, 0, 2)
-
-	writeReview := &authorizationV1.SelfSubjectAccessReview{
-		Spec: authorizationV1.SelfSubjectAccessReviewSpec{
-			ResourceAttributes: &authorizationV1.ResourceAttributes{
-				Namespace: nsName,
-				Resource:  "applications",
-				Verb:      "create",
-				Group:     "core.kalm.dev",
-			},
-		},
-	}
-
-	// TODO Is there a better way?
-	// Infer user roles with some specific access review. This is not accurate but a trade off.
-	err := builder.Create(writeReview)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if writeReview.Status.Allowed {
-		roles = append(roles, "writer")
-	}
-
-	readReview := &authorizationV1.SelfSubjectAccessReview{
-		Spec: authorizationV1.SelfSubjectAccessReviewSpec{
-			ResourceAttributes: &authorizationV1.ResourceAttributes{
-				Namespace: nsName,
-				Resource:  "applications",
-				Verb:      "get",
-				Group:     "core.kalm.dev",
-			},
-		},
-	}
-
-	err = builder.Create(readReview)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if readReview.Status.Allowed {
-		roles = append(roles, "reader")
-	}
 
 	applicationMetric := GetApplicationMetric(nsName)
 
 	istioMetricHistories := &IstioMetricHistories{}
 
-	istioMetricListChan := builder.GetIstioMetricsListChannel(nsName)
-	err = <-istioMetricListChan.Error
+	istioMetricListChan := resourceManager.GetIstioMetricsListChannel(nsName)
+	err := <-istioMetricListChan.Error
 
 	if err != nil {
 		fmt.Printf("fail to GetIstioMetricsListChannel for ns: %s, ignored, err: %s", nsName, err)
@@ -161,7 +158,6 @@ func (builder *Builder) BuildApplicationDetails(namespace *coreV1.Namespace) (*A
 			Memory: applicationMetric.Memory,
 		},
 		IstioMetricHistories: istioMetricHistories,
-		Roles:                roles,
 		Status:               string(namespace.Status.Phase),
 	}, nil
 }
@@ -175,22 +171,18 @@ func formatEnvs(envs []v1alpha1.EnvVar) {
 	}
 }
 
-func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.NamespaceList) ([]ApplicationDetails, error) {
+func (resourceManager *ResourceManager) BuildApplicationListResponse(namespaces []*coreV1.Namespace) ([]ApplicationDetails, error) {
 	apps := []ApplicationDetails{}
 
 	// TODO concurrent build response items
-	for i := range namespaceList.Items {
-		ns := namespaceList.Items[i]
-
-		if ns.Name == KALM_SYSTEM_NAMESPACE {
-			continue
-		}
+	for i := range namespaces {
+		ns := namespaces[i]
 
 		if _, exist := ns.Labels[controllers.KalmEnableLabelName]; !exist {
 			continue
 		}
 
-		item, err := builder.BuildApplicationDetails(&ns)
+		item, err := resourceManager.BuildApplicationDetails(ns)
 
 		if err != nil {
 			return nil, err

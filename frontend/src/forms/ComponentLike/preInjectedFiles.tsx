@@ -1,29 +1,22 @@
 import { Box, Button } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
-import { Alert } from "@material-ui/lab";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
-import { KBoolCheckboxRender } from "forms/Basic/checkbox";
-import Immutable from "immutable";
+import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
+import { FinalTextField } from "forms/Final/textfield";
+import { trimParse } from "forms/normalizer";
 import React from "react";
-import { connect, DispatchProp } from "react-redux";
-import { RootState } from "reducers";
-import { arrayPop, arrayPush, arrayRemove, change, WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
-import { Field, FieldArray } from "redux-form/immutable";
+import { Field } from "react-final-form";
+import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
+import { connect } from "react-redux";
+import { TDispatchProp } from "types";
 import { PreInjectedFile } from "types/componentTemplate";
+import StringConstants from "utils/stringConstants";
 import { ControlledDialog } from "widgets/ControlledDialog";
-import { DeleteIcon, AddIcon } from "widgets/Icon";
+import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { Label } from "widgets/Label";
-import { RichEdtor } from "widgets/RichEditor";
-import { KRenderDebounceTextField } from "../Basic/textfield";
-import { KValidatorInjectedFilePath, ValidatorRequired } from "../validator";
-
-interface FieldArrayComponentHackType {
-  name: any;
-  component: any;
-  validate: any;
-}
+import { RichEditor } from "widgets/RichEditor";
+import { ValidatorInjectedFilePath } from "../validator";
 
 interface State {
   editingFileIndex: number;
@@ -31,53 +24,85 @@ interface State {
   activeIndex: number;
 }
 
-interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProps> {}
-
-interface OwnProps {
-  formID: string;
-}
-
-interface Props extends WrappedFieldArrayProps<PreInjectedFile>, FieldArrayComponentHackType, FieldArrayProps {}
-
-const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
-  return {
-    syncError: state.getIn(["form", ownProps.formID, "syncErrors", "preInjectedFiles"]),
-  };
-};
+interface Props extends FieldArrayRenderProps<PreInjectedFile, any>, TDispatchProp {}
 
 const updateContentDialogID = "update-content-dialog";
-const validateMountPath = [ValidatorRequired, KValidatorInjectedFilePath];
 
 class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
+    const { fields } = props;
+
     this.state = {
       editingFileIndex: -1,
       fileContentValue: "",
-      activeIndex: props.fields.length,
+      activeIndex: fields.value ? fields.value.length : 0,
     };
   }
 
   private privateOpenEditDialog = (file: PreInjectedFile, index: number) => {
     const { dispatch } = this.props;
-    this.setState({ editingFileIndex: index, fileContentValue: file.get("content") });
+    this.setState({ editingFileIndex: index, fileContentValue: file.content });
     dispatch(openDialogAction(updateContentDialogID));
   };
 
+  private handleDiscard(isInvalidFile: boolean | undefined) {
+    const { fields, dispatch } = this.props;
+    const { editingFileIndex } = this.state;
+    if (isInvalidFile) {
+      fields.remove(editingFileIndex);
+    }
+    dispatch(closeDialogAction(updateContentDialogID));
+  }
+
+  private handleSave(isInvalidFile: boolean | undefined, file: any, mountPathTmp: string) {
+    const { fields, dispatch } = this.props;
+    const { editingFileIndex, activeIndex, fileContentValue } = this.state;
+    if (isInvalidFile) {
+      return;
+    }
+
+    fields.update(editingFileIndex, { ...file, content: fileContentValue, mountPath: mountPathTmp });
+    if (editingFileIndex === activeIndex) {
+      this.setState({ activeIndex: activeIndex + 1 });
+    }
+    dispatch(closeDialogAction(updateContentDialogID));
+  }
+
+  private handleChangeEditor(value: string) {
+    this.setState({ fileContentValue: value });
+  }
+
+  private handleRemove(index: number) {
+    const { fields } = this.props;
+    const { activeIndex } = this.state;
+    fields.remove(index);
+    this.setState({ activeIndex: activeIndex - 1 });
+  }
+
+  private handlePush() {
+    const { activeIndex } = this.state;
+    const { fields } = this.props;
+    const initFile = { readonly: true, content: "", mountPath: "" };
+    if (!fields.value || fields.value.length <= activeIndex) {
+      fields.push(initFile);
+    } else {
+      fields.pop();
+      fields.push(initFile);
+    }
+    this.privateOpenEditDialog(initFile, activeIndex);
+  }
+
   private renderEditContentDialog = () => {
-    const {
-      dispatch,
-      fields,
-      meta: { form },
-      syncError,
-    } = this.props;
-    const { editingFileIndex, fileContentValue, activeIndex } = this.state;
-    const file = fields.get(editingFileIndex);
-    const mountPathTmp = file ? file.get("mountPathTmp") : "";
-    const isDisabledSaveButton =
+    const { fields } = this.props;
+    const syncErrors = fields.error as { [key: string]: string }[] | undefined;
+    const { editingFileIndex, fileContentValue } = this.state;
+    const file = editingFileIndex > -1 && fields.value ? fields.value[editingFileIndex] : null;
+    const mountPathTmp = file && file.mountPathTmp ? file.mountPathTmp : "";
+    const isInvalidFile =
       !mountPathTmp ||
       !fileContentValue ||
-      (syncError && syncError[editingFileIndex] && !!syncError[editingFileIndex].mountPathTmp);
+      (syncErrors && syncErrors[editingFileIndex] && !!syncErrors[editingFileIndex].mountPathTmp);
 
     return (
       <ControlledDialog
@@ -87,25 +112,15 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
           fullWidth: true,
           maxWidth: "sm",
         }}
+        closeCallback={this.handleDiscard.bind(this, isInvalidFile)}
         actions={
           <>
-            <Button onClick={() => dispatch(closeDialogAction(updateContentDialogID))} color="primary">
+            <Button onClick={this.handleDiscard.bind(this, isInvalidFile)} color="primary">
               Discard
             </Button>
             <Button
-              disabled={isDisabledSaveButton}
-              onClick={() => {
-                if (isDisabledSaveButton) {
-                  return;
-                }
-                let newFile = file.set("content", fileContentValue);
-                newFile = newFile.set("mountPath", mountPathTmp);
-                dispatch(change(form, "preInjectedFiles[" + editingFileIndex + "]", newFile));
-                if (editingFileIndex === activeIndex) {
-                  this.setState({ activeIndex: activeIndex + 1 });
-                }
-                dispatch(closeDialogAction(updateContentDialogID));
-              }}
+              disabled={isInvalidFile}
+              onClick={this.handleSave.bind(this, isInvalidFile, file, mountPathTmp)}
               color="primary"
             >
               Save
@@ -116,82 +131,71 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
         <Grid container>
           <Grid item xs={8}>
             <Field
-              name={`preInjectedFiles[${editingFileIndex}].mountPathTmp`}
+              name={`preInjectedFiles.${editingFileIndex}.mountPathTmp`}
               label="Mount Path"
-              component={KRenderDebounceTextField}
-              margin
-              validate={validateMountPath}
+              component={FinalTextField}
+              validate={ValidatorInjectedFilePath}
+              parse={trimParse}
+              placeholder={StringConstants.MOUNT_PATH_PLACEHOLDER}
             />
           </Grid>
           <Grid item xs={1}></Grid>
           <Grid item xs={3}>
             <Field
-              name={`preInjectedFiles[${editingFileIndex}].readonly`}
-              component={KBoolCheckboxRender}
+              name={`preInjectedFiles.${editingFileIndex}.readonly`}
+              component={FinalBoolCheckboxRender}
               label="Read Only"
-            ></Field>
+            />
           </Grid>
         </Grid>
-        <RichEdtor value={fileContentValue} onChange={(value) => this.setState({ fileContentValue: value })} />
+        <RichEditor value={fileContentValue} onChange={this.handleChangeEditor.bind(this)} />
       </ControlledDialog>
     );
   };
 
-  private renderContent = ({ meta: { error }, file }: WrappedFieldProps & { file: PreInjectedFile; index: number }) => {
-    return (
-      <Label color={error ? "error" : undefined} style={{ padding: 12, width: "100%" }}>
-        {error ? "File Content Required" : file.get("mountPath") || "Config File"}
-      </Label>
-    );
-  };
-
   public render() {
-    const {
-      meta: { form, error },
-      fields,
-      dispatch,
-    } = this.props;
-    const { activeIndex } = this.state;
+    const { fields } = this.props;
+    const name = fields.name;
     let fieldsNodes: any = [];
-    fields.forEach((member, index) => {
-      const injectedFile = fields.get(index);
-      if (injectedFile.get("mountPath")) {
-        fieldsNodes.push(
-          <Grid container spacing={1} key={member}>
-            <Grid item xs={4}>
-              <Field
-                name={`${member}.content`}
-                component={this.renderContent}
-                file={injectedFile}
-                validate={ValidatorRequired}
-                index={index}
-              />
-            </Grid>
-            <Grid item xs={4}>
-              <IconButtonWithTooltip
-                tooltipPlacement="top"
-                tooltipTitle="Edit"
-                aria-label="edit"
-                onClick={() => this.privateOpenEditDialog(injectedFile, index)}
-              >
-                <EditIcon />
-              </IconButtonWithTooltip>
-              <IconButtonWithTooltip
-                tooltipPlacement="top"
-                tooltipTitle="Delete"
-                aria-label="delete"
-                onClick={() => {
-                  dispatch(arrayRemove(form, "preInjectedFiles", index));
-                  this.setState({ activeIndex: activeIndex - 1 });
-                }}
-              >
-                <DeleteIcon />
-              </IconButtonWithTooltip>
-            </Grid>
-          </Grid>,
-        );
-      }
-    });
+    if (fields.value) {
+      fields.value.forEach((injectedFile: PreInjectedFile, index: number) => {
+        if (injectedFile.mountPath) {
+          fieldsNodes.push(
+            <Grid container spacing={1} key={index}>
+              <Grid item xs={4}>
+                <Field
+                  name={`${name}.${index}.mountPath`}
+                  component={FinalTextField}
+                  disabled
+                  label="Mount Path"
+                  file={injectedFile}
+                  index={index}
+                  placeholder={StringConstants.MOUNT_PATH_PLACEHOLDER}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <IconButtonWithTooltip
+                  tooltipPlacement="top"
+                  tooltipTitle="Edit"
+                  aria-label="edit"
+                  onClick={this.privateOpenEditDialog.bind(this, injectedFile, index)}
+                >
+                  <EditIcon />
+                </IconButtonWithTooltip>
+                <IconButtonWithTooltip
+                  tooltipPlacement="top"
+                  tooltipTitle="Delete"
+                  aria-label="delete"
+                  onClick={this.handleRemove.bind(this, index)}
+                >
+                  <DeleteIcon />
+                </IconButtonWithTooltip>
+              </Grid>
+            </Grid>,
+          );
+        }
+      });
+    }
     return (
       <>
         {this.renderEditContentDialog()}
@@ -202,64 +206,18 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
             color="primary"
             startIcon={<AddIcon />}
             size="small"
-            onClick={() => {
-              const initFile = Immutable.Map({
-                readonly: true,
-                content: "",
-                mountPath: "",
-              });
-              if (fields.length <= activeIndex) {
-                dispatch(arrayPush(form, "preInjectedFiles", initFile));
-              } else {
-                dispatch(arrayPop(form, "preInjectedFiles"));
-                dispatch(arrayPush(form, "preInjectedFiles", initFile));
-              }
-              this.privateOpenEditDialog(initFile, activeIndex);
-            }}
+            onClick={this.handlePush.bind(this)}
           >
             New File
           </Button>
-          {error ? (
-            <Box mb={2}>
-              <Alert severity="error">{error}</Alert>
-            </Box>
-          ) : null}
         </Box>
       </>
     );
   }
 }
 
-const ValidatorInjectedFiles = (
-  values: Immutable.List<PreInjectedFile>,
-  _allValues?: any,
-  _props?: any,
-  _name?: any,
-) => {
-  if (!values) return undefined;
-  const mountPaths = new Set<string>();
+const RenderPreInjectedFile = connect()(RenderPreInjectedFileRaw);
 
-  for (let i = 0; i < values.size; i++) {
-    const path = values.get(i)!;
-    const mountPath = path.get("mountPath");
-
-    if (!mountPaths.has(mountPath)) {
-      mountPaths.add(mountPath);
-    } else if (mountPath !== "") {
-      return "Files paths should be unique.  " + mountPath + "";
-    }
-  }
-};
-
-const RenderPreInjectedFile = connect(mapStateToProps)(RenderPreInjectedFileRaw);
-
-export const PreInjectedFiles = (props: any) => {
-  return (
-    <FieldArray
-      name="preInjectedFiles"
-      component={RenderPreInjectedFile}
-      validate={ValidatorInjectedFiles}
-      {...props}
-    />
-  );
+export const PreInjectedFiles = () => {
+  return <FieldArray name="preInjectedFiles" component={RenderPreInjectedFile} />;
 };

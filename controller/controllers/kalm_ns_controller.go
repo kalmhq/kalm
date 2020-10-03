@@ -28,6 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strconv"
+	"strings"
 	"time"
 
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -55,29 +56,27 @@ func NewKalmNSReconciler(mgr ctrl.Manager) *KalmNSReconciler {
 }
 
 // resource change needs trigger reconcile
-type MapAll struct{}
+type MapperForDefaultHttpsCertIssuer struct{}
 
-func (m MapAll) Map(_ handler.MapObject) []reconcile.Request {
-	return []reconcile.Request{{NamespacedName: types.NamespacedName{}}}
+func (m MapperForDefaultHttpsCertIssuer) Map(mapObj handler.MapObject) []reconcile.Request {
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{
+		Namespace: mapObj.Meta.GetNamespace(),
+		Name:      "default-httpscertissuer-" + mapObj.Meta.GetName(),
+	}}}
 }
 
 func (r *KalmNSReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1.Namespace{}).
-		Watches(genSourceForObject(&v1alpha1.HttpsCertIssuer{}), genEnqueueAllEventHandler()).
-		Watches(genSourceForObject(&v1alpha1.HttpsCert{}), genEnqueueAllEventHandler()).
+		Watches(genSourceForObject(&v1alpha1.HttpsCertIssuer{}), &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: MapperForDefaultHttpsCertIssuer{},
+		}).
 		Complete(r)
 }
 
 func genSourceForObject(obj runtime.Object) source.Source {
 	return &source.Kind{Type: obj}
-}
-
-func genEnqueueAllEventHandler() handler.EventHandler {
-	return &handler.EnqueueRequestsFromMapFunc{
-		ToRequests: MapAll{},
-	}
 }
 
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
@@ -90,7 +89,7 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	logger.Info("kalm ns reconciling...")
 
 	var namespaceList v1.NamespaceList
-	if err := r.List(ctx, &namespaceList); err != nil {
+	if err := r.List(ctx, &namespaceList, client.HasLabels([]string{KalmEnableLabelName})); err != nil {
 		err = client.IgnoreNotFound(err)
 		return ctrl.Result{}, err
 	}
@@ -131,13 +130,20 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 				suffix = "disabled"
 			}
 
-			component.Labels["kalm-namespace-updated-at"] = strconv.Itoa(int(now.Unix())) + "-" + suffix
+			labelNSUpdatedAt := "kalm-namespace-updated-at"
 
-			if err := r.Update(ctx, component); err != nil {
-				return ctrl.Result{}, err
+			oldLabelVal := component.Labels[labelNSUpdatedAt]
+			if !strings.HasSuffix(oldLabelVal, suffix) {
+				component.Labels[labelNSUpdatedAt] = strconv.Itoa(int(now.Unix())) + "-" + suffix
+
+				if err := r.Update(ctx, component); err != nil {
+					return ctrl.Result{}, err
+				}
 			}
 		}
 	}
+
+	// todo weird here
 
 	// check if default caIssuer & cert is created
 	if err := r.reconcileDefaultCAIssuerAndCert(); err != nil {
@@ -152,11 +158,10 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 }
 
 func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
-	defaultCAIssuerName := "default-cert-issuer"
 
 	expectedCAIssuer := v1alpha1.HttpsCertIssuer{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: defaultCAIssuerName,
+			Name: v1alpha1.DefaultCAIssuerName,
 		},
 		Spec: v1alpha1.HttpsCertIssuerSpec{
 			CAForTest: &v1alpha1.CAForTestIssuer{},
@@ -164,7 +169,9 @@ func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 	}
 
 	currentCAIssuer := v1alpha1.HttpsCertIssuer{}
-	err := r.Get(r.ctx, types.NamespacedName{Name: defaultCAIssuerName}, &currentCAIssuer)
+	err := r.Get(r.ctx, types.NamespacedName{
+		Name: v1alpha1.DefaultCAIssuerName,
+	}, &currentCAIssuer)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			return err
@@ -186,7 +193,7 @@ func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 			Name: defaultCertName,
 		},
 		Spec: v1alpha1.HttpsCertSpec{
-			HttpsCertIssuer: defaultCAIssuerName,
+			HttpsCertIssuer: v1alpha1.DefaultCAIssuerName,
 			Domains:         []string{"*"},
 		},
 	}
@@ -204,13 +211,11 @@ func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 	}
 }
 
-var DefaultHTTP01IssuerName = "default-http01-issuer"
-
 func (r *KalmNSReconciler) reconcileDefaultHTTP01Issuer() error {
 
 	expectedHTTP01Issuer := v1alpha1.HttpsCertIssuer{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: DefaultHTTP01IssuerName,
+			Name: v1alpha1.DefaultHTTP01IssuerName,
 		},
 		Spec: v1alpha1.HttpsCertIssuerSpec{
 			HTTP01: &v1alpha1.HTTP01Issuer{},
@@ -218,7 +223,7 @@ func (r *KalmNSReconciler) reconcileDefaultHTTP01Issuer() error {
 	}
 
 	currentIssuer := v1alpha1.HttpsCertIssuer{}
-	err := r.Get(r.ctx, types.NamespacedName{Name: DefaultHTTP01IssuerName}, &currentIssuer)
+	err := r.Get(r.ctx, types.NamespacedName{Name: v1alpha1.DefaultHTTP01IssuerName}, &currentIssuer)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			return err

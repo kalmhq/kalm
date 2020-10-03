@@ -1,23 +1,24 @@
 import { Box, createStyles, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import { Alert } from "@material-ui/lab";
-import { shouldError } from "forms/common";
-import Immutable from "immutable";
+import { createApplicationAction } from "actions/application";
+import { push } from "connected-react-router";
+import { FinalTextField } from "forms/Final/textfield";
+import { FormDataPreview } from "forms/Final/util";
+import { APPLICATION_FORM_ID } from "forms/formIDs";
+import { trimAndToLowerParse } from "forms/normalizer";
 import React from "react";
-import { connect, DispatchProp } from "react-redux";
+import { Field, Form, FormRenderProps } from "react-final-form";
+import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { InjectedFormProps } from "redux-form";
-import { Field, formValueSelector, reduxForm } from "redux-form/immutable";
 import { theme } from "theme/theme";
-import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
+import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { TDispatchProp } from "types";
 import { Application } from "types/application";
-import stringConstants from "utils/stringConstants";
-import { CustomizedButton } from "widgets/Button";
+import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
-import { KRenderDebounceTextField } from "../Basic/textfield";
-import { APPLICATION_FORM_ID } from "../formIDs";
-import { ValidatorName, ValidatorRequired } from "../validator";
+import { ValidatorIsDNS123Label } from "../validator";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -39,43 +40,33 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const selector = formValueSelector(APPLICATION_FORM_ID);
-  const name = selector(state, "name") as string;
   return {
-    tutorialState: state.get("tutorial"),
-    isSubmittingApplication: state.get("applications").get("isSubmittingApplication"),
-    name,
+    tutorialState: state.tutorial,
+    isSubmittingApplication: state.applications.isSubmittingApplication,
+    form: APPLICATION_FORM_ID,
   };
 };
 
-interface OwnProps {
-  isEdit?: boolean;
-  currentTab: "basic" | "applicationPlugins";
-}
+interface OwnProps {}
 
-interface ConnectedProps extends ReturnType<typeof mapStateToProps>, DispatchProp {}
+interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props
-  extends ConnectedProps,
-    InjectedFormProps<Application, ConnectedProps & OwnProps>,
-    WithStyles<typeof styles>,
-    OwnProps {}
-
-const nameValidators = [ValidatorRequired, ValidatorName];
+export interface Props extends ConnectedProps, WithStyles<typeof styles>, OwnProps {}
 
 class ApplicationFormRaw extends React.PureComponent<Props> {
-  private renderBasic() {
-    const { isEdit, name } = this.props;
+  private renderBasic(name: string) {
     return (
       <>
         <Field
           name="name"
           label="App Name"
-          disabled={isEdit}
-          component={KRenderDebounceTextField}
-          autoFocus={true}
-          validate={nameValidators}
-          helperText={isEdit ? "Can't modify name" : stringConstants.NAME_RULE}
+          id="application-name"
+          component={FinalTextField}
+          autoFocus
+          validate={ValidatorIsDNS123Label}
+          parse={trimAndToLowerParse}
+          placeholder="e.g. my-application; production"
+          helperText="Must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"
         />
 
         <Box mt={2} style={{ color: theme.palette.text.secondary }}>
@@ -91,69 +82,54 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
     );
   }
 
-  private renderButtons() {
-    const { handleSubmit, classes, currentTab, isSubmittingApplication } = this.props;
-
-    return (
-      <>
-        <CustomizedButton
-          pending={isSubmittingApplication}
-          disabled={isSubmittingApplication}
-          tutorial-anchor-id="application-form-submit-button"
-          variant="contained"
-          color="primary"
-          className={`${currentTab === "basic" ? classes.submitButton : classes.displayNone}`}
-          onClick={(event: any) => {
-            handleSubmit(event);
-          }}
-          id="add-application-submit-button"
-        >
-          Create App
-        </CustomizedButton>
-      </>
-    );
-  }
+  private onSubmit = async (applicationFormValue: Application) => {
+    const { dispatch } = this.props;
+    await dispatch(createApplicationAction(applicationFormValue));
+    dispatch(push(`/applications/${applicationFormValue.name}/components/new`));
+  };
 
   public render() {
-    const { handleSubmit, classes, submitFailed, error } = this.props;
+    const { classes, form, tutorialState } = this.props;
 
     return (
-      <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">
-        <KPanel
-          content={
-            <Box p={2} tutorial-anchor-id="application-form-name-field">
-              {this.renderBasic()}
-            </Box>
-          }
-        />
+      <Form
+        initialValues={{ name: "" }}
+        onSubmit={this.onSubmit}
+        keepDirtyOnReinitialize
+        validate={(values) => finalValidateOrNotBlockByTutorial(values, tutorialState, form)}
+        render={({ handleSubmit, values }: FormRenderProps<Application>) => (
+          <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">
+            <FormTutorialHelper form={form} />
+            <KPanel
+              content={
+                <Box p={2} tutorial-anchor-id="application-form-name-field">
+                  {this.renderBasic(values.name)}
+                </Box>
+              }
+            />
 
-        {error && submitFailed ? (
+            {/* {errors.name && touched.name ? (
           <Box pt={2}>
-            <Alert severity="error">{error}</Alert>
+            <Alert severity="error">{errors.name}</Alert>
           </Box>
-        ) : null}
+        ) : null} */}
 
-        <Box pt={3} className={classes.displayFlex}>
-          {this.renderButtons()}
-        </Box>
-      </form>
+            <FormDataPreview />
+
+            <Box pt={3} className={classes.displayFlex}>
+              <SubmitButton
+                tutorial-anchor-id="application-form-submit-button"
+                className={`${classes.submitButton}`}
+                id="add-application-submit-button"
+              >
+                Create App
+              </SubmitButton>
+            </Box>
+          </form>
+        )}
+      />
     );
   }
 }
 
-export const applicationInitialValues: Application = Immutable.fromJS({
-  name: "",
-  components: [],
-});
-
-export default connect(mapStateToProps)(
-  reduxForm<Application, ConnectedProps & OwnProps>({
-    form: APPLICATION_FORM_ID,
-    initialValues: applicationInitialValues,
-    validate: formValidateOrNotBlockByTutorial,
-    shouldError: shouldError,
-    onSubmitFail: (...args) => {
-      console.log("submit failed", args);
-    },
-  })(withStyles(styles)(ApplicationFormRaw)),
-);
+export default connect(mapStateToProps)(withStyles(styles)(ApplicationFormRaw));

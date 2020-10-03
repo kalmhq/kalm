@@ -1,68 +1,94 @@
 import { Box, Button, Grid, TextField } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import HelpIcon from "@material-ui/icons/Help";
-import { KTooltip } from "forms/Application/KTooltip";
-import Immutable from "immutable";
+import { diskSizeFormat, diskSizeParse, trimParse } from "forms/normalizer";
 import React from "react";
+import { Field } from "react-final-form";
+import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { connect, DispatchProp } from "react-redux";
 import { RootState } from "reducers";
-import { arrayPush, WrappedFieldArrayProps } from "redux-form";
-import { Field, FieldArray } from "redux-form/immutable";
-import { getComponentFormVolumeOptions } from "selectors/component";
 import {
   Volume,
+  VolumeTypeHostPath,
   VolumeTypePersistentVolumeClaim,
   VolumeTypePersistentVolumeClaimNew,
+  VolumeTypePersistentVolumeClaimTemplate,
+  VolumeTypePersistentVolumeClaimTemplateNew,
   VolumeTypeTemporaryDisk,
   VolumeTypeTemporaryMemory,
+  workloadTypeCronjob,
+  workloadTypeDaemonSet,
+  workloadTypeServer,
+  workloadTypeStatefulSet,
 } from "types/componentTemplate";
 import { sizeStringToGi } from "utils/sizeConv";
+import StringConstants from "utils/stringConstants";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { KTooltip } from "widgets/KTooltip";
 import { Caption, H6 } from "widgets/Label";
-import { RenderSelectField } from "../Basic/select";
-import { KRenderDebounceTextField, RenderComplexValueTextDebounceField } from "../Basic/textfield";
+import { FinalSelectField } from "../Final/select";
+import { FinalTextField } from "../Final/textfield";
 import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    volumeOptions: getComponentFormVolumeOptions(state),
-    storageClasses: state.get("persistentVolumes").get("storageClasses"),
+    statefulSetOptions: state.persistentVolumes.statefulSetOptions,
+    simpleOptions: state.persistentVolumes.simpleOptions,
+    storageClasses: state.persistentVolumes.storageClasses,
   };
 };
 
-interface FieldArrayComponentHackType {
-  name: any;
-  component: any;
+interface OwnProps {
+  isEdit?: boolean;
+  workloadType?: string;
+  componentName?: string;
 }
 
-interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProps> {}
+interface Props
+  extends FieldArrayRenderProps<Volume, any>,
+    DispatchProp,
+    ReturnType<typeof mapStateToProps>,
+    OwnProps {}
 
-interface Props extends WrappedFieldArrayProps<Volume>, FieldArrayComponentHackType, FieldArrayProps {}
-
-const sizeValidators = [ValidatorRequired, ValidatorVolumeSize];
-
-class RenderVolumes extends React.PureComponent<Props> {
+class RenderVolumesRaw extends React.PureComponent<Props> {
   private getUsingClaimNames() {
     const { fields } = this.props;
 
     const claimNames: { [key: string]: boolean } = {};
 
-    fields.forEach((member, index) => {
-      const volume = fields.get(index);
-      if (volume.get("type") === VolumeTypePersistentVolumeClaim) {
-        const claimName = volume.get("claimName");
-        claimNames[claimName] = true;
-      }
-    });
+    if (fields.value) {
+      fields.value.forEach((volume: Volume, index: number) => {
+        if (volume.type === VolumeTypePersistentVolumeClaim) {
+          const claimName = volume.claimName;
+          claimNames[claimName] = true;
+        }
+      });
+    }
 
     return claimNames;
   }
 
+  private isEdit = () => {
+    const { isEdit } = this.props;
+    return isEdit;
+  };
+
+  private shouldDisabledStatefulSetPvcTemplate(fieldDiskType: string) {
+    return this.isEdit() && fieldDiskType === VolumeTypePersistentVolumeClaimTemplate;
+  }
+
+  private getVolumeOptions = () => {
+    const { workloadType, componentName, statefulSetOptions, simpleOptions } = this.props;
+    return workloadType === workloadTypeStatefulSet
+      ? statefulSetOptions.filter((statefulSetOption) => statefulSetOption.componentName === componentName)
+      : simpleOptions;
+  };
+
   private getClaimNameOptions(disk: Volume) {
-    const { volumeOptions } = this.props;
+    const volumeOptions = this.getVolumeOptions();
     const usingClaimNames = this.getUsingClaimNames();
-    const currentClaimName = disk.get("claimName");
+    const currentClaimName = disk.claimName;
 
     const options: {
       value: string;
@@ -71,25 +97,23 @@ class RenderVolumes extends React.PureComponent<Props> {
     }[] = [];
 
     volumeOptions.forEach((vo) => {
-      if (vo.get("name") === currentClaimName || !usingClaimNames[vo.get("name")]) {
+      if (vo.name === currentClaimName || !usingClaimNames[vo.name]) {
         options.push({
-          value: vo.get("name"),
+          value: vo.name,
           text: (
             <Box pt={1} pb={1}>
-              <H6>{vo.get("name")}</H6>
+              <H6>{vo.name}</H6>
+              <Box>{vo.componentNamespace ? <Caption>Namespace: {vo.componentNamespace}</Caption> : null}</Box>
+              <Box>{vo.componentName ? <Caption>Component: {vo.componentName}</Caption> : null}</Box>
               <Box>
-                {vo.get("componentNamespace") ? <Caption>Namespace: {vo.get("componentNamespace")}</Caption> : null}
-              </Box>
-              <Box>{vo.get("componentName") ? <Caption>Component: {vo.get("componentName")}</Caption> : null}</Box>
-              <Box>
-                <Caption>Storage Class: {vo.get("storageClassName")}</Caption>
+                <Caption>Storage Class: {vo.storageClassName}</Caption>
               </Box>
               <Box>
-                <Caption>size: {sizeStringToGi(vo.get("capacity")) + " Gi"}</Caption>
+                <Caption>size: {sizeStringToGi(vo.capacity) + " Gi"}</Caption>
               </Box>
             </Box>
           ),
-          selectedText: vo.get("name"),
+          selectedText: vo.name,
         });
       }
     });
@@ -107,54 +131,128 @@ class RenderVolumes extends React.PureComponent<Props> {
 
     storageClasses.forEach((sc) => {
       options.push({
-        value: sc.get("name"),
-        text: sc.get("name"),
+        value: sc.name,
+        text: sc.name,
       });
     });
 
     return options;
   }
 
-  public getFieldComponents(member: string, disk: Volume) {
-    const { volumeOptions } = this.props;
-    const volumeType = disk.get("type");
+  private getTypeOptions(filedDiskType: string) {
+    let options: { value: string; text: string }[] = [];
+    const { workloadType } = this.props;
+    if (workloadType === workloadTypeServer) {
+      options = [
+        { value: VolumeTypePersistentVolumeClaimNew, text: "Create and mount disk" },
+        { value: VolumeTypePersistentVolumeClaim, text: "Mount an existing disk" },
+      ];
+    } else if (workloadType === workloadTypeCronjob) {
+      options = [];
+    } else if (workloadType === workloadTypeDaemonSet) {
+      options = [{ value: VolumeTypeHostPath, text: "Mount a hostPath disk" }];
+    } else if (workloadType === workloadTypeStatefulSet) {
+      if (this.isEdit()) {
+        if (this.shouldDisabledStatefulSetPvcTemplate(filedDiskType)) {
+          options = [{ value: VolumeTypePersistentVolumeClaimTemplate, text: "Mount an existing disk group" }];
+        }
+      } else {
+        options = [
+          { value: VolumeTypePersistentVolumeClaimTemplateNew, text: "Create and mount disk group" },
+          { value: VolumeTypePersistentVolumeClaimTemplate, text: "Mount an existing disk group" },
+        ];
+      }
+    }
+
+    options.push({ value: VolumeTypeTemporaryDisk, text: "Mount a temporary disk" });
+    options.push({ value: VolumeTypeTemporaryMemory, text: "Mount a temporary memory disk" });
+
+    return options;
+  }
+
+  private getDefaultAddValues(): any {
+    const { storageClasses, workloadType } = this.props;
+
+    if (workloadType === workloadTypeServer) {
+      return {
+        type: VolumeTypePersistentVolumeClaimNew,
+        path: "",
+        storageClassName: storageClasses[0]?.name || "",
+        size: "",
+      };
+    } else if (workloadType === workloadTypeCronjob) {
+      return {
+        type: VolumeTypeTemporaryDisk,
+        path: "",
+        size: "",
+      };
+    } else if (workloadType === workloadTypeDaemonSet) {
+      return {
+        type: VolumeTypeHostPath,
+        path: "",
+        hostPath: "",
+      };
+    } else if (workloadType === workloadTypeStatefulSet) {
+      if (this.isEdit()) {
+        return {
+          type: VolumeTypeTemporaryDisk,
+          path: "",
+          size: "",
+        };
+      }
+      return {
+        type: VolumeTypePersistentVolumeClaimTemplateNew,
+        path: "",
+        storageClassName: storageClasses[0]?.name || "",
+        size: "",
+      };
+    }
+
+    return {
+      type: VolumeTypePersistentVolumeClaimNew,
+      path: "",
+      storageClassName: storageClasses[0]?.name || "",
+      size: "",
+    };
+  }
+
+  public getFieldComponents(disk: Volume, index: number) {
+    const { fields } = this.props;
+    const name = fields.name;
+    const volumeOptions = this.getVolumeOptions();
+    const typeOptions = this.getTypeOptions(disk.type);
+    const shouldDisabledStatefulSetPvcTemplate = this.shouldDisabledStatefulSetPvcTemplate(disk.type);
+
     const fieldComponents = [
       <Field
-        name={`${member}.type`}
-        component={RenderSelectField}
+        name={`${name}.${index}.type`}
+        component={FinalSelectField}
         label="Type"
-        validate={ValidatorRequired}
-        placeholder="Select a volume type"
-        defaultValue={VolumeTypePersistentVolumeClaimNew}
-        options={[
-          // { value: VolumeTypePersistentVolumeClaim, text: "Mount a disk" },
-          { value: VolumeTypePersistentVolumeClaimNew, text: "Create and mount disk" },
-          { value: VolumeTypePersistentVolumeClaim, text: "Mount an existing disk" },
-          { value: VolumeTypeTemporaryDisk, text: "Mount a temporary disk" },
-          { value: VolumeTypeTemporaryMemory, text: "Mount a temporary memory disk" },
-        ]}
+        value={disk.type || typeOptions[0].value}
+        options={typeOptions}
+        disabled={shouldDisabledStatefulSetPvcTemplate}
       />,
       <Field
-        component={KRenderDebounceTextField}
-        name={`${member}.path`}
+        component={FinalTextField}
+        name={`${name}.${index}.path`}
         label="Mount Path"
-        margin
         validate={ValidatorRequired}
+        parse={trimParse}
+        placeholder={StringConstants.MOUNT_PATH_PLACEHOLDER}
       />,
     ];
 
-    if (volumeType === VolumeTypePersistentVolumeClaim) {
-      const claimName = disk.get("claimName");
-      const volumeOption = volumeOptions.find((vo) => vo.get("name") === claimName);
+    if (disk.type === VolumeTypePersistentVolumeClaim || disk.type === VolumeTypePersistentVolumeClaimTemplate) {
+      const claimName = disk.claimName;
+      const volumeOption = volumeOptions.find((vo) => vo.name === claimName);
 
       fieldComponents.push(
         <Field
-          name={`${member}.claimName`}
-          component={RenderSelectField}
+          name={`${name}.${index}.claimName`}
+          component={FinalSelectField}
           label="Claim Name"
-          // validate={ValidatorRequired}
-          placeholder="Select a Claim Name"
           options={this.getClaimNameOptions(disk)}
+          disabled={shouldDisabledStatefulSetPvcTemplate}
         />,
       );
       // only for show info
@@ -163,7 +261,7 @@ class RenderVolumes extends React.PureComponent<Props> {
           fullWidth
           disabled
           label="Storage Class"
-          value={volumeOption?.get("storageClassName") || ""}
+          value={volumeOption?.storageClassName || ""}
           margin="dense"
           variant="outlined"
         />,
@@ -174,52 +272,57 @@ class RenderVolumes extends React.PureComponent<Props> {
           fullWidth
           disabled
           label="Size"
-          value={volumeOption?.get("capacity") ? sizeStringToGi(volumeOption?.get("capacity")) + " Gi" : ""}
+          value={volumeOption?.capacity ? sizeStringToGi(volumeOption?.capacity) + " Gi" : ""}
           margin="dense"
           variant="outlined"
         />,
       );
-    } else if (volumeType === VolumeTypePersistentVolumeClaimNew) {
+    } else if (
+      disk.type === VolumeTypePersistentVolumeClaimNew ||
+      disk.type === VolumeTypePersistentVolumeClaimTemplateNew
+    ) {
       fieldComponents.push(
         <Field
           label="Storage Class"
-          name={`${member}.storageClassName`}
-          component={RenderSelectField}
+          name={`${name}.${index}.storageClassName`}
+          component={FinalSelectField}
           placeholder="Select the type of your disk"
           options={this.getStorageClassesOptions()}
         />,
       );
       fieldComponents.push(
         <Field
-          component={RenderComplexValueTextDebounceField}
-          name={`${member}.size`}
+          component={FinalTextField}
+          name={`${name}.${index}.size`}
           label="Size"
           margin
-          validate={sizeValidators}
+          validate={ValidatorVolumeSize}
           endAdornment={this.getSizeEndAdornment()}
-          format={(value: any) => {
-            return !value ? "" : sizeStringToGi(value);
-          }}
-          parse={(value: any) => {
-            return !value ? "" : value + "Gi";
-          }}
+          format={diskSizeFormat}
+          parse={diskSizeParse}
+        />,
+      );
+    } else if (disk.type === VolumeTypeHostPath) {
+      fieldComponents.push(
+        <Field
+          component={FinalTextField}
+          name={`${name}.${index}.hostPath`}
+          label="Host Path"
+          validate={ValidatorRequired}
+          parse={trimParse}
         />,
       );
     } else {
       fieldComponents.push(
         <Field
-          component={RenderComplexValueTextDebounceField}
-          name={`${member}.size`}
+          component={FinalTextField}
+          name={`${name}.${index}.size`}
           label="Size"
           margin
-          validate={sizeValidators}
+          validate={ValidatorVolumeSize}
           endAdornment={this.getSizeEndAdornment()}
-          format={(value: any) => {
-            return !value ? "" : sizeStringToGi(value);
-          }}
-          parse={(value: any) => {
-            return !value ? "" : value + "Gi";
-          }}
+          format={diskSizeFormat}
+          parse={diskSizeParse}
         />,
       );
     }
@@ -242,13 +345,16 @@ class RenderVolumes extends React.PureComponent<Props> {
     return "Kalm uses Mi as the base unit of disk. 1 Gi equals 1024 Mi.";
   }
 
+  private handleRemove(index: number) {
+    this.props.fields.remove(index);
+  }
+
+  private handlePush() {
+    this.props.fields.push(this.getDefaultAddValues());
+  }
+
   public render() {
-    const {
-      fields,
-      dispatch,
-      storageClasses,
-      meta: { submitFailed, error, form },
-    } = this.props;
+    const { fields } = this.props;
 
     return (
       <Box>
@@ -259,57 +365,46 @@ class RenderVolumes extends React.PureComponent<Props> {
               color="primary"
               startIcon={<AddIcon />}
               size="small"
-              onClick={() => {
-                dispatch(
-                  arrayPush(
-                    form,
-                    fields.name,
-                    Immutable.Map({
-                      type: VolumeTypePersistentVolumeClaimNew,
-                      path: "",
-                      storageClassName: storageClasses.get(0)?.get("name") || "",
-                      size: "",
-                    }),
-                  ),
-                );
-              }}
+              onClick={this.handlePush.bind(this)}
             >
               Add
             </Button>
-            {submitFailed && error && <span>{error}</span>}
+            {/* {submitFailed && error && <span>{error}</span>} */}
           </Grid>
         </Box>
+        {fields.value &&
+          fields.value.map((disk: Volume, index: number) => {
+            return (
+              <Grid container spacing={2} key={index}>
+                {this.getFieldComponents(disk, index).map((fieldComponent, fieldIndex) => {
+                  return (
+                    <Grid item xs={fieldIndex === 0 ? 3 : 2} key={`${fields.name}-${fieldIndex}`}>
+                      {fieldComponent}
+                    </Grid>
+                  );
+                })}
 
-        {fields.map((member, index) => {
-          const disk = fields.get(index);
-          return (
-            <Grid container spacing={2} key={member}>
-              {this.getFieldComponents(member, disk).map((fieldComponent, fieldIndex) => {
-                return (
-                  <Grid item xs={fieldIndex === 0 ? 3 : 2} key={`${member}-${fieldIndex}`}>
-                    {fieldComponent}
-                  </Grid>
-                );
-              })}
-
-              <Grid item xs={1}>
-                <IconButtonWithTooltip
-                  tooltipPlacement="top"
-                  tooltipTitle="Delete"
-                  aria-label="delete"
-                  onClick={() => fields.remove(index)}
-                >
-                  <DeleteIcon />
-                </IconButtonWithTooltip>
+                <Grid item xs={1}>
+                  <IconButtonWithTooltip
+                    tooltipPlacement="top"
+                    tooltipTitle="Delete"
+                    aria-label="delete"
+                    disabled={this.shouldDisabledStatefulSetPvcTemplate(disk.type)}
+                    onClick={this.handleRemove.bind(this, index)}
+                  >
+                    <DeleteIcon />
+                  </IconButtonWithTooltip>
+                </Grid>
               </Grid>
-            </Grid>
-          );
-        })}
+            );
+          })}
       </Box>
     );
   }
 }
 
-export const Disks = connect(mapStateToProps)((props: FieldArrayProps) => {
+const RenderVolumes = connect(mapStateToProps)(RenderVolumesRaw);
+
+export const Disks = (props: OwnProps) => {
   return <FieldArray name="volumes" component={RenderVolumes} {...props} />;
-});
+};

@@ -1,93 +1,60 @@
-import {
-  Box,
-  Button,
-  Collapse,
-  Divider,
-  Grid,
-  Link,
-  List as MList,
-  ListItem,
-  ListItemText,
-  Tab,
-  Tabs,
-} from "@material-ui/core";
-import { grey } from "@material-ui/core/colors";
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
+import { Box, Button, Divider, Grid, Link, Tab, Tabs } from "@material-ui/core";
+import grey from "@material-ui/core/colors/grey";
+import { createStyles, Theme, useTheme, withStyles, WithStyles } from "@material-ui/core/styles";
 import HelpIcon from "@material-ui/icons/Help";
 import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 import clsx from "clsx";
 import { push } from "connected-react-router";
-import { KTooltip } from "forms/Application/KTooltip";
-import { KBoolCheckboxRender } from "forms/Basic/checkbox";
-import { shouldError } from "forms/common";
+import arrayMutators from "final-form-arrays";
 import { Disks } from "forms/ComponentLike/Disks";
+import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
+import { FinalRadioGroupRender } from "forms/Final/radio";
+import { FinalSelectField } from "forms/Final/select";
+import { FormDataPreview } from "forms/Final/util";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
-import Immutable from "immutable";
+import { cpuFormat, cpuParse, memoryFormat, memoryParse, NormalizePositiveNumber, trimParse } from "forms/normalizer";
 import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
-import queryString from "qs";
 import React from "react";
+import { Field, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
-import { InjectedFormProps } from "redux-form";
-import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
-import { getNodeLabels } from "selectors/node";
-import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
+import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
-import { ApplicationDetails } from "types/application";
 import {
   ComponentLike,
-  ComponentLikeContent,
   workloadTypeCronjob,
   workloadTypeDaemonSet,
   workloadTypeServer,
   workloadTypeStatefulSet,
 } from "types/componentTemplate";
 import { PublicRegistriesList } from "types/registry";
-import { sizeStringToMi, sizeStringToNumber } from "utils/sizeConv";
 import sc from "utils/stringConstants";
-import { CustomizedButton } from "widgets/Button";
+import { SubmitButton } from "widgets/Button";
+import { KalmConsoleIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
+import { KTooltip } from "widgets/KTooltip";
 import { Body2, Subtitle1 } from "widgets/Label";
+import { KMLink } from "widgets/Link";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
-import { KRadioGroupRender } from "../Basic/radio";
-import { makeSelectOption, RenderSelectField } from "../Basic/select";
-import {
-  KRenderCommandTextField,
-  KRenderDebounceTextField,
-  RenderComplexValueTextDebounceField,
-} from "../Basic/textfield";
-import { NormalizeNumber } from "../normalizer";
+import { makeSelectOption } from "../Final/select";
+import { FinalTextField } from "../Final/textfield";
 import {
   ValidatorCPU,
+  ValidatorIsDNS123Label,
   ValidatorMemory,
-  ValidatorName,
-  ValidatorNaturalNumber,
-  ValidatorRequired,
   ValidatorSchedule,
+  ValidatorRequired,
 } from "../validator";
+import { ComponentAccess } from "./Access";
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
-import { Ports } from "./Ports";
+import { IngressHint, Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
-import { LivenessProbe, ReadinessProbe } from "./Probes";
-
-const IngressHint = () => {
-  const [open, setOpen] = React.useState(false);
-
-  return (
-    <>
-      <Link style={{ cursor: "pointer" }} onClick={() => setOpen(!open)}>
-        {sc.PORT_ROUTE_QUESTION}
-      </Link>
-      <Box pt={1}>
-        <Collapse in={open}>{sc.PORT_ROUTE_ANSWER}</Collapse>
-      </Box>
-    </>
-  );
-};
+import { ProbeFields } from "./Probes";
 
 const Configurations = "Config";
 const DisksTab = "Disks";
@@ -95,16 +62,10 @@ export const HealthTab = "Health";
 export const NetworkingTab = "Networking";
 const Scheduling = "Pod Scheduling";
 const Deploy = "Deployment Strategy";
-const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy];
+const Access = "Access";
+const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy, Access];
 
 const mapStateToProps = (state: RootState) => {
-  const fieldValues = (getFormValues(COMPONENT_FORM_ID)(state) as ComponentLike) || (Immutable.Map() as ComponentLike);
-  const syncValidationErrors = getFormSyncErrors(COMPONENT_FORM_ID)(state) as {
-    [x in keyof ComponentLikeContent]: any;
-  };
-  const nodeLabels = getNodeLabels(state);
-
-  const search = queryString.parse(window.location.search.replace("?", ""));
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");
   let currentTabIndex = tabs.map((t) => t.replace(/\s/g, "")).indexOf(`${anchor}`);
@@ -113,14 +74,12 @@ const mapStateToProps = (state: RootState) => {
   }
 
   return {
-    registries: state.get("registries").get("registries"),
-    tutorialState: state.get("tutorial"),
-    search,
-    fieldValues,
-    isSubmittingApplicationComponent: state.get("components").get("isSubmittingApplicationComponent"),
-    syncValidationErrors,
-    nodeLabels,
+    registries: state.registries.registries,
+    tutorialState: state.tutorial,
+    isSubmittingApplicationComponent: state.components.isSubmittingApplicationComponent,
+    nodeLabels: state.nodes.labels,
     currentTabIndex,
+    form: COMPONENT_FORM_ID,
   };
 };
 
@@ -142,7 +101,7 @@ const styles = (theme: Theme) =>
       },
     },
     borderBottom: {
-      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+      borderBottom: `1px solid ${theme.palette.divider}`,
     },
     displayBlock: {
       display: "block",
@@ -172,31 +131,22 @@ const styles = (theme: Theme) =>
  */
 const HelperTextSection: React.FC<{}> = ({ children }) => (
   <Grid item xs={8}>
-    <Body2>{children}</Body2>
+    {children}
   </Grid>
 );
 
 interface RawProps {
-  showDataView?: boolean;
-  showSubmitButton?: boolean;
-  submitButtonText?: string;
-  application?: ApplicationDetails;
+  _initialValues: ComponentLike;
+  onSubmit: (values: ComponentLike) => Promise<void>;
 }
 
-interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {
-  // submitAppplicationErrors?: Immutable.Map<string, any>;
-}
+interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props
-  extends InjectedFormProps<ComponentLike, ConnectedProps>,
-    RouteComponentProps,
-    WithStyles<typeof styles>,
-    ConnectedProps,
-    RawProps {}
+export interface Props extends RouteComponentProps, WithStyles<typeof styles>, ConnectedProps, RawProps {}
 
 interface State {}
 
-const nameValidators = [ValidatorRequired, ValidatorName];
+type RenderProps = FormRenderProps<ComponentLike>;
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
@@ -212,33 +162,35 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     this.loadRequiredData();
   }
 
-  private renderReplicasOrSchedule = () => {
-    const workloadType = this.props.fieldValues.get("workloadType");
+  private renderScheduleHelperText = () => {
+    return (
+      <span>
+        <a href="https://en.wikipedia.org/wiki/Cron" target="_blank" rel="noopener noreferrer">
+          Cron
+        </a>
+        {" \n"}
+        format string. You can create schedule expressions with{" "}
+        <a href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">
+          Crontab Guru
+        </a>
+        .
+      </span>
+    );
+  };
+
+  private renderReplicasOrSchedule = (workloadType?: string) => {
     if (workloadType === workloadTypeServer || workloadType === workloadTypeStatefulSet) {
       return (
         <Field
-          component={RenderComplexValueTextDebounceField}
-          validate={ValidatorNaturalNumber}
+          component={FinalTextField}
+          validate={ValidatorRequired}
           name="replicas"
           margin
           label="Replicas"
           helperText={sc.REPLICA_INPUT_HELPER}
-          format={(value: any) => {
-            let displayValue;
-            if (value !== null && value !== undefined) {
-              displayValue = `${value}`.length > 0 ? value : 1;
-            } else {
-              displayValue = 1;
-            }
-
-            return displayValue;
-          }}
-          parse={(value: any) => {
-            return value;
-          }}
           type="number"
           min="0"
-          normalize={NormalizeNumber}
+          parse={NormalizePositiveNumber}
         />
       );
     }
@@ -248,21 +200,21 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <>
           <Field
             name="schedule"
-            component={KRenderDebounceTextField}
+            component={FinalTextField}
             placeholder="* * * * *"
             label="Cronjob Schedule"
             required
             validate={ValidatorSchedule}
             helperText={
               <span>
-                <a href="https://en.wikipedia.org/wiki/Cron" target="_blank" rel="noopener noreferrer">
+                <KMLink href="https://en.wikipedia.org/wiki/Cron" rel="noopener noreferrer" target="_blank">
                   Cron
-                </a>
+                </KMLink>
                 {" \n"}
                 format string. You can create schedule expressions with{" "}
-                <a href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">
+                <KMLink href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">
                   Crontab Guru
-                </a>
+                </KMLink>
                 .
               </span>
             }
@@ -290,7 +242,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </HelperTextSection>
         </Grid>
         <Grid item xs={12}>
-          <PreInjectedFiles formID={COMPONENT_FORM_ID} />
+          <PreInjectedFiles />
         </Grid>
       </>
     );
@@ -339,7 +291,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderDisks() {
+  private renderDisks(isEdit: boolean) {
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
@@ -349,127 +301,19 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <HelperTextSection>{sc.DISKS_HELPER}</HelperTextSection>
         <Grid item xs={12}>
-          <Disks />
+          <FormSpy subscription={{ values: true }}>
+            {({ values }: FormSpyRenderProps<ComponentLike>) => {
+              return <Disks isEdit={isEdit} workloadType={values.workloadType} componentName={values.name} />;
+            }}
+          </FormSpy>
         </Grid>
       </Grid>
     );
   }
 
-  private getDnsPolicyOptions() {
-    return [
-      {
-        value: "Default",
-        label: "Default",
-        explain: (
-          <>
-            The Pod inherits the name resolution configuration from the node that the pods run on. See{" "}
-            <a
-              target="_blank"
-              href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#inheriting-dns-from-the-node"
-              rel="noopener noreferrer"
-            >
-              related discussion
-            </a>{" "}
-            for more details.
-          </>
-        ),
-      },
-      {
-        value: "ClusterFirst",
-        label: "ClusterFirst",
-        explain: (
-          <>
-            Any DNS query that does not match the configured cluster domain suffix, such as “www.kubernetes.io”, is
-            forwarded to the upstream nameserver inherited from the node. Cluster administrators may have extra
-            stub-domain and upstream DNS servers configured. See{" "}
-            <a
-              target="_blank"
-              href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#impacts-on-pods"
-              rel="noopener noreferrer"
-            >
-              related discussion
-            </a>{" "}
-            for details on how DNS queries are handled in those cases.
-          </>
-        ),
-      },
-      {
-        value: "ClusterFirstWithHostNet",
-        label: "ClusterFirstWithHostNet",
-        explain: (
-          <>For Pods running with hostNetwork, you should explicitly set its DNS policy “ClusterFirstWithHostNet”.</>
-        ),
-      },
-      {
-        value: "None",
-        label: "None",
-        explain: <>It allows a Pod to ignore DNS settings from the Kubernetes environment.</>,
-      },
-    ];
-  }
-
-  private renderDnsPolicy() {
-    return (
-      <>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>DNS Policy</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <Grid item xs={12}>
-          <Field component={KRadioGroupRender} name="dnsPolicy" options={this.getDnsPolicyOptions()} />
-        </Grid>
-      </>
-    );
-  }
-
-  private renderAdvancedHelper = (options: { title: string; content: React.ReactNode }[]) => {
-    return (
-      <MList dense={true}>
-        {options.map((x, index) => (
-          <ListItem key={index}>
-            <ListItemText
-              primary={x.title}
-              key={index}
-              secondary={x.content}
-              secondaryTypographyProps={{ color: "inherit" }}
-            />
-          </ListItem>
-        ))}
-      </MList>
-    );
-  };
-
-  // private renderPlugins() {
-  //   const { classes } = this.props;
-
-  //   const helper = (
-  //     <HelperContainer>
-  //       <Typography>
-  //         Plugins can affect running state of a program, or provide extra functionality for the programs.
-  //       </Typography>
-  //     </HelperContainer>
-  //   );
-
-  //   return (
-  //     <>
-  //       <SectionTitle>
-  //         <Subtitle1>Plugins</Subtitle1>
-  //         <KTooltip title={helper}>
-  //           <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-  //         </KTooltip>
-  //       </SectionTitle>
-
-  //       <Grid container spacing={2}>
-  //         <Grid item xs={12}>
-  //           <Plugins />
-  //         </Grid>
-  //       </Grid>
-  //     </>
-  //   );
-  // }
-
   private renderCommandAndArgs() {
+    const theme = useTheme();
+
     return (
       <>
         <Grid item xs={12}>
@@ -482,7 +326,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={12}>
           <Field
-            component={KRenderCommandTextField}
+            component={FinalTextField}
+            startAdornment={<KalmConsoleIcon color={theme.palette.type === "light" ? "default" : "inherit"} />}
             name="command"
             label="Command"
             placeholder={sc.COMMAND_INPUT_PLACEHOLDER}
@@ -504,44 +349,47 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
   private renderHealth() {
     return (
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Readiness Probe</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <Grid item xs={8}>
-          {sc.READINESS_PROBE_HELPER}
-        </Grid>
-        <Grid item xs={12}>
-          <ReadinessProbe />
-        </Grid>
-        <Grid item xs={12}>
-          <Divider orientation="horizontal" color="inherit" />
-        </Grid>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Liveness Probe</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <HelperTextSection>{sc.LIVENESS_PROBE_HELPER}</HelperTextSection>
-        <Grid item xs={12}>
-          <LivenessProbe />
-        </Grid>
-      </Grid>
+      <FormSpy subscription={{ values: true }}>
+        {({
+          values: { ports, readinessProbe, livenessProbe },
+          form: { change },
+        }: FormSpyRenderProps<ComponentLike>) => {
+          return (
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <SectionTitle>
+                  <Subtitle1>Readiness Probe</Subtitle1>
+                </SectionTitle>
+              </Grid>
+              <Grid item xs={8}>
+                {sc.READINESS_PROBE_HELPER}
+              </Grid>
+              <Grid item xs={12}>
+                <ProbeFields name="readinessProbe" value={readinessProbe} ports={ports} change={change} />
+              </Grid>
+              <Grid item xs={12}>
+                <Divider orientation="horizontal" color="inherit" />
+              </Grid>
+              <Grid item xs={12}>
+                <SectionTitle>
+                  <Subtitle1>Liveness Probe</Subtitle1>
+                </SectionTitle>
+              </Grid>
+              <HelperTextSection>{sc.LIVENESS_PROBE_HELPER}</HelperTextSection>
+              <Grid item xs={12}>
+                <ProbeFields name="livenessProbe" value={livenessProbe} ports={ports} change={change} />
+              </Grid>
+            </Grid>
+          );
+        }}
+      </FormSpy>
     );
   }
 
   private renderNetworking() {
     return (
       <Grid container spacing={2}>
-        {/* <Grid item xs={12}>
-          <SectionTitle>
-          <Subtitle1>Networking</Subtitle1>
-          </SectionTitle>
-        </Grid> */}
         {this.renderPorts()}
-        {/* {this.renderDnsPolicy()} */}
       </Grid>
     );
   }
@@ -562,7 +410,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderScheduling() {
-    const { nodeLabels, classes } = this.props;
+    const { classes, nodeLabels } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
@@ -572,20 +420,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
-            component={RenderComplexValueTextDebounceField}
+          <Field<string | undefined>
+            component={FinalTextField}
             name="cpuLimit"
             label="CPU Limit"
             validate={ValidatorCPU}
-            // normalize={NormalizeCPU}
             placeholder={sc.CPU_INPUT_PLACEHOLDER}
-            type="number"
-            format={(value: any) => {
-              return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
-            }}
-            parse={(value: any) => {
-              return !value ? "" : value + "m";
-            }}
+            min="0"
+            format={cpuFormat}
+            parse={cpuParse}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -598,21 +441,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
-            component={RenderComplexValueTextDebounceField}
+          <Field<string | undefined>
+            component={FinalTextField}
             name="memoryLimit"
             label="Memory Limit"
             margin
             validate={ValidatorMemory}
-            // normalize={NormalizeMemory}
             placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
-            type="number"
-            format={(value: any) => {
-              return !value ? "" : sizeStringToMi(value);
-            }}
-            parse={(value: any) => {
-              return !value ? "" : value + "Mi";
-            }}
+            min="0"
+            format={memoryFormat}
+            parse={memoryParse}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -625,20 +463,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
-            component={RenderComplexValueTextDebounceField}
+          <Field<string | undefined>
+            component={FinalTextField}
             name="cpuRequest"
             label="CPU Request"
             validate={ValidatorCPU}
-            // normalize={NormalizeCPU}
             placeholder={sc.CPU_INPUT_PLACEHOLDER}
-            type="number"
-            format={(value: any) => {
-              return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
-            }}
-            parse={(value: any) => {
-              return !value ? "" : value + "m";
-            }}
+            format={cpuFormat}
+            parse={cpuParse}
             endAdornment={
               <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -651,21 +483,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field
-            component={RenderComplexValueTextDebounceField}
+          <Field<string | undefined>
+            component={FinalTextField}
             name="memoryRequest"
             label="Memory Request"
             margin
             validate={ValidatorMemory}
-            // normalize={NormalizeMemory}
             placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
-            type="number"
-            format={(value: any) => {
-              return !value ? "" : sizeStringToMi(value);
-            }}
-            parse={(value: any) => {
-              return !value ? "" : value + "Mi";
-            }}
+            format={memoryFormat}
+            parse={memoryParse}
             endAdornment={
               <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
@@ -677,9 +503,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        {/* <Grid item xs={12}>
-          <Field name="enableResourcesRequests" component={KBoolCheckboxRender} label={sc.SCHEDULING_RR_CHECKBOX} />
-        </Grid> */}
         <Grid item xs={12}>
           <SectionTitle>
             <Subtitle1>Nodes</Subtitle1>
@@ -689,11 +512,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
         </Grid>
         <Grid item xs={12}>
-          <Field name="preferNotCoLocated" component={KBoolCheckboxRender} label={sc.SCHEDULING_COLOCATE_CHECKBOX} />
+          <Field
+            name="preferNotCoLocated"
+            component={FinalBoolCheckboxRender}
+            label={sc.SCHEDULING_COLOCATE_CHECKBOX}
+          />
         </Grid>
-        {/* <Grid item xs={6}>
-          <Field name="podAffinityType" component={KRadioGroupRender} options={this.getPodAffinityOptions()} />
-        </Grid> */}
       </Grid>
     );
   }
@@ -708,9 +532,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={8}>
           <Field
-            defaultValue="RollingUpdate"
-            component={KRadioGroupRender}
+            // won't fix, https://github.com/final-form/react-final-form/issues/392
+            // type="radio"
             name="restartStrategy"
+            component={FinalRadioGroupRender}
             options={[
               {
                 value: "RollingUpdate",
@@ -748,11 +573,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </HelperTextSection>
         <Grid item xs={6}>
           <Field
-            component={KRenderDebounceTextField}
+            component={FinalTextField}
             name="terminationGracePeriodSeconds"
             label="Termination Grace Period (seconds)"
-            // validate={ValidatorRequired}
-            normalize={NormalizeNumber}
+            parse={NormalizePositiveNumber}
             placeholder={sc.GRACEFUL_TERM_INPUT_PLACEHOLDER}
           />
         </Grid>
@@ -760,7 +584,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderTabDetails() {
+  private renderTabDetails(isEdit: boolean) {
     const { classes, currentTabIndex } = this.props;
 
     return (
@@ -772,7 +596,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {this.renderNetworking()}
         </div>
         <div className={`${this.tabs[currentTabIndex] === DisksTab ? "" : classes.displayNone}`}>
-          {this.renderDisks()}
+          {this.renderDisks(isEdit)}
         </div>
         <div className={`${this.tabs[currentTabIndex] === HealthTab ? "" : classes.displayNone}`}>
           {this.renderHealth()}
@@ -782,6 +606,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </div>
         <div className={`${this.tabs[currentTabIndex] === Deploy ? "" : classes.displayNone}`}>
           {this.renderUpgradePolicy()}
+        </div>
+        <div className={`${this.tabs[currentTabIndex] === Access ? "" : classes.displayNone}`}>
+          <FormSpy subscription={{ pristine: true, values: true }}>
+            {({ form: { change }, values }: FormSpyRenderProps<ComponentLike>) => (
+              <ComponentAccess ports={values.ports} change={change} protectedEndpoint={values.protectedEndpoint} />
+            )}
+          </FormSpy>
         </div>
       </>
     );
@@ -797,97 +628,116 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     dispatch(push(`${pathname}#${tab ? tab.replace(/\s/g, "") : ""}`));
   }
 
-  private renderTabs() {
-    const { classes, syncValidationErrors, submitFailed, currentTabIndex } = this.props;
-    return (
-      <Tabs
-        className={clsx(classes.borderBottom, classes.tabsRoot)}
-        value={currentTabIndex}
-        variant="scrollable"
-        scrollButtons="auto"
-        indicatorColor="primary"
-        textColor="primary"
-        onChange={(event: React.ChangeEvent<{}>, value: number) => {
-          this.pushToTab(value);
-          // this.setState({ currentTabIndex: value });
-        }}
-        aria-label="component form tabs"
-      >
-        {this.tabs.map((tab) => {
-          if (
-            submitFailed &&
-            ((tab === Configurations &&
-              (syncValidationErrors.preInjectedFiles || syncValidationErrors.env || syncValidationErrors.command)) ||
-              (tab === DisksTab && syncValidationErrors.volumes) ||
-              (tab === HealthTab && (syncValidationErrors.livenessProbe || syncValidationErrors.readinessProbe)) ||
-              (tab === NetworkingTab && syncValidationErrors.ports) ||
-              (tab === Scheduling &&
-                (syncValidationErrors.cpuLimit ||
-                  syncValidationErrors.memoryLimit ||
-                  syncValidationErrors.nodeSelectorLabels)))
-          ) {
-            return <Tab key={tab} label={tab} className={classes.hasError} />;
-          }
+  private handleChangeTab(event: React.ChangeEvent<{}>, value: number) {
+    this.pushToTab(value);
+  }
 
-          return <Tab key={tab} label={tab} tutorial-anchor-id={tab} />;
-        })}
-      </Tabs>
+  private renderTabs() {
+    const { classes, currentTabIndex } = this.props;
+    return (
+      <FormSpy subscription={{ errors: true }}>
+        {({ errors }: FormSpyRenderProps<ComponentLike>) => {
+          return (
+            <Tabs
+              className={clsx(classes.borderBottom, classes.tabsRoot)}
+              value={currentTabIndex}
+              variant="scrollable"
+              scrollButtons="auto"
+              indicatorColor="primary"
+              textColor="primary"
+              onChange={this.handleChangeTab.bind(this)}
+              aria-label="component form tabs"
+            >
+              {this.tabs.map((tab) => {
+                if (
+                  this.tabs[currentTabIndex] !== tab &&
+                  ((tab === Configurations && (errors.preInjectedFiles || errors.env || errors.command)) ||
+                    (tab === NetworkingTab && errors.ports) ||
+                    (tab === DisksTab && errors.volumes) ||
+                    (tab === HealthTab && (errors.livenessProbe || errors.readinessProbe)) ||
+                    (tab === Scheduling && (errors.cpuLimit || errors.memoryLimit || errors.nodeSelectorLabels)))
+                ) {
+                  return <Tab key={tab} label={tab} className={classes.hasError} />;
+                }
+
+                return <Tab key={tab} label={tab} tutorial-anchor-id={tab} />;
+              })}
+            </Tabs>
+          );
+        }}
+      </FormSpy>
     );
   }
 
-  private renderMain() {
-    const { initialValues } = this.props;
-    let isEdit = false;
-    // @ts-ignore
-    if (initialValues && initialValues!.get("name")) {
-      isEdit = true;
-    }
-
+  private renderMain(isEdit: boolean) {
     return (
       <Grid container spacing={2}>
         <Grid item xs={6}>
           <Field
-            component={KRenderDebounceTextField}
-            autoFocus={true}
+            autoFocus
+            component={FinalTextField}
+            id="component-name"
             name="name"
             label="Name"
-            margin
-            validate={nameValidators}
+            validate={ValidatorIsDNS123Label}
+            parse={trimParse}
             disabled={isEdit}
             helperText={isEdit ? "Name can't be changed." : sc.NAME_RULE}
           />
         </Grid>
         <Grid item xs={6}>
           <Field
-            component={KRenderDebounceTextField}
+            component={FinalTextField}
+            id="component-image"
             name="image"
+            spellCheck={false}
             label="Image"
+            parse={trimParse}
             placeholder={sc.IMAGE_PLACEHOLDER}
-            margin
             validate={ValidatorRequired}
             helperText={sc.IMAGE_INPUT_HELPER}
           />
         </Grid>
 
         <Grid item xs={6}>
-          <Field
-            name="workloadType"
-            component={RenderSelectField}
-            label="Type"
-            validate={ValidatorRequired}
-            disabled={isEdit}
-            options={[
-              makeSelectOption(workloadTypeServer, "Service Component", sc.COMPONENT_TYPE_SERVICE_OPTION),
-              makeSelectOption(workloadTypeCronjob, "CronJob", sc.COMPONENT_TYPE_CRONJOB_OPTION),
-              makeSelectOption(workloadTypeDaemonSet, "DaemonSet", sc.COMPONENT_TYPE_DAEMON_OPTION),
-              makeSelectOption(workloadTypeStatefulSet, "StatefulSet", sc.COMPONENT_TYPE_STATEFUL_SET_OPTION),
-            ]}
-          />
+          <FormSpy subscription={{ values: true }}>
+            {({ values }: FormSpyRenderProps<ComponentLike>) => {
+              let hasVolumes = false;
+              if (values.volumes && values.volumes.length > 0) {
+                hasVolumes = true;
+              }
+
+              return (
+                <Field
+                  name="workloadType"
+                  component={FinalSelectField}
+                  label="Type"
+                  disabled={isEdit || hasVolumes}
+                  options={[
+                    makeSelectOption(workloadTypeServer, "Service Component", sc.COMPONENT_TYPE_SERVICE_OPTION),
+                    makeSelectOption(workloadTypeCronjob, "CronJob", sc.COMPONENT_TYPE_CRONJOB_OPTION),
+                    makeSelectOption(workloadTypeDaemonSet, "DaemonSet", sc.COMPONENT_TYPE_DAEMON_OPTION),
+                    makeSelectOption(workloadTypeStatefulSet, "StatefulSet", sc.COMPONENT_TYPE_STATEFUL_SET_OPTION),
+                  ]}
+                  helperText={!isEdit && hasVolumes ? "Type can't be changed after created disks" : ""}
+                />
+              );
+            }}
+          </FormSpy>
         </Grid>
-        <Grid item xs={6}>
-          {this.renderReplicasOrSchedule()}
-        </Grid>
-        {this.renderPrivateRegistryAlert()}
+
+        <FormSpy subscription={{ values: true }}>
+          {({ values }: FormSpyRenderProps<ComponentLike>) => {
+            return (
+              <>
+                <Grid item xs={6}>
+                  {this.renderReplicasOrSchedule(values.workloadType)}
+                </Grid>
+                {this.renderPrivateRegistryAlert(values.image)}
+              </>
+            );
+          }}
+        </FormSpy>
       </Grid>
     );
   }
@@ -912,13 +762,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       return false;
     }
 
-    return !registries.find((r) => r.get("host").includes(parts[0]));
+    return !registries.find((r) => r.host && r.host.includes(parts[0]));
   };
 
-  private renderPrivateRegistryAlert = () => {
-    const { fieldValues } = this.props;
-    const image = fieldValues.get("image");
-
+  private renderPrivateRegistryAlert = (image: string) => {
     if (!image || !this.isUnknownPrivateRegistry(image)) {
       return null;
     }
@@ -946,84 +793,67 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderDeployButton() {
-    const { classes, handleSubmit, isSubmittingApplicationComponent, initialValues } = this.props;
-
-    // @ts-ignore
-    const isEdit = initialValues && initialValues!.get("name");
+  private renderDeployButton(isEdit: boolean) {
+    const { classes, isSubmittingApplicationComponent } = this.props;
 
     return (
       <Grid container spacing={2}>
         <Grid item xs={6} sm={6} md={6}>
-          <CustomizedButton
+          <SubmitButton
             pending={isSubmittingApplicationComponent}
             disabled={isSubmittingApplicationComponent}
-            variant="contained"
-            color="primary"
             className={classes.deployBtn}
-            onClick={handleSubmit}
             id="add-component-submit-button"
           >
             {isEdit ? "Update" : "Deploy"} Component
-          </CustomizedButton>
-
-          {/* <Button variant="contained" color="primary" type="submit" className={classes.deployBtn}>
-            Deploy
-          </Button> */}
+          </SubmitButton>
         </Grid>
       </Grid>
     );
   }
 
-  public renderDirtyPrompt = () => {
-    const { dirty, submitSucceeded } = this.props;
-    return <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />;
-  };
-
   public render() {
-    const { handleSubmit, classes } = this.props;
+    const { classes, _initialValues, onSubmit, form, tutorialState } = this.props;
+    const isEdit = !!_initialValues.name;
     return (
-      <form onSubmit={handleSubmit} className={classes.root}>
-        {this.renderDirtyPrompt()}
-        <KPanel
-          content={
-            <Box p={2} tutorial-anchor-id="component-from-basic">
-              {this.renderMain()}
+      <Form
+        // debug={process.env.REACT_APP_DEBUG === "true" ? console.log : undefined}
+        initialValues={_initialValues}
+        onSubmit={onSubmit}
+        subscription={{ submitting: true, pristine: true, dirty: true }}
+        keepDirtyOnReinitialize
+        validate={(values) => finalValidateOrNotBlockByTutorial(values, tutorialState, form)}
+        mutators={{
+          ...arrayMutators,
+        }}
+        render={({ handleSubmit }: RenderProps) => (
+          <form onSubmit={handleSubmit} className={classes.root} id="component-form">
+            <FormTutorialHelper form={form} />
+            <Prompt />
+            <KPanel
+              content={
+                <Box p={2} tutorial-anchor-id="component-from-basic">
+                  {this.renderMain(isEdit)}
+                </Box>
+              }
+            />
+            <Box mt={2}>
+              <KPanel
+                content={
+                  <>
+                    {this.renderTabs()}
+                    <Box p={2}>{this.renderTabDetails(isEdit)}</Box>
+                  </>
+                }
+              />
             </Box>
-          }
-        />
-        <Box mt={2}>
-          <KPanel
-            content={
-              <>
-                {this.renderTabs()}
-                <Box p={2}>{this.renderTabDetails()}</Box>
-              </>
-            }
-          />
-        </Box>
-        {process.env.REACT_APP_DEBUG === "true" ? (
-          <pre style={{ maxWidth: 1500, background: "#eee" }}>
-            {JSON.stringify(
-              (this.props.fieldValues as any).delete("metrics").delete("pods").delete("services"),
-              undefined,
-              2,
-            )}
-          </pre>
-        ) : null}
-        {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
-        {this.renderDeployButton()}
-      </form>
+            <FormDataPreview />
+            {this.renderDeployButton(isEdit)}
+          </form>
+        )}
+      />
     );
   }
 }
 
-const form = reduxForm<ComponentLike, RawProps & ConnectedProps>({
-  form: COMPONENT_FORM_ID,
-  enableReinitialize: true,
-  validate: formValidateOrNotBlockByTutorial,
-  shouldError: shouldError,
-  onSubmitFail: console.log,
-})(withStyles(styles)(withRouter(ComponentLikeFormRaw)));
-
-export const ComponentLikeForm = connect(mapStateToProps)(form);
+export const ComponentLikeForm = connect(mapStateToProps)(withStyles(styles)(withRouter(ComponentLikeFormRaw)));

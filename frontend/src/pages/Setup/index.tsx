@@ -1,26 +1,35 @@
-import React from "react";
-import { BasePage } from "pages/BasePage";
 import Box from "@material-ui/core/Box";
-import Stepper from "@material-ui/core/Stepper";
 import Step from "@material-ui/core/Step";
-import StepLabel from "@material-ui/core/StepLabel";
 import StepContent from "@material-ui/core/StepContent";
-import { KPanel } from "widgets/KPanel";
-import { Body, H5 } from "widgets/Label";
-import { CustomizedButton, DangerButton } from "widgets/Button";
+import StepLabel from "@material-ui/core/StepLabel";
+import Stepper from "@material-ui/core/Stepper";
+import { Alert } from "@material-ui/lab";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { api } from "api";
+import copy from "copy-to-clipboard";
+import { withCerts, WithCertsProps } from "hoc/withCerts";
 import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
+import { withComponents, WithComponentsProps } from "hoc/withComponents";
+import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
+import { BasePage } from "pages/BasePage";
+import React from "react";
+import { Field, Form, FormRenderProps, FormSpy } from "react-final-form";
+import { InitializeClusterResponse } from "types/cluster";
 import { PendingBadge, SuccessBadge } from "widgets/Badge";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
+import { CustomizedButton, DangerButton, SubmitButton } from "widgets/Button";
+import { CopyIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { KPanel } from "widgets/KPanel";
+import { Body, H5 } from "widgets/Label";
+import { KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
-import { setErrorNotificationAction } from "actions/notification";
-import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
-import { withCerts, WithCertsProps } from "hoc/withCerts";
-import { withComponents, WithComponentsProps } from "hoc/withComponents";
-import { InitializeClusterResponse } from "types/cluster";
-import { Form, Formik } from "formik";
-import TextField from "@material-ui/core/TextField";
-import { Alert } from "@material-ui/lab";
+import { FinalTextField } from "../../forms//Final/textfield";
+
+interface SetupFormType {
+  domain: string;
+}
+type RenderProps = FormRenderProps<SetupFormType>;
 
 interface Props extends WithClusterInfoProps, WithRoutesDataProps, WithCertsProps, WithComponentsProps {}
 
@@ -60,7 +69,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
 
     let errors: { domain?: string } = {};
 
-    if (!values.domain) {
+    if (!values.domain || values?.domain.length === 0) {
       errors.domain = "Required";
       return errors;
     }
@@ -68,7 +77,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
     if (!ignoreDNSResult) {
       try {
         const result = await api.resolveDomain(values.domain, "A");
-        if (result.length <= 0 || result.indexOf(clusterInfo.get("ingressIP")) < 0) {
+        if (result.length <= 0 || result.indexOf(clusterInfo.ingressIP) < 0) {
           this.setState({ showDNSWarning: true });
           errors.domain = dnsCheckError;
           return errors;
@@ -86,14 +95,17 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
 
   private submit = async (values: { domain: string }) => {
     const { dispatch } = this.props;
-
+    const errors = await this.validate(values);
+    if (errors.domain) {
+      return errors;
+    }
     try {
       const res = await api.initializeCluster(values.domain);
       this.setState({
         activeStep: 1,
 
         // If it's not production. We don't need to wait cert to be ready
-        kalmCertReady: !res.get("clusterInfo").get("isProduction"),
+        kalmCertReady: !res.clusterInfo.isProduction,
         initializeResponse: res,
       });
     } catch (e) {
@@ -130,8 +142,8 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
   }
 
   private getKalmCertReady = (props: Props): boolean => {
-    const cert = props.certs.find((x) => x.get("name") === "kalm-cert");
-    return !!cert && cert.get("ready") === "True";
+    const cert = props.certs.find((x) => x.name === "kalm-cert");
+    return !!cert && cert.ready === "True";
   };
 
   private isKalmCertChangedToReady = (prevProps: Props) => {
@@ -141,14 +153,14 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
   private getKalmSystemComponentReady = (props: Props, componentName: string): boolean => {
     const { componentsMap } = props;
 
-    const components = componentsMap.get("kalm-system");
-    if (!components || components.size === 0) return false;
+    const components = componentsMap["kalm-system"];
+    if (!components || components.length === 0) return false;
 
-    const component = components.find((x) => x.get("name") === componentName);
+    const component = components.find((x) => x.name === componentName);
 
     if (!component) return false;
 
-    return !!component.get("pods").find((x) => x.get("phase") === "Running" && x.get("status") === "Running");
+    return !!component.pods.find((x) => x.phase === "Running" && x.status === "Running");
   };
 
   private isKalmDexChangedToReady = (prevProps: Props) => {
@@ -163,7 +175,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
   };
 
   private getKalmRouteReady = (props: Props): boolean => {
-    return !!props.httpRoutes.find((x) => x.get("name") === "kalm-route");
+    return !!props.httpRoutes.find((x) => x.name === "kalm-route");
   };
 
   private isKalmRouteChangedToReady = (prevProps: Props) => {
@@ -179,82 +191,97 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
         cluster load balancer IP{" "}
         <Box display="inline-block" style={{ verticalAlign: "bottom" }}>
           <H5>
-            <strong>{clusterInfo.get("ingressIP")}</strong>
+            <strong>{clusterInfo.ingressIP}</strong>
           </H5>
         </Box>
         . This domain name will be your address to access the kalm dashboard in the future.
         <Box mt={2}>
-          <Formik
+          <Form
+            debug={process.env.REACT_APP_DEBUG === "true" ? console.log : undefined}
             initialValues={initialValues}
-            validate={this.validate}
-            validateOnChange={false}
-            validateOnBlur={false}
+            subscription={{ submitting: true, pristine: true, errors: true, touched: true }}
             onSubmit={this.submit}
-            enableReinitialize={false}
-            handleReset={console.log}
-          >
-            {({ values, errors, touched, handleChange, handleBlur, isSubmitting, submitForm }) => (
-              <Form>
-                <TextField
-                  key={"abc"}
-                  fullWidth
-                  error={!!errors.domain && errors.domain !== dnsCheckError && touched.domain}
-                  label="Domain"
-                  variant="outlined"
-                  size="small"
-                  name="domain"
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  value={values.domain}
-                  InputLabelProps={{ shrink: true }}
-                  placeholder="e.g. mydomain.org kalm.mydomain.com"
-                  helperText={errors.domain && errors.domain !== dnsCheckError && touched.domain && errors.domain}
-                />
-
-                {showDNSWarning && (
-                  <Box mt={2}>
-                    <Alert severity="warning">
-                      DNS check failed. After the DNS record is modified, it takes some time to take effect. <br />
-                      If your load balancer is behind another proxy (such as cloudflare), your DNS records will not
-                      resolve to the address of the load balancer. In this case, you can ignore this warning and
-                      continue.
-                    </Alert>
-                  </Box>
-                )}
-
+            keepDirtyOnReinitialize={true}
+            render={({ handleSubmit, submitting }: RenderProps) => (
+              <form onSubmit={handleSubmit}>
+                <FormSpy subscription={{ values: true, submitErrors: true, errors: true, touched: true }}>
+                  {({ submitErrors }) => {
+                    return (
+                      <Field
+                        name="domain"
+                        label="Domain"
+                        error={submitErrors?.domain && submitErrors?.domain !== dnsCheckError ? true : false}
+                        size="small"
+                        variant="outlined"
+                        fullWidth
+                        placeholder="e.g. mydomain.org kalm.mydomain.com"
+                        component={FinalTextField}
+                        helperText={
+                          submitErrors?.domain && submitErrors?.domain !== dnsCheckError ? submitErrors.domain : ""
+                        }
+                      />
+                    );
+                  }}
+                </FormSpy>
+                <FormSpy subscription={{ values: true, errors: true, touched: true }}>
+                  {(props) => {
+                    return (
+                      showDNSWarning && (
+                        <Box mt={2}>
+                          <Alert severity="warning">
+                            DNS check failed. After the DNS record is modified, it takes some time to take effect.{" "}
+                            <br />
+                            If your load balancer is behind another proxy (such as cloudflare), your DNS records will
+                            not resolve to the address of the load balancer. In this case, you can ignore this warning
+                            and continue.
+                          </Alert>
+                        </Box>
+                      )
+                    );
+                  }}
+                </FormSpy>
                 <Box mt={2}>
                   <Box display={"inline-block"} mr={2}>
-                    <CustomizedButton
-                      variant="contained"
-                      color="primary"
-                      type="submit"
-                      disabled={isSubmitting}
-                      pending={isSubmitting}
+                    <SubmitButton
+                      onClick={async () => {
+                        await this.setState({ ignoreDNSResult: false });
+                        handleSubmit();
+                      }}
                     >
                       Check and continue
-                    </CustomizedButton>
+                    </SubmitButton>
                   </Box>
-
                   {showDNSWarning && (
                     <Box display={"inline-block"} mr={2}>
                       <CustomizedButton
                         variant="contained"
                         color="default"
-                        disabled={isSubmitting}
-                        pending={isSubmitting}
+                        disabled={submitting}
+                        pending={submitting}
                         onClick={async () => {
                           await this.setState({ ignoreDNSResult: true });
-                          submitForm();
+                          handleSubmit();
                         }}
                       >
                         Continue anyway
                       </CustomizedButton>
                     </Box>
                   )}
+                  {process.env.REACT_APP_DEBUG === "true" ? (
+                    <FormSpy subscription={{ values: true }}>
+                      {({ values }: { values: SetupFormType }) => {
+                        return (
+                          <pre style={{ maxWidth: 1500, background: "#eee" }}>
+                            {JSON.stringify(values, undefined, 2)}
+                          </pre>
+                        );
+                      }}
+                    </FormSpy>
+                  ) : null}
                 </Box>
-              </Form>
+              </form>
             )}
-          </Formik>
+          />
         </Box>
       </Box>
     );
@@ -315,13 +342,13 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
       return null;
     }
 
-    const temporaryAdmin = initializeResponse!.get("temporaryAdmin");
-    const clusterInfo = initializeResponse!.get("clusterInfo");
+    const temporaryAdmin = initializeResponse!.temporaryAdmin;
+    const clusterInfo = initializeResponse!.clusterInfo;
 
-    const email = temporaryAdmin.get("email");
-    const password = temporaryAdmin.get("password");
-    const scheme = clusterInfo.get("isProduction") ? "https" : "http";
-    const domain = initializeResponse!.get("sso").get("domain");
+    const email = temporaryAdmin.email;
+    const password = temporaryAdmin.password;
+    const scheme = clusterInfo.isProduction ? "https" : "http";
+    const domain = initializeResponse!.sso.domain;
 
     const url = `${scheme}://${domain}`;
 
@@ -355,9 +382,15 @@ Password: ${password}`}</pre>
       dispatch(setErrorNotificationAction(e.toString()));
     }
   };
+  private canReset = () => {
+    if (window.location.hostname === "localhost") {
+      return true;
+    }
+    return false;
+  };
 
   public render() {
-    const { clusterInfo, isClusterInfoLoaded, isClusterInfoLoading } = this.props;
+    const { clusterInfo, isClusterInfoLoaded, isClusterInfoLoading, dispatch } = this.props;
 
     if (!isClusterInfoLoaded && isClusterInfoLoading) {
       return (
@@ -367,18 +400,73 @@ Password: ${password}`}</pre>
       );
     }
 
-    if (!clusterInfo.get("canBeInitialized")) {
+    if (!clusterInfo.canBeInitialized) {
+      if (true) {
+        //!this.canReset()
+        const cmd = `kubectl port-forward -n kalm-system $(kubectl get pod -n kalm-system -l app=kalm -o=jsonpath="{.items[0].metadata.name}" ) 3010:3010`;
+
+        return (
+          <BasePage>
+            <Box p={2}>
+              <Alert severity="error">
+                You cannot reconfigure Kalm in domain access mode
+                <Box pt={1}>
+                  please run following command in terminal and open{" "}
+                  <KMLink href="http://localhost:3010/" rel="noopener noreferrer" target="_blank">
+                    http://localhost:3010/
+                  </KMLink>{" "}
+                  to continue setup.
+                </Box>
+              </Alert>
+            </Box>
+            <Box pl={3} pt={1}>
+              <pre>
+                {cmd}
+                <Box ml={2} mt={0} display="inline-block">
+                  <IconButtonWithTooltip
+                    tooltipTitle="Copy"
+                    size="small"
+                    aria-label="copy"
+                    onClick={() => {
+                      copy(cmd);
+                      dispatch(setSuccessNotificationAction("Copied successful!"));
+                    }}
+                  >
+                    <CopyIcon fontSize="small" />
+                  </IconButtonWithTooltip>
+                </Box>
+              </pre>
+            </Box>
+          </BasePage>
+        );
+      }
       return (
         <Box p={2}>
           Your cluster has been initialized already.
           <Box mt={2}>
-            If your cluster is not initialized properly, you can reset the initialization process. Note that your kalm
-            Single Sign-on configuration, kalm's own routing, and kalm's own certificate will be deleted. The remaining
-            applications will not be affected in any way.
-          </Box>{" "}
+            If you want to reset kalm, If your cluster is not initialized properly, you can reset the initialization
+            process.
+            <Box pt={2}>
+              <Alert severity="warning">
+                Note that reconfigurion will affect your Kalm's following configuration:
+                <Box pl={2} pt={2}>
+                  Single Sign-on will be reset
+                </Box>
+                <Box pl={2} pt={0}>
+                  Kalm's instance's domain may be changed
+                </Box>
+                <Box pl={2} pt={0}>
+                  Current Kalm's certificate will be delete
+                </Box>
+                <Box pl={2} pt={2}>
+                  All applications will safe in any way.
+                </Box>
+              </Alert>
+            </Box>
+          </Box>
           <Box mt={2}>
             <DangerButton onClick={this.reset}>Re-configure</DangerButton>
-          </Box>{" "}
+          </Box>
         </Box>
       );
     }

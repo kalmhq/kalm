@@ -10,7 +10,7 @@ we support 2 dependencies for now:
 You have to install them manually now:
 
 ```bash
-# intall kong-controller, ref: https://github.com/Kong/kubernetes-ingress-controller#get-started
+# install kong-controller, ref: https://github.com/Kong/kubernetes-ingress-controller#get-started
 kubectl apply -f https://bit.ly/k4k8s
 
 # install cert-manager, ref: https://cert-manager.io/docs/installation/kubernetes/#installing-with-regular-manifests

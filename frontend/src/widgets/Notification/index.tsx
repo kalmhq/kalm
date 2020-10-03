@@ -6,19 +6,19 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { SNACKBAR_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "layout/Constants";
 
 const getMessageFromState = (state: RootState) => ({
-  message: state.get("notification"),
+  message: state.notification,
 });
 
 const NotificationComponent = connect(getMessageFromState)(({ message }: ReturnType<typeof getMessageFromState>) => {
   const { enqueueSnackbar } = useSnackbar();
 
   React.useEffect(() => {
-    if (!message.get("message")) {
+    if (!message.message) {
       return;
     }
 
-    enqueueSnackbar(message.get("message"), {
-      variant: message.get("variant"),
+    enqueueSnackbar(message.message, {
+      variant: message.variant,
     });
   }, [enqueueSnackbar, message]);
 
@@ -26,7 +26,7 @@ const NotificationComponent = connect(getMessageFromState)(({ message }: ReturnT
 });
 
 const mapStateToProps = (state: RootState) => {
-  return { isTutorialDrawerOpen: state.get("tutorial").get("drawerOpen") };
+  return { isTutorialDrawerOpen: state.tutorial.drawerOpen };
 };
 
 const styles = (theme: Theme) =>

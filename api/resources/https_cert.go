@@ -1,10 +1,12 @@
 package resources
 
 import (
+	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
+	"golang.org/x/crypto/ssh"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,16 +27,17 @@ type HttpsCert struct {
 }
 
 type HttpsCertResp struct {
-	HttpsCert                 `json:",inline"`
-	Ready                     string `json:"ready"`
-	Reason                    string `json:"reason"`
-	IsSignedByPublicTrustedCA bool   `json:"isSignedByTrustedCA,omitempty"`
-	ExpireTimestamp           int64  `json:"expireTimestamp,omitempty"`
+	HttpsCert                         `json:",inline"`
+	Ready                             string            `json:"ready"`
+	Reason                            string            `json:"reason"`
+	IsSignedByPublicTrustedCA         bool              `json:"isSignedByTrustedCA,omitempty"`
+	ExpireTimestamp                   int64             `json:"expireTimestamp,omitempty"`
+	WildcardCertDNSChallengeDomainMap map[string]string `json:"wildcardCertDNSChallengeDomainMap,omitempty"`
 }
 
 var ReasonForNoReadyConditions = "no feedback on cert status yet"
 
-func BuildHttpsCertResponse(httpsCert v1alpha1.HttpsCert) *HttpsCertResp {
+func BuildHttpsCertResponse(httpsCert *v1alpha1.HttpsCert) *HttpsCertResp {
 	var readyCond *v1alpha1.HttpsCertCondition
 	for i := range httpsCert.Status.Conditions {
 		cond := httpsCert.Status.Conditions[i]
@@ -80,18 +83,30 @@ func BuildHttpsCertResponse(httpsCert v1alpha1.HttpsCert) *HttpsCertResp {
 		//todo show content of cert?
 	}
 
+	resp.WildcardCertDNSChallengeDomainMap = httpsCert.Status.WildcardCertDNSChallengeDomainMap
+
 	return &resp
 }
 
-func (builder *Builder) GetHttpsCerts() ([]HttpsCertResp, error) {
+func (resourceManager *ResourceManager) GetHttpsCert(name string) (*HttpsCertResp, error) {
+	var fetched v1alpha1.HttpsCert
+
+	if err := resourceManager.Get("", name, &fetched); err != nil {
+		return nil, err
+	}
+
+	return BuildHttpsCertResponse(&fetched), nil
+}
+
+func (resourceManager *ResourceManager) GetHttpsCerts() ([]HttpsCertResp, error) {
 	var fetched v1alpha1.HttpsCertList
-	if err := builder.List(&fetched); err != nil {
+	if err := resourceManager.List(&fetched); err != nil {
 		return nil, err
 	}
 
 	var httpsCerts []HttpsCertResp
-	for _, ele := range fetched.Items {
-		cur := BuildHttpsCertResponse(ele)
+	for _, item := range fetched.Items {
+		cur := BuildHttpsCertResponse(&item)
 
 		httpsCerts = append(httpsCerts, *cur)
 	}
@@ -99,28 +114,25 @@ func (builder *Builder) GetHttpsCerts() ([]HttpsCertResp, error) {
 	return httpsCerts, nil
 }
 
-func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert, error) {
+func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCertResp, error) {
+
 	// by default, cert use our default http01Issuer
 	if cert.HttpsCertIssuer == "" {
-		cert.HttpsCertIssuer = controllers.DefaultHTTP01IssuerName
+		cert.HttpsCertIssuer = v1alpha1.DefaultHTTP01IssuerName
 	}
 
 	if cert.Name == "" {
-		cnt := 0
 		maxCnt := 5
-		for cnt < maxCnt {
+		for cnt := 0; cnt < maxCnt; cnt++ {
 			name := autoGenCertName(cert)
 
 			// check if exist
 			existCert := v1alpha1.HttpsCert{}
-			err := builder.Get("", name, &existCert)
+			err := resourceManager.Get("", name, &existCert)
 			if errors.IsNotFound(err) {
 				cert.Name = name
 				break
 			}
-
-			// otherwise retry
-			cnt += 1
 		}
 	}
 
@@ -139,41 +151,36 @@ func (builder *Builder) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 		},
 	}
 
-	err := builder.Create(&res)
+	err := resourceManager.Create(&res)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return cert, nil
+	return BuildHttpsCertResponse(&res), nil
 }
 
 func autoGenCertName(cert *HttpsCert) string {
 	var prefix string
-	if len(cert.Domains) >= 1 {
-		prefix = cert.Domains[0]
-	} else {
-		prefix = "cert"
+
+	switch cert.HttpsCertIssuer {
+	case v1alpha1.DefaultDNS01IssuerName:
+		prefix = "dns01-"
+	case v1alpha1.DefaultHTTP01IssuerName:
+		prefix = "http01-"
 	}
 
-	name := fmt.Sprintf("%s-%s", prefix, rand.String(6))
-	name = cleanToResName(name)
+	if cert.IsSelfManaged {
+		prefix = "uploaded-"
+	}
 
-	return name
+	return fmt.Sprintf("%s%s", prefix, rand.String(8))
 }
 
-func cleanToResName(s string) string {
-	s = strings.ToLower(s)
-
-	s = strings.ReplaceAll(s, "*", "wildcard")
-	s = strings.ReplaceAll(s, ".", "-")
-	return s
-}
-
-func (builder *Builder) UpdateAutoManagedCert(cert *HttpsCert) (*HttpsCert, error) {
+func (resourceManager *ResourceManager) UpdateAutoManagedCert(cert *HttpsCert) (*HttpsCert, error) {
 	var res v1alpha1.HttpsCert
 
-	err := builder.Get("", cert.Name, &res)
+	err := resourceManager.Get("", cert.Name, &res)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +188,7 @@ func (builder *Builder) UpdateAutoManagedCert(cert *HttpsCert) (*HttpsCert, erro
 	res.Spec.Domains = cert.Domains
 	res.Spec.HttpsCertIssuer = cert.HttpsCertIssuer
 
-	err = builder.Update(&res)
+	err = resourceManager.Update(&res)
 	if err != nil {
 		return nil, err
 	}
@@ -189,11 +196,17 @@ func (builder *Builder) UpdateAutoManagedCert(cert *HttpsCert) (*HttpsCert, erro
 	return cert, nil
 }
 
-func (builder *Builder) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, error) {
-	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
+func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCertResp, error) {
+	x509Cert, _, err := controllers.ParseCert(cert.SelfManagedCertContent)
+
 	if err != nil {
-		builder.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
+		resourceManager.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
 		return nil, err
+	}
+
+	domains := getDomainsInCert(x509Cert)
+	if len(domains) <= 0 {
+		return nil, fmt.Errorf("fail to find domain name in cert")
 	}
 
 	var err1 error
@@ -204,7 +217,7 @@ func (builder *Builder) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, erro
 
 		// update sec
 		var sec coreV1.Secret
-		if err := builder.Get(nsIstioSystem, getSecNameForSelfManagedCert(cert), &sec); err != nil {
+		if err := resourceManager.Get(nsIstioSystem, cert.Name, &sec); err != nil {
 			err1 = err
 			return
 		}
@@ -217,9 +230,10 @@ func (builder *Builder) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, erro
 		sec.Data["tls.crt"] = []byte(cert.SelfManagedCertContent)
 		sec.Data["tls.key"] = []byte(cert.SelfManagedCertPrvKey)
 
-		err1 = builder.Update(&sec)
+		err1 = resourceManager.Update(&sec)
 	}()
 
+	var res v1alpha1.HttpsCert
 	var err2 error
 	wg2 := sync.WaitGroup{}
 	wg2.Add(1)
@@ -227,18 +241,17 @@ func (builder *Builder) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, erro
 		defer wg2.Done()
 
 		// update domains
-		var res v1alpha1.HttpsCert
-		if err2 = builder.Get("", cert.Name, &res); err2 != nil {
+		if err2 = resourceManager.Get("", cert.Name, &res); err2 != nil {
 			return
 		}
 
-		if strings.Join(res.Spec.Domains, ",") == strings.Join(x509Cert.DNSNames, ",") {
+		if strings.Join(res.Spec.Domains, ",") == strings.Join(domains, ",") {
 			return
 		}
 
 		// ensure domains updated
 		res.Spec.Domains = x509Cert.DNSNames
-		err2 = builder.Update(&res)
+		err2 = resourceManager.Update(&res)
 	}()
 
 	wg1.Wait()
@@ -250,32 +263,53 @@ func (builder *Builder) UpdateSelfManagedCert(cert *HttpsCert) (*HttpsCert, erro
 		return nil, err2
 	}
 
-	return cert, nil
+	return BuildHttpsCertResponse(&res), nil
 }
 
-func (builder *Builder) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCert, error) {
-	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
+func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCertResp, error) {
+	x509Cert, _, err := controllers.ParseCert(cert.SelfManagedCertContent)
+
+	if cert.Name == "" {
+		cert.Name = autoGenCertName(cert)
+	}
+
 	if err != nil {
-		builder.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
+		resourceManager.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
 		return nil, err
 	}
 
-	var domains []string
-	if len(x509Cert.DNSNames) > 0 {
-		domains = x509Cert.DNSNames
-	} else if x509Cert.Subject.CommonName != "" {
-		domains = []string{x509Cert.Subject.CommonName}
-	} else {
+	domains := getDomainsInCert(x509Cert)
+
+	if len(domains) <= 0 {
 		return nil, fmt.Errorf("fail to find domain name in cert")
 	}
 
-	ok := checkPrivateKey(x509Cert, cert.SelfManagedCertPrvKey)
+	pki, err := ssh.ParseRawPrivateKey([]byte(cert.SelfManagedCertPrvKey))
+
+	if err != nil {
+		return nil, err
+	}
+
+	rsaPrivateKey, ok := pki.(*rsa.PrivateKey)
+
 	if !ok {
-		return nil, fmt.Errorf("privateKey and cert not match")
+		return nil, fmt.Errorf("Only support RSA algorithm in private key")
+	}
+
+	rsaPublicKey, ok := x509Cert.PublicKey.(*rsa.PublicKey)
+
+	if !ok {
+		return nil, fmt.Errorf("Only support RSA algorithm in public key")
+	}
+
+	if rsaPrivateKey.PublicKey.N.Cmp(rsaPublicKey.N) != 0 ||
+		rsaPrivateKey.PublicKey.E != rsaPublicKey.E {
+		return nil, fmt.Errorf("Private key and cert not match")
 	}
 
 	// create secret in istio-system
-	certSecretName, err := builder.createCertSecretInNSIstioSystem(cert)
+	certSecretName, err := resourceManager.createCertSecretInNSIstioSystem(cert)
+
 	if err != nil {
 		return nil, err
 	}
@@ -291,56 +325,39 @@ func (builder *Builder) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCert,
 		},
 	}
 
-	err = builder.Create(&res)
+	err = resourceManager.Create(&res)
+
 	if err != nil {
 		return nil, err
 	}
 
-	cert.Domains = x509Cert.DNSNames
-
-	return cert, nil
+	return BuildHttpsCertResponse(&res), nil
 }
 
-func checkPrivateKey(cert *x509.Certificate, prvKey string) bool {
-	//todo check if cert & prvKey matches
-	return true
+func getDomainsInCert(x509Cert *x509.Certificate) []string {
+	var domains []string
+	if len(x509Cert.DNSNames) > 0 {
+		domains = x509Cert.DNSNames
+	} else if x509Cert.Subject.CommonName != "" {
+		domains = []string{x509Cert.Subject.CommonName}
+	}
+
+	return domains
 }
 
-//func parseCert(certPEM string) (*x509.Certificate, error) {
-//	block, _ := pem.Decode([]byte(certPEM))
-//	if block == nil {
-//		panic("failed to parse certificate PEM")
-//	}
-//	cert, err := x509.ParseCertificate(block.Bytes)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	return cert, nil
-//}
-
-func (builder *Builder) DeleteHttpsCert(name string) error {
-	return builder.Delete(&v1alpha1.HttpsCert{ObjectMeta: v1.ObjectMeta{Name: name}})
+func (resourceManager *ResourceManager) DeleteHttpsCert(name string) error {
+	return resourceManager.Delete(&v1alpha1.HttpsCert{ObjectMeta: v1.ObjectMeta{Name: name}})
 }
 
 const nsIstioSystem = "istio-system"
 
-func getSecNameForSelfManagedCert(cert *HttpsCert) string {
-	certSecName := "kalm-self-managed-" + cert.Name
-	return certSecName
-}
-
-func (builder *Builder) createCertSecretInNSIstioSystem(cert *HttpsCert) (string, error) {
-
-	certSecName := getSecNameForSelfManagedCert(cert)
-
+func (resourceManager *ResourceManager) createCertSecretInNSIstioSystem(cert *HttpsCert) (string, error) {
 	tlsCert := cert.SelfManagedCertContent
 	tlsKey := cert.SelfManagedCertPrvKey
 
 	certSec := coreV1.Secret{
 		ObjectMeta: v1.ObjectMeta{
-			//todo avoid conflict here
-			Name:      certSecName,
+			Name:      cert.Name,
 			Namespace: nsIstioSystem,
 		},
 		Data: map[string][]byte{
@@ -349,10 +366,10 @@ func (builder *Builder) createCertSecretInNSIstioSystem(cert *HttpsCert) (string
 		},
 	}
 
-	err := builder.Create(&certSec)
+	err := resourceManager.Create(&certSec)
 	if err != nil {
 		return "", err
 	}
 
-	return certSecName, nil
+	return cert.Name, nil
 }

@@ -28,15 +28,6 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - namespaces
-  - secrets
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
   - nodes
   verbs:
   - get
@@ -108,13 +99,6 @@ rules:
   - serviceaccounts
   verbs:
   - '*'
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
 - apiGroups:
   - ""
   resources:
@@ -196,6 +180,26 @@ rules:
 - apiGroups:
   - core.kalm.dev
   resources:
+  - acmeservers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - acmeservers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
   - applications
   verbs:
   - get
@@ -256,26 +260,6 @@ rules:
   - core.kalm.dev
   resources:
   - components/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - core.kalm.dev
-  resources:
-  - deploykeys
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - core.kalm.dev
-  resources:
-  - deploykeys/status
   verbs:
   - get
   - patch
@@ -523,19 +507,6 @@ rules:
   - clusterroles
   verbs:
   - '*'
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
-  - rolebindings
-  - roles
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
 - apiGroups:
   - security.istio.io
   resources:

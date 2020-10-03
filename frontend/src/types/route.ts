@@ -1,5 +1,3 @@
-import Immutable from "immutable";
-import { ImmutableMap } from "typings";
 import { ID } from "utils";
 
 export const LOAD_ROUTES_FULFILLED = "LOAD_ROUTES_FULFILLED";
@@ -18,69 +16,63 @@ export const DELETE_ROUTE_PENDING = "DELETE_ROUTE_PENDING";
 export const DELETE_ROUTE_FULFILLED = "DELETE_ROUTE_FULFILLED";
 export const DELETE_ROUTE_FAILED = "DELETE_ROUTE_FAILED";
 
-export const AllHttpMethods = Immutable.List<string>([
-  "GET",
-  "POST",
-  "PUT",
-  "PATCH",
-  "DELETE",
-  "HEAD",
-  "OPTIONS",
-  "CONNECT",
-  "TRACE",
-]);
+export const AllHttpMethods = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "CONNECT", "TRACE"];
 
-export type HttpRouteCondition = ImmutableMap<{
+export interface HttpRouteCondition {
   type: string;
   name: string;
   operator: string;
   value: string;
-}>;
+}
 
-export type HttpRouteDestination = ImmutableMap<{
+export interface HttpRouteDestination {
   host: string;
   weight: number;
-}>;
+}
 
-export type HttpRouteRetry = ImmutableMap<{
+export interface HttpRouteRetry {
   attempts: number;
   perTtyTimeoutSeconds: number;
-  retryOn: Immutable.List<string>;
-}>;
+  retryOn: string[];
+}
 
-export type HttpRouteMirror = ImmutableMap<{
+export interface HttpRouteMirror {
   destination: HttpRouteDestination;
   percentage: number;
-}>;
+}
 
-export type HttpRouteFault = ImmutableMap<{
+export interface HttpRouteFault {
   percentage: number;
   errorStatus: number;
-}>;
+}
 
-export type HttpRouteDelay = ImmutableMap<{
+export interface HttpRouteDelay {
   percentage: number;
   delaySeconds: number;
-}>;
+}
 
-export type HttpRouteCORS = ImmutableMap<{
-  allowOrigin: Immutable.List<string>;
-  allowMethods: Immutable.List<string>;
+export interface HttpRouteCORS {
+  allowOrigin: string[];
+  allowMethods: string[];
   allowCredentials: boolean;
-  allowHeaders: Immutable.List<string>;
+  allowHeaders: string[];
   maxAge: string;
-}>;
+}
 
-export interface HttpRouteContent {
+export const methodsModeAll = "all";
+export const methodsModeSpecific = "specific";
+export const httpMethods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT"];
+
+export interface HttpRoute {
   name: string;
   namespace: string;
-  hosts: Immutable.List<string>;
-  paths: Immutable.List<string>;
-  methods: Immutable.List<string>;
-  schemes: Immutable.List<string>;
+  hosts: string[];
+  paths: string[];
+  methods: string[];
+  schemes: string[];
   stripPath?: boolean;
-  conditions?: Immutable.List<HttpRouteCondition>;
-  destinations: Immutable.List<HttpRouteDestination>;
+  conditions?: HttpRouteCondition[];
+  destinations: HttpRouteDestination[];
   httpRedirectToHttps?: boolean;
   timeout?: number;
   retries?: HttpRouteRetry;
@@ -88,16 +80,11 @@ export interface HttpRouteContent {
   fault?: HttpRouteFault;
   delay?: HttpRouteDelay;
   cors?: HttpRouteCORS;
+  methodsMode?: string;
 }
 
-export type HttpRoute = ImmutableMap<HttpRouteContent>;
-
-export const methodsModeAll = "all";
-export const methodsModeSpecific = "specific";
-export const httpMethods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT"];
-
-export const newEmptyRouteForm = (): HttpRouteForm => {
-  return Immutable.fromJS({
+export const newEmptyRouteForm = (): HttpRoute => {
+  return {
     namespace: "kalm-system",
     name: "http-route-" + ID(),
     hosts: [],
@@ -114,19 +101,13 @@ export const newEmptyRouteForm = (): HttpRouteForm => {
       retryOn: ["gateway-error", "connect-failure", "refused-stream"],
     },
     methodsMode: methodsModeAll,
-  });
+  };
 };
-
-export interface HttpRouteFormContent extends HttpRouteContent {
-  methodsMode: string;
-}
-
-export type HttpRouteForm = ImmutableMap<HttpRouteFormContent>;
 
 export interface LoadHttpRoutesAction {
   type: typeof LOAD_ROUTES_FULFILLED;
   payload: {
-    httpRoutes: Immutable.List<HttpRoute>;
+    httpRoutes: HttpRoute[];
   };
 }
 

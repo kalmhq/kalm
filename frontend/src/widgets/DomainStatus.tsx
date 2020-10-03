@@ -10,18 +10,32 @@ import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 import copy from "copy-to-clipboard";
 import { setSuccessNotificationAction } from "actions/notification";
 import { regExpIp } from "forms/validator";
+import { Domain } from "types/domain";
+
+export const acmePrefix = "_acme-challenge.";
 
 const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
   const regResultIp = regExpIp.exec(ownProps.domain);
+  let domainStatus: Domain | undefined;
+  const domainState = state.domain;
+  for (let domainKey in domainState) {
+    if (domainKey === ownProps.domain) {
+      domainStatus = domainState[domainKey];
+    }
+  }
   return {
-    domainStatus: state.get("domain").find((status) => status.get("domain") === ownProps.domain),
-    ingressIP: state.get("cluster").get("info").get("ingressIP"),
+    domainStatus,
+    ingressIP: state.cluster.info.ingressIP,
     isIPDomain: regResultIp !== null,
+    acmeServer: state.certificates.acmeServer,
   };
 };
 
 interface OwnProps {
   domain: string;
+  cnameDomain?: string;
+  ipAddress?: string;
+  nsDomain?: string;
   mr?: number;
 }
 
@@ -41,24 +55,134 @@ class DomainStatus extends React.PureComponent<Props> {
       dispatch(loadDomainDNSInfo(domain));
     }
   }
+  private getIPAddress = () => {
+    const { ingressIP, ipAddress } = this.props;
+    if (ipAddress != null) {
+      return ipAddress;
+    } else {
+      return ingressIP;
+    }
+  };
+
+  private getIPTipsText = () => {
+    const { ingressIP, ipAddress } = this.props;
+    if (ipAddress != null) {
+      return (
+        <>
+          The IP address doesn’t match the IP address: <strong>{ipAddress}</strong>{" "}
+        </>
+      );
+    } else {
+      return (
+        <>
+          The IP address doesn’t match the Ingress IP address: <strong>{ingressIP}</strong>{" "}
+        </>
+      );
+    }
+  };
+
+  private getHelperText = (cnameDomain: string | undefined, cnameRecords: string): React.ReactElement => {
+    const { domain, nsDomain } = this.props;
+    if (cnameDomain !== undefined) {
+      if (cnameDomain.length > 0 && cnameRecords && cnameRecords.length > 0) {
+        return (
+          <>
+            <Box>
+              current CNAME record is <strong>{cnameRecords}</strong>
+            </Box>
+            please add an CNAME record with your dns provider, <strong>{domain}</strong> CNAME{" "}
+            <strong>{cnameDomain}</strong>{" "}
+          </>
+        );
+      } else {
+        if (cnameDomain.length > 0) {
+          return (
+            <>
+              <Box>please add an CNAME record with your dns provider</Box>
+              <>
+                <strong>{domain}</strong> CNAME <strong>{cnameDomain}</strong>{" "}
+              </>
+            </>
+          );
+        } else {
+          return (
+            <>
+              Please configure the ACME DNS Server first, and then check the domain status after ACME DNS Server is
+              running.
+            </>
+          );
+        }
+      }
+    } else if (nsDomain !== undefined) {
+      return (
+        <>
+          <Box>please add an NS record with your dns provider</Box>
+          <>
+            <strong>
+              {domain} NS {nsDomain}.{" "}
+            </strong>
+          </>
+        </>
+      );
+    } else {
+      return (
+        <>
+          please add an A record with your dns provider, point to <strong>{this.getIPAddress()}</strong>{" "}
+        </>
+      );
+    }
+  };
+
+  private getError = (): boolean => {
+    const { domainStatus, cnameDomain, nsDomain, domain, ipAddress } = this.props;
+    const isLoaded = domainStatus?.isLoaded;
+    let isError = true;
+    try {
+      if (domainStatus) {
+        if (isLoaded && cnameDomain && domainStatus.cname) {
+          // console.log("cname check", domain, cnameDomain, domainStatus.cname);
+          isError = !(domainStatus.cname.indexOf(cnameDomain) > -1);
+        } else if (isLoaded && nsDomain && domainStatus.ns) {
+          // console.log("ns check", domain, nsDomain, domainStatus.ns);
+          isError = !domainStatus.ns.includes(nsDomain + ".");
+        } else if (isLoaded && domainStatus.aRecords && ipAddress) {
+          console.log("aRecords", domain, ipAddress, domainStatus.aRecords, this.getIPAddress());
+          isError = !domainStatus.aRecords.includes(this.getIPAddress());
+        }
+      }
+    } catch (error) {
+      // console.log("domain status component getError exception:", error);
+      isError = false;
+    }
+
+    return isError;
+  };
 
   private getIconAndBody = () => {
-    const { domainStatus, ingressIP, domain, dispatch, isIPDomain } = this.props;
+    const { domainStatus, domain, dispatch, isIPDomain, cnameDomain, acmeServer, nsDomain } = this.props;
+    const ip = this.getIPAddress();
     if (isIPDomain) {
       return {
-        icon: domain === ingressIP ? <CheckCircleIcon /> : <WarningIcon color="action" />,
+        icon:
+          domain === ip ? (
+            <CheckCircleIcon />
+          ) : domainStatus?.aRecords.includes(ip) ? (
+            <WarningIcon color="action" />
+          ) : (
+            <CheckCircleIcon />
+          ),
         body:
-          domain === ingressIP ? (
+          domain === ip ? (
             <Box p={2}>the domain is successfully configured!</Box>
           ) : (
             <Box p={2}>
-              The IP address doesn’t match the ingress IP address: <strong>{ingressIP}</strong>{" "}
+              {this.getIPTipsText()}
               <IconButtonWithTooltip
                 tooltipTitle="Copy"
                 aria-label="copy"
                 size="small"
                 onClick={() => {
-                  copy(ingressIP);
+                  copy(ip);
                   dispatch(setSuccessNotificationAction("Copied successful!"));
                 }}
               >
@@ -68,32 +192,45 @@ class DomainStatus extends React.PureComponent<Props> {
           ),
       };
     }
-    if (!domainStatus || !domainStatus?.get("cname")) {
+    if (!domainStatus || !domainStatus?.isLoaded) {
       return {
         icon: <CircularProgress size={24} style={{ padding: 2 }} />,
         body: <Box p={2}>checking domain status</Box>,
       };
     }
 
-    const aRecords = domainStatus?.get("aRecords");
-    const isError = (!aRecords || !aRecords.includes(ingressIP)) && domain !== ingressIP;
+    const isError = this.getError();
+
     if (isError) {
+      const cnameRecords = domainStatus?.cname;
+      let copyContent = "";
+      if (cnameRecords === "" && acmeServer === undefined) {
+      } else {
+        copyContent = cnameRecords !== undefined ? cnameDomain! : ip;
+      }
+
+      if (cnameDomain === undefined && nsDomain === undefined) {
+        copyContent = ip;
+      }
+
       return {
         icon: <WarningIcon color="action" />,
         body: (
           <Box p={2}>
-            please add an A record with your dns provider, point to <strong>{ingressIP}</strong>{" "}
-            <IconButtonWithTooltip
-              tooltipTitle="Copy"
-              aria-label="copy"
-              size="small"
-              onClick={(e) => {
-                copy(ingressIP);
-                dispatch(setSuccessNotificationAction("Copied successful!"));
-              }}
-            >
-              <CopyIcon fontSize="small" />
-            </IconButtonWithTooltip>
+            {this.getHelperText(cnameDomain, cnameRecords)}
+            {!copyContent || copyContent.length === 0 ? null : (
+              <IconButtonWithTooltip
+                tooltipTitle="Copy"
+                aria-label="copy"
+                size="small"
+                onClick={(e) => {
+                  copy(copyContent);
+                  dispatch(setSuccessNotificationAction("Copied successful!"));
+                }}
+              >
+                <CopyIcon fontSize="small" />
+              </IconButtonWithTooltip>
+            )}
           </Box>
         ),
       };

@@ -1,12 +1,11 @@
-import { Box, Button, Fade, Grid, Paper, Popper } from "@material-ui/core";
+import { Box, Button, Collapse, Fade, Grid, Link, Paper, Popper } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
-import Immutable from "immutable";
+import { normalizePort } from "forms/normalizer";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { anchorRef, bindPopper, InjectedProps } from "material-ui-popup-state";
 import React from "react";
-import { connect, DispatchProp } from "react-redux";
-import { arrayPush, WrappedFieldArrayProps } from "redux-form";
-import { Field, FieldArray } from "redux-form/immutable";
+import { Field } from "react-final-form";
+import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import {
   ComponentLikePort,
   PortProtocolGRPC,
@@ -15,34 +14,188 @@ import {
   PortProtocolTCP,
   PortProtocolUDP,
 } from "types/componentTemplate";
+import sc from "utils/stringConstants";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { PortChart } from "widgets/PortChart";
-import { RenderSelectField } from "../Basic/select";
-import { KRenderDebounceTextField } from "../Basic/textfield";
-import { NormalizePort } from "../normalizer";
-import { ValidatorRequired, ValidatorContainerPortRequired, ValidatorPort } from "../validator";
+import { FinalSelectField } from "../Final/select";
+import { FinalTextField } from "../Final/textfield";
+import { ValidatorContainerPortRequired, ValidatorPort } from "../validator";
 
-interface FieldArrayComponentHackType {
-  name: any;
-  component: any;
-  validate: any;
+interface Props extends FieldArrayRenderProps<ComponentLikePort, any> {}
+
+class RenderPorts extends React.PureComponent<Props> {
+  private handlePush() {
+    this.props.fields.push({ protocol: PortProtocolHTTP } as any);
+  }
+
+  private handleRemove(index: number) {
+    this.props.fields.remove(index);
+  }
+
+  private handleBlur(close: any, e: any) {
+    console.log("handleBlur", close);
+    close();
+  }
+
+  public render() {
+    const { fields } = this.props;
+    const name = fields.name;
+
+    return (
+      <>
+        <Box mb={2}>
+          <Grid item xs>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<AddIcon />}
+              size="small"
+              onClick={this.handlePush.bind(this)}
+            >
+              Add
+            </Button>
+
+            {/* {submitFailed && error && <span>{error}</span>} */}
+            {fields.error && typeof fields.error === "string" ? (
+              <Box mt={2}>
+                <Alert severity="error">{fields.error}</Alert>
+              </Box>
+            ) : null}
+          </Grid>
+        </Box>
+
+        {fields.value &&
+          fields.value.map((field: ComponentLikePort, index: number) => {
+            return (
+              <Grid container spacing={2} key={index}>
+                <Grid item xs>
+                  <Field
+                    name={`${name}.${index}.protocol`}
+                    component={FinalSelectField}
+                    label="Protocol"
+                    options={[
+                      { value: PortProtocolHTTP, text: PortProtocolHTTP },
+                      { value: PortProtocolHTTP2, text: PortProtocolHTTP2 },
+                      { value: PortProtocolGRPC, text: PortProtocolGRPC },
+                      { value: PortProtocolTCP, text: PortProtocolTCP },
+                      { value: PortProtocolUDP, text: PortProtocolUDP },
+                    ]}
+                  />
+                </Grid>
+                <PopupState variant="popover" popupId={`container-port-${index}`} disableAutoFocus>
+                  {(popupState: InjectedProps) => {
+                    return (
+                      <>
+                        <Grid
+                          item
+                          xs
+                          ref={(c: any) => {
+                            anchorRef(popupState)(c);
+                          }}
+                        >
+                          <Field<number | undefined>
+                            onFocus={popupState.open}
+                            handleBlur={popupState.close}
+                            component={FinalTextField}
+                            name={`${name}.${index}.containerPort`}
+                            label="Container port"
+                            placeholder="1~65535,not 443"
+                            parse={normalizePort}
+                            validate={ValidatorContainerPortRequired}
+                          />
+                        </Grid>
+                        <Popper
+                          {...bindPopper(popupState)}
+                          transition
+                          placement="top"
+                          style={{ zIndex: POPPER_ZINDEX }}
+                        >
+                          {({ TransitionProps }) => (
+                            <Fade {...TransitionProps} timeout={350}>
+                              <Paper elevation={2} variant="outlined" square>
+                                <Box p={2}>
+                                  <PortChart highlightContainerPort />
+                                </Box>
+                              </Paper>
+                            </Fade>
+                          )}
+                        </Popper>
+                      </>
+                    );
+                  }}
+                </PopupState>
+                <PopupState variant="popover" popupId={`service-port-${index}`} disableAutoFocus>
+                  {(popupState: InjectedProps) => {
+                    return (
+                      <>
+                        <Grid
+                          item
+                          xs
+                          ref={(c: any) => {
+                            anchorRef(popupState)(c);
+                          }}
+                        >
+                          <Field
+                            onFocus={popupState.open}
+                            handleBlur={popupState.close}
+                            component={FinalTextField}
+                            name={`${name}.${index}.servicePort`}
+                            label="Service Port"
+                            placeholder="Default to equal publish port"
+                            parse={normalizePort}
+                            validate={ValidatorPort}
+                          />
+                        </Grid>
+                        <Popper
+                          {...bindPopper(popupState)}
+                          transition
+                          placement="top"
+                          style={{ zIndex: POPPER_ZINDEX }}
+                        >
+                          {({ TransitionProps }) => (
+                            <Fade {...TransitionProps} timeout={350}>
+                              <Paper elevation={2} variant="outlined" square>
+                                <Box p={2}>
+                                  <PortChart highlightServicePort />
+                                </Box>
+                              </Paper>
+                            </Fade>
+                          )}
+                        </Popper>
+                      </>
+                    );
+                  }}
+                </PopupState>
+
+                <Grid item xs={1}>
+                  <IconButtonWithTooltip
+                    tooltipPlacement="top"
+                    tooltipTitle="Delete"
+                    aria-label="delete"
+                    onClick={this.handleRemove.bind(this, index)}
+                  >
+                    <DeleteIcon />
+                  </IconButtonWithTooltip>
+                </Grid>
+              </Grid>
+            );
+          })}
+      </>
+    );
+  }
 }
 
-interface FieldArrayProps extends DispatchProp {}
-
-interface Props extends WrappedFieldArrayProps<ComponentLikePort>, FieldArrayComponentHackType, FieldArrayProps {}
-
-const ValidatorPorts = (values: Immutable.List<ComponentLikePort>, _allValues?: any, _props?: any, _name?: any) => {
+const ValidatorPorts = (values: ComponentLikePort[], _allValues?: any, _props?: any, _name?: any) => {
   if (!values) return undefined;
   const protocolServicePorts = new Set<string>();
 
-  for (let i = 0; i < values.size; i++) {
-    const port = values.get(i)!;
-    const servicePort = port.get("servicePort") || port.get("containerPort");
+  for (let i = 0; i < values.length; i++) {
+    const port = values[i]!;
+    const servicePort = port.servicePort || port.containerPort;
 
     if (servicePort) {
-      const protocol = port.get("protocol");
+      const protocol = port.protocol;
       const protocolServicePort = protocol + "-" + servicePort;
 
       if (!protocolServicePorts.has(protocolServicePort)) {
@@ -54,160 +207,21 @@ const ValidatorPorts = (values: Immutable.List<ComponentLikePort>, _allValues?: 
   }
 };
 
-class RenderPorts extends React.PureComponent<Props> {
-  public render() {
-    const {
-      fields,
-      dispatch,
-      meta: { error, form },
-    } = this.props;
-    return (
-      <>
-        <Box mb={2}>
-          <Grid item xs>
-            <Button
-              variant="outlined"
-              color="primary"
-              startIcon={<AddIcon />}
-              size="small"
-              onClick={() =>
-                dispatch(
-                  arrayPush(
-                    form,
-                    fields.name,
-                    Immutable.Map({
-                      protocol: PortProtocolHTTP,
-                      containerPort: null,
-                    }),
-                  ),
-                )
-              }
-            >
-              Add
-            </Button>
+export const Ports = () => {
+  return <FieldArray name="ports" component={RenderPorts} validate={ValidatorPorts} />;
+};
 
-            {/* {submitFailed && error && <span>{error}</span>} */}
-            {error ? (
-              <Box mt={2}>
-                <Alert severity="error">{error}</Alert>
-              </Box>
-            ) : null}
-          </Grid>
-        </Box>
+export const IngressHint = () => {
+  const [open, setOpen] = React.useState(false);
 
-        {fields.map((field, index) => {
-          return (
-            <Grid container spacing={2} key={field}>
-              <Grid item xs>
-                <Field
-                  name={`${field}.protocol`}
-                  component={RenderSelectField}
-                  required
-                  label="Protocol"
-                  validate={ValidatorRequired}
-                  options={[
-                    { value: PortProtocolHTTP, text: PortProtocolHTTP },
-                    { value: PortProtocolHTTP2, text: PortProtocolHTTP2 },
-                    { value: PortProtocolGRPC, text: PortProtocolGRPC },
-                    { value: PortProtocolTCP, text: PortProtocolTCP },
-                    { value: PortProtocolUDP, text: PortProtocolUDP },
-                  ]}
-                />
-              </Grid>
-              <PopupState variant="popover" popupId={`container-port-${index}`} disableAutoFocus>
-                {(popupState: InjectedProps) => {
-                  return (
-                    <>
-                      <Grid
-                        item
-                        xs
-                        ref={(c: any) => {
-                          anchorRef(popupState)(c);
-                        }}
-                      >
-                        <Field
-                          component={KRenderDebounceTextField}
-                          onFocus={popupState.open}
-                          onBlur={popupState.close}
-                          name={`${field}.containerPort`}
-                          label="Container port"
-                          placeholder="1~65535,not 443"
-                          required
-                          validate={ValidatorContainerPortRequired}
-                          normalize={NormalizePort}
-                        />
-                      </Grid>
-                      <Popper {...bindPopper(popupState)} transition placement="top" style={{ zIndex: POPPER_ZINDEX }}>
-                        {({ TransitionProps }) => (
-                          <Fade {...TransitionProps} timeout={350}>
-                            <Paper elevation={2}>
-                              <Box p={2}>
-                                <PortChart highlightContainerPort />
-                              </Box>
-                            </Paper>
-                          </Fade>
-                        )}
-                      </Popper>
-                    </>
-                  );
-                }}
-              </PopupState>
-              <PopupState variant="popover" popupId={`service-port-${index}`} disableAutoFocus>
-                {(popupState: InjectedProps) => {
-                  return (
-                    <>
-                      <Grid
-                        item
-                        xs
-                        ref={(c: any) => {
-                          anchorRef(popupState)(c);
-                        }}
-                      >
-                        <Field
-                          component={KRenderDebounceTextField}
-                          onFocus={popupState.open}
-                          onBlur={popupState.close}
-                          name={`${field}.servicePort`}
-                          label="Service Port"
-                          placeholder="Default to equal publish port"
-                          validate={ValidatorPort}
-                          normalize={NormalizePort}
-                        />
-                      </Grid>
-                      <Popper {...bindPopper(popupState)} transition placement="top" style={{ zIndex: POPPER_ZINDEX }}>
-                        {({ TransitionProps }) => (
-                          <Fade {...TransitionProps} timeout={350}>
-                            <Paper elevation={2}>
-                              <Box p={2}>
-                                <PortChart highlightServicePort />
-                              </Box>
-                            </Paper>
-                          </Fade>
-                        )}
-                      </Popper>
-                    </>
-                  );
-                }}
-              </PopupState>
-
-              <Grid item xs={1}>
-                <IconButtonWithTooltip
-                  tooltipPlacement="top"
-                  tooltipTitle="Delete"
-                  aria-label="delete"
-                  onClick={() => fields.remove(index)}
-                >
-                  <DeleteIcon />
-                </IconButtonWithTooltip>
-              </Grid>
-            </Grid>
-          );
-        })}
-      </>
-    );
-  }
-}
-
-export const Ports = connect()((props: FieldArrayProps) => {
-  return <FieldArray name="ports" component={RenderPorts} validate={ValidatorPorts} {...props} />;
-});
+  return (
+    <>
+      <Link style={{ cursor: "pointer" }} onClick={() => setOpen(!open)}>
+        {sc.PORT_ROUTE_QUESTION}
+      </Link>
+      <Box pt={1}>
+        <Collapse in={open}>{sc.PORT_ROUTE_ANSWER}</Collapse>
+      </Box>
+    </>
+  );
+};

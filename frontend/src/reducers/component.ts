@@ -1,51 +1,46 @@
-import Immutable from "immutable";
+import produce, { original } from "immer";
 import { Actions } from "types";
 import {
   ApplicationComponentDetails,
-  ComponentPlugin,
   CREATE_COMPONENT,
   DELETE_COMPONENT,
-  LOAD_COMPONENT_PLUGINS_FULFILLED,
-  SET_IS_SUBMITTING_APPLICATION_COMPONENT,
-  UPDATE_COMPONENT,
-  LOAD_COMPONENTS_PENDING,
+  LOAD_ALL_NAMESAPCES_COMPONETS,
   LOAD_COMPONENTS_FAILED,
   LOAD_COMPONENTS_FULFILLED,
-  LOAD_ALL_NAMESAPCES_COMPONETS,
+  LOAD_COMPONENTS_PENDING,
+  SET_IS_SUBMITTING_APPLICATION_COMPONENT,
+  UPDATE_COMPONENT,
 } from "types/application";
 import { LOGOUT } from "types/common";
-import { ImmutableMap } from "typings";
 import {
-  WATCHED_RESOURCE_CHANGE,
-  RESOURCE_TYPE_COMPONENT,
   RESOURCE_ACTION_ADD,
   RESOURCE_ACTION_DELETE,
   RESOURCE_ACTION_UPDATE,
+  RESOURCE_TYPE_COMPONENT,
+  WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
 
-export type State = ImmutableMap<{
-  components: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>; // key applicationName
+export type State = {
+  components: { [key: string]: ApplicationComponentDetails[] }; // key applicationName
   isListLoading: boolean;
   isListFirstLoaded: boolean;
   isSubmittingApplicationComponent: boolean;
-  componentPlugins: ComponentPlugin[];
-}>;
+};
 
-const initialState: State = Immutable.Map({
-  components: Immutable.Map({}),
+const initialState: State = {
+  components: {},
   isListLoading: false,
   isListFirstLoaded: false,
   isSubmittingApplicationComponent: false,
-  componentPlugins: [],
-});
+};
 
 const isComponentInState = (state: State, applicationName: string, component: ApplicationComponentDetails): boolean => {
-  let components = state.get("components").get(applicationName);
+  let components = state.components[applicationName];
   if (!components) {
     return false;
   }
 
-  const componentIndex = components.findIndex((c) => c.get("name") === component.get("name"));
+  const componentIndex = original(components)!.findIndex((c) => c.name === component.name);
   if (componentIndex < 0) {
     return false;
   }
@@ -59,75 +54,76 @@ const putComponentIntoState = (
   component: ApplicationComponentDetails,
   isCreate: boolean,
 ): State => {
-  let components = state.get("components").get(applicationName);
+  let components = state.components[applicationName];
+  let componentIndex = -1;
   if (!components) {
-    components = Immutable.List([]) as Immutable.List<ApplicationComponentDetails>;
-    state = state.setIn(["components", applicationName], components);
+    state.components[applicationName] = [];
+  } else {
+    componentIndex = original(components)!.findIndex((c) => c.name === component.name);
   }
-  const componentIndex = components.findIndex((c) => c.get("name") === component.get("name"));
   if (componentIndex < 0) {
     if (isCreate) {
-      state = state.setIn(["components", applicationName, components.size], component);
+      state.components[applicationName].push(component);
     }
   } else {
-    state = state.setIn(["components", applicationName, componentIndex], component);
+    state.components[applicationName][componentIndex] = component;
   }
 
   return state;
 };
 
 const deleteComponentFromState = (state: State, applicationName: string, componentName: string): State => {
-  const components = state.get("components").get(applicationName);
+  const components = state.components[applicationName];
   if (!components) {
     return state;
   }
-  const componentIndex = components.findIndex((c) => c.get("name") === componentName);
+  const componentIndex = components.findIndex((c) => c.name === componentName);
   if (componentIndex >= 0) {
-    state = state.deleteIn(["components", applicationName, componentIndex]);
+    state.components[applicationName].splice(componentIndex, 1);
   }
 
   return state;
 };
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOGOUT: {
       return initialState;
     }
     case SET_IS_SUBMITTING_APPLICATION_COMPONENT: {
-      state = state.set("isSubmittingApplicationComponent", action.payload.isSubmittingApplicationComponent);
-      break;
+      state.isSubmittingApplicationComponent = action.payload.isSubmittingApplicationComponent;
+      return;
     }
     case LOAD_COMPONENTS_PENDING: {
-      state = state.set("isListLoading", true);
-      break;
+      state.isListLoading = true;
+      return;
     }
     case LOAD_COMPONENTS_FAILED: {
-      state = state.set("isListLoading", false);
-      break;
+      state.isListLoading = false;
+      return;
     }
     case LOAD_COMPONENTS_FULFILLED: {
-      state = state.set("isListFirstLoaded", true).set("isListLoading", false);
-      state = state.setIn(["components", action.payload.applicationName], action.payload.components);
-
-      break;
+      state.isListFirstLoaded = true;
+      state.isListLoading = false;
+      state.components[action.payload.applicationName] = action.payload.components;
+      return;
     }
     case LOAD_ALL_NAMESAPCES_COMPONETS: {
-      state = state.set("components", action.payload.components);
-      break;
+      state.components = action.payload.components;
+      return;
     }
     case CREATE_COMPONENT: {
       state = putComponentIntoState(state, action.payload.applicationName, action.payload.component, true);
-      break;
+      return;
     }
     case UPDATE_COMPONENT: {
       state = putComponentIntoState(state, action.payload.applicationName, action.payload.component, false);
-      break;
+      return;
     }
     case DELETE_COMPONENT: {
       const { applicationName, componentName } = action.payload;
       state = deleteComponentFromState(state, applicationName, componentName);
-      break;
+      return;
     }
     case WATCHED_RESOURCE_CHANGE: {
       if (action.kind !== RESOURCE_TYPE_COMPONENT) {
@@ -138,27 +134,23 @@ const reducer = (state: State = initialState, action: Actions): State => {
           if (!isComponentInState(state, action.payload.namespace, action.payload.data)) {
             state = putComponentIntoState(state, action.payload.namespace, action.payload.data, true);
           }
-          break;
+          return;
         }
         case RESOURCE_ACTION_DELETE: {
-          state = deleteComponentFromState(state, action.payload.namespace, action.payload.data.get("name"));
-          break;
+          state = deleteComponentFromState(state, action.payload.namespace, action.payload.data.name);
+          return;
         }
         case RESOURCE_ACTION_UPDATE: {
           state = putComponentIntoState(state, action.payload.namespace, action.payload.data, false);
-          break;
+          return;
         }
+        default:
+          return;
       }
-      break;
-    }
-    case LOAD_COMPONENT_PLUGINS_FULFILLED: {
-      state = state.set("componentPlugins", action.payload.componentPlugins);
-
-      break;
     }
   }
 
   return state;
-};
+}, initialState);
 
 export default reducer;

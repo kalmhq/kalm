@@ -1,19 +1,20 @@
 import { getWebsocketInstance } from "actions/websocket";
 import { mockStore } from "@apiType/index";
-import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import {
+  RESOURCE_TYPE_ACME_SERVER,
   RESOURCE_TYPE_APPLICATION,
   RESOURCE_TYPE_COMPONENT,
-  RESOURCE_TYPE_DEPLOY_KEY,
+  RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN,
   RESOURCE_TYPE_HTTP_ROUTE,
   RESOURCE_TYPE_HTTPS_CERT,
   RESOURCE_TYPE_NODE,
   RESOURCE_TYPE_PROTECTED_ENDPOINT,
   RESOURCE_TYPE_REGISTRY,
+  RESOURCE_TYPE_ROLE_BINDING,
   RESOURCE_TYPE_SERVICE,
   RESOURCE_TYPE_SSO,
   RESOURCE_TYPE_VOLUME,
@@ -23,16 +24,22 @@ import {
 import { loadApplicationsAction } from "actions/application";
 import { loadRoutesAction } from "actions/routes";
 import { loadNodesAction } from "actions/node";
-import { loadCertificateIssuersAction, loadCertificatesAction } from "actions/certificate";
+import {
+  loadCertificateAcmeServerAction,
+  loadCertificateIssuersAction,
+  loadCertificatesAction,
+} from "actions/certificate";
 import { loadClusterInfoAction } from "actions/cluster";
 import { loadPersistentVolumesAction, loadStorageClassesAction } from "actions/persistentVolume";
 import { loadRegistriesAction } from "actions/registries";
-import { loadRoleBindingsAction } from "actions/user";
 import { loadServicesAction } from "actions/service";
-import { throttle } from "utils";
 import { loadProtectedEndpointAction, loadSSOConfigAction } from "actions/sso";
 import { setErrorNotificationAction } from "actions/notification";
-import { loadDeployKeyAction } from "actions/deployKey";
+import { loadDeployAccessTokensAction } from "actions/deployAccessToken";
+import { AccessTokenToDeployAccessToken } from "types/deployAccessToken";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
+import { generateKalmImpersonnation } from "api/realApi";
+import throttle from "lodash/throttle";
 
 export interface WatchResMessage {
   namespace: string;
@@ -43,11 +50,11 @@ export interface WatchResMessage {
 
 const mapStateToProps = (state: RootState) => {
   return {
-    token: state.get("auth").get("token"),
+    activeNamespaceName: state.namespaces.active,
   };
 };
 
-interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
+interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp, WithUserAuthProps {}
 
 class WithDataRaw extends React.PureComponent<Props> {
   public componentDidMount() {
@@ -57,28 +64,32 @@ class WithDataRaw extends React.PureComponent<Props> {
   }
 
   private loadData() {
-    const { dispatch } = this.props;
+    const { dispatch, canViewCluster, canEditNamespace, activeNamespaceName } = this.props;
 
     dispatch(loadRoutesAction()); // all namespaces
     dispatch(loadApplicationsAction());
-    dispatch(loadNodesAction());
-    dispatch(loadCertificatesAction());
-    dispatch(loadCertificateIssuersAction());
-    dispatch(loadClusterInfoAction());
-    dispatch(loadPersistentVolumesAction());
-    dispatch(loadRegistriesAction());
-    dispatch(loadRoleBindingsAction());
-    dispatch(loadServicesAction("")); // for routes destinations
-    dispatch(loadStorageClassesAction());
-    dispatch(loadDeployKeyAction());
-
-    // dispatch(loadComponentPluginsAction());
-    dispatch(loadSSOConfigAction());
+    dispatch(loadDeployAccessTokensAction());
     dispatch(loadProtectedEndpointAction());
+
+    if (canEditNamespace(activeNamespaceName) || canViewCluster()) {
+      dispatch(loadRegistriesAction());
+    }
+
+    if (canViewCluster()) {
+      dispatch(loadCertificatesAction());
+      dispatch(loadCertificateIssuersAction());
+      dispatch(loadCertificateAcmeServerAction());
+      dispatch(loadSSOConfigAction());
+      dispatch(loadNodesAction());
+      dispatch(loadClusterInfoAction());
+      dispatch(loadServicesAction("")); // for routes destinations
+      dispatch(loadPersistentVolumesAction());
+      dispatch(loadStorageClassesAction());
+    }
   }
 
   private connectWebsocket() {
-    const { dispatch, token } = this.props;
+    const { dispatch, authToken, impersonation, impersonationType, canViewCluster } = this.props;
     let rws: any;
     if (process.env.REACT_APP_USE_MOCK_API === "true" || process.env.NODE_ENV === "test") {
       rws = mockStore;
@@ -87,16 +98,21 @@ class WithDataRaw extends React.PureComponent<Props> {
       rws.addEventListener("open", () => {
         const message = {
           method: "StartWatching",
-          token,
+          token: authToken,
+          impersonation: generateKalmImpersonnation(impersonation, impersonationType),
         };
         rws.send(JSON.stringify(message));
       });
     }
 
-    function reloadResouces() {
-      dispatch(loadPersistentVolumesAction()); // is in use can't watch
-      dispatch(loadServicesAction("")); // for routes destinations
-    }
+    const reloadResouces = () => {
+      if (canViewCluster()) {
+        dispatch(loadPersistentVolumesAction()); // is in use can't watch
+        dispatch(loadServicesAction("")); // for routes destinations
+      }
+    };
+
+    const throttledReloadResouces = throttle(reloadResouces, 10000, { leading: true, trailing: true });
 
     rws.onmessage = async (event: any) => {
       const data: WatchResMessage = JSON.parse(event.data);
@@ -112,20 +128,20 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_APPLICATION,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
         }
         case RESOURCE_TYPE_COMPONENT: {
-          throttle("reloadResouces", reloadResouces, 10000)();
+          throttledReloadResouces();
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
             kind: RESOURCE_TYPE_COMPONENT,
             payload: {
               namespace: data.namespace,
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -137,7 +153,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             payload: {
               namespace: data.namespace,
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -148,7 +164,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_NODE,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -159,7 +175,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_HTTPS_CERT,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -170,7 +186,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_REGISTRY,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -181,7 +197,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_VOLUME,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -192,7 +208,7 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_SSO,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
@@ -203,18 +219,18 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_PROTECTED_ENDPOINT,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
             },
           });
           break;
         }
-        case RESOURCE_TYPE_DEPLOY_KEY: {
+        case RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN: {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
-            kind: RESOURCE_TYPE_DEPLOY_KEY,
+            kind: RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: AccessTokenToDeployAccessToken(data.data),
             },
           });
           break;
@@ -225,7 +241,29 @@ class WithDataRaw extends React.PureComponent<Props> {
             kind: RESOURCE_TYPE_SERVICE,
             payload: {
               action: data.action,
-              data: Immutable.fromJS(data.data),
+              data: data.data,
+            },
+          });
+          break;
+        }
+        case RESOURCE_TYPE_ROLE_BINDING: {
+          dispatch({
+            type: WATCHED_RESOURCE_CHANGE,
+            kind: RESOURCE_TYPE_ROLE_BINDING,
+            payload: {
+              action: data.action,
+              data: data.data,
+            },
+          });
+          break;
+        }
+        case RESOURCE_TYPE_ACME_SERVER: {
+          dispatch({
+            type: WATCHED_RESOURCE_CHANGE,
+            kind: RESOURCE_TYPE_ACME_SERVER,
+            payload: {
+              action: data.action,
+              data: data.data,
             },
           });
           break;
@@ -239,4 +277,4 @@ class WithDataRaw extends React.PureComponent<Props> {
   }
 }
 
-export const WithData = connect(mapStateToProps)(WithDataRaw);
+export const WithData = withUserAuth(connect(mapStateToProps)(WithDataRaw));

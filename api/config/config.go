@@ -20,6 +20,15 @@ type Config struct {
 	CorsAllowedOrigins            cli.StringSlice
 }
 
+// Built-time env
+var (
+	GIT_VERSION string
+	GIT_COMMIT  string
+	BUILD_TIME  string
+	PLATFORM    string
+	GO_VERSION  string
+)
+
 func fileExists(filename string) bool {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
@@ -29,7 +38,6 @@ func fileExists(filename string) bool {
 }
 
 func (c *Config) Normalize() {
-
 	defaultKubeConfigPath := filepath.Join(os.Getenv("HOME"), ".kube", "config")
 
 	if c.KubeConfigPath == "" && fileExists(defaultKubeConfigPath) && c.KubernetesApiServerAddress == "" && os.Getenv("KUBERNETES_SERVICE_HOST") == "" {
@@ -47,6 +55,10 @@ func (c *Config) DeepCopy() *Config {
 	var res Config
 	_ = json.Unmarshal(bs, &res)
 	return &res
+}
+
+func (c *Config) IsInCluster() bool {
+	return c.KubernetesApiServerAddress == "" && c.KubeConfigPath == ""
 }
 
 func (c *Config) Validate() {

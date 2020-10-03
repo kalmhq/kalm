@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/kalmhq/kalm/api/resources"
 	"io"
 	"net/http"
 	"strconv"
@@ -18,8 +19,6 @@ import (
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/client-go/tools/remotecommand"
 )
 
@@ -28,11 +27,9 @@ type WSConn struct {
 	ctx      context.Context
 	stopFunc context.CancelFunc
 
-	K8sClient     *kubernetes.Clientset
-	K8sConfig     *rest.Config
-	clientManager *client.ClientManager
+	clientInfo    *client.ClientInfo
+	clientManager client.ClientManager
 
-	IsAuthorized       bool
 	podResourceRequest chan *WSPodResourceRequest
 	writeLock          *sync.Mutex
 }
@@ -66,8 +63,9 @@ type WSRequest struct {
 }
 
 type WSClientAuthRequest struct {
-	WSRequest `json:",inline"`
-	AuthToken string `json:"authToken"`
+	WSRequest     `json:",inline"`
+	AuthToken     string `json:"authToken"`
+	Impersonation string `json:"impersonation"`
 }
 
 type WSPodResourceRequest struct {
@@ -192,7 +190,7 @@ func isNormalWebsocketCloseError(err error) bool {
 	return websocket.IsCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived)
 }
 
-func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
+func wsReadLoop(conn *WSConn, clientManager client.ClientManager) (err error) {
 	for {
 		_, message, err := conn.ReadMessage()
 
@@ -217,6 +215,7 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 			Status: StatusError,
 		}
 
+	OuterSwitch:
 		switch basicMessage.Type {
 		case WSRequestTypeAuth:
 			res.Type = WSResponseTypeAuthResult
@@ -228,36 +227,17 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 				continue
 			}
 
-			authInfo := &api.AuthInfo{Token: m.AuthToken}
-
-			if clientManager.IsAuthInfoWorking(authInfo) == nil {
-				cfg, err := clientManager.BuildClientConfigWithAuthInfo(authInfo)
-
-				if err != nil {
-					log.Error(err, "get client config error")
-					continue
-				}
-
-				k8sClient, err := kubernetes.NewForConfig(cfg)
-
-				if err != nil {
-					log.Error(err, "new config error")
-					continue
-				}
-
-				conn.K8sClient = k8sClient
-				conn.K8sConfig = cfg
-				conn.IsAuthorized = true
-
+			if clientInfo, err := clientManager.GetClientInfoFromToken(m.AuthToken); err == nil {
+				clientManager.SetImpersonation(clientInfo, m.Impersonation)
+				conn.clientInfo = clientInfo
 				res.Status = StatusOK
 				res.Message = "Auth Successfully"
 			} else {
+				log.Debug("WSRequest Auth error", "error", err)
 				res.Message = "Invalid Auth Token"
 			}
 		case WSRequestTypeSubscribePodLog, WSRequestTypeUnsubscribePodLog, WSRequestTypeExecStartSession, WSRequestTypeExecEndSession, WSRequestTypeExecStdin, WSRequestTypeExecResize:
-			isAuthorized := conn.IsAuthorized
-
-			if !isAuthorized {
+			if conn.clientInfo == nil {
 				res.Message = "Unauthorized, Please verify yourself first."
 				break
 			}
@@ -270,6 +250,19 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 				continue
 			}
 
+			switch m.Type {
+			case WSRequestTypeSubscribePodLog:
+				if !conn.clientManager.CanView(conn.clientInfo, m.Namespace, "pods/"+m.PodName) {
+					res.Message = resources.NoObjectViewerRoleError(m.Namespace, "pods/"+m.PodName).Error()
+					break OuterSwitch
+				}
+			case WSRequestTypeExecStartSession, WSRequestTypeExecStdin, WSRequestTypeExecResize:
+				if !conn.clientManager.CanEdit(conn.clientInfo, m.Namespace, "pods/"+m.PodName) {
+					res.Message = resources.NoObjectEditorRoleError(m.Namespace, "pods/"+m.PodName).Error()
+					break OuterSwitch
+				}
+			}
+
 			conn.podResourceRequest <- &m
 
 			//res.Status = StatusOK
@@ -279,7 +272,7 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 			continue
 		case WSRequestTypeAuthStatus:
 			res.Type = WSResponseTypeAuthStatus
-			if conn.IsAuthorized {
+			if conn.clientInfo != nil {
 				res.Status = StatusOK
 				res.Message = "You are authorized"
 			} else {
@@ -317,8 +310,6 @@ func handleLogRequests(conn *WSConn) {
 			key := fmt.Sprintf("%s___%s", m.Namespace, m.PodName)
 
 			if m.Type == WSRequestTypeSubscribePodLog {
-				k8sClient := conn.K8sClient
-
 				podLogOpts := coreV1.PodLogOptions{
 					Container:  m.Container,
 					TailLines:  &m.TailLines,
@@ -327,6 +318,7 @@ func handleLogRequests(conn *WSConn) {
 					Previous:   m.Previous,
 				}
 
+				k8sClient, _ := kubernetes.NewForConfig(conn.clientInfo.Cfg)
 				req := k8sClient.CoreV1().Pods(m.Namespace).GetLogs(m.PodName, &podLogOpts)
 				podLogs, err := req.Stream(conn.ctx)
 
@@ -424,7 +416,13 @@ func copyPodLogStreamToWS(ctx context.Context, namespace, podName string, conn *
 }
 
 func startExecTerminalSession(conn *WSConn, shell string, terminalSession *TerminalSession, ns, podName, container string) error {
-	req := conn.K8sClient.CoreV1().RESTClient().Post().
+	k8sClient, err := kubernetes.NewForConfig(conn.clientInfo.Cfg)
+
+	if err != nil {
+		return err
+	}
+
+	req := k8sClient.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(podName).
 		Namespace(ns).
@@ -439,7 +437,7 @@ func startExecTerminalSession(conn *WSConn, shell string, terminalSession *Termi
 		Container: container,
 	}, scheme.ParameterCodec)
 
-	exec, err := remotecommand.NewSPDYExecutor(conn.K8sConfig, "POST", req.URL())
+	exec, err := remotecommand.NewSPDYExecutor(conn.clientInfo.Cfg, "POST", req.URL())
 
 	if err != nil {
 		return err
@@ -576,16 +574,10 @@ func (h *ApiHandler) prepareWSConnection(c echo.Context) (*WSConn, error) {
 		clientManager:      h.clientManager,
 	}
 
-	clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
+	clientInfo, err := h.clientManager.GetClientInfoFromContext(c)
 
-	if err == nil {
-		conn.IsAuthorized = true
-		k8sClient, err := kubernetes.NewForConfig(clientInfo.Cfg)
-		if err != nil {
-			return nil, err
-		}
-		conn.K8sClient = k8sClient
-		conn.K8sConfig = clientInfo.Cfg
+	if err == nil && clientInfo != nil {
+		conn.clientInfo = clientInfo
 	}
 
 	return conn, nil

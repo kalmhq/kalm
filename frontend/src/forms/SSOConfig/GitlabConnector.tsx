@@ -1,26 +1,26 @@
 import { Grid } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
-import { KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
+import { Alert } from "@material-ui/lab";
+import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import React from "react";
+import { Field } from "react-final-form";
 import { connect, DispatchProp } from "react-redux";
-import { Field } from "redux-form/immutable";
 import { SSOGitlabConnector } from "types/sso";
 import { capitalize } from "utils/string";
-import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
-import { KRenderDebounceTextField } from "../Basic/textfield";
+import { Body, H6, Subtitle1, Subtitle2 } from "widgets/Label";
+import { KMLink } from "widgets/Link";
+import { FinalTextField } from "../Final/textfield";
 import { ValidatorRequired } from "../validator";
+import { trimParse } from "forms/normalizer";
 
 interface Props extends DispatchProp {
   connector: SSOGitlabConnector;
-  meta: {
-    form: string;
-  };
-  field: string;
+  fieldName: string;
 }
 
 class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
   public render() {
-    const { connector, field } = this.props;
+    const { connector, fieldName } = this.props;
 
     return (
       <Box p={2}>
@@ -28,7 +28,7 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
           <Box style={{ verticalAlign: "middle" }} mr={2} display="inline-block">
             {/* Gitlab icon place holder */}
           </Box>
-          {capitalize(connector.get("type"))}
+          {capitalize(connector.type)}
         </H6>
 
         <Box mt={2}>
@@ -37,44 +37,41 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
               <Grid container spacing={2}>
                 <Grid item xs>
                   <Field
-                    component={KRenderDebounceTextField}
-                    name={`${field}.name`}
+                    component={FinalTextField}
+                    name={`${fieldName}.name`}
                     label="Name"
                     placeholder="Give a name of this connector"
                     validate={ValidatorRequired}
+                    parse={trimParse}
                     helperText="The name of this connector."
                     required
                   />
                 </Grid>
                 <Grid item xs>
                   <Field
-                    component={KRenderDebounceTextField}
-                    name={`${field}.config.baseURL`}
+                    component={FinalTextField}
+                    name={`${fieldName}.config.baseURL`}
                     label="Gitlab Base URL"
                     placeholder="Please type Gitlab Base URL"
                     validate={ValidatorRequired}
-                    required
                   />
                 </Grid>
               </Grid>
               <Grid container spacing={2}>
                 <Grid item xs>
                   <Field
-                    component={KRenderDebounceTextField}
-                    name={`${field}.config.clientID`}
+                    component={FinalTextField}
+                    name={`${fieldName}.config.clientID`}
                     label="Client ID"
-                    autoComplete={"false"}
                     placeholder="Oauth Client ID"
                     validate={ValidatorRequired}
                     helperText="Follow the right steps to get Client ID."
-                    required
                   />
                 </Grid>
                 <Grid item xs>
                   <Field
-                    component={KRenderDebounceTextField}
-                    autoComplete={"false"}
-                    name={`${field}.config.clientSecret`}
+                    component={FinalTextField}
+                    name={`${fieldName}.config.clientSecret`}
                     label="Client Secret"
                     placeholder="Oauth Client Secret"
                     validate={ValidatorRequired}
@@ -83,7 +80,9 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                 </Grid>
               </Grid>
               <Box mt={1}>
-                <Body2>User MUST be a member of at least one of the specified groups to authenticate with kalm.</Body2>
+                <Alert severity="info">
+                  User MUST be a member of at least one of the specified groups to authenticate with kalm.
+                </Alert>
               </Box>
 
               {/*<Box mt={1}>*/}
@@ -93,11 +92,12 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
               {/*  </Body2>*/}
               {/*</Box>*/}
               <Box mt={1}>
-                <KFreeSoloAutoCompleteMultipleSelectStringField
+                <Field
+                  component={AutoCompleteMultiValuesFreeSolo}
+                  options={[]}
                   label="Groups"
-                  name={`${field}.config.groups`}
+                  name={`${fieldName}.config.groups`}
                   validate={ValidatorRequired}
-                  placeholder="Please type a group name"
                   helperText="Multiple groups are allowed. After entering a group name, try to press enter."
                 />
               </Box>
@@ -109,9 +109,9 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
                 <Body>
                   To get Client ID and Client Secret, you must create an oauth application first. Go to application
                   creation page by clicking{" "}
-                  <a href="https://gitlab.com/profile/applications" rel="noopener noreferrer" target="_blank">
+                  <KMLink href="https://gitlab.com/profile/applications" rel="noopener noreferrer" target="_blank">
                     HERE
-                  </a>
+                  </KMLink>
                   . If you are using a private deployed gitlab. Go to the same path under your domain.
                 </Body>
               </Box>

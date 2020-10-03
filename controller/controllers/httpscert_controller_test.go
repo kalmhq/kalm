@@ -10,6 +10,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"testing"
+	"time"
 )
 
 type HttpsCertControllerSuite struct {
@@ -277,10 +278,11 @@ KOqkqm57TH2H3eDJAkSnh6/DNFu0Qg==
 -----END CERTIFICATE-----`
 
 func TestParseCert(t *testing.T) {
-	cert, err := ParseCert(tlsCert)
-	assert.Nil(t, err)
-	assert.True(t, checkIfIssuerIsTrusted(cert.Issuer))
+	cert, interCert, err := ParseCert(tlsCert)
+	fakeTime := cert.NotAfter.Add(-1 * time.Second)
 
+	assert.Nil(t, err)
+	assert.True(t, checkIfCertIssuedByTrustedCA(cert, interCert, fakeTime))
 	//fmt.Println(cert.NotAfter)
 	//fmt.Println(cert.Issuer)
 	//fmt.Printf("%+v", cert)

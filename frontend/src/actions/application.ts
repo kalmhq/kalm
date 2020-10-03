@@ -1,7 +1,5 @@
 import { api } from "api";
 import { push } from "connected-react-router";
-import Immutable from "immutable";
-import { SubmissionError } from "redux-form";
 import { ThunkResult } from "types";
 import {
   Application,
@@ -10,20 +8,18 @@ import {
   CREATE_APPLICATION,
   DELETE_APPLICATION,
   LOAD_ALL_NAMESAPCES_COMPONETS,
-  LOAD_APPLICATION_FAILED,
-  LOAD_APPLICATION_FULFILLED,
-  LOAD_APPLICATION_PENDING,
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
-  LOAD_COMPONENT_PLUGINS_FULFILLED,
-  SET_IS_SUBMITTING_APPLICATION,
-  SET_IS_SUBMITTING_APPLICATION_COMPONENT,
+  LOAD_APPLICATION_FAILED,
+  LOAD_APPLICATION_FULFILLED,
+  LOAD_APPLICATION_PENDING,
   SetIsSubmittingApplication,
   SetIsSubmittingApplicationComponent,
+  SET_IS_SUBMITTING_APPLICATION,
+  SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   UPDATE_APPLICATION,
 } from "types/application";
-import { resErrorsToSubmitErrors } from "utils";
 import { setCurrentNamespaceAction } from "./namespaces";
 import { setSuccessNotificationAction } from "./notification";
 
@@ -37,11 +33,6 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
       application = await api.createApplication(applicationValues);
     } catch (e) {
       dispatch(setIsSubmittingApplicationAction(false));
-
-      if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
-        const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
-        throw new SubmissionError(submitErrors);
-      }
       throw e;
     }
 
@@ -84,10 +75,6 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
       application = await api.updateApplication(applicationRaw);
     } catch (e) {
       dispatch(setIsSubmittingApplicationAction(false));
-      if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
-        const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
-        throw new SubmissionError(submitErrors);
-      }
       throw e;
     }
 
@@ -105,7 +92,6 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
 export const deleteApplicationAction = (name: string): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     await api.deleteApplication(name);
-
     dispatch({
       type: DELETE_APPLICATION,
       payload: { applicationName: name },
@@ -134,22 +120,22 @@ export const loadApplicationAction = (name: string): ThunkResult<Promise<void>> 
   };
 };
 
-export const loadApplicationsAction = (): ThunkResult<Promise<Immutable.List<ApplicationDetails>>> => {
+export const loadApplicationsAction = (): ThunkResult<Promise<ApplicationDetails[]>> => {
   return async (dispatch, getState) => {
     dispatch({ type: LOAD_APPLICATIONS_PENDING });
 
-    let applicationList: Immutable.List<ApplicationDetails>;
+    let applicationList: ApplicationDetails[];
     // keep consistency, in application list page need pods info in components
-    let allNamespacesComponents: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>> = Immutable.Map({});
+    let allNamespacesComponents: { [key: string]: ApplicationComponentDetails[] } = {};
     try {
       applicationList = await api.getApplicationList();
 
       await Promise.all(
         applicationList
-          .filter((app) => app.get("status") === "Active")
+          .filter((app) => app.status === "Active")
           .map(async (app) => {
-            const components = await api.getApplicationComponentList(app.get("name"));
-            allNamespacesComponents = allNamespacesComponents.set(app.get("name"), components);
+            const components = await api.getApplicationComponentList(app.name);
+            allNamespacesComponents[app.name] = components;
           }),
       );
     } catch (e) {
@@ -157,10 +143,10 @@ export const loadApplicationsAction = (): ThunkResult<Promise<Immutable.List<App
       throw e;
     }
 
-    const activeNamespace = getState().get("namespaces").get("active");
-    const firstNamespace = applicationList.get(0);
-    if (!activeNamespace && applicationList.size > 0 && firstNamespace != null) {
-      dispatch(setCurrentNamespaceAction(firstNamespace?.get("name"), false));
+    const activeNamespace = getState().namespaces.active;
+    const firstNamespace = applicationList[0];
+    if (!activeNamespace && applicationList.length > 0 && firstNamespace != null) {
+      dispatch(setCurrentNamespaceAction(firstNamespace?.name, false));
     }
 
     dispatch({
@@ -178,42 +164,6 @@ export const loadApplicationsAction = (): ThunkResult<Promise<Immutable.List<App
     });
 
     return applicationList;
-  };
-};
-
-// export const loadApplicationPluginsAction = (): ThunkResult<Promise<void>> => {
-//   return async dispatch => {
-//     let applicationPlugins;
-//     try {
-//       applicationPlugins = await getApplicationPlugins();
-//     } catch (e) {
-//       if (e.response && e.response.data.status === StatusFailure) {
-//         dispatch(setErrorNotificationAction(e.response.data.message));
-//       } else {
-//         dispatch(setErrorNotificationAction());
-//       }
-//       return;
-//     }
-
-//     dispatch({
-//       type: LOAD_APPLICATION_PLUGINS_FULFILLED,
-//       payload: {
-//         applicationPlugins
-//       }
-//     });
-//   };
-// };
-
-export const loadComponentPluginsAction = (): ThunkResult<Promise<void>> => {
-  return async (dispatch) => {
-    let componentPlugins = await api.getComponentPlugins();
-
-    dispatch({
-      type: LOAD_COMPONENT_PLUGINS_FULFILLED,
-      payload: {
-        componentPlugins,
-      },
-    });
   };
 };
 

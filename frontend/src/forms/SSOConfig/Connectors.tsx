@@ -1,96 +1,80 @@
-import React from "react";
-import { connect, DispatchProp } from "react-redux";
-import { WrappedFieldArrayProps } from "redux-form";
-import { FieldArray } from "redux-form/immutable";
-import { SSO_CONNECTOR_TYPE_GITHUB, SSO_CONNECTOR_TYPE_GITLAB } from "types/sso";
 import Box from "@material-ui/core/Box";
-import { RenderGithubConnector } from "forms/SSOConfig/GithubConnector";
 import Paper from "@material-ui/core/Paper";
-import { RenderGitlabConnector } from "forms/SSOConfig/GitlabConnector";
-import Immutable from "immutable";
-import { ComponentLikePort } from "types/componentTemplate";
 import { Alert } from "@material-ui/lab";
+import { RenderGithubConnector } from "forms/SSOConfig/GithubConnector";
+import { RenderGitlabConnector } from "forms/SSOConfig/GitlabConnector";
+import { ValidatorArrayNotEmpty } from "forms/validator";
+import React from "react";
+import { FieldArray } from "react-final-form-arrays";
+import {
+  SSOGithubConnector,
+  SSOGitlabConnector,
+  SSO_CONNECTOR_TYPE_GITHUB,
+  SSO_CONNECTOR_TYPE_GITLAB,
+} from "types/sso";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
-interface FieldArrayComponentHackType {
-  name: any;
-  component: any;
-  validate: any;
-}
+export interface Props {}
 
-const ValidatorConnectors = (
-  values: Immutable.List<ComponentLikePort>,
-  _allValues?: any,
-  _props?: any,
-  _name?: any,
-) => {
-  if (!values) return undefined;
-
-  if (values.size === 0) {
-    return "You should at least configure one connector.";
-  }
-};
-
-interface FieldArrayProps extends DispatchProp {}
-
-interface Props extends WrappedFieldArrayProps<any>, FieldArrayComponentHackType, FieldArrayProps {}
-
-class RenderConnectors extends React.PureComponent<Props> {
+export class Connectors extends React.PureComponent<Props> {
   public render() {
-    const { fields, meta } = this.props;
-    const { error } = meta;
     return (
-      <Box mt={2}>
-        {fields.map((field, index) => {
-          const connector = fields.get(index);
-          let connectorComponent;
+      <FieldArray<SSOGithubConnector | SSOGitlabConnector>
+        validate={ValidatorArrayNotEmpty}
+        name="connectors"
+        render={({ fields, meta: { error, touched } }) => (
+          <>
+            <Box mt={2}>
+              {fields.value &&
+                fields.value.map((connector, index) => {
+                  let field = `connectors.${index}`;
+                  let connectorComponent;
 
-          if (connector.get("type") === SSO_CONNECTOR_TYPE_GITHUB) {
-            connectorComponent = (
-              <RenderGithubConnector
-                connector={connector}
-                field={field}
-                meta={meta}
-                key={connector.get("type") + "-" + index}
-              />
-            );
-          } else if (connector.get("type") === SSO_CONNECTOR_TYPE_GITLAB) {
-            connectorComponent = (
-              <RenderGitlabConnector
-                connector={connector}
-                field={field}
-                meta={meta}
-                key={connector.get("type") + "-" + index}
-              />
-            );
-          }
+                  if (connector.type === SSO_CONNECTOR_TYPE_GITHUB) {
+                    connectorComponent = (
+                      <RenderGithubConnector
+                        // @ts-ignore
+                        connector={connector}
+                        fieldName={field}
+                        key={connector.type + "-" + index}
+                      />
+                    );
+                  } else if (connector.type === SSO_CONNECTOR_TYPE_GITLAB) {
+                    connectorComponent = (
+                      <RenderGitlabConnector
+                        // @ts-ignore
+                        connector={connector}
+                        fieldName={field}
+                        key={connector.type + "-" + index}
+                      />
+                    );
+                  }
 
-          return (
-            <Box mb={2} key={field}>
-              <Paper variant="outlined" square>
-                {connectorComponent}
-                <Box p={2} display="flex" flexDirection="row-reverse">
-                  <DeleteButtonWithConfirmPopover
-                    useText
-                    popupId="delete-sso-popup"
-                    popupTitle="DELETE SSO?"
-                    confirmedAction={() => fields.remove(index)}
-                  />
-                </Box>
-              </Paper>
+                  return (
+                    <Box mb={2} key={field}>
+                      <Paper variant="outlined" square>
+                        {connectorComponent}
+                        <Box p={2} display="flex" flexDirection="row-reverse">
+                          <DeleteButtonWithConfirmPopover
+                            useText
+                            popupId="delete-sso-popup"
+                            popupTitle="DELETE SSO?"
+                            confirmedAction={() => fields.remove(index)}
+                          />
+                        </Box>
+                      </Paper>
+                    </Box>
+                  );
+                })}
             </Box>
-          );
-        })}
-        {error ? (
-          <Box mt={2}>
-            <Alert severity="error">{error}</Alert>
-          </Box>
-        ) : null}
-      </Box>
+            {touched && error && typeof error === "string" ? (
+              <Box mt={2}>
+                <Alert severity="error">{error}</Alert>
+              </Box>
+            ) : null}
+          </>
+        )}
+      />
     );
   }
 }
-
-export const Connectors = connect()((props: FieldArrayProps) => {
-  return <FieldArray name="connectors" component={RenderConnectors} validate={ValidatorConnectors} {...props} />;
-});

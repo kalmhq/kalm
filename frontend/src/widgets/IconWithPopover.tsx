@@ -2,16 +2,16 @@ import React from "react";
 import PopupState, { bindTrigger } from "material-ui-popup-state";
 import { FlexRowItemCenterBox } from "./Box";
 import {
-  Popper,
-  Paper,
-  Grid,
-  Button,
-  Popover,
-  withStyles,
-  createStyles,
-  Theme,
-  WithStyles,
   Box,
+  Button,
+  createStyles,
+  Grid,
+  Paper,
+  Popover,
+  Popper,
+  Theme,
+  withStyles,
+  WithStyles,
 } from "@material-ui/core";
 import { POPPER_ZINDEX } from "layout/Constants";
 import { customBindHover, customBindPopover } from "utils/popper";
@@ -39,7 +39,9 @@ export class IconWithPopover extends React.PureComponent<Props> {
                 {icon}
               </FlexRowItemCenterBox>
               <Popper style={{ zIndex: POPPER_ZINDEX }} {...customBindPopover(popupState)}>
-                <Paper>{popoverBody}</Paper>
+                <Paper variant="outlined" square>
+                  {popoverBody}
+                </Paper>
               </Popper>
             </>
           );
@@ -55,6 +57,7 @@ interface ConfirmPopoverProps {
   popupTitle: string;
   useText?: boolean;
   iconSize?: "medium" | "small";
+  disabled?: boolean;
 }
 
 const styles = (theme: Theme) =>
@@ -67,7 +70,7 @@ const styles = (theme: Theme) =>
 
 class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopoverProps & WithStyles<typeof styles>> {
   render() {
-    const { popupId, popupTitle, confirmedAction, classes, useText, iconSize } = this.props;
+    const { popupId, popupTitle, confirmedAction, classes, useText, iconSize, disabled } = this.props;
     return (
       <PopupState variant="popover" popupId={popupId}>
         {(popupState) => {
@@ -81,6 +84,7 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                   variant="outlined"
                   component="span"
                   size="small"
+                  disabled={disabled}
                   {...trigger}
                   onClick={(e: React.SyntheticEvent<any, Event>) => {
                     e.stopPropagation();
@@ -90,7 +94,13 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                   Delete
                 </Button>
               ) : (
-                <IconButtonWithTooltip size={iconSize} tooltipTitle="Delete" aria-label="delete" {...trigger}>
+                <IconButtonWithTooltip
+                  size={iconSize}
+                  tooltipTitle="Delete"
+                  aria-label="delete"
+                  disabled={disabled}
+                  {...trigger}
+                >
                   <DeleteIcon />
                 </IconButtonWithTooltip>
               )}
@@ -99,44 +109,43 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                 onClick={(e: React.SyntheticEvent<any, Event>) => e.stopPropagation()}
                 {...popover}
               >
-                <Paper>
-                  <Box p={2}>
-                    <Subtitle2>{popupTitle}</Subtitle2>
-                  </Box>
-                  <Box p={2}>
-                    <Grid container spacing={2}>
-                      <Grid item xs={6}>
-                        <Button
-                          className={classes.deleteButton}
-                          variant="outlined"
-                          fullWidth
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            blinkTopProgressAction();
-                            confirmedAction();
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Button
-                          fullWidth
-                          size="small"
-                          variant="outlined"
-                          color="default"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            popover.onClose();
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                      </Grid>
+                <Box p={2}>
+                  <Subtitle2>{popupTitle}</Subtitle2>
+                </Box>
+                <Box p={2}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Button
+                        className={classes.deleteButton}
+                        variant="outlined"
+                        fullWidth
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          blinkTopProgressAction();
+                          confirmedAction();
+                          popover.onClose();
+                        }}
+                      >
+                        Delete
+                      </Button>
                     </Grid>
-                  </Box>
-                </Paper>
+                    <Grid item xs={6}>
+                      <Button
+                        fullWidth
+                        size="small"
+                        variant="outlined"
+                        color="default"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          popover.onClose();
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </Box>
               </Popover>
             </>
           );

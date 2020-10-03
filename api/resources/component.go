@@ -19,9 +19,9 @@ type ComponentListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetComponent(namespace, name string) (*v1alpha1.Component, error) {
+func (resourceManager *ResourceManager) GetComponent(namespace, name string) (*v1alpha1.Component, error) {
 	component := &v1alpha1.Component{}
-	err := builder.Get(namespace, name, component)
+	err := resourceManager.Get(namespace, name, component)
 
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func (builder *Builder) GetComponent(namespace, name string) (*v1alpha1.Componen
 	return component, nil
 }
 
-func (builder *Builder) GetComponentListChannel(namespaces string, listOptions metaV1.ListOptions) *ComponentListChannel {
+func (resourceManager *ResourceManager) GetComponentListChannel(namespaces string, listOptions metaV1.ListOptions) *ComponentListChannel {
 	channel := &ComponentListChannel{
 		List:  make(chan []v1alpha1.Component, 1),
 		Error: make(chan error, 1),
@@ -38,7 +38,7 @@ func (builder *Builder) GetComponentListChannel(namespaces string, listOptions m
 
 	go func() {
 		var fetched v1alpha1.ComponentList
-		err := builder.List(&fetched, client.InNamespace(namespaces))
+		err := resourceManager.List(&fetched, client.InNamespace(namespaces))
 		res := make([]v1alpha1.Component, len(fetched.Items))
 
 		for i, item := range fetched.Items {
@@ -53,9 +53,10 @@ func (builder *Builder) GetComponentListChannel(namespaces string, listOptions m
 }
 
 type Component struct {
-	v1alpha1.ComponentSpec `json:",inline"`
-	Plugins                []runtime.RawExtension `json:"plugins,omitempty"`
-	Name                   string                 `json:"name"`
+	Name                            string                 `json:"name"`
+	Plugins                         []runtime.RawExtension `json:"plugins,omitempty"`
+	*v1alpha1.ComponentSpec         `json:",inline"`
+	*v1alpha1.ProtectedEndpointSpec `json:"protectedEndpoint,omitempty"`
 }
 
 type CPUQuantity struct {
@@ -79,7 +80,8 @@ func (m *MemoryQuantity) MarshalJSON() ([]byte, error) {
 type ComponentDetails struct {
 	Name string `json:"name"`
 
-	v1alpha1.ComponentSpec `json:",inline"`
+	v1alpha1.ComponentSpec          `json:",inline"`
+	*v1alpha1.ProtectedEndpointSpec `json:"protectedEndpoint,omitempty"`
 
 	// hack to override & ignore field in ComponentSpec
 	//ResourceRequirements interface{} `json:"resourceRequirements,omitempty"`
@@ -97,7 +99,7 @@ type ComponentDetails struct {
 	Pods                 []PodStatus           `json:"pods"`
 }
 
-func (builder *Builder) BuildComponentDetails(
+func (resourceManager *ResourceManager) BuildComponentDetails(
 	component *v1alpha1.Component,
 	resources *Resources,
 ) (details *ComponentDetails, err error) {
@@ -108,17 +110,18 @@ func (builder *Builder) BuildComponentDetails(
 		belongsToComponent := client.MatchingLabels{"kalm-component": component.Name}
 
 		resourceChannels := &ResourceChannels{
-			IstioMetricList:            builder.GetIstioMetricsListChannel(ns),
-			PodList:                    builder.GetPodListChannel(nsListOption, belongsToComponent),
-			EventList:                  builder.GetEventListChannel(nsListOption),
-			ServiceList:                builder.GetServiceListChannel(nsListOption, belongsToComponent),
-			ComponentPluginBindingList: builder.GetComponentPluginBindingListChannel(nsListOption, belongsToComponent),
+			IstioMetricList:            resourceManager.GetIstioMetricsListChannel(ns),
+			PodList:                    resourceManager.GetPodListChannel(nsListOption, belongsToComponent),
+			EventList:                  resourceManager.GetEventListChannel(nsListOption),
+			ServiceList:                resourceManager.GetServiceListChannel(nsListOption, belongsToComponent),
+			ComponentPluginBindingList: resourceManager.GetComponentPluginBindingListChannel(nsListOption, belongsToComponent),
+			ProtectedEndpointList:      resourceManager.GetProtectedEndpointsChannel(nsListOption),
 		}
 
 		resources, err = resourceChannels.ToResources()
 
 		if err != nil {
-			builder.Logger.Error(err, "channels to resources error")
+			resourceManager.Logger.Error(err, "channels to resources error")
 			return nil, err
 		}
 	}
@@ -196,6 +199,14 @@ func (builder *Builder) BuildComponentDetails(
 		Pods:                 podsStatus,
 	}
 
+	for _, protectedEndpoint := range resources.ProtectedEndpoints {
+		if protectedEndpoint.Spec.EndpointName == component.Name {
+			details.ProtectedEndpointSpec = &protectedEndpoint.Spec
+			break
+		}
+		continue
+	}
+
 	resRequirements := component.Spec.ResourceRequirements
 	if resRequirements != nil && resRequirements.Requests != nil {
 		if cpuReq, exist := resRequirements.Requests[coreV1.ResourceCPU]; exist {
@@ -232,7 +243,7 @@ func getComponentAndNSNameFromSvcName(svcName string) (string, string) {
 	return compName, nsName
 }
 
-func (builder *Builder) BuildComponentDetailsResponse(
+func (resourceManager *ResourceManager) BuildComponentDetailsResponse(
 	components *v1alpha1.ComponentList,
 ) ([]ComponentDetails, error) {
 
@@ -246,11 +257,12 @@ func (builder *Builder) BuildComponentDetailsResponse(
 	nsListOption := client.InNamespace(ns)
 
 	resourceChannels := &ResourceChannels{
-		IstioMetricList:            builder.GetIstioMetricsListChannel(ns),
-		PodList:                    builder.GetPodListChannel(nsListOption),
-		EventList:                  builder.GetEventListChannel(nsListOption),
-		ServiceList:                builder.GetServiceListChannel(nsListOption),
-		ComponentPluginBindingList: builder.GetComponentPluginBindingListChannel(nsListOption),
+		IstioMetricList:            resourceManager.GetIstioMetricsListChannel(ns),
+		PodList:                    resourceManager.GetPodListChannel(nsListOption),
+		EventList:                  resourceManager.GetEventListChannel(nsListOption),
+		ServiceList:                resourceManager.GetServiceListChannel(nsListOption),
+		ComponentPluginBindingList: resourceManager.GetComponentPluginBindingListChannel(nsListOption),
+		ProtectedEndpointList:      resourceManager.GetProtectedEndpointsChannel(nsListOption),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -264,7 +276,7 @@ func (builder *Builder) BuildComponentDetailsResponse(
 	//}
 
 	for i := range components.Items {
-		item, err := builder.BuildComponentDetails(&components.Items[i], resources)
+		item, err := resourceManager.BuildComponentDetails(&components.Items[i], resources)
 		if err != nil {
 			return nil, err
 		}

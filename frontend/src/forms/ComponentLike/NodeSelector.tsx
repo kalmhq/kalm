@@ -3,35 +3,34 @@ import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import Immutable from "immutable";
+import { FieldRenderProps } from "react-final-form";
 import React from "react";
-import { WrappedFieldProps } from "redux-form";
-import { NodeSelectorLabels, PodAffinityTypePreferFanout, PodAffinityTypePreferGather } from "types/componentTemplate";
-import { RenderSelectField } from "../Basic/select";
+import { NodeSelectorLabels } from "types/componentTemplate";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" color="primary" />;
 
 interface Props {
-  nodeLabels: Immutable.List<string>;
+  nodeLabels: string[];
 }
 
-export const RenderSelectLabels = ({ input, nodeLabels }: FilledTextFieldProps & WrappedFieldProps & Props) => {
+export const RenderSelectLabels = ({
+  nodeLabels,
+  input: { value, onChange },
+}: FilledTextFieldProps & FieldRenderProps<NodeSelectorLabels> & Props) => {
   const defaultValue: string[] = [];
-  const inputValue = input.value as NodeSelectorLabels;
+  const inputValue = value as NodeSelectorLabels;
 
   if (inputValue) {
-    inputValue.forEach((v, k) => {
-      defaultValue.push(`${k}:${v}`);
-    });
+    for (let k in inputValue) {
+      defaultValue.push(`${k}:${inputValue[k]}`);
+    }
   }
-
-  const options = nodeLabels.toArray();
 
   return (
     <Autocomplete
       multiple
-      options={options}
+      options={nodeLabels}
       disableCloseOnSelect
       getOptionLabel={(option) => option}
       renderOption={(option, { selected }) => (
@@ -53,37 +52,20 @@ export const RenderSelectLabels = ({ input, nodeLabels }: FilledTextFieldProps &
           size={"small"}
         />
       )}
-      defaultValue={defaultValue}
+      value={defaultValue}
       onChange={(_, v: any) => {
         const value = v as string[];
 
-        let nodeSelectorLabels = Immutable.OrderedMap({});
+        let nodeSelectorLabels: NodeSelectorLabels = {};
 
         value.forEach((nodeLabel) => {
           const kv = nodeLabel.split(":");
 
-          nodeSelectorLabels = nodeSelectorLabels.set(kv[0], kv[1]);
+          nodeSelectorLabels[kv[0]] = kv[1];
         });
 
-        input.onChange(nodeSelectorLabels);
+        onChange(nodeSelectorLabels);
       }}
     />
-  );
-};
-
-export const RenderAffinityType = (props: FilledTextFieldProps & WrappedFieldProps) => {
-  const inputLabel = "Assign Node Policy";
-  const { input } = props;
-  return (
-    <RenderSelectField
-      input={input}
-      label={inputLabel}
-      value={input.value}
-      meta={props.meta}
-      options={[
-        { value: PodAffinityTypePreferFanout, text: "Prefer Fanout" },
-        { value: PodAffinityTypePreferGather, text: "Prefer Gather" },
-      ]}
-    ></RenderSelectField>
   );
 };

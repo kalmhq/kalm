@@ -2,6 +2,7 @@ import {
   Box,
   createStyles,
   Grid,
+  makeStyles,
   MenuItem,
   StandardTextFieldProps,
   TextField,
@@ -10,52 +11,27 @@ import {
   withStyles,
 } from "@material-ui/core";
 import { WithStyles } from "@material-ui/styles";
-import { NormalizeNumber } from "forms/normalizer";
-import Immutable from "immutable";
+import { NormalizePositiveNumber, trimParse } from "forms/normalizer";
 import React from "react";
-import { connect, DispatchProp } from "react-redux";
-import { RootState } from "reducers";
-import { change, WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
-import { Field, formValueSelector } from "redux-form/immutable";
+import { Field, FieldRenderProps } from "react-final-form";
 import { ComponentLikePort, PortProtocolHTTP, PortProtocolTCP, Probe } from "types/componentTemplate";
-import { makeSelectOption, SelectField } from "../Basic/select";
-import { ValidatorOneof, ValidatorRequired } from "../validator";
 import sc from "../../utils/stringConstants";
+import { makeSelectOption, KSelect } from "../Final/select";
+import { validateHostWithWildcardPrefix, ValidatorOneOfFactory, ValidatorRequired } from "../validator";
 
-interface FieldComponentHackType {
-  name: any;
-  component: any;
+const ValidatorScheme = ValidatorOneOfFactory(["HTTP", "HTTPS"]);
+
+interface OwnProps {
+  name: "livenessProbe" | "readinessProbe";
+  value?: Probe;
+  change: any;
+  ports?: ComponentLikePort[];
 }
 
-const ValidatorScheme = ValidatorOneof(/^https?$/i);
-
-const mapStateToProps = (state: RootState, { meta: { form } }: WrappedFieldArrayProps) => {
-  const selector = formValueSelector(form);
-  const readinessProbe = selector(state, "readinessProbe") as Probe | undefined;
-  const livenessProbe = selector(state, "livenessProbe") as Probe | undefined;
-  const ports = selector(state, "ports") as Immutable.List<ComponentLikePort> | undefined;
-  return { readinessProbe, livenessProbe, ports };
-};
-
-interface FieldProps extends DispatchProp {}
-
-interface Props
-  extends WrappedFieldProps,
-    FieldComponentHackType,
-    FieldProps,
-    WithStyles<typeof styles>,
-    ReturnType<typeof mapStateToProps> {}
+interface Props extends WithStyles<typeof styles>, OwnProps {}
 
 const styles = (theme: Theme) =>
   createStyles({
-    input: {
-      padding: 2,
-      textAlign: "center",
-      width: 60,
-      "&::placeholder": {
-        textAlign: "center",
-      },
-    },
     code: {
       fontFamily: "Hack, monospace",
       "& input": {
@@ -64,46 +40,58 @@ const styles = (theme: Theme) =>
     },
   });
 
-class RenderProbe extends React.PureComponent<Props> {
-  private renderNestedTextfield = ({
-    input,
-    meta: { error, touched },
-    placeholder,
-    style,
-    select,
-    children,
-    type,
-  }: WrappedFieldProps & StandardTextFieldProps & { style?: any; type?: string }) => {
-    const { classes } = this.props;
-    return (
-      <TextField
-        error={touched && !!error}
-        helperText={touched && !!error ? error : undefined}
-        InputProps={{ classes: { input: classes.input } }}
-        onChange={input.onChange}
-        value={input.value}
-        size="small"
-        type={type}
-        select={select}
-        placeholder={placeholder}
-        inputProps={{ style }}
-      >
-        {children}
-      </TextField>
-    );
-  };
+const RenderNestedTextfield = ({
+  input: { value, onChange, onBlur },
+  meta: { error, touched, active },
+  placeholder,
+  style,
+  select,
+  children,
+  type,
+}: FieldRenderProps<string | number | undefined> &
+  StandardTextFieldProps & { style?: any; type?: string; normalize?: any }) => {
+  const classes = makeStyles((theme) => ({
+    input: {
+      padding: 2,
+      textAlign: "center",
+      width: 60,
+      "&::placeholder": {
+        textAlign: "center",
+      },
+    },
+  }))();
 
+  return (
+    <TextField
+      error={!!error && touched}
+      helperText={touched && error}
+      InputProps={{ classes: { input: classes.input } }}
+      onChange={onChange}
+      onBlur={onBlur}
+      value={value}
+      size="small"
+      type={type}
+      select={select}
+      placeholder={placeholder}
+      inputProps={{ style }}
+    >
+      {children}
+    </TextField>
+  );
+};
+
+class RenderProbe extends React.PureComponent<Props> {
   private renderHttpGet() {
-    const name = this.props.input.name;
-    const { classes } = this.props;
+    const { classes, name } = this.props;
+
     return (
       <Box p={1}>
         <Typography component="div">
           After initial
           <Field
             name={`${name}.initialDelaySeconds`}
-            component={this.renderNestedTextfield}
-            normalize={NormalizeNumber}
+            component={RenderNestedTextfield}
+            parse={NormalizePositiveNumber}
             placeholder="10"
             type="number"
             min="1"
@@ -113,7 +101,7 @@ class RenderProbe extends React.PureComponent<Props> {
           <Box className={classes.code} display="inline-block">
             <Field
               name={`${name}.httpGet.scheme`}
-              component={this.renderNestedTextfield}
+              component={RenderNestedTextfield}
               validate={ValidatorScheme}
               placeholder="http"
               select
@@ -127,24 +115,25 @@ class RenderProbe extends React.PureComponent<Props> {
               </MenuItem>
             </Field>
             ://
-            <Field
+            <Field<string | undefined>
               name={`${name}.httpGet.host`}
-              component={this.renderNestedTextfield}
+              component={RenderNestedTextfield}
               placeholder="0.0.0.0"
+              validate={validateHostWithWildcardPrefix}
               style={{ width: 80 }}
             />
             :
             <Field
               name={`${name}.httpGet.port`}
-              component={this.renderNestedTextfield}
+              component={RenderNestedTextfield}
               placeholder="8080"
-              normalize={NormalizeNumber}
+              parse={NormalizePositiveNumber}
               validate={ValidatorRequired}
               style={{ width: 60 }}
             />
             <Field
               name={`${name}.httpGet.path`}
-              component={this.renderNestedTextfield}
+              component={RenderNestedTextfield}
               placeholder="/healthy"
               validate={ValidatorRequired}
               style={{ width: 80, textAlign: "left" }}
@@ -153,8 +142,8 @@ class RenderProbe extends React.PureComponent<Props> {
           will be triggered every{" "}
           <Field
             name={`${name}.periodSeconds`}
-            component={this.renderNestedTextfield}
-            normalize={NormalizeNumber}
+            component={RenderNestedTextfield}
+            parse={NormalizePositiveNumber}
             placeholder="10"
             type="number"
             min="1"
@@ -167,17 +156,17 @@ class RenderProbe extends React.PureComponent<Props> {
   }
 
   private renderExec() {
-    const name = this.props.input.name;
-    const { classes } = this.props;
+    const { classes, name } = this.props;
+
     return (
       <Box p={1}>
         <Typography component="div">
           After initial
           <Field
             name={`${name}.initialDelaySeconds`}
-            component={this.renderNestedTextfield}
+            component={RenderNestedTextfield}
             placeholder="10"
-            normalize={NormalizeNumber}
+            parse={NormalizePositiveNumber}
             type="number"
             min="1"
             style={{ width: 60 }}
@@ -186,8 +175,8 @@ class RenderProbe extends React.PureComponent<Props> {
           <Box className={classes.code} display="inline-block">
             <Field
               name={`${name}.exec.command[0]`}
-              component={this.renderNestedTextfield}
-              validate={ValidatorRequired}
+              component={RenderNestedTextfield}
+              parse={trimParse}
               placeholder="command"
               style={{ width: 300 }}
             />
@@ -195,8 +184,8 @@ class RenderProbe extends React.PureComponent<Props> {
           will be executed every{" "}
           <Field
             name={`${name}.periodSeconds`}
-            component={this.renderNestedTextfield}
-            normalize={NormalizeNumber}
+            component={RenderNestedTextfield}
+            parse={NormalizePositiveNumber}
             placeholder="10"
             type="number"
             min="1"
@@ -209,16 +198,16 @@ class RenderProbe extends React.PureComponent<Props> {
   }
 
   private renderTcpSocket() {
-    const name = this.props.input.name;
-    const { classes } = this.props;
+    const { classes, name } = this.props;
+
     return (
       <Box p={1}>
         <Typography component="div">
           After initial
           <Field
             name={`${name}.initialDelaySeconds`}
-            component={this.renderNestedTextfield}
-            normalize={NormalizeNumber}
+            component={RenderNestedTextfield}
+            parse={NormalizePositiveNumber}
             placeholder="10"
             type="number"
             min="1"
@@ -228,16 +217,16 @@ class RenderProbe extends React.PureComponent<Props> {
           <Box className={classes.code} display="inline-block">
             <Field
               name={`${name}.tcpSocket.host`}
-              component={this.renderNestedTextfield}
+              component={RenderNestedTextfield}
               placeholder="0.0.0.0"
               style={{ width: 200 }}
             />
             :
             <Field
               name={`${name}.tcpSocket.port`}
-              component={this.renderNestedTextfield}
+              component={RenderNestedTextfield}
               validate={ValidatorRequired}
-              normalize={NormalizeNumber}
+              parse={NormalizePositiveNumber}
               placeholder="8080"
               style={{ width: 60 }}
             />
@@ -245,8 +234,8 @@ class RenderProbe extends React.PureComponent<Props> {
           will be established every{" "}
           <Field
             name={`${name}.periodSeconds`}
-            component={this.renderNestedTextfield}
-            normalize={NormalizeNumber}
+            component={RenderNestedTextfield}
+            parse={NormalizePositiveNumber}
             placeholder="10"
             type="number"
             min="1"
@@ -259,7 +248,7 @@ class RenderProbe extends React.PureComponent<Props> {
   }
 
   private renderCommon() {
-    const name = this.props.input.name;
+    const { name } = this.props;
     const type = this.getProbeType();
 
     return (
@@ -268,9 +257,9 @@ class RenderProbe extends React.PureComponent<Props> {
           If there is no response within{" "}
           <Field
             name={`${name}.timeoutSeconds`}
-            component={this.renderNestedTextfield}
+            component={RenderNestedTextfield}
             placeholder="1"
-            normalize={NormalizeNumber}
+            parse={NormalizePositiveNumber}
             style={{ width: 60 }}
             type="number"
             min="1"
@@ -291,9 +280,9 @@ class RenderProbe extends React.PureComponent<Props> {
             <>
               <Field
                 name={`${name}.successThreshold`}
-                component={this.renderNestedTextfield}
+                component={RenderNestedTextfield}
                 placeholder="1"
-                normalize={NormalizeNumber}
+                parse={NormalizePositiveNumber}
                 style={{ width: 60 }}
                 type="number"
                 min="1"
@@ -304,9 +293,9 @@ class RenderProbe extends React.PureComponent<Props> {
           will make the probe ready.{" "}
           <Field
             name={`${name}.failureThreshold`}
-            component={this.renderNestedTextfield}
+            component={RenderNestedTextfield}
             placeholder="3"
-            normalize={NormalizeNumber}
+            parse={NormalizePositiveNumber}
             type="number"
             min="1"
             style={{ width: 60 }}
@@ -317,121 +306,78 @@ class RenderProbe extends React.PureComponent<Props> {
     );
   }
 
-  private getProbeObject = () => {
-    const name = this.props.input.name;
-    let probe: Probe | undefined;
-
-    if (name === "livenessProbe") {
-      probe = this.props.livenessProbe;
-    } else {
-      probe = this.props.readinessProbe;
-    }
-
-    return probe;
-  };
-
   private handleChangeType(type: string) {
-    const {
-      ports,
-      dispatch,
-      meta: { form },
-      input,
-    } = this.props;
+    const { change, ports, name } = this.props;
 
     if (type === "httpGet") {
-      const potentialPort = ports
-        ? ports.find((x) => x.get("protocol") === PortProtocolHTTP && !!x.get("containerPort"))
-        : null;
-      dispatch(
-        change(
-          form,
-          input.name,
-          Immutable.Map({
-            httpGet: Immutable.Map({
-              scheme: "HTTP",
-              host: "0.0.0.0",
-              path: "/health",
-              port: potentialPort ? potentialPort.get("containerPort") : 8080,
-            }),
-            failureThreshold: 3,
-            periodSeconds: 10,
-            successThreshold: 1,
-            timeoutSeconds: 1,
-            initialDelaySeconds: 10,
-          }),
-        ),
-      );
+      const potentialPort = ports ? ports.find((x) => x.protocol === PortProtocolHTTP && !!x.containerPort) : null;
+      change(name, {
+        httpGet: {
+          scheme: "HTTP",
+          host: "0.0.0.0",
+          path: "/health",
+          port: potentialPort ? potentialPort.containerPort : 8080,
+        },
+        failureThreshold: 3,
+        periodSeconds: 10,
+        successThreshold: 1,
+        timeoutSeconds: 1,
+        initialDelaySeconds: 10,
+      });
     } else if (type === "exec") {
-      dispatch(
-        change(
-          form,
-          input.name,
-          Immutable.Map({
-            exec: Immutable.Map({
-              command: Immutable.List([""]),
-            }),
-            failureThreshold: 3,
-            periodSeconds: 10,
-            successThreshold: 1,
-            timeoutSeconds: 1,
-            initialDelaySeconds: 10,
-          }),
-        ),
-      );
+      change(name, {
+        exec: {
+          command: [""],
+        },
+        failureThreshold: 3,
+        periodSeconds: 10,
+        successThreshold: 1,
+        timeoutSeconds: 1,
+        initialDelaySeconds: 10,
+      });
     } else if (type === "tcpSocket") {
-      const potentialPort = ports
-        ? ports.find((x) => x.get("protocol") === PortProtocolTCP && !!x.get("containerPort"))
-        : null;
-      dispatch(
-        change(
-          form,
-          input.name,
-          Immutable.Map({
-            tcpSocket: Immutable.Map({
-              port: potentialPort ? potentialPort.get("containerPort") : 8080,
-              host: "0.0.0.0",
-            }),
-            failureThreshold: 3,
-            periodSeconds: 10,
-            successThreshold: 1,
-            timeoutSeconds: 1,
-            initialDelaySeconds: 10,
-          }),
-        ),
-      );
+      const potentialPort = ports ? ports.find((x: any) => x.protocol === PortProtocolTCP && !!x.containerPort) : null;
+      change(name, {
+        tcpSocket: {
+          port: potentialPort ? potentialPort.containerPort : 8080,
+          host: "0.0.0.0",
+        },
+        failureThreshold: 3,
+        periodSeconds: 10,
+        successThreshold: 1,
+        timeoutSeconds: 1,
+        initialDelaySeconds: 10,
+      });
     } else {
-      dispatch(change(form, input.name, null));
+      change(name, null);
     }
   }
 
   private getProbeType = () => {
-    const probe = this.getProbeObject();
+    const { value: probe } = this.props;
 
     return !probe
       ? "none"
-      : !!probe.get("httpGet")
+      : !!probe.httpGet
       ? "httpGet"
-      : !!probe.get("exec")
+      : !!probe.exec
       ? "exec"
-      : !!probe.get("tcpSocket")
+      : !!probe.tcpSocket
       ? "tcpSocket"
       : "none";
   };
 
   public render() {
     const type = this.getProbeType();
+
     return (
       <Grid container spacing={2}>
         <Grid item xs={6}>
-          <SelectField
+          <KSelect
             label="Type"
             value={type}
             onChange={(event: any) => {
               this.handleChangeType(event.target.value);
-            }}
-            meta={{
-              touched: true,
-              error: undefined,
             }}
             options={[
               makeSelectOption("none", "None", sc.PROBE_NONE_OPTION),
@@ -451,14 +397,4 @@ class RenderProbe extends React.PureComponent<Props> {
   }
 }
 
-export const LivenessProbe = connect()((props: FieldProps) => {
-  return (
-    <Field name="livenessProbe" component={withStyles(styles)(connect(mapStateToProps)(RenderProbe))} {...props} />
-  );
-});
-
-export const ReadinessProbe = connect()((props: FieldProps) => {
-  return (
-    <Field name="readinessProbe" component={withStyles(styles)(connect(mapStateToProps)(RenderProbe))} {...props} />
-  );
-});
+export const ProbeFields = withStyles(styles)(RenderProbe);

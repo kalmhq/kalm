@@ -28,7 +28,7 @@ const styles = (theme: Theme) =>
       background: "rgba(0, 0, 0, 0.04)",
     },
     chartWrapperOpen: {
-      height: 120,
+      minHeight: 120,
       width: 120,
       margin: "0 auto",
     },
@@ -78,11 +78,11 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
   }
 
   private renderPodStatus = (pod: PodStatus) => {
-    if (pod.get("isTerminating")) {
+    if (pod.isTerminating) {
       return <PendingBadge />;
     }
 
-    switch (pod.get("status")) {
+    switch (pod.status) {
       case "Running": {
         return <SuccessBadge />;
       }
@@ -105,10 +105,10 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
     let podPending = 0;
     let podError = 0;
 
-    component?.get("pods").forEach((pod) => {
-      if (pod.get("status") === "Succeeded" || pod.get("status") === "Running") {
+    component?.pods?.forEach((pod) => {
+      if (pod.status === "Succeeded" || pod.status === "Running") {
         podSuccess = podSuccess + 1;
-      } else if (pod.get("status") === "Failed") {
+      } else if (pod.status === "Failed") {
         podError = podError + 1;
       } else {
         podPending = podPending + 1;
@@ -126,24 +126,21 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
     const { classes } = this.props;
 
     return (
-      <div className={`${classes.podItem} `} key={pod.get("name")}>
+      <div className={`${classes.podItem} `} key={pod.name}>
         <div className={classes.podName}>
           {this.renderPodStatus(pod)}
-          <Box ml={1}>{pod.get("name")}</Box>
+          <Box ml={1}>{pod.name}</Box>
         </div>
-        {<div className={classes.podStatus}>{pod.get("status")}</div>}
+        {<div className={classes.podStatus}>{pod.status}</div>}
         {
           <div className={classes.podMessage}>
-            {pod
-              .get("warnings")
-              .map((w, index) => {
-                return (
-                  <Box ml={2} color="error.main" key={index}>
-                    {index + 1}. {w.get("message")}
-                  </Box>
-                );
-              })
-              .toArray()}
+            {pod.warnings.map((w, index) => {
+              return (
+                <Box ml={2} color="error.main" key={index}>
+                  {index + 1}. {w.message}
+                </Box>
+              );
+            })}
           </div>
         }
       </div>
@@ -175,32 +172,28 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
                 <Subtitle1>Pods</Subtitle1>
               </SectionTitle>
             </div>
-            {component.get("pods").size > 0 ? (
+            {component.pods?.length > 0 ? (
               <>
-                {component
-                  .get("pods")
-                  .filter((pod) => pod.get("status") === "Failed")
+                {component.pods
+                  .filter((pod) => pod.status === "Failed")
                   .map((pod) => {
                     return this.renderPodItem(pod);
                   })}
 
-                {component
-                  .get("pods")
-                  .filter((pod) => pod.get("status") === "Pending")
+                {component.pods
+                  .filter((pod) => pod.status === "Pending")
                   .map((pod) => {
                     return this.renderPodItem(pod);
                   })}
 
-                {component
-                  .get("pods")
-                  .filter((pod) => pod.get("status") === "Running")
+                {component.pods
+                  .filter((pod) => pod.status === "Running")
                   .map((pod) => {
                     return this.renderPodItem(pod);
                   })}
 
-                {component
-                  .get("pods")
-                  .filter((pod) => pod.get("status") === "Succeeded")
+                {component.pods
+                  .filter((pod) => pod.status === "Succeeded")
                   .map((pod) => {
                     return this.renderPodItem(pod);
                   })}

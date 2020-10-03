@@ -18,15 +18,11 @@ class ComponentNewRaw extends React.PureComponent<Props> {
   private submit = async (formValues: ComponentLike) => {
     const { dispatch, activeNamespaceName } = this.props;
 
-    formValues = formValues.set(
-      "preInjectedFiles",
-      formValues.get("preInjectedFiles")?.filter((file) => file.get("mountPath") || file.get("content")),
-    );
-    return await dispatch(createComponentAction(formValues, activeNamespaceName));
-  };
+    if (formValues.preInjectedFiles) {
+      formValues.preInjectedFiles = formValues.preInjectedFiles?.filter((file) => file.mountPath || file.content);
+    }
 
-  private onSubmitSuccess = () => {
-    const { dispatch, activeNamespaceName } = this.props;
+    await dispatch(createComponentAction(formValues, activeNamespaceName));
     dispatch(push(`/applications/${activeNamespaceName}/components`));
   };
 
@@ -40,11 +36,7 @@ class ComponentNewRaw extends React.PureComponent<Props> {
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <ComponentLikeForm
-                initialValues={newEmptyComponentLike()}
-                onSubmit={this.submit}
-                onSubmitSuccess={this.onSubmitSuccess}
-              />
+              <ComponentLikeForm _initialValues={newEmptyComponentLike} onSubmit={this.submit} />
             </Grid>
           </Grid>
         </Box>

@@ -18,34 +18,90 @@ func (suite *ClusterHandlerTestSuite) SetupSuite() {
 
 func (suite *ClusterHandlerTestSuite) TestClusterInfo() {
 	// init cluster info
-	var setupClusterResponse SetupClusterResponse
-	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/initialize", `{"domain": "kalm.test"}`)
-	rec.BodyAsJSON(&setupClusterResponse)
-	suite.NotNil(setupClusterResponse.ClusterInfo)
-	suite.Equal("kalm.test", setupClusterResponse.Route.Hosts[0])
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterOwnerRole(),
+		},
+		Method: http.MethodPost,
+		Path:   "/v1alpha1/initialize",
+		Body:   `{"domain": "kalm.test"}`,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "owner", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var setupClusterResponse SetupClusterResponse
+			rec.BodyAsJSON(&setupClusterResponse)
 
-	// get cluster info
-	var clusterInfo ClusterInfo
-	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/cluster", `{}`)
-	rec.BodyAsJSON(&clusterInfo)
-	suite.NotNil(&clusterInfo)
+			suite.NotNil(setupClusterResponse.ClusterInfo)
+			suite.Equal("kalm.test", setupClusterResponse.Route.Hosts[0])
+		},
+	})
 
-	var routes []*resources.HttpRoute
-	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/httproutes/kalm-system", `{}`)
-	rec.BodyAsJSON(&routes)
-	suite.NotNil(routes)
-	suite.Equal(1, len(routes))
-	suite.Equal("kalm-route", routes[0].Name)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterViewerRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/cluster",
+		Body:   `{}`,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var clusterInfo ClusterInfo
+			rec.BodyAsJSON(&clusterInfo)
+			suite.NotNil(&clusterInfo)
+		},
+	})
 
-	// reset cluster info
-	rec = suite.NewRequest(http.MethodPost, "/v1alpha1/reset", `{}`)
-	suite.Equal(200, rec.Code)
-	suite.Equal("", rec.Body.String())
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterViewerRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/httproutes/kalm-system",
+		Body:   `{}`,
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var routes []*resources.HttpRoute
+			rec.BodyAsJSON(&routes)
+			suite.NotNil(routes)
+			suite.Equal(1, len(routes))
+			suite.Equal("kalm-route", routes[0].Name)
+		},
+	})
 
-	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/httproutes/kalm-system", `{}`)
-	rec.BodyAsJSON(&routes)
-	suite.NotNil(routes)
-	suite.Equal(0, len(routes))
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterOwnerRole(),
+		},
+		Method: http.MethodPost,
+		Path:   "/v1alpha1/reset",
+		Body:   `{}`,
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "owner", "cluster")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.Equal(200, rec.Code)
+			suite.Equal("", rec.Body.String())
+
+		},
+	})
+
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterViewerRole(),
+		},
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/httproutes/kalm-system",
+		Body:   `{}`,
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var routes []*resources.HttpRoute
+			rec.BodyAsJSON(&routes)
+			rec.BodyAsJSON(&routes)
+			suite.NotNil(routes)
+			suite.Equal(0, len(routes))
+		},
+	})
 }
 
 func TestClusterHandler(t *testing.T) {

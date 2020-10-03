@@ -1,4 +1,4 @@
-import { ConnectedRouter } from "connected-react-router/immutable";
+import { ConnectedRouter } from "connected-react-router";
 import "driver.js/dist/driver.min.css";
 import { createBrowserHistory } from "history";
 import "perfect-scrollbar/css/perfect-scrollbar.css";

@@ -5,10 +5,11 @@ import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import React from "react";
-import { AllHttpMethods, HttpRoute, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
+import { AllHttpMethods, HttpRoute, methodsModeAll, methodsModeSpecific } from "types/route";
 import { Loading } from "widgets/Loading";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
 import { BasePage } from "../BasePage";
+import produce from "immer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -20,22 +21,19 @@ const styles = (theme: Theme) =>
 interface Props extends WithStyles<typeof styles>, WithRoutesDataProps {}
 
 class RouteEditRaw extends React.PureComponent<Props> {
-  private onSubmit = async (route: HttpRouteForm) => {
+  private onSubmit = async (route: HttpRoute) => {
     const { dispatch } = this.props;
     try {
-      if (route.get("methodsMode") === methodsModeAll) {
-        route = route.set("methods", AllHttpMethods);
+      if (route.methodsMode === methodsModeAll) {
+        route.methods = AllHttpMethods;
       }
 
       await dispatch(updateRouteAction(route));
       await dispatch(setSuccessNotificationAction("Update route successfully"));
+      dispatch(push("/routes"));
     } catch (e) {
       console.log(e);
     }
-  };
-
-  private onSubmitSuccess = async (_route: HttpRoute) => {
-    this.props.dispatch(push("/routes"));
   };
 
   private renderContent() {
@@ -63,12 +61,15 @@ class RouteEditRaw extends React.PureComponent<Props> {
       );
     }
 
-    let routeForm = httpRoute as HttpRouteForm;
-    routeForm = routeForm.set("methodsMode", httpRoute.get("methods").size >= 7 ? methodsModeAll : methodsModeSpecific);
+    let initial = produce(httpRoute, (draft) => {
+      if (httpRoute.methods.length >= 7) {
+        draft.methodsMode = methodsModeAll;
+      } else {
+        draft.methodsMode = methodsModeSpecific;
+      }
+    });
 
-    return (
-      <RouteForm isEdit onSubmit={this.onSubmit} onSubmitSuccess={this.onSubmitSuccess} initialValues={routeForm} />
-    );
+    return <RouteForm isEdit onSubmit={this.onSubmit} initial={initial} />;
   }
 
   public render() {

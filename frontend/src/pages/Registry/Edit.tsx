@@ -7,9 +7,10 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { RegistryType } from "types/registry";
+import { RegistryFormType } from "types/registry";
 import { H6 } from "widgets/Label";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
+import { Loading } from "widgets/Loading";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -18,10 +19,9 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
   return {
-    initialValues: state
-      .get("registries")
-      .get("registries")
-      .find((registry) => registry.get("name") === ownProps.match.params.name),
+    initialValues: state.registries.registries.find((registry) => registry.name === ownProps.match.params.name),
+    isLoading: state.registries.isLoading,
+    isFirstLoaded: state.registries.isFirstLoaded,
   };
 };
 
@@ -30,17 +30,18 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 interface State {}
 
 class RegistryEditPageRaw extends React.PureComponent<Props, State> {
-  private submit = async (registryValue: RegistryType) => {
+  private submit = async (registryValue: RegistryFormType) => {
     const { dispatch } = this.props;
     await dispatch(updateRegistryAction(registryValue));
-  };
-
-  private onSubmitSuccess = () => {
     this.props.dispatch(push("/cluster/registries"));
   };
 
   public render() {
-    const { initialValues } = this.props;
+    const { initialValues, isLoading, isFirstLoaded } = this.props;
+    if (isLoading && !isFirstLoaded) {
+      return <Loading />;
+    }
+
     if (!initialValues) {
       return (
         <BasePage>
@@ -58,13 +59,8 @@ class RegistryEditPageRaw extends React.PureComponent<Props, State> {
     return (
       <BasePage secondHeaderRight={<H6>Edit Registry</H6>}>
         <Grid container spacing={2}>
-          <Grid item xs={8} sm={8} md={8}>
-            <RegistryForm
-              isEdit
-              onSubmit={this.submit}
-              onSubmitSuccess={this.onSubmitSuccess}
-              initialValues={initialValues}
-            />
+          <Grid item xs={12} sm={12} md={8}>
+            <RegistryForm isEdit onSubmit={this.submit} initial={initialValues as RegistryFormType} />
           </Grid>
         </Grid>
       </BasePage>

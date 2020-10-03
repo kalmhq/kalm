@@ -32,14 +32,11 @@ func (suite *VolumeTestSuite) SetupSuite() {
 	suite.ensureNamespaceExist(suite.NS2)
 }
 
-func (suite *VolumeTestSuite) TearDownTest() {
-}
-
 func (suite *VolumeTestSuite) TestGetAvailableVolsForDP() {
 	//prepare pvc & pv
 
 	// a unbound pv
-	unboundPV := suite.createPV()
+	//unboundPV := suite.createPV()
 
 	// a free bounded pvc & pv pair
 	pvc, pv := suite.createBoundedPVCAndPV(suite.NS)
@@ -52,69 +49,91 @@ func (suite *VolumeTestSuite) TestGetAvailableVolsForDP() {
 	inUsePVC2, _ := suite.createInUseBoundedPVCAndPV(suite.NS2)
 
 	// call API from ns
-	urlPath := fmt.Sprintf("/v1alpha1/volumes/available/simple-workload?currentNamespace=%s", suite.NS)
-	rec := suite.NewRequest(http.MethodGet, urlPath, nil)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method:    http.MethodGet,
+		Namespace: suite.NS,
+		Path:      fmt.Sprintf("/v1alpha1/volumes/available/simple-workload?currentNamespace=%s", suite.NS),
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", suite.NS)
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var resList []resources.Volume
+			rec.BodyAsJSON(&resList)
 
-	var resList []resources.Volume
-	rec.BodyAsJSON(&resList)
+			suite.Equal(200, rec.Code)
+			suite.Equal(3, len(resList))
 
-	suite.Equal(200, rec.Code)
-	suite.Equal(4, len(resList))
+			//suite.True(volExists(resources.Volume{
+			//	Name: unboundPV.Name,
+			//	PVC:  "",
+			//	PV:   unboundPV.Name,
+			//}, resList))
+			suite.True(volExists(resources.Volume{
+				Name: pvc.Name,
+				PVC:  pvc.Name,
+				PV:   "",
+			}, resList))
+			suite.True(volExists(resources.Volume{
+				Name: pvc2.Name,
+				PVC:  "",
+				PV:   pv2.Name,
+			}, resList))
 
-	suite.True(volExists(resources.Volume{
-		Name: unboundPV.Name,
-		PVC:  "",
-		PV:   unboundPV.Name,
-	}, resList))
-	suite.True(volExists(resources.Volume{
-		Name: pvc.Name,
-		PVC:  pvc.Name,
-		PV:   "",
-	}, resList))
-	suite.True(volExists(resources.Volume{
-		Name: pvc2.Name,
-		PVC:  "",
-		PV:   pv2.Name,
-	}, resList))
-
-	// in-use
-	suite.True(volExists(resources.Volume{
-		Name:    inUsePVC.Name,
-		IsInUse: true,
-		PVC:     inUsePVC.Name,
-		PV:      "",
-	}, resList))
+			// in-use
+			suite.True(volExists(resources.Volume{
+				Name:    inUsePVC.Name,
+				IsInUse: true,
+				PVC:     inUsePVC.Name,
+				PV:      "",
+			}, resList))
+		},
+	})
 
 	// call API from ns2
-	urlPath = fmt.Sprintf("/v1alpha1/volumes/available/simple-workload?currentNamespace=%s", suite.NS2)
-	rec = suite.NewRequest(http.MethodGet, urlPath, nil)
-	rec.BodyAsJSON(&resList)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Method:    http.MethodGet,
+		Namespace: suite.NS2,
+		Path:      fmt.Sprintf("/v1alpha1/volumes/available/simple-workload?currentNamespace=%s", suite.NS2),
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "viewer", suite.NS2)
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var resList []resources.Volume
+			rec.BodyAsJSON(&resList)
 
-	suite.Equal(200, rec.Code)
-	suite.Equal(4, len(resList))
+			suite.Equal(200, rec.Code)
+			suite.Equal(3, len(resList))
 
-	suite.True(volExists(resources.Volume{
-		Name: unboundPV.Name,
-		PVC:  "",
-		PV:   unboundPV.Name,
-	}, resList))
-	suite.True(volExists(resources.Volume{
-		Name: pvc.Name,
-		PVC:  "",
-		PV:   pv.Name,
-	}, resList))
-	suite.True(volExists(resources.Volume{
-		Name: pvc2.Name,
-		PVC:  pvc2.Name,
-		PV:   "",
-	}, resList))
-	// in-use
-	suite.True(volExists(resources.Volume{
-		Name:    inUsePVC2.Name,
-		IsInUse: true,
-		PVC:     inUsePVC2.Name,
-		PV:      "",
-	}, resList))
+			//suite.True(volExists(resources.Volume{
+			//	Name: unboundPV.Name,
+			//	PVC:  "",
+			//	PV:   unboundPV.Name,
+			//}, resList))
+			suite.True(volExists(resources.Volume{
+				Name: pvc.Name,
+				PVC:  "",
+				PV:   pv.Name,
+			}, resList))
+			suite.True(volExists(resources.Volume{
+				Name: pvc2.Name,
+				PVC:  pvc2.Name,
+				PV:   "",
+			}, resList))
+			// in-use
+			suite.True(volExists(resources.Volume{
+				Name:    inUsePVC2.Name,
+				IsInUse: true,
+				PVC:     inUsePVC2.Name,
+				PV:      "",
+			}, resList))
+		},
+	})
 }
 
 func volExists(vol resources.Volume, list []resources.Volume) bool {
@@ -129,22 +148,6 @@ func volExists(vol resources.Volume, list []resources.Volume) bool {
 
 	return false
 }
-
-func volNotExists(vol resources.Volume, list []resources.Volume) bool {
-	for _, one := range list {
-		if one.Name == vol.Name &&
-			one.PVC == vol.PVC &&
-			one.PV == vol.PV {
-			return false
-		}
-	}
-
-	return true
-}
-
-//todo
-//func (suite *VolumeTestSuite) TestGetAvailableVolsForSTS() {
-//}
 
 func randomName() string {
 	return rand.String(10)

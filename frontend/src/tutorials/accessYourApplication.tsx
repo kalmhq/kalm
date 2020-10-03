@@ -1,10 +1,8 @@
-import Immutable from "immutable";
-import React from "react";
-import { Tutorial, TutorialFactory } from "types/tutorial";
-import { ApplicationDetails } from "types/application";
-import { store } from "store";
 import { resetTutorialAction } from "actions/tutorial";
+import { ROUTE_FORM_ID } from "forms/formIDs";
+import React from "react";
 import { RootState } from "reducers";
+import { store } from "store";
 import {
   isFormFieldMeet,
   isFormFieldValueEqualTo,
@@ -14,8 +12,9 @@ import {
   requireSubStepNotCompleted,
 } from "tutorials/utils";
 import { Actions } from "types";
-import { ActionTypes, actionTypes } from "redux-form";
+import { CREATE_COMPONENT } from "types/application";
 import { HttpRouteDestination } from "types/route";
+import { Tutorial, TutorialFactory } from "types/tutorial";
 import { KMLink } from "widgets/Link";
 
 const resetTutorial = () => {
@@ -25,8 +24,8 @@ const resetTutorial = () => {
 export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tutorial => {
   const state = store.getState();
 
-  const apps: Immutable.List<ApplicationDetails> = state.get("applications").get("applications");
-  const application = apps.find((x) => x.get("name") === "tutorial");
+  const apps = state.applications.applications;
+  const application = apps.find((x) => x.name === "tutorial");
 
   if (!application) {
     return {
@@ -52,20 +51,20 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
     };
   }
 
-  const applicationName = application.get("name");
+  const applicationName = application.name;
   const routesPath = "/routes";
   const newRoutePath = "/routes/new";
 
-  const clusterInfo = state.get("cluster").get("info");
-  const clusterIngressIP = clusterInfo.get("ingressIP") || "10.0.0.1"; // TODO
+  const clusterInfo = state.cluster.info;
+  const clusterIngressIP = clusterInfo.ingressIP || "10.0.0.1"; // TODO
 
   const domain = clusterIngressIP.replace(/\./g, "-") + ".nip.io";
 
   const path = "/echoserver";
   let finialLink = "http://" + domain + path;
 
-  if (clusterInfo.get("httpPort") !== 80) {
-    finialLink = finialLink + ":" + clusterInfo.get("httpPort");
+  if (clusterInfo.httpPort !== 80) {
+    finialLink = finialLink + ":" + clusterInfo.httpPort;
   }
 
   return {
@@ -117,10 +116,11 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
               {
                 form: "route",
                 field: "hosts",
-                validate: (hosts) => (hosts.size === 1 && hosts.get(0) === domain ? undefined : `Please use ${domain}`),
+                validate: (hosts) => (hosts.length === 1 && hosts[0] === domain ? undefined : `Please use ${domain}`),
               },
             ],
-            shouldCompleteByState: (state: RootState) => isFormFieldValueEqualTo(state, "route", "hosts[0]", domain),
+            shouldCompleteByState: (state: RootState) =>
+              isFormFieldValueEqualTo(state, ROUTE_FORM_ID, "hosts", [domain]),
           },
           {
             title: (
@@ -133,10 +133,10 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
                 form: "route",
                 field: "paths",
                 validate: (paths) =>
-                  paths.size === 1 && paths.get(0) === path ? undefined : `Please keep only one path "${path}"`,
+                  paths.length === 1 && paths[0] === path ? undefined : `Please keep only one path "${path}"`,
               },
             ],
-            shouldCompleteByState: (state: RootState) => isFormFieldValueEqualTo(state, "route", "paths[0]", path),
+            shouldCompleteByState: (state: RootState) => isFormFieldValueEqualTo(state, ROUTE_FORM_ID, "paths", [path]),
           },
           {
             title: (
@@ -148,12 +148,11 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
               {
                 form: "route",
                 field: "methods",
-                validate: (hosts: Immutable.List<string>) =>
-                  hosts.includes("GET") ? undefined : `Please allow GET method`,
+                validate: (hosts: string[]) => (hosts.includes("GET") ? undefined : `Please allow GET method`),
               },
             ],
             shouldCompleteByState: (state: RootState) =>
-              isFormFieldMeet(state, "route", "methods", (schemes: Immutable.List<string>) => schemes.includes("GET")),
+              isFormFieldMeet(state, ROUTE_FORM_ID, "methods", (schemes: string[]) => schemes.includes("GET")),
           },
           {
             title: (
@@ -165,12 +164,11 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
               {
                 form: "route",
                 field: "schemes",
-                validate: (hosts: Immutable.List<string>) =>
-                  hosts.includes("http") ? undefined : `Please allow http scheme`,
+                validate: (hosts: string[]) => (hosts.includes("http") ? undefined : `Please allow http scheme`),
               },
             ],
             shouldCompleteByState: (state: RootState) =>
-              isFormFieldMeet(state, "route", "schemes", (schemes: Immutable.List<string>) => schemes.includes("http")),
+              isFormFieldMeet(state, "route", "schemes", (schemes: string[]) => schemes.includes("http")),
           },
           {
             title: <span>Add echoserver in tutorial application as the only target</span>,
@@ -178,11 +176,9 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
               {
                 form: "route",
                 field: "destinations",
-                validate: (destinations: Immutable.List<HttpRouteDestination>) =>
-                  destinations.size === 1 &&
-                  destinations.find(
-                    (destination) => destination.get("host") === "echoserver.tutorial.svc.cluster.local:8001",
-                  )
+                validate: (destinations: HttpRouteDestination[]) =>
+                  destinations.length === 1 &&
+                  destinations.find((destination) => destination.host === "echoserver.tutorial.svc.cluster.local:8001")
                     ? undefined
                     : `Please use echoserver as the only target`,
               },
@@ -192,17 +188,16 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
                 state,
                 "route",
                 "destinations",
-                (destinations: Immutable.List<HttpRouteDestination>) =>
-                  destinations.size === 1 &&
+                (destinations: HttpRouteDestination[]) =>
+                  destinations.length === 1 &&
                   !!destinations.find(
-                    (destination) => destination.get("host") === "echoserver.tutorial.svc.cluster.local:8001",
+                    (destination) => destination.host === "echoserver.tutorial.svc.cluster.local:8001",
                   ),
               ),
           },
           {
             title: "Submit form",
-            shouldCompleteByAction: (action: Actions) =>
-              action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) && action.meta!.form === "route",
+            shouldCompleteByAction: (action: Actions) => action.type === CREATE_COMPONENT,
           },
         ],
         highlights: [],

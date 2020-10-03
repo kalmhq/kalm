@@ -1,5 +1,4 @@
 import { Box, Fade, Paper, Popper } from "@material-ui/core";
-import Immutable from "immutable";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState from "material-ui-popup-state";
 import React from "react";
@@ -7,7 +6,7 @@ import { httpMethods } from "types/route";
 import { customBindHover, customBindPopover } from "utils/popper";
 import { KChip } from "widgets/Chip";
 
-export const Methods = ({ methods }: { methods: Immutable.List<string> }) => {
+export const Methods = ({ methods }: { methods: string[] }) => {
   return (
     <>
       <PopupState variant="popper" popupId="methods-popup-popper">
@@ -15,7 +14,7 @@ export const Methods = ({ methods }: { methods: Immutable.List<string> }) => {
           return (
             <div>
               <KChip
-                label={methods.size === httpMethods.length ? "All" : "Custom"}
+                label={methods.length === httpMethods.length ? "All" : "Custom"}
                 color="primary"
                 {...customBindHover(popupState)}
               />
@@ -23,7 +22,7 @@ export const Methods = ({ methods }: { methods: Immutable.List<string> }) => {
               <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
                 {({ TransitionProps }) => (
                   <Fade {...TransitionProps} timeout={100}>
-                    <Paper>
+                    <Paper variant="outlined" square>
                       <Box display={"flex"} width={300} flexWrap={"wrap"} pt={1} pl={1}>
                         {httpMethods.map((m) => {
                           return (

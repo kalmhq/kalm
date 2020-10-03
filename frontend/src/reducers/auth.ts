@@ -1,65 +1,84 @@
-import Immutable from "immutable";
 import {
+  emptyPermissionMethods,
   LOAD_LOGIN_STATUS_FAILED,
   LOAD_LOGIN_STATUS_FULFILLED,
   LOAD_LOGIN_STATUS_PENDING,
   LOGOUT,
+  PermissionMethods,
+  SET_AUTH_METHODS,
   SET_AUTH_TOKEN,
 } from "types/common";
 import { Actions } from "types";
-import { ImmutableMap } from "typings";
+import produce from "immer";
 
-export type State = ImmutableMap<{
+export type State = {
   firstLoaded: boolean;
   isLoading: boolean;
   authorized: boolean;
-  isAdmin: boolean;
   token: string;
-  entity: string;
-  csrf: string;
-}>;
+  email: string;
+  groups: string[];
+  policies: string;
+  avatarUrl: string;
+  impersonation: string;
+  impersonationType: string;
+  permissionMethods: PermissionMethods;
+};
 
 const AUTHORIZED_TOKEN_KEY = "AUTHORIZED_TOKEN_KEY";
 
-const initialState: State = Immutable.Map({
+const initialState: State = {
   authorized: false,
   firstLoaded: false,
   isLoading: false,
   token: window.localStorage.getItem(AUTHORIZED_TOKEN_KEY) || "",
-  entity: "",
-  isAdmin: false,
-  csrf: "",
-});
+  email: "",
+  groups: [],
+  policies: "",
+  avatarUrl: "",
+  impersonation: "",
+  impersonationType: "",
+  permissionMethods: emptyPermissionMethods,
+};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOAD_LOGIN_STATUS_FULFILLED: {
-      state = state.set("authorized", action.payload.loginStatus.get("authorized"));
-      state = state.set("isAdmin", action.payload.loginStatus.get("isAdmin"));
-      state = state.set("entity", action.payload.loginStatus.get("entity"));
-      state = state.set("csrf", action.payload.loginStatus.get("csrf"));
-      state = state.set("firstLoaded", true);
-      state = state.set("isLoading", false);
-      break;
+      state.authorized = action.payload.loginStatus.authorized;
+      state.email = action.payload.loginStatus.email;
+      state.policies = action.payload.loginStatus.policies;
+      state.impersonation = action.payload.loginStatus.impersonation;
+      state.groups = action.payload.loginStatus.groups;
+      state.impersonationType = action.payload.loginStatus.impersonationType;
+      state.avatarUrl = action.payload.loginStatus.avatarUrl;
+      state.firstLoaded = true;
+      state.isLoading = false;
+      return;
     }
     case LOAD_LOGIN_STATUS_FAILED: {
-      return state.set("isLoading", false);
+      state.isLoading = false;
+      return;
     }
     case LOAD_LOGIN_STATUS_PENDING: {
-      return state.set("isLoading", true);
+      state.isLoading = true;
+      return;
     }
     case SET_AUTH_TOKEN: {
-      state = state.set("token", action.payload.token);
+      state.token = action.payload.token;
       window.localStorage.setItem(AUTHORIZED_TOKEN_KEY, action.payload.token);
-      break;
+      return;
     }
     case LOGOUT: {
       window.localStorage.removeItem(AUTHORIZED_TOKEN_KEY);
       return initialState;
     }
+    case SET_AUTH_METHODS: {
+      state.permissionMethods = action.payload;
+      return;
+    }
   }
 
   return state;
-};
+}, initialState);
 
 export default reducer;

@@ -9,7 +9,8 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { AppBarComponent } from "./AppBar";
-import { APP_BAR_HEIGHT, TOP_PROGRESS_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "./Constants";
+import { APP_BAR_HEIGHT, TOP_PROGRESS_ZINDEX, TUTORIAL_DRAWER_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "./Constants";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { RootDrawer } from "./RootDrawer";
 
 const styles = (theme: Theme) => {
@@ -49,8 +50,8 @@ const styles = (theme: Theme) => {
 
 const mapStateToProps = (state: RootState) => {
   return {
-    isShowTopProgress: state.get("settings").get("isShowTopProgress"),
-    showTutorialDrawer: state.get("tutorial").get("drawerOpen"),
+    isShowTopProgress: state.settings.isShowTopProgress,
+    showTutorialDrawer: state.tutorial.drawerOpen,
   };
 };
 
@@ -64,28 +65,32 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
   render() {
     const { classes, children, isShowTopProgress, showTutorialDrawer } = this.props;
     return (
-      <div className={classes.root}>
-        <div
-          className={clsx(classes.mainContent, {
-            [classes.mainContentShift]: showTutorialDrawer,
-          })}
-        >
-          {isShowTopProgress ? <LinearProgress className={classes.progress} /> : null}
+      <ErrorBoundary>
+        <div className={classes.root}>
+          <div
+            className={clsx(classes.mainContent, {
+              [classes.mainContentShift]: showTutorialDrawer,
+            })}
+          >
+            {isShowTopProgress ? <LinearProgress className={classes.progress} /> : null}
 
-          <AppBarComponent />
+            <AppBarComponent />
 
-          <Box display="flex" flex="1" marginTop={APP_BAR_HEIGHT + "px"}>
-            <RootDrawer />
-            <Box flex="1" display="flex">
-              {children}
+            <Box display="flex" flex="1" marginTop={APP_BAR_HEIGHT + "px"}>
+              <Box maxWidth={LEFT_SECTION_OPEN_WIDTH}>
+                <RootDrawer />
+              </Box>
+              <Box flex="1" display="flex">
+                {children}
+              </Box>
             </Box>
-          </Box>
+          </div>
+
+          <TutorialDrawer />
+
+          <WithData />
         </div>
-
-        <TutorialDrawer />
-
-        <WithData />
-      </div>
+      </ErrorBoundary>
     );
   }
 }

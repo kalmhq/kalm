@@ -10,25 +10,40 @@ import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
-import { HelpIcon, KalmUserIcon, MenuIcon, MenuOpenIcon, KalmLogo2Icon, KalmTextLogoIcon } from "widgets/Icon";
+import {
+  HelpIcon,
+  ImpersonateIcon,
+  KalmLogo2Icon,
+  KalmTextLogoIcon,
+  KalmUserIcon,
+  MenuIcon,
+  MenuOpenIcon,
+} from "widgets/Icon";
 import { ThemeToggle } from "theme/ThemeToggle";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import stringConstants from "utils/stringConstants";
+import StringConstants from "utils/stringConstants";
 import Button from "@material-ui/core/Button";
 import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
+import { stopImpersonating } from "api/realApi/index";
+import { push } from "connected-react-router";
+import deepOrange from "@material-ui/core/colors/deepOrange";
+import { SubjectTypeUser } from "types/member";
 
 const mapStateToProps = (state: RootState) => {
-  const activeNamespace = state.get("namespaces").get("active");
+  const activeNamespace = state.namespaces.active;
 
-  const auth = state.get("auth");
-  const isAdmin = auth.get("isAdmin");
-  const entity = auth.get("entity");
+  const auth = state.auth;
+  const email = auth.email;
+  const impersonation = auth.impersonation;
+  const impersonationType = auth.impersonationType;
+
   return {
-    isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
-    tutorialDrawerOpen: state.get("tutorial").get("drawerOpen"),
+    isOpenRootDrawer: state.settings.isOpenRootDrawer,
+    tutorialDrawerOpen: state.tutorial.drawerOpen,
+    impersonation,
+    impersonationType,
     activeNamespace,
-    isAdmin,
-    entity,
+    email,
   };
 };
 
@@ -123,21 +138,28 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  renderAuthEntity() {
-    const { entity } = this.props;
+  renderAuth() {
+    const { impersonation, impersonationType, email, dispatch } = this.props;
     const { authMenuAnchorElement } = this.state;
+
+    let emailForDisplay: string = email;
+
+    if (email.length > 15) {
+      emailForDisplay = email.slice(0, 15) + "...";
+    }
+
     return (
       <div>
         <IconButtonWithTooltip
-          tooltipTitle={stringConstants.APP_AUTH_TOOLTIPS}
-          aria-label={stringConstants.APP_AUTH_TOOLTIPS}
+          tooltipTitle={StringConstants.APP_AUTH_TOOLTIPS}
+          aria-label={StringConstants.APP_AUTH_TOOLTIPS}
           aria-haspopup="true"
           onClick={(event: React.MouseEvent<HTMLElement>) => {
             this.setState({ authMenuAnchorElement: event.currentTarget });
           }}
           color="inherit"
         >
-          <KalmUserIcon />
+          {!impersonation ? <KalmUserIcon /> : <ImpersonateIcon style={{ color: deepOrange[400] }} />}
         </IconButtonWithTooltip>
         <Menu
           id="menu-appbar"
@@ -156,9 +178,23 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             this.setState({ authMenuAnchorElement: null });
           }}
         >
-          <MenuItem disabled>Auth as {entity}</MenuItem>
-          {entity.indexOf("localhost") < 0 ? (
-            <>
+          <MenuItem disabled>{emailForDisplay}</MenuItem>
+          <MenuItem onClick={() => dispatch(push("/profile"))}>Profile</MenuItem>
+          {!!impersonation ? (
+            <MenuItem
+              onClick={async () => {
+                stopImpersonating();
+                await dispatch(push("/"));
+                window.location.reload();
+              }}
+            >
+              {impersonationType === SubjectTypeUser
+                ? `Stop impersonating ${impersonation}`
+                : `Stop impersonating as member in ${impersonation} group`}
+            </MenuItem>
+          ) : null}
+          {email.indexOf("localhost") < 0 ? (
+            <Box>
               <Divider />
               <MenuItem
                 onClick={() => {
@@ -167,12 +203,13 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
               >
                 Logout
               </MenuItem>
-            </>
+            </Box>
           ) : null}
         </Menu>
       </div>
     );
   }
+
   renderThemeIcon = () => {
     return <ThemeToggle />;
   };
@@ -181,8 +218,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     const { tutorialDrawerOpen, dispatch } = this.props;
     return (
       <IconButtonWithTooltip
-        tooltipTitle={stringConstants.APP_TUTORIAL_TOOLTIPS}
-        aria-label={stringConstants.APP_TUTORIAL_TOOLTIPS}
+        tooltipTitle={StringConstants.APP_TUTORIAL_TOOLTIPS}
+        aria-label={StringConstants.APP_TUTORIAL_TOOLTIPS}
         onClick={(event: React.MouseEvent<HTMLElement>) => {
           tutorialDrawerOpen ? dispatch(closeTutorialDrawerAction()) : dispatch(openTutorialDrawerAction());
         }}
@@ -213,14 +250,18 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
         return "Registries";
       case "new":
         return "New";
+      case "upload":
+        return "Upload";
       case "edit":
         return "Edit";
       case "sso":
         return "SSO";
+      case "acme":
+        return "ACME DNS Server";
       case "ci":
         return "CI";
       case "metrics":
-        return stringConstants.APP_DASHBOARD_PAGE_NAME;
+        return StringConstants.APP_DASHBOARD_PAGE_NAME;
       default:
         return path;
     }
@@ -276,7 +317,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           </div>
 
           <div className={classes.barRight}>
-            {clusterInfo.get("canBeInitialized") && (
+            {clusterInfo.canBeInitialized && (
               <Box mr={2}>
                 <Button to="/setup" component={Link} onClick={console.log} variant="outlined" color="secondary">
                   Finish the setup steps
@@ -288,7 +329,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             <Divider orientation="vertical" flexItem color="inherit" />
             <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
             <Divider orientation="vertical" flexItem color="inherit" />
-            <div className={classes.barAvatar}>{this.renderAuthEntity()}</div>
+            <div className={classes.barAvatar}>{this.renderAuth()}</div>
           </div>
         </div>
       </AppBar>

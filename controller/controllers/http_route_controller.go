@@ -45,6 +45,7 @@ const (
 
 const KALM_SSO_GRANTED_GROUPS_HEADER = "kalm-sso-granted-groups"
 const KALM_SSO_USERINFO_HEADER = "kalm-sso-userinfo"
+const KALM_SSO_SET_COOKIE_PAYLOAD_HEADER = "kalm-set-cookie"
 const KALM_ROUTE_HEADER = "kalm-route"
 const KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER = "allow-to-pass-if-has-bearer-token"
 
@@ -52,6 +53,7 @@ var DANGEROUS_HEADERS = []string{
 	KALM_SSO_USERINFO_HEADER,
 	KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER,
 	KALM_ROUTE_HEADER,
+	KALM_SSO_SET_COOKIE_PAYLOAD_HEADER,
 }
 
 type HttpRouteReconcilerTask struct {

@@ -4,7 +4,7 @@ import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { createRegistryAction } from "actions/registries";
 import { RegistryForm } from "forms/Registry";
-import { newEmptyRegistry, RegistryType } from "types/registry";
+import { newEmptyRegistry, RegistryFormType } from "types/registry";
 import { BasePage } from "pages/BasePage";
 import { H6 } from "widgets/Label";
 import { push } from "connected-react-router";
@@ -19,12 +19,9 @@ interface Props extends WithStyles<typeof styles>, TDispatchProp {}
 interface State {}
 
 class RegistryNewPageRaw extends React.PureComponent<Props, State> {
-  private submit = async (registryValue: RegistryType) => {
+  private submit = async (registryValue: RegistryFormType) => {
     const { dispatch } = this.props;
     await dispatch(createRegistryAction(registryValue));
-  };
-
-  private onSubmitSuccess = () => {
     this.props.dispatch(push("/cluster/registries"));
   };
 
@@ -32,12 +29,8 @@ class RegistryNewPageRaw extends React.PureComponent<Props, State> {
     return (
       <BasePage secondHeaderRight={<H6>{"Add Registry"}</H6>}>
         <Grid container spacing={2}>
-          <Grid item xs={8} sm={8} md={8}>
-            <RegistryForm
-              onSubmit={this.submit}
-              onSubmitSuccess={this.onSubmitSuccess}
-              initialValues={newEmptyRegistry()}
-            />
+          <Grid item xs={12} sm={12} md={8}>
+            <RegistryForm onSubmit={this.submit} initial={newEmptyRegistry()} />
           </Grid>
         </Grid>
       </BasePage>

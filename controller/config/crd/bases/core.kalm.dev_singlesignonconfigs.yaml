@@ -78,6 +78,9 @@ spec:
               - port
               - scheme
               type: object
+            idTokenExpirySeconds:
+              format: int32
+              type: integer
             issuer:
               description: These two are for arbitrary oidc provider
               type: string

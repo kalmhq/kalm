@@ -10,15 +10,17 @@ import { getDisplayName } from "./utils";
 import { Box } from "@material-ui/core";
 
 const mapStateToProps = (state: RootState) => {
-  const auth = state.get("auth");
-  const authorized = auth.get("authorized");
-  const firstLoaded = auth.get("firstLoaded");
-  const isLoading = auth.get("isLoading");
+  const auth = state.auth;
+  const authorized = auth.authorized;
+  const firstLoaded = auth.firstLoaded;
+  const isLoading = auth.isLoading;
+  const policies = auth.policies;
 
   return {
     isLoading,
     authorized,
     firstLoaded,
+    policies,
   };
 };
 
@@ -44,7 +46,7 @@ export const Authorizated = ({ mustAuthorized, mustNotAuthorized }: Options) => 
     }
 
     componentDidUpdate() {
-      const { firstLoaded, authorized, isLoading } = this.props;
+      const { firstLoaded, authorized, isLoading, policies } = this.props;
 
       if (isLoading && !firstLoaded) {
         return;
@@ -56,6 +58,10 @@ export const Authorizated = ({ mustAuthorized, mustNotAuthorized }: Options) => 
 
       if (authorized && mustNotAuthorized) {
         this.props.dispatch(push("/"));
+      }
+
+      if (authorized && policies === "") {
+        this.props.dispatch(push("/profile"));
       }
     }
 

@@ -1,22 +1,31 @@
+import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createCertificateAction } from "actions/certificate";
+import { push } from "connected-react-router";
+import { CertificateUploadForm } from "forms/Certificate/uploadForm";
+import { BasePage } from "pages/BasePage";
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
 import { connect } from "react-redux";
+import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { CertificateFormType, selfManaged } from "types/certificate";
-import { createCertificateAction } from "actions/certificate";
-import { CertificateForm } from "forms/Certificate";
-import { RootState } from "reducers";
-import { BasePage } from "pages/BasePage";
 import { H6 } from "widgets/Label";
-import { push } from "connected-react-router";
+import { Loading } from "widgets/Loading";
+import produce from "immer";
+import { CertificateNotFound } from "pages/Certificate/NotFound";
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
-  const certificate = state
-    .get("certificates")
-    .get("certificates")
-    .find((certificate) => certificate.get("name") === ownProps.match.params.name);
+  const certificate = state.certificates.certificates.find(
+    (certificate) => certificate.name === ownProps.match.params.name,
+  );
+
   return {
-    initialValues: certificate ? certificate.merge({ managedType: selfManaged }) : undefined,
+    initialValues: (certificate
+      ? produce(certificate, (draft: CertificateFormType) => {
+          draft.managedType = selfManaged;
+        })
+      : undefined) as CertificateFormType | undefined,
+    isLoading: state.certificates.isLoading,
+    isFirstLoaded: state.certificates.isFirstLoaded,
   };
 };
 
@@ -32,32 +41,28 @@ class CertificateEditRaw extends React.PureComponent<Props> {
     try {
       const { dispatch } = this.props;
       await dispatch(createCertificateAction(certificate, true));
+      dispatch(push("/certificates"));
     } catch (e) {
       console.log(e);
     }
   };
 
-  private onSubmitSuccess = () => {
-    this.props.dispatch(push("/certificates"));
-  };
-
   public render() {
-    const { initialValues, classes } = this.props;
+    const { initialValues, classes, isLoading, isFirstLoaded } = this.props;
+    if (isLoading && !isFirstLoaded) {
+      return <Loading />;
+    }
+
     if (!initialValues) {
-      return "Certificate not found";
+      return <CertificateNotFound />;
     }
 
     return (
-      <BasePage secondHeaderRight={<H6>New Certificate</H6>}>
+      <BasePage secondHeaderRight={<H6>Edit Certificate</H6>}>
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>
-              <CertificateForm
-                isEdit
-                onSubmitSuccess={this.onSubmitSuccess}
-                onSubmit={this.submit}
-                initialValues={initialValues}
-              />
+              <CertificateUploadForm isEdit onSubmit={this.submit} initialValues={initialValues} />
             </Grid>
           </Grid>
         </div>

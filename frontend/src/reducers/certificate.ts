@@ -1,101 +1,134 @@
-import Immutable from "immutable";
 import { Actions } from "types";
 import {
-  CertificateIssuerList,
-  CertificateList,
+  AcmeServerInfo,
+  Certificate,
+  CertificateIssuer,
   CREATE_CERTIFICATE,
   CREATE_CERTIFICATE_ISSUER,
   DELETE_CERTIFICATE,
+  LOAD_ACME_SERVER_FAILED,
+  LOAD_ACME_SERVER_FULFILLED,
+  LOAD_ACME_SERVER_PENDING,
+  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
   LOAD_CERTIFICATES_FAILED,
   LOAD_CERTIFICATES_FULFILLED,
   LOAD_CERTIFICATES_PENDING,
-  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
+  SET_IS_SUBMITTING_ACME_SERVER,
   SET_IS_SUBMITTING_CERTIFICATE,
 } from "types/certificate";
 import {
   RESOURCE_ACTION_ADD,
   RESOURCE_ACTION_DELETE,
+  RESOURCE_ACTION_UPDATE,
+  RESOURCE_TYPE_ACME_SERVER,
   RESOURCE_TYPE_HTTPS_CERT,
   WATCHED_RESOURCE_CHANGE,
-  RESOURCE_ACTION_UPDATE,
 } from "types/resources";
-import { ImmutableMap } from "typings";
-import { addOrUpdateInList, removeInList, removeInListByName, isInList } from "./utils";
+import { produce } from "immer";
+import { addOrUpdateInArray, isInArray, removeInArray, removeInArrayByName } from "./utils";
 
-export type State = ImmutableMap<{
+export interface State {
   isLoading: boolean;
   isFirstLoaded: boolean;
   isSubmittingCreateCertificate: boolean;
-  certificates: CertificateList;
-  certificateIssuers: CertificateIssuerList;
-}>;
+  certificates: Certificate[];
+  certificateIssuers: CertificateIssuer[];
+  isSubmittingCreateAcmeServer: boolean;
+  isAcmeServerLoading: boolean;
+  acmeServer: AcmeServerInfo | null;
+}
 
-const initialState: State = Immutable.Map({
+const initialState: State = {
   isLoading: false,
   isFirstLoaded: false,
   isSubmittingCreateCertificate: false,
-  certificates: Immutable.List(),
-  certificateIssuers: Immutable.List(),
-});
+  certificates: [],
+  certificateIssuers: [],
+  isSubmittingCreateAcmeServer: false,
+  isAcmeServerLoading: false,
+  acmeServer: null,
+};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case LOAD_CERTIFICATES_PENDING: {
-      return state.set("isLoading", true);
+      state.isLoading = true;
+      return;
     }
     case LOAD_CERTIFICATES_FAILED: {
-      return state.set("isLoading", false);
+      state.isLoading = false;
+      return;
     }
     case LOAD_CERTIFICATES_FULFILLED: {
-      state = state.set("isFirstLoaded", true);
-      state = state.set("certificates", action.payload.certificates || Immutable.List());
+      state.isFirstLoaded = true;
+      state.certificates = action.payload.certificates || [];
+      return;
+    }
+    case LOAD_ACME_SERVER_PENDING: {
+      state.isAcmeServerLoading = true;
+      return;
+    }
+    case LOAD_ACME_SERVER_FAILED: {
+      state.isAcmeServerLoading = false;
+      return;
+    }
+    case LOAD_ACME_SERVER_FULFILLED: {
+      state.isAcmeServerLoading = false;
+      state.acmeServer = action.payload.acmeServer;
       break;
     }
     case LOAD_CERTIFICATE_ISSUERS_FULFILLED: {
-      return state.set("certificateIssuers", action.payload.certificateIssuers || Immutable.List());
+      state.certificateIssuers = action.payload.certificateIssuers || [];
+      return;
     }
     case DELETE_CERTIFICATE: {
-      state = state.update("certificates", (x) => removeInListByName(x, action.payload.name));
-      break;
+      state.certificates = removeInArrayByName(state.certificates, action.payload.name);
+      return;
     }
     case CREATE_CERTIFICATE: {
-      state = state.update("certificates", (x) => addOrUpdateInList(x, action.payload.certificate));
-
-      break;
+      state.certificates = addOrUpdateInArray(state.certificates, action.payload.certificate);
+      return;
     }
     case CREATE_CERTIFICATE_ISSUER: {
-      const index = state
-        .get("certificateIssuers")
-        .findIndex(
-          (certificateIssuer) => certificateIssuer.get("name") === action.payload.certificateIssuer.get("name"),
-        );
-      if (index >= 0) {
-        state = state.setIn(["certificateIssuers", index], action.payload.certificateIssuer);
-      } else {
-        state = state.update("certificateIssuers", (certificateIssuers) =>
-          certificateIssuers.push(action.payload.certificateIssuer),
-        );
-      }
-      break;
+      state.certificateIssuers = addOrUpdateInArray(state.certificateIssuers, action.payload.certificateIssuer);
+      return;
     }
     case WATCHED_RESOURCE_CHANGE: {
-      if (action.kind !== RESOURCE_TYPE_HTTPS_CERT) {
-        return state;
-      }
-
-      switch (action.payload.action) {
-        case RESOURCE_ACTION_ADD: {
-          if (!isInList(state.get("certificates"), action.payload.data)) {
-            state = state.update("certificates", (x) => addOrUpdateInList(x, action.payload.data));
+      switch (action.kind) {
+        case RESOURCE_TYPE_HTTPS_CERT: {
+          switch (action.payload.action) {
+            case RESOURCE_ACTION_ADD: {
+              if (!isInArray(state.certificates, action.payload.data)) {
+                state.certificates = addOrUpdateInArray(state.certificates, action.payload.data);
+              }
+              return;
+            }
+            case RESOURCE_ACTION_DELETE: {
+              state.certificates = removeInArray(state.certificates, action.payload.data);
+              return;
+            }
+            case RESOURCE_ACTION_UPDATE: {
+              state.certificates = addOrUpdateInArray(state.certificates, action.payload.data);
+              return;
+            }
           }
           break;
         }
-        case RESOURCE_ACTION_DELETE: {
-          state = state.update("certificates", (x) => removeInList(x, action.payload.data));
-          break;
-        }
-        case RESOURCE_ACTION_UPDATE: {
-          state = state.update("certificates", (x) => addOrUpdateInList(x, action.payload.data));
+        case RESOURCE_TYPE_ACME_SERVER: {
+          switch (action.payload.action) {
+            case RESOURCE_ACTION_ADD: {
+              state.acmeServer = action.payload.data;
+              return;
+            }
+            case RESOURCE_ACTION_DELETE: {
+              state.acmeServer = null;
+              return;
+            }
+            case RESOURCE_ACTION_UPDATE: {
+              state.acmeServer = action.payload.data;
+              return;
+            }
+          }
           break;
         }
       }
@@ -103,11 +136,16 @@ const reducer = (state: State = initialState, action: Actions): State => {
       break;
     }
     case SET_IS_SUBMITTING_CERTIFICATE: {
-      return state.set("isSubmittingCreateCertificate", action.payload.isSubmittingCertificate);
+      state.isSubmittingCreateCertificate = action.payload.isSubmittingCertificate;
+      return;
+    }
+    case SET_IS_SUBMITTING_ACME_SERVER: {
+      state.isSubmittingCreateAcmeServer = action.payload.isSubmittingAcmeServer;
+      return;
     }
   }
 
-  return state;
-};
+  return;
+}, initialState);
 
 export default reducer;

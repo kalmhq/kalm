@@ -39,11 +39,20 @@ func (suite *PodsHandlerTestSuite) TestPodsHandler() {
 	suite.Nil(err)
 
 	// delete pod
-	rec := suite.NewRequest(http.MethodDelete,
-		fmt.Sprintf("/v1alpha1/pods/%s/%s", "test-pods", "test-pods-1"),
-		nil,
-	)
-	suite.Equal(200, rec.Code)
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetEditorRoleOfNs("test-pods"),
+		},
+		Namespace: "test-pods",
+		Method:    http.MethodDelete,
+		Path:      fmt.Sprintf("/v1alpha1/pods/%s/%s", "test-pods", "test-pods-1"),
+		TestWithoutRoles: func(rec *ResponseRecorder) {
+			suite.IsMissingRoleError(rec, "editor", "test-pods")
+		},
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.Equal(200, rec.Code)
+		},
+	})
 }
 
 func TestPodsHandlerTestSuite(t *testing.T) {

@@ -1,32 +1,31 @@
 import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
-import React from "react";
-import { BasePage } from "pages/BasePage";
-import { push } from "connected-react-router";
+import { createDeployAccessTokenAction } from "actions/deployAccessToken";
 import { setSuccessNotificationAction } from "actions/notification";
-import { withDeployKeys, WithDeployKeysProps } from "hoc/withDeployKeys";
-import { DeployKeyForm } from "forms/DeployKey";
-import { DeployKey } from "types/deployKey";
-import { createDeployKeyAction } from "actions/deployKey";
+import { push } from "connected-react-router";
+import { DeployAccessTokenForm } from "forms/DeployAccessToken";
+import { withDeployAccessTokens, WithDeployAccessTokensProps } from "hoc/withDeployAccessTokens";
+import { BasePage } from "pages/BasePage";
+import React from "react";
+import { DeployAccessToken, newEmptyDeployAccessToken } from "types/deployAccessToken";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
   });
 
-interface Props extends WithStyles<typeof styles>, WithDeployKeysProps {}
+interface Props extends WithStyles<typeof styles>, WithDeployAccessTokensProps {}
 
 interface State {}
 
-class DeployKeyNewPageRaw extends React.PureComponent<Props, State> {
-  private submit = async (config: DeployKey) => {
+class DeployAccessTokenNewPageRaw extends React.PureComponent<Props, State> {
+  private submit = async (config: DeployAccessToken) => {
     const { dispatch } = this.props;
-    return await dispatch(createDeployKeyAction(config));
-  };
+    await dispatch(createDeployAccessTokenAction(config));
 
-  private onSubmitSuccess = async (config: DeployKey) => {
-    const { dispatch } = this.props;
     dispatch(setSuccessNotificationAction("Create Deploy key Successfully"));
-    dispatch(push("/ci/keys/" + config.get("name")));
+    dispatch(push("/ci/keys/" + config.name));
+
+    return;
   };
 
   public render() {
@@ -35,7 +34,8 @@ class DeployKeyNewPageRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item md={8}>
-              <DeployKeyForm onSubmit={this.submit} onSubmitSuccess={this.onSubmitSuccess} />
+              {/* @ts-ignore */}
+              <DeployAccessTokenForm _initialValues={newEmptyDeployAccessToken()} onSubmit={this.submit} />
             </Grid>
           </Grid>
         </Box>
@@ -44,4 +44,4 @@ class DeployKeyNewPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const DeployKeyNewPage = withStyles(styles)(withDeployKeys(DeployKeyNewPageRaw));
+export const DeployAccessTokenNewPage = withStyles(styles)(withDeployAccessTokens(DeployAccessTokenNewPageRaw));

@@ -1,117 +1,32 @@
-import Immutable from "immutable";
-import { HttpRoute, HttpRouteDestination } from "types/route";
-import sc from "utils/stringConstants";
+import * as Yup from "yup";
+import { addMethod, ArraySchema, mixed, number, object, Schema, string, ValidationError } from "yup";
 
-export const validator = () => {
-  const errors = {};
-
-  return errors;
-};
-
-export const ValidatorListNotEmpty = (value: Immutable.List<any>, _allValues?: any, _props?: any, _name?: any) => {
-  if (!value || value.size <= 0) {
-    return "Select at least one option";
-  }
-
-  return undefined;
-};
-
-export const ValidatorHttpRouteDestinations = (
-  value: Immutable.List<HttpRouteDestination>,
-  _allValues?: HttpRoute,
-  _props?: any,
-  _name?: any,
-) => {
-  if (!value || value.size <= 0) {
-    return "Please define at least one target.";
-  }
-
-  if (value.size === 1) {
-    return undefined;
-  }
-
-  let valid = false;
-
-  for (let i = 0; i < value.size; i++) {
-    const target = value.get(i)!;
-
-    if (target.get("weight") > 0) {
-      valid = true;
-      break;
+addMethod(object, "unique", function (propertyName, message) {
+  //@ts-ignore
+  return this.test("unique", message, function (value) {
+    if (!value || !value[propertyName]) {
+      return true;
     }
-  }
 
-  if (!valid) {
-    return "Please define at least one target with non-zero weight.";
-  }
+    //@ts-ignore
+    const { path } = this;
+    //@ts-ignore
+    const options = [...this.parent];
+    const currentIndex = options.indexOf(value);
 
-  return undefined;
-};
+    const subOptions = options.slice(0, currentIndex);
 
-export const ValidatorRequired = (value: any, _allValues?: any, _props?: any, _name?: any) => {
-  if (Array.isArray(value)) {
-    return value.length > 0 ? undefined : "Required";
-  }
-
-  if (Immutable.isList(value)) {
-    return value.size > 0 ? undefined : "Required";
-  }
-
-  return !!value ? undefined : `Required`;
-};
-
-export const ValidatorContainerPortRequired = (value: any, _allValues?: any, _props?: any, _name?: any) => {
-  if (!!value !== undefined) {
-    const portInteger = parseInt(value, 10);
-
-    if (portInteger === 443) {
-      return `Can't use 443 port`;
+    if (subOptions.some((option) => option[propertyName] === value[propertyName])) {
+      //@ts-ignore
+      throw this.createError({
+        path: `${path}.${propertyName}`,
+        message,
+      });
     }
-  }
 
-  return !!value ? undefined : `Required`;
-};
-
-export const ValidatorPort = (value: any, _allValues?: any, _props?: any, _name?: any) => {
-  if (!!value !== undefined) {
-    const portInteger = parseInt(value, 10);
-
-    if (portInteger === 443) {
-      return `Can't use 443 port`;
-    }
-  }
-  return undefined;
-};
-
-export const ValidatorNumberOrAlphabet = (value: any, _allValues?: any, _props?: any, _name?: any) => {
-  const portInteger = parseInt(value, 10);
-  if (isNaN(portInteger) && portInteger > 0) {
-    if (portInteger.toString().length !== value.toString().length) {
-      return "Not a valid port value";
-    }
-    return undefined;
-  } else {
-    if (value.match && value.match(/^([a-zA-Z]*)$/)) {
-      return undefined;
-    }
-  }
-  return "Not a valid port value";
-};
-
-export const ValidatorNaturalNumber = (value: string) => {
-  if (!value) return undefined;
-
-  const integerValue = parseInt(value, 10);
-  if (isNaN(integerValue)) {
-    return undefined;
-  }
-
-  if (integerValue < 0) {
-    return 'Number can\'t be negative';
-  }
-
-  return undefined;
-};
+    return true;
+  });
+});
 
 export const ValidatorOneof = (...options: (string | RegExp)[]) => {
   return (value: string) => {
@@ -133,190 +48,257 @@ export const ValidatorOneof = (...options: (string | RegExp)[]) => {
   };
 };
 
-export const ValidatorVolumeSize = (value: string) => {
-  if (!value) return undefined;
-
-  if (value === "Gi") {
-    return "Required";
-  }
-  // if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
-  //   return "Invalid Value";
-  // }
-
-  return undefined;
-};
-
-export const ValidatorName = (value: string) => {
-  if (!value) return undefined;
-
-  if (!value.match(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/) || value === "0") {
-    return sc.NAME_RULE;
-  }
-
-  return undefined;
-};
-
-export const ValidatorHttpHeaders = (value: any) => {
-  if (!value) return undefined;
-
-  if (typeof value === "string") {
-    return "Invalid JSON";
-  }
-
-  return undefined;
-};
-
-// https://regex101.com/r/cJ74bX/1/
-export const ValidatorCPU = (value: number) => {
-  if (!value) return undefined;
-
-  if (parseFloat(`${value}`) < 0.001) {
-    return "The minimum support is 0.001 Core";
-  }
-
-  // if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
-  //   return "Invalid CPU Value";
-  // }
-
-  return undefined;
-};
-
-export const ValidatorMemory = (value: string) => {
-  if (!value) return undefined;
-
-  if (value === "Gi") {
-    return "Required";
-  }
-
-  // if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
-  //   return "Invalid Memory Value";
-  // }
-
-  return undefined;
-};
-
-export const ValidatorSchedule = (value: string) => {
-  if (
-    !value ||
-    !value.match(
-      /^(\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?(1?[0-9]|2[0-3]))) (\*|((\*\/)?([1-9]|[12][0-9]|3[0-1]))) (\*|((\*\/)?([1-9]|1[0-2])))$/,
-    )
-  ) {
-    return "Invalid Schedule Rule";
-  }
-
-  return undefined;
-};
-
-export const ValidatorStringLength = () => {};
-
-export const ValidateHost = (value: string) => {
-  if (value === undefined) return undefined;
-
-  if (value.length === 0 || value.length > 511) {
-    return "Host length must be between 1 and 511 characters.";
-  }
-
-  var regResultHostname = regExpHostname.exec(value);
-  if (regResultHostname === null) {
-    return "Domain is invalid.";
-  }
-
-  return undefined;
-};
-
 export const regExpIp = new RegExp(
   "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
 );
 
-export const regExpHostname = new RegExp(
-  /^([a-z0-9*])(([a-z0-9-]{1,61})?[a-z0-9]{1})?(\.[a-z0-9](([a-z0-9-]{1,61})?[a-z0-9]{1})?)?(\.[a-zA-Z]{2,4})+$/,
+// https://regex101.com/r/wG1nZ3/37
+export const regExpWildcardDomain = new RegExp(/^(\*\.)?([\w-]+\.)+[a-zA-Z]+$/);
+
+const yupValidatorWrap = function <T>(...v: Schema<T>[]) {
+  return function (value: T) {
+    let schema: Schema<T>;
+
+    if (v.length === 1) {
+      schema = v[0];
+    } else {
+      schema = mixed();
+
+      for (let i = 0; i < v.length; i++) {
+        schema = schema.concat(v[i]);
+      }
+    }
+
+    try {
+      schema.validateSync(value);
+      return undefined;
+    } catch (e) {
+      if (!ValidationError.isError(e)) {
+        throw e;
+      }
+
+      return e.errors[0] || "Unknown error";
+    }
+  };
+};
+
+const yupValidatorWrapForArray = function <T>(arraySchema: ArraySchema<T>, ...v: Schema<T>[]) {
+  return function (values: T[]) {
+    try {
+      arraySchema.validateSync(values);
+    } catch (e) {
+      if (!ValidationError.isError(e)) {
+        throw e;
+      }
+
+      return e.errors[0] || "Unknown error";
+    }
+
+    if (v.length === 0) {
+      return undefined;
+    }
+
+    const validateFunction = yupValidatorWrap<T>(...v);
+
+    const errors = values.map((value) => validateFunction(value));
+
+    if (errors.findIndex((x) => !!x) < 0) {
+      return undefined;
+    }
+
+    return errors;
+  };
+};
+
+// Basic yup validator
+const envVarNameFmt = "[-._a-zA-Z][-._a-zA-Z0-9]*";
+const envVarNameFmtErrMsg =
+  "a valid environment variable name must consist of alphabetic characters, digits, '_', '-', or '.', and must not start with a digit";
+const IsEnvVarName = string()
+  .required("Required")
+  .matches(new RegExp(`^${envVarNameFmt}$`), envVarNameFmtErrMsg);
+
+const dns1123LabelFmt = "[a-z0-9]([-a-z0-9]*[a-z0-9])?";
+const IsDNS1123Label = string()
+  .required("Required")
+  .max(63, "Max length is 63")
+  .matches(
+    new RegExp(`^${dns1123LabelFmt}$`),
+    "Not a valid DNS1123 label. Regex is " + new RegExp(`^${dns1123LabelFmt}$`),
+  );
+
+const dns1123SubDomainFmt = dns1123LabelFmt + "(\\." + dns1123LabelFmt + ")*";
+export const InvalidDNS1123SubDomain = "Invalid domain";
+const IsDNS1123SubDomain = string()
+  .required("Required")
+  .matches(new RegExp(`^${dns1123SubDomainFmt}$`), InvalidDNS1123SubDomain)
+  .max(253);
+
+// wildcard definition - RFC 1034 section 4.3.3.
+// examples:
+// - valid: *.bar.com, *.foo.bar.com
+// - invalid: *.*.bar.com, *.foo.*.com, *bar.com, f*.bar.com, *
+const wildcardDNS1123SubDomainFmt = "\\*\\." + dns1123SubDomainFmt;
+const IsWildcardDNS1123SubDomain = Yup.string()
+  .required("Required")
+  .matches(new RegExp(`^${wildcardDNS1123SubDomainFmt}$`), "Not a valid wildcard DNS123 SubDomain")
+  .max(253);
+
+const hostnameFmt = "[a-z0-9_]([-a-z0-9_]*[a-z0-9_])?";
+export const InvalidHostInCertificateErrorMessage = "Invalid domain";
+const IsValidHostInCertificate = Yup.string()
+  .required("Required")
+  .max(253)
+  .matches(
+    new RegExp(`^(?:\\*\\.)?(?:${hostnameFmt}\\.)*${dns1123LabelFmt}\\.${dns1123LabelFmt}$`),
+    InvalidHostInCertificateErrorMessage,
+  );
+
+// ================= Kalm Validators ==================
+
+export const ValidatorIsEnvVarName = yupValidatorWrap<string>(IsEnvVarName);
+export const ValidatorIsDNS123Label = yupValidatorWrap<string>(IsDNS1123Label);
+export const ValidatorIsDNS1123SubDomain = yupValidatorWrap<string>(IsDNS1123SubDomain);
+export const ValidatorArrayOfIsDNS1123SubDomain = yupValidatorWrapForArray<string>(
+  Yup.array<string>().required("Should have at least one item"),
+  IsDNS1123SubDomain,
 );
 
-const validateHostWithWildcardPrefix = (value: string) => {
-  if (value.length === 0 || value.length > 511) {
-    return "Host length must be between 1 and 511 characters.";
-  }
+export const ValidatorArrayOfIsValidHostInCertificate = yupValidatorWrapForArray<string>(
+  Yup.array<string>().required("Should have at least one item"),
+  IsValidHostInCertificate,
+);
 
-  var regResultIp = regExpIp.exec(value);
+export const ValidatorIsWildcardDNS1123SubDomain = yupValidatorWrap<string>(IsWildcardDNS1123SubDomain);
+export const ValidatorArrayOfDIsWildcardDNS1123SubDomain = yupValidatorWrapForArray<string>(
+  Yup.array<string>().required("Should have at least one item"),
+  IsWildcardDNS1123SubDomain,
+);
 
-  var regResultHostname = regExpHostname.exec(value);
-  if (regResultIp === null && regResultHostname === null) {
-    return "Host must be a valid IP address or hostname.";
-  }
+// Allowed characters in an HTTP Path as defined by RFC 3986. A HTTP path may
+// contain:
+// * unreserved characters (alphanumeric, '-', '.', '_', '~')
+// * percent-encoded octets
+// * sub-delims ("!", "$", "&", "'", "(", ")", "*", "+", ",", ";", "=")
+// * a colon character (":")
 
-  return undefined;
-};
+export const NotValidPathPrefixError = "Not a valid path prefix";
+export const NoPrefixSlashError = 'Should start with a "/"';
+export const PathArrayCantBeBlankError = "Should have at least one path prefix";
+export const InvalidHostError = "Host must be a valid IP address or hostname.";
+export const ValidatorArrayOfPath = yupValidatorWrapForArray<string>(
+  Yup.array<string>().required(PathArrayCantBeBlankError),
+  Yup.string()
+    .required("Path Prefix can'b be blank")
+    .matches(/^\//, NoPrefixSlashError)
+    .matches(/^\/[A-Za-z0-9/\-._~%!$&'()*+,;=:]*$/, NotValidPathPrefixError),
+);
 
-export const KValidatorHostsWithWildcardPrefix = (
-  values: Immutable.List<string>,
-  _allValues?: any,
-  _props?: any,
-  _name?: any,
-): (undefined | string)[] | undefined => {
-  if (!values || values.size === 0) {
-    return undefined;
-  }
+export const ValidatorContainerPortRequired = yupValidatorWrap<number | undefined>(
+  number()
+    .required("Required")
+    .test("", "Can't use 443 port", (value) => value !== 443),
+);
 
-  const errors = values.map((host) => (host === "*" ? undefined : validateHostWithWildcardPrefix(host))).toArray();
+export const ValidatorPort = yupValidatorWrap<number | undefined>(
+  number().test("", "Can't use 443 port", (value) => value !== 443),
+);
 
-  return errors.filter((x) => !!x).length > 0 ? errors : undefined;
-};
+export const ValidatorRequired = yupValidatorWrap<any>(
+  mixed()
+    .required("Required") // mixed.required() will not validate empty string
+    .test("", "Required", (value) => typeof value !== "string" || value !== ""),
+);
 
-export const KValidatorInjectedFilePath = (value: string, _allValues?: any, _props?: any, _name?: any) => {
-  if (!value) {
-    return undefined;
-  }
+export const ValidatorVolumeSize = yupValidatorWrap<string>(
+  string()
+    .required("Required")
+    .notOneOf(["0Gi"], "Invalid Value")
+    .matches(/(^\d+(\.\d+)?)(Gi)$/, "Invalid Value"),
+);
 
-  if (!value.startsWith("/")) return 'Must be an absolute path, which starts with a "/"';
-  if (value.endsWith("/")) return 'File name mush not end with "/"';
+export const ValidatorMemory = yupValidatorWrap<string | undefined>(
+  string()
+    .notRequired()
+    .notOneOf(["0Mi"], "Invalid Value")
+    .matches(/(^\d+(\.\d+)?)(Mi)$/, "Invalid Value"),
+);
 
-  return undefined;
-};
+export const ValidatorCPU = yupValidatorWrap<string | undefined>(
+  string().test(
+    "Validate CPU",
+    "The minimum support is 0.001 Core",
+    (value) => value === undefined || parseFloat(`${value}`) >= 0.001,
+  ),
+);
 
-export const KValidatorPaths = (
-  values: Immutable.List<string>,
-  _allValues?: any,
-  _props?: any,
-  _name?: any,
-): (undefined | string)[] | undefined => {
-  if (!values) {
-    return undefined;
-  }
+export const ValidatorSchedule = yupValidatorWrap<string | undefined>(
+  string()
+    .required("Required")
+    .matches(
+      /^(\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?(1?[0-9]|2[0-3]))) (\*|((\*\/)?([1-9]|[12][0-9]|3[0-1]))) (\*|((\*\/)?([1-9]|1[0-2])))$/,
+      "Invalid Schedule Rule",
+    ),
+);
 
-  const errors = values.map((x) => (x.startsWith("/") ? undefined : 'path should start with a "/"')).toArray();
+export const ValidatorInjectedFilePath = yupValidatorWrap<string | undefined>(
+  string()
+    .required("Required")
+    .test("", 'Must be an absolute path, which starts with a "/"', (value) => !value || value.startsWith("/"))
+    .test("", 'File name mush not end with "/"', (value) => !value || !value.endsWith("/")),
+);
 
-  return errors.filter((x) => !!x).length > 0 ? errors : undefined;
-};
+export const ValidatorRegistryHost = yupValidatorWrap<string | undefined>(
+  string()
+    .notRequired()
+    .test("", 'Require prefix "https://"', (value) => !value || value.startsWith("https://"))
+    .test("", 'Require no suffix "/"', (value) => !value || !value.endsWith("/")),
+);
+export const ValidatorArrayNotEmpty = yupValidatorWrapForArray(
+  Yup.array<any>().required("Should have at least one item"),
+);
 
-export const ValidatorEnvName = (value: string) => {
-  if (value === undefined) return undefined;
+export const validateHostWithWildcardPrefix = yupValidatorWrap<string | undefined>(
+  string()
+    .required("Required")
+    .max(511)
+    .test(
+      "",
+      InvalidHostError,
+      (value) => value === undefined || !!String(value).match(regExpIp) || !!String(value).match(regExpWildcardDomain),
+    ),
+);
 
-  if (!value.match(/^[-._a-zA-Z][-._a-zA-Z0-9]*$/)) {
-    return "Env name is invalid. regex used for validation is '[-._a-zA-Z][-._a-zA-Z0-9]*'";
-  }
+export const ValidatorIpAndHosts = yupValidatorWrapForArray(
+  Yup.array<string>().required("Required"),
+  string()
+    .required("Required")
+    .max(511)
+    .test(
+      "",
+      InvalidHostError,
+      (value) =>
+        value === undefined ||
+        value === "*" ||
+        !!String(value).match(regExpIp) ||
+        !!String(value).match(regExpWildcardDomain),
+    ),
+);
 
-  return undefined;
-};
+export const ValidateHost = yupValidatorWrap<string | undefined>(
+  string()
+    .required("Required")
+    .max(511)
+    .test("", "Domain is invalid.", (value) => value === undefined || !!String(value).match(regExpWildcardDomain)),
+);
 
-export const ValidatorServiceName = (value: string) => {
-  if (value === undefined) return undefined;
+export const ValidatorOneOfFactory = (values: any[]) => yupValidatorWrap(Yup.string().oneOf(values));
 
-  if (!value.match(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/)) {
-    return `Port name must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character. (e.g. 'my-name',  or '123-abc', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?')`;
-  }
-
-  return undefined;
-};
-
-export const RequirePrefix = (prefix: string) => (value: string) => {
-  if (value === undefined) return undefined;
-  if (!value.startsWith(prefix)) return `Require prefix "${prefix}"`;
-  return undefined;
-};
-
-export const RequireNoSuffix = (suffix: string) => (value: string) => {
-  if (value === undefined) return undefined;
-  if (value.endsWith(suffix)) return `Require no suffix "${suffix}"`;
-  return undefined;
-};
+export const ValidatorEnvName = yupValidatorWrap<string>(
+  string()
+    .required()
+    .matches(
+      /^[-._a-zA-Z][-._a-zA-Z0-9]*$/,
+      "Env name is invalid. regex used for validation is '[-._a-zA-Z][-._a-zA-Z0-9]*'",
+    ),
+);

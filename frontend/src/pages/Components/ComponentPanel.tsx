@@ -1,6 +1,6 @@
 import { Box, Button, Container, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteComponentAction } from "actions/component";
-import { Expansion, ExpansionProps } from "forms/Route/expansion";
+import { Expansion, ExpansionProps } from "widgets/expansion";
 import { PodsTable } from "pages/Components/PodsTable";
 import React from "react";
 import { connect } from "react-redux";
@@ -36,6 +36,7 @@ interface Props
     Pick<ExpansionProps, "defaultUnfold"> {
   application: Application;
   component: ApplicationComponentDetails;
+  canEdit: boolean;
 }
 
 interface State {}
@@ -60,7 +61,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
                 <KalmComponentsIcon fontSize={"default"} />
               </Box>
               <Box display="flex" minWidth={200}>
-                <Subtitle1>{component.get("name")}</Subtitle1>
+                <Subtitle1>{component.name}</Subtitle1>
               </Box>
             </Box>
           </Grid>
@@ -72,11 +73,11 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
               </Grid>
               <Grid item>
                 <Caption>Type</Caption>
-                <Subtitle1>{component.get("workloadType")}</Subtitle1>
+                <Subtitle1>{component.workloadType}</Subtitle1>
               </Grid>
               <Grid item>
                 <Caption>Image</Caption>
-                <Subtitle1>{component.get("image")}</Subtitle1>
+                <Subtitle1>{component.image}</Subtitle1>
               </Grid>
             </Grid>
           </Grid>
@@ -90,29 +91,30 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     const { component } = this.props;
     let runningCount = 0;
 
-    component.get("pods").forEach((pod) => {
-      if (pod.get("status") === "Succeeded" || pod.get("status") === "Running") {
+    component.pods?.forEach((pod) => {
+      if (pod.status === "Succeeded" || pod.status === "Running") {
         runningCount = runningCount + 1;
       }
     });
 
-    return `${runningCount}/${component.get("pods").size}`;
+    return `${runningCount}/${component.pods.length}`;
   };
 
   private renderPods() {
-    const { component, application } = this.props;
+    const { component, application, canEdit } = this.props;
 
     return (
       <PodsTable
-        activeNamespaceName={application.get("name")}
-        pods={component.get("pods")}
-        workloadType={component.get("workloadType") as WorkloadType}
+        activeNamespaceName={application.name}
+        pods={component.pods}
+        workloadType={component.workloadType as WorkloadType}
+        canEdit={canEdit}
       />
     );
   }
 
   private componentControls = () => {
-    const { component, application, dispatch } = this.props;
+    const { component, application, dispatch, canEdit } = this.props;
     return (
       <Box pb={2} pt={2}>
         <Button
@@ -121,27 +123,30 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
           color="primary"
           size="small"
           variant="outlined"
-          to={`/applications/${application.get("name")}/components/${component.get("name")}`}
+          to={`/applications/${application.name}/components/${component.name}`}
         >
           View Details
         </Button>
-
-        <Button
-          component={Link}
-          style={{ marginRight: 20 }}
-          color="primary"
-          size="small"
-          variant="outlined"
-          to={`/applications/${application.get("name")}/components/${component.get("name")}/edit`}
-        >
-          Edit
-        </Button>
-        <DeleteButtonWithConfirmPopover
-          useText
-          popupId="delete-component-popup"
-          popupTitle="DELETE COMPONENT?"
-          confirmedAction={() => dispatch(deleteComponentAction(component.get("name"), application.get("name")))}
-        />
+        {canEdit && (
+          <>
+            <Button
+              component={Link}
+              style={{ marginRight: 20 }}
+              color="primary"
+              size="small"
+              variant="outlined"
+              to={`/applications/${application.name}/components/${component.name}/edit`}
+            >
+              Edit
+            </Button>
+            <DeleteButtonWithConfirmPopover
+              useText
+              popupId="delete-component-popup"
+              popupTitle="DELETE COMPONENT?"
+              confirmedAction={() => dispatch(deleteComponentAction(component.name, application.name))}
+            />
+          </>
+        )}
       </Box>
     );
   };
@@ -154,7 +159,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     }
 
     return (
-      <Expansion defaultUnfold={defaultUnfold} title={this.renderSummary(component)}>
+      <Expansion defaultUnfold={defaultUnfold} title={this.renderSummary(component)} high={true}>
         {this.renderPods()}
       </Expansion>
     );

@@ -1,59 +1,51 @@
-import { ImmutableMap } from "typings";
-import Immutable from "immutable";
 import { Metrics } from "./common";
 
 export const LOAD_NODES_PENDING = "LOAD_NODES_PENDING";
 export const LOAD_NODES_FULFILlED = "LOAD_NODES_FULFILlED";
 export const LOAD_NODES_FAILED = "LOAD_NODES_FAILED";
 
-export type ResourceList = ImmutableMap<{
+export type ResourceList = {
   cpu: string;
   memory: string;
   pods: string;
   [key: string]: string;
-}>;
+};
 
-export interface NodeContent {
+export interface Node {
   name: string;
   creationTimestamp: number;
-  labels: ImmutableMap<{ [key: string]: string }>;
-  annotations: ImmutableMap<{ [key: string]: string }>;
-  roles: Immutable.List<string>;
-  statusTexts: Immutable.List<string>;
+  labels: { [key: string]: string };
+  annotations: { [key: string]: string };
+  roles: string[];
+  statusTexts: string[];
   internalIP: string;
   externalIP: string;
-  allocatedResources: ImmutableMap<{
+  allocatedResources: {
     podsCount: number;
     requests: ResourceList;
     limits: ResourceList;
-    podsRequests: Immutable.List<
-      ImmutableMap<{
-        podName: string;
-        namespace: string;
-        requests: ResourceList;
-      }>
-    >;
-  }>;
-  status: ImmutableMap<{
+    podsRequests: {
+      podName: string;
+      namespace: string;
+      requests: ResourceList;
+    }[];
+  };
+  status: {
     capacity: ResourceList;
     allocatable: ResourceList;
-    addresses: Immutable.List<
-      ImmutableMap<{
-        type: string;
-        address: string;
-      }>
-    >;
-    conditions: Immutable.List<
-      ImmutableMap<{
-        type: string;
-        status: string;
-        lastHeartbeatTime: string;
-        lastTransitionTime: string;
-        reason: string;
-        message: string;
-      }>
-    >;
-    nodeInfo: ImmutableMap<{
+    addresses: {
+      type: string;
+      address: string;
+    }[];
+    conditions: {
+      type: string;
+      status: string;
+      lastHeartbeatTime: string;
+      lastTransitionTime: string;
+      reason: string;
+      message: string;
+    }[];
+    nodeInfo: {
       machineID: string;
       systemUUID: string;
       bootID: string;
@@ -64,23 +56,19 @@ export interface NodeContent {
       kubeProxyVersion: string;
       operatingSystem: string;
       architecture: string;
-    }>;
-    images: Immutable.List<
-      ImmutableMap<{
-        names: Immutable.List<string>;
-        sizeBytes: number;
-      }>
-    >;
-  }>;
+    };
+    images: {
+      names: string[];
+      sizeBytes: number;
+    }[];
+  };
   metrics: Metrics;
 }
 
-export type NodesListResponse = ImmutableMap<{
-  nodes: Immutable.List<Node>;
+export type NodesListResponse = {
+  nodes: Node[];
   metrics: Metrics;
-}>;
-
-export type Node = ImmutableMap<NodeContent>;
+};
 
 export interface LoadNodesAction {
   type: typeof LOAD_NODES_FULFILlED;

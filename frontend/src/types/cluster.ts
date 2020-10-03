@@ -1,11 +1,10 @@
-import { ImmutableMap } from "typings";
 import { SSOConfig } from "types/sso";
 
 export const LOAD_CLUSTER_INFO_PENDING = "LOAD_CLUSTER_INFO_PENDING";
 export const LOAD_CLUSTER_INFO_FULFILlED = "LOAD_CLUSTER_INFO_FULFILlED";
 export const LOAD_CLUSTER_INFO_FAILED = "LOAD_CLUSTER_INFO_FAILED";
 
-export interface ClusterInfoContent {
+export interface ClusterInfo {
   ingressIP: string;
   ingressHostname: string;
   httpPort: number;
@@ -14,21 +13,37 @@ export interface ClusterInfoContent {
   version: string;
   canBeInitialized: boolean;
   isProduction: boolean;
+  kubernetesVersion: {
+    buildDate: string;
+    compiler: string;
+    gitCommit: string;
+    gitTreeState: string;
+    gitVersion: string;
+    goVersion: string;
+    platform: string;
+  };
+  kalmVersion: {
+    buildDate: string;
+    compiler: string;
+    gitCommit: string;
+    gitTreeState: string;
+    gitVersion: string;
+    goVersion: string;
+    platform: string;
+  };
 }
 
-export type TemporaryAdmin = ImmutableMap<{
+export type TemporaryAdmin = {
   username: string;
   password: string;
   email: string;
-}>;
+};
 
-export type InitializeClusterResponse = ImmutableMap<{
+export type InitializeClusterResponse = {
   clusterInfo: ClusterInfo;
   temporaryAdmin: TemporaryAdmin;
   sso: SSOConfig;
-}>;
-
-export type ClusterInfo = ImmutableMap<ClusterInfoContent>;
+};
 
 export interface LoadClusterInfoFulfilledAction {
   type: typeof LOAD_CLUSTER_INFO_FULFILlED;

@@ -11,6 +11,24 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-core-kalm-dev-v1alpha1-accesstoken
+  failurePolicy: Fail
+  name: maccesstoken.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - accesstokens
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-core-kalm-dev-v1alpha1-component
   failurePolicy: Fail
   name: mcomponent.kb.io
@@ -24,24 +42,6 @@ webhooks:
     - UPDATE
     resources:
     - components
-- clientConfig:
-    caBundle: Cg==
-    service:
-      name: webhook-service
-      namespace: system
-      path: /mutate-core-kalm-dev-v1alpha1-deploykey
-  failurePolicy: Fail
-  name: mdeploykey.kb.io
-  rules:
-  - apiGroups:
-    - core.kalm.dev
-    apiVersions:
-    - v1alpha1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - deploykeys
 - clientConfig:
     caBundle: Cg==
     service:
@@ -83,6 +83,24 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-core-kalm-dev-v1alpha1-httpscert
+  failurePolicy: Fail
+  name: mhttpscert.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - httpscerts
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-core-kalm-dev-v1alpha1-logsystem
   failurePolicy: Fail
   name: mlogsystem.kb.io
@@ -96,6 +114,24 @@ webhooks:
     - UPDATE
     resources:
     - logsystems
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-core-kalm-dev-v1alpha1-rolebinding
+  failurePolicy: Fail
+  name: mrolebinding.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - rolebindings
 - clientConfig:
     caBundle: Cg==
     service:
@@ -122,6 +158,42 @@ metadata:
   creationTimestamp: null
   name: validating-webhook-configuration
 webhooks:
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-core-kalm-dev-v1alpha1-accesstoken
+  failurePolicy: Fail
+  name: vaccesstoken.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - accesstokens
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-core-kalm-dev-v1alpha1-acmeserver
+  failurePolicy: Fail
+  name: vacmeserver.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - acmeservers
 - clientConfig:
     caBundle: Cg==
     service:
@@ -158,24 +230,6 @@ webhooks:
     - UPDATE
     resources:
     - components
-- clientConfig:
-    caBundle: Cg==
-    service:
-      name: webhook-service
-      namespace: system
-      path: /validate-core-kalm-dev-v1alpha1-deploykey
-  failurePolicy: Fail
-  name: vdeploykey.kb.io
-  rules:
-  - apiGroups:
-    - core.kalm.dev
-    apiVersions:
-    - v1alpha1
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - deploykeys
 - clientConfig:
     caBundle: Cg==
     service:
@@ -284,6 +338,24 @@ webhooks:
     - UPDATE
     resources:
     - protectedendpointtypes
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-core-kalm-dev-v1alpha1-rolebinding
+  failurePolicy: Fail
+  name: vrolebinding.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - rolebindings
 - clientConfig:
     caBundle: Cg==
     service:

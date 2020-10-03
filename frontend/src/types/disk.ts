@@ -1,25 +1,21 @@
-import { ImmutableMap } from "typings";
-import Immutable from "immutable";
-
 export const LOAD_PERSISTENT_VOLUMES = "LOAD_PERSISTENT_VOLUMES";
 export const DELETE_PERSISTENT_VOLUME = "DELETE_PERSISTENT_VOLUME";
 export const LOAD_STORAGE_CLASSES = "LOAD_STORAGE_CLASSES";
 export const LOAD_SIMPLE_OPTIONS = "LOAD_SIMPLE_OPTIONS";
 export const LOAD_STATEFULSET_OPTIONS = "LOAD_STATEFULSET_OPTIONS";
 
-export interface DiskContent {
+export interface Disk {
   name: string;
   isInUse: boolean;
   componentNamespace?: string;
   componentName?: string;
   phase: string;
   capacity: string;
+  stsVolClaimTemplate?: string;
 }
+export type PersistentVolumes = Disk[];
 
-export type Disk = ImmutableMap<DiskContent>;
-export type PersistentVolumes = Immutable.List<Disk>;
-
-export interface VolumeOptionContent {
+export interface VolumeOption {
   name: string;
   isInUse: boolean;
   componentNamespace?: string;
@@ -29,18 +25,15 @@ export interface VolumeOptionContent {
   pvToMatch: string;
   storageClassName: string;
 }
-export type VolumeOption = ImmutableMap<VolumeOptionContent>;
-export type VolumeOptions = Immutable.List<VolumeOption>;
+export type VolumeOptions = VolumeOption[];
 
-export interface StorageClassContent {
+export interface StorageClass {
   name: string;
   isManaged: boolean;
   docLink: string;
   priceLink: string;
 }
-
-export type StorageClass = ImmutableMap<StorageClassContent>;
-export type StorageClasses = Immutable.List<StorageClass>;
+export type StorageClasses = StorageClass[];
 
 export interface LoadPersistentVolumesAction {
   type: typeof LOAD_PERSISTENT_VOLUMES;

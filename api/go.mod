@@ -3,6 +3,7 @@ module github.com/kalmhq/kalm/api
 go 1.13
 
 require (
+	github.com/casbin/casbin/v2 v2.11.2
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-logr/logr v0.1.0

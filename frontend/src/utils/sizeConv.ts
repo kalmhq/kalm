@@ -34,29 +34,38 @@ const unitMap: { [key: string]: number } = {
 };
 
 export const sizeStringToNumber = (str: string) => {
-  const matches = str.match(new RegExp(`^\\d+(${Object.keys(unitMap).join("|")})?$`));
+  const matches = str.match(new RegExp(`^(?<value>\\d+(\\.\\d+)?)(?<unit>${Object.keys(unitMap).join("|")})?$`));
 
-  if (!matches) {
+  if (!matches || !matches.groups) {
     return 0;
   }
 
-  let base = parseInt(matches[0], 10);
+  let base = parseFloat(matches.groups.value);
 
-  if (matches[1] && unitMap[matches[1]]) {
-    base = base * unitMap[matches[1]];
+  if (matches.groups.unit && unitMap[matches.groups.unit]) {
+    base = base * unitMap[matches.groups.unit];
   }
 
   return base;
 };
 
 export const sizeStringToGi = (str: string) => {
+  if (str.endsWith("Gi")) {
+    return str.replace("Gi", "");
+  }
   const num = sizeStringToNumber(str);
+  if (num === 0) {
+    return str.replace(new RegExp(Object.keys(unitMap).join("|")), "");
+  }
   const GiBytes = 1024 * 1024 * 1024;
-  return (num / GiBytes).toFixed(3);
+  return num / GiBytes;
 };
 
 export const sizeStringToMi = (str: string) => {
+  if (str.endsWith("Mi")) {
+    return str.replace("Mi", "");
+  }
   const num = sizeStringToNumber(str);
   const MiBytes = 1024 * 1024;
-  return (num / MiBytes).toFixed(0);
+  return num / MiBytes;
 };

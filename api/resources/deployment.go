@@ -10,7 +10,7 @@ type DeploymentListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetDeploymentListChannel(namespaces string) *DeploymentListChannel {
+func (resourceManager *ResourceManager) GetDeploymentListChannel(namespaces string) *DeploymentListChannel {
 	channel := &DeploymentListChannel{
 		List:  make(chan *appsV1.DeploymentList, 1),
 		Error: make(chan error, 1),
@@ -18,7 +18,7 @@ func (builder *Builder) GetDeploymentListChannel(namespaces string) *DeploymentL
 
 	go func() {
 		var deployments appsV1.DeploymentList
-		err := builder.List(&deployments, client.InNamespace(namespaces))
+		err := resourceManager.List(&deployments, client.InNamespace(namespaces))
 
 		channel.List <- &deployments
 		channel.Error <- err

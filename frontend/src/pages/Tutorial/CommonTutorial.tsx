@@ -59,11 +59,11 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const tutorial = state.get("tutorial");
+  const tutorial = state.tutorial;
   return {
-    currentStepIndex: tutorial.get("currentStepIndex"),
-    tutorial: tutorial.get("tutorial")!,
-    pathname: state.get("router").get("location").get("pathname") as string,
+    currentStepIndex: tutorial.currentStepIndex,
+    tutorial: tutorial.tutorial!,
+    pathname: state.router.location.pathname as string,
   };
 };
 

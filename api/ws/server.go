@@ -18,30 +18,30 @@ var (
 )
 
 type WsHandler struct {
-	k8sClientManager *client.ClientManager
-	clientPool       *ClientPool
-	logger           logr.Logger
+	clientManager client.ClientManager
+	clientPool    *ClientPool
+	logger        logr.Logger
 }
 
-func NewWsHandler(k8sClientManager *client.ClientManager) *WsHandler {
+func NewWsHandler(clientManager client.ClientManager) *WsHandler {
 	clientPool := NewClientPool()
 	go clientPool.run()
 
 	return &WsHandler{
-		k8sClientManager: k8sClientManager,
-		clientPool:       clientPool,
-		logger:           log.DefaultLogger(),
+		clientManager: clientManager,
+		clientPool:    clientPool,
+		logger:        log.DefaultLogger(),
 	}
 }
 
 func (h *WsHandler) Serve(c echo.Context) error {
-	client := &Client{
-		clientPool:       h.clientPool,
-		Send:             make(chan []byte, 256),
-		Done:             make(chan struct{}),
-		StopWatcher:      make(chan struct{}),
-		K8sClientManager: h.k8sClientManager,
-		logger:           h.logger,
+	clt := &Client{
+		clientPool:    h.clientPool,
+		send:          make(chan []byte, 256),
+		done:          make(chan struct{}),
+		stopWatcher:   make(chan struct{}),
+		clientManager: h.clientManager,
+		logger:        h.logger,
 	}
 
 	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
@@ -51,18 +51,18 @@ func (h *WsHandler) Serve(c echo.Context) error {
 		return err
 	}
 
-	client.conn = conn
+	clt.conn = conn
 
-	clientInfo, err := h.k8sClientManager.GetConfigForClientRequestContext(c)
+	clientInfo, err := h.clientManager.GetClientInfoFromContext(c)
 
-	if err == nil {
-		client.K8SClientConfig = clientInfo.Cfg
+	if err == nil && clientInfo != nil {
+		clt.clientInfo = clientInfo
 	}
 
-	client.clientPool.register <- client
+	clt.clientPool.register <- clt
 
-	go client.write()
-	client.read()
+	go clt.write()
+	clt.read()
 
 	return nil
 }

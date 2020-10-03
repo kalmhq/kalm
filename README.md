@@ -2,25 +2,27 @@
 
 [![CircleCI](https://circleci.com/gh/kalmhq/kalm.svg?style=svg)](https://circleci.com/gh/kalmhq/kalm) [![Go Report](https://goreportcard.com/badge/github.com/kalmhq/kalm)](https://goreportcard.com/badge/github.com/kalmhq/kalm)
 
-Kalm provides a web interface which makes it easy to perform common Kubernetes workflows, including:
+Kalm provides a web interface that makes it easy to perform common Kubernetes workflows, including:
 
 - Creating and updating applications
 - Scaling
-- Handle external traffic
-- Setup probes for auto-healing
+- Handling external traffic
+- Setting up probes for auto-healing
 - Attaching and using Volumes
 
-In addition, Kalm simplifies the process of many common Kubernetes integration point:
+In addition, Kalm simplifies the processes for many common Kubernetes integration points:
 
 - CI/CD webhooks
-- Obtain HTTPS Certificates (via Let's Encrypt)
-- Setup Single Sign On access for any application in your cluster
-- Configure private image registries
+- Obtaining HTTPS Certificates (via Let's Encrypt)
+- Setting up Single Sign On access for any application in your cluster
+- Configuring private image registries
 - Plugin log systems such as PLG(Loki) and ELK
 
-![Kalm](https://kalm.dev/gif/kalm_short.gif)
+[![Kalm](https://kalm.dev/gif/kalm_short.gif)](https://www.youtube.com/watch?v=F5wuQaPQ50s&ab_channel=KalmHQ)
 
-Kalm is intended as an alternative to writing and maintaining scripts and internal tools. Since Kalm is implemented as a Kubernetes operator and a set of Custom Resource Definitions, it can be used alongside existing Kubernetes tooling. Kalm tries to minimize the amount of time you have to spent writing yaml files and executing one off kubectl commands, but doesn't prevent you from doing so if necessary.
+[overview video with voiceover](https://www.youtube.com/watch?v=F5wuQaPQ50s&ab_channel=KalmHQ)
+
+Kalm is intended as an alternative to writing and maintaining scripts and internal tools. Since Kalm is implemented as a Kubernetes operator and a set of Custom Resource Definitions, it can be used alongside existing Kubernetes tooling. Kalm tries to minimize the amount of time you have to spend writing yaml files and executing one off kubectl commands, but doesn't prevent you from doing so if necessary.
 
 ## Project Status
 

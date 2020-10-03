@@ -4,11 +4,11 @@
  * This flat strings map is probably sufficient for now, but we should
  * replace this with a sophisticated solution if Localization is ever needed.
  */
-const stringConstants = {
+export const StringConstants = {
   APP_NAME: "Kalm",
   LIMIT_NOT_SET: "Limit Not Set",
   REQUEST_NOT_SET: "Request Not Set",
-  NAME_RULE: "Names can only use digits(0-9), lowercase letters(a-z), and dashes(-). Maximum length is 180 characters.",
+  NAME_RULE: "Names can only use digits(0-9), lowercase letters(a-z), and dashes(-). Maximum length is 63 characters.",
   PORT_ROUTE_QUESTION: "Want to have your container accessible to external sources?",
   COMPONENT_TYPE_SERVICE_OPTION: "Default choice - Suitable for most continuous services",
   COMPONENT_TYPE_CRONJOB_OPTION: "Scheduled tasks to be ran at specific times",
@@ -71,14 +71,20 @@ const stringConstants = {
   EMPTY_REGISTRY_TITLE: "You haven't configured any Private Registries.",
   EMPTY_REGISTRY_SUBTITLE:
     "To pull images hosted on a private registry, first add an entry with your login info here. Public registries such as Docker Hub can be used directly.",
+  EMPTY_SSO_TITLE: "You haven't configured Single Sign-On.",
   EMPTY_ROUTES_TITLE: "You don't have any Routes",
   EMPTY_ROUTES_SUBTITLE:
     "Add a Route to allow external requests to access your Application. You can use Routes to specify how hosts and paths map to components, configure HTTPS, and setup canary or blue-green deployments.",
   NEW_APP_BUTTON: "Create App",
   CERT_AUTO: "Automatic Certification with Let's Encrypt",
-  CERT_AUTO_DESC: "Use a certificate signed by Let's Encrypt. Safe and fast. Renewing and updating are fully-automatic.",
+  CERT_AUTO_DESC:
+    "Use a certificate signed by Let's Encrypt. Safe and fast. Renewing and updating are fully-automatic. Wildcard certificate is supported.",
   CERT_UPLOAD: "Use an existing certificate",
   CERT_UPLOAD_DESC: "Use an existing certificate. You are responsible for renewal.",
+  CERT_DNS01: "Automatic certification for domains with Let's Encrypt",
+  CERT_DNS01_DESC:
+    "Use a certificate signed by Let's Encrypt for domains. Safe and fast. Renewing and updating are fully-automatic.",
+  CERT_DNS01_SERVER_NOT_READY: "Please config and runing ACME DNS Server first.",
   NODES_INFO_BOX_TEXT:
     "Data and metrics regarding nodes in the cluster is displayed here. For cluster administration operations, please see platform specific instructions.",
   ROUTE_HOSTS_INPUT_HELPER:
@@ -104,12 +110,15 @@ const stringConstants = {
   APP_TUTORIAL_TOOLTIPS: "Toggle tutorial",
   APP_AUTH_TOOLTIPS: "Auth menu",
   APP_DASHBOARD_PAGE_NAME: "Dashboard",
+  APP_MEMBERS_PAGE_NAME: "Members",
   PROTECTED_ENDPOINT_PORT:
-    "Select the ports you want to protect. Leave blank to protected any ports of the selected component.",
+    "Select the ports you want to protect. Leave blank to protected all ports of this component.",
   PROTECTED_ENDPOINT_SPECIFIC_GROUPS:
-    "Select the groups you want to grant access permissions for the selected component. Leave blank to allow any sso member.",
+    "Select the groups you want to grant access permissions for this component. Leave blank to allow any sso member.",
   CANT_NOT_EDIT: "Can NOT edit this field",
   REGISTRY_VERIFIED_ERROR: "Error",
+  NO_PERMISSION_TIPS: "No permission to view this, please contact with admin.",
+  MOUNT_PATH_PLACEHOLDER: "e.g. /mountPath",
 };
 
-export default stringConstants;
+export default StringConstants;

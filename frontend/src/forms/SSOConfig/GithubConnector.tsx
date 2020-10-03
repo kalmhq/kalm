@@ -2,113 +2,119 @@ import { Grid } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
 import { Alert } from "@material-ui/lab";
-import { KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
-import Immutable from "immutable";
+import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
+import { trimParse } from "forms/normalizer";
 import React from "react";
-import { connect, DispatchProp } from "react-redux";
-import { arrayPush } from "redux-form";
-import { Field, FieldArray } from "redux-form/immutable";
-import { SSOGithubConnector } from "types/sso";
+import { Field, FormSpy, FormSpyRenderProps } from "react-final-form";
+import { FieldArray } from "react-final-form-arrays";
+import { GithubOrg, SSOConfig, SSOGithubConnector } from "types/sso";
 import { capitalize } from "utils/string";
 import { DeleteIcon, GithubIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
-import { KRenderDebounceTextField } from "../Basic/textfield";
-import { ValidatorRequired } from "../validator";
+import { Body, H6, Subtitle1, Subtitle2 } from "widgets/Label";
+import { KMLink } from "widgets/Link";
+import { FinalTextField } from "../Final/textfield";
+import { ValidatorArrayNotEmpty, ValidatorRequired } from "../validator";
 
-const ValidatorOrgs = (values: Immutable.List<any>, _allValues?: any, _props?: any, _name?: any) => {
+export const ValidatorOrgs = (values: any[], _allValues?: any, _props?: any, _name?: any) => {
   if (!values) return undefined;
 
-  if (values.size === 0) {
+  if (values.length === 0) {
     return "You should at least configure one organization.";
   }
 };
 
-class RenderGithubConnectorOrganizations extends React.Component<any> {
+class RenderGithubConnectorOrganizations extends React.Component<{
+  name: string;
+}> {
   public render() {
-    const {
-      fields,
-      meta: { error },
-    } = this.props;
+    const { name } = this.props;
 
     return (
-      <>
-        {error ? (
-          <Box mt={2} mb={2}>
-            <Alert severity="error">{error}</Alert>
-          </Box>
-        ) : null}
+      <FieldArray<GithubOrg>
+        name={name}
+        validate={ValidatorArrayNotEmpty}
+        render={({ fields, meta: { error, touched } }) => (
+          <>
+            {touched && error && typeof error === "string" ? (
+              <Box mt={2} mb={2}>
+                <Alert severity="error">{error}</Alert>
+              </Box>
+            ) : null}
 
-        {fields.map((field: string, index: number) => {
-          return (
-            <Grid container spacing={2} key={field}>
-              <Grid item xs={3}>
-                <Field
-                  component={KRenderDebounceTextField}
-                  name={`${field}.name`}
-                  label="Organization Name"
-                  placeholder="Please type a organization name"
-                  validate={ValidatorRequired}
-                  required
-                />
-              </Grid>
+            {fields.map((_, index) => {
+              let fieldName = `${name}.${index}`;
+              return (
+                <Grid container spacing={2} key={fieldName}>
+                  <Grid item xs={3}>
+                    <Field
+                      component={FinalTextField}
+                      name={`${fieldName}.name`}
+                      label="Organization Name"
+                      validate={ValidatorRequired}
+                      parse={trimParse}
+                    />
+                  </Grid>
 
-              <Grid item xs={8}>
-                <KFreeSoloAutoCompleteMultipleSelectStringField
-                  label="Teams"
-                  name={`${field}.teams`}
-                  placeholder="Please type a team name"
-                  helperText="Multiple teams are allowed. After entering a team name, try to press enter."
-                />
-              </Grid>
-              <Grid item xs={1}>
-                <IconButtonWithTooltip
-                  tooltipPlacement="top"
-                  tooltipTitle="Delete"
-                  aria-label="delete"
-                  size="small"
-                  onClick={() => fields.remove(index)}
-                >
-                  <DeleteIcon />
-                </IconButtonWithTooltip>
-              </Grid>
-            </Grid>
-          );
-        })}
-      </>
+                  <Grid item xs={8}>
+                    <Field
+                      component={AutoCompleteMultiValuesFreeSolo}
+                      options={[]}
+                      label="Teams"
+                      name={`${fieldName}.teams`}
+                      helperText="Multiple teams are allowed. After entering a team name, try to press enter."
+                    />
+                  </Grid>
+                  <Grid item xs={1}>
+                    <Box pt={1.5}>
+                      <IconButtonWithTooltip
+                        tooltipPlacement="top"
+                        tooltipTitle="Delete"
+                        aria-label="delete"
+                        size="small"
+                        onClick={() => fields.remove(index)}
+                      >
+                        <DeleteIcon />
+                      </IconButtonWithTooltip>
+                    </Box>
+                  </Grid>
+                </Grid>
+              );
+            })}
+          </>
+        )}
+      />
     );
   }
 }
 
-interface Props extends DispatchProp {
+interface Props {
   connector: SSOGithubConnector;
-  meta: {
-    form: string;
-  };
-  field: string;
+  fieldName: string;
 }
 
 class RenderGithubConnectorRaw extends React.PureComponent<Props> {
-  private addOrganization = () => {
-    const {
-      dispatch,
-      field,
-      meta: { form },
-    } = this.props;
-    dispatch(
-      arrayPush(
-        form,
-        `${field}.config.orgs`,
-        Immutable.Map({
-          name: "",
-          teams: Immutable.List([]),
-        }),
-      ),
-    );
+  private addOrganization = (prevOrgs: any[], change: any) => {
+    const { fieldName } = this.props;
+
+    prevOrgs && prevOrgs.length > 0
+      ? change(`${fieldName}.config.orgs`, [
+          ...prevOrgs,
+          {
+            name: "",
+            teams: [],
+          },
+        ])
+      : change(`${fieldName}.config.orgs`, [
+          {
+            name: "",
+            teams: [],
+          },
+        ]);
   };
 
   public render() {
-    const { connector, field } = this.props;
+    const { connector, fieldName } = this.props;
 
     return (
       <Box p={2}>
@@ -116,54 +122,50 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
           <Box style={{ verticalAlign: "middle" }} mr={2} display="inline-block">
             <GithubIcon />
           </Box>
-          {capitalize(connector.get("type"))}
+          {capitalize(connector.type)}
         </H6>
 
         <Box mt={2}>
           <Grid container spacing={2}>
             <Grid item xs={8}>
               <Field
-                component={KRenderDebounceTextField}
-                name={`${field}.name`}
+                component={FinalTextField}
+                name={`${fieldName}.name`}
                 label="Name"
                 placeholder="Give a name of this connector"
                 validate={ValidatorRequired}
+                parse={trimParse}
                 helperText="The name of this connector."
-                required
               />
 
               <Grid container spacing={2}>
                 <Grid item xs>
                   <Field
-                    component={KRenderDebounceTextField}
-                    name={`${field}.config.clientID`}
+                    component={FinalTextField}
+                    name={`${fieldName}.config.clientID`}
                     label="Client ID"
-                    autoComplete="disabled"
                     placeholder="Oauth Client ID"
                     validate={ValidatorRequired}
                     helperText="Follow the right steps to get Client ID."
-                    required
                   />
                 </Grid>
                 <Grid item xs>
                   <Field
-                    component={KRenderDebounceTextField}
-                    autoComplete={"false"}
-                    name={`${field}.config.clientSecret`}
+                    component={FinalTextField}
+                    name={`${fieldName}.config.clientSecret`}
                     label="Client Secret"
                     placeholder="Oauth Client Secret"
                     validate={ValidatorRequired}
-                    required
                   />
                 </Grid>
               </Grid>
 
               <Box mt={1}>
-                <Body2>
+                <Alert severity="info">
                   User MUST be a member of at least one of the specified orgs to authenticate with kalm. If teams are
                   set, only members belongs to these teams will have right to access kalm. Otherwise all members in the
                   org will have right.
-                </Body2>
+                </Alert>
               </Box>
 
               {/*<Box mt={1}>*/}
@@ -174,16 +176,23 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
               {/*</Box>*/}
 
               <Box mt={1}>
-                <FieldArray
-                  name={`${field}.config.orgs`}
-                  component={RenderGithubConnectorOrganizations}
-                  validate={ValidatorOrgs}
-                />
+                <RenderGithubConnectorOrganizations name={`${fieldName}.config.orgs`} />
               </Box>
 
-              <Button variant="outlined" color="primary" onClick={this.addOrganization} size="small">
-                Add an organization
-              </Button>
+              <FormSpy subscription={{ pristine: true }}>
+                {({ form: { change } }: FormSpyRenderProps<SSOConfig>) => {
+                  return (
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => this.addOrganization(connector.config.orgs, change)}
+                      size="small"
+                    >
+                      Add an organization
+                    </Button>
+                  );
+                }}
+              </FormSpy>
             </Grid>
             <Grid item xs={4}>
               <Subtitle1>Steps to get Client ID and Client Secret on Github</Subtitle1>
@@ -192,9 +201,9 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
                 <Body>
                   To get Client ID and Client Secret, you must create an oauth application first. Github oauth
                   application can be created under an organization or a user. Create a user oauth application{" "}
-                  <a href="https://github.com/settings/applications/new" rel="noopener noreferrer" target="_blank">
+                  <KMLink href="https://github.com/settings/applications/new" rel="noopener noreferrer" target="_blank">
                     HERE
-                  </a>
+                  </KMLink>
                   . Or create an org oauth application{" "}
                   <a
                     href="https://github.com/organizations/YOUR-ORGANIZATION-NAME/settings/applications/new"
@@ -227,4 +236,4 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
   }
 }
 
-export const RenderGithubConnector = connect()(RenderGithubConnectorRaw);
+export const RenderGithubConnector = RenderGithubConnectorRaw;

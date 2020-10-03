@@ -1,6 +1,3 @@
-import { ImmutableMap } from "typings";
-import Immutable from "immutable";
-
 export const CREATE_DEPLOY_KEY_FAILED = "CREATE_DEPLOY_KEY_FAILED";
 export const CREATE_DEPLOY_KEY_FULFILLED = "CREATE_DEPLOY_KEY_FULFILLED";
 export const CREATE_DEPLOY_KEY_PENDING = "CREATE_DEPLOY_KEY_PENDING";
@@ -17,26 +14,25 @@ export const DeployKeyScopeCluster: DeployKeyScope = "cluster";
 export const DeployKeyScopeNamespace: DeployKeyScope = "namespace";
 export const DeployKeyScopeComponent: DeployKeyScope = "component";
 
-export type DeployKey = ImmutableMap<{
+export interface DeployKey {
   name: string;
   scope: DeployKeyScope;
-  resources: Immutable.List<string>;
+  resources: string[];
   key: string;
   creator: string;
-}>;
+}
 
-export const newEmptyDeployKey = () => {
-  return Immutable.Map({
-    name: "",
-    scope: DeployKeyScopeCluster,
-    resources: Immutable.List(),
-    creator: "",
-  });
+export const newEmptyDeployKeyForm: DeployKey = {
+  name: "",
+  scope: DeployKeyScopeCluster,
+  resources: [],
+  key: "",
+  creator: "",
 };
 
 export interface LoadDeployKeysAction {
   type: typeof LOAD_DEPLOY_KEYS_FULFILLED;
-  payload: Immutable.List<DeployKey>;
+  payload: DeployKey[];
 }
 
 export interface DeleteDeployKeyAction {

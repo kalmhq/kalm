@@ -1,5 +1,4 @@
 import { api } from "api";
-import Immutable from "immutable";
 import { ThunkResult } from "types";
 import {
   ApplicationComponent,
@@ -19,7 +18,7 @@ export const loadComponentsAction = (namespace: string): ThunkResult<Promise<voi
   return async (dispatch) => {
     dispatch({ type: LOAD_COMPONENTS_PENDING });
 
-    let components: Immutable.List<ApplicationComponentDetails>;
+    let components: ApplicationComponentDetails[];
     try {
       components = await api.getApplicationComponentList(namespace);
     } catch (e) {
@@ -43,7 +42,7 @@ export const createComponentAction = (
 ): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (!applicationName) {
-      applicationName = getState().get("namespaces").get("active");
+      applicationName = getState().namespaces.active;
     }
     dispatch(setIsSubmittingApplicationComponentAction(true));
 
@@ -74,7 +73,7 @@ export const updateComponentAction = (
 ): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (!applicationName) {
-      applicationName = getState().get("namespaces").get("active");
+      applicationName = getState().namespaces.active;
     }
 
     dispatch(setIsSubmittingApplicationComponentAction(true));
@@ -102,7 +101,7 @@ export const updateComponentAction = (
 export const deleteComponentAction = (componentName: string, applicationName?: string): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (!applicationName) {
-      applicationName = getState().get("namespaces").get("active");
+      applicationName = getState().namespaces.active;
     }
 
     await api.deleteApplicationComponent(applicationName, componentName);

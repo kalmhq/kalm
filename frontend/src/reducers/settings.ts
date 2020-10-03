@@ -1,6 +1,5 @@
-import { ImmutableMap } from "typings";
+import produce from "immer";
 import { Actions } from "types";
-import Immutable from "immutable";
 import { SET_SETTINGS } from "types/common";
 
 export interface SettingObject {
@@ -12,31 +11,30 @@ export interface SettingObject {
   usingTheme: string;
 }
 
-export type State = ImmutableMap<SettingObject>;
+export type State = SettingObject;
 
-const initialState: State = Immutable.Map({
+const initialState = {
   isDisplayingHelpers: window.localStorage.getItem("isDisplayingHelpers") === "true",
   isOpenRootDrawer: window.localStorage.getItem("isOpenRootDrawer") !== "false",
   usingApplicationCard: window.localStorage.getItem("usingApplicationCard") === "true",
   usingTheme: window.localStorage.getItem("usingTheme") ?? "light",
   isShowTopProgress: false,
-});
+};
 
-const reducer = (state: State = initialState, action: Actions): State => {
+const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
     case SET_SETTINGS: {
-      const newParitalSettings = Immutable.Map(action.payload);
-      state = state.merge(newParitalSettings);
+      state = Object.assign(state, action.payload);
       break;
     }
   }
 
-  window.localStorage.setItem("isDisplayingHelpers", state.get("isDisplayingHelpers").toString());
-  window.localStorage.setItem("isOpenRootDrawer", state.get("isOpenRootDrawer").toString());
-  window.localStorage.setItem("usingApplicationCard", state.get("usingApplicationCard").toString());
-  window.localStorage.setItem("usingTheme", state.get("usingTheme", "light"));
+  window.localStorage.setItem("isDisplayingHelpers", state.isDisplayingHelpers.toString());
+  window.localStorage.setItem("isOpenRootDrawer", state.isOpenRootDrawer.toString());
+  window.localStorage.setItem("usingApplicationCard", state.usingApplicationCard.toString());
+  window.localStorage.setItem("usingTheme", state.usingTheme || "light");
 
-  return state;
-};
+  return;
+}, initialState);
 
 export default reducer;

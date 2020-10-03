@@ -1,23 +1,30 @@
-import React from "react";
-import { Button, createStyles, Tab, Tabs, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { withDeployKeys, WithDeployKeysProps } from "hoc/withDeployKeys";
-import { Link, RouteComponentProps, withRouter } from "react-router-dom";
-import { Loading } from "widgets/Loading";
+import { createStyles, Tab, Tabs, Theme, withStyles, WithStyles } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
+import { deleteDeployAccessTokenAction } from "actions/deployAccessToken";
+import { setSuccessNotificationAction } from "actions/notification";
+import clsx from "clsx";
+import { push } from "connected-react-router";
+import copy from "copy-to-clipboard";
+import { withDeployAccessTokens, WithDeployAccessTokensProps } from "hoc/withDeployAccessTokens";
 import { BasePage } from "pages/BasePage";
-import { deleteDeployKeyAction } from "actions/deployKey";
+import React from "react";
+import { connect } from "react-redux";
+import { RouteComponentProps, withRouter } from "react-router-dom";
+import {
+  DeployAccessToken,
+  DeployAccessTokenScopeCluster,
+  DeployAccessTokenScopeComponent,
+  DeployAccessTokenScopeNamespace,
+} from "types/deployAccessToken";
+import { CopyIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle2 } from "widgets/Label";
-import { DeployKey, DeployKeyScopeCluster, DeployKeyScopeComponent, DeployKeyScopeNamespace } from "types/deployKey";
-import { push } from "connected-react-router";
-import { connect } from "react-redux";
-import clsx from "clsx";
-import { RichEdtor } from "widgets/RichEditor";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import copy from "copy-to-clipboard";
-import { setSuccessNotificationAction } from "actions/notification";
-import { CopyIcon } from "widgets/Icon";
-import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { Loading } from "widgets/Loading";
+import { RichEditor } from "widgets/RichEditor";
+import { ResourceNotFound } from "widgets/ResourceNotFound";
+import { CodeBlock } from "widgets/CodeBlock";
 
 const TAB_CURL = "curl";
 const TAB_GITHUB_ACTION = "Github Action";
@@ -34,7 +41,7 @@ const styles = (theme: Theme) =>
       },
     },
     borderBottom: {
-      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+      borderBottom: `1px solid ${theme.palette.divider}`,
     },
   });
 
@@ -49,31 +56,31 @@ const mapStateToProps = (_state: any, { location }: RouteComponentProps<{ name: 
 
 interface Props
   extends WithStyles<typeof styles>,
-    WithDeployKeysProps,
+    WithDeployAccessTokensProps,
     ReturnType<typeof mapStateToProps>,
     RouteComponentProps<{ name: string }> {}
 
-class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
+class DeployAccessTokenDetailPageRaw extends React.PureComponent<Props> {
   private handleDelete = () => {
     const { dispatch } = this.props;
-    const deployKey = this.getDeployKey();
+    const deployAccessToken = this.getDeployAccessToken();
 
-    if (!deployKey) {
+    if (!deployAccessToken) {
       return;
     }
 
-    dispatch(deleteDeployKeyAction(deployKey));
+    dispatch(deleteDeployAccessTokenAction(deployAccessToken));
   };
 
-  private getDeployKey = () => {
-    const { deployKeys, match } = this.props;
-    return deployKeys.find((x) => x.get("name") === match.params.name);
+  private getDeployAccessToken = () => {
+    const { deployAccessTokens, match } = this.props;
+    return deployAccessTokens.find((x) => x.name === match.params.name);
   };
 
   private renderContent = () => {
-    const deployKey = this.getDeployKey();
+    const deployAccessToken = this.getDeployAccessToken();
 
-    if (!deployKey) {
+    if (!deployAccessToken) {
       return null;
     }
 
@@ -84,13 +91,22 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
             <Box>
               <Body2>The key is the identity used to call the webhook to restart components.</Body2>
             </Box>
-            <Box mt={2}>{this.renderDeployKeyScope(deployKey)}</Box>
-            {this.renderCopyKey(deployKey)}
+            <Box mt={2}>{this.renderDeployAccessTokenScope(deployAccessToken)}</Box>
+            {this.renderCopy(deployAccessToken)}
           </Box>
         </KPanel>
 
         <Box mt={2}>
-          <KPanel title={`Webhook`}>
+          <KPanel>
+            {this.renderTabs()}
+            <Box p={2}>
+              <Box mt={2}>{this.renderTabDetails(deployAccessToken)}</Box>
+            </Box>
+          </KPanel>
+        </Box>
+
+        <Box mt={2}>
+          <KPanel title={`Webhook api spec`}>
             <Box p={2}>
               <Box>
                 <Body2>Send a POST http request to the webhook endpoint to restart a component.</Body2>
@@ -98,43 +114,37 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
               <Box mt={2}>
                 <Subtitle2>Endpoint</Subtitle2>
                 <Box mt={2} ml={2}>
-                  <pre>{`POST https://<your-kalm-host>/webhook/components`}</pre>
+                  <CodeBlock>{`POST https://<your-kalm-host>/webhook/components`}</CodeBlock>
                 </Box>
               </Box>
               <Box mt={2}>
                 <Subtitle2>Content-Type</Subtitle2>
                 <Box mt={2} ml={2}>
-                  <pre>application/json</pre>
+                  <CodeBlock>application/json</CodeBlock>
                 </Box>
               </Box>
               <Box mt={2}>
                 <Subtitle2>Body Params</Subtitle2>
                 <Box mt={2} ml={2}>
-                  <pre>{`{
-  "deployKey":     "<key>",                  // (Required) this key value.
+                  <CodeBlock>{`{
   "application":   "<application-name>",     // (Required) application name of this component.
   "componentName": "<component-name>",       // (Required) component name.
   "imageTag":      "v1.2"                    // (Optional) If not blank, the component image tag will be updated.
-}`}</pre>
+}`}</CodeBlock>
                 </Box>
               </Box>
               <Box mt={2}>
                 <Subtitle2>Response status code</Subtitle2>
                 <Box mt={2} ml={2}>
-                  <pre>{`200 Success.      The component is successfully restart.`}</pre>
-                  <pre>{`401 Unauthorized. Wrong key or the key is not granted for the component.`}</pre>
-                  <pre>{`404 Not Found.    The application or component doesn't exist.`}</pre>
+                  <CodeBlock>
+                    {`
+                    200 Success.      The component is successfully restart.
+                    401 Unauthorized. Wrong key or the key is not granted for the component.
+                    404 Not Found.    The application or component doesn't exist.
+                    `}
+                  </CodeBlock>
                 </Box>
               </Box>
-            </Box>
-          </KPanel>
-        </Box>
-
-        <Box mt={2}>
-          <KPanel>
-            {this.renderTabs()}
-            <Box p={2}>
-              <Box mt={2}>{this.renderTabDetails(deployKey)}</Box>
             </Box>
           </KPanel>
         </Box>
@@ -175,9 +185,9 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
     );
   }
 
-  private renderCopyKey = (deployKey: DeployKey) => {
+  private renderCopy = (deployAccessToken: DeployAccessToken) => {
     const { dispatch } = this.props;
-    const key = deployKey.get("key");
+    const key = deployAccessToken.token;
     return (
       <Box mt={2}>
         <Subtitle2>Copy key</Subtitle2>
@@ -199,12 +209,12 @@ class DeployKeyDetailPageRaw extends React.PureComponent<Props> {
     );
   };
 
-  private renderTabDetails(deployKey: DeployKey) {
+  private renderTabDetails(deployAccessToken: DeployAccessToken) {
     const { currentTabIndex } = this.props;
 
     const curl = `curl -X POST \\
     -H "Content-Type: application/json" \\
-    -H "Authorization: Bearer ${deployKey.get("key")}" \\
+    -H "Authorization: Bearer ${deployAccessToken.token}" \\
     -d '{
       "application":   "<application-name>",
       "componentName": "<component-name>",
@@ -266,7 +276,7 @@ workflows:
             Copy the following command and modify the content in angle brackets. Then try the edited command in a shell.
           </Body2>
           <Box mt={2}>
-            <RichEdtor mode="bash" value={curl} height="280px" wrapEnabled />
+            <RichEditor mode="bash" value={curl} height="280px" wrapEnabled />
           </Box>
         </Box>
         <Box display={tabs[currentTabIndex] === TAB_GITHUB_ACTION ? "block" : "none"}>
@@ -276,9 +286,9 @@ workflows:
             <strong>{`<application-name>`}</strong>, <strong>{`<component-name>`}</strong> and{" "}
             <strong>{`<image-tag>`}</strong> as needed.
           </Body2>
-          {this.renderCopyKey(deployKey)}
+          {this.renderCopy(deployAccessToken)}
           <Box mt={2}>
-            <RichEdtor mode="yaml" value={githubAction} height="400px" wrapEnabled tabSize={2} />
+            <RichEditor mode="yaml" value={githubAction} height="400px" wrapEnabled tabSize={2} />
           </Box>
         </Box>
         <Box display={tabs[currentTabIndex] === TAB_CIRCLE_CI_ORD ? "block" : "none"}>
@@ -288,55 +298,49 @@ workflows:
             <strong>KALM_DEPLOY_KEY</strong> as environment variables. Set <strong>{`<application-name>`}</strong>,{" "}
             <strong>{`<component-name>`}</strong> and <strong>{`<image-tag>`}</strong> as needed.
           </Body2>
-          {this.renderCopyKey(deployKey)}
+          {this.renderCopy(deployAccessToken)}
           <Box mt={2}>
-            <RichEdtor mode="yaml" value={circleCIOrb} height="350px" wrapEnabled tabSize={2} />
+            <RichEditor mode="yaml" value={circleCIOrb} height="350px" wrapEnabled tabSize={2} />
           </Box>
         </Box>
       </>
     );
   }
 
-  private renderDeployKeyScope = (deployKey: DeployKey) => {
-    if (deployKey.get("scope") === DeployKeyScopeCluster) {
+  private renderDeployAccessTokenScope = (deployAccessToken: DeployAccessToken) => {
+    if (deployAccessToken.scope === DeployAccessTokenScopeCluster) {
       return (
         <Body2>
           Its granted scope is <strong>Cluster</strong>.
         </Body2>
       );
-    } else if (deployKey.get("scope") === DeployKeyScopeNamespace) {
+    } else if (deployAccessToken.scope === DeployAccessTokenScopeNamespace) {
       return (
         <>
           <Body2>
             Its granted scope is <strong>Specific Applications</strong>:
           </Body2>
           <Box pl={2} mt={1}>
-            {deployKey
-              .get("resources")
-              .map((x) => (
-                <Box key={x}>
-                  <strong>{x}</strong>
-                </Box>
-              ))
-              .toArray()}
+            {deployAccessToken.resources.map((x) => (
+              <Box key={x}>
+                <strong>{x}</strong>
+              </Box>
+            ))}
           </Box>
         </>
       );
-    } else if (deployKey.get("scope") === DeployKeyScopeComponent) {
+    } else if (deployAccessToken.scope === DeployAccessTokenScopeComponent) {
       return (
         <>
           <Body2>
             Its granted scope is <strong>Specific Components</strong>:
           </Body2>
           <Box pl={2} mt={1}>
-            {deployKey
-              .get("resources")
-              .map((x) => (
-                <Box key={x}>
-                  <strong>{x}</strong>
-                </Box>
-              ))
-              .toArray()}
+            {deployAccessToken.resources.map((x) => (
+              <Box key={x}>
+                <strong>{x}</strong>
+              </Box>
+            ))}
           </Box>
         </>
       );
@@ -344,7 +348,7 @@ workflows:
   };
 
   public render() {
-    const { deployKeys, isLoading, loaded, match } = this.props;
+    const { deployAccessTokens, isLoading, loaded, match } = this.props;
 
     if (!loaded && isLoading) {
       return (
@@ -354,25 +358,35 @@ workflows:
       );
     }
 
-    const deployKey = deployKeys.find((x) => x.get("name") === match.params.name);
+    const deployAccessToken = deployAccessTokens.find((x) => x.name === match.params.name);
 
-    if (!deployKey) {
-      return <Box p={2}>Deploy key "${match.params.name}" not found.</Box>;
+    if (!deployAccessToken) {
+      return (
+        <BasePage>
+          <Box p={2}>
+            <ResourceNotFound
+              text={`Deploy key ${match.params.name} not found.`}
+              redirect={`/applications`}
+              redirectText="Go back to Apps List"
+            ></ResourceNotFound>
+          </Box>
+        </BasePage>
+      );
     }
 
     return (
       <BasePage
         secondHeaderRight={
           <>
-            <Button
+            {/* <Button
               component={Link}
               color="primary"
               variant="outlined"
               size="small"
-              to={`/ci/keys/${deployKey.get("name")}/edit`}
+              to={`/ci/keys/${deployAccessToken.name}/edit`}
             >
               Edit
-            </Button>
+            </Button> */}
             <DeleteButtonWithConfirmPopover
               useText
               popupId="delete-ci-popup"
@@ -388,6 +402,6 @@ workflows:
   }
 }
 
-export const DeployKeyDetailPage = withStyles(styles)(
-  withRouter(connect(mapStateToProps)(withDeployKeys(DeployKeyDetailPageRaw))),
+export const DeployAccessTokenDetailPage = withStyles(styles)(
+  withRouter(connect(mapStateToProps)(withDeployAccessTokens(DeployAccessTokenDetailPageRaw))),
 );

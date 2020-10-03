@@ -33,7 +33,6 @@ export const deletePersistentVolumeAction = (namespace: string, name: string): T
 export const loadStorageClassesAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     const storageClasses = await api.getStorageClasses();
-
     dispatch({
       type: LOAD_STORAGE_CLASSES,
       payload: { storageClasses },
@@ -44,7 +43,7 @@ export const loadStorageClassesAction = (): ThunkResult<Promise<void>> => {
 export const loadSimpleOptionsAction = (namespace?: string): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (!namespace) {
-      namespace = getState().get("namespaces").get("active");
+      namespace = getState().namespaces.active;
     }
     const simpleOptions = await api.getSimpleOptions(namespace);
 
@@ -58,7 +57,7 @@ export const loadSimpleOptionsAction = (namespace?: string): ThunkResult<Promise
 export const loadStatefulSetOptionsAction = (namespace?: string): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (!namespace) {
-      namespace = getState().get("namespaces").get("active");
+      namespace = getState().namespaces.active;
     }
 
     const statefulSetOptions = await api.getStatefulSetOptions(namespace);

@@ -1,16 +1,17 @@
+import { api } from "api";
+import { ThunkResult } from "types";
 import {
   CREATE_REGISTRY,
   DELETE_REGISTRY,
   LOAD_REGISTRIES_FAILED,
   LOAD_REGISTRIES_FULFILLED,
   LOAD_REGISTRIES_PENDING,
-  RegistryType,
-  SET_IS_SUBMITTING_REGISTRY,
+  Registry,
+  RegistryFormType,
   SetIsSubmittingRegistry,
+  SET_IS_SUBMITTING_REGISTRY,
   UPDATE_REGISTRY,
 } from "types/registry";
-import { ThunkResult } from "types";
-import { api } from "api";
 
 export const loadRegistriesAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
@@ -31,11 +32,11 @@ export const loadRegistriesAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const createRegistryAction = (registryValues: RegistryType): ThunkResult<Promise<void>> => {
+export const createRegistryAction = (registryValues: RegistryFormType): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     dispatch(setIsSubmittingRegistry(true));
 
-    let registry;
+    let registry: Registry;
     try {
       registry = await api.createRegistry(registryValues);
     } catch (e) {
@@ -53,11 +54,11 @@ export const createRegistryAction = (registryValues: RegistryType): ThunkResult<
   };
 };
 
-export const updateRegistryAction = (registryValues: RegistryType): ThunkResult<Promise<void>> => {
+export const updateRegistryAction = (registryValues: RegistryFormType): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     dispatch(setIsSubmittingRegistry(true));
 
-    let registry;
+    let registry: Registry;
     try {
       registry = await api.updateRegistry(registryValues);
     } catch (e) {

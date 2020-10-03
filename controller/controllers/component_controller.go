@@ -43,13 +43,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"sort"
 	"strconv"
 	"strings"
 
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
 
-const AnnoLastUpdatedByWebhook = "last-updated-by-webhook"
+const (
+	AnnoLastUpdatedByWebhook = "last-updated-by-webhook"
+	ControllerComponent      = "controller-component"
+)
 
 // ComponentReconciler reconciles a Component object
 type ComponentReconciler struct {
@@ -221,11 +225,6 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 		return client.IgnoreNotFound(err)
 	}
 
-	//if err := r.FixComponentDefaultValues(); err != nil {
-	//	r.WarningEvent()(err, "Fix component default values error.")
-	//	return ctrl.Result{}, err
-	//}
-
 	if err := r.LoadResources(); err != nil {
 		return err
 	}
@@ -256,7 +255,7 @@ const (
 
 func (r *ComponentReconcilerTask) GetLabels() map[string]string {
 	res := map[string]string{
-		KalmLabelNamespaceKey: r.namespace.Name,
+		KalmLabelNamespaceKey: r.component.Namespace,
 		KalmLabelComponentKey: r.component.Name,
 		KalmLabelManaged:      "true",
 	}
@@ -321,40 +320,40 @@ func GetPodSecurityContextFromAnnotation(annotations map[string]string) *coreV1.
 	return securityContext
 }
 
-func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
-	if r.component == nil {
-		return nil
-	}
-
-	if r.component.Spec.WorkloadType == "" {
-		r.component.Spec.WorkloadType = corev1alpha1.WorkloadTypeServer
-	}
-
-	if r.component.Spec.DnsPolicy == "" {
-		r.component.Spec.DnsPolicy = coreV1.DNSClusterFirst
-	}
-
-	if r.component.Spec.RestartPolicy == "" {
-		r.component.Spec.RestartPolicy = coreV1.RestartPolicyAlways
-	}
-
-	if r.component.Spec.TerminationGracePeriodSeconds == nil {
-		x := int64(30)
-		r.component.Spec.TerminationGracePeriodSeconds = &x
-	}
-
-	if r.component.Spec.RestartStrategy == "" {
-		r.component.Spec.RestartStrategy = appsV1.RollingUpdateDeploymentStrategyType
-	}
-
-	for i := range r.component.Spec.Env {
-		if r.component.Spec.Env[i].Type == "" {
-			r.component.Spec.Env[i].Type = corev1alpha1.EnvVarTypeStatic
-		}
-	}
-
-	return r.Update(r.ctx, r.component)
-}
+//func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
+//	if r.component == nil {
+//		return nil
+//	}
+//
+//	if r.component.Spec.WorkloadType == "" {
+//		r.component.Spec.WorkloadType = corev1alpha1.WorkloadTypeServer
+//	}
+//
+//	if r.component.Spec.DnsPolicy == "" {
+//		r.component.Spec.DnsPolicy = coreV1.DNSClusterFirst
+//	}
+//
+//	if r.component.Spec.RestartPolicy == "" {
+//		r.component.Spec.RestartPolicy = coreV1.RestartPolicyAlways
+//	}
+//
+//	if r.component.Spec.TerminationGracePeriodSeconds == nil {
+//		x := int64(30)
+//		r.component.Spec.TerminationGracePeriodSeconds = &x
+//	}
+//
+//	if r.component.Spec.RestartStrategy == "" {
+//		r.component.Spec.RestartStrategy = appsV1.RollingUpdateDeploymentStrategyType
+//	}
+//
+//	for i := range r.component.Spec.Env {
+//		if r.component.Spec.Env[i].Type == "" {
+//			r.component.Spec.Env[i].Type = corev1alpha1.EnvVarTypeStatic
+//		}
+//	}
+//
+//	return r.Update(r.ctx, r.component)
+//}
 
 func IsNamespaceKalmEnabled(namespace coreV1.Namespace) bool {
 	if v, exist := namespace.Labels[KalmEnableLabelName]; !exist || v != KalmEnableLabelValue {
@@ -681,7 +680,7 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 	ctx := r.ctx
 	deployment := r.deployment
 	isNewDeployment := false
-	labelMap := r.GetLabels()
+	labelMap := podTemplateSpec.Labels //r.GetLabels()
 	annotations := r.GetAnnotations()
 
 	if deployment == nil {
@@ -727,27 +726,6 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 		deployment.Spec.Replicas = nil
 	}
 
-	//if len(component.Ports) > 0 {
-	//	var ports []coreV1.ContainerPort
-	//	for _, p := range component.Ports {
-	//		ports = append(ports, coreV1.ContainerPort{
-	//			Name:          p.Name,
-	//			ContainerPort: int32(p.ContainerPort),
-	//			Protocol:      p.Protocol,
-	//		})
-	//	}
-	//}
-
-	// apply plugins
-	//for _, pluginDef := range component.Spec.Plugins {
-	//	plugin := corev1alpha1.GetPlugin(pluginDef)
-	//
-	//	switch p := plugin.(type) {
-	//	case *corev1alpha1.PluginManualScaler:
-	//		p.Operate(deployment)
-	//	}
-	//}
-
 	if err := ctrl.SetControllerReference(component, deployment, r.Scheme); err != nil {
 		r.WarningEvent(err, "unable to set owner for deployment")
 		return err
@@ -773,16 +751,6 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 
 		r.NormalEvent("DeploymentUpdated", deployment.Name+" is updated.")
 	}
-
-	// apply plugins
-	//for _, pluginDef := range app.Spec.Components[0].Plugins {
-	//	plugin := corev1alpha1.GetPlugin(pluginDef)
-	//
-	//	switch p := plugin.(type) {
-	//	case *corev1alpha1.PluginManualScaler:
-	//		p.Operate(deployment)
-	//	}
-	//}
 
 	return nil
 }
@@ -1003,9 +971,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 
 	template = &coreV1.PodTemplateSpec{
 		ObjectMeta: metaV1.ObjectMeta{
-			Labels: labels,
-
-			// The following is for set sidecar resources.
+			Labels:      labels,
 			Annotations: annotations,
 		},
 		Spec: coreV1.PodSpec{
@@ -1025,15 +991,6 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 			SecurityContext: GetPodSecurityContextFromAnnotation(annotations),
 		},
 	}
-
-	// TODO are these values reasonable?
-	template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPULimit"] = "100m"
-	template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemoryLimit"] = "50Mi"
-
-	//if component.Spec.EnableResourcesRequests {
-	//	template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPU"] = "10m"
-	//	template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemory"] = "50Mi"
-	//}
 
 	if v, exist := component.Annotations[AnnoLastUpdatedByWebhook]; exist {
 		template.ObjectMeta.Annotations[AnnoLastUpdatedByWebhook] = v
@@ -1066,15 +1023,21 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	}
 
 	pullImageSecretRefs := make([]coreV1.LocalObjectReference, len(pullImageSecrets.Items))
-	for i, secret := range pullImageSecrets.Items {
+
+	pullImgSecs := pullImageSecrets.Items
+	sort.Slice(pullImgSecs, func(i, j int) bool {
+		return strings.Compare(pullImgSecs[i].Name, pullImgSecs[j].Name) < 0
+	})
+
+	for i, secret := range pullImgSecs {
 		pullImageSecretRefs[i] = coreV1.LocalObjectReference{
 			Name: secret.Name,
 		}
 	}
 
-	if len(pullImageSecretRefs) > 0 {
-		template.Spec.ImagePullSecrets = pullImageSecretRefs
-	}
+	//if len(pullImageSecretRefs) > 0 {
+	template.Spec.ImagePullSecrets = pullImageSecretRefs
+	//}
 
 	//decide affinity
 	if affinity, exist := r.decideAffinity(); exist {
@@ -1812,14 +1775,14 @@ func (r *ComponentReconcilerTask) preparePreInjectedFiles(
 //
 // - temp vol as podTemplate.volumes
 // - persistent vol as volClaimTemplate
-func (r *ComponentReconcilerTask) prepareVolsForSTS(template *coreV1.PodTemplateSpec) ([]coreV1.PersistentVolumeClaim, error) {
+func (r *ComponentReconcilerTask) prepareVolsForSTS(podTemplate *coreV1.PodTemplateSpec) ([]coreV1.PersistentVolumeClaim, error) {
 	component := r.component
 
 	var volumes []coreV1.Volume
 	var volumeMounts []coreV1.VolumeMount
 	var volClaimTemplates []coreV1.PersistentVolumeClaim
 
-	if err := r.preparePreInjectedFiles(template, &volumes, &volumeMounts); err != nil {
+	if err := r.preparePreInjectedFiles(podTemplate, &volumes, &volumeMounts); err != nil {
 		return nil, err
 	}
 
@@ -1845,45 +1808,36 @@ func (r *ComponentReconcilerTask) prepareVolsForSTS(template *coreV1.PodTemplate
 					},
 				},
 			})
-		} else if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim || disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaimTemplate {
+		} else if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim ||
+			disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaimTemplate {
 
-			pvcName := disk.PVC
-
+			volClaimTemplateName := disk.PVC
 			// for volClaimTemplate, volName == pvcName
-			volName = pvcName
+			volName = volClaimTemplateName
 
-			var pvc *coreV1.PersistentVolumeClaim
+			labels := mergeMap(r.GetLabels(), map[string]string{
+				KalmLabelVolClaimTemplateName: volClaimTemplateName,
+			})
 
-			pvcFetched, err := r.getPVC(pvcName)
-			if err != nil {
-				return nil, err
-			}
-
-			if pvcFetched != nil {
-				pvc = pvcFetched
-			} else {
-				expectedPVC := &coreV1.PersistentVolumeClaim{
-					ObjectMeta: metaV1.ObjectMeta{
-						Name:      pvcName,
-						Namespace: r.component.Namespace,
-						Labels:    r.GetLabels(),
-					},
-					Spec: coreV1.PersistentVolumeClaimSpec{
-						AccessModes: []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
-						Resources: coreV1.ResourceRequirements{
-							Requests: coreV1.ResourceList{
-								coreV1.ResourceStorage: disk.Size,
-							},
+			expectedVolClaimTemplate := coreV1.PersistentVolumeClaim{
+				ObjectMeta: metaV1.ObjectMeta{
+					Name:      volClaimTemplateName,
+					Namespace: r.component.Namespace,
+					Labels:    labels,
+				},
+				Spec: coreV1.PersistentVolumeClaimSpec{
+					AccessModes: []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
+					Resources: coreV1.ResourceRequirements{
+						Requests: coreV1.ResourceList{
+							coreV1.ResourceStorage: disk.Size,
 						},
-						StorageClassName: disk.StorageClassName,
 					},
-				}
-
-				pvc = expectedPVC
+					StorageClassName: disk.StorageClassName,
+				},
 			}
 
 			// claimTemplate for PVC
-			volClaimTemplates = append(volClaimTemplates, *pvc)
+			volClaimTemplates = append(volClaimTemplates, expectedVolClaimTemplate)
 		} else {
 			return nil, fmt.Errorf("unknown disk type: %s", disk.Type)
 		}
@@ -1896,9 +1850,10 @@ func (r *ComponentReconcilerTask) prepareVolsForSTS(template *coreV1.PodTemplate
 	}
 
 	// set volumes & volMounts for podTemplate of STS
-	template.Spec.Volumes = volumes
+	podTemplate.Spec.Volumes = volumes
 
-	mainContainer := &template.Spec.Containers[0]
+	// mount vols into container
+	mainContainer := &podTemplate.Spec.Containers[0]
 	mainContainer.VolumeMounts = volumeMounts
 
 	// for STS, pvc is not in podTemplate but in volumeClaimTemplate
@@ -1946,7 +1901,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 				Name: volName,
 				VolumeSource: coreV1.VolumeSource{
 					HostPath: &coreV1.HostPathVolumeSource{
-						Path: disk.Path,
+						Path: disk.HostPath,
 					},
 				},
 			})
@@ -1995,7 +1950,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 
 					// expectation: PVToMatch only need to be set when try to re-use pv from other ns,
 					//   and pv's claimPolicy should be Retain (to make deletion of PVC safe)
-					if err := r.reconcilePVForReUse(r.ctx, *expectedPVC, disk.PVToMatch); err != nil {
+					if err := r.reconcilePVForReUse(*expectedPVC, disk.PVToMatch); err != nil {
 						return err
 					}
 				}
@@ -2040,14 +1995,18 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 }
 
 // 2. diff ns pv reuse, remove old pvc, clean ref in pv
-func (r *ComponentReconcilerTask) reconcilePVForReUse(ctx context.Context, pvc coreV1.PersistentVolumeClaim, pvName string) error {
-	// 1. same ns pv reuse, pvc name should be same
+func (r *ComponentReconcilerTask) reconcilePVForReUse(
+	pvc coreV1.PersistentVolumeClaim,
+	pvName string,
+) error {
+
+	// pvc is using this pv, nothing need to be done
 	if pvc.Spec.VolumeName == pvName {
 		return nil
 	}
 
 	var pv coreV1.PersistentVolume
-	if err := r.Get(ctx, types.NamespacedName{Name: pvName}, &pv); err != nil {
+	if err := r.Get(r.ctx, types.NamespacedName{Name: pvName}, &pv); err != nil {
 		return err
 	}
 
@@ -2062,12 +2021,12 @@ func (r *ComponentReconcilerTask) reconcilePVForReUse(ctx context.Context, pvc c
 	ownerName := pv.Spec.ClaimRef.Name
 
 	var ownerPVC coreV1.PersistentVolumeClaim
-	err := r.Get(ctx, types.NamespacedName{Name: ownerName, Namespace: ownerNs}, &ownerPVC)
+	err := r.Get(r.ctx, types.NamespacedName{Name: ownerName, Namespace: ownerNs}, &ownerPVC)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			cleanPVToBeAvailable(&pv)
 
-			if err := r.Update(ctx, &pv); err != nil {
+			if err := r.Update(r.ctx, &pv); err != nil {
 				return nil
 			}
 		} else {
@@ -2084,7 +2043,7 @@ func (r *ComponentReconcilerTask) reconcilePVForReUse(ctx context.Context, pvc c
 			)
 		} else {
 			// check if ownerPVC is being used
-			if isInUse, err := r.pvcIsInUsed(ctx, ownerPVC); err != nil {
+			if isInUse, err := r.pvcIsInUsed(ownerPVC); err != nil {
 				return err
 			} else if isInUse {
 				// pvc in use, nothing we can do but warning the user
@@ -2096,12 +2055,14 @@ func (r *ComponentReconcilerTask) reconcilePVForReUse(ctx context.Context, pvc c
 				)
 			} else {
 				// delete ownerPVC
-				if err := r.Delete(ctx, &ownerPVC); err != nil {
+				if err := r.Delete(r.ctx, &ownerPVC); err != nil {
 					return err
 				}
 
 				cleanPVToBeAvailable(&pv)
-				if err := r.Update(ctx, &pv); err != nil {
+				pv.Labels[KalmLabelPVLocker] = ControllerComponent
+
+				if err := r.Update(r.ctx, &pv); err != nil {
 					return nil
 				}
 			}
@@ -2118,9 +2079,9 @@ func cleanPVToBeAvailable(pv *coreV1.PersistentVolume) {
 	delete(pv.Labels, KalmLabelCleanIfPVCGone)
 }
 
-func (r *ComponentReconcilerTask) pvcIsInUsed(ctx context.Context, pvc coreV1.PersistentVolumeClaim) (bool, error) {
+func (r *ComponentReconcilerTask) pvcIsInUsed(pvc coreV1.PersistentVolumeClaim) (bool, error) {
 	var podList coreV1.PodList
-	err := r.List(ctx, &podList, client.InNamespace(pvc.Namespace))
+	err := r.List(r.ctx, &podList, client.InNamespace(pvc.Namespace))
 	if errors.IsNotFound(err) {
 		return false, err
 	}

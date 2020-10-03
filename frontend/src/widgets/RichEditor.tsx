@@ -37,7 +37,7 @@ const detectMode = (text: string): string => {
   }
 };
 
-class RichEdtorRaw extends React.PureComponent<Props, State> {
+class RichEditorRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -102,4 +102,4 @@ class RichEdtorRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const RichEdtor = withStyles(styles)(RichEdtorRaw);
+export const RichEditor = withStyles(styles)(RichEditorRaw);

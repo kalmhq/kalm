@@ -1,41 +1,41 @@
 package handler
 
 import (
+	"github.com/kalmhq/kalm/api/client"
 	"github.com/labstack/echo/v4"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
+	"k8s.io/apimachinery/pkg/api/errors"
 )
 
 const (
-	KUBERNETES_CLIENT_CONFIG_KEY = "k8sClientConfig"
-	KUBERNETES_CLIENT_CLIENT_KEY = "k8sClient"
+	CURRENT_USER_KEY = "k8sClientConfig"
 )
 
-func (h *ApiHandler) AuthClientMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func (h *ApiHandler) RequireUserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		clientInfo, err := h.clientManager.GetConfigForClientRequestContext(c)
+		currentUser := c.Get(CURRENT_USER_KEY).(*client.ClientInfo)
 
-		if err != nil {
-			return err
+		if currentUser == nil {
+			return errors.NewUnauthorized("")
 		}
-
-		c.Set(KUBERNETES_CLIENT_CONFIG_KEY, clientInfo.Cfg)
-
-		k8sClient, err := kubernetes.NewForConfig(clientInfo.Cfg)
-		if err != nil {
-			return err
-		}
-
-		c.Set(KUBERNETES_CLIENT_CLIENT_KEY, k8sClient)
 
 		return next(c)
 	}
 }
 
-func getK8sClient(c echo.Context) *kubernetes.Clientset {
-	return c.Get(KUBERNETES_CLIENT_CLIENT_KEY).(*kubernetes.Clientset)
+func (h *ApiHandler) GetCurrentUserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		clientInfo, err := h.clientManager.GetClientInfoFromContext(c)
+
+		if err != nil {
+			return err
+		}
+
+		c.Set(CURRENT_USER_KEY, clientInfo)
+
+		return next(c)
+	}
 }
 
-func getK8sClientConfig(c echo.Context) *rest.Config {
-	return c.Get(KUBERNETES_CLIENT_CONFIG_KEY).(*rest.Config)
+func getCurrentUser(c echo.Context) *client.ClientInfo {
+	return c.Get(CURRENT_USER_KEY).(*client.ClientInfo)
 }

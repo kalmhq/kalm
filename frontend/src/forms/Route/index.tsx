@@ -1,78 +1,52 @@
-import { Box, Button, Collapse, Grid, Link } from "@material-ui/core";
+import { Box, Collapse, Grid, Link } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import { loadDomainDNSInfo } from "actions/domain";
-import { KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
-import { KBoolCheckboxRender, KCheckboxGroupRender } from "forms/Basic/checkbox";
-import { KRadioGroupRender } from "forms/Basic/radio";
-import { shouldError } from "forms/common";
+import arrayMutators from "final-form-arrays";
+import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
+import { FinalBoolCheckboxRender, FinalCheckboxGroupRender } from "forms/Final/checkbox";
+import { FinalRadioGroupRender } from "forms/Final/radio";
 import { ROUTE_FORM_ID } from "forms/formIDs";
-import {
-  KValidatorHostsWithWildcardPrefix,
-  KValidatorPaths,
-  ValidatorHttpRouteDestinations,
-  ValidatorListNotEmpty,
-  ValidatorRequired,
-} from "forms/validator";
+import { stringArrayTrimParse, stringArrayTrimAndToLowerCaseParse } from "forms/normalizer";
+import { RenderHttpRouteDestinations } from "forms/Route/destinations";
+import { ValidatorArrayNotEmpty, ValidatorArrayOfPath, ValidatorIpAndHosts } from "forms/validator";
 import routesGif from "images/routes.gif";
-import Immutable from "immutable";
 import React from "react";
+import { Field, FieldRenderProps, Form, FormRenderProps } from "react-final-form";
+import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { connect } from "react-redux";
 import { Link as RouteLink } from "react-router-dom";
 import { RootState } from "reducers";
-import { State as TutorialState } from "reducers/tutorial";
-import { arrayPush, change, InjectedFormProps } from "redux-form";
-import { Field, FieldArray, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
-import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
+import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
-import {
-  httpMethods,
-  HttpRouteDestination,
-  HttpRouteForm,
-  methodsModeAll,
-  methodsModeSpecific,
-  newEmptyRouteForm,
-} from "types/route";
+import { httpMethods, HttpRoute, methodsModeAll, methodsModeSpecific } from "types/route";
 import { isArray } from "util";
 import { arraysMatch } from "utils";
 import { includesForceHttpsDomain } from "utils/domain";
 import { default as sc, default as stringConstants } from "utils/stringConstants";
+import { SubmitButton } from "widgets/Button";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
 import DomainStatus from "widgets/DomainStatus";
-import { AddIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
-import { RenderHttpRouteDestinations } from "./destinations";
 
 const mapStateToProps = (state: RootState) => {
-  const form = ROUTE_FORM_ID;
-  const selector = formValueSelector(form || ROUTE_FORM_ID);
-  const syncErrors = getFormSyncErrors(form || ROUTE_FORM_ID)(state) as { [key: string]: any };
-  const certifications = state.get("certificates").get("certificates");
+  const certifications = state.certificates.certificates;
   const domains: Set<string> = new Set();
-  const hosts = selector(state, "hosts") as Immutable.List<string>;
-  const httpRedirectToHttps = !!selector(state, "httpRedirectToHttps") as boolean;
 
   certifications.forEach((x) => {
-    x.get("domains")
-      .filter((x) => x !== "*")
-      .forEach((domain) => domains.add(domain));
+    x.domains.filter((x) => x !== "*").forEach((domain) => domains.add(domain));
   });
 
   return {
-    tutorialState: state.get("tutorial"),
-    syncErrors,
-    schemes: selector(state, "schemes") as Immutable.List<string>,
-    methodsMode: selector(state, "methodsMode") as string,
-    hosts,
-    httpRedirectToHttps,
-    destinations: selector(state, "destinations") as Immutable.List<HttpRouteDestination>,
+    tutorialState: state.tutorial,
     domains: Array.from(domains),
-    ingressIP: state.get("cluster").get("info").get("ingressIP"),
+    ingressIP: state.cluster.info.ingressIP,
     certifications,
+    form: ROUTE_FORM_ID,
   };
 };
 
@@ -104,31 +78,34 @@ const styles = (theme: Theme) =>
     },
   });
 
-export interface TutorialStateProps {
-  tutorialState: TutorialState;
-}
-
 interface OwnProps {
   isEdit?: boolean;
+  onSubmit: any;
+  initial: HttpRoute;
 }
 
 export interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props
-  extends InjectedFormProps<HttpRouteForm, TutorialStateProps>,
-    ConnectedProps,
-    OwnProps,
-    WithStyles<typeof styles> {}
+export interface Props extends ConnectedProps, OwnProps, WithStyles<typeof styles> {}
 
 interface State {
   isAdvancedPartUnfolded: boolean;
   isValidCertificationUnfolded: boolean;
 }
 
-const hostsValidators = [ValidatorRequired, KValidatorHostsWithWildcardPrefix];
-const pathsValidators = [ValidatorRequired, KValidatorPaths];
-
 class RouteFormRaw extends React.PureComponent<Props, State> {
+  private schemaOptions = [
+    {
+      value: "http",
+      label: "http",
+    },
+    {
+      value: "https",
+      label: "https",
+      htmlColor: "#9CCC65",
+    },
+  ];
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -137,34 +114,9 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  componentDidUpdate(prevProps: Props) {
-    const { schemes, httpRedirectToHttps, hosts, dispatch, form } = this.props;
-    if (!hosts.equals(prevProps.hosts)) {
-      hosts.forEach((host) => {
-        dispatch(loadDomainDNSInfo(host));
-      });
-    }
-
-    // for dev, app domains auto enable https
-    if (!schemes.includes("https")) {
-      if (includesForceHttpsDomain(hosts).length > 0) {
-        if (schemes.includes("http")) {
-          dispatch(change(form, "schemes", Immutable.List(["http", "https"])));
-        } else {
-          dispatch(change(form, "schemes", Immutable.List(["https"])));
-        }
-      }
-    }
-
-    // set httpRedirectToHttps to false if http or https is not in schemes
-    if (!(schemes.includes("http") && schemes.includes("https")) && httpRedirectToHttps) {
-      dispatch(change(form, "httpRedirectToHttps", false));
-    }
-  }
-
-  private canCertDomainsSuiteForHost = (domains: Immutable.List<string>, host: string) => {
-    for (let i = 0; i < domains.size; i++) {
-      const domain = domains.get(i)!;
+  private canCertDomainsSuiteForHost = (domains: string[], host: string) => {
+    for (let i = 0; i < domains.length; i++) {
+      const domain = domains[i]!;
       if (domain === "*") {
         return false;
       }
@@ -188,18 +140,19 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     return false;
   };
 
-  private renderCertificationStatus() {
-    const { hosts, certifications } = this.props;
+  private renderCertificationStatus(values: HttpRoute) {
+    const { certifications } = this.props;
     const { isValidCertificationUnfolded } = this.state;
+    const { hosts } = values;
 
-    if (hosts.size === 0) {
+    if (hosts.length === 0) {
       return null;
     }
 
     let hostCertResults: any[] = [];
 
     hosts.forEach((host) => {
-      const cert = certifications.find((c) => this.canCertDomainsSuiteForHost(c.get("domains"), host));
+      const cert = certifications.find((c) => this.canCertDomainsSuiteForHost(c.domains, host));
 
       hostCertResults.push({
         host,
@@ -264,7 +217,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
               <Typography key={host}>
                 <strong>{host}</strong> will use{" "}
                 <Link href="#" variant="body2">
-                  <strong>{cert.get("name")}</strong>
+                  <strong>{cert.name}</strong>
                 </Link>{" "}
                 certification.
               </Typography>
@@ -276,57 +229,13 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderTargets = () => {
-    const { dispatch, form, destinations } = this.props;
-    if (destinations.size === 0) {
-      dispatch(
-        arrayPush(
-          form,
-          "destinations",
-          Immutable.Map({
-            host: "",
-            weight: 1,
-          }),
-        ),
-      );
-    }
+    // const { destinations } = values;
+
     return (
       <Box p={2}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={12} md={12}>
-            <Box mt={2} mr={2} mb={2}>
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<AddIcon />}
-                size="small"
-                id="add-target-button"
-                onClick={() =>
-                  dispatch(
-                    arrayPush(
-                      form,
-                      "destinations",
-                      Immutable.Map({
-                        host: "",
-                        weight: 1,
-                      }),
-                    ),
-                  )
-                }
-              >
-                Add a target
-              </Button>
-            </Box>
-            <Collapse in={destinations.size > 1}>
-              <Alert className="alert" severity="info">
-                There are more than one target, traffic will be forwarded to each target by weight.
-              </Alert>
-            </Collapse>
-            <FieldArray
-              name="destinations"
-              component={RenderHttpRouteDestinations}
-              rerenderOnEveryChange
-              validate={ValidatorHttpRouteDestinations}
-            />
+            <RenderHttpRouteDestinations />
           </Grid>
           <Grid item xs={8} sm={8} md={8}>
             <CollapseWrapper title={stringConstants.ROUTE_MULTIPLE_TARGETS_HELPER}>
@@ -342,290 +251,234 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       </Box>
     );
   };
+
+  private validate = (values: HttpRoute) => {
+    const { form, tutorialState } = this.props;
+    let errors: any = {};
+    const { methods, methodsMode, schemes } = values;
+    if (methodsMode === methodsModeSpecific) {
+      errors.methods = ValidatorArrayNotEmpty(methods);
+    }
+    errors.schemes = ValidatorArrayNotEmpty(schemes);
+    return Object.keys(errors).length > 0 ? errors : finalValidateOrNotBlockByTutorial(values, tutorialState, form);
+  };
+
   public render() {
-    const {
-      methodsMode,
-      classes,
-      ingressIP,
-      dispatch,
-      form,
-      schemes,
-      handleSubmit,
-      dirty,
-      submitSucceeded,
-      change,
-      isEdit,
-      hosts,
-      syncErrors,
-    } = this.props;
-
-    const hstsDomains = includesForceHttpsDomain(hosts);
-
-    const icons = hosts.map((host, index) => {
-      if (isArray(syncErrors.hosts) && syncErrors.hosts[index]) {
-        return undefined;
-      } else {
-        return <DomainStatus domain={host} />;
-      }
-    });
+    const { classes, ingressIP, isEdit, initial, onSubmit, form } = this.props;
     return (
       <div className={classes.root}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
-            <Box mb={2}>
-              <KPanel
-                title="Hosts and paths"
-                content={
-                  <Box p={2}>
-                    <KFreeSoloAutoCompleteMultipleSelectStringField
-                      icons={icons}
-                      label="Hosts"
-                      name="hosts"
-                      validate={hostsValidators}
-                      placeholder="e.g. www.example.com"
-                      helperText={
-                        <Caption color="textSecondary">
-                          Your cluster ip is{" "}
-                          <Link
-                            href="#"
-                            onClick={() => {
-                              const isHostsIncludeIngressIP = !!hosts.find((host) => host === ingressIP);
-                              if (!isHostsIncludeIngressIP) {
-                                change("hosts", hosts.push(ingressIP));
-                              }
-                            }}
-                          >
-                            {ingressIP}
-                          </Link>
-                          . {sc.ROUTE_HOSTS_INPUT_HELPER}
-                        </Caption>
-                      }
-                    />
-                    <KFreeSoloAutoCompleteMultipleSelectStringField
-                      label="Path Prefixes"
-                      name="paths"
-                      validate={pathsValidators}
-                      placeholder="e.g. /some/path/to/app"
-                      helperText={sc.ROUTE_PATHS_INPUT_HELPER}
-                    />
-                    <Field
-                      component={KBoolCheckboxRender}
-                      name="stripPath"
-                      label={sc.ROUTE_STRIP_PATH_LABEL}
-                      helperText={sc.ROUTE_STRIP_PATH_HELPER}
-                    />
-                  </Box>
-                }
-              />
-            </Box>
+        <Form
+          onSubmit={onSubmit}
+          initialValues={initial}
+          keepDirtyOnReinitialize
+          validate={this.validate}
+          mutators={{
+            ...arrayMutators,
+          }}
+          render={({ values, errors, handleSubmit, form: { change } }: FormRenderProps<HttpRoute>) => {
+            const { hosts, methodsMode, schemes, httpRedirectToHttps } = values;
+            const hstsDomains = includesForceHttpsDomain(hosts);
+            const icons = hosts.map((host, index) => {
+              if (isArray(errors.hosts) && errors.hosts[index]) {
+                return undefined;
+              } else {
+                return <DomainStatus domain={host} />;
+              }
+            });
+            const methodOptions = httpMethods.map((m) => ({ value: m, label: m }));
 
-            <Box mb={2}>
-              <KPanel
-                title="Schemes and Methods"
-                content={
-                  <Box p={2}>
-                    <Field
-                      title="Http Methods"
-                      component={KRadioGroupRender}
-                      name="methodsMode"
-                      options={[
-                        {
-                          value: methodsModeAll,
-                          label: sc.ROUTE_HTTP_METHOD_ALL,
-                        },
-                        {
-                          value: methodsModeSpecific,
-                          label: sc.ROUTE_HTTP_METHOD_CUSTOM,
-                        },
-                      ]}
-                    />
-                    <Collapse in={methodsMode === methodsModeSpecific}>
-                      <Field
-                        component={KCheckboxGroupRender}
-                        componentType={"Checkbox"}
-                        validate={methodsMode === methodsModeSpecific ? ValidatorListNotEmpty : []}
-                        name="methods"
-                        options={httpMethods.map((m) => {
-                          return { value: m, label: m };
-                        })}
-                      />
-                    </Collapse>
-                    <Field
-                      title="Allow traffic through"
-                      component={KCheckboxGroupRender}
-                      componentType={"Checkbox"}
-                      validate={ValidatorListNotEmpty}
-                      name="schemes"
-                      options={[
-                        {
-                          value: "http",
-                          label: "http",
-                        },
-                        {
-                          value: "https",
-                          label: "https",
-                          htmlColor: "#9CCC65",
-                        },
-                      ]}
-                    />
-                    <Collapse in={schemes.includes("http") && schemes.includes("https")}>
-                      <Field
-                        component={KBoolCheckboxRender}
-                        name="httpRedirectToHttps"
-                        label={
-                          <span>
-                            Redirect all <strong>http</strong> request to <strong>https</strong> with 301 status code.
-                          </span>
+            if (!schemes.includes("https")) {
+              if (hstsDomains.length > 0) {
+                if (schemes.includes("http")) {
+                  change("schemes", ["http", "https"]);
+                } else {
+                  change("schemes", ["https"]);
+                }
+              }
+            }
+            // set httpRedirectToHttps to false if http or https is not in schemes
+            if (!(schemes.includes("http") && schemes.includes("https")) && httpRedirectToHttps) {
+              change("httpRedirectToHttps", false);
+            }
+
+            return (
+              <form onSubmit={handleSubmit} id="route-form">
+                <FormTutorialHelper form={form} />
+                <Prompt />
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <Box mb={2}>
+                      <KPanel
+                        title="Hosts and paths"
+                        content={
+                          <Box p={2}>
+                            <Field
+                              id="route-hosts"
+                              render={(props: FieldRenderProps<string[]>) => (
+                                <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
+                              )}
+                              icons={icons}
+                              label="Hosts"
+                              name="hosts"
+                              validate={ValidatorIpAndHosts}
+                              parse={stringArrayTrimAndToLowerCaseParse}
+                              placeholder="e.g. www.example.com"
+                              helperText={
+                                <Caption color="textSecondary">
+                                  Your cluster ip is{" "}
+                                  <Link
+                                    href="#"
+                                    onClick={() => {
+                                      const isHostsIncludeIngressIP = !!hosts.find((host) => host === ingressIP);
+                                      if (!isHostsIncludeIngressIP) {
+                                        hosts.push(ingressIP);
+                                        change("hosts", hosts);
+                                      }
+                                    }}
+                                  >
+                                    {ingressIP || ""}
+                                  </Link>
+                                  . {sc.ROUTE_HOSTS_INPUT_HELPER}
+                                </Caption>
+                              }
+                            />
+                            <Field
+                              render={(props: FieldRenderProps<string[]>) => (
+                                <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
+                              )}
+                              label="Path Prefixes"
+                              name="paths"
+                              validate={ValidatorArrayOfPath}
+                              parse={stringArrayTrimParse}
+                              placeholder="e.g. /api/v1; /blogs; /assets"
+                              helperText={sc.ROUTE_PATHS_INPUT_HELPER}
+                            />
+                            <Field
+                              type="checkbox"
+                              component={FinalBoolCheckboxRender}
+                              name="stripPath"
+                              label={sc.ROUTE_STRIP_PATH_LABEL}
+                              helperText={sc.ROUTE_STRIP_PATH_HELPER}
+                            />
+                          </Box>
                         }
                       />
-                    </Collapse>
-                    <Collapse in={schemes.includes("https")}>
-                      <Alert className="alert" severity="info">
-                        {sc.ROUTE_HTTPS_ALERT}
-                      </Alert>
-                      {hstsDomains.length > 0 ? (
-                        <Alert className="alert" severity="warning">
-                          <Box display="flex">
-                            The
-                            <Box ml="4px" mr="4px">
-                              <strong>{hstsDomains.join(", ")}</strong>
-                            </Box>
-                            {stringConstants.HSTS_DOMAINS_REQUIRED_HTTPS}
-                          </Box>
-                        </Alert>
-                      ) : null}
-                      {this.renderCertificationStatus()}
-                    </Collapse>
-                  </Box>
-                }
-              />
-            </Box>
-
-            <Box mb={2}>
-              <KPanel title="Targets" content={this.renderTargets()} />
-            </Box>
-
-            <Box mb={2}>
-              <KPanel
-                title="Rules"
-                content={
-                  <Box p={2}>
-                    <Caption>
-                      Set specific rules for this ingress. Only requests that match these conditions will be accepted.
-                    </Caption>
-                    <Box display="flex">
-                      <Box mt={2} mr={2} mb={2}>
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          startIcon={<AddIcon />}
-                          size="small"
-                          onClick={() =>
-                            dispatch(
-                              arrayPush(
-                                form,
-                                "conditions",
-                                Immutable.Map({
-                                  type: "header",
-                                  operator: "equal",
-                                  name: "",
-                                  value: "",
-                                }),
-                              ),
-                            )
-                          }
-                        >
-                          Add Header Rule
-                        </Button>
-                      </Box>
-                      <Box mt={2} mr={2} mb={2}>
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          startIcon={<AddIcon />}
-                          size="small"
-                          onClick={() =>
-                            dispatch(
-                              arrayPush(
-                                form,
-                                "conditions",
-                                Immutable.Map({
-                                  type: "query",
-                                  operator: "equal",
-                                  name: "",
-                                  value: "",
-                                }),
-                              ),
-                            )
-                          }
-                        >
-                          Add Query Rule
-                        </Button>
-                      </Box>
                     </Box>
-                    <FieldArray name="conditions" component={RenderHttpRouteConditions} />
-                  </Box>
-                }
-              />
-            </Box>
 
-            {/* <Expansion title="Advanced" subTitle="more powerful settings">
-          <h1>TODO</h1>
-          <div className={classes.box}>
-            <FormControl component="fieldset">
-              <FormLabel component="legend">High availability</FormLabel>
-            </FormControl>
-          </div>
+                    <Box mb={2}>
+                      <KPanel
+                        title="Schemes and Methods"
+                        content={
+                          <Box p={2}>
+                            <Field
+                              title="Http Methods"
+                              name="methodsMode"
+                              component={FinalRadioGroupRender}
+                              options={[
+                                {
+                                  value: methodsModeAll,
+                                  label: sc.ROUTE_HTTP_METHOD_ALL,
+                                },
+                                {
+                                  value: methodsModeSpecific,
+                                  label: sc.ROUTE_HTTP_METHOD_CUSTOM,
+                                },
+                              ]}
+                            />
+                            <Collapse in={methodsMode === methodsModeSpecific}>
+                              <FieldArray
+                                render={(props: FieldArrayRenderProps<string, any>) => {
+                                  return <FinalCheckboxGroupRender {...props} options={methodOptions} />;
+                                }}
+                                name="methods"
+                              />
+                            </Collapse>
+                            <FieldArray
+                              render={(props: FieldArrayRenderProps<string, any>) => {
+                                return (
+                                  <FinalCheckboxGroupRender
+                                    {...props}
+                                    title="Allow traffic through"
+                                    options={this.schemaOptions}
+                                  />
+                                );
+                              }}
+                              name="schemes"
+                            />
+                            <Collapse
+                              in={
+                                values.schemes &&
+                                values.schemes.indexOf("http") > -1 &&
+                                values.schemes.indexOf("https") > -1
+                              }
+                            >
+                              <Field
+                                component={FinalBoolCheckboxRender}
+                                name="httpRedirectToHttps"
+                                type="checkbox"
+                                label={
+                                  <span>
+                                    Redirect all <strong>http</strong> request to <strong>https</strong> with 301 status
+                                    code.
+                                  </span>
+                                }
+                              />
+                            </Collapse>
+                            <Collapse in={values.schemes.includes("https")}>
+                              <Alert className="alert" severity="info">
+                                {sc.ROUTE_HTTPS_ALERT}
+                              </Alert>
+                              {hstsDomains.length > 0 ? (
+                                <Alert className="alert" severity="warning">
+                                  <Box display="flex">
+                                    The
+                                    <Box ml="4px" mr="4px">
+                                      <strong>{hstsDomains.join(", ")}</strong>
+                                    </Box>
+                                    {stringConstants.HSTS_DOMAINS_REQUIRED_HTTPS}
+                                  </Box>
+                                </Alert>
+                              ) : null}
+                              {this.renderCertificationStatus(values)}
+                            </Collapse>
+                          </Box>
+                        }
+                      />
+                    </Box>
 
-          <div className={classes.box}>
-            <FormControl component="fieldset">
-              <FormLabel component="legend">Debug & Testing</FormLabel>
-            </FormControl>
-          </div>
+                    <Box mb={2}>
+                      <KPanel title="Targets" content={this.renderTargets()} />
+                    </Box>
 
-          <div className={classes.box}>
-            <FormControl component="fieldset">
-              <FormLabel component="legend">CORS</FormLabel>
-            </FormControl>
-          </div>
+                    <Box mb={2}>
+                      <KPanel
+                        title="Rules"
+                        content={
+                          <Box p={2}>
+                            <Caption>
+                              Set specific rules for this ingress. Only requests that match these conditions will be
+                              accepted.
+                            </Caption>
 
-          <div className={classes.box}>
-            <FormControl component="fieldset">
-              <FormLabel component="legend">Need more features?</FormLabel>
-            </FormControl>
-          </div>
-        </Expansion> */}
-            <Button
-              id="add-route-submit-button"
-              type="submit"
-              onClick={handleSubmit}
-              color="primary"
-              variant="contained"
-            >
-              {isEdit ? "Update" : "Create"} Route
-            </Button>
-          </Grid>
-        </Grid>
+                            <RenderHttpRouteConditions />
+                          </Box>
+                        }
+                      />
+                    </Box>
+
+                    <SubmitButton id="add-route-submit-button">{isEdit ? "Update" : "Create"} Route</SubmitButton>
+                  </Grid>
+                </Grid>
+                {process.env.REACT_APP_DEBUG === "true" ? (
+                  <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
+                ) : null}
+              </form>
+            );
+          }}
+        />
       </div>
     );
   }
 }
 
-// use connect twice
-// The one inside reduxForm is normal usage
-// The one outside of reduxForm is to set tutorialState props for the form
-
-const form = reduxForm<HttpRouteForm, TutorialStateProps & OwnProps>({
-  onSubmitFail: console.log,
-  form: ROUTE_FORM_ID,
-  enableReinitialize: true,
-  initialValues: newEmptyRouteForm(),
-  touchOnChange: true,
-  shouldError: shouldError,
-  validate: formValidateOrNotBlockByTutorial,
-})(connect(mapStateToProps)(withStyles(styles)(RouteFormRaw)));
-
-export const RouteForm = connect((state: RootState) => ({
-  tutorialState: state.get("tutorial"),
-}))(form);
+export const RouteForm = connect(mapStateToProps)(withStyles(styles)(RouteFormRaw));

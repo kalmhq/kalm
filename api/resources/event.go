@@ -10,7 +10,7 @@ type EventListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetEventListChannel(opts ...client.ListOption) *EventListChannel {
+func (resourceManager *ResourceManager) GetEventListChannel(opts ...client.ListOption) *EventListChannel {
 	channel := &EventListChannel{
 		List:  make(chan *coreV1.EventList, 1),
 		Error: make(chan error, 1),
@@ -18,7 +18,7 @@ func (builder *Builder) GetEventListChannel(opts ...client.ListOption) *EventLis
 
 	go func() {
 		var list coreV1.EventList
-		err := builder.List(&list, opts...)
+		err := resourceManager.List(&list, opts...)
 
 		channel.List <- &list
 		channel.Error <- err

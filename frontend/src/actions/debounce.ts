@@ -1,16 +1,16 @@
 import { ThunkResult } from "types";
 import { SET_DEBOUNCING, SET_TIMER } from "types/debounce";
 
-export const setDebouncing = (formID: string, name: string): ThunkResult<void> => {
+export const setDebouncing = (name: string): ThunkResult<void> => {
   return (dispatch, getState) => {
-    const debounceState = getState().get("debounce");
+    const debounceState = getState().debounce;
 
     dispatch({
       type: SET_DEBOUNCING,
-      payload: { formID, name, debouncing: false },
+      payload: { name, debouncing: false },
     });
 
-    const currentTimer = debounceState.get(formID)?.get(name)?.get("timer");
+    const currentTimer = debounceState[name]?.timer;
     if (currentTimer) {
       window.clearTimeout(currentTimer);
     }
@@ -18,13 +18,13 @@ export const setDebouncing = (formID: string, name: string): ThunkResult<void> =
     const timer = window.setTimeout(() => {
       dispatch({
         type: SET_DEBOUNCING,
-        payload: { formID, name, debouncing: true },
+        payload: { name, debouncing: true },
       });
     }, 3000);
 
     dispatch({
       type: SET_TIMER,
-      payload: { formID, name, timer },
+      payload: { name, timer },
     });
   };
 };

@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	finalizerName = "storage.finalizers.kalm.dev"
-	ownerKey      = ".metadata.controller"
+	finalizerName       = "storage.finalizers.kalm.dev"
+	ownerKey            = ".metadata.controller"
+	KalmSystemNamespace = "kalm-system"
 )
 
 var (

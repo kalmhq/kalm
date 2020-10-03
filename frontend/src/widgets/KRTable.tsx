@@ -2,7 +2,6 @@ import Paper from "@material-ui/core/Paper";
 import MuiTable from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
@@ -11,7 +10,6 @@ import { usePagination, useTable, useGlobalFilter, useAsyncDebounce } from "reac
 import { TextField, Grid, Box } from "@material-ui/core";
 import { FilterListIcon } from "./Icon";
 import { Body } from "./Label";
-import Immutable from "immutable";
 
 interface RowData {
   [key: string]: any;
@@ -94,7 +92,7 @@ export const KRTable = ({
   );
 
   return (
-    <TableContainer component={Paper} variant="outlined" square>
+    <Paper variant="outlined" square>
       {showTitle ? (
         <Grid container spacing={2}>
           <Grid item md={9}>
@@ -152,7 +150,7 @@ export const KRTable = ({
           onChangeRowsPerPage={onChangeRowsPerPage}
         />
       ) : null}
-    </TableContainer>
+    </Paper>
   );
 };
 
@@ -177,7 +175,7 @@ const GlobalFilter = ({ preGlobalFilteredRows, globalFilter, setGlobalFilter }: 
           setValue(e.target.value);
           onChange(e.target.value);
         }}
-        placeholder={`Filter`}
+        placeholder="Filter"
       />
       <FilterListIcon />
     </Box>
@@ -237,14 +235,20 @@ const cellIncludes = (cellValue: any, filterValue: string): boolean => {
             }
           }
         }
+
+        if (typeof cellValue.props.children === "object") {
+          if (cellIncludes(cellValue.props.children, filterValue)) {
+            return true;
+          }
+        }
       } else {
         for (let key in cellValue.props) {
           if (typeof cellValue.props[key] === "string") {
             if (cellIncludes(cellValue.props[key], filterValue)) {
               return true;
             }
-          } else if (Immutable.isImmutable(cellValue.props[key])) {
-            if (cellIncludes(JSON.stringify(cellValue.props[key].toJS()), filterValue)) {
+          } else if (typeof cellValue.props[key] === "object") {
+            if (cellIncludes(JSON.stringify(cellValue.props[key]), filterValue)) {
               return true;
             }
           }

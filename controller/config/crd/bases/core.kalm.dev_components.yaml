@@ -48,7 +48,7 @@ spec:
             Annotations:
               additionalProperties:
                 type: string
-              description: labels will add to pods
+              description: annotations will add to pods
               type: object
             Labels:
               additionalProperties:
@@ -56,14 +56,17 @@ spec:
               description: labels will add to pods
               type: object
             afterStart:
+              description: Deprecated
               items:
                 type: string
               type: array
             beforeDestroy:
+              description: Deprecated
               items:
                 type: string
               type: array
             beforeStart:
+              description: Deprecated
               items:
                 type: string
               type: array
@@ -530,6 +533,8 @@ spec:
             volumes:
               items:
                 properties:
+                  hostPath:
+                    type: string
                   path:
                     description: the path we use to mount this volume to container
                     type: string

@@ -8,7 +8,7 @@ export const displaySvcNameUnder = (serviceName: string, namespace: string) => {
 
 export const displayRouteWeightAsPercentage = (route: HttpRoute, weight: number) => {
   let sum = 0;
-  route.get("destinations").forEach((d) => (sum += d.get("weight")));
+  route.destinations.forEach((d) => (sum += d.weight));
 
   return Math.floor((weight / sum) * 100 + 0.5) + "%";
 };

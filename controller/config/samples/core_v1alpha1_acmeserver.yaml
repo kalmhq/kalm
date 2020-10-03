@@ -1,0 +1,7 @@
+apiVersion: core.kalm.dev/v1alpha1
+kind: ACMEServer
+metadata:
+  name: acmeserver-sample
+spec:
+  acmeDomain: acme.example.com
+  nsDomain: name-server.example.com
