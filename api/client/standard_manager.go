@@ -230,6 +230,10 @@ func (m *StandardClientManager) GetClientInfoFromContext(c echo.Context) (*Clien
 		clientInfo.Cfg = m.ClusterConfig
 		clientInfo.Impersonation = ""
 
+		if clientInfo.Groups == nil {
+			clientInfo.Groups = []string{}
+		}
+
 		m.SetImpersonation(&clientInfo, c.Request().Header.Get("Kalm-Impersonation"))
 		return &clientInfo, nil
 	}
