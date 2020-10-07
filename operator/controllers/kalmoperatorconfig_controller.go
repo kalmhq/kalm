@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+
 	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
@@ -31,6 +32,9 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 
+	"strconv"
+	"time"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,8 +46,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-	"strconv"
-	"time"
 )
 
 const (
@@ -271,7 +273,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 				Ports: []corev1alpha1.Port{
 					// Main service port
 					{
-						Protocol:      corev1alpha1.PortProtocolHTTP,
+						Protocol:      corev1alpha1.PortProtocolHTTP2,
 						ContainerPort: 3001,
 						ServicePort:   80,
 					},
