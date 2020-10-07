@@ -7,7 +7,7 @@
   "arrowParens": "always",
   "overrides": [
     {
-      "files": ["*.json", ".eslintrc", ".tslintrc", ".prettierrc", ".tern-project"],
+      "files": ["*.json", ".eslintrc", ".tslintrc", ".prettierrc", ".tern-project", "*.json"],
       "options": {
         "parser": "json",
         "tabWidth": 2
