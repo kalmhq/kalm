@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # allow a specific version to be passed in as the first argument, for example:
-# curl -sL https://get.kalm.dev | bash -s v0.1.0-rc.3
+# curl -sL https://get.kalm.dev | bash -s vx.x.x
 
 default_version=v0.1.0-alpha.5
 KALM_VERSION=${1:-$default_version}
