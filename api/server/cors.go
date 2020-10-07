@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -79,8 +80,12 @@ func CORSWithConfig(config CORSConfig) echo.MiddlewareFunc {
 			req := c.Request()
 			res := c.Response()
 
-			origin := req.Header.Get("authority")
-			if origin == "" {
+			scheme := req.Header.Get(":scheme")
+			origin := req.Header.Get(":authority")
+
+			if origin != "" && scheme != "" {
+				origin = fmt.Sprintf("%s://%s", scheme, origin)
+			} else {
 				origin = req.Header.Get(echo.HeaderOrigin)
 			}
 
