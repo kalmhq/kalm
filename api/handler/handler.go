@@ -180,6 +180,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.DELETE("/sso", h.handleDeleteSSOConfig)
 	gv1Alpha1WithAuth.PUT("/sso", h.handleUpdateSSOConfig)
 	gv1Alpha1WithAuth.POST("/sso", h.handleCreateSSOConfig)
+	gv1Alpha1WithAuth.DELETE("/sso/temporary_admin_user", h.handleDeleteTemporaryUser)
 
 	gv1Alpha1WithAuth.GET("/protectedendpoints", h.handleListProtectedEndpoints)
 	gv1Alpha1WithAuth.DELETE("/protectedendpoints", h.handleDeleteProtectedEndpoints)
@@ -193,8 +194,6 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	gv1Alpha1WithAuth.GET("/settings", h.handleListSettings)
 }
-
-
 
 func NewApiHandler(clientManager client.ClientManager) *ApiHandler {
 	return &ApiHandler{

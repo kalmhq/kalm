@@ -2,13 +2,14 @@ package server
 
 import (
 	"flag"
+	"net"
+	"net/http"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"net"
-	"net/http"
 )
 
 func isTest() bool {
@@ -42,7 +43,7 @@ func NewEchoInstance() *echo.Echo {
 	e.Pre(middleware.RemoveTrailingSlash())
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://localhost:3000", "*"},
+		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
 		AllowCredentials: true,
 		MaxAge:           86400,

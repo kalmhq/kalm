@@ -60,6 +60,27 @@ func (h *ApiHandler) handleUpdateSSOConfig(c echo.Context) error {
 	return c.JSON(200, ssoConfig)
 }
 
+func (h *ApiHandler) handleDeleteTemporaryUser(c echo.Context) error {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
+		return resources.NoClusterEditorRoleError
+	}
+
+	ssoConfig, err := h.resourceManager.GetSSOConfig()
+
+	if err != nil {
+		return err
+	}
+
+	ssoConfig.TemporaryUser = nil
+	ssoConfig, err = h.resourceManager.UpdateSSOConfig(ssoConfig)
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, ssoConfig)
+}
+
 func (h *ApiHandler) handleCreateSSOConfig(c echo.Context) error {
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError
