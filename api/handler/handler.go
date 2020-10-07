@@ -6,10 +6,7 @@ import (
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/api/ws"
-	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/rand"
 )
 
 type ApiHandler struct {
@@ -21,51 +18,13 @@ type ApiHandler struct {
 type H map[string]interface{}
 
 func (h *ApiHandler) InstallAdminRoutes(e *echo.Echo) {
+	g := e.Group("/admin")
 
-	e.GET("/api-routes", func(c echo.Context) error {
-		return c.JSON(200, e.Routes())
-	})
+	g.GET("/routes", handleApiRoutes)
+	g.POST("/temp_account", h.handleCreateTemporaryClusterOwnerAccessTokens, h.GetUserMiddleware, h.RequireUserMiddleware)
 
-	e.POST("/temporary_cluster_owner_access_tokens", func(c echo.Context) error {
-		token := rand.String(128)
-
-		accessToken := &v1alpha1.AccessToken{
-			ObjectMeta: metaV1.ObjectMeta{
-				Name: v1alpha1.GetAccessTokenNameFromToken(token),
-			},
-			Spec: v1alpha1.AccessTokenSpec{
-				Token: token,
-				Rules: []v1alpha1.AccessTokenRule{
-					{
-						Verb:      "view",
-						Namespace: "*",
-						Kind:      "*",
-						Name:      "*",
-					},
-					{
-						Verb:      "edit",
-						Namespace: "*",
-						Kind:      "*",
-						Name:      "*",
-					},
-					{
-						Verb:      "manage",
-						Namespace: "*",
-						Kind:      "*",
-						Name:      "*",
-					},
-				},
-				Creator:   getCurrentUser(c).Name,
-				ExpiredAt: nil,
-			},
-		}
-
-		if err := h.resourceManager.Create(accessToken); err != nil {
-			return err
-		}
-
-		return c.JSON(200, accessToken)
-	}, h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
+	// deprecated
+	e.POST("/temporary_cluster_owner_access_token", h.handleCreateTemporaryClusterOwnerAccessTokens, h.GetUserMiddleware, h.RequireUserMiddleware)
 }
 
 func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
@@ -75,7 +34,7 @@ func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
 
 func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	e.GET("/ping", handlePing)
-	e.GET("/policies", h.handlePolicies, h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
+	e.GET("/policies", h.handlePolicies, h.GetUserMiddleware, h.RequireUserMiddleware)
 
 	// watch
 	wsHandler := ws.NewWsHandler(h.clientManager)
@@ -83,17 +42,17 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	// login
 	e.POST("/login/token", h.handleValidateToken)
-	e.GET("/login/status", h.handleLoginStatus, h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
+	e.GET("/login/status", h.handleLoginStatus, h.GetUserMiddleware, h.RequireUserMiddleware)
 
 	// original resources routes
-	gV1 := e.Group("/v1", h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
+	gV1 := e.Group("/v1", h.GetUserMiddleware, h.RequireUserMiddleware)
 	gV1.GET("/persistentvolumes", h.handleGetPVs)
 
 	gv1Alpha1 := e.Group("/v1alpha1")
 	gv1Alpha1.GET("/logs", h.logWebsocketHandler)
 	gv1Alpha1.GET("/exec", h.execWebsocketHandler)
 
-	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
+	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.GetUserMiddleware, h.RequireUserMiddleware)
 
 	// initialize the cluster
 	gv1Alpha1WithAuth.POST("/initialize", h.handleInitializeCluster)
