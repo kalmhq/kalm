@@ -176,7 +176,9 @@ func (suite *WithControllerTestSuite) Patch(obj runtime.Object, patch client.Pat
 }
 
 func (suite *WithControllerTestSuite) TearDownSuite() {
-	suite.testEnv.Stop()
+	if suite.testEnv != nil {
+		suite.testEnv.Stop()
+	}
 }
 
 func (suite *WithControllerTestSuite) Eventually(condition func() bool, msgAndArgs ...interface{}) bool {

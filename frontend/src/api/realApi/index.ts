@@ -468,8 +468,9 @@ export const k8sWsPrefix = !K8sApiPrefix
 const getAxiosClient = (withHeaderToken: boolean) => {
   const token = store.getState().auth.token;
   const headers: { [key: string]: string } = {};
+  const useToken = withHeaderToken && !!token;
 
-  if (withHeaderToken && token) {
+  if (useToken) {
     headers.Authorization = `Bearer ${token}`;
   }
 
@@ -481,7 +482,7 @@ const getAxiosClient = (withHeaderToken: boolean) => {
 
   const instance = Axios.create({
     timeout: 10000,
-    withCredentials: true,
+    withCredentials: !useToken,
     headers: headers,
   });
 
