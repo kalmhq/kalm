@@ -22,7 +22,7 @@ type H map[string]interface{}
 
 func (h *ApiHandler) InstallAdminRoutes(e *echo.Echo) {
 
-	e.GET("/routes", func(c echo.Context) error {
+	e.GET("/api-routes", func(c echo.Context) error {
 		return c.JSON(200, e.Routes())
 	})
 
