@@ -234,6 +234,8 @@ export default class MockApi extends Api {
 
   public deleteSSOConfig = async (): Promise<void> => {};
 
+  public deleteSSOTemporaryAdminUser = async (): Promise<void> => {};
+
   public listProtectedEndpoints = async (): Promise<ProtectedEndpoint[]> => {
     return [];
   };

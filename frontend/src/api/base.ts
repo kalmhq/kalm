@@ -135,6 +135,8 @@ export abstract class Api {
 
   public abstract deleteSSOConfig(): Promise<void>;
 
+  public abstract deleteSSOTemporaryAdminUser(): Promise<void>;
+
   public abstract listProtectedEndpoints(): Promise<ProtectedEndpoint[]>;
 
   public abstract createProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint>;

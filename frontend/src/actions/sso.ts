@@ -47,7 +47,7 @@ export const loadSSOConfigAction = (): ThunkResult<Promise<void>> => {
 };
 
 export const createSSOConfigAction = (ssoConfig: SSOConfig): ThunkResult<Promise<void>> => {
-  return async (dispatch, getState) => {
+  return async (dispatch) => {
     try {
       dispatch({ type: CREATE_SSO_CONFIG_PENDING });
 
@@ -65,7 +65,7 @@ export const createSSOConfigAction = (ssoConfig: SSOConfig): ThunkResult<Promise
 };
 
 export const updateSSOConfigAction = (ssoConfig: SSOConfig): ThunkResult<Promise<SSOConfig>> => {
-  return async (dispatch, getState) => {
+  return async (dispatch) => {
     try {
       dispatch({ type: UPDATE_SSO_CONFIG_PENDING });
 
@@ -84,7 +84,7 @@ export const updateSSOConfigAction = (ssoConfig: SSOConfig): ThunkResult<Promise
 };
 
 export const deleteSSOConfigAction = (): ThunkResult<Promise<void>> => {
-  return async (dispatch, getState) => {
+  return async (dispatch) => {
     try {
       dispatch({ type: DELETE_SSO_CONFIG_PENDING });
       await api.deleteSSOConfig();
@@ -115,7 +115,7 @@ export const loadProtectedEndpointAction = (): ThunkResult<Promise<void>> => {
 };
 
 export const createProtectedEndpointAction = (protectedEndpoint: ProtectedEndpoint): ThunkResult<Promise<void>> => {
-  return async (dispatch, getState) => {
+  return async (dispatch) => {
     try {
       dispatch({ type: CREATE_PROTECTED_ENDPOINT_PENDING });
 
@@ -133,7 +133,7 @@ export const createProtectedEndpointAction = (protectedEndpoint: ProtectedEndpoi
 };
 
 export const updateProtectedEndpointAction = (protectedEndpoint: ProtectedEndpoint): ThunkResult<Promise<void>> => {
-  return async (dispatch, getState) => {
+  return async (dispatch) => {
     try {
       dispatch({ type: UPDATE_PROTECTED_ENDPOINT_PENDING });
 
@@ -151,7 +151,7 @@ export const updateProtectedEndpointAction = (protectedEndpoint: ProtectedEndpoi
 };
 
 export const deleteProtectedEndpointAction = (protectedEndpoint: ProtectedEndpoint): ThunkResult<Promise<void>> => {
-  return async (dispatch, getState) => {
+  return async (dispatch) => {
     try {
       dispatch({ type: DELETE_PROTECTED_ENDPOINT_PENDING });
       await api.deleteProtectedEndpoint(protectedEndpoint);

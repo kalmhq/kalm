@@ -2,7 +2,6 @@ import { Api } from "api/base";
 import Axios, { AxiosRequestConfig } from "axios";
 import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
-
 import { AcmeServerFormType, AcmeServerInfo, CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import {
@@ -358,6 +357,10 @@ export default class RealApi extends Api {
 
   public deleteSSOConfig = async (): Promise<void> => {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/sso` });
+  };
+
+  public deleteSSOTemporaryAdminUser = async (): Promise<void> => {
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/sso/temporary_admin_user` });
   };
 
   public listProtectedEndpoints = async (): Promise<ProtectedEndpoint[]> => {
