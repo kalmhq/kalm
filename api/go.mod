@@ -1,6 +1,6 @@
 module github.com/kalmhq/kalm/api
 
-go 1.13
+go 1.15
 
 require (
 	github.com/casbin/casbin/v2 v2.11.2
