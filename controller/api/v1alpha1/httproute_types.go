@@ -90,11 +90,11 @@ type HttpRouteFault struct {
 }
 
 type HttpRouteCORS struct {
-	AllowOrigins     []HttpRouteCondition `json:"allowOrigin"`
-	AllowMethods     []AllowMethod        `json:"allowMethods"`
-	AllowCredentials bool                 `json:"allowCredentials"`
-	AllowHeaders     []string             `json:"allowHeaders"`
-	MaxAgeSeconds    int                  `json:"maxAgeSeconds"`
+	AllowOrigins     []string `json:"allowOrigin"`
+	AllowMethods     []string `json:"allowMethods"`
+	AllowCredentials bool     `json:"allowCredentials"`
+	AllowHeaders     []string `json:"allowHeaders"`
+	MaxAgeSeconds    int      `json:"maxAgeSeconds"`
 }
 
 // +kubebuilder:validation:Enum=GET;HEAD;POST;PUT;PATCH;DELETE;OPTIONS;TRACE;CONNECT

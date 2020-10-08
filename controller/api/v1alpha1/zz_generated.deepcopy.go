@@ -1055,12 +1055,12 @@ func (in *HttpRouteCORS) DeepCopyInto(out *HttpRouteCORS) {
 	*out = *in
 	if in.AllowOrigins != nil {
 		in, out := &in.AllowOrigins, &out.AllowOrigins
-		*out = make([]HttpRouteCondition, len(*in))
+		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
 	if in.AllowMethods != nil {
 		in, out := &in.AllowMethods, &out.AllowMethods
-		*out = make([]AllowMethod, len(*in))
+		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
 	if in.AllowHeaders != nil {
