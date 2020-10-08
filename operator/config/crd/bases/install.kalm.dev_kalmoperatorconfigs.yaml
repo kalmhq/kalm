@@ -55,10 +55,6 @@ spec:
                   type: array
                 version:
                   type: string
-              required:
-              - args
-              - envs
-              - version
               type: object
             kalmVersion:
               description: deprecated
@@ -73,9 +69,6 @@ spec:
               type: boolean
             version:
               type: string
-          required:
-          - dashboard
-          - version
           type: object
         status:
           description: KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig

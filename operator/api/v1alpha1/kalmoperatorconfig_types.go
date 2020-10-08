@@ -26,9 +26,9 @@ type NameValue struct {
 }
 
 type DashboardConfig struct {
-	Version string      `json:"version"`
-	Args    []string    `json:"args"`
-	Envs    []NameValue `json:"envs"`
+	Version *string     `json:"version,omitempty"`
+	Args    []string    `json:"args,omitempty"`
+	Envs    []NameValue `json:"envs,omitempty"`
 }
 
 // KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
@@ -40,10 +40,11 @@ type KalmOperatorConfigSpec struct {
 
 	// deprecated
 	KalmVersion string `json:"kalmVersion,omitempty"`
-	Version     string `json:"version"`
+
+	Version string `json:"version,omitempty"`
 
 	// Dashboard Config
-	Dashboard *DashboardConfig `json:"dashboard"`
+	Dashboard *DashboardConfig `json:"dashboard,omitempty"`
 }
 
 // KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
