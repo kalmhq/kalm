@@ -85,7 +85,6 @@ func main() {
 			},
 			&cli.BoolFlag{
 				Name:        "verbose",
-				Aliases:     []string{"v"},
 				Value:       false,
 				Usage:       "show debug log",
 				Destination: &runningConfig.Verbose,
