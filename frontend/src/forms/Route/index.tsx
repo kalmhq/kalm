@@ -3,11 +3,13 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import arrayMutators from "final-form-arrays";
-import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
+import { AutoCompleteMultipleValue, AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalBoolCheckboxRender, FinalCheckboxGroupRender } from "forms/Final/checkbox";
 import { FinalRadioGroupRender } from "forms/Final/radio";
+import { FinalTextField } from "forms/Final/textfield";
+import { FormDataPreview } from "forms/Final/util";
 import { ROUTE_FORM_ID } from "forms/formIDs";
-import { stringArrayTrimParse, stringArrayTrimAndToLowerCaseParse } from "forms/normalizer";
+import { NormalizePositiveNumber, stringArrayTrimAndToLowerCaseParse, stringArrayTrimParse } from "forms/normalizer";
 import { RenderHttpRouteDestinations } from "forms/Route/destinations";
 import { ValidatorArrayNotEmpty, ValidatorArrayOfPath, ValidatorIpAndHosts } from "forms/validator";
 import routesGif from "images/routes.gif";
@@ -28,6 +30,7 @@ import { default as sc, default as stringConstants } from "utils/stringConstants
 import { SubmitButton } from "widgets/Button";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
 import DomainStatus from "widgets/DomainStatus";
+import { Expansion } from "widgets/expansion";
 import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
@@ -466,12 +469,67 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       />
                     </Box>
 
+                    <Box mb={2}>
+                      <Expansion title="Cors" defaultUnfold={false}>
+                        <Box p={2}>
+                          {" "}
+                          <Box mb={2}>
+                            <Field
+                              render={(props: FieldRenderProps<string[]>) => (
+                                <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
+                              )}
+                              parse={stringArrayTrimAndToLowerCaseParse}
+                              placeholder="e.g. *; http://example.com"
+                              name="cors.allowOrigins"
+                              label="Allow Origins"
+                            />
+                          </Box>
+                          <Box mb={2}>
+                            <Field
+                              render={(props: FieldRenderProps<string[]>) => (
+                                <AutoCompleteMultipleValue {...props} options={httpMethods} />
+                              )}
+                              placeholder={`e.g. ${httpMethods.join("; ")}`}
+                              name="cors.allowMethods"
+                              label="Allow Methods"
+                            />
+                          </Box>
+                          <Box mb={2}>
+                            <Field
+                              render={(props: FieldRenderProps<string[]>) => (
+                                <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
+                              )}
+                              parse={stringArrayTrimAndToLowerCaseParse}
+                              placeholder="e.g. Custom-Header-Name"
+                              name="cors.allowHeaders"
+                              label="Allow Headers"
+                            />
+                          </Box>
+                          <Box mb={2}>
+                            <Field
+                              name="cors.allowCredentials"
+                              type="checkbox"
+                              component={FinalBoolCheckboxRender}
+                              label="Allow Credentials"
+                            />
+                          </Box>
+                          <Box mb={2}>
+                            <Field<number | undefined>
+                              component={FinalTextField}
+                              parse={NormalizePositiveNumber}
+                              name={`cors.maxAgeSeconds`}
+                              label="Max Age Seconds"
+                              placeholder="e.g. 86400"
+                            />
+                          </Box>
+                        </Box>
+                      </Expansion>
+                    </Box>
+
                     <SubmitButton id="add-route-submit-button">{isEdit ? "Update" : "Create"} Route</SubmitButton>
                   </Grid>
                 </Grid>
-                {process.env.REACT_APP_DEBUG === "true" ? (
-                  <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(values, undefined, 2)}</pre>
-                ) : null}
+                <FormDataPreview />
               </form>
             );
           }}

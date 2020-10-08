@@ -56,7 +56,7 @@ export interface HttpRouteCORS {
   allowMethods: string[];
   allowCredentials: boolean;
   allowHeaders: string[];
-  maxAge: string;
+  maxAge: number;
 }
 
 export const methodsModeAll = "all";

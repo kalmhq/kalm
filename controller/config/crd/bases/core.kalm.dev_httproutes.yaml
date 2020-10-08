@@ -90,18 +90,12 @@ spec:
                   items:
                     type: string
                   type: array
-                allowOrigin:
+                allowOrigins:
                   items:
                     type: string
                   type: array
                 maxAgeSeconds:
                   type: integer
-              required:
-              - allowCredentials
-              - allowHeaders
-              - allowMethods
-              - allowOrigin
-              - maxAgeSeconds
               type: object
             delay:
               properties:
