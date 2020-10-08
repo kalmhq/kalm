@@ -288,6 +288,10 @@ func UpdateDatabase(db *sql.DB, nodeMetrics *v1beta1.NodeMetricsList, podMetrics
 func CullDatabase(db *sql.DB, window *time.Duration) error {
 	tx, err := db.Begin()
 
+	if err != nil {
+		return err
+	}
+
 	windowStr := fmt.Sprintf("-%.0f seconds", window.Seconds())
 
 	nodestmt, err := tx.Prepare("delete from nodes where time <= datetime('now', ?);")
