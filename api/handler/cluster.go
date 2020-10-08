@@ -2,6 +2,10 @@ package handler
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+	"sync"
+
 	"github.com/google/uuid"
 	"github.com/kalmhq/kalm/api/config"
 	"github.com/kalmhq/kalm/api/resources"
@@ -9,15 +13,13 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
-	"strconv"
-	"strings"
-	"sync"
 )
 
 type ClusterInfo struct {
@@ -373,7 +375,7 @@ func (h *ApiHandler) handleResetCluster(c echo.Context) error {
 		defer wg.Done()
 		err := h.resourceManager.DeleteAllRoleBindings()
 		if err != nil {
-			h.logger.Error(err, "fail DeleteAllRoleBindings when reset()")
+			h.logger.Error("fail DeleteAllRoleBindings when reset()", zap.Error(err))
 		}
 	}()
 

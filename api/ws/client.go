@@ -2,11 +2,12 @@ package ws
 
 import (
 	"encoding/json"
-	"github.com/go-logr/logr"
+
 	"github.com/gorilla/websocket"
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
+	"go.uber.org/zap"
 )
 
 type ReqMessage struct {
@@ -30,7 +31,7 @@ type Client struct {
 	stopWatcher   chan struct{}
 	clientManager client.ClientManager
 	clientInfo    *client.ClientInfo
-	logger        logr.Logger
+	logger        *zap.Logger
 	isWatching    bool
 }
 
@@ -77,7 +78,7 @@ func (c *Client) read() {
 				return
 			}
 
-			log.Error(err, "read message error")
+			log.Error("read message error", zap.Error(err))
 			return
 		}
 
@@ -88,7 +89,7 @@ func (c *Client) read() {
 			clientInfo, err := c.clientManager.GetClientInfoFromToken(reqMessage.Token)
 
 			if err != nil {
-				log.Error(err, "new config error")
+				log.Error("new config error", zap.Error(err))
 				continue
 			}
 
@@ -125,7 +126,7 @@ func (c *Client) write() {
 
 			err := c.conn.WriteMessage(websocket.TextMessage, message)
 			if err != nil {
-				log.Error(err, "write message error")
+				log.Error("write message error", zap.Error(err))
 				break
 			}
 			continue
@@ -142,7 +143,7 @@ func (c *Client) sendWatchResMessage(resMessage *ResMessage) {
 
 	bts, err := json.Marshal(resMessage)
 	if err != nil {
-		log.Error(err, "parse message error")
+		log.Error("parse message error", zap.Error(err))
 		return
 	}
 

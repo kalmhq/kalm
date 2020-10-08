@@ -1,43 +1,62 @@
 package log
 
 import (
-	"github.com/go-logr/logr"
-	"go.uber.org/zap/zapcore"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"go.uber.org/zap"
 )
 
-var (
-	defaultLogger = zap.New(func(o *zap.Options) {
-		o.Development = true
-		o.Level = zapcore.InfoLevel
-	})
-)
+var defaultLogger *zap.Logger
 
-func InitDefaultLogger(level string) {
-	defaultLogger = NewLogger(level)
+func init() {
+	zapLogger, err := zap.NewProduction()
+
+	if err != nil {
+		panic(err)
+	}
+
+	defaultLogger = zapLogger
 }
 
-func NewLogger(level string) logr.Logger {
-	return zap.New(func(o *zap.Options) {
-		o.Development = true
-		logLevel := zapcore.InfoLevel
-		logLevel.UnmarshalText([]byte(level))
-		o.Level = logLevel
-	})
+func InitDefaultLogger(isDev bool) {
+	defaultLogger = NewLogger(isDev)
 }
 
-func DefaultLogger() logr.Logger {
+func NewLogger(isDev bool) *zap.Logger {
+	var zapLog *zap.Logger
+	var err error
+
+	if isDev {
+		zapLog, err = zap.NewDevelopment()
+	} else {
+		zapLog, err = zap.NewProduction()
+	}
+
+	if err != nil {
+		panic(err)
+	}
+
+	return zapLog
+}
+
+func DefaultLogger() *zap.Logger {
 	return defaultLogger
 }
 
-func Debug(msg string, keysAndValues ...interface{}) {
-	defaultLogger.V(1).Info(msg, keysAndValues...)
+func Debug(msg string, fields ...zap.Field) {
+	defaultLogger.Debug(msg, fields...)
 }
 
-func Info(msg string, keysAndValues ...interface{}) {
-	defaultLogger.Info(msg, keysAndValues...)
+func Info(msg string, fields ...zap.Field) {
+	defaultLogger.Info(msg, fields...)
 }
 
-func Error(err error, msg string, keysAndValues ...interface{}) {
-	defaultLogger.Error(err, msg, keysAndValues...)
+func Error(msg string, fields ...zap.Field) {
+	defaultLogger.Error(msg, fields...)
+}
+
+func Named(s string) *zap.Logger {
+	return defaultLogger.Named(s)
+}
+
+func With(fields ...zap.Field) *zap.Logger {
+	return defaultLogger.With(fields...)
 }

@@ -2,6 +2,7 @@ package server
 
 import (
 	"flag"
+	"fmt"
 	"net"
 	"net/http"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"go.uber.org/zap/zapcore"
 )
 
 func isTest() bool {
@@ -39,7 +41,8 @@ func NewEchoInstance() *echo.Echo {
 	e.IPExtractor = getClientIP
 
 	e.Use(middleware.Gzip())
-	e.Use(middlewareLogging)
+	e.Use(middleware.Logger())
+	e.Use(debugHeaderMiddleware)
 	e.Pre(middleware.RemoveTrailingSlash())
 
 	e.Use(CORSWithConfig(CORSConfig{
@@ -62,12 +65,14 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 	return cv.Validator.Struct(i)
 }
 
-func middlewareLogging(next echo.HandlerFunc) echo.HandlerFunc {
+func debugHeaderMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		if c != nil {
-			log.Info("receive request", "method", c.Request().Method, "uri", c.Request().URL.String(), "ip", c.RealIP())
-		} else {
-			log.Info("receive request bad request")
+		if log.DefaultLogger().Check(zapcore.DebugLevel, "") == nil {
+			return next(c)
+		}
+
+		for k, v := range c.Request().Header {
+			log.Debug(fmt.Sprintf("Header \"%s: %+v\"", k, v))
 		}
 
 		return next(c)

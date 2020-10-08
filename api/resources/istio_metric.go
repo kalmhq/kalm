@@ -3,13 +3,15 @@ package resources
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/kalmhq/kalm/api/log"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/kalmhq/kalm/api/log"
+	"go.uber.org/zap"
 )
 
 var istioPrometheusAPIAddress string
@@ -136,7 +138,7 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 			promResp, err := queryPrometheusAPI(api)
 
 			if err != nil {
-				log.Debug("err when queryPrometheusAPI, ignored", "api", api, "err", err)
+				log.Debug("err when queryPrometheusAPI, ignored", zap.String("api", api), zap.Error(err))
 			}
 
 			respContentChan <- respContent{
@@ -193,7 +195,7 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 			case "tcpReceiveBytes":
 				svc2MetricHistoriesMap[svc].TCPReceivedBytesTotal = metricPoints
 			default:
-				log.Info("unknown query key", "key", k)
+				log.Info("unknown query key", zap.String("key", k))
 			}
 		}
 
@@ -266,11 +268,12 @@ func queryPrometheusAPI(api string) (PromResponse, error) {
 		return PromResponse{}, err
 	}
 
-	log.Debug("prom api", "api", api, "resp", body)
+	log.Debug("prom api", zap.String("api", api), zap.Any("resp", body))
 
 	err = json.Unmarshal(body, &promResp)
+
 	if err != nil {
-		log.Error(err, "fail to parse resp from prometheus", "val", body)
+		log.Error("fail to parse resp from prometheus", zap.Any("val", body), zap.Error(err))
 		return PromResponse{}, err
 	}
 

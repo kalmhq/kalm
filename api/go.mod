@@ -6,7 +6,6 @@ require (
 	github.com/casbin/casbin/v2 v2.11.2
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/go-logr/logr v0.1.0
 	github.com/go-openapi/runtime v0.19.20 // indirect
 	github.com/go-openapi/spec v0.19.9 // indirect
 	github.com/go-playground/validator/v10 v10.3.0
@@ -18,7 +17,6 @@ require (
 	github.com/jetstack/cert-manager v0.15.2 // indirect
 	github.com/joho/godotenv v1.3.0
 	github.com/kalmhq/kalm/controller v0.0.0-20200722131031-2336d7eaf4c9
-	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/echo/v4 v4.1.17
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/opencontainers/image-spec v1.0.1 // indirect

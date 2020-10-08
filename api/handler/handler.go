@@ -1,18 +1,18 @@
 package handler
 
 import (
-	"github.com/go-logr/logr"
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/api/ws"
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 )
 
 type ApiHandler struct {
 	resourceManager *resources.ResourceManager
 	clientManager   client.ClientManager
-	logger          logr.Logger
+	logger          *zap.Logger
 }
 
 type H map[string]interface{}

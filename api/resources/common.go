@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-logr/logr"
+	"reflect"
+
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"go.uber.org/zap"
 	appV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
@@ -17,7 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -233,10 +234,10 @@ type ResourceManager struct {
 	ctx    context.Context
 	Cfg    *rest.Config
 	Client client.Client
-	Logger logr.Logger
+	Logger *zap.Logger
 }
 
-func NewResourceManager(cfg *rest.Config, logger logr.Logger) *ResourceManager {
+func NewResourceManager(cfg *rest.Config, logger *zap.Logger) *ResourceManager {
 	c, err := client.New(cfg, client.Options{Scheme: scheme.Scheme})
 	if err != nil {
 		panic(err)

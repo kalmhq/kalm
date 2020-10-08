@@ -60,7 +60,7 @@ func (r *ResponseRecorder) BodyAsJSON(obj interface{}) {
 }
 
 func (suite *WithControllerTestSuite) SetupSuite() {
-	log.InitDefaultLogger("debug")
+	log.InitDefaultLogger(true)
 
 	os.Setenv("KALM_SKIP_ISTIO_METRICS", "true")
 
@@ -131,9 +131,9 @@ func GetEditorRoleOfNs(name string) string {
 	return fmt.Sprintf("role_%sEditor", name)
 }
 
-func GetOwnerRoleOfNs(name string) string {
-	return fmt.Sprintf("role_%sOwner", name)
-}
+// func GetOwnerRoleOfNs(name string) string {
+// 	return fmt.Sprintf("role_%sOwner", name)
+// }
 
 func GetClusterViewerRole() string {
 	return "role_clusterViewer"
@@ -176,9 +176,7 @@ func (suite *WithControllerTestSuite) Patch(obj runtime.Object, patch client.Pat
 }
 
 func (suite *WithControllerTestSuite) TearDownSuite() {
-	if suite.testEnv != nil {
-		suite.testEnv.Stop()
-	}
+	_ = suite.testEnv.Stop()
 }
 
 func (suite *WithControllerTestSuite) Eventually(condition func() bool, msgAndArgs ...interface{}) bool {
@@ -211,11 +209,10 @@ func BaseRequest(server *echo.Echo, method string, path string, body interface{}
 
 	req := httptest.NewRequest(method, path, reader)
 
-	if headers != nil {
-		for k, v := range headers {
-			req.Header.Add(k, v)
-		}
+	for k, v := range headers {
+		req.Header.Add(k, v)
 	}
+
 	req.Header.Add(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := &ResponseRecorder{
 		ResponseRecorder: httptest.NewRecorder(),
@@ -312,17 +309,17 @@ func toReader(obj interface{}) io.Reader {
 	return bytes.NewBuffer(bts)
 }
 
-func (suite *WithControllerTestSuite) getPVCList(ns string) (*v1.PersistentVolumeClaimList, error) {
-	var pvcList v1.PersistentVolumeClaimList
-	err := suite.List(&pvcList, client.InNamespace(ns))
-	return &pvcList, err
-}
+// func (suite *WithControllerTestSuite) getPVCList(ns string) (*v1.PersistentVolumeClaimList, error) {
+// 	var pvcList v1.PersistentVolumeClaimList
+// 	err := suite.List(&pvcList, client.InNamespace(ns))
+// 	return &pvcList, err
+// }
 
-func (suite *WithControllerTestSuite) getComponentList(ns string) (v1alpha1.ComponentList, error) {
-	var compList v1alpha1.ComponentList
-	err := suite.List(&compList, client.InNamespace(ns))
-	return compList, err
-}
+// func (suite *WithControllerTestSuite) getComponentList(ns string) (v1alpha1.ComponentList, error) {
+// 	var compList v1alpha1.ComponentList
+// 	err := suite.List(&compList, client.InNamespace(ns))
+// 	return compList, err
+// }
 
 func (suite *WithControllerTestSuite) getComponent(ns, compName string) (v1alpha1.Component, error) {
 	var comp v1alpha1.Component

@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/kalmhq/kalm/api/resources"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/kalmhq/kalm/api/resources"
+	"go.uber.org/zap"
 
 	"github.com/gorilla/websocket"
 	"github.com/kalmhq/kalm/api/client"
@@ -198,7 +200,6 @@ func wsReadLoop(conn *WSConn, clientManager client.ClientManager) (err error) {
 			if isNormalWebsocketCloseError(err) {
 				return nil
 			}
-			log.Error(err, "read message error")
 			return err
 		}
 
@@ -206,7 +207,6 @@ func wsReadLoop(conn *WSConn, clientManager client.ClientManager) (err error) {
 		err = json.Unmarshal(message, &basicMessage)
 
 		if err != nil {
-			log.Error(err, "parse message error")
 			continue
 		}
 
@@ -223,7 +223,6 @@ func wsReadLoop(conn *WSConn, clientManager client.ClientManager) (err error) {
 			err = json.Unmarshal(message, &m)
 
 			if err != nil {
-				log.Error(err, "parse message error")
 				continue
 			}
 
@@ -233,7 +232,7 @@ func wsReadLoop(conn *WSConn, clientManager client.ClientManager) (err error) {
 				res.Status = StatusOK
 				res.Message = "Auth Successfully"
 			} else {
-				log.Debug("WSRequest Auth error", "error", err)
+				log.Debug("WSRequest Auth error", zap.Error(err))
 				res.Message = "Invalid Auth Token"
 			}
 		case WSRequestTypeSubscribePodLog, WSRequestTypeUnsubscribePodLog, WSRequestTypeExecStartSession, WSRequestTypeExecEndSession, WSRequestTypeExecStdin, WSRequestTypeExecResize:
@@ -246,7 +245,7 @@ func wsReadLoop(conn *WSConn, clientManager client.ClientManager) (err error) {
 			err = json.Unmarshal(message, &m)
 
 			if err != nil {
-				log.Error(err, "parse message error")
+				log.Error("parse message error", zap.Error(err))
 				continue
 			}
 
@@ -286,7 +285,7 @@ func wsReadLoop(conn *WSConn, clientManager client.ClientManager) (err error) {
 
 		if err != nil {
 			if !isNormalWebsocketCloseError(err) {
-				log.Error(err, "write message error")
+				log.Error("write message error", zap.Error(err))
 			}
 			return err
 		}
@@ -323,7 +322,7 @@ func handleLogRequests(conn *WSConn) {
 				podLogs, err := req.Stream(conn.ctx)
 
 				if err != nil {
-					log.Error(err, "stream error")
+					log.Error("stream error", zap.Error(err))
 					_ = conn.WriteJSON(&WSPodDataResponse{
 						Type:      WSResponseTypeLogStreamDisconnected,
 						Namespace: m.Namespace,
@@ -378,7 +377,7 @@ func copyPodLogStreamToWS(ctx context.Context, namespace, podName string, conn *
 
 			if err != nil {
 				if !strings.Contains(err.Error(), "body closed") {
-					log.Error(err, "read error")
+					log.Error("read error", zap.Error(err))
 				}
 				close(bufChan)
 				return
@@ -407,7 +406,7 @@ func copyPodLogStreamToWS(ctx context.Context, namespace, podName string, conn *
 			if err != nil {
 
 				if !isNormalWebsocketCloseError(err) {
-					log.Error(err, "write message error")
+					log.Error("write message error", zap.Error(err))
 				}
 				return
 			}
@@ -508,7 +507,7 @@ func handleExecRequests(conn *WSConn) {
 					var data string
 
 					if err != nil {
-						log.Error(err, "Start Exec Terminal Session Error")
+						log.Error("Start Exec Terminal Session Error", zap.Error(err))
 						data = err.Error()
 					}
 
@@ -531,7 +530,7 @@ func handleExecRequests(conn *WSConn) {
 				session, existing := terminalSessions[key]
 
 				if !existing {
-					log.Error(nil, "can't find terminal session", "key", key)
+					log.Error("can't find terminal session", zap.String("key", key))
 					continue
 				}
 
@@ -540,7 +539,7 @@ func handleExecRequests(conn *WSConn) {
 				session, existing := terminalSessions[key]
 
 				if !existing {
-					log.Error(nil, "can't find terminal session", "key", key)
+					log.Error("can't find terminal session", zap.String("key", key))
 					continue
 				}
 
@@ -559,7 +558,6 @@ func (h *ApiHandler) prepareWSConnection(c echo.Context) (*WSConn, error) {
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 
 	if err != nil {
-		log.Error(err, "upgrade")
 		return nil, err
 	}
 

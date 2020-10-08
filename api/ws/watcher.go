@@ -8,6 +8,7 @@ import (
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
+	"go.uber.org/zap"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	toolscache "k8s.io/client-go/tools/cache"
@@ -18,7 +19,7 @@ func StartWatching(c *Client) {
 	informerCache, err := cache.New(c.clientInfo.Cfg, cache.Options{})
 
 	if err != nil {
-		log.Error(err, "new cache error")
+		log.Error("new cache error", zap.Error(err))
 		return
 	}
 
@@ -48,7 +49,7 @@ func registerWatchHandler(c *Client,
 
 	informer, err := (*informerCache).GetInformer(context.Background(), runtimeObj)
 	if err != nil {
-		log.Error(err, "get informer error")
+		log.Error("get informer error", zap.Error(err))
 		return
 	}
 
@@ -56,7 +57,7 @@ func registerWatchHandler(c *Client,
 		AddFunc: func(obj interface{}) {
 			resMessage, err := buildResMessage(c, "Add", obj)
 			if err != nil {
-				log.Error(err, "build res message error")
+				log.Error("build res message error", zap.Error(err))
 				return
 			}
 
@@ -67,7 +68,7 @@ func registerWatchHandler(c *Client,
 		DeleteFunc: func(obj interface{}) {
 			resMessage, err := buildResMessage(c, "Delete", obj)
 			if err != nil {
-				log.Error(err, "build res message error")
+				log.Error("build res message error", zap.Error(err))
 				return
 			}
 			if resMessage != nil {
@@ -77,7 +78,7 @@ func registerWatchHandler(c *Client,
 		UpdateFunc: func(oldObj, obj interface{}) {
 			resMessage, err := buildResMessage(c, "Update", obj)
 			if err != nil {
-				log.Error(err, "build res message error")
+				log.Error("build res message error", zap.Error(err))
 				return
 			}
 			if resMessage != nil {

@@ -4,6 +4,7 @@ import (
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 	coreV1 "k8s.io/api/core/v1"
 )
 
@@ -30,7 +31,7 @@ func (h *ApiHandler) getLoadBalancers(c echo.Context) (rst []LoadBalancer) {
 
 	var svcList coreV1.ServiceList
 	if err := h.resourceManager.List(&svcList); err != nil {
-		h.logger.Error(err, "fail when list svcList")
+		h.logger.Error("fail when list svcList", zap.Error(err))
 		return nil
 	}
 

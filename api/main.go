@@ -2,13 +2,17 @@ package main
 
 import (
 	"context"
+	"time"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/net/http2"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"time"
+
+	"os"
+	"sort"
 
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/kalmhq/kalm/api/client"
@@ -19,8 +23,6 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/urfave/cli/v2"
 	"k8s.io/client-go/kubernetes/scheme"
-	"os"
-	"sort"
 )
 
 func main() {
@@ -81,12 +83,13 @@ func main() {
 				Destination: &runningConfig.KubeConfigPath,
 				EnvVars:     []string{"KUBE_CONFIG_PATH"},
 			},
-			&cli.StringFlag{
-				Name:        "log-level",
-				Value:       "INFO",
-				Usage:       "DEBUG, INFO, ERROR",
-				Destination: &runningConfig.LogLevel,
-				EnvVars:     []string{"LOG_LEVEL"},
+			&cli.BoolFlag{
+				Name:        "verbose",
+				Aliases:     []string{"v"},
+				Value:       false,
+				Usage:       "show debug log",
+				Destination: &runningConfig.Verbose,
+				EnvVars:     []string{"VERBOSE"},
 			},
 		},
 		EnableBashCompletion: true,

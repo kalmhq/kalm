@@ -3,17 +3,19 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/kalmhq/kalm/api/log"
-	"github.com/urfave/cli/v2"
 	"os"
 	"path/filepath"
+
+	"github.com/kalmhq/kalm/api/log"
+	"github.com/urfave/cli/v2"
+	"go.uber.org/zap"
 )
 
 type Config struct {
 	BindAddress                   string
 	Port                          int
 	PrivilegedLocalhostAccess     bool
-	LogLevel                      string
+	Verbose                       bool
 	KubernetesApiServerAddress    string
 	KubernetesApiServerCAFilePath string
 	KubeConfigPath                string
@@ -46,7 +48,7 @@ func (c *Config) Normalize() {
 		// This is convenient for development.
 		c.KubeConfigPath = defaultKubeConfigPath
 
-		log.Debug("Using cluster of current context", "definedIn", defaultKubeConfigPath)
+		log.Debug("Using cluster of current context", zap.String("definedIn", defaultKubeConfigPath))
 	}
 }
 
@@ -62,13 +64,12 @@ func (c *Config) IsInCluster() bool {
 }
 
 func (c *Config) Validate() {
-
 }
 
 func (c *Config) Install() {
-	log.InitDefaultLogger(c.LogLevel)
 	c.Normalize()
-	log.Debug("config", "config", c)
+	log.InitDefaultLogger(c.Verbose)
+	log.Debug("config", zap.Any("config", c))
 	c.Validate()
 }
 

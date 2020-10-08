@@ -2,16 +2,18 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/kalmhq/kalm/api/auth"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
-	"net/http"
+	"go.uber.org/zap"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type DeployWebhookCallParams struct {
@@ -83,11 +85,11 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 	copiedComp.Annotations[controllers.AnnoLastUpdatedByWebhook] = strconv.Itoa(updateTs)
 
 	if err := h.resourceManager.Patch(copiedComp, client.MergeFrom(crdComp)); err != nil {
-		h.logger.Info("fail updating component", "name", copiedComp.Name, "time", updateTs)
+		h.logger.Info("fail updating component", zap.String("name", copiedComp.Name), zap.Int("time", updateTs))
 		return err
 	}
 
-	h.logger.Info("updating component", "name", copiedComp.Name, "time", updateTs)
+	h.logger.Info("updating component", zap.String("name", copiedComp.Name), zap.Int("time", updateTs))
 
 	var accessToken v1alpha1.AccessToken
 	if err := h.resourceManager.Get("", clientInfo.Name, &accessToken); err == nil {
@@ -96,10 +98,10 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 		copiedKey.Status.LastUsedAt = updateTs
 
 		if err := h.resourceManager.Patch(copiedKey, client.MergeFrom(&accessToken)); err != nil {
-			h.logger.Error(err, "fail update status of access token")
+			h.logger.Error("fail update status of access token", zap.Error(err))
 		}
 	} else {
-		h.logger.Error(err, "fail to get access token")
+		h.logger.Error("fail to get access token", zap.Error(err))
 	}
 
 	return c.JSON(http.StatusOK, map[string]string{
