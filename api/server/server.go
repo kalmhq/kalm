@@ -42,7 +42,7 @@ func NewEchoInstance() *echo.Echo {
 
 	e.Use(middleware.Gzip())
 	e.Use(middleware.Logger())
-	e.Use(debugHeaderMiddleware)
+	e.Pre(debugHeaderMiddleware)
 	e.Pre(middleware.RemoveTrailingSlash())
 
 	e.Use(CORSWithConfig(CORSConfig{
