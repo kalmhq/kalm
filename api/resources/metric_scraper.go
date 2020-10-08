@@ -191,8 +191,8 @@ func getMetricHistories(sql string, args ...interface{}) MetricHistories {
 			return metricHistories
 		}
 
-		cpuUint, err := strconv.ParseFloat(cpuValue, 64)
-		memoryUnit, err := strconv.ParseFloat(memoryValue, 64)
+		cpuUint, _ := strconv.ParseFloat(cpuValue, 64)
+		memoryUnit, _ := strconv.ParseFloat(memoryValue, 64)
 
 		metricHistories.CPU = append(metricHistories.CPU, MetricPoint{
 			Timestamp: t,
@@ -306,8 +306,14 @@ func CullDatabase(db *sql.DB, window *time.Duration) error {
 
 	podstmt, err := tx.Prepare("delete from pods where time <= datetime('now', ?);")
 
+	if err != nil {
+		return err
+	}
+
 	defer podstmt.Close()
+
 	res, err = podstmt.Exec(windowStr)
+
 	if err != nil {
 		return err
 	}
