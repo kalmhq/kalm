@@ -20,8 +20,8 @@ import (
 
 func getKalmDashboardVersion(config *installV1Alpha1.KalmOperatorConfig) string {
 	if config.Spec.Dashboard != nil {
-		if config.Spec.Dashboard.Version != "" {
-			return config.Spec.Dashboard.Version
+		if config.Spec.Dashboard.Version != nil {
+			return *config.Spec.Dashboard.Version
 		}
 	}
 
