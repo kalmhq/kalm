@@ -93,7 +93,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installV1A
 			Env:     envs,
 			Ports: []coreV1Alpha1.Port{
 				{
-					Protocol:      coreV1Alpha1.PortProtocolHTTP2,
+					Protocol:      coreV1Alpha1.PortProtocolHTTP,
 					ContainerPort: 3001,
 					ServicePort:   80,
 				},
