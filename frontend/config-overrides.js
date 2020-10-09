@@ -20,8 +20,9 @@ module.exports = override(
           release: process.env.REACT_APP_NAME + "@" + process.env.REACT_APP_VERSION,
 
           // webpack specific configuration
-          include: ".",
+          include: "build",
           ignore: ["node_modules", "webpack.config.js"],
+          stripPrefix: ["~/build"],
         }),
       )
     : undefined,

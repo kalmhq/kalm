@@ -18,7 +18,7 @@ if (process.env.REACT_APP_ENABLE_SENTRY && process.env.REACT_APP_SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.REACT_APP_SENTRY_DSN,
     // https://docs.sentry.io/platforms/javascript/guides/react/integrations/default/
-    defaultIntegrations: false,
+    // defaultIntegrations: false,
     integrations: [
       new Sentry.Integrations.GlobalHandlers({ onerror: true, onunhandledrejection: true }),
       new Integrations.BrowserTracing(),
