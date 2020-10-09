@@ -84,6 +84,9 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 		ServicePort:   2233,
 		Protocol:      v1alpha1.PortProtocolTCP,
 	})
+
+	component.Labels["foo"] = "bar"
+
 	suite.updateComponent(component) // todo sometimes this line fail the test e.g. https://travis-ci.com/github/kalmhq/kalm/jobs/354813530
 
 	suite.Eventually(func() bool {
@@ -99,7 +102,8 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 		}
 
 		return len(deployment.Spec.Template.Spec.Containers[0].Env) == 2 &&
-			len(service.Spec.Ports) == 2
+			len(service.Spec.Ports) == 2 &&
+			service.Spec.Selector["foo"] == "bar"
 	}, "component update is not working")
 
 	// delete
