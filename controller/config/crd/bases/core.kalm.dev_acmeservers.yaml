@@ -38,10 +38,12 @@ spec:
           properties:
             acmeDomain:
               description: sub-domains of this will server TXT record for DNS-Challenge
+              minLength: 1
               type: string
             nsDomain:
               description: 'act as NameServer for us, the NS record should be: ACMEDomain
                 -> NSDomain'
+              minLength: 1
               type: string
           type: object
         status:
