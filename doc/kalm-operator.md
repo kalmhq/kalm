@@ -11,7 +11,7 @@ This is our ideal way to install kalm for a cluster. The prerequirements are a r
 There will be a generated single file yaml. The only thing you need to do is apply it into your cluster.
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/v0.1.0-rc.4/operator/kalm-install.yaml
+kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/v0.1.0-rc.5/operator/kalm-install.yaml
 ```
 
 This command runs the operator by creating the following resources in the cluster.
