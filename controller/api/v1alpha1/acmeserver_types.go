@@ -28,10 +28,12 @@ type ACMEServerSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// sub-domains of this will server TXT record for DNS-Challenge
+	// +kubebuilder:validation:MinLength=1
 	ACMEDomain string `json:"acmeDomain,omitempty"`
 
 	// act as NameServer for us,
 	// the NS record should be: ACMEDomain -> NSDomain
+	// +kubebuilder:validation:MinLength=1
 	NSDomain string `json:"nsDomain,omitempty"`
 }
 

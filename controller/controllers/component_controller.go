@@ -390,24 +390,31 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 					Selector: labels,
 				},
 			}
+		} else {
+			r.service.Spec.Selector = labels
 		}
 
 		if r.component.Spec.WorkloadType == corev1alpha1.WorkloadTypeStatefulSet {
 			r.component.Spec.EnableHeadlessService = true
 		}
 
-		if r.component.Spec.EnableHeadlessService && r.headlessService == nil {
-			newHeadlessService = true
-			r.headlessService = &coreV1.Service{
-				ObjectMeta: metaV1.ObjectMeta{
-					Name:      getNameForHeadlessService(r.component.Name),
-					Namespace: r.component.Namespace,
-					Labels:    labels,
-				},
-				Spec: coreV1.ServiceSpec{
-					Selector:  labels,
-					ClusterIP: "None",
-				},
+		if r.component.Spec.EnableHeadlessService {
+			if r.headlessService == nil {
+				newHeadlessService = true
+				r.headlessService = &coreV1.Service{
+					ObjectMeta: metaV1.ObjectMeta{
+						Name:      getNameForHeadlessService(r.component.Name),
+						Namespace: r.component.Namespace,
+						Labels:    labels,
+					},
+					Spec: coreV1.ServiceSpec{
+						Selector:  labels,
+						ClusterIP: "None",
+					},
+				}
+			} else {
+				r.headlessService.Spec.Selector = labels
+				r.headlessService.Spec.ClusterIP = "None"
 			}
 		}
 
@@ -438,6 +445,7 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 
 		// TODO service ComponentPlugin call
 		r.service.Spec.Ports = ps
+
 		if newService {
 			if err := ctrl.SetControllerReference(r.component, r.service, r.Scheme); err != nil {
 				r.WarningEvent(err, "unable to set owner for Service")
@@ -448,7 +456,6 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 				r.WarningEvent(err, "unable to create Service for Component")
 				return err
 			}
-
 		} else {
 			if err := r.Update(r.ctx, r.service); err != nil {
 				r.WarningEvent(err, "unable to update Service for Component")
