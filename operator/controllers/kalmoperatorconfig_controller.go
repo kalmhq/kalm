@@ -485,7 +485,9 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 	secVolSourceDefaultMode := int32(420)
 
 	var controllerImgTag string
-	if config.Spec.KalmVersion != "" {
+	if config.Spec.Version != "" {
+		controllerImgTag = config.Spec.Version
+	} else if config.Spec.KalmVersion != "" {
 		controllerImgTag = config.Spec.KalmVersion
 	} else {
 		controllerImgTag = FallbackImgVersion
