@@ -401,8 +401,7 @@ Password: ${password}`}</pre>
     }
 
     if (!clusterInfo.canBeInitialized) {
-      if (true) {
-        //!this.canReset()
+      if (!this.canReset()) {
         const cmd = `kubectl port-forward -n kalm-system $(kubectl get pod -n kalm-system -l app=kalm -o=jsonpath="{.items[0].metadata.name}" ) 3010:3010`;
 
         return (
