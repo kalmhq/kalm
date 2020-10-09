@@ -13,6 +13,9 @@ spec:
     global:
       proxy:
         holdApplicationUntilProxyStarts: true
+  addonComponents:
+    prometheus:
+      enabled: true
   profile: default
   components:
     pilot:
