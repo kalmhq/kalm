@@ -18,18 +18,20 @@ package main
 
 import (
 	"flag"
+	"os"
+
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
 	"github.com/kalmhq/kalm/operator/controllers"
 	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
+	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	// +kubebuilder:scaffold:imports
@@ -46,6 +48,7 @@ func init() {
 	_ = installv1alpha1.AddToScheme(scheme)
 	_ = cmv1alpha2.AddToScheme(scheme)
 	_ = apiextv1beta1.AddToScheme(scheme)
+	_ = apiextv1.AddToScheme(scheme)
 	_ = istioScheme.AddToScheme(scheme)
 	_ = v1alpha1.AddToScheme(scheme)
 

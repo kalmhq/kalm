@@ -18,6 +18,9 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strings"
+	"text/template"
+
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
@@ -27,8 +30,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
-	"text/template"
 )
 
 // LogSystemReconciler reconciles a LogSystem object
@@ -453,16 +454,19 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicPromtail() error {
 			},
 			Volumes: []corev1alpha1.Volume{
 				{
-					Path: "/var/lib/docker/containers",
-					Type: corev1alpha1.VolumeTypeHostPath,
+					Path:     "/var/lib/docker/containers",
+					HostPath: "/var/lib/docker/containers",
+					Type:     corev1alpha1.VolumeTypeHostPath,
 				},
 				{
-					Path: "/var/log/pods",
-					Type: corev1alpha1.VolumeTypeHostPath,
+					Path:     "/var/log/pods",
+					HostPath: "/var/log/pods",
+					Type:     corev1alpha1.VolumeTypeHostPath,
 				},
 				{
-					Path: "/run/promtail",
-					Type: corev1alpha1.VolumeTypeHostPath,
+					Path:     "/run/promtail",
+					HostPath: "/run/promtail",
+					Type:     corev1alpha1.VolumeTypeHostPath,
 				},
 			},
 			RunnerPermission: &corev1alpha1.RunnerPermission{
