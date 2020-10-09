@@ -17,7 +17,7 @@ spec:
       serviceAccountName: istio-operator
       containers:
         - name: istio-operator
-          image: docker.io/istio/operator:1.6.1
+          image: docker.io/istio/operator:1.7.3
           command:
           - operator
           - server
@@ -40,6 +40,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            - name: REVISION
+              value: ""
             - name: OPERATOR_NAME
               value: "istio-operator"
+            - name: WAIT_FOR_RESOURCES_TIMEOUT
+              value: 300s
 ...
