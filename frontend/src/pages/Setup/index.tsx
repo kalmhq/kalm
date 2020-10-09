@@ -216,12 +216,15 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
       return (
         <Box>
           <Alert severity="warning">
-            Can not get your cluster ip or host name. Please check if your load balancer status. If you are using
-            minikube, please check{" "}
-            <BlankTargetLink href="https://kalm.dev/docs/guide-minikube#step-2-start-a-minikube-cluster">
-              this doc
-            </BlankTargetLink>
-            .
+            <Box>
+              {" "}
+              Can not get your cluster ip or host name. Please check if your load balancer status. If you are using
+              minikube, please check{" "}
+              <BlankTargetLink href="https://kalm.dev/docs/guide-minikube#step-2-start-a-minikube-cluster">
+                this doc
+              </BlankTargetLink>
+              .
+            </Box>
           </Alert>
         </Box>
       );
