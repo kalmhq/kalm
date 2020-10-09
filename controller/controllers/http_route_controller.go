@@ -182,6 +182,10 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 				Seconds: int64(*spec.CORS.MaxAgeSeconds),
 			}
 		}
+
+		httpRoute.CorsPolicy.AllowCredentials = &protoTypes.BoolValue{
+			Value: spec.CORS.AllowCredentials,
+		}
 	}
 
 	return httpRoute
