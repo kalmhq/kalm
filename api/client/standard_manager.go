@@ -77,6 +77,7 @@ func GetPoliciesFromAccessToken(accessToken *resources.AccessToken) [][]string {
 
 		var obj string
 
+		// todo, rule.Namespace or rule.Kind here?
 		if rule.Namespace == "*" && rule.Name == "*" {
 			obj = "*"
 		} else {
