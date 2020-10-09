@@ -9,6 +9,10 @@ metadata:
   namespace: istio-system
   name: istiocontrolplane
 spec:
+  values:
+    global:
+      proxy:
+        holdApplicationUntilProxyStarts: true
   profile: default
   components:
     pilot:
