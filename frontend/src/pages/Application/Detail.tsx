@@ -1,6 +1,6 @@
 import { Box, createStyles, Grid, Link, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import { Expansion } from "forms/Route/expansion";
+import { Expansion } from "widgets/expansion";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import React, { ReactElement } from "react";

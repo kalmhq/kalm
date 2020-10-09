@@ -2,6 +2,7 @@ package resources
 
 import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"go.uber.org/zap"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -56,7 +57,7 @@ func (resourceManager *ResourceManager) GetComponentPlugins() ([]ComponentPlugin
 	resources, err := resourceChannels.ToResources()
 
 	if err != nil {
-		resourceManager.Logger.Error(err, "channels to resources error")
+		resourceManager.Logger.Error("channels to resources error", zap.Error(err))
 		return nil, err
 	}
 

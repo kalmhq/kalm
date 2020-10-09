@@ -4,7 +4,7 @@ import "github.com/kalmhq/kalm/api/utils"
 
 var stateEncryptKey [32]byte
 
-func InitEncrypteKey(key [32]byte) {
+func InitEncryptKey(key [32]byte) {
 	stateEncryptKey = key
 }
 

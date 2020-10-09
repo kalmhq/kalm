@@ -2,13 +2,16 @@ package server
 
 import (
 	"flag"
+	"fmt"
+	"net"
+	"net/http"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"net"
-	"net/http"
+	"go.uber.org/zap/zapcore"
 )
 
 func isTest() bool {
@@ -38,11 +41,12 @@ func NewEchoInstance() *echo.Echo {
 	e.IPExtractor = getClientIP
 
 	e.Use(middleware.Gzip())
-	e.Use(middlewareLogging)
+	e.Use(middleware.Logger())
+	e.Pre(debugHeaderMiddleware)
 	e.Pre(middleware.RemoveTrailingSlash())
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://localhost:3000", "*"},
+		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
 		AllowCredentials: true,
 		MaxAge:           86400,
@@ -61,12 +65,14 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 	return cv.Validator.Struct(i)
 }
 
-func middlewareLogging(next echo.HandlerFunc) echo.HandlerFunc {
+func debugHeaderMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		if c != nil {
-			log.Info("receive request", "method", c.Request().Method, "uri", c.Request().URL.String(), "ip", c.RealIP())
-		} else {
-			log.Info("receive request bad request")
+		if log.DefaultLogger().Check(zapcore.DebugLevel, "") == nil {
+			return next(c)
+		}
+
+		for k, v := range c.Request().Header {
+			log.Debug(fmt.Sprintf("Header \"%s: %+v\"", k, v))
 		}
 
 		return next(c)

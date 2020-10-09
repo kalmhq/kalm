@@ -1,6 +1,6 @@
 import { Box, Button, Container, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteComponentAction } from "actions/component";
-import { Expansion, ExpansionProps } from "forms/Route/expansion";
+import { Expansion, ExpansionProps } from "widgets/expansion";
 import { PodsTable } from "pages/Components/PodsTable";
 import React from "react";
 import { connect } from "react-redux";

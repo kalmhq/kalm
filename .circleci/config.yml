@@ -5,7 +5,7 @@ orbs:
 jobs:
   test-dashboard:
     docker:
-      - image: circleci/golang:1.13.11
+      - image: circleci/golang:1.15.2
     environment:
       KUBEBUILDER_ASSETS: /home/circleci/kubebuilder/bin
       GO111MODULE: "on"

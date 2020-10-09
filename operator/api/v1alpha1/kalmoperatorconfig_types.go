@@ -20,14 +20,31 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type NameValue struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+type DashboardConfig struct {
+	Version *string     `json:"version,omitempty"`
+	Args    []string    `json:"args,omitempty"`
+	Envs    []NameValue `json:"envs,omitempty"`
+}
+
 // KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
 type KalmOperatorConfigSpec struct {
 	SkipIstioInstallation          bool `json:"skipIstioInstallation,omitempty"`
 	SkipCertManagerInstallation    bool `json:"skipCertManagerInstallation,omitempty"`
 	SkipKalmControllerInstallation bool `json:"skipKalmControllerInstallation,omitempty"`
 	SkipKalmDashboardInstallation  bool `json:"skipKalmDashboardInstallation,omitempty"`
-	//DashboardVersion               string `json:"dashboardVersion,omitempty"`
+
+	// deprecated
 	KalmVersion string `json:"kalmVersion,omitempty"`
+
+	Version string `json:"version,omitempty"`
+
+	// Dashboard Config
+	Dashboard *DashboardConfig `json:"dashboard,omitempty"`
 }
 
 // KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig

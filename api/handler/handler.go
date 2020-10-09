@@ -1,71 +1,30 @@
 package handler
 
 import (
-	"github.com/go-logr/logr"
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/api/ws"
-	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/rand"
+	"go.uber.org/zap"
 )
 
 type ApiHandler struct {
 	resourceManager *resources.ResourceManager
 	clientManager   client.ClientManager
-	logger          logr.Logger
+	logger          *zap.Logger
 }
 
 type H map[string]interface{}
 
 func (h *ApiHandler) InstallAdminRoutes(e *echo.Echo) {
+	g := e.Group("/admin")
 
-	e.GET("/routes", func(c echo.Context) error {
-		return c.JSON(200, e.Routes())
-	})
+	g.GET("/routes", handleApiRoutes)
+	g.POST("/temp_account", h.handleCreateTemporaryClusterOwnerAccessTokens, h.GetUserMiddleware, h.RequireUserMiddleware)
 
-	e.POST("/temporary_cluster_owner_access_tokens", func(c echo.Context) error {
-		token := rand.String(128)
-
-		accessToken := &v1alpha1.AccessToken{
-			ObjectMeta: metaV1.ObjectMeta{
-				Name: v1alpha1.GetAccessTokenNameFromToken(token),
-			},
-			Spec: v1alpha1.AccessTokenSpec{
-				Token: token,
-				Rules: []v1alpha1.AccessTokenRule{
-					{
-						Verb:      "view",
-						Namespace: "*",
-						Kind:      "*",
-						Name:      "*",
-					},
-					{
-						Verb:      "edit",
-						Namespace: "*",
-						Kind:      "*",
-						Name:      "*",
-					},
-					{
-						Verb:      "manage",
-						Namespace: "*",
-						Kind:      "*",
-						Name:      "*",
-					},
-				},
-				Creator:   getCurrentUser(c).Name,
-				ExpiredAt: nil,
-			},
-		}
-
-		if err := h.resourceManager.Create(accessToken); err != nil {
-			return err
-		}
-
-		return c.JSON(200, accessToken)
-	}, h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
+	// deprecated
+	e.POST("/temporary_cluster_owner_access_token", h.handleCreateTemporaryClusterOwnerAccessTokens, h.GetUserMiddleware, h.RequireUserMiddleware)
 }
 
 func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
@@ -75,7 +34,7 @@ func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
 
 func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	e.GET("/ping", handlePing)
-	e.GET("/policies", h.handlePolicies, h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
+	e.GET("/policies", h.handlePolicies, h.GetUserMiddleware, h.RequireUserMiddleware)
 
 	// watch
 	wsHandler := ws.NewWsHandler(h.clientManager)
@@ -83,23 +42,26 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	// login
 	e.POST("/login/token", h.handleValidateToken)
-	e.GET("/login/status", h.handleLoginStatus, h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
+	e.GET("/login/status", h.handleLoginStatus, h.GetUserMiddleware, h.RequireUserMiddleware)
 
 	// original resources routes
-	gV1 := e.Group("/v1", h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
+	gV1 := e.Group("/v1", h.GetUserMiddleware, h.RequireUserMiddleware)
 	gV1.GET("/persistentvolumes", h.handleGetPVs)
 
 	gv1Alpha1 := e.Group("/v1alpha1")
 	gv1Alpha1.GET("/logs", h.logWebsocketHandler)
 	gv1Alpha1.GET("/exec", h.execWebsocketHandler)
 
-	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.GetCurrentUserMiddleware, h.RequireUserMiddleware)
+	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.GetUserMiddleware, h.RequireUserMiddleware)
 
 	// initialize the cluster
 	gv1Alpha1WithAuth.POST("/initialize", h.handleInitializeCluster)
 	gv1Alpha1WithAuth.POST("/reset", h.handleResetCluster)
 
 	gv1Alpha1WithAuth.GET("/cluster", h.handleClusterInfo)
+
+	gv1Alpha1WithAuth.GET("/loadbalancers", h.handleLoadBalancers)
+
 	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
 	gv1Alpha1WithAuth.POST("/applications", h.handleCreateApplication)
 	gv1Alpha1WithAuth.GET("/applications/:name", h.handleGetApplicationDetails)
@@ -177,6 +139,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.DELETE("/sso", h.handleDeleteSSOConfig)
 	gv1Alpha1WithAuth.PUT("/sso", h.handleUpdateSSOConfig)
 	gv1Alpha1WithAuth.POST("/sso", h.handleCreateSSOConfig)
+	gv1Alpha1WithAuth.DELETE("/sso/temporary_admin_user", h.handleDeleteTemporaryUser)
 
 	gv1Alpha1WithAuth.GET("/protectedendpoints", h.handleListProtectedEndpoints)
 	gv1Alpha1WithAuth.DELETE("/protectedendpoints", h.handleDeleteProtectedEndpoints)

@@ -4,15 +4,17 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
+	"strings"
+	"sync"
+
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"strings"
-	"sync"
 )
 
 type HttpsCert struct {
@@ -200,7 +202,7 @@ func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (
 	x509Cert, _, err := controllers.ParseCert(cert.SelfManagedCertContent)
 
 	if err != nil {
-		resourceManager.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
+		resourceManager.Logger.Error("fail to parse SelfManagedCertContent as cert", zap.Error(err))
 		return nil, err
 	}
 
@@ -274,7 +276,7 @@ func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCe
 	}
 
 	if err != nil {
-		resourceManager.Logger.Error(err, "fail to parse SelfManagedCertContent as cert")
+		resourceManager.Logger.Error("fail to parse SelfManagedCertContent as cert", zap.Error(err))
 		return nil, err
 	}
 

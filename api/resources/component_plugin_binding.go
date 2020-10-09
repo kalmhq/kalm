@@ -2,6 +2,7 @@ package resources
 
 import (
 	"encoding/json"
+
 	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -50,7 +51,7 @@ func (resourceManager *ResourceManager) UpdateComponentPluginBindingsForObject(n
 	requirement, _ := labels.NewRequirement("kalm-component", selection.Equals, []string{componentName})
 	selector = selector.Add(*requirement)
 
-	err = resourceManager.List(&oldPluginList, client.MatchingLabelsSelector{selector})
+	err = resourceManager.List(&oldPluginList, client.MatchingLabelsSelector{Selector: selector})
 
 	if err != nil {
 		return err

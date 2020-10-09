@@ -1,6 +1,6 @@
 module github.com/kalmhq/kalm/controller
 
-go 1.13
+go 1.15
 
 require (
 	github.com/coreos/prometheus-operator v0.29.0

@@ -164,7 +164,7 @@ class ProfilePageRaw extends React.PureComponent<Props, State> {
             )}
             {this.renderAvatar()}
             {this.renderEmailOrName()}
-            {auth.impersonation === "" && auth.groups.length > 0 ? <p>Groups: {auth.groups}</p> : null}
+            {auth.impersonation === "" && auth.groups && auth.groups.length > 0 ? <p>Groups: {auth.groups}</p> : null}
           </Box>
         }
       />

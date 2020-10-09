@@ -88,61 +88,14 @@ spec:
                   type: array
                 allowMethods:
                   items:
-                    enum:
-                    - GET
-                    - HEAD
-                    - POST
-                    - PUT
-                    - PATCH
-                    - DELETE
-                    - OPTIONS
-                    - TRACE
-                    - CONNECT
                     type: string
                   type: array
-                allowOrigin:
+                allowOrigins:
                   items:
-                    properties:
-                      name:
-                        minLength: 1
-                        type: string
-                      operator:
-                        allOf:
-                        - enum:
-                          - equal
-                          - withPrefix
-                          - matchRegexp
-                        - enum:
-                          - equal
-                          - withPrefix
-                          - matchRegexp
-                        type: string
-                      type:
-                        allOf:
-                        - enum:
-                          - query
-                          - header
-                        - enum:
-                          - query
-                          - header
-                        type: string
-                      value:
-                        type: string
-                    required:
-                    - name
-                    - operator
-                    - type
-                    - value
-                    type: object
+                    type: string
                   type: array
                 maxAgeSeconds:
                   type: integer
-              required:
-              - allowCredentials
-              - allowHeaders
-              - allowMethods
-              - allowOrigin
-              - maxAgeSeconds
               type: object
             delay:
               properties:

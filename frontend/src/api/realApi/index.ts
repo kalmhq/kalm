@@ -2,7 +2,6 @@ import { Api } from "api/base";
 import Axios, { AxiosRequestConfig } from "axios";
 import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
-
 import { AcmeServerFormType, AcmeServerInfo, CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import {
@@ -360,6 +359,10 @@ export default class RealApi extends Api {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/sso` });
   };
 
+  public deleteSSOTemporaryAdminUser = async (): Promise<void> => {
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/sso/temporary_admin_user` });
+  };
+
   public listProtectedEndpoints = async (): Promise<ProtectedEndpoint[]> => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/protectedendpoints` });
     return res.data;
@@ -465,8 +468,9 @@ export const k8sWsPrefix = !K8sApiPrefix
 const getAxiosClient = (withHeaderToken: boolean) => {
   const token = store.getState().auth.token;
   const headers: { [key: string]: string } = {};
+  const useToken = withHeaderToken && !!token;
 
-  if (withHeaderToken && token) {
+  if (useToken) {
     headers.Authorization = `Bearer ${token}`;
   }
 
@@ -478,7 +482,7 @@ const getAxiosClient = (withHeaderToken: boolean) => {
 
   const instance = Axios.create({
     timeout: 10000,
-    withCredentials: true,
+    withCredentials: !useToken,
     headers: headers,
   });
 

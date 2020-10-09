@@ -1,21 +1,21 @@
 import { OutlinedTextFieldProps, TextField, Theme, Typography } from "@material-ui/core";
+import Chip from "@material-ui/core/Chip";
 import { grey } from "@material-ui/core/colors";
+import Divider from "@material-ui/core/Divider";
+import makeStyles from "@material-ui/core/styles/makeStyles";
 import {
   AutocompleteProps,
   createFilterOptions,
   UseAutocompleteMultipleProps,
   UseAutocompleteSingleProps,
 } from "@material-ui/lab";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 import clsx from "clsx";
 import React, { ReactNode } from "react";
-import { theme } from "theme/theme";
 import { FieldRenderProps } from "react-final-form";
-import Chip from "@material-ui/core/Chip";
-import makeStyles from "@material-ui/core/styles/makeStyles";
-import Autocomplete from "@material-ui/lab/Autocomplete";
+import { theme } from "theme/theme";
 import { KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
 import { Caption } from "widgets/Label";
-import Divider from "@material-ui/core/Divider";
 
 export interface AutoCompleteForRenderOption {
   value: string;
@@ -346,6 +346,7 @@ export const AutoCompleteMultipleValue = (props: AutoCompleteMultipleValuesProps
       size="small"
       options={options}
       // filterSelectedOptions
+      disableCloseOnSelect
       openOnFocus
       // groupBy={(option): string => option.group}
       // renderGroup={({ key, children }) => (

@@ -62,13 +62,11 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           label="App Name"
           id="application-name"
           component={FinalTextField}
-          autoFocus={true}
+          autoFocus
           validate={ValidatorIsDNS123Label}
           parse={trimAndToLowerParse}
-          placeholder={"e.g. my-application; production"}
-          helperText={
-            "Must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"
-          }
+          placeholder="e.g. my-application; production"
+          helperText="Must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"
         />
 
         <Box mt={2} style={{ color: theme.palette.text.secondary }}>

@@ -1,10 +1,14 @@
 package handler
 
 import (
-	"github.com/kalmhq/kalm/api/resources"
-	"github.com/labstack/echo/v4"
 	"sort"
 	"strings"
+
+	"github.com/kalmhq/kalm/api/resources"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"github.com/labstack/echo/v4"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/rand"
 )
 
 type Policies []string
@@ -37,4 +41,49 @@ func (h *ApiHandler) handlePolicies(c echo.Context) error {
 	sort.Sort(Policies(list))
 
 	return c.String(200, strings.Join(list, "\n"))
+}
+
+func handleApiRoutes(c echo.Context) error {
+	return c.JSON(200, c.Echo().Routes())
+}
+
+func (h *ApiHandler) handleCreateTemporaryClusterOwnerAccessTokens(c echo.Context) error {
+	token := rand.String(128)
+
+	accessToken := &v1alpha1.AccessToken{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name: v1alpha1.GetAccessTokenNameFromToken(token),
+		},
+		Spec: v1alpha1.AccessTokenSpec{
+			Token: token,
+			Rules: []v1alpha1.AccessTokenRule{
+				{
+					Verb:      "view",
+					Namespace: "*",
+					Kind:      "*",
+					Name:      "*",
+				},
+				{
+					Verb:      "edit",
+					Namespace: "*",
+					Kind:      "*",
+					Name:      "*",
+				},
+				{
+					Verb:      "manage",
+					Namespace: "*",
+					Kind:      "*",
+					Name:      "*",
+				},
+			},
+			Creator:   getCurrentUser(c).Name,
+			ExpiredAt: nil,
+		},
+	}
+
+	if err := h.resourceManager.Create(accessToken); err != nil {
+		return err
+	}
+
+	return c.JSON(200, accessToken)
 }

@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Theme, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Link as KMLink, Theme, WithStyles } from "@material-ui/core";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -21,6 +21,7 @@ import { indigo } from "@material-ui/core/colors";
 import sc from "utils/stringConstants";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
+import { InfoBox } from "widgets/InfoBox";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -140,6 +141,23 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderInfoBox() {
+    const title = "References";
+
+    const options = [
+      {
+        title: (
+          <KMLink href="https://kalm.dev/docs/next/crd/component" target="_blank">
+            Component CRD
+          </KMLink>
+        ),
+        content: "",
+      },
+    ];
+
+    return <InfoBox title={title} options={options} />;
+  }
+
   public render() {
     const { components, activeNamespace, canEditNamespace } = this.props;
     const appName = activeNamespace!.name;
@@ -152,8 +170,9 @@ class ComponentRaw extends React.PureComponent<Props, State> {
         {this.renderDeleteConfirmDialog()}
 
         <Box p={2}>
-          {components && components.length > 0
-            ? components?.map((component, index) => (
+          {components && components.length > 0 ? (
+            <>
+              {components?.map((component, index) => (
                 <Box pb={1} key={component.name}>
                   <ComponentPanel
                     component={component}
@@ -162,8 +181,12 @@ class ComponentRaw extends React.PureComponent<Props, State> {
                     canEdit={canEditNamespace(appName)}
                   />
                 </Box>
-              ))
-            : this.renderEmpty()}
+              ))}
+              {this.renderInfoBox()}
+            </>
+          ) : (
+            this.renderEmpty()
+          )}
         </Box>
       </BasePage>
     );

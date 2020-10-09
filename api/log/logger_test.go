@@ -1,19 +1,25 @@
 package log
 
-import "testing"
+import (
+	"testing"
 
-func TestLogger(t *testing.T) {
-	Debug("debug")
-	Info("info")
-	Error(nil, "error")
+	"go.uber.org/zap"
+)
 
-	InitDefaultLogger("debug")
-	Debug("debug")
-	Info("info")
-	Error(nil, "error")
+func TestDevLogger(t *testing.T) {
+	log := NewLogger(true)
+	log.Info("bar")
+	log.Debug("bar")
+	log.Named("foo").Info("bar", zap.String("abc", "123"))
+	log.Named("foo").Debug("bar")
+	log.Error("error")
+}
 
-	InitDefaultLogger("error")
-	Debug("debug")
-	Info("info")
-	Error(nil, "error")
+func TestProdLogger(t *testing.T) {
+	log := NewLogger(false)
+	log.Info("bar")
+	log.Debug("bar")
+	log.Named("foo").Info("bar")
+	log.Named("foo").Debug("bar")
+	log.Error("error")
 }

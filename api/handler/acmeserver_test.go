@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"fmt"
+	"net/http"
+	"testing"
+
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/stretchr/testify/suite"
-	"net/http"
-	"testing"
 )
 
 type ACMEServerHandlerTestSuite struct {
@@ -31,7 +31,7 @@ func (suite *ACMEServerHandlerTestSuite) TestGetEmpty() {
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodGet,
-		Path:      fmt.Sprintf("/v1alpha1/acmeserver"),
+    	Path:      "/v1alpha1/acmeserver",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsMissingRoleError(rec, "view", "cluster")
 		},
@@ -53,7 +53,7 @@ func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodPost,
-		Path:      fmt.Sprintf("/v1alpha1/acmeserver"),
+		Path:      "/v1alpha1/acmeserver",
 		Body: resources.ACMEServer{
 			ACMEDomain: acmeDomain,
 			NSDomain:   nsDomain,
@@ -77,7 +77,7 @@ func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodGet,
-		Path:      fmt.Sprintf("/v1alpha1/acmeserver"),
+		Path:      "/v1alpha1/acmeserver",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsMissingRoleError(rec, "viewer", "cluster")
 		},
@@ -100,7 +100,7 @@ func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodDelete,
-		Path:      fmt.Sprintf("/v1alpha1/acmeserver"),
+		Path:      "/v1alpha1/acmeserver",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsMissingRoleError(rec, "editor", "cluster")
 		},
@@ -116,7 +116,7 @@ func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodGet,
-		Path:      fmt.Sprintf("/v1alpha1/acmeserver"),
+		Path:      "/v1alpha1/acmeserver",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsMissingRoleError(rec, "viewer", "cluster")
 		},

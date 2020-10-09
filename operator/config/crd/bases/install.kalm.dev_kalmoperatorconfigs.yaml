@@ -34,8 +34,30 @@ spec:
         spec:
           description: KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
           properties:
+            dashboard:
+              description: Dashboard Config
+              properties:
+                args:
+                  items:
+                    type: string
+                  type: array
+                envs:
+                  items:
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                    required:
+                    - name
+                    - value
+                    type: object
+                  type: array
+                version:
+                  type: string
+              type: object
             kalmVersion:
-              description: DashboardVersion               string `json:"dashboardVersion,omitempty"`
+              description: deprecated
               type: string
             skipCertManagerInstallation:
               type: boolean
@@ -45,6 +67,8 @@ spec:
               type: boolean
             skipKalmDashboardInstallation:
               type: boolean
+            version:
+              type: string
           type: object
         status:
           description: KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig

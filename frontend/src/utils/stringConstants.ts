@@ -118,6 +118,7 @@ export const StringConstants = {
   CANT_NOT_EDIT: "Can NOT edit this field",
   REGISTRY_VERIFIED_ERROR: "Error",
   NO_PERMISSION_TIPS: "No permission to view this, please contact with admin.",
+  MOUNT_PATH_PLACEHOLDER: "e.g. /mountPath",
 };
 
 export default StringConstants;

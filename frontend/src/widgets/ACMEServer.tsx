@@ -12,7 +12,7 @@ import {
   withStyles,
 } from "@material-ui/core";
 import { WithStyles } from "@material-ui/styles";
-import { Expansion } from "forms/Route/expansion";
+import { Expansion } from "widgets/expansion";
 import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";

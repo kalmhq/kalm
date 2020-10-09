@@ -2,14 +2,15 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
+	"testing"
+
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"net/http"
-	"testing"
 )
 
 type VolumeTestSuite struct {
@@ -151,13 +152,6 @@ func volExists(vol resources.Volume, list []resources.Volume) bool {
 
 func randomName() string {
 	return rand.String(10)
-}
-
-func (suite *VolumeTestSuite) createPV() coreV1.PersistentVolume {
-	unboundPV := genPV()
-	err := suite.Create(&unboundPV)
-	suite.Nil(err)
-	return unboundPV
 }
 
 func genPV() coreV1.PersistentVolume {

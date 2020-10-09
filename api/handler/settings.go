@@ -8,7 +8,3 @@ type Settings struct {
 func (h *ApiHandler) handleListSettings(c echo.Context) error {
 	return nil
 }
-
-func (h *ApiHandler) handlePatchSettings(c echo.Context) error {
-	return nil
-}

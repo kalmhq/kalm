@@ -1,9 +1,15 @@
 #!/bin/bash
 
-echo "Installing Kalm"
+# allow a specific version to be passed in as the first argument, for example:
+# curl -sL https://get.kalm.dev | bash -s vx.x.x
+
+default_version=v0.1.0-alpha.5
+KALM_VERSION=${1:-$default_version}
+
+echo "Installing Kalm $KALM_VERSION"
 echo ""
 
-kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/v0.1.0-alpha.5/kalm-install-operator.yaml
+kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/$KALM_VERSION/kalm-install-operator.yaml
 ## same as running this in code repo:
 #kubectl apply -f kalm-install-operator.yaml
 
@@ -25,7 +31,7 @@ while [ "$OPERATOR_CONFIG_APPLY_STATUS" -ne 0 ]
 do
   ## same as running this in code repo:
   #kubectl apply -f kalm-install-kalmoperatorconfig.yaml
-  kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/v0.1.0-alpha.5/kalm-install-kalmoperatorconfig.yaml
+  kubectl apply -f https://raw.githubusercontent.com/kalmhq/kalm/$KALM_VERSION/kalm-install-kalmoperatorconfig.yaml
   OPERATOR_CONFIG_APPLY_STATUS=$?
 done
 

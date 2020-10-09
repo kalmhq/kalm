@@ -19,7 +19,7 @@ COPY frontend/ .
 RUN npm run build
 
 # ============== Api ==============
-FROM golang:1.13 as api-builder
+FROM golang:1.15.2 as api-builder
 WORKDIR /workspace/api
 
 # Copy dependencies

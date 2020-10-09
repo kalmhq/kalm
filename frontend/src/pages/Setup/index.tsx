@@ -29,6 +29,7 @@ import { FinalTextField } from "../../forms//Final/textfield";
 interface SetupFormType {
   domain: string;
 }
+
 type RenderProps = FormRenderProps<SetupFormType>;
 
 interface Props extends WithClusterInfoProps, WithRoutesDataProps, WithCertsProps, WithComponentsProps {}
@@ -182,19 +183,56 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
     return this.getKalmRouteReady(this.props) && !this.getKalmRouteReady(prevProps);
   };
 
-  private renderStep0 = () => {
+  private renderStep0Hint = () => {
     const { clusterInfo } = this.props;
+
+    if (clusterInfo.ingressIP !== "") {
+      return (
+        <Box>
+          Please enter your domain name, and configure this domain name an <strong>A record</strong> that points to your
+          cluster load balancer IP{" "}
+          <Box display="inline-block" style={{ verticalAlign: "bottom" }}>
+            <H5>
+              <strong>{clusterInfo.ingressIP}</strong>
+            </H5>
+          </Box>
+          . This domain name will be your address to access the kalm dashboard in the future.
+        </Box>
+      );
+    } else if (clusterInfo.ingressHostname !== "") {
+      return (
+        <Box>
+          Please enter your domain name, and configure this domain name an <strong>CNAME record</strong> that points to
+          your cluster load balancer hostname{" "}
+          <Box display="inline-block" style={{ verticalAlign: "bottom" }}>
+            <H5>
+              <strong>{clusterInfo.ingressHostname}</strong>
+            </H5>
+          </Box>
+          . This domain name will be your address to access the kalm dashboard in the future.
+        </Box>
+      );
+    } else {
+      return (
+        <Box>
+          <Alert severity="warning">
+            Can not get your cluster ip or host name. Please check if your load balancer status. If you are using
+            minikube, please check{" "}
+            <BlankTargetLink href="https://kalm.dev/docs/guide-minikube#step-2-start-a-minikube-cluster">
+              this doc
+            </BlankTargetLink>
+            .
+          </Alert>
+        </Box>
+      );
+    }
+  };
+
+  private renderStep0 = () => {
     const { showDNSWarning } = this.state;
     return (
       <Box>
-        Please enter your domain name, and configure this domain name an <strong>A record</strong> that points to your
-        cluster load balancer IP{" "}
-        <Box display="inline-block" style={{ verticalAlign: "bottom" }}>
-          <H5>
-            <strong>{clusterInfo.ingressIP}</strong>
-          </H5>
-        </Box>
-        . This domain name will be your address to access the kalm dashboard in the future.
+        {this.renderStep0Hint()}
         <Box mt={2}>
           <Form
             debug={process.env.REACT_APP_DEBUG === "true" ? console.log : undefined}
@@ -224,7 +262,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
                   }}
                 </FormSpy>
                 <FormSpy subscription={{ values: true, errors: true, touched: true }}>
-                  {(props) => {
+                  {() => {
                     return (
                       showDNSWarning && (
                         <Box mt={2}>

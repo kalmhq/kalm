@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -106,10 +107,6 @@ func (h *ApiHandler) handleDeleteRoleBinding(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusOK)
-}
-
-func (h *ApiHandler) resolveClusterRole() error {
-	return nil
 }
 
 func (h *ApiHandler) handleGetServiceAccount(c echo.Context) error {

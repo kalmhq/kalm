@@ -1,12 +1,13 @@
 package ws
 
 import (
-	"github.com/go-logr/logr"
+	"net/http"
+
 	"github.com/gorilla/websocket"
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/labstack/echo/v4"
-	"net/http"
+	"go.uber.org/zap"
 )
 
 var (
@@ -20,7 +21,7 @@ var (
 type WsHandler struct {
 	clientManager client.ClientManager
 	clientPool    *ClientPool
-	logger        logr.Logger
+	logger        *zap.Logger
 }
 
 func NewWsHandler(clientManager client.ClientManager) *WsHandler {
@@ -47,7 +48,7 @@ func (h *WsHandler) Serve(c echo.Context) error {
 	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 
 	if err != nil {
-		log.Error(err, "ws upgrade error")
+		log.Error("ws upgrade error", zap.Error(err))
 		return err
 	}
 

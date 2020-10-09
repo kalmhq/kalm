@@ -7,5 +7,5 @@ This installation script is mainly to ensure that all images can be downloaded c
 Before running the script, please make sure that kubectl and openssl have been installed
 
 ```bash
-curl -s https://raw.githubusercontent.com/kalmhq/kalm/v0.1.0-alpha.5/deploy/imgconv/install.sh | bash
+curl -s https://raw.githubusercontent.com/kalmhq/kalm/v0.1.0-rc.5/deploy/imgconv/install.sh | bash
 ```

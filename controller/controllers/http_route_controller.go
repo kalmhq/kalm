@@ -18,6 +18,12 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"math"
+	"net/http"
+	"sort"
+	"strconv"
+	"strings"
+
 	protoTypes "github.com/gogo/protobuf/types"
 	"istio.io/api/networking/v1alpha3"
 	istioNetworkingV1Beta1 "istio.io/api/networking/v1beta1"
@@ -25,15 +31,10 @@ import (
 	"istio.io/client-go/pkg/apis/networking/v1beta1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"math"
-	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-	"sort"
-	"strconv"
-	"strings"
 
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -152,28 +153,43 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 	}
 
 	if spec.CORS != nil {
-		httpRoute.CorsPolicy = &istioNetworkingV1Beta1.CorsPolicy{
-			AllowOrigins: make([]*istioNetworkingV1Beta1.StringMatch, 0, len(spec.CORS.AllowOrigins)),
-			AllowMethods: toStringSlice(spec.CORS.AllowMethods),
-			AllowHeaders: spec.CORS.AllowHeaders,
-			MaxAge: &protoTypes.Duration{
-				Seconds: int64(spec.CORS.MaxAgeSeconds),
-			},
+		httpRoute.CorsPolicy = &istioNetworkingV1Beta1.CorsPolicy{}
+
+		if spec.CORS.AllowOrigins != nil {
+			allowOrigins := make([]*istioNetworkingV1Beta1.StringMatch, 0, len(spec.CORS.AllowOrigins))
+
+			for _, origin := range spec.CORS.AllowOrigins {
+				allowOrigins = append(allowOrigins, &istioNetworkingV1Beta1.StringMatch{
+					MatchType: &istioNetworkingV1Beta1.StringMatch_Exact{
+						Exact: origin,
+					},
+				})
+			}
+
+			httpRoute.CorsPolicy.AllowOrigins = allowOrigins
 		}
 
-		for _, condition := range spec.CORS.AllowOrigins {
-			httpRoute.CorsPolicy.AllowOrigins = append(httpRoute.CorsPolicy.AllowOrigins, conditionToStringMatch(condition))
+		if spec.CORS.AllowMethods != nil {
+			httpRoute.CorsPolicy.AllowMethods = spec.CORS.AllowMethods
+		}
+
+		if spec.CORS.AllowHeaders != nil {
+			httpRoute.CorsPolicy.AllowHeaders = spec.CORS.AllowHeaders
+		}
+
+		if spec.CORS.MaxAgeSeconds != nil {
+			httpRoute.CorsPolicy.MaxAge = &protoTypes.Duration{
+				Seconds: int64(*spec.CORS.MaxAgeSeconds),
+			}
+		}
+
+		httpRoute.CorsPolicy.AllowCredentials = &protoTypes.BoolValue{
+			Value: spec.CORS.AllowCredentials,
 		}
 	}
+
 	return httpRoute
 
-}
-
-func toStringSlice(list []corev1alpha1.AllowMethod) (rst []string) {
-	for _, one := range list {
-		rst = append(rst, string(one))
-	}
-	return
 }
 
 // Kalm route level http to https redirect is achieved by adding envoy filter for istio ingress gateway

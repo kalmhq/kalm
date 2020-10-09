@@ -3,9 +3,11 @@ package resources
 import (
 	"encoding/json"
 	"fmt"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"strconv"
 	"strings"
+
+	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	coreV1 "k8s.io/api/core/v1"
@@ -121,7 +123,7 @@ func (resourceManager *ResourceManager) BuildComponentDetails(
 		resources, err = resourceChannels.ToResources()
 
 		if err != nil {
-			resourceManager.Logger.Error(err, "channels to resources error")
+			resourceManager.Logger.Error("channels to resources error", zap.Error(err))
 			return nil, err
 		}
 	}

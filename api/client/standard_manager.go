@@ -5,6 +5,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"html/template"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/rbac"
@@ -12,16 +17,13 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
-	"html/template"
+	"go.uber.org/zap"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	toolscache "k8s.io/client-go/tools/cache"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
-	"strings"
-	"sync"
-	"time"
 )
 
 type StandardClientManager struct {
@@ -193,7 +195,7 @@ func (m *StandardClientManager) SetImpersonation(clientInfo *ClientInfo, rawImpe
 			clientInfo.Impersonation = impersonation
 			clientInfo.ImpersonationType = impersonationType
 		} else {
-			log.Error(err, "parse impersonation raw string failed")
+			log.Error("parse impersonation raw string failed", zap.Error(err))
 		}
 	}
 }
@@ -229,6 +231,10 @@ func (m *StandardClientManager) GetClientInfoFromContext(c echo.Context) (*Clien
 
 		clientInfo.Cfg = m.ClusterConfig
 		clientInfo.Impersonation = ""
+
+		if clientInfo.Groups == nil {
+			clientInfo.Groups = []string{}
+		}
 
 		m.SetImpersonation(&clientInfo, c.Request().Header.Get("Kalm-Impersonation"))
 		return &clientInfo, nil
@@ -290,7 +296,7 @@ func setupResourcesWatcher(cfg *rest.Config, manager *StandardClientManager) {
 	informerCache, err := cache.New(cfg, cache.Options{})
 
 	if err != nil {
-		log.Error(err, "new cache error")
+		log.Error("new cache error", zap.Error(err))
 		panic(err)
 	}
 
@@ -322,7 +328,7 @@ func setupResourcesWatcher(cfg *rest.Config, manager *StandardClientManager) {
 			},
 		})
 	} else {
-		log.Error(err, "get informer error")
+		log.Error("get informer error", zap.Error(err))
 		panic(err)
 	}
 
@@ -354,7 +360,7 @@ func setupResourcesWatcher(cfg *rest.Config, manager *StandardClientManager) {
 			},
 		})
 	} else {
-		log.Error(err, "get informer error")
+		log.Error("get informer error", zap.Error(err))
 		panic(err)
 	}
 
@@ -386,7 +392,7 @@ func setupResourcesWatcher(cfg *rest.Config, manager *StandardClientManager) {
 			},
 		})
 	} else {
-		log.Error(err, "get informer error")
+		log.Error("get informer error", zap.Error(err))
 		panic(err)
 	}
 
