@@ -17,7 +17,12 @@ import { Field, FieldRenderProps } from "react-final-form";
 import { ComponentLikePort, PortProtocolHTTP, PortProtocolTCP, Probe } from "types/componentTemplate";
 import sc from "../../utils/stringConstants";
 import { makeSelectOption, KSelect } from "../Final/select";
-import { ValidatorOneOfFactory } from "../validator";
+import {
+  validateHostWithWildcardPrefix,
+  ValidatorOneOfFactory,
+  ValidatorProbePath,
+  ValidatorRequired,
+} from "../validator";
 
 const ValidatorScheme = ValidatorOneOfFactory(["HTTP", "HTTPS"]);
 
@@ -119,6 +124,7 @@ class RenderProbe extends React.PureComponent<Props> {
               name={`${name}.httpGet.host`}
               component={RenderNestedTextfield}
               placeholder="0.0.0.0"
+              validate={validateHostWithWildcardPrefix}
               style={{ width: 80 }}
             />
             :
@@ -127,11 +133,13 @@ class RenderProbe extends React.PureComponent<Props> {
               component={RenderNestedTextfield}
               placeholder="8080"
               parse={NormalizePositiveNumber}
+              validate={ValidatorRequired}
               style={{ width: 60 }}
             />
             <Field
               name={`${name}.httpGet.path`}
               component={RenderNestedTextfield}
+              validate={ValidatorProbePath}
               placeholder="/healthy"
               style={{ width: 80, textAlign: "left" }}
             />
@@ -216,6 +224,7 @@ class RenderProbe extends React.PureComponent<Props> {
               name={`${name}.tcpSocket.host`}
               component={RenderNestedTextfield}
               placeholder="0.0.0.0"
+              validate={validateHostWithWildcardPrefix}
               style={{ width: 200 }}
             />
             :
@@ -223,6 +232,7 @@ class RenderProbe extends React.PureComponent<Props> {
               name={`${name}.tcpSocket.port`}
               component={RenderNestedTextfield}
               parse={NormalizePositiveNumber}
+              validate={ValidatorRequired}
               placeholder="8080"
               style={{ width: 60 }}
             />

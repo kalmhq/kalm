@@ -258,9 +258,15 @@ export const ValidatorArrayNotEmpty = yupValidatorWrapForArray(
   Yup.array<any>().required("Should have at least one item"),
 );
 
+export const ValidatorProbePath = yupValidatorWrap<string | undefined>(
+  string()
+    .notRequired()
+    .test("", 'Must be an absolute path, which starts with a "/"', (value) => !value || value.startsWith("/")),
+);
+
 export const validateHostWithWildcardPrefix = yupValidatorWrap<string | undefined>(
   string()
-    .required("Required")
+    .notRequired()
     .max(511)
     .test(
       "",
