@@ -228,9 +228,6 @@ func (r *HttpRouteReconcilerTask) buildHttpsRedirectEnvoyFilter(route *corev1alp
 					Patch: &v1alpha3.EnvoyFilter_Patch{
 						Operation: v1alpha3.EnvoyFilter_Patch_MERGE,
 						Value: golangMapToProtoStruct(map[string]interface{}{
-							"match": map[string]interface{}{
-								"prefix": "/",
-							},
 							"redirect": map[string]interface{}{
 								"https_redirect": true,
 							},
