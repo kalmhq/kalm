@@ -333,8 +333,12 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 	// Kalm will order http route rules, and set them in the virtual service http field.
 	hostVirtualService := make(map[string][]*istioNetworkingV1Beta1.HTTPRoute)
 
-	for _, route := range r.routes {
-		for _, host := range route.Spec.Hosts {
+	for i := range r.routes {
+		route := r.routes[i]
+
+		for j := range route.Spec.Hosts {
+			host := route.Spec.Hosts[j]
+
 			if _, ok := hostVirtualService[host]; ok {
 				hostVirtualService[host] = append(hostVirtualService[host], r.buildIstioHttpRoutes(&route)...)
 			} else {
@@ -361,7 +365,9 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 	}
 
 	// Create or delete envoy filter on gateway for routes
-	for _, route := range r.routes {
+	for i := range r.routes {
+		route := r.routes[i]
+
 		filterName := getHttpsRedirectEnvoyFilterName(&route)
 		if route.Spec.HttpRedirectToHttps {
 			if _, ok := httpsRedirectFilterMap[filterName]; !ok {
@@ -391,7 +397,9 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 	}
 
 	// delete old virtual Service
-	for _, vs := range r.virtualServices {
+	for i := range r.virtualServices {
+		vs := r.virtualServices[i]
+
 		if hostVirtualService[vs.Spec.Hosts[0]] == nil {
 			if err := r.Delete(r.ctx, &vs); err != nil {
 				return err

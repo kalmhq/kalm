@@ -18,6 +18,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -91,7 +92,8 @@ func (r *KalmPVReconciler) reconcileForPVCChange() error {
 func (r *KalmPVReconciler) reconcileDeleteOfPVWithSpecialCleanLabel(kalmPVList corev1.PersistentVolumeList) error {
 	r.Log.Info("reconcileDeleteOfPVWithSpecialCleanLabel")
 
-	for _, pv := range kalmPVList.Items {
+	for i := range kalmPVList.Items {
+		pv := kalmPVList.Items[i]
 
 		pvcNsAndName, exist := pv.Labels[KalmLabelCleanIfPVCGone]
 		if !exist {

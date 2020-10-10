@@ -21,6 +21,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"path"
+	"sort"
+	"strconv"
+	"strings"
+
 	js "github.com/dop251/goja"
 	"github.com/kalmhq/kalm/controller/lib/files"
 	"github.com/kalmhq/kalm/controller/vm"
@@ -37,15 +42,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"path"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-	"sort"
-	"strconv"
-	"strings"
 
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
@@ -602,7 +603,9 @@ func (r *ComponentReconcilerTask) ReconcileComponentPluginBinding() error {
 		return nil
 	}
 
-	for _, ele := range r.pluginBindings.Items {
+	for i := range r.pluginBindings.Items {
+		ele := r.pluginBindings.Items[i]
+
 		if err := ctrl.SetControllerReference(&ele, r.component, r.Scheme); err != nil {
 			return err
 		}
@@ -1196,7 +1199,9 @@ func (r *ComponentReconcilerTask) runPlugins(methodName string, component *corev
 		return nil
 	}
 
-	for _, binding := range r.pluginBindings.Items {
+	for i := range r.pluginBindings.Items {
+		binding := r.pluginBindings.Items[i]
+
 		if binding.DeletionTimestamp != nil || binding.Spec.IsDisabled {
 			continue
 		}
@@ -1413,7 +1418,9 @@ func (r *ComponentReconcilerTask) getPVC(pvcName string) (*coreV1.PersistentVolu
 		return nil, err
 	}
 
-	for _, item := range pvcList.Items {
+	for i := range pvcList.Items {
+		item := pvcList.Items[i]
+
 		if item.Name == pvcName {
 			return &item, nil
 		}
@@ -1542,7 +1549,9 @@ func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 		return err
 	}
 
-	for _, binding := range bindingList.Items {
+	for i := range bindingList.Items {
+		binding := bindingList.Items[i]
+
 		if err := r.Delete(r.ctx, &binding); client.IgnoreNotFound(err) != nil {
 			r.WarningEvent(err, "Delete plugin binding error.")
 		}

@@ -22,6 +22,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"os"
+	"sort"
+	"strings"
+
 	apps1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/storage/v1"
@@ -29,14 +34,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"net/http"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sort"
-	"strings"
 
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
@@ -156,7 +157,7 @@ nsname = "ACME_DOMAIN_PLACEHOLDER"
 #nsadmin = "admin.example.org"
 # predefined records served in addition to the TXT
 records = [
-    # domain pointing to the public IP of your acme-dns server 
+    # domain pointing to the public IP of your acme-dns server
     "ACME_DOMAIN_PLACEHOLDER. A  NS_DOMAIN_IP_PLACEHOLDER",
     # specify that acme.example.xyz will resolve any *.acme.example.xyz records
     "ACME_DOMAIN_PLACEHOLDER. NS NS_DOMAIN_PLACEHOLDER.",
@@ -788,7 +789,9 @@ func (r *ACMEServerReconciler) updateStatusOfCertsUsingDNSIssuer(httpsCertIssuer
 	}
 
 	// update status of certs using dns01Issuer
-	for _, cert := range dns01Certs {
+	for i := range dns01Certs {
+		cert := dns01Certs[i]
+
 		if len(cert.Spec.Domains) <= 0 {
 			continue
 		}

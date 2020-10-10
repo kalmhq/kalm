@@ -18,12 +18,13 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	js "github.com/dop251/goja"
 	"github.com/kalmhq/kalm/controller/utils"
 	"github.com/kalmhq/kalm/controller/vm"
 	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"sync"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -233,7 +234,9 @@ func (r *ComponentPluginReconcilerTask) deletePluginBindings() error {
 		return err
 	}
 
-	for _, binding := range bindingList.Items {
+	for i := range bindingList.Items {
+		binding := bindingList.Items[i]
+
 		if err := r.Delete(r.ctx, &binding); err != nil {
 			r.WarningEvent(err, "Delete plugin binding error.")
 		}
