@@ -18,6 +18,9 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+
 	protoTypes "github.com/gogo/protobuf/types"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	v1alpha32 "istio.io/api/networking/v1alpha3"
@@ -30,8 +33,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-	"strconv"
-	"strings"
 )
 
 // ProtectedEndpointReconciler reconciles a SingleSignOnConfig object
@@ -202,8 +203,9 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterListenerPatches(req ct
 	patch := &v1alpha32.EnvoyFilter_Patch{
 		Operation: v1alpha32.EnvoyFilter_Patch_INSERT_BEFORE,
 		Value: golangMapToProtoStruct(map[string]interface{}{
-			"name": "envoy.ext_authz",
-			"config": map[string]interface{}{
+			"name": "envoy.filters.http.ext_authz",
+			"typed_config": map[string]interface{}{
+				"@type": "type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz",
 				"httpService": map[string]interface{}{
 					"serverUri": map[string]interface{}{
 						"uri":     oidcProviderInfo.AuthProxyInternalUrl + "/ext_authz",
