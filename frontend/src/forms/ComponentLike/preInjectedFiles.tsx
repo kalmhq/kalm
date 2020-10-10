@@ -46,10 +46,11 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     dispatch(openDialogAction(updateContentDialogID));
   };
 
-  private handleDiscard(isInvalidFile: boolean | undefined) {
+  private handleDiscard() {
     const { fields, dispatch } = this.props;
-    const { editingFileIndex } = this.state;
-    if (isInvalidFile) {
+    const { editingFileIndex, activeIndex } = this.state;
+
+    if (editingFileIndex === activeIndex) {
       fields.remove(editingFileIndex);
     }
     dispatch(closeDialogAction(updateContentDialogID));
@@ -112,10 +113,10 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
           fullWidth: true,
           maxWidth: "sm",
         }}
-        closeCallback={this.handleDiscard.bind(this, isInvalidFile)}
+        closeCallback={this.handleDiscard.bind(this)}
         actions={
           <>
-            <Button onClick={this.handleDiscard.bind(this, isInvalidFile)} color="primary">
+            <Button onClick={this.handleDiscard.bind(this)} color="primary">
               Discard
             </Button>
             <Button
