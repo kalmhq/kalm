@@ -83,7 +83,8 @@ func (resourceManager *ResourceManager) UpdateComponentPluginBindingsForObject(n
 		newPlugins[binding.Name] = binding
 	}
 
-	for _, binding := range oldPluginList.Items {
+	for i := range oldPluginList.Items {
+		binding := oldPluginList.Items[i]
 		oldPlugins[binding.Name] = &binding
 	}
 
@@ -102,7 +103,8 @@ func (resourceManager *ResourceManager) UpdateComponentPluginBindingsForObject(n
 		}
 	}
 
-	for _, np := range shouldCreate {
+	for i := range shouldCreate {
+		np := shouldCreate[i]
 		err := resourceManager.Create(np)
 
 		if errors.IsAlreadyExists(err) {

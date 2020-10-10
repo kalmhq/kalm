@@ -220,7 +220,9 @@ func (resourceManager *ResourceManager) getAllocatedResources(node *coreV1.Node)
 
 func getPodsRequests(podList *coreV1.PodList) (podsRequests []PodRequests, err error) {
 	podsRequests = []PodRequests{}
-	for _, pod := range podList.Items {
+	for i := range podList.Items {
+		pod := podList.Items[i]
+
 		podReqs, _ := PodRequestsAndLimits(&pod)
 		if err != nil {
 			return nil, err
@@ -238,7 +240,9 @@ func getPodsRequests(podList *coreV1.PodList) (podsRequests []PodRequests, err e
 
 func getPodsTotalRequestsAndLimits(podList *coreV1.PodList) (reqs coreV1.ResourceList, limits coreV1.ResourceList, err error) {
 	reqs, limits = coreV1.ResourceList{}, coreV1.ResourceList{}
-	for _, pod := range podList.Items {
+	for i := range podList.Items {
+		pod := podList.Items[i]
+
 		podReqs, podLimits := PodRequestsAndLimits(&pod)
 		if err != nil {
 			return nil, nil, err

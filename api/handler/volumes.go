@@ -2,12 +2,13 @@ package handler
 
 import (
 	"fmt"
-	"github.com/kalmhq/kalm/controller/controllers"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/kalmhq/kalm/controller/controllers"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	kalmclient "github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/resources"
@@ -328,7 +329,6 @@ type volPair struct {
 	pvc v1.PersistentVolumeClaim
 }
 
-
 func divideAccordingToNs(pairs []volPair, ns string) (sameNs []volPair, diffNs []volPair) {
 	for _, p := range pairs {
 		if p.pvc.Namespace == ns {
@@ -363,7 +363,9 @@ func (h *ApiHandler) findAvailableVolsForSts(ns string) ([]resources.Volume, err
 	pvcNamePrefixHasInUsePVC := make(map[string]interface{})
 
 	//format of pvc generated from volClaimTemplate is: <volClaimTplName>-<stsName>-{0,1,2}
-	for _, pvc := range pvcList {
+	for i := range pvcList {
+		pvc := pvcList[i]
+
 		componentName, _ := GetComponentNameAndNsFromObjLabels(&pvc)
 		if componentName == "" {
 			continue

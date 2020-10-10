@@ -109,7 +109,8 @@ func update(client *mclientv1beta1.MetricsV1beta1Client, restClient *kubernetes.
 
 func completePodMetrics(podMetrics *v1beta1.PodMetricsList, podDetails *v12.PodList) *v1beta1.PodMetricsList {
 	podDetailsMap := make(map[string]*v12.Pod)
-	for _, podDetailsItem := range podDetails.Items {
+	for i := range podDetails.Items {
+		podDetailsItem := podDetails.Items[i]
 		podDetailsMap[podDetailsItem.Namespace+podDetailsItem.Name] = &podDetailsItem
 	}
 

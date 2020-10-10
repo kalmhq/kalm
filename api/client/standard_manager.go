@@ -118,7 +118,9 @@ func (m *StandardClientManager) UpdatePolicies() {
 		sb.WriteString(BuildRolePoliciesForNamespace(application.Name))
 	}
 
-	for _, accessToken := range m.AccessTokens {
+	for i := range m.AccessTokens {
+		accessToken := m.AccessTokens[i]
+
 		if accessToken.Spec.ExpiredAt != nil && accessToken.Spec.ExpiredAt.Time.Before(time.Now()) {
 			continue
 		}

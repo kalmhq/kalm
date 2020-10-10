@@ -201,7 +201,9 @@ func (resourceManager *ResourceManager) BuildComponentDetails(
 		Pods:                 podsStatus,
 	}
 
-	for _, protectedEndpoint := range resources.ProtectedEndpoints {
+	for i := range resources.ProtectedEndpoints {
+		protectedEndpoint := resources.ProtectedEndpoints[i]
+
 		if protectedEndpoint.Spec.EndpointName == component.Name {
 			details.ProtectedEndpointSpec = &protectedEndpoint.Spec
 			break
