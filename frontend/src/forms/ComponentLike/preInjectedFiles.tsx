@@ -55,14 +55,14 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     dispatch(closeDialogAction(updateContentDialogID));
   }
 
-  private handleSave(isInvalidFile: boolean | undefined, file: any, mountPathTmp: string) {
+  private handleSave(isInvalidFile: boolean | undefined, file: any, mountPath: string) {
     const { fields, dispatch } = this.props;
     const { editingFileIndex, activeIndex, fileContentValue } = this.state;
     if (isInvalidFile) {
       return;
     }
 
-    fields.update(editingFileIndex, { ...file, content: fileContentValue, mountPath: mountPathTmp });
+    fields.update(editingFileIndex, { ...file, content: fileContentValue, mountPath: mountPath });
     if (editingFileIndex === activeIndex) {
       this.setState({ activeIndex: activeIndex + 1 });
     }
@@ -98,11 +98,11 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     const syncErrors = fields.error as { [key: string]: string }[] | undefined;
     const { editingFileIndex, fileContentValue } = this.state;
     const file = editingFileIndex > -1 && fields.value ? fields.value[editingFileIndex] : null;
-    const mountPathTmp = file && file.mountPathTmp ? file.mountPathTmp : "";
+    const mountPath = file && file.mountPath ? file.mountPath : "";
     const isInvalidFile =
-      !mountPathTmp ||
+      !mountPath ||
       !fileContentValue ||
-      (syncErrors && syncErrors[editingFileIndex] && !!syncErrors[editingFileIndex].mountPathTmp);
+      (syncErrors && syncErrors[editingFileIndex] && !!syncErrors[editingFileIndex].mountPath);
 
     return (
       <ControlledDialog
@@ -120,7 +120,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
             </Button>
             <Button
               disabled={isInvalidFile}
-              onClick={this.handleSave.bind(this, isInvalidFile, file, mountPathTmp)}
+              onClick={this.handleSave.bind(this, isInvalidFile, file, mountPath)}
               color="primary"
             >
               Save
@@ -131,7 +131,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
         <Grid container>
           <Grid item xs={8}>
             <Field
-              name={`preInjectedFiles.${editingFileIndex}.mountPathTmp`}
+              name={`preInjectedFiles.${editingFileIndex}.mountPath`}
               label="Mount Path"
               component={FinalTextField}
               validate={ValidatorInjectedFilePath}

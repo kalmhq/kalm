@@ -35,6 +35,8 @@ import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
+import copy from "copy-to-clipboard";
+import { setSuccessNotificationAction } from "actions/notification";
 
 const mapStateToProps = (state: RootState) => {
   const certifications = state.certificates.certificates;
@@ -267,7 +269,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, ingressIP, isEdit, initial, onSubmit, form } = this.props;
+    const { classes, ingressIP, isEdit, initial, onSubmit, form, dispatch } = this.props;
     return (
       <div className={classes.root}>
         <Form
@@ -332,11 +334,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                                   <Link
                                     href="#"
                                     onClick={() => {
-                                      const isHostsIncludeIngressIP = !!hosts.find((host) => host === ingressIP);
-                                      if (!isHostsIncludeIngressIP) {
-                                        hosts.push(ingressIP);
-                                        change("hosts", hosts);
-                                      }
+                                      copy(ingressIP);
+                                      dispatch(setSuccessNotificationAction("Copied successful!"));
                                     }}
                                   >
                                     {ingressIP || ""}
