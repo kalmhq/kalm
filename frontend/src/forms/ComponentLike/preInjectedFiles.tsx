@@ -142,6 +142,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
           <Grid item xs={1}></Grid>
           <Grid item xs={3}>
             <Field
+              type="checkbox"
               name={`preInjectedFiles.${editingFileIndex}.readonly`}
               component={FinalBoolCheckboxRender}
               label="Read Only"
