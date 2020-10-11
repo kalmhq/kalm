@@ -107,9 +107,9 @@ func (resourceManager *ResourceManager) GetHttpsCerts() ([]HttpsCertResp, error)
 	}
 
 	var httpsCerts []HttpsCertResp
-	for _, item := range fetched.Items {
+	for i := range fetched.Items {
+		item := fetched.Items[i]
 		cur := BuildHttpsCertResponse(&item)
-
 		httpsCerts = append(httpsCerts, *cur)
 	}
 

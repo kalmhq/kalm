@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Box,
   Button,
@@ -11,21 +10,22 @@ import {
   Theme,
   withStyles,
 } from "@material-ui/core";
+import { Alert } from "@material-ui/lab";
 import { WithStyles } from "@material-ui/styles";
-import { Expansion } from "widgets/expansion";
-import { Link } from "react-router-dom";
-import { connect } from "react-redux";
-import { TDispatchProp } from "types";
-import DomainStatus from "widgets/DomainStatus";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import copy from "copy-to-clipboard";
 import { setSuccessNotificationAction } from "actions/notification";
-import { CopyIcon } from "widgets/Icon";
-import { Body } from "widgets/Label";
+import copy from "copy-to-clipboard";
+import React from "react";
+import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 import { RootState } from "reducers";
+import { TDispatchProp } from "types";
 import { PendingBadge, SuccessBadge } from "widgets/Badge";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
-import { Alert } from "@material-ui/lab";
+import DomainStatus from "widgets/DomainStatus";
+import { Expansion } from "widgets/expansion";
+import { CopyIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { Body } from "widgets/Label";
 
 const styles = (_theme: Theme) =>
   createStyles({
@@ -164,17 +164,23 @@ export const DNSConfigItems = connect()((props: DNSConfigGuideProps) => {
                     </IconButtonWithTooltip>
                   </TableCell>
                   <TableCell>
-                    {record}
-                    <IconButtonWithTooltip
-                      tooltipTitle="Copy"
-                      aria-label="copy"
-                      onClick={() => {
-                        copy(record);
-                        dispatch(setSuccessNotificationAction("Copied successful!"));
-                      }}
-                    >
-                      <CopyIcon fontSize="small" />
-                    </IconButtonWithTooltip>
+                    {!!record ? (
+                      <>
+                        {record}
+                        <IconButtonWithTooltip
+                          tooltipTitle="Copy"
+                          aria-label="copy"
+                          onClick={() => {
+                            copy(record);
+                            dispatch(setSuccessNotificationAction("Copied successful!"));
+                          }}
+                        >
+                          <CopyIcon fontSize="small" />
+                        </IconButtonWithTooltip>
+                      </>
+                    ) : (
+                      "Generating, please wait."
+                    )}
                   </TableCell>
                 </TableRow>
               );

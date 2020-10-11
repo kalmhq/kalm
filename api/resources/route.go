@@ -30,8 +30,8 @@ func (resourceManager *ResourceManager) GetHttpRouteListChannel(listOptions ...c
 
 		res := make([]*v1alpha1.HttpRoute, len(fetched.Items))
 
-		for i, route := range fetched.Items {
-			res[i] = &route
+		for i := range fetched.Items {
+			res[i] = &fetched.Items[i]
 		}
 
 		channel.List <- res

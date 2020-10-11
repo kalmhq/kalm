@@ -1,17 +1,16 @@
-import React from "react";
 import { FormControlLabel, Grid } from "@material-ui/core";
-import { TDispatchProp } from "types";
-import { withSSO, WithSSOProps } from "hoc/withSSO";
-import { Field, FieldRenderProps } from "react-final-form";
-import { Loading } from "widgets/Loading";
-import { Alert } from "@material-ui/lab";
-import sc from "../../utils/stringConstants";
-import { BlankTargetLink } from "widgets/BlankTargetLink";
 import Checkbox from "@material-ui/core/Checkbox";
+import { Alert } from "@material-ui/lab";
+import { FormApi } from "final-form";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { NormalizePorts, stringArrayTrimParse } from "forms/normalizer";
+import { withSSO, WithSSOProps } from "hoc/withSSO";
+import React from "react";
+import { Field, FieldRenderProps } from "react-final-form";
+import { TDispatchProp } from "types";
 import { ComponentLike } from "types/componentTemplate";
-import { FormApi } from "final-form";
+import { Loading } from "widgets/Loading";
+import sc from "../../utils/stringConstants";
 
 interface Props extends WithSSOProps, TDispatchProp {
   ports: ComponentLike["ports"];
@@ -37,7 +36,7 @@ class ComponentAccessRaw extends React.PureComponent<Props> {
         <Alert severity="info">
           <span>
             Your cluster doesn't have <strong>Single Sign-on</strong> configured. Component access feature is disabled.{" "}
-            <BlankTargetLink href="/#">Learn More(TODO)</BlankTargetLink>
+            {/* <BlankTargetLink href="/#">Learn More(TODO)</BlankTargetLink> */}
           </span>
         </Alert>
       );

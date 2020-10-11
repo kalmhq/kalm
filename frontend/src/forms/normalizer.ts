@@ -138,16 +138,21 @@ export const cpuParse = (value: any) => {
   if (!value) {
     return undefined;
   }
+
   const valueNum = parseFloat(value);
+
   if (isNaN(valueNum)) {
-    return "";
+    return undefined;
   }
+
   if (valueNum < 0) {
     return String(0 - valueNum) + "m";
   }
+
   if (value.endsWith("0") || value.endsWith(".")) {
     return value + "m";
   }
+
   return valueNum + "m";
 };
 

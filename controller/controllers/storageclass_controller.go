@@ -2,12 +2,13 @@ package controllers
 
 import (
 	"context"
+	"strings"
+
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
 )
 
 type StorageClassReconciler struct {
@@ -139,7 +140,9 @@ func (r *StorageClassReconciler) reconcileDefaultStorageClass(cloudProvider stri
 		sc.Labels[KalmLabelManaged] = "true"
 	}
 
-	for _, expectedSC := range expectedStorageClasses {
+	for i := range expectedStorageClasses {
+		expectedSC := expectedStorageClasses[i]
+
 		var sc v1.StorageClass
 		isNew := false
 

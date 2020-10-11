@@ -38,8 +38,8 @@ func (resourceManager *ResourceManager) GetSSOConfigListChannel(listOptions ...c
 
 		res := make([]*v1alpha1.SingleSignOnConfig, len(fetched.Items))
 
-		for i, ssoConfig := range fetched.Items {
-			res[i] = &ssoConfig
+		for i := range fetched.Items {
+			res[i] = &fetched.Items[i]
 		}
 
 		channel.List <- res
