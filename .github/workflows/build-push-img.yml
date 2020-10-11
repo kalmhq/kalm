@@ -40,3 +40,6 @@ jobs:
           tags: diveinto/kalm-for-test:latest
           cache-from: type=local,src=~/.npm
           cache-to: type=local,dest=~/.npm
+      - 
+        name: list dir
+        run: ls ~/.npm && ls * && ls */*
