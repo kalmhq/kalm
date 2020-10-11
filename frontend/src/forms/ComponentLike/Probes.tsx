@@ -17,7 +17,12 @@ import { Field, FieldRenderProps } from "react-final-form";
 import { ComponentLikePort, PortProtocolHTTP, PortProtocolTCP, Probe } from "types/componentTemplate";
 import sc from "../../utils/stringConstants";
 import { KSelect, makeSelectOption } from "../Final/select";
-import { ValidatorOneOfFactory, ValidatorRequired } from "../validator";
+import {
+  validateHostWithWildcardPrefix,
+  ValidatorOneOfFactory,
+  ValidatorProbePath,
+  ValidatorRequired,
+} from "../validator";
 
 const ValidatorScheme = ValidatorOneOfFactory(["HTTP", "HTTPS"]);
 
@@ -119,6 +124,7 @@ class RenderProbe extends React.PureComponent<Props> {
               name={`${name}.httpGet.host`}
               component={RenderNestedTextfield}
               placeholder="0.0.0.0"
+              validate={validateHostWithWildcardPrefix}
               style={{ width: 80 }}
             />
             :
