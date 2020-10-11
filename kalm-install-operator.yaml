@@ -392,7 +392,7 @@ spec:
             - --enable-leader-election
           command:
             - /manager
-          image: kalmhq/kalm-operator:v0.1.0-rc.9
+          image: kalmhq/kalm-operator:v0.1.0-rc.10
           imagePullPolicy: Always
           name: manager
           resources:
