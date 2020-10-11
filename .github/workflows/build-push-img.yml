@@ -22,7 +22,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-buildx-${{ hashFiles('**/package-lock.json') }}
+          #key: ${{ runner.os }}-buildx-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
       -
