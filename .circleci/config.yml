@@ -55,12 +55,11 @@ jobs:
             docker push kalmhq/kalm:latest
             docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_SHA1
             docker push kalmhq/kalm:$CIRCLE_SHA1
-            TAG=$(git tag --points-at HEAD)
-
-            if [ "$TAG" != "" ]
+            
+            if [ "$CIRCLE_TAG" != "" ]
             then
-              docker tag kalmhq/kalm:latest kalmhq/kalm:$TAG
-              docker push kalmhq/kalm:$TAG
+              docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_TAG
+              docker push kalmhq/kalm:$CIRCLE_TAG
             fi
   test-controller:
     docker:
