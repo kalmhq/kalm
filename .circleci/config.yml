@@ -40,19 +40,19 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: docker buildx version
-      - run: echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      - run: docker version
       - run:
           name: Build Docker image
           command: >
-            docker buildx build --cache-from type=registry,ref=diveinto/kalm-for-test:latest --cache-to type=inline,mode=max \
-            --load --push \
-            --build-arg KALM_BUILD_ENV_GIT_COMMIT=$CIRCLE_SHA1 \
-            --build-arg KALM_BUILD_ENV_GIT_VERSION=$CIRCLE_TAG \
+            docker buildx build --cache-from type=registry,ref=diveinto/kalm-for-test:latest --cache-to type=inline,mode=max
+            --load
+            --build-arg KALM_BUILD_ENV_GIT_COMMIT=$CIRCLE_SHA1
+            --build-arg KALM_BUILD_ENV_GIT_VERSION=$CIRCLE_TAG
             -t kalmhq/kalm:latest .
       - run:
           name: Publish Docker Image to DOCKER HUB
           command: |
-            # echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
             docker push kalmhq/kalm:latest
             docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_SHA1
