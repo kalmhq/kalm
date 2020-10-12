@@ -44,6 +44,7 @@ jobs:
           name: Build Docker image
           command: >
             docker buildx build --cache-from type=registry,ref=kalmhq/kalm:latest --cache-to type=inline
+            --push --load
             --build-arg KALM_BUILD_ENV_GIT_COMMIT=$CIRCLE_SHA1
             --build-arg KALM_BUILD_ENV_GIT_VERSION=$CIRCLE_TAG
             -t kalmhq/kalm:latest .
