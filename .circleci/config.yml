@@ -43,7 +43,7 @@ jobs:
       - run:
           name: Build Docker image
           command: >
-            docker buildx build --cache-from type=registry,ref=kalmhq/kalm:latest --cache-to type=inline,mode=max
+            docker buildx build --cache-from type=registry,ref=diveinto/kalm-for-test:latest --cache-to type=inline,mode=max
             --load
             --build-arg KALM_BUILD_ENV_GIT_COMMIT=$CIRCLE_SHA1
             --build-arg KALM_BUILD_ENV_GIT_VERSION=$CIRCLE_TAG
