@@ -38,7 +38,8 @@ jobs:
       - image: jdrouet/docker-with-buildx:stable
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
       - run: docker buildx version
       - run: docker version
       - run:
