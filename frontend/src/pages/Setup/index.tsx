@@ -189,27 +189,27 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
     if (clusterInfo.ingressIP !== "") {
       return (
         <Box>
-          Please enter your domain name, and configure this domain name an <strong>A record</strong> that points to your
+          Please enter your domain name and configure this domain name with an <strong>A record</strong> that points to your
           cluster load balancer IP{" "}
           <Box display="inline-block" style={{ verticalAlign: "bottom" }}>
             <H5>
               <strong>{clusterInfo.ingressIP}</strong>
             </H5>
           </Box>
-          . This domain name will be your address to access the kalm dashboard in the future.
+          . After completing this configuration you will be able to access the Kalm dashboard from this domain.
         </Box>
       );
     } else if (clusterInfo.ingressHostname !== "") {
       return (
         <Box>
-          Please enter your domain name, and configure this domain name an <strong>CNAME record</strong> that points to
+          Please enter your domain name and configure this domain name with a <strong>CNAME record</strong> that points to
           your cluster load balancer hostname{" "}
           <Box display="inline-block" style={{ verticalAlign: "bottom" }}>
             <H5>
               <strong>{clusterInfo.ingressHostname}</strong>
             </H5>
           </Box>
-          . This domain name will be your address to access the kalm dashboard in the future.
+          . After completing this configuration you will be able to access the Kalm dashboard from this domain.
         </Box>
       );
     } else {
@@ -218,7 +218,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
           <Alert severity="warning">
             <Box>
               {" "}
-              Can not get your cluster ip or host name. Please check your load balancer status. If you are using
+              Kalm is unable to retrieve your cluster ip or host name. Please check the status of your load balancer. If you are using
               minikube, please check{" "}
               <BlankTargetLink href="https://kalm.dev/docs/guide-minikube#step-2-start-a-minikube-cluster">
                 this doc
@@ -270,7 +270,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
                       showDNSWarning && (
                         <Box mt={2}>
                           <Alert severity="warning">
-                            DNS check failed. After the DNS record is modified, it takes some time to take effect.{" "}
+                            DNS check failed. After the DNS record is modified, it may take some time to take effect.{" "}
                             <br />
                             If your load balancer is behind another proxy (such as cloudflare), your DNS records will
                             not resolve to the address of the load balancer. In this case, you can ignore this warning
@@ -336,16 +336,16 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
       <Box>
         <Box mt={1}>
           {kalmRouteReady ? (
-            <SuccessBadge text={"Kalm route is configured successfully."} />
+            <SuccessBadge text={"Kalm routing configured successfully."} />
           ) : (
-            <PendingBadge text={"Configuring kalm routing ...."} />
+            <PendingBadge text={"Configuring Kalm routing ...."} />
           )}
         </Box>
         <Box mt={1}>
           {kalmCertReady ? (
-            <SuccessBadge text={"Certificate of domain is issued."} />
+            <SuccessBadge text={"Certificate issued successfully."} />
           ) : (
-            <PendingBadge text={"Applying https certificate for domain ...."} />
+            <PendingBadge text={"Applying https certificate for your domain ...."} />
           )}
         </Box>
         <Box mt={1}>
@@ -395,9 +395,9 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
 
     return (
       <Box>
-        Your kalm dashboard is ready to access from url <BlankTargetLink href={url}>{url}</BlankTargetLink>. <br />
-        Temporary administrator email(can only be used to login) and password have been generated for you. You will not
-        be able to get this account through the dashboard again. Please save this account safely.
+        Your kalm dashboard can now be accessed from: <BlankTargetLink href={url}>{url}</BlankTargetLink>. <br />
+        A temporary administrator email (which can only be used to login) and password have been generated for you. You will not
+        be able to see this account through the dashboard again. Please save this account information safely.
         <Box mt={2} mb={2}>
           <KPanel>
             <Box p={2}>
@@ -484,7 +484,7 @@ Password: ${password}`}</pre>
         <Box p={2}>
           Your cluster has been initialized already.
           <Box mt={2}>
-            If you want to reset kalm, If your cluster is not initialized properly, you can reset the initialization
+            If you want to reset kalm, you can reset the initialization
             process.
             <Box pt={2}>
               <Alert severity="warning">
@@ -496,7 +496,7 @@ Password: ${password}`}</pre>
                   Kalm's instance's domain may be changed
                 </Box>
                 <Box pl={2} pt={0}>
-                  Current Kalm's certificate will be delete
+                  Current Kalm's certificate will be deleted
                 </Box>
                 <Box pl={2} pt={2}>
                   All applications will safe in any way.
@@ -518,12 +518,12 @@ Password: ${password}`}</pre>
         <Box p={2} key="page">
           <KPanel>
             <Box p={2}>
-              <H5>Congratulations! you have successfully deployed kalm. Last few steps.</H5>
+              <H5>Congratulations! You have successfully deployed Kalm. Last few steps.</H5>
               <Box mt={2}>
                 <Body>
-                  Your cluster is currently not accessible from outside, and can only be used by yourself through
-                  port-forward. Don't worry, complete the following steps and you can use kalm conveniently with your
-                  colleagues.
+                  Your cluster is currently not accessible from outside of your localhost, and can only be used by yourself through
+                  port-forwarding. Don't worry, complete the following steps to setup Kalm on a publicly accessible domain so you can 
+                  use Kalm conveniently with your colleagues.
                 </Body>
               </Box>
 
