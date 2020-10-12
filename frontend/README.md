@@ -40,7 +40,7 @@ There are two parts of the code that relate to storybook
 
 please checkout `frontend/src/_stories/1-Button.stories.tsx` as a references.
 
-### References:
+### References
 
 - https://github.com/storybookjs/storybook/tree/master/addons/knobs
 - https://github.com/storybookjs/storybook/tree/master/addons/viewport
