@@ -35,15 +35,15 @@ jobs:
           command: bash <(curl -s https://codecov.io/bash)
   build-push-dashboard-image:
     docker:
-      - image: circleci/buildpack-deps:stretch
+      - image: jdrouet/docker-with-buildx:stable
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
+      - setup_remote_docker
+      - run: docker buildx version
       - run:
           name: Build Docker image
           command: >
-            docker build
+            docker buildx build --cache-from type=registry,ref=kalmhq/kalm:latest --cache-to type=inline
             --build-arg KALM_BUILD_ENV_GIT_COMMIT=$CIRCLE_SHA1
             --build-arg KALM_BUILD_ENV_GIT_VERSION=$CIRCLE_TAG
             -t kalmhq/kalm:latest .
