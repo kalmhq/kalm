@@ -22,14 +22,14 @@ RUN npm run build
 FROM golang:1.15.2 as api-builder
 WORKDIR /workspace/api
 
+# Copy dependencies
+COPY controller/ /workspace/controller
+
 # Copy the Go Modules manifests
 COPY api/go.mod go.mod
 COPY api/go.sum go.sum
 
 RUN go mod download
-
-# Copy dependencies
-COPY controller/ /workspace/controller
 
 # Copy the go source
 COPY api/ .
