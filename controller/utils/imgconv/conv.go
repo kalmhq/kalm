@@ -10,6 +10,7 @@ import (
 )
 
 const CloudAzureChina = "AzureChina"
+const QuayIo = "QuayIo"
 
 func Convert(image string, couldName string) string {
 	if couldName == "" {
@@ -30,9 +31,39 @@ func Convert(image string, couldName string) string {
 		case reference.Named:
 			return fmt.Sprintf("%s/%s", convertAzureChinaImageHost(reference.Domain(v)), reference.Path(v))
 		}
+	case QuayIo:
+		switch v := ref.(type) {
+		case reference.NamedTagged:
+			return fmt.Sprintf("%s/%s:%s", convertQuayIoImageHost(reference.Domain(v)), convertPrivatePath(reference.Path(v)), v.Tag())
+		case reference.Named:
+			return fmt.Sprintf("%s/%s", convertQuayIoImageHost(reference.Domain(v)), convertPrivatePath(reference.Path(v)))
+		}
 	}
 
 	return image
+}
+
+func convertPrivatePath(oldPath string) string {
+	switch oldPath {
+	case "kubebuilder/kube-rbac-proxy":
+		return "coreos/kube-rbac-proxy"
+	}
+	return oldPath
+}
+
+func convertQuayIoImageHost(oldHost string) string {
+	switch oldHost {
+	case "gcr.io":
+		return "quay.io"
+	case "k8s.gcr.io":
+		return "quay.io"
+	case "us.gcr.io":
+		return "quay.io"
+	case "mcr.microsoft.com":
+		return "quay.io"
+	default:
+		return oldHost
+	}
 }
 
 // https://github.com/Azure/container-service-for-azure-china/blob/master/aks/README.md#22-container-registry-proxy

@@ -48,13 +48,13 @@ spec:
     spec:
       containers:
         - name: imgconv
-          image: dockerhub.azk8s.cn/kalmhq/kalm:latest
+          image: kalmhq/kalm:latest
           command:
             - ./imgconv
           args:
             - -certfile=/certs/cert.pem
             - -keyfile=/certs/key.pem
-            - -cloud=AzureChina
+            - -cloud=QuayIo
           volumeMounts:
             - mountPath: /certs
               name: certs
