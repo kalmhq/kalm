@@ -78,7 +78,7 @@ func main() {
 				Name: "kube-config-path",
 				Usage: "Only required when running kalm api server out of kubernetes cluster. " +
 					"Kalm api server will read kubernetes config file and try to connect the current context kubernetes cluster. " +
-					"It only recommend to use this way in DEVELOPMENT mode.",
+					"It only recommend to use this way in DEVELOPMENT mode. ",
 				DefaultText: "$HOME/.kube/config",
 				Destination: &runningConfig.KubeConfigPath,
 				EnvVars:     []string{"KUBE_CONFIG_PATH"},
