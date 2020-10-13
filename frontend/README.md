@@ -20,8 +20,8 @@ We will use storybook as a tool for designing assets for the KALM system. With s
 - support change viewport
 - support custom state and property
 - support notes
-- support mock url query
 - support event emit
+- support mock url query
 
 ## how to run storybook
 
