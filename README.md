@@ -12,8 +12,8 @@ Kalm provides a web interface that makes it easy to perform common Kubernetes wo
 
 In addition, Kalm simplifies the processes for many common Kubernetes integration points:
 
-- CI/CD webhooks
 - Obtaining HTTPS Certificates (via Let's Encrypt)
+- CI/CD webhooks
 - Setting up Single Sign On access for any application in your cluster
 - Configuring private image registries
 - Plugin log systems such as PLG(Loki) and ELK
