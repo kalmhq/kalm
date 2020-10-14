@@ -1,10 +1,11 @@
 package handler
 
 import (
-	"github.com/kalmhq/kalm/api/resources"
-	"github.com/stretchr/testify/suite"
 	"net/http"
 	"testing"
+
+	"github.com/kalmhq/kalm/api/resources"
+	"github.com/stretchr/testify/suite"
 )
 
 type SsoHandlerTestSuite struct {
@@ -50,7 +51,6 @@ func (suite *SsoHandlerTestSuite) TestSsoConfigHandler() {
 			rec.BodyAsJSON(&ssoConfig)
 			suite.EqualValues(200, rec.Code)
 			suite.EqualValues("Gitlab", ssoConfig.SingleSignOnConfigSpec.Connectors[0].Name)
-			suite.Nil(ssoConfig.SingleSignOnConfigSpec.Connectors[0].Config)
 		},
 	})
 
