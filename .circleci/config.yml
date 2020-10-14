@@ -127,6 +127,11 @@ jobs:
           name: Build & Publish Docker Image to Docker Hub
           working_directory: ./operator
           command: |
+            # enable buildx
+            export DOCKER_CLI_EXPERIMENTAL=enabled
+            # use driver: docker-container
+            docker buildx create --name mybuilder --use
+
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
             docker buildx build \
