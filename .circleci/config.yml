@@ -115,34 +115,35 @@ jobs:
               docker push kalmhq/kalm-controller:$TAG
             fi
   build-push-operator-image:
-    docker:
-      - image: circleci/golang:1.13.11
+    machine:
+      image: ubuntu-2004:202008-01
     steps:
       - checkout
-      - setup_remote_docker
       - run:
           name: cp controller
           working_directory: ./operator
           command: cp -r ../controller .
       - run:
-          name: Build Docker image
-          working_directory: ./operator
-          command: docker build -t kalmhq/kalm-operator:latest .
-      - run:
-          name: Publish Docker Image to Docker Hub
+          name: Build & Publish Docker Image to Docker Hub
           working_directory: ./operator
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker push kalmhq/kalm-operator:latest
-            docker tag kalmhq/kalm-operator:latest kalmhq/kalm-operator:$CIRCLE_SHA1
-            docker push kalmhq/kalm-operator:$CIRCLE_SHA1
 
-            TAG=$(git tag --points-at HEAD)
-            if [ "$TAG" != "" ]
-            then
-              docker tag kalmhq/kalm-operator:latest kalmhq/kalm-operator:$TAG
-              docker push kalmhq/kalm-operator:$TAG
-            fi
+            docker buildx build \
+              --output type=registry \
+              --cache-from=type=registry,ref=kalmhq/kalm-operator:cache \
+              --cache-to=type=registry,ref=kalmhq/kalm-operator:cache,mode=max \
+              -t kalmhq/kalm-operator:latest .
+
+            # docker tag kalmhq/kalm-operator:latest kalmhq/kalm-operator:$CIRCLE_SHA1
+            # docker push kalmhq/kalm-operator:$CIRCLE_SHA1
+
+            # TAG=$(git tag --points-at HEAD)
+            # if [ "$TAG" != "" ]
+            # then
+            #   docker tag kalmhq/kalm-operator:latest kalmhq/kalm-operator:$TAG
+            #   docker push kalmhq/kalm-operator:$TAG
+            # fi
   deploy-dashboard:
     executor: deploy-orb/default
     steps:
