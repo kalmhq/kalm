@@ -32,7 +32,7 @@ func main() {
 		Name:        "kalm-apiserver",
 		Version:     "0.1.0",
 		Usage:       "Kalm Api Server",
-		Description: "KalmApiServer is a key component in kalm system. It works between kalm dashboard and kubernetes api server to proxy requests and delegate authorizations.",
+		Description: "KalmApiServer is a key component in kalm system. It works between kalm dashboard and kubernetes api server to proxy requests and delegate authorizations",
 		Action: func(c *cli.Context) error {
 			runningConfig.Install()
 			run(runningConfig)
