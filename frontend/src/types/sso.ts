@@ -146,7 +146,7 @@ export interface SSOGithubConnector {
   id: string;
   name: string;
   type: typeof SSO_CONNECTOR_TYPE_GITHUB;
-  config: GithubConfig;
+  config?: GithubConfig;
 }
 
 export interface SSOGitlabConnector {
@@ -159,6 +159,7 @@ export interface SSOGitlabConnector {
 export interface SSOConfig {
   domain: string;
   connectors?: Array<SSOGithubConnector | SSOGitlabConnector>;
+  temporaryUser?: { [key: string]: any };
 }
 
 export const newEmptyGithubConnector = (): SSOGithubConnector => {

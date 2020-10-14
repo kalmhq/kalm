@@ -1,5 +1,8 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
+import Alert from "@material-ui/lab/Alert/Alert";
+import { setSuccessNotificationAction } from "actions/notification";
+import { api } from "api";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withSSO, WithSSOProps } from "hoc/withSSO";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
@@ -7,22 +10,22 @@ import { BasePage } from "pages/BasePage";
 import React from "react";
 import { Link } from "react-router-dom";
 import {
+  SSOGithubConnector,
+  SSOGitlabConnector,
   SSO_CONNECTOR_TYPE,
   SSO_CONNECTOR_TYPE_GITHUB,
   SSO_CONNECTOR_TYPE_GITLAB,
-  SSOGithubConnector,
-  SSOGitlabConnector,
 } from "types/sso";
+import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { GithubIcon, SSOIcon } from "widgets/Icon";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
 import { KPanel } from "widgets/KPanel";
 import { Body, Subtitle1 } from "widgets/Label";
 import { KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
-import sc from "utils/stringConstants";
-
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
@@ -75,30 +78,37 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
               </Box>
               Github {cnt.name}
             </Subtitle1>
-            {cnt.config.orgs.map((org, index) => {
-              const teams = org.teams;
-              if (teams && teams.length > 0) {
-                return (
-                  <Box key={org.name}>
-                    Users in organization {org.name} and teams{" "}
-                    {org.teams.map((team, index) => (
-                      <>
-                        <a target="_blank" rel="noopener noreferrer" href={"https://github.com/" + team}>
-                          {team}
-                        </a>
-                        {index < teams.length - 1 ? ", " : " "}
-                      </>
-                    ))}
-                  </Box>
-                );
-              } else {
-                return <Box key={org.name}>Users in organization {org.name}</Box>;
-              }
-            })}
+            {cnt.config &&
+              cnt.config.orgs.map((org) => {
+                const teams = org.teams;
+                if (teams && teams.length > 0) {
+                  return (
+                    <Box key={org.name}>
+                      Users in organization {org.name} and teams{" "}
+                      {org.teams.map((team, index) => (
+                        <>
+                          <a target="_blank" rel="noopener noreferrer" href={"https://github.com/" + team}>
+                            {team}
+                          </a>
+                          {index < teams.length - 1 ? ", " : " "}
+                        </>
+                      ))}
+                    </Box>
+                  );
+                } else {
+                  return <Box key={org.name}>Users in organization {org.name}</Box>;
+                }
+              })}
           </Box>
         );
       }
     }
+  };
+
+  private deleteTemporaryUser = async () => {
+    const { dispatch } = this.props;
+    await api.deleteSSOTemporaryAdminUser();
+    dispatch(setSuccessNotificationAction("The temporary admin user is successfully deleted."));
   };
 
   private renderConfigDetails = () => {
@@ -115,13 +125,37 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
             <pre>Dex OIDC Issuer: https://{ssoConfig.domain}/dex</pre>
             {ssoConfig.connectors && ssoConfig.connectors.map(this.renderConnectorDetails)}
           </Box>
-          <Box p={2} display="inline-block">
-            {canEditCluster() ? (
-              <CustomizedButton component={Link} size="small" to="/sso/config" variant="outlined" color="primary">
-                Edit
-              </CustomizedButton>
-            ) : null}
-          </Box>
+
+          {canEditCluster() && (
+            <>
+              <Box p={2} display="inline-block">
+                <CustomizedButton component={Link} size="small" to="/sso/config" variant="outlined" color="primary">
+                  Edit
+                </CustomizedButton>
+              </Box>
+
+              {ssoConfig.connectors && ssoConfig.connectors.length > 0 && !!ssoConfig.temporaryUser ? (
+                <Box p={2} display="inline-block">
+                  <Alert severity="info">
+                    After you create connector in your Single Sign-on config, it's strongly recommended to delete your
+                    temporary admin email account which is generated when you setup your cluster. Since the account
+                    doesn't have expired time and doesn't support multi factor authentication, it's not safe for long
+                    time usage.
+                  </Alert>
+                  <Box mt={2}>
+                    {" "}
+                    <DeleteButtonWithConfirmPopover
+                      useText
+                      text="Delete Temporary Admin User"
+                      popupId="delete-temporary-user"
+                      popupTitle="Are your sure to delete temporary user?"
+                      confirmedAction={this.deleteTemporaryUser}
+                    />
+                  </Box>
+                </Box>
+              ) : null}
+            </>
+          )}
         </KPanel>
       </>
     );

@@ -68,34 +68,34 @@ class ComponentAccessRaw extends React.PureComponent<Props> {
             label="Only users authenticated by Single Sign-on can access"
           />
         </Grid>
-        {!!this.props.protectedEndpoint && (
-          <>
-            <Grid item xs={12}>
-              <Field
-                render={(props: FieldRenderProps<number[]>) => (
-                  <AutoCompleteMultiValuesFreeSolo<number> {...props} options={ps} />
-                )}
-                label="Ports"
-                name="protectedEndpoint.ports"
-                placeholder="Select specific ports"
-                parse={NormalizePorts}
-                helperText={sc.PROTECTED_ENDPOINT_PORT}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Field
-                render={(props: FieldRenderProps<string[]>) => (
-                  <AutoCompleteMultiValuesFreeSolo<string> {...props} options={allGroups} />
-                )}
-                label="Grant to specific groups"
-                name="protectedEndpoint.groups"
-                placeholder="e.g. my-github-org:a-team-name. a-gitlab-group-name"
-                parse={stringArrayTrimParse}
-                helperText={sc.PROTECTED_ENDPOINT_SPECIFIC_GROUPS}
-              />
-            </Grid>
-          </>
-        )}
+        <>
+          <Grid item xs={12}>
+            <Field
+              render={(props: FieldRenderProps<number[]>) => (
+                <AutoCompleteMultiValuesFreeSolo<number> {...props} options={ps} />
+              )}
+              label="Ports"
+              name="protectedEndpoint.ports"
+              disabled={!this.props.protectedEndpoint}
+              placeholder="Select specific ports"
+              parse={NormalizePorts}
+              helperText={sc.PROTECTED_ENDPOINT_PORT}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Field
+              render={(props: FieldRenderProps<string[]>) => (
+                <AutoCompleteMultiValuesFreeSolo<string> {...props} options={allGroups} />
+              )}
+              label="Grant to specific groups"
+              name="protectedEndpoint.groups"
+              placeholder="e.g. my-github-org:a-team-name. a-gitlab-group-name"
+              parse={stringArrayTrimParse}
+              helperText={sc.PROTECTED_ENDPOINT_SPECIFIC_GROUPS}
+              disabled={!this.props.protectedEndpoint}
+            />
+          </Grid>
+        </>
       </Grid>
     );
   }

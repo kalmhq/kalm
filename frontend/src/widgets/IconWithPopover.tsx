@@ -1,6 +1,3 @@
-import React from "react";
-import PopupState, { bindTrigger } from "material-ui-popup-state";
-import { FlexRowItemCenterBox } from "./Box";
 import {
   Box,
   Button,
@@ -13,12 +10,15 @@ import {
   withStyles,
   WithStyles,
 } from "@material-ui/core";
+import { blinkTopProgressAction } from "actions/settings";
 import { POPPER_ZINDEX } from "layout/Constants";
+import PopupState, { bindTrigger } from "material-ui-popup-state";
+import React from "react";
 import { customBindHover, customBindPopover } from "utils/popper";
+import { FlexRowItemCenterBox } from "./Box";
 import { DeleteIcon } from "./Icon";
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 import { Subtitle2 } from "./Label";
-import { blinkTopProgressAction } from "actions/settings";
 
 interface Props {
   popupId: string;
@@ -54,8 +54,9 @@ export class IconWithPopover extends React.PureComponent<Props> {
 interface ConfirmPopoverProps {
   popupId: string;
   confirmedAction: any;
-  popupTitle: string;
+  popupTitle: React.ReactNode;
   useText?: boolean;
+  text?: string;
   iconSize?: "medium" | "small";
   disabled?: boolean;
 }
@@ -70,7 +71,7 @@ const styles = (theme: Theme) =>
 
 class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopoverProps & WithStyles<typeof styles>> {
   render() {
-    const { popupId, popupTitle, confirmedAction, classes, useText, iconSize, disabled } = this.props;
+    const { popupId, popupTitle, confirmedAction, classes, useText, text, iconSize, disabled } = this.props;
     return (
       <PopupState variant="popover" popupId={popupId}>
         {(popupState) => {
@@ -91,7 +92,7 @@ class DeleteButtonWithConfirmPopoverRaw extends React.PureComponent<ConfirmPopov
                     trigger.onClick(e);
                   }}
                 >
-                  Delete
+                  {text ? text : "Delete"}
                 </Button>
               ) : (
                 <IconButtonWithTooltip

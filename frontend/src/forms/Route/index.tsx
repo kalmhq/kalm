@@ -2,6 +2,8 @@ import { Box, Collapse, Grid, Link } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
+import { setSuccessNotificationAction } from "actions/notification";
+import copy from "copy-to-clipboard";
 import arrayMutators from "final-form-arrays";
 import { AutoCompleteMultipleValue, AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalBoolCheckboxRender, FinalCheckboxGroupRender } from "forms/Final/checkbox";
@@ -267,7 +269,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, ingressIP, isEdit, initial, onSubmit, form } = this.props;
+    const { classes, ingressIP, isEdit, initial, onSubmit, form, dispatch } = this.props;
     return (
       <div className={classes.root}>
         <Form
@@ -332,11 +334,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                                   <Link
                                     href="#"
                                     onClick={() => {
-                                      const isHostsIncludeIngressIP = !!hosts.find((host) => host === ingressIP);
-                                      if (!isHostsIncludeIngressIP) {
-                                        hosts.push(ingressIP);
-                                        change("hosts", hosts);
-                                      }
+                                      copy(ingressIP);
+                                      dispatch(setSuccessNotificationAction("Copied successful!"));
                                     }}
                                   >
                                     {ingressIP || ""}
