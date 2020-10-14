@@ -189,8 +189,8 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
     if (clusterInfo.ingressIP !== "") {
       return (
         <Box>
-          Please enter your domain name and configure this domain name with an <strong>A record</strong> that points to your
-          cluster load balancer IP{" "}
+          Please enter your domain name and configure this domain name with an <strong>A record</strong> that points to
+          your cluster load balancer IP{" "}
           <Box display="inline-block" style={{ verticalAlign: "bottom" }}>
             <H5>
               <strong>{clusterInfo.ingressIP}</strong>
@@ -202,8 +202,8 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
     } else if (clusterInfo.ingressHostname !== "") {
       return (
         <Box>
-          Please enter your domain name and configure this domain name with a <strong>CNAME record</strong> that points to
-          your cluster load balancer hostname{" "}
+          Please enter your domain name and configure this domain name with a <strong>CNAME record</strong> that points
+          to your cluster load balancer hostname{" "}
           <Box display="inline-block" style={{ verticalAlign: "bottom" }}>
             <H5>
               <strong>{clusterInfo.ingressHostname}</strong>
@@ -218,8 +218,8 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
           <Alert severity="warning">
             <Box>
               {" "}
-              Kalm is unable to retrieve your cluster ip or host name. Please check the status of your load balancer. If you are using
-              minikube, please check{" "}
+              Kalm is unable to retrieve your cluster ip or host name. Please check the status of your load balancer. If
+              you are using minikube, please check{" "}
               <BlankTargetLink href="https://kalm.dev/docs/guide-minikube#step-2-start-a-minikube-cluster">
                 this doc
               </BlankTargetLink>
@@ -395,9 +395,9 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
 
     return (
       <Box>
-        Your kalm dashboard can now be accessed from: <BlankTargetLink href={url}>{url}</BlankTargetLink>. <br />
-        A temporary administrator email (which can only be used to login) and password have been generated for you. You will not
-        be able to see this account through the dashboard again. Please save this account information safely.
+        Your kalm dashboard can now be accessed from: <BlankTargetLink href={url}>{url}</BlankTargetLink>. <br />A
+        temporary administrator email (which can only be used to login) and password have been generated for you. You
+        will not be able to see this account through the dashboard again. Please save this account information safely.
         <Box mt={2} mb={2}>
           <KPanel>
             <Box p={2}>
@@ -484,8 +484,7 @@ Password: ${password}`}</pre>
         <Box p={2}>
           Your cluster has been initialized already.
           <Box mt={2}>
-            If you want to reset kalm, you can reset the initialization
-            process.
+            If you want to reset kalm, you can reset the initialization process.
             <Box pt={2}>
               <Alert severity="warning">
                 Note that reconfigurion will affect your Kalm's following configuration:
@@ -521,9 +520,9 @@ Password: ${password}`}</pre>
               <H5>Congratulations! You have successfully deployed Kalm. Last few steps.</H5>
               <Box mt={2}>
                 <Body>
-                  Your cluster is currently not accessible from outside of your localhost, and can only be used by yourself through
-                  port-forwarding. Don't worry, complete the following steps to setup Kalm on a publicly accessible domain so you can 
-                  use Kalm conveniently with your colleagues.
+                  Your cluster is currently not accessible from outside of your localhost, and can only be used by
+                  yourself through port-forwarding. Don't worry, complete the following steps to setup Kalm on a
+                  publicly accessible domain so you can use Kalm conveniently with your colleagues.
                 </Body>
               </Box>
 
