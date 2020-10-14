@@ -1,17 +1,17 @@
-import React from "react";
 import { Box, createStyles, Theme, Typography, WithStyles } from "@material-ui/core";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
-import { KPanel } from "widgets/KPanel";
 import Avatar from "@material-ui/core/Avatar";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import { BlankTargetLink } from "widgets/BlankTargetLink";
-import { Alert, AlertTitle } from "@material-ui/lab";
 import Button from "@material-ui/core/Button";
-import { BasePage } from "pages/BasePage";
-import { CollapseWrapper } from "widgets/CollapseWrapper";
 import withStyles from "@material-ui/core/styles/withStyles";
+import { Alert, AlertTitle } from "@material-ui/lab";
 import { stopImpersonating } from "api/realApi/index";
 import { push } from "connected-react-router";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
+import { BasePage } from "pages/BasePage";
+import React from "react";
+import { BlankTargetLink } from "widgets/BlankTargetLink";
+import { CollapseWrapper } from "widgets/CollapseWrapper";
+import { KPanel } from "widgets/KPanel";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -77,10 +77,9 @@ class ProfilePageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderApplicationRole = () => {
-    const { applications } = this.props;
     const roles = this.getApplicationRoles();
 
-    if (applications.length > 0 && roles.length === 0) {
+    if (roles.length === 0) {
       return (
         <Alert severity="warning">
           <AlertTitle>No Role</AlertTitle>

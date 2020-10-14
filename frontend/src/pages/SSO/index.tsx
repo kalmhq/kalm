@@ -141,6 +141,8 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
                     temporary admin email account which is generated when you setup your cluster. Since the account
                     doesn't have expired time and doesn't support multi factor authentication, it's not safe for long
                     time usage.
+                    <br />
+                    Before the deletion, please test your new connector to confirm your settings are correct.
                   </Alert>
                   <Box mt={2}>
                     {" "}
