@@ -1,4 +1,4 @@
-name: build & push img with cache
+name: build & push dashboard img with cache
 
 on:
   push:
