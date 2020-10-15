@@ -1,10 +1,9 @@
-package controllers
+package v1alpha1
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -20,8 +19,8 @@ func InitializeWebhookClient(mgr ctrl.Manager) {
 }
 
 type InsufficientResourceError struct {
-	ResourceName v1alpha1.ResourceName
-	Tenant       *v1alpha1.Tenant
+	ResourceName ResourceName
+	Tenant       *Tenant
 	Increment    *resource.Quantity
 }
 
@@ -42,7 +41,7 @@ func (e *InsufficientResourceError) Error() string {
 	)
 }
 
-func NewInsufficientResourceError(tenant *v1alpha1.Tenant, resourceName v1alpha1.ResourceName, increment resource.Quantity) error {
+func NewInsufficientResourceError(tenant *Tenant, resourceName ResourceName, increment resource.Quantity) error {
 	return &InsufficientResourceError{
 		ResourceName: resourceName,
 		Tenant:       tenant,
@@ -50,8 +49,8 @@ func NewInsufficientResourceError(tenant *v1alpha1.Tenant, resourceName v1alpha1
 	}
 }
 
-func updateTenantResource(tenantName string, resourceName v1alpha1.ResourceName, changes resource.Quantity) error {
-	var tenant v1alpha1.Tenant
+func updateTenantResource(tenantName string, resourceName ResourceName, changes resource.Quantity) error {
+	var tenant Tenant
 
 	if err := webhookClient.Get(context.Background(), types.NamespacedName{
 		Name: tenantName,
@@ -74,16 +73,16 @@ func updateTenantResource(tenantName string, resourceName v1alpha1.ResourceName,
 	return webhookClient.Status().Patch(context.Background(), tenantCopy, client.MergeFrom(&tenant))
 }
 
-func AllocateTenantResource(tenantName string, resourceName v1alpha1.ResourceName, increment resource.Quantity) error {
+func AllocateTenantResource(tenantName string, resourceName ResourceName, increment resource.Quantity) error {
 	return updateTenantResource(tenantName, resourceName, increment)
 }
 
-func ReleaseTenantResource(tenantName string, resourceName v1alpha1.ResourceName, decrement resource.Quantity) error {
+func ReleaseTenantResource(tenantName string, resourceName ResourceName, decrement resource.Quantity) error {
 	decrement.Neg()
 	return updateTenantResource(tenantName, resourceName, decrement)
 }
 
-func AdjustTenantResource(tenantName string, resourceName v1alpha1.ResourceName, old resource.Quantity, new resource.Quantity) error {
+func AdjustTenantResource(tenantName string, resourceName ResourceName, old resource.Quantity, new resource.Quantity) error {
 	new.Sub(old)
 	return updateTenantResource(tenantName, resourceName, new)
 }

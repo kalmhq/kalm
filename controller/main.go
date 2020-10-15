@@ -32,6 +32,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 
@@ -178,7 +179,7 @@ func main() {
 
 	// only run webhook if explicitly declared
 	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
-		controllers.InitializeWebhookClient(mgr)
+		v1alpha1.InitializeWebhookClient(mgr)
 
 		if err = (&corev1alpha1.AccessToken{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "AccessToken")
