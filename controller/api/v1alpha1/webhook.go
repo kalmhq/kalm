@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -133,4 +134,52 @@ func getTenantNameFromObj(obj runtime.Object) (*Tenant, error) {
 	}
 
 	return &tenant, nil
+}
+
+func InheritTenantFromNamespace(obj runtime.Object) error {
+	objMeta, err := meta.Accessor(obj)
+
+	if err != nil {
+		return err
+	}
+
+	namespaceName := objMeta.GetNamespace()
+
+	if namespaceName == "" {
+		return fmt.Errorf("can't use InheritTenantFromNamespace for a cluster scope resource")
+	}
+
+	labels := objMeta.GetLabels()
+
+	if labels == nil {
+		labels = make(map[string]string)
+	}
+
+	var namespace v1.Namespace
+
+	if err := webhookClient.Get(context.Background(), types.NamespacedName{Name: namespaceName}, &namespace); err != nil {
+		return nil
+	}
+
+	namespaceMeta, err := meta.Accessor(&namespace)
+
+	if err != nil {
+		return err
+	}
+
+	namespaceLabels := namespaceMeta.GetLabels()
+
+	var tenant string
+
+	if namespaceLabels != nil {
+		tenant = namespaceLabels[TenantNameLabelKey]
+	}
+
+	if tenant == "" {
+		tenant = DefaultGlobalTenantName
+	}
+
+	labels[TenantNameLabelKey] = tenant
+	objMeta.SetLabels(labels)
+	return nil
 }
