@@ -47,7 +47,7 @@ jobs:
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
             docker buildx build \
-              --progress auto \
+              --progress tty \
               --output type=registry \
               --cache-from=type=registry,ref=kalmhq/kalm:cache \
               --cache-to=type=registry,ref=kalmhq/kalm:cache,mode=max \

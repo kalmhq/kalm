@@ -39,7 +39,7 @@ jobs:
 
           # build cache
           docker buildx build \
-            --progress auto \
+            --progress tty \
             --output type=registry \
             --cache-from type=local,src=/tmp/buildx-cache \
             --cache-to type=local,dest=/tmp/buildx-cache,mode=max \
