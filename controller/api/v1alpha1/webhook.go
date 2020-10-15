@@ -116,7 +116,7 @@ func getTenantNameFromObj(obj runtime.Object) (*Tenant, error) {
 		return nil, fmt.Errorf("No labels in obj %+v", obj)
 	}
 
-	tenantName := labels["tenantName"]
+	tenantName := labels[TenantNameLabelKey]
 
 	if tenantName == "" {
 		return nil, fmt.Errorf("No tenant name found in obj %+v", obj)

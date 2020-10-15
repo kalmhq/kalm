@@ -20,6 +20,11 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	TenantNameLabelKey      = "tenant"
+	DefaultGlobalTenantName = "fake"
+)
+
 type ResourceName string
 
 const (
