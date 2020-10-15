@@ -33,6 +33,36 @@ jobs:
           name: upload coverage
           working_directory: ./api
           command: bash <(curl -s https://codecov.io/bash)
+  test-controller:
+    docker:
+      - image: circleci/golang:1.13.11
+    environment:
+      KUBEBUILDER_ASSETS: /home/circleci/kubebuilder/bin
+      GO111MODULE: "on"
+    steps:
+      - checkout
+      - run:
+          name: Install kubebuilder
+          command: |
+            os=$(go env GOOS)
+            arch=$(go env GOARCH)
+            echo $os $arch
+            echo https://go.kubebuilder.io/dl/2.3.1/${os}/${arch}
+            curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
+            sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
+            export PATH=$PATH:$HOME/kubebuilder/bin
+      - run:
+          name: go get
+          working_directory: ./controller
+          command: go get -d ./...
+      - run:
+          name: run test
+          working_directory: ./controller
+          command: make test
+      - run:
+          name: upload coverage
+          working_directory: ./controller
+          command: bash <(curl -s https://codecov.io/bash)
   build-push-dashboard-image:
     machine:
       image: ubuntu-2004:202008-01
@@ -69,36 +99,6 @@ jobs:
               docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_TAG
               docker push kalmhq/kalm:$CIRCLE_TAG
             fi
-  test-controller:
-    docker:
-      - image: circleci/golang:1.13.11
-    environment:
-      KUBEBUILDER_ASSETS: /home/circleci/kubebuilder/bin
-      GO111MODULE: "on"
-    steps:
-      - checkout
-      - run:
-          name: Install kubebuilder
-          command: |
-            os=$(go env GOOS)
-            arch=$(go env GOARCH)
-            echo $os $arch
-            echo https://go.kubebuilder.io/dl/2.3.1/${os}/${arch}
-            curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
-            sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
-            export PATH=$PATH:$HOME/kubebuilder/bin
-      - run:
-          name: go get
-          working_directory: ./controller
-          command: go get -d ./...
-      - run:
-          name: run test
-          working_directory: ./controller
-          command: make test
-      - run:
-          name: upload coverage
-          working_directory: ./controller
-          command: bash <(curl -s https://codecov.io/bash)
   build-push-controller-image:
     machine:
       image: ubuntu-2004:202008-01
@@ -116,22 +116,20 @@ jobs:
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
             docker buildx build \
-              --output type=registry \
+              --output=type=docker \
               --cache-from=type=registry,ref=kalmhq/kalm-controller:$CIRCLE_BRANCH-cache \
               --cache-to=type=registry,ref=kalmhq/kalm-controller:$CIRCLE_BRANCH-cache,mode=max \
               -t kalmhq/kalm-controller:latest .
 
-            # echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            # docker push kalmhq/kalm-controller:latest
-            # docker tag kalmhq/kalm-controller:latest kalmhq/kalm-controller:$CIRCLE_SHA1
-            # docker push kalmhq/kalm-controller:$CIRCLE_SHA1
-            # TAG=$(git tag --points-at HEAD)
+            docker tag  kalmhq/kalm-controller:latest kalmhq/kalm-controller:$CIRCLE_SHA1
+            docker push kalmhq/kalm-controller:latest
+            docker push kalmhq/kalm-controller:$CIRCLE_SHA1
 
-            # if [ "$TAG" != "" ]
-            # then
-            #   docker tag kalmhq/kalm-controller:latest kalmhq/kalm-controller:$TAG
-            #   docker push kalmhq/kalm-controller:$TAG
-            # fi
+            if [ "$CIRCLE_TAG" != "" ]
+            then
+              docker tag kalmhq/kalm-controller:latest kalmhq/kalm-controller:$CIRCLE_TAG
+              docker push kalmhq/kalm-controller:$CIRCLE_TAG
+            fi
   build-push-operator-image:
     machine:
       image: ubuntu-2004:202008-01
@@ -153,20 +151,20 @@ jobs:
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
             docker buildx build \
-              --output type=registry \
+              --output=type=docker \
               --cache-from=type=registry,ref=kalmhq/kalm-operator:$CIRCLE_BRANCH-cache \
               --cache-to=type=registry,ref=kalmhq/kalm-operator:$CIRCLE_BRANCH-cache,mode=max \
               -t kalmhq/kalm-operator:latest .
 
-            # docker tag kalmhq/kalm-operator:latest kalmhq/kalm-operator:$CIRCLE_SHA1
-            # docker push kalmhq/kalm-operator:$CIRCLE_SHA1
+            docker tag  kalmhq/kalm-operator:latest kalmhq/kalm-operator:$CIRCLE_SHA1
+            docker push kalmhq/kalm-operator:latest
+            docker push kalmhq/kalm-operator:$CIRCLE_SHA1
 
-            # TAG=$(git tag --points-at HEAD)
-            # if [ "$TAG" != "" ]
-            # then
-            #   docker tag kalmhq/kalm-operator:latest kalmhq/kalm-operator:$TAG
-            #   docker push kalmhq/kalm-operator:$TAG
-            # fi
+            if [ "$CIRCLE_TAG" != "" ]
+            then
+              docker tag kalmhq/kalm-operator:latest kalmhq/kalm-operator:$CIRCLE_TAG
+              docker push kalmhq/kalm-operator:$CIRCLE_TAG
+            fi
   deploy-dashboard:
     executor: deploy-orb/default
     steps:
