@@ -21,10 +21,10 @@ jobs:
         name: Cache Docker layers
         uses: actions/cache@v2
         with:
-          path: /tmp/buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          path: /tmp/buildx-operator-cache
+          key: ${{ runner.os }}-buildx-operator-cache-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-buildx-operator-cache
       -
         name: Login to DockerHub
         uses: docker/login-action@v1 
@@ -34,16 +34,21 @@ jobs:
       - 
         name: build & push
         run: |
+          # change dir to operator
+          cd ./operator
+          # cp dependency code
+          cp -r ../controller .
+
           docker buildx ls
           echo "============================="
 
           # build cache
           docker buildx build \
-            --progress tty \
+            --progress plain \
             --output type=registry \
-            --cache-from type=local,src=/tmp/buildx-cache \
-            --cache-to type=local,dest=/tmp/buildx-cache,mode=max \
-            -t diveinto/kalm:latest-github .
+            --cache-from type=local,src=/tmp/buildx-operator-cache \
+            --cache-to type=local,dest=/tmp/buildx-operator-cache,mode=max \
+            -t diveinto/kalm-operator:latest-github .
           echo "============================="
 
           # build img

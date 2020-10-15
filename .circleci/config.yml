@@ -47,7 +47,7 @@ jobs:
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
             docker buildx build \
-              --progress tty \
+              --progress plain \
               --output type=registry \
               --cache-from=type=registry,ref=kalmhq/kalm:cache \
               --cache-to=type=registry,ref=kalmhq/kalm:cache,mode=max \
@@ -98,23 +98,33 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: Build Docker image
+          name: Build & Push Controller image
           working_directory: ./controller
-          command: docker build -t kalmhq/kalm-controller:latest .
-      - run:
-          name: Publish Docker Image to DOCKER HUB
           command: |
-            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker push kalmhq/kalm-controller:latest
-            docker tag kalmhq/kalm-controller:latest kalmhq/kalm-controller:$CIRCLE_SHA1
-            docker push kalmhq/kalm-controller:$CIRCLE_SHA1
-            TAG=$(git tag --points-at HEAD)
+            # enable buildx
+            export DOCKER_CLI_EXPERIMENTAL=enabled
+            # use driver: docker-container
+            docker buildx create --name mybuilder --use
 
-            if [ "$TAG" != "" ]
-            then
-              docker tag kalmhq/kalm-controller:latest kalmhq/kalm-controller:$TAG
-              docker push kalmhq/kalm-controller:$TAG
-            fi
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+            docker buildx build \
+              --output type=registry \
+              --cache-from=type=registry,ref=kalmhq/kalm-controller:cache \
+              --cache-to=type=registry,ref=kalmhq/kalm-controller:cache,mode=max \
+              -t kalmhq/kalm-controller:latest .
+
+            # echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            # docker push kalmhq/kalm-controller:latest
+            # docker tag kalmhq/kalm-controller:latest kalmhq/kalm-controller:$CIRCLE_SHA1
+            # docker push kalmhq/kalm-controller:$CIRCLE_SHA1
+            # TAG=$(git tag --points-at HEAD)
+
+            # if [ "$TAG" != "" ]
+            # then
+            #   docker tag kalmhq/kalm-controller:latest kalmhq/kalm-controller:$TAG
+            #   docker push kalmhq/kalm-controller:$TAG
+            # fi
   build-push-operator-image:
     machine:
       image: ubuntu-2004:202008-01
@@ -125,7 +135,7 @@ jobs:
           working_directory: ./operator
           command: cp -r ../controller .
       - run:
-          name: Build & Publish Docker Image to Docker Hub
+          name: Build & Publish Operator Image
           working_directory: ./operator
           command: |
             # enable buildx
