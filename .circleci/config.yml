@@ -49,10 +49,10 @@ jobs:
             docker buildx build \
               --progress plain \
               --output type=registry \
-              --cache-from=type=registry,ref=kalmhq/kalm:cache \
-              --cache-to=type=registry,ref=kalmhq/kalm:cache,mode=max \
+              --cache-from=type=registry,ref=kalmhq/kalm:$CIRCLE_BRANCH-cache \
+              --cache-to=type=registry,ref=kalmhq/kalm:$CIRCLE_BRANCH-cache,mode=max \
               -t kalmhq/kalm:latest .
-            
+
             # docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_SHA1
             # docker push kalmhq/kalm:$CIRCLE_SHA1
             
@@ -109,8 +109,8 @@ jobs:
 
             docker buildx build \
               --output type=registry \
-              --cache-from=type=registry,ref=kalmhq/kalm-controller:cache \
-              --cache-to=type=registry,ref=kalmhq/kalm-controller:cache,mode=max \
+              --cache-from=type=registry,ref=kalmhq/kalm-controller:$CIRCLE_BRANCH-cache \
+              --cache-to=type=registry,ref=kalmhq/kalm-controller:$CIRCLE_BRANCH-cache,mode=max \
               -t kalmhq/kalm-controller:latest .
 
             # echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
@@ -146,8 +146,8 @@ jobs:
 
             docker buildx build \
               --output type=registry \
-              --cache-from=type=registry,ref=kalmhq/kalm-operator:cache \
-              --cache-to=type=registry,ref=kalmhq/kalm-operator:cache,mode=max \
+              --cache-from=type=registry,ref=kalmhq/kalm-operator:$CIRCLE_BRANCH-cache \
+              --cache-to=type=registry,ref=kalmhq/kalm-operator:$CIRCLE_BRANCH-cache,mode=max \
               -t kalmhq/kalm-operator:latest .
 
             # docker tag kalmhq/kalm-operator:latest kalmhq/kalm-operator:$CIRCLE_SHA1
