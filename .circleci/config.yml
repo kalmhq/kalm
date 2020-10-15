@@ -46,21 +46,29 @@ jobs:
 
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
+            if [ $CIRCLE_BRANCH = "master" ]
+            then
+              KALM_BUILD_ENV_GIT_COMMIT=$CIRCLE_SHA1
+              KALM_BUILD_ENV_GIT_VERSION=$CIRCLE_TAG
+            fi
+
             docker buildx build \
-              --progress plain \
-              --output type=registry \
+              --output=type=docker \
               --cache-from=type=registry,ref=kalmhq/kalm:$CIRCLE_BRANCH-cache \
               --cache-to=type=registry,ref=kalmhq/kalm:$CIRCLE_BRANCH-cache,mode=max \
+              --build-arg KALM_BUILD_ENV_GIT_COMMIT=$KALM_BUILD_ENV_GIT_COMMIT \
+              --build-arg KALM_BUILD_ENV_GIT_VERSION=$KALM_BUILD_ENV_GIT_VERSION \
               -t kalmhq/kalm:latest .
 
-            # docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_SHA1
-            # docker push kalmhq/kalm:$CIRCLE_SHA1
+            docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_SHA1
+            docker push kalmhq/kalm:latest
+            docker push kalmhq/kalm:$CIRCLE_SHA1
             
-            # if [ "$CIRCLE_TAG" != "" ]
-            # then
-            #   docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_TAG
-            #   docker push kalmhq/kalm:$CIRCLE_TAG
-            # fi
+            if [ "$CIRCLE_TAG" != "" ]
+            then
+              docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_TAG
+              docker push kalmhq/kalm:$CIRCLE_TAG
+            fi
   test-controller:
     docker:
       - image: circleci/golang:1.13.11
