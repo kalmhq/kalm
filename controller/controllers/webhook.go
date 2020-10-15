@@ -82,3 +82,8 @@ func ReleaseTenantResource(tenantName string, resourceName v1alpha1.ResourceName
 	decrement.Neg()
 	return updateTenantResource(tenantName, resourceName, decrement)
 }
+
+func AdjustTenantResource(tenantName string, resourceName v1alpha1.ResourceName, old resource.Quantity, new resource.Quantity) error {
+	new.Sub(old)
+	return updateTenantResource(tenantName, resourceName, new)
+}
