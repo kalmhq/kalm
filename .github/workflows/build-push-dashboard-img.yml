@@ -53,8 +53,3 @@ jobs:
           #     --build-arg KALM_BUILD_ENV_GIT_COMMIT=$GITHUB_SHA \
           #     -t diveinto/kalm:latest-github .
           #echo "============================="
-
-          ls -al /tmp/buildx-cache
-          echo "============================="
-
-          cat /tmp/buildx-cache/index.json
