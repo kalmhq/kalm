@@ -50,7 +50,7 @@ func NewInsufficientResourceError(tenant *v1alpha1.Tenant, resourceName v1alpha1
 	}
 }
 
-func AllocateTenantResource(tenantName string, resourceName v1alpha1.ResourceName, increment resource.Quantity) error {
+func updateTenantResource(tenantName string, resourceName v1alpha1.ResourceName, changes resource.Quantity) error {
 	var tenant v1alpha1.Tenant
 
 	if err := webhookClient.Get(context.Background(), types.NamespacedName{
@@ -61,15 +61,24 @@ func AllocateTenantResource(tenantName string, resourceName v1alpha1.ResourceNam
 
 	limit := tenant.Spec.ResourceQuota[resourceName]
 	used := tenant.Status.UsedResourceQuota[resourceName]
-	used.Add(increment)
+	used.Add(changes)
 
 	// used + increment >= limit
 	if used.AsDec().Cmp(limit.AsDec()) >= 0 {
-		return NewInsufficientResourceError(&tenant, resourceName, increment)
+		return NewInsufficientResourceError(&tenant, resourceName, changes)
 	}
 
 	tenantCopy := tenant.DeepCopy()
 	tenantCopy.Status.UsedResourceQuota[resourceName] = used
 
 	return webhookClient.Status().Patch(context.Background(), tenantCopy, client.MergeFrom(&tenant))
+}
+
+func AllocateTenantResource(tenantName string, resourceName v1alpha1.ResourceName, increment resource.Quantity) error {
+	return updateTenantResource(tenantName, resourceName, increment)
+}
+
+func ReleaseTenantResource(tenantName string, resourceName v1alpha1.ResourceName, decrement resource.Quantity) error {
+	decrement.Neg()
+	return updateTenantResource(tenantName, resourceName, decrement)
 }
