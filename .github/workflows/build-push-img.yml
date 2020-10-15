@@ -39,18 +39,20 @@ jobs:
 
           # build cache
           docker buildx build \
+            --progress auto \
+            --output type=registry \
             --cache-from type=local,src=/tmp/buildx-cache \
-            --cache-to type=local,dest=/tmp/buildx-cache,mode=max .
+            --cache-to type=local,dest=/tmp/buildx-cache,mode=max \
+            -t diveinto/kalm:latest-github .
           echo "============================="
 
           # build img
-          docker buildx build \
-              --output type=registry \
-              --cache-from type=local,src=/tmp/buildx-cache \
-              --build-arg KALM_BUILD_ENV_GIT_COMMIT=$GITHUB_SHA \
-              -t diveinto/kalm:latest-github .
-          
-          echo "============================="
+          # docker buildx build \
+          #     --output type=registry \
+          #     --cache-from type=local,src=/tmp/buildx-cache \
+          #     --build-arg KALM_BUILD_ENV_GIT_COMMIT=$GITHUB_SHA \
+          #     -t diveinto/kalm:latest-github .
+          #echo "============================="
 
           ls -al /tmp/buildx-cache
           echo "============================="
