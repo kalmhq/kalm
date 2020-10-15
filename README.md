@@ -4,8 +4,8 @@
 
 Kalm provides a web interface that makes it easy to perform common Kubernetes workflows, including:
 
-- Creating and updating applications
 - Scaling
+- Creating and updating applications
 - Handling external traffic
 - Setting up probes for auto-healing
 - Attaching and using Volumes

@@ -33,33 +33,6 @@ jobs:
           name: upload coverage
           working_directory: ./api
           command: bash <(curl -s https://codecov.io/bash)
-  build-push-dashboard-image:
-    docker:
-      - image: circleci/buildpack-deps:stretch
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build Docker image
-          command: >
-            docker build
-            --build-arg KALM_BUILD_ENV_GIT_COMMIT=$CIRCLE_SHA1
-            --build-arg KALM_BUILD_ENV_GIT_VERSION=$CIRCLE_TAG
-            -t kalmhq/kalm:latest .
-      - run:
-          name: Publish Docker Image to DOCKER HUB
-          command: |
-            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker push kalmhq/kalm:latest
-            docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_SHA1
-            docker push kalmhq/kalm:$CIRCLE_SHA1
-            TAG=$(git tag --points-at HEAD)
-
-            if [ "$TAG" != "" ]
-            then
-              docker tag kalmhq/kalm:latest kalmhq/kalm:$TAG
-              docker push kalmhq/kalm:$TAG
-            fi
   test-controller:
     docker:
       - image: circleci/golang:1.13.11
@@ -90,58 +63,107 @@ jobs:
           name: upload coverage
           working_directory: ./controller
           command: bash <(curl -s https://codecov.io/bash)
-  build-push-controller-image:
-    docker:
-      - image: circleci/golang:1.13.11
+  build-push-dashboard-image:
+    machine:
+      image: ubuntu-2004:202008-01
     steps:
       - checkout
-      - setup_remote_docker
       - run:
-          name: Build Docker image
-          working_directory: ./controller
-          command: docker build -t kalmhq/kalm-controller:latest .
-      - run:
-          name: Publish Docker Image to DOCKER HUB
+          name: Build & Push Docker image
           command: |
-            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker push kalmhq/kalm-controller:latest
-            docker tag kalmhq/kalm-controller:latest kalmhq/kalm-controller:$CIRCLE_SHA1
-            docker push kalmhq/kalm-controller:$CIRCLE_SHA1
-            TAG=$(git tag --points-at HEAD)
+            export DOCKER_CLI_EXPERIMENTAL=enabled
+            docker buildx create --name mybuilder --use
 
-            if [ "$TAG" != "" ]
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+            if [ $CIRCLE_BRANCH = "master" ]
             then
-              docker tag kalmhq/kalm-controller:latest kalmhq/kalm-controller:$TAG
-              docker push kalmhq/kalm-controller:$TAG
+              KALM_BUILD_ENV_GIT_COMMIT=$CIRCLE_SHA1
+              KALM_BUILD_ENV_GIT_VERSION=$CIRCLE_TAG
+            fi
+
+            docker buildx build \
+              --output=type=docker \
+              --cache-from=type=registry,ref=kalmhq/kalm:$CIRCLE_BRANCH-cache \
+              --cache-to=type=registry,ref=kalmhq/kalm:$CIRCLE_BRANCH-cache,mode=max \
+              --build-arg KALM_BUILD_ENV_GIT_COMMIT=$KALM_BUILD_ENV_GIT_COMMIT \
+              --build-arg KALM_BUILD_ENV_GIT_VERSION=$KALM_BUILD_ENV_GIT_VERSION \
+              -t kalmhq/kalm:latest .
+
+            docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_SHA1
+            docker push kalmhq/kalm:latest
+            docker push kalmhq/kalm:$CIRCLE_SHA1
+            
+            if [ "$CIRCLE_TAG" != "" ]
+            then
+              docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_TAG
+              docker push kalmhq/kalm:$CIRCLE_TAG
+            fi
+  build-push-controller-image:
+    machine:
+      image: ubuntu-2004:202008-01
+    steps:
+      - checkout
+      - run:
+          name: Build & Push Controller image
+          working_directory: ./controller
+          command: |
+            # enable buildx
+            export DOCKER_CLI_EXPERIMENTAL=enabled
+            # use driver: docker-container
+            docker buildx create --name mybuilder --use
+
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+            docker buildx build \
+              --output=type=docker \
+              --cache-from=type=registry,ref=kalmhq/kalm-controller:$CIRCLE_BRANCH-cache \
+              --cache-to=type=registry,ref=kalmhq/kalm-controller:$CIRCLE_BRANCH-cache,mode=max \
+              -t kalmhq/kalm-controller:latest .
+
+            docker tag  kalmhq/kalm-controller:latest kalmhq/kalm-controller:$CIRCLE_SHA1
+            docker push kalmhq/kalm-controller:latest
+            docker push kalmhq/kalm-controller:$CIRCLE_SHA1
+
+            if [ "$CIRCLE_TAG" != "" ]
+            then
+              docker tag kalmhq/kalm-controller:latest kalmhq/kalm-controller:$CIRCLE_TAG
+              docker push kalmhq/kalm-controller:$CIRCLE_TAG
             fi
   build-push-operator-image:
-    docker:
-      - image: circleci/golang:1.13.11
+    machine:
+      image: ubuntu-2004:202008-01
     steps:
       - checkout
-      - setup_remote_docker
       - run:
           name: cp controller
           working_directory: ./operator
           command: cp -r ../controller .
       - run:
-          name: Build Docker image
-          working_directory: ./operator
-          command: docker build -t kalmhq/kalm-operator:latest .
-      - run:
-          name: Publish Docker Image to Docker Hub
+          name: Build & Publish Operator Image
           working_directory: ./operator
           command: |
+            # enable buildx
+            export DOCKER_CLI_EXPERIMENTAL=enabled
+            # use driver: docker-container
+            docker buildx create --name mybuilder --use
+
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+            docker buildx build \
+              --output=type=docker \
+              --cache-from=type=registry,ref=kalmhq/kalm-operator:$CIRCLE_BRANCH-cache \
+              --cache-to=type=registry,ref=kalmhq/kalm-operator:$CIRCLE_BRANCH-cache,mode=max \
+              -t kalmhq/kalm-operator:latest .
+
+            docker tag  kalmhq/kalm-operator:latest kalmhq/kalm-operator:$CIRCLE_SHA1
             docker push kalmhq/kalm-operator:latest
-            docker tag kalmhq/kalm-operator:latest kalmhq/kalm-operator:$CIRCLE_SHA1
             docker push kalmhq/kalm-operator:$CIRCLE_SHA1
 
-            TAG=$(git tag --points-at HEAD)
-            if [ "$TAG" != "" ]
+            if [ "$CIRCLE_TAG" != "" ]
             then
-              docker tag kalmhq/kalm-operator:latest kalmhq/kalm-operator:$TAG
-              docker push kalmhq/kalm-operator:$TAG
+              docker tag kalmhq/kalm-operator:latest kalmhq/kalm-operator:$CIRCLE_TAG
+              docker push kalmhq/kalm-operator:$CIRCLE_TAG
             fi
   deploy-dashboard:
     executor: deploy-orb/default

@@ -1,0 +1,60 @@
+name: build & push operator img with cache
+
+on:
+  push:
+    branches: 
+      - master
+      - buildx
+
+jobs:
+  job-build-with-cache:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - 
+        uses: actions/checkout@v2
+
+      -
+        name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/buildx-operator-cache
+          key: ${{ runner.os }}-buildx-operator-cache-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-operator-cache
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_TMP_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TMP_TOKEN }}
+      - 
+        name: build & push
+        run: |
+          # change dir to operator
+          cd ./operator
+          # cp dependency code
+          cp -r ../controller .
+
+          docker buildx ls
+          echo "============================="
+
+          # build cache
+          docker buildx build \
+            --progress plain \
+            --output type=registry \
+            --cache-from type=local,src=/tmp/buildx-operator-cache \
+            --cache-to type=local,dest=/tmp/buildx-operator-cache,mode=max \
+            -t diveinto/kalm-operator:latest-github .
+          echo "============================="
+
+          # build img
+          # docker buildx build \
+          #     --output type=registry \
+          #     --cache-from type=local,src=/tmp/buildx-cache \
+          #     --build-arg KALM_BUILD_ENV_GIT_COMMIT=$GITHUB_SHA \
+          #     -t diveinto/kalm:latest-github .
+          #echo "============================="
