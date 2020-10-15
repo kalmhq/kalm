@@ -23,4 +23,4 @@ metadata:
   namespace: kalm-operator
   name: kalmoperatorconfig-sample
 spec:
-  kalmVersion: v0.1.0-rc.10
+  kalmVersion: v0.1.0-rc.12

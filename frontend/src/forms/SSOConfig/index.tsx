@@ -7,6 +7,7 @@ import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
 import arrayMutators from "final-form-arrays";
 import { FormDataPreview } from "forms/Final/util";
+import { trimAndToLowerParse } from "forms/normalizer";
 import { Connectors } from "forms/SSOConfig/Connectors";
 import React from "react";
 import { Field, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
@@ -28,7 +29,6 @@ import { KMLink } from "widgets/Link";
 import { Prompt } from "widgets/Prompt";
 import { FinalTextField } from "../Final/textfield";
 import { ValidateHost } from "../validator";
-import { trimAndToLowerParse } from "forms/normalizer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -151,54 +151,47 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
             />
 
             <Box mt={2}>
-              <KPanel
-                title="Setup Identity Provider Connectors"
-                content={
-                  <Box p={2}>
-                    <FormSpy subscription={{ values: true }}>
-                      {({ values, form: { change } }: FormSpyRenderProps<SSOConfig>) => {
-                        return (
-                          <>
-                            <Box mr={2} display="inline-block">
-                              <Button
-                                size="small"
-                                variant="outlined"
-                                color="primary"
-                                endIcon={<GithubIcon />}
-                                onClick={() => this.addConnector(SSO_CONNECTOR_TYPE_GITHUB, values, change)}
-                              >
-                                Add Github connector
-                              </Button>
-                            </Box>
-                            <Box mr={2} display="inline-block">
-                              <Button
-                                size="small"
-                                variant="outlined"
-                                color="primary"
-                                onClick={() => this.addConnector(SSO_CONNECTOR_TYPE_GITLAB, values, change)}
-                              >
-                                Add Gitlab connector
-                              </Button>
-                            </Box>
-                          </>
-                        );
-                      }}
-                    </FormSpy>
-                    <Box pt={2} className={classes.inlineHelperText}>
-                      No connector you are looking for? Fire an{" "}
-                      <KMLink
-                        href="https://github.com/kalmhq/kalm/issues/new"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        issue
-                      </KMLink>{" "}
-                      on kalm github. Also, pull request is well welcomed.
-                    </Box>
-                    <Connectors />
+              <KPanel title="Setup Identity Provider Connectors">
+                <Box p={2}>
+                  <Connectors />
+                  <FormSpy subscription={{ values: true }}>
+                    {({ values, form: { change } }: FormSpyRenderProps<SSOConfig>) => {
+                      return (
+                        <>
+                          <Box mr={2} display="inline-block">
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="primary"
+                              endIcon={<GithubIcon />}
+                              onClick={() => this.addConnector(SSO_CONNECTOR_TYPE_GITHUB, values, change)}
+                            >
+                              Add Github connector
+                            </Button>
+                          </Box>
+                          <Box mr={2} display="inline-block">
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="primary"
+                              onClick={() => this.addConnector(SSO_CONNECTOR_TYPE_GITLAB, values, change)}
+                            >
+                              Add Gitlab connector
+                            </Button>
+                          </Box>
+                        </>
+                      );
+                    }}
+                  </FormSpy>
+                  <Box pt={2} className={classes.inlineHelperText}>
+                    No connector you are looking for? Fire an{" "}
+                    <KMLink href="https://github.com/kalmhq/kalm/issues/new" rel="noopener noreferrer" target="_blank">
+                      issue
+                    </KMLink>{" "}
+                    on kalm github. Also, pull request is well welcomed.
                   </Box>
-                }
-              />
+                </Box>
+              </KPanel>
             </Box>
 
             {/* {error && submitFailed ? (

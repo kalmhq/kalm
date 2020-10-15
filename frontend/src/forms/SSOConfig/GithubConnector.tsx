@@ -185,7 +185,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
                     <Button
                       variant="outlined"
                       color="primary"
-                      onClick={() => this.addOrganization(connector.config.orgs, change)}
+                      onClick={() => this.addOrganization(connector.config!.orgs, change)}
                       size="small"
                     >
                       Add an organization
