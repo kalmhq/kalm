@@ -92,11 +92,10 @@ jobs:
           working_directory: ./controller
           command: bash <(curl -s https://codecov.io/bash)
   build-push-controller-image:
-    docker:
-      - image: circleci/golang:1.13.11
+    machine:
+      image: ubuntu-2004:202008-01
     steps:
       - checkout
-      - setup_remote_docker
       - run:
           name: Build & Push Controller image
           working_directory: ./controller
