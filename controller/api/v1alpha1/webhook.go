@@ -51,6 +51,8 @@ func NewInsufficientResourceError(tenant *Tenant, resourceName ResourceName, inc
 	}
 }
 
+// concurrent update safe?
+// v1.18 server side apply
 func updateTenantResource(tenant *Tenant, resourceName ResourceName, changes resource.Quantity) error {
 	limit := tenant.Spec.ResourceQuota[resourceName]
 	used := tenant.Status.UsedResourceQuota[resourceName]
@@ -68,7 +70,7 @@ func updateTenantResource(tenant *Tenant, resourceName ResourceName, changes res
 }
 
 func AllocateTenantResource(obj runtime.Object, resourceName ResourceName, increment resource.Quantity) error {
-	tenant, err := GetTenantNameFromObj(obj)
+	tenant, err := getTenantNameFromObj(obj)
 
 	if err != nil {
 		return err
@@ -78,7 +80,7 @@ func AllocateTenantResource(obj runtime.Object, resourceName ResourceName, incre
 }
 
 func ReleaseTenantResource(obj runtime.Object, resourceName ResourceName, decrement resource.Quantity) error {
-	tenant, err := GetTenantNameFromObj(obj)
+	tenant, err := getTenantNameFromObj(obj)
 
 	if err != nil {
 		return err
@@ -90,7 +92,7 @@ func ReleaseTenantResource(obj runtime.Object, resourceName ResourceName, decrem
 }
 
 func AdjustTenantResource(obj runtime.Object, resourceName ResourceName, old resource.Quantity, new resource.Quantity) error {
-	tenant, err := GetTenantNameFromObj(obj)
+	tenant, err := getTenantNameFromObj(obj)
 
 	if err != nil {
 		return err
@@ -101,8 +103,7 @@ func AdjustTenantResource(obj runtime.Object, resourceName ResourceName, old res
 	return updateTenantResource(tenant, resourceName, new)
 }
 
-func GetTenantNameFromObj(obj runtime.Object) (*Tenant, error) {
-
+func getTenantNameFromObj(obj runtime.Object) (*Tenant, error) {
 	objMeta, err := meta.Accessor(obj)
 
 	if err != nil {

@@ -46,7 +46,7 @@ func (r *AccessToken) Default() {
 	accesstokenlog.Info("default", "name", r.Name)
 }
 
-// +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-accesstoken,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=accesstokens,versions=v1alpha1,name=vaccesstoken.kb.io
+// +kubebuilder:webhook:verbs=create;update;delete,path=/validate-core-kalm-dev-v1alpha1-accesstoken,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=accesstokens,versions=v1alpha1,name=vaccesstoken.kb.io
 
 var _ webhook.Validator = &AccessToken{}
 
