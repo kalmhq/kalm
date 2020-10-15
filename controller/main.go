@@ -62,11 +62,11 @@ func init() {
 		panic(err)
 	}
 
-	apiregistration.AddToScheme(scheme)
+	_ = apiregistration.AddToScheme(scheme)
 
-	elkv1.AddToScheme(scheme)
-	kibanav1.AddToScheme(scheme)
-	istioScheme.AddToScheme(scheme)
+	_ = elkv1.AddToScheme(scheme)
+	_ = kibanav1.AddToScheme(scheme)
+	_ = istioScheme.AddToScheme(scheme)
 
 	// +kubebuilder:scaffold:scheme
 }
@@ -91,6 +91,7 @@ func main() {
 		LeaderElectionNamespace: "kalm-system",
 		Port:                    9443,
 	})
+
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
@@ -177,6 +178,8 @@ func main() {
 
 	// only run webhook if explicitly declared
 	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
+		controllers.InitializeWebhookClient(mgr)
+
 		if err = (&corev1alpha1.AccessToken{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "AccessToken")
 			os.Exit(1)
@@ -244,6 +247,7 @@ func main() {
 	//+kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")
+
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
