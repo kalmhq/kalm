@@ -20,6 +20,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -52,6 +53,10 @@ var _ webhook.Validator = &AccessToken{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *AccessToken) ValidateCreate() error {
 	accesstokenlog.Info("validate create", "name", r.Name)
+
+	if err := AllocateTenantResource(r, ResourceAccessTokensCount, resource.MustParse("1")); err != nil {
+		return err
+	}
 
 	return r.validate()
 }
@@ -87,6 +92,11 @@ func GetAccessTokenNameFromToken(token string) string {
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *AccessToken) ValidateDelete() error {
 	accesstokenlog.Info("validate delete", "name", r.Name)
+
+	if err := ReleaseTenantResource(r, ResourceAccessTokensCount, resource.MustParse("1")); err != nil {
+		return err
+	}
+
 	return nil
 }
 

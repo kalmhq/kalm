@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -49,40 +51,85 @@ func NewInsufficientResourceError(tenant *Tenant, resourceName ResourceName, inc
 	}
 }
 
-func updateTenantResource(tenantName string, resourceName ResourceName, changes resource.Quantity) error {
-	var tenant Tenant
-
-	if err := webhookClient.Get(context.Background(), types.NamespacedName{
-		Name: tenantName,
-	}, &tenant); err != nil {
-		return err
-	}
-
+func updateTenantResource(tenant *Tenant, resourceName ResourceName, changes resource.Quantity) error {
 	limit := tenant.Spec.ResourceQuota[resourceName]
 	used := tenant.Status.UsedResourceQuota[resourceName]
 	used.Add(changes)
 
 	// used + increment >= limit
 	if used.AsDec().Cmp(limit.AsDec()) >= 0 {
-		return NewInsufficientResourceError(&tenant, resourceName, changes)
+		return NewInsufficientResourceError(tenant, resourceName, changes)
 	}
 
 	tenantCopy := tenant.DeepCopy()
 	tenantCopy.Status.UsedResourceQuota[resourceName] = used
 
-	return webhookClient.Status().Patch(context.Background(), tenantCopy, client.MergeFrom(&tenant))
+	return webhookClient.Status().Patch(context.Background(), tenantCopy, client.MergeFrom(tenant))
 }
 
-func AllocateTenantResource(tenantName string, resourceName ResourceName, increment resource.Quantity) error {
-	return updateTenantResource(tenantName, resourceName, increment)
+func AllocateTenantResource(obj runtime.Object, resourceName ResourceName, increment resource.Quantity) error {
+	tenant, err := GetTenantNameFromObj(obj)
+
+	if err != nil {
+		return err
+	}
+
+	return updateTenantResource(tenant, resourceName, increment)
 }
 
-func ReleaseTenantResource(tenantName string, resourceName ResourceName, decrement resource.Quantity) error {
+func ReleaseTenantResource(obj runtime.Object, resourceName ResourceName, decrement resource.Quantity) error {
+	tenant, err := GetTenantNameFromObj(obj)
+
+	if err != nil {
+		return err
+	}
+
 	decrement.Neg()
-	return updateTenantResource(tenantName, resourceName, decrement)
+
+	return updateTenantResource(tenant, resourceName, decrement)
 }
 
-func AdjustTenantResource(tenantName string, resourceName ResourceName, old resource.Quantity, new resource.Quantity) error {
+func AdjustTenantResource(obj runtime.Object, resourceName ResourceName, old resource.Quantity, new resource.Quantity) error {
+	tenant, err := GetTenantNameFromObj(obj)
+
+	if err != nil {
+		return err
+	}
+
 	new.Sub(old)
-	return updateTenantResource(tenantName, resourceName, new)
+
+	return updateTenantResource(tenant, resourceName, new)
+}
+
+func GetTenantNameFromObj(obj runtime.Object) (*Tenant, error) {
+
+	objMeta, err := meta.Accessor(obj)
+
+	if err != nil {
+		return nil, err
+	}
+
+	labels := objMeta.GetLabels()
+
+	if labels == nil {
+		return nil, fmt.Errorf("No labels in obj %+v", obj)
+	}
+
+	tenantName := labels["tenantName"]
+
+	if tenantName == "" {
+		return nil, fmt.Errorf("No tenant name found in obj %+v", obj)
+	}
+
+	objectKey := types.NamespacedName{
+		Name: tenantName,
+	}
+
+	var tenant Tenant
+
+	if err := webhookClient.Get(context.Background(), objectKey, &tenant); err != nil {
+		return nil, err
+	}
+
+	return &tenant, nil
 }

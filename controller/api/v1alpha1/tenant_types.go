@@ -27,10 +27,10 @@ const (
 	ResourceMemory            ResourceName = "memory"
 	ResourceTraffic           ResourceName = "traffic"
 	ResourceApplicationsCount ResourceName = "applicationsCount"
-	ComponentsCount           ResourceName = "componentsCount"
-	ServicesCount             ResourceName = "servicesCount"
-	UsersCount                ResourceName = "usersCount"
-	AccessTokensCount         ResourceName = "accessTokensCount"
+	ResourceComponentsCount   ResourceName = "componentsCount"
+	ResourceServicesCount     ResourceName = "servicesCount"
+	ResourceUsersCount        ResourceName = "usersCount"
+	ResourceAccessTokensCount ResourceName = "accessTokensCount"
 )
 
 type ResourceList map[ResourceName]resource.Quantity
