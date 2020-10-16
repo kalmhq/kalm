@@ -181,5 +181,25 @@ func InheritTenantFromNamespace(obj runtime.Object) error {
 
 	labels[TenantNameLabelKey] = tenant
 	objMeta.SetLabels(labels)
+
+	return nil
+}
+
+func SetTenantForObj(obj runtime.Object, tenantName string) error {
+	objMeta, err := meta.Accessor(obj)
+
+	if err != nil {
+		return err
+	}
+
+	labels := objMeta.GetLabels()
+
+	if labels == nil {
+		labels = make(map[string]string)
+	}
+
+	labels[TenantNameLabelKey] = tenantName
+	objMeta.SetLabels(labels)
+
 	return nil
 }
