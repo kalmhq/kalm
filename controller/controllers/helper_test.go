@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+
 	"github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	v1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/onsi/ginkgo"
@@ -11,18 +12,19 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"math/rand"
+	"path/filepath"
+	"time"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	"math/rand"
-	"path/filepath"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-	"time"
 )
 
 func init() {
@@ -162,6 +164,11 @@ func (suite *BasicSuite) SetupSuite() {
 			filepath.Join("resources", "istio"),
 			filepath.Join("resources"),
 			filepath.Join("..", "resources"),
+		},
+		WebhookInstallOptions: envtest.WebhookInstallOptions{
+			DirectoryPaths: []string{
+				filepath.Join("..", "config", "webhook", "manifests"),
+			},
 		},
 	}
 

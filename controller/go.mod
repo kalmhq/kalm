@@ -8,7 +8,7 @@ require (
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/dop251/goja v0.0.0-20200721192441-a695b0cdd498
 	github.com/elastic/cloud-on-k8s v0.0.0-20200721161711-b12a39f14ab1
-	github.com/go-logr/logr v0.2.0
+	github.com/go-logr/logr v0.1.0
 	github.com/go-openapi/validate v0.19.10
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/gogo/protobuf v1.3.1
@@ -28,10 +28,10 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 	istio.io/api v0.0.0-20200721175012-ae75c7e9ae26
 	istio.io/client-go v0.0.0-20200717004237-1af75184beba
-	k8s.io/api v0.19.2
-	k8s.io/apiextensions-apiserver v0.18.4
-	k8s.io/apimachinery v0.19.2
-	k8s.io/client-go v0.19.2
+	k8s.io/api v0.18.6
+	k8s.io/apiextensions-apiserver v0.18.6
+	k8s.io/apimachinery v0.18.6
+	k8s.io/client-go v0.18.6
 	k8s.io/kube-aggregator v0.17.2
-	sigs.k8s.io/controller-runtime v0.6.1
+	sigs.k8s.io/controller-runtime v0.6.3
 )
