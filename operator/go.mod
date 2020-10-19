@@ -11,10 +11,10 @@ require (
 	istio.io/api v0.0.0-20200721175012-ae75c7e9ae26
 	istio.io/client-go v0.0.0-20200717004237-1af75184beba
 	k8s.io/api v0.18.6
-	k8s.io/apiextensions-apiserver v0.18.4
+	k8s.io/apiextensions-apiserver v0.18.6
 	k8s.io/apimachinery v0.18.6
-	k8s.io/client-go v0.18.4
-	sigs.k8s.io/controller-runtime v0.6.1
+	k8s.io/client-go v0.18.6
+	sigs.k8s.io/controller-runtime v0.6.3
 )
 
 replace github.com/kalmhq/kalm/controller => ../controller

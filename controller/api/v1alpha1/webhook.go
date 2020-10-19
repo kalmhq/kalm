@@ -104,6 +104,16 @@ func AdjustTenantResource(obj runtime.Object, resourceName ResourceName, old res
 	return updateTenantResource(tenant, resourceName, new)
 }
 
+func AdjustTenantResourceByDelta(obj runtime.Object, resourceName ResourceName, delta resource.Quantity) error {
+	tenant, err := getTenantNameFromObj(obj)
+
+	if err != nil {
+		return err
+	}
+
+	return updateTenantResource(tenant, resourceName, delta)
+}
+
 func getTenantNameFromObj(obj runtime.Object) (*Tenant, error) {
 	objMeta, err := meta.Accessor(obj)
 
@@ -176,6 +186,7 @@ func InheritTenantFromNamespace(obj runtime.Object) error {
 	}
 
 	if tenant == "" {
+		//?
 		tenant = DefaultGlobalTenantName
 	}
 

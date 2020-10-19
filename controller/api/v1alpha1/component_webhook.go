@@ -18,17 +18,19 @@ package v1alpha1
 import (
 	//rbacvalidation "k8s.io/kubernetes/pkg/apis/rbac/validation"
 	"fmt"
+	"math/rand"
+	"strings"
+	"time"
+
 	"github.com/robfig/cron"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	apimachineryval "k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
-	"math/rand"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
-	"strings"
-	"time"
 )
 
 // log is for logging in this package.
@@ -99,8 +101,21 @@ var _ webhook.Validator = &Component{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateCreate() error {
 	componentlog.Info("validate create", "ns", r.Namespace, "name", r.Name)
-	errList := r.validate()
 
+	// component count
+	if err := AllocateTenantResource(r, ResourceComponentsCount, resource.MustParse("1")); err != nil {
+		return err
+	}
+
+	// resource limits like cpu & memory & storage
+	resourceLimits := getComponentResourceLimits(r)
+	for resName, limit := range resourceLimits {
+		if err := AllocateTenantResource(r, resName, limit); err != nil {
+			return err
+		}
+	}
+
+	errList := r.validate()
 	if errList == nil || len(errList) == 0 {
 		return nil
 	}
@@ -108,12 +123,54 @@ func (r *Component) ValidateCreate() error {
 	return error(errList)
 }
 
+// todo
+// - storage & ephemeralStorage
+// - cpu & memory: what about sideCar Istio
+func getComponentResourceLimits(r *Component) ResourceList {
+	limits := r.Spec.ResourceRequirements.Limits
+	replicas := r.Spec.Replicas
+
+	rstResList := make(map[ResourceName]resource.Quantity)
+	for resName, quantity := range limits {
+		// multi by replicas
+		newQuantity := multiQuantity(quantity, int(*replicas))
+
+		switch resName {
+		case v1.ResourceCPU:
+			rstResList[ResourceCPU] = newQuantity
+		case v1.ResourceMemory:
+			rstResList[ResourceMemory] = newQuantity
+		case v1.ResourceStorage:
+			rstResList[ResourceStorage] = newQuantity
+		case v1.ResourceEphemeralStorage:
+			rstResList[ResourceEphemeralStorage] = newQuantity
+		}
+	}
+
+	return rstResList
+}
+
+func multiQuantity(q resource.Quantity, multiplier int) resource.Quantity {
+	newVal := q.Value() * int64(multiplier)
+	return *resource.NewQuantity(newVal, resource.DecimalSI)
+}
+
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateUpdate(old runtime.Object) error {
 	componentlog.Info("validate update", "ns", r.Namespace, "name", r.Name)
 
-	var volErrList KalmValidateErrorList
+	// resource check
+	oldResLimits := getComponentResourceLimits(old.(*Component))
+	newResLimits := getComponentResourceLimits(r)
+	resourceDelta := getResourceDelta(oldResLimits, newResLimits)
 
+	for resName, limitDelta := range resourceDelta {
+		if err := AdjustTenantResourceByDelta(r, resName, limitDelta); err != nil {
+			return err
+		}
+	}
+
+	var volErrList KalmValidateErrorList
 	// for sts, persistent vols should be updated
 	if r.Spec.WorkloadType == WorkloadTypeStatefulSet {
 		if oldComponent, ok := old.(*Component); !ok {
@@ -143,6 +200,37 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 	}
 
 	return error(volErrList)
+}
+
+// from + rstDelta = to
+func getResourceDelta(from, to ResourceList) ResourceList {
+
+	rst := make(map[ResourceName]resource.Quantity)
+
+	for res, quantity := range from {
+		var delta resource.Quantity
+
+		if toQuantity, exist := to[res]; !exist {
+			quantity.Neg()
+			delta = quantity
+		} else {
+			toQuantity.Sub(quantity)
+			delta = toQuantity
+		}
+
+		rst[res] = delta
+	}
+
+	// deal with res not in from, but in to
+	for res, quantity := range to {
+		if _, exist := from[res]; exist {
+			continue
+		}
+
+		rst[res] = quantity
+	}
+
+	return rst
 }
 
 func isIdenticalVolMap(mapNew map[string]Volume, mapOld map[string]Volume) (bool, error) {
@@ -222,6 +310,15 @@ func (r *Component) validate() KalmValidateErrorList {
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateDelete() error {
 	componentlog.Info("validate delete", "name", r.Name)
+
+	// release resource
+	resourceLimits := getComponentResourceLimits(r)
+	for resName, limit := range resourceLimits {
+		if err := ReleaseTenantResource(r, resName, limit); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

@@ -2,10 +2,11 @@ package v1alpha1
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/resource"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"testing"
 )
 
 func TestComponentValidate(t *testing.T) {

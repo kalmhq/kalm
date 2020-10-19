@@ -30,6 +30,8 @@ type ResourceName string
 const (
 	ResourceCPU               ResourceName = "cpu"
 	ResourceMemory            ResourceName = "memory"
+	ResourceStorage           ResourceName = "memory"
+	ResourceEphemeralStorage  ResourceName = "memory"
 	ResourceTraffic           ResourceName = "traffic"
 	ResourceApplicationsCount ResourceName = "applicationsCount"
 	ResourceComponentsCount   ResourceName = "componentsCount"
