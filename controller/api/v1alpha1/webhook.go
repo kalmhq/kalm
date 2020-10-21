@@ -29,7 +29,7 @@ type InsufficientResourceError struct {
 
 func (e *InsufficientResourceError) Error() string {
 	limit := e.Tenant.Spec.ResourceQuota[e.ResourceName]
-	used := e.Tenant.Spec.ResourceQuota[e.ResourceName]
+	used := e.Tenant.Status.UsedResourceQuota[e.ResourceName]
 
 	lp := &limit
 	up := &used
@@ -52,6 +52,30 @@ func NewInsufficientResourceError(tenant *Tenant, resourceName ResourceName, inc
 	}
 }
 
+func updateTenantResourceInBatch(tenant *Tenant, resourceDeltaList map[ResourceName]resource.Quantity) error {
+	tenantCopy := tenant.DeepCopy()
+	if tenantCopy.Status.UsedResourceQuota == nil {
+		tenantCopy.Status.UsedResourceQuota = make(ResourceList)
+	}
+
+	for resourceName, delta := range resourceDeltaList {
+		limit := tenant.Spec.ResourceQuota[resourceName]
+
+		updatedUsed := tenant.Status.UsedResourceQuota[resourceName]
+		updatedUsed.Add(delta)
+
+		// used + increment > limit
+		if updatedUsed.AsDec().Cmp(limit.AsDec()) > 0 {
+			return NewInsufficientResourceError(tenant, resourceName, delta)
+		}
+
+		tenantCopy.Status.UsedResourceQuota[resourceName] = updatedUsed
+	}
+
+	// return webhookClient.Status().Update(context.Background(), tenantCopy)
+	return webhookClient.Status().Patch(context.Background(), tenantCopy, client.MergeFrom(tenant))
+}
+
 // concurrent update safe?
 // v1.18 server side apply
 func updateTenantResource(tenant *Tenant, resourceName ResourceName, changes resource.Quantity) error {
@@ -59,12 +83,17 @@ func updateTenantResource(tenant *Tenant, resourceName ResourceName, changes res
 	used := tenant.Status.UsedResourceQuota[resourceName]
 	used.Add(changes)
 
-	// used + increment >= limit
-	if used.AsDec().Cmp(limit.AsDec()) >= 0 {
+	// used + increment > limit
+	if used.AsDec().Cmp(limit.AsDec()) > 0 {
 		return NewInsufficientResourceError(tenant, resourceName, changes)
 	}
 
 	tenantCopy := tenant.DeepCopy()
+
+	if tenantCopy.Status.UsedResourceQuota == nil {
+		tenantCopy.Status.UsedResourceQuota = make(ResourceList)
+	}
+
 	tenantCopy.Status.UsedResourceQuota[resourceName] = used
 
 	return webhookClient.Status().Patch(context.Background(), tenantCopy, client.MergeFrom(tenant))
@@ -112,6 +141,15 @@ func AdjustTenantResourceByDelta(obj runtime.Object, resourceName ResourceName, 
 	}
 
 	return updateTenantResource(tenant, resourceName, delta)
+}
+
+func AdjustTenantByResourceListDelta(obj runtime.Object, resourceListDelta map[ResourceName]resource.Quantity) error {
+	tenant, err := getTenantNameFromObj(obj)
+	if err != nil {
+		return err
+	}
+
+	return updateTenantResourceInBatch(tenant, resourceListDelta)
 }
 
 func getTenantNameFromObj(obj runtime.Object) (*Tenant, error) {

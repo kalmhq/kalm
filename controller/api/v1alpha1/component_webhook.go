@@ -92,9 +92,31 @@ func (r *Component) Default() {
 
 		r.Spec.Volumes[i] = vol
 	}
+
+	// set default resourceRequirement & limits
+	if r.Spec.ResourceRequirements == nil {
+		r.Spec.ResourceRequirements = &v1.ResourceRequirements{}
+	}
+	if r.Spec.ResourceRequirements.Limits == nil {
+		r.Spec.ResourceRequirements.Limits = make(map[v1.ResourceName]resource.Quantity)
+	}
+
+	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceCPU]; !exist {
+		r.Spec.ResourceRequirements.Limits[v1.ResourceCPU] = resource.MustParse("500m")
+	}
+	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceMemory]; !exist {
+		r.Spec.ResourceRequirements.Limits[v1.ResourceMemory] = resource.MustParse("512Mi")
+	}
+	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceEphemeralStorage]; !exist {
+		r.Spec.ResourceRequirements.Limits[v1.ResourceEphemeralStorage] = resource.MustParse("1Gi")
+	}
+	// storage is not a standard resource for containers
+	// if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceStorage]; !exist {
+	// 	r.Spec.ResourceRequirements.Limits[v1.ResourceStorage] = resource.MustParse("1Gi")
+	// }
 }
 
-// +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-component,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=components,versions=v1alpha1,name=vcomponent.kb.io
+// +kubebuilder:webhook:verbs=create;update;delete,path=/validate-core-kalm-dev-v1alpha1-component,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=components,versions=v1alpha1,name=vcomponent.kb.io
 
 var _ webhook.Validator = &Component{}
 
@@ -102,17 +124,9 @@ var _ webhook.Validator = &Component{}
 func (r *Component) ValidateCreate() error {
 	componentlog.Info("validate create", "ns", r.Namespace, "name", r.Name)
 
-	// component count
-	if err := AllocateTenantResource(r, ResourceComponentsCount, resource.MustParse("1")); err != nil {
+	compResourceList := getComponentResourceList(r)
+	if err := AdjustTenantByResourceListDelta(r, compResourceList); err != nil {
 		return err
-	}
-
-	// resource limits like cpu & memory & storage
-	resourceLimits := getComponentResourceLimits(r)
-	for resName, limit := range resourceLimits {
-		if err := AllocateTenantResource(r, resName, limit); err != nil {
-			return err
-		}
 	}
 
 	errList := r.validate()
@@ -124,35 +138,83 @@ func (r *Component) ValidateCreate() error {
 }
 
 // todo
-// - storage & ephemeralStorage
 // - cpu & memory: what about sideCar Istio
-func getComponentResourceLimits(r *Component) ResourceList {
+func getComponentResourceList(r *Component) ResourceList {
+	if r.Spec.ResourceRequirements == nil || r.Spec.ResourceRequirements.Limits == nil {
+		componentlog.Info("see component without ResourceRequirements.Limits", "ns", r.Namespace, "name", r.Name)
+		return nil
+	}
+
+	rstResList := make(map[ResourceName]resource.Quantity)
+
+	// component count
+	inc(rstResList, ResourceComponentsCount, resource.MustParse("1"))
+
 	limits := r.Spec.ResourceRequirements.Limits
 	replicas := r.Spec.Replicas
 
-	rstResList := make(map[ResourceName]resource.Quantity)
+	// container resource limits
 	for resName, quantity := range limits {
 		// multi by replicas
 		newQuantity := multiQuantity(quantity, int(*replicas))
 
 		switch resName {
 		case v1.ResourceCPU:
-			rstResList[ResourceCPU] = newQuantity
+			inc(rstResList, ResourceCPU, newQuantity)
 		case v1.ResourceMemory:
-			rstResList[ResourceMemory] = newQuantity
-		case v1.ResourceStorage:
-			rstResList[ResourceStorage] = newQuantity
-		case v1.ResourceEphemeralStorage:
-			rstResList[ResourceEphemeralStorage] = newQuantity
+			inc(rstResList, ResourceMemory, newQuantity)
+			// case v1.ResourceStorage:
+			// 	inc(rstResList, ResourceStorage, newQuantity)
+			// case v1.ResourceEphemeralStorage:
+			// 	inc(rstResList, ResourceEphemeralStorage, newQuantity)
 		}
 	}
+
+	// storage usage
+	for _, vol := range r.Spec.Volumes {
+
+		totalSize := multiQuantity(vol.Size, int(*replicas))
+
+		switch vol.Type {
+		case VolumeTypeTemporaryMemory:
+			//memory
+			//todo this uses container.memory or not?
+			inc(rstResList, ResourceMemory, totalSize)
+
+		case VolumeTypeTemporaryDisk:
+			// ephemeralStorage
+			inc(rstResList, ResourceEphemeralStorage, totalSize)
+
+		case VolumeTypePersistentVolumeClaim, VolumeTypePersistentVolumeClaimTemplate:
+			// persist disk
+			inc(rstResList, ResourceStorage, totalSize)
+		}
+	}
+
+	// service
+	svcCount := 1
+	if r.Spec.WorkloadType == WorkloadTypeStatefulSet || r.Spec.EnableHeadlessService {
+		svcCount += 1
+	}
+	svcCountQuantity := resource.NewQuantity(int64(svcCount), resource.DecimalSI)
+
+	inc(rstResList, ResourceServicesCount, *svcCountQuantity)
 
 	return rstResList
 }
 
+func inc(resList map[ResourceName]resource.Quantity, resName ResourceName, delta resource.Quantity) {
+	if v, exist := resList[resName]; exist {
+		v.Add(delta)
+		resList[resName] = v
+	} else {
+		resList[resName] = delta
+	}
+}
+
 func multiQuantity(q resource.Quantity, multiplier int) resource.Quantity {
 	newVal := q.Value() * int64(multiplier)
-	return *resource.NewQuantity(newVal, resource.DecimalSI)
+	return *resource.NewQuantity(newVal, q.Format)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
@@ -160,14 +222,12 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 	componentlog.Info("validate update", "ns", r.Namespace, "name", r.Name)
 
 	// resource check
-	oldResLimits := getComponentResourceLimits(old.(*Component))
-	newResLimits := getComponentResourceLimits(r)
+	oldResLimits := getComponentResourceList(old.(*Component))
+	newResLimits := getComponentResourceList(r)
 	resourceDelta := getResourceDelta(oldResLimits, newResLimits)
 
-	for resName, limitDelta := range resourceDelta {
-		if err := AdjustTenantResourceByDelta(r, resName, limitDelta); err != nil {
-			return err
-		}
+	if err := AdjustTenantByResourceListDelta(r, resourceDelta); err != nil {
+		return err
 	}
 
 	var volErrList KalmValidateErrorList
@@ -312,11 +372,14 @@ func (r *Component) ValidateDelete() error {
 	componentlog.Info("validate delete", "name", r.Name)
 
 	// release resource
-	resourceLimits := getComponentResourceLimits(r)
-	for resName, limit := range resourceLimits {
-		if err := ReleaseTenantResource(r, resName, limit); err != nil {
-			return err
-		}
+	resourceLimits := getComponentResourceList(r)
+	for res, v := range resourceLimits {
+		v.Neg()
+		resourceLimits[res] = v
+	}
+
+	if err := AdjustTenantByResourceListDelta(r, resourceLimits); err != nil {
+		return err
 	}
 
 	return nil
