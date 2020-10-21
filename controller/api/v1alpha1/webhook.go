@@ -53,6 +53,10 @@ func NewInsufficientResourceError(tenant *Tenant, resourceName ResourceName, inc
 }
 
 func updateTenantResourceInBatch(tenant *Tenant, resourceDeltaList map[ResourceName]resource.Quantity) error {
+	if len(resourceDeltaList) == 0 {
+		return nil
+	}
+
 	tenantCopy := tenant.DeepCopy()
 	if tenantCopy.Status.UsedResourceQuota == nil {
 		tenantCopy.Status.UsedResourceQuota = make(ResourceList)
@@ -79,6 +83,10 @@ func updateTenantResourceInBatch(tenant *Tenant, resourceDeltaList map[ResourceN
 // concurrent update safe?
 // v1.18 server side apply
 func updateTenantResource(tenant *Tenant, resourceName ResourceName, changes resource.Quantity) error {
+	if changes.IsZero() {
+		return nil
+	}
+
 	limit := tenant.Spec.ResourceQuota[resourceName]
 	used := tenant.Status.UsedResourceQuota[resourceName]
 	used.Add(changes)
@@ -100,6 +108,10 @@ func updateTenantResource(tenant *Tenant, resourceName ResourceName, changes res
 }
 
 func AllocateTenantResource(obj runtime.Object, resourceName ResourceName, increment resource.Quantity) error {
+	if increment.IsZero() {
+		return nil
+	}
+
 	tenant, err := getTenantNameFromObj(obj)
 
 	if err != nil {
@@ -110,6 +122,10 @@ func AllocateTenantResource(obj runtime.Object, resourceName ResourceName, incre
 }
 
 func ReleaseTenantResource(obj runtime.Object, resourceName ResourceName, decrement resource.Quantity) error {
+	if decrement.IsZero() {
+		return nil
+	}
+
 	tenant, err := getTenantNameFromObj(obj)
 
 	if err != nil {
@@ -122,6 +138,10 @@ func ReleaseTenantResource(obj runtime.Object, resourceName ResourceName, decrem
 }
 
 func AdjustTenantResource(obj runtime.Object, resourceName ResourceName, old resource.Quantity, new resource.Quantity) error {
+	if old.Cmp(new) == 0 {
+		return nil
+	}
+
 	tenant, err := getTenantNameFromObj(obj)
 
 	if err != nil {
@@ -134,6 +154,10 @@ func AdjustTenantResource(obj runtime.Object, resourceName ResourceName, old res
 }
 
 func AdjustTenantResourceByDelta(obj runtime.Object, resourceName ResourceName, delta resource.Quantity) error {
+	if delta.IsZero() {
+		return nil
+	}
+
 	tenant, err := getTenantNameFromObj(obj)
 
 	if err != nil {
@@ -144,6 +168,10 @@ func AdjustTenantResourceByDelta(obj runtime.Object, resourceName ResourceName, 
 }
 
 func AdjustTenantByResourceListDelta(obj runtime.Object, resourceListDelta map[ResourceName]resource.Quantity) error {
+	if len(resourceListDelta) == 0 {
+		return nil
+	}
+
 	tenant, err := getTenantNameFromObj(obj)
 	if err != nil {
 		return err
@@ -210,7 +238,6 @@ func InheritTenantFromNamespace(obj runtime.Object) error {
 	}
 
 	namespaceMeta, err := meta.Accessor(&namespace)
-
 	if err != nil {
 		return err
 	}
@@ -251,4 +278,14 @@ func SetTenantForObj(obj runtime.Object, tenantName string) error {
 	objMeta.SetLabels(labels)
 
 	return nil
+}
+
+var sysNamespaceMap = map[string]interface{}{
+	"kalm-system":   true,
+	"kalm-operator": true,
+}
+
+func IsKalmSystemNamespace(ns string) bool {
+	_, exist := sysNamespaceMap[ns]
+	return exist
 }

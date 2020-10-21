@@ -2,8 +2,9 @@ package buildin
 
 import (
 	"context"
-	"k8s.io/api/admission/v1beta1"
 	"net/http"
+
+	"k8s.io/api/admission/v1beta1"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -40,7 +41,7 @@ func (v *NSValidator) Handle(ctx context.Context, req admission.Request) admissi
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
-		if isKalmSystemNamespace(ns) {
+		if v1alpha1.IsKalmSystemNamespace(ns.Name) {
 			return admission.Allowed("")
 		}
 
@@ -67,16 +68,6 @@ func (v *NSValidator) Handle(ctx context.Context, req admission.Request) admissi
 	}
 
 	return admission.Allowed("")
-}
-
-var sysNamespaceMap = map[string]interface{}{
-	"kalm-system":   true,
-	"kalm-operator": true,
-}
-
-func isKalmSystemNamespace(ns corev1.Namespace) bool {
-	_, exist := sysNamespaceMap[ns.Name]
-	return exist
 }
 
 // InjectDecoder injects the decoder.

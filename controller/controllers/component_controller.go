@@ -690,7 +690,7 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 	ctx := r.ctx
 	deployment := r.deployment
 	isNewDeployment := false
-	labelMap := podTemplateSpec.Labels //r.GetLabels()
+	labelMap := podTemplateSpec.Labels
 	annotations := r.GetAnnotations()
 
 	if deployment == nil {
@@ -1045,9 +1045,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 		}
 	}
 
-	//if len(pullImageSecretRefs) > 0 {
 	template.Spec.ImagePullSecrets = pullImageSecretRefs
-	//}
 
 	//decide affinity
 	if affinity, exist := r.decideAffinity(); exist {

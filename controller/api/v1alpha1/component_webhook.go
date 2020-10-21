@@ -114,6 +114,12 @@ func (r *Component) Default() {
 	// if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceStorage]; !exist {
 	// 	r.Spec.ResourceRequirements.Limits[v1.ResourceStorage] = resource.MustParse("1Gi")
 	// }
+
+	if !IsKalmSystemNamespace(r.Namespace) {
+		if err := InheritTenantFromNamespace(r); err != nil {
+			componentlog.Error(err, "fail to inherit tenant from ns for component", "component", r.Name, "ns", r.Namespace)
+		}
+	}
 }
 
 // +kubebuilder:webhook:verbs=create;update;delete,path=/validate-core-kalm-dev-v1alpha1-component,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=components,versions=v1alpha1,name=vcomponent.kb.io
@@ -124,9 +130,12 @@ var _ webhook.Validator = &Component{}
 func (r *Component) ValidateCreate() error {
 	componentlog.Info("validate create", "ns", r.Namespace, "name", r.Name)
 
-	compResourceList := getComponentResourceList(r)
-	if err := AdjustTenantByResourceListDelta(r, compResourceList); err != nil {
-		return err
+	if !IsKalmSystemNamespace(r.Namespace) {
+		compResourceList := getComponentResourceList(r)
+
+		if err := AdjustTenantByResourceListDelta(r, compResourceList); err != nil {
+			return err
+		}
 	}
 
 	errList := r.validate()
@@ -222,12 +231,14 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 	componentlog.Info("validate update", "ns", r.Namespace, "name", r.Name)
 
 	// resource check
-	oldResLimits := getComponentResourceList(old.(*Component))
-	newResLimits := getComponentResourceList(r)
-	resourceDelta := getResourceDelta(oldResLimits, newResLimits)
+	if !IsKalmSystemNamespace(r.Namespace) {
+		oldResLimits := getComponentResourceList(old.(*Component))
+		newResLimits := getComponentResourceList(r)
+		resourceDelta := getResourceDelta(oldResLimits, newResLimits)
 
-	if err := AdjustTenantByResourceListDelta(r, resourceDelta); err != nil {
-		return err
+		if err := AdjustTenantByResourceListDelta(r, resourceDelta); err != nil {
+			return err
+		}
 	}
 
 	var volErrList KalmValidateErrorList
@@ -372,14 +383,16 @@ func (r *Component) ValidateDelete() error {
 	componentlog.Info("validate delete", "name", r.Name)
 
 	// release resource
-	resourceLimits := getComponentResourceList(r)
-	for res, v := range resourceLimits {
-		v.Neg()
-		resourceLimits[res] = v
-	}
+	if !IsKalmSystemNamespace(r.Namespace) {
+		resourceLimits := getComponentResourceList(r)
+		for res, v := range resourceLimits {
+			v.Neg()
+			resourceLimits[res] = v
+		}
 
-	if err := AdjustTenantByResourceListDelta(r, resourceLimits); err != nil {
-		return err
+		if err := AdjustTenantByResourceListDelta(r, resourceLimits); err != nil {
+			return err
+		}
 	}
 
 	return nil
