@@ -21,19 +21,20 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/heroku/docker-registry-client/registry"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"regexp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-	"strings"
 
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
@@ -45,9 +46,10 @@ type DockerRegistryReconciler struct {
 
 type DockerRegistryReconcileTask struct {
 	*DockerRegistryReconciler
-	ctx      context.Context
-	registry *corev1alpha1.DockerRegistry
-	secret   *v1.Secret
+	ctx        context.Context
+	registry   *corev1alpha1.DockerRegistry
+	tenantName string
+	secret     *v1.Secret
 }
 
 func (r *DockerRegistryReconcileTask) WarningEvent(err error, msg string, args ...interface{}) {
@@ -59,7 +61,13 @@ func (r *DockerRegistryReconcileTask) NormalEvent(reason, msg string, args ...in
 }
 
 func (r *DockerRegistryReconcileTask) Run(req ctrl.Request) error {
-	if err := r.SetupAttributes(req); err != nil {
+	if err := r.LoadRegistry(req); err != nil {
+
+		if corev1alpha1.IsNoTenantFoundError(err) {
+			r.Log.Info("registry don't belong to a tenant, skip.", "name", r.registry.Name)
+			return nil
+		}
+
 		return client.IgnoreNotFound(err)
 	}
 
@@ -143,7 +151,8 @@ func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 	}
 
 	var nsList v1.NamespaceList
-	if err := r.Reader.List(r.ctx, &nsList); err != nil {
+
+	if err := r.Reader.List(r.ctx, &nsList, client.MatchingLabels{corev1alpha1.TenantNameLabelKey: r.tenantName}); err != nil {
 		return err
 	}
 
@@ -183,6 +192,7 @@ func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 
 		secret.Labels["kalm-docker-registry"] = r.registry.Name
 		secret.Labels["kalm-docker-registry-image-pull-secret"] = "true"
+		secret.Labels[corev1alpha1.TenantNameLabelKey] = r.tenantName
 
 		auth := r.secret.Data["username"]
 		auth = append(auth, []byte(":")...)
@@ -258,6 +268,7 @@ func IsRegistryAuthenticationSecret(secret *v1.Secret) bool {
 
 func (r *DockerRegistryReconcileTask) LoadResources(req ctrl.Request) (err error) {
 	var secret v1.Secret
+
 	err = r.Reader.Get(r.ctx, types.NamespacedName{
 		Namespace: "kalm-system",
 		Name:      GetRegistryAuthenticationName(req.Name),
@@ -289,14 +300,24 @@ func (r *DockerRegistryReconcileTask) LoadResources(req ctrl.Request) (err error
 	return
 }
 
-func (r *DockerRegistryReconcileTask) SetupAttributes(req ctrl.Request) (err error) {
+func (r *DockerRegistryReconcileTask) LoadRegistry(req ctrl.Request) (err error) {
 	var registry corev1alpha1.DockerRegistry
 	err = r.Reader.Get(r.ctx, req.NamespacedName, &registry)
 
 	if err != nil {
 		return err
 	}
+
 	r.registry = &registry
+
+	tenantName, err := corev1alpha1.GetTenantNameFromObj(&registry)
+
+	if err != nil {
+		return err
+	}
+
+	r.tenantName = tenantName
+
 	return
 }
 

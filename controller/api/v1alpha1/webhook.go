@@ -44,6 +44,20 @@ func (e *InsufficientResourceError) Error() string {
 	)
 }
 
+var NoTenantFoundError error = fmt.Errorf("No Tenant Error")
+
+func IsNoTenantFoundError(err error) bool {
+	return err == NoTenantFoundError
+}
+
+func IgnoreNoTenantFoundError(err error) error {
+	if IsNoTenantFoundError(err) {
+		return nil
+	}
+
+	return err
+}
+
 func NewInsufficientResourceError(tenant *Tenant, resourceName ResourceName, increment resource.Quantity) error {
 	return &InsufficientResourceError{
 		ResourceName: resourceName,
@@ -124,7 +138,7 @@ func AllocateTenantResource(obj runtime.Object, resourceName ResourceName, incre
 		return nil
 	}
 
-	tenant, err := getTenantNameFromObj(obj)
+	tenant, err := GetTenantFromObj(obj)
 
 	if err != nil {
 		return err
@@ -138,7 +152,7 @@ func ReleaseTenantResource(obj runtime.Object, resourceName ResourceName, decrem
 		return nil
 	}
 
-	tenant, err := getTenantNameFromObj(obj)
+	tenant, err := GetTenantFromObj(obj)
 
 	if err != nil {
 		return err
@@ -181,7 +195,7 @@ func AdjustTenantResource(obj runtime.Object, resourceName ResourceName, old res
 		return nil
 	}
 
-	tenant, err := getTenantNameFromObj(obj)
+	tenant, err := GetTenantFromObj(obj)
 
 	if err != nil {
 		return err
@@ -197,7 +211,7 @@ func AdjustTenantResourceByDelta(obj runtime.Object, resourceName ResourceName, 
 		return nil
 	}
 
-	tenant, err := getTenantNameFromObj(obj)
+	tenant, err := GetTenantFromObj(obj)
 
 	if err != nil {
 		return err
@@ -211,7 +225,7 @@ func AdjustTenantByResourceListDelta(obj runtime.Object, resourceListDelta map[R
 		return nil
 	}
 
-	tenant, err := getTenantNameFromObj(obj)
+	tenant, err := GetTenantFromObj(obj)
 	if err != nil {
 		return err
 	}
@@ -219,23 +233,33 @@ func AdjustTenantByResourceListDelta(obj runtime.Object, resourceListDelta map[R
 	return updateTenantResourceInBatch(tenant, resourceListDelta)
 }
 
-func getTenantNameFromObj(obj runtime.Object) (*Tenant, error) {
+func GetTenantNameFromObj(obj runtime.Object) (string, error) {
 	objMeta, err := meta.Accessor(obj)
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	labels := objMeta.GetLabels()
 
 	if labels == nil {
-		return nil, fmt.Errorf("No labels in obj %+v", obj)
+		return "", NoTenantFoundError
 	}
 
 	tenantName := labels[TenantNameLabelKey]
 
 	if tenantName == "" {
-		return nil, fmt.Errorf("No tenant name found in obj %+v", obj)
+		return "", NoTenantFoundError
+	}
+
+	return tenantName, nil
+}
+
+func GetTenantFromObj(obj runtime.Object) (*Tenant, error) {
+	tenantName, err := GetTenantNameFromObj(obj)
+
+	if err != nil {
+		return nil, err
 	}
 
 	objectKey := types.NamespacedName{
@@ -320,8 +344,11 @@ func SetTenantForObj(obj runtime.Object, tenantName string) error {
 }
 
 var sysNamespaceMap = map[string]interface{}{
-	"kalm-system":   true,
-	"kalm-operator": true,
+	"kalm-system":    true,
+	"kalm-operator":  true,
+	"istio-system":   true,
+	"istio-operator": true,
+	"cert-manager":   true,
 }
 
 func IsKalmSystemNamespace(ns string) bool {

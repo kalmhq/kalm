@@ -1,4 +1,4 @@
-package buildin
+package builtin
 
 import (
 	"context"
