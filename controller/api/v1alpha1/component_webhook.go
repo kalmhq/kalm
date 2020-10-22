@@ -118,6 +118,13 @@ func (r *Component) Default() {
 	if !IsKalmSystemNamespace(r.Namespace) {
 		if err := InheritTenantFromNamespace(r); err != nil {
 			componentlog.Error(err, "fail to inherit tenant from ns for component", "component", r.Name, "ns", r.Namespace)
+		} else {
+			// add tenant in spec.Labels to let underlying resources to inherit
+			if r.Spec.Labels == nil {
+				r.Spec.Labels = make(map[string]string)
+			}
+
+			r.Spec.Labels[TenantNameLabelKey] = r.Labels[TenantNameLabelKey]
 		}
 	}
 }
@@ -389,6 +396,9 @@ func (r *Component) ValidateDelete() error {
 			v.Neg()
 			resourceLimits[res] = v
 		}
+
+		// pvc(storage) won't delete after deletion of component
+		delete(resourceLimits, ResourceStorage)
 
 		if err := AdjustTenantByResourceListDelta(r, resourceLimits); err != nil {
 			return err

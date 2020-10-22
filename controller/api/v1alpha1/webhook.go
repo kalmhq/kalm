@@ -137,6 +137,21 @@ func ReleaseTenantResource(obj runtime.Object, resourceName ResourceName, decrem
 	return updateTenantResource(tenant, resourceName, decrement)
 }
 
+func ReleaseTenantResourceByName(tenantName string, resourceName ResourceName, decrement resource.Quantity) error {
+
+	var tenant Tenant
+
+	if err := webhookClient.Get(context.Background(), types.NamespacedName{
+		Name: tenantName,
+	}, &tenant); err != nil {
+		return err
+	}
+
+	decrement.Neg()
+
+	return updateTenantResource(&tenant, resourceName, decrement)
+}
+
 func AdjustTenantResource(obj runtime.Object, resourceName ResourceName, old resource.Quantity, new resource.Quantity) error {
 	if old.Cmp(new) == 0 {
 		return nil

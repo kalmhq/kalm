@@ -449,3 +449,22 @@ webhooks:
     - UPDATE
     resources:
     - pods
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /admission-handler-v1-pv
+  failurePolicy: Fail
+  name: vpv.kb.io
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    - DELETE
+    resources:
+    - persistentvolumes

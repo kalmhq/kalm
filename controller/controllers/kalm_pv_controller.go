@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -175,6 +176,11 @@ func (r *KalmPVReconciler) reconcilePV(pvName string) error {
 	pv.Labels[KalmLabelNamespaceKey] = pvc.Labels[KalmLabelNamespaceKey]
 	// to be selectable by PV
 	pv.Labels[KalmLabelPV] = pv.Name
+	// inherit tenant
+	tenant := pvc.Labels[v1alpha1.TenantNameLabelKey]
+	if tenant != "" {
+		pv.Labels[v1alpha1.TenantNameLabelKey] = tenant
+	}
 
 	// bounded pvc exist, safe to clean locker label
 	delete(pv.Labels, KalmLabelPVLocker)
@@ -283,9 +289,10 @@ func (r *KalmPVReconciler) reconcileOrphanPV(orphanPV *corev1.PersistentVolume) 
 			Name:      pvcName,
 			Namespace: KalmSystemNamespace,
 			Labels: map[string]string{
-				KalmLabelManaged:      "true",
-				KalmLabelComponentKey: orphanPV.Labels[KalmLabelComponentKey],
-				KalmLabelNamespaceKey: orphanPV.Labels[KalmLabelNamespaceKey],
+				KalmLabelManaged:            "true",
+				KalmLabelComponentKey:       orphanPV.Labels[KalmLabelComponentKey],
+				KalmLabelNamespaceKey:       orphanPV.Labels[KalmLabelNamespaceKey],
+				v1alpha1.TenantNameLabelKey: orphanPV.Labels[v1alpha1.TenantNameLabelKey],
 			},
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{

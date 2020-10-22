@@ -244,8 +244,13 @@ func main() {
 		}
 
 		hookServer := mgr.GetWebhookServer()
+		// ns webhook
 		hookServer.Register("/validate-v1-ns", &webhook.Admission{
 			Handler: &buildin.NSValidator{},
+		})
+		// pv webhook
+		hookServer.Register("/admission-handler-v1-pv", &webhook.Admission{
+			Handler: &buildin.PVAdmissionHandler{},
 		})
 
 		setupLog.Info("WEBHOOK enabled")
