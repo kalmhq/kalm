@@ -222,8 +222,8 @@ func inc(resList map[ResourceName]resource.Quantity, resName ResourceName, delta
 }
 
 func multiQuantity(q resource.Quantity, multiplier int) resource.Quantity {
-	newVal := q.Value() * int64(multiplier)
-	return *resource.NewQuantity(newVal, q.Format)
+	newVal := q.MilliValue() * int64(multiplier)
+	return *resource.NewMilliQuantity(newVal, q.Format)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
