@@ -137,6 +137,10 @@ var _ webhook.Validator = &Component{}
 func (r *Component) ValidateCreate() error {
 	componentlog.Info("validate create", "ns", r.Namespace, "name", r.Name)
 
+	if errList := r.validate(); len(errList) >= 0 {
+		return error(errList)
+	}
+
 	if !IsKalmSystemNamespace(r.Namespace) {
 		compResourceList := getComponentResourceList(r)
 
@@ -145,12 +149,7 @@ func (r *Component) ValidateCreate() error {
 		}
 	}
 
-	errList := r.validate()
-	if errList == nil || len(errList) == 0 {
-		return nil
-	}
-
-	return error(errList)
+	return nil
 }
 
 // todo

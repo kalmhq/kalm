@@ -107,7 +107,7 @@ func (r *HttpRoute) validate() error {
 		if *timeout <= 0 {
 			rst = append(rst, KalmValidateError{
 				Err:  "should be positive",
-				Path: fmt.Sprintf("spec.timeout"),
+				Path: "spec.timeout",
 			})
 		}
 	}

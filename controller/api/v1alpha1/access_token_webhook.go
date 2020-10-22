@@ -58,11 +58,15 @@ var _ webhook.Validator = &AccessToken{}
 func (r *AccessToken) ValidateCreate() error {
 	accesstokenlog.Info("validate create", "name", r.Name)
 
+	if err := r.validate(); err != nil {
+		return err
+	}
+
 	if err := AllocateTenantResource(r, ResourceAccessTokensCount, resource.MustParse("1")); err != nil {
 		return err
 	}
 
-	return r.validate()
+	return nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type

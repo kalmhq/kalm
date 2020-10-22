@@ -65,11 +65,15 @@ func (r *RoleBinding) GetNameBaseOnRoleAndSubject() string {
 func (r *RoleBinding) ValidateCreate() error {
 	rolebindinglog.Info("validate create", "name", r.Name)
 
+	if err := r.validate(); err != nil {
+		return err
+	}
+
 	if err := AllocateTenantResource(r, ResourceRoleBindingCount, resource.MustParse("1")); err != nil {
 		return err
 	}
 
-	return r.validate()
+	return nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
