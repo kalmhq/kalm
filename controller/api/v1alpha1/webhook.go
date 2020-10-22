@@ -107,6 +107,18 @@ func updateTenantResource(tenant *Tenant, resourceName ResourceName, changes res
 	return webhookClient.Status().Patch(context.Background(), tenantCopy, client.MergeFrom(tenant))
 }
 
+func setTenantResource(tenant *Tenant, resourceName ResourceName, quantity resource.Quantity) error {
+
+	tenantCopy := tenant.DeepCopy()
+	if tenantCopy.Status.UsedResourceQuota == nil {
+		tenantCopy.Status.UsedResourceQuota = make(ResourceList)
+	}
+
+	tenantCopy.Status.UsedResourceQuota[resourceName] = quantity
+
+	return webhookClient.Status().Patch(context.Background(), tenantCopy, client.MergeFrom(tenant))
+}
+
 func AllocateTenantResource(obj runtime.Object, resourceName ResourceName, increment resource.Quantity) error {
 	if increment.IsZero() {
 		return nil
@@ -150,6 +162,18 @@ func ReleaseTenantResourceByName(tenantName string, resourceName ResourceName, d
 	decrement.Neg()
 
 	return updateTenantResource(&tenant, resourceName, decrement)
+}
+
+func SetTenantResourceByName(tenantName string, resourceName ResourceName, quantity resource.Quantity) error {
+
+	var tenant Tenant
+	if err := webhookClient.Get(context.Background(), types.NamespacedName{
+		Name: tenantName,
+	}, &tenant); err != nil {
+		return err
+	}
+
+	return setTenantResource(&tenant, resourceName, quantity)
 }
 
 func AdjustTenantResource(obj runtime.Object, resourceName ResourceName, old resource.Quantity, new resource.Quantity) error {

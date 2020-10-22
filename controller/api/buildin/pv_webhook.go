@@ -5,7 +5,10 @@ import (
 	"net/http"
 
 	"k8s.io/api/admission/v1beta1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -18,11 +21,14 @@ var pvAdmissionHandlerLog = logf.Log.WithName("pv-admission-handler")
 
 // webhook for PV
 type PVAdmissionHandler struct {
+	client  client.Client
 	decoder *admission.Decoder
 }
 
 var _ admission.Handler = &PVAdmissionHandler{}
+
 var _ admission.DecoderInjector = &PVAdmissionHandler{}
+var _ inject.Client = &PVAdmissionHandler{}
 
 func (v *PVAdmissionHandler) Handle(ctx context.Context, req admission.Request) admission.Response {
 
@@ -44,12 +50,28 @@ func (v *PVAdmissionHandler) Handle(ctx context.Context, req admission.Request) 
 			return admission.Allowed("")
 		}
 
-		size := *pv.Spec.Capacity.Storage()
-		if err := v1alpha1.ReleaseTenantResource(&pv, v1alpha1.ResourceStorage, size); err != nil {
+		var tenantPVList corev1.PersistentVolumeList
+		if err := v.client.List(ctx, &tenantPVList, client.MatchingLabels{
+			v1alpha1.TenantNameLabelKey: pvTenant,
+		}); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
-		pvAdmissionHandlerLog.Info("pv released", "tenant", pvTenant, "size", size)
+		var size resource.Quantity
+		for _, tmpPV := range tenantPVList.Items {
+			// ignore pv been deleted
+			if tmpPV.Name == pv.Name {
+				continue
+			}
+
+			size.Add(*pv.Spec.Capacity.Storage())
+		}
+
+		if err := v1alpha1.SetTenantResourceByName(pvTenant, v1alpha1.ResourceStorage, size); err != nil {
+			return admission.Errored(http.StatusBadRequest, err)
+		}
+
+		pvAdmissionHandlerLog.Info("pv occupation updated", "tenant", pvTenant, "newOccupation", size)
 	}
 
 	return admission.Allowed("")
@@ -58,5 +80,10 @@ func (v *PVAdmissionHandler) Handle(ctx context.Context, req admission.Request) 
 // InjectDecoder injects the decoder.
 func (v *PVAdmissionHandler) InjectDecoder(d *admission.Decoder) error {
 	v.decoder = d
+	return nil
+}
+
+func (v *PVAdmissionHandler) InjectClient(c client.Client) error {
+	v.client = c
 	return nil
 }
