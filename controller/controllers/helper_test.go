@@ -3,19 +3,19 @@ package controllers
 import (
 	"context"
 	"fmt"
-
-	"github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
-	v1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
-	"github.com/onsi/ginkgo"
-	"github.com/stretchr/testify/suite"
-	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
-	v1 "k8s.io/api/core/v1"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"math/rand"
+	"net"
 	"path/filepath"
 	"time"
 
+	"github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	"github.com/kalmhq/kalm/controller/api/buildin"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"github.com/stretchr/testify/suite"
+	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -25,6 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 func init() {
@@ -34,10 +35,10 @@ func init() {
 type BasicSuite struct {
 	suite.Suite
 
-	Cfg            *rest.Config
-	K8sClient      client.Client
-	TestEnv        *envtest.Environment
-	MgrStopChannel chan struct{}
+	Cfg         *rest.Config
+	K8sClient   client.Client
+	TestEnv     *envtest.Environment
+	StopChannel <-chan struct{}
 }
 
 func (suite *BasicSuite) Eventually(condition func() bool, msgAndArgs ...interface{}) {
@@ -137,7 +138,7 @@ func (suite *BasicSuite) updateObject(obj runtime.Object) {
 }
 
 func (suite *BasicSuite) createObject(obj runtime.Object) {
-	suite.Nil(suite.K8sClient.Create(context.Background(), obj))
+	suite.Require().Nil(suite.K8sClient.Create(context.Background(), obj))
 }
 
 func (suite *BasicSuite) reloadComponent(component *v1alpha1.Component) {
@@ -152,8 +153,40 @@ func (suite *BasicSuite) createComponent(component *v1alpha1.Component) {
 	suite.createObject(component)
 }
 
+// Infinit loop. Caller needs to handle timeout
+func waitPortConnectable(addr string) {
+	var conn net.Conn
+	var err error
+
+	var firstRun bool
+
+	for {
+		if !firstRun {
+			time.Sleep(50 * time.Millisecond)
+		}
+
+		conn, err = net.DialTimeout("tcp", addr, time.Duration(3)*time.Second)
+
+		if err != nil {
+			continue
+		}
+
+		if conn == nil {
+			continue
+		}
+
+		conn.Close()
+		break
+	}
+}
+
 func (suite *BasicSuite) SetupSuite() {
-	logf.SetLogger(zap.New(zap.UseDevMode(true), zap.WriteTo(ginkgo.GinkgoWriter)))
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	suite.Nil(scheme.AddToScheme(scheme.Scheme))
+	suite.Nil(istioScheme.AddToScheme(scheme.Scheme))
+	suite.Nil(v1alpha1.AddToScheme(scheme.Scheme))
+	suite.Nil(v1alpha2.AddToScheme(scheme.Scheme))
 
 	// bootstrapping test environment
 	testEnv := &envtest.Environment{
@@ -167,8 +200,9 @@ func (suite *BasicSuite) SetupSuite() {
 		},
 		WebhookInstallOptions: envtest.WebhookInstallOptions{
 			DirectoryPaths: []string{
-				filepath.Join("..", "config", "webhook", "manifests"),
+				filepath.Join("..", "config", "webhook"),
 			},
+			MaxTime: time.Duration(30 * time.Second),
 		},
 	}
 
@@ -176,63 +210,87 @@ func (suite *BasicSuite) SetupSuite() {
 	cfg, err := testEnv.Start()
 	suite.Nil(err)
 	suite.NotNil(cfg)
-	suite.Nil(scheme.AddToScheme(scheme.Scheme))
-	suite.Nil(istioScheme.AddToScheme(scheme.Scheme))
-	suite.Nil(v1alpha1.AddToScheme(scheme.Scheme))
-	suite.Nil(v1alpha2.AddToScheme(scheme.Scheme))
 
 	// +kubebuilder:scaffold:scheme
+
+	zapLog := zap.Logger(true)
 
 	min := 2000
 	max := 8000
 	port := rand.Intn(max-min) + min
 
-	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
+	mgrOptions := ctrl.Options{
 		Scheme:             scheme.Scheme,
 		MetricsBindAddress: fmt.Sprintf("localhost:%d", port),
+		Logger:             zapLog,
+		Port:               testEnv.WebhookInstallOptions.LocalServingPort,
+		Host:               testEnv.WebhookInstallOptions.LocalServingHost,
+		CertDir:            testEnv.WebhookInstallOptions.LocalServingCertDir,
+	}
+
+	mgr, err := ctrl.NewManager(cfg, mgrOptions)
+
+	webhookServer := mgr.GetWebhookServer()
+	webhookServer.Register("/validate-v1-ns", &webhook.Admission{
+		Handler: &buildin.NSValidator{},
 	})
 
-	suite.NotNil(mgr)
-	suite.Nil(err)
+	suite.Require().NotNil(mgr)
+	suite.Require().Nil(err)
 
-	suite.Nil(NewKalmNSReconciler(mgr).SetupWithManager(mgr))
-	suite.Nil(NewKalmPVCReconciler(mgr).SetupWithManager(mgr))
-	suite.Nil(NewKalmPVReconciler(mgr).SetupWithManager(mgr))
+	suite.Require().Nil(NewKalmNSReconciler(mgr).SetupWithManager(mgr))
+	suite.Require().Nil(NewKalmPVCReconciler(mgr).SetupWithManager(mgr))
+	suite.Require().Nil(NewKalmPVReconciler(mgr).SetupWithManager(mgr))
 
-	suite.Nil(NewComponentReconciler(mgr).SetupWithManager(mgr))
-	suite.Nil(NewComponentPluginReconciler(mgr).SetupWithManager(mgr))
-	suite.Nil(NewComponentPluginBindingReconciler(mgr).SetupWithManager(mgr))
+	suite.Require().Nil(NewComponentReconciler(mgr).SetupWithManager(mgr))
+	suite.Require().Nil(NewComponentPluginReconciler(mgr).SetupWithManager(mgr))
+	suite.Require().Nil(NewComponentPluginBindingReconciler(mgr).SetupWithManager(mgr))
 
-	suite.Nil(NewHttpsCertIssuerReconciler(mgr).SetupWithManager(mgr))
-	suite.Nil(NewHttpsCertReconciler(mgr).SetupWithManager(mgr))
+	suite.Require().Nil(NewHttpsCertIssuerReconciler(mgr).SetupWithManager(mgr))
+	suite.Require().Nil(NewHttpsCertReconciler(mgr).SetupWithManager(mgr))
 
-	suite.Nil(NewDockerRegistryReconciler(mgr).SetupWithManager(mgr))
-	suite.Nil(NewHttpRouteReconciler(mgr).SetupWithManager(mgr))
-	suite.Nil(NewGatewayReconciler(mgr).SetupWithManager(mgr))
-	suite.Nil(NewSingleSignOnConfigReconciler(mgr).SetupWithManager(mgr))
-	suite.Nil(NewProtectedEndpointReconciler(mgr).SetupWithManager(mgr))
+	suite.Require().Nil(NewDockerRegistryReconciler(mgr).SetupWithManager(mgr))
+	suite.Require().Nil(NewHttpRouteReconciler(mgr).SetupWithManager(mgr))
+	suite.Require().Nil(NewGatewayReconciler(mgr).SetupWithManager(mgr))
+	suite.Require().Nil(NewSingleSignOnConfigReconciler(mgr).SetupWithManager(mgr))
+	suite.Require().Nil(NewProtectedEndpointReconciler(mgr).SetupWithManager(mgr))
 
-	mgrStopChannel := make(chan struct{})
-	suite.MgrStopChannel = mgrStopChannel
+	v1alpha1.InitializeWebhookClient(mgr)
+	suite.Require().Nil((&v1alpha1.AccessToken{}).SetupWebhookWithManager(mgr))
+	suite.Require().Nil((&v1alpha1.RoleBinding{}).SetupWebhookWithManager(mgr))
+	suite.Require().Nil((&v1alpha1.Component{}).SetupWebhookWithManager(mgr))
+	suite.Require().Nil((&v1alpha1.ComponentPluginBinding{}).SetupWebhookWithManager(mgr))
+	suite.Require().Nil((&v1alpha1.DockerRegistry{}).SetupWebhookWithManager(mgr))
+	suite.Require().Nil((&v1alpha1.HttpRoute{}).SetupWebhookWithManager(mgr))
+	suite.Require().Nil((&v1alpha1.HttpsCert{}).SetupWebhookWithManager(mgr))
+	suite.Require().Nil((&v1alpha1.HttpsCertIssuer{}).SetupWebhookWithManager(mgr))
+	suite.Require().Nil((&v1alpha1.ProtectedEndpoint{}).SetupWebhookWithManager(mgr))
+	suite.Require().Nil((&v1alpha1.SingleSignOnConfig{}).SetupWebhookWithManager(mgr))
+	suite.Require().Nil((&v1alpha1.LogSystem{}).SetupWebhookWithManager(mgr))
+	suite.Require().Nil((&v1alpha1.ACMEServer{}).SetupWebhookWithManager(mgr))
+
+	mgrStopChannel := ctrl.SetupSignalHandler()
+	suite.StopChannel = mgrStopChannel
 
 	go func() {
 		err = mgr.Start(mgrStopChannel)
-		suite.Nil(err)
+		suite.Require().Nil(err)
 	}()
 
-	k8sClient := mgr.GetClient()
-	suite.NotNil(k8sClient)
+	// wait webhook server is ready to accept requests.
+	waitPortConnectable(fmt.Sprintf("%s:%d", mgrOptions.Host, mgrOptions.Port))
+
+	// https://github.com/kubernetes-sigs/controller-runtime/issues/550#issuecomment-518818318
+	client := mgr.GetClient()
+	// client, err := client.New(cfg, client.Options{Scheme: scheme.Scheme})
+	suite.NotNil(client)
 
 	suite.TestEnv = testEnv
-	suite.K8sClient = k8sClient
+	suite.K8sClient = client
 	suite.Cfg = cfg
 }
 
 func (suite *BasicSuite) TearDownSuite() {
-	if suite.MgrStopChannel != nil {
-		suite.MgrStopChannel <- struct{}{}
-	}
-
 	if suite.TestEnv != nil {
 		suite.Nil(suite.TestEnv.Stop())
 	}
@@ -278,7 +336,39 @@ func randomName() string {
 	return string(b)
 }
 
+func (suite *BasicSuite) SetupTenant() *v1alpha1.Tenant {
+	name := randomName()
+
+	tenant := &v1alpha1.Tenant{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name: name,
+		},
+		Spec: v1alpha1.TenantSpec{
+			TenantDisplayName: "test-tenant-" + name,
+			ResourceQuota: map[v1alpha1.ResourceName]resource.Quantity{
+				v1alpha1.ResourceApplicationsCount: resource.MustParse("100"),
+				v1alpha1.ResourceServicesCount:     resource.MustParse("100"),
+				v1alpha1.ResourceComponentsCount:   resource.MustParse("100"),
+				v1alpha1.ResourceCPU:               resource.MustParse("100"),
+				v1alpha1.ResourceMemory:            resource.MustParse("100Gi"),
+			},
+			Owners: []string{"david"},
+		},
+	}
+
+	suite.Require().Nil(suite.K8sClient.Create(context.Background(), tenant))
+
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: tenant.Name}, tenant)
+		return err == nil
+	})
+
+	return tenant
+}
+
 func (suite *BasicSuite) SetupKalmEnabledNs(nameOpt ...string) v1.Namespace {
+	tenant := suite.SetupTenant()
+
 	var name string
 
 	if len(nameOpt) > 0 && nameOpt[0] != "" {
@@ -291,11 +381,14 @@ func (suite *BasicSuite) SetupKalmEnabledNs(nameOpt ...string) v1.Namespace {
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: name,
 			Labels: map[string]string{
-				KalmEnableLabelName: "true",
+				KalmEnableLabelName:         "true",
+				v1alpha1.TenantNameLabelKey: tenant.Name,
 			},
 		},
 	}
-	suite.Nil(suite.K8sClient.Create(context.Background(), &ns))
+
+	suite.Require().Nil(suite.K8sClient.Create(context.Background(), &ns))
+
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: ns.Name}, &ns)
 		return err == nil

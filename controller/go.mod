@@ -16,14 +16,11 @@ require (
 	github.com/jetstack/cert-manager v0.13.1
 	github.com/joho/godotenv v1.3.0
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
-	github.com/onsi/ginkgo v1.12.1
-	github.com/onsi/gomega v1.10.1
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.6.0 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/xeipuuv/gojsonschema v1.2.0
-	go.etcd.io/etcd v0.0.0-20191023171146-3cf2f69b5738
 	golang.org/x/mod v0.3.0 // indirect
 	golang.org/x/tools v0.0.0-20200616133436-c1934b75d054 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
