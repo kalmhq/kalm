@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
-	"github.com/kalmhq/kalm/controller/api/buildin"
+	"github.com/kalmhq/kalm/controller/api/builtin"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
@@ -232,7 +232,7 @@ func (suite *BasicSuite) SetupSuite() {
 
 	webhookServer := mgr.GetWebhookServer()
 	webhookServer.Register("/validate-v1-ns", &webhook.Admission{
-		Handler: &buildin.NSValidator{},
+		Handler: &builtin.NSValidator{},
 	})
 
 	suite.Require().NotNil(mgr)

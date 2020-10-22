@@ -33,7 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	"github.com/kalmhq/kalm/controller/api/buildin"
+	"github.com/kalmhq/kalm/controller/api/builtin"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
@@ -245,7 +245,7 @@ func main() {
 
 		hookServer := mgr.GetWebhookServer()
 		hookServer.Register("/validate-v1-ns", &webhook.Admission{
-			Handler: &buildin.NSValidator{},
+			Handler: &builtin.NSValidator{},
 		})
 
 		setupLog.Info("WEBHOOK enabled")

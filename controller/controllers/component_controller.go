@@ -1220,7 +1220,7 @@ func (r *ComponentReconcilerTask) runPlugins(methodName string, component *corev
 
 		rt := r.initPluginRuntime(component)
 
-		r.insertBuildInPluginImpls(rt, binding.Spec.PluginName, methodName, component, desc, args)
+		r.insertBuiltInPluginImpls(rt, binding.Spec.PluginName, methodName, component, desc, args)
 
 		// TODO refactor this filter
 		if pluginProgram.Methods[ComponentPluginMethodComponentFilter] {
@@ -1719,7 +1719,7 @@ func (r *ComponentReconcilerTask) LoadItem(dest runtime.Object) (err error) {
 	return nil
 }
 
-func (r *ComponentReconcilerTask) insertBuildInPluginImpls(rt *js.Runtime, pluginName, methodName string, component *corev1alpha1.Component, desc interface{}, args []interface{}) {
+func (r *ComponentReconcilerTask) insertBuiltInPluginImpls(rt *js.Runtime, pluginName, methodName string, component *corev1alpha1.Component, desc interface{}, args []interface{}) {
 	// TODO
 }
 
