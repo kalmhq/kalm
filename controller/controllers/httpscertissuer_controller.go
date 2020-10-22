@@ -27,19 +27,20 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"math/big"
+	"os"
+	"time"
+
 	"github.com/jetstack/cert-manager/pkg/apis/acme/v1alpha2"
 	cmmetav1 "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"math/big"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"time"
 
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -59,9 +60,10 @@ func (r *HttpsCertIssuerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 
 	certMgrNs := corev1.Namespace{}
 	err := r.Get(ctx, client.ObjectKey{Name: CertManagerNamespace}, &certMgrNs)
+
 	if err != nil {
 		if errors.IsNotFound(err) {
-			r.Log.Error(err, fmt.Sprintf("%s not setup, HttpsCertIssuerReconciler skipped", CertManagerNamespace))
+			r.Log.Info(fmt.Sprintf("%s not setup, HttpsCertIssuerReconciler skipped", CertManagerNamespace))
 			return ctrl.Result{}, nil
 		}
 

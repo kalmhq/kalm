@@ -38,7 +38,7 @@ type BasicSuite struct {
 	Cfg         *rest.Config
 	K8sClient   client.Client
 	TestEnv     *envtest.Environment
-	StopChannel <-chan struct{}
+	StopChannel chan struct{}
 }
 
 func (suite *BasicSuite) Eventually(condition func() bool, msgAndArgs ...interface{}) {
@@ -269,7 +269,7 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.Require().Nil((&v1alpha1.LogSystem{}).SetupWebhookWithManager(mgr))
 	suite.Require().Nil((&v1alpha1.ACMEServer{}).SetupWebhookWithManager(mgr))
 
-	mgrStopChannel := ctrl.SetupSignalHandler()
+	mgrStopChannel := make(chan struct{})
 	suite.StopChannel = mgrStopChannel
 
 	go func() {
@@ -291,6 +291,9 @@ func (suite *BasicSuite) SetupSuite() {
 }
 
 func (suite *BasicSuite) TearDownSuite() {
+	if suite.StopChannel != nil {
+		suite.StopChannel <- struct{}{}
+	}
 	if suite.TestEnv != nil {
 		suite.Nil(suite.TestEnv.Stop())
 	}
