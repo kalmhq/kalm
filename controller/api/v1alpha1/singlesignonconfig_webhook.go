@@ -18,6 +18,8 @@ package v1alpha1
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -25,7 +27,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
-	"strconv"
 )
 
 // log is for logging in this package.
@@ -82,6 +83,10 @@ func (r *SingleSignOnConfig) Default() {
 
 	if r.Spec.IDTokenExpirySeconds == nil {
 		r.Spec.IDTokenExpirySeconds = &SSODefaultIDTokenExpirySeconds
+	}
+
+	if err := InheritTenantFromNamespace(r); err != nil {
+		singlesignonconfiglog.Error(err, "fail to inherit tenant from ns", "sso", r.Name, "ns", r.Namespace)
 	}
 }
 

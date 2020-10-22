@@ -44,6 +44,10 @@ var _ webhook.Defaulter = &AccessToken{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *AccessToken) Default() {
 	accesstokenlog.Info("default", "name", r.Name)
+
+	if err := InheritTenantFromNamespace(r); err != nil {
+		accesstokenlog.Error(err, "fail to inherit tenant from ns", "accessToken", r.Name, "ns", r.Namespace)
+	}
 }
 
 // +kubebuilder:webhook:verbs=create;update;delete,path=/validate-core-kalm-dev-v1alpha1-accesstoken,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=accesstokens,versions=v1alpha1,name=vaccesstoken.kb.io

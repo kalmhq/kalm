@@ -19,6 +19,7 @@ import (
 	"crypto/md5"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -41,6 +42,10 @@ var _ webhook.Defaulter = &RoleBinding{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *RoleBinding) Default() {
 	rolebindinglog.Info("default", "name", r.Name)
+
+	if err := InheritTenantFromNamespace(r); err != nil {
+		rolebindinglog.Error(err, "fail to inherit tenant from ns", "roleBinding", r.Name, "ns", r.Namespace)
+	}
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-rolebinding,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=rolebindings,versions=v1alpha1,name=vrolebinding.kb.io
@@ -59,6 +64,11 @@ func (r *RoleBinding) GetNameBaseOnRoleAndSubject() string {
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *RoleBinding) ValidateCreate() error {
 	rolebindinglog.Info("validate create", "name", r.Name)
+
+	if err := AllocateTenantResource(r, ResourceRoleBindingCount, resource.MustParse("1")); err != nil {
+		return err
+	}
+
 	return r.validate()
 }
 
@@ -98,6 +108,11 @@ func (r *RoleBinding) ValidateUpdate(old runtime.Object) error {
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *RoleBinding) ValidateDelete() error {
 	rolebindinglog.Info("validate delete", "name", r.Name)
+
+	if err := ReleaseTenantResource(r, ResourceRoleBindingCount, resource.MustParse("1")); err != nil {
+		return err
+	}
+
 	return nil
 }
 

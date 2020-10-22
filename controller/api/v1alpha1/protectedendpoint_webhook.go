@@ -17,6 +17,7 @@ package v1alpha1
 
 import (
 	"fmt"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -30,6 +31,18 @@ func (r *ProtectedEndpoint) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
+}
+
+// +kubebuilder:webhook:verbs=create;update,path=/mutate-core-v1alpha1-protectedendpoint,mutating=true,failurePolicy=fail,groups=core,resources=protectedendpointtypes,versions=v1alpha1,name=vprotectedendpointtype.kb.io
+
+var _ webhook.Defaulter = &ProtectedEndpoint{}
+
+func (r *ProtectedEndpoint) Default() {
+	protectedendpointlog.Info("default", "name", r.Name)
+
+	if err := InheritTenantFromNamespace(r); err != nil {
+		protectedendpointlog.Error(err, "fail to inherit tenant from ns", "protectedEndpoint", r.Name, "ns", r.Namespace)
+	}
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-v1alpha1-protectedendpoint,mutating=false,failurePolicy=fail,groups=core,resources=protectedendpointtypes,versions=v1alpha1,name=vprotectedendpointtype.kb.io

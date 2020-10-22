@@ -17,12 +17,13 @@ package v1alpha1
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
-	"strconv"
-	"strings"
 )
 
 // log is for logging in this package.
@@ -43,6 +44,10 @@ var _ webhook.Defaulter = &HttpRoute{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *HttpRoute) Default() {
 	httproutelog.Info("default", "name", r.Name)
+
+	if err := InheritTenantFromNamespace(r); err != nil {
+		httproutelog.Error(err, "fail to inherit tenant from ns", "httpRoute", r.Name, "ns", r.Namespace)
+	}
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-httproute,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=httproutes,versions=v1alpha1,name=vhttproute.kb.io

@@ -36,7 +36,8 @@ const (
 	ResourceApplicationsCount ResourceName = "applicationsCount"
 	ResourceComponentsCount   ResourceName = "componentsCount"
 	ResourceServicesCount     ResourceName = "servicesCount"
-	ResourceUsersCount        ResourceName = "usersCount"
+	// ResourceUsersCount        ResourceName = "usersCount"
+	ResourceRoleBindingCount  ResourceName = "roleBindingCount"
 	ResourceAccessTokensCount ResourceName = "accessTokensCount"
 )
 
