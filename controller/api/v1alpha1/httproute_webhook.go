@@ -44,10 +44,6 @@ var _ webhook.Defaulter = &HttpRoute{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *HttpRoute) Default() {
 	httproutelog.Info("default", "name", r.Name)
-
-	if err := InheritTenantFromNamespace(r); err != nil {
-		httproutelog.Error(err, "fail to inherit tenant from ns", "httpRoute", r.Name, "ns", r.Namespace)
-	}
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-httproute,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=httproutes,versions=v1alpha1,name=vhttproute.kb.io
@@ -57,12 +53,22 @@ var _ webhook.Validator = &HttpRoute{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *HttpRoute) ValidateCreate() error {
 	httproutelog.Info("validate create", "name", r.Name)
+
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
+
 	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *HttpRoute) ValidateUpdate(old runtime.Object) error {
 	httproutelog.Info("validate update", "name", r.Name)
+
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
+
 	return r.validate()
 }
 

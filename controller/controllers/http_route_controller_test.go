@@ -1,21 +1,24 @@
 package controllers
 
 import (
+	"testing"
+
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 )
 
 type HttpRouteControllerSuite struct {
 	BasicSuite
-	ns *coreV1.Namespace
+	ns     *coreV1.Namespace
+	tenant *v1alpha1.Tenant
 }
 
 func (suite *HttpRouteControllerSuite) SetupSuite() {
 	suite.BasicSuite.SetupSuite()
+	tenant := suite.SetupTenant()
 
 	ns := coreV1.Namespace{
 		ObjectMeta: v1.ObjectMeta{
@@ -23,8 +26,11 @@ func (suite *HttpRouteControllerSuite) SetupSuite() {
 		},
 	}
 
+	v1alpha1.SetTenantForObj(&ns, tenant.Name)
+
 	suite.createObject(&ns)
 	suite.ns = &ns
+	suite.tenant = tenant
 }
 
 func TestRegexp(t *testing.T) {
@@ -85,6 +91,8 @@ func (suite *HttpRouteControllerSuite) TestBasicHttpRoute() {
 			},
 		},
 	}
+
+	v1alpha1.SetTenantForObj(&route, suite.tenant.Name)
 
 	suite.createObject(&route)
 }

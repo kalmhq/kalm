@@ -233,6 +233,11 @@ func AdjustTenantByResourceListDelta(obj runtime.Object, resourceListDelta map[R
 	return updateTenantResourceInBatch(tenant, resourceListDelta)
 }
 
+func HasTenantSet(obj runtime.Object) bool {
+	_, err := GetTenantFromObj(obj)
+	return err == nil
+}
+
 func GetTenantNameFromObj(obj runtime.Object) (string, error) {
 	objMeta, err := meta.Accessor(obj)
 

@@ -195,12 +195,19 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 // Kalm route level http to https redirect is achieved by adding envoy filter for istio ingress gateway
 //
 func (r *HttpRouteReconcilerTask) buildHttpsRedirectEnvoyFilter(route *corev1alpha1.HttpRoute) (*v1alpha32.EnvoyFilter, error) {
+	tenantName, err := corev1alpha1.GetTenantNameFromObj(route)
+
+	if err != nil {
+		return nil, err
+	}
+
 	filter := &v1alpha32.EnvoyFilter{
 		ObjectMeta: metaV1.ObjectMeta{
 			Namespace: istioNamespace,
 			Name:      getHttpsRedirectEnvoyFilterName(route),
 			Labels: map[string]string{
-				KALM_ROUTE_LABEL: "true",
+				KALM_ROUTE_LABEL:                "true",
+				corev1alpha1.TenantNameLabelKey: tenantName,
 			},
 		},
 		Spec: v1alpha3.EnvoyFilter{
@@ -307,7 +314,6 @@ func sortRoutes(a, b *istioNetworkingV1Beta1.HTTPRoute) bool {
 }
 
 func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
-
 	var routes corev1alpha1.HttpRouteList
 	if err := r.Reader.List(r.ctx, &routes); err != nil {
 		return err
