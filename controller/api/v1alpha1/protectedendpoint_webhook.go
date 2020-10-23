@@ -70,6 +70,10 @@ func (r *ProtectedEndpoint) ValidateDelete() error {
 func (r *ProtectedEndpoint) validate() error {
 	var rst KalmValidateErrorList
 
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
+
 	if !isValidLabelValue(r.Spec.EndpointName) {
 		rst = append(rst, KalmValidateError{
 			Err:  "invalid endpointName",

@@ -36,7 +36,9 @@ func (r *DockerRegistry) SetupWebhookWithManager(mgr ctrl.Manager) error {
 var _ webhook.Defaulter = &DockerRegistry{}
 
 // The empty host is a special value for docker hub. Do not change it
-func (r *DockerRegistry) Default() {}
+func (r *DockerRegistry) Default() {
+
+}
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-dockerregistry,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=dockerregistries,versions=v1alpha1,name=vdockerregistry.kb.io
 
@@ -45,12 +47,22 @@ var _ webhook.Validator = &DockerRegistry{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *DockerRegistry) ValidateCreate() error {
 	dockerregistrylog.Info("validate create", "name", r.Name)
+
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
+
 	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *DockerRegistry) ValidateUpdate(old runtime.Object) error {
 	dockerregistrylog.Info("validate update", "name", r.Name)
+
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
+
 	return r.validate()
 }
 

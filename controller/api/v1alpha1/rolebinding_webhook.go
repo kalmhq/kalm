@@ -123,6 +123,10 @@ func (r *RoleBinding) ValidateDelete() error {
 func (r *RoleBinding) validate() error {
 	var rst KalmValidateErrorList
 
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
+
 	switch r.Spec.Role {
 	case ClusterRoleEditor, ClusterRoleOwner, ClusterRoleViewer:
 		if r.Namespace != KalmSystemNamespace {

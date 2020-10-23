@@ -137,6 +137,10 @@ var _ webhook.Validator = &Component{}
 func (r *Component) ValidateCreate() error {
 	componentlog.Info("validate create", "ns", r.Namespace, "name", r.Name)
 
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
+
 	if errList := r.validate(); len(errList) > 0 {
 		componentlog.Error(errList, "validate fail")
 		return error(errList)
@@ -237,6 +241,10 @@ func multiQuantity(q resource.Quantity, multiplier int) resource.Quantity {
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateUpdate(old runtime.Object) error {
 	componentlog.Info("validate update", "ns", r.Namespace, "name", r.Name)
+
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
 
 	// resource check
 	if !IsKalmSystemNamespace(r.Namespace) {

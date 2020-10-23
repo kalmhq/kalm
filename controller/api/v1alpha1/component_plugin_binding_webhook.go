@@ -50,12 +50,22 @@ var _ webhook.Validator = &ComponentPluginBinding{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *ComponentPluginBinding) ValidateCreate() error {
 	componentpluginbindinglog.Info("validate create", "name", r.Name)
+
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
+
 	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *ComponentPluginBinding) ValidateUpdate(old runtime.Object) error {
 	componentpluginbindinglog.Info("validate update", "name", r.Name)
+
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
+
 	return r.validate()
 }
 

@@ -17,11 +17,12 @@ package v1alpha1
 
 import (
 	"fmt"
+	"strings"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
-	"strings"
 )
 
 // log is for logging in this package.
@@ -91,6 +92,10 @@ func (r *HttpsCert) ValidateDelete() error {
 
 func (r *HttpsCert) validate() error {
 	var rst KalmValidateErrorList
+
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
 
 	for i, domain := range r.Spec.Domains {
 		if isValidDomainInCert(domain) {
