@@ -86,6 +86,32 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 		Protocol:      v1alpha1.PortProtocolTCP,
 	})
 
+	resList := v1alpha1.GetComponentResourceList(component)
+	suite.Eventually(func() bool {
+		var tenant v1alpha1.Tenant
+
+		tenantName := suite.ns.Labels[v1alpha1.TenantNameLabelKey]
+		if err := suite.K8sClient.Get(context.Background(), client.ObjectKey{Name: tenantName}, &tenant); err != nil {
+			return false
+		}
+
+		statusResList := tenant.Status.UsedResourceQuota
+
+		allResShownInStatus := true
+		for resName, quantity := range resList {
+			if statusQuantity, exist := statusResList[resName]; !exist || statusQuantity.Cmp(quantity) != 0 {
+				allResShownInStatus = false
+				break
+			}
+		}
+
+		// status has 1 extra: ResourceApplicationsCount
+		expectedSize := len(resList)+1 == len(statusResList)
+		appCntInStatus := statusResList[v1alpha1.ResourceApplicationsCount]
+
+		return expectedSize && allResShownInStatus && appCntInStatus.Cmp(resource.MustParse("1")) == 0
+	})
+
 	component.Labels["foo"] = "bar"
 
 	suite.updateComponent(component) // todo sometimes this line fail the test e.g. https://travis-ci.com/github/kalmhq/kalm/jobs/354813530
