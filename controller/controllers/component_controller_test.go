@@ -109,7 +109,11 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 		expectedSize := len(resList)+1 == len(statusResList)
 		appCntInStatus := statusResList[v1alpha1.ResourceApplicationsCount]
 
-		return expectedSize && allResShownInStatus && appCntInStatus.Cmp(resource.MustParse("1")) == 0
+		// fmt.Println("status", statusResList)
+		// fmt.Println("resList", resList)
+
+		return expectedSize && allResShownInStatus &&
+			appCntInStatus.Cmp(resource.MustParse("1")) == 0
 	})
 
 	component.Labels["foo"] = "bar"
@@ -394,7 +398,7 @@ func generateEmptyComponent(namespace string, workloadTypeOpt ...v1alpha1.Worklo
 			Annotations: map[string]string{
 				"foo": "bar",
 			},
-			WorkloadType: workloadType, // TODo test default value
+			WorkloadType: workloadType,
 			Image:        "nginx:latest",
 			Env: []v1alpha1.EnvVar{
 				{
@@ -700,4 +704,88 @@ func genPVWithClaimRef(pvc coreV1.PersistentVolumeClaim) coreV1.PersistentVolume
 	}
 
 	return pv
+}
+
+func (suite *ComponentControllerSuite) TestComponentTenant() {
+
+	component := generateEmptyComponent(suite.ns.Name)
+	// component with pvc
+	pvcSize := resource.MustParse("1Mi")
+	component.Spec.Volumes = []v1alpha1.Volume{
+		{
+			Type: v1alpha1.VolumeTypePersistentVolumeClaim,
+			Size: pvcSize,
+			Path: "/tmp/data",
+		},
+	}
+	// component with resource limits
+	cpuLimit := resource.MustParse("100m")
+	memLimit := resource.MustParse("64Mi")
+
+	component.Spec.ResourceRequirements = &coreV1.ResourceRequirements{
+		Limits: map[coreV1.ResourceName]resource.Quantity{
+			coreV1.ResourceCPU:    cpuLimit,
+			coreV1.ResourceMemory: memLimit,
+		},
+	}
+
+	// create
+	suite.createComponent(component)
+
+	var tenant v1alpha1.Tenant
+	tenantName := suite.ns.Labels[v1alpha1.TenantNameLabelKey]
+
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(context.Background(), client.ObjectKey{Name: tenantName}, &tenant)
+		if err != nil {
+			return false
+		}
+
+		statusResList := tenant.Status.UsedResourceQuota
+
+		storageRes := statusResList[v1alpha1.ResourceStorage]
+		cpuRes := statusResList[v1alpha1.ResourceCPU]
+		memRes := statusResList[v1alpha1.ResourceMemory]
+		// fmt.Println("aaa:", storageRes, cpuRes, memRes)
+
+		return storageRes.Cmp(pvcSize) == 0 &&
+			cpuRes.Cmp(cpuLimit) == 0 &&
+			memRes.Cmp(memLimit) == 0
+	})
+
+	// Delete this component
+	//   will release cpu & memory
+	//   but not storage
+	suite.reloadComponent(component)
+	suite.Nil(suite.K8sClient.Delete(context.Background(), component))
+
+	suite.Eventually(func() bool {
+		suite.reloadTenant(&tenant)
+
+		resStatus := tenant.Status.UsedResourceQuota
+		cpu := resStatus[v1alpha1.ResourceCPU]
+		mem := resStatus[v1alpha1.ResourceMemory]
+		storage := resStatus[v1alpha1.ResourceStorage]
+
+		return cpu.Cmp(resource.MustParse("0")) == 0 &&
+			mem.Cmp(resource.MustParse("0")) == 0 &&
+			storage.Cmp(resource.MustParse("0")) != 0
+	})
+
+	// delete pvc will release storage
+	var pvc coreV1.PersistentVolumeClaim
+	err := suite.K8sClient.Get(context.Background(), types.NamespacedName{
+		Namespace: suite.ns.Name,
+		Name:      component.Spec.Volumes[0].PVC,
+	}, &pvc)
+	suite.Nil(err)
+
+	suite.Nil(suite.K8sClient.Delete(context.Background(), &pvc))
+
+	suite.Eventually(func() bool {
+		suite.reloadTenant(&tenant)
+
+		storage := tenant.Status.UsedResourceQuota[v1alpha1.ResourceStorage]
+		return storage.Cmp(resource.MustParse("0")) == 0
+	})
 }

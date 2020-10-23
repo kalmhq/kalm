@@ -202,9 +202,9 @@ func GetComponentResourceList(r *Component) ResourceList {
 			// ephemeralStorage
 			inc(rstResList, ResourceEphemeralStorage, totalSize)
 
-		case VolumeTypePersistentVolumeClaim, VolumeTypePersistentVolumeClaimTemplate:
-			// persist disk
-			inc(rstResList, ResourceStorage, totalSize)
+			// case VolumeTypePersistentVolumeClaim, VolumeTypePersistentVolumeClaimTemplate:
+			// 	// persist disk, not necessarily consume storage cuz re-use
+			// 	inc(rstResList, ResourceStorage, totalSize)
 		}
 	}
 

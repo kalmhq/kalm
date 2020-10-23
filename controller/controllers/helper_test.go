@@ -141,6 +141,10 @@ func (suite *BasicSuite) createObject(obj runtime.Object) {
 	suite.Require().Nil(suite.K8sClient.Create(context.Background(), obj))
 }
 
+func (suite *BasicSuite) reloadTenant(tenant *v1alpha1.Tenant) {
+	suite.reloadObject(types.NamespacedName{Name: tenant.Name}, tenant)
+}
+
 func (suite *BasicSuite) reloadComponent(component *v1alpha1.Component) {
 	suite.reloadObject(types.NamespacedName{Name: component.Name, Namespace: component.Namespace}, component)
 }
@@ -233,6 +237,9 @@ func (suite *BasicSuite) SetupSuite() {
 	webhookServer := mgr.GetWebhookServer()
 	webhookServer.Register("/validate-v1-ns", &webhook.Admission{
 		Handler: &builtin.NSValidator{},
+	})
+	webhookServer.Register("/admission-handler-v1-pvc", &webhook.Admission{
+		Handler: &builtin.PVCAdmissionHandler{},
 	})
 
 	suite.Require().NotNil(mgr)
