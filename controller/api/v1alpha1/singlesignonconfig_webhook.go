@@ -84,10 +84,6 @@ func (r *SingleSignOnConfig) Default() {
 	if r.Spec.IDTokenExpirySeconds == nil {
 		r.Spec.IDTokenExpirySeconds = &SSODefaultIDTokenExpirySeconds
 	}
-
-	if err := InheritTenantFromNamespace(r); err != nil {
-		singlesignonconfiglog.Error(err, "fail to inherit tenant from ns", "sso", r.Name, "ns", r.Namespace)
-	}
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-singlesignonconfig,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=singlesignonconfigs,versions=v1alpha1,name=vsinglesignonconfig.kb.io
