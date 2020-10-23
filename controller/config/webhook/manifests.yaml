@@ -454,9 +454,9 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /admission-handler-v1-pv
+      path: /admission-handler-v1-pvc
   failurePolicy: Fail
-  name: vpv.kb.io
+  name: vpvc.kb.io
   rules:
   - apiGroups:
     - ""
@@ -467,4 +467,4 @@ webhooks:
     - UPDATE
     - DELETE
     resources:
-    - persistentvolumes
+    - persistentvolumeclaims

@@ -249,8 +249,8 @@ func main() {
 			Handler: &builtin.NSValidator{},
 		})
 		// pv webhook
-		hookServer.Register("/admission-handler-v1-pv", &webhook.Admission{
-			Handler: &builtin.PVAdmissionHandler{},
+		hookServer.Register("/admission-handler-v1-pvc", &webhook.Admission{
+			Handler: &builtin.PVCAdmissionHandler{},
 		})
 
 		setupLog.Info("WEBHOOK enabled")

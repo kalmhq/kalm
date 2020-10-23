@@ -137,14 +137,16 @@ var _ webhook.Validator = &Component{}
 func (r *Component) ValidateCreate() error {
 	componentlog.Info("validate create", "ns", r.Namespace, "name", r.Name)
 
-	if errList := r.validate(); len(errList) >= 0 {
+	if errList := r.validate(); len(errList) > 0 {
+		componentlog.Error(errList, "validate fail")
 		return error(errList)
 	}
 
 	if !IsKalmSystemNamespace(r.Namespace) {
-		compResourceList := getComponentResourceList(r)
+		compResourceList := GetComponentResourceList(r)
 
 		if err := AdjustTenantByResourceListDelta(r, compResourceList); err != nil {
+			componentlog.Error(err, "tenant fail")
 			return err
 		}
 	}
@@ -154,7 +156,7 @@ func (r *Component) ValidateCreate() error {
 
 // todo
 // - cpu & memory: what about sideCar Istio
-func getComponentResourceList(r *Component) ResourceList {
+func GetComponentResourceList(r *Component) ResourceList {
 	if r.Spec.ResourceRequirements == nil || r.Spec.ResourceRequirements.Limits == nil {
 		componentlog.Info("see component without ResourceRequirements.Limits", "ns", r.Namespace, "name", r.Name)
 		return nil
@@ -200,9 +202,9 @@ func getComponentResourceList(r *Component) ResourceList {
 			// ephemeralStorage
 			inc(rstResList, ResourceEphemeralStorage, totalSize)
 
-		case VolumeTypePersistentVolumeClaim, VolumeTypePersistentVolumeClaimTemplate:
-			// persist disk
-			inc(rstResList, ResourceStorage, totalSize)
+			// case VolumeTypePersistentVolumeClaim, VolumeTypePersistentVolumeClaimTemplate:
+			// 	// persist disk, not necessarily consume storage cuz re-use
+			// 	inc(rstResList, ResourceStorage, totalSize)
 		}
 	}
 
@@ -238,8 +240,8 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 
 	// resource check
 	if !IsKalmSystemNamespace(r.Namespace) {
-		oldResLimits := getComponentResourceList(old.(*Component))
-		newResLimits := getComponentResourceList(r)
+		oldResLimits := GetComponentResourceList(old.(*Component))
+		newResLimits := GetComponentResourceList(r)
 		resourceDelta := getResourceDelta(oldResLimits, newResLimits)
 
 		if err := AdjustTenantByResourceListDelta(r, resourceDelta); err != nil {
@@ -390,7 +392,7 @@ func (r *Component) ValidateDelete() error {
 
 	// release resource
 	if !IsKalmSystemNamespace(r.Namespace) {
-		resourceLimits := getComponentResourceList(r)
+		resourceLimits := GetComponentResourceList(r)
 		for res, v := range resourceLimits {
 			v.Neg()
 			resourceLimits[res] = v
