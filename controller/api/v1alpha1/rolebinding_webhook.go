@@ -65,6 +65,10 @@ func (r *RoleBinding) GetNameBaseOnRoleAndSubject() string {
 func (r *RoleBinding) ValidateCreate() error {
 	rolebindinglog.Info("validate create", "name", r.Name)
 
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
+
 	if err := r.validate(); err != nil {
 		return err
 	}
@@ -79,6 +83,14 @@ func (r *RoleBinding) ValidateCreate() error {
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *RoleBinding) ValidateUpdate(old runtime.Object) error {
 	rolebindinglog.Info("validate update", "name", r.Name)
+
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
+
+	if IsTenantChanged(r, old) {
+		return TenantChangedError
+	}
 
 	if oldRoleBinding, ok := old.(*RoleBinding); !ok {
 		return fmt.Errorf("old object is not an role binding")
@@ -122,10 +134,6 @@ func (r *RoleBinding) ValidateDelete() error {
 
 func (r *RoleBinding) validate() error {
 	var rst KalmValidateErrorList
-
-	if !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
 
 	switch r.Spec.Role {
 	case ClusterRoleEditor, ClusterRoleOwner, ClusterRoleViewer:

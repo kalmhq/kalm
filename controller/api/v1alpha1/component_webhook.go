@@ -246,6 +246,10 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 		return NoTenantFoundError
 	}
 
+	if IsTenantChanged(r, old) {
+		return TenantChangedError
+	}
+
 	// resource check
 	if !IsKalmSystemNamespace(r.Namespace) {
 		oldResLimits := GetComponentResourceList(old.(*Component))

@@ -75,12 +75,26 @@ var _ webhook.Validator = &HttpsCert{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *HttpsCert) ValidateCreate() error {
 	httpscertlog.Info("validate create", "name", r.Name)
+
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
+
 	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *HttpsCert) ValidateUpdate(old runtime.Object) error {
 	httpscertlog.Info("validate update", "name", r.Name)
+
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
+
+	if IsTenantChanged(r, old) {
+		return TenantChangedError
+	}
+
 	return r.validate()
 }
 
@@ -92,10 +106,6 @@ func (r *HttpsCert) ValidateDelete() error {
 
 func (r *HttpsCert) validate() error {
 	var rst KalmValidateErrorList
-
-	if !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
 
 	for i, domain := range r.Spec.Domains {
 		if isValidDomainInCert(domain) {

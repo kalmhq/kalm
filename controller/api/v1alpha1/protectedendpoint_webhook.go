@@ -52,12 +52,26 @@ var _ webhook.Validator = &ProtectedEndpoint{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *ProtectedEndpoint) ValidateCreate() error {
 	protectedendpointlog.Info("validate create", "name", r.Name)
+
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
+
 	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *ProtectedEndpoint) ValidateUpdate(old runtime.Object) error {
 	protectedendpointlog.Info("validate update", "name", r.Name)
+
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
+
+	if IsTenantChanged(r, old) {
+		return TenantChangedError
+	}
+
 	return r.validate()
 }
 
@@ -69,10 +83,6 @@ func (r *ProtectedEndpoint) ValidateDelete() error {
 
 func (r *ProtectedEndpoint) validate() error {
 	var rst KalmValidateErrorList
-
-	if !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
 
 	if !isValidLabelValue(r.Spec.EndpointName) {
 		rst = append(rst, KalmValidateError{

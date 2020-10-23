@@ -45,6 +45,7 @@ func (e *InsufficientResourceError) Error() string {
 }
 
 var NoTenantFoundError error = fmt.Errorf("No Tenant Error")
+var TenantChangedError error = fmt.Errorf("Tenant can't not be changed")
 
 func IsNoTenantFoundError(err error) bool {
 	return err == NoTenantFoundError
@@ -236,6 +237,12 @@ func AdjustTenantByResourceListDelta(obj runtime.Object, resourceListDelta map[R
 func HasTenantSet(obj runtime.Object) bool {
 	_, err := GetTenantFromObj(obj)
 	return err == nil
+}
+
+func IsTenantChanged(new, old runtime.Object) bool {
+	newObjectTenantName, _ := GetTenantNameFromObj(new)
+	oldObjectTenantName, _ := GetTenantNameFromObj(old)
+	return newObjectTenantName != oldObjectTenantName
 }
 
 func GetTenantNameFromObj(obj runtime.Object) (string, error) {

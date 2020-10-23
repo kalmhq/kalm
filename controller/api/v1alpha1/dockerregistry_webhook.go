@@ -63,6 +63,10 @@ func (r *DockerRegistry) ValidateUpdate(old runtime.Object) error {
 		return NoTenantFoundError
 	}
 
+	if IsTenantChanged(r, old) {
+		return TenantChangedError
+	}
+
 	return r.validate()
 }
 

@@ -77,6 +77,10 @@ func (r *AccessToken) ValidateUpdate(old runtime.Object) error {
 		return NoTenantFoundError
 	}
 
+	if IsTenantChanged(r, old) {
+		return TenantChangedError
+	}
+
 	if oldAccessToken, ok := old.(*AccessToken); !ok {
 		return fmt.Errorf("old object is not an access token")
 	} else {
