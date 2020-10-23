@@ -7,6 +7,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
+// In api test, we don't actually use a real k8s cluster.
+// Instead, we use a fake client and a default tenant.
 func SetupWebhookClientWithTenant() *Tenant {
 	AddToScheme(scheme.Scheme)
 
