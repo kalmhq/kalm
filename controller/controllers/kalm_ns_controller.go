@@ -17,6 +17,10 @@ package controllers
 
 import (
 	"context"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -27,9 +31,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-	"strconv"
-	"strings"
-	"time"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 )
@@ -84,9 +85,6 @@ func genSourceForObject(obj runtime.Object) source.Source {
 
 func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := r.ctx
-	logger := r.Log.WithValues("kalmns", req.NamespacedName)
-
-	logger.Info("kalm ns reconciling...")
 
 	var namespaceList v1.NamespaceList
 	if err := r.List(ctx, &namespaceList, client.HasLabels([]string{KalmEnableLabelName})); err != nil {
@@ -187,28 +185,32 @@ func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 		}
 	}
 
-	defaultCertName := "default-https-cert"
-	expectedCert := v1alpha1.HttpsCert{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: defaultCertName,
-		},
-		Spec: v1alpha1.HttpsCertSpec{
-			HttpsCertIssuer: v1alpha1.DefaultCAIssuerName,
-			Domains:         []string{"*"},
-		},
-	}
+	// defaultCertName := "default-https-cert"
+	// expectedCert := v1alpha1.HttpsCert{
+	// 	ObjectMeta: metav1.ObjectMeta{
+	// 		Name: defaultCertName,
+	// 		Labels: map[string]string{
+	// 			v1alpha1.TenantNameLabelKey: r.
+	// 		},
+	// 	},
+	// 	Spec: v1alpha1.HttpsCertSpec{
+	// 		HttpsCertIssuer: v1alpha1.DefaultCAIssuerName,
+	// 		Domains:         []string{"*"},
+	// 	},
+	// }
 
-	var currentCert v1alpha1.HttpsCert
-	if err = r.Get(r.ctx, types.NamespacedName{Name: defaultCertName}, &currentCert); err != nil {
-		if !errors.IsNotFound(err) {
-			return err
-		}
+	// var currentCert v1alpha1.HttpsCert
+	// if err = r.Get(r.ctx, types.NamespacedName{Name: defaultCertName}, &currentCert); err != nil {
+	// 	if !errors.IsNotFound(err) {
+	// 		return err
+	// 	}
 
-		return r.Create(r.ctx, &expectedCert)
-	} else {
-		currentCert.Spec = expectedCert.Spec
-		return r.Update(r.ctx, &currentCert)
-	}
+	// 	return r.Create(r.ctx, &expectedCert)
+	// } else {
+	// 	currentCert.Spec = expectedCert.Spec
+	// 	return r.Update(r.ctx, &currentCert)
+	// }
+	return nil
 }
 
 func (r *KalmNSReconciler) reconcileDefaultHTTP01Issuer() error {
