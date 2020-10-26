@@ -256,6 +256,10 @@ func main() {
 		hookServer.Register("/admission-handler-v1-pod", &webhook.Admission{
 			Handler: &builtin.PodAdmissionHandler{},
 		})
+		// svc webhook
+		hookServer.Register("/admission-handler-v1-svc", &webhook.Admission{
+			Handler: &builtin.SvcAdmissionHandler{},
+		})
 
 		setupLog.Info("WEBHOOK enabled")
 	} else {

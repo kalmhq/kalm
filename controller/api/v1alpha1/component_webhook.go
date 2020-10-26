@@ -204,37 +204,6 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 	return error(volErrList)
 }
 
-// from + rstDelta = to
-func getResourceDelta(from, to ResourceList) ResourceList {
-
-	rst := make(map[ResourceName]resource.Quantity)
-
-	for res, quantity := range from {
-		var delta resource.Quantity
-
-		if toQuantity, exist := to[res]; !exist {
-			quantity.Neg()
-			delta = quantity
-		} else {
-			toQuantity.Sub(quantity)
-			delta = toQuantity
-		}
-
-		rst[res] = delta
-	}
-
-	// deal with res not in from, but in to
-	for res, quantity := range to {
-		if _, exist := from[res]; exist {
-			continue
-		}
-
-		rst[res] = quantity
-	}
-
-	return rst
-}
-
 func isIdenticalVolMap(mapNew map[string]Volume, mapOld map[string]Volume) (bool, error) {
 
 	if len(mapNew) != len(mapOld) {
@@ -313,11 +282,13 @@ func (r *Component) validate() KalmValidateErrorList {
 func (r *Component) ValidateDelete() error {
 	componentlog.Info("validate delete", "name", r.Name)
 
+	if IsKalmSystemNamespace(r.Namespace) {
+		return nil
+	}
+
 	// release resource
-	if !IsKalmSystemNamespace(r.Namespace) {
-		if err := ReleaseTenantResource(r, ResourceComponentsCount, resource.MustParse("1")); err != nil {
-			return err
-		}
+	if err := ReleaseTenantResource(r, ResourceComponentsCount, resource.MustParse("1")); err != nil {
+		return err
 	}
 
 	return nil

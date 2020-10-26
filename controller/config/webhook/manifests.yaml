@@ -469,3 +469,22 @@ webhooks:
     - DELETE
     resources:
     - persistentvolumeclaims
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-v1-svc
+  failurePolicy: Fail
+  name: vsvc.kb.io
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    - DELETE
+    resources:
+    - services
