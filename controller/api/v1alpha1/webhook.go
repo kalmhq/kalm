@@ -95,6 +95,23 @@ func updateTenantResourceInBatch(tenant *Tenant, resourceDeltaList map[ResourceN
 	return webhookClient.Status().Patch(context.Background(), tenantCopy, client.MergeFrom(tenant))
 }
 
+// diff between this and AdjustTenantByResourceListDelta() is:
+//   resourceList is newQuantity not delta
+func SetTenantResourceListByName(tenantName string, resourceList ResourceList) error {
+	if len(resourceList) == 0 {
+		return nil
+	}
+
+	var tenant Tenant
+	if err := webhookClient.Get(context.Background(), types.NamespacedName{
+		Name: tenantName,
+	}, &tenant); err != nil {
+		return err
+	}
+
+	return setTenantResourceList(&tenant, resourceList)
+}
+
 // concurrent update safe?
 // v1.18 server side apply
 func updateTenantResource(tenant *Tenant, resourceName ResourceName, changes resource.Quantity) error {
@@ -132,6 +149,30 @@ func setTenantResource(tenant *Tenant, resourceName ResourceName, quantity resou
 	tenantCopy.Status.UsedResourceQuota[resourceName] = quantity
 
 	return webhookClient.Status().Patch(context.Background(), tenantCopy, client.MergeFrom(tenant))
+}
+
+func setTenantResourceList(tenant *Tenant, resourceList ResourceList) error {
+	tenantCopy := tenant.DeepCopy()
+	if tenantCopy.Status.UsedResourceQuota == nil {
+		tenantCopy.Status.UsedResourceQuota = make(ResourceList)
+	}
+
+	for resourceName, newQuantity := range resourceList {
+		limit := tenant.Spec.ResourceQuota[resourceName]
+
+		// newQuantity > limit
+		if newQuantity.AsDec().Cmp(limit.AsDec()) > 0 {
+			//todo should be delta in err
+			delta := newQuantity.DeepCopy()
+			delta.Sub(tenant.Status.UsedResourceQuota[resourceName])
+
+			return NewInsufficientResourceError(tenant, resourceName, delta)
+		}
+
+		tenantCopy.Status.UsedResourceQuota[resourceName] = newQuantity
+	}
+
+	return webhookClient.Status().Update(context.Background(), tenantCopy)
 }
 
 func AllocateTenantResource(obj runtime.Object, resourceName ResourceName, increment resource.Quantity) error {

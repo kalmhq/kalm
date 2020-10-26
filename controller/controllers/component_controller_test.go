@@ -86,7 +86,6 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 		Protocol:      v1alpha1.PortProtocolTCP,
 	})
 
-	resList := v1alpha1.GetComponentResourceList(component)
 	suite.Eventually(func() bool {
 		var tenant v1alpha1.Tenant
 
@@ -97,23 +96,18 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 
 		statusResList := tenant.Status.UsedResourceQuota
 
-		allResShownInStatus := true
-		for resName, quantity := range resList {
-			if statusQuantity, exist := statusResList[resName]; !exist || statusQuantity.Cmp(quantity) != 0 {
-				allResShownInStatus = false
-				break
-			}
-		}
+		expectedSize := len(statusResList) == 2
+		appCnt := statusResList[v1alpha1.ResourceApplicationsCount]
+		compCnt := statusResList[v1alpha1.ResourceComponentsCount]
 
-		// status has 1 extra: ResourceApplicationsCount
-		expectedSize := len(resList)+1 == len(statusResList)
-		appCntInStatus := statusResList[v1alpha1.ResourceApplicationsCount]
-
+		// fmt.Println("size", len(statusResList))
 		// fmt.Println("status", statusResList)
-		// fmt.Println("resList", resList)
 
-		return expectedSize && allResShownInStatus &&
-			appCntInStatus.Cmp(resource.MustParse("1")) == 0
+		one := resource.MustParse("1")
+
+		return expectedSize &&
+			appCnt.Cmp(one) == 0 &&
+			compCnt.Cmp(one) == 0
 	})
 
 	component.Labels["foo"] = "bar"
@@ -743,18 +737,21 @@ func (suite *ComponentControllerSuite) TestComponentTenant() {
 
 		statusResList := tenant.Status.UsedResourceQuota
 
+		appCntRes := statusResList[v1alpha1.ResourceApplicationsCount]
+		compCntRes := statusResList[v1alpha1.ResourceComponentsCount]
 		storageRes := statusResList[v1alpha1.ResourceStorage]
-		cpuRes := statusResList[v1alpha1.ResourceCPU]
-		memRes := statusResList[v1alpha1.ResourceMemory]
-		// fmt.Println("aaa:", storageRes, cpuRes, memRes)
 
-		return storageRes.Cmp(pvcSize) == 0 &&
-			cpuRes.Cmp(cpuLimit) == 0 &&
-			memRes.Cmp(memLimit) == 0
+		fmt.Println("status:", statusResList)
+
+		one := resource.MustParse("1")
+
+		return appCntRes.Cmp(one) == 0 &&
+			compCntRes.Cmp(one) == 0 &&
+			storageRes.Cmp(pvcSize) == 0
 	})
 
 	// Delete this component
-	//   will release cpu & memory
+	//   will release compCnt
 	//   but not storage
 	suite.reloadComponent(component)
 	suite.Nil(suite.K8sClient.Delete(context.Background(), component))
@@ -763,12 +760,11 @@ func (suite *ComponentControllerSuite) TestComponentTenant() {
 		suite.reloadTenant(&tenant)
 
 		resStatus := tenant.Status.UsedResourceQuota
-		cpu := resStatus[v1alpha1.ResourceCPU]
-		mem := resStatus[v1alpha1.ResourceMemory]
+
+		compCntRes := resStatus[v1alpha1.ResourceComponentsCount]
 		storage := resStatus[v1alpha1.ResourceStorage]
 
-		return cpu.Cmp(resource.MustParse("0")) == 0 &&
-			mem.Cmp(resource.MustParse("0")) == 0 &&
+		return compCntRes.Cmp(resource.MustParse("0")) == 0 &&
 			storage.Cmp(resource.MustParse("0")) != 0
 	})
 

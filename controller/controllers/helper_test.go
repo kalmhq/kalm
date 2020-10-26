@@ -241,6 +241,9 @@ func (suite *BasicSuite) SetupSuite() {
 	webhookServer.Register("/admission-handler-v1-pvc", &webhook.Admission{
 		Handler: &builtin.PVCAdmissionHandler{},
 	})
+	webhookServer.Register("/admission-handler-v1-pod", &webhook.Admission{
+		Handler: &builtin.PodAdmissionHandler{},
+	})
 
 	suite.Require().NotNil(mgr)
 	suite.Require().Nil(err)

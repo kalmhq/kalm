@@ -436,7 +436,7 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-v1-pod
+      path: /admission-handler-v1-pod
   failurePolicy: Fail
   name: vpod.kb.io
   rules:
@@ -447,6 +447,7 @@ webhooks:
     operations:
     - CREATE
     - UPDATE
+    - DELETE
     resources:
     - pods
 - clientConfig:

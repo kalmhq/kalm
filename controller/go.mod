@@ -6,6 +6,8 @@ require (
 	github.com/coreos/prometheus-operator v0.29.0
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/docker/distribution v2.7.1+incompatible
+	github.com/docker/docker v0.7.3-0.20190327010347-be7ac8be2ae0
+	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/dop251/goja v0.0.0-20200721192441-a695b0cdd498
 	github.com/elastic/cloud-on-k8s v0.0.0-20200721161711-b12a39f14ab1
 	github.com/go-logr/logr v0.1.0

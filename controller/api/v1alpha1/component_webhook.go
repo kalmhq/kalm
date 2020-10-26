@@ -137,19 +137,18 @@ var _ webhook.Validator = &Component{}
 func (r *Component) ValidateCreate() error {
 	componentlog.Info("validate create", "ns", r.Namespace, "name", r.Name)
 
-	if !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
-
 	if errList := r.validate(); len(errList) > 0 {
 		componentlog.Error(errList, "validate fail")
 		return error(errList)
 	}
 
 	if !IsKalmSystemNamespace(r.Namespace) {
-		compResourceList := GetComponentResourceList(r)
 
-		if err := AdjustTenantByResourceListDelta(r, compResourceList); err != nil {
+		if !HasTenantSet(r) {
+			return NoTenantFoundError
+		}
+
+		if err := AdjustTenantResourceByDelta(r, ResourceComponentsCount, resource.MustParse("1")); err != nil {
 			componentlog.Error(err, "tenant fail")
 			return err
 		}
@@ -158,106 +157,18 @@ func (r *Component) ValidateCreate() error {
 	return nil
 }
 
-// todo
-// - cpu & memory: what about sideCar Istio
-func GetComponentResourceList(r *Component) ResourceList {
-	if r.Spec.ResourceRequirements == nil || r.Spec.ResourceRequirements.Limits == nil {
-		componentlog.Info("see component without ResourceRequirements.Limits", "ns", r.Namespace, "name", r.Name)
-		return nil
-	}
-
-	rstResList := make(map[ResourceName]resource.Quantity)
-
-	// component count
-	inc(rstResList, ResourceComponentsCount, resource.MustParse("1"))
-
-	limits := r.Spec.ResourceRequirements.Limits
-	replicas := r.Spec.Replicas
-
-	// container resource limits
-	for resName, quantity := range limits {
-		// multi by replicas
-		newQuantity := multiQuantity(quantity, int(*replicas))
-
-		switch resName {
-		case v1.ResourceCPU:
-			inc(rstResList, ResourceCPU, newQuantity)
-		case v1.ResourceMemory:
-			inc(rstResList, ResourceMemory, newQuantity)
-			// case v1.ResourceStorage:
-			// 	inc(rstResList, ResourceStorage, newQuantity)
-			// case v1.ResourceEphemeralStorage:
-			// 	inc(rstResList, ResourceEphemeralStorage, newQuantity)
-		}
-	}
-
-	// storage usage
-	for _, vol := range r.Spec.Volumes {
-
-		totalSize := multiQuantity(vol.Size, int(*replicas))
-
-		switch vol.Type {
-		case VolumeTypeTemporaryMemory:
-			//memory
-			//todo this uses container.memory or not?
-			inc(rstResList, ResourceMemory, totalSize)
-
-		case VolumeTypeTemporaryDisk:
-			// ephemeralStorage
-			inc(rstResList, ResourceEphemeralStorage, totalSize)
-
-			// case VolumeTypePersistentVolumeClaim, VolumeTypePersistentVolumeClaimTemplate:
-			// 	// persist disk, not necessarily consume storage cuz re-use
-			// 	inc(rstResList, ResourceStorage, totalSize)
-		}
-	}
-
-	// service
-	svcCount := 1
-	if r.Spec.WorkloadType == WorkloadTypeStatefulSet || r.Spec.EnableHeadlessService {
-		svcCount += 1
-	}
-	svcCountQuantity := resource.NewQuantity(int64(svcCount), resource.DecimalSI)
-
-	inc(rstResList, ResourceServicesCount, *svcCountQuantity)
-
-	return rstResList
-}
-
-func inc(resList map[ResourceName]resource.Quantity, resName ResourceName, delta resource.Quantity) {
-	if v, exist := resList[resName]; exist {
-		v.Add(delta)
-		resList[resName] = v
-	} else {
-		resList[resName] = delta
-	}
-}
-
-func multiQuantity(q resource.Quantity, multiplier int) resource.Quantity {
-	newVal := q.MilliValue() * int64(multiplier)
-	return *resource.NewMilliQuantity(newVal, q.Format)
-}
-
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateUpdate(old runtime.Object) error {
 	componentlog.Info("validate update", "ns", r.Namespace, "name", r.Name)
 
-	if !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
-
-	if IsTenantChanged(r, old) {
-		return TenantChangedError
-	}
-
-	// resource check
+	// tenant check
 	if !IsKalmSystemNamespace(r.Namespace) {
-		oldResLimits := GetComponentResourceList(old.(*Component))
-		newResLimits := GetComponentResourceList(r)
-		resourceDelta := getResourceDelta(oldResLimits, newResLimits)
+		if !HasTenantSet(r) {
+			return NoTenantFoundError
+		}
 
-		if err := AdjustTenantByResourceListDelta(r, resourceDelta); err != nil {
-			return err
+		if IsTenantChanged(r, old) {
+			return TenantChangedError
 		}
 	}
 
@@ -404,16 +315,7 @@ func (r *Component) ValidateDelete() error {
 
 	// release resource
 	if !IsKalmSystemNamespace(r.Namespace) {
-		resourceLimits := GetComponentResourceList(r)
-		for res, v := range resourceLimits {
-			v.Neg()
-			resourceLimits[res] = v
-		}
-
-		// pvc(storage) won't delete after deletion of component
-		delete(resourceLimits, ResourceStorage)
-
-		if err := AdjustTenantByResourceListDelta(r, resourceLimits); err != nil {
+		if err := ReleaseTenantResource(r, ResourceComponentsCount, resource.MustParse("1")); err != nil {
 			return err
 		}
 	}
