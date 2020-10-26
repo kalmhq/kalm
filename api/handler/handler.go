@@ -152,6 +152,14 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.DELETE("/acmeserver", h.handleDeleteACMEServer)
 
 	gv1Alpha1WithAuth.GET("/settings", h.handleListSettings)
+
+	gv1Alpha1WithAuth.GET("/tenants", h.handleListTenants)                // Get all virtual clusters info
+	gv1Alpha1WithAuth.GET("/tenants/:name", h.handleGetTenant)            // get single virtual cluster info
+	gv1Alpha1WithAuth.POST("/tenants", h.handleCreateTenant)              // Create virtual cluster
+	gv1Alpha1WithAuth.POST("/tenants/:name/pause", h.handlePauseTenant)   // Pause virtual cluster
+	gv1Alpha1WithAuth.POST("/tenants/:name/resume", h.handleResumeTenant) // Resume virtual cluster
+	gv1Alpha1WithAuth.PUT("/tenants/:name", h.handleUpdateTenant)         // update virtual cluster billing plan
+	gv1Alpha1WithAuth.DELETE("/tenants/:name", h.handleDeleteTenant)      // internal
 }
 
 func NewApiHandler(clientManager client.ClientManager) *ApiHandler {

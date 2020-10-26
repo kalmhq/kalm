@@ -1,6 +1,9 @@
 package client
 
 import (
+	"reflect"
+	"strings"
+
 	"github.com/casbin/casbin/v2/persist"
 	"github.com/kalmhq/kalm/api/auth"
 	"github.com/kalmhq/kalm/api/rbac"
@@ -8,8 +11,6 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/rest"
-	"reflect"
-	"strings"
 )
 
 const (
@@ -21,6 +22,7 @@ type ClientInfo struct {
 	Cfg               *rest.Config `json:"-"`
 	Name              string       `json:"name"`
 	PreferredUsername string       `json:"preferred_username"`
+	Tenant            string       `json:"tenant"`
 	Email             string       `json:"email"`
 	EmailVerified     bool         `json:"email_verified"`
 	Groups            []string     `json:"groups"`
