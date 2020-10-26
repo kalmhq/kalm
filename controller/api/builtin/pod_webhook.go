@@ -42,9 +42,13 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
+		if v1alpha1.IsKalmSystemNamespace(pod.Namespace) {
+			return admission.Allowed("")
+		}
+
 		var tenant string
 		if tenant = pod.Labels[v1alpha1.TenantNameLabelKey]; tenant == "" {
-			return admission.Allowed("")
+			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
 		}
 
 		var podList corev1.PodList
@@ -65,9 +69,13 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
+		if v1alpha1.IsKalmSystemNamespace(pod.Namespace) {
+			return admission.Allowed("")
+		}
+
 		var tenant string
 		if tenant = pod.Labels[v1alpha1.TenantNameLabelKey]; tenant == "" {
-			return admission.Allowed("")
+			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
 		}
 
 		var podList corev1.PodList

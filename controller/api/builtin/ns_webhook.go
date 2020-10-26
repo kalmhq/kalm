@@ -45,13 +45,14 @@ func (v *NSValidator) Handle(ctx context.Context, req admission.Request) admissi
 			return admission.Allowed("")
 		}
 
+		tenant := ns.Labels[v1alpha1.TenantNameLabelKey]
+		if tenant == "" {
+			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
+		}
+
 		if err := v1alpha1.AllocateTenantResource(&ns, v1alpha1.ResourceApplicationsCount, resource.MustParse("1")); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
 		}
-	}
-
-	if req.Operation == v1beta1.Update {
-		return admission.Allowed("")
 	}
 
 	if req.Operation == v1beta1.Delete {
@@ -60,6 +61,10 @@ func (v *NSValidator) Handle(ctx context.Context, req admission.Request) admissi
 		err := v.decoder.DecodeRaw(req.OldObject, &ns)
 		if err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
+		}
+
+		if v1alpha1.IsKalmSystemNamespace(ns.Name) {
+			return admission.Allowed("")
 		}
 
 		if err := v1alpha1.ReleaseTenantResource(&ns, v1alpha1.ResourceApplicationsCount, resource.MustParse("1")); err != nil {

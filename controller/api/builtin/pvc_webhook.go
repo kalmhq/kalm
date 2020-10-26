@@ -45,6 +45,8 @@ func (v *PVCAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
+		// orphan pvc may appear in kalm-system
+
 		pvcTenant := pvc.Labels[v1alpha1.TenantNameLabelKey]
 		if pvcTenant == "" {
 			return admission.Allowed("")
