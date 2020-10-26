@@ -47,6 +47,8 @@ type TenantSpec struct {
 	// Customized name on dashboard
 	TenantDisplayName string `json:"tenantDisplayName"`
 
+	Paused bool `json:"paused"`
+
 	// Resource limit of this tenant
 	ResourceQuota ResourceList `json:"resourceQuota"`
 
