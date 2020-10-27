@@ -150,23 +150,24 @@ func getResourceOfPod(pod corev1.Pod) v1alpha1.ResourceList {
 			}
 		}
 
-		// todo, deal with istio-envoy pod volume without limit
-		//
-		// for _, vol := range pod.Spec.Volumes {
-		// 	podAdmissionHandlerLog.Info("vol info", "vol", vol)
+		for _, vol := range pod.Spec.Volumes {
+			podAdmissionHandlerLog.Info("vol info", "vol", vol)
 
-		// 	if vol.EmptyDir != nil {
-		// 		switch vol.EmptyDir.Medium {
-		// 		case corev1.StorageMediumMemory:
-		// 			inc(rstResList, v1alpha1.ResourceMemory, *vol.EmptyDir.SizeLimit)
-		// 		case corev1.StorageMediumDefault:
-		// 			// todo create dir on host, maybe we should disable this for saas version
-		// 			podAdmissionHandlerLog.Info("emptyDir using defaultMedium ignored", "medium", vol.EmptyDir.Medium)
-		// 		default:
-		// 			podAdmissionHandlerLog.Info("emptyDir ignored", "medium", vol.EmptyDir.Medium)
-		// 		}
-		// 	}
-		// }
+			if vol.EmptyDir != nil {
+				switch vol.EmptyDir.Medium {
+				case corev1.StorageMediumMemory:
+					// todo pod volume: istio-envoy comes without limit
+					if vol.EmptyDir.SizeLimit != nil {
+						inc(rstResList, v1alpha1.ResourceMemory, *vol.EmptyDir.SizeLimit)
+					}
+				case corev1.StorageMediumDefault:
+					// todo create dir on host, maybe we should disable this for saas version
+					podAdmissionHandlerLog.Info("emptyDir using defaultMedium ignored", "medium", vol.EmptyDir.Medium)
+				default:
+					podAdmissionHandlerLog.Info("emptyDir ignored", "medium", vol.EmptyDir.Medium)
+				}
+			}
+		}
 	}
 
 	return rstResList
