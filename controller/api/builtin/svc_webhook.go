@@ -17,7 +17,7 @@ import (
 
 var svcAdmissionHandlerLog = logf.Log.WithName("svc-admission-handler")
 
-// +kubebuilder:webhook:verbs=create;update;delete,path=/validate-v1-svc,mutating=false,failurePolicy=fail,groups="",resources=services,versions=v1,name=vsvc.kb.io
+// +kubebuilder:webhook:verbs=create;update;delete,path=/admission-handler-v1-svc,mutating=false,failurePolicy=fail,groups="",resources=services,versions=v1,name=vsvc.kb.io
 
 type SvcAdmissionHandler struct {
 	client  client.Client
@@ -27,7 +27,7 @@ type SvcAdmissionHandler struct {
 var _ admission.Handler = &SvcAdmissionHandler{}
 
 var _ admission.DecoderInjector = &SvcAdmissionHandler{}
-var _ inject.Client = &PVCAdmissionHandler{}
+var _ inject.Client = &SvcAdmissionHandler{}
 
 func (v *SvcAdmissionHandler) Handle(ctx context.Context, req admission.Request) admission.Response {
 

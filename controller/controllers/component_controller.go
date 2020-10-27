@@ -1809,7 +1809,8 @@ func (r *ComponentReconcilerTask) prepareVolsForSTS(podTemplate *coreV1.PodTempl
 				Name: volName,
 				VolumeSource: coreV1.VolumeSource{
 					EmptyDir: &coreV1.EmptyDirVolumeSource{
-						Medium: coreV1.StorageMediumDefault,
+						Medium:    coreV1.StorageMediumDefault,
+						SizeLimit: &disk.Size,
 					},
 				},
 			})
@@ -1818,7 +1819,8 @@ func (r *ComponentReconcilerTask) prepareVolsForSTS(podTemplate *coreV1.PodTempl
 				Name: volName,
 				VolumeSource: coreV1.VolumeSource{
 					EmptyDir: &coreV1.EmptyDirVolumeSource{
-						Medium: coreV1.StorageMediumMemory,
+						Medium:    coreV1.StorageMediumMemory,
+						SizeLimit: &disk.Size,
 					},
 				},
 			})
@@ -1897,7 +1899,8 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 				Name: volName,
 				VolumeSource: coreV1.VolumeSource{
 					EmptyDir: &coreV1.EmptyDirVolumeSource{
-						Medium: coreV1.StorageMediumDefault,
+						Medium:    coreV1.StorageMediumDefault,
+						SizeLimit: &disk.Size,
 					},
 				},
 			})
@@ -1906,7 +1909,8 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 				Name: volName,
 				VolumeSource: coreV1.VolumeSource{
 					EmptyDir: &coreV1.EmptyDirVolumeSource{
-						Medium: coreV1.StorageMediumMemory,
+						Medium:    coreV1.StorageMediumMemory,
+						SizeLimit: &disk.Size,
 					},
 				},
 			})
