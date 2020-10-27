@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
 )
 
 func (h *ApiHandler) handleGetApplications(c echo.Context) error {
@@ -47,7 +48,7 @@ func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) { // TODO: Tenant
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -71,7 +72,7 @@ func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
+	if !h.clientManager.CanEditCluster(getCurrentUser(c)) { // TODO: Tenant
 		return resources.NoClusterEditorRoleError
 	}
 
@@ -96,7 +97,7 @@ func getKalmNamespaceFromContext(c echo.Context) (*coreV1.Namespace, error) {
 				controllers.KalmEnableLabelName: controllers.KalmEnableLabelValue,
 			},
 		},
-	}
+	} // TODO: get tenant
 
 	return &coreV1Namespace, nil
 }
