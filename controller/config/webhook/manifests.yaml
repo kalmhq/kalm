@@ -474,7 +474,7 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-v1-svc
+      path: /admission-handler-v1-svc
   failurePolicy: Fail
   name: vsvc.kb.io
   rules:

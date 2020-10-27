@@ -96,18 +96,20 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 
 		statusResList := tenant.Status.UsedResourceQuota
 
-		expectedSize := len(statusResList) == 2
+		expectedSize := len(statusResList) == 3
 		appCnt := statusResList[v1alpha1.ResourceApplicationsCount]
 		compCnt := statusResList[v1alpha1.ResourceComponentsCount]
+		svcCnt := statusResList[v1alpha1.ResourceServicesCount]
 
-		// fmt.Println("size", len(statusResList))
-		// fmt.Println("status", statusResList)
+		fmt.Println("size", len(statusResList))
+		fmt.Println("status", statusResList)
 
 		one := resource.MustParse("1")
 
 		return expectedSize &&
 			appCnt.Cmp(one) == 0 &&
-			compCnt.Cmp(one) == 0
+			compCnt.Cmp(one) == 0 &&
+			svcCnt.Cmp(one) == 0
 	})
 
 	component.Labels["foo"] = "bar"

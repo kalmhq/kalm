@@ -310,6 +310,15 @@ func (r *Component) validateVolumesOfComponent() (rst KalmValidateErrorList) {
 		errList := ValidateResourceQuantityValue(vol.Size, fld, true)
 		rst = append(rst, toKalmValidateErrors(errList)...)
 
+		if vol.Type == VolumeTypeTemporaryDisk || vol.Type == VolumeTypeTemporaryMemory {
+			if vol.Size.IsZero() {
+				rst = append(rst, KalmValidateError{
+					Err:  "must set size for this volume",
+					Path: fmt.Sprintf(".spec.volumes[%d].size", i),
+				})
+			}
+		}
+
 		// for pvc && pvcTemplate vol, field: pvc must be set
 		if vol.Type == VolumeTypePersistentVolumeClaim ||
 			vol.Type == VolumeTypePersistentVolumeClaimTemplate {
