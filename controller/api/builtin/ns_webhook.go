@@ -67,6 +67,11 @@ func (v *NSValidator) Handle(ctx context.Context, req admission.Request) admissi
 			return admission.Allowed("")
 		}
 
+		tenant := ns.Labels[v1alpha1.TenantNameLabelKey]
+		if tenant == "" {
+			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
+		}
+
 		if err := v1alpha1.ReleaseTenantResource(&ns, v1alpha1.ResourceApplicationsCount, resource.MustParse("1")); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
 		}
