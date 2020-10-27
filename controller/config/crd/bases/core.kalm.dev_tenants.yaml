@@ -44,6 +44,8 @@ spec:
               items:
                 type: string
               type: array
+            paused:
+              type: boolean
             resourceQuota:
               additionalProperties:
                 type: string
@@ -54,6 +56,7 @@ spec:
               type: string
           required:
           - owners
+          - paused
           - resourceQuota
           - tenantDisplayName
           type: object
