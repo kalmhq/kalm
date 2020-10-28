@@ -108,7 +108,7 @@ func (r *Component) Default() {
 		r.Spec.ResourceRequirements.Limits[v1.ResourceMemory] = resource.MustParse("512Mi")
 	}
 	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceEphemeralStorage]; !exist {
-		r.Spec.ResourceRequirements.Limits[v1.ResourceEphemeralStorage] = resource.MustParse("1Gi")
+		r.Spec.ResourceRequirements.Limits[v1.ResourceEphemeralStorage] = resource.MustParse("128Mi")
 	}
 	// storage is not a standard resource for containers
 	// if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceStorage]; !exist {
