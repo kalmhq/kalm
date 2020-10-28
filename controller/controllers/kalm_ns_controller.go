@@ -22,7 +22,10 @@ import (
 	"time"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	istioapisec "istio.io/api/security/v1beta1"
+	istiosec "istio.io/client-go/pkg/apis/security/v1beta1"
 	v1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -85,6 +88,30 @@ func genSourceForObject(obj runtime.Object) source.Source {
 
 func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := r.ctx
+
+	ns := v1.Namespace{}
+	if err := r.Get(ctx, client.ObjectKey{Name: req.Name}, &ns); err != nil {
+		if errors.IsNotFound(err) {
+			return ctrl.Result{}, nil
+		} else {
+			return ctrl.Result{}, err
+		}
+	}
+
+	tenant := ns.Labels[v1alpha1.TenantNameLabelKey]
+	if tenant != "" {
+		// reconcile AuthzPolicies for this tenant
+		err := r.reconcileAuthorizationPoliciesForTenant(tenant)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		// reconcile AuthzPolicies for this tenant
+		err = r.reconcileNetworkPoliciesForTenant(ns.Name, tenant)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+	}
 
 	var namespaceList v1.NamespaceList
 	if err := r.List(ctx, &namespaceList, client.HasLabels([]string{KalmEnableLabelName})); err != nil {
@@ -153,6 +180,125 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *KalmNSReconciler) reconcileAuthorizationPoliciesForTenant(tenant string) error {
+	if tenant == "" {
+		return v1alpha1.NoTenantFoundError
+	}
+
+	nsList := v1.NamespaceList{}
+	if err := r.List(r.ctx, &nsList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenant}); err != nil {
+		return err
+	}
+
+	authzPolicyName := "kalm-authz-policy"
+
+	var sameTenantNSList []string
+	for _, ns := range nsList.Items {
+		sameTenantNSList = append(sameTenantNSList, ns.Name)
+	}
+
+	allowSameTenantNSRule := istioapisec.Rule{
+		From: []*istioapisec.Rule_From{
+			{Source: &istioapisec.Source{Namespaces: sameTenantNSList}},
+		},
+	}
+
+	for _, ns := range nsList.Items {
+		expectedAuthzPolicy := istiosec.AuthorizationPolicy{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      authzPolicyName,
+				Namespace: ns.Name,
+			},
+			Spec: istioapisec.AuthorizationPolicy{
+				Action: istioapisec.AuthorizationPolicy_ALLOW,
+				Rules:  []*istioapisec.Rule{&allowSameTenantNSRule},
+			},
+		}
+
+		isNew := false
+
+		authzPolicy := istiosec.AuthorizationPolicy{}
+		if err := r.Get(r.ctx, client.ObjectKey{Namespace: ns.Name, Name: authzPolicyName}, &authzPolicy); err != nil {
+			if errors.IsNotFound(err) {
+				isNew = true
+
+				authzPolicy = expectedAuthzPolicy
+			} else {
+				return err
+			}
+		} else {
+			authzPolicy.Spec = expectedAuthzPolicy.Spec
+		}
+
+		var err error
+		if isNew {
+			err = r.Create(r.ctx, &authzPolicy)
+		} else {
+			err = r.Update(r.ctx, &authzPolicy)
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *KalmNSReconciler) reconcileNetworkPoliciesForTenant(ns, tenant string) error {
+	if tenant == "" {
+		return v1alpha1.NoTenantFoundError
+	}
+
+	networkPolicyName := "kalm-network-policy"
+
+	expectedNetworkPolicy := networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: ns,
+			Name:      networkPolicyName,
+		},
+		Spec: networkingv1.NetworkPolicySpec{
+			PodSelector: metav1.LabelSelector{},
+			Ingress: []networkingv1.NetworkPolicyIngressRule{
+				{
+					From: []networkingv1.NetworkPolicyPeer{
+						{
+							NamespaceSelector: &metav1.LabelSelector{
+								MatchLabels: map[string]string{
+									v1alpha1.TenantNameLabelKey: tenant,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	isNew := false
+
+	np := networkingv1.NetworkPolicy{}
+	if err := r.Get(r.ctx, client.ObjectKey{Namespace: ns, Name: networkPolicyName}, &np); err != nil {
+		if errors.IsNotFound(err) {
+			isNew = true
+			np = expectedNetworkPolicy
+		} else {
+			return err
+		}
+	} else {
+		np.Spec = expectedNetworkPolicy.Spec
+	}
+
+	var err error
+	if isNew {
+		err = r.Create(r.ctx, &np)
+	} else {
+		err = r.Update(r.ctx, &np)
+	}
+
+	return err
 }
 
 func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
