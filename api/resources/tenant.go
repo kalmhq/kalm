@@ -33,6 +33,22 @@ func (resourceManager *ResourceManager) GetTenants() ([]*Tenant, error) {
 	return res, nil
 }
 
+func (resourceManager *ResourceManager) IsATenantOwner(email, tenantName string) bool {
+	tenant, err := resourceManager.GetTenant(tenantName)
+
+	if err != nil {
+		return false
+	}
+
+	for i := range tenant.Owners {
+		if tenant.Owners[i] == email {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (resourceManager *ResourceManager) GetTenant(name string) (*Tenant, error) {
 	var fetched v1alpha1.Tenant
 
