@@ -2,6 +2,7 @@ package resources
 
 import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -11,6 +12,7 @@ type Tenant struct {
 	ID                string                `json:"id"`
 	Name              string                `json:"name"`
 	Owners            []string              `json:"owners"`
+	Paused            bool                  `json:"paused"`
 	ResourcesQuotas   v1alpha1.ResourceList `json:"resourceQuotas"`
 	ConsumedResources v1alpha1.ResourceList `json:"consumedResources"`
 }
@@ -29,6 +31,22 @@ func (resourceManager *ResourceManager) GetTenants() ([]*Tenant, error) {
 	}
 
 	return res, nil
+}
+
+func (resourceManager *ResourceManager) IsATenantOwner(email, tenantName string) bool {
+	tenant, err := resourceManager.GetTenant(tenantName)
+
+	if err != nil {
+		return false
+	}
+
+	for i := range tenant.Owners {
+		if tenant.Owners[i] == email {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (resourceManager *ResourceManager) GetTenant(name string) (*Tenant, error) {
@@ -54,7 +72,7 @@ func (resourceManager *ResourceManager) CreateTenant(tenant *Tenant) (*Tenant, e
 func (resourceManager *ResourceManager) UpdateTenant(tenant *Tenant) (*Tenant, error) {
 	crdTenant := toCRDTenant(tenant)
 
-	if err := resourceManager.Update(crdTenant); err != nil {
+	if err := resourceManager.Apply(crdTenant); err != nil {
 		return nil, err
 	}
 
@@ -77,7 +95,7 @@ func (resourceManager *ResourceManager) PauseTenant(name string) error {
 	}, client.RawPatch(types.JSONPatchType, []byte(`[
     {
         "op": "replace",
-        "path": "/paused",
+        "path": "/spec/paused",
         "value": true
     }
 ]`)))
@@ -91,7 +109,7 @@ func (resourceManager *ResourceManager) ResumeTenant(name string) error {
 	}, client.RawPatch(types.JSONPatchType, []byte(`[
     {
         "op": "replace",
-        "path": "/paused",
+        "path": "/spec/paused",
         "value": false
     }
 ]`)))
@@ -102,6 +120,7 @@ func fromCRDTenant(tenant *v1alpha1.Tenant) *Tenant {
 		ID:                tenant.Name, // TODO: which field should be used as an id?
 		Name:              tenant.Name,
 		Owners:            tenant.Spec.Owners,
+		Paused:            tenant.Spec.Paused,
 		ResourcesQuotas:   tenant.Spec.ResourceQuota,
 		ConsumedResources: tenant.Status.UsedResourceQuota,
 	}
@@ -109,12 +128,17 @@ func fromCRDTenant(tenant *v1alpha1.Tenant) *Tenant {
 
 func toCRDTenant(tenant *Tenant) *v1alpha1.Tenant {
 	return &v1alpha1.Tenant{
+		TypeMeta: metaV1.TypeMeta{
+			Kind:       "Tenant",
+			APIVersion: "core.kalm.dev/v1alpha1",
+		},
 		ObjectMeta: v1.ObjectMeta{
 			Name: tenant.Name,
 		},
 		Spec: v1alpha1.TenantSpec{
 			Owners:        tenant.Owners,
 			ResourceQuota: tenant.ResourcesQuotas,
+			Paused:        tenant.Paused,
 		},
 		Status: v1alpha1.TenantStatus{
 			UsedResourceQuota: tenant.ConsumedResources,

@@ -21,6 +21,7 @@ type LoginStatusResponse struct {
 	Impersonation     string   `json:"impersonation"`
 	ImpersonationType string   `json:"impersonationType"`
 	Policies          string   `json:"policies"`
+	Tenant            string   `json:"tenant"`
 }
 
 func (h *ApiHandler) handleValidateToken(c echo.Context) error {
@@ -62,6 +63,7 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 		res.Email = clientInfo.Email
 		res.Groups = clientInfo.Groups
 		res.Authorized = true
+		res.Tenant = clientInfo.Tenant
 
 		var subjects []string
 		if clientInfo.Impersonation == "" {

@@ -2,6 +2,7 @@ package resources
 
 import (
 	"fmt"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 )
 
@@ -35,3 +36,6 @@ var InsufficientPermissionsError = errors.NewUnauthorized("You don't have enough
 var NoClusterViewerRoleError = errors.NewUnauthorized("Require viewer role in cluster level")
 var NoClusterEditorRoleError = errors.NewUnauthorized("Require editor role in cluster level")
 var NoClusterOwnerRoleError = errors.NewUnauthorized("Require owner role in cluster level")
+var NotATenantOwnerError = errors.NewUnauthorized("Require owner of a tenant")
+var NotTenantOwnerError = errors.NewUnauthorized("Require owner of the tenant")
+var UnauthorizedTenantError = errors.NewUnauthorized("You can't view resources of unauthorized tenant")

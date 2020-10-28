@@ -15,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/rand"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type HttpsCert struct {
@@ -90,19 +91,20 @@ func BuildHttpsCertResponse(httpsCert *v1alpha1.HttpsCert) *HttpsCertResp {
 	return &resp
 }
 
-func (resourceManager *ResourceManager) GetHttpsCert(name string) (*HttpsCertResp, error) {
+func (resourceManager *ResourceManager) GetHttpsCert(name string) (*v1alpha1.HttpsCert, error) {
 	var fetched v1alpha1.HttpsCert
 
 	if err := resourceManager.Get("", name, &fetched); err != nil {
 		return nil, err
 	}
 
-	return BuildHttpsCertResponse(&fetched), nil
+	return &fetched, nil
 }
 
-func (resourceManager *ResourceManager) GetHttpsCerts() ([]HttpsCertResp, error) {
+func (resourceManager *ResourceManager) GetHttpsCerts(options ...client.ListOption) ([]HttpsCertResp, error) {
 	var fetched v1alpha1.HttpsCertList
-	if err := resourceManager.List(&fetched); err != nil {
+
+	if err := resourceManager.List(&fetched, options...); err != nil {
 		return nil, err
 	}
 
@@ -116,7 +118,7 @@ func (resourceManager *ResourceManager) GetHttpsCerts() ([]HttpsCertResp, error)
 	return httpsCerts, nil
 }
 
-func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCertResp, error) {
+func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCert, tenantName string) (*HttpsCertResp, error) {
 
 	// by default, cert use our default http01Issuer
 	if cert.HttpsCertIssuer == "" {
@@ -146,6 +148,9 @@ func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCe
 	res := v1alpha1.HttpsCert{
 		ObjectMeta: v1.ObjectMeta{
 			Name: cert.Name,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: tenantName,
+			},
 		},
 		Spec: v1alpha1.HttpsCertSpec{
 			HttpsCertIssuer: cert.HttpsCertIssuer,
@@ -268,7 +273,7 @@ func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (
 	return BuildHttpsCertResponse(&res), nil
 }
 
-func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCertResp, error) {
+func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCert, tenantName string) (*HttpsCertResp, error) {
 	x509Cert, _, err := controllers.ParseCert(cert.SelfManagedCertContent)
 
 	if cert.Name == "" {
@@ -319,6 +324,9 @@ func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCe
 	res := v1alpha1.HttpsCert{
 		ObjectMeta: v1.ObjectMeta{
 			Name: cert.Name,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: tenantName,
+			},
 		},
 		Spec: v1alpha1.HttpsCertSpec{
 			IsSelfManaged:             true,

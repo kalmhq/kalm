@@ -2,17 +2,19 @@ package handler
 
 import (
 	"fmt"
+
 	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/api/resources"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (h *ApiHandler) handleListHttpsCerts(c echo.Context) error {
-	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
-		return resources.NoClusterViewerRoleError
-	}
+	httpsCerts, err := h.resourceManager.GetHttpsCerts(client.MatchingLabels{
+		v1alpha1.TenantNameLabelKey: getCurrentUser(c).Tenant,
+	})
 
-	httpsCerts, err := h.resourceManager.GetHttpsCerts()
 	if err != nil {
 		return err
 	}
@@ -21,22 +23,30 @@ func (h *ApiHandler) handleListHttpsCerts(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleGetHttpsCert(c echo.Context) error {
-	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
-		return resources.NoClusterViewerRoleError
-	}
-
 	httpsCert, err := h.resourceManager.GetHttpsCert(c.Param("name"))
 
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(200, httpsCert)
+	tenantName, err := v1alpha1.GetTenantNameFromObj(httpsCert)
+
+	if err != nil {
+		return err
+	}
+
+	if tenantName != getCurrentUser(c).Tenant {
+		return resources.UnauthorizedTenantError
+	}
+
+	return c.JSON(200, resources.BuildHttpsCertResponse(httpsCert))
 }
 
 func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
+	currentUser := getCurrentUser(c)
+
+	if !h.resourceManager.IsATenantOwner(currentUser.Email, currentUser.Tenant) {
+		return resources.NotATenantOwnerError
 	}
 
 	httpsCert, err := getHttpsCertFromContext(c)
@@ -49,7 +59,7 @@ func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
 		return fmt.Errorf("for selfManaged certs, use /upload instead")
 	}
 
-	httpsCertResp, err := h.resourceManager.CreateAutoManagedHttpsCert(httpsCert)
+	httpsCertResp, err := h.resourceManager.CreateAutoManagedHttpsCert(httpsCert, currentUser.Tenant)
 
 	if err != nil {
 		return err
@@ -59,8 +69,10 @@ func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
+	currentUser := getCurrentUser(c)
+
+	if !h.resourceManager.IsATenantOwner(currentUser.Email, currentUser.Tenant) {
+		return resources.NotATenantOwnerError
 	}
 
 	httpsCert, err := getHttpsCertFromContext(c)
@@ -73,7 +85,7 @@ func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
 		return fmt.Errorf("can only upload selfManaged certs")
 	}
 
-	httpsCertResp, err := h.resourceManager.CreateSelfManagedHttpsCert(httpsCert)
+	httpsCertResp, err := h.resourceManager.CreateSelfManagedHttpsCert(httpsCert, currentUser.Tenant)
 
 	if err != nil {
 		return err
@@ -83,17 +95,36 @@ func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
+	currentUser := getCurrentUser(c)
+
+	if !h.resourceManager.IsATenantOwner(currentUser.Email, currentUser.Tenant) {
+		return resources.NotATenantOwnerError
 	}
 
 	httpsCert, err := getHttpsCertFromContext(c)
+
 	if err != nil {
 		return err
 	}
 
 	if !httpsCert.IsSelfManaged {
 		return errors.NewBadRequest("Only uploaded cert is editable.")
+	}
+
+	crdHttpCert, err := h.resourceManager.GetHttpsCert(httpsCert.Name)
+
+	if err != nil {
+		return err
+	}
+
+	tenantName, err := v1alpha1.GetTenantNameFromObj(crdHttpCert)
+
+	if err != nil {
+		return err
+	}
+
+	if tenantName != currentUser.Tenant {
+		return resources.UnauthorizedTenantError
 	}
 
 	httpsCertResp, err := h.resourceManager.UpdateSelfManagedCert(httpsCert)
@@ -106,11 +137,29 @@ func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteHttpsCert(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
+	currentUser := getCurrentUser(c)
+
+	if !h.resourceManager.IsATenantOwner(currentUser.Email, currentUser.Tenant) {
+		return resources.NotATenantOwnerError
 	}
 
-	err := h.resourceManager.DeleteHttpsCert(c.Param("name"))
+	crdHttpCert, err := h.resourceManager.GetHttpsCert(c.Param("name"))
+
+	if err != nil {
+		return err
+	}
+
+	tenantName, err := v1alpha1.GetTenantNameFromObj(crdHttpCert)
+
+	if err != nil {
+		return err
+	}
+
+	if tenantName != currentUser.Tenant {
+		return resources.UnauthorizedTenantError
+	}
+
+	err = h.resourceManager.DeleteHttpsCert(c.Param("name"))
 
 	if err != nil {
 		return err
