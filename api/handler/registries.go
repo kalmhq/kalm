@@ -11,10 +11,9 @@ import (
 func (h *ApiHandler) InstallRegistriesHandlers(e *echo.Group) {
 	e.GET("/registries", h.handleListRegistries, h.requireIsTenantOwner)
 	e.GET("/registries/:name", h.handleGetRegistry, h.requireIsTenantOwner, h.setRegistryToContext)
-	e.PUT("/registries/:name", h.handleUpdateRegistry, h.requireIsTenantOwner)
+	e.PUT("/registries/:name", h.handleUpdateRegistry, h.requireIsTenantOwner, h.setRegistryToContext)
 	e.POST("/registries", h.handleCreateRegistry, h.requireIsTenantOwner)
 	e.DELETE("/registries/:name", h.handleDeleteRegistry, h.requireIsTenantOwner, h.setRegistryToContext)
-
 }
 
 // middlewares
@@ -70,7 +69,7 @@ func (h *ApiHandler) handleCreateRegistry(c echo.Context) (err error) {
 
 	var registry *resources.DockerRegistry
 
-	if registry, err = getDockerRegistryFromBody(c); err != nil {
+	if registry, err = bindDockerRegistryFromRequestBody(c); err != nil {
 		return err
 	}
 
@@ -88,7 +87,7 @@ func (h *ApiHandler) handleUpdateRegistry(c echo.Context) (err error) {
 
 	var registry *resources.DockerRegistry
 
-	if registry, err = getDockerRegistryFromBody(c); err != nil {
+	if registry, err = bindDockerRegistryFromRequestBody(c); err != nil {
 		return err
 	}
 
@@ -116,7 +115,7 @@ func (h *ApiHandler) handleDeleteRegistry(c echo.Context) error {
 	return c.NoContent(200)
 }
 
-func getDockerRegistryFromBody(c echo.Context) (*resources.DockerRegistry, error) {
+func bindDockerRegistryFromRequestBody(c echo.Context) (*resources.DockerRegistry, error) {
 	var registry resources.DockerRegistry
 
 	if err := c.Bind(&registry); err != nil {

@@ -103,12 +103,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.PUT("/httpscertissuers/:name", h.handleUpdateHttpsCertIssuer)
 	gv1Alpha1WithAuth.DELETE("/httpscertissuers/:name", h.handleDeleteHttpsCertIssuer)
 
-	gv1Alpha1WithAuth.GET("/httpscerts", h.handleListHttpsCerts)
-	gv1Alpha1WithAuth.GET("/httpscerts/:name", h.handleGetHttpsCert)
-	gv1Alpha1WithAuth.POST("/httpscerts", h.handleCreateHttpsCert)
-	gv1Alpha1WithAuth.POST("/httpscerts/upload", h.handleUploadHttpsCert)
-	gv1Alpha1WithAuth.PUT("/httpscerts/:name", h.handleUpdateHttpsCert)
-	gv1Alpha1WithAuth.DELETE("/httpscerts/:name", h.handleDeleteHttpsCert)
+	h.InstallHttpsCertsHandlers(gv1Alpha1WithAuth)
 
 	gv1Alpha1WithAuth.GET("/storageclasses", h.handleListStorageClasses)
 
