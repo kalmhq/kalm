@@ -1,8 +1,9 @@
 package resources
 
 import (
-	"k8s.io/apimachinery/pkg/api/errors"
 	"sync"
+
+	"k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
@@ -16,7 +17,7 @@ type DockerRegistryListChannel struct {
 	Error chan error
 }
 
-func (resourceManager *ResourceManager) GetDockerRegistryListChannel(listOptions metaV1.ListOptions) *DockerRegistryListChannel {
+func (resourceManager *ResourceManager) GetDockerRegistryListChannel(options ...client.ListOption) *DockerRegistryListChannel {
 	channel := &DockerRegistryListChannel{
 		List:  make(chan []v1alpha1.DockerRegistry, 1),
 		Error: make(chan error, 1),
@@ -24,7 +25,7 @@ func (resourceManager *ResourceManager) GetDockerRegistryListChannel(listOptions
 
 	go func() {
 		var fetched v1alpha1.DockerRegistryList
-		err := resourceManager.List(&fetched)
+		err := resourceManager.List(&fetched, options...)
 
 		if err != nil {
 			channel.List <- nil
@@ -49,6 +50,7 @@ type DockerRegistry struct {
 	*v1alpha1.DockerRegistrySpec   `json:",inline"`
 	*v1alpha1.DockerRegistryStatus `json:",inline"`
 	Name                           string `json:"name"`
+	Tenant                         string `json:"tenant"`
 	Username                       string `json:"username"`
 	Password                       string `json:"password"`
 }
@@ -78,12 +80,12 @@ func (resourceManager *ResourceManager) GetDockerRegistry(name string) (*DockerR
 		return nil, err
 	}
 
-	return buildDockerRegistryFromResource(&registry, &secret), nil
+	return FromCRDRegistry(&registry, &secret), nil
 }
 
-func (resourceManager *ResourceManager) GetDockerRegistries() ([]*DockerRegistry, error) {
+func (resourceManager *ResourceManager) GetDockerRegistries(options ...client.ListOption) ([]*DockerRegistry, error) {
 	resourceChannels := &ResourceChannels{
-		DockerRegistryList: resourceManager.GetDockerRegistryListChannel(ListAll),
+		DockerRegistryList: resourceManager.GetDockerRegistryListChannel(options...),
 		SecretList:         resourceManager.GetSecretListChannel(client.InNamespace("kalm-system"), client.MatchingLabels{"kalm-docker-registry-authentication": "true"}),
 	}
 
@@ -105,17 +107,24 @@ func (resourceManager *ResourceManager) GetDockerRegistries() ([]*DockerRegistry
 		registry := resources.DockerRegistries[i]
 
 		secret := secretMap[controllers.GetRegistryAuthenticationName(registry.Name)]
-		res[i] = buildDockerRegistryFromResource(&registry, &secret)
+		res[i] = FromCRDRegistry(&registry, &secret)
 	}
 
 	return res, nil
 }
 
-func buildDockerRegistryFromResource(registry *v1alpha1.DockerRegistry, secret *coreV1.Secret) *DockerRegistry {
+func FromCRDRegistry(registry *v1alpha1.DockerRegistry, secret *coreV1.Secret) *DockerRegistry {
 	var username string
 
 	if secret != nil {
 		username = string(secret.Data["username"])
+	}
+
+	tenant, err := v1alpha1.GetTenantNameFromObj(registry)
+
+	if err != nil {
+		// TODO: return the error
+		tenant = ""
 	}
 
 	return &DockerRegistry{
@@ -124,6 +133,7 @@ func buildDockerRegistryFromResource(registry *v1alpha1.DockerRegistry, secret *
 		Name:                 registry.Name,
 		Username:             username,
 		Password:             "", // do not pass password to client
+		Tenant:               tenant,
 	}
 }
 
@@ -131,6 +141,9 @@ func (resourceManager *ResourceManager) CreateDockerRegistry(registry *DockerReg
 	dockerRegistry := &v1alpha1.DockerRegistry{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: registry.Name,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: registry.Tenant,
+			},
 		},
 	}
 
@@ -142,6 +155,9 @@ func (resourceManager *ResourceManager) CreateDockerRegistry(registry *DockerReg
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      controllers.GetRegistryAuthenticationName(registry.Name),
 			Namespace: "kalm-system",
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: registry.Tenant,
+			},
 		},
 		Data: map[string][]byte{
 			"username": []byte(registry.Username),
@@ -169,7 +185,7 @@ func (resourceManager *ResourceManager) CreateDockerRegistry(registry *DockerReg
 		return nil, err
 	}
 
-	return buildDockerRegistryFromResource(dockerRegistry, secret), nil
+	return FromCRDRegistry(dockerRegistry, secret), nil
 }
 
 func (resourceManager *ResourceManager) UpdateDockerRegistry(registry *DockerRegistry) (*DockerRegistry, error) {
@@ -217,7 +233,7 @@ func (resourceManager *ResourceManager) UpdateDockerRegistry(registry *DockerReg
 		}
 	}
 
-	return buildDockerRegistryFromResource(dockerRegistry, secret), nil
+	return FromCRDRegistry(dockerRegistry, secret), nil
 }
 
 func (resourceManager *ResourceManager) DeleteDockerRegistry(name string) error {

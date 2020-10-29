@@ -77,11 +77,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.DELETE("/applications/:applicationName/components/:name", h.handleDeleteComponent)
 	gv1Alpha1WithAuth.POST("/applications/:applicationName/components", h.handleCreateComponent)
 
-	gv1Alpha1WithAuth.GET("/registries", h.handleListRegistries)
-	gv1Alpha1WithAuth.GET("/registries/:name", h.handleGetRegistry)
-	gv1Alpha1WithAuth.PUT("/registries/:name", h.handleUpdateRegistry)
-	gv1Alpha1WithAuth.POST("/registries", h.handleCreateRegistry)
-	gv1Alpha1WithAuth.DELETE("/registries/:name", h.handleDeleteRegistry)
+	h.InstallRegistriesHandlers(gv1Alpha1WithAuth)
 
 	gv1Alpha1WithAuth.DELETE("/pods/:namespace/:name", h.handleDeletePod)
 
