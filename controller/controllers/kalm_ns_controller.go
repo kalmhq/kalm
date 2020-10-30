@@ -100,13 +100,13 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	tenant := ns.Labels[v1alpha1.TenantNameLabelKey]
 	if tenant != "" {
-		// reconcile AuthzPolicies for this tenant
+		// reconcile istio.AuthzPolicies for this tenant
 		err := r.reconcileAuthorizationPoliciesForTenant(tenant)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
 
-		// reconcile AuthzPolicies for this tenant
+		// reconcile k8s.NetworkPolicies for this tenant
 		err = r.reconcileNetworkPoliciesForTenant(ns.Name, tenant)
 		if err != nil {
 			return ctrl.Result{}, err
@@ -205,6 +205,13 @@ func (r *KalmNSReconciler) reconcileAuthorizationPoliciesForTenant(tenant string
 		},
 	}
 
+	controlPlaneNSList := []string{"istio-system"}
+	allowKalmControlPlaneNSRule := istioapisec.Rule{
+		From: []*istioapisec.Rule_From{
+			{Source: &istioapisec.Source{Namespaces: controlPlaneNSList}},
+		},
+	}
+
 	for _, ns := range nsList.Items {
 		expectedAuthzPolicy := istiosec.AuthorizationPolicy{
 			ObjectMeta: metav1.ObjectMeta{
@@ -213,7 +220,10 @@ func (r *KalmNSReconciler) reconcileAuthorizationPoliciesForTenant(tenant string
 			},
 			Spec: istioapisec.AuthorizationPolicy{
 				Action: istioapisec.AuthorizationPolicy_ALLOW,
-				Rules:  []*istioapisec.Rule{&allowSameTenantNSRule},
+				Rules: []*istioapisec.Rule{
+					&allowSameTenantNSRule,
+					&allowKalmControlPlaneNSRule,
+				},
 			},
 		}
 
@@ -268,6 +278,14 @@ func (r *KalmNSReconciler) reconcileNetworkPoliciesForTenant(ns, tenant string) 
 							NamespaceSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
 									v1alpha1.TenantNameLabelKey: tenant,
+								},
+							},
+						},
+						{
+							// for istio-system, ns should has this label
+							NamespaceSelector: &metav1.LabelSelector{
+								MatchLabels: map[string]string{
+									v1alpha1.KalmControlPlaneLabelKey: "true",
 								},
 							},
 						},

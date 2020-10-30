@@ -6,6 +6,7 @@ import (
 )
 
 const KalmSystemNamespace = "kalm-system"
+const KalmControlPlaneLabelKey = "kalm-control-plane"
 
 type EnvVarType string
 
