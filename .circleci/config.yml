@@ -1,7 +1,7 @@
 version: 2.1
-orbs:
-  hello-orb: kalmhq-ns1/hello-orb@dev:0.0.1
-  deploy-orb: kalmhq-ns1/deploy-orb@dev:0.0.3
+#orbs:
+#  hello-orb: kalmhq-ns1/hello-orb@dev:0.0.1
+#  deploy-orb: kalmhq-ns1/deploy-orb@dev:0.0.3
 jobs:
   test-dashboard:
     docker:
@@ -143,24 +143,24 @@ jobs:
               docker tag kalmhq/kalm-operator:latest kalmhq/kalm-operator:$TAG
               docker push kalmhq/kalm-operator:$TAG
             fi
-  deploy-dashboard:
-    executor: deploy-orb/default
-    steps:
-      - deploy-orb/deploy:
-          KALM_API_ADDRESS: https://dashboard.kapp.live
-          KALM_DEPLOY_KEY: $DEPLOY_KEY
-          KALM_APP: kalm-system
-          KALM_COMPONENT: kalm
-          KALM_COMPONENT_IMG_TAG: $CIRCLE_SHA1
-  deploy-auth-proxy:
-    executor: deploy-orb/default
-    steps:
-      - deploy-orb/deploy:
-          KALM_API_ADDRESS: https://dashboard.kapp.live
-          KALM_DEPLOY_KEY: $DEPLOY_KEY
-          KALM_APP: kalm-system
-          KALM_COMPONENT: auth-proxy
-          KALM_COMPONENT_IMG_TAG: $CIRCLE_SHA1
+  #deploy-dashboard:
+  #  executor: deploy-orb/default
+  #  steps:
+  #    - deploy-orb/deploy:
+  #        KALM_API_ADDRESS: https://dashboard.kapp.live
+  #        KALM_DEPLOY_KEY: $DEPLOY_KEY
+  #        KALM_APP: kalm-system
+  #        KALM_COMPONENT: kalm
+  #        KALM_COMPONENT_IMG_TAG: $CIRCLE_SHA1
+  #deploy-auth-proxy:
+  #  executor: deploy-orb/default
+  #  steps:
+  #    - deploy-orb/deploy:
+  #        KALM_API_ADDRESS: https://dashboard.kapp.live
+  #        KALM_DEPLOY_KEY: $DEPLOY_KEY
+  #        KALM_APP: kalm-system
+  #        KALM_COMPONENT: auth-proxy
+  #        KALM_COMPONENT_IMG_TAG: $CIRCLE_SHA1
   deploy-controller:
     docker:
       - image: circleci/golang:1.13.11
