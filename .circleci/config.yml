@@ -221,22 +221,22 @@ workflows:
                 - master
             tags:
               only: /^v.*/
-      - deploy-dashboard:
-          context: deploy-demo-cluster
-          requires:
-            - build-push-dashboard-image
-          filters:
-            branches:
-              only:
-                - master
-      - deploy-auth-proxy:
-          context: deploy-demo-cluster
-          requires:
-            - build-push-dashboard-image
-          filters:
-            branches:
-              only:
-                - master
+      #- deploy-dashboard:
+      #    context: deploy-demo-cluster
+      #    requires:
+      #      - build-push-dashboard-image
+      #    filters:
+      #      branches:
+      #        only:
+      #          - master
+      #- deploy-auth-proxy:
+      #    context: deploy-demo-cluster
+      #    requires:
+      #      - build-push-dashboard-image
+      #    filters:
+      #      branches:
+      #        only:
+      #          - master
   controller:
     jobs:
       - test-controller:
