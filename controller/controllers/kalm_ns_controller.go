@@ -98,19 +98,34 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
+	if !ns.DeletionTimestamp.IsZero() {
+		r.Log.Info("being deleting, ignored", "ns", ns.Name)
+		return ctrl.Result{}, nil
+	}
+
 	tenant := ns.Labels[v1alpha1.TenantNameLabelKey]
+	isKalmCtrlPlaneNS := ns.Labels[v1alpha1.KalmControlPlaneLabelKey]
+
 	if tenant != "" {
 		// reconcile istio.AuthzPolicies for this tenant
-		err := r.reconcileAuthorizationPoliciesForTenant(tenant)
-		if err != nil {
+		if err := r.reconcileAuthorizationPoliciesForTenant(tenant); err != nil {
 			return ctrl.Result{}, err
 		}
 
 		// reconcile k8s.NetworkPolicies for this tenant
-		err = r.reconcileNetworkPoliciesForTenant(ns.Name, tenant)
-		if err != nil {
+		if err := r.reconcileNetworkPoliciesForTenant(ns.Name, tenant); err != nil {
 			return ctrl.Result{}, err
 		}
+	} else if isKalmCtrlPlaneNS != "" {
+		if err := r.reconcileAuthorizationPoliciesForCtrlPlane(ns.Name); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		if err := r.reconcileNetworkPoliciesForCtrlPlane(ns.Name); err != nil {
+			return ctrl.Result{}, err
+		}
+	} else {
+		r.Log.Info("see ns neither tenant nor ctrl-plane", "ns", ns.Name)
 	}
 
 	var namespaceList v1.NamespaceList
@@ -182,6 +197,8 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
+const authzPolicyName = "kalm-authz-policy"
+
 func (r *KalmNSReconciler) reconcileAuthorizationPoliciesForTenant(tenant string) error {
 	if tenant == "" {
 		return v1alpha1.NoTenantFoundError
@@ -191,8 +208,6 @@ func (r *KalmNSReconciler) reconcileAuthorizationPoliciesForTenant(tenant string
 	if err := r.List(r.ctx, &nsList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenant}); err != nil {
 		return err
 	}
-
-	authzPolicyName := "kalm-authz-policy"
 
 	var sameTenantNSList []string
 	for _, ns := range nsList.Items {
@@ -317,6 +332,70 @@ func (r *KalmNSReconciler) reconcileNetworkPoliciesForTenant(ns, tenant string) 
 	}
 
 	return err
+}
+
+// istio.AuthnPolicy
+// allow access within kalm-control-plane namespaces
+func (r *KalmNSReconciler) reconcileAuthorizationPoliciesForCtrlPlane(ns string) error {
+	nsList := v1.NamespaceList{}
+	if err := r.List(r.ctx, &nsList, client.MatchingLabels{v1alpha1.KalmControlPlaneLabelKey: "true"}); err != nil {
+		return err
+	}
+
+	var ctrlPlaneNSList []string
+	for _, tmpNS := range nsList.Items {
+		ctrlPlaneNSList = append(ctrlPlaneNSList, tmpNS.Name)
+	}
+
+	expectedAuthnPolicy := istiosec.AuthorizationPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: ns,
+			Name:      authzPolicyName,
+		},
+		Spec: istioapisec.AuthorizationPolicy{
+			Action: istioapisec.AuthorizationPolicy_ALLOW,
+			Rules: []*istioapisec.Rule{
+				{
+					From: []*istioapisec.Rule_From{
+						{
+							Source: &istioapisec.Source{
+								Namespaces: ctrlPlaneNSList,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	var authnPolicy istiosec.AuthorizationPolicy
+	isNew := false
+
+	err := r.Get(r.ctx, client.ObjectKey{Namespace: expectedAuthnPolicy.Namespace, Name: expectedAuthnPolicy.Name}, &authnPolicy)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			isNew = true
+
+			authnPolicy = expectedAuthnPolicy
+		} else {
+			authnPolicy.Spec = expectedAuthnPolicy.Spec
+		}
+	}
+
+	if isNew {
+		err = r.Create(r.ctx, &authnPolicy)
+	} else {
+		err = r.Update(r.ctx, &authnPolicy)
+	}
+
+	return err
+}
+
+// k8s.NP
+// allow access within kalm-control-plane namespaces
+func (r *KalmNSReconciler) reconcileNetworkPoliciesForCtrlPlane(ns string) error {
+	//todo
+	return nil
 }
 
 func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
