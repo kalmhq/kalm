@@ -107,20 +107,10 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	isKalmCtrlPlaneNS := ns.Labels[v1alpha1.KalmControlPlaneLabelKey]
 
 	if tenant != "" {
-		// reconcile istio.AuthzPolicies for this tenant
-		if err := r.reconcileAuthorizationPoliciesForTenant(tenant); err != nil {
-			return ctrl.Result{}, err
-		}
-
-		// reconcile k8s.NetworkPolicies for this tenant
 		if err := r.reconcileNetworkPoliciesForTenant(ns.Name, tenant); err != nil {
 			return ctrl.Result{}, err
 		}
-	} else if isKalmCtrlPlaneNS != "" {
-		if err := r.reconcileAuthorizationPoliciesForCtrlPlane(ns.Name); err != nil {
-			return ctrl.Result{}, err
-		}
-
+	} else if isKalmCtrlPlaneNS == "true" {
 		if err := r.reconcileNetworkPoliciesForCtrlPlane(ns.Name); err != nil {
 			return ctrl.Result{}, err
 		}
@@ -220,7 +210,7 @@ func (r *KalmNSReconciler) reconcileAuthorizationPoliciesForTenant(tenant string
 		},
 	}
 
-	controlPlaneNSList := []string{"istio-system"}
+	controlPlaneNSList := []string{"istio-system", "kube-system"}
 	allowKalmControlPlaneNSRule := istioapisec.Rule{
 		From: []*istioapisec.Rule_From{
 			{Source: &istioapisec.Source{Namespaces: controlPlaneNSList}},
@@ -272,12 +262,12 @@ func (r *KalmNSReconciler) reconcileAuthorizationPoliciesForTenant(tenant string
 	return nil
 }
 
+const networkPolicyName = "kalm-network-policy"
+
 func (r *KalmNSReconciler) reconcileNetworkPoliciesForTenant(ns, tenant string) error {
 	if tenant == "" {
 		return v1alpha1.NoTenantFoundError
 	}
-
-	networkPolicyName := "kalm-network-policy"
 
 	expectedNetworkPolicy := networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
@@ -297,7 +287,7 @@ func (r *KalmNSReconciler) reconcileNetworkPoliciesForTenant(ns, tenant string) 
 							},
 						},
 						{
-							// for istio-system, ns should has this label
+							// allow access from kalm-contrl-plane
 							NamespaceSelector: &metav1.LabelSelector{
 								MatchLabels: map[string]string{
 									v1alpha1.KalmControlPlaneLabelKey: "true",
@@ -391,11 +381,54 @@ func (r *KalmNSReconciler) reconcileAuthorizationPoliciesForCtrlPlane(ns string)
 	return err
 }
 
-// k8s.NP
-// allow access within kalm-control-plane namespaces
+// k8s.NP, allow access within kalm-control-plane namespaces
 func (r *KalmNSReconciler) reconcileNetworkPoliciesForCtrlPlane(ns string) error {
-	//todo
-	return nil
+	expectedNetworkPolicy := networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: ns,
+			Name:      networkPolicyName,
+		},
+		Spec: networkingv1.NetworkPolicySpec{
+			PodSelector: metav1.LabelSelector{},
+			Ingress: []networkingv1.NetworkPolicyIngressRule{
+				{
+					From: []networkingv1.NetworkPolicyPeer{
+						{
+							// allow access between kalm-contrl-plane
+							NamespaceSelector: &metav1.LabelSelector{
+								MatchLabels: map[string]string{
+									v1alpha1.KalmControlPlaneLabelKey: "true",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	isNew := false
+
+	np := networkingv1.NetworkPolicy{}
+	if err := r.Get(r.ctx, client.ObjectKey{Namespace: ns, Name: networkPolicyName}, &np); err != nil {
+		if errors.IsNotFound(err) {
+			isNew = true
+			np = expectedNetworkPolicy
+		} else {
+			return err
+		}
+	} else {
+		np.Spec = expectedNetworkPolicy.Spec
+	}
+
+	var err error
+	if isNew {
+		err = r.Create(r.ctx, &np)
+	} else {
+		err = r.Update(r.ctx, &np)
+	}
+
+	return err
 }
 
 func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
