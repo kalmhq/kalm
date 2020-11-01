@@ -2,6 +2,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: istio-system
+  labels:
+    kalm-control-plane: "true"
 ---
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
