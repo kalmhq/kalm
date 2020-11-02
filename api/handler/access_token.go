@@ -56,19 +56,29 @@ func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
+	currentUser := getCurrentUser(c)
+
 	accessToken, err := bindAccessTokenFromRequestBody(c)
 
 	if err != nil {
 		return err
 	}
 
-	var fetched v1alpha1.AccessToken
+	tokens, err := h.resourceManager.GetAccessTokens(
+		belongsToTenant(currentUser.Tenant),
+		hasName(accessToken.Name),
+		limitOne(),
+	)
 
-	if err := h.resourceManager.Get("", accessToken.Name, &fetched); err != nil {
+	if err != nil {
 		return err
 	}
 
-	if !h.clientManager.PermissionsGreaterThanOrEqualAccessToken(getCurrentUser(c), &resources.AccessToken{Name: fetched.Name, AccessTokenSpec: &fetched.Spec}) {
+	token := tokens[0]
+
+	if !h.clientManager.PermissionsGreaterThanOrEqualAccessToken(currentUser, &resources.AccessToken{
+		Name: token.Name, AccessTokenSpec: token.AccessTokenSpec,
+	}) {
 		return resources.InsufficientPermissionsError
 	}
 

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 )
@@ -11,20 +12,22 @@ func (h *ApiHandler) handleCreateACMEServer(c echo.Context) error {
 		return resources.NoClusterEditorRoleError
 	}
 
-	acmeServer, err := getACMEServerFromContext(c)
+	acmeServer, err := bindACMEServerFromRequestBody(c)
+
 	if err != nil {
 		return err
 	}
 
 	if acmeServer.NSDomain == "" {
-		return fmt.Errorf("must set nsDomain")
+		return fmt.Errorf("nsDomain is blank")
 	}
 
 	if acmeServer.ACMEDomain == "" {
-		return fmt.Errorf("must set acmeDomain")
+		return fmt.Errorf("acmeDomain is blank")
 	}
 
 	acmeServer, err = h.resourceManager.CreateACMEServer(acmeServer)
+
 	if err != nil {
 		return err
 	}
@@ -37,13 +40,13 @@ func (h *ApiHandler) handleUpdateACMEServer(c echo.Context) error {
 		return resources.NoClusterEditorRoleError
 	}
 
-	acmeServer, err := getACMEServerFromContext(c)
+	acmeServer, err := bindACMEServerFromRequestBody(c)
 	if err != nil {
 		return err
 	}
 
 	if acmeServer.ACMEDomain == "" {
-		return fmt.Errorf("must set acmeDomain")
+		return fmt.Errorf("acmeDomain is blank")
 	}
 
 	// ns.<acme-xyz>.<your-domain.com>
@@ -86,7 +89,7 @@ func (h *ApiHandler) handleDeleteACMEServer(c echo.Context) error {
 	return c.NoContent(200)
 }
 
-func getACMEServerFromContext(c echo.Context) (*resources.ACMEServer, error) {
+func bindACMEServerFromRequestBody(c echo.Context) (*resources.ACMEServer, error) {
 	var acmeServer resources.ACMEServer
 
 	if err := c.Bind(&acmeServer); err != nil {
