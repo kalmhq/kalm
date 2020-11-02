@@ -7,6 +7,13 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func (h *ApiHandler) InstallACMEServerHandlers(e *echo.Group) {
+	e.POST("/acmeserver", h.handleCreateACMEServer)
+	e.GET("/acmeserver", h.handleGetACMEServer)
+	e.PUT("/acmeserver", h.handleUpdateACMEServer)
+	e.DELETE("/acmeserver", h.handleDeleteACMEServer)
+}
+
 func (h *ApiHandler) handleCreateACMEServer(c echo.Context) error {
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.NoClusterEditorRoleError

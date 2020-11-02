@@ -134,10 +134,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.POST("/protectedendpoints", h.handleCreateProtectedEndpoints)
 	gv1Alpha1WithAuth.PUT("/protectedendpoints", h.handleUpdateProtectedEndpoints)
 
-	gv1Alpha1WithAuth.POST("/acmeserver", h.handleCreateACMEServer)
-	gv1Alpha1WithAuth.GET("/acmeserver", h.handleGetACMEServer)
-	gv1Alpha1WithAuth.PUT("/acmeserver", h.handleUpdateACMEServer)
-	gv1Alpha1WithAuth.DELETE("/acmeserver", h.handleDeleteACMEServer)
+	h.InstallACMEServerHandlers(gv1Alpha1WithAuth)
 
 	gv1Alpha1WithAuth.GET("/settings", h.handleListSettings)
 
