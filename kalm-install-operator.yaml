@@ -25,24 +25,44 @@ spec:
       description: KalmOperatorConfig is the Schema for the kalmoperatorconfigs API
       properties:
         apiVersion:
-          description:
-            "APIVersion defines the versioned schema of this representation
+          description: 'APIVersion defines the versioned schema of this representation
             of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources"
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
           type: string
         kind:
-          description:
-            "Kind is a string value representing the REST resource this
+          description: 'Kind is a string value representing the REST resource this
             object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
           type: string
         metadata:
           type: object
         spec:
           description: KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
           properties:
+            dashboard:
+              description: Dashboard Config
+              properties:
+                args:
+                  items:
+                    type: string
+                  type: array
+                envs:
+                  items:
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                    required:
+                      - name
+                      - value
+                    type: object
+                  type: array
+                version:
+                  type: string
+              type: object
             kalmVersion:
-              description: DashboardVersion               string `json:"dashboardVersion,omitempty"`
+              description: deprecated
               type: string
             skipCertManagerInstallation:
               type: boolean
@@ -52,6 +72,8 @@ spec:
               type: boolean
             skipKalmDashboardInstallation:
               type: boolean
+            version:
+              type: string
           type: object
         status:
           description: KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
@@ -68,6 +90,74 @@ status:
     plural: ""
   conditions: []
   storedVersions: []
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
+  name: kalm-privileged
+spec:
+  allowPrivilegeEscalation: true
+  allowedCapabilities:
+    - '*'
+  fsGroup:
+    rule: RunAsAny
+  hostIPC: true
+  hostNetwork: true
+  hostPID: true
+  hostPorts:
+    - max: 65535
+      min: 0
+  privileged: true
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+    - '*'
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  annotations:
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
+    apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: docker/default,runtime/default
+    seccomp.security.alpha.kubernetes.io/defaultProfileName: runtime/default
+  name: kalm-restricted
+spec:
+  allowPrivilegeEscalation: false
+  fsGroup:
+    ranges:
+      - max: 65535
+        min: 1
+    rule: MustRunAs
+  hostIPC: false
+  hostNetwork: false
+  hostPID: false
+  privileged: false
+  readOnlyRootFilesystem: false
+  requiredDropCapabilities:
+    - ALL
+  runAsUser:
+    rule: MustRunAsNonRoot
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    ranges:
+      - max: 65535
+        min: 1
+    rule: MustRunAs
+  volumes:
+    - configMap
+    - emptyDir
+    - projected
+    - secret
+    - downwardAPI
+    - persistentVolumeClaim
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -121,27 +211,27 @@ rules:
       - serviceaccounts
       - services
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - acme.cert-manager.io
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - admissionregistration.k8s.io
     resources:
       - mutatingwebhookconfigurations
       - validatingwebhookconfigurations
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - apiextensions.k8s.io
     resources:
       - customresourcedefinitions
       - customresourcedefinitions.apiextensions.k8s.io
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - apiregistration.k8s.io
     resources:
@@ -161,7 +251,7 @@ rules:
       - replicasets
       - statefulsets
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - auditregistration.k8s.io
     resources:
@@ -174,33 +264,33 @@ rules:
   - apiGroups:
       - authentication.istio.io
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - autoscaling
     resources:
       - horizontalpodautoscalers
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - cert-manager.io
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - config.istio.io
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - core.kalm.dev
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - extensions
     resources:
@@ -212,13 +302,13 @@ rules:
       - replicasets
       - statefulsets
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - install.istio.io
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - install.kalm.dev
     resources:
@@ -249,15 +339,15 @@ rules:
   - apiGroups:
       - networking.istio.io
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - policy
     resources:
       - poddisruptionbudgets*
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - rbac.authorization.k8s.io
     resources:
@@ -266,13 +356,13 @@ rules:
       - rolebindings
       - roles
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - rbac.istio.io
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "*"
+      - '*'
   - apiGroups:
       - route.openshift.io
     resources:
@@ -282,9 +372,9 @@ rules:
   - apiGroups:
       - security.istio.io
     resources:
-      - "*"
+      - '*'
     verbs:
-      - "*"
+      - '*'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -403,3 +493,61 @@ spec:
               cpu: 100m
               memory: 20Mi
       terminationGracePeriodSeconds: 10
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:psp:privileged
+rules:
+  - apiGroups:
+      - policy
+    resourceNames:
+      - privileged
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:psp:restricted
+rules:
+  - apiGroups:
+      - policy
+    resourceNames:
+      - restricted
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kalm-operator:psp:privileged
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:psp:privileged
+subjects:
+  - kind: ServiceAccount
+    name: kalm-operator
+    namespace: kalm-operator
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kalm-system-default:psp:privileged
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:psp:privileged
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: kalm-system

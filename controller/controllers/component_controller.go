@@ -654,6 +654,10 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 		return err
 	}
 
+	if err := r.CreatePspRoleBinding(template.Spec.ServiceAccountName); err != nil {
+		return err
+	}
+
 	switch r.component.Spec.WorkloadType {
 	case corev1alpha1.WorkloadTypeServer, "":
 		if err := r.prepareVolsForSimpleWorkload(template); err != nil {
