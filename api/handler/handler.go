@@ -15,18 +15,6 @@ type ApiHandler struct {
 	logger          *zap.Logger
 }
 
-type H map[string]interface{}
-
-func (h *ApiHandler) InstallAdminRoutes(e *echo.Echo) {
-	g := e.Group("/admin")
-
-	g.GET("/routes", handleApiRoutes)
-	g.POST("/temp_account", h.handleCreateTemporaryClusterOwnerAccessTokens, h.GetUserMiddleware, h.RequireUserMiddleware)
-
-	// deprecated
-	e.POST("/temporary_cluster_owner_access_token", h.handleCreateTemporaryClusterOwnerAccessTokens, h.GetUserMiddleware, h.RequireUserMiddleware)
-}
-
 func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
 	e.GET("/ping", handlePing)
 	e.POST("/webhook/components", h.handleDeployWebhookCall)
@@ -62,10 +50,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	gv1Alpha1WithAuth.GET("/loadbalancers", h.handleLoadBalancers)
 
-	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
-	gv1Alpha1WithAuth.POST("/applications", h.handleCreateApplication)
-	gv1Alpha1WithAuth.GET("/applications/:name", h.handleGetApplicationDetails)
-	gv1Alpha1WithAuth.DELETE("/applications/:name", h.handleDeleteApplication)
+	h.InstallApplicationsHandlers(gv1Alpha1WithAuth)
 
 	gv1Alpha1WithAuth.GET("/services", h.handleListClusterServices)
 

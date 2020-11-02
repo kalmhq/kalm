@@ -60,10 +60,26 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 		},
 	}
 
+	// A namespace owner in the default tenant can't create access token
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetEditorRoleOfScope(defaultTenant, "ns1"),
+		},
+		Namespace: "ns1",
+		Method:    http.MethodPost,
+		Body:      key,
+		Path:      "/v1alpha1/access_tokens",
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res resources.AccessToken
+			rec.BodyAsJSON(&res)
+			suite.Equal(401, rec.Code)
+		},
+	})
+
 	// create
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetTenantOwnerRole(defaultTenant),
 		},
 		Method: http.MethodPost,
 		Body:   key,
@@ -81,7 +97,7 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 	// list in same tenant
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetTenantOwnerRole(defaultTenant),
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/access_tokens",
@@ -99,7 +115,7 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 	// list in another tenant, should get 0
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetTenantOwnerRole("anotherTenant"),
 		},
 		Tenant: "anotherTenant",
 		Method: http.MethodGet,
@@ -115,7 +131,7 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 	// Delete
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetTenantOwnerRole(defaultTenant),
 		},
 		Method: http.MethodDelete,
 		Path:   "/v1alpha1/access_tokens",
@@ -131,7 +147,7 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 	// list again
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetTenantOwnerRole(defaultTenant),
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/access_tokens",

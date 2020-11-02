@@ -120,7 +120,7 @@ func (h *ApiHandler) handleDeleteProtectedEndpoints(c echo.Context) error {
 		return err
 	}
 
-	if !h.clientManager.CanEditNamespace(getCurrentUser(c), protectedEndpoint.Namespace) {
+	if !h.clientManager.CanEditScope(getCurrentUser(c), protectedEndpoint.Namespace) {
 		return resources.NoNamespaceEditorRoleError(protectedEndpoint.Namespace)
 	}
 
@@ -140,7 +140,7 @@ func (h *ApiHandler) handleCreateProtectedEndpoints(c echo.Context) error {
 		return err
 	}
 
-	if !h.clientManager.CanEditNamespace(getCurrentUser(c), protectedEndpoint.Namespace) {
+	if !h.clientManager.CanEditScope(getCurrentUser(c), protectedEndpoint.Namespace) {
 		return resources.NoNamespaceEditorRoleError(protectedEndpoint.Namespace)
 	}
 
@@ -160,7 +160,7 @@ func (h *ApiHandler) handleUpdateProtectedEndpoints(c echo.Context) error {
 		return err
 	}
 
-	if !h.clientManager.CanEditNamespace(getCurrentUser(c), protectedEndpoint.Namespace) {
+	if !h.clientManager.CanEditScope(getCurrentUser(c), protectedEndpoint.Namespace) {
 		return resources.NoNamespaceEditorRoleError(protectedEndpoint.Namespace)
 	}
 

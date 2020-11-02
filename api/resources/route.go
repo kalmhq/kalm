@@ -44,6 +44,7 @@ func (resourceManager *ResourceManager) GetHttpRouteListChannel(listOptions ...c
 type HttpRoute struct {
 	*v1alpha1.HttpRouteSpec `json:",inline"`
 	Name                    string `json:"name"`
+	Tenant                  string `json:"tenant"`
 	Namespace               string `json:"namespace"`
 }
 

@@ -100,17 +100,17 @@ func (suite *WithControllerTestSuite) SetupApiServer(policies ...string) *echo.E
 	return e
 }
 
-func (suite *WithControllerTestSuite) SetupApiServerWithDefaultPolicy(policies ...string) *echo.Echo {
-	ps := []string{
-		client2.BuildClusterRolePolicies(),
-		client2.BuildRolePoliciesForNamespace("ns1"),
-		client2.BuildRolePoliciesForNamespace("ns2"),
-	}
+// func (suite *WithControllerTestSuite) SetupApiServerWithDefaultPolicy(policies ...string) *echo.Echo {
+// 	ps := []string{
+// 		client2.BuildClusterRolePolicies(),
+// 		client2.BuildRolePoliciesForTenantAndNamespace("ns1"),
+// 		client2.BuildRolePoliciesForTenantAndNamespace("ns2"),
+// 	}
 
-	ps = append(ps, policies...)
+// 	ps = append(ps, policies...)
 
-	return suite.SetupApiServer(ps...)
-}
+// 	return suite.SetupApiServer(ps...)
+// }
 
 func GrantUserRoles(email string, roles ...string) string {
 	var sb strings.Builder
@@ -123,12 +123,12 @@ func GrantUserRoles(email string, roles ...string) string {
 	return sb.String()
 }
 
-func GetViewerRoleOfNs(name string) string {
-	return fmt.Sprintf("role_%sViewer", name)
+func GetViewerRoleOfScope(tenant, name string) string {
+	return fmt.Sprintf("role_%s_%s_viewer", tenant, name)
 }
 
-func GetEditorRoleOfNs(name string) string {
-	return fmt.Sprintf("role_%sEditor", name)
+func GetEditorRoleOfScope(tenant, name string) string {
+	return fmt.Sprintf("role_%s_%s_editor", tenant, name)
 }
 
 // func GetOwnerRoleOfNs(name string) string {
@@ -136,15 +136,19 @@ func GetEditorRoleOfNs(name string) string {
 // }
 
 func GetClusterViewerRole() string {
-	return "role_clusterViewer"
+	return "role_cluster_viewer"
 }
 
 func GetClusterEditorRole() string {
-	return "role_clusterEditor"
+	return "role_cluster_editor"
 }
 
 func GetClusterOwnerRole() string {
-	return "role_clusterOwner"
+	return "role_cluster_owner"
+}
+
+func GetTenantOwnerRole(name string) string {
+	return "tenant_" + name + "_owner"
 }
 
 func (suite *WithControllerTestSuite) SetupApiServerWithoutPolicy() {
@@ -242,13 +246,15 @@ type TestRequestContext struct {
 	Debug bool
 }
 
+const defaultTenant = "defaultTenant"
+
 func (suite *WithControllerTestSuite) DoTestRequest(rc *TestRequestContext) {
 	if rc.User == "" {
 		rc.User = "foo@bar"
 	}
 
 	if rc.Tenant == "" {
-		rc.Tenant = "defaultTenant"
+		rc.Tenant = defaultTenant
 	}
 
 	if rc.TestWithoutRoles != nil {
@@ -265,9 +271,10 @@ func (suite *WithControllerTestSuite) DoTestRequest(rc *TestRequestContext) {
 		ps := []string{client2.BuildClusterRolePolicies()}
 
 		if rc.Namespace != "" {
-			ps = append(ps, client2.BuildRolePoliciesForNamespace(rc.Namespace))
+			ps = append(ps, client2.BuildRolePoliciesForTenantAndNamespace(rc.Tenant, rc.Namespace))
 		}
 
+		ps = append(ps, client2.BuildTenantOwnerPolicies(rc.Tenant))
 		ps = append(ps, GrantUserRoles(rc.User, rc.Roles...))
 
 		if rc.Debug {

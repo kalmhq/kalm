@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"k8s.io/apimachinery/pkg/util/rand"
 )
+
+// installer
 
 func (h *ApiHandler) InstallAccessTokensHandlers(e *echo.Group) {
 	e.GET("/access_tokens", h.handleListAccessTokens)
@@ -13,20 +16,22 @@ func (h *ApiHandler) InstallAccessTokensHandlers(e *echo.Group) {
 	e.DELETE("/access_tokens", h.handleDeleteAccessToken)
 }
 
+// handlers
+
 func (h *ApiHandler) handleListAccessTokens(c echo.Context) error {
 	currentUser := getCurrentUser(c)
 
-	keys, err := h.resourceManager.GetAccessTokens(
+	tokens, err := h.resourceManager.GetAccessTokens(
 		belongsToTenant(currentUser.Tenant),
 	)
 
-	keys = h.filterAuthorizedAccessTokens(c, keys)
+	tokens = h.filterAuthorizedAccessTokens(c, tokens)
 
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(200, keys)
+	return c.JSON(200, tokens)
 }
 
 func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
@@ -37,17 +42,22 @@ func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
 		return err
 	}
 
-	if !h.clientManager.PermissionsGreaterThanOrEqualAccessToken(currentUser, accessToken) {
-		return resources.InsufficientPermissionsError
-	}
-
 	// Set sensitive fields
 	accessToken.Token = rand.String(128)
 	accessToken.Creator = currentUser.Name
 	accessToken.Name = v1alpha1.GetAccessTokenNameFromToken(accessToken.Token)
 	accessToken.Tenant = currentUser.Tenant
 
+	if !h.clientManager.CanEdit(currentUser, currentUser.Tenant+"/*", "accessTokens/*") {
+		return resources.InsufficientPermissionsError
+	}
+
+	if !h.clientManager.PermissionsGreaterThanOrEqualToAccessToken(currentUser, accessToken) {
+		return resources.InsufficientPermissionsError
+	}
+
 	accessToken, err = h.resourceManager.CreateAccessToken(accessToken)
+
 	if err != nil {
 		return err
 	}
@@ -74,10 +84,18 @@ func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
 		return err
 	}
 
+	if len(tokens) == 0 {
+		return errors.NewNotFound("")
+	}
+
 	token := tokens[0]
 
-	if !h.clientManager.PermissionsGreaterThanOrEqualAccessToken(currentUser, &resources.AccessToken{
-		Name: token.Name, AccessTokenSpec: token.AccessTokenSpec,
+	if !h.clientManager.CanEdit(currentUser, currentUser.Tenant+"/*", "accessTokens/"+token.Name) {
+		return resources.InsufficientPermissionsError
+	}
+
+	if !h.clientManager.PermissionsGreaterThanOrEqualToAccessToken(currentUser, &resources.AccessToken{
+		Name: token.Name, AccessTokenSpec: token.AccessTokenSpec, Tenant: token.Tenant,
 	}) {
 		return resources.InsufficientPermissionsError
 	}
@@ -103,7 +121,7 @@ func (h *ApiHandler) filterAuthorizedAccessTokens(c echo.Context, records []*res
 	l := len(records)
 
 	for i := 0; i < l; i++ {
-		if !h.clientManager.PermissionsGreaterThanOrEqualAccessToken(getCurrentUser(c), records[i]) {
+		if !h.clientManager.PermissionsGreaterThanOrEqualToAccessToken(getCurrentUser(c), records[i]) {
 			records[l-1], records[i] = records[i], records[l-1]
 			i--
 			l--

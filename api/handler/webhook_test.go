@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"net/http"
+	"testing"
+
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"net/http"
-	"testing"
 )
 
 type WebhookHandlerTestSuite struct {
@@ -67,7 +68,7 @@ func (suite *WebhookHandlerTestSuite) TestWebhookHandler() {
 	suite.DoTestRequest(&TestRequestContext{
 		User: accessToken.Name,
 		Roles: []string{
-			GetEditorRoleOfNs(suite.namespace),
+			GetEditorRoleOfScope(defaultTenant, suite.namespace),
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodPost,

@@ -134,7 +134,7 @@ func (suite *SsoHandlerTestSuite) TestProtectedEndpointsHandler() {
 	// create a protected endpoint
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetEditorRoleOfNs(suite.namespace),
+			GetEditorRoleOfScope(defaultTenant, suite.namespace),
 		},
 		Method:    http.MethodPost,
 		Path:      "/v1alpha1/protectedendpoints",

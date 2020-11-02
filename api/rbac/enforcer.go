@@ -21,9 +21,9 @@ type Enforcer interface {
 	// the following functions should be more convenience to use.
 	// Scope should follow the format of "${tenantName}/${applicationName}"
 	// TODO: rename these functions
-	CanViewNamespace(subject, scope string) bool
-	CanEditNamespace(subject, scope string) bool
-	CanManageNamespace(subject, scope string) bool
+	CanViewScope(subject, scope string) bool
+	CanEditScope(subject, scope string) bool
+	CanManageScope(subject, scope string) bool
 
 	CanViewCluster(subject string) bool
 	CanEditCluster(subject string) bool
@@ -67,15 +67,15 @@ func (e *KalmRBACEnforcer) CanManage(subject, scope, resource string) bool {
 	return e.Enforce(subject, ActionManage, scope, resource)
 }
 
-func (e *KalmRBACEnforcer) CanViewNamespace(subject, scope string) bool {
+func (e *KalmRBACEnforcer) CanViewScope(subject, scope string) bool {
 	return e.Enforce(subject, ActionView, scope, AnyResource)
 }
 
-func (e *KalmRBACEnforcer) CanEditNamespace(subject, scope string) bool {
+func (e *KalmRBACEnforcer) CanEditScope(subject, scope string) bool {
 	return e.Enforce(subject, ActionEdit, scope, AnyResource)
 }
 
-func (e *KalmRBACEnforcer) CanManageNamespace(subject, scope string) bool {
+func (e *KalmRBACEnforcer) CanManageScope(subject, scope string) bool {
 	return e.Enforce(subject, ActionManage, scope, AnyResource)
 }
 
