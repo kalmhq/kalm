@@ -189,9 +189,9 @@ func (suite *WithControllerTestSuite) NewRequest(method string, path string, bod
 	return BaseRequest(suite.apiServer, method, path, body, nil)
 }
 
-func (suite *WithControllerTestSuite) NewRequestWithIdentity(method string, path string, body interface{}, email string, roles ...string) *ResponseRecorder {
+func (suite *WithControllerTestSuite) NewRequestWithIdentity(method string, path string, body interface{}, email string, tenant string, roles ...string) *ResponseRecorder {
 	return BaseRequest(suite.apiServer, method, path, body, map[string]string{
-		echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(email, roles...),
+		echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(email, tenant, roles...),
 	})
 }
 
@@ -227,6 +227,7 @@ type TestRequestContext struct {
 	User      string
 	Groups    []string
 	Roles     []string
+	Tenant    string
 	Headers   map[string]string
 	Namespace string
 
@@ -246,11 +247,15 @@ func (suite *WithControllerTestSuite) DoTestRequest(rc *TestRequestContext) {
 		rc.User = "foo@bar"
 	}
 
+	if rc.Tenant == "" {
+		rc.Tenant = "defaultTenant"
+	}
+
 	if rc.TestWithoutRoles != nil {
 		s := suite.SetupApiServer()
 
 		rec := BaseRequest(s, rc.Method, rc.Path, rc.Body, map[string]string{
-			echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(rc.User, rc.Groups...),
+			echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(rc.User, rc.Tenant, rc.Groups...),
 		})
 
 		rc.TestWithoutRoles(rec)
@@ -272,7 +277,7 @@ func (suite *WithControllerTestSuite) DoTestRequest(rc *TestRequestContext) {
 		s := suite.SetupApiServer(ps...)
 
 		rec := BaseRequest(s, rc.Method, rc.Path, rc.Body, map[string]string{
-			echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(rc.User, rc.Groups...),
+			echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(rc.User, rc.Tenant, rc.Groups...),
 		})
 
 		rc.TestWithRoles(rec)

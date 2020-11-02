@@ -7,8 +7,19 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 )
 
+func (h *ApiHandler) InstallAccessTokensHandlers(e *echo.Group) {
+	e.GET("/access_tokens", h.handleListAccessTokens)
+	e.POST("/access_tokens", h.handleCreateAccessToken)
+	e.DELETE("/access_tokens", h.handleDeleteAccessToken)
+}
+
 func (h *ApiHandler) handleListAccessTokens(c echo.Context) error {
-	keys, err := h.resourceManager.GetAccessTokens()
+	currentUser := getCurrentUser(c)
+
+	keys, err := h.resourceManager.GetAccessTokens(
+		belongsToTenant(currentUser.Tenant),
+	)
+
 	keys = h.filterAuthorizedAccessTokens(c, keys)
 
 	if err != nil {
@@ -19,20 +30,22 @@ func (h *ApiHandler) handleListAccessTokens(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
-	accessToken, err := getAccessTokenFromContext(c)
+	currentUser := getCurrentUser(c)
+	accessToken, err := bindAccessTokenFromRequestBody(c)
 
 	if err != nil {
 		return err
 	}
 
-	if !h.clientManager.PermissionsGreaterThanOrEqualAccessToken(getCurrentUser(c), accessToken) {
+	if !h.clientManager.PermissionsGreaterThanOrEqualAccessToken(currentUser, accessToken) {
 		return resources.InsufficientPermissionsError
 	}
 
 	// Set sensitive fields
 	accessToken.Token = rand.String(128)
-	accessToken.Creator = getCurrentUser(c).Name
+	accessToken.Creator = currentUser.Name
 	accessToken.Name = v1alpha1.GetAccessTokenNameFromToken(accessToken.Token)
+	accessToken.Tenant = currentUser.Tenant
 
 	accessToken, err = h.resourceManager.CreateAccessToken(accessToken)
 	if err != nil {
@@ -43,13 +56,14 @@ func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
-	accessToken, err := getAccessTokenFromContext(c)
+	accessToken, err := bindAccessTokenFromRequestBody(c)
 
 	if err != nil {
 		return err
 	}
 
 	var fetched v1alpha1.AccessToken
+
 	if err := h.resourceManager.Get("", accessToken.Name, &fetched); err != nil {
 		return err
 	}
@@ -65,7 +79,7 @@ func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
 	return c.NoContent(200)
 }
 
-func getAccessTokenFromContext(c echo.Context) (*resources.AccessToken, error) {
+func bindAccessTokenFromRequestBody(c echo.Context) (*resources.AccessToken, error) {
 	var accessToken resources.AccessToken
 
 	if err := c.Bind(&accessToken); err != nil {

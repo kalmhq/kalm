@@ -113,13 +113,10 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	// deprecated
 	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload", h.handleAvailableVolsForSimpleWorkload)
 	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload/:namespace", h.handleAvailableVolsForSimpleWorkload)
-
 	gv1Alpha1WithAuth.GET("/volumes/available/sts/:namespace", h.handleAvailableVolsForSts)
 
 	// general access token handler
-	gv1Alpha1WithAuth.GET("/access_tokens", h.handleListAccessTokens)
-	gv1Alpha1WithAuth.POST("/access_tokens", h.handleCreateAccessToken)
-	gv1Alpha1WithAuth.DELETE("/access_tokens", h.handleDeleteAccessToken)
+	h.InstallAccessTokensHandlers(gv1Alpha1WithAuth)
 
 	// deploy access token is just access token that only has update component permissions
 	gv1Alpha1WithAuth.GET("/deploy_access_tokens", h.handleListDeployAccessTokens)

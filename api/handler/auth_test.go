@@ -1,9 +1,10 @@
 package handler
 
 import (
-	"github.com/stretchr/testify/suite"
 	"net/http"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 type (
@@ -24,7 +25,7 @@ func (suite *AuthTestSuite) TestLoginStatusWithToken() {
 }
 
 func (suite *AuthTestSuite) TestLoginStatusWithoutToken() {
-	rec := suite.NewRequestWithIdentity(http.MethodGet, "/login/status", nil, "foo@bar")
+	rec := suite.NewRequestWithIdentity(http.MethodGet, "/login/status", nil, "foo@bar", "tenantA")
 	var res Res
 	rec.BodyAsJSON(&res)
 	suite.Equal(true, res.Authorized)

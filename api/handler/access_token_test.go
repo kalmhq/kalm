@@ -1,11 +1,12 @@
 package handler
 
 import (
+	"net/http"
+	"testing"
+
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
-	"net/http"
-	"testing"
 )
 
 type AccessTokenTestSuite struct {
@@ -77,7 +78,7 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 		},
 	})
 
-	// list
+	// list in same tenant
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
 			GetClusterEditorRole(),
@@ -92,6 +93,22 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 
 			// set name for delete
 			key.Name = resList[0].Name
+		},
+	})
+
+	// list in another tenant, should get 0
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetClusterEditorRole(),
+		},
+		Tenant: "anotherTenant",
+		Method: http.MethodGet,
+		Path:   "/v1alpha1/access_tokens",
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var resList []resources.AccessToken
+			rec.BodyAsJSON(&resList)
+			suite.Equal(200, rec.Code)
+			suite.Equal(0, len(resList))
 		},
 	})
 
@@ -111,6 +128,7 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 		},
 	})
 
+	// list again
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
 			GetClusterEditorRole(),
@@ -120,6 +138,7 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var resList []resources.AccessToken
 			rec.BodyAsJSON(&resList)
+
 			suite.Equal(200, rec.Code)
 			suite.Equal(0, len(resList))
 		},
