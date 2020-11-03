@@ -3,16 +3,14 @@ package handler
 import (
 	"net/http"
 
-	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func (h *ApiHandler) handleDeletePod(c echo.Context) error {
-	if !h.clientManager.CanEditScope(getCurrentUser(c), c.Param("namespace")) {
-		return resources.NoNamespaceEditorRoleError(c.Param("namespace"))
-	}
+	currentUser := getCurrentUser(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+c.Param("namespace"), "*/*")
 
 	err := h.resourceManager.Delete(&coreV1.Pod{ObjectMeta: metaV1.ObjectMeta{
 		Namespace: c.Param("namespace"),

@@ -58,7 +58,7 @@ func (suite *VolumeTestSuite) TestGetAvailableVolsForDP() {
 		Namespace: suite.NS,
 		Path:      fmt.Sprintf("/v1alpha1/volumes/available/simple-workload?currentNamespace=%s", suite.NS),
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", suite.NS)
+			suite.IsUnauthorizedError(rec, "viewer", suite.NS)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var resList []resources.Volume
@@ -102,7 +102,7 @@ func (suite *VolumeTestSuite) TestGetAvailableVolsForDP() {
 		Namespace: suite.NS2,
 		Path:      fmt.Sprintf("/v1alpha1/volumes/available/simple-workload?currentNamespace=%s", suite.NS2),
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", suite.NS2)
+			suite.IsUnauthorizedError(rec, "viewer", suite.NS2)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var resList []resources.Volume

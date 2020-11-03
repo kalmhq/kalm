@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+
 	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -9,45 +11,37 @@ import (
 )
 
 func (h *ApiHandler) InstallRegistriesHandlers(e *echo.Group) {
-	e.GET("/registries", h.handleListRegistries, h.requireIsTenantOwner)
-	e.GET("/registries/:name", h.handleGetRegistry, h.requireIsTenantOwner, h.setRegistryToContext)
-	e.PUT("/registries/:name", h.handleUpdateRegistry, h.requireIsTenantOwner, h.setRegistryToContext)
-	e.POST("/registries", h.handleCreateRegistry, h.requireIsTenantOwner)
-	e.DELETE("/registries/:name", h.handleDeleteRegistry, h.requireIsTenantOwner, h.setRegistryToContext)
+	e.GET("/registries", h.handleListRegistries)
+	e.GET("/registries/:name", h.handleGetRegistry)
+	e.PUT("/registries/:name", h.handleUpdateRegistry)
+	e.POST("/registries", h.handleCreateRegistry)
+	e.DELETE("/registries/:name", h.handleDeleteRegistry)
 }
 
-// middlewares
+func (h *ApiHandler) getRegistryFromContext(c echo.Context) (*resources.DockerRegistry, error) {
+	currentUser := getCurrentUser(c)
 
-func (h *ApiHandler) setRegistryToContext(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		currentUser := getCurrentUser(c)
+	list, err := h.resourceManager.GetDockerRegistries(client.MatchingLabels{
+		v1alpha1.TenantNameLabelKey: currentUser.Tenant,
+	}, client.MatchingField("metadata.name", c.Param("name")), client.Limit(1))
 
-		list, err := h.resourceManager.GetDockerRegistries(client.MatchingLabels{
-			v1alpha1.TenantNameLabelKey: currentUser.Tenant,
-		}, client.MatchingField("metadata.name", c.Param("name")), client.Limit(1))
-
-		if err != nil {
-			return err
-		}
-
-		if len(list) < 1 {
-			return errors.NewNotFound("")
-		}
-
-		c.Set("Registry", list[0])
-
-		return next(c)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func (h *ApiHandler) getRegistryFromContext(c echo.Context) *resources.DockerRegistry {
-	registry := c.Get("Registry")
-	return registry.(*resources.DockerRegistry)
+	if len(list) < 1 {
+		return nil, errors.NewNotFound("")
+	}
+
+	return list[0], nil
 }
 
 // handlers
 
 func (h *ApiHandler) handleListRegistries(c echo.Context) error {
+	currentUser := getCurrentUser(c)
+	h.MustCanView(currentUser, currentUser.Tenant+"/*", "registries/*")
+
 	list, err := h.resourceManager.GetDockerRegistries(client.MatchingLabels{
 		v1alpha1.TenantNameLabelKey: getCurrentUser(c).Tenant,
 	})
@@ -60,12 +54,21 @@ func (h *ApiHandler) handleListRegistries(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleGetRegistry(c echo.Context) error {
-	registry := h.getRegistryFromContext(c)
+	currentUser := getCurrentUser(c)
+	h.MustCanView(currentUser, currentUser.Tenant+"/*", "registries/"+c.Param("name"))
+
+	registry, err := h.getRegistryFromContext(c)
+
+	if err != nil {
+		return err
+	}
+
 	return c.JSON(200, registry)
 }
 
 func (h *ApiHandler) handleCreateRegistry(c echo.Context) (err error) {
 	currentUser := getCurrentUser(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "registries/*")
 
 	var registry *resources.DockerRegistry
 
@@ -84,11 +87,15 @@ func (h *ApiHandler) handleCreateRegistry(c echo.Context) (err error) {
 
 func (h *ApiHandler) handleUpdateRegistry(c echo.Context) (err error) {
 	currentUser := getCurrentUser(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "registries/"+c.Param("name"))
 
 	var registry *resources.DockerRegistry
-
 	if registry, err = bindDockerRegistryFromRequestBody(c); err != nil {
 		return err
+	}
+
+	if registry.Name != c.Param("name") {
+		return fmt.Errorf("Name in body and url are mismatched")
 	}
 
 	registry.Tenant = currentUser.Tenant
@@ -102,7 +109,13 @@ func (h *ApiHandler) handleUpdateRegistry(c echo.Context) (err error) {
 
 func (h *ApiHandler) handleDeleteRegistry(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	registry := h.getRegistryFromContext(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "registries/"+c.Param("name"))
+
+	registry, err := h.getRegistryFromContext(c)
+
+	if err != nil {
+		return err
+	}
 
 	if registry.Tenant != currentUser.Tenant {
 		return resources.NotTenantOwnerError

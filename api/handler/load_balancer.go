@@ -20,9 +20,7 @@ type PortInfo struct {
 }
 
 func (h *ApiHandler) handleLoadBalancers(c echo.Context) error {
-	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
-		return resources.NoClusterViewerRoleError
-	}
+	h.MustCanViewCluster(getCurrentUser(c))
 
 	return c.JSON(200, h.getLoadBalancers(c))
 }

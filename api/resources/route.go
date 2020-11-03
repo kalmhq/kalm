@@ -58,10 +58,10 @@ func (resourceManager *ResourceManager) GetHttpRoute(namespace, name string) (*H
 	return BuildHttpRouteFromResource(&route), nil
 }
 
-func (resourceManager *ResourceManager) GetHttpRoutes(namespace string) ([]*HttpRoute, error) {
+func (resourceManager *ResourceManager) GetHttpRoutes(listOptions ...client.ListOption) ([]*HttpRoute, error) {
 	var routes v1alpha1.HttpRouteList
 
-	if err := resourceManager.List(&routes, client.InNamespace(namespace)); err != nil {
+	if err := resourceManager.List(&routes, listOptions...); err != nil {
 		return nil, err
 	}
 
@@ -75,10 +75,13 @@ func (resourceManager *ResourceManager) GetHttpRoutes(namespace string) ([]*Http
 }
 
 func BuildHttpRouteFromResource(route *v1alpha1.HttpRoute) *HttpRoute {
+	tenantName, _ := v1alpha1.GetTenantNameFromObj(route)
+
 	return &HttpRoute{
 		HttpRouteSpec: &route.Spec,
 		Name:          route.Name,
 		Namespace:     route.Namespace,
+		Tenant:        tenantName,
 	}
 }
 
@@ -87,6 +90,9 @@ func (resourceManager *ResourceManager) CreateHttpRoute(routeSpec *HttpRoute) (*
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      routeSpec.Name,
 			Namespace: routeSpec.Namespace,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: routeSpec.Tenant,
+			},
 		},
 		Spec: *routeSpec.HttpRouteSpec,
 	}

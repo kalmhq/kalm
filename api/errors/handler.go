@@ -22,8 +22,19 @@ type ErrDetail struct {
 	Message string `json:"message"`
 }
 
+type ErrorWithCode interface {
+	error
+	Status() string
+	StatusCode() int
+}
+
 func CustomHTTPErrorHandler(err error, c echo.Context) {
 	log.Debug("return error message to client", zap.Error(err))
+
+	if errWithCode, ok := err.(ErrorWithCode); ok {
+		 c.JSON(errWithCode.StatusCode(), &ErrorRes{Status: errWithCode.Status(), Message: errWithCode.Error()})
+		 return
+	}
 
 	statusError, ok := err.(*errors.StatusError)
 	if ok && statusError.Status().Code > 0 {

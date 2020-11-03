@@ -12,9 +12,11 @@ import (
 )
 
 func (h *ApiHandler) handleListRoleBindings(c echo.Context) error {
+	currentUser := getCurrentUser(c)
+
 	var roleBindingList v1alpha1.RoleBindingList
 
-	if err := h.resourceManager.List(&roleBindingList); err != nil {
+	if err := h.resourceManager.List(&roleBindingList, belongsToTenant(currentUser.Tenant)); err != nil {
 		return err
 	}
 

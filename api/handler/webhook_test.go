@@ -75,7 +75,7 @@ func (suite *WebhookHandlerTestSuite) TestWebhookHandler() {
 		Path:      "/webhook/components",
 		Body:      deployWebhookCallParams,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+			suite.IsUnauthorizedError(rec, "editor", suite.namespace)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.NotNil(rec)

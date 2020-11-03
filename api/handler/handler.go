@@ -21,6 +21,9 @@ func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
 }
 
 func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
+	// recover panic from permission check
+	e.Use(PermissionPanicRecoverMiddleware)
+
 	e.GET("/ping", handlePing)
 	e.GET("/policies", h.handlePolicies, h.GetUserMiddleware, h.RequireUserMiddleware)
 
@@ -49,19 +52,11 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/cluster", h.handleClusterInfo)
 
 	gv1Alpha1WithAuth.GET("/loadbalancers", h.handleLoadBalancers)
-
-	h.InstallApplicationsHandlers(gv1Alpha1WithAuth)
-
 	gv1Alpha1WithAuth.GET("/services", h.handleListClusterServices)
-
 	gv1Alpha1WithAuth.GET("/componentplugins", h.handleListComponentPlugins)
 
-	gv1Alpha1WithAuth.GET("/applications/:applicationName/components", h.handleListComponents)
-	gv1Alpha1WithAuth.GET("/applications/:applicationName/components/:name", h.handleGetComponent)
-	gv1Alpha1WithAuth.PUT("/applications/:applicationName/components/:name", h.handleUpdateComponent)
-	gv1Alpha1WithAuth.DELETE("/applications/:applicationName/components/:name", h.handleDeleteComponent)
-	gv1Alpha1WithAuth.POST("/applications/:applicationName/components", h.handleCreateComponent)
-
+	h.InstallApplicationsHandlers(gv1Alpha1WithAuth)
+	h.InstallComponentsHandlers(gv1Alpha1WithAuth)
 	h.InstallRegistriesHandlers(gv1Alpha1WithAuth)
 
 	gv1Alpha1WithAuth.DELETE("/pods/:namespace/:name", h.handleDeletePod)
