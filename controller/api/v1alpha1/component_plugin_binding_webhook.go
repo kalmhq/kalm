@@ -31,7 +31,7 @@ func (r *ComponentPluginBinding) SetupWebhookWithManager(mgr ctrl.Manager) error
 		Complete()
 }
 
-// +kubebuilder:webhook:path=/mutate-core-kalm-dev-v1alpha1-componentpluginbinding,mutating=true,failurePolicy=fail,groups=core.kalm.dev,resources=componentpluginbindings,verbs=create;update,versions=v1alpha1,name=vcomponentpluginbinding.kb.io
+// +kubebuilder:webhook:path=/mutate-core-kalm-dev-v1alpha1-componentpluginbinding,mutating=true,failurePolicy=fail,groups=core.kalm.dev,resources=componentpluginbindings,verbs=create;update,versions=v1alpha1,name=mcomponentpluginbinding.kb.io
 
 var _ webhook.Defaulter = &ComponentPluginBinding{}
 
