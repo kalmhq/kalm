@@ -20,6 +20,7 @@ import (
 
 type HttpsCert struct {
 	Name          string `json:"name"`
+	Tenant        string `json:"tenant"`
 	IsSelfManaged bool   `json:"isSelfManaged"`
 
 	SelfManagedCertContent string `json:"selfManagedCertContent,omitempty"`
@@ -62,9 +63,13 @@ func BuildHttpsCertResponse(httpsCert *v1alpha1.HttpsCert) *HttpsCertResp {
 		reason = readyCond.Message
 	}
 
+	// TODO: deal with the error
+	tenant, _ := v1alpha1.GetTenantNameFromObj(httpsCert)
+
 	resp := HttpsCertResp{
 		HttpsCert: HttpsCert{
 			Name:          httpsCert.Name,
+			Tenant:        tenant,
 			IsSelfManaged: httpsCert.Spec.IsSelfManaged,
 			Domains:       httpsCert.Spec.Domains,
 		},
@@ -118,7 +123,7 @@ func (resourceManager *ResourceManager) GetHttpsCerts(options ...client.ListOpti
 	return httpsCerts, nil
 }
 
-func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCert, tenantName string) (*HttpsCertResp, error) {
+func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCert) (*HttpsCertResp, error) {
 
 	// by default, cert use our default http01Issuer
 	if cert.HttpsCertIssuer == "" {
@@ -149,7 +154,7 @@ func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCe
 		ObjectMeta: v1.ObjectMeta{
 			Name: cert.Name,
 			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: tenantName,
+				v1alpha1.TenantNameLabelKey: cert.Tenant,
 			},
 		},
 		Spec: v1alpha1.HttpsCertSpec{
@@ -273,7 +278,7 @@ func (resourceManager *ResourceManager) UpdateSelfManagedCert(cert *HttpsCert) (
 	return BuildHttpsCertResponse(&res), nil
 }
 
-func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCert, tenantName string) (*HttpsCertResp, error) {
+func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCert) (*HttpsCertResp, error) {
 	x509Cert, _, err := controllers.ParseCert(cert.SelfManagedCertContent)
 
 	if cert.Name == "" {
@@ -325,7 +330,7 @@ func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCe
 		ObjectMeta: v1.ObjectMeta{
 			Name: cert.Name,
 			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: tenantName,
+				v1alpha1.TenantNameLabelKey: cert.Tenant,
 			},
 		},
 		Spec: v1alpha1.HttpsCertSpec{
@@ -369,6 +374,9 @@ func (resourceManager *ResourceManager) createCertSecretInNSIstioSystem(cert *Ht
 		ObjectMeta: v1.ObjectMeta{
 			Name:      cert.Name,
 			Namespace: nsIstioSystem,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: cert.Tenant,
+			},
 		},
 		Data: map[string][]byte{
 			"tls.crt": []byte(tlsCert),

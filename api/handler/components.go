@@ -1,13 +1,14 @@
 package handler
 
 import (
+	"net/http"
+
 	client2 "github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -86,7 +87,7 @@ func (h *ApiHandler) handleDeleteComponent(c echo.Context) error {
 // helper
 
 func (h *ApiHandler) deleteComponent(c echo.Context) error {
-	if !h.clientManager.CanEditNamespace(getCurrentUser(c), c.Param("applicationName")) {
+	if !h.clientManager.CanEditScope(getCurrentUser(c), c.Param("applicationName")) {
 		return resources.NoNamespaceEditorRoleError(c.Param("applicationName"))
 	}
 
@@ -99,7 +100,7 @@ func (h *ApiHandler) deleteComponent(c echo.Context) error {
 }
 
 func (h *ApiHandler) getComponent(c echo.Context) (*v1alpha1.Component, error) {
-	if !h.clientManager.CanViewNamespace(getCurrentUser(c), c.Param("applicationName")) {
+	if !h.clientManager.CanViewScope(getCurrentUser(c), c.Param("applicationName")) {
 		return nil, resources.NoNamespaceViewerRoleError(c.Param("applicationName"))
 	}
 
@@ -114,7 +115,7 @@ func (h *ApiHandler) getComponent(c echo.Context) (*v1alpha1.Component, error) {
 }
 
 func (h *ApiHandler) getComponentList(c echo.Context) (*v1alpha1.ComponentList, error) {
-	if !h.clientManager.CanViewNamespace(getCurrentUser(c), c.Param("applicationName")) {
+	if !h.clientManager.CanViewScope(getCurrentUser(c), c.Param("applicationName")) {
 		return nil, resources.NoNamespaceViewerRoleError(c.Param("applicationName"))
 	}
 
@@ -155,7 +156,7 @@ func (h *ApiHandler) checkPermissionOnVolume(c *client2.ClientInfo, vols []v1alp
 			continue
 		}
 
-		if !h.clientManager.CanEditNamespace(c, boundingPVC.Namespace) {
+		if !h.clientManager.CanEditScope(c, boundingPVC.Namespace) {
 			return resources.NoNamespaceEditorRoleError(boundingPVC.Namespace)
 		}
 	}
@@ -164,7 +165,7 @@ func (h *ApiHandler) checkPermissionOnVolume(c *client2.ClientInfo, vols []v1alp
 }
 
 func (h *ApiHandler) createComponent(c echo.Context) (*v1alpha1.Component, error) {
-	if !h.clientManager.CanEditNamespace(getCurrentUser(c), c.Param("applicationName")) {
+	if !h.clientManager.CanEditScope(getCurrentUser(c), c.Param("applicationName")) {
 		return nil, resources.NoNamespaceEditorRoleError(c.Param("applicationName"))
 	}
 
@@ -207,7 +208,7 @@ func (h *ApiHandler) updateComponent(c echo.Context) (*v1alpha1.Component, error
 
 	crdComponent := getCrdComponentFromResourcesComponentAndContext(c, component)
 
-	if !h.clientManager.CanEditNamespace(getCurrentUser(c), crdComponent.Namespace) {
+	if !h.clientManager.CanEditScope(getCurrentUser(c), crdComponent.Namespace) {
 		return nil, resources.NoNamespaceEditorRoleError(crdComponent.Namespace)
 	}
 

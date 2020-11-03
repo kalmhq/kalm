@@ -100,17 +100,17 @@ func (suite *WithControllerTestSuite) SetupApiServer(policies ...string) *echo.E
 	return e
 }
 
-func (suite *WithControllerTestSuite) SetupApiServerWithDefaultPolicy(policies ...string) *echo.Echo {
-	ps := []string{
-		client2.BuildClusterRolePolicies(),
-		client2.BuildRolePoliciesForNamespace("ns1"),
-		client2.BuildRolePoliciesForNamespace("ns2"),
-	}
+// func (suite *WithControllerTestSuite) SetupApiServerWithDefaultPolicy(policies ...string) *echo.Echo {
+// 	ps := []string{
+// 		client2.BuildClusterRolePolicies(),
+// 		client2.BuildRolePoliciesForTenantAndNamespace("ns1"),
+// 		client2.BuildRolePoliciesForTenantAndNamespace("ns2"),
+// 	}
 
-	ps = append(ps, policies...)
+// 	ps = append(ps, policies...)
 
-	return suite.SetupApiServer(ps...)
-}
+// 	return suite.SetupApiServer(ps...)
+// }
 
 func GrantUserRoles(email string, roles ...string) string {
 	var sb strings.Builder
@@ -123,12 +123,12 @@ func GrantUserRoles(email string, roles ...string) string {
 	return sb.String()
 }
 
-func GetViewerRoleOfNs(name string) string {
-	return fmt.Sprintf("role_%sViewer", name)
+func GetViewerRoleOfScope(tenant, name string) string {
+	return fmt.Sprintf("role_%s_%s_viewer", tenant, name)
 }
 
-func GetEditorRoleOfNs(name string) string {
-	return fmt.Sprintf("role_%sEditor", name)
+func GetEditorRoleOfScope(tenant, name string) string {
+	return fmt.Sprintf("role_%s_%s_editor", tenant, name)
 }
 
 // func GetOwnerRoleOfNs(name string) string {
@@ -136,15 +136,19 @@ func GetEditorRoleOfNs(name string) string {
 // }
 
 func GetClusterViewerRole() string {
-	return "role_clusterViewer"
+	return "role_cluster_viewer"
 }
 
 func GetClusterEditorRole() string {
-	return "role_clusterEditor"
+	return "role_cluster_editor"
 }
 
 func GetClusterOwnerRole() string {
-	return "role_clusterOwner"
+	return "role_cluster_owner"
+}
+
+func GetTenantOwnerRole(name string) string {
+	return "tenant_" + name + "_owner"
 }
 
 func (suite *WithControllerTestSuite) SetupApiServerWithoutPolicy() {
@@ -189,9 +193,9 @@ func (suite *WithControllerTestSuite) NewRequest(method string, path string, bod
 	return BaseRequest(suite.apiServer, method, path, body, nil)
 }
 
-func (suite *WithControllerTestSuite) NewRequestWithIdentity(method string, path string, body interface{}, email string, roles ...string) *ResponseRecorder {
+func (suite *WithControllerTestSuite) NewRequestWithIdentity(method string, path string, body interface{}, email string, tenant string, roles ...string) *ResponseRecorder {
 	return BaseRequest(suite.apiServer, method, path, body, map[string]string{
-		echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(email, roles...),
+		echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(email, tenant, roles...),
 	})
 }
 
@@ -227,6 +231,7 @@ type TestRequestContext struct {
 	User      string
 	Groups    []string
 	Roles     []string
+	Tenant    string
 	Headers   map[string]string
 	Namespace string
 
@@ -241,16 +246,22 @@ type TestRequestContext struct {
 	Debug bool
 }
 
+const defaultTenant = "defaultTenant"
+
 func (suite *WithControllerTestSuite) DoTestRequest(rc *TestRequestContext) {
 	if rc.User == "" {
 		rc.User = "foo@bar"
+	}
+
+	if rc.Tenant == "" {
+		rc.Tenant = defaultTenant
 	}
 
 	if rc.TestWithoutRoles != nil {
 		s := suite.SetupApiServer()
 
 		rec := BaseRequest(s, rc.Method, rc.Path, rc.Body, map[string]string{
-			echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(rc.User, rc.Groups...),
+			echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(rc.User, rc.Tenant, rc.Groups...),
 		})
 
 		rc.TestWithoutRoles(rec)
@@ -260,9 +271,10 @@ func (suite *WithControllerTestSuite) DoTestRequest(rc *TestRequestContext) {
 		ps := []string{client2.BuildClusterRolePolicies()}
 
 		if rc.Namespace != "" {
-			ps = append(ps, client2.BuildRolePoliciesForNamespace(rc.Namespace))
+			ps = append(ps, client2.BuildRolePoliciesForTenantAndNamespace(rc.Tenant, rc.Namespace))
 		}
 
+		ps = append(ps, client2.BuildTenantOwnerPolicies(rc.Tenant))
 		ps = append(ps, GrantUserRoles(rc.User, rc.Roles...))
 
 		if rc.Debug {
@@ -272,7 +284,7 @@ func (suite *WithControllerTestSuite) DoTestRequest(rc *TestRequestContext) {
 		s := suite.SetupApiServer(ps...)
 
 		rec := BaseRequest(s, rc.Method, rc.Path, rc.Body, map[string]string{
-			echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(rc.User, rc.Groups...),
+			echo.HeaderAuthorization: "Bearer " + client2.ToFakeToken(rc.User, rc.Tenant, rc.Groups...),
 		})
 
 		rc.TestWithRoles(rec)

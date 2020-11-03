@@ -9,7 +9,7 @@ func (h *ApiHandler) handleListClusterServices(c echo.Context) error {
 	namespace := c.Param("namespace")
 
 	if namespace != "" {
-		if !h.clientManager.CanViewNamespace(getCurrentUser(c), namespace) {
+		if !h.clientManager.CanViewScope(getCurrentUser(c), namespace) {
 			return resources.NoNamespaceViewerRoleError(namespace)
 		}
 	} else {

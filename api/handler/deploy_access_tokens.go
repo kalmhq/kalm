@@ -20,13 +20,13 @@ func (h *ApiHandler) handleListDeployAccessTokens(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateDeployAccessToken(c echo.Context) error {
-	accessToken, err := getAccessTokenFromContext(c)
+	accessToken, err := bindAccessTokenFromRequestBody(c)
 
 	if err != nil {
 		return err
 	}
 
-	if !h.clientManager.PermissionsGreaterThanOrEqualAccessToken(getCurrentUser(c), accessToken) {
+	if !h.clientManager.PermissionsGreaterThanOrEqualToAccessToken(getCurrentUser(c), accessToken) {
 		return resources.InsufficientPermissionsError
 	}
 

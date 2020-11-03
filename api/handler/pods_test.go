@@ -2,11 +2,12 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
+	"testing"
+
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
-	"testing"
 )
 
 type PodsHandlerTestSuite struct {
@@ -41,7 +42,7 @@ func (suite *PodsHandlerTestSuite) TestPodsHandler() {
 	// delete pod
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetEditorRoleOfNs("test-pods"),
+			GetEditorRoleOfScope(defaultTenant, "test-pods"),
 		},
 		Namespace: "test-pods",
 		Method:    http.MethodDelete,

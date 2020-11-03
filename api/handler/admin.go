@@ -20,6 +20,16 @@ func (a Policies) Len() int { return len(a) }
 func (a Policies) Less(i, j int) bool { return a[i][3:] < a[j][3:] }
 func (a Policies) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
+func (h *ApiHandler) InstallAdminRoutes(e *echo.Echo) {
+	g := e.Group("/admin")
+
+	g.GET("/routes", handleApiRoutes)
+	g.POST("/temp_account", h.handleCreateTemporaryClusterOwnerAccessTokens, h.GetUserMiddleware, h.RequireUserMiddleware)
+
+	// deprecated
+	e.POST("/temporary_cluster_owner_access_token", h.handleCreateTemporaryClusterOwnerAccessTokens, h.GetUserMiddleware, h.RequireUserMiddleware)
+}
+
 func (h *ApiHandler) handlePolicies(c echo.Context) error {
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
 		return resources.InsufficientPermissionsError

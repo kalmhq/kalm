@@ -2,10 +2,11 @@ package rbac
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	"github.com/casbin/casbin/v2/persist"
-	"strings"
 )
 
 type Enforcer interface {
@@ -16,12 +17,13 @@ type Enforcer interface {
 	CanEdit(subject, scope, resource string) bool
 	CanManage(subject, scope, resource string) bool
 
-	// Because the permissions of kalm are organized by application,
+	// Because the permissions of kalm are organized by tenant and application,
 	// the following functions should be more convenience to use.
-	// Scope should be a application(namespace) or "cluster"
-	CanViewNamespace(subject, scope string) bool
-	CanEditNamespace(subject, scope string) bool
-	CanManageNamespace(subject, scope string) bool
+	// Scope should follow the format of "${tenantName}/${applicationName}"
+	// TODO: rename these functions
+	CanViewScope(subject, scope string) bool
+	CanEditScope(subject, scope string) bool
+	CanManageScope(subject, scope string) bool
 
 	CanViewCluster(subject string) bool
 	CanEditCluster(subject string) bool
@@ -65,28 +67,28 @@ func (e *KalmRBACEnforcer) CanManage(subject, scope, resource string) bool {
 	return e.Enforce(subject, ActionManage, scope, resource)
 }
 
-func (e *KalmRBACEnforcer) CanViewNamespace(subject, scope string) bool {
-	return e.Enforce(subject, ActionView, scope, ResourceAll)
+func (e *KalmRBACEnforcer) CanViewScope(subject, scope string) bool {
+	return e.Enforce(subject, ActionView, scope, AnyResource)
 }
 
-func (e *KalmRBACEnforcer) CanEditNamespace(subject, scope string) bool {
-	return e.Enforce(subject, ActionEdit, scope, ResourceAll)
+func (e *KalmRBACEnforcer) CanEditScope(subject, scope string) bool {
+	return e.Enforce(subject, ActionEdit, scope, AnyResource)
 }
 
-func (e *KalmRBACEnforcer) CanManageNamespace(subject, scope string) bool {
-	return e.Enforce(subject, ActionManage, scope, ResourceAll)
+func (e *KalmRBACEnforcer) CanManageScope(subject, scope string) bool {
+	return e.Enforce(subject, ActionManage, scope, AnyResource)
 }
 
 func (e *KalmRBACEnforcer) CanViewCluster(subject string) bool {
-	return e.Enforce(subject, ActionView, AllScope, ResourceAll)
+	return e.Enforce(subject, ActionView, AnyScope, AnyResource)
 }
 
 func (e *KalmRBACEnforcer) CanEditCluster(subject string) bool {
-	return e.Enforce(subject, ActionEdit, AllScope, ResourceAll)
+	return e.Enforce(subject, ActionEdit, AnyScope, AnyResource)
 }
 
 func (e *KalmRBACEnforcer) CanManageCluster(subject string) bool {
-	return e.Enforce(subject, ActionManage, AllScope, ResourceAll)
+	return e.Enforce(subject, ActionManage, AnyScope, AnyResource)
 }
 
 func (e *KalmRBACEnforcer) GetCompletePoliciesFor(subjects ...string) string {
@@ -122,7 +124,7 @@ func NewEnforcer(adapter persist.Adapter) (Enforcer, error) {
 		return nil, err
 	}
 
-	e.AddFunction("objMatchFunc", objMatchFunc)
+	e.AddFunction("objectMatchFunc", objectMatchFunc)
 
 	return &KalmRBACEnforcer{e}, nil
 }

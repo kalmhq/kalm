@@ -47,7 +47,7 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 
 	respVolumes := []resources.Volume{}
 	for _, kalmPVC := range kalmPVCList.Items {
-		if !h.clientManager.CanViewNamespace(getCurrentUser(c), kalmPVC.Namespace) {
+		if !h.clientManager.CanViewScope(getCurrentUser(c), kalmPVC.Namespace) {
 			continue
 		}
 
@@ -82,7 +82,7 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 
 	// MARK: diff with doc https://kalm.dev/docs/next/auth/roles (delete disk(pv))
 	// nsEditor should be able to delete same ns pvc & pv
-	if !h.clientManager.CanEditNamespace(getCurrentUser(c), pvcNamespace) {
+	if !h.clientManager.CanEditScope(getCurrentUser(c), pvcNamespace) {
 		return resources.NoNamespaceEditorRoleError(pvcNamespace)
 	}
 
@@ -152,7 +152,7 @@ func (h *ApiHandler) handleAvailableVolsForSimpleWorkload(c echo.Context) error 
 		return fmt.Errorf("must provide namespace in query")
 	}
 
-	if !h.clientManager.CanViewNamespace(getCurrentUser(c), ns) {
+	if !h.clientManager.CanViewScope(getCurrentUser(c), ns) {
 		return resources.NoNamespaceViewerRoleError(ns)
 	}
 
@@ -170,7 +170,7 @@ func (h *ApiHandler) handleAvailableVolsForSts(c echo.Context) error {
 		return fmt.Errorf("must provide namespace in query")
 	}
 
-	if !h.clientManager.CanViewNamespace(getCurrentUser(c), ns) {
+	if !h.clientManager.CanViewScope(getCurrentUser(c), ns) {
 		return resources.NoNamespaceViewerRoleError(ns)
 	}
 
@@ -268,7 +268,7 @@ func (h *ApiHandler) findAvailableVolsForSimpleWorkload(c *kalmclient.ClientInfo
 		pv := diffNsFreePair.pv
 
 		// permission: if no edit permission in this ns, skip
-		if !h.clientManager.CanEditNamespace(c, pvc.Namespace) {
+		if !h.clientManager.CanEditScope(c, pvc.Namespace) {
 			continue
 		}
 
