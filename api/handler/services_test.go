@@ -49,7 +49,7 @@ func (suite *ServicesHandlerTestSuite) TestServicesHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/services",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsUnauthorizedError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var services []*resources.Service

@@ -185,9 +185,9 @@ func ProtectedEndpointCRDToProtectedEndpoint(endpoint *v1alpha1.ProtectedEndpoin
 	return ep
 }
 
-func (resourceManager *ResourceManager) ListProtectedEndpoints() ([]*ProtectedEndpoint, error) {
+func (resourceManager *ResourceManager) ListProtectedEndpoints(options ...client.ListOption) ([]*ProtectedEndpoint, error) {
 	channel := ResourceChannels{
-		ProtectedEndpointList: resourceManager.GetProtectedEndpointsChannel(),
+		ProtectedEndpointList: resourceManager.GetProtectedEndpointsChannel(options...),
 	}
 
 	resources, err := channel.ToResources()

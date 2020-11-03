@@ -6,9 +6,7 @@ import (
 )
 
 func (h *ApiHandler) handleGetSSOConfig(c echo.Context) error {
-	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
-		return resources.NoClusterViewerRoleError
-	}
+	h.MustCanViewCluster(getCurrentUser(c))
 
 	ssoConfig, err := h.resourceManager.GetSSOConfig()
 
@@ -27,9 +25,7 @@ func (h *ApiHandler) handleGetSSOConfig(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteSSOConfig(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
-	}
+	h.MustCanEditCluster(getCurrentUser(c))
 
 	err := h.resourceManager.DeleteSSOConfig()
 
@@ -41,9 +37,7 @@ func (h *ApiHandler) handleDeleteSSOConfig(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUpdateSSOConfig(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
-	}
+	h.MustCanEditCluster(getCurrentUser(c))
 
 	ssoConfig := &resources.SSOConfig{}
 
@@ -61,9 +55,7 @@ func (h *ApiHandler) handleUpdateSSOConfig(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteTemporaryUser(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
-	}
+	h.MustCanEditCluster(getCurrentUser(c))
 
 	ssoConfig, err := h.resourceManager.GetSSOConfig()
 
@@ -82,9 +74,7 @@ func (h *ApiHandler) handleDeleteTemporaryUser(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateSSOConfig(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
-	}
+	h.MustCanEditCluster(getCurrentUser(c))
 
 	ssoConfig := &resources.SSOConfig{}
 
@@ -102,7 +92,8 @@ func (h *ApiHandler) handleCreateSSOConfig(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleListProtectedEndpoints(c echo.Context) error {
-	endpoints, err := h.resourceManager.ListProtectedEndpoints()
+	currentUser := getCurrentUser(c)
+	endpoints, err := h.resourceManager.ListProtectedEndpoints(belongsToTenant(currentUser.Tenant))
 
 	if err != nil {
 		return err
@@ -120,9 +111,8 @@ func (h *ApiHandler) handleDeleteProtectedEndpoints(c echo.Context) error {
 		return err
 	}
 
-	if !h.clientManager.CanEditScope(getCurrentUser(c), protectedEndpoint.Namespace) {
-		return resources.NoNamespaceEditorRoleError(protectedEndpoint.Namespace)
-	}
+	currentUser := getCurrentUser(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+protectedEndpoint.Namespace, "protectedEndpoints/"+protectedEndpoint.Name)
 
 	err := h.resourceManager.DeleteProtectedEndpoints(protectedEndpoint)
 
@@ -140,10 +130,10 @@ func (h *ApiHandler) handleCreateProtectedEndpoints(c echo.Context) error {
 		return err
 	}
 
-	if !h.clientManager.CanEditScope(getCurrentUser(c), protectedEndpoint.Namespace) {
-		return resources.NoNamespaceEditorRoleError(protectedEndpoint.Namespace)
-	}
+	currentUser := getCurrentUser(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+protectedEndpoint.Namespace, "protectedEndpoints/*")
 
+	protectedEndpoint.Tenant = currentUser.Tenant
 	protectedEndpoint, err := h.resourceManager.CreateProtectedEndpoint(protectedEndpoint)
 
 	if err != nil {
@@ -160,9 +150,8 @@ func (h *ApiHandler) handleUpdateProtectedEndpoints(c echo.Context) error {
 		return err
 	}
 
-	if !h.clientManager.CanEditScope(getCurrentUser(c), protectedEndpoint.Namespace) {
-		return resources.NoNamespaceEditorRoleError(protectedEndpoint.Namespace)
-	}
+	currentUser := getCurrentUser(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+protectedEndpoint.Namespace, "protectedEndpoints/"+protectedEndpoint.Name)
 
 	protectedEndpoint, err := h.resourceManager.UpdateProtectedEndpoint(protectedEndpoint)
 
