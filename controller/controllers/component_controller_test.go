@@ -598,7 +598,7 @@ func (suite *ComponentControllerSuite) TestStatefulSetUsingNewPVC() {
 	newPVCName := "pvc-" + randomName()
 	component.Spec.Volumes = []v1alpha1.Volume{
 		{
-			Type: v1alpha1.VolumeTypePersistentVolumeClaim,
+			Type: v1alpha1.VolumeTypePersistentVolumeClaimTemplate,
 			Path: "/test/b",
 			Size: resource.MustParse("1Mi"),
 			PVC:  newPVCName,

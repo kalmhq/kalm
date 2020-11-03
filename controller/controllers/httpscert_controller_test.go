@@ -2,6 +2,9 @@ package controllers
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -9,12 +12,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"testing"
-	"time"
 )
 
 type HttpsCertControllerSuite struct {
 	BasicSuite
+	*v1alpha1.Tenant
 }
 
 func TestHttpsCertControllerSuite(t *testing.T) {
@@ -23,6 +25,9 @@ func TestHttpsCertControllerSuite(t *testing.T) {
 
 func (suite *HttpsCertControllerSuite) SetupSuite() {
 	suite.BasicSuite.SetupSuite()
+
+	tenant := suite.SetupTenant()
+	suite.Tenant = tenant
 }
 
 func (suite *HttpsCertControllerSuite) TearDownSuite() {
@@ -30,7 +35,7 @@ func (suite *HttpsCertControllerSuite) TearDownSuite() {
 }
 
 func (suite *HttpsCertControllerSuite) TestSelfManagedCertWithAbsentSecret() {
-	httpsCert := genSelfManagedHttpsCert()
+	httpsCert := genSelfManagedHttpsCert(suite.Tenant.Name)
 	suite.createHttpsCert(httpsCert)
 
 	//get
@@ -50,7 +55,7 @@ func (suite *HttpsCertControllerSuite) TestSelfManagedCertWithAbsentSecret() {
 }
 
 func (suite *HttpsCertControllerSuite) TestSelfManagedCertWithSecret() {
-	httpsCert := genSelfManagedHttpsCert()
+	httpsCert := genSelfManagedHttpsCert(suite.Tenant.Name)
 
 	//prepare secret for httpsCert first
 	suite.createObject(&corev1.Secret{
@@ -80,12 +85,8 @@ func (suite *HttpsCertControllerSuite) TestSelfManagedCertWithSecret() {
 
 func (suite *HttpsCertControllerSuite) TestBasicCRUD() {
 
-	// prepare httpsCertIssuer
-	issuer := genEmptyCAHttpsCertIssuer()
-	suite.createHttpsCertIssuer(issuer)
-
 	//create
-	httpsCert := genHttpsCert(issuer.Name)
+	httpsCert := genHttpsCert(v1alpha1.DefaultCAIssuerName, suite.Tenant.Name)
 	suite.createHttpsCert(httpsCert)
 
 	//get
@@ -100,25 +101,6 @@ func (suite *HttpsCertControllerSuite) TestBasicCRUD() {
 
 		return err == nil
 	})
-
-	// secret with prvKey & cert should be generated too
-	//suite.Eventually(func() bool {
-	//	var sec corev1.Secret
-	//	err := suite.K8sClient.Get(context.Background(), types.NamespacedName{
-	//		Name: httpsCert.Name,
-	//		Namespace: "istio-system",
-	//	}, &sec)
-	//
-	//	if err != nil {
-	//		fmt.Println("fail get sec", err)
-	//	}
-	//
-	//	return err == nil
-	//	//_, keyExist := sec.Data["tls.key"]
-	//	//_, crtExist := sec.Data["tls.crt"]
-	//	//_, caCrtExist := sec.Data["ca.crt"]
-	//	//return keyExist && crtExist && caCrtExist
-	//})
 
 	// delete
 	suite.reloadHttpsCert(&httpsCert)
@@ -150,7 +132,7 @@ func (suite *HttpsCertControllerSuite) reloadHttpsCert(httpsCert *v1alpha1.Https
 	suite.Nil(err)
 }
 
-func genSelfManagedHttpsCert(certNameOpt ...string) v1alpha1.HttpsCert {
+func genSelfManagedHttpsCert(tenant string, certNameOpt ...string) v1alpha1.HttpsCert {
 	var certName string
 	if len(certNameOpt) > 0 {
 		certName = certNameOpt[0]
@@ -161,6 +143,9 @@ func genSelfManagedHttpsCert(certNameOpt ...string) v1alpha1.HttpsCert {
 	return v1alpha1.HttpsCert{
 		ObjectMeta: v1.ObjectMeta{
 			Name: certName,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: tenant,
+			},
 		},
 		Spec: v1alpha1.HttpsCertSpec{
 			IsSelfManaged:             true,
@@ -169,7 +154,7 @@ func genSelfManagedHttpsCert(certNameOpt ...string) v1alpha1.HttpsCert {
 		},
 	}
 }
-func genHttpsCert(issuer string, certNameOpt ...string) v1alpha1.HttpsCert {
+func genHttpsCert(issuer string, tenant string, certNameOpt ...string) v1alpha1.HttpsCert {
 	var certName string
 	if len(certNameOpt) > 0 {
 		certName = certNameOpt[0]
@@ -180,6 +165,9 @@ func genHttpsCert(issuer string, certNameOpt ...string) v1alpha1.HttpsCert {
 	return v1alpha1.HttpsCert{
 		ObjectMeta: v1.ObjectMeta{
 			Name: certName,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: tenant,
+			},
 		},
 		Spec: v1alpha1.HttpsCertSpec{
 			HttpsCertIssuer: issuer,
