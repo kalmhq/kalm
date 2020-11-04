@@ -39,24 +39,6 @@ class ProfilePageRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderClusterRole = () => {
-    const { canViewCluster, canEditCluster, canManageCluster } = this.props;
-
-    if (canManageCluster()) {
-      return <strong>Cluster Owner</strong>;
-    }
-
-    if (canEditCluster()) {
-      return <strong>Cluster Editor</strong>;
-    }
-
-    if (canViewCluster()) {
-      return <strong>Cluster Viewer</strong>;
-    }
-
-    return null;
-  };
-
   private getApplicationRoles = () => {
     const { canViewNamespace, canEditNamespace, canManageNamespace, applications } = this.props;
 
@@ -76,10 +58,22 @@ class ProfilePageRaw extends React.PureComponent<Props, State> {
       .filter((x) => !!x.role);
   };
 
-  private renderApplicationRole = () => {
+  private renderRoles = () => {
+    const { canViewCluster, canEditCluster, canManageCluster } = this.props;
+
+    let clusterRole: React.ReactNode = null;
+
+    if (canManageCluster()) {
+      clusterRole = <strong>Cluster Owner</strong>;
+    } else if (canEditCluster()) {
+      clusterRole = <strong>Cluster Editor</strong>;
+    } else if (canViewCluster()) {
+      clusterRole = <strong>Cluster Viewer</strong>;
+    }
+
     const roles = this.getApplicationRoles();
 
-    if (roles.length === 0) {
+    if (roles.length === 0 && !clusterRole) {
       return (
         <Alert severity="warning">
           <AlertTitle>No Role</AlertTitle>
@@ -90,11 +84,18 @@ class ProfilePageRaw extends React.PureComponent<Props, State> {
         </Alert>
       );
     } else {
-      return roles.map((x) => (
-        <p key={x.applicationName}>
-          <strong>{x.role}</strong> in application <strong>{x.applicationName}</strong>
-        </p>
-      ));
+      return (
+        <KPanel title="Roles">
+          <Box p={2}>
+            {clusterRole}
+            {roles.map((x) => (
+              <p key={x.applicationName}>
+                <strong>{x.role}</strong> in application <strong>{x.applicationName}</strong>
+              </p>
+            ))}
+          </Box>
+        </KPanel>
+      );
     }
   };
 
@@ -164,20 +165,6 @@ class ProfilePageRaw extends React.PureComponent<Props, State> {
             {this.renderAvatar()}
             {this.renderEmailOrName()}
             {auth.impersonation === "" && auth.groups && auth.groups.length > 0 ? <p>Groups: {auth.groups}</p> : null}
-          </Box>
-        }
-      />
-    );
-  };
-
-  private renderRoles = () => {
-    return (
-      <KPanel
-        title="Roles"
-        content={
-          <Box p={2}>
-            {this.renderClusterRole()}
-            {this.renderApplicationRole()}
           </Box>
         }
       />

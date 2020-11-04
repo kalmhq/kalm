@@ -48,6 +48,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
 
@@ -256,9 +257,10 @@ const (
 
 func (r *ComponentReconcilerTask) GetLabels() map[string]string {
 	res := map[string]string{
-		KalmLabelNamespaceKey: r.component.Namespace,
-		KalmLabelComponentKey: r.component.Name,
-		KalmLabelManaged:      "true",
+		KalmLabelNamespaceKey:       r.component.Namespace,
+		KalmLabelComponentKey:       r.component.Name,
+		KalmLabelManaged:            "true",
+		v1alpha1.TenantNameLabelKey: r.component.Labels[v1alpha1.TenantNameLabelKey],
 	}
 
 	if r.component.Spec.Labels != nil {
