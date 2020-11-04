@@ -103,7 +103,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, nil
 	}
 
-	if !c.clientManager.CanViewScope(c.clientInfo, namespace.Name) {
+	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+namespace.Name) {
 		return nil, nil
 	}
 
@@ -144,7 +144,7 @@ func buildComponentResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, errors.New("convert watch obj to Component failed")
 	}
 
-	if !c.clientManager.CanViewScope(c.clientInfo, component.Namespace) {
+	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+component.Namespace) {
 		return nil, nil
 	}
 
@@ -163,7 +163,7 @@ func buildComponentResMessageCausedByService(c *Client, action string, objWatche
 		return nil, nil
 	}
 
-	if !c.clientManager.CanViewScope(c.clientInfo, service.Namespace) {
+	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+service.Namespace) {
 		return nil, nil
 	}
 
@@ -183,7 +183,7 @@ func buildServiceResMessage(c *Client, action string, objWatched interface{}) (*
 		return nil, errors.New("convert watch obj to Service failed")
 	}
 
-	if !c.clientManager.CanViewScope(c.clientInfo, service.Namespace) {
+	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+service.Namespace) {
 		return nil, nil
 	}
 
@@ -205,7 +205,7 @@ func buildPodResMessage(c *Client, action string, objWatched interface{}) (*ResM
 		return &ResMessage{}, nil
 	}
 
-	if !c.clientManager.CanViewScope(c.clientInfo, pod.Namespace) {
+	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+pod.Namespace) {
 		return nil, nil
 	}
 
@@ -399,7 +399,7 @@ func buildProtectEndpointResMessage(c *Client, action string, objWatched interfa
 		return nil, errors.New("convert watch obj to ProtectedEndpoint failed")
 	}
 
-	if !c.clientManager.CanViewScope(c.clientInfo, endpoint.Namespace) {
+	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+endpoint.Namespace) {
 		return nil, nil
 	}
 

@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"net/http"
+	"testing"
+
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
-	"testing"
 )
 
 type K8sHandlerTestSuite struct {
@@ -46,7 +47,7 @@ func (suite *K8sHandlerTestSuite) TestHandleGetPVs() {
 		Method: http.MethodGet,
 		Path:   "/v1/persistentvolumes",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var pvList coreV1.PersistentVolumeList

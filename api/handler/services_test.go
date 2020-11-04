@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"net/http"
+	"testing"
+
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/stretchr/testify/suite"
 	v1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
-	"testing"
 )
 
 type ServicesHandlerTestSuite struct {
@@ -48,7 +49,7 @@ func (suite *ServicesHandlerTestSuite) TestServicesHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/services",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var services []*resources.Service

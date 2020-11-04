@@ -85,7 +85,7 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 		Body:   key,
 		Path:   "/v1alpha1/access_tokens",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
+			suite.IsUnauthorizedError(rec, resources.InsufficientPermissionsError.Error())
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res resources.AccessToken
@@ -137,7 +137,7 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 		Path:   "/v1alpha1/access_tokens",
 		Body:   key,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
+			suite.IsUnauthorizedError(rec, resources.InsufficientPermissionsError.Error())
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)

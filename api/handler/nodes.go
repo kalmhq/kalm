@@ -1,14 +1,11 @@
 package handler
 
 import (
-	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 )
 
 func (h *ApiHandler) handleListNodes(c echo.Context) error {
-	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
-		return resources.NoClusterViewerRoleError
-	}
+	h.MustCanViewCluster(getCurrentUser(c))
 
 	res, err := h.resourceManager.ListNodes()
 
@@ -20,9 +17,7 @@ func (h *ApiHandler) handleListNodes(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCordonNode(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
-	}
+	h.MustCanEditCluster(getCurrentUser(c))
 
 	node, err := h.resourceManager.GetNode(c.Param("name"))
 
@@ -38,9 +33,7 @@ func (h *ApiHandler) handleCordonNode(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUncordonNode(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
-	}
+	h.MustCanEditCluster(getCurrentUser(c))
 
 	node, err := h.resourceManager.GetNode(c.Param("name"))
 

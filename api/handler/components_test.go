@@ -42,11 +42,9 @@ func (suite *ComponentTestSuite) TestGetEmptyComponentList() {
 		Method:    http.MethodGet,
 		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace),
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", suite.namespace)
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
-			var res []resources.Component
-			rec.BodyAsJSON(&res)
 			suite.Equal(200, rec.Code)
 		},
 	})
@@ -68,7 +66,7 @@ func (suite *ComponentTestSuite) TestBasicRequestOfComponents() {
 			},
 		},
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res resources.Component
@@ -87,7 +85,7 @@ func (suite *ComponentTestSuite) TestBasicRequestOfComponents() {
 		Method:    http.MethodGet,
 		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", suite.namespace)
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res resources.Component
@@ -112,7 +110,7 @@ func (suite *ComponentTestSuite) TestBasicRequestOfComponents() {
 			},
 		},
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res resources.Component
@@ -131,7 +129,7 @@ func (suite *ComponentTestSuite) TestBasicRequestOfComponents() {
 		Method:    http.MethodDelete,
 		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(204, rec.Code)
@@ -147,7 +145,7 @@ func (suite *ComponentTestSuite) TestBasicRequestOfComponents() {
 		Method:    http.MethodGet,
 		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", suite.namespace)
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(404, rec.Code)
@@ -182,7 +180,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithPVCAsVolume() {
 		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace),
 		Body:      reqComp,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res resources.Component
@@ -200,7 +198,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithPVCAsVolume() {
 		Method:    http.MethodGet,
 		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace),
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", suite.namespace)
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res []resources.ComponentDetails
@@ -269,7 +267,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace),
 		Body:      reqComp,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res resources.Component
@@ -322,7 +320,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithResourceRequirements() {
 		Path:      fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace),
 		Body:      component,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(201, rec.Code)

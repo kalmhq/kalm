@@ -12,14 +12,29 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (h *ApiHandler) handleListComponents(c echo.Context) error {
-	componentList, err := h.getComponentList(c)
+func (h *ApiHandler) InstallComponentsHandlers(e *echo.Group) {
+	e.GET("/applications/:applicationName/components", h.handleListComponents)
+	e.GET("/applications/:applicationName/components/:name", h.handleGetComponent)
+	e.PUT("/applications/:applicationName/components/:name", h.handleUpdateComponent)
+	e.DELETE("/applications/:applicationName/components/:name", h.handleDeleteComponent)
+	e.POST("/applications/:applicationName/components", h.handleCreateComponent)
+}
 
-	if err != nil {
+func (h *ApiHandler) handleListComponents(c echo.Context) error {
+	currentUser := getCurrentUser(c)
+	h.MustCanView(currentUser, currentUser.Tenant+"/"+c.Param("applicationName"), "components/*")
+
+	var componentList v1alpha1.ComponentList
+
+	if err := h.resourceManager.List(
+		&componentList,
+		belongsToTenant(currentUser.Tenant),
+		client.InNamespace(c.Param("applicationName")),
+	); err != nil {
 		return err
 	}
 
-	res, err := h.componentListResponse(componentList)
+	res, err := h.componentListResponse(&componentList)
 
 	if err != nil {
 		return err
@@ -29,13 +44,40 @@ func (h *ApiHandler) handleListComponents(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateComponent(c echo.Context) error {
-	component, err := h.createComponent(c)
+	currentUser := getCurrentUser(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+c.Param("applicationName"), "components/*")
+
+	component, err := bindResourcesComponentFromRequestBody(c)
 
 	if err != nil {
 		return err
 	}
 
-	res, err := h.componentResponse(component)
+	component.Tenant = currentUser.Tenant
+	crdComponent := getCrdComponent(component)
+
+	// permission, check if component try to re-use disk from other ns
+	if err := h.checkPermissionOnVolume(currentUser, crdComponent.Spec.Volumes); err != nil {
+		return err
+	}
+
+	if err := h.resourceManager.Create(crdComponent); err != nil {
+		return err
+	}
+
+	if err := h.resourceManager.UpdateProtectedEndpointForComponent(crdComponent, component.ProtectedEndpointSpec); err != nil {
+		return err
+	}
+
+	if err := h.resourceManager.UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, component.Plugins); err != nil {
+		return err
+	}
+
+	if err != nil {
+		return err
+	}
+
+	res, err := h.componentResponse(crdComponent)
 
 	if err != nil {
 		return err
@@ -45,13 +87,38 @@ func (h *ApiHandler) handleCreateComponent(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUpdateComponent(c echo.Context) error {
-	component, err := h.updateComponent(c)
+	component, err := bindResourcesComponentFromRequestBody(c)
 
 	if err != nil {
 		return err
 	}
 
-	res, err := h.componentResponse(component)
+	currentUser := getCurrentUser(c)
+
+	component.Name = c.Param("name")
+	component.Tenant = currentUser.Tenant
+
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+c.Param("applicationName"), "components/"+component.Name)
+
+	crdComponent := getCrdComponent(component)
+
+	if err := h.resourceManager.Apply(crdComponent); err != nil {
+		return err
+	}
+
+	if err := h.resourceManager.UpdateProtectedEndpointForComponent(crdComponent, component.ProtectedEndpointSpec); err != nil {
+		return err
+	}
+
+	if err := h.resourceManager.UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, component.Plugins); err != nil {
+		return err
+	}
+
+	if err != nil {
+		return err
+	}
+
+	res, err := h.componentResponse(crdComponent)
 
 	if err != nil {
 		return err
@@ -61,13 +128,15 @@ func (h *ApiHandler) handleUpdateComponent(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleGetComponent(c echo.Context) error {
-	component, err := h.getComponent(c)
+	currentUser := getCurrentUser(c)
+	h.MustCanView(currentUser, currentUser.Tenant+"/"+c.Param("applicationName"), "components/"+c.Param("name"))
 
-	if err != nil {
+	var component v1alpha1.Component
+	if err := h.resourceManager.Get(c.Param("applicationName"), c.Param("name"), &component); err != nil {
 		return err
 	}
 
-	res, err := h.componentResponse(component)
+	res, err := h.componentResponse(&component)
 
 	if err != nil {
 		return err
@@ -77,55 +146,20 @@ func (h *ApiHandler) handleGetComponent(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteComponent(c echo.Context) error {
-	err := h.deleteComponent(c)
-	if err != nil {
+	currentUser := getCurrentUser(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+c.Param("applicationName"), "components/"+c.Param("name"))
+
+	if err := h.resourceManager.Delete(&v1alpha1.Component{ObjectMeta: metaV1.ObjectMeta{
+		Name:      c.Param("name"),
+		Namespace: c.Param("applicationName"),
+	}}); err != nil {
 		return err
 	}
+
 	return c.NoContent(http.StatusNoContent)
 }
 
 // helper
-
-func (h *ApiHandler) deleteComponent(c echo.Context) error {
-	if !h.clientManager.CanEditScope(getCurrentUser(c), c.Param("applicationName")) {
-		return resources.NoNamespaceEditorRoleError(c.Param("applicationName"))
-	}
-
-	err := h.resourceManager.Delete(&v1alpha1.Component{ObjectMeta: metaV1.ObjectMeta{
-		Name:      c.Param("name"),
-		Namespace: c.Param("applicationName"),
-	}})
-
-	return err
-}
-
-func (h *ApiHandler) getComponent(c echo.Context) (*v1alpha1.Component, error) {
-	if !h.clientManager.CanViewScope(getCurrentUser(c), c.Param("applicationName")) {
-		return nil, resources.NoNamespaceViewerRoleError(c.Param("applicationName"))
-	}
-
-	var component v1alpha1.Component
-	err := h.resourceManager.Get(c.Param("applicationName"), c.Param("name"), &component)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &component, nil
-}
-
-func (h *ApiHandler) getComponentList(c echo.Context) (*v1alpha1.ComponentList, error) {
-	if !h.clientManager.CanViewScope(getCurrentUser(c), c.Param("applicationName")) {
-		return nil, resources.NoNamespaceViewerRoleError(c.Param("applicationName"))
-	}
-
-	var fetched v1alpha1.ComponentList
-	err := h.resourceManager.List(&fetched, client.InNamespace(c.Param("applicationName")))
-	if err != nil {
-		return nil, err
-	}
-	return &fetched, nil
-}
 
 func (h *ApiHandler) checkPermissionOnVolume(c *client2.ClientInfo, vols []v1alpha1.Volume) error {
 	for _, vol := range vols {
@@ -156,7 +190,7 @@ func (h *ApiHandler) checkPermissionOnVolume(c *client2.ClientInfo, vols []v1alp
 			continue
 		}
 
-		if !h.clientManager.CanEditScope(c, boundingPVC.Namespace) {
+		if !h.clientManager.CanEditScope(c, c.Tenant+"/"+boundingPVC.Namespace) {
 			return resources.NoNamespaceEditorRoleError(boundingPVC.Namespace)
 		}
 	}
@@ -164,84 +198,18 @@ func (h *ApiHandler) checkPermissionOnVolume(c *client2.ClientInfo, vols []v1alp
 	return nil
 }
 
-func (h *ApiHandler) createComponent(c echo.Context) (*v1alpha1.Component, error) {
-	if !h.clientManager.CanEditScope(getCurrentUser(c), c.Param("applicationName")) {
-		return nil, resources.NoNamespaceEditorRoleError(c.Param("applicationName"))
-	}
-
-	component, err := getResourcesComponentFromContext(c)
-
-	if err != nil {
-		return nil, err
-	}
-
-	crdComponent := getCrdComponentFromResourcesComponentAndContext(c, component)
-
-	//permission, check if component try to re-use disk from other ns
-	if err := h.checkPermissionOnVolume(getCurrentUser(c), crdComponent.Spec.Volumes); err != nil {
-		return nil, err
-	}
-
-	crdComponent.Namespace = c.Param("applicationName")
-
-	if err := h.resourceManager.Create(crdComponent); err != nil {
-		return nil, err
-	}
-
-	if err := h.resourceManager.UpdateProtectedEndpointForComponent(crdComponent, component.ProtectedEndpointSpec); err != nil {
-		return nil, err
-	}
-
-	if err := h.resourceManager.UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, component.Plugins); err != nil {
-		return nil, err
-	}
-
-	return crdComponent, nil
-}
-
-func (h *ApiHandler) updateComponent(c echo.Context) (*v1alpha1.Component, error) {
-	component, err := getResourcesComponentFromContext(c)
-
-	if err != nil {
-		return nil, err
-	}
-
-	crdComponent := getCrdComponentFromResourcesComponentAndContext(c, component)
-
-	if !h.clientManager.CanEditScope(getCurrentUser(c), crdComponent.Namespace) {
-		return nil, resources.NoNamespaceEditorRoleError(crdComponent.Namespace)
-	}
-
-	if err := h.resourceManager.Apply(crdComponent); err != nil {
-		return nil, err
-	}
-
-	if err := h.resourceManager.UpdateProtectedEndpointForComponent(crdComponent, component.ProtectedEndpointSpec); err != nil {
-		return nil, err
-	}
-
-	if err := h.resourceManager.UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, component.Plugins); err != nil {
-		return nil, err
-	}
-
-	return crdComponent, nil
-}
-
-func getCrdComponentFromResourcesComponentAndContext(c echo.Context, component *resources.Component) *v1alpha1.Component {
-	name := c.Param("name")
-
-	if name == "" {
-		name = component.Name
-	}
-
+func getCrdComponent(component *resources.Component) *v1alpha1.Component {
 	crdComponent := &v1alpha1.Component{
 		TypeMeta: metaV1.TypeMeta{
 			Kind:       "Component",
 			APIVersion: "core.kalm.dev/v1alpha1",
 		},
 		ObjectMeta: metaV1.ObjectMeta{
-			Name:      name,
-			Namespace: c.Param("applicationName"),
+			Name:      component.Name,
+			Namespace: component.Namespace,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: component.Tenant,
+			},
 		},
 		Spec: *component.ComponentSpec,
 	}
@@ -249,12 +217,14 @@ func getCrdComponentFromResourcesComponentAndContext(c echo.Context, component *
 	return crdComponent
 }
 
-func getResourcesComponentFromContext(c echo.Context) (*resources.Component, error) {
+func bindResourcesComponentFromRequestBody(c echo.Context) (*resources.Component, error) {
 	var component resources.Component
 
 	if err := c.Bind(&component); err != nil {
 		return nil, err
 	}
+
+	component.Namespace = c.Param("applicationName")
 
 	return &component, nil
 }

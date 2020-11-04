@@ -295,7 +295,8 @@ func (suite *WithControllerTestSuite) DoTestRequest(rc *TestRequestContext) {
 	}
 }
 
-func (suite *WithControllerTestSuite) IsMissingRoleError(rec *ResponseRecorder, substrs ...string) {
+
+func (suite *WithControllerTestSuite) IsUnauthorizedError(rec *ResponseRecorder, substrs ...string) {
 	var res map[string]interface{}
 	rec.BodyAsJSON(&res)
 

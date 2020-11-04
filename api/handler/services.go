@@ -1,21 +1,17 @@
 package handler
 
 import (
-	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 )
 
 func (h *ApiHandler) handleListClusterServices(c echo.Context) error {
 	namespace := c.Param("namespace")
+	currentUser := getCurrentUser(c)
 
 	if namespace != "" {
-		if !h.clientManager.CanViewScope(getCurrentUser(c), namespace) {
-			return resources.NoNamespaceViewerRoleError(namespace)
-		}
+		h.MustCanView(currentUser, currentUser.Tenant+"/"+namespace, "services/*")
 	} else {
-		if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
-			return resources.NoClusterViewerRoleError
-		}
+		h.MustCanView(currentUser, currentUser.Tenant+"/*", "services/*")
 	}
 
 	list, err := h.resourceManager.GetServices(namespace)

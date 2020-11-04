@@ -1,11 +1,12 @@
 package handler
 
 import (
+	"net/http"
+	"testing"
+
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
-	"net/http"
-	"testing"
 )
 
 type RegistriesHandlerTestSuite struct {
@@ -36,7 +37,7 @@ func (suite *RegistriesHandlerTestSuite) TestRegistriesHandler() {
 		Path:   "/v1alpha1/registries",
 		Body:   registry,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.NotNil(rec)
@@ -52,7 +53,7 @@ func (suite *RegistriesHandlerTestSuite) TestRegistriesHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/registries/test-registry",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, resources.NoRegistriesViewPermissionError.Error())
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var registryRes resources.DockerRegistry
@@ -71,7 +72,7 @@ func (suite *RegistriesHandlerTestSuite) TestRegistriesHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/registries",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, resources.NoRegistriesViewPermissionError.Error())
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var registries []*resources.DockerRegistry
@@ -98,7 +99,7 @@ func (suite *RegistriesHandlerTestSuite) TestRegistriesHandler() {
 			Password: "password",
 		},
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.NotNil(rec)
@@ -114,7 +115,7 @@ func (suite *RegistriesHandlerTestSuite) TestRegistriesHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/registries/test-registry",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, resources.NoRegistriesViewPermissionError.Error())
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var registryResForUpdate resources.DockerRegistry
@@ -132,7 +133,7 @@ func (suite *RegistriesHandlerTestSuite) TestRegistriesHandler() {
 		Method: http.MethodDelete,
 		Path:   "/v1alpha1/registries/test-registry",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.EqualValues(200, rec.Code)
@@ -147,7 +148,7 @@ func (suite *RegistriesHandlerTestSuite) TestRegistriesHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/registries",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, resources.NoRegistriesViewPermissionError.Error())
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var registries []*resources.DockerRegistry

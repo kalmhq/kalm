@@ -209,11 +209,18 @@ func (m *StandardClientManager) GetClientInfoFromToken(tokenString string) (*Cli
 		return nil, errors.NewUnauthorized("access token is expired")
 	}
 
+	tenantName, err := v1alpha1.GetTenantNameFromObj(accessToken)
+
+	if err != nil {
+		return nil, err
+	}
+
 	clientInfo := &ClientInfo{
 		Cfg:           m.ClusterConfig,
 		Name:          accessToken.Name,
 		Email:         accessToken.Name,
 		EmailVerified: false,
+		Tenant:        tenantName,
 		Groups:        []string{},
 	}
 

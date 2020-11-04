@@ -101,7 +101,7 @@ func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyApplication() {
 		Path:   "/v1alpha1/applications",
 		Body:   fmt.Sprintf(`{"name": "%s"}`, name),
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "edit")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res resources.ApplicationDetails
@@ -121,7 +121,7 @@ func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyApplication() {
 		Method:    http.MethodGet,
 		Path:      "/v1alpha1/applications/" + name,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", name)
+			suite.IsUnauthorizedError(rec, "view", name)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res resources.ApplicationDetails
@@ -172,7 +172,7 @@ func (suite *ApplicationsHandlerTestSuite) TestDeleteApplication() {
 		Method: http.MethodDelete,
 		Path:   "/v1alpha1/applications/test3",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "edit")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(http.StatusNoContent, rec.Code)

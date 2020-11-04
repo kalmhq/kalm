@@ -48,9 +48,7 @@ func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
 	accessToken.Name = v1alpha1.GetAccessTokenNameFromToken(accessToken.Token)
 	accessToken.Tenant = currentUser.Tenant
 
-	if !h.clientManager.CanEdit(currentUser, currentUser.Tenant+"/*", "accessTokens/*") {
-		return resources.InsufficientPermissionsError
-	}
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "accessTokens/*")
 
 	if !h.clientManager.PermissionsGreaterThanOrEqualToAccessToken(currentUser, accessToken) {
 		return resources.InsufficientPermissionsError
@@ -90,9 +88,7 @@ func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
 
 	token := tokens[0]
 
-	if !h.clientManager.CanEdit(currentUser, currentUser.Tenant+"/*", "accessTokens/"+token.Name) {
-		return resources.InsufficientPermissionsError
-	}
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "accessTokens/*")
 
 	if !h.clientManager.PermissionsGreaterThanOrEqualToAccessToken(currentUser, &resources.AccessToken{
 		Name: token.Name, AccessTokenSpec: token.AccessTokenSpec, Tenant: token.Tenant,

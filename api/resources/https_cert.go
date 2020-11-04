@@ -106,18 +106,18 @@ func (resourceManager *ResourceManager) GetHttpsCert(name string) (*v1alpha1.Htt
 	return &fetched, nil
 }
 
-func (resourceManager *ResourceManager) GetHttpsCerts(options ...client.ListOption) ([]HttpsCertResp, error) {
+func (resourceManager *ResourceManager) GetHttpsCerts(options ...client.ListOption) ([]*HttpsCertResp, error) {
 	var fetched v1alpha1.HttpsCertList
 
 	if err := resourceManager.List(&fetched, options...); err != nil {
 		return nil, err
 	}
 
-	var httpsCerts []HttpsCertResp
+	var httpsCerts []*HttpsCertResp
 	for i := range fetched.Items {
 		item := fetched.Items[i]
 		cur := BuildHttpsCertResponse(&item)
-		httpsCerts = append(httpsCerts, *cur)
+		httpsCerts = append(httpsCerts, cur)
 	}
 
 	return httpsCerts, nil

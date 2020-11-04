@@ -12,7 +12,15 @@ func (h *ApiHandler) filterAuthorizedApplications(c echo.Context, apps []*v1.Nam
 	l := len(apps)
 
 	for i := 0; i < l; i++ {
-		if !h.clientManager.CanViewScope(getCurrentUser(c), apps[i].Name) {
+		tenantName, err := v1alpha1.GetTenantNameFromObj(apps[i])
+
+		if err != nil {
+			continue
+		}
+
+		scope := tenantName + "/" + apps[i].Name
+
+		if !h.clientManager.CanViewScope(getCurrentUser(c), scope) {
 			apps[l-1], apps[i] = apps[i], apps[l-1]
 			i--
 			l--
@@ -26,7 +34,9 @@ func (h *ApiHandler) filterAuthorizedProtectedEndpoints(c echo.Context, records 
 	l := len(records)
 
 	for i := 0; i < l; i++ {
-		if !h.clientManager.CanViewScope(getCurrentUser(c), records[i].Namespace) {
+		scope := records[i].Tenant + "/" + records[i].Namespace
+
+		if !h.clientManager.CanViewScope(getCurrentUser(c), scope) {
 			records[l-1], records[i] = records[i], records[l-1]
 			i--
 			l--

@@ -1,11 +1,12 @@
 package handler
 
 import (
+	"net/http"
+	"testing"
+
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
-	"net/http"
-	"testing"
 )
 
 type RoutesHandlerTestSuite struct {
@@ -45,7 +46,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 		Path:   "/v1alpha1/httproutes/test-routes",
 		Body:   route,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.NotNil(rec)
@@ -113,7 +114,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 		Path:   "/v1alpha1/httproutes/test-routes/test-routes",
 		Body:   routeForUpdate,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.NotNil(rec)
@@ -147,7 +148,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 		Path:   "/v1alpha1/httproutes/test-routes/test-routes",
 		Body:   routeForUpdate,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.NotNil(rec)

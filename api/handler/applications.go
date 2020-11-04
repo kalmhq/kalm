@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/kalmhq/kalm/api/errors"
@@ -19,7 +20,7 @@ func (h *ApiHandler) InstallApplicationsHandlers(e *echo.Group) {
 	e.GET("/applications", h.handleGetApplications)
 	e.POST("/applications", h.handleCreateApplication)
 	e.GET("/applications/:name", h.handleGetApplicationDetails, h.setApplicationIntoContext)
-	e.DELETE("/applications/:name", h.handleDeleteApplication, h.requireIsTenantOwner, h.setApplicationIntoContext)
+	e.DELETE("/applications/:name", h.handleDeleteApplication, h.setApplicationIntoContext)
 }
 
 // middlewares
@@ -74,10 +75,7 @@ func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
 	namespace := h.getApplicationFromContext(c)
 	currentUser := getCurrentUser(c)
-
-	if !h.clientManager.CanViewScope(currentUser, namespace.Name) {
-		return resources.NoNamespaceViewerRoleError(namespace.Name)
-	}
+	h.MustCanView(currentUser, fmt.Sprintf("%s/%s", currentUser.Tenant, namespace.Name), "applications/"+namespace.Name)
 
 	res, err := h.resourceManager.BuildApplicationDetails(namespace)
 
@@ -90,10 +88,7 @@ func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
 
 func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-
-	if !h.clientManager.Can(currentUser, "create", currentUser.Tenant+"/*", "applications/*") {
-		panic("TODO: fix this")
-	}
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "applications/*")
 
 	ns, err := bindKalmNamespaceFromRequestBody(c)
 
@@ -119,6 +114,9 @@ func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
+	currentUser := getCurrentUser(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "applications/*")
+
 	namespace := h.getApplicationFromContext(c)
 
 	if err := h.resourceManager.DeleteNamespace(namespace); err != nil {

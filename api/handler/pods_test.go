@@ -48,7 +48,7 @@ func (suite *PodsHandlerTestSuite) TestPodsHandler() {
 		Method:    http.MethodDelete,
 		Path:      fmt.Sprintf("/v1alpha1/pods/%s/%s", "test-pods", "test-pods-1"),
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "test-pods")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)

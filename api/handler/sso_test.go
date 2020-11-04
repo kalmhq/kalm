@@ -29,7 +29,7 @@ func (suite *SsoHandlerTestSuite) TestSsoConfigHandler() {
 		Path:   "/v1alpha1/sso",
 		Body:   `{"domain":"sso.test","connectors":[{"type":"gitlab","id":"gitlab","name":"Gitlab","config":{"baseURL":"https://sso.test","clientID":"clientid","clientSecret":"clientsecret","groups":["sso"]}}]}`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.EqualValues(201, rec.Code)
@@ -44,7 +44,7 @@ func (suite *SsoHandlerTestSuite) TestSsoConfigHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/sso",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var ssoConfig resources.SSOConfig
@@ -63,7 +63,7 @@ func (suite *SsoHandlerTestSuite) TestSsoConfigHandler() {
 		Path:   "/v1alpha1/sso",
 		Body:   `{"domain":"sso.test","connectors":[{"type":"gitlab","id":"gitlab","name":"Gitlab2","config":{"baseURL":"https://sso.test","clientID":"clientid","clientSecret":"clientsecret","groups":["sso"]}}]}`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.EqualValues(200, rec.Code)
@@ -78,7 +78,7 @@ func (suite *SsoHandlerTestSuite) TestSsoConfigHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/sso",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var ssoConfigForUpdate resources.SSOConfig
@@ -96,7 +96,7 @@ func (suite *SsoHandlerTestSuite) TestSsoConfigHandler() {
 		Method: http.MethodDelete,
 		Path:   "/v1alpha1/sso",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.EqualValues(200, rec.Code)
@@ -111,7 +111,7 @@ func (suite *SsoHandlerTestSuite) TestSsoConfigHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/sso",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var ssoConfigForDelete resources.SSOConfig
@@ -141,7 +141,7 @@ func (suite *SsoHandlerTestSuite) TestProtectedEndpointsHandler() {
 		Body:      protectedEndpoint,
 		Namespace: suite.namespace,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.EqualValues(201, rec.Code)
@@ -174,7 +174,7 @@ func (suite *SsoHandlerTestSuite) TestProtectedEndpointsHandler() {
 		Body:      protectedEndpoint,
 		Namespace: suite.namespace,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.EqualValues(200, rec.Code)
@@ -206,7 +206,7 @@ func (suite *SsoHandlerTestSuite) TestProtectedEndpointsHandler() {
 		Body:      protectedEndpoint,
 		Namespace: suite.namespace,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", suite.namespace)
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.EqualValues(200, rec.Code)

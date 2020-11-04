@@ -1,10 +1,11 @@
 package handler
 
 import (
-	"github.com/kalmhq/kalm/api/resources"
-	"github.com/stretchr/testify/suite"
 	"net/http"
 	"testing"
+
+	"github.com/kalmhq/kalm/api/resources"
+	"github.com/stretchr/testify/suite"
 )
 
 type ClusterHandlerTestSuite struct {
@@ -26,7 +27,7 @@ func (suite *ClusterHandlerTestSuite) TestClusterInfo() {
 		Path:   "/v1alpha1/initialize",
 		Body:   `{"domain": "kalm.test"}`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "owner", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var setupClusterResponse SetupClusterResponse
@@ -45,7 +46,7 @@ func (suite *ClusterHandlerTestSuite) TestClusterInfo() {
 		Path:   "/v1alpha1/cluster",
 		Body:   `{}`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var clusterInfo ClusterInfo
@@ -78,7 +79,7 @@ func (suite *ClusterHandlerTestSuite) TestClusterInfo() {
 		Path:   "/v1alpha1/reset",
 		Body:   `{}`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "owner", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)

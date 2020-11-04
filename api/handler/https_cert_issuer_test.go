@@ -1,14 +1,15 @@
 package handler
 
 import (
+	"net/http"
+	"testing"
+
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
-	"testing"
 )
 
 type HttpsCertIssuerTestSuite struct {
@@ -37,7 +38,7 @@ func (suite *HttpsCertIssuerTestSuite) TestGetEmptyHCIssuerList() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/httpscertissuers",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec, "viewer", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res []resources.HttpsCertIssuer
@@ -59,7 +60,7 @@ func (suite *HttpsCertIssuerTestSuite) TestCreateHttpsCertIssuer() {
   "caForTest": {}
 }`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "editor", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var issuer resources.HttpsCertIssuer
@@ -96,7 +97,7 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
   }
 }`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "editor", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var issuer resources.HttpsCertIssuer
@@ -142,7 +143,7 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
   }
 }`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "editor", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res v1alpha1.HttpsCertIssuerList
@@ -189,7 +190,7 @@ func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCertIssuer() {
   }
 }`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "editor", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var issuer resources.HttpsCertIssuer
@@ -215,7 +216,7 @@ func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCertIssuer() {
 		Method: http.MethodDelete,
 		Path:   "/v1alpha1/httpscertissuers/my-foobar-issuer",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "editor", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res v1alpha1.HttpsCertIssuerList
