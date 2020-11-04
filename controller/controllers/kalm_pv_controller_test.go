@@ -3,13 +3,14 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 type KalmPVControllerSuite struct {
@@ -24,7 +25,7 @@ func TestKalmPVControllerSuite(t *testing.T) {
 }
 
 func (suite *KalmPVControllerSuite) SetupSuite() {
-	suite.BasicSuite.SetupSuite()
+	suite.BasicSuite.SetupSuite(true)
 }
 
 func (suite *KalmPVControllerSuite) TearDownSuite() {

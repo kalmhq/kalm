@@ -45,11 +45,16 @@ func (v *PVCAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
-		// orphan pvc may appear in kalm-system
+		// this webhook will only be called for PVCs in tenant ns
+		// so orphan pvc in kalm-system won't go through this
+
+		if v1alpha1.IsKalmSystemNamespace(pvc.Namespace) {
+			return admission.Allowed("")
+		}
 
 		pvcTenant := pvc.Labels[v1alpha1.TenantNameLabelKey]
 		if pvcTenant == "" {
-			return admission.Allowed("")
+			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
 		}
 
 		var tenantPVCList corev1.PersistentVolumeClaimList
@@ -82,9 +87,13 @@ func (v *PVCAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 
 		pvcAdmissionHandlerLog.Info("pvc being deleted", "pvc", pvc.Name)
 
+		if v1alpha1.IsKalmSystemNamespace(pvc.Namespace) {
+			return admission.Allowed("")
+		}
+
 		pvcTenant := pvc.Labels[v1alpha1.TenantNameLabelKey]
 		if pvcTenant == "" {
-			return admission.Allowed("")
+			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
 		}
 
 		var tenantPVCList corev1.PersistentVolumeClaimList
