@@ -59,7 +59,19 @@ class ProfilePageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderRoles = () => {
-    const { canViewCluster, canEditCluster, canManageCluster } = this.props;
+    const { canViewCluster, canEditCluster, canManageCluster, auth } = this.props;
+
+    if (auth.policies === "") {
+      return (
+        <Alert severity="warning">
+          <AlertTitle>No Role</AlertTitle>
+          <Typography>
+            Although you have been authenticated, you do not have any role, which means you cannot access any resources.
+            Please contact your cluster admin for help.
+          </Typography>
+        </Alert>
+      );
+    }
 
     let clusterRole: React.ReactNode = null;
 
@@ -73,30 +85,18 @@ class ProfilePageRaw extends React.PureComponent<Props, State> {
 
     const roles = this.getApplicationRoles();
 
-    if (roles.length === 0 && !clusterRole) {
-      return (
-        <Alert severity="warning">
-          <AlertTitle>No Role</AlertTitle>
-          <Typography>
-            Although you have been authenticated, you do not have any role, which means you cannot access any resources.
-            Please contact your cluster admin for help.
-          </Typography>
-        </Alert>
-      );
-    } else {
-      return (
-        <KPanel title="Roles">
-          <Box p={2}>
-            {clusterRole}
-            {roles.map((x) => (
-              <p key={x.applicationName}>
-                <strong>{x.role}</strong> in application <strong>{x.applicationName}</strong>
-              </p>
-            ))}
-          </Box>
-        </KPanel>
-      );
-    }
+    return roles.length > 0 ? (
+      <KPanel title="Roles">
+        <Box p={2}>
+          {clusterRole}
+          {roles.map((x) => (
+            <p key={x.applicationName}>
+              <strong>{x.role}</strong> in application <strong>{x.applicationName}</strong>
+            </p>
+          ))}
+        </Box>
+      </KPanel>
+    ) : null;
   };
 
   private renderEmailOrName = () => {

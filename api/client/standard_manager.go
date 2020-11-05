@@ -152,9 +152,16 @@ func (m *StandardClientManager) UpdatePolicies() {
 			continue
 		}
 
+		tenantName, err := v1alpha1.GetTenantNameFromObj(accessToken)
+
+		if err != nil {
+			log.Error(fmt.Sprintf("Can't find tenantName from AccessToken %s", accessToken.Name))
+			continue
+		}
+
 		sb.WriteString(fmt.Sprintf("# policies for access token %s\n", accessToken.Name))
 
-		for _, policy := range GetPoliciesFromAccessToken(&resources.AccessToken{Name: accessToken.Name, AccessTokenSpec: &accessToken.Spec}) {
+		for _, policy := range GetPoliciesFromAccessToken(&resources.AccessToken{Name: accessToken.Name, Tenant: tenantName, AccessTokenSpec: &accessToken.Spec}) {
 			sb.WriteString(
 				fmt.Sprintf(
 					"p, %s, %s, %s, %s\n",
@@ -228,7 +235,11 @@ func (m *StandardClientManager) GetClientInfoFromToken(tokenString string) (*Cli
 }
 
 func (m *StandardClientManager) SetImpersonation(clientInfo *ClientInfo, rawImpersonation string) {
-	if rawImpersonation != "" && m.CanManageCluster(clientInfo) {
+	if rawImpersonation == "" {
+		return
+	}
+
+	if m.CanManageCluster(clientInfo) {
 		impersonation, impersonationType, err := parseImpersonationString(rawImpersonation)
 
 		if err == nil {
@@ -237,6 +248,32 @@ func (m *StandardClientManager) SetImpersonation(clientInfo *ClientInfo, rawImpe
 		} else {
 			log.Error("parse impersonation raw string failed", zap.Error(err))
 		}
+	}
+
+	if m.CanManageScope(clientInfo, clientInfo.Tenant+"/*") {
+		impersonation, impersonationType, err := parseImpersonationString(rawImpersonation)
+
+		if err != nil {
+			log.Error("parse impersonation raw string failed", zap.Error(err))
+			return
+		}
+
+		policies, err := m.GetRBACEnforcer().GetImplicitPermissionsForUser(ToSafeSubject(impersonation, impersonationType))
+
+		if err != nil {
+			log.Error("get implicit permissions for error", zap.String("user", ToSafeSubject(impersonation, impersonationType)), zap.Error(err))
+			return
+		}
+
+		for _, policy := range policies {
+			if !m.Can(clientInfo, policy[1], policy[2], policy[3]) {
+				// Can't impersonate. The goal user has at least one permission that current user don't have
+				return
+			}
+		}
+
+		clientInfo.Impersonation = impersonation
+		clientInfo.ImpersonationType = impersonationType
 	}
 }
 
@@ -310,6 +347,7 @@ func NewStandardClientManager(cfg *rest.Config) *StandardClientManager {
 		PolicyAdapter:     policyAdapter,
 		ClusterConfig:     cfg,
 		mut:               &sync.RWMutex{},
+		Tenants:           make(map[string]*v1alpha1.Tenant),
 		Applications:      make(map[string]*coreV1.Namespace),
 		AccessTokens:      make(map[string]*v1alpha1.AccessToken),
 		RoleBindings:      make(map[string]*v1alpha1.RoleBinding),

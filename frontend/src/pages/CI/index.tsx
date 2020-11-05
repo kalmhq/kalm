@@ -12,6 +12,8 @@ import { indigo } from "@material-ui/core/colors";
 import { deleteDeployAccessTokenAction } from "actions/deployAccessToken";
 import { blinkTopProgressAction } from "actions/settings";
 import { withDeployAccessTokens, WithDeployAccessTokensProps } from "hoc/withDeployAccessTokens";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
@@ -32,8 +34,6 @@ import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { Loading } from "widgets/Loading";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 
 const styles = (theme: Theme) =>
   createStyles({

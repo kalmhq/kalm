@@ -33,6 +33,7 @@ type Enforcer interface {
 	GetPolicy() [][]string
 	GetGroupingPolicy() [][]string
 	GetCompletePoliciesFor(subjects ...string) string
+	GetImplicitPermissionsForUser(subject string) ([][]string, error)
 }
 
 var _ Enforcer = &KalmRBACEnforcer{}
@@ -89,6 +90,10 @@ func (e *KalmRBACEnforcer) CanEditCluster(subject string) bool {
 
 func (e *KalmRBACEnforcer) CanManageCluster(subject string) bool {
 	return e.Enforce(subject, ActionManage, AnyScope, AnyResource)
+}
+
+func (e *KalmRBACEnforcer) GetImplicitPermissionsForUser(subject string) ([][]string, error) {
+	return e.SyncedEnforcer.GetImplicitPermissionsForUser(subject)
 }
 
 func (e *KalmRBACEnforcer) GetCompletePoliciesFor(subjects ...string) string {

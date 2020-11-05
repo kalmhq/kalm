@@ -58,12 +58,15 @@ export const createCasbinEnforcerMiddleware = () => {
           canEdit: (scope: string, resource: string) => withSubjects(enforcer.canEdit, tenant + "/" + scope, resource),
           canManage: (scope: string, resource: string) =>
             withSubjects(enforcer.canManage, tenant + "/" + scope, resource),
-          canViewNamespace: (scope: string) => withSubjects(enforcer.canViewNamespace, tenant + "/" + scope),
-          canEditNamespace: (scope: string) => withSubjects(enforcer.canEditNamespace, tenant + "/" + scope),
-          canManageNamespace: (scope: string) => withSubjects(enforcer.canManageNamespace, tenant + "/" + scope),
+          canViewNamespace: (scope: string) => withSubjects(enforcer.canViewScope, tenant + "/" + scope),
+          canEditNamespace: (scope: string) => withSubjects(enforcer.canEditScope, tenant + "/" + scope),
+          canManageNamespace: (scope: string) => withSubjects(enforcer.canManageScope, tenant + "/" + scope),
           canViewCluster: () => withSubjects(enforcer.canViewCluster),
           canEditCluster: () => withSubjects(enforcer.canEditCluster),
           canManageCluster: () => withSubjects(enforcer.canManageCluster),
+          canViewTenant: () => withSubjects(enforcer.canViewScope, tenant + "/*"),
+          canEditTenant: () => withSubjects(enforcer.canEditScope, tenant + "/*"),
+          canManageTenant: () => withSubjects(enforcer.canManageScope, tenant + "/*"),
         },
       });
     }

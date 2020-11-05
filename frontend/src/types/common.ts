@@ -1,8 +1,8 @@
 import { CallHistoryMethodAction } from "connected-react-router";
 import { VariantType } from "notistack";
 import { SettingObject } from "reducers/settings";
-import { NamespaceActions } from "./namespace";
 import { LoginStatus } from "./authorization";
+import { NamespaceActions } from "./namespace";
 
 export const LOAD_LOGIN_STATUS_PENDING = "LOAD_LOGIN_STATUS_PENDING";
 export const LOAD_LOGIN_STATUS_FULFILLED = "LOAD_LOGIN_STATUS_FULFILLED";
@@ -132,6 +132,9 @@ export interface PermissionMethods {
   canViewNamespace: (scope: string) => boolean;
   canEditNamespace: (scope: string) => boolean;
   canManageNamespace: (scope: string) => boolean;
+  canViewTenant: () => boolean;
+  canEditTenant: () => boolean;
+  canManageTenant: () => boolean;
   canViewCluster: () => boolean;
   canEditCluster: () => boolean;
   canManageCluster: () => boolean;
@@ -148,6 +151,9 @@ export const emptyPermissionMethods: PermissionMethods = {
   canViewCluster: () => false,
   canEditCluster: () => false,
   canManageCluster: () => false,
+  canViewTenant: () => false,
+  canEditTenant: () => false,
+  canManageTenant: () => false,
 };
 
 export interface SetAuthMethodsAction {

@@ -38,15 +38,15 @@ function objMatchFunc(...args: any[]): boolean {
   const name1: string = (arg0 || "").toString();
   const name2: string = (arg1 || "").toString();
 
-  const name1Parts = name1.split("/")
-  const name2Parts = name2.split("/")
+  const name1Parts = name1.split("/");
+  const name2Parts = name2.split("/");
 
-  if (name1Parts.length !== 2)  {
-    throw `wrong object in objectMatchFunc ${name1}`
+  if (name1Parts.length !== 2) {
+    throw `wrong object in objectMatchFunc ${name1}`;
   }
 
-  if (name2Parts.length !== 2)  {
-    throw `wrong object in objectMatchFunc ${name2}`
+  if (name2Parts.length !== 2) {
+    throw `wrong object in objectMatchFunc ${name2}`;
   }
 
   return objMatch(name1Parts[0], name2Parts[0]) && objMatch(name1Parts[1], name2Parts[1]);
@@ -92,15 +92,15 @@ export class RBACEnforcer {
     return this.enforcer.enforce(subject, ActionManage, scope, resource);
   }
 
-  public canViewNamespace(subject: string, scope: string) {
+  public canViewScope(subject: string, scope: string) {
     return this.enforcer.enforce(subject, ActionView, scope, ResourceAll);
   }
 
-  public canEditNamespace(subject: string, scope: string) {
+  public canEditScope(subject: string, scope: string) {
     return this.enforcer.enforce(subject, ActionEdit, scope, ResourceAll);
   }
 
-  public canManageNamespace(subject: string, scope: string) {
+  public canManageScope(subject: string, scope: string) {
     return this.enforcer.enforce(subject, ActionManage, scope, ResourceAll);
   }
 

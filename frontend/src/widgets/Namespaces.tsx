@@ -14,10 +14,10 @@ import {
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { LEFT_SECTION_OPEN_WIDTH, NAMESPACES_ZINDEX, SECOND_HEADER_HEIGHT } from "layout/Constants";
 import React from "react";
 import { Link, withRouter } from "react-router-dom";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const styles = (theme: Theme) =>
   createStyles({

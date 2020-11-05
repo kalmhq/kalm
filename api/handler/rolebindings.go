@@ -67,18 +67,13 @@ func (h *ApiHandler) handleUpdateRoleBinding(c echo.Context) error {
 		return err
 	}
 
-	if !h.clientManager.CanManageRoleBinding(getCurrentUser(c), roleBinding) {
-		return resources.InsufficientPermissionsError
-	}
-
-	switch roleBinding.Spec.Role {
-	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
-		roleBinding.Namespace = controllers.KalmSystemNamespace
-	}
-
 	var fetched v1alpha1.RoleBinding
 	if err := h.resourceManager.Get(roleBinding.Namespace, roleBinding.Name, &fetched); err != nil {
 		return err
+	}
+
+	if !h.clientManager.CanManageRoleBinding(getCurrentUser(c), &fetched) {
+		return resources.InsufficientPermissionsError
 	}
 
 	copied := fetched.DeepCopy()
@@ -88,7 +83,7 @@ func (h *ApiHandler) handleUpdateRoleBinding(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, roleBinding)
+	return c.JSON(http.StatusOK, copied)
 }
 
 func (h *ApiHandler) handleDeleteRoleBinding(c echo.Context) error {
@@ -125,21 +120,31 @@ func (h *ApiHandler) handleGetServiceAccount(c echo.Context) error {
 }
 
 func getRoleBindingFromContext(c echo.Context) (*v1alpha1.RoleBinding, error) {
+	currentUser := getCurrentUser(c)
+
 	var roleBinding resources.RoleBinding
 
 	if err := c.Bind(&roleBinding); err != nil {
 		return nil, err
 	}
 
-	coreV1Namespace := &v1alpha1.RoleBinding{
+	binding := &v1alpha1.RoleBinding{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      roleBinding.Name,
 			Namespace: roleBinding.Namespace,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: currentUser.Tenant,
+			},
 		},
 		Spec: *roleBinding.RoleBindingSpec,
 	}
 
-	return coreV1Namespace, nil
+	switch binding.Spec.Role {
+	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
+		binding.Namespace = controllers.KalmSystemNamespace
+	}
+
+	return binding, nil
 }
 
 func (h *ApiHandler) filterAuthorizedRoleBindings(c echo.Context, records []v1alpha1.RoleBinding) []v1alpha1.RoleBinding {

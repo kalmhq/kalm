@@ -5,7 +5,9 @@ import { deleteRouteAction } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withClusterInfo } from "hoc/withClusterInfo";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
 import { Methods } from "pages/Route/Methods";
 import React from "react";
@@ -20,15 +22,13 @@ import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { EditIcon, ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { InfoBox } from "widgets/InfoBox";
+import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 import { KRTable } from "widgets/KRTable";
 import { KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
 import { getRouteUrl } from "widgets/OpenInBrowser";
 import { Targets } from "widgets/Targets";
-import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import { InfoBox } from "widgets/InfoBox";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -168,7 +168,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderEmpty() {
-    const { dispatch, canEditNamespace, activeNamespaceName } = this.props;
+    const { dispatch, canEditTenant } = this.props;
 
     return (
       <EmptyInfoBox
@@ -176,7 +176,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         title={sc.EMPTY_ROUTES_TITLE}
         content={sc.EMPTY_ROUTES_SUBTITLE}
         button={
-          canEditNamespace(activeNamespaceName) ? (
+          canEditTenant() ? (
             <CustomizedButton
               variant="contained"
               color="primary"
