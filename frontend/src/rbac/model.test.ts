@@ -31,47 +31,47 @@ g, clusterOwner, role_clusterOwner
 p, Nio, edit, t1/ns2, components/*
 `);
 
-  await expect(enforcer.canViewNamespace("ns1Viewer", "t1/ns1")).toBe(true);
-  await expect(enforcer.canEditNamespace("ns1Viewer", "t1/ns1")).toBe(false);
-  await expect(enforcer.canManageNamespace("ns1Viewer", "t1/ns1")).toBe(false);
-  await expect(enforcer.canViewNamespace("ns1Viewer", "t1/ns2")).toBe(false);
-  await expect(enforcer.canEditNamespace("ns1Viewer", "t1/ns2")).toBe(false);
-  await expect(enforcer.canManageNamespace("ns1Viewer", "t1/ns2")).toBe(false);
+  await expect(enforcer.canViewScope("ns1Viewer", "t1/ns1")).toBe(true);
+  await expect(enforcer.canEditScope("ns1Viewer", "t1/ns1")).toBe(false);
+  await expect(enforcer.canManageScope("ns1Viewer", "t1/ns1")).toBe(false);
+  await expect(enforcer.canViewScope("ns1Viewer", "t1/ns2")).toBe(false);
+  await expect(enforcer.canEditScope("ns1Viewer", "t1/ns2")).toBe(false);
+  await expect(enforcer.canManageScope("ns1Viewer", "t1/ns2")).toBe(false);
 
-  await expect(enforcer.canViewNamespace("ns1Editor", "t1/ns1")).toBe(true);
-  await expect(enforcer.canEditNamespace("ns1Editor", "t1/ns1")).toBe(true);
-  await expect(enforcer.canManageNamespace("ns1Editor", "t1/ns1")).toBe(false);
-  await expect(enforcer.canViewNamespace("ns1Editor", "t1/ns2")).toBe(false);
-  await expect(enforcer.canEditNamespace("ns1Editor", "t1/ns2")).toBe(false);
-  await expect(enforcer.canManageNamespace("ns1Editor", "t1/ns2")).toBe(false);
+  await expect(enforcer.canViewScope("ns1Editor", "t1/ns1")).toBe(true);
+  await expect(enforcer.canEditScope("ns1Editor", "t1/ns1")).toBe(true);
+  await expect(enforcer.canManageScope("ns1Editor", "t1/ns1")).toBe(false);
+  await expect(enforcer.canViewScope("ns1Editor", "t1/ns2")).toBe(false);
+  await expect(enforcer.canEditScope("ns1Editor", "t1/ns2")).toBe(false);
+  await expect(enforcer.canManageScope("ns1Editor", "t1/ns2")).toBe(false);
 
-  await expect(enforcer.canViewNamespace("ns1Owner", "t1/ns1")).toBe(true);
-  await expect(enforcer.canEditNamespace("ns1Owner", "t1/ns1")).toBe(true);
-  await expect(enforcer.canManageNamespace("ns1Owner", "t1/ns1")).toBe(true);
-  await expect(enforcer.canViewNamespace("ns1Owner", "t1/ns2")).toBe(false);
-  await expect(enforcer.canEditNamespace("ns1Owner", "t1/ns2")).toBe(false);
-  await expect(enforcer.canManageNamespace("ns1Owner", "t1/ns2")).toBe(false);
+  await expect(enforcer.canViewScope("ns1Owner", "t1/ns1")).toBe(true);
+  await expect(enforcer.canEditScope("ns1Owner", "t1/ns1")).toBe(true);
+  await expect(enforcer.canManageScope("ns1Owner", "t1/ns1")).toBe(true);
+  await expect(enforcer.canViewScope("ns1Owner", "t1/ns2")).toBe(false);
+  await expect(enforcer.canEditScope("ns1Owner", "t1/ns2")).toBe(false);
+  await expect(enforcer.canManageScope("ns1Owner", "t1/ns2")).toBe(false);
 
-  await expect(enforcer.canViewNamespace("clusterViewer", "t1/ns1")).toBe(true);
-  await expect(enforcer.canEditNamespace("clusterViewer", "t1/ns1")).toBe(false);
-  await expect(enforcer.canManageNamespace("clusterViewer", "t1/ns1")).toBe(false);
-  await expect(enforcer.canViewNamespace("clusterViewer", "t1/ns2")).toBe(true);
-  await expect(enforcer.canEditNamespace("clusterViewer", "t1/ns2")).toBe(false);
-  await expect(enforcer.canManageNamespace("clusterViewer", "t1/ns2")).toBe(false);
+  await expect(enforcer.canViewScope("clusterViewer", "t1/ns1")).toBe(true);
+  await expect(enforcer.canEditScope("clusterViewer", "t1/ns1")).toBe(false);
+  await expect(enforcer.canManageScope("clusterViewer", "t1/ns1")).toBe(false);
+  await expect(enforcer.canViewScope("clusterViewer", "t1/ns2")).toBe(true);
+  await expect(enforcer.canEditScope("clusterViewer", "t1/ns2")).toBe(false);
+  await expect(enforcer.canManageScope("clusterViewer", "t1/ns2")).toBe(false);
 
-  await expect(enforcer.canViewNamespace("clusterEditor", "t1/ns1")).toBe(true);
-  await expect(enforcer.canEditNamespace("clusterEditor", "t1/ns1")).toBe(true);
-  await expect(enforcer.canManageNamespace("clusterEditor", "t1/ns1")).toBe(false);
-  await expect(enforcer.canViewNamespace("clusterEditor", "t1/ns2")).toBe(true);
-  await expect(enforcer.canEditNamespace("clusterEditor", "t1/ns2")).toBe(true);
-  await expect(enforcer.canManageNamespace("clusterEditor", "t1/ns2")).toBe(false);
+  await expect(enforcer.canViewScope("clusterEditor", "t1/ns1")).toBe(true);
+  await expect(enforcer.canEditScope("clusterEditor", "t1/ns1")).toBe(true);
+  await expect(enforcer.canManageScope("clusterEditor", "t1/ns1")).toBe(false);
+  await expect(enforcer.canViewScope("clusterEditor", "t1/ns2")).toBe(true);
+  await expect(enforcer.canEditScope("clusterEditor", "t1/ns2")).toBe(true);
+  await expect(enforcer.canManageScope("clusterEditor", "t1/ns2")).toBe(false);
 
-  await expect(enforcer.canViewNamespace("clusterOwner", "t1/ns1")).toBe(true);
-  await expect(enforcer.canEditNamespace("clusterOwner", "t1/ns1")).toBe(true);
-  await expect(enforcer.canManageNamespace("clusterOwner", "t1/ns1")).toBe(true);
-  await expect(enforcer.canViewNamespace("clusterOwner", "t1/ns2")).toBe(true);
-  await expect(enforcer.canEditNamespace("clusterOwner", "t1/ns2")).toBe(true);
-  await expect(enforcer.canManageNamespace("clusterOwner", "t1/ns2")).toBe(true);
+  await expect(enforcer.canViewScope("clusterOwner", "t1/ns1")).toBe(true);
+  await expect(enforcer.canEditScope("clusterOwner", "t1/ns1")).toBe(true);
+  await expect(enforcer.canManageScope("clusterOwner", "t1/ns1")).toBe(true);
+  await expect(enforcer.canViewScope("clusterOwner", "t1/ns2")).toBe(true);
+  await expect(enforcer.canEditScope("clusterOwner", "t1/ns2")).toBe(true);
+  await expect(enforcer.canManageScope("clusterOwner", "t1/ns2")).toBe(true);
 
   await expect(enforcer.can("Nio", "edit", "t1/ns2", "components/abc")).toBe(true);
   await expect(enforcer.can("Nio", "edit", "t1/ns2", "pod/abc")).toBe(false);

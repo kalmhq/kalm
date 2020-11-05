@@ -6,6 +6,7 @@ import { setErrorNotificationAction, setSuccessNotificationAction } from "action
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { RouteWidgets } from "pages/Route/Widget";
@@ -32,7 +33,6 @@ import { KLink, KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -252,7 +252,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderActions = (applicationDetails: ApplicationDetails) => {
-    const { canViewNamespace, canEditCluster } = this.props;
+    const { canViewNamespace, canEditTenant } = this.props;
     return (
       <>
         {canViewNamespace(applicationDetails.name) && (
@@ -268,7 +268,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
           </IconLinkWithToolTip>
         )}
 
-        {canEditCluster() && (
+        {canEditTenant() && (
           <DeleteButtonWithConfirmPopover
             popupId="delete-application-popup"
             popupTitle="DELETE APPLICATION?"
@@ -281,11 +281,11 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderSecondHeaderRight() {
-    const { usingApplicationCard, dispatch, canEditCluster } = this.props;
+    const { usingApplicationCard, dispatch, canEditTenant } = this.props;
     return (
       <>
         {/* <H6>Applications</H6> */}
-        {canEditCluster() && (
+        {canEditTenant() && (
           <Button
             tutorial-anchor-id="add-application"
             component={Link}
@@ -377,6 +377,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
       applications.forEach((application, index) => {
         const applicationDetails = application as ApplicationDetails;
         const applicationName = applicationDetails.name;
+
         if (canViewNamespace(applicationName) || canEditNamespace(applicationName)) {
           data.push({
             name: this.renderName(applicationDetails),
@@ -398,11 +399,12 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   }
 
   private renderGrid = () => {
-    const { applications, componentsMap, canEditNamespace, canViewNamespace } = this.props;
+    const { applications, componentsMap, canEditNamespace } = this.props;
 
     const filteredApps = applications.filter((app) => {
-      return canEditNamespace(app.name) || canViewNamespace(app.name);
+      return canEditNamespace(app.name);
     });
+
     const GridRow = (app: ApplicationDetails, index: number) => {
       const applicationRoutes = this.getRoutes(app.name);
       return (

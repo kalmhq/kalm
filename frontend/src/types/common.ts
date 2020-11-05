@@ -1,8 +1,8 @@
 import { CallHistoryMethodAction } from "connected-react-router";
 import { VariantType } from "notistack";
 import { SettingObject } from "reducers/settings";
-import { NamespaceActions } from "./namespace";
 import { LoginStatus } from "./authorization";
+import { NamespaceActions } from "./namespace";
 
 export const LOAD_LOGIN_STATUS_PENDING = "LOAD_LOGIN_STATUS_PENDING";
 export const LOAD_LOGIN_STATUS_FULFILLED = "LOAD_LOGIN_STATUS_FULFILLED";
@@ -126,12 +126,21 @@ export interface LoadStatusAction {
 
 export interface PermissionMethods {
   can: (action: string, scope: string, object: string) => boolean;
+
   canView: (scope: string, resource: string) => boolean;
   canEdit: (scope: string, resource: string) => boolean;
   canManage: (scope: string, resource: string) => boolean;
+
   canViewNamespace: (scope: string) => boolean;
   canEditNamespace: (scope: string) => boolean;
   canManageNamespace: (scope: string) => boolean;
+
+  canViewTenant: () => boolean;
+  canEditTenant: () => boolean;
+  canManageTenant: () => boolean;
+
+  canEditAnyNamespace: () => boolean;
+
   canViewCluster: () => boolean;
   canEditCluster: () => boolean;
   canManageCluster: () => boolean;
@@ -139,15 +148,24 @@ export interface PermissionMethods {
 
 export const emptyPermissionMethods: PermissionMethods = {
   can: (action: string, scope: string, object: string) => false,
+
   canView: (scope: string, resource: string) => false,
   canEdit: (scope: string, resource: string) => false,
   canManage: (scope: string, resource: string) => false,
+
   canViewNamespace: (scope: string) => false,
   canEditNamespace: (scope: string) => false,
   canManageNamespace: (scope: string) => false,
+
   canViewCluster: () => false,
   canEditCluster: () => false,
   canManageCluster: () => false,
+
+  canViewTenant: () => false,
+  canEditTenant: () => false,
+  canManageTenant: () => false,
+
+  canEditAnyNamespace: () => false,
 };
 
 export interface SetAuthMethodsAction {

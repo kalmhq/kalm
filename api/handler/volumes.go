@@ -79,12 +79,14 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
+	currentUser := getCurrentUser(c)
+
 	pvcNamespace := c.Param("namespace")
 	pvcName := c.Param("name")
 
 	// MARK: diff with doc https://kalm.dev/docs/next/auth/roles (delete disk(pv))
 	// nsEditor should be able to delete same ns pvc & pv
-	if !h.clientManager.CanEditScope(getCurrentUser(c), pvcNamespace) {
+	if !h.clientManager.CanEditScope(currentUser, currentUser.Tenant+"/"+pvcNamespace) {
 		return resources.NoNamespaceEditorRoleError(pvcNamespace)
 	}
 
