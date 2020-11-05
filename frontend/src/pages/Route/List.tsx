@@ -297,21 +297,14 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const {
-      isRoutesFirstLoaded,
-      isRoutesLoading,
-      httpRoutes,
-      canEditNamespace,
-      activeNamespaceName,
-      canViewNamespace,
-    } = this.props;
+    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes, canEditAnyNamespace, canViewNamespace } = this.props;
 
     const filteredRoutes = httpRoutes.filter((route) => canViewNamespace(route.namespace));
 
     return (
       <BasePage
         secondHeaderRight={
-          canEditNamespace(activeNamespaceName) ? (
+          canEditAnyNamespace() ? (
             <Button
               tutorial-anchor-id="add-route"
               component={Link}

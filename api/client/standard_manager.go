@@ -60,7 +60,7 @@ func BuildRolePoliciesForTenantAndNamespace(tenant, name string) string {
 p, role_{{ .tenant }}_{{ .name }}_viewer, view, {{ .tenant }}/{{ .name }}, */*
 p, role_{{ .tenant }}_{{ .name }}_viewer, view, */*, storageClasses/*
 p, role_{{ .tenant }}_{{ .name }}_editor, edit, {{ .tenant }}/{{ .name }}, */*
-p, role_{{ .tenant }}_{{ .name }}_editor, view, */*, registries/*
+p, role_{{ .tenant }}_{{ .name }}_editor, view, {{ .tenant }}/*, registries/*
 p, role_{{ .tenant }}_{{ .name }}_owner, manage, {{ .tenant }}/{{ .name }}, */*
 
 g, role_{{ .tenant }}_{{ .name }}_editor, role_{{ .tenant }}_{{ .name }}_viewer
@@ -76,6 +76,8 @@ g, role_{{ .tenant }}_{{ .name }}_owner, role_{{ .tenant }}_{{ .name }}_editor
 func BuildTenantOwnerPolicies(tenant string) string {
 	t := template.Must(template.New("policy").Parse(`
 # {{ .name }} tenant owner policies
+p, tenant_{{ .tenant }}_owner, view, */*, storageClasses/*
+
 p, tenant_{{ .tenant }}_owner, view, {{ .tenant }}/*, */*
 p, tenant_{{ .tenant }}_owner, edit, {{ .tenant }}/*, */*
 p, tenant_{{ .tenant }}_owner, manage, {{ .tenant }}/*, */*
@@ -258,6 +260,10 @@ func (m *StandardClientManager) SetImpersonation(clientInfo *ClientInfo, rawImpe
 			return
 		}
 
+		if impersonation == "" || impersonationType == "" {
+			return
+		}
+
 		policies, err := m.GetRBACEnforcer().GetImplicitPermissionsForUser(ToSafeSubject(impersonation, impersonationType))
 
 		if err != nil {
@@ -268,6 +274,14 @@ func (m *StandardClientManager) SetImpersonation(clientInfo *ClientInfo, rawImpe
 		for _, policy := range policies {
 			if !m.Can(clientInfo, policy[1], policy[2], policy[3]) {
 				// Can't impersonate. The goal user has at least one permission that current user don't have
+				log.Debug(
+					"Impersonate failed",
+					zap.String("currentUser", clientInfo.Email),
+					zap.String("goal user", ToSafeSubject(impersonation, impersonationType)),
+					zap.String("action", policy[1]),
+					zap.String("scope", policy[2]),
+					zap.String("object", policy[3]),
+				)
 				return
 			}
 		}

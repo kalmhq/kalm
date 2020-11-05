@@ -61,6 +61,7 @@ func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
 		return err
 	}
 
+	// TODO: check if current user can edit all old http route destinations
 	if !h.clientManager.CanOperateHttpRoute(currentUser, "edit", route) {
 		return resources.InsufficientPermissionsError
 	}
