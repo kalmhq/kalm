@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	protoTypes "github.com/gogo/protobuf/types"
-	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	v1alpha32 "istio.io/api/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -43,8 +43,8 @@ type ProtectedEndpointReconciler struct {
 type ProtectedEndpointReconcilerTask struct {
 	*ProtectedEndpointReconciler
 	ctx         context.Context
-	endpoint    *corev1alpha1.ProtectedEndpoint
-	ssoConfig   *corev1alpha1.SingleSignOnConfig
+	endpoint    *v1alpha1.ProtectedEndpoint
+	ssoConfig   *v1alpha1.SingleSignOnConfig
 	envoyFilter *v1alpha3.EnvoyFilter
 }
 
@@ -70,7 +70,7 @@ func (r *ProtectedEndpointReconcilerTask) LoadResources(req ctrl.Request) error 
 }
 
 func (r *ProtectedEndpointReconcilerTask) Run(req ctrl.Request) error {
-	var endpoint corev1alpha1.ProtectedEndpoint
+	var endpoint v1alpha1.ProtectedEndpoint
 
 	if err := r.Get(r.ctx, req.NamespacedName, &endpoint); err != nil {
 		if errors.IsNotFound(err) {
@@ -83,7 +83,7 @@ func (r *ProtectedEndpointReconcilerTask) Run(req ctrl.Request) error {
 
 	r.endpoint = &endpoint
 
-	var ssoList corev1alpha1.SingleSignOnConfigList
+	var ssoList v1alpha1.SingleSignOnConfigList
 
 	if err := r.Reader.List(r.ctx, &ssoList); err != nil {
 		r.Log.Error(err, "List sso error.")
@@ -131,7 +131,7 @@ type OIDCProviderInfo struct {
 	AuthProxyInternalEnvoyClusterName string
 }
 
-func GetOIDCProviderInfo(ssoConfig *corev1alpha1.SingleSignOnConfig) *OIDCProviderInfo {
+func GetOIDCProviderInfo(ssoConfig *v1alpha1.SingleSignOnConfig) *OIDCProviderInfo {
 	info := &OIDCProviderInfo{}
 	spec := ssoConfig.Spec
 
@@ -184,7 +184,7 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilter(req ctrl.Request) *v1
 		Spec: v1alpha32.EnvoyFilter{
 			WorkloadSelector: &v1alpha32.WorkloadSelector{
 				Labels: map[string]string{
-					KalmLabelComponentKey: r.endpoint.Spec.EndpointName,
+					v1alpha1.KalmLabelComponentKey: r.endpoint.Spec.EndpointName,
 				},
 			},
 			ConfigPatches: patches,
@@ -462,13 +462,13 @@ type WatchAllSSOConfig struct {
 }
 
 func (r *WatchAllSSOConfig) Map(object handler.MapObject) []reconcile.Request {
-	_, ok := object.Object.(*corev1alpha1.SingleSignOnConfig)
+	_, ok := object.Object.(*v1alpha1.SingleSignOnConfig)
 
 	if !ok {
 		return nil
 	}
 
-	var endpointList corev1alpha1.ProtectedEndpointList
+	var endpointList v1alpha1.ProtectedEndpointList
 
 	if err := r.Reader.List(context.Background(), &endpointList); err != nil {
 		r.Log.Error(err, "Get protected endpoints list failed.")
@@ -492,10 +492,10 @@ func (r *WatchAllSSOConfig) Map(object handler.MapObject) []reconcile.Request {
 
 func (r *ProtectedEndpointReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1alpha1.ProtectedEndpoint{}).
+		For(&v1alpha1.ProtectedEndpoint{}).
 		Owns(&v1alpha3.EnvoyFilter{}).
 		Watches(
-			&source.Kind{Type: &corev1alpha1.SingleSignOnConfig{}},
+			&source.Kind{Type: &v1alpha1.SingleSignOnConfig{}},
 			&handler.EnqueueRequestsFromMapFunc{
 				ToRequests: &WatchAllSSOConfig{r.BaseReconciler},
 			},

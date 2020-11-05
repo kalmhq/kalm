@@ -33,7 +33,9 @@ var _ inject.Client = &PodAdmissionHandler{}
 
 func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request) admission.Response {
 
-	podAdmissionHandlerLog.Info("pod admissionHandler called", "op", req.Operation)
+	logger := podAdmissionHandlerLog.WithValues("UID", req.UID)
+
+	logger.Info("pod admissionHandler called", "op", req.Operation)
 
 	pod := corev1.Pod{}
 
@@ -61,11 +63,33 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 		sum := getResouceListSumOfPods(append(podList.Items, pod))
 
 		if err := v1alpha1.SetTenantResourceListByName(tenant, sum); err != nil {
-			podAdmissionHandlerLog.Info("fail to allocate res for tenant, CREATE", "tenant", tenant, "err", err, "sum", sum)
+			logger.Info("fail to allocate res for tenant, CREATE", "tenant", tenant, "err", err, "sum", sum)
+
+			ns := pod.Namespace
+			componentName := pod.Labels[v1alpha1.KalmLabelComponentKey]
+
+			if componentName == "" {
+				logger.Info("no component info found in pod, ignored")
+				return admission.Errored(http.StatusBadRequest, err)
+			}
+
+			var component v1alpha1.Component
+			err := v.client.Get(ctx, client.ObjectKey{Namespace: ns, Name: componentName}, &component)
+			if err != nil {
+				logger.Error(err, "fail to get component, ignored", "component", componentName)
+				return admission.Errored(http.StatusBadRequest, err)
+			}
+
+			copy := component.DeepCopy()
+			copy.Labels[v1alpha1.KalmLabelKeyExceedingLimit] = "true"
+			if err := v.client.Update(ctx, copy); err != nil {
+				logger.Error(err, "fail to mark component as exceeding limit, ignored", "component", componentName)
+			}
+
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
-		podAdmissionHandlerLog.Info("pod resource updated for create", "tenant", tenant, "newQuantity", sum)
+		logger.Info("pod resource updated for create", "tenant", tenant, "newQuantity", sum)
 	case v1beta1.Delete:
 		if err := v.decoder.DecodeRaw(req.OldObject, &pod); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)

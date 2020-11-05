@@ -250,17 +250,12 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 	return nil
 }
 
-const (
-	KalmLabelComponentKey = "kalm-component"
-	KalmLabelNamespaceKey = "kalm-namespace"
-)
-
 func (r *ComponentReconcilerTask) GetLabels() map[string]string {
 	res := map[string]string{
-		KalmLabelNamespaceKey:       r.component.Namespace,
-		KalmLabelComponentKey:       r.component.Name,
-		KalmLabelManaged:            "true",
-		v1alpha1.TenantNameLabelKey: r.component.Labels[v1alpha1.TenantNameLabelKey],
+		v1alpha1.KalmLabelNamespaceKey: r.component.Namespace,
+		v1alpha1.KalmLabelComponentKey: r.component.Name,
+		KalmLabelManaged:               "true",
+		v1alpha1.TenantNameLabelKey:    r.component.Labels[v1alpha1.TenantNameLabelKey],
 	}
 
 	if r.component.Spec.Labels != nil {
@@ -1543,7 +1538,7 @@ func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 	var bindingList corev1alpha1.ComponentPluginBindingList
 
 	if err := r.Reader.List(r.ctx, &bindingList, client.MatchingLabels{
-		KalmLabelComponentKey: r.component.Name,
+		v1alpha1.KalmLabelComponentKey: r.component.Name,
 	}); client.IgnoreNotFound(err) != nil {
 		r.WarningEvent(err, "get plugin binding list error.")
 		return err

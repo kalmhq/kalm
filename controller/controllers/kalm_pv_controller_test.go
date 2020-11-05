@@ -82,9 +82,9 @@ func (suite *KalmPVControllerSuite) TestPVCleanLabelWorks() {
 			Name:      pvcName,
 			Namespace: suite.ns.Name,
 			Labels: map[string]string{
-				KalmLabelNamespaceKey: suite.ns.Namespace,
-				KalmLabelComponentKey: "comp-not-exist",
-				KalmLabelManaged:      "true",
+				v1alpha1.KalmLabelNamespaceKey: suite.ns.Namespace,
+				v1alpha1.KalmLabelComponentKey: "comp-not-exist",
+				KalmLabelManaged:               "true",
 			},
 		},
 		Spec: coreV1.PersistentVolumeClaimSpec{
@@ -191,8 +191,8 @@ func (suite *KalmPVControllerSuite) TestPVIsLabeledForKalm() {
 		}, &pv)
 		suite.Nil(err)
 
-		return pv.Labels[KalmLabelNamespaceKey] == pvc.Namespace &&
+		return pv.Labels[v1alpha1.KalmLabelNamespaceKey] == pvc.Namespace &&
 			pv.Labels[KalmLabelManaged] == "true" &&
-			pv.Labels[KalmLabelComponentKey] == component.Name
+			pv.Labels[v1alpha1.KalmLabelComponentKey] == component.Name
 	})
 }

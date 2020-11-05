@@ -172,8 +172,8 @@ func (r *KalmPVReconciler) reconcilePV(pvName string) error {
 
 	pv.Labels[KalmLabelManaged] = "true"
 	// descriptive information
-	pv.Labels[KalmLabelComponentKey] = pvc.Labels[KalmLabelComponentKey]
-	pv.Labels[KalmLabelNamespaceKey] = pvc.Labels[KalmLabelNamespaceKey]
+	pv.Labels[v1alpha1.KalmLabelComponentKey] = pvc.Labels[v1alpha1.KalmLabelComponentKey]
+	pv.Labels[v1alpha1.KalmLabelNamespaceKey] = pvc.Labels[v1alpha1.KalmLabelNamespaceKey]
 	// to be selectable by PV
 	pv.Labels[KalmLabelPV] = pv.Name
 	// inherit tenant
@@ -289,10 +289,10 @@ func (r *KalmPVReconciler) reconcileOrphanPV(orphanPV *corev1.PersistentVolume) 
 			Name:      pvcName,
 			Namespace: KalmSystemNamespace,
 			Labels: map[string]string{
-				KalmLabelManaged:            "true",
-				KalmLabelComponentKey:       orphanPV.Labels[KalmLabelComponentKey],
-				KalmLabelNamespaceKey:       orphanPV.Labels[KalmLabelNamespaceKey],
-				v1alpha1.TenantNameLabelKey: orphanPV.Labels[v1alpha1.TenantNameLabelKey],
+				KalmLabelManaged:               "true",
+				v1alpha1.KalmLabelComponentKey: orphanPV.Labels[v1alpha1.KalmLabelComponentKey],
+				v1alpha1.KalmLabelNamespaceKey: orphanPV.Labels[v1alpha1.KalmLabelNamespaceKey],
+				v1alpha1.TenantNameLabelKey:    orphanPV.Labels[v1alpha1.TenantNameLabelKey],
 			},
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{

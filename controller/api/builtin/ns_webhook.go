@@ -30,7 +30,8 @@ var _ admission.DecoderInjector = &NSValidator{}
 // ref: https://github.com/kubernetes-sigs/controller-runtime/blob/master/pkg/webhook/admission/validator.go#L59
 func (v *NSValidator) Handle(ctx context.Context, req admission.Request) admission.Response {
 
-	nsValidatorLog.Info("ns webhook called")
+	logger := nsValidatorLog.WithValues("ns", req.Name, "UID", req.UID)
+	logger.Info("ns webhook called")
 
 	ns := corev1.Namespace{}
 
@@ -51,7 +52,10 @@ func (v *NSValidator) Handle(ctx context.Context, req admission.Request) admissi
 		}
 
 		if err := v1alpha1.AllocateTenantResource(&ns, v1alpha1.ResourceApplicationsCount, resource.MustParse("1")); err != nil {
+			logger.Error(err, "fail to allocate ns resource", "ns", ns.Name)
 			return admission.Errored(http.StatusBadRequest, err)
+		} else {
+			logger.Info("succeeded to allocate ns resource", "ns", ns.Name)
 		}
 	}
 

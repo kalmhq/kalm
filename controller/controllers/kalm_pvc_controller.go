@@ -17,6 +17,8 @@ package controllers
 
 import (
 	"context"
+
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -89,15 +91,15 @@ func (r *KalmPVCReconciler) reconcileForPVCOwnerChange(pvc corev1.PersistentVolu
 			}
 
 			expectedNS := pod.Namespace
-			expectedComp := pod.Labels[KalmLabelComponentKey]
+			expectedComp := pod.Labels[v1alpha1.KalmLabelComponentKey]
 
 			copiedPVC := pvc.DeepCopy()
 			if copiedPVC.Labels == nil {
 				copiedPVC.Labels = make(map[string]string)
 			}
 
-			copiedPVC.Labels[KalmLabelComponentKey] = expectedComp
-			copiedPVC.Labels[KalmLabelNamespaceKey] = expectedNS
+			copiedPVC.Labels[v1alpha1.KalmLabelComponentKey] = expectedComp
+			copiedPVC.Labels[v1alpha1.KalmLabelNamespaceKey] = expectedNS
 			copiedPVC.Labels[KalmLabelManaged] = "true"
 
 			err := r.Update(r.ctx, copiedPVC)
