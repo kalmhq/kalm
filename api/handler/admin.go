@@ -63,6 +63,9 @@ func (h *ApiHandler) handleCreateTemporaryClusterOwnerAccessTokens(c echo.Contex
 	accessToken := &v1alpha1.AccessToken{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: v1alpha1.GetAccessTokenNameFromToken(token),
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: "global",
+			},
 		},
 		Spec: v1alpha1.AccessTokenSpec{
 			Token: token,
