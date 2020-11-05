@@ -116,7 +116,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private getSideBarData() {
-    const { canEditTenant, canViewCluster, canManageCluster } = this.props;
+    const { canEditTenant, canViewCluster, canManageCluster, canViewTenant } = this.props;
 
     return [
       {
@@ -154,14 +154,14 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
                 to: "/cluster/nodes",
               }
             : null,
-          canViewCluster()
+          canViewTenant()
             ? {
                 icon: KalmIngressIcon,
                 text: "Load Balancer",
                 to: "/cluster/loadbalancer",
               }
             : null,
-          canViewCluster()
+          canViewTenant()
             ? {
                 icon: KalmVolumeIcon,
                 text: "Disks",

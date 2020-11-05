@@ -40,6 +40,12 @@ run: generate fmt vet manifests go-generate
 install: manifests
 	kustomize build config/crd | kubectl apply -f -
 
+setup_webhook_development_env:
+	mkdir -p ./tmp
+	openssl req -x509 -newkey rsa:4096 -keyout ./tmp/tls.key -out ./tmp/tls.crt -days 365 -nodes -subj '/CN=host.minikube.internal'
+	ruby ./scripts/build-development-webhook-yaml.rb
+	kubectl apply -f ./tmp/webhooks.yaml
+
 # Uninstall CRDs from a cluster
 uninstall: manifests
 	kustomize build config/crd | kubectl delete -f -
