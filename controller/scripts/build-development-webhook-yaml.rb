@@ -10,8 +10,6 @@ rstFile = File.open(File.dirname(__FILE__) + "/../tmp/webhooks.yaml", 'w')
 rstFile.truncate(0)
 
 YAML.load_stream(data) do |file|
-  puts "==================="
-  puts file
 
   if file["webhooks"] == nil 
     next
