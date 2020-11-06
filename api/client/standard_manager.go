@@ -38,6 +38,7 @@ type StandardClientManager struct {
 	mut           *sync.RWMutex
 	Applications  map[string]*coreV1.Namespace
 	AccessTokens  map[string]*v1alpha1.AccessToken
+	Tenants       map[string]*v1alpha1.Tenant
 	RoleBindings  map[string]*v1alpha1.RoleBinding
 	StopWatchChan chan struct{}
 }
@@ -45,28 +46,45 @@ type StandardClientManager struct {
 func BuildClusterRolePolicies() string {
 	return `
 # cluster role policies
-p, role_clusterViewer, view, *, *
-p, role_clusterEditor, edit, *, *
-p, role_clusterOwner, manage, *, *
-g, role_clusterEditor, role_clusterViewer
-g, role_clusterOwner, role_clusterEditor
+p, role_cluster_viewer, view, */*, */*
+p, role_cluster_editor, edit, */*, */*
+p, role_cluster_owner, manage, */*, */*
+g, role_cluster_editor, role_cluster_viewer
+g, role_cluster_owner, role_cluster_editor
 `
 }
 
-func BuildRolePoliciesForNamespace(name string) string {
+func BuildRolePoliciesForTenantAndNamespace(tenant, name string) string {
 	t := template.Must(template.New("policy").Parse(`
 # {{ .name }} application role policies
-p, role_{{ .name }}Viewer, view, {{ .name }}, *
-p, role_{{ .name }}Viewer, view, *, storageClasses
-p, role_{{ .name }}Editor, edit, {{ .name }}, *
-p, role_{{ .name }}Editor, view, *, registries
-p, role_{{ .name }}Owner, manage, {{ .name }}, *
-g, role_{{ .name }}Editor, role_{{ .name }}Viewer
-g, role_{{ .name }}Owner, role_{{ .name }}Editor
+p, role_{{ .tenant }}_{{ .name }}_viewer, view, {{ .tenant }}/{{ .name }}, */*
+p, role_{{ .tenant }}_{{ .name }}_viewer, view, */*, storageClasses/*
+p, role_{{ .tenant }}_{{ .name }}_editor, edit, {{ .tenant }}/{{ .name }}, */*
+p, role_{{ .tenant }}_{{ .name }}_editor, view, {{ .tenant }}/*, registries/*
+p, role_{{ .tenant }}_{{ .name }}_owner, manage, {{ .tenant }}/{{ .name }}, */*
+
+g, role_{{ .tenant }}_{{ .name }}_editor, role_{{ .tenant }}_{{ .name }}_viewer
+g, role_{{ .tenant }}_{{ .name }}_owner, role_{{ .tenant }}_{{ .name }}_editor
 `))
 
 	strBuffer := &strings.Builder{}
-	_ = t.Execute(strBuffer, map[string]string{"name": name})
+	_ = t.Execute(strBuffer, map[string]string{"name": name, "tenant": tenant})
+
+	return strBuffer.String()
+}
+
+func BuildTenantOwnerPolicies(tenant string) string {
+	t := template.Must(template.New("policy").Parse(`
+# {{ .name }} tenant owner policies
+p, tenant_{{ .tenant }}_owner, view, */*, storageClasses/*
+
+p, tenant_{{ .tenant }}_owner, view, {{ .tenant }}/*, */*
+p, tenant_{{ .tenant }}_owner, edit, {{ .tenant }}/*, */*
+p, tenant_{{ .tenant }}_owner, manage, {{ .tenant }}/*, */*
+`))
+
+	strBuffer := &strings.Builder{}
+	_ = t.Execute(strBuffer, map[string]string{"tenant": tenant})
 
 	return strBuffer.String()
 }
@@ -75,19 +93,13 @@ func GetPoliciesFromAccessToken(accessToken *resources.AccessToken) [][]string {
 	var res = [][]string{}
 	for _, rule := range accessToken.Rules {
 
-		var obj string
-
-		// todo, rule.Namespace or rule.Kind here?
-		if rule.Namespace == "*" && rule.Name == "*" {
-			obj = "*"
-		} else {
-			obj = fmt.Sprintf("%s/%s", rule.Kind, rule.Name)
-		}
+		scope := fmt.Sprintf("%s/%s", accessToken.Tenant, rule.Namespace)
+		obj := fmt.Sprintf("%s/%s", rule.Kind, rule.Name)
 
 		res = append(res, []string{
 			ToSafeSubject(accessToken.Name, v1alpha1.SubjectTypeUser),
 			string(rule.Verb),
-			rule.Namespace,
+			scope,
 			obj,
 		})
 	}
@@ -95,12 +107,16 @@ func GetPoliciesFromAccessToken(accessToken *resources.AccessToken) [][]string {
 	return res
 }
 
-func roleValueToPolicyValue(role, ns string) string {
+func roleValueToPolicyValue(tenant, ns, role string) string {
 	switch role {
-	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
-		return "role_" + role
+	case v1alpha1.ClusterRoleViewer:
+		return "role_cluster_viewer"
+	case v1alpha1.ClusterRoleEditor:
+		return "role_cluster_editor"
+	case v1alpha1.ClusterRoleOwner:
+		return "role_cluster_owner"
 	default:
-		return fmt.Sprintf("role_%s%s", ns, strings.ToUpper(role[:1])+role[1:])
+		return fmt.Sprintf("role_%s_%s_%s", tenant, ns, role)
 	}
 
 }
@@ -115,7 +131,20 @@ func (m *StandardClientManager) UpdatePolicies() {
 			continue
 		}
 
-		sb.WriteString(BuildRolePoliciesForNamespace(application.Name))
+		// TODO: error
+		tenantName, _ := v1alpha1.GetTenantNameFromObj(application)
+
+		sb.WriteString(BuildRolePoliciesForTenantAndNamespace(tenantName, application.Name))
+	}
+
+	for _, tenant := range m.Tenants {
+		sb.WriteString(BuildTenantOwnerPolicies(tenant.Name))
+
+		for _, owner := range tenant.Spec.Owners {
+			sb.WriteString(
+				fmt.Sprintf("g, %s, tenant_%s_owner\n", ToSafeSubject(owner, v1alpha1.SubjectTypeUser), tenant.Name),
+			)
+		}
 	}
 
 	for i := range m.AccessTokens {
@@ -125,9 +154,16 @@ func (m *StandardClientManager) UpdatePolicies() {
 			continue
 		}
 
+		tenantName, err := v1alpha1.GetTenantNameFromObj(accessToken)
+
+		if err != nil {
+			log.Error(fmt.Sprintf("Can't find tenantName from AccessToken %s", accessToken.Name))
+			continue
+		}
+
 		sb.WriteString(fmt.Sprintf("# policies for access token %s\n", accessToken.Name))
 
-		for _, policy := range GetPoliciesFromAccessToken(&resources.AccessToken{Name: accessToken.Name, AccessTokenSpec: &accessToken.Spec}) {
+		for _, policy := range GetPoliciesFromAccessToken(&resources.AccessToken{Name: accessToken.Name, Tenant: tenantName, AccessTokenSpec: &accessToken.Spec}) {
 			sb.WriteString(
 				fmt.Sprintf(
 					"p, %s, %s, %s, %s\n",
@@ -145,11 +181,14 @@ func (m *StandardClientManager) UpdatePolicies() {
 			continue
 		}
 
+		// TODO: handle error
+		tenantName, _ := v1alpha1.GetTenantNameFromObj(roleBinding)
+
 		sb.WriteString(fmt.Sprintf("# policies for rolebinding %s\n", roleBinding.Name))
 		sb.WriteString(fmt.Sprintf(
 			"g, %s, %s\n",
 			ToSafeSubject(roleBinding.Spec.Subject, roleBinding.Spec.SubjectType),
-			roleValueToPolicyValue(roleBinding.Spec.Role, roleBinding.Namespace)),
+			roleValueToPolicyValue(tenantName, roleBinding.Namespace, roleBinding.Spec.Role)),
 		)
 	}
 
@@ -179,11 +218,18 @@ func (m *StandardClientManager) GetClientInfoFromToken(tokenString string) (*Cli
 		return nil, errors.NewUnauthorized("access token is expired")
 	}
 
+	tenantName, err := v1alpha1.GetTenantNameFromObj(accessToken)
+
+	if err != nil {
+		return nil, err
+	}
+
 	clientInfo := &ClientInfo{
 		Cfg:           m.ClusterConfig,
 		Name:          accessToken.Name,
 		Email:         accessToken.Name,
 		EmailVerified: false,
+		Tenant:        tenantName,
 		Groups:        []string{},
 	}
 
@@ -191,7 +237,11 @@ func (m *StandardClientManager) GetClientInfoFromToken(tokenString string) (*Cli
 }
 
 func (m *StandardClientManager) SetImpersonation(clientInfo *ClientInfo, rawImpersonation string) {
-	if rawImpersonation != "" && m.CanManageCluster(clientInfo) {
+	if rawImpersonation == "" {
+		return
+	}
+
+	if m.CanManageCluster(clientInfo) {
 		impersonation, impersonationType, err := parseImpersonationString(rawImpersonation)
 
 		if err == nil {
@@ -200,6 +250,44 @@ func (m *StandardClientManager) SetImpersonation(clientInfo *ClientInfo, rawImpe
 		} else {
 			log.Error("parse impersonation raw string failed", zap.Error(err))
 		}
+	}
+
+	if m.CanManageScope(clientInfo, clientInfo.Tenant+"/*") {
+		impersonation, impersonationType, err := parseImpersonationString(rawImpersonation)
+
+		if err != nil {
+			log.Error("parse impersonation raw string failed", zap.Error(err))
+			return
+		}
+
+		if impersonation == "" || impersonationType == "" {
+			return
+		}
+
+		policies, err := m.GetRBACEnforcer().GetImplicitPermissionsForUser(ToSafeSubject(impersonation, impersonationType))
+
+		if err != nil {
+			log.Error("get implicit permissions for error", zap.String("user", ToSafeSubject(impersonation, impersonationType)), zap.Error(err))
+			return
+		}
+
+		for _, policy := range policies {
+			if !m.Can(clientInfo, policy[1], policy[2], policy[3]) {
+				// Can't impersonate. The goal user has at least one permission that current user don't have
+				log.Debug(
+					"Impersonate failed",
+					zap.String("currentUser", clientInfo.Email),
+					zap.String("goal user", ToSafeSubject(impersonation, impersonationType)),
+					zap.String("action", policy[1]),
+					zap.String("scope", policy[2]),
+					zap.String("object", policy[3]),
+				)
+				return
+			}
+		}
+
+		clientInfo.Impersonation = impersonation
+		clientInfo.ImpersonationType = impersonationType
 	}
 }
 
@@ -273,6 +361,7 @@ func NewStandardClientManager(cfg *rest.Config) *StandardClientManager {
 		PolicyAdapter:     policyAdapter,
 		ClusterConfig:     cfg,
 		mut:               &sync.RWMutex{},
+		Tenants:           make(map[string]*v1alpha1.Tenant),
 		Applications:      make(map[string]*coreV1.Namespace),
 		AccessTokens:      make(map[string]*v1alpha1.AccessToken),
 		RoleBindings:      make(map[string]*v1alpha1.RoleBinding),
@@ -390,6 +479,40 @@ func setupResourcesWatcher(cfg *rest.Config, manager *StandardClientManager) {
 				defer manager.mut.Unlock()
 				if accessToken, ok := obj.(*v1alpha1.AccessToken); ok {
 					manager.AccessTokens[accessToken.Name] = accessToken
+					manager.UpdatePolicies()
+				}
+			},
+		})
+	} else {
+		log.Error("get informer error", zap.Error(err))
+		panic(err)
+	}
+
+	if informer, err := informerCache.GetInformer(context.Background(), &v1alpha1.Tenant{}); err == nil {
+		informer.AddEventHandler(toolscache.ResourceEventHandlerFuncs{
+			AddFunc: func(obj interface{}) {
+				manager.mut.Lock()
+				defer manager.mut.Unlock()
+
+				if tenant, ok := obj.(*v1alpha1.Tenant); ok {
+					manager.Tenants[tenant.Name] = tenant
+					manager.UpdatePolicies()
+				}
+			},
+			DeleteFunc: func(obj interface{}) {
+				manager.mut.Lock()
+				defer manager.mut.Unlock()
+
+				if tenant, ok := obj.(*v1alpha1.Tenant); ok {
+					delete(manager.Tenants, tenant.Name)
+					manager.UpdatePolicies()
+				}
+			},
+			UpdateFunc: func(oldObj, obj interface{}) {
+				manager.mut.Lock()
+				defer manager.mut.Unlock()
+				if tenant, ok := obj.(*v1alpha1.Tenant); ok {
+					manager.Tenants[tenant.Name] = tenant
 					manager.UpdatePolicies()
 				}
 			},

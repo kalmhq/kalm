@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -32,7 +33,7 @@ var _ inject.Client = &PodAdmissionHandler{}
 
 func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request) admission.Response {
 
-	podAdmissionHandlerLog.Info("pod admissionHandler called")
+	podAdmissionHandlerLog.Info("pod admissionHandler called", "op", req.Operation)
 
 	pod := corev1.Pod{}
 
@@ -60,6 +61,7 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 		sum := getResouceListSumOfPods(append(podList.Items, pod))
 
 		if err := v1alpha1.SetTenantResourceListByName(tenant, sum); err != nil {
+			podAdmissionHandlerLog.Info("fail to allocate res for tenant, CREATE", "tenant", tenant, "err", err, "sum", sum)
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
@@ -99,6 +101,7 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 		}
 
 		if err := v1alpha1.SetTenantResourceListByName(tenant, sumExceptPodBeenDeleted); err != nil {
+			podAdmissionHandlerLog.Info("fail to allocate res for tenant, DELETE", "tenant", tenant, "err", err, "sum", sumExceptPodBeenDeleted)
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
@@ -113,7 +116,17 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 func getResouceListSumOfPods(pods []corev1.Pod) v1alpha1.ResourceList {
 	rstResList := make(map[v1alpha1.ResourceName]resource.Quantity)
 
+	podMap := make(map[string]bool)
+
 	for _, pod := range pods {
+		podKey := fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
+
+		if _, exist := podMap[podKey]; exist {
+			continue
+		} else {
+			podMap[podKey] = true
+		}
+
 		tmp := getResourceOfPod(pod)
 		rstResList = sumOfResouceList(rstResList, tmp)
 	}

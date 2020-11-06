@@ -7,7 +7,8 @@ import (
 )
 
 type AccessToken struct {
-	Name string `json:"name"`
+	Name   string `json:"name"`
+	Tenant string `json:"tenant"`
 	*v1alpha1.AccessTokenSpec
 }
 
@@ -25,6 +26,9 @@ func (resourceManager *ResourceManager) CreateAccessToken(accessToken *AccessTok
 	resAccessToken := &v1alpha1.AccessToken{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: accessToken.Name,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: accessToken.Tenant,
+			},
 		},
 		Spec: *accessToken.AccessTokenSpec,
 	}
@@ -39,27 +43,20 @@ func (resourceManager *ResourceManager) CreateAccessToken(accessToken *AccessTok
 func BuildAccessTokenFromResource(dk *v1alpha1.AccessToken) *AccessToken {
 	return &AccessToken{
 		Name:            dk.Name,
+		Tenant:          dk.Labels[v1alpha1.TenantNameLabelKey],
 		AccessTokenSpec: &dk.Spec,
 	}
 }
 
-func (resourceManager *ResourceManager) GetAccessTokenByToken(token string) (*v1alpha1.AccessToken, error) {
-	name := v1alpha1.GetAccessTokenNameFromToken(token)
-	var accessToken v1alpha1.AccessToken
-	if err := resourceManager.Get("", name, &accessToken); err != nil {
-		return nil, err
-	}
-	return &accessToken, nil
-}
-
-func (resourceManager *ResourceManager) GetAccessTokens() ([]*AccessToken, error) {
+func (resourceManager *ResourceManager) GetAccessTokens(listOptions ...client.ListOption) ([]*AccessToken, error) {
 	var accessTokenList v1alpha1.AccessTokenList
 
-	if err := resourceManager.List(&accessTokenList); err != nil {
+	if err := resourceManager.List(&accessTokenList, listOptions...); err != nil {
 		return nil, err
 	}
 
 	rst := make([]*AccessToken, len(accessTokenList.Items))
+
 	for i := range accessTokenList.Items {
 		dk := accessTokenList.Items[i]
 		rst[i] = BuildAccessTokenFromResource(&dk)
@@ -71,14 +68,18 @@ func (resourceManager *ResourceManager) GetAccessTokens() ([]*AccessToken, error
 var AccessTokenTypeLabelKey = "tokenType"
 var DeployAccessTokenLabelValue = "deployAccessToken"
 
-var deployAccessTokenLabels = map[string]string{
-	AccessTokenTypeLabelKey: DeployAccessTokenLabelValue,
-}
-
-func (resourceManager *ResourceManager) GetDeployAccessTokens() ([]*AccessToken, error) {
+func (resourceManager *ResourceManager) GetDeployAccessTokens(listOptions ...client.ListOption) ([]*AccessToken, error) {
 	var accessTokenList v1alpha1.AccessTokenList
 
-	if err := resourceManager.List(&accessTokenList, client.MatchingLabels(deployAccessTokenLabels)); err != nil {
+	if listOptions == nil {
+		listOptions = make([]client.ListOption, 0, 1)
+	}
+
+	listOptions = append(listOptions, client.MatchingLabels(map[string]string{
+		AccessTokenTypeLabelKey: DeployAccessTokenLabelValue,
+	}))
+
+	if err := resourceManager.List(&accessTokenList, listOptions...); err != nil {
 		return nil, err
 	}
 
@@ -93,10 +94,14 @@ func (resourceManager *ResourceManager) GetDeployAccessTokens() ([]*AccessToken,
 }
 
 func (resourceManager *ResourceManager) CreateDeployAccessToken(accessToken *AccessToken) (*AccessToken, error) {
+
 	resAccessToken := &v1alpha1.AccessToken{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name:   accessToken.Name,
-			Labels: deployAccessTokenLabels,
+			Name: accessToken.Name,
+			Labels: map[string]string{
+				AccessTokenTypeLabelKey:     DeployAccessTokenLabelValue,
+				v1alpha1.TenantNameLabelKey: accessToken.Tenant,
+			},
 		},
 		Spec: *accessToken.AccessTokenSpec,
 	}

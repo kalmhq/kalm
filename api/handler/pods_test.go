@@ -2,11 +2,12 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
+	"testing"
+
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
-	"testing"
 )
 
 type PodsHandlerTestSuite struct {
@@ -41,13 +42,13 @@ func (suite *PodsHandlerTestSuite) TestPodsHandler() {
 	// delete pod
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetEditorRoleOfNs("test-pods"),
+			GetEditorRoleOfScope(defaultTenant, "test-pods"),
 		},
 		Namespace: "test-pods",
 		Method:    http.MethodDelete,
 		Path:      fmt.Sprintf("/v1alpha1/pods/%s/%s", "test-pods", "test-pods-1"),
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "test-pods")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)

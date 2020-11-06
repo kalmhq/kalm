@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/yaml.v3"
@@ -13,7 +15,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-	"testing"
 )
 
 type SSOConfigControllerSuite struct {
@@ -27,7 +28,7 @@ func TestSSOConfigControllerSuite(t *testing.T) {
 }
 
 func (suite *SSOConfigControllerSuite) SetupSuite() {
-	suite.BasicSuite.SetupSuite()
+	suite.BasicSuite.SetupSuite(true)
 	suite.logger = ctrl.Log
 }
 
@@ -100,10 +101,14 @@ func (suite *SSOConfigControllerSuite) TestSSOBasicCRUD() {
 			Domain: domain,
 			Connectors: []v1alpha1.DexConnector{
 				{
-					Type:   "type",
-					ID:     "id",
-					Name:   "name",
-					Config: &runtime.RawExtension{Raw: []byte(`{}`)},
+					Type: "gitlab",
+					ID:   "id",
+					Name: "name",
+					Config: &runtime.RawExtension{Raw: []byte(`{ 
+						"clientID": "fake-id",
+						"clientSecret": "fake-sec",
+						"groups": ["fake-group"]
+					}`)},
 				},
 			},
 		},

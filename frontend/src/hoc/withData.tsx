@@ -1,16 +1,36 @@
-import { getWebsocketInstance } from "actions/websocket";
 import { mockStore } from "@apiType/index";
+import { loadApplicationsAction } from "actions/application";
+import {
+  loadCertificateAcmeServerAction,
+  loadCertificateIssuersAction,
+  loadCertificatesAction,
+} from "actions/certificate";
+import { loadClusterInfoAction } from "actions/cluster";
+import { loadDeployAccessTokensAction } from "actions/deployAccessToken";
+import { loadNodesAction } from "actions/node";
+import { setErrorNotificationAction } from "actions/notification";
+import { loadPersistentVolumesAction, loadStorageClassesAction } from "actions/persistentVolume";
+import { loadRegistriesAction } from "actions/registries";
+import { loadRoutesAction } from "actions/routes";
+import { loadServicesAction } from "actions/service";
+import { loadProtectedEndpointAction, loadSSOConfigAction } from "actions/sso";
+import { getWebsocketInstance } from "actions/websocket";
+import { generateKalmImpersonnation } from "api/realApi";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
+import throttle from "lodash/throttle";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
+import { AccessTokenToDeployAccessToken } from "types/deployAccessToken";
 import {
+  ResourceActionType,
   RESOURCE_TYPE_ACME_SERVER,
   RESOURCE_TYPE_APPLICATION,
   RESOURCE_TYPE_COMPONENT,
   RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN,
-  RESOURCE_TYPE_HTTP_ROUTE,
   RESOURCE_TYPE_HTTPS_CERT,
+  RESOURCE_TYPE_HTTP_ROUTE,
   RESOURCE_TYPE_NODE,
   RESOURCE_TYPE_PROTECTED_ENDPOINT,
   RESOURCE_TYPE_REGISTRY,
@@ -18,28 +38,8 @@ import {
   RESOURCE_TYPE_SERVICE,
   RESOURCE_TYPE_SSO,
   RESOURCE_TYPE_VOLUME,
-  ResourceActionType,
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
-import { loadApplicationsAction } from "actions/application";
-import { loadRoutesAction } from "actions/routes";
-import { loadNodesAction } from "actions/node";
-import {
-  loadCertificateAcmeServerAction,
-  loadCertificateIssuersAction,
-  loadCertificatesAction,
-} from "actions/certificate";
-import { loadClusterInfoAction } from "actions/cluster";
-import { loadPersistentVolumesAction, loadStorageClassesAction } from "actions/persistentVolume";
-import { loadRegistriesAction } from "actions/registries";
-import { loadServicesAction } from "actions/service";
-import { loadProtectedEndpointAction, loadSSOConfigAction } from "actions/sso";
-import { setErrorNotificationAction } from "actions/notification";
-import { loadDeployAccessTokensAction } from "actions/deployAccessToken";
-import { AccessTokenToDeployAccessToken } from "types/deployAccessToken";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
-import { generateKalmImpersonnation } from "api/realApi";
-import throttle from "lodash/throttle";
 
 export interface WatchResMessage {
   namespace: string;
@@ -64,32 +64,32 @@ class WithDataRaw extends React.PureComponent<Props> {
   }
 
   private loadData() {
-    const { dispatch, canViewCluster, canEditNamespace, activeNamespaceName } = this.props;
+    const { dispatch, canViewTenant, canViewCluster } = this.props;
 
     dispatch(loadRoutesAction()); // all namespaces
     dispatch(loadApplicationsAction());
     dispatch(loadDeployAccessTokensAction());
     dispatch(loadProtectedEndpointAction());
 
-    if (canEditNamespace(activeNamespaceName) || canViewCluster()) {
+    if (canViewTenant()) {
+      dispatch(loadCertificatesAction());
       dispatch(loadRegistriesAction());
+      dispatch(loadServicesAction("")); // for routes destinations
+      dispatch(loadPersistentVolumesAction());
+      dispatch(loadStorageClassesAction());
     }
 
     if (canViewCluster()) {
-      dispatch(loadCertificatesAction());
       dispatch(loadCertificateIssuersAction());
       dispatch(loadCertificateAcmeServerAction());
       dispatch(loadSSOConfigAction());
       dispatch(loadNodesAction());
       dispatch(loadClusterInfoAction());
-      dispatch(loadServicesAction("")); // for routes destinations
-      dispatch(loadPersistentVolumesAction());
-      dispatch(loadStorageClassesAction());
     }
   }
 
   private connectWebsocket() {
-    const { dispatch, authToken, impersonation, impersonationType, canViewCluster } = this.props;
+    const { dispatch, authToken, impersonation, impersonationType, canViewTenant } = this.props;
     let rws: any;
     if (process.env.REACT_APP_USE_MOCK_API === "true" || process.env.NODE_ENV === "test") {
       rws = mockStore;
@@ -106,7 +106,7 @@ class WithDataRaw extends React.PureComponent<Props> {
     }
 
     const reloadResouces = () => {
-      if (canViewCluster()) {
+      if (canViewTenant()) {
         dispatch(loadPersistentVolumesAction()); // is in use can't watch
         dispatch(loadServicesAction("")); // for routes destinations
       }

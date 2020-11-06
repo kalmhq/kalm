@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"github.com/kalmhq/kalm/api/resources"
+	"sort"
+	"strings"
+
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	v1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"sort"
-	"strings"
 )
 
 type StorageClass struct {
@@ -21,9 +21,7 @@ type StorageClass struct {
 }
 
 func (h *ApiHandler) handleListStorageClasses(c echo.Context) error {
-	if !h.clientManager.CanView(getCurrentUser(c), "*", "storageClasses") {
-		return resources.NoStorageClassesViewPermissionError
-	}
+	h.MustCanView(getCurrentUser(c), "*/*", "storageClasses/*")
 
 	var storageClassList v1.StorageClassList
 

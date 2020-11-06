@@ -11,46 +11,20 @@ import (
 )
 
 func (h *ApiHandler) InstallHttpsCertsHandlers(e *echo.Group) {
-	e.GET("/httpscerts", h.handleListHttpsCerts, h.requireIsTenantOwner)
-	e.GET("/httpscerts/:name", h.handleGetHttpsCert, h.requireIsTenantOwner, h.setHttpsCertToContext)
-	e.POST("/httpscerts", h.handleCreateHttpsCert, h.requireIsTenantOwner)
-	e.POST("/httpscerts/upload", h.handleUploadHttpsCert, h.requireIsTenantOwner)
-	e.PUT("/httpscerts/:name", h.handleUpdateHttpsCert, h.requireIsTenantOwner, h.setHttpsCertToContext)
-	e.DELETE("/httpscerts/:name", h.handleDeleteHttpsCert, h.requireIsTenantOwner, h.setHttpsCertToContext)
-}
-
-// middlewares
-
-func (h *ApiHandler) setHttpsCertToContext(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		currentUser := getCurrentUser(c)
-
-		list, err := h.resourceManager.GetHttpsCerts(client.MatchingLabels{
-			v1alpha1.TenantNameLabelKey: currentUser.Tenant,
-		}, client.MatchingField("metadata.name", c.Param("name")), client.Limit(1))
-
-		if err != nil {
-			return err
-		}
-
-		if len(list) < 1 {
-			return errors.NewNotFound("")
-		}
-
-		c.Set("HttpsCert", list[0])
-
-		return next(c)
-	}
-}
-
-func (h *ApiHandler) getHttpsCertFromContext(c echo.Context) *resources.HttpsCert {
-	httpsCert := c.Get("HttpsCert")
-	return httpsCert.(*resources.HttpsCert)
+	e.GET("/httpscerts", h.handleListHttpsCerts)
+	e.GET("/httpscerts/:name", h.handleGetHttpsCert)
+	e.POST("/httpscerts", h.handleCreateHttpsCert)
+	e.POST("/httpscerts/upload", h.handleUploadHttpsCert)
+	e.PUT("/httpscerts/:name", h.handleUpdateHttpsCert)
+	e.DELETE("/httpscerts/:name", h.handleDeleteHttpsCert)
 }
 
 // handlers
 
 func (h *ApiHandler) handleListHttpsCerts(c echo.Context) error {
+	currentUser := getCurrentUser(c)
+	h.MustCanView(currentUser, currentUser.Tenant+"/*", "httpsCerts/*")
+
 	httpsCerts, err := h.resourceManager.GetHttpsCerts(client.MatchingLabels{
 		v1alpha1.TenantNameLabelKey: getCurrentUser(c).Tenant,
 	})
@@ -63,12 +37,21 @@ func (h *ApiHandler) handleListHttpsCerts(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleGetHttpsCert(c echo.Context) error {
-	cert := h.getHttpsCertFromContext(c)
+	currentUser := getCurrentUser(c)
+	h.MustCanView(currentUser, currentUser.Tenant+"/*", "httpsCerts/"+c.Param("name"))
+
+	cert, err := h.getHttpsCertFromContext(c)
+
+	if err != nil {
+		return err
+	}
+
 	return c.JSON(200, cert)
 }
 
 func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
 	currentUser := getCurrentUser(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "httpsCerts/*")
 
 	httpsCert, err := bindHttpsCertFromRequestBody(c)
 
@@ -93,6 +76,7 @@ func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
 
 func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
 	currentUser := getCurrentUser(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "httpsCerts/*")
 
 	httpsCert, err := bindHttpsCertFromRequestBody(c)
 
@@ -117,6 +101,7 @@ func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
 
 func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
 	currentUser := getCurrentUser(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "httpsCerts/"+c.Param("name"))
 
 	httpsCert, err := bindHttpsCertFromRequestBody(c)
 
@@ -126,6 +111,10 @@ func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
 
 	if !httpsCert.IsSelfManaged {
 		return errors.NewBadRequest("Only uploaded cert is editable.")
+	}
+
+	if c.Param("name") != httpsCert.Name {
+		return errors.NewBadRequest("Name in url and body are mismatched")
 	}
 
 	httpsCert.Tenant = currentUser.Tenant
@@ -139,6 +128,9 @@ func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteHttpsCert(c echo.Context) error {
+	currentUser := getCurrentUser(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "httpsCerts/"+c.Param("name"))
+
 	if err := h.resourceManager.DeleteHttpsCert(c.Param("name")); err != nil {
 		return err
 	}
@@ -154,4 +146,22 @@ func bindHttpsCertFromRequestBody(c echo.Context) (*resources.HttpsCert, error) 
 	}
 
 	return &httpsCert, nil
+}
+
+func (h *ApiHandler) getHttpsCertFromContext(c echo.Context) (*resources.HttpsCertResp, error) {
+	currentUser := getCurrentUser(c)
+
+	list, err := h.resourceManager.GetHttpsCerts(client.MatchingLabels{
+		v1alpha1.TenantNameLabelKey: currentUser.Tenant,
+	}, client.MatchingField("metadata.name", c.Param("name")), client.Limit(1))
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(list) < 1 {
+		return nil, errors.NewNotFound("")
+	}
+
+	return list[0], nil
 }

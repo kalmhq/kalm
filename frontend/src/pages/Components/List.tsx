@@ -1,7 +1,12 @@
 import { Box, Button, createStyles, Link as KMLink, Theme, WithStyles } from "@material-ui/core";
+import { indigo } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { blinkTopProgressAction } from "actions/settings";
+import { push } from "connected-react-router";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { ComponentPanel } from "pages/Components/ComponentPanel";
 import React from "react";
@@ -9,19 +14,14 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { ApplicationDetails } from "types/application";
+import sc from "utils/stringConstants";
+import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
+import { KalmComponentsIcon } from "widgets/Icon";
+import { InfoBox } from "widgets/InfoBox";
 import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
-import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { CustomizedButton } from "widgets/Button";
-import { blinkTopProgressAction } from "actions/settings";
-import { push } from "connected-react-router";
-import { KalmComponentsIcon } from "widgets/Icon";
-import { indigo } from "@material-ui/core/colors";
-import sc from "utils/stringConstants";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
-import { InfoBox } from "widgets/InfoBox";
 
 const styles = (theme: Theme) =>
   createStyles({

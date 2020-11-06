@@ -7,6 +7,7 @@ import (
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/rand"
 )
@@ -19,6 +20,16 @@ func (a Policies) Len() int { return len(a) }
 // Sort all policies with actual subject names.
 func (a Policies) Less(i, j int) bool { return a[i][3:] < a[j][3:] }
 func (a Policies) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+
+func (h *ApiHandler) InstallAdminRoutes(e *echo.Echo) {
+	g := e.Group("/admin")
+
+	g.GET("/routes", handleApiRoutes)
+	g.POST("/temp_account", h.handleCreateTemporaryClusterOwnerAccessTokens, h.GetUserMiddleware, h.RequireUserMiddleware)
+
+	// deprecated
+	e.POST("/temporary_cluster_owner_access_token", h.handleCreateTemporaryClusterOwnerAccessTokens, h.GetUserMiddleware, h.RequireUserMiddleware)
+}
 
 func (h *ApiHandler) handlePolicies(c echo.Context) error {
 	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
@@ -49,10 +60,15 @@ func handleApiRoutes(c echo.Context) error {
 
 func (h *ApiHandler) handleCreateTemporaryClusterOwnerAccessTokens(c echo.Context) error {
 	token := rand.String(128)
+	accessTokenName := v1alpha1.GetAccessTokenNameFromToken(token)
+	tenantName := "global"
 
 	accessToken := &v1alpha1.AccessToken{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name: v1alpha1.GetAccessTokenNameFromToken(token),
+			Name: accessTokenName,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: tenantName,
+			},
 		},
 		Spec: v1alpha1.AccessTokenSpec{
 			Token: token,
@@ -81,7 +97,28 @@ func (h *ApiHandler) handleCreateTemporaryClusterOwnerAccessTokens(c echo.Contex
 		},
 	}
 
+	tenant := &v1alpha1.Tenant{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name: tenantName,
+		},
+		Spec: v1alpha1.TenantSpec{
+			TenantDisplayName: "test-tenant-global",
+			ResourceQuota: map[v1alpha1.ResourceName]resource.Quantity{
+				v1alpha1.ResourceApplicationsCount: resource.MustParse("100"),
+				v1alpha1.ResourceServicesCount:     resource.MustParse("100"),
+				v1alpha1.ResourceComponentsCount:   resource.MustParse("100"),
+				v1alpha1.ResourceCPU:               resource.MustParse("100"),
+				v1alpha1.ResourceMemory:            resource.MustParse("100Gi"),
+			},
+			Owners: []string{accessTokenName},
+		},
+	}
+
 	if err := h.resourceManager.Create(accessToken); err != nil {
+		return err
+	}
+
+	if err := h.resourceManager.Create(tenant); err != nil {
 		return err
 	}
 

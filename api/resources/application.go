@@ -7,6 +7,7 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	coreV1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type ListMeta struct {
@@ -96,10 +97,10 @@ func (resourceManager *ResourceManager) GetNamespace(name string) (*coreV1.Names
 	return namespace, nil
 }
 
-func (resourceManager *ResourceManager) GetNamespaces() ([]*coreV1.Namespace, error) {
+func (resourceManager *ResourceManager) GetNamespaces(options ...client.ListOption) ([]*coreV1.Namespace, error) {
 	var fetched coreV1.NamespaceList
 
-	if err := resourceManager.List(&fetched); err != nil {
+	if err := resourceManager.List(&fetched, options...); err != nil {
 		return nil, err
 	}
 

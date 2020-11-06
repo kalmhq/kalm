@@ -486,8 +486,15 @@ func genPVC(ns string) coreV1.PersistentVolumeClaim {
 
 // pvc exist, re-use it
 func (suite *ComponentControllerSuite) TestDeploymentReUsePVC() {
+
+	tenantName := suite.ns.Labels[v1alpha1.TenantNameLabelKey]
+
 	// create pvc ahead, and check if dp can reuse it
 	pvc := genPVC(suite.ns.Name)
+	pvc.Labels = map[string]string{
+		v1alpha1.TenantNameLabelKey: tenantName,
+	}
+
 	err := suite.K8sClient.Create(suite.ctx, &pvc)
 	suite.Nil(err)
 
@@ -598,7 +605,7 @@ func (suite *ComponentControllerSuite) TestStatefulSetUsingNewPVC() {
 	newPVCName := "pvc-" + randomName()
 	component.Spec.Volumes = []v1alpha1.Volume{
 		{
-			Type: v1alpha1.VolumeTypePersistentVolumeClaim,
+			Type: v1alpha1.VolumeTypePersistentVolumeClaimTemplate,
 			Path: "/test/b",
 			Size: resource.MustParse("1Mi"),
 			PVC:  newPVCName,

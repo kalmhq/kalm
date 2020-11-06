@@ -1,13 +1,13 @@
+import { CoreEnforcer } from "rbac/casbin/coreEnforcer";
 import { newModelFromString } from "rbac/casbin/model";
 import { StringAdapter } from "rbac/casbin/persist";
-import { CoreEnforcer } from "rbac/casbin/coreEnforcer";
 
 export const RBACModel = `
 [request_definition]
-r = sub, act, scope, obj
+r = subject, action, scope, object
 
 [policy_definition]
-p = sub, act, scope, obj
+p = subject, action, scope, object
 
 [role_definition]
 g = _, _
@@ -16,7 +16,7 @@ g = _, _
 e = some(where (p.eft == allow))
 
 [matchers]
-m = g(r.sub, p.sub) && (r.scope == p.scope || p.scope == "*") && objMatchFunc(r.obj, p.obj) && r.act == p.act
+m = g(r.subject, p.subject) && objectMatchFunc(r.scope, p.scope) && objectMatchFunc(r.object, p.object) && r.action == p.action
 `;
 
 function objMatch(key1: string, key2: string): boolean {
@@ -38,14 +38,25 @@ function objMatchFunc(...args: any[]): boolean {
   const name1: string = (arg0 || "").toString();
   const name2: string = (arg1 || "").toString();
 
-  return objMatch(name1, name2);
+  const name1Parts = name1.split("/");
+  const name2Parts = name2.split("/");
+
+  if (name1Parts.length !== 2) {
+    throw `wrong object in objectMatchFunc ${name1}`;
+  }
+
+  if (name2Parts.length !== 2) {
+    throw `wrong object in objectMatchFunc ${name2}`;
+  }
+
+  return objMatch(name1Parts[0], name2Parts[0]) && objMatch(name1Parts[1], name2Parts[1]);
 }
 
 const ActionView = "view";
 const ActionEdit = "edit";
 const ActionManage = "manage";
-const ResourceAll = "*";
-const AllScope = "*";
+const ResourceAll = "*/*";
+const AllScope = "*/*";
 
 export class RBACEnforcer {
   private enforcer: CoreEnforcer;
@@ -54,7 +65,7 @@ export class RBACEnforcer {
   constructor(policies: string) {
     this.policyAdapter = new StringAdapter(policies);
     const enforcer = new CoreEnforcer(newModelFromString(RBACModel), this.policyAdapter);
-    enforcer.addFunction("objMatchFunc", objMatchFunc);
+    enforcer.addFunction("objectMatchFunc", objMatchFunc);
     enforcer.loadPolicy();
     this.enforcer = enforcer;
   }
@@ -81,15 +92,15 @@ export class RBACEnforcer {
     return this.enforcer.enforce(subject, ActionManage, scope, resource);
   }
 
-  public canViewNamespace(subject: string, scope: string) {
+  public canViewScope(subject: string, scope: string) {
     return this.enforcer.enforce(subject, ActionView, scope, ResourceAll);
   }
 
-  public canEditNamespace(subject: string, scope: string) {
+  public canEditScope(subject: string, scope: string) {
     return this.enforcer.enforce(subject, ActionEdit, scope, ResourceAll);
   }
 
-  public canManageNamespace(subject: string, scope: string) {
+  public canManageScope(subject: string, scope: string) {
     return this.enforcer.enforce(subject, ActionManage, scope, ResourceAll);
   }
 

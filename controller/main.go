@@ -93,6 +93,7 @@ func main() {
 		LeaderElectionID:        "kalm-controller",
 		LeaderElectionNamespace: "kalm-system",
 		Port:                    9443,
+		CertDir:                 os.Getenv("WEBHOOKS_CERTS_DIR"),
 	})
 
 	if err != nil {

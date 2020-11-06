@@ -31,7 +31,7 @@ webhooks:
       namespace: system
       path: /mutate-core-kalm-dev-v1alpha1-componentpluginbinding
   failurePolicy: Fail
-  name: vcomponentpluginbinding.kb.io
+  name: mcomponentpluginbinding.kb.io
   rules:
   - apiGroups:
     - core.kalm.dev
@@ -139,7 +139,7 @@ webhooks:
       namespace: system
       path: /mutate-core-v1alpha1-protectedendpoint
   failurePolicy: Fail
-  name: vprotectedendpointtype.kb.io
+  name: mprotectedendpointtype.kb.io
   rules:
   - apiGroups:
     - ""

@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"github.com/kalmhq/kalm/api/resources"
+	"net/http"
+	"testing"
+
 	"github.com/stretchr/testify/suite"
 	v1 "k8s.io/api/storage/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
-	"testing"
 )
 
 type StorageclassesHandlerTestSuite struct {
@@ -54,7 +54,7 @@ func (suite *StorageclassesHandlerTestSuite) TestStorageclassesHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/storageclasses",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, resources.NoStorageClassesViewPermissionError.Error())
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var storageClasses []*StorageClass
