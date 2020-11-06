@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -443,8 +444,8 @@ func (h *ApiHandler) findAvailableVolsForSts(ns string) ([]resources.Volume, err
 }
 
 func GetComponentNameAndNsFromObjLabels(metaObj metav1.Object) (compName, compNamespace string) {
-	compName = metaObj.GetLabels()[controllers.KalmLabelComponentKey]
-	compNamespace = metaObj.GetLabels()[controllers.KalmLabelNamespaceKey]
+	compName = metaObj.GetLabels()[v1alpha1.KalmLabelComponentKey]
+	compNamespace = metaObj.GetLabels()[v1alpha1.KalmLabelNamespaceKey]
 
 	return
 }
