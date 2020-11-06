@@ -200,7 +200,8 @@ type SetupClusterResponse struct {
 }
 
 func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
-	h.MustCanManageCluster(getCurrentUser(c))
+	currentUser := getCurrentUser(c)
+	h.MustCanManageCluster(currentUser)
 
 	clusterInfo := h.getClusterInfo(c)
 
@@ -234,6 +235,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 		},
 		Name:      KalmRouteName,
 		Namespace: controllers.KalmSystemNamespace,
+		Tenant:    currentUser.Tenant,
 	}
 
 	temporaryAdmin := &TemporaryAdmin{

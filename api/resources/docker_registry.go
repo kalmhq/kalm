@@ -86,7 +86,8 @@ func (resourceManager *ResourceManager) GetDockerRegistry(name string) (*DockerR
 func (resourceManager *ResourceManager) GetDockerRegistries(options ...client.ListOption) ([]*DockerRegistry, error) {
 	resourceChannels := &ResourceChannels{
 		DockerRegistryList: resourceManager.GetDockerRegistryListChannel(options...),
-		SecretList:         resourceManager.GetSecretListChannel(client.InNamespace("kalm-system"), client.MatchingLabels{"kalm-docker-registry-authentication": "true"}),
+		// TODO: add options
+		SecretList: resourceManager.GetSecretListChannel(client.InNamespace("kalm-system"), client.MatchingLabels{"kalm-docker-registry-authentication": "true"}),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -156,7 +157,8 @@ func (resourceManager *ResourceManager) CreateDockerRegistry(registry *DockerReg
 			Name:      controllers.GetRegistryAuthenticationName(registry.Name),
 			Namespace: "kalm-system",
 			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: registry.Tenant,
+				v1alpha1.TenantNameLabelKey:           registry.Tenant,
+				"kalm-docker-registry-authentication": "true",
 			},
 		},
 		Data: map[string][]byte{
