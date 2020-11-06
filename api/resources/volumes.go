@@ -1,9 +1,11 @@
 package resources
 
 import (
-	"k8s.io/apimachinery/pkg/api/resource"
 	"strconv"
 
+	"k8s.io/apimachinery/pkg/api/resource"
+
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -45,7 +47,7 @@ func (resourceManager *ResourceManager) BuildVolumeResponse(
 		allocatedQuantity = *storage
 	}
 
-	compName := pvc.Labels[controllers.KalmLabelComponentKey]
+	compName := pvc.Labels[v1alpha1.KalmLabelComponentKey]
 
 	stsVolClaimTemplate := pvc.Labels[controllers.KalmLabelVolClaimTemplateName]
 
@@ -90,8 +92,8 @@ func (resourceManager *ResourceManager) GetPVCs(opts ...client.ListOption) ([]co
 }
 
 func GetComponentNameAndNsFromObjLabels(metaObj metav1.Object) (compName, compNamespace string) {
-	compName = metaObj.GetLabels()[controllers.KalmLabelComponentKey]
-	compNamespace = metaObj.GetLabels()[controllers.KalmLabelNamespaceKey]
+	compName = metaObj.GetLabels()[v1alpha1.KalmLabelComponentKey]
+	compNamespace = metaObj.GetLabels()[v1alpha1.KalmLabelNamespaceKey]
 
 	return
 }

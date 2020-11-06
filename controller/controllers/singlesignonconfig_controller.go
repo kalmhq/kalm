@@ -19,6 +19,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
+
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/utils"
 	"gopkg.in/yaml.v3"
@@ -29,10 +32,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
 )
 
 const KALM_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME = "external-envoy-ext-authz-server"
@@ -794,13 +795,13 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources() error {
 		if err := r.ReconcileDexRoute(); err != nil {
 			return err
 		}
+
+		if err := r.ReconcileDexRouteCert(); err != nil {
+			return err
+		}
 	}
 
 	if err := r.ReconcileAuthProxy(); err != nil {
-		return err
-	}
-
-	if err := r.ReconcileDexRouteCert(); err != nil {
 		return err
 	}
 
