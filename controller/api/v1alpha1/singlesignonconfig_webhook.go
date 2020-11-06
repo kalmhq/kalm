@@ -115,7 +115,7 @@ func (r *SingleSignOnConfig) commonValidate() error {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("domain"), r.Name, "Domain or issuer can't be blank at the same time."))
 	}
 
-	if len(r.Spec.Connectors) == 0 && r.Spec.TemporaryUser == nil {
+	if r.Spec.Domain != "" && len(r.Spec.Connectors) == 0 && r.Spec.TemporaryUser == nil {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec"), r.Name, "Connectors and TemporaryUser can't be blank at the same time."))
 	}
 
