@@ -44,7 +44,6 @@ func (suite *ClusterHandlerTestSuite) TestClusterInfo() {
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/cluster",
-		Body:   `{}`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsUnauthorizedError(rec)
 		},
@@ -61,7 +60,6 @@ func (suite *ClusterHandlerTestSuite) TestClusterInfo() {
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/httproutes/kalm-system",
-		Body:   `{}`,
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var routes []*resources.HttpRoute
 			rec.BodyAsJSON(&routes)
