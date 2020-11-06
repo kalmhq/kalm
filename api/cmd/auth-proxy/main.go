@@ -81,7 +81,7 @@ func getOauth2Config() *oauth2.Config {
 	oidcVerifier = provider.Verifier(&oidc.Config{ClientID: clientID})
 
 	scopes := []string{}
-	scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups", "offline_access")
+	scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups", "offline_access", "tenant")
 
 	oauth2Config = &oauth2.Config{
 		ClientID:     clientID,
