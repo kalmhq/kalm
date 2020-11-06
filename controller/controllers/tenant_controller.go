@@ -111,7 +111,7 @@ func (r *TenantReconciler) tryReScheduleExceedingQuotaComponent(comp *v1alpha1.C
 		return nil
 	}
 
-	// clean label
+	// clean exceeding quota label
 	delete(comp.Labels, v1alpha1.KalmLabelKeyExceedingQuota)
 
 	// restore replicas
@@ -123,6 +123,9 @@ func (r *TenantReconciler) tryReScheduleExceedingQuotaComponent(comp *v1alpha1.C
 
 	replicas := int32(originalReplicas)
 	comp.Spec.Replicas = &replicas
+
+	// clean original replicas label
+	delete(comp.Labels, v1alpha1.KalmLabelKeyOriginalReplicas)
 
 	return r.Update(r.ctx, comp)
 }
