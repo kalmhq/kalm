@@ -46,9 +46,9 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
-	surplusResource, noNegtive := getSurplusResource(tenant)
+	surplusResource, noNegative := getSurplusResource(tenant)
 
-	if noNegtive {
+	if noNegative {
 		r.Log.Info("see surplusResource, will re-schedule exceedingQuota component if exist any", "res", surplusResource)
 
 		// if enough quota, check if any component is labeled with ExceedingQuota
@@ -65,15 +65,27 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 		r.Log.Info("removed exceedingQuota label for components", "size", len(components))
 	} else {
-		// todo if exceeding quota, find component to stop
+		r.Log.Info("see exceeding quota, will stop components to reduce resource usage", "res", surplusResource)
+
+		// if exceeding quota, find component to stop
+		components, err := r.findComponentsToStop(tenant.Name, surplusResource)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+
+		for _, comp := range components {
+			if err := r.tryMarkComponentAsExceedingQuota(comp.DeepCopy()); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
 	}
 
 	return ctrl.Result{}, nil
 }
 
-func getSurplusResource(tenant v1alpha1.Tenant) (rst v1alpha1.ResourceList, noNegtive bool) {
+func getSurplusResource(tenant v1alpha1.Tenant) (rst v1alpha1.ResourceList, noNegative bool) {
 	rst = make(v1alpha1.ResourceList)
-	noNegtive = true
+	noNegative = true
 
 	for resName, quantity := range tenant.Spec.ResourceQuota {
 		if usedQuantity, exist := tenant.Status.UsedResourceQuota[resName]; exist {
@@ -84,14 +96,14 @@ func getSurplusResource(tenant v1alpha1.Tenant) (rst v1alpha1.ResourceList, noNe
 
 		zero := resource.Quantity{}
 		if quantity.Cmp(zero) < 0 {
-			noNegtive = false
+			noNegative = false
 		}
 	}
 
 	return
 }
 
-func (r *TenantReconciler) findComponentsToSchedule(tenant string, surplusResouce v1alpha1.ResourceList) ([]v1alpha1.Component, error) {
+func (r *TenantReconciler) findComponentsToSchedule(tenant string, surplusResource v1alpha1.ResourceList) ([]v1alpha1.Component, error) {
 	var compList v1alpha1.ComponentList
 	err := r.List(r.ctx, &compList, client.MatchingLabels{
 		v1alpha1.TenantNameLabelKey:         tenant,
@@ -101,9 +113,58 @@ func (r *TenantReconciler) findComponentsToSchedule(tenant string, surplusResouc
 		return nil, err
 	}
 
-	//todo sort and filter components according to resource consumption
+	var compToReschedule []v1alpha1.Component
 
-	return compList.Items, nil
+	//todo sort components by priority, return components that resource sum won't exceed quota
+	var rescheduleSum v1alpha1.ResourceList
+	for _, comp := range compList.Items {
+		rescheduleSum = sumResourceList(rescheduleSum, estimateResourceConsumption(comp))
+
+		if existGreaterResourceInList(rescheduleSum, surplusResource) {
+			return compToReschedule, nil
+		}
+
+		compToReschedule = append(compToReschedule, comp)
+	}
+
+	return compToReschedule, nil
+}
+
+func sumResourceList(resLists ...v1alpha1.ResourceList) v1alpha1.ResourceList {
+	//todo
+	return nil
+}
+
+func existGreaterResourceInList(resList1, resList2 v1alpha1.ResourceList) bool {
+	//todo
+	return false
+}
+
+func estimateResourceConsumption(component v1alpha1.Component) v1alpha1.ResourceList {
+	//todo
+	return nil
+}
+
+func (r *TenantReconciler) findComponentsToStop(tenant string, surplusResource v1alpha1.ResourceList) ([]v1alpha1.Component, error) {
+	var compList v1alpha1.ComponentList
+	err := r.List(r.ctx, &compList, client.MatchingLabels{
+		v1alpha1.TenantNameLabelKey: tenant,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, comp := range compList.Items {
+		if comp.Labels != nil &&
+			comp.Labels[v1alpha1.KalmLabelKeyExceedingQuota] == "true" {
+			continue
+		}
+
+		// todo fix this
+		return []v1alpha1.Component{comp}, nil
+	}
+
+	return nil, nil
 }
 
 func (r *TenantReconciler) tryReScheduleExceedingQuotaComponent(comp *v1alpha1.Component) error {
@@ -126,6 +187,16 @@ func (r *TenantReconciler) tryReScheduleExceedingQuotaComponent(comp *v1alpha1.C
 
 	// clean original replicas label
 	delete(comp.Labels, v1alpha1.KalmLabelKeyOriginalReplicas)
+
+	return r.Update(r.ctx, comp)
+}
+
+func (r *TenantReconciler) tryMarkComponentAsExceedingQuota(comp *v1alpha1.Component) error {
+	if comp.Labels == nil {
+		comp.Labels = make(map[string]string)
+	}
+
+	comp.Labels[v1alpha1.KalmLabelKeyExceedingQuota] = "true"
 
 	return r.Update(r.ctx, comp)
 }
