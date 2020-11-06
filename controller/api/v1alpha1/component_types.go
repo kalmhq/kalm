@@ -25,7 +25,7 @@ const (
 	KalmLabelNamespaceKey = "kalm-namespace"
 
 	KalmLabelComponentKey        = "kalm-component"
-	KalmLabelKeyExceedingLimit   = "kalm-exceeding-limit"
+	KalmLabelKeyExceedingQuota   = "kalm-exceeding-quota"
 	KalmLabelKeyOriginalReplicas = "kalm-original-replicas"
 )
 

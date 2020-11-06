@@ -68,28 +68,14 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 			ns := pod.Namespace
 			componentName := pod.Labels[v1alpha1.KalmLabelComponentKey]
 
-			if componentName == "" {
-				logger.Info("no component info found in pod, ignored")
-				return admission.Errored(http.StatusBadRequest, err)
-			}
-
-			var component v1alpha1.Component
-			err := v.client.Get(ctx, client.ObjectKey{Namespace: ns, Name: componentName}, &component)
-			if err != nil {
-				logger.Error(err, "fail to get component, ignored", "component", componentName)
-				return admission.Errored(http.StatusBadRequest, err)
-			}
-
-			copy := component.DeepCopy()
-			copy.Labels[v1alpha1.KalmLabelKeyExceedingLimit] = "true"
-			if err := v.client.Update(ctx, copy); err != nil {
-				logger.Error(err, "fail to mark component as exceeding limit, ignored", "component", componentName)
+			if err := v.tryLabelComponentAsExceedingQuota(ns, componentName); err != nil {
+				logger.Error(err, "fail to mark component as exceeding quota, ignored", "component", componentName)
 			}
 
 			return admission.Errored(http.StatusBadRequest, err)
+		} else {
+			logger.Info("pod resource updated for create", "tenant", tenant, "newQuantity", sum)
 		}
-
-		logger.Info("pod resource updated for create", "tenant", tenant, "newQuantity", sum)
 	case v1beta1.Delete:
 		if err := v.decoder.DecodeRaw(req.OldObject, &pod); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
@@ -135,6 +121,33 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 	}
 
 	return admission.Allowed("")
+}
+
+func (v *PodAdmissionHandler) tryLabelComponentAsExceedingQuota(ns, compName string) error {
+
+	if ns == "" {
+		return fmt.Errorf("namespace is empty")
+	}
+
+	if compName == "" {
+		return fmt.Errorf("component name is empty")
+	}
+
+	var component v1alpha1.Component
+	if err := v.client.Get(context.Background(), client.ObjectKey{Namespace: ns, Name: compName}, &component); err != nil {
+		podAdmissionHandlerLog.Error(err, "fail to get component, ignored", "component", compName)
+		return err
+	}
+
+	copy := component.DeepCopy()
+	copy.Labels[v1alpha1.KalmLabelKeyExceedingQuota] = "true"
+
+	if err := v.client.Update(context.Background(), copy); err != nil {
+		podAdmissionHandlerLog.Error(err, "fail to mark component as exceeding limit, ignored", "component", compName)
+		return err
+	}
+
+	return nil
 }
 
 func getResouceListSumOfPods(pods []corev1.Pod) v1alpha1.ResourceList {

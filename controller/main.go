@@ -180,6 +180,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = controllers.NewTenantReconciler(mgr).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller: Tenant")
+		os.Exit(1)
+	}
+
 	// only run webhook if explicitly declared
 	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
 		v1alpha1.InitializeWebhookClient(mgr)

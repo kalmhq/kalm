@@ -638,6 +638,19 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 		return
 	}
 
+	if isComponentLabeledAsExceedingQuota(r.component) &&
+		(r.component.Spec.Replicas == nil || *r.component.Spec.Replicas > 0) {
+
+		err := r.forceScaleDownExceedingQuotaComponent(r.component)
+		if err == nil {
+			r.Log.Info("succeed force scale down exceeding quota comp", "comp name", r.component.Name)
+		} else {
+			r.Log.Error(err, "fail force scale down exceeding quota comp", "comp name", r.component.Name)
+		}
+
+		return err
+	}
+
 	if err := r.reconcileDirectConfigs(); err != nil {
 		return err
 	}
@@ -680,6 +693,32 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 	default:
 		return fmt.Errorf("unknown workload type: %s", string(r.component.Spec.WorkloadType))
 	}
+}
+
+func isComponentLabeledAsExceedingQuota(comp *v1alpha1.Component) bool {
+	return comp.Labels[v1alpha1.KalmLabelKeyExceedingQuota] == "true"
+}
+
+func (r *ComponentReconcilerTask) forceScaleDownExceedingQuotaComponent(comp *v1alpha1.Component) (err error) {
+	if comp.Spec.Replicas != nil && *comp.Spec.Replicas == 0 {
+		return nil
+	}
+
+	copy := comp.DeepCopy()
+
+	// remember original replicas for recovery
+	var originalReplica int32
+	if copy.Spec.Replicas == nil {
+		originalReplica = 1
+	} else {
+		originalReplica = *copy.Spec.Replicas
+	}
+	copy.Labels[v1alpha1.KalmLabelKeyOriginalReplicas] = fmt.Sprintf("%d", originalReplica)
+
+	zero := int32(0)
+	copy.Spec.Replicas = &zero
+
+	return r.Update(r.ctx, copy)
 }
 
 func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.PodTemplateSpec) (err error) {
