@@ -16,7 +16,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	//rbacvalidation "k8s.io/kubernetes/pkg/apis/rbac/validation"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -94,26 +93,10 @@ func (r *Component) Default() {
 	}
 
 	// set default resourceRequirement & limits
-	if r.Spec.ResourceRequirements == nil {
-		r.Spec.ResourceRequirements = &v1.ResourceRequirements{}
-	}
-	if r.Spec.ResourceRequirements.Limits == nil {
-		r.Spec.ResourceRequirements.Limits = make(map[v1.ResourceName]resource.Quantity)
-	}
+	r.setupResourceRequirementIfAbsent()
 
-	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceCPU]; !exist {
-		r.Spec.ResourceRequirements.Limits[v1.ResourceCPU] = resource.MustParse("500m")
-	}
-	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceMemory]; !exist {
-		r.Spec.ResourceRequirements.Limits[v1.ResourceMemory] = resource.MustParse("512Mi")
-	}
-	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceEphemeralStorage]; !exist {
-		r.Spec.ResourceRequirements.Limits[v1.ResourceEphemeralStorage] = resource.MustParse("128Mi")
-	}
-	// storage is not a standard resource for containers
-	// if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceStorage]; !exist {
-	// 	r.Spec.ResourceRequirements.Limits[v1.ResourceStorage] = resource.MustParse("1Gi")
-	// }
+	// set for istio proxy
+	r.setupIstioResourceRequirementIfAbsent()
 
 	if !IsKalmSystemNamespace(r.Namespace) {
 		if err := InheritTenantFromNamespace(r); err != nil {
@@ -525,4 +508,50 @@ func (r *Component) validateRunnerPermission() (rst KalmValidateErrorList) {
 	}
 
 	return rst
+}
+
+func (r *Component) setupResourceRequirementIfAbsent() {
+	if r.Spec.ResourceRequirements == nil {
+		r.Spec.ResourceRequirements = &v1.ResourceRequirements{}
+	}
+
+	if r.Spec.ResourceRequirements.Limits == nil {
+		r.Spec.ResourceRequirements.Limits = make(map[v1.ResourceName]resource.Quantity)
+	}
+
+	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceCPU]; !exist {
+		r.Spec.ResourceRequirements.Limits[v1.ResourceCPU] = resource.MustParse("500m")
+	}
+	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceMemory]; !exist {
+		r.Spec.ResourceRequirements.Limits[v1.ResourceMemory] = resource.MustParse("512Mi")
+	}
+	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceEphemeralStorage]; !exist {
+		r.Spec.ResourceRequirements.Limits[v1.ResourceEphemeralStorage] = resource.MustParse("128Mi")
+	}
+	// storage is not a standard resource for containers
+	// if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceStorage]; !exist {
+	// 	r.Spec.ResourceRequirements.Limits[v1.ResourceStorage] = resource.MustParse("1Gi")
+	// }
+}
+
+func (r *Component) setupIstioResourceRequirementIfAbsent() {
+	if r.Spec.IstioResourceRequirements == nil {
+		r.Spec.IstioResourceRequirements = &v1.ResourceRequirements{}
+	}
+	if r.Spec.IstioResourceRequirements.Limits == nil {
+		r.Spec.IstioResourceRequirements.Limits = make(map[v1.ResourceName]resource.Quantity)
+	}
+
+	//cpu
+	if _, exist := r.Spec.IstioResourceRequirements.Limits[v1.ResourceCPU]; !exist {
+		r.Spec.IstioResourceRequirements.Limits[v1.ResourceCPU] = resource.MustParse("100m")
+	}
+	//memory
+	if _, exist := r.Spec.IstioResourceRequirements.Limits[v1.ResourceMemory]; !exist {
+		r.Spec.IstioResourceRequirements.Limits[v1.ResourceMemory] = resource.MustParse("256Mi")
+	}
+	//ephemeralStorage
+	if _, exist := r.Spec.IstioResourceRequirements.Limits[v1.ResourceEphemeralStorage]; !exist {
+		r.Spec.IstioResourceRequirements.Limits[v1.ResourceEphemeralStorage] = resource.MustParse("128Mi")
+	}
 }

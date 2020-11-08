@@ -95,8 +95,8 @@ type ComponentSpec struct {
 
 	// +optional
 	ResourceRequirements *v1.ResourceRequirements `json:"resourceRequirements,omitempty"`
-
-	//EnableResourcesRequests bool `json:"enableResourcesRequests,omitempty"`
+	// +optional
+	IstioResourceRequirements *v1.ResourceRequirements `json:"istioResourceRequirements,omitempty"`
 
 	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 
@@ -123,6 +123,9 @@ type ComponentSpec struct {
 
 	// Deprecated
 	DirectConfigs []DirectConfig `json:"directConfigs,omitempty"`
+
+	// +optional
+	Priority int `json:"priority"`
 }
 
 // ComponentStatus defines the observed state of Component
