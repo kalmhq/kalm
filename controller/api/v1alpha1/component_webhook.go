@@ -522,12 +522,31 @@ func (r *Component) setupResourceRequirementIfAbsent() {
 	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceCPU]; !exist {
 		r.Spec.ResourceRequirements.Limits[v1.ResourceCPU] = resource.MustParse("500m")
 	}
+
 	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceMemory]; !exist {
 		r.Spec.ResourceRequirements.Limits[v1.ResourceMemory] = resource.MustParse("512Mi")
 	}
+
 	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceEphemeralStorage]; !exist {
 		r.Spec.ResourceRequirements.Limits[v1.ResourceEphemeralStorage] = resource.MustParse("128Mi")
 	}
+
+	if r.Spec.ResourceRequirements.Requests == nil {
+		r.Spec.ResourceRequirements.Requests = make(map[v1.ResourceName]resource.Quantity)
+	}
+
+	if _, exist := r.Spec.ResourceRequirements.Requests[v1.ResourceCPU]; !exist {
+		r.Spec.ResourceRequirements.Requests[v1.ResourceCPU] = resource.MustParse("1m")
+	}
+
+	if _, exist := r.Spec.ResourceRequirements.Requests[v1.ResourceMemory]; !exist {
+		r.Spec.ResourceRequirements.Requests[v1.ResourceMemory] = resource.MustParse("1Mi")
+	}
+
+	if _, exist := r.Spec.ResourceRequirements.Requests[v1.ResourceEphemeralStorage]; !exist {
+		r.Spec.ResourceRequirements.Requests[v1.ResourceEphemeralStorage] = resource.MustParse("1Mi")
+	}
+
 	// storage is not a standard resource for containers
 	// if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceStorage]; !exist {
 	// 	r.Spec.ResourceRequirements.Limits[v1.ResourceStorage] = resource.MustParse("1Gi")
