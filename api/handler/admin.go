@@ -271,6 +271,7 @@ func (h *ApiHandler) handleCreateTemporaryTenant(c echo.Context) error {
 			TenantDisplayName: tenantName,
 			ResourceQuota: map[v1alpha1.ResourceName]resource.Quantity{
 				v1alpha1.ResourceAccessTokensCount: resource.MustParse("100"),
+				v1alpha1.ResourceRoleBindingCount:  resource.MustParse("100"),
 				v1alpha1.ResourceApplicationsCount: resource.MustParse("100"),
 				v1alpha1.ResourceServicesCount:     resource.MustParse("100"),
 				v1alpha1.ResourceComponentsCount:   resource.MustParse("100"),
