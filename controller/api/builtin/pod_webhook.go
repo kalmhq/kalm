@@ -60,7 +60,7 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 		}
 
 		// exist podList + the pod to be created
-		sum := getResouceListSumOfPods(append(podList.Items, pod))
+		sum := getResourceListSumOfPods(append(podList.Items, pod))
 
 		if err := v1alpha1.SetTenantResourceListByName(tenant, sum); err != nil {
 			logger.Info("fail to allocate res for tenant, CREATE", "tenant", tenant, "err", err, "sum", sum)
@@ -87,7 +87,8 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 
 		var tenant string
 		if tenant = pod.Labels[v1alpha1.TenantNameLabelKey]; tenant == "" {
-			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
+			logger.Info("fail to find tenant in pod being DELETED, ignored", "tenant", tenant, "pod", fmt.Sprintf("%s/%s", pod.Namespace, pod.Name))
+			return admission.Allowed("")
 		}
 
 		var podList corev1.PodList
@@ -107,17 +108,17 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 				continue
 			}
 
-			sumExceptPodBeenDeleted = sumOfResouceList(sumExceptPodBeenDeleted, getResourceOfPod(pod))
+			sumExceptPodBeenDeleted = sumOfResourceList(sumExceptPodBeenDeleted, getResourceOfPod(pod))
 		}
 
 		if err := v1alpha1.SetTenantResourceListByName(tenant, sumExceptPodBeenDeleted); err != nil {
-			podAdmissionHandlerLog.Info("fail to allocate res for tenant, DELETE", "tenant", tenant, "err", err, "sum", sumExceptPodBeenDeleted)
-			return admission.Errored(http.StatusBadRequest, err)
+			// should not DENY delete pod
+			logger.Info("fail to allocate res for tenant, DELETE", "tenant", tenant, "err", err, "sum", sumExceptPodBeenDeleted)
+		} else {
+			logger.Info("pod resource updated for delete", "tenant", tenant, "newQuantity", sumExceptPodBeenDeleted)
 		}
-
-		podAdmissionHandlerLog.Info("pod resource updated for delete", "tenant", tenant, "newQuantity", sumExceptPodBeenDeleted)
 	default:
-		podAdmissionHandlerLog.Info("req ignored,", "req", req.Operation)
+		logger.Info("req ignored,", "req", req.Operation)
 	}
 
 	return admission.Allowed("")
@@ -150,7 +151,7 @@ func (v *PodAdmissionHandler) tryLabelComponentAsExceedingQuota(ns, compName str
 	return nil
 }
 
-func getResouceListSumOfPods(pods []corev1.Pod) v1alpha1.ResourceList {
+func getResourceListSumOfPods(pods []corev1.Pod) v1alpha1.ResourceList {
 	rstResList := make(map[v1alpha1.ResourceName]resource.Quantity)
 
 	podMap := make(map[string]bool)
@@ -165,13 +166,13 @@ func getResouceListSumOfPods(pods []corev1.Pod) v1alpha1.ResourceList {
 		}
 
 		tmp := getResourceOfPod(pod)
-		rstResList = sumOfResouceList(rstResList, tmp)
+		rstResList = sumOfResourceList(rstResList, tmp)
 	}
 
 	return rstResList
 }
 
-func sumOfResouceList(resourceLists ...v1alpha1.ResourceList) v1alpha1.ResourceList {
+func sumOfResourceList(resourceLists ...v1alpha1.ResourceList) v1alpha1.ResourceList {
 	rstResList := make(map[v1alpha1.ResourceName]resource.Quantity)
 
 	for _, resourceList := range resourceLists {

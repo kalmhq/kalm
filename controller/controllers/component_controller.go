@@ -1015,6 +1015,26 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 
 	annotations := r.GetAnnotations()
 
+	// add annotation to limit resource for sidecar Istio
+	if r.component.Spec.IstioResourceRequirements != nil {
+		for resName, quantity := range r.component.Spec.IstioResourceRequirements.Limits {
+			switch resName {
+			case coreV1.ResourceCPU:
+				annotations["sidecar.istio.io/proxyCPULimit"] = quantity.String()
+			case coreV1.ResourceMemory:
+				annotations["sidecar.istio.io/proxyMemoryLimit"] = quantity.String()
+			}
+		}
+		for resName, quantity := range r.component.Spec.IstioResourceRequirements.Requests {
+			switch resName {
+			case coreV1.ResourceCPU:
+				annotations["sidecar.istio.io/proxyCPU"] = quantity.String()
+			case coreV1.ResourceMemory:
+				annotations["sidecar.istio.io/proxyMemory"] = quantity.String()
+			}
+		}
+	}
+
 	template = &coreV1.PodTemplateSpec{
 		ObjectMeta: metaV1.ObjectMeta{
 			Labels:      labels,

@@ -510,48 +510,91 @@ func (r *Component) validateRunnerPermission() (rst KalmValidateErrorList) {
 	return rst
 }
 
-func (r *Component) setupResourceRequirementIfAbsent() {
-	if r.Spec.ResourceRequirements == nil {
-		r.Spec.ResourceRequirements = &v1.ResourceRequirements{}
+func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu, mem, ephemeralStorage resource.Quantity) *v1.ResourceRequirements {
+	var rst *v1.ResourceRequirements
+	if requirements == nil {
+		rst = &v1.ResourceRequirements{}
+	} else {
+		rst = requirements.DeepCopy()
 	}
 
-	if r.Spec.ResourceRequirements.Limits == nil {
-		r.Spec.ResourceRequirements.Limits = make(map[v1.ResourceName]resource.Quantity)
+	if rst.Limits == nil {
+		rst.Limits = make(map[v1.ResourceName]resource.Quantity)
+	}
+	if rst.Requests == nil {
+		rst.Requests = make(map[v1.ResourceName]resource.Quantity)
 	}
 
-	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceCPU]; !exist {
-		r.Spec.ResourceRequirements.Limits[v1.ResourceCPU] = resource.MustParse("500m")
+	limits := rst.Limits
+	requests := rst.Requests
+
+	// Limits
+
+	// if request exist, set limit same as request
+	if _, exist := limits[v1.ResourceCPU]; !exist {
+		if req, exist := requests[v1.ResourceCPU]; exist {
+			limits[v1.ResourceCPU] = req
+		} else {
+			limits[v1.ResourceCPU] = cpu
+		}
 	}
-	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceMemory]; !exist {
-		r.Spec.ResourceRequirements.Limits[v1.ResourceMemory] = resource.MustParse("512Mi")
+
+	if _, exist := limits[v1.ResourceMemory]; !exist {
+		if req, exist := requests[v1.ResourceMemory]; exist {
+			limits[v1.ResourceMemory] = req
+		} else {
+			limits[v1.ResourceMemory] = mem
+		}
 	}
-	if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceEphemeralStorage]; !exist {
-		r.Spec.ResourceRequirements.Limits[v1.ResourceEphemeralStorage] = resource.MustParse("128Mi")
+
+	if _, exist := limits[v1.ResourceEphemeralStorage]; !exist {
+		if req, exist := requests[v1.ResourceEphemeralStorage]; exist {
+			limits[v1.ResourceEphemeralStorage] = req
+		} else {
+			limits[v1.ResourceEphemeralStorage] = ephemeralStorage
+		}
 	}
+
+	rst.Limits = limits
+
 	// storage is not a standard resource for containers
 	// if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceStorage]; !exist {
 	// 	r.Spec.ResourceRequirements.Limits[v1.ResourceStorage] = resource.MustParse("1Gi")
 	// }
+
+	// Requests
+
+	// start with really low request here
+	if _, exist := requests[v1.ResourceCPU]; !exist {
+		requests[v1.ResourceCPU] = resource.MustParse("1m")
+	}
+	if _, exist := requests[v1.ResourceMemory]; !exist {
+		requests[v1.ResourceMemory] = resource.MustParse("1Mi")
+	}
+	if _, exist := requests[v1.ResourceEphemeralStorage]; !exist {
+		requests[v1.ResourceEphemeralStorage] = resource.MustParse("1Mi")
+	}
+	rst.Requests = requests
+
+	return rst
+}
+
+func (r *Component) setupResourceRequirementIfAbsent() {
+	defaultCPULimit := resource.MustParse("500m")
+	defaultMemoryLimit := resource.MustParse("512Mi")
+	defaultEphemeralStorageLimit := resource.MustParse("128Mi")
+
+	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.ResourceRequirements, defaultCPULimit, defaultMemoryLimit, defaultEphemeralStorageLimit)
+
+	r.Spec.ResourceRequirements = filledResRequirement
 }
 
 func (r *Component) setupIstioResourceRequirementIfAbsent() {
-	if r.Spec.IstioResourceRequirements == nil {
-		r.Spec.IstioResourceRequirements = &v1.ResourceRequirements{}
-	}
-	if r.Spec.IstioResourceRequirements.Limits == nil {
-		r.Spec.IstioResourceRequirements.Limits = make(map[v1.ResourceName]resource.Quantity)
-	}
+	defaultCPULimit := resource.MustParse("100m")
+	defaultMemoryLimit := resource.MustParse("128Mi")
+	defaultEphemeralStorageLimit := resource.MustParse("64Mi")
 
-	//cpu
-	if _, exist := r.Spec.IstioResourceRequirements.Limits[v1.ResourceCPU]; !exist {
-		r.Spec.IstioResourceRequirements.Limits[v1.ResourceCPU] = resource.MustParse("100m")
-	}
-	//memory
-	if _, exist := r.Spec.IstioResourceRequirements.Limits[v1.ResourceMemory]; !exist {
-		r.Spec.IstioResourceRequirements.Limits[v1.ResourceMemory] = resource.MustParse("256Mi")
-	}
-	//ephemeralStorage
-	if _, exist := r.Spec.IstioResourceRequirements.Limits[v1.ResourceEphemeralStorage]; !exist {
-		r.Spec.IstioResourceRequirements.Limits[v1.ResourceEphemeralStorage] = resource.MustParse("128Mi")
-	}
+	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.IstioResourceRequirements, defaultCPULimit, defaultMemoryLimit, defaultEphemeralStorageLimit)
+
+	r.Spec.IstioResourceRequirements = filledResRequirement
 }
