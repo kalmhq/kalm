@@ -111,90 +111,100 @@ func (r *SingleSignOnConfig) ValidateDelete() error {
 func (r *SingleSignOnConfig) commonValidate() error {
 	var allErrs field.ErrorList
 
-	if r.Spec.Domain == "" && r.Spec.Issuer == "" {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("domain"), r.Name, "Domain or issuer can't be blank at the same time."))
+	if r.Spec.Domain == "" {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("domain"), r.Name, "Domain can't be blank."))
 	}
 
-	if r.Spec.Domain != "" && len(r.Spec.Connectors) == 0 && r.Spec.TemporaryUser == nil {
-		allErrs = append(allErrs, field.Invalid(field.NewPath("spec"), r.Name, "Connectors and TemporaryUser can't be blank at the same time."))
-	}
+	if r.Spec.Issuer != "" {
+		if len(r.Spec.Connectors) > 0 {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec"), r.Name, "Connectors should be blank when using customize oidc mode."))
+		}
 
-	for i := range r.Spec.Connectors {
-		connector := r.Spec.Connectors[i]
-		basePath := field.NewPath("spec", "connectors", strconv.Itoa(i))
+		if r.Spec.TemporaryUser != nil {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec"), r.Name, "TemporaryUser should be blank when using customize oidc mode."))
+		}
+	} else {
+		if len(r.Spec.Connectors) == 0 && r.Spec.TemporaryUser == nil {
+			allErrs = append(allErrs, field.Invalid(field.NewPath("spec"), r.Name, "Connectors and TemporaryUser can't be blank at the same time, when using dex oidc mode."))
+		}
 
-		if connector.Type == SSOConnectorTypeGithub {
-			bts, err := json.Marshal(connector)
+		for i := range r.Spec.Connectors {
+			connector := r.Spec.Connectors[i]
+			basePath := field.NewPath("spec", "connectors", strconv.Itoa(i))
 
-			if err != nil {
-				allErrs = append(allErrs, field.Invalid(basePath, r.Name, "Marshal to json failed."))
-				continue
-			}
+			if connector.Type == SSOConnectorTypeGithub {
+				bts, err := json.Marshal(connector)
 
-			var typeConnector SSOGithubConnector
-			err = json.Unmarshal(bts, &typeConnector)
-
-			if err != nil {
-				allErrs = append(allErrs, field.Invalid(basePath, r.Name, "Unmarshal to json failed."))
-				continue
-			}
-
-			if typeConnector.Config.ClientID == "" {
-				allErrs = append(allErrs, field.Invalid(basePath.Child("config", "clientID"), r.Name, "Can't be blank"))
-			}
-
-			if typeConnector.Config.ClientSecret == "" {
-				allErrs = append(allErrs, field.Invalid(basePath.Child("config", "clientSecret"), r.Name, "Can't be blank"))
-			}
-
-			if len(typeConnector.Config.Orgs) == 0 {
-				allErrs = append(allErrs, field.Invalid(basePath.Child("config", "orgs"), r.Name, "Can't be blank"))
-			}
-
-			for j := range typeConnector.Config.Orgs {
-				org := typeConnector.Config.Orgs[j]
-
-				if org.Name == "" {
-					allErrs = append(allErrs, field.Invalid(basePath.Child("config", "orgs", strconv.Itoa(j)), r.Name, "Can't be blank"))
+				if err != nil {
+					allErrs = append(allErrs, field.Invalid(basePath, r.Name, "Marshal to json failed."))
+					continue
 				}
-			}
-		} else if connector.Type == SSOConnectorTypeGitlab {
-			bts, err := json.Marshal(connector)
 
-			if err != nil {
-				allErrs = append(allErrs, field.Invalid(basePath, r.Name, "Marshal to json failed."))
-				continue
-			}
+				var typeConnector SSOGithubConnector
+				err = json.Unmarshal(bts, &typeConnector)
 
-			var typeConnector SSOGitlabConnector
-			err = json.Unmarshal(bts, &typeConnector)
-
-			if err != nil {
-				allErrs = append(allErrs, field.Invalid(basePath, r.Name, "Unmarshal to json failed."))
-				continue
-			}
-
-			if typeConnector.Config.ClientID == "" {
-				allErrs = append(allErrs, field.Invalid(basePath.Child("config", "clientID"), r.Name, "Can't be blank"))
-			}
-
-			if typeConnector.Config.ClientSecret == "" {
-				allErrs = append(allErrs, field.Invalid(basePath.Child("config", "clientSecret"), r.Name, "Can't be blank"))
-			}
-
-			if len(typeConnector.Config.Groups) == 0 {
-				allErrs = append(allErrs, field.Invalid(basePath.Child("config", "groups"), r.Name, "Can't be blank"))
-			}
-
-			for j := range typeConnector.Config.Groups {
-				groupName := typeConnector.Config.Groups[j]
-
-				if groupName == "" {
-					allErrs = append(allErrs, field.Invalid(basePath.Child("config", "groups", strconv.Itoa(j)), r.Name, "Can't be blank"))
+				if err != nil {
+					allErrs = append(allErrs, field.Invalid(basePath, r.Name, "Unmarshal to json failed."))
+					continue
 				}
+
+				if typeConnector.Config.ClientID == "" {
+					allErrs = append(allErrs, field.Invalid(basePath.Child("config", "clientID"), r.Name, "Can't be blank"))
+				}
+
+				if typeConnector.Config.ClientSecret == "" {
+					allErrs = append(allErrs, field.Invalid(basePath.Child("config", "clientSecret"), r.Name, "Can't be blank"))
+				}
+
+				if len(typeConnector.Config.Orgs) == 0 {
+					allErrs = append(allErrs, field.Invalid(basePath.Child("config", "orgs"), r.Name, "Can't be blank"))
+				}
+
+				for j := range typeConnector.Config.Orgs {
+					org := typeConnector.Config.Orgs[j]
+
+					if org.Name == "" {
+						allErrs = append(allErrs, field.Invalid(basePath.Child("config", "orgs", strconv.Itoa(j)), r.Name, "Can't be blank"))
+					}
+				}
+			} else if connector.Type == SSOConnectorTypeGitlab {
+				bts, err := json.Marshal(connector)
+
+				if err != nil {
+					allErrs = append(allErrs, field.Invalid(basePath, r.Name, "Marshal to json failed."))
+					continue
+				}
+
+				var typeConnector SSOGitlabConnector
+				err = json.Unmarshal(bts, &typeConnector)
+
+				if err != nil {
+					allErrs = append(allErrs, field.Invalid(basePath, r.Name, "Unmarshal to json failed."))
+					continue
+				}
+
+				if typeConnector.Config.ClientID == "" {
+					allErrs = append(allErrs, field.Invalid(basePath.Child("config", "clientID"), r.Name, "Can't be blank"))
+				}
+
+				if typeConnector.Config.ClientSecret == "" {
+					allErrs = append(allErrs, field.Invalid(basePath.Child("config", "clientSecret"), r.Name, "Can't be blank"))
+				}
+
+				if len(typeConnector.Config.Groups) == 0 {
+					allErrs = append(allErrs, field.Invalid(basePath.Child("config", "groups"), r.Name, "Can't be blank"))
+				}
+
+				for j := range typeConnector.Config.Groups {
+					groupName := typeConnector.Config.Groups[j]
+
+					if groupName == "" {
+						allErrs = append(allErrs, field.Invalid(basePath.Child("config", "groups", strconv.Itoa(j)), r.Name, "Can't be blank"))
+					}
+				}
+			} else {
+				allErrs = append(allErrs, field.Invalid(basePath, r.Name, fmt.Sprintf("Unsupport connector type: %s", connector.Type)))
 			}
-		} else {
-			allErrs = append(allErrs, field.Invalid(basePath, r.Name, fmt.Sprintf("Unsupport connector type: %s", connector.Type)))
 		}
 	}
 

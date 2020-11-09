@@ -39,7 +39,7 @@ import (
 )
 
 const KALM_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME = "external-envoy-ext-authz-server"
-const KALM_DEX_SECRET_NAME = "dex-secret"
+const KALM_AUTH_PROXY_SECRET_NAME = "auth-proxy-secret"
 const KALM_DEX_NAMESPACE = "kalm-system"
 const KALM_DEX_NAME = "dex"
 const KALM_AUTH_PROXY_NAME = "auth-proxy"
@@ -174,7 +174,7 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 	var secret coreV1.Secret
 
 	err = r.Get(r.ctx, types.NamespacedName{
-		Name:      KALM_DEX_SECRET_NAME,
+		Name:      KALM_AUTH_PROXY_SECRET_NAME,
 		Namespace: KALM_DEX_NAMESPACE,
 	}, &secret)
 
@@ -318,7 +318,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileSecret() error {
 		secret := coreV1.Secret{
 			ObjectMeta: metaV1.ObjectMeta{
 				Namespace: KALM_DEX_NAMESPACE,
-				Name:      KALM_DEX_SECRET_NAME,
+				Name:      KALM_AUTH_PROXY_SECRET_NAME,
 			},
 			Data: map[string][]byte{
 				"client_id":     []byte("kalm-sso"),
@@ -328,12 +328,12 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileSecret() error {
 		}
 
 		if err := ctrl.SetControllerReference(r.ssoConfig, &secret, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex secret")
+			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for auth-proxy secret")
 			return err
 		}
 
 		if err := r.Create(r.ctx, &secret); err != nil {
-			r.Log.Error(err, "Create dex secret failed.")
+			r.Log.Error(err, "Create auth-proxy secret failed.")
 			return err
 		}
 
@@ -791,11 +791,16 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRouteCert() error {
 }
 
 func (r *SingleSignOnConfigReconcilerTask) ReconcileResources() error {
-	if r.ssoConfig.Spec.Issuer == "" {
-		if err := r.ReconcileSecret(); err != nil {
-			return err
-		}
+	if err := r.ReconcileSecret(); err != nil {
+		return err
+	}
 
+	if err := r.ReconcileAuthProxy(); err != nil {
+		return err
+	}
+
+	// use dex mode
+	if r.ssoConfig.Spec.Issuer == "" {
 		if err := r.ReconcileDexComponent(); err != nil {
 			return err
 		}
@@ -807,10 +812,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources() error {
 		if err := r.ReconcileDexRouteCert(); err != nil {
 			return err
 		}
-	}
-
-	if err := r.ReconcileAuthProxy(); err != nil {
-		return err
 	}
 
 	return nil
