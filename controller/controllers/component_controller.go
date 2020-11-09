@@ -303,6 +303,7 @@ func GetPodSecurityContextFromAnnotation(annotations map[string]string) *coreV1.
 			}
 
 			securityContext.RunAsGroup = &n
+		// TODO need check this permission
 		case "runAsUser":
 			n, err := strconv.ParseInt(v, 0, 64)
 
@@ -1058,6 +1059,8 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 
 	if component.Spec.RunnerPermission != nil {
 		template.Spec.ServiceAccountName = r.getNameForPermission()
+	} else {
+		template.Spec.ServiceAccountName = "default"
 	}
 
 	// resource requirements

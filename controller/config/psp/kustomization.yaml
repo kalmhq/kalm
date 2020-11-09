@@ -1,2 +1,3 @@
 resources:
-  - pod-security-policy.yaml
+  - pod-security-policy-restricted.yaml
+  - pod-security-policy-privileged.yaml

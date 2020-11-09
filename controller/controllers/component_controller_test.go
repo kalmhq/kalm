@@ -3,19 +3,17 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"testing"
-
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	appsV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
-	rbacV1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"testing"
 )
 
 type ComponentControllerSuite struct {
@@ -41,24 +39,6 @@ func (suite *ComponentControllerSuite) SetupTest() {
 
 func TestComponentControllerSuite(t *testing.T) {
 	suite.Run(t, new(ComponentControllerSuite))
-}
-
-func (suite *ComponentControllerSuite) TestInitPsp() {
-	// create
-	component := generateEmptyComponent(suite.ns.Name)
-	suite.createComponent(component)
-
-	suite.Eventually(func() bool {
-		clusterRoleBindingName := fmt.Sprintf("psp-%s-default", component.Namespace)
-		pspClusterRoleBinding := rbacV1.ClusterRoleBinding{}
-
-		err := suite.K8sClient.Get(suite.ctx, types.NamespacedName{Name: clusterRoleBindingName}, &pspClusterRoleBinding)
-
-		return err == nil &&
-			pspClusterRoleBinding.RoleRef.Kind == "ClusterRole" &&
-			pspClusterRoleBinding.RoleRef.Name == "system:psp:restricted"
-	}, "create psp fail")
-
 }
 
 func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
