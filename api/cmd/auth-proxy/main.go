@@ -260,17 +260,16 @@ func handleExtAuthz(c echo.Context) error {
 // and other processes wait for the result. This is enough if there is the auth-proxy service only has one replica.
 // If you deploy auth-proxy with scaling, make sure use sticky load balancing strategy.
 func refreshIDToken(token *auth_proxy.ThinToken) (idToken *oidc.IDToken, err error) {
-
 	refreshContext, isProducer := auth_proxy.GetRefreshTokenCond(token.RefreshToken)
 
 	if isProducer {
-		logger.Named("[refresh producer]").Debug("Do refresh", zap.String("token", token.RefreshToken[:10]))
+		logger.Named("[refresh producer]").Debug("Do refresh", zap.String("token", token.RefreshToken))
 		err = doRefresh(token, refreshContext)
 		logger.Named("[refresh producer]").Debug("Done", zap.Error(err))
 		auth_proxy.RemoveRefreshTokenCond(token.RefreshToken, 60)
 	} else {
 		refreshContext.Cond.L.Lock()
-		logger.Named("[refresh consumer]").Debug("Wait", zap.String("token", token.RefreshToken[:10]))
+		logger.Named("[refresh consumer]").Debug("Wait", zap.String("token", token.RefreshToken))
 
 		for refreshContext.IDToken == nil && refreshContext.Error == nil {
 			refreshContext.Cond.Wait()
@@ -327,7 +326,7 @@ func doRefresh(token *auth_proxy.ThinToken, refreshContext *auth_proxy.RefreshCo
 	}
 
 	refreshContext.Cond.L.Lock()
-	refreshContext.Cond.L.Unlock()
+	defer refreshContext.Cond.L.Unlock()
 
 	refreshContext.IDToken = IDToken
 	refreshContext.IDTokenString = rawIDToken
