@@ -104,6 +104,7 @@ func (h *ApiHandler) handleCreateTemporaryClusterOwnerAccessTokens(c echo.Contex
 		Spec: v1alpha1.TenantSpec{
 			TenantDisplayName: "test-tenant-global",
 			ResourceQuota: map[v1alpha1.ResourceName]resource.Quantity{
+				v1alpha1.ResourceAccessTokensCount: resource.MustParse("100"),
 				v1alpha1.ResourceApplicationsCount: resource.MustParse("100"),
 				v1alpha1.ResourceServicesCount:     resource.MustParse("100"),
 				v1alpha1.ResourceComponentsCount:   resource.MustParse("100"),
@@ -114,11 +115,11 @@ func (h *ApiHandler) handleCreateTemporaryClusterOwnerAccessTokens(c echo.Contex
 		},
 	}
 
-	if err := h.resourceManager.Create(accessToken); err != nil {
+	if err := h.resourceManager.Create(tenant); err != nil {
 		return err
 	}
 
-	if err := h.resourceManager.Create(tenant); err != nil {
+	if err := h.resourceManager.Create(accessToken); err != nil {
 		return err
 	}
 
