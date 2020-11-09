@@ -28,8 +28,10 @@ import (
 	"istio.io/api/networking/v1alpha3"
 	v1alpha32 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	coreV1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -604,6 +606,12 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 					Type:  corev1alpha1.EnvVarTypeStatic,
 					Name:  "KALM_OIDC_AUTH_PROXY_URL",
 					Value: oidcProviderInfo.AuthProxyExternalUrl,
+				},
+			},
+			ResourceRequirements: &coreV1.ResourceRequirements{
+				Requests: map[v1.ResourceName]resource.Quantity{
+					v1.ResourceCPU:    resource.MustParse("10m"),
+					v1.ResourceMemory: resource.MustParse("10Mi"),
 				},
 			},
 		},
