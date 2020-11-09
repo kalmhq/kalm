@@ -210,6 +210,12 @@ func handleExtAuthz(c echo.Context) error {
 
 			contextLogger.Debug("enter retry logic", zap.Any("token", token))
 
+			if token.RefreshToken == "" {
+				contextLogger.Error("no refresh token")
+				clearTokenInCookie(c)
+				return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client. (No refresh token)")
+			}
+
 			// use refresh token to fetch the id_token
 			idToken, err = refreshIDToken(token)
 
@@ -254,6 +260,7 @@ func handleExtAuthz(c echo.Context) error {
 // and other processes wait for the result. This is enough if there is the auth-proxy service only has one replica.
 // If you deploy auth-proxy with scaling, make sure use sticky load balancing strategy.
 func refreshIDToken(token *auth_proxy.ThinToken) (idToken *oidc.IDToken, err error) {
+
 	refreshContext, isProducer := auth_proxy.GetRefreshTokenCond(token.RefreshToken)
 
 	if isProducer {
