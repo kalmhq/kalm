@@ -84,6 +84,13 @@ func main() {
 				EnvVars:     []string{"KUBE_CONFIG_PATH"},
 			},
 			&cli.BoolFlag{
+				Name:        "enable-debug-apis",
+				Value:       false,
+				Usage:       "enable debug apis in admin server",
+				Destination: &runningConfig.EnableAdminServerDebugRoutes,
+				EnvVars:     []string{"ENABLE_DEBUG_APIS"},
+			},
+			&cli.BoolFlag{
 				Name:        "verbose",
 				Value:       false,
 				Usage:       "show debug log",
@@ -163,6 +170,10 @@ func startMainServer(runningConfig *config.Config, k8sClientConfig *rest.Config)
 
 	if runningConfig.PrivilegedLocalhostAccess {
 		apiHandler.InstallAdminRoutes(e)
+	}
+
+	if runningConfig.EnableAdminServerDebugRoutes {
+		apiHandler.InstallAdminDebugRoutes(e)
 	}
 
 	err := e.StartH2CServer(runningConfig.GetServerAddress(), &http2.Server{

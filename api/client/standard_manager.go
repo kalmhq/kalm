@@ -93,7 +93,15 @@ func GetPoliciesFromAccessToken(accessToken *resources.AccessToken) [][]string {
 	var res = [][]string{}
 	for _, rule := range accessToken.Rules {
 
-		scope := fmt.Sprintf("%s/%s", accessToken.Tenant, rule.Namespace)
+		var scope string
+
+		// TODO: should work, But not clean.
+		if accessToken.Tenant == "global" {
+			scope = fmt.Sprintf("*/%s", rule.Namespace)
+		} else {
+			scope = fmt.Sprintf("%s/%s", accessToken.Tenant, rule.Namespace)
+		}
+
 		obj := fmt.Sprintf("%s/%s", rule.Kind, rule.Name)
 
 		res = append(res, []string{
