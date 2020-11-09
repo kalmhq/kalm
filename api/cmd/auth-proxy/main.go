@@ -203,8 +203,12 @@ func handleExtAuthz(c echo.Context) error {
 	idToken, err := oidcVerifier.Verify(context.Background(), token.IDTokenString)
 
 	if err != nil {
+		contextLogger.Debug("verify token error", zap.Error(err))
+
 		// An hack way to know whether the error is expire or not
 		if strings.Contains(strings.ToLower(err.Error()), "expire") {
+
+			contextLogger.Debug("enter retry logic", zap.Any("token", token))
 
 			// use refresh token to fetch the id_token
 			idToken, err = refreshIDToken(token)
