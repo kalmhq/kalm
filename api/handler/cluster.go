@@ -183,6 +183,7 @@ const (
 
 type SetupClusterBody struct {
 	Domain string `json:"domain"`
+	Issuer string `json:"issuer"`
 }
 
 type TemporaryAdmin struct {
@@ -199,7 +200,7 @@ type SetupClusterResponse struct {
 	ClusterInfo   *ClusterInfo         `json:"clusterInfo"`
 }
 
-func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
+func (h *ApiHandler) handleInitializeCluster(c echo.Context) (err error) {
 	currentUser := getCurrentUser(c)
 	h.MustCanManageCluster(currentUser)
 
@@ -238,6 +239,12 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 		Tenant:    currentUser.Tenant,
 	}
 
+	ssoConfig := &resources.SSOConfig{
+		SingleSignOnConfigSpec: &v1alpha1.SingleSignOnConfigSpec{
+			Domain: body.Domain,
+		},
+	}
+
 	temporaryAdmin := &TemporaryAdmin{
 		Username: "admin",
 		Password: utils.RandPassword(64),
@@ -250,16 +257,15 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 		return err
 	}
 
-	ssoConfig := &resources.SSOConfig{
-		SingleSignOnConfigSpec: &v1alpha1.SingleSignOnConfigSpec{
-			Domain: body.Domain,
-			TemporaryUser: &v1alpha1.TemporaryDexUser{
-				Username:     temporaryAdmin.Username,
-				PasswordHash: string(hashedPassword),
-				UserID:       uuid.New().String(),
-				Email:        temporaryAdmin.Email,
-			},
-		},
+	if body.Issuer == "" {
+		ssoConfig.SingleSignOnConfigSpec.TemporaryUser = &v1alpha1.TemporaryDexUser{
+			Username:     temporaryAdmin.Username,
+			PasswordHash: string(hashedPassword),
+			UserID:       uuid.New().String(),
+			Email:        temporaryAdmin.Email,
+		}
+	} else {
+		ssoConfig.SingleSignOnConfigSpec.Issuer = body.Issuer
 	}
 
 	httpsCertForKalm := &resources.HttpsCert{
@@ -306,23 +312,25 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 		return err
 	}
 
-	//bind clusterOwner for this tmpUser
-	roleBinding := v1alpha1.RoleBinding{
-		ObjectMeta: v1.ObjectMeta{
-			Namespace: v1alpha1.KalmSystemNamespace,
-		},
-		Spec: v1alpha1.RoleBindingSpec{
-			Subject:     temporaryAdmin.Email,
-			SubjectType: v1alpha1.SubjectTypeUser,
-			Role:        v1alpha1.ClusterRoleOwner,
-			Creator:     getCurrentUser(c).Name,
-		},
-	}
+	if body.Issuer == "" {
+		//bind clusterOwner for this tmpUser
+		roleBinding := v1alpha1.RoleBinding{
+			ObjectMeta: v1.ObjectMeta{
+				Namespace: v1alpha1.KalmSystemNamespace,
+			},
+			Spec: v1alpha1.RoleBindingSpec{
+				Subject:     temporaryAdmin.Email,
+				SubjectType: v1alpha1.SubjectTypeUser,
+				Role:        v1alpha1.ClusterRoleOwner,
+				Creator:     getCurrentUser(c).Name,
+			},
+		}
 
-	roleBinding.Name = roleBinding.GetNameBaseOnRoleAndSubject()
+		roleBinding.Name = roleBinding.GetNameBaseOnRoleAndSubject()
 
-	if err := h.resourceManager.Create(&roleBinding); err != nil {
-		return err
+		if err := h.resourceManager.Create(&roleBinding); err != nil {
+			return err
+		}
 	}
 
 	return c.JSON(200, &SetupClusterResponse{
