@@ -8,9 +8,7 @@ import (
 )
 
 func (h *ApiHandler) handleListTenants(c echo.Context) error {
-	if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
-		return resources.NoClusterOwnerRoleError
-	}
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	tenants, err := h.resourceManager.GetTenants()
 
@@ -22,9 +20,7 @@ func (h *ApiHandler) handleListTenants(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleGetTenant(c echo.Context) error {
-	if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
-		return resources.NoClusterOwnerRoleError
-	}
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	tenant, err := h.resourceManager.GetTenant(c.Param("name"))
 
@@ -36,9 +32,7 @@ func (h *ApiHandler) handleGetTenant(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateTenant(c echo.Context) error {
-	if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
-		return resources.NoClusterOwnerRoleError
-	}
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	tenant, err := getResourcesTenantFromContext(c)
 
@@ -56,25 +50,19 @@ func (h *ApiHandler) handleCreateTenant(c echo.Context) error {
 }
 
 func (h *ApiHandler) handlePauseTenant(c echo.Context) error {
-	if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
-		return resources.NoClusterOwnerRoleError
-	}
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	return h.resourceManager.PauseTenant(c.Param("name"))
 }
 
 func (h *ApiHandler) handleResumeTenant(c echo.Context) error {
-	if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
-		return resources.NoClusterOwnerRoleError
-	}
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	return h.resourceManager.ResumeTenant(c.Param("name"))
 }
 
 func (h *ApiHandler) handleUpdateTenant(c echo.Context) error {
-	if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
-		return resources.NoClusterOwnerRoleError
-	}
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	tenant, err := getResourcesTenantFromContext(c)
 
@@ -96,9 +84,7 @@ func (h *ApiHandler) handleUpdateTenant(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteTenant(c echo.Context) error {
-	if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
-		return resources.NoClusterOwnerRoleError
-	}
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	return h.resourceManager.DeleteTenant(c.Param("name"))
 }

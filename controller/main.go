@@ -93,6 +93,7 @@ func main() {
 		LeaderElectionID:        "kalm-controller",
 		LeaderElectionNamespace: "kalm-system",
 		Port:                    9443,
+		CertDir:                 os.Getenv("WEBHOOKS_CERTS_DIR"),
 	})
 
 	if err != nil {
@@ -176,6 +177,11 @@ func main() {
 
 	if err = (controllers.NewLogSystemReconciler(mgr)).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "LogSystem")
+		os.Exit(1)
+	}
+
+	if err = controllers.NewTenantReconciler(mgr).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller: Tenant")
 		os.Exit(1)
 	}
 

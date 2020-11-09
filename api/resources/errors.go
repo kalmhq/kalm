@@ -2,6 +2,7 @@ package resources
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 )
@@ -39,3 +40,32 @@ var NoClusterOwnerRoleError = errors.NewUnauthorized("Require owner role in clus
 var NotATenantOwnerError = errors.NewUnauthorized("Require owner of a tenant")
 var NotTenantOwnerError = errors.NewUnauthorized("Require owner of the tenant")
 var UnauthorizedTenantError = errors.NewUnauthorized("You can't view resources of unauthorized tenant")
+
+type UnauthorizedError struct {
+	Email  string
+	Tenant string
+	Groups []string
+	Action string
+	Scope  string
+	Object string
+}
+
+func(e *UnauthorizedError) StatusCode() int {
+	return 401
+}
+
+func (e *UnauthorizedError) Status() string {
+	return "Unauthorized"
+}
+
+func (e *UnauthorizedError) Error() string {
+	var groupsString string
+
+	if len(e.Groups) > 0 {
+		groupsString = strings.Join(e.Groups, ",")
+	} else {
+		groupsString = "N/A"
+	}
+
+	return fmt.Sprintf("tenant: %s, user: %s, groups: %s, action: %s, scope: %s, object: %s", e.Tenant, e.Email, groupsString, e.Action, e.Scope, e.Object)
+}

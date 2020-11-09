@@ -33,7 +33,7 @@ func (suite *ACMEServerHandlerTestSuite) TestGetEmpty() {
 		Method:    http.MethodGet,
     	Path:      "/v1alpha1/acmeserver",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "view", "cluster")
+			suite.IsUnauthorizedError(rec, "view", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)
@@ -59,7 +59,7 @@ func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 			NSDomain:   nsDomain,
 		},
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "editor", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res resources.ACMEServer
@@ -79,7 +79,7 @@ func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 		Method:    http.MethodGet,
 		Path:      "/v1alpha1/acmeserver",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec, "viewer", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var acmeResp resources.ACMEServerResp
@@ -102,7 +102,7 @@ func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 		Method:    http.MethodDelete,
 		Path:      "/v1alpha1/acmeserver",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "editor", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)
@@ -118,7 +118,7 @@ func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 		Method:    http.MethodGet,
 		Path:      "/v1alpha1/acmeserver",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec, "viewer", "cluster")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)

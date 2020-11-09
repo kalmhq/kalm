@@ -44,6 +44,15 @@ var _ webhook.Defaulter = &HttpRoute{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *HttpRoute) Default() {
 	httproutelog.Info("default", "name", r.Name)
+
+	if IsKalmSystemNamespace(r.Namespace) {
+		return
+	}
+
+	err := InheritTenantFromNamespace(r)
+	if err != nil {
+		httproutelog.Error(err, "fail to inherit tenant from ns for httpRoute", "httpRoute", r.Name, "ns", r.Namespace)
+	}
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-httproute,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=httproutes,versions=v1alpha1,name=vhttproute.kb.io

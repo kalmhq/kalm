@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"net/http"
+	"testing"
+
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/stretchr/testify/suite"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
-	"testing"
 )
 
 type NodesHandlerTestSuite struct {
@@ -41,7 +42,7 @@ func (suite *NodesHandlerTestSuite) TestNodesHandler() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/nodes",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var nodeList resources.NodesResponse
@@ -60,7 +61,7 @@ func (suite *NodesHandlerTestSuite) TestNodesHandler() {
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/nodes/test-node/uncordon",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.EqualValues(200, rec.Code)
@@ -75,7 +76,7 @@ func (suite *NodesHandlerTestSuite) TestNodesHandler() {
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/nodes/test-node/cordon",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.EqualValues(200, rec.Code)

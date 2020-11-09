@@ -200,10 +200,8 @@ type SetupClusterResponse struct {
 }
 
 func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
-
-	if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
-		return resources.NoClusterOwnerRoleError
-	}
+	currentUser := getCurrentUser(c)
+	h.MustCanManageCluster(currentUser)
 
 	clusterInfo := h.getClusterInfo(c)
 
@@ -237,6 +235,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 		},
 		Name:      KalmRouteName,
 		Namespace: controllers.KalmSystemNamespace,
+		Tenant:    currentUser.Tenant,
 	}
 
 	temporaryAdmin := &TemporaryAdmin{
@@ -337,9 +336,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) error {
 
 func (h *ApiHandler) handleResetCluster(c echo.Context) error {
 
-	if !h.clientManager.CanManageCluster(getCurrentUser(c)) {
-		return resources.NoClusterOwnerRoleError
-	}
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	wg := sync.WaitGroup{}
 

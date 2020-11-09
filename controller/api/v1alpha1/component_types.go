@@ -21,6 +21,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	KalmLabelNamespaceKey = "kalm-namespace"
+
+	KalmLabelComponentKey        = "kalm-component"
+	KalmLabelKeyExceedingQuota   = "kalm-exceeding-quota"
+	KalmLabelKeyOriginalReplicas = "kalm-original-replicas"
+)
+
 type PreInjectFile struct {
 	// the content of the file
 	// +kubebuilder:validation:MinLength=1

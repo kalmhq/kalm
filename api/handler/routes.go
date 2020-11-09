@@ -3,10 +3,13 @@ package handler
 import (
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
-	list, err := h.resourceManager.GetHttpRoutes("")
+	currentUser := getCurrentUser(c)
+
+	list, err := h.resourceManager.GetHttpRoutes(belongsToTenant(currentUser.Tenant))
 	list = h.filterAuthorizedHttpRoutes(c, list)
 
 	if err != nil {
@@ -17,7 +20,9 @@ func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleListRoutes(c echo.Context) error {
-	list, err := h.resourceManager.GetHttpRoutes(c.Param("namespace"))
+	currentUser := getCurrentUser(c)
+
+	list, err := h.resourceManager.GetHttpRoutes(belongsToTenant(currentUser.Tenant), client.InNamespace(c.Param("namespace")))
 	list = h.filterAuthorizedHttpRoutes(c, list)
 
 	if err != nil {
@@ -28,13 +33,16 @@ func (h *ApiHandler) handleListRoutes(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
+	currentUser := getCurrentUser(c)
 	var route *resources.HttpRoute
 
 	if route, err = getHttpRouteFromContext(c); err != nil {
 		return err
 	}
 
-	if !h.clientManager.CanOperateHttpRoute(getCurrentUser(c), "edit", route) {
+	route.Tenant = currentUser.Tenant
+
+	if !h.clientManager.CanOperateHttpRoute(currentUser, "edit", route) {
 		return resources.InsufficientPermissionsError
 	}
 
@@ -46,13 +54,15 @@ func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
 }
 
 func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
+	currentUser := getCurrentUser(c)
 	var route *resources.HttpRoute
 
 	if route, err = getHttpRouteFromContext(c); err != nil {
 		return err
 	}
 
-	if !h.clientManager.CanOperateHttpRoute(getCurrentUser(c), "edit", route) {
+	// TODO: check if current user can edit all old http route destinations
+	if !h.clientManager.CanOperateHttpRoute(currentUser, "edit", route) {
 		return resources.InsufficientPermissionsError
 	}
 

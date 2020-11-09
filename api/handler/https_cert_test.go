@@ -1,15 +1,16 @@
 package handler
 
 import (
+	"net/http"
+	"strings"
+	"testing"
+
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
-	"strings"
-	"testing"
 )
 
 type HttpsCertTestSuite struct {
@@ -40,7 +41,7 @@ func (suite *HttpsCertTestSuite) TestGetEmptyHttpsCertList() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/httpscerts",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)
@@ -65,7 +66,7 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
   "domains": ["example.com"]
 }`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(201, rec.Code)
@@ -84,7 +85,7 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/httpscerts/" + httpsCert.Name,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)
@@ -108,7 +109,7 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCertWithoutSetIssuer() {
   "domains": ["example.com"]
 }`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(201, rec.Code)
@@ -211,7 +212,7 @@ func (suite *HttpsCertTestSuite) TestUploadHttpsCert() {
 			"selfManagedCertPrivateKey": tlsPK,
 		},
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(201, rec.Code)
@@ -239,7 +240,7 @@ func (suite *HttpsCertTestSuite) TestUploadHttpsCert() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/httpscerts/" + httpsCert.Name,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)
@@ -265,7 +266,7 @@ func (suite *HttpsCertTestSuite) TestUpdateSelfManagedHttpsCert() {
 			"selfManagedCertPrivateKey": tlsPK,
 		},
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(201, rec.Code)
@@ -286,7 +287,7 @@ func (suite *HttpsCertTestSuite) TestUpdateSelfManagedHttpsCert() {
 			"selfManagedCertPrivateKey": tlsPK,
 		},
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)
@@ -308,7 +309,7 @@ func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
   "domains": ["example.com"]
 }`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			rec.BodyAsJSON(&httpsCert)
@@ -324,7 +325,7 @@ func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
 		Method: http.MethodDelete,
 		Path:   "/v1alpha1/httpscerts/" + httpsCert.Name,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)
@@ -339,7 +340,7 @@ func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/httpscerts/" + httpsCert.Name,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(404, rec.Code)

@@ -11,6 +11,7 @@ import {
 import { indigo } from "@material-ui/core/colors";
 import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
@@ -20,6 +21,7 @@ import { TDispatchProp } from "types";
 import { Certificate } from "types/certificate";
 import { formatDate } from "utils/date";
 import sc from "utils/stringConstants";
+import { ACMEServer } from "widgets/ACMEServer";
 import { PendingBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
@@ -29,11 +31,9 @@ import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
+import { KLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
-import { KLink } from "widgets/Link";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
-import { ACMEServer } from "widgets/ACMEServer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -99,10 +99,10 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderActions = (cert: Certificate) => {
-    const { canEditCluster } = this.props;
+    const { canEditTenant } = this.props;
     return (
       <>
-        {canEditCluster() && (
+        {canEditTenant() && (
           <>
             {cert.isSelfManaged && (
               <IconLinkWithToolTip tooltipTitle="Edit" aria-label="edit" to={`/certificates/${cert.name}/edit`}>
@@ -247,14 +247,14 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderEmpty() {
-    const { canEditCluster } = this.props;
+    const { canEditTenant } = this.props;
     return (
       <EmptyInfoBox
         image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={sc.EMPTY_CERT_TITLE}
         content={sc.EMPTY_CERT_SUBTITLE}
         button={
-          canEditCluster() ? (
+          canEditTenant() ? (
             <CustomizedButton variant="contained" color="primary" component={Link} to="/certificates/new">
               New Certificate
             </CustomizedButton>
@@ -301,11 +301,11 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isFirstLoaded, isLoading, certificates, canEditCluster } = this.props;
+    const { isFirstLoaded, isLoading, certificates, canEditTenant } = this.props;
     return (
       <BasePage
         secondHeaderRight={
-          canEditCluster() ? (
+          canEditTenant() ? (
             <>
               {/* <H6>Certificates</H6> */}
               <Button

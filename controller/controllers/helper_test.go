@@ -184,7 +184,7 @@ func waitPortConnectable(addr string) {
 	}
 }
 
-func (suite *BasicSuite) SetupSuite() {
+func (suite *BasicSuite) SetupSuite(disableWebhookOpt ...bool) {
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	suite.Nil(scheme.AddToScheme(scheme.Scheme))
@@ -202,12 +202,16 @@ func (suite *BasicSuite) SetupSuite() {
 			filepath.Join("resources"),
 			filepath.Join("..", "resources"),
 		},
-		WebhookInstallOptions: envtest.WebhookInstallOptions{
+	}
+
+	disableWebhook := len(disableWebhookOpt) > 0 && disableWebhookOpt[0]
+	if !disableWebhook {
+		testEnv.WebhookInstallOptions = envtest.WebhookInstallOptions{
 			DirectoryPaths: []string{
 				filepath.Join("..", "config", "webhook"),
 			},
 			MaxTime: time.Duration(30 * time.Second),
-		},
+		}
 	}
 
 	var err error
@@ -234,19 +238,21 @@ func (suite *BasicSuite) SetupSuite() {
 
 	mgr, err := ctrl.NewManager(cfg, mgrOptions)
 
-	webhookServer := mgr.GetWebhookServer()
-	webhookServer.Register("/validate-v1-ns", &webhook.Admission{
-		Handler: &builtin.NSValidator{},
-	})
-	webhookServer.Register("/admission-handler-v1-pvc", &webhook.Admission{
-		Handler: &builtin.PVCAdmissionHandler{},
-	})
-	webhookServer.Register("/admission-handler-v1-pod", &webhook.Admission{
-		Handler: &builtin.PodAdmissionHandler{},
-	})
-	webhookServer.Register("/admission-handler-v1-svc", &webhook.Admission{
-		Handler: &builtin.SvcAdmissionHandler{},
-	})
+	if !disableWebhook {
+		webhookServer := mgr.GetWebhookServer()
+		webhookServer.Register("/validate-v1-ns", &webhook.Admission{
+			Handler: &builtin.NSValidator{},
+		})
+		webhookServer.Register("/admission-handler-v1-pvc", &webhook.Admission{
+			Handler: &builtin.PVCAdmissionHandler{},
+		})
+		webhookServer.Register("/admission-handler-v1-pod", &webhook.Admission{
+			Handler: &builtin.PodAdmissionHandler{},
+		})
+		webhookServer.Register("/admission-handler-v1-svc", &webhook.Admission{
+			Handler: &builtin.SvcAdmissionHandler{},
+		})
+	}
 
 	suite.Require().NotNil(mgr)
 	suite.Require().Nil(err)

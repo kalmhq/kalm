@@ -1,11 +1,12 @@
 package handler
 
 import (
+	"net/http"
+	"testing"
+
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
-	"net/http"
-	"testing"
 )
 
 type DeployAccessTokenTestSuite struct {
@@ -67,7 +68,7 @@ func (suite *DeployAccessTokenTestSuite) TestTryToCreateInvalidDeployAccessToken
 		Body:   key,
 		Path:   "/v1alpha1/deploy_access_tokens",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res map[string]string
@@ -88,7 +89,7 @@ func (suite *DeployAccessTokenTestSuite) TestTryToCreateInvalidDeployAccessToken
 		Body:   key,
 		Path:   "/v1alpha1/deploy_access_tokens",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res map[string]string
@@ -123,7 +124,7 @@ func (suite *DeployAccessTokenTestSuite) TestCreateAndDeleteDeployAccessToken() 
 		Body:   key,
 		Path:   "/v1alpha1/deploy_access_tokens",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res resources.AccessToken
@@ -159,7 +160,7 @@ func (suite *DeployAccessTokenTestSuite) TestCreateAndDeleteDeployAccessToken() 
 		Path:   "/v1alpha1/deploy_access_tokens",
 		Body:   key,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, resources.InsufficientPermissionsError.Error())
+			suite.IsUnauthorizedError(rec)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(200, rec.Code)

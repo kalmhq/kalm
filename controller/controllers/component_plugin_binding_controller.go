@@ -17,7 +17,8 @@ package controllers
 
 import (
 	"context"
-	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
+
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -45,13 +46,13 @@ func (r *ComponentPluginBindingReconciler) Reconcile(req ctrl.Request) (ctrl.Res
 type ComponentPluginBindingReconcilerTask struct {
 	*ComponentPluginBindingReconciler
 	ctx     context.Context
-	binding *corev1alpha1.ComponentPluginBinding
+	binding *v1alpha1.ComponentPluginBinding
 }
 
 func (r *ComponentPluginBindingReconcilerTask) Run(req ctrl.Request) error {
 	ctx := context.Background()
 
-	var pluginBinding corev1alpha1.ComponentPluginBinding
+	var pluginBinding v1alpha1.ComponentPluginBinding
 
 	if err := r.Get(ctx, req.NamespacedName, &pluginBinding); err != nil {
 		return client.IgnoreNotFound(err)
@@ -66,10 +67,10 @@ func (r *ComponentPluginBindingReconcilerTask) Run(req ctrl.Request) error {
 	r.binding.ObjectMeta.Labels["kalm-plugin"] = r.binding.Spec.PluginName
 
 	if r.binding.Spec.ComponentName != "" {
-		r.binding.ObjectMeta.Labels[KalmLabelComponentKey] = r.binding.Spec.ComponentName
+		r.binding.ObjectMeta.Labels[v1alpha1.KalmLabelComponentKey] = r.binding.Spec.ComponentName
 	}
 
-	var component corev1alpha1.Component
+	var component v1alpha1.Component
 	err := r.Get(
 		ctx,
 		types.NamespacedName{
@@ -157,6 +158,6 @@ func NewComponentPluginBindingReconciler(mgr ctrl.Manager) *ComponentPluginBindi
 
 func (r *ComponentPluginBindingReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1alpha1.ComponentPluginBinding{}).
+		For(&v1alpha1.ComponentPluginBinding{}).
 		Complete(r)
 }

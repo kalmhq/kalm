@@ -2,10 +2,11 @@ package handler
 
 import (
 	"fmt"
-	"github.com/kalmhq/kalm/api/resources"
-	"github.com/stretchr/testify/suite"
 	"net/http"
 	"testing"
+
+	"github.com/kalmhq/kalm/api/resources"
+	"github.com/stretchr/testify/suite"
 )
 
 type ApplicationsHandlerTestSuite struct {
@@ -56,7 +57,7 @@ func (suite *ApplicationsHandlerTestSuite) TestApplicationListOnlyContainAuthori
 	// Get list
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetViewerRoleOfNs("list-test-2"),
+			GetViewerRoleOfScope(defaultTenant, "list-test-2"),
 		},
 		Namespace: "list-test-2",
 		Method:    http.MethodGet,
@@ -69,6 +70,23 @@ func (suite *ApplicationsHandlerTestSuite) TestApplicationListOnlyContainAuthori
 			suite.Equal("list-test-2", res[0].Name)
 		},
 	})
+
+	// Get list from another tenant
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetViewerRoleOfScope(defaultTenant, "list-test-2"),
+		},
+		Tenant:    "anotherTenant",
+		Namespace: "list-test-2",
+		Method:    http.MethodGet,
+		Path:      "/v1alpha1/applications",
+		TestWithRoles: func(rec *ResponseRecorder) {
+			var res []resources.ApplicationDetails
+			rec.BodyAsJSON(&res)
+			suite.Equal(200, rec.Code)
+			suite.Len(res, 0)
+		},
+	})
 }
 
 func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyApplication() {
@@ -76,14 +94,14 @@ func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyApplication() {
 
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetViewerRoleOfNs(name),
+			GetViewerRoleOfScope(defaultTenant, name),
 			GetClusterEditorRole(),
 		},
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/applications",
 		Body:   fmt.Sprintf(`{"name": "%s"}`, name),
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "edit")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res resources.ApplicationDetails
@@ -94,15 +112,16 @@ func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyApplication() {
 		},
 	})
 
+	// get
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetViewerRoleOfNs(name),
+			GetViewerRoleOfScope(defaultTenant, name),
 		},
 		Namespace: name,
 		Method:    http.MethodGet,
 		Path:      "/v1alpha1/applications/" + name,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "viewer", name)
+			suite.IsUnauthorizedError(rec, "view", name)
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res resources.ApplicationDetails
@@ -110,6 +129,20 @@ func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyApplication() {
 
 			suite.NotNil(res.Application)
 			suite.Equal("test", res.Application.Name)
+		},
+	})
+
+	// get from another tenant
+	suite.DoTestRequest(&TestRequestContext{
+		Roles: []string{
+			GetViewerRoleOfScope(defaultTenant, name),
+		},
+		Namespace: name,
+		Tenant:    "Tenant2",
+		Method:    http.MethodGet,
+		Path:      "/v1alpha1/applications/" + name,
+		TestWithRoles: func(rec *ResponseRecorder) {
+			suite.Equal(404, rec.Code)
 		},
 	})
 }
@@ -139,7 +172,7 @@ func (suite *ApplicationsHandlerTestSuite) TestDeleteApplication() {
 		Method: http.MethodDelete,
 		Path:   "/v1alpha1/applications/test3",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsMissingRoleError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "edit")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			suite.Equal(http.StatusNoContent, rec.Code)

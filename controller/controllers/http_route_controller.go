@@ -195,10 +195,14 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 // Kalm route level http to https redirect is achieved by adding envoy filter for istio ingress gateway
 //
 func (r *HttpRouteReconcilerTask) buildHttpsRedirectEnvoyFilter(route *corev1alpha1.HttpRoute) (*v1alpha32.EnvoyFilter, error) {
-	tenantName, err := corev1alpha1.GetTenantNameFromObj(route)
+	var tenantName string
 
-	if err != nil {
-		return nil, err
+	if !corev1alpha1.IsKalmSystemNamespace(route.Namespace) {
+		var err error
+		tenantName, err = corev1alpha1.GetTenantNameFromObj(route)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	filter := &v1alpha32.EnvoyFilter{
@@ -206,8 +210,7 @@ func (r *HttpRouteReconcilerTask) buildHttpsRedirectEnvoyFilter(route *corev1alp
 			Namespace: istioNamespace,
 			Name:      getHttpsRedirectEnvoyFilterName(route),
 			Labels: map[string]string{
-				KALM_ROUTE_LABEL:                "true",
-				corev1alpha1.TenantNameLabelKey: tenantName,
+				KALM_ROUTE_LABEL: "true",
 			},
 		},
 		Spec: v1alpha3.EnvoyFilter{
@@ -243,6 +246,10 @@ func (r *HttpRouteReconcilerTask) buildHttpsRedirectEnvoyFilter(route *corev1alp
 				},
 			},
 		},
+	}
+
+	if tenantName != "" {
+		filter.Labels[corev1alpha1.TenantNameLabelKey] = tenantName
 	}
 
 	// TODO route and filter are in different namespace. Can't set owner relationship for them.

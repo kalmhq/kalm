@@ -103,7 +103,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, nil
 	}
 
-	if !c.clientManager.CanViewNamespace(c.clientInfo, namespace.Name) {
+	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+namespace.Name) {
 		return nil, nil
 	}
 
@@ -144,7 +144,7 @@ func buildComponentResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, errors.New("convert watch obj to Component failed")
 	}
 
-	if !c.clientManager.CanViewNamespace(c.clientInfo, component.Namespace) {
+	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+component.Namespace) {
 		return nil, nil
 	}
 
@@ -163,7 +163,7 @@ func buildComponentResMessageCausedByService(c *Client, action string, objWatche
 		return nil, nil
 	}
 
-	if !c.clientManager.CanViewNamespace(c.clientInfo, service.Namespace) {
+	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+service.Namespace) {
 		return nil, nil
 	}
 
@@ -183,7 +183,7 @@ func buildServiceResMessage(c *Client, action string, objWatched interface{}) (*
 		return nil, errors.New("convert watch obj to Service failed")
 	}
 
-	if !c.clientManager.CanViewNamespace(c.clientInfo, service.Namespace) {
+	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+service.Namespace) {
 		return nil, nil
 	}
 
@@ -205,7 +205,7 @@ func buildPodResMessage(c *Client, action string, objWatched interface{}) (*ResM
 		return &ResMessage{}, nil
 	}
 
-	if !c.clientManager.CanViewNamespace(c.clientInfo, pod.Namespace) {
+	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+pod.Namespace) {
 		return nil, nil
 	}
 
@@ -260,11 +260,18 @@ func buildNodeResMessage(c *Client, action string, objWatched interface{}) (*Res
 
 func buildHttpsCertResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
 	httpsCert, ok := objWatched.(*v1alpha1.HttpsCert)
+
 	if !ok {
 		return nil, errors.New("convert watch obj to HttpsCert failed")
 	}
 
-	if !c.clientManager.CanViewCluster(c.clientInfo) {
+	tenantName, err := v1alpha1.GetTenantNameFromObj(httpsCert)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if tenantName != c.clientInfo.Tenant {
 		return nil, nil
 	}
 
@@ -280,6 +287,16 @@ func buildRegistryResMessage(c *Client, action string, objWatched interface{}) (
 
 	if !ok {
 		return nil, errors.New("convert watch obj to Registry failed")
+	}
+
+	tenantName, err := v1alpha1.GetTenantNameFromObj(registry)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if tenantName != c.clientInfo.Tenant {
+		return nil, nil
 	}
 
 	if !c.clientManager.CanViewCluster(c.clientInfo) {
@@ -307,6 +324,7 @@ func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*R
 	}
 
 	label := pvc.Labels["kalm-managed"]
+
 	if label != "true" {
 		return &ResMessage{}, nil
 	}
@@ -322,11 +340,18 @@ func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*R
 	//	}
 	//}
 
-	if !c.clientManager.CanViewCluster(c.clientInfo) {
+	tenantName, err := v1alpha1.GetTenantNameFromObj(pvc)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if tenantName != c.clientInfo.Tenant {
 		return nil, nil
 	}
 
 	volume, err := builder.BuildVolumeResponse(*pvc)
+
 	if err != nil {
 		return nil, err
 	}
@@ -374,7 +399,7 @@ func buildProtectEndpointResMessage(c *Client, action string, objWatched interfa
 		return nil, errors.New("convert watch obj to ProtectedEndpoint failed")
 	}
 
-	if !c.clientManager.CanViewNamespace(c.clientInfo, endpoint.Namespace) {
+	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+endpoint.Namespace) {
 		return nil, nil
 	}
 
@@ -392,8 +417,18 @@ func buildAccessTokenResMessage(c *Client, action string, objWatched interface{}
 		return nil, errors.New("convert watch obj to DeployKey failed")
 	}
 
+	tenantName, err := v1alpha1.GetTenantNameFromObj(accessToken)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if tenantName != c.clientInfo.Tenant {
+		return nil, nil
+	}
+
 	if accessToken.Labels != nil && accessToken.Labels[resources.AccessTokenTypeLabelKey] == resources.DeployAccessTokenLabelValue {
-		if !c.clientManager.PermissionsGreaterThanOrEqualAccessToken(c.clientInfo, &resources.AccessToken{
+		if !c.clientManager.PermissionsGreaterThanOrEqualToAccessToken(c.clientInfo, &resources.AccessToken{
 			Name:            accessToken.Name,
 			AccessTokenSpec: &accessToken.Spec,
 		}) {

@@ -9,13 +9,15 @@ import {
   Theme,
 } from "@material-ui/core";
 import { WithStyles, withStyles } from "@material-ui/styles";
+import { blinkTopProgressAction } from "actions/settings";
 import clsx from "clsx";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
+import { APP_BAR_HEIGHT, LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
 import React from "react";
 import { connect } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { APP_BAR_HEIGHT, LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
 import {
   CIIcon,
   InfoIcon,
@@ -29,8 +31,6 @@ import {
   PeopleIcon,
   SettingIcon,
 } from "widgets/Icon";
-import { blinkTopProgressAction } from "actions/settings";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -116,14 +116,14 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private getSideBarData() {
-    const { activeNamespaceName, canViewCluster, canEditNamespace, canEditCluster, canManageCluster } = this.props;
+    const { canEditTenant, canViewCluster, canManageCluster, canViewTenant } = this.props;
 
     return [
       {
         name: "Application",
         items: [
           { icon: KalmApplicationIcon, text: "Apps", to: "/applications" },
-          canViewCluster()
+          canEditTenant()
             ? {
                 icon: KalmCertificatesIcon,
                 text: "Certificates",
@@ -135,7 +135,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
             to: "/routes",
             icon: KalmRoutesIcon,
           },
-          canEditNamespace(activeNamespaceName) || canEditCluster()
+          canEditTenant()
             ? {
                 icon: CIIcon,
                 text: "CI / CD",
@@ -154,21 +154,21 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
                 to: "/cluster/nodes",
               }
             : null,
-          canViewCluster()
+          canViewTenant()
             ? {
                 icon: KalmIngressIcon,
                 text: "Load Balancer",
                 to: "/cluster/loadbalancer",
               }
             : null,
-          canViewCluster()
+          canViewTenant()
             ? {
                 icon: KalmVolumeIcon,
                 text: "Disks",
                 to: "/cluster/disks",
               }
             : null,
-          canEditNamespace(activeNamespaceName) || canViewCluster()
+          canEditTenant()
             ? {
                 icon: KalmRegistryIcon,
                 text: "Registries",

@@ -1,18 +1,62 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// installer
+
+func (h *ApiHandler) InstallApplicationsHandlers(e *echo.Group) {
+	e.GET("/applications", h.handleGetApplications)
+	e.POST("/applications", h.handleCreateApplication)
+	e.GET("/applications/:name", h.handleGetApplicationDetails, h.setApplicationIntoContext)
+	e.DELETE("/applications/:name", h.handleDeleteApplication, h.setApplicationIntoContext)
+}
+
+// middlewares
+
+func (h *ApiHandler) setApplicationIntoContext(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := getCurrentUser(c)
+
+		list, err := h.resourceManager.GetNamespaces(client.MatchingLabels{
+			v1alpha1.TenantNameLabelKey: currentUser.Tenant,
+		}, client.MatchingField("metadata.name", c.Param("name")), client.Limit(1))
+
+		if err != nil {
+			return err
+		}
+
+		if len(list) < 1 {
+			return errors.NewNotFound("")
+		}
+
+		c.Set("application", list[0])
+
+		return next(c)
+	}
+}
+
+func (h *ApiHandler) getApplicationFromContext(c echo.Context) *coreV1.Namespace {
+	namespace := c.Get("application")
+	return namespace.(*coreV1.Namespace)
+}
+
+// handlers
+
 func (h *ApiHandler) handleGetApplications(c echo.Context) error {
-	namespaces, err := h.resourceManager.GetNamespaces()
+	currentUser := getCurrentUser(c)
+	namespaces, err := h.resourceManager.GetNamespaces(belongsToTenant(currentUser.Tenant))
 	namespaces = h.filterAuthorizedApplications(c, namespaces)
 
 	if err != nil {
@@ -29,15 +73,9 @@ func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
-	if !h.clientManager.CanViewNamespace(getCurrentUser(c), c.Param("name")) {
-		return resources.NoNamespaceViewerRoleError(c.Param("name"))
-	}
-
-	namespace, err := h.resourceManager.GetNamespace(c.Param("name"))
-
-	if err != nil {
-		return err
-	}
+	namespace := h.getApplicationFromContext(c)
+	currentUser := getCurrentUser(c)
+	h.MustCanView(currentUser, fmt.Sprintf("%s/%s", currentUser.Tenant, namespace.Name), "applications/"+namespace.Name)
 
 	res, err := h.resourceManager.BuildApplicationDetails(namespace)
 
@@ -50,12 +88,9 @@ func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
 
 func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
 	currentUser := getCurrentUser(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "applications/*")
 
-	if !h.resourceManager.IsATenantOwner(currentUser.Email, currentUser.Tenant) {
-		return resources.NotATenantOwnerError
-	}
-
-	ns, err := getKalmNamespaceFromContext(c)
+	ns, err := bindKalmNamespaceFromRequestBody(c)
 
 	if err != nil {
 		return err
@@ -80,22 +115,9 @@ func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
 
 func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
 	currentUser := getCurrentUser(c)
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "applications/*")
 
-	if !h.resourceManager.IsATenantOwner(currentUser.Email, currentUser.Tenant) {
-		return resources.NotATenantOwnerError
-	}
-
-	namespace, err := h.resourceManager.GetNamespace(c.Param("name"))
-
-	if err != nil {
-		return err
-	}
-
-	applicationTenantName, _ := v1alpha1.GetTenantNameFromObj(namespace)
-
-	if currentUser.Tenant != applicationTenantName {
-		return resources.NotTenantOwnerError
-	}
+	namespace := h.getApplicationFromContext(c)
 
 	if err := h.resourceManager.DeleteNamespace(namespace); err != nil {
 		return err
@@ -104,7 +126,9 @@ func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-func getKalmNamespaceFromContext(c echo.Context) (*coreV1.Namespace, error) {
+// helper
+
+func bindKalmNamespaceFromRequestBody(c echo.Context) (*coreV1.Namespace, error) {
 	var ns resources.Application
 
 	if err := c.Bind(&ns); err != nil {

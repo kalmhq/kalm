@@ -45,6 +45,7 @@ func NewEchoInstance() *echo.Echo {
 	e.Pre(debugHeaderMiddleware)
 	e.Pre(middleware.RemoveTrailingSlash())
 
+
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},

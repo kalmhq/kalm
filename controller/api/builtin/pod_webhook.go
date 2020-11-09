@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -32,7 +33,9 @@ var _ inject.Client = &PodAdmissionHandler{}
 
 func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request) admission.Response {
 
-	podAdmissionHandlerLog.Info("pod admissionHandler called")
+	logger := podAdmissionHandlerLog.WithValues("UID", req.UID)
+
+	logger.Info("pod admissionHandler called", "op", req.Operation)
 
 	pod := corev1.Pod{}
 
@@ -60,10 +63,19 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 		sum := getResouceListSumOfPods(append(podList.Items, pod))
 
 		if err := v1alpha1.SetTenantResourceListByName(tenant, sum); err != nil {
-			return admission.Errored(http.StatusBadRequest, err)
-		}
+			logger.Info("fail to allocate res for tenant, CREATE", "tenant", tenant, "err", err, "sum", sum)
 
-		podAdmissionHandlerLog.Info("pod resource updated for create", "tenant", tenant, "newQuantity", sum)
+			ns := pod.Namespace
+			componentName := pod.Labels[v1alpha1.KalmLabelComponentKey]
+
+			if err := v.tryLabelComponentAsExceedingQuota(ns, componentName); err != nil {
+				logger.Error(err, "fail to mark component as exceeding quota, ignored", "component", componentName)
+			}
+
+			return admission.Errored(http.StatusBadRequest, err)
+		} else {
+			logger.Info("pod resource updated for create", "tenant", tenant, "newQuantity", sum)
+		}
 	case v1beta1.Delete:
 		if err := v.decoder.DecodeRaw(req.OldObject, &pod); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
@@ -99,6 +111,7 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 		}
 
 		if err := v1alpha1.SetTenantResourceListByName(tenant, sumExceptPodBeenDeleted); err != nil {
+			podAdmissionHandlerLog.Info("fail to allocate res for tenant, DELETE", "tenant", tenant, "err", err, "sum", sumExceptPodBeenDeleted)
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
@@ -110,10 +123,47 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 	return admission.Allowed("")
 }
 
+func (v *PodAdmissionHandler) tryLabelComponentAsExceedingQuota(ns, compName string) error {
+
+	if ns == "" {
+		return fmt.Errorf("namespace is empty")
+	}
+
+	if compName == "" {
+		return fmt.Errorf("component name is empty")
+	}
+
+	var component v1alpha1.Component
+	if err := v.client.Get(context.Background(), client.ObjectKey{Namespace: ns, Name: compName}, &component); err != nil {
+		podAdmissionHandlerLog.Error(err, "fail to get component, ignored", "component", compName)
+		return err
+	}
+
+	copy := component.DeepCopy()
+	copy.Labels[v1alpha1.KalmLabelKeyExceedingQuota] = "true"
+
+	if err := v.client.Update(context.Background(), copy); err != nil {
+		podAdmissionHandlerLog.Error(err, "fail to mark component as exceeding limit, ignored", "component", compName)
+		return err
+	}
+
+	return nil
+}
+
 func getResouceListSumOfPods(pods []corev1.Pod) v1alpha1.ResourceList {
 	rstResList := make(map[v1alpha1.ResourceName]resource.Quantity)
 
+	podMap := make(map[string]bool)
+
 	for _, pod := range pods {
+		podKey := fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
+
+		if _, exist := podMap[podKey]; exist {
+			continue
+		} else {
+			podMap[podKey] = true
+		}
+
 		tmp := getResourceOfPod(pod)
 		rstResList = sumOfResouceList(rstResList, tmp)
 	}

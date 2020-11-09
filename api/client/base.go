@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -40,16 +41,16 @@ type ClientManager interface {
 	CanView(client *ClientInfo, scope string, obj string) bool
 	CanEdit(client *ClientInfo, scope string, obj string) bool
 	CanManage(client *ClientInfo, scope string, obj string) bool
-	CanViewNamespace(client *ClientInfo, scope string) bool
-	CanEditNamespace(client *ClientInfo, scope string) bool
-	CanManageNamespace(client *ClientInfo, scope string) bool
+	CanViewScope(client *ClientInfo, scope string) bool
+	CanEditScope(client *ClientInfo, scope string) bool
+	CanManageScope(client *ClientInfo, scope string) bool
 	CanViewCluster(client *ClientInfo) bool
 	CanEditCluster(client *ClientInfo) bool
 	CanManageCluster(client *ClientInfo) bool
 
 	// special resources
 	CanOperateHttpRoute(c *ClientInfo, action string, route *resources.HttpRoute) bool
-	PermissionsGreaterThanOrEqualAccessToken(c *ClientInfo, accessToken *resources.AccessToken) bool
+	PermissionsGreaterThanOrEqualToAccessToken(c *ClientInfo, accessToken *resources.AccessToken) bool
 	CanManageRoleBinding(c *ClientInfo, roleBinding *v1alpha1.RoleBinding) bool
 
 	GetRBACEnforcer() rbac.Enforcer
@@ -127,16 +128,16 @@ func (m *BaseClientManager) CanManage(client *ClientInfo, scope string, obj stri
 	return m.wrapper(client, m.RBACEnforcer.CanManage, scope, obj)
 }
 
-func (m *BaseClientManager) CanViewNamespace(client *ClientInfo, scope string) bool {
-	return m.wrapper(client, m.RBACEnforcer.CanViewNamespace, scope)
+func (m *BaseClientManager) CanViewScope(client *ClientInfo, scope string) bool {
+	return m.wrapper(client, m.RBACEnforcer.CanViewScope, scope)
 }
 
-func (m *BaseClientManager) CanEditNamespace(client *ClientInfo, scope string) bool {
-	return m.wrapper(client, m.RBACEnforcer.CanEditNamespace, scope)
+func (m *BaseClientManager) CanEditScope(client *ClientInfo, scope string) bool {
+	return m.wrapper(client, m.RBACEnforcer.CanEditScope, scope)
 }
 
-func (m *BaseClientManager) CanManageNamespace(client *ClientInfo, scope string) bool {
-	return m.wrapper(client, m.RBACEnforcer.CanManageNamespace, scope)
+func (m *BaseClientManager) CanManageScope(client *ClientInfo, scope string) bool {
+	return m.wrapper(client, m.RBACEnforcer.CanManageScope, scope)
 }
 
 func (m *BaseClientManager) CanViewCluster(client *ClientInfo) bool {
@@ -151,7 +152,7 @@ func (m *BaseClientManager) CanManageCluster(client *ClientInfo) bool {
 	return m.wrapper(client, m.RBACEnforcer.CanManageCluster)
 }
 
-func (m *BaseClientManager) PermissionsGreaterThanOrEqualAccessToken(c *ClientInfo, accessToken *resources.AccessToken) bool {
+func (m *BaseClientManager) PermissionsGreaterThanOrEqualToAccessToken(c *ClientInfo, accessToken *resources.AccessToken) bool {
 	policies := GetPoliciesFromAccessToken(accessToken)
 
 	for _, policy := range policies {
@@ -178,12 +179,14 @@ func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, ro
 			ns = parts[1]
 		}
 
+		scope := fmt.Sprintf("%s/%s", route.Tenant, ns)
+
 		if action == "view" {
-			if !m.CanViewNamespace(c, ns) {
+			if !m.CanViewScope(c, scope) {
 				return false
 			}
 		} else if action == "edit" {
-			if !m.CanEditNamespace(c, ns) {
+			if !m.CanEditScope(c, scope) {
 				return false
 			}
 		}
@@ -196,7 +199,10 @@ func (m *BaseClientManager) CanManageRoleBinding(c *ClientInfo, roleBinding *v1a
 	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
 		return m.CanManageCluster(c)
 	default:
-		return m.CanManageNamespace(c, roleBinding.Namespace)
+		// TODO: handle the error
+		tenantName, _ := v1alpha1.GetTenantNameFromObj(roleBinding)
+		scope := fmt.Sprintf("%s/%s", tenantName, roleBinding.Namespace)
+		return m.CanManageScope(c, scope)
 	}
 }
 

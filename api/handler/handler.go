@@ -15,24 +15,15 @@ type ApiHandler struct {
 	logger          *zap.Logger
 }
 
-type H map[string]interface{}
-
-func (h *ApiHandler) InstallAdminRoutes(e *echo.Echo) {
-	g := e.Group("/admin")
-
-	g.GET("/routes", handleApiRoutes)
-	g.POST("/temp_account", h.handleCreateTemporaryClusterOwnerAccessTokens, h.GetUserMiddleware, h.RequireUserMiddleware)
-
-	// deprecated
-	e.POST("/temporary_cluster_owner_access_token", h.handleCreateTemporaryClusterOwnerAccessTokens, h.GetUserMiddleware, h.RequireUserMiddleware)
-}
-
 func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
 	e.GET("/ping", handlePing)
 	e.POST("/webhook/components", h.handleDeployWebhookCall)
 }
 
 func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
+	// recover panic from permission check
+	e.Use(PermissionPanicRecoverMiddleware)
+
 	e.GET("/ping", handlePing)
 	e.GET("/policies", h.handlePolicies, h.GetUserMiddleware, h.RequireUserMiddleware)
 
@@ -61,27 +52,12 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/cluster", h.handleClusterInfo)
 
 	gv1Alpha1WithAuth.GET("/loadbalancers", h.handleLoadBalancers)
-
-	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
-	gv1Alpha1WithAuth.POST("/applications", h.handleCreateApplication)
-	gv1Alpha1WithAuth.GET("/applications/:name", h.handleGetApplicationDetails)
-	gv1Alpha1WithAuth.DELETE("/applications/:name", h.handleDeleteApplication)
-
 	gv1Alpha1WithAuth.GET("/services", h.handleListClusterServices)
-
 	gv1Alpha1WithAuth.GET("/componentplugins", h.handleListComponentPlugins)
 
-	gv1Alpha1WithAuth.GET("/applications/:applicationName/components", h.handleListComponents)
-	gv1Alpha1WithAuth.GET("/applications/:applicationName/components/:name", h.handleGetComponent)
-	gv1Alpha1WithAuth.PUT("/applications/:applicationName/components/:name", h.handleUpdateComponent)
-	gv1Alpha1WithAuth.DELETE("/applications/:applicationName/components/:name", h.handleDeleteComponent)
-	gv1Alpha1WithAuth.POST("/applications/:applicationName/components", h.handleCreateComponent)
-
-	gv1Alpha1WithAuth.GET("/registries", h.handleListRegistries)
-	gv1Alpha1WithAuth.GET("/registries/:name", h.handleGetRegistry)
-	gv1Alpha1WithAuth.PUT("/registries/:name", h.handleUpdateRegistry)
-	gv1Alpha1WithAuth.POST("/registries", h.handleCreateRegistry)
-	gv1Alpha1WithAuth.DELETE("/registries/:name", h.handleDeleteRegistry)
+	h.InstallApplicationsHandlers(gv1Alpha1WithAuth)
+	h.InstallComponentsHandlers(gv1Alpha1WithAuth)
+	h.InstallRegistriesHandlers(gv1Alpha1WithAuth)
 
 	gv1Alpha1WithAuth.DELETE("/pods/:namespace/:name", h.handleDeletePod)
 
@@ -107,12 +83,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.PUT("/httpscertissuers/:name", h.handleUpdateHttpsCertIssuer)
 	gv1Alpha1WithAuth.DELETE("/httpscertissuers/:name", h.handleDeleteHttpsCertIssuer)
 
-	gv1Alpha1WithAuth.GET("/httpscerts", h.handleListHttpsCerts)
-	gv1Alpha1WithAuth.GET("/httpscerts/:name", h.handleGetHttpsCert)
-	gv1Alpha1WithAuth.POST("/httpscerts", h.handleCreateHttpsCert)
-	gv1Alpha1WithAuth.POST("/httpscerts/upload", h.handleUploadHttpsCert)
-	gv1Alpha1WithAuth.PUT("/httpscerts/:name", h.handleUpdateHttpsCert)
-	gv1Alpha1WithAuth.DELETE("/httpscerts/:name", h.handleDeleteHttpsCert)
+	h.InstallHttpsCertsHandlers(gv1Alpha1WithAuth)
 
 	gv1Alpha1WithAuth.GET("/storageclasses", h.handleListStorageClasses)
 
@@ -122,13 +93,10 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	// deprecated
 	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload", h.handleAvailableVolsForSimpleWorkload)
 	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload/:namespace", h.handleAvailableVolsForSimpleWorkload)
-
 	gv1Alpha1WithAuth.GET("/volumes/available/sts/:namespace", h.handleAvailableVolsForSts)
 
 	// general access token handler
-	gv1Alpha1WithAuth.GET("/access_tokens", h.handleListAccessTokens)
-	gv1Alpha1WithAuth.POST("/access_tokens", h.handleCreateAccessToken)
-	gv1Alpha1WithAuth.DELETE("/access_tokens", h.handleDeleteAccessToken)
+	h.InstallAccessTokensHandlers(gv1Alpha1WithAuth)
 
 	// deploy access token is just access token that only has update component permissions
 	gv1Alpha1WithAuth.GET("/deploy_access_tokens", h.handleListDeployAccessTokens)
@@ -146,10 +114,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.POST("/protectedendpoints", h.handleCreateProtectedEndpoints)
 	gv1Alpha1WithAuth.PUT("/protectedendpoints", h.handleUpdateProtectedEndpoints)
 
-	gv1Alpha1WithAuth.POST("/acmeserver", h.handleCreateACMEServer)
-	gv1Alpha1WithAuth.GET("/acmeserver", h.handleGetACMEServer)
-	gv1Alpha1WithAuth.PUT("/acmeserver", h.handleUpdateACMEServer)
-	gv1Alpha1WithAuth.DELETE("/acmeserver", h.handleDeleteACMEServer)
+	h.InstallACMEServerHandlers(gv1Alpha1WithAuth)
 
 	gv1Alpha1WithAuth.GET("/settings", h.handleListSettings)
 

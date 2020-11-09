@@ -33,7 +33,7 @@ func (r *ProtectedEndpoint) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// +kubebuilder:webhook:verbs=create;update,path=/mutate-core-v1alpha1-protectedendpoint,mutating=true,failurePolicy=fail,groups=core,resources=protectedendpointtypes,versions=v1alpha1,name=vprotectedendpointtype.kb.io
+// +kubebuilder:webhook:verbs=create;update,path=/mutate-core-v1alpha1-protectedendpoint,mutating=true,failurePolicy=fail,groups=core,resources=protectedendpointtypes,versions=v1alpha1,name=mprotectedendpointtype.kb.io
 
 var _ webhook.Defaulter = &ProtectedEndpoint{}
 

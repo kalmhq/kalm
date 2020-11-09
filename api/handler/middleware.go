@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/kalmhq/kalm/api/client"
+	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 	"k8s.io/apimachinery/pkg/api/errors"
 )
@@ -38,4 +39,17 @@ func (h *ApiHandler) GetUserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 func getCurrentUser(c echo.Context) *client.ClientInfo {
 	return c.Get(CURRENT_USER_KEY).(*client.ClientInfo)
+}
+
+func (h *ApiHandler) requireIsTenantOwner(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := getCurrentUser(c)
+
+		if !h.resourceManager.IsATenantOwner(currentUser.Email, currentUser.Tenant) {
+			return resources.NotATenantOwnerError
+		}
+
+		return next(c)
+	}
+
 }

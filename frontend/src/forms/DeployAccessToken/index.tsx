@@ -60,7 +60,7 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
       isNamespaceFirstLoaded,
       applications,
       allComponents,
-      canEditCluster,
+      canEditTenant,
       onSubmit,
     } = this.props;
 
@@ -84,7 +84,7 @@ class DeployAccessTokenFormRaw extends React.PureComponent<Props> {
     });
 
     const scopeOptions: { value: string; label: string; explain?: string }[] = [];
-    if (canEditCluster()) {
+    if (canEditTenant()) {
       scopeOptions.push({
         value: DeployAccessTokenScopeCluster,
         label: "Cluster - Can update all components on this cluster",
