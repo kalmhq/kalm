@@ -76,9 +76,10 @@ var _ webhook.Validator = &HttpsCert{}
 func (r *HttpsCert) ValidateCreate() error {
 	httpscertlog.Info("validate create", "name", r.Name)
 
-	if !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
+	// httpsCert is Cluster scope
+	// if !HasTenantSet(r) {
+	// 	return NoTenantFoundError
+	// }
 
 	return r.validate()
 }
@@ -87,13 +88,13 @@ func (r *HttpsCert) ValidateCreate() error {
 func (r *HttpsCert) ValidateUpdate(old runtime.Object) error {
 	httpscertlog.Info("validate update", "name", r.Name)
 
-	if !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
+	// if !HasTenantSet(r) {
+	// 	return NoTenantFoundError
+	// }
 
-	if IsTenantChanged(r, old) {
-		return TenantChangedError
-	}
+	// if IsTenantChanged(r, old) {
+	// 	return TenantChangedError
+	// }
 
 	return r.validate()
 }
