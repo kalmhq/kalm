@@ -47,7 +47,7 @@ export const createCasbinEnforcerMiddleware = () => {
         return false;
       };
 
-      const tenant = "global";
+      const { tenant } = action.payload.loginStatus;
 
       store.dispatch({
         type: SET_AUTH_METHODS,
