@@ -704,6 +704,11 @@ func (r *ComponentReconcilerTask) forceScaleDownExceedingQuotaComponent(comp *v1
 		return nil
 	}
 
+	if comp.Labels[v1alpha1.KalmLabelKeyExceedingQuota] == "true" &&
+		comp.Spec.Replicas != nil && *comp.Spec.Replicas == 0 {
+		return nil
+	}
+
 	copy := comp.DeepCopy()
 
 	// remember original replicas for recovery
