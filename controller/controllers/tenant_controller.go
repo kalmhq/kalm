@@ -62,6 +62,7 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		if err != nil {
 			return ctrl.Result{}, err
 		}
+		logger.Info("to remove exceedingQuota label for components", "size", len(components))
 
 		for _, comp := range components {
 			if err := r.tryReScheduleExceedingQuotaComponent(comp.DeepCopy()); err != nil {
@@ -69,7 +70,7 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			}
 		}
 
-		logger.Info("removed exceedingQuota label for components", "size", len(components))
+		logger.Info("finish remove exceedingQuota label for components")
 	} else {
 		logger.Info("see exceeding quota, will stop components to reduce resource usage", "res", surplusResource)
 
@@ -110,6 +111,8 @@ func getSurplusResource(tenant v1alpha1.Tenant) (rst v1alpha1.ResourceList, noNe
 }
 
 func (r *TenantReconciler) findComponentsToSchedule(tenant string, surplusResource v1alpha1.ResourceList) ([]v1alpha1.Component, error) {
+	r.Log.Info("findComponentsToSchedule", "tenant", tenant, "surplusRes", surplusResource)
+
 	var compList v1alpha1.ComponentList
 	err := r.List(r.ctx, &compList, client.MatchingLabels{
 		v1alpha1.TenantNameLabelKey:         tenant,
@@ -119,24 +122,28 @@ func (r *TenantReconciler) findComponentsToSchedule(tenant string, surplusResour
 		return nil, err
 	}
 
-	var compToReschedule []v1alpha1.Component
-
 	// re-schedule higher priority first
 	components := compList.Items
 	sort.Slice(components, func(i, j int) bool {
 		return components[i].Spec.Priority > components[j].Spec.Priority
 	})
 
+	r.Log.Info("potential components to schedule", "size", len(components))
+
 	// find components that resource sum won't exceed quota
+	var compToReschedule []v1alpha1.Component
+
 	var rescheduleSum v1alpha1.ResourceList
 	for _, comp := range compList.Items {
-		rescheduleSum = sumResourceList(rescheduleSum, estimateResourceConsumption(comp))
+		compResToSchedule := estimateResourceConsumption(comp)
+		rescheduleSum = sumResourceList(rescheduleSum, compResToSchedule)
 
 		if existGreaterResourceInList(rescheduleSum, surplusResource) {
 			return compToReschedule, nil
 		}
 
 		compToReschedule = append(compToReschedule, comp)
+		r.Log.Info("components to schedule", "curSize", len(compToReschedule))
 	}
 
 	return compToReschedule, nil
@@ -247,7 +254,7 @@ func estimateResourceConsumption(component v1alpha1.Component) v1alpha1.Resource
 		}
 	}
 
-	return nil
+	return resList
 }
 
 func incResource(resList v1alpha1.ResourceList, resName v1alpha1.ResourceName, deltaQuantity resource.Quantity) {
@@ -259,11 +266,12 @@ func incResource(resList v1alpha1.ResourceList, resName v1alpha1.ResourceName, d
 
 //todo
 func multiQuantity(quantity resource.Quantity, cnt int) resource.Quantity {
+	var rst resource.Quantity
 	for i := 0; i < cnt; i++ {
-		quantity.Add(quantity)
+		rst.Add(quantity)
 	}
 
-	return quantity
+	return rst
 }
 
 func (r *TenantReconciler) findComponentsToStop(tenant string, surplusResource v1alpha1.ResourceList) ([]v1alpha1.Component, error) {
@@ -292,10 +300,14 @@ func (r *TenantReconciler) findComponentsToStop(tenant string, surplusResource v
 	for _, comp := range components {
 		componentsToBeStopped = append(componentsToBeStopped, comp)
 
-		surplusResource = sumResourceList(surplusResource, estimateResourceConsumption(comp))
+		resListToBeFreed := estimateResourceConsumption(comp)
+		r.Log.Info("before sum", "surplusResource", surplusResource, "resListToBeFreed", resListToBeFreed)
+		surplusResource = sumResourceList(surplusResource, resListToBeFreed)
+		r.Log.Info("stop 1 component", "surplusResource", surplusResource, "comp to be stopped", comp)
 
 		if !existNegativeResource(surplusResource) {
 			// all >= 0, tenant quota can be healthy again
+			r.Log.Info("stop early of components to stop:", "size", len(componentsToBeStopped))
 			return componentsToBeStopped, nil
 		}
 	}
