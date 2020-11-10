@@ -280,7 +280,7 @@ func (r *Component) ValidateDelete() error {
 
 	// release resource
 	if err := ReleaseTenantResource(r, ResourceComponentsCount, resource.MustParse("1")); err != nil {
-		return err
+		componentlog.Error(err, "fail to release componentCnt, ignored", "ns/name", fmt.Sprintf("%s/%s", r.Namespace, r.Name))
 	}
 
 	return nil

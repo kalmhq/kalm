@@ -77,11 +77,11 @@ func (r *RoleBinding) ValidateCreate() error {
 		return err
 	}
 
-	if IsKalmSystemNamespace(r.Namespace) {
-		return nil
+	if !IsKalmSystemNamespace(r.Namespace) {
+		return AllocateTenantResource(r, ResourceRoleBindingCount, resource.MustParse("1"))
 	}
 
-	return AllocateTenantResource(r, ResourceRoleBindingCount, resource.MustParse("1"))
+	return nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
@@ -136,7 +136,7 @@ func (r *RoleBinding) ValidateDelete() error {
 	}
 
 	if err := ReleaseTenantResource(r, ResourceRoleBindingCount, resource.MustParse("1")); err != nil {
-		return err
+		rolebindinglog.Error(err, "fail to release roleBindingCount, ignored", "ns/name", fmt.Sprintf("%s/%s", r.Namespace, r.Name))
 	}
 
 	return nil

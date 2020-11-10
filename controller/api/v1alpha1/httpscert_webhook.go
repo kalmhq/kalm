@@ -76,7 +76,8 @@ var _ webhook.Validator = &HttpsCert{}
 func (r *HttpsCert) ValidateCreate() error {
 	httpscertlog.Info("validate create", "name", r.Name)
 
-	// httpsCert is Cluster scope
+	// tmp disable tenant check on httpsCert, cuz default-https-cert belongs to no tenant
+
 	// if !HasTenantSet(r) {
 	// 	return NoTenantFoundError
 	// }

@@ -110,7 +110,7 @@ func (r *AccessToken) ValidateDelete() error {
 	accesstokenlog.Info("validate delete", "name", r.Name)
 
 	if err := ReleaseTenantResource(r, ResourceAccessTokensCount, resource.MustParse("1")); err != nil {
-		return err
+		accesstokenlog.Error(err, "fail to release AccessTokenCnt, ignored", "name", r.Name)
 	}
 
 	return nil
