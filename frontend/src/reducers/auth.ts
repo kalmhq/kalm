@@ -27,19 +27,24 @@ export type State = {
 
 const AUTHORIZED_TOKEN_KEY = "AUTHORIZED_TOKEN_KEY";
 
-const initialState: State = {
-  authorized: false,
-  firstLoaded: false,
-  isLoading: false,
-  token: window.localStorage.getItem(AUTHORIZED_TOKEN_KEY) || "",
-  email: "",
-  groups: [],
-  policies: "",
-  avatarUrl: "",
-  impersonation: "",
-  impersonationType: "",
-  permissionMethods: emptyPermissionMethods,
+const getInitialState = () => {
+  return {
+    authorized: false,
+    firstLoaded: false,
+    isLoading: false,
+    token: window.localStorage.getItem(AUTHORIZED_TOKEN_KEY) || "",
+    email: "",
+    groups: [],
+    policies: "",
+    avatarUrl: "",
+    impersonation: "",
+    impersonationType: "",
+    permissionMethods: emptyPermissionMethods,
+  };
 };
+
+// prevent LOGOUT reset token bug
+const initialState: State = getInitialState();
 
 const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {
@@ -70,7 +75,7 @@ const reducer = produce((state: State, action: Actions) => {
     }
     case LOGOUT: {
       window.localStorage.removeItem(AUTHORIZED_TOKEN_KEY);
-      return initialState;
+      return getInitialState();
     }
     case SET_AUTH_METHODS: {
       state.permissionMethods = action.payload;
