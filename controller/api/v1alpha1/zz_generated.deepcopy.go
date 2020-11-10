@@ -583,6 +583,11 @@ func (in *ComponentSpec) DeepCopyInto(out *ComponentSpec) {
 		*out = new(corev1.ResourceRequirements)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.IstioResourceRequirements != nil {
+		in, out := &in.IstioResourceRequirements, &out.IstioResourceRequirements
+		*out = new(corev1.ResourceRequirements)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.TerminationGracePeriodSeconds != nil {
 		in, out := &in.TerminationGracePeriodSeconds, &out.TerminationGracePeriodSeconds
 		*out = new(int64)

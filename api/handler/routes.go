@@ -6,6 +6,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+func (h *ApiHandler) InstallHttpRouteHandlers(e *echo.Group) {
+	e.GET("/httproutes", h.handleListAllRoutes)
+	e.GET("/httproutes/:namespace", h.handleListRoutes)
+	e.POST("/httproutes/:namespace", h.handleCreateRoute)
+	e.PUT("/httproutes/:namespace/:name", h.handleUpdateRoute)
+	e.DELETE("/httproutes/:namespace/:name", h.handleDeleteRoute)
+}
+
 func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
 	currentUser := getCurrentUser(c)
 

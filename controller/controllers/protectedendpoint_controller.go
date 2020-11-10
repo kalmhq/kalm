@@ -125,7 +125,6 @@ func (r *ProtectedEndpointReconcilerTask) DeleteResources() error {
 
 type OIDCProviderInfo struct {
 	Issuer                            string
-	JwksURI                           string
 	AuthProxyInternalUrl              string
 	AuthProxyExternalUrl              string
 	AuthProxyInternalEnvoyClusterName string
@@ -138,22 +137,20 @@ func GetOIDCProviderInfo(ssoConfig *v1alpha1.SingleSignOnConfig) *OIDCProviderIn
 	var scheme string
 	var port string
 
+	if spec.UseHttp {
+		scheme = "http"
+	} else {
+		scheme = "https"
+	}
+
 	if spec.Issuer != "" {
 		info.Issuer = spec.Issuer
-		info.JwksURI = spec.JwksURI
 	} else {
-		if spec.UseHttp {
-			scheme = "http"
-		} else {
-			scheme = "https"
-		}
-
 		if spec.Port != nil {
 			port = ":" + strconv.Itoa(*spec.Port)
 		}
 
 		info.Issuer = fmt.Sprintf("%s://%s%s/dex", scheme, spec.Domain, port)
-		info.JwksURI = fmt.Sprintf("%s/keys", info.Issuer)
 	}
 
 	if spec.ExternalEnvoyExtAuthz != nil {

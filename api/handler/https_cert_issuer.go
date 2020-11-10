@@ -8,6 +8,13 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+func (h *ApiHandler) InstallHttpCertIssuerHandlers(e *echo.Group) {
+	e.GET("/httpscertissuers", h.handleGetHttpsCertIssuer)
+	e.POST("/httpscertissuers", h.handleCreateHttpsCertIssuer)
+	e.PUT("/httpscertissuers/:name", h.handleUpdateHttpsCertIssuer)
+	e.DELETE("/httpscertissuers/:name", h.handleDeleteHttpsCertIssuer)
+}
+
 func (h *ApiHandler) handleGetHttpsCertIssuer(c echo.Context) error {
 
 	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
