@@ -4,6 +4,7 @@ import { getComponentFormVolumeOptions } from "selectors/component";
 import { ApplicationComponent, ApplicationComponentDetails } from "types/application";
 import {
   ResourceRequirements,
+  Volume,
   VolumeTypePersistentVolumeClaim,
   VolumeTypePersistentVolumeClaimNew,
   VolumeTypePersistentVolumeClaimTemplate,
@@ -108,6 +109,7 @@ export const correctComponentFormValuesForInit = (
   component: ApplicationComponent,
 ): ApplicationComponent => {
   let volumes = component.volumes;
+  let correctedVolumes: Volume[];
   if (volumes) {
     const volumeOptions = getComponentFormVolumeOptions(
       state,
@@ -128,7 +130,7 @@ export const correctComponentFormValuesForInit = (
       return claimName;
     };
 
-    const correctedVolumes = volumes?.map((v) => {
+    correctedVolumes = volumes?.map((v) => {
       const newVolume = produce(v, (draft) => {
         // set claimName according to pvc
         if (v.type === VolumeTypePersistentVolumeClaim || v.type === VolumeTypePersistentVolumeClaimTemplate) {
@@ -139,24 +141,26 @@ export const correctComponentFormValuesForInit = (
 
       return newVolume;
     });
-
-    component = produce(component, (draft) => {
-      draft.volumes = correctedVolumes;
-
-      if (component.cpuLimit) {
-        draft.cpuLimit = component.resourceRequirements?.limits?.cpu;
-      }
-      if (component.cpuRequest) {
-        draft.cpuRequest = component.resourceRequirements?.requests?.cpu;
-      }
-      if (component.memoryLimit) {
-        draft.memoryLimit = component.resourceRequirements?.limits?.memory;
-      }
-      if (component.memoryRequest) {
-        draft.memoryRequest = component.resourceRequirements?.requests?.memory;
-      }
-    });
   }
+
+  component = produce(component, (draft) => {
+    if (volumes) {
+      draft.volumes = correctedVolumes;
+    }
+
+    if (component.cpuLimit) {
+      draft.cpuLimit = component.resourceRequirements?.limits?.cpu;
+    }
+    if (component.cpuRequest) {
+      draft.cpuRequest = component.resourceRequirements?.requests?.cpu;
+    }
+    if (component.memoryLimit) {
+      draft.memoryLimit = component.resourceRequirements?.limits?.memory;
+    }
+    if (component.memoryRequest) {
+      draft.memoryRequest = component.resourceRequirements?.requests?.memory;
+    }
+  });
 
   return component;
 };

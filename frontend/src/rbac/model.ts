@@ -42,11 +42,11 @@ function objMatchFunc(...args: any[]): boolean {
   const name2Parts = name2.split("/");
 
   if (name1Parts.length !== 2) {
-    throw `wrong object in objectMatchFunc ${name1}`;
+    throw new Error(`wrong object in objectMatchFunc ${name1}`);
   }
 
   if (name2Parts.length !== 2) {
-    throw `wrong object in objectMatchFunc ${name2}`;
+    throw new Error(`wrong object in objectMatchFunc ${name2}`);
   }
 
   return objMatch(name1Parts[0], name2Parts[0]) && objMatch(name1Parts[1], name2Parts[1]);

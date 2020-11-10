@@ -182,7 +182,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private getKRTableColumns() {
-    const { canEditCluster } = this.props;
+    const { canEditTenant } = this.props;
 
     const columns = [
       {
@@ -211,7 +211,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       },
     ];
 
-    if (canEditCluster()) {
+    if (canEditTenant()) {
       columns.push({
         Header: "Actions",
         accessor: "actions",

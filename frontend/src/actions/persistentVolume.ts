@@ -9,7 +9,13 @@ import {
 } from "types/disk";
 
 export const loadPersistentVolumesAction = (): ThunkResult<Promise<void>> => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
+    // for withData reloadResouces
+    const { token, impersonation } = getState().auth;
+    if (!token && !impersonation) {
+      return;
+    }
+
     const persistentVolumes = await api.getPersistentVolumes();
 
     dispatch({

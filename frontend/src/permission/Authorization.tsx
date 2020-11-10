@@ -41,7 +41,7 @@ export const Authorizated = ({ mustAuthorized, mustNotAuthorized }: Options) => 
       const { firstLoaded } = this.props;
 
       if (!firstLoaded) {
-        this.props.dispatch(loadLoginStatusAction());
+        this.props.dispatch(loadLoginStatusAction(false));
       }
     }
 
