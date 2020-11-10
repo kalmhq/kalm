@@ -103,6 +103,11 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, nil
 	}
 
+	tenant, tenantExist := namespace.Labels["tenant"]
+	if !tenantExist || tenant != c.clientInfo.Tenant {
+		return nil, nil
+	}
+
 	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+namespace.Name) {
 		return nil, nil
 	}
