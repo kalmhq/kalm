@@ -3,6 +3,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	appsV1 "k8s.io/api/apps/v1"
@@ -11,7 +13,6 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"testing"
 )
 
 type PluginBindingControllerSuite struct {
@@ -25,7 +26,7 @@ type PluginBindingControllerSuite struct {
 }
 
 func (suite *PluginBindingControllerSuite) SetupSuite() {
-	suite.BasicSuite.SetupSuite()
+	suite.BasicSuite.SetupSuite(true)
 }
 
 func (suite *PluginBindingControllerSuite) TearDownSuite() {
