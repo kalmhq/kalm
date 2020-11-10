@@ -118,7 +118,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   }
 
   private renderEmpty() {
-    const { dispatch, activeNamespaceName } = this.props;
+    const { dispatch, activeNamespaceName, canEditNamespace } = this.props;
 
     return (
       <EmptyInfoBox
@@ -126,16 +126,18 @@ class ComponentRaw extends React.PureComponent<Props, State> {
         title={"This App doesn’t have any Components"}
         content="Components are the fundamental building blocks of your Application. Each Component corresponds to a single image, and typically represents a service or a cronjob."
         button={
-          <CustomizedButton
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              blinkTopProgressAction();
-              dispatch(push(`/applications/${activeNamespaceName}/components/new`));
-            }}
-          >
-            Add Component
-          </CustomizedButton>
+          canEditNamespace(activeNamespaceName) && (
+            <CustomizedButton
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                blinkTopProgressAction();
+                dispatch(push(`/applications/${activeNamespaceName}/components/new`));
+              }}
+            >
+              Add Component
+            </CustomizedButton>
+          )
         }
       />
     );
