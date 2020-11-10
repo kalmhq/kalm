@@ -83,6 +83,13 @@ func main() {
 				Destination: &runningConfig.KubeConfigPath,
 				EnvVars:     []string{"KUBE_CONFIG_PATH"},
 			},
+			&cli.StringFlag{
+				Name:        "kalm-type",
+				Usage:       "",
+				DefaultText: "saas",
+				Destination: &runningConfig.KalmType,
+				EnvVars:     []string{"KALM_TYPE"},
+			},
 			&cli.BoolFlag{
 				Name:        "enable-debug-apis",
 				Value:       false,

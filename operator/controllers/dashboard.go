@@ -47,6 +47,11 @@ func getKalmDashboardCommand(config *installV1Alpha1.KalmOperatorConfig) string 
 		}
 	}
 
+	if config.Spec.KalmType != "" {
+		sb.WriteString(" ")
+		sb.WriteString(fmt.Sprintf("--kalm-type=%s", config.Spec.KalmType))
+	}
+
 	return sb.String()
 }
 

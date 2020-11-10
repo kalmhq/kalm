@@ -19,6 +19,7 @@ type Config struct {
 	KubernetesApiServerAddress    string
 	KubernetesApiServerCAFilePath string
 	KubeConfigPath                string
+	KalmType                      string
 	CorsAllowedOrigins            cli.StringSlice
 
 	EnableAdminServerDebugRoutes bool

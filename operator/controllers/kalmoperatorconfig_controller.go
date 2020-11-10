@@ -538,44 +538,6 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 								"--v=10",
 							},
 						},
-						{
-							Command: []string{"/manager"},
-							Args: []string{
-								"--enable-leader-election",
-								"--metrics-addr=127.0.0.1:8080",
-							},
-							Image:           img,
-							ImagePullPolicy: "Always",
-							Name:            "manager",
-							Env: []corev1.EnvVar{
-								{Name: "ENABLE_WEBHOOKS", Value: "true"},
-								{Name: "KALM_VERSION", Value: controllerImgTag},
-							},
-							Ports: []corev1.ContainerPort{
-								{
-									Name:          "webhook-server",
-									ContainerPort: 9443,
-									Protocol:      "TCP",
-								},
-							},
-							Resources: corev1.ResourceRequirements{
-								Limits: map[corev1.ResourceName]resource.Quantity{
-									corev1.ResourceCPU:    resource.MustParse("100m"),
-									corev1.ResourceMemory: resource.MustParse("256Mi"),
-								},
-								Requests: map[corev1.ResourceName]resource.Quantity{
-									corev1.ResourceCPU:    resource.MustParse("10m"),
-									corev1.ResourceMemory: resource.MustParse("128Mi"),
-								},
-							},
-							VolumeMounts: []corev1.VolumeMount{
-								{
-									Name:      "cert",
-									MountPath: "/tmp/k8s-webhook-server/serving-certs",
-									ReadOnly:  true,
-								},
-							},
-						},
 					},
 					TerminationGracePeriodSeconds: &terminationGracePeriodSeconds,
 					Volumes: []corev1.Volume{
@@ -592,6 +554,49 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 				},
 			},
 		},
+	}
+
+	managerContainer := corev1.Container{
+		Command: []string{"/manager"},
+		Args: []string{
+			"--enable-leader-election",
+			"--metrics-addr=127.0.0.1:8080",
+		},
+		Image:           img,
+		ImagePullPolicy: "Always",
+		Name:            "manager",
+		Env: []corev1.EnvVar{
+			{Name: "ENABLE_WEBHOOKS", Value: "true"},
+			{Name: "KALM_VERSION", Value: controllerImgTag},
+		},
+		Ports: []corev1.ContainerPort{
+			{
+				Name:          "webhook-server",
+				ContainerPort: 9443,
+				Protocol:      "TCP",
+			},
+		},
+		Resources: corev1.ResourceRequirements{
+			Limits: map[corev1.ResourceName]resource.Quantity{
+				corev1.ResourceCPU:    resource.MustParse("100m"),
+				corev1.ResourceMemory: resource.MustParse("256Mi"),
+			},
+			Requests: map[corev1.ResourceName]resource.Quantity{
+				corev1.ResourceCPU:    resource.MustParse("10m"),
+				corev1.ResourceMemory: resource.MustParse("128Mi"),
+			},
+		},
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      "cert",
+				MountPath: "/tmp/k8s-webhook-server/serving-certs",
+				ReadOnly:  true,
+			},
+		},
+	}
+
+	if config.Spec.KalmType != "" {
+		managerContainer.Args = append(managerContainer.Args, fmt.Sprintf("--kalm-type=%s", config.Spec.KalmType))
 	}
 
 	var dp appsV1.Deployment

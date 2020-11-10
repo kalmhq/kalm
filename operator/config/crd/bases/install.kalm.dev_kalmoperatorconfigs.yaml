@@ -69,6 +69,8 @@ spec:
               type: boolean
             version:
               type: string
+            kalmType:
+              type: string
           type: object
         status:
           description: KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
