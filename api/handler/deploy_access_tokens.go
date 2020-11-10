@@ -11,6 +11,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 )
 
+func (h *ApiHandler) InstallDeployAccessTokenHandlers(e *echo.Group) {
+	e.GET("/deploy_access_tokens", h.handleListDeployAccessTokens)
+	e.POST("/deploy_access_tokens", h.handleCreateDeployAccessToken)
+	e.DELETE("/deploy_access_tokens", h.handleDeleteAccessToken)
+}
+
 func (h *ApiHandler) handleListDeployAccessTokens(c echo.Context) error {
 	currentUser := getCurrentUser(c)
 

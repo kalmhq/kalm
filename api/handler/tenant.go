@@ -7,6 +7,16 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func (h *ApiHandler) InstallTenantHandlers(e *echo.Group) {
+	e.GET("/tenants", h.handleListTenants)                // Get all virtual clusters info
+	e.GET("/tenants/:name", h.handleGetTenant)            // get single virtual cluster info
+	e.POST("/tenants", h.handleCreateTenant)              // Create virtual cluster
+	e.POST("/tenants/:name/pause", h.handlePauseTenant)   // Pause virtual cluster
+	e.POST("/tenants/:name/resume", h.handleResumeTenant) // Resume virtual cluster
+	e.PUT("/tenants/:name", h.handleUpdateTenant)         // update virtual cluster billing plan
+	e.DELETE("/tenants/:name", h.handleDeleteTenant)      // internal
+}
+
 func (h *ApiHandler) handleListTenants(c echo.Context) error {
 	h.MustCanManageCluster(getCurrentUser(c))
 

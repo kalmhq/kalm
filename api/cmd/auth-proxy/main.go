@@ -38,6 +38,8 @@ var clientSecret string
 const KALM_TOKEN_KEY_NAME = "kalm-sso"
 const ENVOY_EXT_AUTH_PATH_PREFIX = "ext_authz"
 
+var logger *zap.Logger
+
 // CSRF protection and pass payload
 type OauthState struct {
 	Nonce       string
@@ -61,12 +63,12 @@ func getOauth2Config() *oauth2.Config {
 	oidcProviderUrl := os.Getenv("KALM_OIDC_PROVIDER_URL")
 	authProxyURL = os.Getenv("KALM_OIDC_AUTH_PROXY_URL")
 
-	log.Info(fmt.Sprintf("ClientID: %s", clientID))
-	log.Info(fmt.Sprintf("oidcProviderUrl: %s", oidcProviderUrl))
-	log.Info(fmt.Sprintf("authProxyURL: %s", authProxyURL))
+	logger.Info(fmt.Sprintf("ClientID: %s", clientID))
+	logger.Info(fmt.Sprintf("oidcProviderUrl: %s", oidcProviderUrl))
+	logger.Info(fmt.Sprintf("authProxyURL: %s", authProxyURL))
 
 	if clientID == "" || clientSecret == "" || oidcProviderUrl == "" || authProxyURL == "" {
-		log.Debug("KALM OIDC ENVS are not configured")
+		logger.Debug("KALM OIDC ENVS are not configured")
 		return nil
 	}
 
@@ -74,7 +76,7 @@ func getOauth2Config() *oauth2.Config {
 	provider, err := oidc.NewProvider(context.Background(), oidcProviderUrl)
 
 	if err != nil {
-		log.Error("KALM new provider failed.", zap.Error(err))
+		logger.Error("KALM new provider failed.", zap.Error(err))
 		return nil
 	}
 
@@ -116,7 +118,7 @@ func getOriginalURL(c echo.Context) string {
 	}
 
 	ur := fmt.Sprintf("%s://%s%s", c.Scheme(), c.Request().Host, requestURI)
-	log.Info(fmt.Sprintf("original url %s", ur))
+	logger.Info(fmt.Sprintf("original url %s", ur))
 	return ur
 }
 func getStringSignature(data string) string {
@@ -130,7 +132,7 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 	uri, err := url.Parse(authProxyURL + "/oidc/login")
 
 	if err != nil {
-		log.Debug("parse auth proxy url error.", zap.Error(err))
+		logger.Debug("parse auth proxy url error.", zap.Error(err))
 		return err
 	}
 
@@ -154,11 +156,11 @@ type ClaimsWithGroups struct {
 }
 
 func handleExtAuthz(c echo.Context) error {
-	contextLog := log.With(zap.String("clientIP", c.RealIP()), zap.String("host", c.Request().Host), zap.String("path", c.Request().URL.Path))
-	contextLog.Info("handleExtAuthz", zap.Bool("tls", c.Request().TLS != nil))
+	contextLogger := logger.With(zap.String("clientIP", c.RealIP()), zap.String("host", c.Request().Host), zap.String("path", c.Request().URL.Path))
+	contextLogger.Info("handleExtAuthz", zap.Bool("tls", c.Request().TLS != nil))
 
 	for k, v := range c.Request().Header {
-		contextLog.Info("handleExtAuthz", zap.String("header", k), zap.Any("value", v))
+		contextLogger.Info("handleExtAuthz", zap.String("header", k), zap.Any("value", v))
 	}
 
 	if getOauth2Config() == nil {
@@ -169,18 +171,18 @@ func handleExtAuthz(c echo.Context) error {
 		thinToken := new(auth_proxy.ThinToken)
 
 		if err := thinToken.Decode(c.QueryParam(KALM_TOKEN_KEY_NAME)); err != nil {
-			contextLog.Info(err.Error())
+			contextLogger.Info(err.Error())
 			return c.String(401, err.Error())
 		}
 
 		// only valid if the token is valid.
 		// do not check group permission here
 		if _, err := oidcVerifier.Verify(context.Background(), thinToken.IDTokenString); err != nil {
-			contextLog.Info(err.Error())
+			contextLogger.Info(err.Error())
 			return c.String(401, err.Error())
 		}
 
-		contextLog.Info("valid jwt token")
+		contextLogger.Info("valid jwt token")
 		return handleSetIDToken(c)
 	}
 
@@ -194,21 +196,31 @@ func handleExtAuthz(c echo.Context) error {
 	token, err := getTokenFromRequest(c)
 
 	if err != nil {
-		contextLog.Info("No auth cookie, redirect to auth proxy")
+		contextLogger.Info("No auth cookie, redirect to auth proxy")
 		return redirectToAuthProxyUrl(c)
 	}
 
 	idToken, err := oidcVerifier.Verify(context.Background(), token.IDTokenString)
 
 	if err != nil {
+		contextLogger.Debug("verify token error", zap.Error(err))
+
 		// An hack way to know whether the error is expire or not
 		if strings.Contains(strings.ToLower(err.Error()), "expire") {
+
+			contextLogger.Debug("enter retry logic", zap.Any("token", token))
+
+			if token.RefreshToken == "" {
+				contextLogger.Error("no refresh token")
+				clearTokenInCookie(c)
+				return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client. (No refresh token)")
+			}
 
 			// use refresh token to fetch the id_token
 			idToken, err = refreshIDToken(token)
 
 			if err != nil {
-				log.Error("refresh token error", zap.Error(err))
+				logger.Error("refresh token error", zap.Error(err))
 				clearTokenInCookie(c)
 				return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client. (After refresh)")
 			}
@@ -222,7 +234,7 @@ func handleExtAuthz(c echo.Context) error {
 				newTokenCookie(encodedToken).String(),
 			)
 
-			log.Named("refresh").Info("Set Kalm-Set-Cookie payload.", zap.String("X-Request-Id", c.Request().Header.Get("X-Request-Id")))
+			logger.Named("refresh").Info("Set Kalm-Set-Cookie payload.", zap.String("X-Request-Id", c.Request().Header.Get("X-Request-Id")))
 		} else {
 			clearTokenInCookie(c)
 			return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client.")
@@ -251,20 +263,20 @@ func refreshIDToken(token *auth_proxy.ThinToken) (idToken *oidc.IDToken, err err
 	refreshContext, isProducer := auth_proxy.GetRefreshTokenCond(token.RefreshToken)
 
 	if isProducer {
-		log.Named("[refresh producer]").Debug("Do refresh", zap.String("token", token.RefreshToken[:10]))
+		logger.Named("[refresh producer]").Debug("Do refresh", zap.String("token", token.RefreshToken))
 		err = doRefresh(token, refreshContext)
-		log.Named("[refresh producer]").Debug("Done", zap.Error(err))
+		logger.Named("[refresh producer]").Debug("Done", zap.Error(err))
 		auth_proxy.RemoveRefreshTokenCond(token.RefreshToken, 60)
 	} else {
 		refreshContext.Cond.L.Lock()
-		log.Named("[refresh consumer]").Debug("Wait", zap.String("token", token.RefreshToken[:10]))
+		logger.Named("[refresh consumer]").Debug("Wait", zap.String("token", token.RefreshToken))
 
 		for refreshContext.IDToken == nil && refreshContext.Error == nil {
 			refreshContext.Cond.Wait()
 		}
 
 		err = refreshContext.Error
-		log.Named("[refresh consumer]").Debug("Got result", zap.Error(err))
+		logger.Named("[refresh consumer]").Debug("Got result", zap.Error(err))
 		refreshContext.Cond.L.Unlock()
 	}
 
@@ -296,7 +308,7 @@ func doRefresh(token *auth_proxy.ThinToken, refreshContext *auth_proxy.RefreshCo
 	newOauth2Token, err := oauth2Config.TokenSource(context.Background(), t).Token()
 
 	if err != nil {
-		log.Error("Refresh token error", zap.Error(err))
+		logger.Error("Refresh token error", zap.Error(err))
 		return err
 	}
 
@@ -309,12 +321,12 @@ func doRefresh(token *auth_proxy.ThinToken, refreshContext *auth_proxy.RefreshCo
 	IDToken, err := oidcVerifier.Verify(context.Background(), rawIDToken)
 
 	if err != nil {
-		log.Error("refreshed token verify error", zap.Error(err))
+		logger.Error("refreshed token verify error", zap.Error(err))
 		return fmt.Errorf("The jwt token is invalid, expired, revoked, or was issued to another client. (After refresh)")
 	}
 
 	refreshContext.Cond.L.Lock()
-	refreshContext.Cond.L.Unlock()
+	defer refreshContext.Cond.L.Unlock()
 
 	refreshContext.IDToken = IDToken
 	refreshContext.IDTokenString = rawIDToken
@@ -416,11 +428,11 @@ func handleSetIDToken(c echo.Context) error {
 
 	requestURI := c.Request().Header.Get("X-Envoy-Original-Path")
 
-	log.Info("set id token", zap.String("X-Envoy-Original-Path", requestURI))
+	logger.Info("set id token", zap.String("X-Envoy-Original-Path", requestURI))
 
 	if requestURI == "" {
 		requestURI = removeExtAuthPathPrefix(c.Request().RequestURI)
-		log.Info("set id token", zap.String("RawRequestURI", c.Request().RequestURI), zap.String("removeExtAuthPathPrefix", requestURI))
+		logger.Info("set id token", zap.String("RawRequestURI", c.Request().RequestURI), zap.String("removeExtAuthPathPrefix", requestURI))
 	}
 
 	uri, err := url.Parse(requestURI)
@@ -468,7 +480,7 @@ func handleOIDCLogin(c echo.Context) error {
 	}
 
 	if sign != getStringSignature(originalURL+now) {
-		log.Debug("wrong sign", zap.String("receive", sign), zap.String("expected", getStringSignature(originalURL+now)))
+		logger.Debug("wrong sign", zap.String("receive", sign), zap.String("expected", getStringSignature(originalURL+now)))
 		return c.String(400, "Wrong sign")
 	}
 
@@ -509,21 +521,21 @@ func handleOIDCCallback(c echo.Context) error {
 	stateStr := c.QueryParam("state")
 
 	if stateStr == "" {
-		log.Debug("missing state")
+		logger.Debug("missing state")
 		return c.String(400, "Missing state")
 	}
 
 	stateBytes, err := base64.RawStdEncoding.DecodeString(stateStr)
 
 	if err != nil {
-		log.Debug("Base64 decode state failed", zap.Error(err))
+		logger.Debug("Base64 decode state failed", zap.Error(err))
 		return c.String(400, "Base64 decode state failed")
 	}
 
 	stateJsonBytes, err := auth_proxy.AesDecrypt(stateBytes)
 
 	if err != nil {
-		log.Debug("Aes decrypted state failed", zap.Error(err))
+		logger.Debug("Aes decrypted state failed", zap.Error(err))
 		return c.String(400, "State mismatch")
 	}
 
@@ -531,14 +543,14 @@ func handleOIDCCallback(c echo.Context) error {
 	err = json.Unmarshal(stateJsonBytes, &state)
 
 	if err != nil {
-		log.Debug("json decode state failed", zap.Error(err))
+		logger.Debug("json decode state failed", zap.Error(err))
 		return c.String(400, "json decode state failed")
 	}
 
 	uri, err := url.Parse(state.OriginalURL)
 
 	if err != nil {
-		log.Debug("parse original url failed.", zap.String("OriginalURL", state.OriginalURL), zap.Error(err))
+		logger.Debug("parse original url failed.", zap.String("OriginalURL", state.OriginalURL), zap.Error(err))
 		return c.String(400, "parse original url failed.")
 	}
 
@@ -548,21 +560,21 @@ func handleOIDCCallback(c echo.Context) error {
 	)
 
 	if err != nil {
-		log.Debug("Exchange oauth2Token error", zap.Error(err))
+		logger.Debug("Exchange oauth2Token error", zap.Error(err))
 		return c.String(400, "Exchange oauth2Token error")
 	}
 
 	rawIDToken, ok := oauth2Token.Extra("id_token").(string)
 
 	if !ok {
-		log.Debug("no id_token in token response")
+		logger.Debug("no id_token in token response")
 		return c.String(400, "no id_token in token response")
 	}
 
 	_, err = oidcVerifier.Verify(context.Background(), rawIDToken)
 
 	if err != nil {
-		log.Debug("jwt verify failed", zap.Error(err))
+		logger.Debug("jwt verify failed", zap.Error(err))
 		return c.String(400, "jwt verify failed")
 	}
 
@@ -574,7 +586,7 @@ func handleOIDCCallback(c echo.Context) error {
 	encryptedThinToken, err := thinToken.Encode()
 
 	if err != nil {
-		log.Debug("thin token encode error", zap.Error(err))
+		logger.Debug("thin token encode error", zap.Error(err))
 		return c.String(400, err.Error())
 	}
 
@@ -596,13 +608,13 @@ func handleLog(c echo.Context) error {
 		verb = false
 	}
 
-	log.InitDefaultLogger(verb)
+	logger = log.NewLogger(verb)
 
 	return c.String(200, fmt.Sprintf("verbose: %t", verb))
 }
 
 func main() {
-	log.InitDefaultLogger(false)
+	logger = log.NewLogger(false)
 	e := server.NewEchoInstance()
 
 	// oidc auth proxy handlers

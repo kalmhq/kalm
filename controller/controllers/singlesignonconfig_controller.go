@@ -22,14 +22,17 @@ import (
 	"os"
 	"strings"
 
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/utils"
 	"gopkg.in/yaml.v3"
 	"istio.io/api/networking/v1alpha3"
 	v1alpha32 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	coreV1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -37,7 +40,7 @@ import (
 )
 
 const KALM_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME = "external-envoy-ext-authz-server"
-const KALM_DEX_SECRET_NAME = "dex-secret"
+const KALM_AUTH_PROXY_SECRET_NAME = "auth-proxy-secret"
 const KALM_DEX_NAMESPACE = "kalm-system"
 const KALM_DEX_NAME = "dex"
 const KALM_AUTH_PROXY_NAME = "auth-proxy"
@@ -172,7 +175,7 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 	var secret coreV1.Secret
 
 	err = r.Get(r.ctx, types.NamespacedName{
-		Name:      KALM_DEX_SECRET_NAME,
+		Name:      KALM_AUTH_PROXY_SECRET_NAME,
 		Namespace: KALM_DEX_NAMESPACE,
 	}, &secret)
 
@@ -316,7 +319,10 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileSecret() error {
 		secret := coreV1.Secret{
 			ObjectMeta: metaV1.ObjectMeta{
 				Namespace: KALM_DEX_NAMESPACE,
-				Name:      KALM_DEX_SECRET_NAME,
+				Name:      KALM_AUTH_PROXY_SECRET_NAME,
+				Labels: map[string]string{
+					v1alpha1.TenantNameLabelKey: "global",
+				},
 			},
 			Data: map[string][]byte{
 				"client_id":     []byte("kalm-sso"),
@@ -326,12 +332,12 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileSecret() error {
 		}
 
 		if err := ctrl.SetControllerReference(r.ssoConfig, &secret, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex secret")
+			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for auth-proxy secret")
 			return err
 		}
 
 		if err := r.Create(r.ctx, &secret); err != nil {
-			r.Log.Error(err, "Create dex secret failed.")
+			r.Log.Error(err, "Create auth-proxy secret failed.")
 			return err
 		}
 
@@ -353,6 +359,9 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      KALM_DEX_NAME,
 			Namespace: KALM_DEX_NAMESPACE,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: "global",
+			},
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			Annotations: map[string]string{
@@ -426,6 +435,9 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      KALM_DEX_NAME,
 			Namespace: KALM_DEX_NAMESPACE,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: "global",
+			},
 		},
 		Spec: corev1alpha1.HttpRouteSpec{
 			Hosts: []string{
@@ -506,6 +518,9 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileExternalAuthProxyServiceEntr
 		ObjectMeta: metaV1.ObjectMeta{
 			Namespace: KALM_DEX_NAMESPACE,
 			Name:      KALM_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: "global",
+			},
 		},
 		Spec: v1alpha3.ServiceEntry{
 			Hosts: []string{ssoConfig.Spec.ExternalEnvoyExtAuthz.Host},
@@ -572,6 +587,9 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      KALM_AUTH_PROXY_NAME,
 			Namespace: KALM_DEX_NAMESPACE,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: "global",
+			},
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			WorkloadType: corev1alpha1.WorkloadTypeServer,
@@ -604,6 +622,12 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 					Type:  corev1alpha1.EnvVarTypeStatic,
 					Name:  "KALM_OIDC_AUTH_PROXY_URL",
 					Value: oidcProviderInfo.AuthProxyExternalUrl,
+				},
+			},
+			ResourceRequirements: &coreV1.ResourceRequirements{
+				Requests: map[v1.ResourceName]resource.Quantity{
+					v1.ResourceCPU:    resource.MustParse("10m"),
+					v1.ResourceMemory: resource.MustParse("10Mi"),
 				},
 			},
 		},
@@ -644,6 +668,9 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() err
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      KALM_AUTH_PROXY_NAME,
 			Namespace: KALM_DEX_NAMESPACE,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: "global",
+			},
 		},
 		Spec: corev1alpha1.HttpRouteSpec{
 			Hosts: []string{
@@ -762,6 +789,9 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRouteCert() error {
 				ObjectMeta: metaV1.ObjectMeta{
 					Name:      certName,
 					Namespace: KALM_DEX_NAMESPACE,
+					Labels: map[string]string{
+						v1alpha1.TenantNameLabelKey: "global",
+					},
 				},
 				Spec: corev1alpha1.HttpsCertSpec{
 					HttpsCertIssuer: corev1alpha1.DefaultHTTP01IssuerName,
@@ -783,11 +813,16 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRouteCert() error {
 }
 
 func (r *SingleSignOnConfigReconcilerTask) ReconcileResources() error {
-	if r.ssoConfig.Spec.Issuer == "" {
-		if err := r.ReconcileSecret(); err != nil {
-			return err
-		}
+	if err := r.ReconcileSecret(); err != nil {
+		return err
+	}
 
+	if err := r.ReconcileAuthProxy(); err != nil {
+		return err
+	}
+
+	// use dex mode
+	if r.ssoConfig.Spec.Issuer == "" {
 		if err := r.ReconcileDexComponent(); err != nil {
 			return err
 		}
@@ -799,10 +834,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources() error {
 		if err := r.ReconcileDexRouteCert(); err != nil {
 			return err
 		}
-	}
-
-	if err := r.ReconcileAuthProxy(); err != nil {
-		return err
 	}
 
 	return nil

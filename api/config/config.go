@@ -20,6 +20,8 @@ type Config struct {
 	KubernetesApiServerCAFilePath string
 	KubeConfigPath                string
 	CorsAllowedOrigins            cli.StringSlice
+
+	EnableAdminServerDebugRoutes bool
 }
 
 // Built-time env

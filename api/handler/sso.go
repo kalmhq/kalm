@@ -5,6 +5,21 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func (h *ApiHandler) InstallProtectedEndpointHandlers(e *echo.Group) {
+	e.GET("/protectedendpoints", h.handleListProtectedEndpoints)
+	e.DELETE("/protectedendpoints", h.handleDeleteProtectedEndpoints)
+	e.POST("/protectedendpoints", h.handleCreateProtectedEndpoints)
+	e.PUT("/protectedendpoints", h.handleUpdateProtectedEndpoints)
+}
+
+func (h *ApiHandler) InstallSSOHandlers(e *echo.Group) {
+	e.GET("/sso", h.handleGetSSOConfig)
+	e.DELETE("/sso", h.handleDeleteSSOConfig)
+	e.PUT("/sso", h.handleUpdateSSOConfig)
+	e.POST("/sso", h.handleCreateSSOConfig)
+	e.DELETE("/sso/temporary_admin_user", h.handleDeleteTemporaryUser)
+}
+
 func (h *ApiHandler) handleGetSSOConfig(c echo.Context) error {
 	h.MustCanViewCluster(getCurrentUser(c))
 
