@@ -39,7 +39,7 @@ type PSPSuite struct {
 }
 
 func (suite *PSPSuite) SetupSuite() {
-	//the version of api-server need >= 1.19.2
+	//the version of api-server need >= 1.16.13
 	//os.Setenv("TEST_ASSET_KUBE_APISERVER", "/usr/local/kubebuilder/bin/kube-apiserver-1.19.2")
 	logf.SetLogger(zap.New(zap.UseDevMode(true)))
 
@@ -173,10 +173,10 @@ func (suite *PSPSuite) SetupSuite() {
 
 	decode := api.Codecs.UniversalDeserializer().Decode
 
-	pspRestrictedBytes, _ := ioutil.ReadFile("../config/psp/pod-security-policy-restricted.yaml")
-	pspPrivilegedBytes, _ := ioutil.ReadFile("../config/psp/pod-security-policy-privileged.yaml")
-	roleRestrictedBytes, _ := ioutil.ReadFile("../config/rbac/psp_role_restricted.yaml")
-	rolePrivilegedBytes, _ := ioutil.ReadFile("../config/rbac/psp_role_privileged.yaml")
+	pspRestrictedBytes, _ := ioutil.ReadFile("../../operator/config/psp/psp_restricted.yaml")
+	pspPrivilegedBytes, _ := ioutil.ReadFile("../../operator/config/psp/psp_privileged.yaml")
+	roleRestrictedBytes, _ := ioutil.ReadFile("../../operator/config/rbac/psp_restricted_role.yaml")
+	rolePrivilegedBytes, _ := ioutil.ReadFile("../../operator/config/rbac/psp_privileged_role.yaml")
 
 	pspRestricted, _, _ := decode(pspRestrictedBytes, nil, nil)
 	pspPrivileged, _, _ := decode(pspPrivilegedBytes, nil, nil)
@@ -277,6 +277,7 @@ func (suite *PSPSuite) TestPSP() {
 	clientset, err := kubernetes.NewForConfig(suite.Cfg)
 	suite.Nil(err)
 
+	//can use restrictedPSP
 	a := clientset.AuthorizationV1().SubjectAccessReviews()
 	sar := &authorizationv1.SubjectAccessReview{
 		Spec: authorizationv1.SubjectAccessReviewSpec{
@@ -294,4 +295,22 @@ func (suite *PSPSuite) TestPSP() {
 	response, err := a.Create(context.TODO(), sar, metaV1.CreateOptions{})
 	suite.Nil(err)
 	suite.EqualValues(true, response.Status.Allowed)
+
+	//can not use privilegedPSP
+	sarPSPPrivileged := &authorizationv1.SubjectAccessReview{
+		Spec: authorizationv1.SubjectAccessReviewSpec{
+			ResourceAttributes: &authorizationv1.ResourceAttributes{
+				Namespace: suite.ns.Name,
+				Verb:      "use",
+				Resource:  "podsecuritypolicies",
+				Name:      privilegedPSP.Name,
+				Group:     "policy",
+			},
+			User: fmt.Sprintf("system:serviceaccount:%s:default", suite.ns.Name),
+		},
+	}
+
+	responseSarPSPPrivileged, err := a.Create(context.TODO(), sarPSPPrivileged, metaV1.CreateOptions{})
+	suite.Nil(err)
+	suite.EqualValues(false, responseSarPSPPrivileged.Status.Allowed)
 }

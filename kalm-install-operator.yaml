@@ -395,6 +395,34 @@ rules:
       - create
 ---
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kalm-system:psp:privileged
+rules:
+  - apiGroups:
+      - policy
+    resourceNames:
+      - privileged
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kalm-system:psp:restricted
+rules:
+  - apiGroups:
+      - policy
+    resourceNames:
+      - restricted
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: kalm-operator-leader-election-rolebinding
@@ -403,6 +431,32 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: kalm-operator-leader-election-role
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: kalm-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kalm-kalm-operator:psp:privileged
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kalm-system:psp:privileged
+subjects:
+  - kind: ServiceAccount
+    name: kalm-operator
+    namespace: kalm-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kalm-kalm-system-default:psp:privileged
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kalm-system:psp:privileged
 subjects:
   - kind: ServiceAccount
     name: default
@@ -482,7 +536,7 @@ spec:
             - --enable-leader-election
           command:
             - /manager
-          image: kalmhq/kalm-operator:v0.1.0-rc.12
+          image: kalmhq/kalm-operator:latest
           imagePullPolicy: Always
           name: manager
           resources:
@@ -493,61 +547,3 @@ spec:
               cpu: 100m
               memory: 20Mi
       terminationGracePeriodSeconds: 10
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: system:psp:privileged
-rules:
-  - apiGroups:
-      - policy
-    resourceNames:
-      - privileged
-    resources:
-      - podsecuritypolicies
-    verbs:
-      - use
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: system:psp:restricted
-rules:
-  - apiGroups:
-      - policy
-    resourceNames:
-      - restricted
-    resources:
-      - podsecuritypolicies
-    verbs:
-      - use
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: kalm-operator:psp:privileged
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:psp:privileged
-subjects:
-  - kind: ServiceAccount
-    name: kalm-operator
-    namespace: kalm-operator
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: kalm-system-default:psp:privileged
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:psp:privileged
-subjects:
-  - kind: ServiceAccount
-    name: default
-    namespace: kalm-system

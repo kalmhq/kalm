@@ -1,2 +1,3 @@
 resources:
-  - pod-security-policy.yaml
+  - psp_privileged.yaml
+  - psp_restricted.yaml
