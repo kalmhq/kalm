@@ -43,6 +43,10 @@ var _ webhook.Defaulter = &RoleBinding{}
 func (r *RoleBinding) Default() {
 	rolebindinglog.Info("default", "name", r.Name)
 
+	if IsKalmSystemNamespace(r.Namespace) {
+		return
+	}
+
 	if err := InheritTenantFromNamespace(r); err != nil {
 		rolebindinglog.Error(err, "fail to inherit tenant from ns", "roleBinding", r.Name, "ns", r.Namespace)
 	}
@@ -65,7 +69,7 @@ func (r *RoleBinding) GetNameBaseOnRoleAndSubject() string {
 func (r *RoleBinding) ValidateCreate() error {
 	rolebindinglog.Info("validate create", "name", r.Name)
 
-	if !HasTenantSet(r) {
+	if !IsKalmSystemNamespace(r.Namespace) && !HasTenantSet(r) {
 		return NoTenantFoundError
 	}
 
@@ -73,8 +77,8 @@ func (r *RoleBinding) ValidateCreate() error {
 		return err
 	}
 
-	if err := AllocateTenantResource(r, ResourceRoleBindingCount, resource.MustParse("1")); err != nil {
-		return err
+	if !IsKalmSystemNamespace(r.Namespace) {
+		return AllocateTenantResource(r, ResourceRoleBindingCount, resource.MustParse("1"))
 	}
 
 	return nil
@@ -84,12 +88,14 @@ func (r *RoleBinding) ValidateCreate() error {
 func (r *RoleBinding) ValidateUpdate(old runtime.Object) error {
 	rolebindinglog.Info("validate update", "name", r.Name)
 
-	if !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
+	if !IsKalmSystemNamespace(r.Namespace) {
+		if !HasTenantSet(r) {
+			return NoTenantFoundError
+		}
 
-	if IsTenantChanged(r, old) {
-		return TenantChangedError
+		if IsTenantChanged(r, old) {
+			return TenantChangedError
+		}
 	}
 
 	if oldRoleBinding, ok := old.(*RoleBinding); !ok {
@@ -125,8 +131,12 @@ func (r *RoleBinding) ValidateUpdate(old runtime.Object) error {
 func (r *RoleBinding) ValidateDelete() error {
 	rolebindinglog.Info("validate delete", "name", r.Name)
 
+	if IsKalmSystemNamespace(r.Namespace) {
+		return nil
+	}
+
 	if err := ReleaseTenantResource(r, ResourceRoleBindingCount, resource.MustParse("1")); err != nil {
-		return err
+		rolebindinglog.Error(err, "fail to release roleBindingCount, ignored", "ns/name", fmt.Sprintf("%s/%s", r.Namespace, r.Name))
 	}
 
 	return nil

@@ -36,6 +36,7 @@ import { NodeCPU, NodesCPU } from "./CPU";
 import { NodeMemory, NodesMemory } from "./Memory";
 import { NodePods } from "./Pods";
 import { ResourceRank } from "./ResourceRank";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -55,7 +56,7 @@ interface States {
   chartDateFilter: string;
 }
 
-type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
+type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles> & WithUserAuthProps;
 
 export class NodeListRaw extends React.Component<Props, States> {
   constructor(props: Props) {
@@ -171,18 +172,20 @@ export class NodeListRaw extends React.Component<Props, States> {
           </Grid>
         }
       >
-        <Box pb={2} pt={2}>
-          <Button
-            style={{ marginRight: 20 }}
-            color="primary"
-            size="small"
-            variant="outlined"
-            node-name={node.name}
-            onClick={this.handleClickCordonButton}
-          >
-            {this.hasCordon(node) ? "Enable Scheduling" : "Disable Scheduling"}
-          </Button>
-        </Box>
+        {this.props.canEditCluster() ? (
+          <Box pb={2} pt={2}>
+            <Button
+              style={{ marginRight: 20 }}
+              color="primary"
+              size="small"
+              variant="outlined"
+              node-name={node.name}
+              onClick={this.handleClickCordonButton}
+            >
+              {this.hasCordon(node) ? "Enable Scheduling" : "Disable Scheduling"}
+            </Button>
+          </Box>
+        ) : null}
 
         <VerticalHeadTable
           items={[
@@ -584,4 +587,4 @@ export class NodeListRaw extends React.Component<Props, States> {
   }
 }
 
-export const NodeListPage = connect(mapStateToProps)(withStyles(styles)(NodeListRaw));
+export const NodeListPage = withUserAuth(connect(mapStateToProps)(withStyles(styles)(NodeListRaw)));

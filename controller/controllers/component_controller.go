@@ -709,6 +709,11 @@ func (r *ComponentReconcilerTask) forceScaleDownExceedingQuotaComponent(comp *v1
 		return nil
 	}
 
+	if comp.Labels[v1alpha1.KalmLabelKeyExceedingQuota] == "true" &&
+		comp.Spec.Replicas != nil && *comp.Spec.Replicas == 0 {
+		return nil
+	}
+
 	copy := comp.DeepCopy()
 
 	// remember original replicas for recovery
@@ -1019,6 +1024,26 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	labels["version"] = "v1" // TODO
 
 	annotations := r.GetAnnotations()
+
+	// add annotation to limit resource for sidecar Istio
+	if r.component.Spec.IstioResourceRequirements != nil {
+		for resName, quantity := range r.component.Spec.IstioResourceRequirements.Limits {
+			switch resName {
+			case coreV1.ResourceCPU:
+				annotations["sidecar.istio.io/proxyCPULimit"] = quantity.String()
+			case coreV1.ResourceMemory:
+				annotations["sidecar.istio.io/proxyMemoryLimit"] = quantity.String()
+			}
+		}
+		for resName, quantity := range r.component.Spec.IstioResourceRequirements.Requests {
+			switch resName {
+			case coreV1.ResourceCPU:
+				annotations["sidecar.istio.io/proxyCPU"] = quantity.String()
+			case coreV1.ResourceMemory:
+				annotations["sidecar.istio.io/proxyMemory"] = quantity.String()
+			}
+		}
+	}
 
 	template = &coreV1.PodTemplateSpec{
 		ObjectMeta: metaV1.ObjectMeta{

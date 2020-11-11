@@ -440,9 +440,10 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 		ObjectMeta: ctrl.ObjectMeta{
 			Name: NamespaceKalmSystem,
 			Labels: map[string]string{
-				"control-plane":   "controller",
-				"kalm-enabled":    "true",
-				"istio-injection": "enabled",
+				"control-plane":      "controller",
+				"kalm-enabled":       "true",
+				"istio-injection":    "enabled",
+				"kalm-control-plane": "true",
 			},
 		},
 	}

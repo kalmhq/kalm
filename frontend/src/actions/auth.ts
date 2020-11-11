@@ -1,6 +1,7 @@
 import { api } from "api";
-import { LoginStatus } from "types/authorization";
+import { stopImpersonating } from "api/realApi";
 import { ThunkResult } from "types";
+import { LoginStatus } from "types/authorization";
 import {
   LOAD_LOGIN_STATUS_FAILED,
   LOAD_LOGIN_STATUS_FULFILLED,
@@ -10,9 +11,8 @@ import {
   SET_AUTH_TOKEN,
 } from "types/common";
 import { setErrorNotificationAction } from "./notification";
-import { stopImpersonating } from "api/realApi";
 
-export const loadLoginStatusAction = (): ThunkResult<Promise<void>> => {
+export const loadLoginStatusAction = (showNotAuthError: boolean = true): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     let loginStatus: LoginStatus;
 
@@ -24,7 +24,11 @@ export const loadLoginStatusAction = (): ThunkResult<Promise<void>> => {
         payload: { loginStatus },
       });
     } catch (e) {
-      dispatch(setErrorNotificationAction(e.message));
+      if (!showNotAuthError && e.response && e.response.data.message === "not authorized") {
+        console.error(e);
+      } else {
+        dispatch(setErrorNotificationAction(e.message));
+      }
       dispatch({ type: LOAD_LOGIN_STATUS_FAILED });
     }
   };

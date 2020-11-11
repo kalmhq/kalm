@@ -63,7 +63,7 @@ var _ webhook.Validator = &HttpRoute{}
 func (r *HttpRoute) ValidateCreate() error {
 	httproutelog.Info("validate create", "name", r.Name)
 
-	if !HasTenantSet(r) {
+	if !IsKalmSystemNamespace(r.Namespace) && !HasTenantSet(r) {
 		return NoTenantFoundError
 	}
 
@@ -74,12 +74,14 @@ func (r *HttpRoute) ValidateCreate() error {
 func (r *HttpRoute) ValidateUpdate(old runtime.Object) error {
 	httproutelog.Info("validate update", "name", r.Name)
 
-	if !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
+	if !IsKalmSystemNamespace(r.Namespace) {
+		if !HasTenantSet(r) {
+			return NoTenantFoundError
+		}
 
-	if IsTenantChanged(r, old) {
-		return TenantChangedError
+		if IsTenantChanged(r, old) {
+			return TenantChangedError
+		}
 	}
 
 	return r.validate()

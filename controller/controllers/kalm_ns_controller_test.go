@@ -2,12 +2,13 @@ package controllers
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/stretchr/testify/suite"
 	appsV1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
-	"testing"
-	"time"
 )
 
 type KalmNSControllerSuite struct {
@@ -19,7 +20,7 @@ func TestKalmNSControllerSuite(t *testing.T) {
 }
 
 func (suite *KalmNSControllerSuite) SetupSuite() {
-	suite.BasicSuite.SetupSuite()
+	suite.BasicSuite.SetupSuite(true)
 }
 
 func (suite *KalmNSControllerSuite) TearDownSuite() {

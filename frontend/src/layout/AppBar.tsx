@@ -1,15 +1,23 @@
 import { AppBar, Box, Breadcrumbs, createStyles, Divider, IconButton, Menu, MenuItem, Theme } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
+import deepOrange from "@material-ui/core/colors/deepOrange";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { logoutAction } from "actions/auth";
+import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { closeTutorialDrawerAction, openTutorialDrawerAction } from "actions/tutorial";
+import { stopImpersonating } from "api/realApi/index";
+import { push } from "connected-react-router";
+import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
 import { connect } from "react-redux";
 import { Link, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
+import { ThemeToggle } from "theme/ThemeToggle";
 import { TDispatch } from "types";
+import { SubjectTypeUser } from "types/member";
+import StringConstants from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
-import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
 import {
   HelpIcon,
   ImpersonateIcon,
@@ -19,15 +27,8 @@ import {
   MenuIcon,
   MenuOpenIcon,
 } from "widgets/Icon";
-import { ThemeToggle } from "theme/ThemeToggle";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import StringConstants from "utils/stringConstants";
-import Button from "@material-ui/core/Button";
-import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
-import { stopImpersonating } from "api/realApi/index";
-import { push } from "connected-react-router";
-import deepOrange from "@material-ui/core/colors/deepOrange";
-import { SubjectTypeUser } from "types/member";
+import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
 
 const mapStateToProps = (state: RootState) => {
   const activeNamespace = state.namespaces.active;
@@ -119,7 +120,8 @@ interface Props
   extends WithStyles<typeof styles>,
     ReturnType<typeof mapStateToProps>,
     RouteComponentProps,
-    WithClusterInfoProps {
+    WithClusterInfoProps,
+    WithUserAuthProps {
   dispatch: TDispatch;
 }
 
@@ -317,7 +319,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           </div>
 
           <div className={classes.barRight}>
-            {clusterInfo.canBeInitialized && (
+            {this.props.canEditCluster() && clusterInfo.canBeInitialized && (
               <Box mr={2}>
                 <Button to="/setup" component={Link} onClick={console.log} variant="outlined" color="secondary">
                   Finish the setup steps
@@ -338,5 +340,5 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
 }
 
 export const AppBarComponent = connect(mapStateToProps)(
-  withStyles(styles)(withClusterInfo(withRouter(AppBarComponentRaw))),
+  withStyles(styles)(withUserAuth(withClusterInfo(withRouter(AppBarComponentRaw)))),
 );

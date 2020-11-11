@@ -399,10 +399,10 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   }
 
   private renderGrid = () => {
-    const { applications, componentsMap, canEditNamespace } = this.props;
+    const { applications, componentsMap, canEditNamespace, canViewNamespace } = this.props;
 
     const filteredApps = applications.filter((app) => {
-      return canEditNamespace(app.name);
+      return canViewNamespace(app.name) || canEditNamespace(app.name);
     });
 
     const GridRow = (app: ApplicationDetails, index: number) => {

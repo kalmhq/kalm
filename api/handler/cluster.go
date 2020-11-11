@@ -54,7 +54,7 @@ func isPrivateIP(ip string) bool {
 		return false
 	}
 
-	if parts[0] == "10" || parts[0] == "192" && parts[1] == "168" {
+	if parts[0] == "10" || parts[0] == "127" || (parts[0] == "192" && parts[1] == "168") {
 		return true
 	}
 
