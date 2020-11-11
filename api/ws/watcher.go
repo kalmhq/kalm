@@ -491,6 +491,7 @@ func buildAccessTokenResMessage(c *Client, action string, objWatched interface{}
 		if !c.clientManager.PermissionsGreaterThanOrEqualToAccessToken(c.clientInfo, &resources.AccessToken{
 			Name:            accessToken.Name,
 			AccessTokenSpec: &accessToken.Spec,
+			Tenant:          tenantName,
 		}) {
 			return nil, nil
 		}
