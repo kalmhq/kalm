@@ -27,7 +27,7 @@ spec:
             - /manager
           args:
             - --enable-leader-election
-          image: kalmhq/kalm-operator:latest
+          image: controller
           imagePullPolicy: Always
           name: manager
           resources:
