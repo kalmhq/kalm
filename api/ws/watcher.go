@@ -103,8 +103,13 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, nil
 	}
 
-	tenant, tenantExist := namespace.Labels["tenant"]
-	if !tenantExist || tenant != c.clientInfo.Tenant {
+	tenantName, err := v1alpha1.GetTenantNameFromObj(namespace)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if tenantName != c.clientInfo.Tenant {
 		return nil, nil
 	}
 
@@ -149,6 +154,16 @@ func buildComponentResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, errors.New("convert watch obj to Component failed")
 	}
 
+	tenantName, err := v1alpha1.GetTenantNameFromObj(component)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if tenantName != c.clientInfo.Tenant {
+		return nil, nil
+	}
+
 	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+component.Namespace) {
 		return nil, nil
 	}
@@ -167,6 +182,16 @@ func buildComponentResMessageCausedByService(c *Client, action string, objWatche
 	if componentName == "" {
 		return nil, nil
 	}
+
+	// tenantName, err := v1alpha1.GetTenantNameFromObj(service)
+
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// if tenantName != c.clientInfo.Tenant {
+	// 	return nil, nil
+	// }
 
 	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+service.Namespace) {
 		return nil, nil
@@ -188,6 +213,16 @@ func buildServiceResMessage(c *Client, action string, objWatched interface{}) (*
 		return nil, errors.New("convert watch obj to Service failed")
 	}
 
+	// tenantName, err := v1alpha1.GetTenantNameFromObj(service)
+
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// if tenantName != c.clientInfo.Tenant {
+	// 	return nil, nil
+	// }
+
 	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+service.Namespace) {
 		return nil, nil
 	}
@@ -208,6 +243,16 @@ func buildPodResMessage(c *Client, action string, objWatched interface{}) (*ResM
 	componentName := pod.Labels["kalm-component"]
 	if componentName == "" {
 		return &ResMessage{}, nil
+	}
+
+	tenantName, err := v1alpha1.GetTenantNameFromObj(pod)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if tenantName != c.clientInfo.Tenant {
+		return nil, nil
 	}
 
 	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+pod.Namespace) {
@@ -402,6 +447,16 @@ func buildProtectEndpointResMessage(c *Client, action string, objWatched interfa
 
 	if !ok {
 		return nil, errors.New("convert watch obj to ProtectedEndpoint failed")
+	}
+
+	tenantName, err := v1alpha1.GetTenantNameFromObj(endpoint)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if tenantName != c.clientInfo.Tenant {
+		return nil, nil
 	}
 
 	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+endpoint.Namespace) {
