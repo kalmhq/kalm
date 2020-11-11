@@ -172,7 +172,7 @@ jobs:
               namespace: kalm-operator
               name: kalmoperatorconfig-sample
             spec:
-              kalmVersion: $CIRCLE_SHA
+              kalmVersion: $CIRCLE_SHA1
             EOF
 
             kubectl apply -f kalm-operator-config.yaml
@@ -210,7 +210,7 @@ jobs:
               namespace: kalm-operator
               name: kalmoperatorconfig-sample
             spec:
-              kalmVersion: $CIRCLE_SHA
+              kalmVersion: $CIRCLE_SHA1
             EOF
 
             kubectl apply -f kalm-operator-config.yaml
