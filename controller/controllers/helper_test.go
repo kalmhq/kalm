@@ -373,6 +373,8 @@ func (suite *BasicSuite) SetupTenant() *v1alpha1.Tenant {
 				v1alpha1.ResourceComponentsCount:   resource.MustParse("100"),
 				v1alpha1.ResourceCPU:               resource.MustParse("100"),
 				v1alpha1.ResourceMemory:            resource.MustParse("100Gi"),
+				v1alpha1.ResourceStorage:           resource.MustParse("100Gi"),
+				v1alpha1.ResourceEphemeralStorage:  resource.MustParse("100Gi"),
 			},
 			Owners: []string{"david"},
 		},

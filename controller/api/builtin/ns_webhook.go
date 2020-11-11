@@ -73,11 +73,12 @@ func (v *NSValidator) Handle(ctx context.Context, req admission.Request) admissi
 
 		tenant := ns.Labels[v1alpha1.TenantNameLabelKey]
 		if tenant == "" {
-			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
+			logger.Error(v1alpha1.NoTenantFoundError, "no tenant found in ns to be deleted, ignored", "ns", ns.Name)
+			return admission.Allowed("")
 		}
 
 		if err := v1alpha1.ReleaseTenantResource(&ns, v1alpha1.ResourceApplicationsCount, resource.MustParse("1")); err != nil {
-			return admission.Errored(http.StatusBadRequest, err)
+			logger.Error(err, "fail to release ns resource, ignored", "ns", ns.Name)
 		}
 	}
 

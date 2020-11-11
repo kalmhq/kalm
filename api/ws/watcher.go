@@ -57,7 +57,7 @@ func registerWatchHandler(c *Client,
 		AddFunc: func(obj interface{}) {
 			resMessage, err := buildResMessage(c, "Add", obj)
 			if err != nil {
-				log.Error("build res message error", zap.Error(err))
+				log.Error("build res message error, Add,", zap.Error(err), zap.Any("obj", obj))
 				return
 			}
 
@@ -68,7 +68,7 @@ func registerWatchHandler(c *Client,
 		DeleteFunc: func(obj interface{}) {
 			resMessage, err := buildResMessage(c, "Delete", obj)
 			if err != nil {
-				log.Error("build res message error", zap.Error(err))
+				log.Error("build res message error, Delete,", zap.Error(err), zap.Any("obj", obj))
 				return
 			}
 			if resMessage != nil {
@@ -78,7 +78,7 @@ func registerWatchHandler(c *Client,
 		UpdateFunc: func(oldObj, obj interface{}) {
 			resMessage, err := buildResMessage(c, "Update", obj)
 			if err != nil {
-				log.Error("build res message error", zap.Error(err))
+				log.Error("build res message error, Update,", zap.Error(err), zap.Any("obj", obj))
 				return
 			}
 			if resMessage != nil {

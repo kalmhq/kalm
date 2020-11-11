@@ -127,8 +127,17 @@ func (r *Component) ValidateCreate() error {
 
 	if !IsKalmSystemNamespace(r.Namespace) {
 
-		if !HasTenantSet(r) {
+		tenant, err := GetTenantFromObj(r)
+		if err != nil {
 			return NoTenantFoundError
+		}
+
+		// pre-check if resource of this component will exceed quota
+		resList := EstimateResourceConsumption(*r)
+		sumResList := SumResourceList(resList, tenant.Status.UsedResourceQuota)
+		// deny the creation if exceed resource quota
+		if ExistGreaterResourceInList(sumResList, tenant.Spec.ResourceQuota) {
+			return fmt.Errorf("create this component will exceed resource quota")
 		}
 
 		if err := AdjustTenantResourceByDelta(r, ResourceComponentsCount, resource.MustParse("1")); err != nil {
@@ -271,7 +280,7 @@ func (r *Component) ValidateDelete() error {
 
 	// release resource
 	if err := ReleaseTenantResource(r, ResourceComponentsCount, resource.MustParse("1")); err != nil {
-		return err
+		componentlog.Error(err, "fail to release componentCnt, ignored", "ns/name", fmt.Sprintf("%s/%s", r.Namespace, r.Name))
 	}
 
 	return nil
