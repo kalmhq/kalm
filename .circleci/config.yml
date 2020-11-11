@@ -204,7 +204,10 @@ jobs:
             sudo mv ./kubectl /usr/local/bin/kubectl
             mkdir ${HOME}/.kube
             echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
+
             IMG=kalmhq/kalm-operator:${CIRCLE_SHA1} make deploy
+            cat config/manager/kustomization.yaml
+
             kubectl -n kalm-operator patch deployment kalm-operator -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
 workflows:
   version: 2
