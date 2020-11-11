@@ -219,6 +219,7 @@ workflows:
             branches:
               only:
                 - master
+                - multiple-tenancy
             tags:
               only: /^v.*/
       #- deploy-dashboard:
@@ -261,6 +262,7 @@ workflows:
             branches:
               only:
                 - master
+                - multiple-tenancy
             tags:
               only: /^v.*/
       - deploy-controller:
@@ -278,6 +280,7 @@ workflows:
             branches:
               only:
                 - master
+                - multiple-tenancy
             tags:
               only: /^v.*/
       - hold:
@@ -296,4 +299,6 @@ workflows:
             - build-push-operator-image
           filters:
             branches:
-              only: master
+              only:
+                - master
+                - multiple-tenancy
