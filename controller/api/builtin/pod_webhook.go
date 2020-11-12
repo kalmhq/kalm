@@ -160,8 +160,6 @@ func (v *PodAdmissionHandler) InjectClient(c client.Client) error {
 	return nil
 }
 
-const ReasonExceedingQuota = "ExceedingQuota"
-
 func (v *PodAdmissionHandler) HandleCreate(ctx context.Context, req admission.Request) admission.Response {
 	logger := podAdmissionHandlerLog.WithValues("UID", req.UID)
 	logger.Info("pod admissionHandler called", "op", req.Operation, "ns/name", fmt.Sprintf("%s/%s", req.Namespace, req.Name))
@@ -211,7 +209,7 @@ func (v *PodAdmissionHandler) HandleCreate(ctx context.Context, req admission.Re
 
 		// fire a warning event
 		msg := fmt.Sprintf("fail when trying to allocate resource for pod of component, err: %s", err)
-		v.emitWarningEvent(&component, ReasonExceedingQuota, msg)
+		v.emitWarningEvent(&component, v1alpha1.ReasonExceedingQuota, msg)
 
 		// codereview from david: @mingmin
 		// should we use component status instead of labels?
