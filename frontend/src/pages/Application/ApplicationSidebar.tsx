@@ -5,7 +5,7 @@ import { blinkTopProgressAction } from "actions/settings";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
 import { connect } from "react-redux";
-import { NavLink, RouteComponentProps, withRouter } from "react-router-dom";
+import { NavLink, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import sc from "utils/stringConstants";
@@ -41,11 +41,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props
-  extends WithStyles<typeof styles>,
-    WithUserAuthProps,
-    ReturnType<typeof mapStateToProps>,
-    RouteComponentProps<{ applicationName: string }> {
+interface Props extends WithStyles<typeof styles>, WithUserAuthProps, ReturnType<typeof mapStateToProps> {
   dispatch: TDispatch;
   // canEdit?: boolean;
 }

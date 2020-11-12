@@ -33,60 +33,85 @@ func (v *NSValidator) Handle(ctx context.Context, req admission.Request) admissi
 	logger := nsValidatorLog.WithValues("ns", req.Name, "UID", req.UID)
 	logger.Info("ns webhook called")
 
-	ns := corev1.Namespace{}
-
-	// Get the object in the request
-	if req.Operation == v1beta1.Create {
-		err := v.decoder.Decode(req, &ns)
-		if err != nil {
-			return admission.Errored(http.StatusBadRequest, err)
-		}
-
-		if v1alpha1.IsKalmSystemNamespace(ns.Name) {
-			return admission.Allowed("")
-		}
-
-		tenant := ns.Labels[v1alpha1.TenantNameLabelKey]
-		if tenant == "" {
-			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
-		}
-
-		if err := v1alpha1.AllocateTenantResource(&ns, v1alpha1.ResourceApplicationsCount, resource.MustParse("1")); err != nil {
-			logger.Error(err, "fail to allocate ns resource", "ns", ns.Name)
-			return admission.Errored(http.StatusBadRequest, err)
-		} else {
-			logger.Info("succeeded to allocate ns resource", "ns", ns.Name)
-		}
+	switch req.Operation {
+	case v1beta1.Create:
+		return v.HandleCreate(req)
+	case v1beta1.Delete:
+		return v.HandleDelete(req)
+	default:
+		return admission.Allowed("")
 	}
-
-	if req.Operation == v1beta1.Delete {
-		// In reference to PR: https://github.com/kubernetes/kubernetes/pull/76346
-		// OldObject contains the object being deleted
-		err := v.decoder.DecodeRaw(req.OldObject, &ns)
-		if err != nil {
-			return admission.Errored(http.StatusBadRequest, err)
-		}
-
-		if v1alpha1.IsKalmSystemNamespace(ns.Name) {
-			return admission.Allowed("")
-		}
-
-		tenant := ns.Labels[v1alpha1.TenantNameLabelKey]
-		if tenant == "" {
-			logger.Error(v1alpha1.NoTenantFoundError, "no tenant found in ns to be deleted, ignored", "ns", ns.Name)
-			return admission.Allowed("")
-		}
-
-		if err := v1alpha1.ReleaseTenantResource(&ns, v1alpha1.ResourceApplicationsCount, resource.MustParse("1")); err != nil {
-			logger.Error(err, "fail to release ns resource, ignored", "ns", ns.Name)
-		}
-	}
-
-	return admission.Allowed("")
 }
 
 // InjectDecoder injects the decoder.
 func (v *NSValidator) InjectDecoder(d *admission.Decoder) error {
 	v.decoder = d
 	return nil
+}
+
+func (v *NSValidator) HandleCreate(req admission.Request) admission.Response {
+	logger := nsValidatorLog.WithValues("create ns", req.Name, "UID", req.UID)
+
+	ns := corev1.Namespace{}
+	err := v.decoder.Decode(req, &ns)
+	if err != nil {
+		return admission.Errored(http.StatusBadRequest, err)
+	}
+
+	// skip check for kalm system ns
+	if v1alpha1.IsKalmSystemNamespace(ns.Name) {
+		return admission.Allowed("")
+	}
+
+	// skip if is not kalmEnabled namespace
+	if !v1alpha1.IsNamespaceKalmEnabled(ns) {
+		return admission.Allowed("")
+	}
+
+	tenantName := ns.Labels[v1alpha1.TenantNameLabelKey]
+	if tenantName == "" {
+		return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
+	}
+
+	if err := v1alpha1.AllocateTenantResource(&ns, v1alpha1.ResourceApplicationsCount, resource.MustParse("1")); err != nil {
+		logger.Error(err, "fail to allocate ns resource", "ns", ns.Name)
+		return admission.Errored(http.StatusBadRequest, err)
+	} else {
+		logger.Info("succeeded to allocate ns resource", "ns", ns.Name)
+	}
+
+	return admission.Allowed("")
+}
+
+func (v *NSValidator) HandleDelete(req admission.Request) admission.Response {
+	logger := nsValidatorLog.WithValues("delete ns", req.Name, "UID", req.UID)
+
+	ns := corev1.Namespace{}
+
+	// In reference to PR: https://github.com/kubernetes/kubernetes/pull/76346
+	// OldObject contains the object being deleted
+	err := v.decoder.DecodeRaw(req.OldObject, &ns)
+	if err != nil {
+		return admission.Errored(http.StatusBadRequest, err)
+	}
+
+	if v1alpha1.IsKalmSystemNamespace(ns.Name) {
+		return admission.Allowed("")
+	}
+
+	if !v1alpha1.IsNamespaceKalmEnabled(ns) {
+		return admission.Allowed("")
+	}
+
+	tenantName := ns.Labels[v1alpha1.TenantNameLabelKey]
+	if tenantName == "" {
+		logger.Error(v1alpha1.NoTenantFoundError, "no tenant found in ns to be deleted, ignored", "ns", ns.Name)
+		return admission.Allowed("")
+	}
+
+	if err := v1alpha1.ReleaseTenantResource(&ns, v1alpha1.ResourceApplicationsCount, resource.MustParse("1")); err != nil {
+		logger.Error(err, "fail to release ns resource, ignored", "ns", ns.Name)
+	}
+
+	return admission.Allowed("")
 }

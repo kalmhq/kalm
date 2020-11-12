@@ -260,7 +260,7 @@ func main() {
 		})
 		// pod webhook
 		hookServer.Register("/admission-handler-v1-pod", &webhook.Admission{
-			Handler: &builtin.PodAdmissionHandler{},
+			Handler: &builtin.PodAdmissionHandler{Recorder: mgr.GetEventRecorderFor("podAdmissionHandler")},
 		})
 		// svc webhook
 		hookServer.Register("/admission-handler-v1-svc", &webhook.Admission{

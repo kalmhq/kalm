@@ -152,6 +152,30 @@ jobs:
   #        KALM_APP: kalm-system
   #        KALM_COMPONENT: kalm
   #        KALM_COMPONENT_IMG_TAG: $CIRCLE_SHA1
+  deploy-dashboard:
+    docker:
+      - image: circleci/golang:1.13.11
+    steps:
+      - run:
+          name: deploy
+          command: |
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+            mkdir ${HOME}/.kube
+            echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
+
+            cat \<< EOF >> kalm-operator-config.yaml
+            apiVersion: install.kalm.dev/v1alpha1
+            kind: KalmOperatorConfig
+            metadata:
+              namespace: kalm-operator
+              name: kalmoperatorconfig-sample
+            spec:
+              kalmVersion: $CIRCLE_SHA1
+            EOF
+
+            kubectl apply -f kalm-operator-config.yaml
   #deploy-auth-proxy:
   #  executor: deploy-orb/default
   #  steps:
@@ -175,8 +199,21 @@ jobs:
             sudo mv ./kubectl /usr/local/bin/kubectl
             mkdir ${HOME}/.kube
             echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
+
             IMG=kalmhq/kalm-controller:latest make deploy
             kubectl -n kalm-system patch deployment kalm-controller -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
+
+            #cat \<< EOF >> kalm-operator-config.yaml
+            #apiVersion: install.kalm.dev/v1alpha1
+            #kind: KalmOperatorConfig
+            #metadata:
+            #  namespace: kalm-operator
+            #  name: kalmoperatorconfig-sample
+            #spec:
+            #  kalmVersion: $CIRCLE_SHA1
+            #EOF
+
+            #kubectl apply -f kalm-operator-config.yaml
   deploy-operator:
     docker:
       - image: circleci/golang:1.13.11
@@ -191,8 +228,11 @@ jobs:
             sudo mv ./kubectl /usr/local/bin/kubectl
             mkdir ${HOME}/.kube
             echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
-            IMG=kalmhq/kalm-operator:latest make deploy
-            kubectl -n kalm-operator patch deployment kalm-operator -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
+
+            IMG=kalmhq/kalm-operator:${CIRCLE_SHA1} make deploy
+            cat config/manager/kustomization.yaml
+
+            #kubectl -n kalm-operator patch deployment kalm-operator -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
 workflows:
   version: 2
   dashboard:
@@ -219,16 +259,18 @@ workflows:
             branches:
               only:
                 - master
+                - multiple-tenancy
             tags:
               only: /^v.*/
-      #- deploy-dashboard:
-      #    context: deploy-demo-cluster
-      #    requires:
-      #      - build-push-dashboard-image
-      #    filters:
-      #      branches:
-      #        only:
-      #          - master
+      - deploy-dashboard:
+          context: deploy-demo-cluster
+          requires:
+            - build-push-dashboard-image
+          filters:
+            branches:
+              only:
+                - master
+                - multiple-tenancy
       #- deploy-auth-proxy:
       #    context: deploy-demo-cluster
       #    requires:
@@ -261,6 +303,7 @@ workflows:
             branches:
               only:
                 - master
+                - multiple-tenancy
             tags:
               only: /^v.*/
       - deploy-controller:
@@ -269,7 +312,9 @@ workflows:
             - build-push-controller-image
           filters:
             branches:
-              only: master
+              only:
+                - master
+                - multiple-tenancy
   operator:
     jobs:
       - build-push-operator-image:
@@ -278,6 +323,7 @@ workflows:
             branches:
               only:
                 - master
+                - multiple-tenancy
             tags:
               only: /^v.*/
       - hold:
@@ -296,4 +342,6 @@ workflows:
             - build-push-operator-image
           filters:
             branches:
-              only: master
+              only:
+                - master
+                - multiple-tenancy

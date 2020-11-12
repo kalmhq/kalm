@@ -705,10 +705,8 @@ func isComponentLabeledAsExceedingQuota(comp *v1alpha1.Component) bool {
 }
 
 func (r *ComponentReconcilerTask) forceScaleDownExceedingQuotaComponent(comp *v1alpha1.Component) (err error) {
-	if comp.Spec.Replicas != nil && *comp.Spec.Replicas == 0 {
-		return nil
-	}
-
+	// if comp already marked exceedingQuota and spec.replicas == 0
+	// we need do nothing more
 	if comp.Labels[v1alpha1.KalmLabelKeyExceedingQuota] == "true" &&
 		comp.Spec.Replicas != nil && *comp.Spec.Replicas == 0 {
 		return nil

@@ -316,7 +316,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   }
 
   private renderEmpty() {
-    const { dispatch } = this.props;
+    const { dispatch, canEditTenant } = this.props;
 
     return (
       <EmptyInfoBox
@@ -324,16 +324,18 @@ class ApplicationListRaw extends React.PureComponent<Props> {
         title={sc.EMPTY_APP_TITLE}
         content={sc.EMPTY_APP_SUBTITLE}
         button={
-          <CustomizedButton
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              blinkTopProgressAction();
-              dispatch(push(`/applications/new`));
-            }}
-          >
-            {sc.NEW_APP_BUTTON}
-          </CustomizedButton>
+          canEditTenant() && (
+            <CustomizedButton
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                blinkTopProgressAction();
+                dispatch(push(`/applications/new`));
+              }}
+            >
+              {sc.NEW_APP_BUTTON}
+            </CustomizedButton>
+          )
         }
       />
     );
