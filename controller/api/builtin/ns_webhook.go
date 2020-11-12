@@ -35,6 +35,10 @@ func (v *NSValidator) Handle(ctx context.Context, req admission.Request) admissi
 
 	ns := corev1.Namespace{}
 
+	// Code Review from david: @mingmin
+	// How about using two functions to indicate CREATE and DELETE logic?
+	// This advice is applicable for the other three built-in webhooks.
+
 	// Get the object in the request
 	if req.Operation == v1beta1.Create {
 		err := v.decoder.Decode(req, &ns)
@@ -46,6 +50,13 @@ func (v *NSValidator) Handle(ctx context.Context, req admission.Request) admissi
 			return admission.Allowed("")
 		}
 
+		// Code Review from david: @mingmin
+		// I don't agree to ban any namespace without a tenant label. Remember this webhook will run against Kubernetes API.
+		// Any namespace that is created through our API will have a tenant label. This logic will work fine with those. But we should still allow new namespace creation through Kubernetes API.
+		// For example, we may need to install some system-level namespaces by using kubectl directly, which should be allowed.
+		// I suggest checking if the namespace has a kalm-enabled label.
+		// Please take a look at https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-objectselector
+		// This advice is applicable for the other three built-in webhooks
 		tenant := ns.Labels[v1alpha1.TenantNameLabelKey]
 		if tenant == "" {
 			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)

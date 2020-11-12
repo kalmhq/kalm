@@ -67,6 +67,9 @@ func (r *HttpRoute) ValidateCreate() error {
 		return NoTenantFoundError
 	}
 
+	// codereview from david: @mingmin
+	// We should limit the count of routes.
+
 	return r.validate()
 }
 

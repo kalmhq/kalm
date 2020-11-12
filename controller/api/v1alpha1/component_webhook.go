@@ -167,6 +167,9 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 		}
 	}
 
+	// codereview from david: @mingmin
+	// Should we denied the update if the replicas is too big? (server, statefulset)
+
 	var volErrList KalmValidateErrorList
 	// for sts, persistent vols should be updated
 	if r.Spec.WorkloadType == WorkloadTypeStatefulSet {

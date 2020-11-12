@@ -709,6 +709,8 @@ func (r *ComponentReconcilerTask) forceScaleDownExceedingQuotaComponent(comp *v1
 		return nil
 	}
 
+	// codereview from david: @mingmin
+	// comp.Spec.Replicas != nil && *comp.Spec.Replicas == 0 is always false
 	if comp.Labels[v1alpha1.KalmLabelKeyExceedingQuota] == "true" &&
 		comp.Spec.Replicas != nil && *comp.Spec.Replicas == 0 {
 		return nil
