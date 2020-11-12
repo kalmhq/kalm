@@ -183,15 +183,11 @@ func buildComponentResMessageCausedByService(c *Client, action string, objWatche
 		return nil, nil
 	}
 
-	// tenantName, err := v1alpha1.GetTenantNameFromObj(service)
+	tenantName, _ := v1alpha1.GetTenantNameFromObj(service)
 
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// if tenantName != c.clientInfo.Tenant {
-	// 	return nil, nil
-	// }
+	if tenantName != c.clientInfo.Tenant {
+		return nil, nil
+	}
 
 	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+service.Namespace) {
 		return nil, nil
@@ -213,15 +209,11 @@ func buildServiceResMessage(c *Client, action string, objWatched interface{}) (*
 		return nil, errors.New("convert watch obj to Service failed")
 	}
 
-	// tenantName, err := v1alpha1.GetTenantNameFromObj(service)
+	tenantName, _ := v1alpha1.GetTenantNameFromObj(service)
 
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// if tenantName != c.clientInfo.Tenant {
-	// 	return nil, nil
-	// }
+	if tenantName != c.clientInfo.Tenant {
+		return nil, nil
+	}
 
 	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+service.Namespace) {
 		return nil, nil
