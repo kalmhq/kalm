@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"k8s.io/api/admission/v1beta1"
@@ -112,7 +113,8 @@ func (v *PVCAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 
 		pvcTenantName := pvc.Labels[v1alpha1.TenantNameLabelKey]
 		if pvcTenantName == "" {
-			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
+			pvcAdmissionHandlerLog.Error(v1alpha1.NoTenantFoundError, "no tenant found in pvc, ignored", "ns/name", fmt.Sprintf("%s/%s", pvc.Namespace, pvc.Name))
+			return admission.Allowed("")
 		}
 
 		var tenantPVCList corev1.PersistentVolumeClaimList
@@ -129,11 +131,16 @@ func (v *PVCAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 				continue
 			}
 
+			if tmpPVC.DeletionTimestamp != nil && tmpPVC.DeletionTimestamp.Unix() > 0 {
+				continue
+			}
+
 			size.Add(*pvc.Spec.Resources.Requests.Storage())
 		}
 
 		if err := v1alpha1.SetTenantResourceByName(pvcTenantName, v1alpha1.ResourceStorage, size); err != nil {
-			return admission.Errored(http.StatusBadRequest, err)
+			pvcAdmissionHandlerLog.Error(err, "fail to update resource for tenant, ignored", "ns/name", fmt.Sprintf("%s/%s", pvc.Namespace, pvc.Name))
+			return admission.Allowed("")
 		}
 
 		pvcAdmissionHandlerLog.Info("pvc occupation updated for delete", "tenant", pvcTenantName, "newOccupation", size)

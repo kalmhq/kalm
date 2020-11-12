@@ -114,7 +114,7 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 
 		var podList corev1.PodList
 		if err := v.client.List(ctx, &podList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenantName}); err != nil {
-			return admission.Errored(http.StatusBadRequest, err)
+			return admission.Errored(http.StatusInternalServerError, err)
 		}
 
 		// exist podList - the pod been deleted

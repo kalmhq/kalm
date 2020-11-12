@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"k8s.io/api/admission/v1beta1"
@@ -106,28 +107,33 @@ func (v *SvcAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 
 		tenantName := svc.Labels[v1alpha1.TenantNameLabelKey]
 		if tenantName == "" {
-			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
+			svcAdmissionHandlerLog.Error(v1alpha1.NoTenantFoundError, "no tenant found in svc, ignored", "ns/name", fmt.Sprintf("%s/%s", svc.Namespace, svc.Name))
+			return admission.Allowed("")
 		}
 
 		var svcList corev1.ServiceList
 		if err := v.client.List(ctx, &svcList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenantName}); err != nil {
-			return admission.Errored(http.StatusBadRequest, err)
+			return admission.Errored(http.StatusInternalServerError, err)
 		}
 
-		cnt := len(svcList.Items)
+		cnt := 0
 		for _, tmpSvc := range svcList.Items {
-			if tmpSvc.Namespace != svc.Namespace || tmpSvc.Name != svc.Name {
+			if tmpSvc.Namespace == svc.Namespace && tmpSvc.Name == svc.Name {
 				continue
 			}
 
-			cnt -= 1
-			break
+			if tmpSvc.DeletionTimestamp != nil && tmpSvc.DeletionTimestamp.Unix() > 0 {
+				continue
+			}
+
+			cnt += 1
 		}
 
 		newQuantity := resource.NewQuantity(int64(cnt), resource.DecimalSI)
 
 		if err := v1alpha1.SetTenantResourceByName(tenantName, v1alpha1.ResourceServicesCount, *newQuantity); err != nil {
-			return admission.Errored(http.StatusBadRequest, err)
+			svcAdmissionHandlerLog.Error(err, "fail to update tenant for svc deletion, ignored", "ns/name", fmt.Sprintf("%s/%s", svc.Namespace, svc.Name))
+			return admission.Allowed("")
 		}
 	default:
 		svcAdmissionHandlerLog.Info("ignored", "req.Operation", req.Operation)
