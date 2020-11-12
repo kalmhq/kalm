@@ -60,7 +60,7 @@ func (v *PodAdmissionHandler) tryLabelComponentAsExceedingQuota(ns string, compo
 	copy.Labels[v1alpha1.KalmLabelKeyExceedingQuota] = "true"
 
 	if err := v.client.Update(context.Background(), copy); err != nil {
-		podAdmissionHandlerLog.Error(err, "fail to mark component as exceeding limit, ignored", "component", compName)
+		podAdmissionHandlerLog.Error(err, "fail to mark component as exceeding limit, ignored", "ns/name", fmt.Sprintf("%s/%s", component.Namespace, component.Name))
 		return err
 	}
 
@@ -198,7 +198,7 @@ func (v *PodAdmissionHandler) HandleCreate(ctx context.Context, req admission.Re
 	sum := getResourceListSumOfPods(append(podList.Items, pod))
 
 	if err := v1alpha1.SetTenantResourceListByName(tenantName, sum); err != nil {
-		logger.Info("fail to allocate res for tenant, CREATE", "tenant", tenantName, "err", err, "sum", sum)
+		logger.Error(err, "fail to allocate res for tenant, CREATE", "tenant", tenantName, "sum", sum)
 
 		ns := pod.Namespace
 		componentName := pod.Labels[v1alpha1.KalmLabelComponentKey]
