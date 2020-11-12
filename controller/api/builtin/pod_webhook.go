@@ -49,23 +49,30 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 			return admission.Allowed("")
 		}
 
-		// codeview from david: @mingmin
-		// If this is a string, we should name it tanantName.
-		var tenant string
-		if tenant = pod.Labels[v1alpha1.TenantNameLabelKey]; tenant == "" {
+		var ns v1.Namespace
+		if err := v.client.Get(context.Background(), client.ObjectKey{Name: pod.Namespace}, &ns); err != nil {
+			return admission.Errored(http.StatusBadRequest, err)
+		}
+
+		if !v1alpha1.IsNamespaceKalmEnabled(ns) {
+			return admission.Allowed("")
+		}
+
+		var tenantName string
+		if tenantName = pod.Labels[v1alpha1.TenantNameLabelKey]; tenantName == "" {
 			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
 		}
 
 		var podList corev1.PodList
-		if err := v.client.List(ctx, &podList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenant}); err != nil {
+		if err := v.client.List(ctx, &podList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenantName}); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
 		// exist podList + the pod to be created
 		sum := getResourceListSumOfPods(append(podList.Items, pod))
 
-		if err := v1alpha1.SetTenantResourceListByName(tenant, sum); err != nil {
-			logger.Info("fail to allocate res for tenant, CREATE", "tenant", tenant, "err", err, "sum", sum)
+		if err := v1alpha1.SetTenantResourceListByName(tenantName, sum); err != nil {
+			logger.Info("fail to allocate res for tenant, CREATE", "tenant", tenantName, "err", err, "sum", sum)
 
 			ns := pod.Namespace
 			componentName := pod.Labels[v1alpha1.KalmLabelComponentKey]
@@ -79,7 +86,7 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 
 			return admission.Errored(http.StatusBadRequest, err)
 		} else {
-			logger.Info("pod resource updated for create", "tenant", tenant, "newQuantity", sum)
+			logger.Info("pod resource updated for create", "tenant", tenantName, "newQuantity", sum)
 		}
 	case v1beta1.Delete:
 		if err := v.decoder.DecodeRaw(req.OldObject, &pod); err != nil {
@@ -90,14 +97,23 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 			return admission.Allowed("")
 		}
 
-		var tenant string
-		if tenant = pod.Labels[v1alpha1.TenantNameLabelKey]; tenant == "" {
-			logger.Info("fail to find tenant in pod being DELETED, ignored", "tenant", tenant, "pod", fmt.Sprintf("%s/%s", pod.Namespace, pod.Name))
+		var ns v1.Namespace
+		if err := v.client.Get(context.Background(), client.ObjectKey{Name: pod.Namespace}, &ns); err != nil {
+			return admission.Errored(http.StatusBadRequest, err)
+		}
+
+		if !v1alpha1.IsNamespaceKalmEnabled(ns) {
+			return admission.Allowed("")
+		}
+
+		var tenantName string
+		if tenantName = pod.Labels[v1alpha1.TenantNameLabelKey]; tenantName == "" {
+			logger.Info("fail to find tenant in pod being DELETED, ignored", "tenant", tenantName, "pod", fmt.Sprintf("%s/%s", pod.Namespace, pod.Name))
 			return admission.Allowed("")
 		}
 
 		var podList corev1.PodList
-		if err := v.client.List(ctx, &podList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenant}); err != nil {
+		if err := v.client.List(ctx, &podList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenantName}); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
@@ -108,22 +124,24 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 		}
 
 		for _, tmpPod := range podList.Items {
-			// codeview form david: @mingming
-			// Should check if the current pod has a deletedAtTimestamp.
-			// Otherwise, this logic will be wrong if there are two pods are in deleting process.
 			if pod.Namespace == tmpPod.Namespace && pod.Name == tmpPod.Name {
 				// ignore pod been deleted
+				continue
+			}
+
+			// ignore other deleted pods
+			if pod.DeletionTimestamp != nil && pod.DeletionTimestamp.Unix() > 0 {
 				continue
 			}
 
 			sumExceptPodBeenDeleted = sumOfResourceList(sumExceptPodBeenDeleted, getResourceOfPod(pod))
 		}
 
-		if err := v1alpha1.SetTenantResourceListByName(tenant, sumExceptPodBeenDeleted); err != nil {
+		if err := v1alpha1.SetTenantResourceListByName(tenantName, sumExceptPodBeenDeleted); err != nil {
 			// should not DENY delete pod
-			logger.Info("fail to allocate res for tenant, DELETE", "tenant", tenant, "err", err, "sum", sumExceptPodBeenDeleted)
+			logger.Info("fail to update res for tenant, DELETE", "tenant", tenantName, "err", err, "sum", sumExceptPodBeenDeleted)
 		} else {
-			logger.Info("pod resource updated for delete", "tenant", tenant, "newQuantity", sumExceptPodBeenDeleted)
+			logger.Info("pod resource updated for delete", "tenant", tenantName, "newQuantity", sumExceptPodBeenDeleted)
 		}
 	default:
 		logger.Info("req ignored,", "req", req.Operation)

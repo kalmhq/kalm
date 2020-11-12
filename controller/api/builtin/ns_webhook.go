@@ -46,7 +46,13 @@ func (v *NSValidator) Handle(ctx context.Context, req admission.Request) admissi
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
+		// skip check for kalm system ns
 		if v1alpha1.IsKalmSystemNamespace(ns.Name) {
+			return admission.Allowed("")
+		}
+
+		// only check on kalmEnabled namespace
+		if !v1alpha1.IsNamespaceKalmEnabled(ns) {
 			return admission.Allowed("")
 		}
 
@@ -57,8 +63,8 @@ func (v *NSValidator) Handle(ctx context.Context, req admission.Request) admissi
 		// I suggest checking if the namespace has a kalm-enabled label.
 		// Please take a look at https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-objectselector
 		// This advice is applicable for the other three built-in webhooks
-		tenant := ns.Labels[v1alpha1.TenantNameLabelKey]
-		if tenant == "" {
+		tenantName := ns.Labels[v1alpha1.TenantNameLabelKey]
+		if tenantName == "" {
 			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
 		}
 
@@ -82,8 +88,12 @@ func (v *NSValidator) Handle(ctx context.Context, req admission.Request) admissi
 			return admission.Allowed("")
 		}
 
-		tenant := ns.Labels[v1alpha1.TenantNameLabelKey]
-		if tenant == "" {
+		if !v1alpha1.IsNamespaceKalmEnabled(ns) {
+			return admission.Allowed("")
+		}
+
+		tenantName := ns.Labels[v1alpha1.TenantNameLabelKey]
+		if tenantName == "" {
 			logger.Error(v1alpha1.NoTenantFoundError, "no tenant found in ns to be deleted, ignored", "ns", ns.Name)
 			return admission.Allowed("")
 		}

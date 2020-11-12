@@ -164,3 +164,11 @@ func ExistNegativeResource(resList ResourceList) bool {
 
 	return false
 }
+
+func IsNamespaceKalmEnabled(namespace v1.Namespace) bool {
+	if v, exist := namespace.Labels[KalmEnableLabelName]; !exist || v != KalmEnableLabelValue {
+		return false
+	}
+
+	return true
+}

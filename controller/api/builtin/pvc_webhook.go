@@ -12,6 +12,7 @@ import (
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
@@ -52,14 +53,23 @@ func (v *PVCAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 			return admission.Allowed("")
 		}
 
-		pvcTenant := pvc.Labels[v1alpha1.TenantNameLabelKey]
-		if pvcTenant == "" {
+		var ns v1.Namespace
+		if err := v.client.Get(context.Background(), client.ObjectKey{Name: pvc.Namespace}, &ns); err != nil {
+			return admission.Errored(http.StatusBadRequest, err)
+		}
+
+		if !v1alpha1.IsNamespaceKalmEnabled(ns) {
+			return admission.Allowed("")
+		}
+
+		pvcTenantName := pvc.Labels[v1alpha1.TenantNameLabelKey]
+		if pvcTenantName == "" {
 			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
 		}
 
 		var tenantPVCList corev1.PersistentVolumeClaimList
 		if err := v.client.List(ctx, &tenantPVCList, client.MatchingLabels{
-			v1alpha1.TenantNameLabelKey: pvcTenant,
+			v1alpha1.TenantNameLabelKey: pvcTenantName,
 		}); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
 		}
@@ -72,11 +82,11 @@ func (v *PVCAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 		// and current pvc
 		size.Add(*pvc.Spec.Resources.Requests.Storage())
 
-		if err := v1alpha1.SetTenantResourceByName(pvcTenant, v1alpha1.ResourceStorage, size); err != nil {
+		if err := v1alpha1.SetTenantResourceByName(pvcTenantName, v1alpha1.ResourceStorage, size); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
-		pvcAdmissionHandlerLog.Info("pvc occupation updated for create", "tenant", pvcTenant, "newOccupation", size)
+		pvcAdmissionHandlerLog.Info("pvc occupation updated for create", "tenant", pvcTenantName, "newOccupation", size)
 	}
 
 	if req.Operation == v1beta1.Delete {
@@ -91,14 +101,23 @@ func (v *PVCAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 			return admission.Allowed("")
 		}
 
-		pvcTenant := pvc.Labels[v1alpha1.TenantNameLabelKey]
-		if pvcTenant == "" {
+		var ns v1.Namespace
+		if err := v.client.Get(context.Background(), client.ObjectKey{Name: pvc.Namespace}, &ns); err != nil {
+			return admission.Errored(http.StatusBadRequest, err)
+		}
+
+		if !v1alpha1.IsNamespaceKalmEnabled(ns) {
+			return admission.Allowed("")
+		}
+
+		pvcTenantName := pvc.Labels[v1alpha1.TenantNameLabelKey]
+		if pvcTenantName == "" {
 			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
 		}
 
 		var tenantPVCList corev1.PersistentVolumeClaimList
 		if err := v.client.List(ctx, &tenantPVCList, client.MatchingLabels{
-			v1alpha1.TenantNameLabelKey: pvcTenant,
+			v1alpha1.TenantNameLabelKey: pvcTenantName,
 		}); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
 		}
@@ -113,11 +132,11 @@ func (v *PVCAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 			size.Add(*pvc.Spec.Resources.Requests.Storage())
 		}
 
-		if err := v1alpha1.SetTenantResourceByName(pvcTenant, v1alpha1.ResourceStorage, size); err != nil {
+		if err := v1alpha1.SetTenantResourceByName(pvcTenantName, v1alpha1.ResourceStorage, size); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
-		pvcAdmissionHandlerLog.Info("pvc occupation updated for delete", "tenant", pvcTenant, "newOccupation", size)
+		pvcAdmissionHandlerLog.Info("pvc occupation updated for delete", "tenant", pvcTenantName, "newOccupation", size)
 	}
 
 	return admission.Allowed("")

@@ -11,6 +11,7 @@ import (
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
@@ -46,13 +47,22 @@ func (v *SvcAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 			return admission.Allowed("")
 		}
 
-		tenant := svc.Labels[v1alpha1.TenantNameLabelKey]
-		if tenant == "" {
+		var ns v1.Namespace
+		if err := v.client.Get(context.Background(), client.ObjectKey{Name: svc.Namespace}, &ns); err != nil {
+			return admission.Errored(http.StatusBadRequest, err)
+		}
+
+		if !v1alpha1.IsNamespaceKalmEnabled(ns) {
+			return admission.Allowed("")
+		}
+
+		tenantName := svc.Labels[v1alpha1.TenantNameLabelKey]
+		if tenantName == "" {
 			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
 		}
 
 		var svcList corev1.ServiceList
-		if err := v.client.List(ctx, &svcList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenant}); err != nil {
+		if err := v.client.List(ctx, &svcList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenantName}); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
@@ -72,7 +82,7 @@ func (v *SvcAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 		}
 
 		newQuantity := resource.NewQuantity(int64(cnt), resource.DecimalSI)
-		if err := v1alpha1.SetTenantResourceByName(tenant, v1alpha1.ResourceServicesCount, *newQuantity); err != nil {
+		if err := v1alpha1.SetTenantResourceByName(tenantName, v1alpha1.ResourceServicesCount, *newQuantity); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 	case v1beta1.Delete:
@@ -85,13 +95,22 @@ func (v *SvcAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 			return admission.Allowed("")
 		}
 
-		tenant := svc.Labels[v1alpha1.TenantNameLabelKey]
-		if tenant == "" {
+		var ns v1.Namespace
+		if err := v.client.Get(context.Background(), client.ObjectKey{Name: svc.Namespace}, &ns); err != nil {
+			return admission.Errored(http.StatusBadRequest, err)
+		}
+
+		if !v1alpha1.IsNamespaceKalmEnabled(ns) {
+			return admission.Allowed("")
+		}
+
+		tenantName := svc.Labels[v1alpha1.TenantNameLabelKey]
+		if tenantName == "" {
 			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
 		}
 
 		var svcList corev1.ServiceList
-		if err := v.client.List(ctx, &svcList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenant}); err != nil {
+		if err := v.client.List(ctx, &svcList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenantName}); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 
@@ -107,7 +126,7 @@ func (v *SvcAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 
 		newQuantity := resource.NewQuantity(int64(cnt), resource.DecimalSI)
 
-		if err := v1alpha1.SetTenantResourceByName(tenant, v1alpha1.ResourceServicesCount, *newQuantity); err != nil {
+		if err := v1alpha1.SetTenantResourceByName(tenantName, v1alpha1.ResourceServicesCount, *newQuantity); err != nil {
 			return admission.Errored(http.StatusBadRequest, err)
 		}
 	default:
