@@ -27,7 +27,6 @@ import (
 	"strings"
 
 	js "github.com/dop251/goja"
-	"github.com/kalmhq/kalm/controller/lib/files"
 	"github.com/kalmhq/kalm/controller/vm"
 	"github.com/xeipuuv/gojsonschema"
 	v1alpha32 "istio.io/api/networking/v1alpha3"
@@ -300,6 +299,7 @@ func GetPodSecurityContextFromAnnotation(annotations map[string]string) *coreV1.
 			}
 
 			securityContext.RunAsGroup = &n
+		// TODO need check this permission
 		case "runAsUser":
 			n, err := strconv.ParseInt(v, 0, 64)
 
@@ -651,16 +651,16 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 		return err
 	}
 
-	if err := r.reconcileDirectConfigs(); err != nil {
-		return err
-	}
-
 	if err := r.reconcilePermission(); err != nil {
 		return err
 	}
 
 	template, err := r.GetPodTemplateWithoutVols()
 	if err != nil {
+		return err
+	}
+
+	if err := r.CreatePspRoleBinding(template.Spec.ServiceAccountName); err != nil {
 		return err
 	}
 
@@ -700,10 +700,8 @@ func isComponentLabeledAsExceedingQuota(comp *v1alpha1.Component) bool {
 }
 
 func (r *ComponentReconcilerTask) forceScaleDownExceedingQuotaComponent(comp *v1alpha1.Component) (err error) {
-	if comp.Spec.Replicas != nil && *comp.Spec.Replicas == 0 {
-		return nil
-	}
-
+	// if comp already marked exceedingQuota and spec.replicas == 0
+	// we need do nothing more
 	if comp.Labels[v1alpha1.KalmLabelKeyExceedingQuota] == "true" &&
 		comp.Spec.Replicas != nil && *comp.Spec.Replicas == 0 {
 		return nil
@@ -1115,6 +1113,8 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 
 	if component.Spec.RunnerPermission != nil {
 		template.Spec.ServiceAccountName = r.getNameForPermission()
+	} else {
+		template.Spec.ServiceAccountName = "default"
 	}
 
 	// resource requirements
@@ -1365,104 +1365,6 @@ func findPluginAndValidateConfigNew(pluginBinding *corev1alpha1.ComponentPluginB
 	}
 
 	return pluginProgram, nil, nil
-}
-
-func (r *ComponentReconcilerTask) parseComponentConfigs(component *corev1alpha1.Component, volumes *[]coreV1.Volume, volumeMounts *[]coreV1.VolumeMount) {
-	var configMap coreV1.ConfigMap
-
-	err := r.Client.Get(r.ctx, types.NamespacedName{
-		Name:      files.KALM_CONFIG_MAP_NAME,
-		Namespace: r.component.Namespace,
-	}, &configMap)
-
-	if err != nil {
-		r.WarningEvent(err, "can't get files config-map. Skip configs.")
-		return
-	}
-
-	// key is mount dir, values is the files
-	mountPaths := make(map[string]map[string]bool)
-
-	for _, config := range component.Spec.Configs {
-		mountPath := config.MountPath
-
-		for _, path := range config.Paths {
-			root, err := files.GetFileItemTree(&configMap, path)
-
-			if err != nil {
-				r.WarningEvent(err, fmt.Sprintf("can't find file item at %s", path))
-				continue
-			}
-
-			files.ResolveMountPaths(mountPaths, mountPath, root)
-		}
-	}
-
-	for mountPath, rawFileNamesMap := range mountPaths {
-		name := fmt.Sprintf("configs-%x", md5.Sum([]byte(mountPath)))
-		items := make([]coreV1.KeyToPath, 0, len(rawFileNamesMap))
-
-		for itemRawFileName := range rawFileNamesMap {
-
-			items = append(items, coreV1.KeyToPath{
-				Path: files.GetFileNameFromRawPath(itemRawFileName),
-				Key:  files.EncodeFilePath(itemRawFileName),
-			})
-		}
-
-		volume := coreV1.Volume{
-			Name: name,
-			VolumeSource: coreV1.VolumeSource{
-				ConfigMap: &coreV1.ConfigMapVolumeSource{
-					LocalObjectReference: coreV1.LocalObjectReference{
-						Name: files.KALM_CONFIG_MAP_NAME,
-					},
-					Items: items,
-				},
-			},
-		}
-
-		volumeMount := coreV1.VolumeMount{
-			Name:      name,
-			MountPath: mountPath,
-		}
-
-		*volumes = append(*volumes, volume)
-		*volumeMounts = append(*volumeMounts, volumeMount)
-	}
-
-	// directConfigs
-	for i, directConfig := range component.Spec.DirectConfigs {
-		path := getPathOfDirectConfig(component.Name, i)
-
-		name := fmt.Sprintf("direct-config-%s-%d", component.Name, i)
-
-		vol := coreV1.Volume{
-			Name: name,
-			VolumeSource: coreV1.VolumeSource{
-				ConfigMap: &coreV1.ConfigMapVolumeSource{
-					LocalObjectReference: coreV1.LocalObjectReference{
-						Name: files.KALM_CONFIG_MAP_NAME,
-					},
-					Items: []coreV1.KeyToPath{
-						{
-							Key:  files.EncodeFilePath(path),
-							Path: "adhoc-name",
-						},
-					},
-				},
-			},
-		}
-
-		volMount := coreV1.VolumeMount{
-			Name:      name,
-			MountPath: directConfig.MountFilePath,
-			SubPath:   "adhoc-name",
-		}
-
-		*volumes = append(*volumes, vol)
-		*volumeMounts = append(*volumeMounts, volMount)
-	}
 }
 
 func (r *ComponentReconcilerTask) getPVC(pvcName string) (*coreV1.PersistentVolumeClaim, error) {

@@ -1,0 +1,3 @@
+resources:
+  - psp_privileged.yaml
+  - psp_restricted.yaml

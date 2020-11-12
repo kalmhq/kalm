@@ -76,6 +76,7 @@ type KalmOperatorConfigReconciler struct {
 // +kubebuilder:rbac:groups=install.kalm.dev,resources=kalmoperatorconfigs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=install.kalm.dev,resources=kalmoperatorconfigs/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=policy,resources=poddisruptionbudgets*,verbs=*
+// +kubebuilder:rbac:groups=policy,resources=podsecuritypolicies,verbs=*
 // +kubebuilder:rbac:groups=monitoring.coreos.com,resources=servicemonitors,verbs=get;create
 // +kubebuilder:rbac:groups=apiextensions.k8s.io,resources=customresourcedefinitions;customresourcedefinitions.apiextensions.k8s.io,verbs=*
 // +kubebuilder:rbac:groups=apiregistration.k8s.io,resources=apiservices,verbs=get;list;watch;update

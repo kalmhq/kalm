@@ -9,3 +9,7 @@ resources:
 - auth_proxy_service.yaml
 - auth_proxy_role.yaml
 - auth_proxy_role_binding.yaml
+- kalm_operator_psp_role_binding.yaml
+- kalm_system_psp_role_binding.yaml
+- psp_privileged_role.yaml
+- psp_restricted_role.yaml

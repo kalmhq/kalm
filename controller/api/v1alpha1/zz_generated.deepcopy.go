@@ -563,21 +563,6 @@ func (in *ComponentSpec) DeepCopyInto(out *ComponentSpec) {
 		*out = new(corev1.Probe)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.BeforeStart != nil {
-		in, out := &in.BeforeStart, &out.BeforeStart
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
-	if in.AfterStart != nil {
-		in, out := &in.AfterStart, &out.AfterStart
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
-	if in.BeforeDestroy != nil {
-		in, out := &in.BeforeDestroy, &out.BeforeDestroy
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
 	if in.ResourceRequirements != nil {
 		in, out := &in.ResourceRequirements, &out.ResourceRequirements
 		*out = new(corev1.ResourceRequirements)
@@ -608,18 +593,6 @@ func (in *ComponentSpec) DeepCopyInto(out *ComponentSpec) {
 	if in.PreInjectedFiles != nil {
 		in, out := &in.PreInjectedFiles, &out.PreInjectedFiles
 		*out = make([]PreInjectFile, len(*in))
-		copy(*out, *in)
-	}
-	if in.Configs != nil {
-		in, out := &in.Configs, &out.Configs
-		*out = make([]Config, len(*in))
-		for i := range *in {
-			(*in)[i].DeepCopyInto(&(*out)[i])
-		}
-	}
-	if in.DirectConfigs != nil {
-		in, out := &in.DirectConfigs, &out.DirectConfigs
-		*out = make([]DirectConfig, len(*in))
 		copy(*out, *in)
 	}
 }

@@ -27,6 +27,9 @@ func (suite *ServicesHandlerTestSuite) TestServicesHandler() {
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      "test-services",
 			Namespace: suite.namespace,
+			Labels: map[string]string{
+				"tenant": defaultTenant,
+			},
 		},
 		Spec: v1.ServiceSpec{
 			Ports: []v1.ServicePort{
@@ -43,8 +46,9 @@ func (suite *ServicesHandlerTestSuite) TestServicesHandler() {
 
 	// list all services in cluster level
 	suite.DoTestRequest(&TestRequestContext{
+		Debug: true,
 		Roles: []string{
-			GetClusterViewerRole(),
+			GetTenantOwnerRole(defaultTenant),
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/services",
@@ -55,8 +59,9 @@ func (suite *ServicesHandlerTestSuite) TestServicesHandler() {
 			var services []*resources.Service
 			rec.BodyAsJSON(&services)
 			suite.NotNil(rec)
-			suite.EqualValues(2, len(services)) // default service named kubernetes
-			suite.EqualValues("test-services", services[1].Name)
+			// only return svc under this tenant
+			suite.EqualValues(1, len(services))
+			suite.EqualValues("test-services", services[0].Name)
 		},
 	})
 }

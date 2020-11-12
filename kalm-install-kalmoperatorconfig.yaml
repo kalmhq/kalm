@@ -16,6 +16,7 @@ metadata:
   labels:
     istio-injection: enabled
     kalm-enabled: "true"
+    kalm-control-plane: "true"
 ---
 apiVersion: install.kalm.dev/v1alpha1
 kind: KalmOperatorConfig

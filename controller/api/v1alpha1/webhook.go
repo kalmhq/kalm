@@ -9,16 +9,19 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 var webhookClient client.Client
 var webhookReader client.Reader
+var eventRecorder record.EventRecorder
 
 func InitializeWebhookClient(mgr ctrl.Manager) {
 	webhookClient = mgr.GetClient()
 	webhookReader = mgr.GetAPIReader()
+	eventRecorder = mgr.GetEventRecorderFor("kalm-webhook")
 }
 
 type InsufficientResourceError struct {
@@ -101,6 +104,9 @@ func SetTenantResourceListByName(tenantName string, resourceList ResourceList) e
 	if len(resourceList) == 0 {
 		return nil
 	}
+
+	// code review from david: @mingmin
+	// Should we have retry logic here in case the update failed due to version changing?
 
 	var tenant Tenant
 	if err := webhookClient.Get(context.Background(), types.NamespacedName{

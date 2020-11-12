@@ -123,8 +123,8 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions(row: Registry) {
-    const { canEditCluster } = this.props;
-    return canEditCluster() ? (
+    const { canEditTenant } = this.props;
+    return canEditTenant() ? (
       <>
         <IconLinkWithToolTip tooltipTitle={"Edit"} to={`/cluster/registries/${row.name}/edit`}>
           <EditIcon />
@@ -139,7 +139,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private getKRTableColumns() {
-    const { canEditCluster } = this.props;
+    const { canEditTenant } = this.props;
 
     const columns = [
       {
@@ -164,7 +164,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
       },
     ];
 
-    if (canEditCluster()) {
+    if (canEditTenant()) {
       columns.push({
         Header: "Actions",
         accessor: "actions",
@@ -218,8 +218,8 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderEmpty() {
-    const { canEditCluster } = this.props;
-    return canEditCluster() ? (
+    const { canEditTenant } = this.props;
+    return canEditTenant() ? (
       <EmptyInfoBox
         image={<KalmRegistryIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={sc.EMPTY_REGISTRY_TITLE}
@@ -245,9 +245,9 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isLoading, isFirstLoaded, registries, canEditCluster } = this.props;
+    const { isLoading, isFirstLoaded, registries, canEditTenant } = this.props;
     return (
-      <BasePage secondHeaderRight={canEditCluster() ? this.renderSecondHeaderRight() : null}>
+      <BasePage secondHeaderRight={canEditTenant() ? this.renderSecondHeaderRight() : null}>
         <Box p={2}>
           {isLoading && !isFirstLoaded ? (
             <Loading />

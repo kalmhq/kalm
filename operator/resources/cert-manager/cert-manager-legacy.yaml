@@ -6787,3 +6787,267 @@ webhooks:
         name: cert-manager-webhook
         namespace: "cert-manager"
         path: /validate
+
+---
+# Source: cert-manager/templates/cainjector-psp.yaml
+
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: cert-manager-cainjector
+  labels:
+    app: cainjector
+    chart: cert-manager-v0.13.1
+    release: cert-manager
+    heritage: Tiller
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'docker/default'
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: 'runtime/default'
+    apparmor.security.beta.kubernetes.io/defaultProfileName:  'runtime/default'
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  allowedCapabilities: []  # default set of capabilities are implicitly allowed
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1000
+        max: 1000
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1000
+        max: 1000
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1000
+        max: 1000
+
+---
+# Source: cert-manager/templates/cainjector-psp-clusterrole.yaml
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cert-manager-cainjector-psp
+  labels:
+    app: cainjector
+    chart: cert-manager-v0.13.1
+    release: cert-manager
+    heritage: Tiller
+rules:
+  - apiGroups: ['policy']
+    resources: ['podsecuritypolicies']
+    verbs:     ['use']
+    resourceNames:
+      - cert-manager-cainjector
+
+---
+# Source: cert-manager/templates/cainjector-psp-clusterrolebinding.yaml
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-cainjector-psp
+  labels:
+    app: cainjector
+    chart: cert-manager-v0.13.1
+    release: cert-manager
+    heritage: Tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-manager-cainjector-psp
+subjects:
+  - kind: ServiceAccount
+    name: cert-manager-cainjector
+    namespace: cert-manager
+
+---
+# Source: cert-manager/templates/psp.yaml
+
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: cert-manager
+  labels:
+    app: cert-manager
+    chart: cert-manager-v0.13.1
+    release: cert-manager
+    heritage: Tiller
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'docker/default'
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: 'runtime/default'
+    apparmor.security.beta.kubernetes.io/defaultProfileName:  'runtime/default'
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  allowedCapabilities: []  # default set of capabilities are implicitly allowed
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1000
+        max: 1000
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1000
+        max: 1000
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1000
+        max: 1000
+
+---
+# Source: cert-manager/templates/psp-clusterrole.yaml
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cert-manager-psp
+  labels:
+    app: cert-manager
+    chart: cert-manager-v0.13.1
+    release: cert-manager
+    heritage: Tiller
+rules:
+  - apiGroups: ['policy']
+    resources: ['podsecuritypolicies']
+    verbs:     ['use']
+    resourceNames:
+      - cert-manager
+
+---
+# Source: cert-manager/templates/psp-clusterrolebinding.yaml
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-psp
+  labels:
+    app: cert-manager
+    chart: cert-manager-v0.13.1
+    release: cert-manager
+    heritage: Tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-manager-psp
+subjects:
+  - kind: ServiceAccount
+    name: cert-manager
+    namespace: cert-manager
+
+---
+# Source: cert-manager/templates/webhook-psp.yaml
+
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: cert-manager-webhook
+  labels:
+    app: webhook
+    chart: cert-manager-v0.13.1
+    release: cert-manager
+    heritage: Tiller
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName:  'docker/default'
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: 'runtime/default'
+    apparmor.security.beta.kubernetes.io/defaultProfileName:  'runtime/default'
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  allowedCapabilities: []  # default set of capabilities are implicitly allowed
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'downwardAPI'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1000
+        max: 1000
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1000
+        max: 1000
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1000
+        max: 1000
+
+---
+# Source: cert-manager/templates/webhook-psp-clusterrole.yaml
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cert-manager-webhook-psp
+  labels:
+    app: webhook
+    chart: cert-manager-v0.13.1
+    release: cert-manager
+    heritage: Tiller
+rules:
+  - apiGroups: ['policy']
+    resources: ['podsecuritypolicies']
+    verbs:     ['use']
+    resourceNames:
+      - cert-manager-webhook
+
+---
+# Source: cert-manager/templates/webhook-psp-clusterrolebinding.yaml
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cert-manager-webhook-psp
+  labels:
+    app: webhook
+    chart: cert-manager-v0.13.1
+    release: cert-manager
+    heritage: Tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-manager-webhook-psp
+subjects:
+  - kind: ServiceAccount
+    name: cert-manager-webhook
+    namespace: cert-manager

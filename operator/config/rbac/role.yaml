@@ -157,6 +157,12 @@ rules:
   verbs:
   - '*'
 - apiGroups:
+  - policy
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - '*'
+- apiGroups:
   - rbac.authorization.k8s.io
   resources:
   - clusterrolebindings

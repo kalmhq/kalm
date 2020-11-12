@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+
 	corev1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -145,6 +146,39 @@ func (r *ComponentReconcilerTask) reconcilePermission() error {
 		} else {
 			//todo ensure
 		}
+	}
+
+	return nil
+}
+
+func (r *ComponentReconcilerTask) CreatePspRoleBinding(serviceAccountName string) error {
+	if serviceAccountName == "" {
+		serviceAccountName = "default"
+	}
+
+	clusterRoleBindingName := fmt.Sprintf("psp-%s-%s", r.component.Namespace, serviceAccountName)
+	pspClusterRoleBinding := rbacV1.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{Name: clusterRoleBindingName},
+		RoleRef: rbacV1.RoleRef{
+			APIGroup: "rbac.authorization.k8s.io",
+			Kind:     "ClusterRole",
+			Name:     "system:psp:restricted",
+		},
+		Subjects: []rbacV1.Subject{{
+			Kind:      "ServiceAccount",
+			Name:      serviceAccountName,
+			Namespace: r.component.Namespace,
+		}},
+	}
+
+	err := r.Get(r.ctx, types.NamespacedName{Name: clusterRoleBindingName}, &pspClusterRoleBinding)
+	if errors.IsNotFound(err) {
+		err := r.Create(r.ctx, &pspClusterRoleBinding)
+		if err != nil {
+			return err
+		}
+	} else if err != nil {
+		return err
 	}
 
 	return nil

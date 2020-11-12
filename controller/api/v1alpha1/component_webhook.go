@@ -92,13 +92,16 @@ func (r *Component) Default() {
 		r.Spec.Volumes[i] = vol
 	}
 
-	// set default resourceRequirement & limits
-	r.setupResourceRequirementIfAbsent()
-
-	// set for istio proxy
-	r.setupIstioResourceRequirementIfAbsent()
-
 	if !IsKalmSystemNamespace(r.Namespace) {
+		// only set hard limit on tenant component
+		// this makes system component possible to consumes more resource as request grows
+
+		// set default resourceRequirement & limits
+		r.setupResourceRequirementIfAbsent()
+
+		// set for istio proxy
+		r.setupIstioResourceRequirementIfAbsent()
+
 		if err := InheritTenantFromNamespace(r); err != nil {
 			componentlog.Error(err, "fail to inherit tenant from ns for component", "component", r.Name, "ns", r.Namespace)
 		} else {
@@ -162,10 +165,30 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 		if IsTenantChanged(r, old) {
 			return TenantChangedError
 		}
+
+		// deny the update if the replicas is too big
+		oldComponent, oldIsOK := old.(*Component)
+		if oldIsOK {
+			oldRes := EstimateResourceConsumption(*oldComponent)
+			newRes := EstimateResourceConsumption(*r)
+
+			tenant, err := GetTenantFromObj(r)
+			if err != nil {
+				return NoTenantFoundError
+			}
+
+			resDelta := GetDeltaOfResourceList(oldRes, newRes)
+			sumResList := SumResourceList(resDelta, tenant.Status.UsedResourceQuota)
+
+			if ExistGreaterResourceInList(sumResList, tenant.Spec.ResourceQuota) {
+				emitWarning(r, ReasonExceedingQuota, "update of component will exceed resource quota, denied")
+				return fmt.Errorf("create this component will exceed resource quota")
+			}
+		}
 	}
 
 	var volErrList KalmValidateErrorList
-	// for sts, persistent vols should be updated
+	// for sts, persistent vols should NOT be updated
 	if r.Spec.WorkloadType == WorkloadTypeStatefulSet {
 		if oldComponent, ok := old.(*Component); !ok {
 			componentlog.Info("oldObject is not *Component")
@@ -194,6 +217,10 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 	}
 
 	return error(volErrList)
+}
+
+func emitWarning(obj runtime.Object, reason, msg string) {
+	eventRecorder.Event(obj, v1.EventTypeWarning, reason, msg)
 }
 
 func isIdenticalVolMap(mapNew map[string]Volume, mapOld map[string]Volume) (bool, error) {

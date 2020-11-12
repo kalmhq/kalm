@@ -86,13 +86,6 @@ type ComponentSpec struct {
 	// +optional
 	ReadinessProbe *v1.Probe `json:"readinessProbe,omitempty"`
 
-	// Deprecated
-	BeforeStart []string `json:"beforeStart,omitempty"`
-	// Deprecated
-	AfterStart []string `json:"afterStart,omitempty"`
-	// Deprecated
-	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
-
 	// +optional
 	ResourceRequirements *v1.ResourceRequirements `json:"resourceRequirements,omitempty"`
 	// +optional
@@ -116,13 +109,6 @@ type ComponentSpec struct {
 	RunnerPermission *RunnerPermission `json:"runnerPermission,omitempty"`
 
 	PreInjectedFiles []PreInjectFile `json:"preInjectedFiles,omitempty"`
-
-	// +optional
-	// Deprecated
-	Configs []Config `json:"configs,omitempty"`
-
-	// Deprecated
-	DirectConfigs []DirectConfig `json:"directConfigs,omitempty"`
 
 	// +optional
 	Priority int `json:"priority"`
