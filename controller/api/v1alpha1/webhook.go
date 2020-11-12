@@ -102,6 +102,9 @@ func SetTenantResourceListByName(tenantName string, resourceList ResourceList) e
 		return nil
 	}
 
+	// code review from david: @mingmin
+	// Should we have retry logic here in case the update failed due to version changing?
+
 	var tenant Tenant
 	if err := webhookClient.Get(context.Background(), types.NamespacedName{
 		Name: tenantName,

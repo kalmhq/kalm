@@ -52,6 +52,9 @@ func (r *DockerRegistry) ValidateCreate() error {
 		return NoTenantFoundError
 	}
 
+	// codereview from david: @mingmin
+	// We should limit the count of registries.
+
 	return r.validate()
 }
 

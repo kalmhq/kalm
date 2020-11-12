@@ -82,6 +82,9 @@ func (r *HttpsCert) ValidateCreate() error {
 	// 	return NoTenantFoundError
 	// }
 
+	// codereview from david: @mingmin
+	// We should limit the count of certs.
+
 	return r.validate()
 }
 

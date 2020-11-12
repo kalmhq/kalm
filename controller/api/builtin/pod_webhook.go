@@ -49,6 +49,8 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 			return admission.Allowed("")
 		}
 
+		// codeview from david: @mingmin
+		// If this is a string, we should name it tanantName.
 		var tenant string
 		if tenant = pod.Labels[v1alpha1.TenantNameLabelKey]; tenant == "" {
 			return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
@@ -68,6 +70,9 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 			ns := pod.Namespace
 			componentName := pod.Labels[v1alpha1.KalmLabelComponentKey]
 
+			// codeview form david: @mingming
+			// should we fire a warning event here?
+			// should we use component status instead of labels?
 			if err := v.tryLabelComponentAsExceedingQuota(ns, componentName); err != nil {
 				logger.Error(err, "fail to mark component as exceeding quota, ignored", "component", componentName)
 			}
@@ -103,6 +108,9 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 		}
 
 		for _, tmpPod := range podList.Items {
+			// codeview form david: @mingming
+			// Should check if the current pod has a deletedAtTimestamp.
+			// Otherwise, this logic will be wrong if there are two pods are in deleting process.
 			if pod.Namespace == tmpPod.Namespace && pod.Name == tmpPod.Name {
 				// ignore pod been deleted
 				continue
