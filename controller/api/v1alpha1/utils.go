@@ -142,6 +142,28 @@ func SumResourceList(resLists ...ResourceList) ResourceList {
 	return rst
 }
 
+func GetDeltaOfResourceList(from, to ResourceList) ResourceList {
+	rst := make(ResourceList)
+
+	keys := make(map[ResourceName]interface{})
+	for k := range from {
+		keys[k] = nil
+	}
+	for k := range to {
+		keys[k] = nil
+	}
+
+	for k := range keys {
+		fromQuantity := from[k]
+		toQuantity := to[k]
+
+		toQuantity.Sub(fromQuantity)
+		rst[k] = toQuantity
+	}
+
+	return rst
+}
+
 // existGreaterResource in resList than baseResList
 func ExistGreaterResourceInList(resList, baseResList ResourceList) bool {
 	for resName, quantity := range resList {
