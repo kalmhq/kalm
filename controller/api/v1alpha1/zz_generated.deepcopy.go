@@ -563,21 +563,6 @@ func (in *ComponentSpec) DeepCopyInto(out *ComponentSpec) {
 		*out = new(corev1.Probe)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.BeforeStart != nil {
-		in, out := &in.BeforeStart, &out.BeforeStart
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
-	if in.AfterStart != nil {
-		in, out := &in.AfterStart, &out.AfterStart
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
-	if in.BeforeDestroy != nil {
-		in, out := &in.BeforeDestroy, &out.BeforeDestroy
-		*out = make([]string, len(*in))
-		copy(*out, *in)
-	}
 	if in.ResourceRequirements != nil {
 		in, out := &in.ResourceRequirements, &out.ResourceRequirements
 		*out = new(corev1.ResourceRequirements)

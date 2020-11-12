@@ -55,21 +55,6 @@ spec:
                 type: string
               description: labels will add to pods
               type: object
-            afterStart:
-              description: Deprecated
-              items:
-                type: string
-              type: array
-            beforeDestroy:
-              description: Deprecated
-              items:
-                type: string
-              type: array
-            beforeStart:
-              description: Deprecated
-              items:
-                type: string
-              type: array
             command:
               type: string
             dnsPolicy:

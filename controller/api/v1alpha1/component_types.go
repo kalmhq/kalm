@@ -86,13 +86,6 @@ type ComponentSpec struct {
 	// +optional
 	ReadinessProbe *v1.Probe `json:"readinessProbe,omitempty"`
 
-	// Deprecated
-	BeforeStart []string `json:"beforeStart,omitempty"`
-	// Deprecated
-	AfterStart []string `json:"afterStart,omitempty"`
-	// Deprecated
-	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
-
 	// +optional
 	ResourceRequirements *v1.ResourceRequirements `json:"resourceRequirements,omitempty"`
 	// +optional
