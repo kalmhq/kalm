@@ -172,12 +172,9 @@ func (r *ComponentReconcilerTask) CreatePspRoleBinding(serviceAccountName string
 
 	err := r.Get(r.ctx, types.NamespacedName{Name: clusterRoleBindingName}, &pspClusterRoleBinding)
 	if errors.IsNotFound(err) {
-		err := r.Create(r.ctx, &pspClusterRoleBinding)
-		if err != nil {
+		if err := r.Create(r.ctx, &pspClusterRoleBinding); err != nil {
 			return err
 		}
-	} else if err != nil {
-		return err
 	}
 
 	return nil

@@ -3,7 +3,6 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/jetstack/cert-manager/pkg/api"
 	"github.com/stretchr/testify/suite"
 	"io/ioutil"
@@ -104,7 +103,7 @@ func (suite *PSPSuite) TestPSP() {
 	privilegedPSPErr := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: "kalm-privileged"}, &privilegedPSP)
 
 	suite.Nil(restrictedPSPErr)
-	spew.Dump(restrictedPSP)
+	suite.Nil(privilegedPSPErr)
 	suite.Nil(privilegedPSPErr)
 
 	var restrictedRole rbacV1.ClusterRole
@@ -187,7 +186,6 @@ func (suite *PSPSuite) TestPSP() {
 	}
 
 	response, err := a.Create(context.TODO(), sar, metaV1.CreateOptions{})
-	spew.Dump("response", response)
 	suite.Nil(err)
 	suite.EqualValues(true, response.Status.Allowed)
 
