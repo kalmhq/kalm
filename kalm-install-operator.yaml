@@ -402,7 +402,7 @@ rules:
   - apiGroups:
       - policy
     resourceNames:
-      - privileged
+      - kalm-privileged
     resources:
       - podsecuritypolicies
     verbs:
@@ -416,7 +416,7 @@ rules:
   - apiGroups:
       - policy
     resourceNames:
-      - restricted
+      - kalm-restricted
     resources:
       - podsecuritypolicies
     verbs:

@@ -3,8 +3,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/jetstack/cert-manager/pkg/api"
-	"github.com/kalmhq/kalm/controller/api/builtin"
 	"github.com/stretchr/testify/suite"
 	"io/ioutil"
 	appsV1 "k8s.io/api/apps/v1"
@@ -14,21 +14,12 @@ import (
 	rbacV1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
-	"math/rand"
 	"path/filepath"
-	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"testing"
 	"time"
 
-	"github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
-	"github.com/kalmhq/kalm/controller/api/v1alpha1"
-	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/scheme"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 type PSPSuite struct {
@@ -40,15 +31,6 @@ type PSPSuite struct {
 
 func (suite *PSPSuite) SetupSuite() {
 	//the version of api-server need >= 1.16.13
-	//os.Setenv("TEST_ASSET_KUBE_APISERVER", "/usr/local/kubebuilder/bin/kube-apiserver-1.19.2")
-	logf.SetLogger(zap.New(zap.UseDevMode(true)))
-
-	suite.Nil(scheme.AddToScheme(scheme.Scheme))
-	suite.Nil(istioScheme.AddToScheme(scheme.Scheme))
-	suite.Nil(v1alpha1.AddToScheme(scheme.Scheme))
-	suite.Nil(v1alpha2.AddToScheme(scheme.Scheme))
-
-	// bootstrapping test environment
 	testEnv := &envtest.Environment{
 		CRDDirectoryPaths: []string{
 			filepath.Join("..", "config", "crd", "bases"),
@@ -79,98 +61,19 @@ func (suite *PSPSuite) SetupSuite() {
 			"--enable-admission-plugins=PodSecurityPolicy,ServiceAccount"},
 	}
 
-	var err error
-	cfg, err := testEnv.Start()
-	suite.Nil(err)
-	suite.NotNil(cfg)
+	suite.SetupTestEnv(testEnv)
+}
 
-	// +kubebuilder:scaffold:scheme
+func (suite *PSPSuite) TearDownSuite() {
+	suite.BasicSuite.TearDownSuite()
+}
 
-	zapLog := zap.Logger(true)
+func (suite *PSPSuite) SetupTest() {
+	ns := suite.SetupKalmEnabledNs("")
+	suite.ns = &ns
+	suite.ctx = context.Background()
 
-	min := 2000
-	max := 8000
-	port := rand.Intn(max-min) + min
-
-	mgrOptions := ctrl.Options{
-		Scheme:             scheme.Scheme,
-		MetricsBindAddress: fmt.Sprintf("localhost:%d", port),
-		Logger:             zapLog,
-		Port:               testEnv.WebhookInstallOptions.LocalServingPort,
-		Host:               testEnv.WebhookInstallOptions.LocalServingHost,
-		CertDir:            testEnv.WebhookInstallOptions.LocalServingCertDir,
-	}
-
-	mgr, err := ctrl.NewManager(cfg, mgrOptions)
-
-	webhookServer := mgr.GetWebhookServer()
-	webhookServer.Register("/validate-v1-ns", &webhook.Admission{
-		Handler: &builtin.NSValidator{},
-	})
-	webhookServer.Register("/admission-handler-v1-pvc", &webhook.Admission{
-		Handler: &builtin.PVCAdmissionHandler{},
-	})
-	webhookServer.Register("/admission-handler-v1-pod", &webhook.Admission{
-		Handler: &builtin.PodAdmissionHandler{},
-	})
-	webhookServer.Register("/admission-handler-v1-svc", &webhook.Admission{
-		Handler: &builtin.SvcAdmissionHandler{},
-	})
-
-	suite.Require().NotNil(mgr)
-	suite.Require().Nil(err)
-
-	suite.Require().Nil(NewKalmNSReconciler(mgr).SetupWithManager(mgr))
-	suite.Require().Nil(NewKalmPVCReconciler(mgr).SetupWithManager(mgr))
-	suite.Require().Nil(NewKalmPVReconciler(mgr).SetupWithManager(mgr))
-
-	suite.Require().Nil(NewComponentReconciler(mgr).SetupWithManager(mgr))
-	suite.Require().Nil(NewComponentPluginReconciler(mgr).SetupWithManager(mgr))
-	suite.Require().Nil(NewComponentPluginBindingReconciler(mgr).SetupWithManager(mgr))
-
-	suite.Require().Nil(NewHttpsCertIssuerReconciler(mgr).SetupWithManager(mgr))
-	suite.Require().Nil(NewHttpsCertReconciler(mgr).SetupWithManager(mgr))
-
-	suite.Require().Nil(NewDockerRegistryReconciler(mgr).SetupWithManager(mgr))
-	suite.Require().Nil(NewHttpRouteReconciler(mgr).SetupWithManager(mgr))
-	suite.Require().Nil(NewGatewayReconciler(mgr).SetupWithManager(mgr))
-	suite.Require().Nil(NewSingleSignOnConfigReconciler(mgr).SetupWithManager(mgr))
-	suite.Require().Nil(NewProtectedEndpointReconciler(mgr).SetupWithManager(mgr))
-
-	v1alpha1.InitializeWebhookClient(mgr)
-	suite.Require().Nil((&v1alpha1.AccessToken{}).SetupWebhookWithManager(mgr))
-	suite.Require().Nil((&v1alpha1.RoleBinding{}).SetupWebhookWithManager(mgr))
-	suite.Require().Nil((&v1alpha1.Component{}).SetupWebhookWithManager(mgr))
-	suite.Require().Nil((&v1alpha1.ComponentPluginBinding{}).SetupWebhookWithManager(mgr))
-	suite.Require().Nil((&v1alpha1.DockerRegistry{}).SetupWebhookWithManager(mgr))
-	suite.Require().Nil((&v1alpha1.HttpRoute{}).SetupWebhookWithManager(mgr))
-	suite.Require().Nil((&v1alpha1.HttpsCert{}).SetupWebhookWithManager(mgr))
-	suite.Require().Nil((&v1alpha1.HttpsCertIssuer{}).SetupWebhookWithManager(mgr))
-	suite.Require().Nil((&v1alpha1.ProtectedEndpoint{}).SetupWebhookWithManager(mgr))
-	suite.Require().Nil((&v1alpha1.SingleSignOnConfig{}).SetupWebhookWithManager(mgr))
-	suite.Require().Nil((&v1alpha1.LogSystem{}).SetupWebhookWithManager(mgr))
-	suite.Require().Nil((&v1alpha1.ACMEServer{}).SetupWebhookWithManager(mgr))
-
-	mgrStopChannel := make(chan struct{})
-	suite.StopChannel = mgrStopChannel
-
-	go func() {
-		err = mgr.Start(mgrStopChannel)
-		suite.Require().Nil(err)
-	}()
-
-	// wait webhook server is ready to accept requests.
-	waitPortConnectable(fmt.Sprintf("%s:%d", mgrOptions.Host, mgrOptions.Port))
-
-	// https://github.com/kubernetes-sigs/controller-runtime/issues/550#issuecomment-518818318
-	client := mgr.GetClient()
-	// client, err := client.New(cfg, client.Options{Scheme: scheme.Scheme})
-	suite.NotNil(client)
-
-	suite.TestEnv = testEnv
-	suite.K8sClient = client
-	suite.Cfg = cfg
-
+	//init psp and psp roles
 	decode := api.Codecs.UniversalDeserializer().Decode
 
 	pspRestrictedBytes, _ := ioutil.ReadFile("../../operator/config/psp/psp_restricted.yaml")
@@ -189,16 +92,6 @@ func (suite *PSPSuite) SetupSuite() {
 	suite.createObject(roleRestricted.(*rbacV1.ClusterRole))
 }
 
-func (suite *PSPSuite) TearDownSuite() {
-	suite.BasicSuite.TearDownSuite()
-}
-
-func (suite *PSPSuite) SetupTest() {
-	ns := suite.SetupKalmEnabledNs("")
-	suite.ns = &ns
-	suite.ctx = context.Background()
-}
-
 func TestPSPSuite(t *testing.T) {
 	suite.Run(t, new(PSPSuite))
 }
@@ -207,10 +100,11 @@ func (suite *PSPSuite) TestPSP() {
 	// test psp and psp clusterrole
 	var restrictedPSP v1beta1.PodSecurityPolicy
 	var privilegedPSP v1beta1.PodSecurityPolicy
-	restrictedPSPErr := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: "restricted"}, &restrictedPSP)
-	privilegedPSPErr := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: "privileged"}, &privilegedPSP)
+	restrictedPSPErr := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: "kalm-restricted"}, &restrictedPSP)
+	privilegedPSPErr := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: "kalm-privileged"}, &privilegedPSP)
 
 	suite.Nil(restrictedPSPErr)
+	spew.Dump(restrictedPSP)
 	suite.Nil(privilegedPSPErr)
 
 	var restrictedRole rbacV1.ClusterRole
@@ -293,6 +187,7 @@ func (suite *PSPSuite) TestPSP() {
 	}
 
 	response, err := a.Create(context.TODO(), sar, metaV1.CreateOptions{})
+	spew.Dump("response", response)
 	suite.Nil(err)
 	suite.EqualValues(true, response.Status.Allowed)
 

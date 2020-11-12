@@ -6,7 +6,7 @@ rules:
   - apiGroups:
       - policy
     resourceNames:
-      - privileged
+      - kalm-privileged
     resources:
       - podsecuritypolicies
     verbs:

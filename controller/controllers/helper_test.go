@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
 	"math/rand"
 	"net"
 	"path/filepath"
@@ -12,7 +13,6 @@ import (
 	"github.com/kalmhq/kalm/controller/api/builtin"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
-	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -184,25 +184,15 @@ func waitPortConnectable(addr string) {
 	}
 }
 
-func (suite *BasicSuite) SetupSuite(disableWebhookOpt ...bool) {
-	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+func (suite *BasicSuite) SetupTestEnv(testEnv *envtest.Environment, disableWebhookOpt ...bool) {
+	if testEnv == nil {
+		panic("must setup testENV")
+	}
 
 	suite.Nil(scheme.AddToScheme(scheme.Scheme))
 	suite.Nil(istioScheme.AddToScheme(scheme.Scheme))
 	suite.Nil(v1alpha1.AddToScheme(scheme.Scheme))
 	suite.Nil(v1alpha2.AddToScheme(scheme.Scheme))
-
-	// bootstrapping test environment
-	testEnv := &envtest.Environment{
-		CRDDirectoryPaths: []string{
-			filepath.Join("..", "config", "crd", "bases"),
-			filepath.Join("config", "crd", "bases"),
-			filepath.Join("..", "resources", "istio"),
-			filepath.Join("resources", "istio"),
-			filepath.Join("resources"),
-			filepath.Join("..", "resources"),
-		},
-	}
 
 	disableWebhook := len(disableWebhookOpt) > 0 && disableWebhookOpt[0]
 	if !disableWebhook {
@@ -307,6 +297,24 @@ func (suite *BasicSuite) SetupSuite(disableWebhookOpt ...bool) {
 	suite.TestEnv = testEnv
 	suite.K8sClient = client
 	suite.Cfg = cfg
+}
+
+func (suite *BasicSuite) SetupSuite(disableWebhookOpt ...bool) {
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	// bootstrapping test environment
+	testEnv := &envtest.Environment{
+		CRDDirectoryPaths: []string{
+			filepath.Join("..", "config", "crd", "bases"),
+			filepath.Join("config", "crd", "bases"),
+			filepath.Join("..", "resources", "istio"),
+			filepath.Join("resources", "istio"),
+			filepath.Join("resources"),
+			filepath.Join("..", "resources"),
+		},
+	}
+
+	suite.SetupTestEnv(testEnv, disableWebhookOpt...)
 }
 
 func (suite *BasicSuite) TearDownSuite() {
