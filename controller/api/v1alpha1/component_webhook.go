@@ -92,13 +92,16 @@ func (r *Component) Default() {
 		r.Spec.Volumes[i] = vol
 	}
 
-	// set default resourceRequirement & limits
-	r.setupResourceRequirementIfAbsent()
-
-	// set for istio proxy
-	r.setupIstioResourceRequirementIfAbsent()
-
 	if !IsKalmSystemNamespace(r.Namespace) {
+		// only set hard limit on tenant component
+		// this makes system component possible to consumes more resource as request grows
+
+		// set default resourceRequirement & limits
+		r.setupResourceRequirementIfAbsent()
+
+		// set for istio proxy
+		r.setupIstioResourceRequirementIfAbsent()
+
 		if err := InheritTenantFromNamespace(r); err != nil {
 			componentlog.Error(err, "fail to inherit tenant from ns for component", "component", r.Name, "ns", r.Namespace)
 		} else {

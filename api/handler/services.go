@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/labstack/echo/v4"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (h *ApiHandler) handleListClusterServices(c echo.Context) error {
@@ -14,7 +15,7 @@ func (h *ApiHandler) handleListClusterServices(c echo.Context) error {
 		h.MustCanView(currentUser, currentUser.Tenant+"/*", "services/*")
 	}
 
-	list, err := h.resourceManager.GetServices(namespace)
+	list, err := h.resourceManager.GetServices(belongsToTenant(currentUser.Tenant), client.InNamespace(namespace))
 
 	if err != nil {
 		return err

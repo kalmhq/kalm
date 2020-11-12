@@ -1,10 +1,11 @@
 package resources
 
 import (
+	"strings"
+
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	coreV1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
 )
 
 type ServiceListChannel struct {
@@ -75,10 +76,10 @@ func BuildServiceResponse(svc *coreV1.Service) *Service {
 	}
 }
 
-func (resourceManager *ResourceManager) GetServices(namespace string) ([]*Service, error) {
+func (resourceManager *ResourceManager) GetServices(listOptions ...client.ListOption) ([]*Service, error) {
 	var services coreV1.ServiceList
 
-	if err := resourceManager.List(&services, client.InNamespace(namespace)); err != nil {
+	if err := resourceManager.List(&services, listOptions...); err != nil {
 		return nil, err
 	}
 
