@@ -72,34 +72,6 @@ spec:
               type: array
             command:
               type: string
-            configs:
-              description: Deprecated
-              items:
-                properties:
-                  mountPath:
-                    type: string
-                  paths:
-                    items:
-                      type: string
-                    type: array
-                required:
-                - mountPath
-                - paths
-                type: object
-              type: array
-            directConfigs:
-              description: Deprecated
-              items:
-                properties:
-                  content:
-                    type: string
-                  mountFilePath:
-                    type: string
-                required:
-                - content
-                - mountFilePath
-                type: object
-              type: array
             dnsPolicy:
               description: DNSPolicy defines how a pod's DNS will be configured.
               enum:

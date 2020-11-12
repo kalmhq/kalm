@@ -118,13 +118,6 @@ type ComponentSpec struct {
 	PreInjectedFiles []PreInjectFile `json:"preInjectedFiles,omitempty"`
 
 	// +optional
-	// Deprecated
-	Configs []Config `json:"configs,omitempty"`
-
-	// Deprecated
-	DirectConfigs []DirectConfig `json:"directConfigs,omitempty"`
-
-	// +optional
 	Priority int `json:"priority"`
 }
 
