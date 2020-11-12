@@ -10,6 +10,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
@@ -22,8 +24,9 @@ var podAdmissionHandlerLog = logf.Log.WithName("pod-admission-handler")
 
 // PodAdmissionHandler validates Pods
 type PodAdmissionHandler struct {
-	client  client.Client
-	decoder *admission.Decoder
+	client   client.Client
+	decoder  *admission.Decoder
+	Recorder record.EventRecorder
 }
 
 var _ admission.Handler = &PodAdmissionHandler{}
@@ -48,20 +51,9 @@ func (v *PodAdmissionHandler) Handle(ctx context.Context, req admission.Request)
 
 }
 
-func (v *PodAdmissionHandler) tryLabelComponentAsExceedingQuota(ns, compName string) error {
-
+func (v *PodAdmissionHandler) tryLabelComponentAsExceedingQuota(ns string, component v1alpha1.Component) error {
 	if ns == "" {
 		return fmt.Errorf("namespace is empty")
-	}
-
-	if compName == "" {
-		return fmt.Errorf("component name is empty")
-	}
-
-	var component v1alpha1.Component
-	if err := v.client.Get(context.Background(), client.ObjectKey{Namespace: ns, Name: compName}, &component); err != nil {
-		podAdmissionHandlerLog.Error(err, "fail to get component, ignored", "component", compName)
-		return err
 	}
 
 	copy := component.DeepCopy()
@@ -168,9 +160,11 @@ func (v *PodAdmissionHandler) InjectClient(c client.Client) error {
 	return nil
 }
 
+const ReasonExceedingQuota = "ExceedingQuota"
+
 func (v *PodAdmissionHandler) HandleCreate(ctx context.Context, req admission.Request) admission.Response {
 	logger := podAdmissionHandlerLog.WithValues("UID", req.UID)
-	logger.Info("pod admissionHandler called", "op", req.Operation)
+	logger.Info("pod admissionHandler called", "op", req.Operation, "ns/name", fmt.Sprintf("%s/%s", req.Namespace, req.Name))
 
 	pod := corev1.Pod{}
 	if err := v.decoder.Decode(req, &pod); err != nil {
@@ -209,10 +203,19 @@ func (v *PodAdmissionHandler) HandleCreate(ctx context.Context, req admission.Re
 		ns := pod.Namespace
 		componentName := pod.Labels[v1alpha1.KalmLabelComponentKey]
 
-		// codeview form david: @mingming
-		// should we fire a warning event here?
+		var component v1alpha1.Component
+		if err := v.client.Get(context.Background(), client.ObjectKey{Namespace: ns, Name: componentName}, &component); err != nil {
+			logger.Error(err, "fail to find component for this pod", "component", componentName)
+			return admission.Errored(http.StatusBadRequest, err)
+		}
+
+		// fire a warning event
+		msg := fmt.Sprintf("fail when trying to allocate resource for pod of component, err: %s", err)
+		v.emitWarningEvent(&component, ReasonExceedingQuota, msg)
+
+		// codereview from david: @mingmin
 		// should we use component status instead of labels?
-		if err := v.tryLabelComponentAsExceedingQuota(ns, componentName); err != nil {
+		if err := v.tryLabelComponentAsExceedingQuota(ns, component); err != nil {
 			logger.Error(err, "fail to mark component as exceeding quota, ignored", "component", componentName)
 		}
 
@@ -222,6 +225,10 @@ func (v *PodAdmissionHandler) HandleCreate(ctx context.Context, req admission.Re
 	}
 
 	return admission.Allowed("")
+}
+
+func (v *PodAdmissionHandler) emitWarningEvent(obj runtime.Object, reason, msg string) {
+	v.Recorder.Event(obj, v1.EventTypeWarning, reason, msg)
 }
 
 func (v *PodAdmissionHandler) HandleDelete(ctx context.Context, req admission.Request) admission.Response {
