@@ -408,6 +408,7 @@ func clearTokenInCookie(c echo.Context) {
 		Path:     "/",
 		Expires:  time.Unix(0, 0),
 		HttpOnly: true,
+		Secure:   true,
 		// TODO
 		// SameSite: http.SameSiteLaxMode,
 		SameSite: http.SameSiteNoneMode,
@@ -419,6 +420,7 @@ func newTokenCookie(token string) *http.Cookie {
 	cookie.Name = KALM_TOKEN_KEY_NAME
 	cookie.Expires = time.Now().Add(24 * 7 * time.Hour)
 	cookie.HttpOnly = true
+	cookie.Secure = true
 	// TODO
 	// cookie.SameSite = http.SameSiteLaxMode
 	cookie.SameSite = http.SameSiteNoneMode
