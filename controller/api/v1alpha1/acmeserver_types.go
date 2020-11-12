@@ -19,14 +19,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // ACMEServerSpec defines the desired state of ACMEServer
 type ACMEServerSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
 	// sub-domains of this will server TXT record for DNS-Challenge
 	// +kubebuilder:validation:MinLength=1
 	ACMEDomain string `json:"acmeDomain,omitempty"`

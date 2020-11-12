@@ -31,9 +31,6 @@ func (r *ACMEServer) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-
-// TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-acmeserver,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=acmeservers,versions=v1alpha1,name=vacmeserver.kb.io
 
 var _ webhook.Validator = &ACMEServer{}
@@ -55,8 +52,6 @@ func (r *ACMEServer) ValidateUpdate(old runtime.Object) error {
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *ACMEServer) ValidateDelete() error {
 	acmeserverlog.Info("validate delete", "name", r.Name)
-
-	// TODO(user): fill in your validation logic upon object deletion.
 	return nil
 }
 
