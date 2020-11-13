@@ -16,11 +16,14 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
@@ -68,7 +71,7 @@ func (r *HttpsCert) Default() {
 	r.Spec.Domains = processedDomains
 }
 
-// +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-httpscert,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=httpscerts,versions=v1alpha1,name=vhttpscert.kb.io
+// +kubebuilder:webhook:verbs=create;update;delete,path=/validate-core-kalm-dev-v1alpha1-httpscert,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=httpscerts,versions=v1alpha1,name=vhttpscert.kb.io
 
 var _ webhook.Validator = &HttpsCert{}
 
@@ -76,16 +79,36 @@ var _ webhook.Validator = &HttpsCert{}
 func (r *HttpsCert) ValidateCreate() error {
 	httpscertlog.Info("validate create", "name", r.Name)
 
-	// tmp disable tenant check on httpsCert, cuz default-https-cert belongs to no tenant
+	if err := r.validate(); err != nil {
+		return err
+	}
 
-	// if !HasTenantSet(r) {
-	// 	return NoTenantFoundError
-	// }
+	tenantName := r.Labels[TenantNameLabelKey]
+	if tenantName == "" {
+		// todo, what's the tenant for system cert?
+		return nil
+	}
 
-	// codereview from david: @mingmin
-	// We should limit the count of certs.
+	// limit the count of certs.
+	var resList HttpsCertList
+	if err := webhookClient.List(context.Background(), &resList, client.MatchingLabels{TenantNameLabelKey: tenantName}); err != nil {
+		return err
+	}
 
-	return r.validate()
+	if err := tryReCountAndUpdateResourceForTenant(tenantName, ResourceHttpsCertsCount, r, httpsCertsToObjList(resList.Items), false); err != nil {
+		httproutelog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
+		return err
+	}
+
+	return nil
+}
+
+func httpsCertsToObjList(items []HttpsCert) []metav1.Object {
+	var rst []metav1.Object
+	for _, item := range items {
+		rst = append(rst, &item)
+	}
+	return rst
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
@@ -106,6 +129,22 @@ func (r *HttpsCert) ValidateUpdate(old runtime.Object) error {
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *HttpsCert) ValidateDelete() error {
 	httpscertlog.Info("validate delete", "name", r.Name)
+
+	tenantName := r.Labels[TenantNameLabelKey]
+	if tenantName == "" {
+		return nil
+	}
+
+	// limit the count of certs
+	var resList HttpsCertList
+	if err := webhookClient.List(context.Background(), &resList, client.MatchingLabels{TenantNameLabelKey: tenantName}); err != nil {
+		return err
+	}
+
+	if err := tryReCountAndUpdateResourceForTenant(tenantName, ResourceHttpsCertsCount, r, httpsCertsToObjList(resList.Items), true); err != nil {
+		httproutelog.Error(err, "fail when try to update resource", "ns/name", getKey(r))
+	}
+
 	return nil
 }
 

@@ -115,7 +115,7 @@ func (r *TenantReconciler) findComponentsToSchedule(tenant string, surplusResour
 		compResToSchedule := v1alpha1.EstimateResourceConsumption(comp)
 		rescheduleSum = v1alpha1.SumResourceList(rescheduleSum, compResToSchedule)
 
-		if v1alpha1.ExistGreaterResourceInList(rescheduleSum, surplusResource) {
+		if exist, _ := v1alpha1.ExistGreaterResourceInList(rescheduleSum, surplusResource); exist {
 			return compToReschedule, nil
 		}
 

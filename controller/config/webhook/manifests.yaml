@@ -284,6 +284,7 @@ webhooks:
     operations:
     - CREATE
     - UPDATE
+    - DELETE
     resources:
     - dockerregistries
 - clientConfig:
@@ -302,6 +303,7 @@ webhooks:
     operations:
     - CREATE
     - UPDATE
+    - DELETE
     resources:
     - httproutes
 - clientConfig:
@@ -320,6 +322,7 @@ webhooks:
     operations:
     - CREATE
     - UPDATE
+    - DELETE
     resources:
     - httpscerts
 - clientConfig:
