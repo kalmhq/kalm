@@ -154,7 +154,7 @@ jobs:
   #        KALM_COMPONENT_IMG_TAG: $CIRCLE_SHA1
   deploy-dashboard:
     docker:
-      - image: circleci/golang:1.13.11
+      - image: circleci/ruby:2.4.1
     steps:
       - run:
           name: deploy
@@ -165,17 +165,14 @@ jobs:
             mkdir ${HOME}/.kube
             echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
 
-            cat \<< EOF >> kalm-operator-config.yaml
-            apiVersion: install.kalm.dev/v1alpha1
-            kind: KalmOperatorConfig
-            metadata:
-              namespace: kalm-operator
-              name: kalmoperatorconfig-sample
-            spec:
-              kalmVersion: $CIRCLE_SHA1
-            EOF
+            # get current kalmoperator config
+            mkdir tmp
+            kubectl get kalmoperatorconfigs.install.kalm.dev -n kalm-operator kalmoperatorconfig-sample -oyaml > tmp/kalm-op-config.yaml
 
-            kubectl apply -f kalm-operator-config.yaml
+            # update dashboard version
+            ruby scripts/update-kalmop-config-yaml.rb dashboard $CIRCLE_SHA1
+            # apply
+            kubectl apply -f tmp/updated.yaml
   #deploy-auth-proxy:
   #  executor: deploy-orb/default
   #  steps:
