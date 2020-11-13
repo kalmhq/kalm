@@ -192,7 +192,6 @@ jobs:
       - checkout
       - run:
           name: deploy
-          working_directory: ./controller
           command: |
             curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
             chmod +x ./kubectl
@@ -200,20 +199,16 @@ jobs:
             mkdir ${HOME}/.kube
             echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
 
-            IMG=kalmhq/kalm-controller:latest make deploy
-            kubectl -n kalm-system patch deployment kalm-controller -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
+            # IMG=kalmhq/kalm-controller:latest make deploy
+            # kubectl -n kalm-system patch deployment kalm-controller -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
 
-            #cat \<< EOF >> kalm-operator-config.yaml
-            #apiVersion: install.kalm.dev/v1alpha1
-            #kind: KalmOperatorConfig
-            #metadata:
-            #  namespace: kalm-operator
-            #  name: kalmoperatorconfig-sample
-            #spec:
-            #  kalmVersion: $CIRCLE_SHA1
-            #EOF
+            mkdir tmp
+            kubectl get kalmoperatorconfigs.install.kalm.dev -n kalm-operator kalmoperatorconfig-sample -oyaml > tmp/kalm-op-config.yaml
 
-            #kubectl apply -f kalm-operator-config.yaml
+            ruby scripts/update-kalmop-config-yaml.rb controller $CIRCLE_SHA1
+
+            cat tmp/updated.yaml
+            # kubectl apply -f ./tmp/updated.yaml
   deploy-operator:
     docker:
       - image: circleci/golang:1.13.11
