@@ -187,7 +187,7 @@ jobs:
   #        KALM_COMPONENT_IMG_TAG: $CIRCLE_SHA1
   deploy-controller:
     docker:
-      - image: circleci/golang:1.13.11
+      - image: circleci/ruby:2.4.1
     steps:
       - checkout
       - run:
@@ -209,6 +209,26 @@ jobs:
 
             cat tmp/updated.yaml
             # kubectl apply -f ./tmp/updated.yaml
+  test-deploy-controller:
+    docker:
+      - image: circleci/ruby:2.4.1
+    steps:
+      - checkout
+      - run:
+          name: deploy
+          command: |
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+            mkdir ${HOME}/.kube
+            echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
+
+            mkdir tmp
+            kubectl get kalmoperatorconfigs.install.kalm.dev -n kalm-operator kalmoperatorconfig-sample -oyaml > tmp/kalm-op-config.yaml
+
+            ruby scripts/update-kalmop-config-yaml.rb controller $CIRCLE_SHA1
+
+            cat tmp/updated.yaml
   deploy-operator:
     docker:
       - image: circleci/golang:1.13.11
@@ -310,6 +330,8 @@ workflows:
               only:
                 - master
                 - multiple-tenancy
+      - test-deploy-controller:
+          context: deploy-demo-cluster
   operator:
     jobs:
       - build-push-operator-image:
