@@ -70,6 +70,8 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 	controllerImgTag := getKalmControllerVersion(config)
 	img := fmt.Sprintf("%s:%s", KalmControllerImgRepo, controllerImgTag)
 
+	authProxyVersion := getKalmAuthProxyVersion(config)
+
 	dpName := "kalm-controller"
 	expectedKalmController := appsV1.Deployment{
 		ObjectMeta: ctrl.ObjectMeta{
@@ -124,6 +126,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 							Env: []corev1.EnvVar{
 								{Name: "ENABLE_WEBHOOKS", Value: "true"},
 								{Name: "KALM_VERSION", Value: controllerImgTag},
+								{Name: "KALM_AUTH_PROXY_VERSION", Value: authProxyVersion},
 							},
 							Ports: []corev1.ContainerPort{
 								{
@@ -210,4 +213,8 @@ func getKalmControllerVersion(config *installV1Alpha1.KalmOperatorConfig) string
 	}
 
 	return "latest"
+}
+
+func getKalmAuthProxyVersion(config *installV1Alpha1.KalmOperatorConfig) string {
+	return getKalmDashboardVersion(config)
 }
