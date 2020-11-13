@@ -144,6 +144,7 @@ func (suite *PSPSuite) TestPSP() {
 	suite.createObject(&sa)
 	suite.createObject(&token)
 
+	<-time.After(time.Second)
 	component := generateEmptyComponent(suite.ns.Name)
 	suite.createComponent(component)
 
@@ -206,4 +207,44 @@ func (suite *PSPSuite) TestPSP() {
 	responseSarPSPPrivileged, err := a.Create(context.TODO(), sarPSPPrivileged, metaV1.CreateOptions{})
 	suite.Nil(err)
 	suite.EqualValues(false, responseSarPSPPrivileged.Status.Allowed)
+
+	//can create pod
+	podRestricted := coreV1.Pod{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name:      "restricted-pod",
+			Namespace: suite.ns.Name,
+		},
+		Spec: coreV1.PodSpec{
+			Containers: []coreV1.Container{{
+				Image: "nginx:latest",
+			}},
+			ServiceAccountName: sa.Name,
+		},
+	}
+
+	errRestricted := suite.K8sClient.Create(context.Background(), &podRestricted)
+	suite.Nil(errRestricted)
+
+	//can not create pod
+	isPrivileged := true
+	podPrivileged := coreV1.Pod{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name:      "privileged-pod",
+			Namespace: suite.ns.Name,
+		},
+		Spec: coreV1.PodSpec{
+			Containers: []coreV1.Container{{
+				Image: "nginx:latest",
+				SecurityContext: &coreV1.SecurityContext{
+					Privileged: &isPrivileged,
+				},
+			}},
+			ServiceAccountName: sa.Name,
+		},
+	}
+
+	errPrivileged := suite.K8sClient.Create(context.Background(), &podPrivileged)
+	suite.NotNil(errPrivileged)
+	suite.EqualValues("false", err.Error())
+
 }
