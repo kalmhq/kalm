@@ -28,17 +28,19 @@ const (
 type ResourceName string
 
 const (
-	ResourceCPU               ResourceName = "cpu"
-	ResourceMemory            ResourceName = "memory"
-	ResourceStorage           ResourceName = "storage"
-	ResourceEphemeralStorage  ResourceName = "ephemeralStorage"
-	ResourceTraffic           ResourceName = "traffic"
-	ResourceApplicationsCount ResourceName = "applicationsCount"
-	ResourceComponentsCount   ResourceName = "componentsCount"
-	ResourceServicesCount     ResourceName = "servicesCount"
-	// ResourceUsersCount        ResourceName = "usersCount"
-	ResourceRoleBindingCount  ResourceName = "roleBindingCount"
-	ResourceAccessTokensCount ResourceName = "accessTokensCount"
+	ResourceCPU                   ResourceName = "cpu"
+	ResourceMemory                ResourceName = "memory"
+	ResourceStorage               ResourceName = "storage"
+	ResourceEphemeralStorage      ResourceName = "ephemeralStorage"
+	ResourceTraffic               ResourceName = "traffic"
+	ResourceApplicationsCount     ResourceName = "applicationsCount"
+	ResourceComponentsCount       ResourceName = "componentsCount"
+	ResourceServicesCount         ResourceName = "servicesCount"
+	ResourceRoleBindingCount      ResourceName = "roleBindingCount"
+	ResourceAccessTokensCount     ResourceName = "accessTokensCount"
+	ResourceDockerRegistriesCount ResourceName = "dockerRegistriesCount"
+	ResourceHttpRoutesCount       ResourceName = "httpRoutesCount"
+	ResourceHttpsCertsCount       ResourceName = "httpsCertsCount"
 )
 
 type ResourceList map[ResourceName]resource.Quantity

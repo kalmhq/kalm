@@ -164,17 +164,33 @@ func GetDeltaOfResourceList(from, to ResourceList) ResourceList {
 	return rst
 }
 
+type ExceedingResourceInfo struct {
+	ResourceName ResourceName
+	Base         resource.Quantity
+	Target       resource.Quantity
+}
+
+func (i ExceedingResourceInfo) String() string {
+	return fmt.Sprintf("Resource: %s, Base: %s, Target: %s", i.ResourceName, i.Base.String(), i.Target.String())
+}
+
 // existGreaterResource in resList than baseResList
-func ExistGreaterResourceInList(resList, baseResList ResourceList) bool {
+func ExistGreaterResourceInList(resList, baseResList ResourceList) (bool, []ExceedingResourceInfo) {
+	var exceedingInfoList []ExceedingResourceInfo
+
 	for resName, quantity := range resList {
 		baseQuantity := baseResList[resName]
 
 		if quantity.Cmp(baseQuantity) > 0 {
-			return true
+			exceedingInfoList = append(exceedingInfoList, ExceedingResourceInfo{
+				ResourceName: resName,
+				Base:         baseQuantity,
+				Target:       quantity,
+			})
 		}
 	}
 
-	return false
+	return len(exceedingInfoList) > 0, exceedingInfoList
 }
 
 func ExistNegativeResource(resList ResourceList) bool {

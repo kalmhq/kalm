@@ -3,11 +3,12 @@ package controllers
 import (
 	"context"
 	"fmt"
-	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
 	"math/rand"
 	"net"
 	"path/filepath"
 	"time"
+
+	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
 
 	"github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	"github.com/kalmhq/kalm/controller/api/builtin"
@@ -376,13 +377,16 @@ func (suite *BasicSuite) SetupTenant() *v1alpha1.Tenant {
 		Spec: v1alpha1.TenantSpec{
 			TenantDisplayName: "test-tenant-" + name,
 			ResourceQuota: map[v1alpha1.ResourceName]resource.Quantity{
-				v1alpha1.ResourceApplicationsCount: resource.MustParse("100"),
-				v1alpha1.ResourceServicesCount:     resource.MustParse("100"),
-				v1alpha1.ResourceComponentsCount:   resource.MustParse("100"),
-				v1alpha1.ResourceCPU:               resource.MustParse("100"),
-				v1alpha1.ResourceMemory:            resource.MustParse("100Gi"),
-				v1alpha1.ResourceStorage:           resource.MustParse("100Gi"),
-				v1alpha1.ResourceEphemeralStorage:  resource.MustParse("100Gi"),
+				v1alpha1.ResourceHttpRoutesCount:       resource.MustParse("100"),
+				v1alpha1.ResourceHttpsCertsCount:       resource.MustParse("100"),
+				v1alpha1.ResourceDockerRegistriesCount: resource.MustParse("100"),
+				v1alpha1.ResourceApplicationsCount:     resource.MustParse("100"),
+				v1alpha1.ResourceServicesCount:         resource.MustParse("100"),
+				v1alpha1.ResourceComponentsCount:       resource.MustParse("100"),
+				v1alpha1.ResourceCPU:                   resource.MustParse("100"),
+				v1alpha1.ResourceMemory:                resource.MustParse("100Gi"),
+				v1alpha1.ResourceStorage:               resource.MustParse("100Gi"),
+				v1alpha1.ResourceEphemeralStorage:      resource.MustParse("100Gi"),
 			},
 			Owners: []string{"david"},
 		},

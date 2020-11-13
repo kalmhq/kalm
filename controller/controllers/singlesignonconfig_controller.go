@@ -566,6 +566,9 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileExternalAuthProxyServiceEntr
 func getKalmVersionFromEnv() string {
 	return os.Getenv("KALM_VERSION")
 }
+func getKalmAuthProxyVersionFromEnv() string {
+	return os.Getenv("KALM_AUTH_PROXY_VERSION")
+}
 
 const DefaultAuthProxyImgTag = "latest"
 
@@ -574,10 +577,13 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 	clientSecret := string(r.secret.Data["client_secret"])
 	oidcProviderInfo := GetOIDCProviderInfo(r.ssoConfig)
 
+	kalmAuthProxyVersion := getKalmAuthProxyVersionFromEnv()
 	kalmVersion := getKalmVersionFromEnv()
 
 	var authProxyImgTag string
-	if kalmVersion != "" {
+	if kalmAuthProxyVersion != "" {
+		authProxyImgTag = kalmAuthProxyVersion
+	} else if kalmVersion != "" {
 		authProxyImgTag = kalmVersion
 	} else {
 		authProxyImgTag = DefaultAuthProxyImgTag

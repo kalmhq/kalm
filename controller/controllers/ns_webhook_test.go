@@ -36,6 +36,9 @@ func (suite *NSWebhookSuite) TestNoTenantError() {
 	ns := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: randomName(),
+			Labels: map[string]string{
+				v1alpha1.KalmEnableLabelName: v1alpha1.KalmEnableLabelValue,
+			},
 		},
 	}
 
@@ -52,7 +55,8 @@ func (suite *NSWebhookSuite) TestCRUD() {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: randomName(),
 			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: tenantName,
+				v1alpha1.TenantNameLabelKey:  tenantName,
+				v1alpha1.KalmEnableLabelName: v1alpha1.KalmEnableLabelValue,
 			},
 		},
 	}

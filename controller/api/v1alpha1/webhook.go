@@ -152,6 +152,16 @@ func setTenantResource(tenant *Tenant, resourceName ResourceName, quantity resou
 		tenantCopy.Status.UsedResourceQuota = make(ResourceList)
 	}
 
+	limit := tenant.Spec.ResourceQuota[resourceName]
+
+	used := quantity
+	oldUsed := tenantCopy.Status.UsedResourceQuota[resourceName]
+
+	if used.AsDec().Cmp(limit.AsDec()) > 0 {
+		used.Sub(oldUsed)
+		return NewInsufficientResourceError(tenant, resourceName, used)
+	}
+
 	tenantCopy.Status.UsedResourceQuota[resourceName] = quantity
 
 	return webhookClient.Status().Patch(context.Background(), tenantCopy, client.MergeFrom(tenant))
@@ -168,7 +178,6 @@ func setTenantResourceList(tenant *Tenant, resourceList ResourceList) error {
 
 		// newQuantity > limit
 		if newQuantity.AsDec().Cmp(limit.AsDec()) > 0 {
-			//todo should be delta in err
 			delta := newQuantity.DeepCopy()
 			delta.Sub(tenant.Status.UsedResourceQuota[resourceName])
 
