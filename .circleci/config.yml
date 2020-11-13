@@ -34,31 +34,36 @@ jobs:
           working_directory: ./api
           command: bash <(curl -s https://codecov.io/bash)
   build-push-dashboard-image:
-    docker:
-      - image: circleci/buildpack-deps:stretch
+    machine:
+      image: ubuntu-2004:202008-01
     steps:
       - checkout
-      - setup_remote_docker
       - run:
-          name: Build Docker image
-          command: >
-            docker build
-            --build-arg KALM_BUILD_ENV_GIT_COMMIT=$CIRCLE_SHA1
-            --build-arg KALM_BUILD_ENV_GIT_VERSION=$CIRCLE_TAG
-            -t kalmhq/kalm:latest .
-      - run:
-          name: Publish Docker Image to DOCKER HUB
+          name: Build & Push Docker image
           command: |
+            export DOCKER_CLI_EXPERIMENTAL=enabled
+            docker buildx create --name mybuilder --use
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker push kalmhq/kalm:latest
-            docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_SHA1
-            docker push kalmhq/kalm:$CIRCLE_SHA1
-            TAG=$(git tag --points-at HEAD)
-
-            if [ "$TAG" != "" ]
+            if [ $CIRCLE_BRANCH = "master" ]
             then
-              docker tag kalmhq/kalm:latest kalmhq/kalm:$TAG
-              docker push kalmhq/kalm:$TAG
+              KALM_BUILD_ENV_GIT_COMMIT=$CIRCLE_SHA1
+              KALM_BUILD_ENV_GIT_VERSION=$CIRCLE_TAG
+            fi
+            docker buildx build \
+              --output=type=docker \
+              --cache-from=type=registry,ref=kalmhq/kalm:$CIRCLE_BRANCH-cache \
+              --cache-to=type=registry,ref=kalmhq/kalm:$CIRCLE_BRANCH-cache,mode=max \
+              --build-arg KALM_BUILD_ENV_GIT_COMMIT=$KALM_BUILD_ENV_GIT_COMMIT \
+              --build-arg KALM_BUILD_ENV_GIT_VERSION=$KALM_BUILD_ENV_GIT_VERSION \
+              -t kalmhq/kalm:latest .
+            docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_SHA1
+            docker push kalmhq/kalm:latest
+            docker push kalmhq/kalm:$CIRCLE_SHA1
+
+            if [ "$CIRCLE_TAG" != "" ]
+            then
+              docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_TAG
+              docker push kalmhq/kalm:$CIRCLE_TAG
             fi
   test-controller:
     docker:
