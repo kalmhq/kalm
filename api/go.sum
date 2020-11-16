@@ -1272,6 +1272,7 @@ k8s.io/klog/v2 v2.1.0/go.mod h1:PBfzABfn139FHAV07az/IF9Wp1bkk3vpT2XSJ76fSDE=
 k8s.io/kube-aggregator v0.17.0 h1:2/15hPpXp11GvQmtLeTlNP6WeZnmebs/uxckzZS3P9c=
 k8s.io/kube-aggregator v0.17.0/go.mod h1:Vw104PtCEuT12WTVuhRFWCHXGiVqXsTzFtrvoaHxpk4=
 k8s.io/kube-aggregator v0.17.2/go.mod h1:8xQTzaH0GrcKPiSB4YYWwWbeQ0j/4zRsbQt8usEMbRg=
+k8s.io/kube-aggregator v0.18.0 h1:J+wa9FDQ3SbgyA8wQBNg2m2FMSm+mMQfs2A58500hs0=
 k8s.io/kube-aggregator v0.18.0/go.mod h1:ateewQ5QbjMZF/dihEFXwaEwoA4v/mayRvzfmvb6eqI=
 k8s.io/kube-openapi v0.0.0-20190816220812-743ec37842bf/go.mod h1:1TqjTSzOxsLGIKfj0lK8EeCP7K1iUG65v09OM0/WG5E=
 k8s.io/kube-openapi v0.0.0-20191107075043-30be4d16710a h1:UcxjrRMyNx/i/y8G7kPvLyy7rfbeuf1PYyBf973pgyU=
