@@ -142,6 +142,30 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 	params.Add("now", now)
 	params.Add("sign", getStringSignature(originalURL+now))
 
+	var tenantName string
+	tenantInHeader := c.Request().Header.Get(controllers.KALM_TENANT_HEADER)
+
+	// if the upstream is kalm api, get tenant from domain.
+	// otherwise, use tenant in header.
+	if tenantInHeader == "" || tenantInHeader == "global" {
+		lowercaseHost := strings.ToLower(c.Request().Host)
+
+		// check if it is requesting kalm resources
+		if strings.HasSuffix(lowercaseHost, "kapp.live") || strings.HasSuffix(lowercaseHost, "kalm.dev") {
+			// x.y.z.tenantName.region.kalm.dev
+			// parts length = 7
+			// tenantName = parts[7-4]
+			parts := strings.Split(c.Request().Host, ".")
+			if len(parts) >= 4 {
+				tenantName = parts[len(parts)-4]
+			}
+		}
+	} else {
+		tenantName = tenantInHeader
+	}
+
+	params.Add("tenant", tenantName)
+
 	uri.RawQuery = params.Encode()
 
 	return c.Redirect(302, uri.String())
@@ -508,10 +532,17 @@ func handleOIDCLogin(c echo.Context) error {
 		return err
 	}
 
+	opts := []oauth2.AuthCodeOption{}
+
+	if c.QueryParam("tenant") != "" {
+		opts = append(opts, oauth2.SetAuthURLParam("tenant", c.QueryParam("tenant")))
+	}
+
 	return c.Redirect(
 		302,
 		oauth2Config.AuthCodeURL(
 			base64.RawStdEncoding.EncodeToString(encryptedState),
+			opts...,
 		),
 	)
 }

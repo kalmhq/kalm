@@ -197,6 +197,12 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterListenerPatches(req ct
 		grantedGroups = strings.Join(r.endpoint.Spec.Groups, "|")
 	}
 
+	tenantName, err := v1alpha1.GetTenantNameFromObj(r.endpoint)
+
+	if err != nil {
+		return nil
+	}
+
 	patch := &v1alpha32.EnvoyFilter_Patch{
 		Operation: v1alpha32.EnvoyFilter_Patch_INSERT_BEFORE,
 		Value: golangMapToProtoStruct(map[string]interface{}{
@@ -226,7 +232,10 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterListenerPatches(req ct
 								"key":   KALM_SSO_GRANTED_GROUPS_HEADER,
 								"value": grantedGroups,
 							},
-
+							map[string]interface{}{
+								"key":   KALM_TENANT_HEADER,
+								"value": tenantName,
+							},
 							map[string]interface{}{
 								"key":   KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER,
 								"value": strconv.FormatBool(r.endpoint.Spec.AllowToPassIfHasBearerToken),
