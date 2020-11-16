@@ -36,3 +36,6 @@ subjects:
   - kind: ServiceAccount
     name: default
     namespace: system
+  - kind: ServiceAccount
+    name: component-kalm
+    namespace: system
