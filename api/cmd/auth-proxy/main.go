@@ -147,18 +147,16 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 
 	// if the upstream is kalm api, get tenant from domain.
 	// otherwise, use tenant in header.
-	if tenantInHeader == "" || tenantInHeader == "global" {
-		lowercaseHost := strings.ToLower(c.Request().Host)
+	lowercaseHost := strings.ToLower(c.Request().Host)
 
-		// check if it is requesting kalm resources
-		if strings.HasSuffix(lowercaseHost, "kapp.live") || strings.HasSuffix(lowercaseHost, "kalm.dev") {
-			// x.y.z.tenantName.region.kalm.dev
-			// parts length = 7
-			// tenantName = parts[7-4]
-			parts := strings.Split(c.Request().Host, ".")
-			if len(parts) >= 4 {
-				tenantName = parts[len(parts)-4]
-			}
+	// check if it is requesting kalm resources
+	if strings.HasSuffix(lowercaseHost, "kapp.live") || strings.HasSuffix(lowercaseHost, "kalm.dev") {
+		// x.y.z.tenantName.region.kalm.dev
+		// parts length = 7
+		// tenantName = parts[7-4]
+		parts := strings.Split(c.Request().Host, ".")
+		if len(parts) >= 4 {
+			tenantName = parts[len(parts)-4]
 		}
 	} else {
 		tenantName = tenantInHeader
