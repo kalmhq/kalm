@@ -264,9 +264,10 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                 return (
                   <Box m={1} key={index}>
                     <MenuItem
-                      disabled={t === currentTenant}
+                      disabled={t.indexOf(currentTenant) > 0}
                       onClick={() => {
-                        window.open("tenant/" + t, "_blank");
+                        const tenantId = t.split("/")[1];
+                        window.open(tenantId + ".asia-northeast3.kapp.live", "_blank");
                       }}
                     >
                       {t}
