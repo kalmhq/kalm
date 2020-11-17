@@ -344,7 +344,11 @@ func (m *StandardClientManager) GetClientInfoFromContext(c echo.Context) (*Clien
 		case 0:
 			clientInfo.Tenant = ""
 		case 1:
-			clientInfo.Tenant = clientInfo.Tenants[0]
+			parts := strings.Split(clientInfo.Tenants[0], "/")
+
+			if len(parts) == 2 {
+				clientInfo.Tenant = parts[1]
+			}
 		default:
 
 			m := make(map[string]struct{})
