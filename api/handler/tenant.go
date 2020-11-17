@@ -4,7 +4,10 @@ import (
 	"fmt"
 
 	"github.com/kalmhq/kalm/api/resources"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/rand"
 )
 
 func (h *ApiHandler) InstallTenantHandlers(e *echo.Group) {
@@ -56,6 +59,47 @@ func (h *ApiHandler) handleCreateTenant(c echo.Context) error {
 		return err
 	}
 
+	tokenString := rand.String(128)
+	tokenName := v1alpha1.GetAccessTokenNameFromToken(tokenString)
+	accessToken := &v1alpha1.AccessToken{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name: tokenName,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: tenant.Name,
+			},
+		},
+		Spec: v1alpha1.AccessTokenSpec{
+			Token: tokenString,
+			Rules: []v1alpha1.AccessTokenRule{
+				{
+					Verb:      "view",
+					Namespace: "*",
+					Kind:      "*",
+					Name:      "*",
+				},
+				{
+					Verb:      "edit",
+					Namespace: "*",
+					Kind:      "*",
+					Name:      "*",
+				},
+				{
+					Verb:      "manage",
+					Namespace: "*",
+					Kind:      "*",
+					Name:      "*",
+				},
+			},
+			Creator:   getCurrentUser(c).Name,
+			ExpiredAt: nil,
+		},
+	}
+
+	if err := h.resourceManager.Create(accessToken); err != nil {
+		return err
+	}
+
+	tenant.AccessToken = tokenString
 	return c.JSON(201, tenant)
 }
 

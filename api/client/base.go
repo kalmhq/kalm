@@ -23,10 +23,11 @@ type ClientInfo struct {
 	Cfg               *rest.Config `json:"-"`
 	Name              string       `json:"name"`
 	PreferredUsername string       `json:"preferred_username"`
-	Tenant            string       `json:"tenant"`
 	Email             string       `json:"email"`
 	EmailVerified     bool         `json:"email_verified"`
 	Groups            []string     `json:"groups"`
+	Tenant            string       `json:"tenant"`
+	Tenants           []string     `json:"tenants"`
 	Impersonation     string       `json:"impersonation"`
 	ImpersonationType string       `json:"impersonationType"`
 }

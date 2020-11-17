@@ -139,8 +139,8 @@ func (r *Component) ValidateCreate() error {
 		resList := EstimateResourceConsumption(*r)
 		sumResList := SumResourceList(resList, tenant.Status.UsedResourceQuota)
 		// deny the creation if exceed resource quota
-		if ExistGreaterResourceInList(sumResList, tenant.Spec.ResourceQuota) {
-			return fmt.Errorf("create this component will exceed resource quota")
+		if exist, infoList := ExistGreaterResourceInList(sumResList, tenant.Spec.ResourceQuota); exist {
+			return fmt.Errorf("create this component will exceed resource quota, %s", infoList)
 		}
 
 		if err := AdjustTenantResourceByDelta(r, ResourceComponentsCount, resource.MustParse("1")); err != nil {
@@ -180,9 +180,9 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 			resDelta := GetDeltaOfResourceList(oldRes, newRes)
 			sumResList := SumResourceList(resDelta, tenant.Status.UsedResourceQuota)
 
-			if ExistGreaterResourceInList(sumResList, tenant.Spec.ResourceQuota) {
-				emitWarning(r, ReasonExceedingQuota, "update of component will exceed resource quota, denied")
-				return fmt.Errorf("create this component will exceed resource quota")
+			if exist, infoList := ExistGreaterResourceInList(sumResList, tenant.Spec.ResourceQuota); exist {
+				emitWarning(r, ReasonExceedingQuota, fmt.Sprintf("update of component will exceed resource quota, denied, exceeding list: %s", infoList))
+				return fmt.Errorf("update this component will exceed resource quota")
 			}
 		}
 	}

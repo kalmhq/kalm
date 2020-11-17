@@ -19,12 +19,13 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/go-logr/logr"
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
 	"github.com/kalmhq/kalm/operator/utils"
 	promconfig "github.com/prometheus/prometheus/config"
-	appsV1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 
@@ -32,8 +33,6 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/types"
@@ -153,7 +152,7 @@ func (r *KalmOperatorConfigReconciler) applyFromYaml(ctx context.Context, yamlNa
 		objectKey, err := client.ObjectKeyFromObject(object)
 
 		if err != nil {
-			r.Log.Error(err, fmt.Sprintf("Get Object Key from object error"))
+			r.Log.Error(err, fmt.Sprint("Get Object Key from object error"))
 			return err
 		}
 

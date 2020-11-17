@@ -3,8 +3,8 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/jetstack/cert-manager/pkg/api"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	"io/ioutil"
 	appsV1 "k8s.io/api/apps/v1"
@@ -72,54 +72,33 @@ func (suite *PSPSuite) SetupTest() {
 	ns := suite.SetupKalmEnabledNs("")
 	suite.ns = &ns
 	suite.ctx = context.Background()
-
-	//init psp and psp roles
-	decode := api.Codecs.UniversalDeserializer().Decode
-
-	pspRestrictedBytes, _ := ioutil.ReadFile("../../operator/config/psp/psp_restricted.yaml")
-	pspPrivilegedBytes, _ := ioutil.ReadFile("../../operator/config/psp/psp_privileged.yaml")
-	roleRestrictedBytes, _ := ioutil.ReadFile("../../operator/config/rbac/psp_restricted_role.yaml")
-	rolePrivilegedBytes, _ := ioutil.ReadFile("../../operator/config/rbac/psp_privileged_role.yaml")
-
-	pspRestricted, _, _ := decode(pspRestrictedBytes, nil, nil)
-	pspPrivileged, _, _ := decode(pspPrivilegedBytes, nil, nil)
-	rolePrivileged, _, _ := decode(rolePrivilegedBytes, nil, nil)
-	roleRestricted, _, _ := decode(roleRestrictedBytes, nil, nil)
-
-	suite.createObject(pspRestricted.(*v1beta1.PodSecurityPolicy))
-	suite.createObject(pspPrivileged.(*v1beta1.PodSecurityPolicy))
-	suite.createObject(rolePrivileged.(*rbacV1.ClusterRole))
-	suite.createObject(roleRestricted.(*rbacV1.ClusterRole))
 }
 
 func TestPSPSuite(t *testing.T) {
 	suite.Run(t, new(PSPSuite))
 }
 
-func (suite *PSPSuite) TestPSP() {
-	// test psp and psp clusterrole
-	var restrictedPSP v1beta1.PodSecurityPolicy
-	var privilegedPSP v1beta1.PodSecurityPolicy
-	restrictedPSPErr := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: "kalm-restricted"}, &restrictedPSP)
-	privilegedPSPErr := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: "kalm-privileged"}, &privilegedPSP)
+func (suite *PSPSuite) TestCreateDefaultSaAndPSPRoleBinding() {
+	// test create pod using psp
+	// create restricted psp and cluster role
+	decode := api.Codecs.UniversalDeserializer().Decode
 
-	suite.Nil(restrictedPSPErr)
-	spew.Dump(restrictedPSP)
-	suite.Nil(privilegedPSPErr)
+	pspRestrictedBytes, _ := ioutil.ReadFile("../../operator/config/psp/psp_restricted.yaml")
+	roleRestrictedBytes, _ := ioutil.ReadFile("../../operator/config/rbac/psp_restricted_role.yaml")
+	pspRestricted, _, _ := decode(pspRestrictedBytes, nil, nil)
+	roleRestricted, _, _ := decode(roleRestrictedBytes, nil, nil)
+	suite.createObject(pspRestricted.(*v1beta1.PodSecurityPolicy))
+	suite.createObject(roleRestricted.(*rbacV1.ClusterRole))
 
 	var restrictedRole rbacV1.ClusterRole
-	var privilegedRole rbacV1.ClusterRole
+	var restrictedPSP v1beta1.PodSecurityPolicy
+	suite.Eventually(func() bool {
+		restrictedPSPErr := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: "kalm-restricted"}, &restrictedPSP)
+		restrictedRoleErr := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: "system:psp:restricted"}, &restrictedRole)
 
-	restrictedRoleErr := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: "system:psp:restricted"}, &restrictedRole)
-	privilegedRoleErr := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: "system:psp:privileged"}, &privilegedRole)
+		return restrictedPSPErr == nil && restrictedRoleErr == nil && "system:psp:restricted" == restrictedRole.Name
+	}, "can't get psp")
 
-	suite.Nil(restrictedRoleErr)
-	suite.Nil(privilegedRoleErr)
-
-	suite.EqualValues("system:psp:restricted", restrictedRole.Name)
-	suite.EqualValues("system:psp:privileged", privilegedRole.Name)
-
-	// test clusterrolebinding and psp auth
 	// create service account
 	sa := coreV1.ServiceAccount{
 		ObjectMeta: metaV1.ObjectMeta{
@@ -136,14 +115,67 @@ func (suite *PSPSuite) TestPSP() {
 			Name:      "default-user-token",
 			Namespace: suite.ns.Name,
 			Annotations: map[string]string{
-				"kubernetes.io/service-account.name": "default-user-token",
+				"kubernetes.io/service-account.name": "default",
 			},
 		},
 		Type: coreV1.SecretTypeServiceAccountToken,
 	}
 
-	suite.createObject(&sa)
-	suite.createObject(&token)
+	createSaErr := suite.K8sClient.Create(context.Background(), &sa)
+	createTokenErr := suite.K8sClient.Create(context.Background(), &token)
+
+	suite.Nil(createSaErr)
+	suite.Nil(createTokenErr)
+
+	//cannot create pod as root
+	//privileged psp not allow these three value
+	isPrivileged := true //
+	allowPrivilegeEscalation := true
+	runAsUser := int64(0)
+
+	podPrivileged := coreV1.Pod{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name:      "privileged-pod",
+			Namespace: suite.ns.Name,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: "test",
+			},
+		},
+		Spec: coreV1.PodSpec{
+			Containers: []coreV1.Container{{
+				Name:  "nginx",
+				Image: "nginx:latest",
+				SecurityContext: &coreV1.SecurityContext{
+					Privileged:               &isPrivileged,
+					AllowPrivilegeEscalation: &allowPrivilegeEscalation,
+					RunAsUser:                &runAsUser,
+				},
+			}},
+			ServiceAccountName: sa.Name,
+		},
+	}
+
+	errPrivileged := suite.K8sClient.Create(context.Background(), &podPrivileged)
+	suite.NotNil(errPrivileged)
+	suite.EqualValues("pods \"privileged-pod\" is forbidden: unable to validate against any pod security policy: [spec.containers[0].securityContext.runAsUser: Invalid value: 0: running with the root UID is forbidden spec.containers[0].securityContext.privileged: Invalid value: true: Privileged containers are not allowed spec.containers[0].securityContext.allowPrivilegeEscalation: Invalid value: true: Allowing privilege escalation for containers is not allowed]", errPrivileged.Error())
+
+	// test create role binding and service account when creating component
+	// init privileged psp and cluster role
+	pspPrivilegedBytes, _ := ioutil.ReadFile("../../operator/config/psp/psp_privileged.yaml")
+	rolePrivilegedBytes, _ := ioutil.ReadFile("../../operator/config/rbac/psp_privileged_role.yaml")
+	pspPrivileged, _, _ := decode(pspPrivilegedBytes, nil, nil)
+	rolePrivileged, _, _ := decode(rolePrivilegedBytes, nil, nil)
+	suite.createObject(pspPrivileged.(*v1beta1.PodSecurityPolicy))
+	suite.createObject(rolePrivileged.(*rbacV1.ClusterRole))
+
+	var privilegedPSP v1beta1.PodSecurityPolicy
+	var privilegedRole rbacV1.ClusterRole
+	suite.Eventually(func() bool {
+		privilegedPSPErr := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: "kalm-privileged"}, &privilegedPSP)
+		privilegedRoleErr := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: "system:psp:privileged"}, &privilegedRole)
+
+		return privilegedPSPErr == nil && privilegedRoleErr == nil && "system:psp:privileged" == privilegedRole.Name
+	}, "can't get psp")
 
 	component := generateEmptyComponent(suite.ns.Name)
 	suite.createComponent(component)
@@ -163,16 +195,29 @@ func (suite *PSPSuite) TestPSP() {
 		return deployment.Spec.Template.Labels["foo"] == "bar"
 	}, "can't get deployment")
 
-	pspClusterRoleBinding := rbacV1.ClusterRoleBinding{}
-	bindingErr := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: fmt.Sprintf("psp-%s-default", suite.ns.Name)}, &pspClusterRoleBinding)
-	suite.Nil(bindingErr)
-	suite.EqualValues(fmt.Sprintf("psp-%s-default", suite.ns.Name), pspClusterRoleBinding.Name)
+	// test role binding and psp auth
+	// create service account
+	defaultServiceAccountName := fmt.Sprintf("component-%s", component.Name)
+	componentDefaultSa := coreV1.ServiceAccount{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name:      defaultServiceAccountName,
+			Namespace: suite.ns.Name,
+		},
+	}
+	pspRoleBinding := rbacV1.RoleBinding{}
 
-	clientset, err := kubernetes.NewForConfig(suite.Cfg)
+	suite.Eventually(func() bool {
+		errGetSa := suite.K8sClient.Get(context.Background(), types.NamespacedName{Namespace: suite.ns.Name, Name: defaultServiceAccountName}, &componentDefaultSa)
+		errGetBinding := suite.K8sClient.Get(context.Background(), types.NamespacedName{Namespace: suite.ns.Name, Name: fmt.Sprintf("psp-%s-%s", suite.ns.Name, componentDefaultSa.Name)}, &pspRoleBinding)
+
+		return errGetSa == nil && errGetBinding == nil && fmt.Sprintf("psp-%s-%s", suite.ns.Name, componentDefaultSa.Name) == pspRoleBinding.Name
+	}, "can't get sa or role binding")
+
+	clientSet, err := kubernetes.NewForConfig(suite.Cfg)
 	suite.Nil(err)
 
 	//can use restrictedPSP
-	a := clientset.AuthorizationV1().SubjectAccessReviews()
+	a := clientSet.AuthorizationV1().SubjectAccessReviews()
 	sar := &authorizationv1.SubjectAccessReview{
 		Spec: authorizationv1.SubjectAccessReviewSpec{
 			ResourceAttributes: &authorizationv1.ResourceAttributes{
@@ -182,30 +227,11 @@ func (suite *PSPSuite) TestPSP() {
 				Name:      restrictedPSP.Name,
 				Group:     "policy",
 			},
-			User: fmt.Sprintf("system:serviceaccount:%s:default", suite.ns.Name),
+			User: fmt.Sprintf("system:serviceaccount:%s:%s", suite.ns.Name, componentDefaultSa.Name),
 		},
 	}
 
 	response, err := a.Create(context.TODO(), sar, metaV1.CreateOptions{})
-	spew.Dump("response", response)
 	suite.Nil(err)
 	suite.EqualValues(true, response.Status.Allowed)
-
-	//can not use privilegedPSP
-	sarPSPPrivileged := &authorizationv1.SubjectAccessReview{
-		Spec: authorizationv1.SubjectAccessReviewSpec{
-			ResourceAttributes: &authorizationv1.ResourceAttributes{
-				Namespace: suite.ns.Name,
-				Verb:      "use",
-				Resource:  "podsecuritypolicies",
-				Name:      privilegedPSP.Name,
-				Group:     "policy",
-			},
-			User: fmt.Sprintf("system:serviceaccount:%s:default", suite.ns.Name),
-		},
-	}
-
-	responseSarPSPPrivileged, err := a.Create(context.TODO(), sarPSPPrivileged, metaV1.CreateOptions{})
-	suite.Nil(err)
-	suite.EqualValues(false, responseSarPSPPrivileged.Status.Allowed)
 }

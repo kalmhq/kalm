@@ -19,6 +19,7 @@ import { SubjectTypeUser } from "types/member";
 import StringConstants from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import {
+  ArrowDropDownIcon,
   HelpIcon,
   ImpersonateIcon,
   KalmLogo2Icon,
@@ -37,6 +38,8 @@ const mapStateToProps = (state: RootState) => {
   const email = auth.email;
   const impersonation = auth.impersonation;
   const impersonationType = auth.impersonationType;
+  const currentTenant = auth.tenant;
+  const tenants = auth.tenants;
 
   return {
     isOpenRootDrawer: state.settings.isOpenRootDrawer,
@@ -45,6 +48,8 @@ const mapStateToProps = (state: RootState) => {
     impersonationType,
     activeNamespace,
     email,
+    currentTenant,
+    tenants,
   };
 };
 
@@ -127,6 +132,7 @@ interface Props
 
 interface State {
   authMenuAnchorElement: null | HTMLElement;
+  tenantMenuAnchorElement: null | HTMLElement;
 }
 
 class AppBarComponentRaw extends React.PureComponent<Props, State> {
@@ -137,6 +143,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
 
     this.state = {
       authMenuAnchorElement: null,
+      tenantMenuAnchorElement: null,
     };
   }
 
@@ -216,6 +223,70 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     return <ThemeToggle />;
   };
 
+  renderTenants = () => {
+    const { currentTenant, tenants } = this.props;
+    const { tenantMenuAnchorElement } = this.state;
+    return (
+      <div key={"tenants"}>
+        {currentTenant ? (
+          <>
+            <IconButtonWithTooltip
+              tooltipTitle={StringConstants.APP_AUTH_TOOLTIPS}
+              aria-label={StringConstants.APP_AUTH_TOOLTIPS}
+              aria-haspopup="true"
+              onClick={(event: React.MouseEvent<HTMLElement>) => {
+                this.setState({ tenantMenuAnchorElement: event.currentTarget });
+              }}
+              color="inherit"
+            >
+              {currentTenant}
+              <ArrowDropDownIcon color={"white"} />
+            </IconButtonWithTooltip>
+
+            <Menu
+              id="menu-appbar"
+              anchorEl={tenantMenuAnchorElement}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              open={Boolean(tenantMenuAnchorElement)}
+              onClose={() => {
+                this.setState({ tenantMenuAnchorElement: null });
+              }}
+            >
+              {tenants.map((t, index) => {
+                return (
+                  <Box m={1} key={index}>
+                    <MenuItem
+                      disabled={t.indexOf(currentTenant) > 0}
+                      onClick={() => {
+                        const tenantId = t.split("/")[1];
+                        window.open("https://" + tenantId + ".asia-northeast3.kapp.live/", "_blank");
+                      }}
+                    >
+                      {t}
+                    </MenuItem>
+                  </Box>
+                );
+              })}
+            </Menu>
+          </>
+        ) : (
+          <>
+            <KalmLogo2Icon />
+            <KalmTextLogoIcon />
+          </>
+        )}
+      </div>
+    );
+  };
+
   renderTutorialIcon = () => {
     const { tutorialDrawerOpen, dispatch } = this.props;
     return (
@@ -270,7 +341,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   };
 
   render() {
-    const { classes, dispatch, isOpenRootDrawer, location, clusterInfo } = this.props;
+    const { classes, dispatch, isOpenRootDrawer, location, clusterInfo, hasSelectedTenant } = this.props;
     const pathArray = location.pathname.split("/");
     return (
       <AppBar ref={this.headerRef} id="header" position="relative" className={classes.appBar}>
@@ -289,12 +360,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                   if (path === "cluster") {
                     return null;
                   } else if (index === 0) {
-                    return (
-                      <Link key={index} className={classes.breadLink} to="/" onClick={() => blinkTopProgressAction()}>
-                        <KalmLogo2Icon />
-                        <KalmTextLogoIcon />
-                      </Link>
-                    );
+                    return this.renderTenants();
                   } else if (index + 1 === pathArray.length) {
                     return (
                       <span key={index} className={`${classes.breadLink} disabled`}>
@@ -328,10 +394,14 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             )}
             <Divider orientation="vertical" flexItem color="inherit" />
             <Box className={classes.barAvatar}>{this.renderThemeIcon()}</Box>
-            <Divider orientation="vertical" flexItem color="inherit" />
-            <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
-            <Divider orientation="vertical" flexItem color="inherit" />
-            <div className={classes.barAvatar}>{this.renderAuth()}</div>
+            {hasSelectedTenant() ? (
+              <>
+                <Divider orientation="vertical" flexItem color="inherit" />
+                <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
+                <Divider orientation="vertical" flexItem color="inherit" />
+                <div className={classes.barAvatar}>{this.renderAuth()}</div>
+              </>
+            ) : null}
           </div>
         </div>
       </AppBar>

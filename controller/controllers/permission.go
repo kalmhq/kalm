@@ -2,12 +2,12 @@ package controllers
 
 import (
 	"fmt"
-
 	corev1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 func (r *ComponentReconcilerTask) getNameForPermission() string {
@@ -24,24 +24,7 @@ func (r *ComponentReconcilerTask) reconcilePermission() error {
 	name := r.getNameForPermission()
 
 	// serviceAccount
-	var sa corev1.ServiceAccount
-	err := r.Get(
-		r.ctx,
-		types.NamespacedName{Name: name, Namespace: r.component.Namespace},
-		&sa)
-
-	if errors.IsNotFound(err) {
-		err := r.Create(r.ctx, &corev1.ServiceAccount{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      name,
-				Namespace: r.component.Namespace,
-			},
-		})
-
-		if err != nil {
-			return err
-		}
-	} else if err != nil {
+	if _, err := r.createServiceAccountIfNotExist(name); err != nil {
 		return err
 	}
 
@@ -151,14 +134,26 @@ func (r *ComponentReconcilerTask) reconcilePermission() error {
 	return nil
 }
 
-func (r *ComponentReconcilerTask) CreatePspRoleBinding(serviceAccountName string) error {
-	if serviceAccountName == "" {
-		serviceAccountName = "default"
+func (r *ComponentReconcilerTask) CreatePspRoleBinding() error {
+	if r.component.Namespace == KalmSystemNamespace {
+		return nil
 	}
 
-	clusterRoleBindingName := fmt.Sprintf("psp-%s-%s", r.component.Namespace, serviceAccountName)
-	pspClusterRoleBinding := rbacV1.ClusterRoleBinding{
-		ObjectMeta: metav1.ObjectMeta{Name: clusterRoleBindingName},
+	serviceAccountName := r.defaultServiceAccountName()
+	if r.component.Spec.RunnerPermission != nil {
+		serviceAccountName = r.getNameForPermission()
+	}
+
+	serviceAccount, err := r.createServiceAccountIfNotExist(serviceAccountName)
+
+	if err != nil {
+		r.WarningEvent(err, "unable to create service account for Component")
+		return err
+	}
+
+	roleBindingName := fmt.Sprintf("psp-%s-%s", r.component.Namespace, serviceAccountName)
+	pspRoleBinding := rbacV1.RoleBinding{
+		ObjectMeta: metav1.ObjectMeta{Name: roleBindingName, Namespace: r.component.Namespace},
 		RoleRef: rbacV1.RoleRef{
 			APIGroup: "rbac.authorization.k8s.io",
 			Kind:     "ClusterRole",
@@ -166,20 +161,53 @@ func (r *ComponentReconcilerTask) CreatePspRoleBinding(serviceAccountName string
 		},
 		Subjects: []rbacV1.Subject{{
 			Kind:      "ServiceAccount",
-			Name:      serviceAccountName,
-			Namespace: r.component.Namespace,
+			Name:      serviceAccount.Name,
+			Namespace: serviceAccount.Namespace,
 		}},
 	}
 
-	err := r.Get(r.ctx, types.NamespacedName{Name: clusterRoleBindingName}, &pspClusterRoleBinding)
+	err = r.Get(r.ctx, types.NamespacedName{Namespace: r.component.Namespace, Name: roleBindingName}, &pspRoleBinding)
 	if errors.IsNotFound(err) {
-		err := r.Create(r.ctx, &pspClusterRoleBinding)
-		if err != nil {
+		if err := ctrl.SetControllerReference(r.component, &pspRoleBinding, r.Scheme); err != nil {
+			r.WarningEvent(err, "unable to set owner for role binding")
 			return err
 		}
-	} else if err != nil {
-		return err
+
+		if err := r.Create(r.ctx, &pspRoleBinding); err != nil {
+			r.WarningEvent(err, "unable to create PSP for Component")
+			return err
+		}
 	}
 
 	return nil
+}
+
+func (r *ComponentReconcilerTask) defaultServiceAccountName() string {
+	return fmt.Sprintf("component-%s", r.component.Name)
+}
+
+func (r *ComponentReconcilerTask) createServiceAccountIfNotExist(serviceAccountName string) (corev1.ServiceAccount, error) {
+	// serviceAccount
+	var sa corev1.ServiceAccount
+	err := r.Get(
+		r.ctx,
+		types.NamespacedName{Name: serviceAccountName, Namespace: r.component.Namespace},
+		&sa)
+
+	if errors.IsNotFound(err) {
+		err := r.Create(r.ctx, &corev1.ServiceAccount{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      serviceAccountName,
+				Namespace: r.component.Namespace,
+			},
+		})
+
+		if err != nil {
+			return sa, err
+		}
+	} else if err != nil {
+		return sa, err
+	}
+
+	return sa, nil
 }

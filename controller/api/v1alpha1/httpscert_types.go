@@ -20,18 +20,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 var DefaultHTTP01IssuerName = "default-http01-issuer"
 var DefaultDNS01IssuerName = "default-dns01-issuer"
 var DefaultCAIssuerName = "default-cert-issuer"
 
 // HttpsCertSpec defines the desired state of HttpsCert
 type HttpsCertSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
 	IsSelfManaged             bool   `json:"isSelfManaged,omitempty"`
 	SelfManagedCertSecretName string `json:"selfManagedCertSecretName,omitempty"`
 	HttpsCertIssuer           string `json:"httpsCertIssuer,omitempty"`

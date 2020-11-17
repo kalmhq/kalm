@@ -83,7 +83,7 @@ func getOauth2Config() *oauth2.Config {
 	oidcVerifier = provider.Verifier(&oidc.Config{ClientID: clientID})
 
 	scopes := []string{}
-	scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups", "offline_access", "tenant")
+	scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups", "offline_access", "tenants")
 
 	oauth2Config = &oauth2.Config{
 		ClientID:     clientID,
@@ -151,8 +151,9 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 // Run as Envoy ext_authz filter //
 ///////////////////////////////////
 
-type ClaimsWithGroups struct {
-	Groups []string `json:"groups"`
+type Claims struct {
+	Groups  []string `json:"groups"`
+	Tenants []string `json:"tenants"`
 }
 
 func handleExtAuthz(c echo.Context) error {
@@ -222,7 +223,8 @@ func handleExtAuthz(c echo.Context) error {
 			if err != nil {
 				logger.Error("refresh token error", zap.Error(err))
 				clearTokenInCookie(c)
-				return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client. (After refresh)")
+				// return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client. (After refresh)")
+				return redirectToAuthProxyUrl(c)
 			}
 
 			encodedToken, _ := token.Encode()
@@ -239,6 +241,11 @@ func handleExtAuthz(c echo.Context) error {
 			clearTokenInCookie(c)
 			return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client.")
 		}
+	}
+
+	if !inGrantedTenants(c, idToken) {
+		clearTokenInCookie(c)
+		return c.JSON(401, "You don't in any granted tenants. Contact you admin please.")
 	}
 
 	if !inGrantedGroups(c, idToken) {
@@ -376,6 +383,31 @@ func shouldLetPass(c echo.Context) bool {
 		strings.HasPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 }
 
+func inGrantedTenants(c echo.Context, idToken *oidc.IDToken) bool {
+	grantedTenants := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_TENANTS_HEADER)
+
+	if grantedTenants == "" {
+		return true
+	}
+
+	tenants := strings.Split(grantedTenants, "|")
+	var claim Claims
+	_ = idToken.Claims(&claim)
+
+	gm := make(map[string]struct{}, len(tenants))
+	for _, g := range tenants {
+		gm[g] = struct{}{}
+	}
+
+	for _, g := range claim.Tenants {
+		if _, ok := gm[g]; ok {
+			return true
+		}
+	}
+
+	return false
+}
+
 func inGrantedGroups(c echo.Context, idToken *oidc.IDToken) bool {
 	grantedGroups := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_GROUPS_HEADER)
 
@@ -384,7 +416,7 @@ func inGrantedGroups(c echo.Context, idToken *oidc.IDToken) bool {
 	}
 
 	groups := strings.Split(grantedGroups, "|")
-	var claim ClaimsWithGroups
+	var claim Claims
 	_ = idToken.Claims(&claim)
 
 	gm := make(map[string]struct{}, len(groups))
@@ -408,10 +440,8 @@ func clearTokenInCookie(c echo.Context) {
 		Path:     "/",
 		Expires:  time.Unix(0, 0),
 		HttpOnly: true,
-		Secure:   true,
-		// TODO
-		// SameSite: http.SameSiteLaxMode,
-		SameSite: http.SameSiteNoneMode,
+		Secure:   strings.HasPrefix(authProxyURL, "https"),
+		SameSite: http.SameSiteLaxMode,
 	})
 }
 
@@ -420,10 +450,8 @@ func newTokenCookie(token string) *http.Cookie {
 	cookie.Name = KALM_TOKEN_KEY_NAME
 	cookie.Expires = time.Now().Add(24 * 7 * time.Hour)
 	cookie.HttpOnly = true
-	cookie.Secure = true
-	// TODO
-	// cookie.SameSite = http.SameSiteLaxMode
-	cookie.SameSite = http.SameSiteNoneMode
+	cookie.Secure = strings.HasPrefix(authProxyURL, "https")
+	cookie.SameSite = http.SameSiteLaxMode
 	cookie.Path = "/"
 	cookie.Value = token
 	return cookie

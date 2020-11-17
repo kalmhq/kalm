@@ -3,13 +3,13 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import clsx from "clsx";
 import { WithData } from "hoc/withData";
 import { TutorialDrawer } from "pages/Tutorial";
-import { RequireAuthorizated } from "permission/Authorization";
+import { RequireAuthorizated as RequireAuthorized } from "permission/Authorization";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { AppBarComponent } from "./AppBar";
-import { APP_BAR_HEIGHT, TOP_PROGRESS_ZINDEX, TUTORIAL_DRAWER_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "./Constants";
+import { APP_BAR_HEIGHT, LEFT_SECTION_OPEN_WIDTH, TOP_PROGRESS_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "./Constants";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { RootDrawer } from "./RootDrawer";
 
@@ -95,4 +95,4 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
   }
 }
 
-export const DashboardLayout = withStyles(styles)(RequireAuthorizated(connect(mapStateToProps)(DashboardLayoutRaw)));
+export const DashboardLayout = withStyles(styles)(RequireAuthorized(connect(mapStateToProps)(DashboardLayoutRaw)));

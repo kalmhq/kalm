@@ -15,6 +15,7 @@ type Tenant struct {
 	Paused            bool                  `json:"paused"`
 	ResourcesQuotas   v1alpha1.ResourceList `json:"resourceQuotas"`
 	ConsumedResources v1alpha1.ResourceList `json:"consumedResources"`
+	AccessToken       string                `json:"accessToken"`
 }
 
 func (resourceManager *ResourceManager) GetTenants() ([]*Tenant, error) {

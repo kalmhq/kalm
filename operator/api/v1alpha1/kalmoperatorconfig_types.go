@@ -31,6 +31,10 @@ type DashboardConfig struct {
 	Envs    []NameValue `json:"envs,omitempty"`
 }
 
+type ControllerConfig struct {
+	Version *string `json:"version,omitempty"`
+}
+
 // KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
 type KalmOperatorConfigSpec struct {
 	SkipIstioInstallation          bool `json:"skipIstioInstallation,omitempty"`
@@ -48,6 +52,8 @@ type KalmOperatorConfigSpec struct {
 
 	// Dashboard Config
 	Dashboard *DashboardConfig `json:"dashboard,omitempty"`
+	// Controller Config
+	Controller *ControllerConfig `json:"controller,omitempty"`
 }
 
 // KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig

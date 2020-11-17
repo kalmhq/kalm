@@ -16,12 +16,15 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
@@ -34,8 +37,6 @@ func (r *HttpRoute) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		For(r).
 		Complete()
 }
-
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
 // +kubebuilder:webhook:path=/mutate-core-kalm-dev-v1alpha1-httproute,mutating=true,failurePolicy=fail,groups=core.kalm.dev,resources=httproutes,verbs=create;update,versions=v1alpha1,name=mhttproute.kb.io
 
@@ -55,7 +56,7 @@ func (r *HttpRoute) Default() {
 	}
 }
 
-// +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-httproute,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=httproutes,versions=v1alpha1,name=vhttproute.kb.io
+// +kubebuilder:webhook:verbs=create;update;delete,path=/validate-core-kalm-dev-v1alpha1-httproute,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=httproutes,versions=v1alpha1,name=vhttproute.kb.io
 
 var _ webhook.Validator = &HttpRoute{}
 
@@ -67,10 +68,33 @@ func (r *HttpRoute) ValidateCreate() error {
 		return NoTenantFoundError
 	}
 
-	// codereview from david: @mingmin
-	// We should limit the count of routes.
+	if err := r.validate(); err != nil {
+		return err
+	}
 
-	return r.validate()
+	// limit the count of routes
+	tenantName := r.Labels[TenantNameLabelKey]
+
+	var resList HttpRouteList
+	if err := webhookClient.List(context.Background(), &resList, client.MatchingLabels{TenantNameLabelKey: tenantName}); err != nil {
+		return err
+	}
+
+	if err := tryReCountAndUpdateResourceForTenant(tenantName, ResourceHttpRoutesCount, r, httpRoutesToObjList(resList.Items), false); err != nil {
+		httproutelog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
+		return err
+	}
+
+	return nil
+}
+
+func httpRoutesToObjList(items []HttpRoute) []metav1.Object {
+	var rst []metav1.Object
+	for i := 0; i < len(items); i++ {
+		item := items[i]
+		rst = append(rst, &item)
+	}
+	return rst
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
@@ -93,6 +117,18 @@ func (r *HttpRoute) ValidateUpdate(old runtime.Object) error {
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *HttpRoute) ValidateDelete() error {
 	httproutelog.Info("validate delete", "name", r.Name)
+
+	tenantName := r.Labels[TenantNameLabelKey]
+
+	var resList HttpRouteList
+	if err := webhookClient.List(context.Background(), &resList, client.MatchingLabels{TenantNameLabelKey: tenantName}); err != nil {
+		return err
+	}
+
+	if err := tryReCountAndUpdateResourceForTenant(tenantName, ResourceHttpRoutesCount, r, httpRoutesToObjList(resList.Items), true); err != nil {
+		httproutelog.Error(err, "fail when try to release resource, ignored", "ns/name", getKey(r))
+	}
+
 	return nil
 }
 

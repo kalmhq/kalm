@@ -147,8 +147,9 @@ export const HelpIcon = withStyles(styles)((props: ColorIconsProps) => {
 });
 
 export const ArrowDropDownIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style } = props;
-  return <ArrowDropDown className={classes.hint} fontSize={fontSize} style={style} />;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props, "default");
+  return <ArrowDropDown className={className} fontSize={fontSize} style={style} />;
 });
 
 export const CheckBoxIcon = withStyles(styles)((props: ColorIconsProps) => {
