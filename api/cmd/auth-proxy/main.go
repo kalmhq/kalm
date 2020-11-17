@@ -147,18 +147,16 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 
 	// if the upstream is kalm api, get tenant from domain.
 	// otherwise, use tenant in header.
-	if tenantInHeader == "" || tenantInHeader == "global" {
-		lowercaseHost := strings.ToLower(c.Request().Host)
+	lowercaseHost := strings.ToLower(c.Request().Host)
 
-		// check if it is requesting kalm resources
-		if strings.HasSuffix(lowercaseHost, "kapp.live") || strings.HasSuffix(lowercaseHost, "kalm.dev") {
-			// x.y.z.tenantName.region.kalm.dev
-			// parts length = 7
-			// tenantName = parts[7-4]
-			parts := strings.Split(c.Request().Host, ".")
-			if len(parts) >= 4 {
-				tenantName = parts[len(parts)-4]
-			}
+	// check if it is requesting kalm resources
+	if strings.HasSuffix(lowercaseHost, "kapp.live") || strings.HasSuffix(lowercaseHost, "kalm.dev") {
+		// x.y.z.tenantName.region.kalm.dev
+		// parts length = 7
+		// tenantName = parts[7-4]
+		parts := strings.Split(c.Request().Host, ".")
+		if len(parts) >= 4 {
+			tenantName = parts[len(parts)-4]
 		}
 	} else {
 		tenantName = tenantInHeader
@@ -432,10 +430,8 @@ func clearTokenInCookie(c echo.Context) {
 		Path:     "/",
 		Expires:  time.Unix(0, 0),
 		HttpOnly: true,
-		Secure:   true,
-		// TODO
-		// SameSite: http.SameSiteLaxMode,
-		SameSite: http.SameSiteNoneMode,
+		Secure:   strings.HasPrefix(authProxyURL, "https"),
+		SameSite: http.SameSiteLaxMode,
 	})
 }
 
@@ -444,10 +440,8 @@ func newTokenCookie(token string) *http.Cookie {
 	cookie.Name = KALM_TOKEN_KEY_NAME
 	cookie.Expires = time.Now().Add(24 * 7 * time.Hour)
 	cookie.HttpOnly = true
-	cookie.Secure = true
-	// TODO
-	// cookie.SameSite = http.SameSiteLaxMode
-	cookie.SameSite = http.SameSiteNoneMode
+	cookie.Secure = strings.HasPrefix(authProxyURL, "https")
+	cookie.SameSite = http.SameSiteLaxMode
 	cookie.Path = "/"
 	cookie.Value = token
 	return cookie
