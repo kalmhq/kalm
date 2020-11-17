@@ -267,7 +267,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                       disabled={t.indexOf(currentTenant) > 0}
                       onClick={() => {
                         const tenantId = t.split("/")[1];
-                        window.open(tenantId + ".asia-northeast3.kapp.live", "_blank");
+                        window.open("https://" + tenantId + ".asia-northeast3.kapp.live/", "_blank");
                       }}
                     >
                       {t}
