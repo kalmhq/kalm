@@ -3,7 +3,7 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import clsx from "clsx";
 import { WithData } from "hoc/withData";
 import { TutorialDrawer } from "pages/Tutorial";
-import { RequireAuthorizated } from "permission/Authorization";
+import { RequireAuthorizated as RequireAuthorized } from "permission/Authorization";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -95,4 +95,4 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
   }
 }
 
-export const DashboardLayout = withStyles(styles)(RequireAuthorizated(connect(mapStateToProps)(DashboardLayoutRaw)));
+export const DashboardLayout = withStyles(styles)(RequireAuthorized(connect(mapStateToProps)(DashboardLayoutRaw)));
