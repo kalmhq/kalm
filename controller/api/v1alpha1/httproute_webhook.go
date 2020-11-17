@@ -21,7 +21,6 @@ import (
 	"strconv"
 	"strings"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -88,8 +87,8 @@ func (r *HttpRoute) ValidateCreate() error {
 	return nil
 }
 
-func httpRoutesToObjList(items []HttpRoute) []metav1.Object {
-	var rst []metav1.Object
+func httpRoutesToObjList(items []HttpRoute) []runtime.Object {
+	var rst []runtime.Object
 	for i := 0; i < len(items); i++ {
 		item := items[i]
 		rst = append(rst, &item)

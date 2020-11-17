@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"strings"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -103,9 +102,10 @@ func (r *HttpsCert) ValidateCreate() error {
 	return nil
 }
 
-func httpsCertsToObjList(items []HttpsCert) []metav1.Object {
-	var rst []metav1.Object
-	for _, item := range items {
+func httpsCertsToObjList(items []HttpsCert) []runtime.Object {
+	var rst []runtime.Object
+	for i := range items {
+		item := items[i]
 		rst = append(rst, &item)
 	}
 	return rst

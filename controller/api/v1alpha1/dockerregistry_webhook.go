@@ -19,8 +19,8 @@ import (
 	"context"
 	"fmt"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -78,9 +78,10 @@ func (r *DockerRegistry) ValidateCreate() error {
 	return nil
 }
 
-func dockerRegistriesToObjList(items []DockerRegistry) []metav1.Object {
-	var rst []metav1.Object
-	for _, item := range items {
+func dockerRegistriesToObjList(items []DockerRegistry) []runtime.Object {
+	var rst []runtime.Object
+	for i := range items {
+		item := items[i]
 		rst = append(rst, &item)
 	}
 	return rst
@@ -123,9 +124,9 @@ func (r *DockerRegistry) ValidateDelete() error {
 	return nil
 }
 
-func tryReCountAndUpdateResourceForTenant(tenantName string, resName ResourceName, currentObj metav1.Object, objList []metav1.Object, isDelete bool) error {
+func tryReCountResourceForTenant(currentObj runtime.Object, objList []runtime.Object, isDelete bool) int {
 
-	resMap := make(map[string]metav1.Object)
+	resMap := make(map[string]runtime.Object)
 
 	resMap[getKey(currentObj)] = currentObj
 	for _, obj := range objList {
@@ -135,7 +136,8 @@ func tryReCountAndUpdateResourceForTenant(tenantName string, resName ResourceNam
 	var cnt int
 	for _, cur := range resMap {
 		// ignore resource being deleted
-		if cur.GetDeletionTimestamp() != nil {
+		objMeta, err := meta.Accessor(cur)
+		if err == nil && objMeta.GetDeletionTimestamp() != nil {
 			continue
 		}
 
@@ -149,6 +151,13 @@ func tryReCountAndUpdateResourceForTenant(tenantName string, resName ResourceNam
 		cnt++
 	}
 
+	return cnt
+}
+
+func tryReCountAndUpdateResourceForTenant(tenantName string, resName ResourceName, currentObj runtime.Object, objList []runtime.Object, isDelete bool) error {
+
+	cnt := tryReCountResourceForTenant(currentObj, objList, isDelete)
+
 	cntQuantity := resource.NewQuantity(int64(cnt), resource.DecimalSI)
 	fmt.Println("cntQuantity", cntQuantity, "resName", resName, "tenant", tenantName)
 	if err := SetTenantResourceByName(tenantName, resName, *cntQuantity); err != nil {
@@ -158,8 +167,14 @@ func tryReCountAndUpdateResourceForTenant(tenantName string, resName ResourceNam
 	return nil
 }
 
-func getKey(obj metav1.Object) string {
-	key := fmt.Sprintf("%s/%s", obj.GetNamespace(), obj.GetName())
+func getKey(obj runtime.Object) string {
+	objMeta, err := meta.Accessor(obj)
+	if err != nil {
+		//todo, return err?
+		return ""
+	}
+
+	key := fmt.Sprintf("%s/%s", objMeta.GetNamespace(), objMeta.GetName())
 	return key
 }
 
