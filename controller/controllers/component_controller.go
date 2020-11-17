@@ -1111,10 +1111,12 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 		template.Spec.Affinity = affinity
 	}
 
-	if component.Spec.RunnerPermission != nil {
-		template.Spec.ServiceAccountName = r.getNameForPermission()
-	} else {
-		template.Spec.ServiceAccountName = r.defaultServiceAccountName()
+	if r.component.Namespace != KalmSystemNamespace {
+		if component.Spec.RunnerPermission != nil {
+			template.Spec.ServiceAccountName = r.getNameForPermission()
+		} else {
+			template.Spec.ServiceAccountName = r.defaultServiceAccountName()
+		}
 	}
 
 	// resource requirements
