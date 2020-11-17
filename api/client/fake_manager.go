@@ -36,6 +36,7 @@ func (m *FakeClientManager) GetClientInfoFromToken(token string) (*ClientInfo, e
 		Email:         email,
 		EmailVerified: true,
 		Tenant:        tenant,
+		Tenants:       []string{tenant},
 		Groups:        groups,
 	}, nil
 }

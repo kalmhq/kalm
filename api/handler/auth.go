@@ -10,7 +10,6 @@ import (
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
-	"k8s.io/client-go/kubernetes"
 )
 
 type LoginStatusResponse struct {
@@ -22,6 +21,7 @@ type LoginStatusResponse struct {
 	ImpersonationType string   `json:"impersonationType"`
 	Policies          string   `json:"policies"`
 	Tenant            string   `json:"tenant"`
+	Tenants           []string `json:"tenants"`
 }
 
 func (h *ApiHandler) handleValidateToken(c echo.Context) error {
@@ -43,56 +43,42 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 
 	var res LoginStatusResponse
 
-	if err != nil {
+	if err != nil || clientInfo == nil {
 		return c.JSON(http.StatusOK, res)
 	}
 
-	if clientInfo != nil {
-		k8sClient, err := kubernetes.NewForConfig(clientInfo.Cfg)
+	res.Email = clientInfo.Email
+	res.Groups = clientInfo.Groups
+	res.Authorized = true
+	res.Tenants = clientInfo.Tenants
 
-		if err != nil {
-			return c.JSON(http.StatusOK, res)
+	var subjects []string
+	if clientInfo.Impersonation == "" {
+		subjects = make([]string, len(clientInfo.Groups)+1)
+		subjects[0] = client.ToSafeSubject(clientInfo.Email, v1alpha1.SubjectTypeUser)
+
+		for i, role := range clientInfo.Groups {
+			subjects[i+1] = client.ToSafeSubject(role, v1alpha1.SubjectTypeGroup)
 		}
+	} else {
+		res.Impersonation = clientInfo.Impersonation
+		res.ImpersonationType = clientInfo.ImpersonationType
+		subjects = []string{client.ToSafeSubject(clientInfo.Impersonation, clientInfo.ImpersonationType)}
+	}
 
-		_, err = k8sClient.ServerVersion()
+	res.Policies = h.clientManager.GetRBACEnforcer().GetCompletePoliciesFor(subjects...)
 
-		if err != nil {
-			return c.JSON(http.StatusOK, res)
-		}
+	var avatarEmail string
+	if strings.Contains(res.Impersonation, "@") {
+		avatarEmail = res.Impersonation
+	} else if strings.Contains(res.Email, "@") {
+		avatarEmail = res.Email
+	}
 
-		res.Email = clientInfo.Email
-		res.Groups = clientInfo.Groups
-		res.Authorized = true
-		res.Tenant = clientInfo.Tenant
-
-		var subjects []string
-		if clientInfo.Impersonation == "" {
-			subjects = make([]string, len(clientInfo.Groups)+1)
-			subjects[0] = client.ToSafeSubject(clientInfo.Email, v1alpha1.SubjectTypeUser)
-
-			for i, role := range clientInfo.Groups {
-				subjects[i+1] = client.ToSafeSubject(role, v1alpha1.SubjectTypeGroup)
-			}
-		} else {
-			res.Impersonation = clientInfo.Impersonation
-			res.ImpersonationType = clientInfo.ImpersonationType
-			subjects = []string{client.ToSafeSubject(clientInfo.Impersonation, clientInfo.ImpersonationType)}
-		}
-
-		res.Policies = h.clientManager.GetRBACEnforcer().GetCompletePoliciesFor(subjects...)
-
-		var avatarEmail string
-		if strings.Contains(res.Impersonation, "@") {
-			avatarEmail = res.Impersonation
-		} else if strings.Contains(res.Email, "@") {
-			avatarEmail = res.Email
-		}
-
-		if avatarEmail != "" {
-			// gavatar hash https://en.gravatar.com/site/implement/hash/
-			emailMD5 := md5.Sum([]byte(strings.ToLower(strings.TrimSpace(avatarEmail))))
-			res.AvatarURL = fmt.Sprintf("https://www.gravatar.com/avatar/%x", emailMD5[:])
-		}
+	if avatarEmail != "" {
+		// gavatar hash https://en.gravatar.com/site/implement/hash/
+		emailMD5 := md5.Sum([]byte(strings.ToLower(strings.TrimSpace(avatarEmail))))
+		res.AvatarURL = fmt.Sprintf("https://www.gravatar.com/avatar/%x", emailMD5[:])
 	}
 
 	return c.JSON(http.StatusOK, res)

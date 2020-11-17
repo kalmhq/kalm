@@ -39,8 +39,9 @@ type ProtectedEndpointSpec struct {
 	EndpointName string                `json:"name"`
 	Type         ProtectedEndpointType `json:"type,omitempty"`
 
-	Ports  []uint32 `json:"ports,omitempty"`
-	Groups []string `json:"groups,omitempty"`
+	Ports   []uint32 `json:"ports,omitempty"`
+	Groups  []string `json:"groups,omitempty"`
+	Tenants []string `json:"tenants,omitempty"`
 
 	// Allow auth proxy to let the request pass if it has bearer token.
 	// This flag should be set carefully. Please make sure that the upstream can handle the token correctly.
