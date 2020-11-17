@@ -244,7 +244,8 @@ func handleExtAuthz(c echo.Context) error {
 			if err != nil {
 				logger.Error("refresh token error", zap.Error(err))
 				clearTokenInCookie(c)
-				return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client. (After refresh)")
+				// return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client. (After refresh)")
+				return redirectToAuthProxyUrl(c)
 			}
 
 			encodedToken, _ := token.Encode()
