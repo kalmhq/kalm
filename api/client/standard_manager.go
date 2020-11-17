@@ -238,6 +238,7 @@ func (m *StandardClientManager) GetClientInfoFromToken(tokenString string) (*Cli
 		Email:         accessToken.Name,
 		EmailVerified: false,
 		Tenant:        tenantName,
+		Tenants:       []string{tenantName},
 		Groups:        []string{},
 	}
 
@@ -328,14 +329,63 @@ func (m *StandardClientManager) GetClientInfoFromContext(c echo.Context) (*Clien
 			return nil, err
 		}
 
-		// reset tenant, don't trust tenant from claims
-		clientInfo.Tenant = ""
-
 		clientInfo.Cfg = m.ClusterConfig
 		clientInfo.Impersonation = ""
 
 		if clientInfo.Groups == nil {
 			clientInfo.Groups = []string{}
+		}
+
+		if clientInfo.Tenants == nil {
+			clientInfo.Tenants = []string{}
+		}
+
+		switch len(clientInfo.Tenants) {
+		case 0:
+			clientInfo.Tenant = ""
+		case 1:
+			clientInfo.Tenant = clientInfo.Tenants[0]
+		default:
+
+			m := make(map[string]struct{})
+
+			for _, tenant := range clientInfo.Tenants {
+				parts := strings.Split(tenant, "/")
+
+				if len(parts) != 2 {
+					continue
+				}
+
+				// TODO check part[0] is current cluster
+
+				m[parts[1]] = struct{}{}
+			}
+
+			cookie, err := c.Cookie("selected-tenant")
+
+			if err == nil {
+				if _, ok := m[cookie.Value]; ok {
+					clientInfo.Tenant = cookie.Value
+				}
+			}
+
+			if clientInfo.Tenant == "" {
+				lowercaseHost := strings.ToLower(c.Request().Host)
+
+				if strings.HasSuffix(lowercaseHost, "kapp.live") || strings.HasSuffix(lowercaseHost, "kalm.dev") {
+					// x.y.z.tenantName.region.kalm.dev
+					// parts length = 7
+					// tenantName = parts[7-4]
+					parts := strings.Split(c.Request().Host, ".")
+
+					if len(parts) >= 4 {
+						tenantName := parts[len(parts)-4]
+						if _, ok := m[tenantName]; ok {
+							clientInfo.Tenant = tenantName
+						}
+					}
+				}
+			}
 		}
 
 		m.SetImpersonation(&clientInfo, c.Request().Header.Get("Kalm-Impersonation"))
