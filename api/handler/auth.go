@@ -51,6 +51,7 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 	res.Groups = clientInfo.Groups
 	res.Authorized = true
 	res.Tenants = clientInfo.Tenants
+	res.Tenant = clientInfo.Tenant
 
 	var subjects []string
 	if clientInfo.Impersonation == "" {
