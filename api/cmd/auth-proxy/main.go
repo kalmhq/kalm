@@ -151,8 +151,9 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 // Run as Envoy ext_authz filter //
 ///////////////////////////////////
 
-type ClaimsWithGroups struct {
-	Groups []string `json:"groups"`
+type Claims struct {
+	Groups  []string `json:"groups"`
+	Tenants []string `json:"tenants"`
 }
 
 func handleExtAuthz(c echo.Context) error {
@@ -240,6 +241,11 @@ func handleExtAuthz(c echo.Context) error {
 			clearTokenInCookie(c)
 			return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client.")
 		}
+	}
+
+	if !inGrantedTenants(c, idToken) {
+		clearTokenInCookie(c)
+		return c.JSON(401, "You don't in any granted tenants. Contact you admin please.")
 	}
 
 	if !inGrantedGroups(c, idToken) {
@@ -377,6 +383,31 @@ func shouldLetPass(c echo.Context) bool {
 		strings.HasPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 }
 
+func inGrantedTenants(c echo.Context, idToken *oidc.IDToken) bool {
+	grantedTenants := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_TENANTS_HEADER)
+
+	if grantedTenants == "" {
+		return true
+	}
+
+	tenants := strings.Split(grantedTenants, "|")
+	var claim Claims
+	_ = idToken.Claims(&claim)
+
+	gm := make(map[string]struct{}, len(tenants))
+	for _, g := range tenants {
+		gm[g] = struct{}{}
+	}
+
+	for _, g := range claim.Tenants {
+		if _, ok := gm[g]; ok {
+			return true
+		}
+	}
+
+	return false
+}
+
 func inGrantedGroups(c echo.Context, idToken *oidc.IDToken) bool {
 	grantedGroups := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_GROUPS_HEADER)
 
@@ -385,7 +416,7 @@ func inGrantedGroups(c echo.Context, idToken *oidc.IDToken) bool {
 	}
 
 	groups := strings.Split(grantedGroups, "|")
-	var claim ClaimsWithGroups
+	var claim Claims
 	_ = idToken.Claims(&claim)
 
 	gm := make(map[string]struct{}, len(groups))
