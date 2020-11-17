@@ -20,9 +20,10 @@ import StringConstants from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import {
   HelpIcon,
-  ImpersonateIcon,
   KalmLogo2Icon,
   KalmTextLogoIcon,
+  ImpersonateIcon,
+  ArrowDropDownIcon,
   KalmUserIcon,
   MenuIcon,
   MenuOpenIcon,
@@ -37,6 +38,8 @@ const mapStateToProps = (state: RootState) => {
   const email = auth.email;
   const impersonation = auth.impersonation;
   const impersonationType = auth.impersonationType;
+  const currentTenant = auth.tenant;
+  const tenants = auth.tenants;
 
   return {
     isOpenRootDrawer: state.settings.isOpenRootDrawer,
@@ -45,6 +48,8 @@ const mapStateToProps = (state: RootState) => {
     impersonationType,
     activeNamespace,
     email,
+    currentTenant,
+    tenants,
   };
 };
 
@@ -127,6 +132,7 @@ interface Props
 
 interface State {
   authMenuAnchorElement: null | HTMLElement;
+  tenantMenuAnchorElement: null | HTMLElement;
 }
 
 class AppBarComponentRaw extends React.PureComponent<Props, State> {
@@ -137,6 +143,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
 
     this.state = {
       authMenuAnchorElement: null,
+      tenantMenuAnchorElement: null,
     };
   }
 
@@ -216,6 +223,69 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     return <ThemeToggle />;
   };
 
+  renderTenants = () => {
+    const { currentTenant, tenants } = this.props;
+    const { tenantMenuAnchorElement } = this.state;
+    return (
+      <div key={"tenants"}>
+        {currentTenant ? (
+          <>
+            <IconButtonWithTooltip
+              tooltipTitle={StringConstants.APP_AUTH_TOOLTIPS}
+              aria-label={StringConstants.APP_AUTH_TOOLTIPS}
+              aria-haspopup="true"
+              onClick={(event: React.MouseEvent<HTMLElement>) => {
+                this.setState({ tenantMenuAnchorElement: event.currentTarget });
+              }}
+              color="inherit"
+            >
+              {currentTenant}
+              <ArrowDropDownIcon color={"white"} />
+            </IconButtonWithTooltip>
+
+            <Menu
+              id="menu-appbar"
+              anchorEl={tenantMenuAnchorElement}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              open={Boolean(tenantMenuAnchorElement)}
+              onClose={() => {
+                this.setState({ tenantMenuAnchorElement: null });
+              }}
+            >
+              {tenants.map((t, index) => {
+                return (
+                  <Box m={1} key={index}>
+                    <MenuItem
+                      disabled={t === currentTenant}
+                      onClick={() => {
+                        window.open("tenant/" + t, "_blank");
+                      }}
+                    >
+                      {t}
+                    </MenuItem>
+                  </Box>
+                );
+              })}
+            </Menu>
+          </>
+        ) : (
+          <>
+            <KalmLogo2Icon />
+            <KalmTextLogoIcon />
+          </>
+        )}
+      </div>
+    );
+  };
+
   renderTutorialIcon = () => {
     const { tutorialDrawerOpen, dispatch } = this.props;
     return (
@@ -289,12 +359,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                   if (path === "cluster") {
                     return null;
                   } else if (index === 0) {
-                    return (
-                      <Link key={index} className={classes.breadLink} to="/" onClick={() => blinkTopProgressAction()}>
-                        <KalmLogo2Icon />
-                        <KalmTextLogoIcon />
-                      </Link>
-                    );
+                    return this.renderTenants();
                   } else if (index + 1 === pathArray.length) {
                     return (
                       <span key={index} className={`${classes.breadLink} disabled`}>

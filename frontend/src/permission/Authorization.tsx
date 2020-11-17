@@ -15,12 +15,16 @@ const mapStateToProps = (state: RootState) => {
   const firstLoaded = auth.firstLoaded;
   const isLoading = auth.isLoading;
   const policies = auth.policies;
+  const currentTenant = auth.tenant;
+  const tenants = auth.tenants;
 
   return {
     isLoading,
     authorized,
     firstLoaded,
     policies,
+    currentTenant,
+    tenants,
   };
 };
 
@@ -46,22 +50,31 @@ export const Authorizated = ({ mustAuthorized, mustNotAuthorized }: Options) => 
     }
 
     componentDidUpdate() {
-      const { firstLoaded, authorized, isLoading, policies } = this.props;
+      const { firstLoaded, authorized, isLoading, policies, currentTenant, dispatch } = this.props;
 
       if (isLoading && !firstLoaded) {
         return;
       }
 
       if (!authorized && mustAuthorized) {
-        this.props.dispatch(push("/login"));
+        dispatch(push("/login"));
+      }
+
+      if (authorized && currentTenant.length === 0) {
+        // if (tenants.length > 0) {
+        dispatch(push("/tenants"));
+        // } else {
+        //   // FIXME: no current tenant and no tenant should redirect to kalm saas
+        //   dispatch(push("/login"));
+        // }
       }
 
       if (authorized && mustNotAuthorized) {
-        this.props.dispatch(push("/"));
+        dispatch(push("/"));
       }
 
       if (authorized && policies === "") {
-        this.props.dispatch(push("/profile"));
+        dispatch(push("/profile"));
       }
     }
 

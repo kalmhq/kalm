@@ -207,6 +207,11 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
                 to: "/version",
               }
             : null,
+          {
+            icon: InfoIcon,
+            text: "Kalm Overview",
+            to: "/tenants",
+          },
         ],
       },
     ];

@@ -7,4 +7,5 @@ export interface LoginStatus {
   impersonation: string;
   impersonationType: string;
   tenant: string;
+  tenants:string[];
 }
