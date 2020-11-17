@@ -328,6 +328,9 @@ func (m *StandardClientManager) GetClientInfoFromContext(c echo.Context) (*Clien
 			return nil, err
 		}
 
+		// reset tenant, don't trust tenant from claims
+		clientInfo.Tenant = ""
+
 		clientInfo.Cfg = m.ClusterConfig
 		clientInfo.Impersonation = ""
 
