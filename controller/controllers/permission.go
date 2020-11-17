@@ -136,6 +136,10 @@ func (r *ComponentReconcilerTask) reconcilePermission() error {
 }
 
 func (r *ComponentReconcilerTask) CreatePspRoleBinding() error {
+	if r.component.Namespace == KalmSystemNamespace {
+		return nil
+	}
+
 	serviceAccountName := r.defaultServiceAccountName()
 	if r.component.Spec.RunnerPermission != nil {
 		serviceAccountName = r.getNameForPermission()
@@ -165,7 +169,7 @@ func (r *ComponentReconcilerTask) CreatePspRoleBinding() error {
 
 	err = r.Get(r.ctx, types.NamespacedName{Name: clusterRoleBindingName}, &pspClusterRoleBinding)
 	if errors.IsNotFound(err) {
-		if err := ctrl.SetControllerReference(r.component, r.service, r.Scheme); err != nil {
+		if err := ctrl.SetControllerReference(r.component, &pspClusterRoleBinding, r.Scheme); err != nil {
 			r.WarningEvent(err, "unable to set owner for role binding")
 			return err
 		}
