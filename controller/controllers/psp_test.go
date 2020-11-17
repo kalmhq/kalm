@@ -159,7 +159,7 @@ func (suite *PSPSuite) TestCreateDefaultSaAndPSPRoleBinding() {
 	suite.NotNil(errPrivileged)
 	suite.EqualValues("pods \"privileged-pod\" is forbidden: unable to validate against any pod security policy: [spec.containers[0].securityContext.runAsUser: Invalid value: 0: running with the root UID is forbidden spec.containers[0].securityContext.privileged: Invalid value: true: Privileged containers are not allowed spec.containers[0].securityContext.allowPrivilegeEscalation: Invalid value: true: Allowing privilege escalation for containers is not allowed]", errPrivileged.Error())
 
-	// test create cluster role binding and service account when creating component
+	// test create role binding and service account when creating component
 	// init privileged psp and cluster role
 	pspPrivilegedBytes, _ := ioutil.ReadFile("../../operator/config/psp/psp_privileged.yaml")
 	rolePrivilegedBytes, _ := ioutil.ReadFile("../../operator/config/rbac/psp_privileged_role.yaml")
@@ -195,7 +195,7 @@ func (suite *PSPSuite) TestCreateDefaultSaAndPSPRoleBinding() {
 		return deployment.Spec.Template.Labels["foo"] == "bar"
 	}, "can't get deployment")
 
-	// test cluster role binding and psp auth
+	// test role binding and psp auth
 	// create service account
 	defaultServiceAccountName := fmt.Sprintf("component-%s", component.Name)
 	componentDefaultSa := coreV1.ServiceAccount{
@@ -204,13 +204,13 @@ func (suite *PSPSuite) TestCreateDefaultSaAndPSPRoleBinding() {
 			Namespace: suite.ns.Name,
 		},
 	}
-	pspClusterRoleBinding := rbacV1.ClusterRoleBinding{}
+	pspRoleBinding := rbacV1.RoleBinding{}
 
 	suite.Eventually(func() bool {
 		errGetSa := suite.K8sClient.Get(context.Background(), types.NamespacedName{Namespace: suite.ns.Name, Name: defaultServiceAccountName}, &componentDefaultSa)
-		errGetBinding := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: fmt.Sprintf("psp-%s-%s", suite.ns.Name, componentDefaultSa.Name)}, &pspClusterRoleBinding)
+		errGetBinding := suite.K8sClient.Get(context.Background(), types.NamespacedName{Namespace: suite.ns.Name, Name: fmt.Sprintf("psp-%s-%s", suite.ns.Name, componentDefaultSa.Name)}, &pspRoleBinding)
 
-		return errGetSa == nil && errGetBinding == nil && fmt.Sprintf("psp-%s-%s", suite.ns.Name, componentDefaultSa.Name) == pspClusterRoleBinding.Name
+		return errGetSa == nil && errGetBinding == nil && fmt.Sprintf("psp-%s-%s", suite.ns.Name, componentDefaultSa.Name) == pspRoleBinding.Name
 	}, "can't get sa or role binding")
 
 	clientSet, err := kubernetes.NewForConfig(suite.Cfg)
