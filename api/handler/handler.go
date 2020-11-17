@@ -33,7 +33,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	// login
 	e.POST("/login/token", h.handleValidateToken)
-	e.GET("/login/status", h.handleLoginStatus, h.GetUserMiddleware, h.RequireUserMiddleware)
+	e.GET("/login/status", h.handleLoginStatus)
 
 	// original resources routes
 	gV1 := e.Group("/v1", h.GetUserMiddleware, h.RequireUserMiddleware)

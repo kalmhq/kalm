@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
@@ -17,6 +20,19 @@ func (h *ApiHandler) RequireUserMiddleware(next echo.HandlerFunc) echo.HandlerFu
 
 		if currentUser == nil {
 			return errors.NewUnauthorized("")
+		}
+
+		if len(currentUser.Tenants) == 0 {
+			return errors.NewUnauthorized("No tenants")
+		}
+
+		if currentUser.Tenant == "" {
+			return errors.NewBadRequest(
+				fmt.Sprintf(
+					"Can not figure out which tenant you are using. Your tenants are %s. Try set \"selected-tenant\" in cookie, or use original kalm dashboard url.",
+					strings.Join(currentUser.Tenants, ", "),
+				),
+			)
 		}
 
 		return next(c)

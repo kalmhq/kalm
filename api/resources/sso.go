@@ -222,6 +222,7 @@ func (resourceManager *ResourceManager) CreateProtectedEndpoint(ep *ProtectedEnd
 			EndpointName:                ep.EndpointName,
 			Ports:                       ep.Ports,
 			Groups:                      ep.Groups,
+			Tenants:                     []string{ep.Tenant},
 			AllowToPassIfHasBearerToken: ep.AllowToPassIfHasBearerToken,
 		},
 	}
@@ -252,6 +253,7 @@ func (resourceManager *ResourceManager) UpdateProtectedEndpoint(ep *ProtectedEnd
 			EndpointName:                ep.EndpointName,
 			Ports:                       ep.Ports,
 			Groups:                      ep.Groups,
+			Tenants:                     []string{ep.Tenant},
 			AllowToPassIfHasBearerToken: ep.AllowToPassIfHasBearerToken,
 		},
 	}

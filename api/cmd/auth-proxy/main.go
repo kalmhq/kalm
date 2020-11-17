@@ -83,7 +83,7 @@ func getOauth2Config() *oauth2.Config {
 	oidcVerifier = provider.Verifier(&oidc.Config{ClientID: clientID})
 
 	scopes := []string{}
-	scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups", "offline_access", "tenant")
+	scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups", "offline_access", "tenants")
 
 	oauth2Config = &oauth2.Config{
 		ClientID:     clientID,
@@ -142,28 +142,6 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 	params.Add("now", now)
 	params.Add("sign", getStringSignature(originalURL+now))
 
-	var tenantName string
-	tenantInHeader := c.Request().Header.Get(controllers.KALM_TENANT_HEADER)
-
-	// if the upstream is kalm api, get tenant from domain.
-	// otherwise, use tenant in header.
-	lowercaseHost := strings.ToLower(c.Request().Host)
-
-	// check if it is requesting kalm resources
-	if strings.HasSuffix(lowercaseHost, "kapp.live") || strings.HasSuffix(lowercaseHost, "kalm.dev") {
-		// x.y.z.tenantName.region.kalm.dev
-		// parts length = 7
-		// tenantName = parts[7-4]
-		parts := strings.Split(c.Request().Host, ".")
-		if len(parts) >= 4 {
-			tenantName = parts[len(parts)-4]
-		}
-	} else {
-		tenantName = tenantInHeader
-	}
-
-	params.Add("tenant", tenantName)
-
 	uri.RawQuery = params.Encode()
 
 	return c.Redirect(302, uri.String())
@@ -173,8 +151,9 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 // Run as Envoy ext_authz filter //
 ///////////////////////////////////
 
-type ClaimsWithGroups struct {
-	Groups []string `json:"groups"`
+type Claims struct {
+	Groups  []string `json:"groups"`
+	Tenants []string `json:"tenants"`
 }
 
 func handleExtAuthz(c echo.Context) error {
@@ -244,7 +223,8 @@ func handleExtAuthz(c echo.Context) error {
 			if err != nil {
 				logger.Error("refresh token error", zap.Error(err))
 				clearTokenInCookie(c)
-				return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client. (After refresh)")
+				// return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client. (After refresh)")
+				return redirectToAuthProxyUrl(c)
 			}
 
 			encodedToken, _ := token.Encode()
@@ -261,6 +241,11 @@ func handleExtAuthz(c echo.Context) error {
 			clearTokenInCookie(c)
 			return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client.")
 		}
+	}
+
+	if !inGrantedTenants(c, idToken) {
+		clearTokenInCookie(c)
+		return c.JSON(401, "You don't in any granted tenants. Contact you admin please.")
 	}
 
 	if !inGrantedGroups(c, idToken) {
@@ -398,6 +383,31 @@ func shouldLetPass(c echo.Context) bool {
 		strings.HasPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 }
 
+func inGrantedTenants(c echo.Context, idToken *oidc.IDToken) bool {
+	grantedTenants := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_TENANTS_HEADER)
+
+	if grantedTenants == "" {
+		return true
+	}
+
+	tenants := strings.Split(grantedTenants, "|")
+	var claim Claims
+	_ = idToken.Claims(&claim)
+
+	gm := make(map[string]struct{}, len(tenants))
+	for _, g := range tenants {
+		gm[g] = struct{}{}
+	}
+
+	for _, g := range claim.Tenants {
+		if _, ok := gm[g]; ok {
+			return true
+		}
+	}
+
+	return false
+}
+
 func inGrantedGroups(c echo.Context, idToken *oidc.IDToken) bool {
 	grantedGroups := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_GROUPS_HEADER)
 
@@ -406,7 +416,7 @@ func inGrantedGroups(c echo.Context, idToken *oidc.IDToken) bool {
 	}
 
 	groups := strings.Split(grantedGroups, "|")
-	var claim ClaimsWithGroups
+	var claim Claims
 	_ = idToken.Claims(&claim)
 
 	gm := make(map[string]struct{}, len(groups))
@@ -526,17 +536,10 @@ func handleOIDCLogin(c echo.Context) error {
 		return err
 	}
 
-	opts := []oauth2.AuthCodeOption{}
-
-	if c.QueryParam("tenant") != "" {
-		opts = append(opts, oauth2.SetAuthURLParam("tenant", c.QueryParam("tenant")))
-	}
-
 	return c.Redirect(
 		302,
 		oauth2Config.AuthCodeURL(
 			base64.RawStdEncoding.EncodeToString(encryptedState),
-			opts...,
 		),
 	)
 }

@@ -2,13 +2,12 @@ package controllers
 
 import (
 	"fmt"
-	ctrl "sigs.k8s.io/controller-runtime"
-
 	corev1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 func (r *ComponentReconcilerTask) getNameForPermission() string {
@@ -152,9 +151,9 @@ func (r *ComponentReconcilerTask) CreatePspRoleBinding() error {
 		return err
 	}
 
-	clusterRoleBindingName := fmt.Sprintf("psp-%s-%s", r.component.Namespace, serviceAccountName)
-	pspClusterRoleBinding := rbacV1.ClusterRoleBinding{
-		ObjectMeta: metav1.ObjectMeta{Name: clusterRoleBindingName},
+	roleBindingName := fmt.Sprintf("psp-%s-%s", r.component.Namespace, serviceAccountName)
+	pspRoleBinding := rbacV1.RoleBinding{
+		ObjectMeta: metav1.ObjectMeta{Name: roleBindingName, Namespace: r.component.Namespace},
 		RoleRef: rbacV1.RoleRef{
 			APIGroup: "rbac.authorization.k8s.io",
 			Kind:     "ClusterRole",
@@ -167,14 +166,14 @@ func (r *ComponentReconcilerTask) CreatePspRoleBinding() error {
 		}},
 	}
 
-	err = r.Get(r.ctx, types.NamespacedName{Name: clusterRoleBindingName}, &pspClusterRoleBinding)
+	err = r.Get(r.ctx, types.NamespacedName{Namespace: r.component.Namespace, Name: roleBindingName}, &pspRoleBinding)
 	if errors.IsNotFound(err) {
-		if err := ctrl.SetControllerReference(r.component, &pspClusterRoleBinding, r.Scheme); err != nil {
+		if err := ctrl.SetControllerReference(r.component, &pspRoleBinding, r.Scheme); err != nil {
 			r.WarningEvent(err, "unable to set owner for role binding")
 			return err
 		}
 
-		if err := r.Create(r.ctx, &pspClusterRoleBinding); err != nil {
+		if err := r.Create(r.ctx, &pspRoleBinding); err != nil {
 			r.WarningEvent(err, "unable to create PSP for Component")
 			return err
 		}
