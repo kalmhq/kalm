@@ -70,7 +70,7 @@ class TenantsPageRaw extends React.PureComponent<Props, State> {
                 <Box display={"flex"} flexDirection={"column"} alignItems={"center"} p={2}>
                   {tenants.length > 0 ? (
                     tenants.map((t, index) => {
-                      const tenantId = t.split("/");
+                      const tenantId = t.split("/")[1];
                       return (
                         <Box m={1} key={index}>
                           {t.indexOf(currentTenant) > 0 ? (
