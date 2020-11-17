@@ -122,7 +122,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
       {
         name: "Application",
         items: [
-          { icon: KalmApplicationIcon, text: "Apps", to: "/applications" },
+          canViewTenant() ? { icon: KalmApplicationIcon, text: "Apps", to: "/applications" } : null,
           canEditTenant() || canViewCluster()
             ? {
                 icon: KalmCertificatesIcon,
@@ -130,11 +130,13 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
                 to: "/certificates",
               }
             : null,
-          {
-            text: "Routes",
-            to: "/routes",
-            icon: KalmRoutesIcon,
-          },
+          canViewTenant()
+            ? {
+                text: "Routes",
+                to: "/routes",
+                icon: KalmRoutesIcon,
+              }
+            : null,
           canEditTenant()
             ? {
                 icon: CIIcon,
@@ -237,17 +239,12 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
           {this.getSideBarData().map((group) => {
             if (!group) {
               return null;
-            } else {
-              let emptyGroup = true;
-              group.items.forEach((item) => {
-                if (item) {
-                  emptyGroup = false;
-                }
-              });
-              if (emptyGroup) {
-                return null;
-              }
             }
+
+            if (group.items.filter((x) => !!x).length === 0) {
+              return null;
+            }
+
             return (
               <React.Fragment key={group.name}>
                 {open ? (

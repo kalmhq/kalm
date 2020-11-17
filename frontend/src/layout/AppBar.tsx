@@ -19,11 +19,11 @@ import { SubjectTypeUser } from "types/member";
 import StringConstants from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import {
+  ArrowDropDownIcon,
   HelpIcon,
+  ImpersonateIcon,
   KalmLogo2Icon,
   KalmTextLogoIcon,
-  ImpersonateIcon,
-  ArrowDropDownIcon,
   KalmUserIcon,
   MenuIcon,
   MenuOpenIcon,
@@ -341,7 +341,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   };
 
   render() {
-    const { classes, dispatch, isOpenRootDrawer, location, clusterInfo } = this.props;
+    const { classes, dispatch, isOpenRootDrawer, location, clusterInfo, hasSelectedTenant } = this.props;
     const pathArray = location.pathname.split("/");
     return (
       <AppBar ref={this.headerRef} id="header" position="relative" className={classes.appBar}>
@@ -394,10 +394,14 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             )}
             <Divider orientation="vertical" flexItem color="inherit" />
             <Box className={classes.barAvatar}>{this.renderThemeIcon()}</Box>
-            <Divider orientation="vertical" flexItem color="inherit" />
-            <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
-            <Divider orientation="vertical" flexItem color="inherit" />
-            <div className={classes.barAvatar}>{this.renderAuth()}</div>
+            {hasSelectedTenant() ? (
+              <>
+                <Divider orientation="vertical" flexItem color="inherit" />
+                <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
+                <Divider orientation="vertical" flexItem color="inherit" />
+                <div className={classes.barAvatar}>{this.renderAuth()}</div>
+              </>
+            ) : null}
           </div>
         </div>
       </AppBar>

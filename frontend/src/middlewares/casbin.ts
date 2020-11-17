@@ -52,41 +52,46 @@ export const createCasbinEnforcerMiddleware = () => {
 
       const { tenant } = action.payload.loginStatus;
 
-      store.dispatch({
-        type: SET_AUTH_METHODS,
-        payload: {
-          can: (action: string, scope: string, resource: string) =>
-            withSubjects(enforcer.can, action, tenant + "/" + scope, resource),
+      if (tenant !== "") {
+        store.dispatch({
+          type: SET_AUTH_METHODS,
+          payload: {
+            can: (action: string, scope: string, resource: string) =>
+              withSubjects(enforcer.can, action, tenant + "/" + scope, resource),
 
-          canView: (scope: string, resource: string) => withSubjects(enforcer.canView, tenant + "/" + scope, resource),
-          canEdit: (scope: string, resource: string) => withSubjects(enforcer.canEdit, tenant + "/" + scope, resource),
-          canManage: (scope: string, resource: string) =>
-            withSubjects(enforcer.canManage, tenant + "/" + scope, resource),
+            canView: (scope: string, resource: string) =>
+              withSubjects(enforcer.canView, tenant + "/" + scope, resource),
+            canEdit: (scope: string, resource: string) =>
+              withSubjects(enforcer.canEdit, tenant + "/" + scope, resource),
+            canManage: (scope: string, resource: string) =>
+              withSubjects(enforcer.canManage, tenant + "/" + scope, resource),
 
-          canViewNamespace: (scope: string) => withSubjects(enforcer.canViewScope, tenant + "/" + scope),
-          canEditNamespace: (scope: string) => withSubjects(enforcer.canEditScope, tenant + "/" + scope),
-          canManageNamespace: (scope: string) => withSubjects(enforcer.canManageScope, tenant + "/" + scope),
+            canViewNamespace: (scope: string) => withSubjects(enforcer.canViewScope, tenant + "/" + scope),
+            canEditNamespace: (scope: string) => withSubjects(enforcer.canEditScope, tenant + "/" + scope),
+            canManageNamespace: (scope: string) => withSubjects(enforcer.canManageScope, tenant + "/" + scope),
 
-          canViewCluster: () => withSubjects(enforcer.canViewCluster),
-          canEditCluster: () => withSubjects(enforcer.canEditCluster),
-          canManageCluster: () => withSubjects(enforcer.canManageCluster),
+            canViewCluster: () => withSubjects(enforcer.canViewCluster),
+            canEditCluster: () => withSubjects(enforcer.canEditCluster),
+            canManageCluster: () => withSubjects(enforcer.canManageCluster),
 
-          canViewTenant: () => withSubjects(enforcer.canViewScope, tenant + "/*"),
-          canEditTenant: () => withSubjects(enforcer.canEditScope, tenant + "/*"),
-          canManageTenant: () => withSubjects(enforcer.canManageScope, tenant + "/*"),
+            canViewTenant: () => withSubjects(enforcer.canViewScope, tenant + "/*"),
+            canEditTenant: () => withSubjects(enforcer.canEditScope, tenant + "/*"),
+            canManageTenant: () => withSubjects(enforcer.canManageScope, tenant + "/*"),
 
-          canEditAnyNamespace: () => {
-            const applications = store.getState().applications.applications;
+            canEditAnyNamespace: () => {
+              const applications = store.getState().applications.applications;
 
-            for (let i = 0; i < applications.length; i++) {
-              if (withSubjects(enforcer.canEditScope, tenant + "/" + applications[i].name)) {
-                return true;
+              for (let i = 0; i < applications.length; i++) {
+                if (withSubjects(enforcer.canEditScope, tenant + "/" + applications[i].name)) {
+                  return true;
+                }
               }
-            }
-            return false;
+              return false;
+            },
+            hasSelectedTenant: () => true,
           },
-        },
-      });
+        });
+      }
     }
 
     return next(action);

@@ -9,7 +9,7 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { AppBarComponent } from "./AppBar";
-import { APP_BAR_HEIGHT, TOP_PROGRESS_ZINDEX, TUTORIAL_DRAWER_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "./Constants";
+import { APP_BAR_HEIGHT, LEFT_SECTION_OPEN_WIDTH, TOP_PROGRESS_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "./Constants";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { RootDrawer } from "./RootDrawer";
 
