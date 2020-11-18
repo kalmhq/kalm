@@ -72,10 +72,7 @@ func (v *NSValidator) HandleCreate(req admission.Request) admission.Response {
 		return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
 	}
 
-	reqInfo := v1alpha1.AdmissionRequestInfo{
-		Req: req,
-		Obj: &ns,
-	}
+	reqInfo := v1alpha1.NewAdmissionRequestInfo(&ns, req.Operation, req.DryRun != nil && *req.DryRun)
 
 	if err := v1alpha1.CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		logger.Error(err, "fail to allocate ns resource", "ns", ns.Name)
@@ -113,7 +110,7 @@ func (v *NSValidator) HandleDelete(req admission.Request) admission.Response {
 		return admission.Allowed("")
 	}
 
-	reqInfo := v1alpha1.AdmissionRequestInfo{Req: req, Obj: &ns}
+	reqInfo := v1alpha1.NewAdmissionRequestInfo(&ns, req.Operation, req.DryRun != nil && *req.DryRun)
 	if err := v1alpha1.CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		logger.Error(err, "fail to release ns resource, ignored", "ns", ns.Name)
 	}

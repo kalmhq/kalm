@@ -6,42 +6,69 @@ import (
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
+
+var tenantLog = logf.Log.WithName("tenant")
 
 var evaluatorRegistry tenantEvaluatorRegistry
 
 type tenantEvaluatorRegistry struct {
-	evaluators map[schema.GroupResource]TenantEvaluator
+	evaluators map[schema.GroupKind]TenantEvaluator
 }
 
 func initEvaluatorRegistry() {
 	evaluatorRegistry = tenantEvaluatorRegistry{}
 
-	evaluators := make(map[schema.GroupResource]TenantEvaluator)
+	evaluators := make(map[schema.GroupKind]TenantEvaluator)
 
-	//todo use schema info
-	nsGR := schema.GroupResource{Group: "", Resource: "namespaces"}
-	evaluators[nsGR] = nsEvaluator{}
+	//todo use schema info instead of hard code
+	nsGK := schema.GroupKind{Group: "", Kind: "Namespace"}
+	evaluators[nsGK] = nsEvaluator{}
+
+	httpsCertGK := schema.GroupKind{Group: GroupVersion.Group, Kind: "HttpsCert"}
+	evaluators[httpsCertGK] = httpsCertEvaluator{}
 
 	//todo more evaluator
 
 	evaluatorRegistry.evaluators = evaluators
 }
 
-type nsEvaluator struct {
+func GetTenantEvaluator(gr schema.GroupKind) (TenantEvaluator, bool) {
+	v, exist := evaluatorRegistry.evaluators[gr]
+	fmt.Println("<<<<<<", gr, v, exist)
+	return v, exist
+}
+
+//+kubebuilder:object:generate=false
+type TenantEvaluator interface {
+	Usage(req AdmissionRequestInfo) (ResourceList, error)
 }
 
 var _ TenantEvaluator = nsEvaluator{}
 
+type nsEvaluator struct {
+}
+
 //+kubebuilder:object:generate=false
 type AdmissionRequestInfo struct {
-	Req admission.Request
-	Obj runtime.Object
+	// Req       admission.Request
+	Operation admissionv1beta1.Operation
+	Obj       runtime.Object
+	IsDryRun  bool
+}
+
+func NewAdmissionRequestInfo(obj runtime.Object, op admissionv1beta1.Operation, isDryRun bool) AdmissionRequestInfo {
+	return AdmissionRequestInfo{
+		Obj:       obj,
+		Operation: op,
+		IsDryRun:  isDryRun,
+	}
 }
 
 func (e nsEvaluator) Usage(reqInfo AdmissionRequestInfo) (ResourceList, error) {
@@ -55,7 +82,7 @@ func (e nsEvaluator) Usage(reqInfo AdmissionRequestInfo) (ResourceList, error) {
 		return nil, err
 	}
 
-	isDelete := reqInfo.Req.Operation == admissionv1beta1.Delete
+	isDelete := reqInfo.Operation == admissionv1beta1.Delete
 	cnt := tryReCountResourceForTenant(reqInfo.Obj, nsListToObjList(nsList.Items), isDelete)
 	fmt.Println(">>>>>>", cnt, len(nsList.Items), isDelete)
 
@@ -76,24 +103,11 @@ func nsListToObjList(items []corev1.Namespace) []runtime.Object {
 	return rst
 }
 
-func GetTenantEvaluator(gr schema.GroupResource) (TenantEvaluator, bool) {
-	v, exist := evaluatorRegistry.evaluators[gr]
-	fmt.Println("<<<<<<", gr, v, exist)
-	return v, exist
-}
-
-//+kubebuilder:object:generate=false
-type TenantEvaluator interface {
-	Usage(req AdmissionRequestInfo) (ResourceList, error)
-}
-
 // if ok, return tenant to be updated,
 // if not, return error
 func checkAdmissionRequestAgainstTenant(tenant Tenant, reqInfo AdmissionRequestInfo) (Tenant, error) {
-	req := reqInfo.Req
-
-	gr := schema.GroupResource{Group: req.Resource.Group, Resource: req.Resource.Resource}
-	evaluator, exist := GetTenantEvaluator(gr)
+	gk := reqInfo.Obj.GetObjectKind().GroupVersionKind().GroupKind()
+	evaluator, exist := GetTenantEvaluator(gk)
 	if !exist {
 		return tenant, nil
 	}
@@ -102,6 +116,7 @@ func checkAdmissionRequestAgainstTenant(tenant Tenant, reqInfo AdmissionRequestI
 	if err != nil {
 		return tenant, err
 	}
+	tenantLog.Info("usage", "new", resourceList, "old", tenant.Status.UsedResourceQuota)
 
 	tenantCopy := tenant.DeepCopy()
 	for resName, quantity := range resourceList {
@@ -127,6 +142,8 @@ func CheckAndUpdateTenant(tenantName string, reqInfo AdmissionRequestInfo, remai
 	}
 
 	newTenant, err := checkAdmissionRequestAgainstTenant(*tenant, reqInfo)
+	tenantLog.Info("checkAdmissionRequestAgainstTenant", "newTenant", newTenant, "err", err)
+
 	if err != nil {
 		return fmt.Errorf("fail the tenant check, err: %s", err)
 	}
@@ -136,7 +153,7 @@ func CheckAndUpdateTenant(tenantName string, reqInfo AdmissionRequestInfo, remai
 	}
 
 	// skip update for dry-run
-	if reqInfo.Req.DryRun != nil && *reqInfo.Req.DryRun {
+	if reqInfo.IsDryRun {
 		return nil
 	}
 
@@ -151,4 +168,58 @@ func CheckAndUpdateTenant(tenantName string, reqInfo AdmissionRequestInfo, remai
 func noResourceChanged(a, b Tenant) bool {
 	//todo
 	return false
+}
+
+func tryReCountResourceForTenant(currentObj runtime.Object, objList []runtime.Object, isDelete bool) int {
+
+	resMap := make(map[string]runtime.Object)
+
+	resMap[getKey(currentObj)] = currentObj
+	for _, obj := range objList {
+		resMap[getKey(obj)] = obj
+	}
+
+	var cnt int
+	for _, cur := range resMap {
+		// ignore resource being deleted
+		objMeta, err := meta.Accessor(cur)
+		if err == nil && objMeta.GetDeletionTimestamp() != nil {
+			continue
+		}
+
+		if getKey(cur) == getKey(currentObj) {
+			// if deleting current resource, ignore in count
+			if isDelete {
+				continue
+			}
+		}
+
+		cnt++
+	}
+
+	return cnt
+}
+
+func tryReCountAndUpdateResourceForTenant(tenantName string, resName ResourceName, currentObj runtime.Object, objList []runtime.Object, isDelete bool) error {
+
+	cnt := tryReCountResourceForTenant(currentObj, objList, isDelete)
+
+	cntQuantity := resource.NewQuantity(int64(cnt), resource.DecimalSI)
+	fmt.Println("cntQuantity", cntQuantity, "resName", resName, "tenant", tenantName)
+	if err := SetTenantResourceByName(tenantName, resName, *cntQuantity); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getKey(obj runtime.Object) string {
+	objMeta, err := meta.Accessor(obj)
+	if err != nil {
+		//todo, return err?
+		return ""
+	}
+
+	key := fmt.Sprintf("%s/%s", objMeta.GetNamespace(), objMeta.GetName())
+	return key
 }

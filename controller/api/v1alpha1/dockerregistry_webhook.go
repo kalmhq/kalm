@@ -17,10 +17,6 @@ package v1alpha1
 
 import (
 	"context"
-	"fmt"
-
-	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/api/resource"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -122,60 +118,6 @@ func (r *DockerRegistry) ValidateDelete() error {
 	}
 
 	return nil
-}
-
-func tryReCountResourceForTenant(currentObj runtime.Object, objList []runtime.Object, isDelete bool) int {
-
-	resMap := make(map[string]runtime.Object)
-
-	resMap[getKey(currentObj)] = currentObj
-	for _, obj := range objList {
-		resMap[getKey(obj)] = obj
-	}
-
-	var cnt int
-	for _, cur := range resMap {
-		// ignore resource being deleted
-		objMeta, err := meta.Accessor(cur)
-		if err == nil && objMeta.GetDeletionTimestamp() != nil {
-			continue
-		}
-
-		if getKey(cur) == getKey(currentObj) {
-			// if deleting current resource, ignore in count
-			if isDelete {
-				continue
-			}
-		}
-
-		cnt++
-	}
-
-	return cnt
-}
-
-func tryReCountAndUpdateResourceForTenant(tenantName string, resName ResourceName, currentObj runtime.Object, objList []runtime.Object, isDelete bool) error {
-
-	cnt := tryReCountResourceForTenant(currentObj, objList, isDelete)
-
-	cntQuantity := resource.NewQuantity(int64(cnt), resource.DecimalSI)
-	fmt.Println("cntQuantity", cntQuantity, "resName", resName, "tenant", tenantName)
-	if err := SetTenantResourceByName(tenantName, resName, *cntQuantity); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func getKey(obj runtime.Object) string {
-	objMeta, err := meta.Accessor(obj)
-	if err != nil {
-		//todo, return err?
-		return ""
-	}
-
-	key := fmt.Sprintf("%s/%s", objMeta.GetNamespace(), objMeta.GetName())
-	return key
 }
 
 func (r *DockerRegistry) validate() error {
