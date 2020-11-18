@@ -120,6 +120,16 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
 
     return [
       {
+        name: "Kalm",
+        items: [
+          {
+            icon: InfoIcon,
+            text: "Usage",
+            to: "/usage",
+          },
+        ],
+      },
+      {
         name: "Application",
         items: [
           { icon: KalmApplicationIcon, text: "Apps", to: "/applications" },
@@ -207,11 +217,6 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
                 to: "/version",
               }
             : null,
-          {
-            icon: InfoIcon,
-            text: "Kalm Overview",
-            to: "/tenants",
-          },
         ],
       },
     ];

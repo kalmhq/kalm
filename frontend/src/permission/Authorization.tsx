@@ -8,6 +8,7 @@ import { RootState } from "reducers";
 import { Loading } from "widgets/Loading";
 import { getDisplayName } from "./utils";
 import { Box } from "@material-ui/core";
+import { getHasTenant } from "selectors/tenant";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.auth;
@@ -15,16 +16,16 @@ const mapStateToProps = (state: RootState) => {
   const firstLoaded = auth.firstLoaded;
   const isLoading = auth.isLoading;
   const policies = auth.policies;
-  const currentTenant = auth.tenant;
   const tenants = auth.tenants;
+  const hasTenant = getHasTenant(state);
 
   return {
     isLoading,
     authorized,
     firstLoaded,
     policies,
-    currentTenant,
     tenants,
+    hasTenant,
   };
 };
 
@@ -50,7 +51,7 @@ export const Authorizated = ({ mustAuthorized, mustNotAuthorized }: Options) => 
     }
 
     componentDidUpdate() {
-      const { firstLoaded, authorized, isLoading, policies, currentTenant, dispatch } = this.props;
+      const { firstLoaded, authorized, isLoading, policies, hasTenant, dispatch } = this.props;
 
       if (isLoading && !firstLoaded) {
         return;
@@ -60,13 +61,8 @@ export const Authorizated = ({ mustAuthorized, mustNotAuthorized }: Options) => 
         dispatch(push("/login"));
       }
 
-      if (authorized && currentTenant.length === 0) {
-        // if (tenants.length > 0) {
+      if (authorized && !hasTenant) {
         dispatch(push("/tenants"));
-        // } else {
-        //   // FIXME: no current tenant and no tenant should redirect to kalm saas
-        //   dispatch(push("/login"));
-        // }
       }
 
       if (authorized && mustNotAuthorized) {

@@ -13,6 +13,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
+import { composeTenantLink, getHasTenant, getKalmSaaSLink, isSameTenant } from "selectors/tenant";
 import { ThemeToggle } from "theme/ThemeToggle";
 import { TDispatch } from "types";
 import { SubjectTypeUser } from "types/member";
@@ -40,6 +41,7 @@ const mapStateToProps = (state: RootState) => {
   const impersonationType = auth.impersonationType;
   const currentTenant = auth.tenant;
   const tenants = auth.tenants;
+  const hasTenant = getHasTenant(state);
 
   return {
     isOpenRootDrawer: state.settings.isOpenRootDrawer,
@@ -50,6 +52,7 @@ const mapStateToProps = (state: RootState) => {
     email,
     currentTenant,
     tenants,
+    hasTenant,
   };
 };
 
@@ -224,11 +227,11 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   };
 
   renderTenants = () => {
-    const { currentTenant, tenants } = this.props;
+    const { hasTenant, currentTenant, tenants } = this.props;
     const { tenantMenuAnchorElement } = this.state;
     return (
       <div key={"tenants"}>
-        {currentTenant ? (
+        {hasTenant ? (
           <>
             <IconButtonWithTooltip
               tooltipTitle={StringConstants.APP_AUTH_TOOLTIPS}
@@ -260,21 +263,31 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                 this.setState({ tenantMenuAnchorElement: null });
               }}
             >
+              <MenuItem disabled={true}>Clusters</MenuItem>
               {tenants.map((t, index) => {
                 return (
                   <Box m={1} key={index}>
                     <MenuItem
-                      disabled={t.indexOf(currentTenant) > 0}
+                      disabled={isSameTenant(t, currentTenant)}
                       onClick={() => {
-                        const tenantId = t.split("/")[1];
-                        window.open("https://" + tenantId + ".asia-northeast3.kapp.live/", "_blank");
+                        const url = composeTenantLink(t);
+                        window.open(url, "_self");
                       }}
                     >
-                      {t}
+                      {"   " + t}
                     </MenuItem>
                   </Box>
                 );
               })}
+              <Divider />
+              <MenuItem
+                onClick={() => {
+                  const url = getKalmSaaSLink();
+                  window.open(url, "_blank");
+                }}
+              >
+                Create New Kalm
+              </MenuItem>
             </Menu>
           </>
         ) : (
@@ -335,25 +348,33 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
         return "CI";
       case "metrics":
         return StringConstants.APP_DASHBOARD_PAGE_NAME;
+      case "tenants":
+        return "Welcome";
+      case "usage":
+        return "Usage";
       default:
         return path;
     }
   };
 
   render() {
-    const { classes, dispatch, isOpenRootDrawer, location, clusterInfo } = this.props;
+    const { classes, dispatch, isOpenRootDrawer, location, clusterInfo, hasTenant } = this.props;
     const pathArray = location.pathname.split("/");
     return (
       <AppBar ref={this.headerRef} id="header" position="relative" className={classes.appBar}>
         <div className={classes.barContainer}>
           <div className={classes.barLeft}>
-            <IconButton
-              className={classes.shrinkButton}
-              onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !isOpenRootDrawer }))}
-              // size={"small"}
-            >
-              {isOpenRootDrawer ? <MenuOpenIcon color="white" /> : <MenuIcon color="white" />}
-            </IconButton>
+            {hasTenant ? (
+              <IconButton
+                className={classes.shrinkButton}
+                onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !isOpenRootDrawer }))}
+                // size={"small"}
+              >
+                {isOpenRootDrawer ? <MenuOpenIcon color="white" /> : <MenuIcon color="white" />}
+              </IconButton>
+            ) : (
+              <Box paddingLeft={2} paddingRight={0} />
+            )}
             <FlexRowItemCenterBox>
               <Breadcrumbs aria-label="breadcrumb" className={classes.breadcrumb}>
                 {pathArray.map((path, index) => {

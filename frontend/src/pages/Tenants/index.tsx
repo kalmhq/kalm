@@ -8,6 +8,7 @@ import { RootState } from "reducers";
 import { connect } from "react-redux";
 import { KMLink } from "widgets/Link";
 import { Body } from "widgets/Label";
+import { composeTenantLink, getHasTenant, getKalmSaaSLink, isSameTenant } from "selectors/tenant";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -19,11 +20,12 @@ const mapStateToProps = (state: RootState) => {
   const currentTenant = auth.tenant;
   const tenants = auth.tenants;
   const isLoading = auth.isLoading;
-
+  const hasTenant = getHasTenant(state);
   return {
     isLoading,
     currentTenant,
     tenants,
+    hasTenant,
   };
 };
 
@@ -38,7 +40,7 @@ class TenantsPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { currentTenant, tenants, isLoading } = this.props;
+    const { currentTenant, tenants, isLoading, hasTenant } = this.props;
 
     if (isLoading) {
       return <Loading />;
@@ -63,38 +65,41 @@ class TenantsPageRaw extends React.PureComponent<Props, State> {
           </Box>
         )}
 
-        <Box p={2}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={12} md={12}>
-              <KPanel title="Select Target Kalm">
-                <Box display={"flex"} flexDirection={"column"} alignItems={"center"} p={2}>
-                  {tenants.length > 0 ? (
-                    tenants.map((t, index) => {
-                      const tenantId = t.split("/")[1];
-                      return (
-                        <Box m={1} key={index}>
-                          {t.indexOf(currentTenant) > 0 ? (
-                            t
-                          ) : (
-                            <KMLink
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              href={"https://" + tenantId + ".asia-northeast3.kapp.live"}
-                            >
-                              {t}
-                            </KMLink>
-                          )}
-                        </Box>
-                      );
-                    })
-                  ) : (
-                    <>You don't have any kalm, please go to kalm-saas to subscript kalm</>
-                  )}
-                </Box>
-              </KPanel>
+        {tenants.length > 0 && !hasTenant && (
+          <Box p={2}>
+            <Grid container spacing={2}>
+              <Grid item xs={8} sm={8} md={8}>
+                <KPanel title="Select Target">
+                  <Box display={"flex"} flexDirection={"column"} p={2}>
+                    {tenants.length > 0 ? (
+                      tenants.map((t, index) => {
+                        const url = composeTenantLink(t);
+                        return (
+                          <Box m={1} key={index}>
+                            {isSameTenant(t, currentTenant) ? (
+                              t
+                            ) : (
+                              <KMLink rel="noopener noreferrer" href={url} target={"_self"}>
+                                {t}
+                              </KMLink>
+                            )}
+                          </Box>
+                        );
+                      })
+                    ) : (
+                      <>
+                        You don't have any kalm, please go to Kalm SaaS to subscript new plan.{" "}
+                        <KMLink href={getKalmSaaSLink()} target={"_blank"}>
+                          Open Kalm SaaS
+                        </KMLink>{" "}
+                      </>
+                    )}
+                  </Box>
+                </KPanel>
+              </Grid>
             </Grid>
-          </Grid>
-        </Box>
+          </Box>
+        )}
       </BasePage>
     );
   }
