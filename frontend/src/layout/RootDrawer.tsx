@@ -30,6 +30,7 @@ import {
   KalmVolumeIcon,
   PeopleIcon,
   SettingIcon,
+  UsageIcon,
 } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
@@ -123,7 +124,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
         name: "Kalm",
         items: [
           {
-            icon: InfoIcon,
+            icon: UsageIcon,
             text: "Usage",
             to: "/usage",
           },

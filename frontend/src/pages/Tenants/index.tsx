@@ -1,4 +1,4 @@
-import { Box, createStyles, Grid, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Avatar, Box, createStyles, Divider, Grid, Theme, WithStyles, withStyles } from "@material-ui/core";
 import React from "react";
 import { TDispatchProp } from "types";
 import { KPanel } from "widgets/KPanel";
@@ -8,11 +8,22 @@ import { RootState } from "reducers";
 import { connect } from "react-redux";
 import { KMLink } from "widgets/Link";
 import { Body } from "widgets/Label";
-import { composeTenantLink, getHasSelectedTenant, getKalmSaaSLink, isSameTenant } from "selectors/tenant";
+import {
+  composeTenantLink,
+  getHasSelectedTenant,
+  getKalmSaaSLink,
+  getUserAvatar,
+  getUserEmail,
+  isSameTenant,
+} from "selectors/tenant";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
+    large: {
+      width: theme.spacing(9),
+      height: theme.spacing(9),
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -21,11 +32,15 @@ const mapStateToProps = (state: RootState) => {
   const tenants = auth.tenants;
   const isLoading = auth.isLoading;
   const hasSelectedTenant = getHasSelectedTenant(state);
+  const email = getUserEmail(state);
+  const avatarUrl = getUserAvatar(state);
   return {
     isLoading,
     currentTenant,
     tenants,
     hasSelectedTenant,
+    avatarUrl,
+    email,
   };
 };
 
@@ -39,6 +54,17 @@ class TenantsPageRaw extends React.PureComponent<Props, State> {
     this.state = {};
   }
 
+  private renderUserInfo = () => {
+    const { avatarUrl, email, classes } = this.props;
+
+    return (
+      <>
+        {!avatarUrl && <Avatar src={avatarUrl} className={classes.large} />}
+        <Body>Welcome {email}, please select the cluster you want to use</Body>
+      </>
+    );
+  };
+
   public render() {
     const { currentTenant, tenants, isLoading, hasSelectedTenant } = this.props;
 
@@ -46,41 +72,28 @@ class TenantsPageRaw extends React.PureComponent<Props, State> {
       return <Loading />;
     }
 
+    // FIXME: Aladdin comment, If a user has already selected a cluster, do I need force redirect to the home page?
+
     return (
       <BasePage>
-        {currentTenant && (
-          <Box p={2}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={12} md={12}>
-                <KPanel title="Current Kalm Usage">
-                  <Box display={"flex"} flexDirection={"column"} alignItems={"center"} p={2}>
-                    <Body>{currentTenant}</Body>
-                    <Body>CPU xxx</Body>
-                    <Body>Memory xxx</Body>
-                    <Body>Seats xxx</Body>
-                  </Box>
-                </KPanel>
-              </Grid>
-            </Grid>
-          </Box>
-        )}
-
         {tenants.length > 0 && !hasSelectedTenant && (
           <Box p={2}>
             <Grid container spacing={2}>
               <Grid item xs={8} sm={8} md={8}>
-                <KPanel title="Select Target">
+                <KPanel>
                   <Box display={"flex"} flexDirection={"column"} p={2}>
+                    {this.renderUserInfo()}
+                    <Divider />
                     {tenants.length > 0 ? (
                       tenants.map((t, index) => {
                         const url = composeTenantLink(t);
                         return (
                           <Box m={1} key={index}>
                             {isSameTenant(t, currentTenant) ? (
-                              t
+                              <Body>current: {t}</Body>
                             ) : (
                               <KMLink rel="noopener noreferrer" href={url} target={"_self"}>
-                                {t}
+                                click to open {t}
                               </KMLink>
                             )}
                           </Box>

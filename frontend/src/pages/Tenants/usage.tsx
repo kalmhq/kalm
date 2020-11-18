@@ -46,7 +46,7 @@ class TenantUsagePageRaw extends React.PureComponent<Props, State> {
           <Box p={2}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={12} md={12}>
-                <KPanel title="Current Kalm Usage">
+                <KPanel title="Usage">
                   <Box display={"flex"} flexDirection={"column"} alignItems={"center"} p={2}>
                     <Body>{currentTenant}</Body>
                     <Body>CPU xxx</Body>

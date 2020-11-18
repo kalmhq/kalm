@@ -4,6 +4,14 @@ export const getHasSelectedTenant = (state: RootState) => {
   return state.auth.tenant.length > 0;
 };
 
+export const getUserEmail = (state: RootState) => {
+  return state.auth.email;
+};
+
+export const getUserAvatar = (state: RootState) => {
+  return state.auth.avatarUrl;
+};
+
 export const isSameTenant = (tenantName: string, clusterTenantName: string) => {
   return tenantName === clusterTenantName || clusterTenantName.includes(tenantName);
 };
