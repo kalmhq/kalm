@@ -66,7 +66,7 @@ class WithDataRaw extends React.PureComponent<Props> {
     }
 
     this.loadData();
-    this.connectWebsocket();
+    // this.connectWebsocket();
   }
 
   private loadData() {
