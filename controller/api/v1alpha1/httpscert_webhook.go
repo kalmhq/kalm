@@ -210,7 +210,6 @@ type httpsCertEvaluator struct {
 }
 
 func (e httpsCertEvaluator) Usage(reqInfo AdmissionRequestInfo) (ResourceList, error) {
-	fmt.Println("zzzzzzzzzzz httpsCertEval")
 	tenantName, err := GetTenantNameFromObj(reqInfo.Obj)
 	if err != nil {
 		return nil, NoTenantFoundError
@@ -222,7 +221,7 @@ func (e httpsCertEvaluator) Usage(reqInfo AdmissionRequestInfo) (ResourceList, e
 	}
 
 	isDelete := reqInfo.Operation == admissionv1beta1.Delete
-	cnt := tryReCountResourceForTenant(reqInfo.Obj, httpsCertsToObjList(certList.Items), isDelete)
+	cnt := reCountResource(reqInfo.Obj, httpsCertsToObjList(certList.Items), isDelete)
 
 	quantity := resource.NewQuantity(int64(cnt), resource.DecimalSI)
 	rst := map[ResourceName]resource.Quantity{
