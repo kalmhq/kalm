@@ -31,6 +31,9 @@ func initEvaluatorRegistry() {
 	httpsCertGK := schema.GroupKind{Group: GroupVersion.Group, Kind: "HttpsCert"}
 	evaluators[httpsCertGK] = httpsCertEvaluator{}
 
+	podGK := schema.GroupKind{Group: "", Kind: "Pod"}
+	evaluators[podGK] = podEvaluator{}
+
 	//todo more evaluator
 
 	evaluatorRegistry.evaluators = evaluators
@@ -79,6 +82,14 @@ func checkAdmissionRequestAgainstTenant(tenant Tenant, reqInfo AdmissionRequestI
 	tenantLog.Info("usage", "new", resourceList, "old", tenant.Status.UsedResourceQuota)
 
 	tenantCopy := tenant.DeepCopy()
+	for resName, quantity := range resourceList {
+		limit := tenant.Spec.ResourceQuota[resName]
+
+		if quantity.Cmp(limit) > 0 {
+			return tenant, ExceedingQuotaError
+		}
+	}
+
 	for resName, quantity := range resourceList {
 		tenantCopy.Status.UsedResourceQuota[resName] = quantity
 	}
