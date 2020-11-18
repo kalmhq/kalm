@@ -52,12 +52,13 @@ func getPodsToSum(curPod corev1.Pod, podList []corev1.Pod, op admissionv1beta1.O
 
 	// rm duplicate if exist using map
 	podMap := make(map[string]corev1.Pod)
-	for _, pod := range podList {
-		podMap[getKey(&pod)] = pod
-	}
 
 	curPodKey := getKey(&curPod)
 	podMap[curPodKey] = curPod
+
+	for _, pod := range podList {
+		podMap[getKey(&pod)] = pod
+	}
 
 	isDeleteOp := op == admissionv1beta1.Delete
 
@@ -114,7 +115,8 @@ func sumOfResourceList(resourceLists ...ResourceList) ResourceList {
 }
 
 // currently only cpu & mem
-// todo, consider initContainer, return peek resource consumption
+// todo, consider initContainer, ephemeralStorage
+// return peek resource consumption
 func getResourceOfPod(pod corev1.Pod) ResourceList {
 
 	rstResList := ResourceList{

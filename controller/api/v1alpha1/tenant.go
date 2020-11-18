@@ -34,6 +34,9 @@ func initEvaluatorRegistry() {
 	podGK := schema.GroupKind{Group: "", Kind: "Pod"}
 	evaluators[podGK] = podEvaluator{}
 
+	pvcGK := schema.GroupKind{Group: "", Kind: "PersistentVolumeClaim"}
+	evaluators[pvcGK] = pvcEvaluator{}
+
 	//todo more evaluator
 
 	evaluatorRegistry.evaluators = evaluators
