@@ -115,11 +115,8 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 							},
 						},
 						{
-							Command: []string{"/manager"},
-							Args: []string{
-								"--enable-leader-election",
-								"--metrics-addr=127.0.0.1:8080",
-							},
+							Command:         []string{"/manager"},
+							Args:            getControllerArgs(config.Spec.KalmType),
 							Image:           img,
 							ImagePullPolicy: "Always",
 							Name:            "manager",
@@ -194,6 +191,19 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 	}
 
 	return err
+}
+
+func getControllerArgs(kalmType string) []string {
+	args := []string{
+		"--enable-leader-election",
+		"--metrics-addr=127.0.0.1:8080",
+	}
+
+	if kalmType != "" {
+		args = append(args, fmt.Sprintf("--kalm-type=%s", kalmType))
+	}
+
+	return args
 }
 
 func getKalmControllerVersion(config *installV1Alpha1.KalmOperatorConfig) string {

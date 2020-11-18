@@ -3,6 +3,7 @@ module github.com/kalmhq/kalm/operator
 go 1.15
 
 require (
+	github.com/go-bindata/go-bindata v1.0.0 // indirect
 	github.com/go-logr/logr v0.1.0
 	github.com/jetstack/cert-manager v0.13.1
 	github.com/kalmhq/kalm/controller v0.0.0-20200709120351-d96177bbf37a

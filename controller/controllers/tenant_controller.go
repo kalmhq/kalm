@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"sort"
 	"strconv"
 
@@ -49,6 +50,7 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
+	r.reconcileDnsRecord(&tenant)
 	surplusResource, noNegative := v1alpha1.GetSurplusResource(tenant)
 
 	if noNegative {
@@ -199,4 +201,47 @@ func (r *TenantReconciler) tryMarkComponentAsExceedingQuota(comp *v1alpha1.Compo
 	comp.Labels[v1alpha1.KalmLabelKeyExceedingQuota] = "true"
 
 	return r.Update(r.ctx, comp)
+}
+
+func (r *TenantReconciler) reconcileDnsRecord(tenant *v1alpha1.Tenant) {
+	var dnsRecordList v1alpha1.DnsRecordList
+
+	r.List(r.ctx, &dnsRecordList)
+	hasDnsRecord := false
+	for _, dnsRecord := range dnsRecordList.Items {
+		if dnsRecord.Spec.TenantName == tenant.Name {
+			hasDnsRecord = true
+			break
+		}
+	}
+
+	if hasDnsRecord == false {
+		dnsRecord := v1alpha1.DnsRecord{
+			ObjectMeta: ctrl.ObjectMeta{
+				Name: fmt.Sprintf("%s-dns-a-record", tenant.Name),
+				Labels: map[string]string{
+					"tenant": tenant.Name,
+				},
+			},
+			Spec: v1alpha1.DnsRecordSpec{
+				TenantName: tenant.Name,
+				Type:       "A",
+				Name:       generateTentantDomain(),
+				Content:    getContent(),
+			},
+		}
+
+		r.Client.Create(r.ctx, &dnsRecord)
+
+		// TODO create
+	}
+}
+
+// TODO
+func generateTentantDomain() string {
+	return fmt.Sprintf("")
+}
+
+func getContent() string {
+	return ""
 }
