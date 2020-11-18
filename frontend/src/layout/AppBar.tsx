@@ -13,18 +13,18 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
-import { composeTenantLink, getHasTenant, getKalmSaaSLink, isSameTenant } from "selectors/tenant";
+import { composeTenantLink, getHasSelectedTenant, getKalmSaaSLink, isSameTenant } from "selectors/tenant";
 import { ThemeToggle } from "theme/ThemeToggle";
 import { TDispatch } from "types";
 import { SubjectTypeUser } from "types/member";
 import StringConstants from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import {
+  ArrowDropDownIcon,
   HelpIcon,
+  ImpersonateIcon,
   KalmLogo2Icon,
   KalmTextLogoIcon,
-  ImpersonateIcon,
-  ArrowDropDownIcon,
   KalmUserIcon,
   MenuIcon,
   MenuOpenIcon,
@@ -41,7 +41,7 @@ const mapStateToProps = (state: RootState) => {
   const impersonationType = auth.impersonationType;
   const currentTenant = auth.tenant;
   const tenants = auth.tenants;
-  const hasTenant = getHasTenant(state);
+  const hasSelectedTenant = getHasSelectedTenant(state);
 
   return {
     isOpenRootDrawer: state.settings.isOpenRootDrawer,
@@ -52,7 +52,7 @@ const mapStateToProps = (state: RootState) => {
     email,
     currentTenant,
     tenants,
-    hasTenant,
+    hasSelectedTenant,
   };
 };
 
@@ -227,11 +227,11 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   };
 
   renderTenants = () => {
-    const { hasTenant, currentTenant, tenants } = this.props;
+    const { hasSelectedTenant, currentTenant, tenants } = this.props;
     const { tenantMenuAnchorElement } = this.state;
     return (
       <div key={"tenants"}>
-        {hasTenant ? (
+        {hasSelectedTenant ? (
           <>
             <IconButtonWithTooltip
               tooltipTitle={StringConstants.APP_AUTH_TOOLTIPS}
@@ -358,13 +358,13 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   };
 
   render() {
-    const { classes, dispatch, isOpenRootDrawer, location, clusterInfo, hasTenant } = this.props;
+    const { classes, dispatch, isOpenRootDrawer, location, clusterInfo, hasSelectedTenant } = this.props;
     const pathArray = location.pathname.split("/");
     return (
       <AppBar ref={this.headerRef} id="header" position="relative" className={classes.appBar}>
         <div className={classes.barContainer}>
           <div className={classes.barLeft}>
-            {hasTenant ? (
+            {hasSelectedTenant ? (
               <IconButton
                 className={classes.shrinkButton}
                 onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !isOpenRootDrawer }))}
@@ -415,10 +415,14 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             )}
             <Divider orientation="vertical" flexItem color="inherit" />
             <Box className={classes.barAvatar}>{this.renderThemeIcon()}</Box>
-            <Divider orientation="vertical" flexItem color="inherit" />
-            <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
-            <Divider orientation="vertical" flexItem color="inherit" />
-            <div className={classes.barAvatar}>{this.renderAuth()}</div>
+            {hasSelectedTenant ? (
+              <>
+                <Divider orientation="vertical" flexItem color="inherit" />
+                <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
+                <Divider orientation="vertical" flexItem color="inherit" />
+                <div className={classes.barAvatar}>{this.renderAuth()}</div>
+              </>
+            ) : null}
           </div>
         </div>
       </AppBar>

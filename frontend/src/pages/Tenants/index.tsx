@@ -8,7 +8,7 @@ import { RootState } from "reducers";
 import { connect } from "react-redux";
 import { KMLink } from "widgets/Link";
 import { Body } from "widgets/Label";
-import { composeTenantLink, getHasTenant, getKalmSaaSLink, isSameTenant } from "selectors/tenant";
+import { composeTenantLink, getHasSelectedTenant, getKalmSaaSLink, isSameTenant } from "selectors/tenant";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -20,12 +20,12 @@ const mapStateToProps = (state: RootState) => {
   const currentTenant = auth.tenant;
   const tenants = auth.tenants;
   const isLoading = auth.isLoading;
-  const hasTenant = getHasTenant(state);
+  const hasSelectedTenant = getHasSelectedTenant(state);
   return {
     isLoading,
     currentTenant,
     tenants,
-    hasTenant,
+    hasSelectedTenant,
   };
 };
 
@@ -40,7 +40,7 @@ class TenantsPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { currentTenant, tenants, isLoading, hasTenant } = this.props;
+    const { currentTenant, tenants, isLoading, hasSelectedTenant } = this.props;
 
     if (isLoading) {
       return <Loading />;
@@ -65,7 +65,7 @@ class TenantsPageRaw extends React.PureComponent<Props, State> {
           </Box>
         )}
 
-        {tenants.length > 0 && !hasTenant && (
+        {tenants.length > 0 && !hasSelectedTenant && (
           <Box p={2}>
             <Grid container spacing={2}>
               <Grid item xs={8} sm={8} md={8}>

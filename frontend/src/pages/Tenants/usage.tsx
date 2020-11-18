@@ -7,7 +7,6 @@ import { Loading } from "../../widgets/Loading";
 import { RootState } from "reducers";
 import { connect } from "react-redux";
 import { Body } from "widgets/Label";
-import { getHasTenant } from "selectors/tenant";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -18,11 +17,9 @@ const mapStateToProps = (state: RootState) => {
   const auth = state.auth;
   const currentTenant = auth.tenant;
   const isLoading = auth.isLoading;
-  const hasTenant = getHasTenant(state);
   return {
     isLoading,
     currentTenant,
-    hasTenant,
   };
 };
 

@@ -1,6 +1,6 @@
 import { RootState } from "reducers";
 
-export const getHasTenant = (state: RootState) => {
+export const getHasSelectedTenant = (state: RootState) => {
   return state.auth.tenant.length > 0;
 };
 

@@ -3,14 +3,14 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import clsx from "clsx";
 import { WithData } from "hoc/withData";
 import { TutorialDrawer } from "pages/Tutorial";
-import { RequireAuthorizated } from "permission/Authorization";
+import { RequireAuthorizated as RequireAuthorized } from "permission/Authorization";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { getHasTenant } from "selectors/tenant";
+import { getHasSelectedTenant } from "selectors/tenant";
 import { TDispatchProp } from "types";
 import { AppBarComponent } from "./AppBar";
-import { APP_BAR_HEIGHT, TOP_PROGRESS_ZINDEX, TUTORIAL_DRAWER_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "./Constants";
+import { APP_BAR_HEIGHT, LEFT_SECTION_OPEN_WIDTH, TOP_PROGRESS_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "./Constants";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { RootDrawer } from "./RootDrawer";
 
@@ -53,7 +53,7 @@ const mapStateToProps = (state: RootState) => {
   return {
     isShowTopProgress: state.settings.isShowTopProgress,
     showTutorialDrawer: state.tutorial.drawerOpen,
-    hasTenant: getHasTenant(state),
+    hasSelectedTenant: getHasSelectedTenant(state),
   };
 };
 
@@ -65,7 +65,7 @@ interface Props
 
 class DashboardLayoutRaw extends React.PureComponent<Props> {
   render() {
-    const { classes, children, isShowTopProgress, showTutorialDrawer, hasTenant } = this.props;
+    const { classes, children, isShowTopProgress, showTutorialDrawer, hasSelectedTenant } = this.props;
     return (
       <ErrorBoundary>
         <div className={classes.root}>
@@ -79,7 +79,7 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
             <AppBarComponent />
 
             <Box display="flex" flex="1" marginTop={APP_BAR_HEIGHT + "px"}>
-              {hasTenant && (
+              {hasSelectedTenant && (
                 <Box maxWidth={LEFT_SECTION_OPEN_WIDTH}>
                   <RootDrawer />
                 </Box>
@@ -90,7 +90,7 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
             </Box>
           </div>
 
-          {hasTenant && <TutorialDrawer />}
+          {hasSelectedTenant && <TutorialDrawer />}
 
           <WithData />
         </div>
@@ -99,4 +99,4 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
   }
 }
 
-export const DashboardLayout = withStyles(styles)(RequireAuthorizated(connect(mapStateToProps)(DashboardLayoutRaw)));
+export const DashboardLayout = withStyles(styles)(RequireAuthorized(connect(mapStateToProps)(DashboardLayoutRaw)));

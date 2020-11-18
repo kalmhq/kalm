@@ -8,7 +8,7 @@ import { RootState } from "reducers";
 import { Loading } from "widgets/Loading";
 import { getDisplayName } from "./utils";
 import { Box } from "@material-ui/core";
-import { getHasTenant } from "selectors/tenant";
+import { getHasSelectedTenant } from "selectors/tenant";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.auth;
@@ -17,7 +17,7 @@ const mapStateToProps = (state: RootState) => {
   const isLoading = auth.isLoading;
   const policies = auth.policies;
   const tenants = auth.tenants;
-  const hasTenant = getHasTenant(state);
+  const hasSelectedTenant = getHasSelectedTenant(state);
 
   return {
     isLoading,
@@ -25,7 +25,7 @@ const mapStateToProps = (state: RootState) => {
     firstLoaded,
     policies,
     tenants,
-    hasTenant,
+    hasSelectedTenant,
   };
 };
 
@@ -51,7 +51,7 @@ export const Authorizated = ({ mustAuthorized, mustNotAuthorized }: Options) => 
     }
 
     componentDidUpdate() {
-      const { firstLoaded, authorized, isLoading, policies, hasTenant, dispatch } = this.props;
+      const { firstLoaded, authorized, isLoading, policies, hasSelectedTenant, dispatch } = this.props;
 
       if (isLoading && !firstLoaded) {
         return;
@@ -61,7 +61,7 @@ export const Authorizated = ({ mustAuthorized, mustNotAuthorized }: Options) => 
         dispatch(push("/login"));
       }
 
-      if (authorized && !hasTenant) {
+      if (authorized && !hasSelectedTenant) {
         dispatch(push("/tenants"));
       }
 
