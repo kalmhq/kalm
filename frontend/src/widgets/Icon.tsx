@@ -32,17 +32,19 @@ import People from "@material-ui/icons/People";
 import Info from "@material-ui/icons/Info";
 import PeopleAdd from "@material-ui/icons/GroupAdd";
 import Impersonate from "@material-ui/icons/AccountCircle";
+import UsageIconRaw from "@material-ui/icons/DataUsage";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
 import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
 import clsx from "clsx";
 import SettingsBackupRestoreIcon from "@material-ui/icons/SettingsBackupRestore";
 import VpnKey from "@material-ui/icons/VpnKey";
+import { getDisplayName } from "permission/utils";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(1),
+      // padding: theme.spacing(1),
     },
     error: {
       color: theme.palette.error.main,
@@ -139,6 +141,20 @@ const getClassNameByColorName = (props: ColorIconsProps, defaultColor?: string) 
   }
   return className;
 };
+
+const wrapperIcon = (WrappedIcon: React.ComponentType<any>) => {
+  const KIcon: React.ComponentType<ColorIconsProps> = class extends React.Component<ColorIconsProps> {
+    render() {
+      const { fontSize, style } = this.props;
+      const className = getClassNameByColorName(this.props, "default");
+      return <WrappedIcon {...this.props} className={className} fontSize={fontSize} style={style} />;
+    }
+  };
+  KIcon.displayName = `KIcon(${getDisplayName(WrappedIcon)})`;
+  return withStyles(styles)(KIcon);
+};
+
+export const UsageIcon = wrapperIcon(UsageIconRaw);
 
 export const HelpIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
