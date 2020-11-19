@@ -258,6 +258,7 @@ workflows:
               only:
                 - master
                 - multiple-tenancy
+                - tenant-resource-evaluator
             tags:
               only: /^v.*/
       - deploy-dashboard:
@@ -269,6 +270,7 @@ workflows:
               only:
                 - master
                 - multiple-tenancy
+                - tenant-resource-evaluator
       #- deploy-auth-proxy:
       #    context: deploy-demo-cluster
       #    requires:
@@ -302,6 +304,7 @@ workflows:
               only:
                 - master
                 - multiple-tenancy
+                - tenant-resource-evaluator
             tags:
               only: /^v.*/
       - deploy-controller:
@@ -313,6 +316,7 @@ workflows:
               only:
                 - master
                 - multiple-tenancy
+                - tenant-resource-evaluator
   operator:
     jobs:
       - build-push-operator-image:
@@ -322,6 +326,7 @@ workflows:
               only:
                 - master
                 - multiple-tenancy
+                - tenant-resource-evaluator
             tags:
               only: /^v.*/
       - hold:
@@ -343,3 +348,4 @@ workflows:
               only:
                 - master
                 - multiple-tenancy
+                - tenant-resource-evaluator
