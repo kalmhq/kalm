@@ -3,11 +3,12 @@ package v1alpha1
 import (
 	"context"
 	"fmt"
+	"reflect"
+
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
-	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -66,34 +67,43 @@ func (e cntEvaluator) Usage(reqInfo AdmissionRequestInfo) (ResourceList, error) 
 	return ResourceList{e.ResourceName: *quantity}, nil
 }
 
-func getItems2Sum(obj runtime.Object, items []interface{}, op admissionv1beta1.Operation) []interface{} {
+func getItems2Sum(curObj runtime.Object, items []interface{}, op admissionv1beta1.Operation) []interface{} {
 
-	m := make(map[string]interface{})
-	m[getKey(obj)] = obj
+	itemMap := make(map[string]interface{})
+
+	curObjKey := getKey(curObj)
+	itemMap[curObjKey] = curObj
 
 	for i := range items {
 		item := items[i]
 
-		m[getKey2(item)] = item
+		if key, ok := tryGetResourceKey(item); ok {
+			itemMap[key] = item
+		}
 	}
 
 	isDelete := op == admissionv1beta1.Delete
 
 	var rst []interface{}
-	for _, cur := range m {
-		objMeta, err := meta.Accessor(cur)
+	for _, item := range itemMap {
+		objMeta, err := meta.Accessor(item)
 		if err == nil && objMeta.GetDeletionTimestamp() != nil {
 			continue
 		}
 
-		if getKey2(cur) == getKey2(obj) {
+		key, ok := tryGetResourceKey(item)
+		if !ok {
+			continue
+		}
+
+		if key == curObjKey {
 			// if deleting current resource, ignore in count
 			if isDelete {
 				continue
 			}
 		}
 
-		rst = append(rst, cur)
+		rst = append(rst, item)
 	}
 
 	return rst

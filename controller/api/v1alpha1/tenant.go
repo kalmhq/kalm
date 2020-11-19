@@ -216,35 +216,36 @@ func tryReCountAndUpdateResourceForTenant(tenantName string, resName ResourceNam
 func getKey(obj runtime.Object) string {
 	objMeta, err := meta.Accessor(obj)
 	if err != nil {
-		//todo, return err?
 		return ""
 	}
 
 	key := fmt.Sprintf("%s/%s", objMeta.GetNamespace(), objMeta.GetName())
 	return key
 }
-func getKey2(obj interface{}) string {
-	objMeta, err := meta.Accessor(obj)
-	if err == nil {
+
+// will try to get Name and Namespace info from obj
+// return false if no such info exist
+func tryGetResourceKey(obj interface{}) (string, bool) {
+	if objMeta, err := meta.Accessor(obj); err == nil {
 		key := fmt.Sprintf("%s/%s", objMeta.GetNamespace(), objMeta.GetName())
-		return key
+		return key, true
 	}
 
-	// reflect
+	// otherwise, try get field: Name & Namespace using reflect
 	bType := reflect.TypeOf(obj)
-	_, has1 := bType.FieldByName("Name")
-	_, has2 := bType.FieldByName("Namespace")
-	//fmt.Println("FFFFFFFFFFFF:", has1, has2, bType, getNameMeth, getNSMeth)
+	_, hasName := bType.FieldByName("Name")
+	_, hasNamespace := bType.FieldByName("Namespace")
 
-	if has1 && has2 {
+	if hasName && hasNamespace {
 		val := reflect.ValueOf(&obj).Elem().Elem()
 
 		name := val.FieldByName("Name")
 		ns := val.FieldByName("Namespace")
 
 		rst := fmt.Sprintf("%s/%s", ns, name)
-		return rst
+		return rst, true
 	}
 
-	return ""
+	tenantLog.Info("fail to get key of obj:", obj)
+	return "", false
 }
