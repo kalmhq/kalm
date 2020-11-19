@@ -6,7 +6,6 @@ import (
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -198,19 +197,6 @@ func reCountResource(currentObj runtime.Object, objList []runtime.Object, isDele
 	}
 
 	return cnt
-}
-
-func tryReCountAndUpdateResourceForTenant(tenantName string, resName ResourceName, currentObj runtime.Object, objList []runtime.Object, isDelete bool) error {
-
-	cnt := reCountResource(currentObj, objList, isDelete)
-
-	cntQuantity := resource.NewQuantity(int64(cnt), resource.DecimalSI)
-	fmt.Println("cntQuantity", cntQuantity, "resName", resName, "tenant", tenantName)
-	if err := SetTenantResourceByName(tenantName, resName, *cntQuantity); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func getKey(obj runtime.Object) string {

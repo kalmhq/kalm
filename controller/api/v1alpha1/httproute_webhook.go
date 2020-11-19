@@ -17,9 +17,10 @@ package v1alpha1
 
 import (
 	"fmt"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	"strconv"
 	"strings"
+
+	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -78,15 +79,6 @@ func (r *HttpRoute) ValidateCreate() error {
 		httproutelog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
 		return err
 	}
-	//var resList HttpRouteList
-	//if err := webhookClient.List(context.Background(), &resList, client.MatchingLabels{TenantNameLabelKey: tenantName}); err != nil {
-	//	return err
-	//}
-	//
-	//if err := tryReCountAndUpdateResourceForTenant(tenantName, ResourceHttpRoutesCount, r, httpRoutesToObjList(resList.Items), false); err != nil {
-	//	httproutelog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
-	//	return err
-	//}
 
 	return nil
 }
@@ -127,14 +119,6 @@ func (r *HttpRoute) ValidateDelete() error {
 	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		httproutelog.Error(err, "fail when try to release resource, ignored", "ns/name", getKey(r))
 	}
-	//var resList HttpRouteList
-	//if err := webhookClient.List(context.Background(), &resList, client.MatchingLabels{TenantNameLabelKey: tenantName}); err != nil {
-	//	return err
-	//}
-	//
-	//if err := tryReCountAndUpdateResourceForTenant(tenantName, ResourceHttpRoutesCount, r, httpRoutesToObjList(resList.Items), true); err != nil {
-	//	httproutelog.Error(err, "fail when try to release resource, ignored", "ns/name", getKey(r))
-	//}
 
 	return nil
 }

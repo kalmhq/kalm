@@ -68,10 +68,6 @@ func (r *DockerRegistry) ValidateCreate() error {
 		dockerregistrylog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
 		return err
 	}
-	//if err := tryReCountAndUpdateResourceForTenant(tenantName, ResourceDockerRegistriesCount, r, dockerRegistriesToObjList(dockerRegistries.Items), false); err != nil {
-	//	dockerregistrylog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
-	//	return err
-	//}
 
 	return nil
 }
@@ -114,9 +110,6 @@ func (r *DockerRegistry) ValidateDelete() error {
 	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		dockerregistrylog.Error(err, "fail when try to release resource, ignored", "ns/name", getKey(r))
 	}
-	//if err := tryReCountAndUpdateResourceForTenant(tenantName, ResourceDockerRegistriesCount, r, dockerRegistriesToObjList(dockerRegistries.Items), true); err != nil {
-	//	dockerregistrylog.Error(err, "fail when try to release resource, ignored", "ns/name", getKey(r))
-	//}
 
 	return nil
 }
