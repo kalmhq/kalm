@@ -266,6 +266,7 @@ func (suite *BasicSuite) SetupTestEnv(testEnv *envtest.Environment, disableWebho
 	suite.Require().Nil(NewProtectedEndpointReconciler(mgr).SetupWithManager(mgr))
 	suite.Require().Nil(NewProtectedEndpointReconciler(mgr).SetupWithManager(mgr))
 	suite.Require().Nil(NewDnsRecordReconciler(mgr, &FakeNsRecorder{}).SetupWithManager(mgr))
+	suite.Require().Nil(NewTenantReconciler(mgr).SetupWithManager(mgr))
 
 	v1alpha1.InitializeWebhookClient(mgr)
 	suite.Require().Nil((&v1alpha1.AccessToken{}).SetupWebhookWithManager(mgr))

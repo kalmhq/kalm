@@ -3,6 +3,8 @@ package controllers
 import (
 	"context"
 	"fmt"
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sort"
 	"strconv"
 
@@ -50,7 +52,10 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
-	r.reconcileDnsRecord(&tenant)
+	if err := r.reconcileTenantDefaultHttpsCert(&tenant); err != nil {
+		r.Recorder.Event(&tenant, corev1.EventTypeWarning, "Fail to reconcile tenant default https cert", err.Error())
+	}
+
 	surplusResource, noNegative := v1alpha1.GetSurplusResource(tenant)
 
 	if noNegative {
@@ -203,45 +208,44 @@ func (r *TenantReconciler) tryMarkComponentAsExceedingQuota(comp *v1alpha1.Compo
 	return r.Update(r.ctx, comp)
 }
 
-func (r *TenantReconciler) reconcileDnsRecord(tenant *v1alpha1.Tenant) {
-	var dnsRecordList v1alpha1.DnsRecordList
-
-	r.List(r.ctx, &dnsRecordList)
-	hasDnsRecord := false
-	for _, dnsRecord := range dnsRecordList.Items {
-		if dnsRecord.Spec.TenantName == tenant.Name {
-			hasDnsRecord = true
-			break
-		}
-	}
-
-	if hasDnsRecord == false {
-		dnsRecord := v1alpha1.DnsRecord{
-			ObjectMeta: ctrl.ObjectMeta{
-				Name: fmt.Sprintf("%s-dns-a-record", tenant.Name),
-				Labels: map[string]string{
-					"tenant": tenant.Name,
+func (r *TenantReconciler) reconcileTenantDefaultHttpsCert(tenant *v1alpha1.Tenant) error {
+	var defaultTenantHttpCert v1alpha1.HttpsCert
+	defaultTenantHttpCertName := getDefaultTenantHttpCertName(tenant.Name)
+	if err := r.Get(r.ctx, client.ObjectKey{Namespace: istioNamespace, Name: defaultTenantHttpCertName}, &defaultTenantHttpCert); err != nil {
+		if errors.IsNotFound(err) {
+			domains := getTenantDefaultDomains(tenant)
+			defaultTenantHttpCert = v1alpha1.HttpsCert{
+				ObjectMeta: v1.ObjectMeta{
+					Name: defaultTenantHttpCertName,
+					Labels: map[string]string{
+						v1alpha1.TenantNameLabelKey: tenant.Name,
+					},
 				},
-			},
-			Spec: v1alpha1.DnsRecordSpec{
-				TenantName: tenant.Name,
-				Type:       "A",
-				Name:       generateTentantDomain(),
-				Content:    getContent(),
-			},
+				Spec: v1alpha1.HttpsCertSpec{
+					HttpsCertIssuer: v1alpha1.DefaultDNS01IssuerName,
+					Domains:         domains,
+				},
+			}
+
+			if err := r.Create(r.ctx, &defaultTenantHttpCert); err != nil {
+				return err
+			}
+		} else {
+			return err
 		}
-
-		r.Client.Create(r.ctx, &dnsRecord)
-
-		// TODO create
 	}
+
+	return nil
 }
 
-// TODO
-func generateTentantDomain() string {
-	return fmt.Sprintf("")
+func getTenantDefaultDomains(tenant *v1alpha1.Tenant) []string {
+	clusterZone, dnsZone := getClusterZoneAndDnsZone()
+	tenantDnsRecordName := fmt.Sprintf("%s.%s.%s", tenant.Name, clusterZone, dnsZone)
+	dnsWildcardRecordName := fmt.Sprintf("*.%s.%s.%s", tenant.Name, clusterZone, dnsZone)
+
+	return []string{tenantDnsRecordName, dnsWildcardRecordName}
 }
 
-func getContent() string {
-	return ""
+func getDefaultTenantHttpCertName(tenantName string) string {
+	return fmt.Sprintf("%s-tenant-default-cert", tenantName)
 }

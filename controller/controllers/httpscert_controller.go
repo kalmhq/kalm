@@ -37,6 +37,7 @@ import (
 // HttpsCertReconciler reconciles a HttpsCert object
 type HttpsCertReconciler struct {
 	*BaseReconciler
+	ctx context.Context
 }
 
 func getCertAndCertSecretName(httpsCert corev1alpha1.HttpsCert) (certName string, certSecretName string) {
@@ -59,11 +60,13 @@ const istioNamespace = "istio-system"
 // +kubebuilder:rbac:groups=cert-manager.io,resources=certificates,verbs=get;list;watch;create;update;patch;delete
 
 func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
-
 	var httpsCert corev1alpha1.HttpsCert
-	if err := r.Get(ctx, req.NamespacedName, &httpsCert); err != nil {
+	if err := r.Get(r.ctx, req.NamespacedName, &httpsCert); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	if err := r.reconcileTenantDefaultDnsRecord(httpsCert); err != nil {
+		r.Recorder.Event(&httpsCert, corev1.EventTypeWarning, "Fail to reconcile tenant default dns record", err.Error())
 	}
 
 	_, certSecretName := getCertAndCertSecretName(httpsCert)
@@ -73,7 +76,7 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if httpsCert.Spec.IsSelfManaged {
 		// check if secret present
 		var certSec corev1.Secret
-		if err = r.Get(ctx, types.NamespacedName{
+		if err = r.Get(r.ctx, types.NamespacedName{
 			Name:      certSecretName,
 			Namespace: istioNamespace,
 		}, &certSec); err != nil {
@@ -105,7 +108,7 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			}
 		}
 
-		r.Status().Update(ctx, &httpsCert)
+		r.Status().Update(r.ctx, &httpsCert)
 	} else {
 		// if is wildcard cert, check if acme-dns is ready
 		if httpsCert.Spec.HttpsCertIssuer == corev1alpha1.DefaultDNS01IssuerName {
@@ -120,7 +123,7 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			}
 		}
 
-		err = r.reconcileForAutoManagedHttpsCert(ctx, httpsCert)
+		err = r.reconcileForAutoManagedHttpsCert(r.ctx, httpsCert)
 	}
 
 	return ctrl.Result{}, err
@@ -128,6 +131,7 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 func NewHttpsCertReconciler(mgr ctrl.Manager) *HttpsCertReconciler {
 	return &HttpsCertReconciler{
+		ctx:            context.Background(),
 		BaseReconciler: NewBaseReconciler(mgr, "HttpsCert"),
 	}
 }
@@ -171,6 +175,7 @@ func (r *HttpsCertReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(genSourceForObject(&corev1alpha1.ACMEServer{}), &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: ACMEServerMapper{*r},
 		}).
+		Watches(genSourceForObject(&corev1alpha1.Tenant{}), &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }
 
@@ -383,4 +388,111 @@ func ParseCert(certPEM string) (cert, intermediateCert *x509.Certificate, err er
 	}
 
 	return cert, nil, nil
+}
+
+func (r *HttpsCertReconciler) reconcileTenantDefaultDnsRecord(cert corev1alpha1.HttpsCert) error {
+	tenantName := cert.Labels[corev1alpha1.TenantNameLabelKey]
+
+	var dnsRecord corev1alpha1.DnsRecord
+	var dnsWildcardRecord corev1alpha1.DnsRecord
+	var dnsChallengeCnameRecord corev1alpha1.DnsRecord
+
+	tenantDnsRecordName := fmt.Sprintf("%s-dns-a-record", tenantName)
+	dnsWildcardRecordName := fmt.Sprintf("%s-dns-wildcard-record", tenantName)
+	dnsChallengeCnameRecordName := fmt.Sprintf("%s-dns-challengecname-record", tenantName)
+
+	kalmIngressIp := getKalmIngressIp()
+	clusterZone, dnsZone := getClusterZoneAndDnsZone()
+	if err := r.Get(r.ctx, client.ObjectKey{Name: tenantDnsRecordName}, &dnsRecord); err != nil {
+		if errors.IsNotFound(err) {
+			dnsRecord = corev1alpha1.DnsRecord{
+				ObjectMeta: ctrl.ObjectMeta{
+					Name: tenantDnsRecordName,
+					Labels: map[string]string{
+						"tenant": tenantName,
+					},
+				},
+				Spec: corev1alpha1.DnsRecordSpec{
+					TenantName: tenantName,
+					Type:       "A",
+					Name:       fmt.Sprintf("%s.%s.%s", tenantName, clusterZone, dnsZone),
+					Content:    kalmIngressIp,
+				},
+			}
+
+			if err := ctrl.SetControllerReference(&cert, &dnsRecord, r.Scheme); err != nil {
+				return err
+			}
+
+			if err := r.Client.Create(r.ctx, &dnsRecord); err != nil {
+				return err
+			}
+		}
+	}
+
+	if err := r.Get(r.ctx, client.ObjectKey{Name: dnsWildcardRecordName}, &dnsWildcardRecord); err != nil {
+		if errors.IsNotFound(err) {
+			dnsWildcardRecord := corev1alpha1.DnsRecord{
+				ObjectMeta: ctrl.ObjectMeta{
+					Name: dnsWildcardRecordName,
+					Labels: map[string]string{
+						"tenant": tenantName,
+					},
+				},
+				Spec: corev1alpha1.DnsRecordSpec{
+					TenantName: tenantName,
+					Type:       "A",
+					Name:       fmt.Sprintf("*.%s.%s.%s", tenantName, clusterZone, dnsZone),
+					Content:    kalmIngressIp,
+				},
+			}
+
+			if err := ctrl.SetControllerReference(&cert, &dnsWildcardRecord, r.Scheme); err != nil {
+				return err
+			}
+
+			if err := r.Client.Create(r.ctx, &dnsWildcardRecord); err != nil {
+				return err
+			}
+		}
+	}
+
+	if err := r.Get(r.ctx, client.ObjectKey{Name: dnsChallengeCnameRecordName}, &dnsChallengeCnameRecord); err != nil {
+		if errors.IsNotFound(err) {
+			cname := cert.Status.WildcardCertDNSChallengeDomainMap[fmt.Sprintf("%s.%s.%s", tenantName, clusterZone, dnsZone)]
+			dnsChallengeCnameRecord := corev1alpha1.DnsRecord{
+				ObjectMeta: ctrl.ObjectMeta{
+					Name: dnsChallengeCnameRecordName,
+					Labels: map[string]string{
+						"tenant": tenantName,
+					},
+				},
+				Spec: corev1alpha1.DnsRecordSpec{
+					TenantName: tenantName,
+					Type:       "A",
+					Name:       fmt.Sprintf("_acme-challenge.%s.%s.%s", tenantName, clusterZone, dnsZone),
+					Content:    cname,
+				},
+			}
+
+			if err := ctrl.SetControllerReference(&cert, &dnsWildcardRecord, r.Scheme); err != nil {
+				return err
+			}
+
+			if err := r.Client.Create(r.ctx, &dnsChallengeCnameRecord); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func getKalmIngressIp() string {
+	return ""
+}
+
+// TODO
+func getClusterZoneAndDnsZone() (string, string) {
+	return "asia-northeast3", "kapp.live"
 }
