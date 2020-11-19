@@ -24,7 +24,6 @@ func initEvaluatorRegistry() {
 
 	evaluators := make(map[schema.GroupKind]TenantEvaluator)
 
-	//todo use schema info instead of hard code
 	nsGK := schema.GroupKind{Group: "", Kind: "Namespace"}
 	evaluators[nsGK] = nsEvaluator{}
 
@@ -65,7 +64,7 @@ func initEvaluatorRegistry() {
 
 func GetTenantEvaluator(gr schema.GroupKind) (TenantEvaluator, bool) {
 	v, exist := evaluatorRegistry.evaluators[gr]
-	fmt.Println("<<<<<<", gr, v, exist)
+	tenantLog.Info("GetTenantEvaluator", "gr", gr, "evalutator", v, "exist", exist)
 	return v, exist
 }
 
@@ -147,7 +146,7 @@ func CheckAndUpdateTenant(tenantName string, reqInfo AdmissionRequestInfo, remai
 		return fmt.Errorf("fail the tenant check, err: %s", err)
 	}
 
-	if noResourceChanged(newTenant, *tenant) {
+	if isResourceUsageExactlySame(newTenant, *tenant) {
 		return nil
 	}
 
@@ -164,9 +163,27 @@ func CheckAndUpdateTenant(tenantName string, reqInfo AdmissionRequestInfo, remai
 	return nil
 }
 
-func noResourceChanged(a, b Tenant) bool {
-	//todo
-	return false
+// check if resource usage of the two tenant is exactly the same
+func isResourceUsageExactlySame(a, b Tenant) bool {
+	resourceNames := make(map[ResourceName]interface{})
+
+	for resName := range a.Status.UsedResourceQuota {
+		resourceNames[resName] = true
+	}
+	for resName := range b.Status.UsedResourceQuota {
+		resourceNames[resName] = true
+	}
+
+	for resName := range resourceNames {
+		aQuantity := a.Status.UsedResourceQuota[resName]
+		bQuantity := b.Status.UsedResourceQuota[resName]
+
+		if aQuantity.Cmp(bQuantity) != 0 {
+			return false
+		}
+	}
+
+	return true
 }
 
 func reCountResource(currentObj runtime.Object, objList []runtime.Object, isDelete bool) int {
