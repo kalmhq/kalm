@@ -192,34 +192,33 @@ func (v *PodAdmissionHandler) HandleCreate(ctx context.Context, req admission.Re
 		return admission.Errored(http.StatusBadRequest, err)
 	}
 
-	// exist podList + the pod to be created
-	sum := getResourceListSumOfPods(append(podList.Items, pod))
+	reqInfo := v1alpha1.NewAdmissionRequestInfo(&pod, req.Operation, req.DryRun != nil && *req.DryRun)
 
-	if err := v1alpha1.SetTenantResourceListByName(tenantName, sum); err != nil {
-		logger.Error(err, "fail to allocate res for tenant, CREATE", "tenant", tenantName, "sum", sum)
+	if err := v1alpha1.CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
+		logger.Error(err, "fail to allocate res for tenant, CREATE", "tenant", tenantName)
 
-		ns := pod.Namespace
-		componentName := pod.Labels[v1alpha1.KalmLabelComponentKey]
+		if err == v1alpha1.ExceedingQuotaError {
+			ns := pod.Namespace
+			componentName := pod.Labels[v1alpha1.KalmLabelComponentKey]
 
-		var component v1alpha1.Component
-		if err := v.client.Get(context.Background(), client.ObjectKey{Namespace: ns, Name: componentName}, &component); err != nil {
-			logger.Error(err, "fail to find component for this pod", "component", componentName)
-			return admission.Errored(http.StatusBadRequest, err)
-		}
+			var component v1alpha1.Component
+			if err := v.client.Get(context.Background(), client.ObjectKey{Namespace: ns, Name: componentName}, &component); err != nil {
+				logger.Error(err, "fail to find component for this pod", "component", componentName)
+				return admission.Errored(http.StatusBadRequest, err)
+			}
 
-		// fire a warning event
-		msg := fmt.Sprintf("fail when trying to allocate resource for pod of component, err: %s", err)
-		v.emitWarningEvent(&component, v1alpha1.ReasonExceedingQuota, msg)
+			// fire a warning event
+			msg := fmt.Sprintf("fail when trying to allocate resource for pod of component, err: %s", err)
+			v.emitWarningEvent(&component, v1alpha1.ReasonExceedingQuota, msg)
 
-		// codereview from david: @mingmin
-		// should we use component status instead of labels?
-		if err := v.tryLabelComponentAsExceedingQuota(ns, component); err != nil {
-			logger.Error(err, "fail to mark component as exceeding quota, ignored", "component", componentName)
+			if err := v.tryLabelComponentAsExceedingQuota(ns, component); err != nil {
+				logger.Error(err, "fail to mark component as exceeding quota, ignored", "component", componentName)
+			}
 		}
 
 		return admission.Errored(http.StatusBadRequest, err)
 	} else {
-		logger.Info("pod resource updated for create", "tenant", tenantName, "newQuantity", sum)
+		logger.Info("pod resource updated for create", "tenant", tenantName)
 	}
 
 	return admission.Allowed("")
@@ -257,36 +256,13 @@ func (v *PodAdmissionHandler) HandleDelete(ctx context.Context, req admission.Re
 		return admission.Allowed("")
 	}
 
-	var podList corev1.PodList
-	if err := v.client.List(ctx, &podList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenantName}); err != nil {
-		return admission.Errored(http.StatusInternalServerError, err)
-	}
+	reqInfo := v1alpha1.NewAdmissionRequestInfo(&pod, req.Operation, req.DryRun != nil && *req.DryRun)
 
-	// exist podList - the pod been deleted
-	sumExceptPodBeenDeleted := v1alpha1.ResourceList{
-		v1alpha1.ResourceCPU:    resource.MustParse("0"),
-		v1alpha1.ResourceMemory: resource.MustParse("0"),
-	}
-
-	for _, tmpPod := range podList.Items {
-		if pod.Namespace == tmpPod.Namespace && pod.Name == tmpPod.Name {
-			// ignore pod been deleted
-			continue
-		}
-
-		// ignore other deleted pods
-		if pod.DeletionTimestamp != nil && pod.DeletionTimestamp.Unix() > 0 {
-			continue
-		}
-
-		sumExceptPodBeenDeleted = sumOfResourceList(sumExceptPodBeenDeleted, getResourceOfPod(pod))
-	}
-
-	if err := v1alpha1.SetTenantResourceListByName(tenantName, sumExceptPodBeenDeleted); err != nil {
+	if err := v1alpha1.CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		// should not DENY delete pod
-		logger.Info("fail to update res for tenant, DELETE", "tenant", tenantName, "err", err, "sum", sumExceptPodBeenDeleted)
+		logger.Info("fail to update res for tenant, DELETE", "tenant", tenantName, "err", err)
 	} else {
-		logger.Info("pod resource updated for delete", "tenant", tenantName, "newQuantity", sumExceptPodBeenDeleted)
+		logger.Info("pod resource updated for delete", "tenant", tenantName)
 	}
 
 	return admission.Allowed("")

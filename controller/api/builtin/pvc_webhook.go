@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"k8s.io/api/admission/v1beta1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
@@ -85,26 +84,12 @@ func (v *PVCAdmissionHandler) HandleCreate(ctx context.Context, req admission.Re
 		return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
 	}
 
-	var tenantPVCList corev1.PersistentVolumeClaimList
-	if err := v.client.List(ctx, &tenantPVCList, client.MatchingLabels{
-		v1alpha1.TenantNameLabelKey: pvcTenantName,
-	}); err != nil {
+	reqInfo := v1alpha1.NewAdmissionRequestInfo(&pvc, req.Operation, req.DryRun != nil && *req.DryRun)
+	if err := v1alpha1.CheckAndUpdateTenant(pvcTenantName, reqInfo, 3); err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
+	} else {
+		pvcAdmissionHandlerLog.Info("pvc occupation updated for create", "tenant", pvcTenantName)
 	}
-
-	var size resource.Quantity
-	for _, tmpPVC := range tenantPVCList.Items {
-		size.Add(*tmpPVC.Spec.Resources.Requests.Storage())
-	}
-
-	// and current pvc
-	size.Add(*pvc.Spec.Resources.Requests.Storage())
-
-	if err := v1alpha1.SetTenantResourceByName(pvcTenantName, v1alpha1.ResourceStorage, size); err != nil {
-		return admission.Errored(http.StatusBadRequest, err)
-	}
-
-	pvcAdmissionHandlerLog.Info("pvc occupation updated for create", "tenant", pvcTenantName, "newOccupation", size)
 
 	return admission.Allowed("")
 }
@@ -137,33 +122,13 @@ func (v *PVCAdmissionHandler) HandleDelete(ctx context.Context, req admission.Re
 		return admission.Allowed("")
 	}
 
-	var tenantPVCList corev1.PersistentVolumeClaimList
-	if err := v.client.List(ctx, &tenantPVCList, client.MatchingLabels{
-		v1alpha1.TenantNameLabelKey: pvcTenantName,
-	}); err != nil {
-		return admission.Errored(http.StatusBadRequest, err)
-	}
-
-	var size resource.Quantity
-	for _, tmpPVC := range tenantPVCList.Items {
-		// ignore pvc being deleted
-		if tmpPVC.Name == pvc.Name {
-			continue
-		}
-
-		if tmpPVC.DeletionTimestamp != nil && tmpPVC.DeletionTimestamp.Unix() > 0 {
-			continue
-		}
-
-		size.Add(*pvc.Spec.Resources.Requests.Storage())
-	}
-
-	if err := v1alpha1.SetTenantResourceByName(pvcTenantName, v1alpha1.ResourceStorage, size); err != nil {
+	reqInfo := v1alpha1.NewAdmissionRequestInfo(&pvc, req.Operation, req.DryRun != nil && *req.DryRun)
+	if err := v1alpha1.CheckAndUpdateTenant(pvcTenantName, reqInfo, 3); err != nil {
 		pvcAdmissionHandlerLog.Error(err, "fail to update resource for tenant, ignored", "ns/name", fmt.Sprintf("%s/%s", pvc.Namespace, pvc.Name))
 		return admission.Allowed("")
 	}
 
-	pvcAdmissionHandlerLog.Info("pvc occupation updated for delete", "tenant", pvcTenantName, "newOccupation", size)
+	pvcAdmissionHandlerLog.Info("pvc occupation updated for delete", "tenant", pvcTenantName)
 
 	return admission.Allowed("")
 }

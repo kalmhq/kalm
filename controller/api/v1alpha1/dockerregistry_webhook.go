@@ -16,15 +16,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
-	"fmt"
-
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
@@ -64,13 +59,12 @@ func (r *DockerRegistry) ValidateCreate() error {
 	}
 
 	tenantName := r.Labels[TenantNameLabelKey]
-
-	var dockerRegistries DockerRegistryList
-	if err := webhookClient.List(context.Background(), &dockerRegistries, client.MatchingLabels{TenantNameLabelKey: tenantName}); err != nil {
-		return err
+	if tenantName == "" {
+		return NoTenantFoundError
 	}
 
-	if err := tryReCountAndUpdateResourceForTenant(tenantName, ResourceDockerRegistriesCount, r, dockerRegistriesToObjList(dockerRegistries.Items), false); err != nil {
+	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Create, false)
+	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		dockerregistrylog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
 		return err
 	}
@@ -78,9 +72,10 @@ func (r *DockerRegistry) ValidateCreate() error {
 	return nil
 }
 
-func dockerRegistriesToObjList(items []DockerRegistry) []metav1.Object {
-	var rst []metav1.Object
-	for _, item := range items {
+func dockerRegistriesToObjList(items []DockerRegistry) []runtime.Object {
+	var rst []runtime.Object
+	for i := range items {
+		item := items[i]
 		rst = append(rst, &item)
 	}
 	return rst
@@ -111,56 +106,12 @@ func (r *DockerRegistry) ValidateDelete() error {
 		return nil
 	}
 
-	var dockerRegistries DockerRegistryList
-	if err := webhookClient.List(context.Background(), &dockerRegistries, client.MatchingLabels{TenantNameLabelKey: tenantName}); err != nil {
-		return err
-	}
-
-	if err := tryReCountAndUpdateResourceForTenant(tenantName, ResourceDockerRegistriesCount, r, dockerRegistriesToObjList(dockerRegistries.Items), true); err != nil {
+	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Delete, false)
+	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		dockerregistrylog.Error(err, "fail when try to release resource, ignored", "ns/name", getKey(r))
 	}
 
 	return nil
-}
-
-func tryReCountAndUpdateResourceForTenant(tenantName string, resName ResourceName, currentObj metav1.Object, objList []metav1.Object, isDelete bool) error {
-
-	resMap := make(map[string]metav1.Object)
-
-	resMap[getKey(currentObj)] = currentObj
-	for _, obj := range objList {
-		resMap[getKey(obj)] = obj
-	}
-
-	var cnt int
-	for _, cur := range resMap {
-		// ignore resource being deleted
-		if cur.GetDeletionTimestamp() != nil {
-			continue
-		}
-
-		if getKey(cur) == getKey(currentObj) {
-			// if deleting current resource, ignore in count
-			if isDelete {
-				continue
-			}
-		}
-
-		cnt++
-	}
-
-	cntQuantity := resource.NewQuantity(int64(cnt), resource.DecimalSI)
-	fmt.Println("cntQuantity", cntQuantity, "resName", resName, "tenant", tenantName)
-	if err := SetTenantResourceByName(tenantName, resName, *cntQuantity); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func getKey(obj metav1.Object) string {
-	key := fmt.Sprintf("%s/%s", obj.GetNamespace(), obj.GetName())
-	return key
 }
 
 func (r *DockerRegistry) validate() error {
