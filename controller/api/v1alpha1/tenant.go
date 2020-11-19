@@ -115,6 +115,10 @@ func checkAdmissionRequestAgainstTenant(tenant Tenant, reqInfo AdmissionRequestI
 		}
 	}
 
+	if tenantCopy.Status.UsedResourceQuota == nil {
+		tenantCopy.Status.UsedResourceQuota = make(ResourceList)
+	}
+
 	for resName, quantity := range resourceList {
 		tenantCopy.Status.UsedResourceQuota[resName] = quantity
 	}
