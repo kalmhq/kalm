@@ -34,8 +34,7 @@ func (suite *DnsRecordControllerTestSuite) SetupTest() {
 }
 
 func (suite *PSPSuite) TestCreateDnsRecordControllerWhenCreateTenant() {
-	err := godotenv.Load("../.env")
-	suite.Nil(err)
+	_ := godotenv.Load("../.env")
 
 	if os.Getenv("ClusterZone") == "" {
 		fmt.Println("cluster info envs not set")

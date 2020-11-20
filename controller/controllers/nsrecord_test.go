@@ -42,8 +42,7 @@ func (suite *DnsRecordTestSuite) TestCreateDnsRecordWhenCreateTenant() {
 	suite.EqualValues("get cluster info fail", err.Error())
 	suite.EqualValues(false, dnsRecorder.Ready)
 
-	err = godotenv.Load("../.env")
-	suite.Nil(err)
+	_ = godotenv.Load("../.env")
 
 	if os.Getenv("ClusterZone") == "" {
 		fmt.Println("cluster info envs not set")
