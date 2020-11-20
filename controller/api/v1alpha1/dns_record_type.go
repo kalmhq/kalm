@@ -36,8 +36,9 @@ type DnsRecordSpec struct {
 
 // DnsRecordStatus defines the observed state of DnsRecord
 type DnsRecordStatus struct {
-	Message string `json:"message"`
-	Status  string `json:"status"`
+	RecordID string `json:"recordID,omitempty"`
+	Message  string `json:"message,omitempty"`
+	Status   string `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true

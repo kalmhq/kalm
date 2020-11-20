@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sort"
@@ -213,7 +212,10 @@ func (r *TenantReconciler) reconcileTenantDefaultHttpsCert(tenant *v1alpha1.Tena
 	defaultTenantHttpCertName := getDefaultTenantHttpCertName(tenant.Name)
 	if err := r.Get(r.ctx, client.ObjectKey{Namespace: istioNamespace, Name: defaultTenantHttpCertName}, &defaultTenantHttpCert); err != nil {
 		if errors.IsNotFound(err) {
-			domains := getTenantDefaultDomains(tenant)
+			domains, err := getTenantDefaultDomains(r.Client, tenant.Name)
+			if err != nil {
+				return err
+			}
 			defaultTenantHttpCert = v1alpha1.HttpsCert{
 				ObjectMeta: v1.ObjectMeta{
 					Name: defaultTenantHttpCertName,
@@ -227,6 +229,10 @@ func (r *TenantReconciler) reconcileTenantDefaultHttpsCert(tenant *v1alpha1.Tena
 				},
 			}
 
+			if err := ctrl.SetControllerReference(tenant, &defaultTenantHttpCert, r.Scheme); err != nil {
+				return err
+			}
+
 			if err := r.Create(r.ctx, &defaultTenantHttpCert); err != nil {
 				return err
 			}
@@ -236,16 +242,4 @@ func (r *TenantReconciler) reconcileTenantDefaultHttpsCert(tenant *v1alpha1.Tena
 	}
 
 	return nil
-}
-
-func getTenantDefaultDomains(tenant *v1alpha1.Tenant) []string {
-	clusterZone, dnsZone := getClusterZoneAndDnsZone()
-	tenantDnsRecordName := fmt.Sprintf("%s.%s.%s", tenant.Name, clusterZone, dnsZone)
-	dnsWildcardRecordName := fmt.Sprintf("*.%s.%s.%s", tenant.Name, clusterZone, dnsZone)
-
-	return []string{tenantDnsRecordName, dnsWildcardRecordName}
-}
-
-func getDefaultTenantHttpCertName(tenantName string) string {
-	return fmt.Sprintf("%s-tenant-default-cert", tenantName)
 }

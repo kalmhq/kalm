@@ -401,8 +401,15 @@ func (r *HttpsCertReconciler) reconcileTenantDefaultDnsRecord(cert corev1alpha1.
 	dnsWildcardRecordName := fmt.Sprintf("%s-dns-wildcard-record", tenantName)
 	dnsChallengeCnameRecordName := fmt.Sprintf("%s-dns-challengecname-record", tenantName)
 
-	kalmIngressIp := getKalmIngressIp()
-	clusterZone, dnsZone := getClusterZoneAndDnsZone()
+	var kalmIngressIp, clusterZone, dnsZone string
+	if clusterInfo, err := getClusterInfo(r.Client); err != nil || !clusterInfo.IsValid() {
+		return fmt.Errorf("get cluster info error")
+	} else {
+		kalmIngressIp = clusterInfo.ClusterIngresIp
+		clusterZone = clusterInfo.ClusterZone
+		dnsZone = clusterInfo.DnsZone
+	}
+
 	if err := r.Get(r.ctx, client.ObjectKey{Name: tenantDnsRecordName}, &dnsRecord); err != nil {
 		if errors.IsNotFound(err) {
 			dnsRecord = corev1alpha1.DnsRecord{
@@ -460,6 +467,10 @@ func (r *HttpsCertReconciler) reconcileTenantDefaultDnsRecord(cert corev1alpha1.
 	if err := r.Get(r.ctx, client.ObjectKey{Name: dnsChallengeCnameRecordName}, &dnsChallengeCnameRecord); err != nil {
 		if errors.IsNotFound(err) {
 			cname := cert.Status.WildcardCertDNSChallengeDomainMap[fmt.Sprintf("%s.%s.%s", tenantName, clusterZone, dnsZone)]
+			if cname == "" {
+				return fmt.Errorf("get tenant wildcard nds cname error")
+			}
+
 			dnsChallengeCnameRecord := corev1alpha1.DnsRecord{
 				ObjectMeta: ctrl.ObjectMeta{
 					Name: dnsChallengeCnameRecordName,
@@ -469,7 +480,7 @@ func (r *HttpsCertReconciler) reconcileTenantDefaultDnsRecord(cert corev1alpha1.
 				},
 				Spec: corev1alpha1.DnsRecordSpec{
 					TenantName: tenantName,
-					Type:       "A",
+					Type:       "CNAME",
 					Name:       fmt.Sprintf("_acme-challenge.%s.%s.%s", tenantName, clusterZone, dnsZone),
 					Content:    cname,
 				},
@@ -488,11 +499,6 @@ func (r *HttpsCertReconciler) reconcileTenantDefaultDnsRecord(cert corev1alpha1.
 	return nil
 }
 
-func getKalmIngressIp() string {
-	return ""
-}
-
-// TODO
-func getClusterZoneAndDnsZone() (string, string) {
-	return "asia-northeast3", "kapp.live"
+func getDefaultTenantHttpCertName(tenantName string) string {
+	return fmt.Sprintf("%s-tenant-default-cert", tenantName)
 }

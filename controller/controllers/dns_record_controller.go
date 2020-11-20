@@ -78,14 +78,9 @@ func (d DnsRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			return ctrl.Result{}, err
 		}
 		dnsRecord.Status.Status = "ready"
-		d.Status().Update(d.ctx, &dnsRecord)
-	//case "pending":
-	//	if ready, err := d.DnsRecorder.CheckDnsRecordReady(&dnsRecord); err != nil {
-	//		return ctrl.Result{}, err
-	//	} else if ready == true {
-	//		dnsRecord.Status.Status = "ready"
-	//	}
-
+		if err := d.Status().Update(d.ctx, &dnsRecord); err != nil {
+			return ctrl.Result{}, err
+		}
 	case "ready":
 	default:
 
