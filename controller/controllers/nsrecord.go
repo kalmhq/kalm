@@ -155,7 +155,7 @@ func getTenantDefaultDomains(client client.Client, tenantName string) ([]string,
 func InitCloudflareNsRecorder(client client.Client) (*CloudflareNsRecorder, error) {
 	cloudflareNsRecorder := &CloudflareNsRecorder{Client: client, Ready: false}
 
-	return cloudflareNsRecorder.completeRecorder()
+	return cloudflareNsRecorder, nil
 }
 
 type FakeNsRecorder struct {
