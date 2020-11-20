@@ -1,4 +1,4 @@
-import { Box, createStyles, Grid, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Avatar, Box, createStyles, Divider, Grid, Theme, WithStyles, withStyles } from "@material-ui/core";
 import React from "react";
 import { TDispatchProp } from "types";
 import { KPanel } from "widgets/KPanel";
@@ -8,10 +8,22 @@ import { RootState } from "reducers";
 import { connect } from "react-redux";
 import { KMLink } from "widgets/Link";
 import { Body } from "widgets/Label";
+import {
+  composeTenantLink,
+  getHasSelectedTenant,
+  getKalmSaaSLink,
+  getUserAvatar,
+  getUserEmail,
+  isSameTenant,
+} from "selectors/tenant";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
+    large: {
+      width: theme.spacing(9),
+      height: theme.spacing(9),
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -19,11 +31,16 @@ const mapStateToProps = (state: RootState) => {
   const currentTenant = auth.tenant;
   const tenants = auth.tenants;
   const isLoading = auth.isLoading;
-
+  const hasSelectedTenant = getHasSelectedTenant(state);
+  const email = getUserEmail(state);
+  const avatarUrl = getUserAvatar(state);
   return {
     isLoading,
     currentTenant,
     tenants,
+    hasSelectedTenant,
+    avatarUrl,
+    email,
   };
 };
 
@@ -37,64 +54,65 @@ class TenantsPageRaw extends React.PureComponent<Props, State> {
     this.state = {};
   }
 
+  private renderUserInfo = () => {
+    const { avatarUrl, email, classes } = this.props;
+
+    return (
+      <>
+        {!avatarUrl && <Avatar src={avatarUrl} className={classes.large} />}
+        <Body>Welcome {email}, please select the cluster you want to use</Body>
+      </>
+    );
+  };
+
   public render() {
-    const { currentTenant, tenants, isLoading } = this.props;
+    const { currentTenant, tenants, isLoading, hasSelectedTenant } = this.props;
 
     if (isLoading) {
       return <Loading />;
     }
 
+    // FIXME: Aladdin comment, If a user has already selected a cluster, do I need force redirect to the home page?
+
     return (
       <BasePage>
-        {currentTenant && (
+        {tenants.length > 0 && !hasSelectedTenant && (
           <Box p={2}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={12} md={12}>
-                <KPanel title="Current Kalm Usage">
-                  <Box display={"flex"} flexDirection={"column"} alignItems={"center"} p={2}>
-                    <Body>{currentTenant}</Body>
-                    <Body>CPU xxx</Body>
-                    <Body>Memory xxx</Body>
-                    <Body>Seats xxx</Body>
+              <Grid item xs={8} sm={8} md={8}>
+                <KPanel>
+                  <Box display={"flex"} flexDirection={"column"} p={2}>
+                    {this.renderUserInfo()}
+                    <Divider />
+                    {tenants.length > 0 ? (
+                      tenants.map((t, index) => {
+                        const url = composeTenantLink(t);
+                        return (
+                          <Box m={1} key={index}>
+                            {isSameTenant(t, currentTenant) ? (
+                              <Body>current: {t}</Body>
+                            ) : (
+                              <KMLink rel="noopener noreferrer" href={url} target={"_self"}>
+                                click to open {t}
+                              </KMLink>
+                            )}
+                          </Box>
+                        );
+                      })
+                    ) : (
+                      <>
+                        You don't have any kalm, please go to Kalm SaaS to subscript new plan.{" "}
+                        <KMLink href={getKalmSaaSLink()} target={"_blank"}>
+                          Open Kalm SaaS
+                        </KMLink>{" "}
+                      </>
+                    )}
                   </Box>
                 </KPanel>
               </Grid>
             </Grid>
           </Box>
         )}
-
-        <Box p={2}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={12} md={12}>
-              <KPanel title="Select Target Kalm">
-                <Box display={"flex"} flexDirection={"column"} alignItems={"center"} p={2}>
-                  {tenants.length > 0 ? (
-                    tenants.map((t, index) => {
-                      const tenantId = t.split("/")[1];
-                      return (
-                        <Box m={1} key={index}>
-                          {t.indexOf(currentTenant) > 0 ? (
-                            t
-                          ) : (
-                            <KMLink
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              href={"https://" + tenantId + ".asia-northeast3.kapp.live"}
-                            >
-                              {t}
-                            </KMLink>
-                          )}
-                        </Box>
-                      );
-                    })
-                  ) : (
-                    <>You don't have any kalm, please go to kalm-saas to subscript kalm</>
-                  )}
-                </Box>
-              </KPanel>
-            </Grid>
-          </Grid>
-        </Box>
       </BasePage>
     );
   }

@@ -19,8 +19,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 
-	"k8s.io/apimachinery/pkg/api/resource"
 	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -62,9 +62,21 @@ func (r *AccessToken) ValidateCreate() error {
 		return err
 	}
 
-	if err := AllocateTenantResource(r, ResourceAccessTokensCount, resource.MustParse("1")); err != nil {
+	tenantName, err := GetTenantNameFromObj(r)
+	if err != nil {
+		return err
+	} else if tenantName == "" {
+		return NoTenantFoundError
+	}
+
+	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Create, false)
+	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
+		dockerregistrylog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
 		return err
 	}
+	//if err := AllocateTenantResource(r, ResourceAccessTokensCount, resource.MustParse("1")); err != nil {
+	//	return err
+	//}
 
 	return nil
 }
@@ -109,9 +121,22 @@ func GetAccessTokenNameFromToken(token string) string {
 func (r *AccessToken) ValidateDelete() error {
 	accesstokenlog.Info("validate delete", "name", r.Name)
 
-	if err := ReleaseTenantResource(r, ResourceAccessTokensCount, resource.MustParse("1")); err != nil {
+	tenantName, err := GetTenantNameFromObj(r)
+	if err != nil {
+		accesstokenlog.Error(err, "ignored")
+		return nil
+	} else if tenantName == "" {
+		accesstokenlog.Error(err, "no tenant name, ignored", "ns/name", getKey(r))
+		return nil
+	}
+
+	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Delete, false)
+	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		accesstokenlog.Error(err, "fail to release AccessTokenCnt, ignored", "name", r.Name)
 	}
+	//if err := ReleaseTenantResource(r, ResourceAccessTokensCount, resource.MustParse("1")); err != nil {
+	//	accesstokenlog.Error(err, "fail to release AccessTokenCnt, ignored", "name", r.Name)
+	//}
 
 	return nil
 }
@@ -156,3 +181,5 @@ func (r *AccessToken) validate() error {
 
 	return rst
 }
+
+// type AccessToken

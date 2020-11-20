@@ -16,15 +16,14 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 	"strings"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
@@ -75,12 +74,8 @@ func (r *HttpRoute) ValidateCreate() error {
 	// limit the count of routes
 	tenantName := r.Labels[TenantNameLabelKey]
 
-	var resList HttpRouteList
-	if err := webhookClient.List(context.Background(), &resList, client.MatchingLabels{TenantNameLabelKey: tenantName}); err != nil {
-		return err
-	}
-
-	if err := tryReCountAndUpdateResourceForTenant(tenantName, ResourceHttpRoutesCount, r, httpRoutesToObjList(resList.Items), false); err != nil {
+	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Create, false)
+	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		httproutelog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
 		return err
 	}
@@ -88,8 +83,8 @@ func (r *HttpRoute) ValidateCreate() error {
 	return nil
 }
 
-func httpRoutesToObjList(items []HttpRoute) []metav1.Object {
-	var rst []metav1.Object
+func httpRoutesToObjList(items []HttpRoute) []runtime.Object {
+	var rst []runtime.Object
 	for i := 0; i < len(items); i++ {
 		item := items[i]
 		rst = append(rst, &item)
@@ -120,12 +115,8 @@ func (r *HttpRoute) ValidateDelete() error {
 
 	tenantName := r.Labels[TenantNameLabelKey]
 
-	var resList HttpRouteList
-	if err := webhookClient.List(context.Background(), &resList, client.MatchingLabels{TenantNameLabelKey: tenantName}); err != nil {
-		return err
-	}
-
-	if err := tryReCountAndUpdateResourceForTenant(tenantName, ResourceHttpRoutesCount, r, httpRoutesToObjList(resList.Items), true); err != nil {
+	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Delete, false)
+	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		httproutelog.Error(err, "fail when try to release resource, ignored", "ns/name", getKey(r))
 	}
 

@@ -13,7 +13,6 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
@@ -81,28 +80,8 @@ func (v *SvcAdmissionHandler) HandleCreate(ctx context.Context, req admission.Re
 		return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
 	}
 
-	var svcList corev1.ServiceList
-	if err := v.client.List(ctx, &svcList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenantName}); err != nil {
-		return admission.Errored(http.StatusBadRequest, err)
-	}
-
-	svcExist := false
-	for _, tmpSvc := range svcList.Items {
-		if tmpSvc.Namespace != svc.Namespace || tmpSvc.Name != svc.Name {
-			continue
-		}
-
-		svcExist = true
-		break
-	}
-
-	cnt := len(svcList.Items)
-	if !svcExist {
-		cnt += 1
-	}
-
-	newQuantity := resource.NewQuantity(int64(cnt), resource.DecimalSI)
-	if err := v1alpha1.SetTenantResourceByName(tenantName, v1alpha1.ResourceServicesCount, *newQuantity); err != nil {
+	reqInfo := v1alpha1.NewAdmissionRequestInfo(&svc, req.Operation, req.DryRun != nil && *req.DryRun)
+	if err := v1alpha1.CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
 
@@ -135,27 +114,8 @@ func (v *SvcAdmissionHandler) HandleDelete(ctx context.Context, req admission.Re
 		return admission.Allowed("")
 	}
 
-	var svcList corev1.ServiceList
-	if err := v.client.List(ctx, &svcList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenantName}); err != nil {
-		return admission.Errored(http.StatusInternalServerError, err)
-	}
-
-	cnt := 0
-	for _, tmpSvc := range svcList.Items {
-		if tmpSvc.Namespace == svc.Namespace && tmpSvc.Name == svc.Name {
-			continue
-		}
-
-		if tmpSvc.DeletionTimestamp != nil && tmpSvc.DeletionTimestamp.Unix() > 0 {
-			continue
-		}
-
-		cnt += 1
-	}
-
-	newQuantity := resource.NewQuantity(int64(cnt), resource.DecimalSI)
-
-	if err := v1alpha1.SetTenantResourceByName(tenantName, v1alpha1.ResourceServicesCount, *newQuantity); err != nil {
+	reqInfo := v1alpha1.NewAdmissionRequestInfo(&svc, req.Operation, req.DryRun != nil && *req.DryRun)
+	if err := v1alpha1.CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		svcAdmissionHandlerLog.Error(err, "fail to update tenant for svc deletion, ignored", "ns/name", fmt.Sprintf("%s/%s", svc.Namespace, svc.Name))
 		return admission.Allowed("")
 	}

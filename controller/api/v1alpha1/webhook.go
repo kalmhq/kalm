@@ -22,6 +22,9 @@ func InitializeWebhookClient(mgr ctrl.Manager) {
 	webhookClient = mgr.GetClient()
 	webhookReader = mgr.GetAPIReader()
 	eventRecorder = mgr.GetEventRecorderFor("kalm-webhook")
+
+	//todo better place for init this registry?
+	initEvaluatorRegistry()
 }
 
 type InsufficientResourceError struct {
@@ -190,6 +193,10 @@ func setTenantResourceList(tenant *Tenant, resourceList ResourceList) error {
 	return webhookClient.Status().Update(context.Background(), tenantCopy)
 }
 
+func UpdateTenantStatus(tenant Tenant) error {
+	return webhookClient.Status().Update(context.Background(), &tenant)
+}
+
 func AllocateTenantResource(obj runtime.Object, resourceName ResourceName, increment resource.Quantity) error {
 	if increment.IsZero() {
 		return nil
@@ -325,17 +332,19 @@ func GetTenantNameFromObj(obj runtime.Object) (string, error) {
 
 func GetTenantFromObj(obj runtime.Object) (*Tenant, error) {
 	tenantName, err := GetTenantNameFromObj(obj)
-
 	if err != nil {
 		return nil, err
 	}
 
+	return GetTenantByName(tenantName)
+}
+
+func GetTenantByName(tenantName string) (*Tenant, error) {
 	objectKey := types.NamespacedName{
 		Name: tenantName,
 	}
 
 	var tenant Tenant
-
 	if err := webhookClient.Get(context.Background(), objectKey, &tenant); err != nil {
 		return nil, err
 	}

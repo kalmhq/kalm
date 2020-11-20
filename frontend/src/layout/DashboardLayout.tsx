@@ -7,6 +7,7 @@ import { RequireAuthorizated as RequireAuthorized } from "permission/Authorizati
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
+import { getHasSelectedTenant } from "selectors/tenant";
 import { TDispatchProp } from "types";
 import { AppBarComponent } from "./AppBar";
 import { APP_BAR_HEIGHT, LEFT_SECTION_OPEN_WIDTH, TOP_PROGRESS_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "./Constants";
@@ -52,6 +53,7 @@ const mapStateToProps = (state: RootState) => {
   return {
     isShowTopProgress: state.settings.isShowTopProgress,
     showTutorialDrawer: state.tutorial.drawerOpen,
+    hasSelectedTenant: getHasSelectedTenant(state),
   };
 };
 
@@ -63,7 +65,7 @@ interface Props
 
 class DashboardLayoutRaw extends React.PureComponent<Props> {
   render() {
-    const { classes, children, isShowTopProgress, showTutorialDrawer } = this.props;
+    const { classes, children, isShowTopProgress, showTutorialDrawer, hasSelectedTenant } = this.props;
     return (
       <ErrorBoundary>
         <div className={classes.root}>
@@ -77,16 +79,18 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
             <AppBarComponent />
 
             <Box display="flex" flex="1" marginTop={APP_BAR_HEIGHT + "px"}>
-              <Box maxWidth={LEFT_SECTION_OPEN_WIDTH}>
-                <RootDrawer />
-              </Box>
+              {hasSelectedTenant && (
+                <Box maxWidth={LEFT_SECTION_OPEN_WIDTH}>
+                  <RootDrawer />
+                </Box>
+              )}
               <Box flex="1" display="flex">
                 {children}
               </Box>
             </Box>
           </div>
 
-          <TutorialDrawer />
+          {hasSelectedTenant && <TutorialDrawer />}
 
           <WithData />
         </div>

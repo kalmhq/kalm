@@ -144,8 +144,6 @@ export interface PermissionMethods {
   canViewCluster: () => boolean;
   canEditCluster: () => boolean;
   canManageCluster: () => boolean;
-
-  hasSelectedTenant: () => boolean;
 }
 
 export const emptyPermissionMethods: PermissionMethods = {
@@ -168,7 +166,6 @@ export const emptyPermissionMethods: PermissionMethods = {
   canManageTenant: () => false,
 
   canEditAnyNamespace: () => false,
-  hasSelectedTenant: () => false,
 };
 
 export interface SetAuthMethodsAction {

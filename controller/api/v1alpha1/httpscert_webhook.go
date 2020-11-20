@@ -20,7 +20,8 @@ import (
 	"fmt"
 	"strings"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -86,29 +87,18 @@ func (r *HttpsCert) ValidateCreate() error {
 	tenantName := r.Labels[TenantNameLabelKey]
 	if tenantName == "" {
 		// todo, what's the tenant for system cert?
+		httpscertlog.Info("see httpsCert without tenant", "name", r.Name)
 		return nil
 	}
 
-	// limit the count of certs.
-	var resList HttpsCertList
-	if err := webhookClient.List(context.Background(), &resList, client.MatchingLabels{TenantNameLabelKey: tenantName}); err != nil {
-		return err
-	}
-
-	if err := tryReCountAndUpdateResourceForTenant(tenantName, ResourceHttpsCertsCount, r, httpsCertsToObjList(resList.Items), false); err != nil {
+	//todo how to tell if this is dryRun?
+	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Create, false)
+	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		httproutelog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
 		return err
 	}
 
 	return nil
-}
-
-func httpsCertsToObjList(items []HttpsCert) []metav1.Object {
-	var rst []metav1.Object
-	for _, item := range items {
-		rst = append(rst, &item)
-	}
-	return rst
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
@@ -135,14 +125,10 @@ func (r *HttpsCert) ValidateDelete() error {
 		return nil
 	}
 
-	// limit the count of certs
-	var resList HttpsCertList
-	if err := webhookClient.List(context.Background(), &resList, client.MatchingLabels{TenantNameLabelKey: tenantName}); err != nil {
+	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Delete, false)
+	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
+		httproutelog.Error(err, "fail when try to update resource, ignored", "ns/name", getKey(r))
 		return err
-	}
-
-	if err := tryReCountAndUpdateResourceForTenant(tenantName, ResourceHttpsCertsCount, r, httpsCertsToObjList(resList.Items), true); err != nil {
-		httproutelog.Error(err, "fail when try to update resource", "ns/name", getKey(r))
 	}
 
 	return nil
@@ -215,5 +201,41 @@ func (r *HttpsCert) validate() error {
 		return nil
 	}
 
+	return rst
+}
+
+var _ TenantEvaluator = &httpsCertEvaluator{}
+
+type httpsCertEvaluator struct {
+}
+
+func (e httpsCertEvaluator) Usage(reqInfo AdmissionRequestInfo) (ResourceList, error) {
+	tenantName, err := GetTenantNameFromObj(reqInfo.Obj)
+	if err != nil {
+		return nil, NoTenantFoundError
+	}
+
+	var certList HttpsCertList
+	if err := webhookClient.List(context.Background(), &certList, client.MatchingLabels{TenantNameLabelKey: tenantName}); err != nil {
+		return nil, err
+	}
+
+	isDelete := reqInfo.Operation == admissionv1beta1.Delete
+	cnt := reCountResource(reqInfo.Obj, httpsCertsToObjList(certList.Items), isDelete)
+
+	quantity := resource.NewQuantity(int64(cnt), resource.DecimalSI)
+	rst := map[ResourceName]resource.Quantity{
+		ResourceHttpsCertsCount: *quantity,
+	}
+
+	return rst, nil
+}
+
+func httpsCertsToObjList(items []HttpsCert) []runtime.Object {
+	var rst []runtime.Object
+	for i := range items {
+		item := items[i]
+		rst = append(rst, &item)
+	}
 	return rst
 }

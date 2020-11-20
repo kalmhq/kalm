@@ -13,11 +13,13 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
+import { composeTenantLink, getHasSelectedTenant, getKalmSaaSLink, isSameTenant } from "selectors/tenant";
 import { ThemeToggle } from "theme/ThemeToggle";
 import { TDispatch } from "types";
 import { SubjectTypeUser } from "types/member";
 import StringConstants from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
+import { CustomizedButton } from "widgets/Button";
 import {
   ArrowDropDownIcon,
   HelpIcon,
@@ -29,6 +31,7 @@ import {
   MenuOpenIcon,
 } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { Body, Caption } from "widgets/Label";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
 
 const mapStateToProps = (state: RootState) => {
@@ -40,6 +43,7 @@ const mapStateToProps = (state: RootState) => {
   const impersonationType = auth.impersonationType;
   const currentTenant = auth.tenant;
   const tenants = auth.tenants;
+  const hasSelectedTenant = getHasSelectedTenant(state);
 
   return {
     isOpenRootDrawer: state.settings.isOpenRootDrawer,
@@ -50,6 +54,7 @@ const mapStateToProps = (state: RootState) => {
     email,
     currentTenant,
     tenants,
+    hasSelectedTenant,
   };
 };
 
@@ -224,57 +229,71 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   };
 
   renderTenants = () => {
-    const { currentTenant, tenants } = this.props;
+    const { hasSelectedTenant, currentTenant, tenants } = this.props;
     const { tenantMenuAnchorElement } = this.state;
+
+    // FIXME: extract styles to standalone component
     return (
       <div key={"tenants"}>
-        {currentTenant ? (
+        {hasSelectedTenant ? (
           <>
-            <IconButtonWithTooltip
-              tooltipTitle={StringConstants.APP_AUTH_TOOLTIPS}
-              aria-label={StringConstants.APP_AUTH_TOOLTIPS}
-              aria-haspopup="true"
+            <CustomizedButton
               onClick={(event: React.MouseEvent<HTMLElement>) => {
                 this.setState({ tenantMenuAnchorElement: event.currentTarget });
               }}
-              color="inherit"
+              color="primary"
+              style={{ color: "white", fontWeight: 700, fontSize: 16, textTransform: "capitalize" }}
             >
               {currentTenant}
               <ArrowDropDownIcon color={"white"} />
-            </IconButtonWithTooltip>
-
+            </CustomizedButton>
             <Menu
               id="menu-appbar"
               anchorEl={tenantMenuAnchorElement}
               anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
+                vertical: "bottom",
+                horizontal: "left",
               }}
               keepMounted
               transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
+                vertical: "bottom",
+                horizontal: "left",
               }}
               open={Boolean(tenantMenuAnchorElement)}
               onClose={() => {
                 this.setState({ tenantMenuAnchorElement: null });
               }}
             >
+              <MenuItem disabled={true} style={{ height: 30, paddingLeft: 0 }}>
+                <Box pl={2} pb={1}>
+                  <Caption style={{ textTransform: "uppercase" }}>Clusters</Caption>
+                </Box>
+              </MenuItem>
+              <Divider />
               {tenants.map((t, index) => {
                 return (
                   <Box m={1} key={index}>
                     <MenuItem
-                      disabled={t.indexOf(currentTenant) > 0}
+                      disabled={isSameTenant(currentTenant, t)}
                       onClick={() => {
-                        const tenantId = t.split("/")[1];
-                        window.open("https://" + tenantId + ".asia-northeast3.kapp.live/", "_blank");
+                        const url = composeTenantLink(t);
+                        window.open(url, "_self");
                       }}
                     >
-                      {t}
+                      {"   " + t}
                     </MenuItem>
                   </Box>
                 );
               })}
+              <Divider />
+              <MenuItem
+                onClick={() => {
+                  const url = getKalmSaaSLink();
+                  window.open(url, "_blank");
+                }}
+              >
+                Create New Kalm
+              </MenuItem>
             </Menu>
           </>
         ) : (
@@ -335,6 +354,10 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
         return "CI";
       case "metrics":
         return StringConstants.APP_DASHBOARD_PAGE_NAME;
+      case "tenants":
+        return "Welcome";
+      case "usage":
+        return "Usage";
       default:
         return path;
     }
@@ -347,13 +370,17 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
       <AppBar ref={this.headerRef} id="header" position="relative" className={classes.appBar}>
         <div className={classes.barContainer}>
           <div className={classes.barLeft}>
-            <IconButton
-              className={classes.shrinkButton}
-              onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !isOpenRootDrawer }))}
-              // size={"small"}
-            >
-              {isOpenRootDrawer ? <MenuOpenIcon color="white" /> : <MenuIcon color="white" />}
-            </IconButton>
+            {hasSelectedTenant ? (
+              <IconButton
+                className={classes.shrinkButton}
+                onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !isOpenRootDrawer }))}
+                // size={"small"}
+              >
+                {isOpenRootDrawer ? <MenuOpenIcon color="white" /> : <MenuIcon color="white" />}
+              </IconButton>
+            ) : (
+              <Box paddingLeft={2} paddingRight={0} />
+            )}
             <FlexRowItemCenterBox>
               <Breadcrumbs aria-label="breadcrumb" className={classes.breadcrumb}>
                 {pathArray.map((path, index) => {
@@ -394,7 +421,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             )}
             <Divider orientation="vertical" flexItem color="inherit" />
             <Box className={classes.barAvatar}>{this.renderThemeIcon()}</Box>
-            {hasSelectedTenant() ? (
+            {hasSelectedTenant ? (
               <>
                 <Divider orientation="vertical" flexItem color="inherit" />
                 <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>

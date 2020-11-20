@@ -21,6 +21,7 @@ import throttle from "lodash/throttle";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
+import { getHasSelectedTenant } from "selectors/tenant";
 import { TDispatchProp } from "types";
 import { AccessTokenToDeployAccessToken } from "types/deployAccessToken";
 import {
@@ -49,8 +50,10 @@ export interface WatchResMessage {
 }
 
 const mapStateToProps = (state: RootState) => {
+  const hasSelectedTenant = getHasSelectedTenant(state);
   return {
     activeNamespaceName: state.namespaces.active,
+    hasSelectedTenant,
   };
 };
 
@@ -58,7 +61,7 @@ interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp, WithU
 
 class WithDataRaw extends React.PureComponent<Props> {
   public componentDidMount() {
-    if (!this.props.hasSelectedTenant()) {
+    if (!this.props.hasSelectedTenant) {
       return;
     }
 

@@ -43,6 +43,7 @@ import { CertificateDetailPage } from "pages/Certificate/Detail";
 import { VersionPage } from "pages/Version";
 import { ProfilePage } from "pages/Profile";
 import { TenantsPage } from "pages/Tenants";
+import { TenantUsagePage } from "pages/Tenants/usage";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -54,6 +55,7 @@ export const KalmRoutes = (
       <RequireAuthorizatedDashboard>
         <Switch>
           <Route path="/tenants" component={TenantsPage} />
+          <Route path="/usage" component={TenantUsagePage} />
           <Route exact path="/profile" component={ProfilePage} />
 
           <Route exact path="/system" component={SystemPage} />

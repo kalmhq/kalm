@@ -9,7 +9,6 @@ import (
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
@@ -73,7 +72,9 @@ func (v *NSValidator) HandleCreate(req admission.Request) admission.Response {
 		return admission.Errored(http.StatusBadRequest, v1alpha1.NoTenantFoundError)
 	}
 
-	if err := v1alpha1.AllocateTenantResource(&ns, v1alpha1.ResourceApplicationsCount, resource.MustParse("1")); err != nil {
+	reqInfo := v1alpha1.NewAdmissionRequestInfo(&ns, req.Operation, req.DryRun != nil && *req.DryRun)
+
+	if err := v1alpha1.CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		logger.Error(err, "fail to allocate ns resource", "ns", ns.Name)
 		return admission.Errored(http.StatusBadRequest, err)
 	} else {
@@ -109,7 +110,8 @@ func (v *NSValidator) HandleDelete(req admission.Request) admission.Response {
 		return admission.Allowed("")
 	}
 
-	if err := v1alpha1.ReleaseTenantResource(&ns, v1alpha1.ResourceApplicationsCount, resource.MustParse("1")); err != nil {
+	reqInfo := v1alpha1.NewAdmissionRequestInfo(&ns, req.Operation, req.DryRun != nil && *req.DryRun)
+	if err := v1alpha1.CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		logger.Error(err, "fail to release ns resource, ignored", "ns", ns.Name)
 	}
 
