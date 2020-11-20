@@ -33,7 +33,7 @@ func (r *DnsRecord) SetupWebhookWithManager(mgr ctrl.Manager) error {
 var _ webhook.Defaulter = &DnsRecord{}
 
 func (r *DnsRecord) Default() {
-	accesstokenlog.Info("default", "name", r.Name)
+	dnsrecordlog.Info("default", "name", r.Name)
 }
 
 var _ webhook.Validator = &DnsRecord{}
@@ -42,7 +42,6 @@ func (r *DnsRecord) ValidateCreate() error {
 	return nil
 }
 
-// ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *DnsRecord) ValidateUpdate(old runtime.Object) error {
 	return nil
 }

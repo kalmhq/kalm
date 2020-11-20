@@ -264,7 +264,6 @@ func (suite *BasicSuite) SetupTestEnv(testEnv *envtest.Environment, disableWebho
 	suite.Require().Nil(NewGatewayReconciler(mgr).SetupWithManager(mgr))
 	suite.Require().Nil(NewSingleSignOnConfigReconciler(mgr).SetupWithManager(mgr))
 	suite.Require().Nil(NewProtectedEndpointReconciler(mgr).SetupWithManager(mgr))
-	suite.Require().Nil(NewProtectedEndpointReconciler(mgr).SetupWithManager(mgr))
 	suite.Require().Nil(NewDnsRecordReconciler(mgr, &FakeNsRecorder{}).SetupWithManager(mgr))
 	suite.Require().Nil(NewTenantReconciler(mgr).SetupWithManager(mgr))
 

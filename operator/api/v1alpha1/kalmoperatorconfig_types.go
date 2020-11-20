@@ -47,7 +47,6 @@ type KalmOperatorConfigSpec struct {
 
 	Version string `json:"version,omitempty"`
 
-	// +kubebuilder:validation:Enum=saas;local
 	KalmType string `json:"kalmType,omitempty"`
 
 	// Dashboard Config
