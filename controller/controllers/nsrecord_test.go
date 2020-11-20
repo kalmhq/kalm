@@ -37,9 +37,8 @@ func (suite *DnsRecordTestSuite) SetupTest() {
 func (suite *DnsRecordTestSuite) TestCreateDnsRecordWhenCreateTenant() {
 	dnsRecorder, err := InitCloudflareNsRecorder(suite.K8sClient)
 
-	suite.NotNil(err)
+	suite.Nil(err)
 	suite.NotNil(dnsRecorder)
-	suite.EqualValues("get cluster info fail", err.Error())
 	suite.EqualValues(false, dnsRecorder.Ready)
 
 	_ = godotenv.Load("../.env")
