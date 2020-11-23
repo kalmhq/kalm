@@ -34,6 +34,12 @@ spec:
         spec:
           description: KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
           properties:
+            controller:
+              description: Controller Config
+              properties:
+                version:
+                  type: string
+              type: object
             dashboard:
               description: Dashboard Config
               properties:
@@ -56,6 +62,8 @@ spec:
                 version:
                   type: string
               type: object
+            kalmType:
+              type: string
             kalmVersion:
               description: deprecated
               type: string
@@ -68,8 +76,6 @@ spec:
             skipKalmDashboardInstallation:
               type: boolean
             version:
-              type: string
-            kalmType:
               type: string
           type: object
         status:

@@ -267,6 +267,26 @@ rules:
 - apiGroups:
   - core.kalm.dev
   resources:
+  - dnsrecords
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - dnsrecords/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
   - dockerregistries
   verbs:
   - create
