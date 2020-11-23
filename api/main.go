@@ -171,7 +171,9 @@ func startMainServer(runningConfig *config.Config, k8sClientConfig *rest.Config)
 		clientManager = client.NewStandardClientManager(k8sClientConfig)
 	}
 
-	apiHandler := handler.NewApiHandler(clientManager)
+	isLocalMode := runningConfig.KalmType == "local"
+
+	apiHandler := handler.NewApiHandler(clientManager, isLocalMode)
 	apiHandler.InstallMainRoutes(e)
 	apiHandler.InstallWebhookRoutes(e)
 

@@ -13,6 +13,7 @@ type ApiHandler struct {
 	resourceManager *resources.ResourceManager
 	clientManager   client.ClientManager
 	logger          *zap.Logger
+	IsLocalMode     bool
 }
 
 func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
@@ -44,6 +45,9 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1.GET("/exec", h.execWebsocketHandler)
 
 	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.GetUserMiddleware, h.RequireUserMiddleware)
+	if h.IsLocalMode {
+		gv1Alpha1WithAuth = gv1Alpha1WithAuth.Group("", h.SetTenantForLocalModeIfMissing)
+	}
 
 	// initialize the cluster
 	gv1Alpha1WithAuth.POST("/initialize", h.handleInitializeCluster)
@@ -99,10 +103,11 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/settings", h.handleListSettings)
 }
 
-func NewApiHandler(clientManager client.ClientManager) *ApiHandler {
+func NewApiHandler(clientManager client.ClientManager, isLocalMode bool) *ApiHandler {
 	return &ApiHandler{
 		clientManager:   clientManager,
 		logger:          log.DefaultLogger(),
 		resourceManager: resources.NewResourceManager(clientManager.GetDefaultClusterConfig(), log.DefaultLogger()),
+		IsLocalMode:     isLocalMode,
 	}
 }

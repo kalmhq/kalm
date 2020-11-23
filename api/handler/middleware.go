@@ -11,8 +11,24 @@ import (
 )
 
 const (
-	CURRENT_USER_KEY = "k8sClientConfig"
+	CURRENT_USER_KEY          = "k8sClientConfig"
+	DefaultTenantUserForLocal = "global"
 )
+
+func (h *ApiHandler) SetTenantForLocalMode(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser := c.Get(CURRENT_USER_KEY).(*client.ClientInfo)
+		if currentUser == nil {
+			return nil
+		}
+
+		if currentUser.Tenant == "" {
+			currentUser.Tenant = DefaultTenantUserForLocal
+		}
+
+		return nil
+	}
+}
 
 func (h *ApiHandler) RequireUserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
