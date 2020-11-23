@@ -1,16 +1,20 @@
 package v1alpha1
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"testing"
 )
 
 func TestHttpRoute_Validate(t *testing.T) {
 
+	// a dirty trick to skip inherit tenant
+	systemNS := "kalm-system"
+
 	route := HttpRoute{
 		ObjectMeta: ctrl.ObjectMeta{
-			Namespace: "test-ns",
+			Namespace: systemNS,
 			Name:      "test-name",
 		},
 		Spec: HttpRouteSpec{

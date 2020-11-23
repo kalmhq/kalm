@@ -1,13 +1,17 @@
 package v1alpha1
 
 import (
+	"context"
+	"fmt"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -83,6 +87,15 @@ func TestUsage(t *testing.T) {
 		err = mgr.Start(mgrStopChannel)
 		assert.Nil(t, err)
 	}()
+
+	gvk := schema.GroupVersionKind{Group: GroupVersion.Group, Version: GroupVersion.Version, Kind: "DockerRegistry"}
+	informer, err := mgr.GetCache().GetInformerForKind(context.Background(), gvk)
+	assert.Nil(t, err)
+
+	assert.Eventually(t, func() bool {
+		fmt.Println("check informer synced")
+		return informer.HasSynced()
+	}, 3*time.Second, 500*time.Millisecond, "informer not synced")
 
 	client := mgr.GetClient()
 	assert.NotNil(t, client)
