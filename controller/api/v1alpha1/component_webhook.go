@@ -111,6 +111,7 @@ func (r *Component) Default() {
 			}
 
 			r.Spec.Labels[TenantNameLabelKey] = r.Labels[TenantNameLabelKey]
+			componentlog.Info("inherit tenant from ns", "tenant", r.Labels[TenantNameLabelKey])
 		}
 	}
 }
@@ -137,6 +138,7 @@ func (r *Component) ValidateCreate() error {
 
 		// pre-check if resource of this component will exceed quota
 		resList := EstimateResourceConsumption(*r)
+
 		sumResList := SumResourceList(resList, tenant.Status.UsedResourceQuota)
 		// deny the creation if exceed resource quota
 		if exist, infoList := ExistGreaterResourceInList(sumResList, tenant.Spec.ResourceQuota); exist {

@@ -60,7 +60,7 @@ func EstimateResourceConsumption(component Component) ResourceList {
 
 		case VolumeTypeTemporaryMemory:
 
-			incResource(resList, ResourceCPU, multiQuantity(vol.Size, replicas))
+			incResource(resList, ResourceMemory, multiQuantity(vol.Size, replicas))
 
 		case VolumeTypeTemporaryDisk:
 
