@@ -11,5 +11,6 @@ const (
 )
 
 var (
-	ExceedingQuotaError = fmt.Errorf("exceeding quota")
+	ExceedingQuotaError    = fmt.Errorf("exceeding quota")
+	EvaluatorNotExistError = fmt.Errorf("evaluator not exist")
 )
