@@ -95,7 +95,7 @@ func checkAdmissionRequestAgainstTenant(tenant Tenant, reqInfo AdmissionRequestI
 	gk := reqInfo.Obj.GetObjectKind().GroupVersionKind().GroupKind()
 	evaluator, exist := GetTenantEvaluator(gk)
 	if !exist {
-		return tenant, nil
+		return tenant, EvaluatorNotExistError
 	}
 
 	resourceList, err := evaluator.Usage(reqInfo)
