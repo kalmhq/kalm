@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	"fmt"
+	"strconv"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -10,7 +11,7 @@ import (
 
 var utillog = logf.Log.WithName("v1alpha1-utils")
 
-func EstimateResourceConsumption(component Component) ResourceList {
+func EstimateResourceConsumption(component Component, considerOriginalReplicasForExceedingQuota ...bool) ResourceList {
 
 	// component must have spec.ResourceRequirements.Limits
 	if component.Spec.ResourceRequirements == nil ||
@@ -27,6 +28,16 @@ func EstimateResourceConsumption(component Component) ResourceList {
 		replicas = 1
 	} else {
 		replicas = int(*component.Spec.Replicas)
+	}
+
+	considerOriginReplicas := len(considerOriginalReplicasForExceedingQuota) > 0 && considerOriginalReplicasForExceedingQuota[0]
+	isExceedingQuota := component.Labels[KalmLabelKeyExceedingQuota] == "true"
+
+	if considerOriginReplicas && isExceedingQuota {
+		originalReplicas, err := strconv.ParseInt(component.Labels[KalmLabelKeyOriginalReplicas], 10, 64)
+		if err == nil {
+			replicas = int(originalReplicas)
+		}
 	}
 
 	// pods resource consumption

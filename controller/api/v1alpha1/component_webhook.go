@@ -161,37 +161,6 @@ func (r *Component) ValidateCreate() error {
 func (r *Component) ValidateUpdate(old runtime.Object) error {
 	componentlog.Info("validate update", "ns", r.Namespace, "name", r.Name)
 
-	// tenant check
-	if !IsKalmSystemNamespace(r.Namespace) {
-		if !HasTenantSet(r) {
-			return NoTenantFoundError
-		}
-
-		if IsTenantChanged(r, old) {
-			return TenantChangedError
-		}
-
-		// deny the update if the replicas is too big
-		oldComponent, oldIsOK := old.(*Component)
-		if oldIsOK {
-			oldRes := EstimateResourceConsumption(*oldComponent)
-			newRes := EstimateResourceConsumption(*r)
-
-			tenant, err := GetTenantFromObj(r)
-			if err != nil {
-				return NoTenantFoundError
-			}
-
-			resDelta := GetDeltaOfResourceList(oldRes, newRes)
-			sumResList := SumResourceList(resDelta, tenant.Status.UsedResourceQuota)
-
-			if exist, infoList := ExistGreaterResourceInList(sumResList, tenant.Spec.ResourceQuota); exist {
-				emitWarning(r, ReasonExceedingQuota, fmt.Sprintf("update of component will exceed resource quota, denied, exceeding list: %s", infoList))
-				return fmt.Errorf("update this component will exceed resource quota")
-			}
-		}
-	}
-
 	var volErrList KalmValidateErrorList
 	// for sts, persistent vols should NOT be updated
 	if r.Spec.WorkloadType == WorkloadTypeStatefulSet {
@@ -214,14 +183,52 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 	}
 
 	commonValidateErr := r.validate()
-
 	volErrList = append(volErrList, commonValidateErr...)
 
-	if len(volErrList) <= 0 {
-		return nil
+	if len(volErrList) > 0 {
+		return error(volErrList)
 	}
 
-	return error(volErrList)
+	// tenant check
+	if !IsKalmSystemNamespace(r.Namespace) {
+		tenant, err := GetTenantFromObj(r)
+		if err != nil {
+			return err
+		}
+
+		if IsTenantChanged(r, old) {
+			return TenantChangedError
+		}
+
+		// deny the update if the replicas is too big
+		oldComponent, ok := old.(*Component)
+		if !ok {
+			return fmt.Errorf("invalid old component")
+		}
+
+		oldRes := EstimateResourceConsumption(*oldComponent)
+		newRes := EstimateResourceConsumption(*r)
+
+		resDelta := GetDeltaOfResourceList(oldRes, newRes)
+		sumResList := SumResourceList(resDelta, tenant.Status.UsedResourceQuota)
+
+		if exist, infoList := ExistGreaterResourceInList(sumResList, tenant.Spec.ResourceQuota); exist {
+			isMarkedAsExceedingQuota := r.Labels[KalmLabelKeyExceedingQuota] == "true"
+			tryingToUseMore, _ := ExistGreaterResourceInList(newRes, oldRes)
+
+			if !tryingToUseMore && isMarkedAsExceedingQuota {
+				componentlog.Info("component exceeding quota but stopping")
+				return nil
+			}
+
+			fmt.Println(">>>>>>>>", isMarkedAsExceedingQuota, tryingToUseMore, r.Labels)
+
+			emitWarning(r, ReasonExceedingQuota, fmt.Sprintf("update of component will exceed resource quota, denied, exceeding list: %s", infoList))
+			return fmt.Errorf("update this component will exceed resource quota")
+		}
+	}
+
+	return nil
 }
 
 func emitWarning(obj runtime.Object, reason, msg string) {

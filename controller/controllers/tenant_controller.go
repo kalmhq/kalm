@@ -2,10 +2,12 @@ package controllers
 
 import (
 	"context"
-	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"fmt"
 	"sort"
 	"strconv"
+
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -85,6 +87,7 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 		for _, comp := range components {
 			if err := r.tryMarkComponentAsExceedingQuota(comp.DeepCopy()); err != nil {
+				logger.Info("tryMarkComponentAsExceedingQuota failed", "key", fmt.Sprintf("%s/%s", comp.Namespace, comp.Name), "err", err)
 				return ctrl.Result{}, err
 			}
 		}
@@ -118,7 +121,7 @@ func (r *TenantReconciler) findComponentsToSchedule(tenant string, surplusResour
 
 	var rescheduleSum v1alpha1.ResourceList
 	for _, comp := range compList.Items {
-		compResToSchedule := v1alpha1.EstimateResourceConsumption(comp)
+		compResToSchedule := v1alpha1.EstimateResourceConsumption(comp, true)
 		rescheduleSum = v1alpha1.SumResourceList(rescheduleSum, compResToSchedule)
 
 		if exist, _ := v1alpha1.ExistGreaterResourceInList(rescheduleSum, surplusResource); exist {
@@ -126,8 +129,10 @@ func (r *TenantReconciler) findComponentsToSchedule(tenant string, surplusResour
 		}
 
 		compToReschedule = append(compToReschedule, comp)
-		r.Log.Info("components to schedule", "curSize", len(compToReschedule))
+		r.Log.Info("  components to schedule", "curSize", len(compToReschedule))
 	}
+
+	r.Log.Info("actual components to schedule", "size", len(compToReschedule))
 
 	return compToReschedule, nil
 }
