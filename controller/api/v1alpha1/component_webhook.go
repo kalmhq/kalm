@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/robfig/cron"
+	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -142,11 +143,13 @@ func (r *Component) ValidateCreate() error {
 		sumResList := SumResourceList(resList, tenant.Status.UsedResourceQuota)
 		// deny the creation if exceed resource quota
 		if exist, infoList := ExistGreaterResourceInList(sumResList, tenant.Spec.ResourceQuota); exist {
+			emitWarning(r, ReasonExceedingQuota, fmt.Sprintf("create this component will exceed resource quota, denied, exceeding list: %s", infoList))
 			return fmt.Errorf("create this component will exceed resource quota, %s", infoList)
 		}
 
-		if err := AdjustTenantResourceByDelta(r, ResourceComponentsCount, resource.MustParse("1")); err != nil {
-			componentlog.Error(err, "tenant fail")
+		reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Create, false)
+		if err := CheckAndUpdateTenant(tenant.Name, reqInfo, 3); err != nil {
+			componentlog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
 			return err
 		}
 	}
@@ -308,8 +311,12 @@ func (r *Component) ValidateDelete() error {
 	}
 
 	// release resource
-	if err := ReleaseTenantResource(r, ResourceComponentsCount, resource.MustParse("1")); err != nil {
-		componentlog.Error(err, "fail to release componentCnt, ignored", "ns/name", fmt.Sprintf("%s/%s", r.Namespace, r.Name))
+	tenantName := r.Labels[TenantNameLabelKey]
+	if tenantName != "" {
+		reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Delete, false)
+		if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
+			componentlog.Error(err, "fail to release componentCnt, ignored", "ns/name", getKey(r))
+		}
 	}
 
 	return nil

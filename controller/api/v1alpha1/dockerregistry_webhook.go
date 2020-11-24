@@ -72,15 +72,6 @@ func (r *DockerRegistry) ValidateCreate() error {
 	return nil
 }
 
-func dockerRegistriesToObjList(items []DockerRegistry) []runtime.Object {
-	var rst []runtime.Object
-	for i := range items {
-		item := items[i]
-		rst = append(rst, &item)
-	}
-	return rst
-}
-
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *DockerRegistry) ValidateUpdate(old runtime.Object) error {
 	dockerregistrylog.Info("validate update", "name", r.Name)
