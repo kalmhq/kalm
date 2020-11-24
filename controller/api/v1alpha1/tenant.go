@@ -64,6 +64,12 @@ func initEvaluatorRegistry() {
 		ResourceName: ResourceComponentsCount,
 	}
 
+	roleBindingGK := schema.GroupKind{Group: GroupVersion.Group, Kind: "RoleBinding"}
+	evaluators[roleBindingGK] = cntEvaluator{
+		ListType:     reflect.TypeOf(RoleBindingList{}),
+		ResourceName: ResourceRoleBindingCount,
+	}
+
 	//todo more evaluator
 
 	evaluatorRegistry.evaluators = evaluators

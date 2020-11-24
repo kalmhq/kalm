@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -50,7 +51,8 @@ func (e *InsufficientResourceError) Error() string {
 	)
 }
 
-var NoTenantFoundError error = fmt.Errorf("No Tenant Error")
+var NoTenantFoundError error = fmt.Errorf("No Tenant Error")              // Tenant resource not exist
+var NoTenantLabelSetError error = fmt.Errorf("No Tenant Label Set Error") // tenant label is not set in Object
 var TenantChangedError error = fmt.Errorf("Tenant can't not be changed")
 
 func IsNoTenantFoundError(err error) bool {
@@ -147,21 +149,18 @@ func IsTenantChanged(new, old runtime.Object) bool {
 
 func GetTenantNameFromObj(obj runtime.Object) (string, error) {
 	objMeta, err := meta.Accessor(obj)
-
 	if err != nil {
 		return "", err
 	}
 
 	labels := objMeta.GetLabels()
-
 	if labels == nil {
-		return "", NoTenantFoundError
+		return "", NoTenantLabelSetError
 	}
 
 	tenantName := labels[TenantNameLabelKey]
-
 	if tenantName == "" {
-		return "", NoTenantFoundError
+		return "", NoTenantLabelSetError
 	}
 
 	return tenantName, nil
@@ -183,6 +182,10 @@ func GetTenantByName(tenantName string) (*Tenant, error) {
 
 	var tenant Tenant
 	if err := webhookClient.Get(context.Background(), objectKey, &tenant); err != nil {
+		if errors.IsNotFound(err) {
+			return nil, NoTenantFoundError
+		}
+
 		return nil, err
 	}
 
