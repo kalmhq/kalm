@@ -52,7 +52,7 @@ func (r *KalmOperatorConfigReconciler) reconcileDefaultTenantForLocalMode(ctx co
 		err = r.Create(ctx, &expectedTenant)
 	} else {
 		tenant.Spec = expectedTenant.Spec
-		err = r.Update(ctx, &expectedTenant)
+		err = r.Update(ctx, &tenant)
 	}
 
 	return err
