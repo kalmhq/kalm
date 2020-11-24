@@ -32,12 +32,6 @@ import (
 // log is for logging in this package.
 var httpscertlog = logf.Log.WithName("httpscert-resource")
 
-var validIssuers = []string{
-	DefaultDNS01IssuerName,
-	DefaultHTTP01IssuerName,
-	DefaultCAIssuerName,
-}
-
 func (r *HttpsCert) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
@@ -128,7 +122,6 @@ func (r *HttpsCert) ValidateDelete() error {
 	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Delete, false)
 	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		httproutelog.Error(err, "fail when try to update resource, ignored", "ns/name", getKey(r))
-		return err
 	}
 
 	return nil

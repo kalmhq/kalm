@@ -93,7 +93,7 @@ func (r *DockerRegistry) ValidateDelete() error {
 
 	tenantName := r.Labels[TenantNameLabelKey]
 	if tenantName == "" {
-		dockerregistrylog.Info("see dockerRegistry without tenant", "ns/name", getKey(r))
+		dockerregistrylog.Info("see dockerRegistry without tenant, ignored", "ns/name", getKey(r))
 		return nil
 	}
 

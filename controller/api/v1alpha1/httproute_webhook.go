@@ -104,6 +104,9 @@ func (r *HttpRoute) ValidateDelete() error {
 	httproutelog.Info("validate delete", "name", r.Name)
 
 	tenantName := r.Labels[TenantNameLabelKey]
+	if tenantName == "" {
+		return nil
+	}
 
 	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Delete, false)
 	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {

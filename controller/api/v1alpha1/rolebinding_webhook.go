@@ -141,12 +141,7 @@ func (r *RoleBinding) ValidateDelete() error {
 		return nil
 	}
 
-	tenantName, err := GetTenantNameFromObj(r)
-	if err != nil {
-		rolebindinglog.Error(err, "fail to get tenant, ignored", "ns/name", getKey(r))
-		return nil
-	}
-
+	tenantName := r.Labels[TenantNameLabelKey]
 	if tenantName == "" {
 		rolebindinglog.Info("no tenant label set, ignored", "ns/name", getKey(r))
 		return nil
