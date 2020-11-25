@@ -751,6 +751,10 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 		}
 	} else {
 		deployment.Spec.Template = *podTemplateSpec
+
+		//also ensure selector and labels
+		deployment.Spec.Selector.MatchLabels = labelMap
+		deployment.Labels = labelMap
 	}
 
 	// inherit annotation: AnnoLastUpdatedByWebhook
