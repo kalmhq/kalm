@@ -10,7 +10,7 @@ const (
 	ReasonExceedingQuota = "ExceedingQuota"
 
 	// Tenant
-	DefaultSystemTenant = "global"
+	DefaultSystemTenantName = "global"
 )
 
 // Error
