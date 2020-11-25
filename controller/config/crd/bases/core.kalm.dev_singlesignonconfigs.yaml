@@ -81,6 +81,8 @@ spec:
             idTokenExpirySeconds:
               format: int32
               type: integer
+            isKalmInLocalMode:
+              type: boolean
             issuer:
               description: These two are for arbitrary oidc provider
               type: string
