@@ -44,9 +44,11 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1.GET("/logs", h.logWebsocketHandler)
 	gv1Alpha1.GET("/exec", h.execWebsocketHandler)
 
-	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.GetUserMiddleware, h.RequireUserMiddleware)
+	var gv1Alpha1WithAuth *echo.Group
 	if h.IsLocalMode {
-		gv1Alpha1WithAuth = gv1Alpha1WithAuth.Group("", h.SetTenantForLocalModeIfMissing)
+		gv1Alpha1WithAuth = gv1Alpha1.Group("", h.GetUserMiddleware, h.RequireUserMiddleware, h.SetTenantForLocalModeIfMissing)
+	} else {
+		gv1Alpha1WithAuth = gv1Alpha1.Group("", h.GetUserMiddleware, h.RequireUserMiddleware)
 	}
 
 	// initialize the cluster

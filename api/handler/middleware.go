@@ -26,7 +26,7 @@ func (h *ApiHandler) SetTenantForLocalModeIfMissing(next echo.HandlerFunc) echo.
 			currentUser.Tenant = DefaultTenantUserForLocal
 		}
 
-		return nil
+		return next(c)
 	}
 }
 
