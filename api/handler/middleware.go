@@ -22,6 +22,10 @@ func (h *ApiHandler) SetTenantForLocalModeIfMissing(next echo.HandlerFunc) echo.
 			return nil
 		}
 
+		if len(currentUser.Tenants) == 0 {
+			currentUser.Tenants = []string{DefaultTenantUserForLocal}
+		}
+
 		if currentUser.Tenant == "" {
 			currentUser.Tenant = DefaultTenantUserForLocal
 		}
@@ -38,17 +42,20 @@ func (h *ApiHandler) RequireUserMiddleware(next echo.HandlerFunc) echo.HandlerFu
 			return errors.NewUnauthorized("")
 		}
 
-		if len(currentUser.Tenants) == 0 {
-			return errors.NewUnauthorized("No tenants")
-		}
+		// for SaaS version, tenants must be set
+		if !h.IsLocalMode {
+			if len(currentUser.Tenants) == 0 {
+				return errors.NewUnauthorized("No tenants")
+			}
 
-		if currentUser.Tenant == "" {
-			return errors.NewBadRequest(
-				fmt.Sprintf(
-					"Can not figure out which tenant you are using. Your tenants are %s. Try set \"selected-tenant\" in cookie, or use original kalm dashboard url.",
-					strings.Join(currentUser.Tenants, ", "),
-				),
-			)
+			if currentUser.Tenant == "" {
+				return errors.NewBadRequest(
+					fmt.Sprintf(
+						"Can not figure out which tenant you are using. Your tenants are %s. Try set \"selected-tenant\" in cookie, or use original kalm dashboard url.",
+						strings.Join(currentUser.Tenants, ", "),
+					),
+				)
+			}
 		}
 
 		return next(c)
