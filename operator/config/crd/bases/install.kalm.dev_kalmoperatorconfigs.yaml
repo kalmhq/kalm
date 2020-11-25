@@ -41,8 +41,6 @@ spec:
                   type: boolean
                 version:
                   type: string
-              required:
-              - useLetsencryptProductionAPI
               type: object
             dashboard:
               description: Dashboard Config

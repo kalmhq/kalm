@@ -32,8 +32,9 @@ type DashboardConfig struct {
 }
 
 type ControllerConfig struct {
-	Version                     *string `json:"version,omitempty"`
-	UseLetsEncryptProductionAPI bool    `json:"useLetsencryptProductionAPI"`
+	Version *string `json:"version,omitempty"`
+	// +optional
+	UseLetsEncryptProductionAPI bool `json:"useLetsencryptProductionAPI"`
 }
 
 // KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
