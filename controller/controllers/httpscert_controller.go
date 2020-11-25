@@ -391,6 +391,10 @@ func ParseCert(certPEM string) (cert, intermediateCert *x509.Certificate, err er
 }
 
 func (r *HttpsCertReconciler) reconcileTenantDefaultDnsRecord(cert corev1alpha1.HttpsCert) error {
+	if isDefaultTenantHttpsCert, ok := cert.Labels[corev1alpha1.TenantDefaultHttpsCertKey]; !ok || isDefaultTenantHttpsCert != "true" {
+		return nil
+	}
+
 	tenantName := cert.Labels[corev1alpha1.TenantNameLabelKey]
 
 	var dnsRecord corev1alpha1.DnsRecord

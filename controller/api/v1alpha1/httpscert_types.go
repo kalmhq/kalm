@@ -52,7 +52,8 @@ type HttpsCertStatus struct {
 type HttpsCertConditionType string
 
 const (
-	HttpsCertConditionReady HttpsCertConditionType = "Ready"
+	HttpsCertConditionReady   HttpsCertConditionType = "Ready"
+	TenantDefaultHttpsCertKey                        = "IsTenantDefaultHttpsCert"
 )
 
 type HttpsCertCondition struct {
