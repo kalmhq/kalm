@@ -75,65 +75,8 @@ func NewInsufficientResourceError(tenant *Tenant, resourceName ResourceName, inc
 	}
 }
 
-// concurrent update safe?
-// v1.18 server side apply
-func updateTenantResource(tenant *Tenant, resourceName ResourceName, changes resource.Quantity) error {
-	if changes.IsZero() {
-		return nil
-	}
-
-	limit := tenant.Spec.ResourceQuota[resourceName]
-	used := tenant.Status.UsedResourceQuota[resourceName]
-	used.Add(changes)
-
-	// used + increment > limit
-	if used.AsDec().Cmp(limit.AsDec()) > 0 {
-		return NewInsufficientResourceError(tenant, resourceName, changes)
-	}
-
-	tenantCopy := tenant.DeepCopy()
-
-	if tenantCopy.Status.UsedResourceQuota == nil {
-		tenantCopy.Status.UsedResourceQuota = make(ResourceList)
-	}
-
-	tenantCopy.Status.UsedResourceQuota[resourceName] = used
-
-	return webhookClient.Status().Patch(context.Background(), tenantCopy, client.MergeFrom(tenant))
-}
-
 func UpdateTenantStatus(tenant Tenant) error {
 	return webhookClient.Status().Update(context.Background(), &tenant)
-}
-
-func AllocateTenantResource(obj runtime.Object, resourceName ResourceName, increment resource.Quantity) error {
-	if increment.IsZero() {
-		return nil
-	}
-
-	tenant, err := GetTenantFromObj(obj)
-
-	if err != nil {
-		return err
-	}
-
-	return updateTenantResource(tenant, resourceName, increment)
-}
-
-func ReleaseTenantResource(obj runtime.Object, resourceName ResourceName, decrement resource.Quantity) error {
-	if decrement.IsZero() {
-		return nil
-	}
-
-	tenant, err := GetTenantFromObj(obj)
-
-	if err != nil {
-		return err
-	}
-
-	decrement.Neg()
-
-	return updateTenantResource(tenant, resourceName, decrement)
 }
 
 func HasTenantSet(obj runtime.Object) bool {
