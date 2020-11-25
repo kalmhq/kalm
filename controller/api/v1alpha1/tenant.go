@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -25,11 +26,7 @@ func initEvaluatorRegistry() {
 
 	evaluators := make(map[schema.GroupKind]TenantEvaluator)
 
-	nsGK := schema.GroupKind{Group: "", Kind: "Namespace"}
-	evaluators[nsGK] = nsEvaluator{}
-
-	httpsCertGK := schema.GroupKind{Group: GroupVersion.Group, Kind: "HttpsCert"}
-	evaluators[httpsCertGK] = httpsCertEvaluator{}
+	// dedicated evaluators
 
 	podGK := schema.GroupKind{Group: "", Kind: "Pod"}
 	evaluators[podGK] = podEvaluator{}
@@ -37,8 +34,27 @@ func initEvaluatorRegistry() {
 	pvcGK := schema.GroupKind{Group: "", Kind: "PersistentVolumeClaim"}
 	evaluators[pvcGK] = pvcEvaluator{}
 
+	// native Resource using CntEvaluator
+
+	nsGK := schema.GroupKind{Group: "", Kind: "Namespace"}
+	evaluators[nsGK] = cntEvaluator{
+		ListType:     reflect.TypeOf(corev1.NamespaceList{}),
+		ResourceName: ResourceApplicationsCount,
+	}
+
 	svcGK := schema.GroupKind{Group: "", Kind: "Service"}
-	evaluators[svcGK] = svcEvaluator{}
+	evaluators[svcGK] = cntEvaluator{
+		ListType:     reflect.TypeOf(corev1.ServiceList{}),
+		ResourceName: ResourceServicesCount,
+	}
+
+	// CRD using CntEvaluator
+
+	httpsCertGK := schema.GroupKind{Group: GroupVersion.Group, Kind: "HttpsCert"}
+	evaluators[httpsCertGK] = cntEvaluator{
+		ListType:     reflect.TypeOf(HttpsCertList{}),
+		ResourceName: ResourceHttpsCertsCount,
+	}
 
 	accessTokenGK := schema.GroupKind{Group: GroupVersion.Group, Kind: "AccessToken"}
 	evaluators[accessTokenGK] = cntEvaluator{
@@ -69,8 +85,6 @@ func initEvaluatorRegistry() {
 		ListType:     reflect.TypeOf(RoleBindingList{}),
 		ResourceName: ResourceRoleBindingCount,
 	}
-
-	//todo more evaluator
 
 	evaluatorRegistry.evaluators = evaluators
 }
