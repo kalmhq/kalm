@@ -8,6 +8,9 @@ const (
 
 	// Event Reason
 	ReasonExceedingQuota = "ExceedingQuota"
+
+	// Tenant
+	DefaultSystemTenant = "global"
 )
 
 // Error
