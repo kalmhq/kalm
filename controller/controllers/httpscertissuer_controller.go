@@ -443,7 +443,7 @@ func init() {
 	if os.Getenv("LETSENCRYPT_ACME_ISSUER_SERVER_URL") != "" {
 		letsEncryptACMEIssuerServerURL = os.Getenv("LETSENCRYPT_ACME_ISSUER_SERVER_URL")
 	} else {
-		letsEncryptACMEIssuerServerURL = "https://acme-v02.api.letsencrypt.org/directory"
+		letsEncryptACMEIssuerServerURL = "https://acme-staging-v02.api.letsencrypt.org/directory"
 	}
 }
 
