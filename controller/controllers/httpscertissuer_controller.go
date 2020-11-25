@@ -18,8 +18,6 @@ package controllers
 import (
 	"bytes"
 	"context"
-	"crypto/ecdsa"
-	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -43,6 +41,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
 
@@ -379,11 +378,6 @@ func getPrvKeyNameForIssuer(issuer corev1alpha1.HttpsCertIssuer) string {
 }
 
 func (r *HttpsCertIssuerReconciler) generateRandomPrvKeyAndCrtForCA() (prvKey []byte, crt []byte, err error) {
-	//priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	//if err != nil {
-	//	log.Fatalf("Failed to generate private key: %v", err)
-	//	return nil, nil, err
-	//}
 	caPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
 		return nil, nil, err
@@ -424,26 +418,32 @@ func (r *HttpsCertIssuerReconciler) generateRandomPrvKeyAndCrtForCA() (prvKey []
 	return keyOutBuf.Bytes(), certOutBuf.Bytes(), nil
 }
 
-func publicKey(priv interface{}) interface{} {
-	switch k := priv.(type) {
-	case *rsa.PrivateKey:
-		return &k.PublicKey
-	case *ecdsa.PrivateKey:
-		return &k.PublicKey
-	case ed25519.PrivateKey:
-		return k.Public().(ed25519.PublicKey)
-	default:
-		return nil
-	}
-}
+// func publicKey(priv interface{}) interface{} {
+// 	switch k := priv.(type) {
+// 	case *rsa.PrivateKey:
+// 		return &k.PublicKey
+// 	case *ecdsa.PrivateKey:
+// 		return &k.PublicKey
+// 	case ed25519.PrivateKey:
+// 		return k.Public().(ed25519.PublicKey)
+// 	default:
+// 		return nil
+// 	}
+// }
 
 var letsEncryptACMEIssuerServerURL string
 
 func init() {
-	if os.Getenv("LETSENCRYPT_ACME_ISSUER_SERVER_URL") != "" {
-		letsEncryptACMEIssuerServerURL = os.Getenv("LETSENCRYPT_ACME_ISSUER_SERVER_URL")
-	} else {
+	customizeIssuerURL := os.Getenv(v1alpha1.ENV_LETSENCRYPT_ACME_ISSUER_SERVER_URL)
+	useLetEncryptProductionAPI := os.Getenv(v1alpha1.ENV_USE_LETSENCRYPT_PRODUCTION_API) == "true"
+
+	if customizeIssuerURL != "" {
+		letsEncryptACMEIssuerServerURL = customizeIssuerURL
+	} else if useLetEncryptProductionAPI {
 		letsEncryptACMEIssuerServerURL = "https://acme-v02.api.letsencrypt.org/directory"
+	} else {
+		// default is using test api from letsencrypt
+		letsEncryptACMEIssuerServerURL = "https://acme-staging-v02.api.letsencrypt.org/directory"
 	}
 }
 

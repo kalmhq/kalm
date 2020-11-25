@@ -37,8 +37,12 @@ spec:
             controller:
               description: Controller Config
               properties:
+                useLetsencryptProductionAPI:
+                  type: boolean
                 version:
                   type: string
+              required:
+              - useLetsencryptProductionAPI
               type: object
             dashboard:
               description: Dashboard Config
