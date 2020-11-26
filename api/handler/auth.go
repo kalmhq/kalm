@@ -28,7 +28,6 @@ func (h *ApiHandler) handleValidateToken(c echo.Context) error {
 	token := auth.ExtractTokenFromHeader(c.Request().Header.Get(echo.HeaderAuthorization))
 
 	_, err := h.clientManager.GetClientInfoFromToken(token)
-
 	if err != nil {
 		return err
 	}
@@ -50,8 +49,19 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 	res.Email = clientInfo.Email
 	res.Groups = clientInfo.Groups
 	res.Authorized = true
+
 	res.Tenants = clientInfo.Tenants
 	res.Tenant = clientInfo.Tenant
+
+	if h.IsLocalMode {
+		if len(res.Tenants) == 0 {
+			res.Tenants = []string{DefaultTenantUserForLocal}
+		}
+
+		if res.Tenant == "" {
+			res.Tenant = DefaultTenantUserForLocal
+		}
+	}
 
 	var subjects []string
 	if clientInfo.Impersonation == "" {

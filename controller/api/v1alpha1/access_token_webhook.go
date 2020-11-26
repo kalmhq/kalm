@@ -19,6 +19,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 
 	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
@@ -74,9 +75,6 @@ func (r *AccessToken) ValidateCreate() error {
 		dockerregistrylog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
 		return err
 	}
-	//if err := AllocateTenantResource(r, ResourceAccessTokensCount, resource.MustParse("1")); err != nil {
-	//	return err
-	//}
 
 	return nil
 }
@@ -134,9 +132,6 @@ func (r *AccessToken) ValidateDelete() error {
 	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		accesstokenlog.Error(err, "fail to release AccessTokenCnt, ignored", "name", r.Name)
 	}
-	//if err := ReleaseTenantResource(r, ResourceAccessTokensCount, resource.MustParse("1")); err != nil {
-	//	accesstokenlog.Error(err, "fail to release AccessTokenCnt, ignored", "name", r.Name)
-	//}
 
 	return nil
 }
@@ -181,5 +176,3 @@ func (r *AccessToken) validate() error {
 
 	return rst
 }
-
-// type AccessToken

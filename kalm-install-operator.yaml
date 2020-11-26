@@ -346,6 +346,7 @@ rules:
       - policy
     resources:
       - poddisruptionbudgets*
+      - podsecuritypolicies
     verbs:
       - '*'
   - apiGroups:

@@ -249,7 +249,19 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		}
 	}
 
-	return r.reconcileKalmDashboard(config, ctx, log)
+	if err := r.reconcileKalmDashboard(config, ctx, log); err != nil {
+		return err
+	}
+
+	isLocalMode := config.Spec.KalmType == "local"
+	if isLocalMode {
+		if err := r.reconcileDefaultTenantForLocalMode(ctx); err != nil {
+			return err
+		}
+
+	}
+
+	return nil
 }
 
 func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx context.Context) error {

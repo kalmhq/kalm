@@ -6,3 +6,5 @@ coverage.txt
 
 *.local.yaml
 .vscode
+
+*.swp

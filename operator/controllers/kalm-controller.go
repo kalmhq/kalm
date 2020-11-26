@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	installV1Alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
 	appsV1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/apps/v1"
@@ -72,6 +72,13 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 
 	authProxyVersion := getKalmAuthProxyVersion(config)
 
+	var envUseLetsencryptProductionAPI string
+	if config.Spec.Controller != nil && config.Spec.Controller.UseLetsEncryptProductionAPI {
+		envUseLetsencryptProductionAPI = "true"
+	} else {
+		envUseLetsencryptProductionAPI = "false"
+	}
+
 	dpName := "kalm-controller"
 	expectedKalmController := appsV1.Deployment{
 		ObjectMeta: ctrl.ObjectMeta{
@@ -124,6 +131,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 								{Name: "ENABLE_WEBHOOKS", Value: "true"},
 								{Name: "KALM_VERSION", Value: controllerImgTag},
 								{Name: "KALM_AUTH_PROXY_VERSION", Value: authProxyVersion},
+								{Name: v1alpha1.ENV_USE_LETSENCRYPT_PRODUCTION_API, Value: envUseLetsencryptProductionAPI},
 							},
 							Ports: []corev1.ContainerPort{
 								{
@@ -206,7 +214,7 @@ func getControllerArgs(kalmType string) []string {
 	return args
 }
 
-func getKalmControllerVersion(config *installV1Alpha1.KalmOperatorConfig) string {
+func getKalmControllerVersion(config *installv1alpha1.KalmOperatorConfig) string {
 	c := config.Spec.Controller
 	if c != nil {
 		if c.Version != nil && *c.Version != "" {
@@ -225,6 +233,6 @@ func getKalmControllerVersion(config *installV1Alpha1.KalmOperatorConfig) string
 	return "latest"
 }
 
-func getKalmAuthProxyVersion(config *installV1Alpha1.KalmOperatorConfig) string {
+func getKalmAuthProxyVersion(config *installv1alpha1.KalmOperatorConfig) string {
 	return getKalmDashboardVersion(config)
 }

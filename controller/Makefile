@@ -39,6 +39,9 @@ run: generate fmt vet manifests go-generate
 dev: generate fmt vet manifests go-generate setup_webhook_development_env
 	WEBHOOKS_CERTS_DIR=./tmp ENABLE_WEBHOOKS=true go run main.go
 
+dev-local-mode: generate fmt vet manifests go-generate setup_webhook_development_env
+	WEBHOOKS_CERTS_DIR=./tmp ENABLE_WEBHOOKS=true go run main.go --kalm-type=local
+
 # Install CRDs into a cluster
 install: manifests
 	kustomize build config/crd | kubectl apply -f -

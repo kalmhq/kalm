@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -50,7 +51,8 @@ func (e *InsufficientResourceError) Error() string {
 	)
 }
 
-var NoTenantFoundError error = fmt.Errorf("No Tenant Error")
+var NoTenantFoundError error = fmt.Errorf("No Tenant Error")              // Tenant resource not exist
+var NoTenantLabelSetError error = fmt.Errorf("No Tenant Label Set Error") // tenant label is not set in Object
 var TenantChangedError error = fmt.Errorf("Tenant can't not be changed")
 
 func IsNoTenantFoundError(err error) bool {
@@ -73,228 +75,8 @@ func NewInsufficientResourceError(tenant *Tenant, resourceName ResourceName, inc
 	}
 }
 
-func updateTenantResourceInBatch(tenant *Tenant, resourceDeltaList map[ResourceName]resource.Quantity) error {
-	if len(resourceDeltaList) == 0 {
-		return nil
-	}
-
-	tenantCopy := tenant.DeepCopy()
-	if tenantCopy.Status.UsedResourceQuota == nil {
-		tenantCopy.Status.UsedResourceQuota = make(ResourceList)
-	}
-
-	for resourceName, delta := range resourceDeltaList {
-		limit := tenant.Spec.ResourceQuota[resourceName]
-
-		updatedUsed := tenant.Status.UsedResourceQuota[resourceName]
-		updatedUsed.Add(delta)
-
-		// used + increment > limit
-		if updatedUsed.AsDec().Cmp(limit.AsDec()) > 0 {
-			return NewInsufficientResourceError(tenant, resourceName, delta)
-		}
-
-		tenantCopy.Status.UsedResourceQuota[resourceName] = updatedUsed
-	}
-
-	// return webhookClient.Status().Update(context.Background(), tenantCopy)
-	return webhookClient.Status().Patch(context.Background(), tenantCopy, client.MergeFrom(tenant))
-}
-
-// diff between this and AdjustTenantByResourceListDelta() is:
-//   resourceList is newQuantity not delta
-func SetTenantResourceListByName(tenantName string, resourceList ResourceList) error {
-	if len(resourceList) == 0 {
-		return nil
-	}
-
-	// code review from david: @mingmin
-	// Should we have retry logic here in case the update failed due to version changing?
-
-	var tenant Tenant
-	if err := webhookClient.Get(context.Background(), types.NamespacedName{
-		Name: tenantName,
-	}, &tenant); err != nil {
-		return err
-	}
-
-	return setTenantResourceList(&tenant, resourceList)
-}
-
-// concurrent update safe?
-// v1.18 server side apply
-func updateTenantResource(tenant *Tenant, resourceName ResourceName, changes resource.Quantity) error {
-	if changes.IsZero() {
-		return nil
-	}
-
-	limit := tenant.Spec.ResourceQuota[resourceName]
-	used := tenant.Status.UsedResourceQuota[resourceName]
-	used.Add(changes)
-
-	// used + increment > limit
-	if used.AsDec().Cmp(limit.AsDec()) > 0 {
-		return NewInsufficientResourceError(tenant, resourceName, changes)
-	}
-
-	tenantCopy := tenant.DeepCopy()
-
-	if tenantCopy.Status.UsedResourceQuota == nil {
-		tenantCopy.Status.UsedResourceQuota = make(ResourceList)
-	}
-
-	tenantCopy.Status.UsedResourceQuota[resourceName] = used
-
-	return webhookClient.Status().Patch(context.Background(), tenantCopy, client.MergeFrom(tenant))
-}
-
-func setTenantResource(tenant *Tenant, resourceName ResourceName, quantity resource.Quantity) error {
-
-	tenantCopy := tenant.DeepCopy()
-	if tenantCopy.Status.UsedResourceQuota == nil {
-		tenantCopy.Status.UsedResourceQuota = make(ResourceList)
-	}
-
-	limit := tenant.Spec.ResourceQuota[resourceName]
-
-	used := quantity
-	oldUsed := tenantCopy.Status.UsedResourceQuota[resourceName]
-
-	if used.AsDec().Cmp(limit.AsDec()) > 0 {
-		used.Sub(oldUsed)
-		return NewInsufficientResourceError(tenant, resourceName, used)
-	}
-
-	tenantCopy.Status.UsedResourceQuota[resourceName] = quantity
-
-	return webhookClient.Status().Patch(context.Background(), tenantCopy, client.MergeFrom(tenant))
-}
-
-func setTenantResourceList(tenant *Tenant, resourceList ResourceList) error {
-	tenantCopy := tenant.DeepCopy()
-	if tenantCopy.Status.UsedResourceQuota == nil {
-		tenantCopy.Status.UsedResourceQuota = make(ResourceList)
-	}
-
-	for resourceName, newQuantity := range resourceList {
-		limit := tenant.Spec.ResourceQuota[resourceName]
-
-		// newQuantity > limit
-		if newQuantity.AsDec().Cmp(limit.AsDec()) > 0 {
-			delta := newQuantity.DeepCopy()
-			delta.Sub(tenant.Status.UsedResourceQuota[resourceName])
-
-			return NewInsufficientResourceError(tenant, resourceName, delta)
-		}
-
-		tenantCopy.Status.UsedResourceQuota[resourceName] = newQuantity
-	}
-
-	return webhookClient.Status().Update(context.Background(), tenantCopy)
-}
-
 func UpdateTenantStatus(tenant Tenant) error {
 	return webhookClient.Status().Update(context.Background(), &tenant)
-}
-
-func AllocateTenantResource(obj runtime.Object, resourceName ResourceName, increment resource.Quantity) error {
-	if increment.IsZero() {
-		return nil
-	}
-
-	tenant, err := GetTenantFromObj(obj)
-
-	if err != nil {
-		return err
-	}
-
-	return updateTenantResource(tenant, resourceName, increment)
-}
-
-func ReleaseTenantResource(obj runtime.Object, resourceName ResourceName, decrement resource.Quantity) error {
-	if decrement.IsZero() {
-		return nil
-	}
-
-	tenant, err := GetTenantFromObj(obj)
-
-	if err != nil {
-		return err
-	}
-
-	decrement.Neg()
-
-	return updateTenantResource(tenant, resourceName, decrement)
-}
-
-func ReleaseTenantResourceByName(tenantName string, resourceName ResourceName, decrement resource.Quantity) error {
-
-	var tenant Tenant
-
-	if err := webhookClient.Get(context.Background(), types.NamespacedName{
-		Name: tenantName,
-	}, &tenant); err != nil {
-		return err
-	}
-
-	decrement.Neg()
-
-	return updateTenantResource(&tenant, resourceName, decrement)
-}
-
-func SetTenantResourceByName(tenantName string, resourceName ResourceName, quantity resource.Quantity) error {
-
-	var tenant Tenant
-	if err := webhookClient.Get(context.Background(), types.NamespacedName{
-		Name: tenantName,
-	}, &tenant); err != nil {
-		return err
-	}
-
-	return setTenantResource(&tenant, resourceName, quantity)
-}
-
-func AdjustTenantResource(obj runtime.Object, resourceName ResourceName, old resource.Quantity, new resource.Quantity) error {
-	if old.Cmp(new) == 0 {
-		return nil
-	}
-
-	tenant, err := GetTenantFromObj(obj)
-
-	if err != nil {
-		return err
-	}
-
-	new.Sub(old)
-
-	return updateTenantResource(tenant, resourceName, new)
-}
-
-func AdjustTenantResourceByDelta(obj runtime.Object, resourceName ResourceName, delta resource.Quantity) error {
-	if delta.IsZero() {
-		return nil
-	}
-
-	tenant, err := GetTenantFromObj(obj)
-
-	if err != nil {
-		return err
-	}
-
-	return updateTenantResource(tenant, resourceName, delta)
-}
-
-func AdjustTenantByResourceListDelta(obj runtime.Object, resourceListDelta map[ResourceName]resource.Quantity) error {
-	if len(resourceListDelta) == 0 {
-		return nil
-	}
-
-	tenant, err := GetTenantFromObj(obj)
-	if err != nil {
-		return err
-	}
-
-	return updateTenantResourceInBatch(tenant, resourceListDelta)
 }
 
 func HasTenantSet(obj runtime.Object) bool {
@@ -310,21 +92,18 @@ func IsTenantChanged(new, old runtime.Object) bool {
 
 func GetTenantNameFromObj(obj runtime.Object) (string, error) {
 	objMeta, err := meta.Accessor(obj)
-
 	if err != nil {
 		return "", err
 	}
 
 	labels := objMeta.GetLabels()
-
 	if labels == nil {
-		return "", NoTenantFoundError
+		return "", NoTenantLabelSetError
 	}
 
 	tenantName := labels[TenantNameLabelKey]
-
 	if tenantName == "" {
-		return "", NoTenantFoundError
+		return "", NoTenantLabelSetError
 	}
 
 	return tenantName, nil
@@ -346,6 +125,10 @@ func GetTenantByName(tenantName string) (*Tenant, error) {
 
 	var tenant Tenant
 	if err := webhookClient.Get(context.Background(), objectKey, &tenant); err != nil {
+		if errors.IsNotFound(err) {
+			return nil, NoTenantFoundError
+		}
+
 		return nil, err
 	}
 

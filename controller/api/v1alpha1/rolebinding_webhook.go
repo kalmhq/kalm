@@ -19,7 +19,7 @@ import (
 	"crypto/md5"
 	"fmt"
 
-	"k8s.io/apimachinery/pkg/api/resource"
+	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -69,16 +69,22 @@ func (r *RoleBinding) GetNameBaseOnRoleAndSubject() string {
 func (r *RoleBinding) ValidateCreate() error {
 	rolebindinglog.Info("validate create", "name", r.Name)
 
-	if !IsKalmSystemNamespace(r.Namespace) && !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
-
 	if err := r.validate(); err != nil {
 		return err
 	}
 
 	if !IsKalmSystemNamespace(r.Namespace) {
-		return AllocateTenantResource(r, ResourceRoleBindingCount, resource.MustParse("1"))
+		tenant, err := GetTenantFromObj(r)
+		if err != nil {
+			rolebindinglog.Error(err, "fail to get tenant", "ns/name", getKey(r))
+			return err
+		}
+
+		reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Create, false)
+		if err := CheckAndUpdateTenant(tenant.Name, reqInfo, 3); err != nil {
+			rolebindinglog.Error(err, "fail to create roleBindingCount", "ns/name", getKey(r))
+			return err
+		}
 	}
 
 	return nil
@@ -135,8 +141,15 @@ func (r *RoleBinding) ValidateDelete() error {
 		return nil
 	}
 
-	if err := ReleaseTenantResource(r, ResourceRoleBindingCount, resource.MustParse("1")); err != nil {
-		rolebindinglog.Error(err, "fail to release roleBindingCount, ignored", "ns/name", fmt.Sprintf("%s/%s", r.Namespace, r.Name))
+	tenantName := r.Labels[TenantNameLabelKey]
+	if tenantName == "" {
+		rolebindinglog.Info("no tenant label set, ignored", "ns/name", getKey(r))
+		return nil
+	}
+
+	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Delete, false)
+	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
+		rolebindinglog.Error(err, "fail to release roleBindingCount, ignored", "ns/name", getKey(r))
 	}
 
 	return nil
@@ -150,7 +163,7 @@ func (r *RoleBinding) validate() error {
 		if r.Namespace != KalmSystemNamespace {
 			rst = append(rst, KalmValidateError{
 				Err:  "cluster role binding mush be created in kalm-system namespace",
-				Path: fmt.Sprintf(".spec.role"),
+				Path: ".spec.role",
 			})
 		}
 	}

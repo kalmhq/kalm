@@ -52,9 +52,9 @@ spec:
         status:
           description: DnsRecordStatus defines the observed state of DnsRecord
           properties:
-            recordID:
-              type: string
             message:
+              type: string
+            recordID:
               type: string
             status:
               type: string

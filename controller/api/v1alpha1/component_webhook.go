@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/robfig/cron"
+	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -111,6 +112,7 @@ func (r *Component) Default() {
 			}
 
 			r.Spec.Labels[TenantNameLabelKey] = r.Labels[TenantNameLabelKey]
+			componentlog.Info("inherit tenant from ns", "tenant", r.Labels[TenantNameLabelKey])
 		}
 	}
 }
@@ -137,14 +139,17 @@ func (r *Component) ValidateCreate() error {
 
 		// pre-check if resource of this component will exceed quota
 		resList := EstimateResourceConsumption(*r)
+
 		sumResList := SumResourceList(resList, tenant.Status.UsedResourceQuota)
 		// deny the creation if exceed resource quota
 		if exist, infoList := ExistGreaterResourceInList(sumResList, tenant.Spec.ResourceQuota); exist {
+			emitWarning(r, ReasonExceedingQuota, fmt.Sprintf("create this component will exceed resource quota, denied, exceeding list: %s", infoList))
 			return fmt.Errorf("create this component will exceed resource quota, %s", infoList)
 		}
 
-		if err := AdjustTenantResourceByDelta(r, ResourceComponentsCount, resource.MustParse("1")); err != nil {
-			componentlog.Error(err, "tenant fail")
+		reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Create, false)
+		if err := CheckAndUpdateTenant(tenant.Name, reqInfo, 3); err != nil {
+			componentlog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
 			return err
 		}
 	}
@@ -155,37 +160,6 @@ func (r *Component) ValidateCreate() error {
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateUpdate(old runtime.Object) error {
 	componentlog.Info("validate update", "ns", r.Namespace, "name", r.Name)
-
-	// tenant check
-	if !IsKalmSystemNamespace(r.Namespace) {
-		if !HasTenantSet(r) {
-			return NoTenantFoundError
-		}
-
-		if IsTenantChanged(r, old) {
-			return TenantChangedError
-		}
-
-		// deny the update if the replicas is too big
-		oldComponent, oldIsOK := old.(*Component)
-		if oldIsOK {
-			oldRes := EstimateResourceConsumption(*oldComponent)
-			newRes := EstimateResourceConsumption(*r)
-
-			tenant, err := GetTenantFromObj(r)
-			if err != nil {
-				return NoTenantFoundError
-			}
-
-			resDelta := GetDeltaOfResourceList(oldRes, newRes)
-			sumResList := SumResourceList(resDelta, tenant.Status.UsedResourceQuota)
-
-			if exist, infoList := ExistGreaterResourceInList(sumResList, tenant.Spec.ResourceQuota); exist {
-				emitWarning(r, ReasonExceedingQuota, fmt.Sprintf("update of component will exceed resource quota, denied, exceeding list: %s", infoList))
-				return fmt.Errorf("update this component will exceed resource quota")
-			}
-		}
-	}
 
 	var volErrList KalmValidateErrorList
 	// for sts, persistent vols should NOT be updated
@@ -209,14 +183,52 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 	}
 
 	commonValidateErr := r.validate()
-
 	volErrList = append(volErrList, commonValidateErr...)
 
-	if len(volErrList) <= 0 {
-		return nil
+	if len(volErrList) > 0 {
+		return error(volErrList)
 	}
 
-	return error(volErrList)
+	// tenant check
+	if !IsKalmSystemNamespace(r.Namespace) {
+		tenant, err := GetTenantFromObj(r)
+		if err != nil {
+			return err
+		}
+
+		if IsTenantChanged(r, old) {
+			return TenantChangedError
+		}
+
+		// deny the update if the replicas is too big
+		oldComponent, ok := old.(*Component)
+		if !ok {
+			return fmt.Errorf("invalid old component")
+		}
+
+		oldRes := EstimateResourceConsumption(*oldComponent)
+		newRes := EstimateResourceConsumption(*r)
+
+		resDelta := GetDeltaOfResourceList(oldRes, newRes)
+		sumResList := SumResourceList(resDelta, tenant.Status.UsedResourceQuota)
+
+		if exist, infoList := ExistGreaterResourceInList(sumResList, tenant.Spec.ResourceQuota); exist {
+			isMarkedAsExceedingQuota := r.Labels[KalmLabelKeyExceedingQuota] == "true"
+			tryingToUseMore, _ := ExistGreaterResourceInList(newRes, oldRes)
+
+			if !tryingToUseMore && isMarkedAsExceedingQuota {
+				componentlog.Info("component exceeding quota but stopping")
+				return nil
+			}
+
+			fmt.Println(">>>>>>>>", isMarkedAsExceedingQuota, tryingToUseMore, r.Labels)
+
+			emitWarning(r, ReasonExceedingQuota, fmt.Sprintf("update of component will exceed resource quota, denied, exceeding list: %s", infoList))
+			return fmt.Errorf("update this component will exceed resource quota")
+		}
+	}
+
+	return nil
 }
 
 func emitWarning(obj runtime.Object, reason, msg string) {
@@ -306,8 +318,12 @@ func (r *Component) ValidateDelete() error {
 	}
 
 	// release resource
-	if err := ReleaseTenantResource(r, ResourceComponentsCount, resource.MustParse("1")); err != nil {
-		componentlog.Error(err, "fail to release componentCnt, ignored", "ns/name", fmt.Sprintf("%s/%s", r.Namespace, r.Name))
+	tenantName := r.Labels[TenantNameLabelKey]
+	if tenantName != "" {
+		reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Delete, false)
+		if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
+			componentlog.Error(err, "fail to release componentCnt, ignored", "ns/name", getKey(r))
+		}
 	}
 
 	return nil

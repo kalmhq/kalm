@@ -67,6 +67,9 @@ type SingleSignOnConfigSpec struct {
 	ExternalEnvoyExtAuthz *ExtAuthzEndpoint `json:"externalEnvoyExtAuthz,omitempty"`
 
 	IDTokenExpirySeconds *uint32 `json:"idTokenExpirySeconds,omitempty"`
+
+	// +optional
+	IsKalmInLocalMode bool `json:"isKalmInLocalMode"`
 }
 
 // SingleSignOnConfigStatus defines the observed state of SingleSignOnConfig

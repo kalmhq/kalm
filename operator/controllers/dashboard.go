@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/go-logr/logr"
-	coreV1Alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
-	installV1Alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
+	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
+	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
 	"istio.io/api/security/v1beta1"
 	v1beta13 "istio.io/api/type/v1beta1"
 	v1beta12 "istio.io/client-go/pkg/apis/security/v1beta1"
@@ -18,7 +18,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func getKalmDashboardVersion(config *installV1Alpha1.KalmOperatorConfig) string {
+func getKalmDashboardVersion(config *installv1alpha1.KalmOperatorConfig) string {
 	c := config.Spec.Dashboard
 	if c != nil {
 		if c.Version != nil && *c.Version != "" {
@@ -37,7 +37,7 @@ func getKalmDashboardVersion(config *installV1Alpha1.KalmOperatorConfig) string 
 	return "latest"
 }
 
-func getKalmDashboardCommand(config *installV1Alpha1.KalmOperatorConfig) string {
+func getKalmDashboardCommand(config *installv1alpha1.KalmOperatorConfig) string {
 	var sb strings.Builder
 	sb.WriteString("./kalm-api-server")
 
@@ -56,23 +56,23 @@ func getKalmDashboardCommand(config *installV1Alpha1.KalmOperatorConfig) string 
 	return sb.String()
 }
 
-func getKalmDashboardEnvs(config *installV1Alpha1.KalmOperatorConfig) []coreV1Alpha1.EnvVar {
-	var envs []coreV1Alpha1.EnvVar
+func getKalmDashboardEnvs(config *installv1alpha1.KalmOperatorConfig) []corev1alpha1.EnvVar {
+	var envs []corev1alpha1.EnvVar
 	if config.Spec.Dashboard != nil {
 		for _, nv := range config.Spec.Dashboard.Envs {
-			envs = append(envs, coreV1Alpha1.EnvVar{
+			envs = append(envs, corev1alpha1.EnvVar{
 				Name:  nv.Name,
 				Value: nv.Value,
-				Type:  coreV1Alpha1.EnvVarTypeStatic,
+				Type:  corev1alpha1.EnvVarTypeStatic,
 			})
 		}
 	}
 	return envs
 }
 
-func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installV1Alpha1.KalmOperatorConfig, ctx context.Context, log logr.Logger) error {
+func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installv1alpha1.KalmOperatorConfig, ctx context.Context, log logr.Logger) error {
 	dashboardName := "kalm"
-	dashboard := coreV1Alpha1.Component{}
+	dashboard := corev1alpha1.Component{}
 
 	if config.Spec.SkipKalmDashboardInstallation {
 		err := r.Get(ctx, types.NamespacedName{Name: dashboardName, Namespace: NamespaceKalmSystem}, &dashboard)
@@ -88,18 +88,21 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installV1A
 	command := getKalmDashboardCommand(config)
 	envs := getKalmDashboardEnvs(config)
 
-	expectedDashboard := coreV1Alpha1.Component{
+	expectedDashboard := corev1alpha1.Component{
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: NamespaceKalmSystem,
 			Name:      dashboardName,
+			Labels: map[string]string{
+				corev1alpha1.TenantNameLabelKey: corev1alpha1.DefaultSystemTenantName,
+			},
 		},
-		Spec: coreV1Alpha1.ComponentSpec{
+		Spec: corev1alpha1.ComponentSpec{
 			Image:   fmt.Sprintf("%s:%s", KalmDashboardImgRepo, dashboardVersion),
 			Command: command,
 			Env:     envs,
-			Ports: []coreV1Alpha1.Port{
+			Ports: []corev1alpha1.Port{
 				{
-					Protocol:      coreV1Alpha1.PortProtocolHTTP,
+					Protocol:      corev1alpha1.PortProtocolHTTP,
 					ContainerPort: 3001,
 					ServicePort:   80,
 				},
@@ -119,6 +122,15 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installV1A
 		}
 	} else {
 		dashboard.Spec = expectedDashboard.Spec
+
+		if dashboard.Labels == nil {
+			dashboard.Labels = make(map[string]string)
+		}
+		// inherit labels from expected
+		for k, v := range expectedDashboard.Labels {
+			dashboard.Labels[k] = v
+		}
+
 		r.Log.Info("updating dashboard component in kalm-system")
 
 		if err := r.Client.Update(ctx, &dashboard); err != nil {

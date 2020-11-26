@@ -49,8 +49,7 @@ func (r *HttpRoute) Default() {
 		return
 	}
 
-	err := InheritTenantFromNamespace(r)
-	if err != nil {
+	if err := InheritTenantFromNamespace(r); err != nil {
 		httproutelog.Error(err, "fail to inherit tenant from ns for httpRoute", "httpRoute", r.Name, "ns", r.Namespace)
 	}
 }
@@ -83,15 +82,6 @@ func (r *HttpRoute) ValidateCreate() error {
 	return nil
 }
 
-func httpRoutesToObjList(items []HttpRoute) []runtime.Object {
-	var rst []runtime.Object
-	for i := 0; i < len(items); i++ {
-		item := items[i]
-		rst = append(rst, &item)
-	}
-	return rst
-}
-
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *HttpRoute) ValidateUpdate(old runtime.Object) error {
 	httproutelog.Info("validate update", "name", r.Name)
@@ -114,6 +104,9 @@ func (r *HttpRoute) ValidateDelete() error {
 	httproutelog.Info("validate delete", "name", r.Name)
 
 	tenantName := r.Labels[TenantNameLabelKey]
+	if tenantName == "" {
+		return nil
+	}
 
 	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Delete, false)
 	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {

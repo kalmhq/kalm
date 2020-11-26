@@ -20,6 +20,7 @@ import (
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/server"
 	"github.com/kalmhq/kalm/api/utils"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
@@ -62,6 +63,7 @@ func getOauth2Config() *oauth2.Config {
 	clientSecret = os.Getenv("KALM_OIDC_CLIENT_SECRET")
 	oidcProviderUrl := os.Getenv("KALM_OIDC_PROVIDER_URL")
 	authProxyURL = os.Getenv("KALM_OIDC_AUTH_PROXY_URL")
+	isKalmInLocalMode := os.Getenv(v1alpha1.ENV_KALM_IS_IN_LOCAL_MODE) == "true"
 
 	logger.Info(fmt.Sprintf("ClientID: %s", clientID))
 	logger.Info(fmt.Sprintf("oidcProviderUrl: %s", oidcProviderUrl))
@@ -83,7 +85,12 @@ func getOauth2Config() *oauth2.Config {
 	oidcVerifier = provider.Verifier(&oidc.Config{ClientID: clientID})
 
 	scopes := []string{}
-	scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups", "offline_access", "tenants")
+	if isKalmInLocalMode {
+		scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups", "offline_access")
+	} else {
+		// for SaaS version, introduce extra scope: tenants
+		scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups", "offline_access", "tenants")
+	}
 
 	oauth2Config = &oauth2.Config{
 		ClientID:     clientID,
