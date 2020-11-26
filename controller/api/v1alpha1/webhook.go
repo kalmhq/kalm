@@ -175,7 +175,7 @@ func InheritTenantFromNamespace(obj runtime.Object) error {
 
 	if tenant == "" {
 		//?
-		tenant = DefaultGlobalTenantName
+		tenant = DefaultFakeTenantName
 	}
 
 	labels[TenantNameLabelKey] = tenant

@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	TenantNameLabelKey      = "tenant"
-	DefaultGlobalTenantName = "fake"
+	TenantNameLabelKey    = "tenant"
+	DefaultFakeTenantName = "fake"
 )
 
 type ResourceName string

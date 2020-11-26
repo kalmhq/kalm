@@ -29,12 +29,8 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	e.GET("/policies", h.handlePolicies, h.GetUserMiddleware, h.RequireUserMiddleware)
 
 	// watch
-	wsHandler := ws.NewWsHandler(h.clientManager)
-	if h.IsLocalMode {
-		e.GET("/ws", wsHandler.Serve, h.SetTenantForLocalModeIfMissing)
-	} else {
-		e.GET("/ws", wsHandler.Serve)
-	}
+	wsHandler := ws.NewWsHandler(h.clientManager, h.IsLocalMode)
+	e.GET("/ws", wsHandler.Serve)
 
 	// login
 	e.POST("/login/token", h.handleValidateToken)
