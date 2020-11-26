@@ -752,9 +752,8 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 	} else {
 		deployment.Spec.Template = *podTemplateSpec
 
-		//also ensure selector and labels
-		deployment.Spec.Selector.MatchLabels = labelMap
-		deployment.Labels = labelMap
+		// deployment selector(dp.Spec.Selector) is immutable, so no update here
+		// for more: https://github.com/kubernetes/client-go/issues/508#issuecomment-442086621
 	}
 
 	// inherit annotation: AnnoLastUpdatedByWebhook
