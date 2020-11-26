@@ -264,7 +264,6 @@ func (suite *BasicSuite) SetupTestEnv(testEnv *envtest.Environment, disableWebho
 	suite.Require().Nil(NewGatewayReconciler(mgr).SetupWithManager(mgr))
 	suite.Require().Nil(NewSingleSignOnConfigReconciler(mgr).SetupWithManager(mgr))
 	suite.Require().Nil(NewProtectedEndpointReconciler(mgr).SetupWithManager(mgr))
-	suite.Require().Nil(NewDnsRecordReconciler(mgr, &FakeNsRecorder{}).SetupWithManager(mgr))
 	suite.Require().Nil(NewTenantReconciler(mgr).SetupWithManager(mgr))
 
 	v1alpha1.InitializeWebhookClient(mgr)
@@ -280,7 +279,6 @@ func (suite *BasicSuite) SetupTestEnv(testEnv *envtest.Environment, disableWebho
 	suite.Require().Nil((&v1alpha1.SingleSignOnConfig{}).SetupWebhookWithManager(mgr))
 	suite.Require().Nil((&v1alpha1.LogSystem{}).SetupWebhookWithManager(mgr))
 	suite.Require().Nil((&v1alpha1.ACMEServer{}).SetupWebhookWithManager(mgr))
-	suite.Require().Nil((&v1alpha1.DnsRecord{}).SetupWebhookWithManager(mgr))
 
 	mgrStopChannel := make(chan struct{})
 	suite.StopChannel = mgrStopChannel

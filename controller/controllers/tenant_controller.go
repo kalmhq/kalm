@@ -6,9 +6,6 @@ import (
 	"sort"
 	"strconv"
 
-	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -51,10 +48,6 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		} else {
 			return ctrl.Result{}, err
 		}
-	}
-
-	if err := r.reconcileTenantDefaultHttpsCert(&tenant); err != nil {
-		r.Recorder.Event(&tenant, corev1.EventTypeWarning, "Fail to reconcile tenant default https cert", err.Error())
 	}
 
 	surplusResource, noNegative := v1alpha1.GetSurplusResource(tenant)
@@ -210,42 +203,4 @@ func (r *TenantReconciler) tryMarkComponentAsExceedingQuota(comp *v1alpha1.Compo
 	comp.Labels[v1alpha1.KalmLabelKeyExceedingQuota] = "true"
 
 	return r.Update(r.ctx, comp)
-}
-
-func (r *TenantReconciler) reconcileTenantDefaultHttpsCert(tenant *v1alpha1.Tenant) error {
-	var defaultTenantHttpCert v1alpha1.HttpsCert
-	defaultTenantHttpCertName := getDefaultTenantHttpCertName(tenant.Name)
-	if err := r.Get(r.ctx, client.ObjectKey{Namespace: istioNamespace, Name: defaultTenantHttpCertName}, &defaultTenantHttpCert); err != nil {
-		if errors.IsNotFound(err) {
-			domains, err := getTenantDefaultDomains(r.Client, tenant.Name)
-			if err != nil {
-				return err
-			}
-			defaultTenantHttpCert = v1alpha1.HttpsCert{
-				ObjectMeta: v1.ObjectMeta{
-					Name: defaultTenantHttpCertName,
-					Labels: map[string]string{
-						v1alpha1.TenantNameLabelKey:        tenant.Name,
-						v1alpha1.TenantDefaultHttpsCertKey: "true",
-					},
-				},
-				Spec: v1alpha1.HttpsCertSpec{
-					HttpsCertIssuer: v1alpha1.DefaultDNS01IssuerName,
-					Domains:         domains,
-				},
-			}
-
-			if err := ctrl.SetControllerReference(tenant, &defaultTenantHttpCert, r.Scheme); err != nil {
-				return err
-			}
-
-			if err := r.Create(r.ctx, &defaultTenantHttpCert); err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
-	}
-
-	return nil
 }

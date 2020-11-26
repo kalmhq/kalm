@@ -188,18 +188,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if kalmType == "" || kalmType == "saas" {
-		if dnsRecorder, err := controllers.InitCloudflareNsRecorder(mgr.GetClient()); err != nil {
-			setupLog.Error(err, "unable to create dnsRecorder")
-			os.Exit(1)
-		} else {
-			if err = controllers.NewDnsRecordReconciler(mgr, dnsRecorder).SetupWithManager(mgr); err != nil {
-				setupLog.Error(err, "unable to create controller: DnsRecord")
-				os.Exit(1)
-			}
-		}
-	}
-
 	// only run webhook if explicitly declared
 	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
 		v1alpha1.InitializeWebhookClient(mgr)
@@ -262,13 +250,6 @@ func main() {
 		if err = (&corev1alpha1.ACMEServer{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "ACMEServer")
 			os.Exit(1)
-		}
-
-		if kalmType == "" || kalmType == "saas" {
-			if err = (&corev1alpha1.DnsRecord{}).SetupWebhookWithManager(mgr); err != nil {
-				setupLog.Error(err, "unable to create webhook", "webhook", "DnsRecord")
-				os.Exit(1)
-			}
 		}
 
 		hookServer := mgr.GetWebhookServer()

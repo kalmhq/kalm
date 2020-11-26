@@ -4,7 +4,6 @@ go 1.15
 
 require (
 	cloud.google.com/go v0.49.0 // indirect
-	github.com/cloudflare/cloudflare-go v0.13.5
 	github.com/coreos/prometheus-operator v0.29.0
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/docker/distribution v2.7.1+incompatible
@@ -32,7 +31,9 @@ require (
 	go.mongodb.org/mongo-driver v1.3.5 // indirect
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/mod v0.3.0 // indirect
+	golang.org/x/net v0.0.0-20201031054903-ff519b6c9102 // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
+	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
 	golang.org/x/tools v0.0.0-20200616133436-c1934b75d054 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.1.0 // indirect
 	google.golang.org/appengine v1.6.6 // indirect
