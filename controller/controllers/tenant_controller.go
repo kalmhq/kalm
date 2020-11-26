@@ -183,7 +183,7 @@ func (r *TenantReconciler) deleteClusterResource(tenantName string) error {
 }
 
 func (r *TenantReconciler) deleteAll(tenantName string, obj runtime.Object) error {
-	err := r.DeleteAllOf(r.ctx, &v1alpha1.AccessToken{}, &client.DeleteAllOfOptions{
+	err := r.DeleteAllOf(r.ctx, obj, &client.DeleteAllOfOptions{
 		ListOptions: client.ListOptions{
 			LabelSelector: client.MatchingLabelsSelector{
 				Selector: labels.SelectorFromSet(map[string]string{
