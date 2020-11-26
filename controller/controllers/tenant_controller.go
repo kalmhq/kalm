@@ -7,7 +7,11 @@ import (
 	"strconv"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/utils"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -33,6 +37,8 @@ func (r *TenantReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+const TenantFinalizerName = "core.kalm.dev/tenant-finalizer"
+
 func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	tenantName := req.Name
 
@@ -45,9 +51,34 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return ctrl.Result{}, nil
-		} else {
-			return ctrl.Result{}, err
 		}
+
+		return ctrl.Result{}, err
+	}
+
+	if tenant.DeletionTimestamp == nil || tenant.DeletionTimestamp.IsZero() {
+		// tenant not being deleted, add custom finalizer
+		if !utils.ContainsString(tenant.Finalizers, TenantFinalizerName) {
+			tenant.Finalizers = append(tenant.Finalizers, TenantFinalizerName)
+
+			if err := r.Update(r.ctx, &tenant); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+	} else {
+		// tenant being deleted, clean child resources
+		if utils.ContainsString(tenant.Finalizers, TenantFinalizerName) {
+			if err := r.deleteExternalResources(tenant); err != nil {
+				return ctrl.Result{}, err
+			}
+
+			tenant.Finalizers = utils.RemoveString(tenant.Finalizers, TenantFinalizerName)
+			if err := r.Update(context.Background(), &tenant); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+		return ctrl.Result{}, nil
 	}
 
 	surplusResource, noNegative := v1alpha1.GetSurplusResource(tenant)
@@ -89,12 +120,91 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-func (r *TenantReconciler) findComponentsToSchedule(tenant string, surplusResource v1alpha1.ResourceList) ([]v1alpha1.Component, error) {
-	r.Log.Info("findComponentsToSchedule", "tenant", tenant, "surplusRes", surplusResource)
+// two types of child resources: namespaced & not-namespaced
+func (r *TenantReconciler) deleteExternalResources(tenant v1alpha1.Tenant) error {
+	if err := r.deleteNoneSystemNamespace(tenant.Name); err != nil {
+		return err
+	}
+
+	if err := r.deleteClusterResource(tenant.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// rm namespace will clean all namespaced resources
+func (r *TenantReconciler) deleteNoneSystemNamespace(tenantName string) error {
+	var nsList corev1.NamespaceList
+	if err := r.List(r.ctx, &nsList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenantName}); err != nil {
+		return err
+	}
+
+	var noneSystemNS []corev1.Namespace
+	for _, ns := range nsList.Items {
+		if v1alpha1.IsKalmSystemNamespace(ns.Name) {
+			continue
+		}
+
+		noneSystemNS = append(noneSystemNS, ns)
+	}
+
+	for _, ns := range noneSystemNS {
+		if ns.DeletionTimestamp != nil {
+			continue
+		}
+
+		if err := r.Delete(r.ctx, &ns); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// cluster scope resource:
+//   - accessToken
+//   - docker registry
+//   - httpscert
+func (r *TenantReconciler) deleteClusterResource(tenantName string) error {
+	if err := r.deleteAll(tenantName, &v1alpha1.AccessToken{}); err != nil {
+		return err
+	}
+
+	if err := r.deleteAll(tenantName, &v1alpha1.DockerRegistry{}); err != nil {
+		return err
+	}
+
+	if err := r.deleteAll(tenantName, &v1alpha1.HttpsCert{}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *TenantReconciler) deleteAll(tenantName string, obj runtime.Object) error {
+	err := r.DeleteAllOf(r.ctx, &v1alpha1.AccessToken{}, &client.DeleteAllOfOptions{
+		ListOptions: client.ListOptions{
+			LabelSelector: client.MatchingLabelsSelector{
+				Selector: labels.SelectorFromSet(map[string]string{
+					v1alpha1.TenantNameLabelKey: tenantName,
+				}),
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *TenantReconciler) findComponentsToSchedule(tenantName string, surplusResource v1alpha1.ResourceList) ([]v1alpha1.Component, error) {
+	r.Log.Info("findComponentsToSchedule", "tenant", tenantName, "surplusRes", surplusResource)
 
 	var compList v1alpha1.ComponentList
 	err := r.List(r.ctx, &compList, client.MatchingLabels{
-		v1alpha1.TenantNameLabelKey:         tenant,
+		v1alpha1.TenantNameLabelKey:         tenantName,
 		v1alpha1.KalmLabelKeyExceedingQuota: "true",
 	})
 	if err != nil {
