@@ -434,7 +434,6 @@ func (r *HttpsCertIssuerReconciler) generateRandomPrvKeyAndCrtForCA() (prvKey []
 var letsEncryptACMEIssuerServerURL string
 
 func init() {
-<<<<<<< HEAD
 	customizeIssuerURL := os.Getenv(v1alpha1.ENV_LETSENCRYPT_ACME_ISSUER_SERVER_URL)
 	useLetEncryptProductionAPI := os.Getenv(v1alpha1.ENV_USE_LETSENCRYPT_PRODUCTION_API) == "true"
 
@@ -444,11 +443,6 @@ func init() {
 		letsEncryptACMEIssuerServerURL = "https://acme-v02.api.letsencrypt.org/directory"
 	} else {
 		// default is using test api from letsencrypt
-=======
-	if os.Getenv("LETSENCRYPT_ACME_ISSUER_SERVER_URL") != "" {
-		letsEncryptACMEIssuerServerURL = os.Getenv("LETSENCRYPT_ACME_ISSUER_SERVER_URL")
-	} else {
->>>>>>> multiple-tenancy
 		letsEncryptACMEIssuerServerURL = "https://acme-staging-v02.api.letsencrypt.org/directory"
 	}
 }
