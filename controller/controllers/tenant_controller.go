@@ -225,7 +225,8 @@ func (r *TenantReconciler) reconcileTenantDefaultHttpsCert(tenant *v1alpha1.Tena
 				ObjectMeta: v1.ObjectMeta{
 					Name: defaultTenantHttpCertName,
 					Labels: map[string]string{
-						v1alpha1.TenantNameLabelKey: tenant.Name,
+						v1alpha1.TenantNameLabelKey:        tenant.Name,
+						v1alpha1.TenantDefaultHttpsCertKey: "true",
 					},
 				},
 				Spec: v1alpha1.HttpsCertSpec{
