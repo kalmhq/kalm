@@ -16,15 +16,12 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
@@ -194,41 +191,5 @@ func (r *HttpsCert) validate() error {
 		return nil
 	}
 
-	return rst
-}
-
-var _ TenantEvaluator = &httpsCertEvaluator{}
-
-type httpsCertEvaluator struct {
-}
-
-func (e httpsCertEvaluator) Usage(reqInfo AdmissionRequestInfo) (ResourceList, error) {
-	tenantName, err := GetTenantNameFromObj(reqInfo.Obj)
-	if err != nil {
-		return nil, NoTenantFoundError
-	}
-
-	var certList HttpsCertList
-	if err := webhookClient.List(context.Background(), &certList, client.MatchingLabels{TenantNameLabelKey: tenantName}); err != nil {
-		return nil, err
-	}
-
-	isDelete := reqInfo.Operation == admissionv1beta1.Delete
-	cnt := reCountResource(reqInfo.Obj, httpsCertsToObjList(certList.Items), isDelete)
-
-	quantity := resource.NewQuantity(int64(cnt), resource.DecimalSI)
-	rst := map[ResourceName]resource.Quantity{
-		ResourceHttpsCertsCount: *quantity,
-	}
-
-	return rst, nil
-}
-
-func httpsCertsToObjList(items []HttpsCert) []runtime.Object {
-	var rst []runtime.Object
-	for i := range items {
-		item := items[i]
-		rst = append(rst, &item)
-	}
 	return rst
 }
