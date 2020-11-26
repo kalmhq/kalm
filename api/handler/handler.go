@@ -30,7 +30,11 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	// watch
 	wsHandler := ws.NewWsHandler(h.clientManager)
-	e.GET("/ws", wsHandler.Serve)
+	if h.IsLocalMode {
+		e.GET("/ws", wsHandler.Serve, h.SetTenantForLocalModeIfMissing)
+	} else {
+		e.GET("/ws", wsHandler.Serve)
+	}
 
 	// login
 	e.POST("/login/token", h.handleValidateToken)
