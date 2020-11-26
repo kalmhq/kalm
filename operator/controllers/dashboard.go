@@ -92,6 +92,9 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installv1a
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: NamespaceKalmSystem,
 			Name:      dashboardName,
+			Labels: map[string]string{
+				corev1alpha1.TenantNameLabelKey: corev1alpha1.DefaultSystemTenantName,
+			},
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			Image:   fmt.Sprintf("%s:%s", KalmDashboardImgRepo, dashboardVersion),
@@ -119,6 +122,15 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installv1a
 		}
 	} else {
 		dashboard.Spec = expectedDashboard.Spec
+
+		if dashboard.Labels == nil {
+			dashboard.Labels = make(map[string]string)
+		}
+		// inherit labels from expected
+		for k, v := range expectedDashboard.Labels {
+			dashboard.Labels[k] = v
+		}
+
 		r.Log.Info("updating dashboard component in kalm-system")
 
 		if err := r.Client.Update(ctx, &dashboard); err != nil {
