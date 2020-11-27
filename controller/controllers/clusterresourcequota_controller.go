@@ -18,19 +18,22 @@ package controllers
 import (
 	"context"
 
-	"github.com/go-logr/logr"
-	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
 
 // ClusterResourceQuotaReconciler reconciles a ClusterResourceQuota object
 type ClusterResourceQuotaReconciler struct {
-	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	*BaseReconciler
+	ctx context.Context
+}
+
+func NewClusterResourceQuotaReconciler(mgr ctrl.Manager) *ClusterResourceQuotaReconciler {
+	return &ClusterResourceQuotaReconciler{
+		BaseReconciler: NewBaseReconciler(mgr, "ClusterResource"),
+		ctx:            context.Background(),
+	}
 }
 
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=clusterresourcequota,verbs=get;list;watch;create;update;patch;delete
@@ -38,15 +41,23 @@ type ClusterResourceQuotaReconciler struct {
 
 func (r *ClusterResourceQuotaReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	_ = context.Background()
-	_ = r.Log.WithValues("clusterresourcequota", req.NamespacedName)
+	log := r.Log.WithValues("clusterresourcequota", req.NamespacedName)
 
-	// your logic here
+	if req.Name != v1alpha1.ClusterResourceQuotaName {
+		log.Info("see record without default name, will do nothing for this invalid record")
+		return ctrl.Result{}, nil
+	}
+
+	//todo
+	// list and sum tenant, update status.usedResource
 
 	return ctrl.Result{}, nil
 }
 
 func (r *ClusterResourceQuotaReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1alpha1.ClusterResourceQuota{}).
+		For(&v1alpha1.ClusterResourceQuota{}).
+		//todo watch Tenants
+		// Watches(&v1alpha1.Tenant{}, ).
 		Complete(r)
 }

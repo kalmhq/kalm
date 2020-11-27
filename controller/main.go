@@ -188,6 +188,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = controllers.NewClusterResourceQuotaReconciler(mgr).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller: ClusterResourceQuota")
+		os.Exit(1)
+	}
+
 	// only run webhook if explicitly declared
 	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
 		v1alpha1.InitializeWebhookClient(mgr)

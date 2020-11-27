@@ -16,30 +16,40 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+const (
+	// for each kalm cluster, there should be only 1 record of ClusterResourceQuota
+	ClusterResourceQuotaName = "kalm-cluster-resource-quota"
+)
 
-// ClusterResourceQuotaSpec defines the desired state of ClusterResourceQuota
 type ClusterResourceQuotaSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of ClusterResourceQuota. Edit ClusterResourceQuota_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	CPU                   resource.Quantity `json:"cpu"`
+	Memory                resource.Quantity `json:"memory"`
+	Storage               resource.Quantity `json:"storage"`
+	EphemeralStorage      resource.Quantity `json:"ephemeralStorage"`
+	Traffic               resource.Quantity `json:"traffic"`
+	ApplicationsCount     resource.Quantity `json:"applicationsCount"`
+	ComponentsCount       resource.Quantity `json:"componentsCount"`
+	ServicesCount         resource.Quantity `json:"servicesCount"`
+	RoleBindingCount      resource.Quantity `json:"roleBindingCount"`
+	AccessTokensCount     resource.Quantity `json:"accessTokens"`
+	DockerRegistriesCount resource.Quantity `json:"dockerRegistriesCount"`
+	HttpRoutesCount       resource.Quantity `json:"httpRoutesCount"`
+	HttpsCertsCount       resource.Quantity `json:"httpsCertsCount"`
 }
 
-// ClusterResourceQuotaStatus defines the observed state of ClusterResourceQuota
 type ClusterResourceQuotaStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	UsedResourceQuota ResourceList `json:"usedResourceQuota"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
-// ClusterResourceQuota is the Schema for the clusterresourcequota API
 type ClusterResourceQuota struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -49,8 +59,6 @@ type ClusterResourceQuota struct {
 }
 
 // +kubebuilder:object:root=true
-
-// ClusterResourceQuotaList contains a list of ClusterResourceQuota
 type ClusterResourceQuotaList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
