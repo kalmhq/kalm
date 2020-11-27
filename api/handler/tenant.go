@@ -18,6 +18,9 @@ func (h *ApiHandler) InstallTenantHandlers(e *echo.Group) {
 	e.POST("/tenants/:name/resume", h.handleResumeTenant) // Resume virtual cluster
 	e.PUT("/tenants/:name", h.handleUpdateTenant)         // update virtual cluster billing plan
 	e.DELETE("/tenants/:name", h.handleDeleteTenant)      // internal
+
+	e.POST("/tenants/:name/owners", h.handleAddTenantOwners)
+	e.DELETE("/tenants/:name/owners", h.handleDeleteTenantOwners)
 }
 
 func (h *ApiHandler) handleListTenants(c echo.Context) error {
@@ -36,7 +39,6 @@ func (h *ApiHandler) handleGetTenant(c echo.Context) error {
 	h.MustCanManageCluster(getCurrentUser(c))
 
 	tenant, err := h.resourceManager.GetTenant(c.Param("name"))
-
 	if err != nil {
 		return err
 	}
@@ -151,4 +153,74 @@ func getResourcesTenantFromContext(c echo.Context) (*resources.Tenant, error) {
 	}
 
 	return &tenant, nil
+}
+
+type ownersReq struct {
+	Owners []string `json:"owners"`
+}
+
+func (h *ApiHandler) handleAddTenantOwners(c echo.Context) error {
+	h.MustCanManageCluster(getCurrentUser(c))
+
+	tenant, err := h.resourceManager.GetTenant(c.Param("name"))
+	if err != nil {
+		return err
+	}
+
+	var req ownersReq
+	if err := c.Bind(&req); err != nil {
+		return err
+	}
+
+	if err := h.addOrDeleteTenantOwners(tenant, req.Owners, true); err != nil {
+		return err
+	}
+
+	return c.JSON(200, tenant)
+}
+
+func (h *ApiHandler) handleDeleteTenantOwners(c echo.Context) error {
+	h.MustCanManageCluster(getCurrentUser(c))
+
+	tenant, err := h.resourceManager.GetTenant(c.Param("name"))
+	if err != nil {
+		return err
+	}
+
+	var req ownersReq
+	if err := c.Bind(&req); err != nil {
+		return err
+	}
+
+	if err := h.addOrDeleteTenantOwners(tenant, req.Owners, false); err != nil {
+		return err
+	}
+
+	return c.JSON(200, tenant)
+}
+
+func (h *ApiHandler) addOrDeleteTenantOwners(tenant *resources.Tenant, ownersToUpdate []string, isAdd bool) error {
+
+	ownerMap := make(map[string]interface{})
+	for _, owner := range tenant.Owners {
+		ownerMap[owner] = true
+	}
+
+	for _, owner := range ownersToUpdate {
+		if isAdd {
+			ownerMap[owner] = true
+		} else {
+			delete(ownerMap, owner)
+		}
+	}
+
+	var updatedOwners []string
+	for k := range ownerMap {
+		updatedOwners = append(updatedOwners, k)
+	}
+
+	tenant.Owners = updatedOwners
+
+	_, err := h.resourceManager.UpdateTenant(tenant)
+	return err
 }
