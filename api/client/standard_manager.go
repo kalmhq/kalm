@@ -377,13 +377,15 @@ func (m *StandardClientManager) GetClientInfoFromContext(c echo.Context) (*Clien
 				lowercaseHost := strings.ToLower(c.Request().Host)
 
 				if strings.HasSuffix(lowercaseHost, "kapp.live") || strings.HasSuffix(lowercaseHost, "kalm.dev") {
-					// x.y.z.tenantName.region.kalm.dev
-					// parts length = 7
-					// tenantName = parts[7-4]
-					parts := strings.Split(c.Request().Host, ".")
+					// for kalm dashboard, visiting url should be like:
+					//   <tenantName>.<regionName>.kalm.dev
+					// which indicates the current tenant
+					hostParts := strings.Split(c.Request().Host, ".")
 
-					if len(parts) >= 4 {
-						tenantName := parts[len(parts)-4]
+					if len(hostParts) == 4 {
+						tenantName := hostParts[0]
+
+						// if exist in Kalm-Sso-Userinfo.tenants
 						if _, ok := m[tenantName]; ok {
 							clientInfo.Tenant = tenantName
 						}
