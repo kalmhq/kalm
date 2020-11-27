@@ -1,7 +1,18 @@
 apiVersion: core.kalm.dev/v1alpha1
 kind: ClusterResourceQuota
 metadata:
-  name: clusterresourcequota-sample
+  name: kalm-cluster-resource-quota
 spec:
-  # Add fields here
-  foo: bar
+  cpu: "1"
+  memory: "1Gi"
+  storage: "1Gi"
+  ephemeralStorage: "1Gi"
+  traffic: "1Gi"
+  applicationsCount: "100"
+  componentsCount: "100"
+  servicesCount: "100"
+  roleBindingCount: "100"
+  accessTokens: "100"
+  dockerRegistriesCount: "100"
+  httpRoutesCount: "100"
+  httpsCertsCount: "100"

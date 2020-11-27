@@ -74,7 +74,9 @@ func (r *ClusterResourceQuotaReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 
 	copied := clusterResourceQuota.DeepCopy()
 	copied.Status.UsedResourceQuota = usedResourceList
-	if err := r.Status().Update(r.ctx, &clusterResourceQuota); err != nil {
+
+	if err := r.Status().Update(r.ctx, copied); err != nil {
+		log.Error(err, "fail when update status")
 		return ctrl.Result{}, err
 	}
 
