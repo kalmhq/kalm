@@ -19,6 +19,7 @@ resources:
   - bases/core.kalm.dev_logsystems.yaml
   - bases/core.kalm.dev_rolebindings.yaml
   - bases/core.kalm.dev_tenants.yaml
+- bases/core.kalm.dev_clusterresourcequota.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:
@@ -38,6 +39,7 @@ patchesStrategicMerge:
 #- patches/webhook_in_protectedendpoints.yaml
 #- patches/webhook_in_deploykeys.yaml
 #- patches/webhook_in_acmeservers.yaml
+#- patches/webhook_in_clusterresourcequota.yaml
 # +kubebuilder:scaffold:crdkustomizewebhookpatch
 
 # [CERTMANAGER] To enable webhook, uncomment all the sections with [CERTMANAGER] prefix.
@@ -56,6 +58,7 @@ patchesStrategicMerge:
 #- patches/cainjection_in_protectedendpoints.yaml
 #- patches/cainjection_in_deploykeys.yaml
 #- patches/cainjection_in_acmeservers.yaml
+#- patches/cainjection_in_clusterresourcequota.yaml
 # +kubebuilder:scaffold:crdkustomizecainjectionpatch
 
 # the following config is for teaching kustomize how to do kustomization for CRDs.
