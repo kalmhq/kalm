@@ -17,8 +17,8 @@ const (
 
 func (h *ApiHandler) SetTenantForLocalModeIfMissing(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		currentUser := c.Get(CURRENT_USER_KEY).(*client.ClientInfo)
-		if currentUser == nil {
+		currentUser, ok := c.Get(CURRENT_USER_KEY).(*client.ClientInfo)
+		if !ok || currentUser == nil {
 			return nil
 		}
 

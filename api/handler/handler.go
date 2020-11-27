@@ -29,7 +29,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	e.GET("/policies", h.handlePolicies, h.GetUserMiddleware, h.RequireUserMiddleware)
 
 	// watch
-	wsHandler := ws.NewWsHandler(h.clientManager)
+	wsHandler := ws.NewWsHandler(h.clientManager, h.IsLocalMode)
 	e.GET("/ws", wsHandler.Serve)
 
 	// login
