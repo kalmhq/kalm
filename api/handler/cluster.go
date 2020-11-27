@@ -17,22 +17,25 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type ClusterInfo struct {
-	Version           string        `json:"version"`
-	IngressIP         string        `json:"ingressIP"`
-	IngressHostname   string        `json:"ingressHostname"`
-	IsProduction      bool          `json:"isProduction"`
-	HttpPort          *int          `json:"httpPort"`
-	HttpsPort         *int          `json:"httpsPort"`
-	TLSPort           *int          `json:"tlsPort"`
-	CanBeInitialized  bool          `json:"canBeInitialized"`
-	KubernetesVersion *version.Info `json:"kubernetesVersion"`
-	KalmVersion       *version.Info `json:"kalmVersion"`
+	Version                 string                `json:"version"`
+	IngressIP               string                `json:"ingressIP"`
+	IngressHostname         string                `json:"ingressHostname"`
+	IsProduction            bool                  `json:"isProduction"`
+	HttpPort                *int                  `json:"httpPort"`
+	HttpsPort               *int                  `json:"httpsPort"`
+	TLSPort                 *int                  `json:"tlsPort"`
+	CanBeInitialized        bool                  `json:"canBeInitialized"`
+	KubernetesVersion       *version.Info         `json:"kubernetesVersion"`
+	KalmVersion             *version.Info         `json:"kalmVersion"`
+	AllocatableResourceList v1alpha1.ResourceList `json:"allocatableResourceList"`
 }
 
 var KubernetesVersion *version.Info
@@ -131,6 +134,18 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 		))
 	}()
 
+	// get nodes info
+	var nodeList coreV1.NodeList
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		if err := h.resourceManager.List(&nodeList); err != nil {
+			log.Log.Info("fail to list nodes", "err", err)
+		}
+	}()
+
 	wg.Wait()
 
 	if info.IsProduction {
@@ -140,7 +155,6 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	}
 
 	k8sClient, err := kubernetes.NewForConfig(getCurrentUser(c).Cfg)
-
 	if err != nil {
 		panic(err)
 	}
@@ -158,6 +172,27 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	}
 
 	info.KalmVersion = KalmVersion
+
+	var allocatableCPU resource.Quantity
+	var allocatableMemory resource.Quantity
+	//todo more resource, disk...
+
+	for _, node := range nodeList.Items {
+		cpu := node.Status.Allocatable.Cpu()
+		if cpu != nil {
+			allocatableCPU.Add(*cpu)
+		}
+
+		mem := node.Status.Allocatable.Memory()
+		if mem != nil {
+			allocatableMemory.Add(*mem)
+		}
+	}
+
+	info.AllocatableResourceList = map[v1alpha1.ResourceName]resource.Quantity{
+		v1alpha1.ResourceCPU:    allocatableCPU,
+		v1alpha1.ResourceMemory: allocatableMemory,
+	}
 
 	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		info.IngressHostname = ""
