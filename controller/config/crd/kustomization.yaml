@@ -19,7 +19,7 @@ resources:
   - bases/core.kalm.dev_logsystems.yaml
   - bases/core.kalm.dev_rolebindings.yaml
   - bases/core.kalm.dev_tenants.yaml
-- bases/core.kalm.dev_clusterresourcequota.yaml
+  - bases/core.kalm.dev_clusterresourcequotas.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:
