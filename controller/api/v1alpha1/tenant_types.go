@@ -41,6 +41,8 @@ const (
 	ResourceDockerRegistriesCount ResourceName = "dockerRegistriesCount"
 	ResourceHttpRoutesCount       ResourceName = "httpRoutesCount"
 	ResourceHttpsCertsCount       ResourceName = "httpsCertsCount"
+
+	ResourceTenantsCount ResourceName = "tenantsCount"
 )
 
 type ResourceList map[ResourceName]resource.Quantity

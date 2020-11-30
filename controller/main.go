@@ -257,6 +257,11 @@ func main() {
 			os.Exit(1)
 		}
 
+		if err = (&corev1alpha1.Tenant{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Tenant")
+			os.Exit(1)
+		}
+
 		hookServer := mgr.GetWebhookServer()
 		// ns webhook
 		hookServer.Register("/validate-v1-ns", &webhook.Admission{

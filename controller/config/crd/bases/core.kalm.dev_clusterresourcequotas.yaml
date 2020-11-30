@@ -38,46 +38,12 @@ spec:
           type: object
         spec:
           properties:
-            accessTokens:
-              type: string
-            applicationsCount:
-              type: string
-            componentsCount:
-              type: string
-            cpu:
-              type: string
-            dockerRegistriesCount:
-              type: string
-            ephemeralStorage:
-              type: string
-            httpRoutesCount:
-              type: string
-            httpsCertsCount:
-              type: string
-            memory:
-              type: string
-            roleBindingCount:
-              type: string
-            servicesCount:
-              type: string
-            storage:
-              type: string
-            traffic:
-              type: string
+            resourceQuota:
+              additionalProperties:
+                type: string
+              type: object
           required:
-          - accessTokens
-          - applicationsCount
-          - componentsCount
-          - cpu
-          - dockerRegistriesCount
-          - ephemeralStorage
-          - httpRoutesCount
-          - httpsCertsCount
-          - memory
-          - roleBindingCount
-          - servicesCount
-          - storage
-          - traffic
+          - resourceQuota
           type: object
         status:
           properties:

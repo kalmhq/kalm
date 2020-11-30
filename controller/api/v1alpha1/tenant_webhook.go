@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -35,12 +36,17 @@ func (r *Tenant) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// +kubebuilder:webhook:verbs=create;update,path=/validate-core-v1alpha1-tenant,mutating=false,failurePolicy=fail,groups=core,resources=tenants,versions=v1alpha1,name=vtenant.kb.io
+// +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-tenant,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=tenants,versions=v1alpha1,name=vtenant.kb.io
 
 var _ webhook.Validator = &Tenant{}
 
 func (r *Tenant) ValidateCreate() error {
 	tenantlog.Info("validate create", "name", r.Name)
+
+	return checkAndUpdateClusterResourceQuota(*r, 3)
+}
+
+func checkAndUpdateClusterResourceQuota(tenant Tenant, remainingRetry int) error {
 
 	var clusterResourceQuota ClusterResourceQuota
 	err := webhookClient.Get(context.Background(), client.ObjectKey{Name: ClusterResourceQuotaName}, &clusterResourceQuota)
@@ -57,33 +63,89 @@ func (r *Tenant) ValidateCreate() error {
 		return err
 	}
 
-	tenantSum := sumResource(append(tenantList.Items, *r))
+	tenantSum := SumTenantResourceWithCurrentOne(tenantList.Items, tenant, true)
 	if exist, infoList := ExistGreaterResourceInList(tenantSum, clusterResourceQuota.Spec.ResourceQuota); exist {
 		return fmt.Errorf("creating this tenant will exceed cluster resource quota, details: %s", infoList)
+	}
+
+	copied := clusterResourceQuota.DeepCopy()
+	copied.Status.UsedResourceQuota = tenantSum
+	if err := webhookClient.Status().Update(context.Background(), copied); err != nil {
+		if remainingRetry <= 0 {
+			return err
+		}
+
+		return checkAndUpdateClusterResourceQuota(tenant, remainingRetry-1)
 	}
 
 	return nil
 }
 
-func sumResource(tenantList []Tenant) ResourceList {
-	rst := make(ResourceList)
+func SumTenantResourceInCluster(tenantList []Tenant, ignoreGlobalTenant bool) ResourceList {
+	var rst ResourceList
 
-	for _, item := range tenantList {
+	var updatedList []Tenant
+	for _, tenant := range tenantList {
+		//ignore global tenant
+		if ignoreGlobalTenant {
+			if tenant.Name == DefaultGlobalTenantName ||
+				tenant.Name == DefaultSystemTenantName {
+				continue
+			}
+		}
+
+		updatedList = append(updatedList, tenant)
+	}
+
+	var tenantCnt int
+	for _, item := range updatedList {
 		if item.DeletionTimestamp != nil {
 			continue
 		}
 
 		rst = SumResourceList(rst, item.Spec.ResourceQuota)
+		tenantCnt += 1
 	}
 
+	// also include cnt
+	cntQuantity := resource.NewQuantity(int64(tenantCnt), resource.DecimalSI)
+	rst[ResourceTenantsCount] = *cntQuantity
+
 	return rst
+}
+
+func SumTenantResourceWithCurrentOne(tenantList []Tenant, current Tenant, ignoreGlobalTenant bool) ResourceList {
+
+	// for update, same key tenant exist in list as current
+	tenantMap := make(map[string]Tenant)
+	for _, item := range tenantList {
+		tenantMap[getKey(&item)] = item
+	}
+	tenantMap[getKey(&current)] = current
+
+	var updatedList []Tenant
+	for _, item := range tenantMap {
+		updatedList = append(updatedList, item)
+	}
+
+	return SumTenantResourceInCluster(updatedList, ignoreGlobalTenant)
 }
 
 func (r *Tenant) ValidateUpdate(old runtime.Object) error {
 	tenantlog.Info("validate update", "name", r.Name)
 
-	// TODO(user): fill in your validation logic upon object update.
-	return nil
+	oldTenant, ok := old.(*Tenant)
+	if !ok {
+		return fmt.Errorf("old object is not Tenant")
+	}
+
+	isRequiringMore, _ := ExistGreaterResourceInList(r.Spec.ResourceQuota, oldTenant.Spec.ResourceQuota)
+
+	if !isRequiringMore {
+		return nil
+	}
+
+	return checkAndUpdateClusterResourceQuota(*r, 3)
 }
 
 func (r *Tenant) ValidateDelete() error {

@@ -67,13 +67,10 @@ func (r *ClusterResourceQuotaReconciler) Reconcile(req ctrl.Request) (ctrl.Resul
 		return ctrl.Result{}, err
 	}
 
-	var usedResourceList v1alpha1.ResourceList
-	for _, tenant := range tenantList.Items {
-		usedResourceList = v1alpha1.SumResourceList(usedResourceList, tenant.Status.UsedResourceQuota)
-	}
+	resourceSum := v1alpha1.SumTenantResourceInCluster(tenantList.Items, true)
 
 	copied := clusterResourceQuota.DeepCopy()
-	copied.Status.UsedResourceQuota = usedResourceList
+	copied.Status.UsedResourceQuota = resourceSum
 
 	if err := r.Status().Update(r.ctx, copied); err != nil {
 		log.Error(err, "fail when update status")
