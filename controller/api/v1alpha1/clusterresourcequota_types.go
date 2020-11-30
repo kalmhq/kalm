@@ -16,7 +16,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -26,19 +25,7 @@ const (
 )
 
 type ClusterResourceQuotaSpec struct {
-	CPU                   resource.Quantity `json:"cpu"`
-	Memory                resource.Quantity `json:"memory"`
-	Storage               resource.Quantity `json:"storage"`
-	EphemeralStorage      resource.Quantity `json:"ephemeralStorage"`
-	Traffic               resource.Quantity `json:"traffic"`
-	ApplicationsCount     resource.Quantity `json:"applicationsCount"`
-	ComponentsCount       resource.Quantity `json:"componentsCount"`
-	ServicesCount         resource.Quantity `json:"servicesCount"`
-	RoleBindingCount      resource.Quantity `json:"roleBindingCount"`
-	AccessTokensCount     resource.Quantity `json:"accessTokens"`
-	DockerRegistriesCount resource.Quantity `json:"dockerRegistriesCount"`
-	HttpRoutesCount       resource.Quantity `json:"httpRoutesCount"`
-	HttpsCertsCount       resource.Quantity `json:"httpsCertsCount"`
+	ResourceQuota ResourceList `json:"resourceQuota"`
 }
 
 type ClusterResourceQuotaStatus struct {

@@ -9,7 +9,6 @@ import (
 	"k8s.io/api/admission/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -65,88 +64,6 @@ func (v *PodAdmissionHandler) tryLabelComponentAsExceedingQuota(ns string, compo
 	}
 
 	return nil
-}
-
-func getResourceListSumOfPods(pods []corev1.Pod) v1alpha1.ResourceList {
-	rstResList := make(map[v1alpha1.ResourceName]resource.Quantity)
-
-	podMap := make(map[string]bool)
-
-	for _, pod := range pods {
-		podKey := fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
-
-		if _, exist := podMap[podKey]; exist {
-			continue
-		} else {
-			podMap[podKey] = true
-		}
-
-		tmp := getResourceOfPod(pod)
-		rstResList = sumOfResourceList(rstResList, tmp)
-	}
-
-	return rstResList
-}
-
-func sumOfResourceList(resourceLists ...v1alpha1.ResourceList) v1alpha1.ResourceList {
-	rstResList := make(map[v1alpha1.ResourceName]resource.Quantity)
-
-	for _, resourceList := range resourceLists {
-		for resName, quantity := range resourceList {
-			inc(rstResList, resName, quantity)
-		}
-	}
-
-	return rstResList
-}
-
-// currently only cpu & mem
-func getResourceOfPod(pod corev1.Pod) v1alpha1.ResourceList {
-
-	rstResList := make(map[v1alpha1.ResourceName]resource.Quantity)
-
-	for _, container := range pod.Spec.Containers {
-		for resName, quantity := range container.Resources.Limits {
-			switch resName {
-			case v1.ResourceCPU:
-				inc(rstResList, v1alpha1.ResourceCPU, quantity)
-			case v1.ResourceMemory:
-				inc(rstResList, v1alpha1.ResourceMemory, quantity)
-			default:
-				podAdmissionHandlerLog.Info("resource limit ignored,", "resourceName", resName)
-			}
-		}
-
-		for _, vol := range pod.Spec.Volumes {
-			podAdmissionHandlerLog.Info("vol info", "vol", vol)
-
-			if vol.EmptyDir != nil {
-				switch vol.EmptyDir.Medium {
-				case corev1.StorageMediumMemory:
-					// todo pod volume: istio-envoy comes without limit
-					if vol.EmptyDir.SizeLimit != nil {
-						inc(rstResList, v1alpha1.ResourceMemory, *vol.EmptyDir.SizeLimit)
-					}
-				case corev1.StorageMediumDefault:
-					// todo create dir on host, maybe we should disable this for saas version
-					podAdmissionHandlerLog.Info("emptyDir using defaultMedium ignored", "medium", vol.EmptyDir.Medium)
-				default:
-					podAdmissionHandlerLog.Info("emptyDir ignored", "medium", vol.EmptyDir.Medium)
-				}
-			}
-		}
-	}
-
-	return rstResList
-}
-
-func inc(resList map[v1alpha1.ResourceName]resource.Quantity, resName v1alpha1.ResourceName, delta resource.Quantity) {
-	if v, exist := resList[resName]; exist {
-		v.Add(delta)
-		resList[resName] = v
-	} else {
-		resList[resName] = delta
-	}
 }
 
 // InjectDecoder injects the decoder.

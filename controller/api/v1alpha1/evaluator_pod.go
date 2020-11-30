@@ -96,19 +96,7 @@ func getResourceListSumOfPods(pods []corev1.Pod) ResourceList {
 		}
 
 		resOfPod := getResourceOfPod(pod)
-		rstResList = sumOfResourceList(rstResList, resOfPod)
-	}
-
-	return rstResList
-}
-
-func sumOfResourceList(resourceLists ...ResourceList) ResourceList {
-	rstResList := make(map[ResourceName]resource.Quantity)
-
-	for _, resourceList := range resourceLists {
-		for resName, quantity := range resourceList {
-			inc(rstResList, resName, quantity)
-		}
+		rstResList = SumResourceList(rstResList, resOfPod)
 	}
 
 	return rstResList
