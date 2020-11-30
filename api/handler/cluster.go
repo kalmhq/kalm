@@ -17,7 +17,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
@@ -134,15 +133,20 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 		))
 	}()
 
-	// get nodes info
-	var nodeList coreV1.NodeList
+	clusterResourceQuota := new(v1alpha1.ClusterResourceQuota)
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 
-		if err := h.resourceManager.List(&nodeList); err != nil {
-			log.Log.Info("fail to list nodes", "err", err)
+		if err := h.resourceManager.Get("", v1alpha1.ClusterResourceQuotaName, clusterResourceQuota); err != nil {
+			if errors.IsNotFound(err) {
+				log.Log.Info("clusterResourceQuota not exist")
+			} else {
+				log.Log.Error(err, "fail to get clusterResourceQuota")
+			}
+
+			clusterResourceQuota = nil
 		}
 	}()
 
@@ -173,25 +177,14 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 
 	info.KalmVersion = KalmVersion
 
-	var allocatableCPU resource.Quantity
-	var allocatableMemory resource.Quantity
-	//todo more resource, disk...
+	if clusterResourceQuota != nil {
+		used := clusterResourceQuota.Status.UsedResourceQuota
+		quota := clusterResourceQuota.Spec.ResourceQuota
 
-	for _, node := range nodeList.Items {
-		cpu := node.Status.Allocatable.Cpu()
-		if cpu != nil {
-			allocatableCPU.Add(*cpu)
-		}
+		// quota - used
+		allocatableResList := v1alpha1.GetDeltaOfResourceList(used, quota, true)
 
-		mem := node.Status.Allocatable.Memory()
-		if mem != nil {
-			allocatableMemory.Add(*mem)
-		}
-	}
-
-	info.AllocatableResourceList = map[v1alpha1.ResourceName]resource.Quantity{
-		v1alpha1.ResourceCPU:    allocatableCPU,
-		v1alpha1.ResourceMemory: allocatableMemory,
+		info.AllocatableResourceList = allocatableResList
 	}
 
 	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
