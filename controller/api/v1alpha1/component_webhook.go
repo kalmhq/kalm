@@ -632,8 +632,8 @@ func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu,
 }
 
 func (r *Component) setupResourceRequirementIfAbsent() {
-	defaultCPULimit := resource.MustParse("500m")
-	defaultMemoryLimit := resource.MustParse("512Mi")
+	defaultCPULimit := resource.MustParse("200m")
+	defaultMemoryLimit := resource.MustParse("128Mi")
 	defaultEphemeralStorageLimit := resource.MustParse("128Mi")
 
 	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.ResourceRequirements, defaultCPULimit, defaultMemoryLimit, defaultEphemeralStorageLimit)
@@ -643,7 +643,7 @@ func (r *Component) setupResourceRequirementIfAbsent() {
 
 func (r *Component) setupIstioResourceRequirementIfAbsent() {
 	defaultCPULimit := resource.MustParse("100m")
-	defaultMemoryLimit := resource.MustParse("128Mi")
+	defaultMemoryLimit := resource.MustParse("64Mi")
 	defaultEphemeralStorageLimit := resource.MustParse("64Mi")
 
 	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.IstioResourceRequirements, defaultCPULimit, defaultMemoryLimit, defaultEphemeralStorageLimit)
