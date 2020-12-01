@@ -118,7 +118,7 @@ func (v *PodAdmissionHandler) HandleCreate(ctx context.Context, req admission.Re
 		if err == v1alpha1.ExceedingQuotaError ||
 			strings.Contains(err.Error(), v1alpha1.ExceedingQuotaError.Error()) {
 
-			logger.Info("try label component for err:", err)
+			logger.Info("try label component for err", "err", err)
 
 			ns := pod.Namespace
 			componentName := pod.Labels[v1alpha1.KalmLabelComponentKey]
