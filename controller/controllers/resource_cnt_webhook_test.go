@@ -53,12 +53,15 @@ func (suite *ResCntWebhookSuite) TestDockerRegistryCnt() {
 	err = suite.K8sClient.Create(context.Background(), &dockerRegistry)
 	suite.Nil(err)
 
-	err = suite.K8sClient.Get(context.Background(), client.ObjectKey{Name: tenantName}, &tenant)
-	suite.Nil(err)
+	suite.Eventually(func() bool {
 
-	cnt = tenant.Status.UsedResourceQuota[v1alpha1.ResourceDockerRegistriesCount]
-	cntIsOne := cnt.Cmp(resource.MustParse("1")) == 0
-	suite.True(cntIsOne)
+		err = suite.K8sClient.Get(context.Background(), client.ObjectKey{Name: tenantName}, &tenant)
+		suite.Nil(err)
+
+		cnt = tenant.Status.UsedResourceQuota[v1alpha1.ResourceDockerRegistriesCount]
+		cntIsOne := cnt.Cmp(resource.MustParse("1")) == 0
+		return cntIsOne
+	})
 }
 
 func (suite *ResCntWebhookSuite) TearDownSuite() {
