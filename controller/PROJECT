@@ -49,4 +49,7 @@ resources:
 - group: core
   kind: ACMEServer
   version: v1alpha1
+- group: core
+  kind: ClusterResourceQuota
+  version: v1alpha1
 version: "2"

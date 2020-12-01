@@ -153,7 +153,8 @@ func SumResourceList(resLists ...ResourceList) ResourceList {
 	return rst
 }
 
-func GetDeltaOfResourceList(from, to ResourceList) ResourceList {
+// result = to - from
+func GetDeltaOfResourceList(from, to ResourceList, noNegativeOpt ...bool) ResourceList {
 	rst := make(ResourceList)
 
 	keys := make(map[ResourceName]interface{})
@@ -169,6 +170,12 @@ func GetDeltaOfResourceList(from, to ResourceList) ResourceList {
 		toQuantity := to[k]
 
 		toQuantity.Sub(fromQuantity)
+
+		zero := resource.NewQuantity(0, resource.DecimalSI)
+		if toQuantity.Cmp(*zero) < 0 && len(noNegativeOpt) > 0 && noNegativeOpt[0] {
+			toQuantity = *zero
+		}
+
 		rst[k] = toQuantity
 	}
 

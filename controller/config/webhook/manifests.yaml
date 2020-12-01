@@ -420,6 +420,24 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /validate-core-kalm-dev-v1alpha1-tenant
+  failurePolicy: Fail
+  name: vtenant.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - tenants
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
       path: /validate-v1-ns
   failurePolicy: Fail
   name: vns.kb.io
