@@ -170,7 +170,7 @@ func CheckAndUpdateTenant(tenantName string, reqInfo AdmissionRequestInfo, remai
 	tenantLog.Info("checkAdmissionRequestAgainstTenant", "newTenant", newTenant, "err", err)
 
 	if err != nil {
-		return fmt.Errorf("fail the tenant check, err: %s", err)
+		return err
 	}
 
 	if isResourceUsageExactlySame(newTenant, *tenant) {

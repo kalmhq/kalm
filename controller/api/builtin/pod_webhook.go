@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"k8s.io/api/admission/v1beta1"
@@ -78,8 +79,8 @@ func (v *PodAdmissionHandler) InjectClient(c client.Client) error {
 }
 
 func (v *PodAdmissionHandler) HandleCreate(ctx context.Context, req admission.Request) admission.Response {
-	logger := podAdmissionHandlerLog.WithValues("UID", req.UID)
-	logger.Info("pod admissionHandler called", "op", req.Operation, "ns/name", fmt.Sprintf("%s/%s", req.Namespace, req.Name))
+	logger := podAdmissionHandlerLog.WithValues("UID", req.UID, "ns/name", fmt.Sprintf("%s/%s", req.Namespace, req.Name))
+	logger.Info("pod admissionHandler called", "op", req.Operation)
 
 	pod := corev1.Pod{}
 	if err := v.decoder.Decode(req, &pod); err != nil {
@@ -114,7 +115,11 @@ func (v *PodAdmissionHandler) HandleCreate(ctx context.Context, req admission.Re
 	if err := v1alpha1.CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		logger.Error(err, "fail to allocate res for tenant, CREATE", "tenant", tenantName)
 
-		if err == v1alpha1.ExceedingQuotaError {
+		if err == v1alpha1.ExceedingQuotaError ||
+			strings.Contains(err.Error(), v1alpha1.ExceedingQuotaError.Error()) {
+
+			logger.Info("try label component for err:", err)
+
 			ns := pod.Namespace
 			componentName := pod.Labels[v1alpha1.KalmLabelComponentKey]
 

@@ -28,6 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
@@ -102,6 +103,11 @@ func (r *GatewayReconcilerTask) HttpsGateway() error {
 	gw.Spec.Servers = []*istioNetworkingV1Beta1.Server{}
 
 	for _, cert := range certs.Items {
+		// skip not ready cert
+		if !v1alpha1.IsHttpsCertReady(cert) {
+			continue
+		}
+
 		_, secretName := getCertAndCertSecretName(cert)
 		server := &istioNetworkingV1Beta1.Server{
 			Hosts: cert.Spec.Domains,
