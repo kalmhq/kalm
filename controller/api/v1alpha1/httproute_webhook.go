@@ -148,9 +148,6 @@ func IsHttpRouteSpecValidIfUsingKalmDomain(baseDomain, tenantName string, httpRo
 	return len(invalidIdx) == 0, invalidIdx
 }
 
-// func IsHostsUsingKalmDomainRight(baseDomain string, hosts []string) (bool, []int) {
-// }
-
 func (r *HttpRoute) validate() error {
 	var rst KalmValidateErrorList
 
@@ -162,31 +159,29 @@ func (r *HttpRoute) validate() error {
 			})
 		}
 
-		if !isKalmLocalMode() {
-			continue
-		}
-
+		isSaaSMode := !isKalmLocalMode()
 		// for saas mode
+		if isSaaSMode {
+			tenantName := r.Labels[TenantNameLabelKey]
+			if tenantName == "" {
+				continue
+			}
 
-		tenantName := r.Labels[TenantNameLabelKey]
-		if tenantName == "" {
-			continue
-		}
+			baseDomain := GetKalmBaseDomainFromEnv()
+			if baseDomain == "" {
+				continue
+			}
 
-		baseDomain := GetKalmBaseDomainFromEnv()
-		if baseDomain == "" {
-			continue
-		}
+			if ok, idxList := isHttpRouteValidIfUsingKalmDomain(baseDomain, *r); !ok {
 
-		if ok, idxList := isHttpRouteValidIfUsingKalmDomain(baseDomain, *r); !ok {
+				validSuffix := fmt.Sprintf("%s.%s", tenantName, baseDomain)
 
-			validSuffix := fmt.Sprintf("%s.%s", tenantName, baseDomain)
-
-			for _, idx := range idxList {
-				rst = append(rst, KalmValidateError{
-					Err:  fmt.Sprintf("invalid usage of kalmDomain for host(%s), should have suffix: %s", r.Spec.Hosts[idx], validSuffix),
-					Path: fmt.Sprintf("spec.hosts[%d]", idx),
-				})
+				for _, idx := range idxList {
+					rst = append(rst, KalmValidateError{
+						Err:  fmt.Sprintf("invalid usage of kalmDomain for host(%s), should have suffix: %s", r.Spec.Hosts[idx], validSuffix),
+						Path: fmt.Sprintf("spec.hosts[%d]", idx),
+					})
+				}
 			}
 		}
 	}

@@ -90,6 +90,12 @@ func main() {
 				Destination: &runningConfig.KalmType,
 				EnvVars:     []string{"KALM_TYPE"},
 			},
+			&cli.StringFlag{
+				Name:        "cluster-base-domain",
+				Usage:       "",
+				Destination: &runningConfig.ClusterBaseDomain,
+				EnvVars:     []string{"CLUSTER_BASE_DOMAIN"},
+			},
 			&cli.BoolFlag{
 				Name:        "enable-debug-apis",
 				Value:       false,
