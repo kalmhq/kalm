@@ -103,3 +103,15 @@ type HttpsCertList struct {
 func init() {
 	SchemeBuilder.Register(&HttpsCert{}, &HttpsCertList{})
 }
+
+func IsHttpsCertReady(cert HttpsCert) bool {
+	for _, cond := range cert.Status.Conditions {
+		if cond.Type != HttpsCertConditionReady {
+			continue
+		}
+
+		return cond.Status == corev1.ConditionTrue
+	}
+
+	return false
+}
