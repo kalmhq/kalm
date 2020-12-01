@@ -69,6 +69,7 @@ type RoleBinding struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:printcolumn:name="Tenant",type="string",JSONPath=".metadata.labels.tenant"
 // RoleBindingList contains a list of RoleBinding
 type RoleBindingList struct {
 	metav1.TypeMeta `json:",inline"`

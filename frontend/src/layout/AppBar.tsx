@@ -7,6 +7,7 @@ import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { closeTutorialDrawerAction, openTutorialDrawerAction } from "actions/tutorial";
 import { stopImpersonating } from "api/realApi/index";
 import { push } from "connected-react-router";
+import { tenantApplicationNameFormat } from "forms/normalizer";
 import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
@@ -31,7 +32,7 @@ import {
   MenuOpenIcon,
 } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { Body, Caption } from "widgets/Label";
+import { Caption } from "widgets/Label";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
 
 const mapStateToProps = (state: RootState) => {
@@ -322,6 +323,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   };
 
   private renderBreadcrumbContent = (path: string) => {
+    const { currentTenant } = this.props;
     switch (path) {
       case "applications":
       case "":
@@ -359,7 +361,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
       case "usage":
         return "Usage";
       default:
-        return path;
+        return tenantApplicationNameFormat(currentTenant)(path);
     }
   };
 

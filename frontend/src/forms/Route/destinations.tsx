@@ -1,8 +1,15 @@
 import { Box, Grid } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
+import Collapse from "@material-ui/core/Collapse";
 import Typography from "@material-ui/core/Typography";
 import Warning from "@material-ui/icons/Warning";
 import { Alert, AlertTitle } from "@material-ui/lab";
+import { AutoCompleteForRenderOption, AutoCompleteSingleValue } from "forms/Final/autoComplete";
+import { FinialSliderRender } from "forms/Final/slicer";
+import { tenantApplicationNameFormat } from "forms/normalizer";
 import React from "react";
+import { Field, FieldRenderProps } from "react-final-form";
+import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import {
@@ -16,17 +23,12 @@ import { HttpRouteDestination } from "types/route";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorArrayNotEmpty, ValidatorRequired } from "../validator";
-import { Field, FieldRenderProps } from "react-final-form";
-import Button from "@material-ui/core/Button";
-import Collapse from "@material-ui/core/Collapse";
-import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
-import { AutoCompleteForRenderOption, AutoCompleteSingleValue } from "forms/Final/autoComplete";
-import { FinialSliderRender } from "forms/Final/slicer";
 
 const mapStateToProps = (state: RootState) => {
   return {
     activeNamespace: state.namespaces.active,
     services: state.services.services,
+    tenant: state.auth.tenant,
   };
 };
 
@@ -34,7 +36,7 @@ interface Props extends ReturnType<typeof mapStateToProps> {}
 
 class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
   public render() {
-    const { services, activeNamespace } = this.props;
+    const { services, activeNamespace, tenant } = this.props;
 
     const options: AutoCompleteForRenderOption[] = [];
     services
@@ -64,10 +66,11 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
             );
           })
           .forEach((port) => {
+            const displayNamespace = tenantApplicationNameFormat(tenant)(svc.namespace);
             options.push({
               value: `${svc.name}.${svc.namespace}.svc.cluster.local:${port.port}`,
               label: svc.name + ":" + port.port + `(${port.appProtocol})`,
-              group: svc.namespace === activeNamespace ? `${svc.namespace} (Current)` : svc.namespace,
+              group: svc.namespace === activeNamespace ? `${displayNamespace} (Current)` : displayNamespace,
             });
           });
       });

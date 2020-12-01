@@ -175,7 +175,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
     return [
       { Header: "", accessor: "statusIcon" },
       { Header: "Pod Name", accessor: "name" },
-      { Header: "Node", accessor: "node" },
+      // { Header: "Node", accessor: "node" },
       { Header: "Restarts", accessor: "restarts" },
       { Header: "Status", accessor: "status" },
       { Header: "Age", accessor: "age" },
@@ -193,7 +193,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
       data.push({
         statusIcon: this.renderPodStatusIcon(pod),
         name: this.renderPodName(pod),
-        node: this.renderPodNode(pod),
+        // node: this.renderPodNode(pod),
         restarts: this.renderPodRestarts(pod),
         status: this.renderPodStatusText(pod),
         age: this.renderPodAGE(pod),

@@ -13,6 +13,9 @@ spec:
     description: Domain of dex
     name: Domain
     type: string
+  - JSONPath: .spec.issuer
+    name: Issuer
+    type: string
   group: core.kalm.dev
   names:
     kind: SingleSignOnConfig

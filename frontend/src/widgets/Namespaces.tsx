@@ -13,6 +13,7 @@ import {
 } from "@material-ui/core";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
+import { tenantApplicationNameFormat } from "forms/normalizer";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { LEFT_SECTION_OPEN_WIDTH, NAMESPACES_ZINDEX, SECOND_HEADER_HEIGHT } from "layout/Constants";
@@ -84,6 +85,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
       isNamespaceLoading,
       isNamespaceFirstLoaded,
       location,
+      auth,
       canViewNamespace,
       canEditNamespace,
     } = this.props;
@@ -115,7 +117,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
           {isNamespaceLoading && !isNamespaceFirstLoaded
             ? "Loading..."
             : activeNamespace
-            ? activeNamespace.name
+            ? tenantApplicationNameFormat(auth.tenant)(activeNamespace.name)
             : "Select a Application"}
           {open ? <ExpandLess /> : <ExpandMore />}
         </Button>
@@ -142,6 +144,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
                     classes={{ root: classes.menuList }}
                   >
                     {filteredApp.map((application) => {
+                      const name = tenantApplicationNameFormat(auth.tenant)(application.name);
                       let to = `/applications/${application.name}/components`;
                       if (pathnameSplits[1] && pathnameSplits[2] && pathnameSplits[1] === "applications") {
                         pathnameSplits[2] = application.name;
@@ -156,7 +159,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
                           component={Link}
                           to={to}
                         >
-                          {application.name}
+                          {name}
                         </MenuItem>
                       );
                     })}

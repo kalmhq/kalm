@@ -5,6 +5,7 @@ import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { push } from "connected-react-router";
+import { tenantApplicationNameFormat } from "forms/normalizer";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { POPPER_ZINDEX } from "layout/Constants";
@@ -92,15 +93,17 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderName = (applicationDetails: ApplicationDetails) => {
-    const { canViewNamespace } = this.props;
+    const { auth, canViewNamespace } = this.props;
+    const displayApplicationName = tenantApplicationNameFormat(auth.tenant)(applicationDetails.name);
+
     return (
       <>
         {canViewNamespace(applicationDetails.name) ? (
           <KLink to={`/applications/${applicationDetails.name}/components`} onClick={() => blinkTopProgressAction()}>
-            {applicationDetails.name}
+            {displayApplicationName}
           </KLink>
         ) : (
-          applicationDetails.name
+          displayApplicationName
         )}
       </>
     );
