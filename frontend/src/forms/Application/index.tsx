@@ -5,7 +5,7 @@ import { push } from "connected-react-router";
 import { FinalTextField } from "forms/Final/textfield";
 import { FormDataPreview } from "forms/Final/util";
 import { APPLICATION_FORM_ID } from "forms/formIDs";
-import { trimAndToLowerParse } from "forms/normalizer";
+import { tenantApplicationNameFormat, tenantApplicationNameParse } from "forms/normalizer";
 import React from "react";
 import { Field, Form, FormRenderProps } from "react-final-form";
 import { connect } from "react-redux";
@@ -43,6 +43,7 @@ const mapStateToProps = (state: RootState) => {
   return {
     tutorialState: state.tutorial,
     isSubmittingApplication: state.applications.isSubmittingApplication,
+    tenant: state.auth.tenant,
     form: APPLICATION_FORM_ID,
   };
 };
@@ -54,7 +55,8 @@ interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchPr
 export interface Props extends ConnectedProps, WithStyles<typeof styles>, OwnProps {}
 
 class ApplicationFormRaw extends React.PureComponent<Props> {
-  private renderBasic(name: string) {
+  private renderBasic = (name: string) => {
+    const { tenant } = this.props;
     return (
       <>
         <Field
@@ -64,7 +66,8 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           component={FinalTextField}
           autoFocus
           validate={ValidatorIsDNS123Label}
-          parse={trimAndToLowerParse}
+          parse={tenantApplicationNameParse(tenant)}
+          format={tenantApplicationNameFormat(tenant)}
           placeholder="e.g. my-application; production"
           helperText="Must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"
         />
@@ -80,7 +83,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
         </Box>
       </>
     );
-  }
+  };
 
   private onSubmit = async (applicationFormValue: Application) => {
     const { dispatch } = this.props;
