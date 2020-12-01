@@ -1,8 +1,14 @@
 package handler
 
 import (
+	"fmt"
+	"strings"
+
+	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
+	"k8s.io/apimachinery/pkg/util/rand"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -48,10 +54,43 @@ func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
 		return err
 	}
 
-	route.Tenant = currentUser.Tenant
+	tenantName := currentUser.Tenant
+	if tenantName == "" {
+		return fmt.Errorf("should set tenant but empty")
+	}
+
+	route.Tenant = tenantName
 
 	if !h.clientManager.CanOperateHttpRoute(currentUser, "edit", route) {
 		return resources.InsufficientPermissionsError
+	}
+
+	// for saas version, strict check if httpRoute is using baseDomain
+	if !h.IsLocalMode {
+		kalmBaseDomain := h.BaseDomain
+
+		if kalmBaseDomain == "" {
+			log.Info("for saas version, BaseDomain should be set but is empty")
+		} else {
+			// support using kalmDomain if route.Hosts is empty
+			if len(route.HttpRouteSpec.Hosts) == 0 {
+				randomKalmDomain := fmt.Sprintf("%s-%s.%s", rand.String(5), tenantName, kalmBaseDomain)
+				route.HttpRouteSpec.Hosts = []string{randomKalmDomain}
+			}
+
+			for _, host := range route.Hosts {
+				// if is XXXasia-northeast3.kapp.live
+				if !strings.HasSuffix(host, kalmBaseDomain) {
+					continue
+				}
+
+				// then must be: YYY<tenant>.asia-northeast3.kapp.live
+				validKalmDomainSuffixForUser := fmt.Sprintf("%s.%s", tenantName, kalmBaseDomain)
+				if !strings.HasSuffix(host, validKalmDomainSuffixForUser) {
+					return fmt.Errorf("httpRoute using KalmDomain must be like: xx-%s", validKalmDomainSuffixForUser)
+				}
+			}
+		}
 	}
 
 	if route, err = h.resourceManager.CreateHttpRoute(route); err != nil {
@@ -72,6 +111,22 @@ func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
 	// TODO: check if current user can edit all old http route destinations
 	if !h.clientManager.CanOperateHttpRoute(currentUser, "edit", route) {
 		return resources.InsufficientPermissionsError
+	}
+
+	isSaaSMode := !h.IsLocalMode
+	if isSaaSMode {
+		baseDomain := h.ClusterBaseDomain
+		tenantName := currentUser.Tenant
+
+		ok, idxList := v1alpha1.IsHttpRouteSpecValidIfUsingKalmDomain(baseDomain, tenantName, *route.HttpRouteSpec)
+		if !ok {
+			var invalidHosts []string
+			for _, idx := range idxList {
+				invalidHosts = append(invalidHosts, route.Hosts[idx])
+			}
+
+			return fmt.Errorf("invalid usage of kalmDomain, invalid hosts: %s", invalidHosts)
+		}
 	}
 
 	if route, err = h.resourceManager.UpdateHttpRoute(route); err != nil {

@@ -116,6 +116,41 @@ func (r *HttpRoute) ValidateDelete() error {
 	return nil
 }
 
+func isHttpRouteValidIfUsingKalmDomain(baseDomain string, httpRoute HttpRoute) (bool, []int) {
+	tenantName := httpRoute.Labels[TenantNameLabelKey]
+
+	return IsHttpRouteSpecValidIfUsingKalmDomain(baseDomain, tenantName, httpRoute.Spec)
+}
+
+func IsHttpRouteSpecValidIfUsingKalmDomain(baseDomain, tenantName string, httpRouteSpec HttpRouteSpec) (bool, []int) {
+	if baseDomain == "" {
+		// invalid baseDomain always return false
+		return false, []int{}
+	}
+
+	if tenantName == "" {
+		// empty tenantName always return false
+		return false, []int{}
+	}
+
+	var invalidIdx []int
+	for i, host := range httpRouteSpec.Hosts {
+		if !strings.HasSuffix(host, baseDomain) {
+			continue
+		}
+
+		validSuffix := fmt.Sprintf("%s.%s", tenantName, baseDomain)
+		if !strings.HasSuffix(host, validSuffix) {
+			invalidIdx = append(invalidIdx, i)
+		}
+	}
+
+	return len(invalidIdx) == 0, invalidIdx
+}
+
+// func IsHostsUsingKalmDomainRight(baseDomain string, hosts []string) (bool, []int) {
+// }
+
 func (r *HttpRoute) validate() error {
 	var rst KalmValidateErrorList
 
@@ -125,6 +160,34 @@ func (r *HttpRoute) validate() error {
 				Err:  "invalid route host:" + host,
 				Path: fmt.Sprintf("spec.hosts[%d]", i),
 			})
+		}
+
+		if !isKalmLocalMode() {
+			continue
+		}
+
+		// for saas mode
+
+		tenantName := r.Labels[TenantNameLabelKey]
+		if tenantName == "" {
+			continue
+		}
+
+		baseDomain := GetKalmBaseDomainFromEnv()
+		if baseDomain == "" {
+			continue
+		}
+
+		if ok, idxList := isHttpRouteValidIfUsingKalmDomain(baseDomain, *r); !ok {
+
+			validSuffix := fmt.Sprintf("%s.%s", tenantName, baseDomain)
+
+			for _, idx := range idxList {
+				rst = append(rst, KalmValidateError{
+					Err:  fmt.Sprintf("invalid usage of kalmDomain for host(%s), should have suffix: %s", r.Spec.Hosts[idx], validSuffix),
+					Path: fmt.Sprintf("spec.hosts[%d]", idx),
+				})
+			}
 		}
 	}
 
@@ -172,6 +235,10 @@ func (r *HttpRoute) validate() error {
 	}
 
 	return rst
+}
+
+func isKalmLocalMode() bool {
+	return GetKalmLocalModeFromEnv() == "true"
 }
 
 func isValidDestinationHost(host string) bool {
