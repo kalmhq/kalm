@@ -118,14 +118,16 @@ func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
 		baseDomain := h.ClusterBaseDomain
 		tenantName := currentUser.Tenant
 
-		ok, idxList := v1alpha1.IsHttpRouteSpecValidIfUsingKalmDomain(baseDomain, tenantName, *route.HttpRouteSpec)
-		if !ok {
-			var invalidHosts []string
-			for _, idx := range idxList {
-				invalidHosts = append(invalidHosts, route.Hosts[idx])
-			}
+		if baseDomain != "" && tenantName != "" {
+			ok, idxList := v1alpha1.IsHttpRouteSpecValidIfUsingKalmDomain(baseDomain, tenantName, *route.HttpRouteSpec)
+			if !ok {
+				var invalidHosts []string
+				for _, idx := range idxList {
+					invalidHosts = append(invalidHosts, route.Hosts[idx])
+				}
 
-			return fmt.Errorf("invalid usage of kalmDomain, invalid hosts: %s", invalidHosts)
+				return fmt.Errorf("invalid usage of kalmDomain, invalid hosts: %s", invalidHosts)
+			}
 		}
 	}
 
