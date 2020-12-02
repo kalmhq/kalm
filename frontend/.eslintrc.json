@@ -4,6 +4,7 @@
   "rules": {
     "@typescript-eslint/no-unused-vars": "warn",
     "no-loop-func": "off",
-    "prettier/prettier": "warn"
+    "prettier/prettier": "warn",
+    "import/no-anonymous-default-export": "off"
   }
 }

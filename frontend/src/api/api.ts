@@ -1,4 +1,3 @@
-import { Api } from "api/base";
 import Axios, { AxiosRequestConfig } from "axios";
 import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
@@ -17,9 +16,7 @@ import { Registry, RegistryFormType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
 
-export const mockStore = null;
-
-export default class RealApi extends Api {
+export default class RealApi {
   public getClusterInfo = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/cluster` });
     return res.data;
@@ -498,12 +495,12 @@ export default class RealApi extends Api {
 
 export const IMPERSONATION_KEY = "KALM_IMPERSONATION";
 
-export const generateKalmImpersonnation = (subject: string, subjectType: string) => {
+export const generateKalmImpersonation = (subject: string, subjectType: string) => {
   return `subject=${subject}; type=${subjectType}`;
 };
 
 export const impersonate = (subject: string, subjectType: string) => {
-  window.localStorage.setItem(IMPERSONATION_KEY, generateKalmImpersonnation(subject, subjectType));
+  window.localStorage.setItem(IMPERSONATION_KEY, generateKalmImpersonation(subject, subjectType));
 };
 
 export const stopImpersonating = () => {

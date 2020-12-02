@@ -182,7 +182,7 @@ export interface AutoCompleteSingleValueProps<T>
 
 const NO_GROUP = "__no__group__";
 
-export const AutoCompleteSingleValue = function <T>(props: AutoCompleteSingleValueProps<string>): JSX.Element {
+export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueProps<string>): JSX.Element {
   const {
     label,
     helperText,

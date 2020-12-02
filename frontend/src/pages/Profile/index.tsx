@@ -3,7 +3,7 @@ import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import { stopImpersonating } from "api/realApi/index";
+import { stopImpersonating } from "api/api";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";

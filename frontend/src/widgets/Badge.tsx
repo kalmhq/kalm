@@ -1,7 +1,7 @@
-import React from "react";
 import { Box, CircularProgress } from "@material-ui/core";
 import HelpIcon from "@material-ui/icons/Help";
 import WarningIcon from "@material-ui/icons/Warning";
+import React from "react";
 import { CheckCircleIcon, ErrorIcon } from "./Icon";
 
 const Spacer = () => {

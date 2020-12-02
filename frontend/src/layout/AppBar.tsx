@@ -5,7 +5,7 @@ import { WithStyles, withStyles } from "@material-ui/styles";
 import { logoutAction } from "actions/auth";
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { closeTutorialDrawerAction, openTutorialDrawerAction } from "actions/tutorial";
-import { stopImpersonating } from "api/realApi/index";
+import { stopImpersonating } from "api/api";
 import { push } from "connected-react-router";
 import { tenantApplicationNameFormat } from "forms/normalizer";
 import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";

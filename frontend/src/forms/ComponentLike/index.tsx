@@ -1,6 +1,6 @@
 import { Box, Button, Divider, Grid, Link, Tab, Tabs } from "@material-ui/core";
 import grey from "@material-ui/core/colors/grey";
-import { createStyles, Theme, useTheme, withStyles, WithStyles } from "@material-ui/core/styles";
+import { createStyles, Theme, withStyles, WithStyles, WithTheme, withTheme } from "@material-ui/core/styles";
 import HelpIcon from "@material-ui/icons/Help";
 import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
@@ -46,8 +46,8 @@ import {
   ValidatorCPU,
   ValidatorIsDNS123Label,
   ValidatorMemory,
-  ValidatorSchedule,
   ValidatorRequired,
+  ValidatorSchedule,
 } from "../validator";
 import { ComponentAccess } from "./Access";
 import { Envs } from "./Envs";
@@ -142,7 +142,7 @@ interface RawProps {
 
 interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props extends RouteComponentProps, WithStyles<typeof styles>, ConnectedProps, RawProps {}
+export interface Props extends RouteComponentProps, WithStyles<typeof styles>, ConnectedProps, RawProps, WithTheme {}
 
 interface State {}
 
@@ -312,8 +312,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderCommandAndArgs() {
-    const theme = useTheme();
-
+    const { theme } = this.props;
     return (
       <>
         <Grid item xs={12}>
@@ -856,4 +855,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ComponentLikeForm = connect(mapStateToProps)(withStyles(styles)(withRouter(ComponentLikeFormRaw)));
+export const ComponentLikeForm = connect(mapStateToProps)(
+  withStyles(styles)(withRouter(withTheme(ComponentLikeFormRaw))),
+);

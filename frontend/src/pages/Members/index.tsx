@@ -5,7 +5,7 @@ import TextField from "@material-ui/core/TextField";
 import { setSuccessNotificationAction } from "actions/notification";
 import { blinkTopProgressAction } from "actions/settings";
 import { deleteRoleBindingsAction, updateRoleBindingsAction } from "actions/user";
-import { impersonate } from "api/realApi";
+import { impersonate } from "api/api";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { WithRoleBindingProps, withRoleBindings } from "hoc/withRoleBinding";

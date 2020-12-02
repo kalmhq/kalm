@@ -1,4 +1,3 @@
-import { Api } from "./base";
-import ApiClass from "@apiType/index";
+import RealApi from "api/api";
 
-export const api: Api = new ApiClass();
+export const api = new RealApi();

@@ -48,7 +48,7 @@ export type RootState = {
   domains: DomainsState;
 };
 
-export default (history: History<LocationState>) =>
+const rootReducer = (history: History<LocationState>) =>
   combineReducers<RootState>({
     namespaces,
     nodes,
@@ -73,3 +73,5 @@ export default (history: History<LocationState>) =>
     deployAccessTokens,
     domains,
   });
+
+export default rootReducer;

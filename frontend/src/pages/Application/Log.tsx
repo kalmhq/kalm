@@ -16,7 +16,7 @@ import { WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import { Autocomplete, AutocompleteProps, UseAutocompleteProps } from "@material-ui/lab";
-import { k8sWsPrefix } from "api/realApi";
+import { k8sWsPrefix } from "api/api";
 import { push, replace } from "connected-react-router";
 import debug from "debug";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
