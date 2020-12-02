@@ -51,6 +51,9 @@ type KalmOperatorConfigSpec struct {
 
 	KalmType string `json:"kalmType,omitempty"`
 
+	// like: asia-northeast3.kapp.live
+	ClusterBaseDomain string `json:"clusterBaseDomain,omitempty"`
+
 	// Dashboard Config
 	Dashboard *DashboardConfig `json:"dashboard,omitempty"`
 	// Controller Config

@@ -90,6 +90,12 @@ func main() {
 				Destination: &runningConfig.KalmType,
 				EnvVars:     []string{"KALM_TYPE"},
 			},
+			&cli.StringFlag{
+				Name:        "cluster-base-domain",
+				Usage:       "",
+				Destination: &runningConfig.ClusterBaseDomain,
+				EnvVars:     []string{"CLUSTER_BASE_DOMAIN"},
+			},
 			&cli.BoolFlag{
 				Name:        "enable-debug-apis",
 				Value:       false,
@@ -173,7 +179,7 @@ func startMainServer(runningConfig *config.Config, k8sClientConfig *rest.Config)
 
 	isLocalMode := runningConfig.KalmType == "local"
 
-	apiHandler := handler.NewApiHandler(clientManager, isLocalMode)
+	apiHandler := handler.NewApiHandler(clientManager, isLocalMode, runningConfig.ClusterBaseDomain)
 	apiHandler.InstallMainRoutes(e)
 	apiHandler.InstallWebhookRoutes(e)
 
