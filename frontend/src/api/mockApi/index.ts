@@ -2,6 +2,7 @@ import { Application, ApplicationComponent, ApplicationComponentDetails, Applica
 import { AcmeServerFormType, AcmeServerInfo, CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";
 import { DeployAccessToken } from "types/deployAccessToken";
+import { Domain } from "types/domains";
 import { RoleBinding } from "types/member";
 import { Registry, RegistryFormType } from "types/registry";
 import { HttpRoute } from "types/route";
@@ -166,6 +167,10 @@ export default class MockApi extends Api {
   public deleteApplicationComponent = async (applicationName: string, name: string) => {
     await mockStore.deleteApplicationComponent(applicationName, name);
   };
+
+  public async loadDomains(): Promise<Domain[]> {
+    return [];
+  }
 
   public loadServices = async (name: string) => {
     return mockStore.data.mockServices;

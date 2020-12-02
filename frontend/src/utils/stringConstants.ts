@@ -88,6 +88,11 @@ export const StringConstants = {
   CERT_DNS01_DESC:
     "Use a certificate signed by Let's Encrypt for domains. Safe and fast. Renewing and updating are fully-automatic.",
   CERT_DNS01_SERVER_NOT_READY: "Please config and running ACME DNS Server first.",
+
+  DOMAIN: "You can add custom domains to access your applications.",
+  DOMAIN_DESC:
+    "After you submit your domain, you will need to follow the coming instructions to configure on your DNS provider side.",
+
   NODES_INFO_BOX_TEXT:
     "Data and metrics regarding nodes in the cluster is displayed here. For cluster administration operations, please see platform specific instructions.",
   ROUTE_HOSTS_INPUT_HELPER:

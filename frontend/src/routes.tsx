@@ -19,7 +19,9 @@ import { ComponentListPage } from "pages/Components/List";
 import { ComponentNewPage } from "pages/Components/New";
 import { ComponentShowPage } from "pages/Components/Show";
 import { DiskListPage } from "pages/Disks/List";
+import { DomainDetailPage } from "pages/Domains/Detail";
 import { DomainListPage } from "pages/Domains/List";
+import { DomainNewPage } from "pages/Domains/New";
 import { LoadBalancerInfoPage } from "pages/LoadBalancer";
 import { RolesListPage } from "pages/Members";
 import { MemberNewPage } from "pages/Members/New";
@@ -104,6 +106,8 @@ export const KalmRoutes = (
           <Route exact path="/applications/:applicationName/shells" component={Log} />
 
           <Route exact path="/domains" component={DomainListPage} />
+          <Route exact path="/domains/new" component={DomainNewPage} />
+          <Route exact path="/domains/:name" component={DomainDetailPage} />
 
           <Route exact path="/certificates" component={CertificateListPage} />
           <Route exact path="/certificates/new" component={CertificateNewPage} />

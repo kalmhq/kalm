@@ -10,6 +10,7 @@ import {
   DeployAccessTokenToAccessToken,
 } from "types/deployAccessToken";
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
+import { Domain } from "types/domains";
 import { RoleBinding } from "types/member";
 import { Node } from "types/node";
 import { Registry, RegistryFormType } from "types/registry";
@@ -95,7 +96,11 @@ export default class RealApi extends Api {
   };
 
   public createRegistry = async (registry: RegistryFormType): Promise<Registry> => {
-    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/registries`, data: registry });
+    const res = await axiosRequest({
+      method: "post",
+      url: `/${K8sApiVersion}/registries`,
+      data: registry,
+    });
     return res.data;
   };
 
@@ -125,7 +130,11 @@ export default class RealApi extends Api {
   };
 
   public createApplication = async (application: Application) => {
-    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/applications`, data: application });
+    const res = await axiosRequest({
+      method: "post",
+      url: `/${K8sApiVersion}/applications`,
+      data: application,
+    });
     return res.data;
   };
 
@@ -251,7 +260,10 @@ export default class RealApi extends Api {
   };
 
   public deleteRoleBinding = async (namespace: string, bindingName: string) => {
-    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/rolebindings/` + namespace + "/" + bindingName });
+    await axiosRequest({
+      method: "delete",
+      url: `/${K8sApiVersion}/rolebindings/` + namespace + "/" + bindingName,
+    });
   };
 
   public getServiceAccountSecret = async (name: string) => {
@@ -280,9 +292,17 @@ export default class RealApi extends Api {
         data: certificate,
       });
     } else if (certificate.isSelfManaged) {
-      res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/httpscerts/upload`, data: certificate });
+      res = await axiosRequest({
+        method: "post",
+        url: `/${K8sApiVersion}/httpscerts/upload`,
+        data: certificate,
+      });
     } else {
-      res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/httpscerts`, data: certificate });
+      res = await axiosRequest({
+        method: "post",
+        url: `/${K8sApiVersion}/httpscerts`,
+        data: certificate,
+      });
     }
 
     return res.data;
@@ -312,7 +332,11 @@ export default class RealApi extends Api {
 
   // certificate acme server
   public createAcmeServer = async (acmeServer: AcmeServerFormType): Promise<AcmeServerInfo> => {
-    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
+    const res = await axiosRequest({
+      method: "post",
+      url: `/${K8sApiVersion}/acmeserver`,
+      data: acmeServer,
+    });
 
     return res.data;
   };
@@ -338,6 +362,27 @@ export default class RealApi extends Api {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/services` });
     return res.data;
   };
+
+  public async loadDomains(): Promise<Domain[]> {
+    const domains: Domain[] = [
+      {
+        name: "domain1",
+        domain: "xxxxxxx.asia.kalm-kapps.com",
+        status: "ready",
+        recordType: "CNAME",
+        target: "xxxxxxx.asia.kalm-dns.com",
+        isBuiltIn: true,
+      },
+      {
+        name: "domain2",
+        domain: "www.david.com",
+        status: "pending",
+        recordType: "CNAME",
+        target: "xxxxxxx.asia.kalm-dns.com",
+      },
+    ];
+    return domains;
+  }
 
   // sso
   public getSSOConfig = async (): Promise<SSOConfig> => {
@@ -389,7 +434,11 @@ export default class RealApi extends Api {
   };
 
   public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {
-    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/protectedendpoints`, data: protectedEndpoint });
+    await axiosRequest({
+      method: "delete",
+      url: `/${K8sApiVersion}/protectedendpoints`,
+      data: protectedEndpoint,
+    });
   };
 
   public listDeployAccessTokens = async (): Promise<DeployAccessToken[]> => {
@@ -416,7 +465,9 @@ export default class RealApi extends Api {
   };
 
   public resolveDomain = async (domain: string, type: "A" | "CNAME", timeout: number = 5000): Promise<string[]> => {
-    const res = await Axios.get(`https://dns.google.com/resolve?name=${domain}&type=${type}`, { timeout });
+    const res = await Axios.get(`https://dns.google.com/resolve?name=${domain}&type=${type}`, {
+      timeout,
+    });
 
     if (res.data.Answer) {
       return (res.data.Answer as GoogleDNSARecordResponse[]).map((aRecord) => aRecord.data);

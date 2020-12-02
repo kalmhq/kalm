@@ -144,6 +144,14 @@ const IsWildcardDNS1123SubDomain = Yup.string()
   .matches(new RegExp(`^${wildcardDNS1123SubDomainFmt}$`), "Not a valid wildcard DNS123 SubDomain")
   .max(253);
 
+export const IsOrCommonOrWildcardDNS1123SubDomain = Yup.string()
+  .required("Required")
+  .matches(
+    new RegExp(`^(${wildcardDNS1123SubDomainFmt}|${dns1123SubDomainFmt})\\.${dns1123LabelFmt}$`),
+    `Not a valid domain. Valid examples: "foo.bar"; "*.foo.bar"`,
+  )
+  .max(253);
+
 const hostnameFmt = "[a-z0-9_]([-a-z0-9_]*[a-z0-9_])?";
 export const InvalidHostInCertificateErrorMessage = "Invalid domain";
 const IsValidHostInCertificate = Yup.string()
@@ -170,6 +178,9 @@ export const ValidatorArrayOfIsValidHostInCertificate = yupValidatorWrapForArray
 );
 
 export const ValidatorIsWildcardDNS1123SubDomain = yupValidatorWrap<string>(IsWildcardDNS1123SubDomain);
+export const ValidatorIsCommonOrWildcardDNS1123SubDomain = yupValidatorWrap<string>(
+  IsOrCommonOrWildcardDNS1123SubDomain,
+);
 export const ValidatorArrayOfDIsWildcardDNS1123SubDomain = yupValidatorWrapForArray<string>(
   Yup.array<string>().required("Should have at least one item"),
   IsWildcardDNS1123SubDomain,

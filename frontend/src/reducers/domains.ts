@@ -23,28 +23,10 @@ export interface State {
   domains: Domain[];
 }
 
-const domains: Domain[] = [
-  {
-    name: "domain1",
-    domain: "xxxxxxx.asia.kalm-kapps.com",
-    status: "ready",
-    recordType: "CNAME",
-    target: "xxxxxxx.asia.kalm-dns.com",
-    isBuiltIn: true,
-  },
-  {
-    name: "domain1",
-    domain: "www.david.com",
-    status: "pending",
-    recordType: "CNAME",
-    target: "xxxxxxx.asia.kalm-dns.com",
-  },
-];
-
 const initialState: State = {
   isLoading: false,
   isFirstLoaded: false,
-  domains,
+  domains: [],
 };
 
 const reducer = produce((state: State, action: Actions) => {

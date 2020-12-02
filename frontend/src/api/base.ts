@@ -11,6 +11,7 @@ import {
 import { ClusterInfo, InitializeClusterResponse } from "types/cluster";
 import { DeployAccessToken } from "types/deployAccessToken";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
+import { Domain } from "types/domains";
 import { RoleBinding } from "types/member";
 import { Node, NodesListResponse } from "types/node";
 import { Registry, RegistryFormType } from "types/registry";
@@ -125,6 +126,8 @@ export abstract class Api {
 
   // services
   public abstract loadServices(name: string): Promise<Service[]>;
+
+  public abstract loadDomains(): Promise<Domain[]>;
 
   // SSOConfig
   public abstract getSSOConfig(): Promise<SSOConfig>;

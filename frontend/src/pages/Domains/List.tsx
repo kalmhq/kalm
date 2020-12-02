@@ -1,18 +1,16 @@
-import { Box, Button, createStyles, Link as KMLink, Theme } from "@material-ui/core";
+import { Box, Button, Link as KMLink } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
-import makeStyles from "@material-ui/core/styles/makeStyles";
 import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
+import { DomainStatus } from "pages/Domains/Status";
 import React, { memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { Domain } from "types/domains";
 import sc from "utils/stringConstants";
-import { PendingBadge } from "widgets/Badge";
-import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { WebIcon } from "widgets/Icon";
@@ -22,25 +20,9 @@ import { KRTable } from "widgets/KRTable";
 import { KLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {},
-    normalStatus: {
-      color: theme.palette.success.main,
-    },
-    warningStatus: {
-      color: theme.palette.warning.main,
-    },
-    domainsColumn: {
-      minWidth: 200,
-    },
-  }),
-);
-
 interface Props extends WithUserAuthProps {}
 
 const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
-  const classes = useStyles();
   const dispatch = useDispatch();
   const { canEditTenant } = props;
   const { isFirstLoaded, isLoading, domains } = useSelector((state: RootState) => {
@@ -52,11 +34,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   });
 
   const renderDomain = (domain: Domain) => {
-    return (
-      <Box className={classes.domainsColumn}>
-        <KLink to={`/domains/${domain.name}`}>{domain.domain}</KLink>
-      </Box>
-    );
+    return <KLink to={`/domains/${domain.name}`}>{domain.domain}</KLink>;
   };
   const renderType = (domain: Domain) => (domain.isBuiltIn ? "-" : domain.recordType);
   const renderTarget = (domain: Domain) => (domain.isBuiltIn ? "-" : domain.target);
@@ -88,25 +66,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   };
 
   const renderStatus = (domain: Domain) => {
-    if (domain.status === "ready") {
-      // why the ready field is a string value ?????
-      return (
-        <FlexRowItemCenterBox>
-          <FlexRowItemCenterBox className={classes.normalStatus}>Normal</FlexRowItemCenterBox>
-        </FlexRowItemCenterBox>
-      );
-    } else if (domain.status === "pending") {
-      return (
-        <FlexRowItemCenterBox>
-          <FlexRowItemCenterBox mr={1}>
-            <PendingBadge />
-          </FlexRowItemCenterBox>
-          <FlexRowItemCenterBox className={classes.warningStatus}>Pending</FlexRowItemCenterBox>
-        </FlexRowItemCenterBox>
-      );
-    } else {
-      return <PendingBadge />;
-    }
+    return <DomainStatus domain={domain} />;
   };
 
   const getKRTableColumns = () => {
@@ -214,7 +174,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
               variant="outlined"
               size="small"
               component={Link}
-              tutorial-anchor-id="add-certificate"
+              tutorial-anchor-id="add-domain"
               to="/domains/new"
             >
               New Domain

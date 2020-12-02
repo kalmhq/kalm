@@ -20,16 +20,8 @@ export interface Domain {
 }
 
 export interface DomainCreation {
-  name: string;
   domain: string;
 }
-
-export const newEmptyDomain = (): DomainCreation => {
-  return {
-    name: "",
-    domain: "",
-  };
-};
 
 export interface DomainRequestStatusAction {
   type:
