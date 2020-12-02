@@ -26,7 +26,9 @@ type DomainSpec struct {
 
 // DomainStatus defines the observed state of Domain
 type DomainStatus struct {
-	CNAMEReady bool
+	CNAMEReady                       bool  `json:"cnameReady,omitempty"`
+	CheckCountSinceCNAMEReadyUpdated int   `json:"checkCountSinceCNAMEReadyUpdated"`
+	LastCheckTimestamp               int64 `json:"lastCheckTimestamp"`
 }
 
 // +kubebuilder:object:root=true
