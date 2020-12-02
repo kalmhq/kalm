@@ -1,22 +1,22 @@
+import { Box, CircularProgress } from "@material-ui/core";
+import { loadDomainDNSInfo } from "actions/domain";
+import { setSuccessNotificationAction } from "actions/notification";
+import copy from "copy-to-clipboard";
+import { regExpIp } from "forms/validator";
 import React from "react";
 import { connect } from "react-redux";
-import { IconWithPopover } from "./IconWithPopover";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { loadDomainDNSInfo } from "actions/domain";
-import { CircularProgress, Box } from "@material-ui/core";
-import { WarningIcon, CopyIcon, CheckCircleIcon } from "./Icon";
+import { DomainForCheck } from "types/domain";
+import { CheckCircleIcon, CopyIcon, WarningIcon } from "./Icon";
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
-import copy from "copy-to-clipboard";
-import { setSuccessNotificationAction } from "actions/notification";
-import { regExpIp } from "forms/validator";
-import { Domain } from "types/domain";
+import { IconWithPopover } from "./IconWithPopover";
 
 export const acmePrefix = "_acme-challenge.";
 
 const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
   const regResultIp = regExpIp.exec(ownProps.domain);
-  let domainStatus: Domain | undefined;
+  let domainStatus: DomainForCheck | undefined;
   const domainState = state.domain;
   for (let domainKey in domainState) {
     if (domainKey === ownProps.domain) {

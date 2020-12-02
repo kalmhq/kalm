@@ -3,8 +3,7 @@ export const SET_DOMAIN_CNAME = "SET_DOMAIN_CNAME";
 export const SET_DOMAIN_NS = "SET_DOMAIN_NS";
 export const LOADED_DOMAIN_STATUS = "LOADED_DOMAIN_STATUS";
 export const INIT_DOMAIN_STATUS = "INIT_DOMAIN_STATUS";
-
-export interface Domain {
+export interface DomainForCheck {
   aRecords: string[];
   cname: string;
   domain: string;

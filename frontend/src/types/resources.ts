@@ -1,4 +1,5 @@
 import { DeployAccessToken } from "types/deployAccessToken";
+import { Domain } from "types/domains";
 import { RoleBinding } from "types/member";
 import { Node } from "types/node";
 import { Service } from "types/service";
@@ -28,6 +29,7 @@ export const RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN = "DeployAccessToken";
 export const RESOURCE_TYPE_SERVICE = "Service";
 export const RESOURCE_TYPE_ROLE_BINDING = "RoleBinding";
 export const RESOURCE_TYPE_ACME_SERVER = "ACMEServer";
+export const RESOURCE_TYPE_DOMAIN = "Domain";
 
 export type ResourceActionType =
   | typeof RESOURCE_ACTION_UPDATE
@@ -153,6 +155,15 @@ export interface ACMEServerResourceAction {
   };
 }
 
+export interface DomainResourceAction {
+  type: typeof WATCHED_RESOURCE_CHANGE;
+  kind: typeof RESOURCE_TYPE_DOMAIN;
+  payload: {
+    action: ResourceActionType;
+    data: Domain;
+  };
+}
+
 export type ResourceActions =
   | NodeResourceAction
   | ApplicationResourceAction
@@ -166,4 +177,5 @@ export type ResourceActions =
   | DeployAccessTokenResourceAction
   | ServiceResourceAction
   | RoleBindingResourceAction
+  | DomainResourceAction
   | ACMEServerResourceAction;

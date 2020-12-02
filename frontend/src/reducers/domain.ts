@@ -1,7 +1,7 @@
 import produce from "immer";
 import { Actions } from "types";
 import {
-  Domain,
+  DomainForCheck,
   INIT_DOMAIN_STATUS,
   LOADED_DOMAIN_STATUS,
   SET_DOMAIN_A_RECORDS,
@@ -9,7 +9,7 @@ import {
   SET_DOMAIN_NS,
 } from "types/domain";
 
-export type State = { [key: string]: Domain };
+export type State = { [key: string]: DomainForCheck };
 
 export let initialState: State = {};
 
@@ -19,7 +19,7 @@ const reducer = produce((state: State, action: Actions) => {
       const { domain } = action.payload;
       const currentDomain = state[domain];
       if (!currentDomain) {
-        state[domain] = { domain, isLoaded: false } as Domain;
+        state[domain] = { domain, isLoaded: false } as DomainForCheck;
       }
       return;
     }
@@ -28,7 +28,7 @@ const reducer = produce((state: State, action: Actions) => {
       if (state[domain]) {
         state[domain].isLoaded = true;
       } else {
-        state[domain] = { domain, isLoaded: true } as Domain;
+        state[domain] = { domain, isLoaded: true } as DomainForCheck;
       }
       return state;
     }
@@ -40,7 +40,7 @@ const reducer = produce((state: State, action: Actions) => {
         state[domain] = {
           domain,
           aRecords,
-        } as Domain;
+        } as DomainForCheck;
       }
       return;
     }
@@ -52,7 +52,7 @@ const reducer = produce((state: State, action: Actions) => {
         state[domain] = {
           domain,
           cname,
-        } as Domain;
+        } as DomainForCheck;
       }
       return;
     }
@@ -64,7 +64,7 @@ const reducer = produce((state: State, action: Actions) => {
         state[domain] = {
           domain,
           ns,
-        } as Domain;
+        } as DomainForCheck;
       }
       return state;
     }
