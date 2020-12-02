@@ -1,14 +1,14 @@
-import { Box, Button, createStyles, Link as KMLink, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Link as KMLink, Theme } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
+import makeStyles from "@material-ui/core/styles/makeStyles";
 import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
-import React from "react";
-import { connect } from "react-redux";
+import React, { memo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
-import { TDispatchProp } from "types";
 import { Domain } from "types/domains";
 import sc from "utils/stringConstants";
 import { PendingBadge } from "widgets/Badge";
@@ -22,7 +22,7 @@ import { KRTable } from "widgets/KRTable";
 import { KLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
 
-const styles = (theme: Theme) =>
+const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {},
     normalStatus: {
@@ -34,38 +34,34 @@ const styles = (theme: Theme) =>
     domainsColumn: {
       minWidth: 200,
     },
+  }),
+);
+
+interface Props extends WithUserAuthProps {}
+
+const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
+  const classes = useStyles();
+  const dispatch = useDispatch();
+  const { canEditTenant } = props;
+  const { isFirstLoaded, isLoading, domains } = useSelector((state: RootState) => {
+    return {
+      isLoading: state.domains.isLoading,
+      isFirstLoaded: state.domains.isFirstLoaded,
+      domains: state.domains.domains,
+    };
   });
 
-const mapStateToProps = (state: RootState) => {
-  return {
-    isLoading: state.domains.isLoading,
-    isFirstLoaded: state.domains.isFirstLoaded,
-    domains: state.domains.domains,
-  };
-};
-
-interface Props
-  extends WithUserAuthProps,
-    WithStyles<typeof styles>,
-    ReturnType<typeof mapStateToProps>,
-    TDispatchProp {}
-
-class DomainListPageRaw extends React.PureComponent<Props> {
-  private renderDomain = (domain: Domain) => {
-    const { classes } = this.props;
-
+  const renderDomain = (domain: Domain) => {
     return (
       <Box className={classes.domainsColumn}>
         <KLink to={`/domains/${domain.name}`}>{domain.domain}</KLink>
       </Box>
     );
   };
-
-  private renderType = (domain: Domain) => (domain.isBuiltIn ? "-" : domain.recordType);
-  private renderTarget = (domain: Domain) => (domain.isBuiltIn ? "-" : domain.target);
-
-  private renderActions = (domain: Domain) => {
-    const { canEditTenant } = this.props;
+  const renderType = (domain: Domain) => (domain.isBuiltIn ? "-" : domain.recordType);
+  const renderTarget = (domain: Domain) => (domain.isBuiltIn ? "-" : domain.target);
+  const renderActions = (domain: Domain) => {
+    const { canEditTenant } = props;
     return (
       <>
         {canEditTenant() && !domain.isBuiltIn && (
@@ -73,7 +69,7 @@ class DomainListPageRaw extends React.PureComponent<Props> {
             <DeleteButtonWithConfirmPopover
               popupId="delete-domain-popup"
               popupTitle="DELETE DOMAIN?"
-              confirmedAction={() => this.confirmDelete(domain)}
+              confirmedAction={() => confirmDelete(domain)}
             />
           </>
         )}
@@ -81,9 +77,7 @@ class DomainListPageRaw extends React.PureComponent<Props> {
     );
   };
 
-  private confirmDelete = async (domain: Domain) => {
-    const { dispatch } = this.props;
-
+  const confirmDelete = async (domain: Domain) => {
     try {
       const certName = domain.name;
       await dispatch(deleteCertificateAction(certName));
@@ -93,9 +87,7 @@ class DomainListPageRaw extends React.PureComponent<Props> {
     }
   };
 
-  private renderStatus = (domain: Domain) => {
-    const { classes } = this.props;
-
+  const renderStatus = (domain: Domain) => {
     if (domain.status === "ready") {
       // why the ready field is a string value ?????
       return (
@@ -117,9 +109,7 @@ class DomainListPageRaw extends React.PureComponent<Props> {
     }
   };
 
-  private getKRTableColumns() {
-    const { canEditTenant } = this.props;
-
+  const getKRTableColumns = () => {
     const columns = [
       {
         Header: "Domain",
@@ -147,33 +137,30 @@ class DomainListPageRaw extends React.PureComponent<Props> {
     }
 
     return columns;
-  }
+  };
 
-  private getKRTableData() {
-    const { domains } = this.props;
+  const getKRTableData = () => {
     const data: any[] = [];
 
     domains.forEach((domain) => {
       data.push({
-        domain: this.renderDomain(domain),
-        type: this.renderType(domain),
-        target: this.renderTarget(domain),
-        status: this.renderStatus(domain),
-        actions: this.renderActions(domain),
+        domain: renderDomain(domain),
+        type: renderType(domain),
+        target: renderTarget(domain),
+        status: renderStatus(domain),
+        actions: renderActions(domain),
       });
     });
 
     return data;
-  }
+  };
 
-  private renderKRTable() {
-    return (
-      <KRTable showTitle={true} title="Certificates" columns={this.getKRTableColumns()} data={this.getKRTableData()} />
-    );
-  }
+  const renderKRTable = () => {
+    return <KRTable showTitle={true} title="Certificates" columns={getKRTableColumns()} data={getKRTableData()} />;
+  };
 
-  private renderEmpty() {
-    const { canEditTenant } = this.props;
+  const renderEmpty = () => {
+    const { canEditTenant } = props;
     return (
       <EmptyInfoBox
         image={<WebIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
@@ -188,9 +175,9 @@ class DomainListPageRaw extends React.PureComponent<Props> {
         }
       />
     );
-  }
+  };
 
-  private renderInfoBox() {
+  const renderInfoBox = () => {
     const title = "Domains";
 
     const options = [
@@ -215,44 +202,35 @@ class DomainListPageRaw extends React.PureComponent<Props> {
     ];
 
     return <InfoBox title={title} options={options} />;
-  }
+  };
 
-  public render() {
-    const { isFirstLoaded, isLoading, domains: certificates, canEditTenant } = this.props;
-    return (
-      <BasePage
-        secondHeaderRight={
-          canEditTenant() ? (
-            <>
-              <Button
-                color="primary"
-                variant="outlined"
-                size="small"
-                component={Link}
-                tutorial-anchor-id="add-certificate"
-                to="/domains/new"
-              >
-                New Domain
-              </Button>
-            </>
-          ) : null
-        }
-      >
-        <Box p={2}>
-          <Box>
-            {isLoading && !isFirstLoaded ? (
-              <Loading />
-            ) : certificates && certificates.length > 0 ? (
-              this.renderKRTable()
-            ) : (
-              this.renderEmpty()
-            )}
-          </Box>
-          <Box mt={2}>{this.renderInfoBox()}</Box>
+  return (
+    <BasePage
+      secondHeaderRight={
+        canEditTenant() ? (
+          <>
+            <Button
+              color="primary"
+              variant="outlined"
+              size="small"
+              component={Link}
+              tutorial-anchor-id="add-certificate"
+              to="/domains/new"
+            >
+              New Domain
+            </Button>
+          </>
+        ) : null
+      }
+    >
+      <Box p={2}>
+        <Box>
+          {isLoading && !isFirstLoaded ? <Loading /> : domains && domains.length > 0 ? renderKRTable() : renderEmpty()}
         </Box>
-      </BasePage>
-    );
-  }
-}
+        <Box mt={2}>{renderInfoBox()}</Box>
+      </Box>
+    </BasePage>
+  );
+};
 
-export const DomainListPage = withUserAuth(withStyles(styles)(connect(mapStateToProps)(DomainListPageRaw)));
+export const DomainListPage = withUserAuth(memo(DomainListPageRaw));
