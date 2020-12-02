@@ -44,11 +44,10 @@ func NewDomainReconciler(mgr ctrl.Manager) *DomainReconciler {
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=domains/status,verbs=get;update;patch
 
 func (r *DomainReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	_ = r.Log.WithValues("domain", req.NamespacedName)
+	log := r.Log.WithValues("domain", req.NamespacedName)
 
 	domain := v1alpha1.Domain{}
-	if err := r.Get(context.Background(), client.ObjectKey{Name: req.Name}, &domain); err != nil {
+	if err := r.Get(r.ctx, client.ObjectKey{Name: req.Name}, &domain); err != nil {
 		if errors.IsNotFound(err) {
 			return ctrl.Result{}, nil
 		}
@@ -71,11 +70,12 @@ func (r *DomainReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	copied.Status.LastCheckTimestamp = time.Now().Unix()
 	copied.Status.CNAMEReady = isCNAMEValid
 
-	if err := r.Status().Update(context.Background(), copied); err != nil {
+	if err := r.Status().Update(r.ctx, copied); err != nil {
 		return ctrl.Result{}, err
 	}
 
 	// this reconcile act as a never ending loop to check if Domain config is Valid
+	log.Info("requeue check of Domain", "after", requeueAfter)
 	return ctrl.Result{RequeueAfter: requeueAfter}, nil
 }
 

@@ -71,7 +71,6 @@ func (h *ApiHandler) handleCreateRegistry(c echo.Context) (err error) {
 	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "registries/*")
 
 	var registry *resources.DockerRegistry
-
 	if registry, err = bindDockerRegistryFromRequestBody(c); err != nil {
 		return err
 	}
