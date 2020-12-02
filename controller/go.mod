@@ -22,6 +22,7 @@ require (
 	github.com/jetstack/cert-manager v0.15.2
 	github.com/joho/godotenv v1.3.0
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
+	github.com/miekg/dns v1.1.27
 	github.com/onsi/ginkgo v1.12.1
 	github.com/onsi/gomega v1.10.1
 	github.com/opencontainers/image-spec v1.0.1 // indirect
