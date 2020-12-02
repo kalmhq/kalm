@@ -10,10 +10,12 @@ import (
 )
 
 type ApiHandler struct {
-	resourceManager *resources.ResourceManager
-	clientManager   client.ClientManager
-	logger          *zap.Logger
-	IsLocalMode     bool
+	resourceManager   *resources.ResourceManager
+	clientManager     client.ClientManager
+	logger            *zap.Logger
+	IsLocalMode       bool
+	BaseDomain        string
+	ClusterBaseDomain string
 }
 
 func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
@@ -105,11 +107,12 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/settings", h.handleListSettings)
 }
 
-func NewApiHandler(clientManager client.ClientManager, isLocalMode bool) *ApiHandler {
+func NewApiHandler(clientManager client.ClientManager, isLocalMode bool, clusterBaseDomain string) *ApiHandler {
 	return &ApiHandler{
-		clientManager:   clientManager,
-		logger:          log.DefaultLogger(),
-		resourceManager: resources.NewResourceManager(clientManager.GetDefaultClusterConfig(), log.DefaultLogger()),
-		IsLocalMode:     isLocalMode,
+		clientManager:     clientManager,
+		logger:            log.DefaultLogger(),
+		resourceManager:   resources.NewResourceManager(clientManager.GetDefaultClusterConfig(), log.DefaultLogger()),
+		IsLocalMode:       isLocalMode,
+		ClusterBaseDomain: clusterBaseDomain,
 	}
 }

@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
@@ -79,6 +80,8 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 		envUseLetsencryptProductionAPI = "false"
 	}
 
+	isLocalMode := strconv.FormatBool(config.Spec.KalmType == "local")
+
 	dpName := "kalm-controller"
 	expectedKalmController := appsV1.Deployment{
 		ObjectMeta: ctrl.ObjectMeta{
@@ -123,7 +126,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 						},
 						{
 							Command:         []string{"/manager"},
-							Args:            getControllerArgs(config.Spec.KalmType),
+							Args:            getControllerArgs(),
 							Image:           img,
 							ImagePullPolicy: "Always",
 							Name:            "manager",
@@ -132,6 +135,8 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 								{Name: "KALM_VERSION", Value: controllerImgTag},
 								{Name: "KALM_AUTH_PROXY_VERSION", Value: authProxyVersion},
 								{Name: v1alpha1.ENV_USE_LETSENCRYPT_PRODUCTION_API, Value: envUseLetsencryptProductionAPI},
+								{Name: v1alpha1.ENV_KALM_IS_IN_LOCAL_MODE, Value: isLocalMode},
+								{Name: v1alpha1.ENV_KALM_CLUSTER_BASE_DOMAIN, Value: config.Spec.ClusterBaseDomain},
 							},
 							Ports: []corev1.ContainerPort{
 								{
@@ -201,14 +206,10 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 	return err
 }
 
-func getControllerArgs(kalmType string) []string {
+func getControllerArgs() []string {
 	args := []string{
 		"--enable-leader-election",
 		"--metrics-addr=127.0.0.1:8080",
-	}
-
-	if kalmType != "" {
-		args = append(args, fmt.Sprintf("--kalm-type=%s", kalmType))
 	}
 
 	return args
