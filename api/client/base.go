@@ -53,6 +53,7 @@ type ClientManager interface {
 	CanOperateHttpRoute(c *ClientInfo, action string, route *resources.HttpRoute) bool
 	PermissionsGreaterThanOrEqualToAccessToken(c *ClientInfo, accessToken *resources.AccessToken) bool
 	CanManageRoleBinding(c *ClientInfo, roleBinding *v1alpha1.RoleBinding) bool
+	CanOperateDomains(c *ClientInfo, action string, domain *v1alpha1.Domain) bool
 
 	GetRBACEnforcer() rbac.Enforcer
 }
@@ -195,6 +196,7 @@ func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, ro
 
 	return true
 }
+
 func (m *BaseClientManager) CanManageRoleBinding(c *ClientInfo, roleBinding *v1alpha1.RoleBinding) bool {
 	switch roleBinding.Spec.Role {
 	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
@@ -205,6 +207,11 @@ func (m *BaseClientManager) CanManageRoleBinding(c *ClientInfo, roleBinding *v1a
 		scope := fmt.Sprintf("%s/%s", tenantName, roleBinding.Namespace)
 		return m.CanManageScope(c, scope)
 	}
+}
+
+func (m *BaseClientManager) CanOperateDomains(c *ClientInfo, action string, domain *v1alpha1.Domain) bool {
+	//todo
+	return false
 }
 
 func extractAuthTokenFromClientRequestContext(c echo.Context) string {
