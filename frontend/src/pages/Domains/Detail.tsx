@@ -17,11 +17,14 @@ import { DNSConfigItems } from "widgets/ACMEServer";
 import { KalmCertificatesIcon } from "widgets/Icon";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { KPanel } from "widgets/KPanel";
+import { Loading } from "widgets/Loading";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 
 const DomainDetailPageRaw: React.FC = () => {
-  const { domains, certificates, canEditTenant } = useSelector((state: RootState) => {
+  const { domains, isLoading, isFirstLoaded, certificates, canEditTenant } = useSelector((state: RootState) => {
     return {
+      isLoading: state.domains.isLoading,
+      isFirstLoaded: state.domains.isFirstLoaded,
       domains: state.domains.domains,
       certificates: state.certificates.certificates,
       canEditTenant: state.auth.permissionMethods.canEditTenant,
@@ -32,8 +35,12 @@ const DomainDetailPageRaw: React.FC = () => {
   const router = useRouteMatch<{ name: string }>();
   const domain = domains.find((x) => x.name === router.params.name);
 
+  if (isLoading && !isFirstLoaded) {
+    return <Loading />;
+  }
+
   if (!domain) {
-    return <div>no such domain</div>;
+    return <Box p={2}>no such domain</Box>;
   }
 
   const cert = certificates.find((x) => x.domains.length === 1 && x.domains[0] === domain.domain);
