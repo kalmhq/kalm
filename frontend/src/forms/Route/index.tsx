@@ -2,8 +2,6 @@ import { Box, Collapse, Grid, Link } from "@material-ui/core";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import { setSuccessNotificationAction } from "actions/notification";
-import copy from "copy-to-clipboard";
 import arrayMutators from "final-form-arrays";
 import { AutoCompleteMultipleValue, AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalBoolCheckboxRender, FinalCheckboxGroupRender } from "forms/Final/checkbox";
@@ -18,7 +16,7 @@ import routesGif from "images/routes.gif";
 import React, { useState } from "react";
 import { Field, FieldRenderProps, Form, FormRenderProps } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { Link as RouteLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { FormTutorialHelper } from "tutorials/formValueToReduxStoreListener";
@@ -39,27 +37,27 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       "& .alert": {
-        marginTop: theme.spacing(1),
-        marginBottom: theme.spacing(1),
+        // marginTop: theme.spacing(1),
+        // marginBottom: theme.spacing(1),
       },
     },
     box: {
-      padding: theme.spacing(2),
-      border: "1px solid black",
-      marginBottom: theme.spacing(2),
+      // padding: theme.spacing(2),
+      // border: "1px solid black",
+      // marginBottom: theme.spacing(2),
     },
 
     heading: {
-      fontSize: theme.typography.pxToRem(15),
-      flexBasis: "20%",
-      flexShrink: 0,
+      // fontSize: theme.typography.pxToRem(15),
+      // flexBasis: "20%",
+      // flexShrink: 0,
     },
     secondaryHeading: {
-      fontSize: theme.typography.pxToRem(15),
-      color: theme.palette.text.secondary,
+      // fontSize: theme.typography.pxToRem(15),
+      // color: theme.palette.text.secondary,
     },
     secondaryTip: {
-      color: theme.palette.text.secondary,
+      // color: theme.palette.text.secondary,
     },
   }),
 );
@@ -84,24 +82,17 @@ const schemaOptions = [
 
 const RouteFormRaw: React.FC<Props> = (props) => {
   const classes = useStyles();
-  const dispatch = useDispatch();
+
   const { isEdit, initial, onSubmit } = props;
   const [isValidCertificationUnfolded, setIsValidCertificationUnfolded] = useState(false);
 
-  const { tutorialState, ingressIP, certificates, form } = useSelector((state: RootState) => {
+  const { tutorialState, certificates } = useSelector((state: RootState) => {
     const certificates = state.certificates.certificates;
-    const domains: Set<string> = new Set();
-
-    certificates.forEach((x) => {
-      x.domains.filter((x) => x !== "*").forEach((domain) => domains.add(domain));
-    });
 
     return {
       tutorialState: state.tutorial,
-      domains: Array.from(domains),
-      ingressIP: state.cluster.info.ingressIP,
+      domains: state.domains.domains,
       certificates,
-      form: ROUTE_FORM_ID,
     };
   });
 
@@ -241,11 +232,16 @@ const RouteFormRaw: React.FC<Props> = (props) => {
   const validate = (values: HttpRoute) => {
     let errors: any = {};
     const { methods, methodsMode, schemes } = values;
+
     if (methodsMode === methodsModeSpecific) {
       errors.methods = ValidatorArrayNotEmpty(methods);
     }
+
     errors.schemes = ValidatorArrayNotEmpty(schemes);
-    return Object.keys(errors).length > 0 ? errors : finalValidateOrNotBlockByTutorial(values, tutorialState, form);
+
+    return Object.keys(errors).length > 0
+      ? errors
+      : finalValidateOrNotBlockByTutorial(values, tutorialState, ROUTE_FORM_ID);
   };
 
   return (
@@ -260,6 +256,7 @@ const RouteFormRaw: React.FC<Props> = (props) => {
         }}
         render={({ values, errors, handleSubmit, form: { change } }: FormRenderProps<HttpRoute>) => {
           const { hosts, methodsMode, schemes, httpRedirectToHttps } = values;
+
           const hstsDomains = includesForceHttpsDomain(hosts);
           const methodOptions = httpMethods.map((m) => ({ value: m, label: m }));
 
@@ -272,6 +269,7 @@ const RouteFormRaw: React.FC<Props> = (props) => {
               }
             }
           }
+
           // set httpRedirectToHttps to false if http or https is not in schemes
           if (!(schemes.includes("http") && schemes.includes("https")) && httpRedirectToHttps) {
             change("httpRedirectToHttps", false);
@@ -279,7 +277,7 @@ const RouteFormRaw: React.FC<Props> = (props) => {
 
           return (
             <form onSubmit={handleSubmit} id="route-form">
-              <FormTutorialHelper form={form} />
+              <FormTutorialHelper form={ROUTE_FORM_ID} />
               <Prompt />
               <Grid container spacing={2}>
                 <Grid item xs={12}>
@@ -298,21 +296,7 @@ const RouteFormRaw: React.FC<Props> = (props) => {
                             validate={ValidatorIpAndHosts}
                             parse={stringArrayTrimAndToLowerCaseParse}
                             placeholder="e.g. www.example.com"
-                            helperText={
-                              <Caption color="textSecondary">
-                                Your cluster ip is{" "}
-                                <Link
-                                  href="#"
-                                  onClick={() => {
-                                    copy(ingressIP);
-                                    dispatch(setSuccessNotificationAction("Copied successful!"));
-                                  }}
-                                >
-                                  {ingressIP || ""}
-                                </Link>
-                                . {sc.ROUTE_HOSTS_INPUT_HELPER}
-                              </Caption>
-                            }
+                            helperText={<Caption color="textSecondary">{sc.ROUTE_HOSTS_INPUT_HELPER}</Caption>}
                           />
                           <Field
                             render={(props: FieldRenderProps<string[]>) => (

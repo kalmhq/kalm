@@ -20,6 +20,7 @@ import { Tutorial, TutorialFactory } from "types/tutorial";
 
 export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title): Tutorial => {
   let apps = store.getState().applications.applications;
+  const tenantName = store.getState().auth.tenant;
 
   const applicationNameTemplate = "tutorial-";
   let i = 0;
@@ -79,11 +80,14 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
                 form: APPLICATION_FORM_ID,
                 field: "name",
                 validate: (name) =>
-                  name === applicationName ? undefined : `Please follow the tutorial, use ${applicationName}.`,
+                  name === applicationName || name === `${tenantName}-${applicationName}`
+                    ? undefined
+                    : `Please follow the tutorial, use ${applicationName}.`,
               },
             ],
             shouldCompleteByState: (state: RootState) =>
-              isApplicationFormFieldValueEqualTo(state, "name", applicationName),
+              isApplicationFormFieldValueEqualTo(state, "name", applicationName) ||
+              isApplicationFormFieldValueEqualTo(state, "name", `${tenantName}-${applicationName}`),
           },
           {
             title: "Submit form",
