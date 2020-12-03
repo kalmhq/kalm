@@ -52,10 +52,11 @@ func (r *ResponseRecorder) BodyAsString() string {
 }
 
 func (r *ResponseRecorder) BodyAsJSON(obj interface{}) {
-	err := json.Unmarshal(r.bytes, obj)
+	bytes := r.bytes
+	err := json.Unmarshal(bytes, obj)
 
 	if err != nil {
-		panic(fmt.Errorf("Unmarshal response body failed, %+v", err))
+		panic(fmt.Errorf("Unmarshal response body failed, err:%+v, resp bytes: %s", err, bytes))
 	}
 }
 
@@ -149,6 +150,10 @@ func GetClusterOwnerRole() string {
 
 func GetTenantOwnerRole(name string) string {
 	return "tenant_" + name + "_owner"
+}
+
+func GetTenantEditorRole(name string) string {
+	return "tenant_" + name + "_editor"
 }
 
 func (suite *WithControllerTestSuite) SetupApiServerWithoutPolicy() {
@@ -246,7 +251,7 @@ type TestRequestContext struct {
 	Debug bool
 }
 
-const defaultTenant = "defaultTenant"
+const defaultTenant = "default-tenant"
 
 func (suite *WithControllerTestSuite) DoTestRequest(rc *TestRequestContext) {
 	if rc.User == "" {

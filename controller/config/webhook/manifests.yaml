@@ -83,6 +83,24 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-core-kalm-dev-v1alpha1-domain
+  failurePolicy: Fail
+  name: mdomain.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - domains
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-core-kalm-dev-v1alpha1-httproute
   failurePolicy: Fail
   name: mhttproute.kb.io
@@ -287,6 +305,24 @@ webhooks:
     - DELETE
     resources:
     - dockerregistries
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-core-kalm-dev-v1alpha1-domain
+  failurePolicy: Fail
+  name: vdomain.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - domains
 - clientConfig:
     caBundle: Cg==
     service:

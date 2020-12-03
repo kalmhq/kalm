@@ -66,6 +66,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	h.InstallApplicationsHandlers(gv1Alpha1WithAuth)
 	h.InstallComponentsHandlers(gv1Alpha1WithAuth)
 	h.InstallRegistriesHandlers(gv1Alpha1WithAuth)
+	h.InstallDomainHandlers(gv1Alpha1WithAuth)
 
 	gv1Alpha1WithAuth.DELETE("/pods/:namespace/:name", h.handleDeletePod)
 

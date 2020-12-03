@@ -87,7 +87,7 @@ g, dvd2, clusterViewer
 	assert.Nil(t, err)
 	assert.True(t, canAccess)
 
-	canAccess, err = e.Enforce("dvd2", "view", "defaultTenant/*", "services/*")
+	canAccess, err = e.Enforce("dvd2", "view", "some-random-tenant/*", "services/*")
 	assert.Nil(t, err)
 	assert.True(t, canAccess)
 }

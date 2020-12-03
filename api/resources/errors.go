@@ -50,7 +50,7 @@ type UnauthorizedError struct {
 	Object string
 }
 
-func(e *UnauthorizedError) StatusCode() int {
+func (e *UnauthorizedError) StatusCode() int {
 	return 401
 }
 
@@ -67,5 +67,5 @@ func (e *UnauthorizedError) Error() string {
 		groupsString = "N/A"
 	}
 
-	return fmt.Sprintf("tenant: %s, user: %s, groups: %s, action: %s, scope: %s, object: %s", e.Tenant, e.Email, groupsString, e.Action, e.Scope, e.Object)
+	return fmt.Sprintf("fail the auth check: [action: %s, scope: %s, object: %s], userAuthInfo: [tenant: %s, user: %s, groups: %s]", e.Action, e.Scope, e.Object, e.Tenant, e.Email, groupsString)
 }

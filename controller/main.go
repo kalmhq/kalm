@@ -191,6 +191,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = controllers.NewDomainReconciler(mgr).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller: Domain")
+		os.Exit(1)
+	}
+
 	// only run webhook if explicitly declared
 	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
 		v1alpha1.InitializeWebhookClient(mgr)
@@ -260,6 +265,11 @@ func main() {
 			os.Exit(1)
 		}
 
+		if err = (&corev1alpha1.Domain{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Domain")
+			os.Exit(1)
+		}
+
 		hookServer := mgr.GetWebhookServer()
 		// ns webhook
 		hookServer.Register("/validate-v1-ns", &webhook.Admission{
@@ -284,8 +294,9 @@ func main() {
 	}
 	//+kubebuilder:scaffold:builder
 
-	setupLog.Info("starting manager")
+	//todo start domain check loop
 
+	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
