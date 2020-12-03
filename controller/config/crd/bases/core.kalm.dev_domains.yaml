@@ -43,6 +43,10 @@ spec:
               type: string
             domain:
               type: string
+            isKalmBuiltinDomain:
+              type: boolean
+          required:
+          - isKalmBuiltinDomain
           type: object
         status:
           description: DomainStatus defines the observed state of Domain

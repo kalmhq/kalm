@@ -262,9 +262,8 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) (err error) {
 				},
 			},
 		},
-		Name:      KalmRouteName,
-		Namespace: controllers.KalmSystemNamespace,
-		Tenant:    currentUser.Tenant,
+		Name:   KalmRouteName,
+		Tenant: currentUser.Tenant,
 	}
 
 	ssoConfig := &resources.SSOConfig{

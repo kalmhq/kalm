@@ -170,16 +170,12 @@ func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, ro
 	for _, dest := range route.HttpRouteSpec.Destinations {
 		parts := strings.Split(dest.Host, ".")
 
-		if len(parts) == 0 {
+		if len(parts) < 2 {
 			return false
 		}
 
 		var ns string
-		if len(parts) == 1 {
-			ns = route.Namespace
-		} else {
-			ns = parts[1]
-		}
+		ns = parts[1]
 
 		scope := fmt.Sprintf("%s/%s", route.Tenant, ns)
 

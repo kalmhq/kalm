@@ -45,7 +45,6 @@ type HttpRoute struct {
 	*v1alpha1.HttpRouteSpec `json:",inline"`
 	Name                    string `json:"name"`
 	Tenant                  string `json:"tenant"`
-	Namespace               string `json:"namespace"`
 }
 
 func (resourceManager *ResourceManager) GetHttpRoute(namespace, name string) (*HttpRoute, error) {
@@ -80,7 +79,6 @@ func BuildHttpRouteFromResource(route *v1alpha1.HttpRoute) *HttpRoute {
 	return &HttpRoute{
 		HttpRouteSpec: &route.Spec,
 		Name:          route.Name,
-		Namespace:     route.Namespace,
 		Tenant:        tenantName,
 	}
 }
@@ -88,8 +86,7 @@ func BuildHttpRouteFromResource(route *v1alpha1.HttpRoute) *HttpRoute {
 func (resourceManager *ResourceManager) CreateHttpRoute(routeSpec *HttpRoute) (*HttpRoute, error) {
 	route := &v1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name:      routeSpec.Name,
-			Namespace: routeSpec.Namespace,
+			Name: routeSpec.Name,
 			Labels: map[string]string{
 				v1alpha1.TenantNameLabelKey: routeSpec.Tenant,
 			},
@@ -107,7 +104,7 @@ func (resourceManager *ResourceManager) CreateHttpRoute(routeSpec *HttpRoute) (*
 func (resourceManager *ResourceManager) UpdateHttpRoute(routeSpec *HttpRoute) (*HttpRoute, error) {
 	route := &v1alpha1.HttpRoute{}
 
-	if err := resourceManager.Get(routeSpec.Namespace, routeSpec.Name, route); err != nil {
+	if err := resourceManager.Get("", routeSpec.Name, route); err != nil {
 		return nil, err
 	}
 

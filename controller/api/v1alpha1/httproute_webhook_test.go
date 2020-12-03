@@ -8,14 +8,9 @@ import (
 )
 
 func TestHttpRoute_Validate(t *testing.T) {
-
-	// a dirty trick to skip inherit tenant
-	systemNS := "kalm-system"
-
 	route := HttpRoute{
 		ObjectMeta: ctrl.ObjectMeta{
-			Namespace: systemNS,
-			Name:      "test-name",
+			Name: "test-name",
 		},
 		Spec: HttpRouteSpec{
 			Hosts:   []string{"*.xip.io", "xip.io"},

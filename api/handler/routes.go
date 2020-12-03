@@ -9,15 +9,13 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (h *ApiHandler) InstallHttpRouteHandlers(e *echo.Group) {
 	e.GET("/httproutes", h.handleListAllRoutes)
-	e.GET("/httproutes/:namespace", h.handleListRoutes)
-	e.POST("/httproutes/:namespace", h.handleCreateRoute)
-	e.PUT("/httproutes/:namespace/:name", h.handleUpdateRoute)
-	e.DELETE("/httproutes/:namespace/:name", h.handleDeleteRoute)
+	e.POST("/httproutes", h.handleCreateRoute)
+	e.PUT("/httproutes/:name", h.handleUpdateRoute)
+	e.DELETE("/httproutes/:name", h.handleDeleteRoute)
 }
 
 func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
@@ -36,7 +34,7 @@ func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
 func (h *ApiHandler) handleListRoutes(c echo.Context) error {
 	currentUser := getCurrentUser(c)
 
-	list, err := h.resourceManager.GetHttpRoutes(belongsToTenant(currentUser.Tenant), client.InNamespace(c.Param("namespace")))
+	list, err := h.resourceManager.GetHttpRoutes(belongsToTenant(currentUser.Tenant))
 	list = h.filterAuthorizedHttpRoutes(c, list)
 
 	if err != nil {
@@ -113,8 +111,7 @@ func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
 		return resources.InsufficientPermissionsError
 	}
 
-	isSaaSMode := !h.IsLocalMode
-	if isSaaSMode {
+	if !h.IsLocalMode {
 		baseDomain := h.ClusterBaseDomain
 		tenantName := currentUser.Tenant
 
@@ -139,7 +136,7 @@ func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
 }
 
 func (h *ApiHandler) handleDeleteRoute(c echo.Context) (err error) {
-	route, err := h.resourceManager.GetHttpRoute(c.Param("namespace"), c.Param("name"))
+	route, err := h.resourceManager.GetHttpRoute("", c.Param("name"))
 
 	if err != nil {
 		return nil
@@ -149,7 +146,7 @@ func (h *ApiHandler) handleDeleteRoute(c echo.Context) (err error) {
 		return resources.InsufficientPermissionsError
 	}
 
-	if err = h.resourceManager.DeleteHttpRoute(route.Namespace, route.Name); err != nil {
+	if err = h.resourceManager.DeleteHttpRoute("", route.Name); err != nil {
 		return err
 	}
 

@@ -33,8 +33,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 				},
 			},
 		},
-		Name:      "test-routes",
-		Namespace: "test-routes",
+		Name: "test-routes",
 	}
 
 	// create a route
@@ -43,7 +42,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 			GetClusterEditorRole(),
 		},
 		Method: http.MethodPost,
-		Path:   "/v1alpha1/httproutes/test-routes",
+		Path:   "/v1alpha1/httproutes",
 		Body:   route,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsUnauthorizedError(rec)
@@ -60,7 +59,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 			GetClusterEditorRole(),
 		},
 		Method: http.MethodGet,
-		Path:   "/v1alpha1/httproutes/test-routes",
+		Path:   "/v1alpha1/httproutes",
 		Body:   route,
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var routesRes []*resources.HttpRoute
@@ -103,15 +102,14 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 				},
 			},
 		},
-		Name:      "test-routes",
-		Namespace: "test-routes",
+		Name: "test-routes",
 	}
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
 			GetClusterEditorRole(),
 		},
 		Method: http.MethodPut,
-		Path:   "/v1alpha1/httproutes/test-routes/test-routes",
+		Path:   "/v1alpha1/httproutes/test-routes",
 		Body:   routeForUpdate,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsUnauthorizedError(rec)
@@ -128,7 +126,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 			GetClusterEditorRole(),
 		},
 		Method: http.MethodGet,
-		Path:   "/v1alpha1/httproutes/test-routes",
+		Path:   "/v1alpha1/httproutes",
 		Body:   route,
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var routesResForUpdate []*resources.HttpRoute
@@ -145,7 +143,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 			GetClusterEditorRole(),
 		},
 		Method: http.MethodDelete,
-		Path:   "/v1alpha1/httproutes/test-routes/test-routes",
+		Path:   "/v1alpha1/httproutes/test-routes",
 		Body:   routeForUpdate,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsUnauthorizedError(rec)
