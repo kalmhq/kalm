@@ -1,5 +1,4 @@
 import { Box, Collapse, Grid, Link } from "@material-ui/core";
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import arrayMutators from "final-form-arrays";
@@ -33,34 +32,7 @@ import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      "& .alert": {
-        // marginTop: theme.spacing(1),
-        // marginBottom: theme.spacing(1),
-      },
-    },
-    box: {
-      // padding: theme.spacing(2),
-      // border: "1px solid black",
-      // marginBottom: theme.spacing(2),
-    },
-
-    heading: {
-      // fontSize: theme.typography.pxToRem(15),
-      // flexBasis: "20%",
-      // flexShrink: 0,
-    },
-    secondaryHeading: {
-      // fontSize: theme.typography.pxToRem(15),
-      // color: theme.palette.text.secondary,
-    },
-    secondaryTip: {
-      // color: theme.palette.text.secondary,
-    },
-  }),
-);
+// const useStyles = makeStyles((theme: Theme) => createStyles({}));
 
 interface Props {
   isEdit?: boolean;
@@ -81,8 +53,6 @@ const schemaOptions = [
 ];
 
 const RouteFormRaw: React.FC<Props> = (props) => {
-  const classes = useStyles();
-
   const { isEdit, initial, onSubmit } = props;
   const [isValidCertificationUnfolded, setIsValidCertificationUnfolded] = useState(false);
 
@@ -245,248 +215,246 @@ const RouteFormRaw: React.FC<Props> = (props) => {
   };
 
   return (
-    <div className={classes.root}>
-      <Form
-        onSubmit={onSubmit}
-        initialValues={initial}
-        keepDirtyOnReinitialize
-        validate={validate}
-        mutators={{
-          ...arrayMutators,
-        }}
-        render={({ values, errors, handleSubmit, form: { change } }: FormRenderProps<HttpRoute>) => {
-          const { hosts, methodsMode, schemes, httpRedirectToHttps } = values;
+    <Form
+      onSubmit={onSubmit}
+      initialValues={initial}
+      keepDirtyOnReinitialize
+      validate={validate}
+      mutators={{
+        ...arrayMutators,
+      }}
+      render={({ values, handleSubmit, form: { change } }: FormRenderProps<HttpRoute>) => {
+        const { hosts, methodsMode, schemes, httpRedirectToHttps } = values;
 
-          const hstsDomains = includesForceHttpsDomain(hosts);
-          const methodOptions = httpMethods.map((m) => ({ value: m, label: m }));
+        const hstsDomains = includesForceHttpsDomain(hosts);
+        const methodOptions = httpMethods.map((m) => ({ value: m, label: m }));
 
-          if (!schemes.includes("https")) {
-            if (hstsDomains.length > 0) {
-              if (schemes.includes("http")) {
-                change("schemes", ["http", "https"]);
-              } else {
-                change("schemes", ["https"]);
-              }
+        if (!schemes.includes("https")) {
+          if (hstsDomains.length > 0) {
+            if (schemes.includes("http")) {
+              change("schemes", ["http", "https"]);
+            } else {
+              change("schemes", ["https"]);
             }
           }
+        }
 
-          // set httpRedirectToHttps to false if http or https is not in schemes
-          if (!(schemes.includes("http") && schemes.includes("https")) && httpRedirectToHttps) {
-            change("httpRedirectToHttps", false);
-          }
+        // set httpRedirectToHttps to false if http or https is not in schemes
+        if (!(schemes.includes("http") && schemes.includes("https")) && httpRedirectToHttps) {
+          change("httpRedirectToHttps", false);
+        }
 
-          return (
-            <form onSubmit={handleSubmit} id="route-form">
-              <FormTutorialHelper form={ROUTE_FORM_ID} />
-              <Prompt />
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Box mb={2}>
-                    <KPanel
-                      title="Hosts and paths"
-                      content={
-                        <Box p={2}>
-                          <Field
-                            id="route-hosts"
-                            render={(props: FieldRenderProps<string[]>) => (
-                              <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
-                            )}
-                            label="Hosts"
-                            name="hosts"
-                            validate={ValidatorIpAndHosts}
-                            parse={stringArrayTrimAndToLowerCaseParse}
-                            placeholder="e.g. www.example.com"
-                            helperText={<Caption color="textSecondary">{sc.ROUTE_HOSTS_INPUT_HELPER}</Caption>}
-                          />
-                          <Field
-                            render={(props: FieldRenderProps<string[]>) => (
-                              <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
-                            )}
-                            label="Path Prefixes"
-                            name="paths"
-                            validate={ValidatorArrayOfPath}
-                            parse={stringArrayTrimParse}
-                            placeholder="e.g. /api/v1; /blogs; /assets"
-                            helperText={sc.ROUTE_PATHS_INPUT_HELPER}
-                          />
-                          <Field
-                            type="checkbox"
-                            component={FinalBoolCheckboxRender}
-                            name="stripPath"
-                            label={sc.ROUTE_STRIP_PATH_LABEL}
-                            helperText={sc.ROUTE_STRIP_PATH_HELPER}
-                          />
-                        </Box>
-                      }
-                    />
-                  </Box>
+        return (
+          <form onSubmit={handleSubmit} id="route-form">
+            <FormTutorialHelper form={ROUTE_FORM_ID} />
+            <Prompt />
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Box mb={2}>
+                  <KPanel
+                    title="Hosts and paths"
+                    content={
+                      <Box p={2}>
+                        <Field
+                          id="route-hosts"
+                          render={(props: FieldRenderProps<string[]>) => (
+                            <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
+                          )}
+                          label="Hosts"
+                          name="hosts"
+                          validate={ValidatorIpAndHosts}
+                          parse={stringArrayTrimAndToLowerCaseParse}
+                          placeholder="e.g. www.example.com"
+                          helperText={<Caption color="textSecondary">{sc.ROUTE_HOSTS_INPUT_HELPER}</Caption>}
+                        />
+                        <Field
+                          render={(props: FieldRenderProps<string[]>) => (
+                            <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
+                          )}
+                          label="Path Prefixes"
+                          name="paths"
+                          validate={ValidatorArrayOfPath}
+                          parse={stringArrayTrimParse}
+                          placeholder="e.g. /api/v1; /blogs; /assets"
+                          helperText={sc.ROUTE_PATHS_INPUT_HELPER}
+                        />
+                        <Field
+                          type="checkbox"
+                          component={FinalBoolCheckboxRender}
+                          name="stripPath"
+                          label={sc.ROUTE_STRIP_PATH_LABEL}
+                          helperText={sc.ROUTE_STRIP_PATH_HELPER}
+                        />
+                      </Box>
+                    }
+                  />
+                </Box>
 
-                  <Box mb={2}>
-                    <KPanel
-                      title="Schemes and Methods"
-                      content={
-                        <Box p={2}>
-                          <Field
-                            title="Http Methods"
-                            name="methodsMode"
-                            component={FinalRadioGroupRender}
-                            options={[
-                              {
-                                value: methodsModeAll,
-                                label: sc.ROUTE_HTTP_METHOD_ALL,
-                              },
-                              {
-                                value: methodsModeSpecific,
-                                label: sc.ROUTE_HTTP_METHOD_CUSTOM,
-                              },
-                            ]}
-                          />
-                          <Collapse in={methodsMode === methodsModeSpecific}>
-                            <FieldArray
-                              render={(props: FieldArrayRenderProps<string, any>) => {
-                                return <FinalCheckboxGroupRender {...props} options={methodOptions} />;
-                              }}
-                              name="methods"
-                            />
-                          </Collapse>
+                <Box mb={2}>
+                  <KPanel
+                    title="Schemes and Methods"
+                    content={
+                      <Box p={2}>
+                        <Field
+                          title="Http Methods"
+                          name="methodsMode"
+                          component={FinalRadioGroupRender}
+                          options={[
+                            {
+                              value: methodsModeAll,
+                              label: sc.ROUTE_HTTP_METHOD_ALL,
+                            },
+                            {
+                              value: methodsModeSpecific,
+                              label: sc.ROUTE_HTTP_METHOD_CUSTOM,
+                            },
+                          ]}
+                        />
+                        <Collapse in={methodsMode === methodsModeSpecific}>
                           <FieldArray
                             render={(props: FieldArrayRenderProps<string, any>) => {
-                              return (
-                                <FinalCheckboxGroupRender
-                                  {...props}
-                                  title="Allow traffic through"
-                                  options={schemaOptions}
-                                />
-                              );
+                              return <FinalCheckboxGroupRender {...props} options={methodOptions} />;
                             }}
-                            name="schemes"
+                            name="methods"
                           />
-                          <Collapse
-                            in={
-                              values.schemes &&
-                              values.schemes.indexOf("http") > -1 &&
-                              values.schemes.indexOf("https") > -1
-                            }
-                          >
-                            <Field
-                              component={FinalBoolCheckboxRender}
-                              name="httpRedirectToHttps"
-                              type="checkbox"
-                              label={
-                                <span>
-                                  Redirect all <strong>http</strong> request to <strong>https</strong> with 301 status
-                                  code.
-                                </span>
-                              }
-                            />
-                          </Collapse>
-                          <Collapse in={values.schemes.includes("https")}>
-                            <Alert className="alert" severity="info">
-                              {sc.ROUTE_HTTPS_ALERT}
-                            </Alert>
-                            {hstsDomains.length > 0 ? (
-                              <Alert className="alert" severity="warning">
-                                <Box display="flex">
-                                  The
-                                  <Box ml="4px" mr="4px">
-                                    <strong>{hstsDomains.join(", ")}</strong>
-                                  </Box>
-                                  {stringConstants.HSTS_DOMAINS_REQUIRED_HTTPS}
-                                </Box>
-                              </Alert>
-                            ) : null}
-                            {renderCertificationStatus(values)}
-                          </Collapse>
-                        </Box>
-                      }
-                    />
-                  </Box>
-
-                  <Box mb={2}>
-                    <KPanel title="Targets" content={renderTargets()} />
-                  </Box>
-
-                  <Box mb={2}>
-                    <KPanel
-                      title="Rules"
-                      content={
-                        <Box p={2}>
-                          <Caption>
-                            Set specific rules for this ingress. Only requests that match these conditions will be
-                            accepted.
-                          </Caption>
-
-                          <RenderHttpRouteConditions />
-                        </Box>
-                      }
-                    />
-                  </Box>
-
-                  <Box mb={2}>
-                    <Expansion title="Cors" defaultUnfold={false}>
-                      <Box p={2}>
-                        <Box mb={2}>
+                        </Collapse>
+                        <FieldArray
+                          render={(props: FieldArrayRenderProps<string, any>) => {
+                            return (
+                              <FinalCheckboxGroupRender
+                                {...props}
+                                title="Allow traffic through"
+                                options={schemaOptions}
+                              />
+                            );
+                          }}
+                          name="schemes"
+                        />
+                        <Collapse
+                          in={
+                            values.schemes &&
+                            values.schemes.indexOf("http") > -1 &&
+                            values.schemes.indexOf("https") > -1
+                          }
+                        >
                           <Field
-                            render={(props: FieldRenderProps<string[]>) => (
-                              <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
-                            )}
-                            parse={stringArrayTrimAndToLowerCaseParse}
-                            placeholder="e.g. *; http://example.com"
-                            name="cors.allowOrigins"
-                            label="Allow Origins"
-                          />
-                        </Box>
-                        <Box mb={2}>
-                          <Field
-                            render={(props: FieldRenderProps<string[]>) => (
-                              <AutoCompleteMultipleValue {...props} options={httpMethods} />
-                            )}
-                            placeholder={`e.g. ${httpMethods.join("; ")}`}
-                            name="cors.allowMethods"
-                            label="Allow Methods"
-                          />
-                        </Box>
-                        <Box mb={2}>
-                          <Field
-                            render={(props: FieldRenderProps<string[]>) => (
-                              <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
-                            )}
-                            parse={stringArrayTrimAndToLowerCaseParse}
-                            placeholder="e.g. Custom-Header-Name"
-                            name="cors.allowHeaders"
-                            label="Allow Headers"
-                          />
-                        </Box>
-                        <Box mb={2}>
-                          <Field
-                            name="cors.allowCredentials"
-                            type="checkbox"
                             component={FinalBoolCheckboxRender}
-                            label="Allow Credentials"
+                            name="httpRedirectToHttps"
+                            type="checkbox"
+                            label={
+                              <span>
+                                Redirect all <strong>http</strong> request to <strong>https</strong> with 301 status
+                                code.
+                              </span>
+                            }
                           />
-                        </Box>
-                        <Box mb={2}>
-                          <Field<number | undefined>
-                            component={FinalTextField}
-                            parse={NormalizePositiveNumber}
-                            name={`cors.maxAgeSeconds`}
-                            label="Max Age Seconds"
-                            placeholder="e.g. 86400"
-                          />
-                        </Box>
+                        </Collapse>
+                        <Collapse in={values.schemes.includes("https")}>
+                          <Alert className="alert" severity="info">
+                            {sc.ROUTE_HTTPS_ALERT}
+                          </Alert>
+                          {hstsDomains.length > 0 ? (
+                            <Alert className="alert" severity="warning">
+                              <Box display="flex">
+                                The
+                                <Box ml="4px" mr="4px">
+                                  <strong>{hstsDomains.join(", ")}</strong>
+                                </Box>
+                                {stringConstants.HSTS_DOMAINS_REQUIRED_HTTPS}
+                              </Box>
+                            </Alert>
+                          ) : null}
+                          {renderCertificationStatus(values)}
+                        </Collapse>
                       </Box>
-                    </Expansion>
-                  </Box>
+                    }
+                  />
+                </Box>
 
-                  <SubmitButton id="add-route-submit-button">{isEdit ? "Update" : "Create"} Route</SubmitButton>
-                </Grid>
+                <Box mb={2}>
+                  <KPanel title="Targets" content={renderTargets()} />
+                </Box>
+
+                <Box mb={2}>
+                  <KPanel
+                    title="Rules"
+                    content={
+                      <Box p={2}>
+                        <Caption>
+                          Set specific rules for this ingress. Only requests that match these conditions will be
+                          accepted.
+                        </Caption>
+
+                        <RenderHttpRouteConditions />
+                      </Box>
+                    }
+                  />
+                </Box>
+
+                <Box mb={2}>
+                  <Expansion title="Cors" defaultUnfold={false}>
+                    <Box p={2}>
+                      <Box mb={2}>
+                        <Field
+                          render={(props: FieldRenderProps<string[]>) => (
+                            <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
+                          )}
+                          parse={stringArrayTrimAndToLowerCaseParse}
+                          placeholder="e.g. *; http://example.com"
+                          name="cors.allowOrigins"
+                          label="Allow Origins"
+                        />
+                      </Box>
+                      <Box mb={2}>
+                        <Field
+                          render={(props: FieldRenderProps<string[]>) => (
+                            <AutoCompleteMultipleValue {...props} options={httpMethods} />
+                          )}
+                          placeholder={`e.g. ${httpMethods.join("; ")}`}
+                          name="cors.allowMethods"
+                          label="Allow Methods"
+                        />
+                      </Box>
+                      <Box mb={2}>
+                        <Field
+                          render={(props: FieldRenderProps<string[]>) => (
+                            <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
+                          )}
+                          parse={stringArrayTrimAndToLowerCaseParse}
+                          placeholder="e.g. Custom-Header-Name"
+                          name="cors.allowHeaders"
+                          label="Allow Headers"
+                        />
+                      </Box>
+                      <Box mb={2}>
+                        <Field
+                          name="cors.allowCredentials"
+                          type="checkbox"
+                          component={FinalBoolCheckboxRender}
+                          label="Allow Credentials"
+                        />
+                      </Box>
+                      <Box mb={2}>
+                        <Field<number | undefined>
+                          component={FinalTextField}
+                          parse={NormalizePositiveNumber}
+                          name={`cors.maxAgeSeconds`}
+                          label="Max Age Seconds"
+                          placeholder="e.g. 86400"
+                        />
+                      </Box>
+                    </Box>
+                  </Expansion>
+                </Box>
+
+                <SubmitButton id="add-route-submit-button">{isEdit ? "Update" : "Create"} Route</SubmitButton>
               </Grid>
-              <FormDataPreview />
-            </form>
-          );
-        }}
-      />
-    </div>
+            </Grid>
+            <FormDataPreview />
+          </form>
+        );
+      }}
+    />
   );
 };
 
