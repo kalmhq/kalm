@@ -20,8 +20,9 @@ import (
 )
 
 type DomainSpec struct {
-	Domain string `json:"domain,omitempty"`
-	CNAME  string `json:"cname,omitempty"`
+	Domain              string `json:"domain,omitempty"`
+	CNAME               string `json:"cname,omitempty"`
+	IsKalmBuiltinDomain bool   `json:"isKalmBuiltinDomain"`
 }
 
 // DomainStatus defines the observed state of Domain
