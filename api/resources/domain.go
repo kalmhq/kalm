@@ -1,10 +1,12 @@
 package resources
 
 type Domain struct {
-	Domain string
-	//todo
+	// Req
+	Domain string `json:"domain"`
+	// Resp
+	Name       string `json:"name"`
+	Status     string `json:"status"`
+	RecordType string `json:"recordType"`
+	Target     string `json:"target"`
+	IsBuiltIn  bool   `json:"isBuiltIn"`
 }
-
-// func (resourceManager *ResourceManager) CreateDomain(domain *Domain) (*Domain, error) {
-// 	return nil, nil
-// }

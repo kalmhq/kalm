@@ -29,7 +29,7 @@ func (h *ApiHandler) handleListDomains(c echo.Context) error {
 
 	afterFilter := h.filterAuthorizedDomains(c, "view", domainList.Items)
 
-	return c.JSON(http.StatusOK, afterFilter)
+	return c.JSON(http.StatusOK, wrapDomainListAsResp(afterFilter))
 }
 
 func (h *ApiHandler) filterAuthorizedDomains(c echo.Context, action string, records []v1alpha1.Domain) []v1alpha1.Domain {
@@ -56,7 +56,7 @@ func (h *ApiHandler) handleGetDomain(c echo.Context) error {
 		return fmt.Errorf("no permission to view this domain: %s", c.Param("name"))
 	}
 
-	return c.JSON(http.StatusOK, rst)
+	return c.JSON(http.StatusOK, wrapDomainAsResp(rst))
 }
 
 func (h *ApiHandler) handleCreateDomain(c echo.Context) error {
@@ -72,7 +72,35 @@ func (h *ApiHandler) handleCreateDomain(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(201, domain)
+	return c.JSON(201, wrapDomainAsResp(*domain))
+}
+
+func wrapDomainAsResp(d v1alpha1.Domain) resources.Domain {
+	var status string
+	if d.Status.CNAMEReady {
+		status = "ready"
+	} else {
+		status = "pending"
+	}
+
+	return resources.Domain{
+		Name:       d.Name,
+		Domain:     d.Spec.Domain,
+		Target:     d.Spec.CNAME,
+		Status:     status,
+		RecordType: "CNAME",
+		IsBuiltIn:  false,
+	}
+}
+
+func wrapDomainListAsResp(list []v1alpha1.Domain) []resources.Domain {
+	rst := []resources.Domain{}
+
+	for _, d := range list {
+		rst = append(rst, wrapDomainAsResp(d))
+	}
+
+	return rst
 }
 
 func (h *ApiHandler) handleDeleteDomain(c echo.Context) error {
