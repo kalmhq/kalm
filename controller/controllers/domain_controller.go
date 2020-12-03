@@ -64,10 +64,10 @@ func (r *DomainReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	// update status
 	if isCNAMEValid != copied.Status.CNAMEReady {
 		// reset count if CNAME ready changed
-		copied.Status.CheckCountSinceCNAMEReadyUpdated = 0
+		// copied.Status.CheckCountSinceCNAMEReadyUpdated = 0
 	}
-	copied.Status.CheckCountSinceCNAMEReadyUpdated += 1
-	copied.Status.LastCheckTimestamp = time.Now().Unix()
+	// copied.Status.CheckCountSinceCNAMEReadyUpdated += 1
+	// copied.Status.LastCheckTimestamp = time.Now().Unix()
 	copied.Status.CNAMEReady = isCNAMEValid
 
 	if err := r.Status().Update(r.ctx, copied); err != nil {
@@ -77,39 +77,41 @@ func (r *DomainReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	// this reconcile act as a never ending loop to check if Domain config is Valid
 	log.Info("requeue check of Domain", "after", requeueAfter)
 	return ctrl.Result{RequeueAfter: requeueAfter}, nil
+	// return ctrl.Result{}, nil
 }
 
 // decide time of next re-check
 func decideRequeueAfter(domain v1alpha1.Domain, isReady bool) time.Duration {
-	wasReady := domain.Status.CNAMEReady
-	if wasReady {
-		// still ok
-		if isReady {
-			return 1 * time.Hour
-		}
+	return 5 * time.Second
+	// wasReady := domain.Status.CNAMEReady
+	// if wasReady {
+	// 	// still ok
+	// 	if isReady {
+	// 		return 1 * time.Hour
+	// 	}
 
-		// ok -> not ok, quick check again
-		return 10 * time.Second
-	} else {
-		// not ok -> ok, quick check again
-		if isReady {
-			return 10 * time.Second
-		}
+	// 	// ok -> not ok, quick check again
+	// 	return 10 * time.Second
+	// } else {
+	// 	// not ok -> ok, quick check again
+	// 	if isReady {
+	// 		return 10 * time.Second
+	// 	}
 
-		// still not ok
-		checkCount := domain.Status.CheckCountSinceCNAMEReadyUpdated
-		if checkCount <= 10 {
-			return 10 * time.Second
-		} else if checkCount <= 20 {
-			return 20 * time.Second
-		} else if checkCount <= 30 {
-			return 30 * time.Second
-		} else if checkCount <= 60 {
-			return 1 * time.Minute
-		} else {
-			return 1 * time.Hour
-		}
-	}
+	// 	// still not ok
+	// 	checkCount := domain.Status.CheckCountSinceCNAMEReadyUpdated
+	// 	if checkCount <= 10 {
+	// 		return 10 * time.Second
+	// 	} else if checkCount <= 20 {
+	// 		return 20 * time.Second
+	// 	} else if checkCount <= 30 {
+	// 		return 30 * time.Second
+	// 	} else if checkCount <= 60 {
+	// 		return 1 * time.Minute
+	// 	} else {
+	// 		return 1 * time.Hour
+	// 	}
+	// }
 }
 
 func (r *DomainReconciler) SetupWithManager(mgr ctrl.Manager) error {

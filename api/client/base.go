@@ -210,7 +210,23 @@ func (m *BaseClientManager) CanManageRoleBinding(c *ClientInfo, roleBinding *v1a
 }
 
 func (m *BaseClientManager) CanOperateDomains(c *ClientInfo, action string, domain *v1alpha1.Domain) bool {
-	//todo
+	scope := fmt.Sprintf("%s/*", domain.Labels[v1alpha1.TenantNameLabelKey])
+	obj := fmt.Sprintf("domains/%s", domain.Name)
+
+	if action == "view" {
+		if m.CanView(c, scope, obj) {
+			return true
+		}
+	} else if action == "edit" {
+		if m.CanEdit(c, scope, obj) {
+			return true
+		}
+	} else if action == "manage" {
+		if m.CanManage(c, scope, obj) {
+			return true
+		}
+	}
+
 	return false
 }
 

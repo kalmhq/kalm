@@ -115,9 +115,14 @@ func getDirectCNAMEOfDomain(domain string) string {
 
 	m.SetQuestion(domain, dns.TypeCNAME)
 	m.RecursionDesired = true
-	r, _, _ := c.Exchange(m, config.Servers[0]+":"+config.Port)
+	r, _, err := c.Exchange(m, config.Servers[0]+":"+config.Port)
 
-	if len(r.Answer) <= 0 {
+	if err != nil {
+		domainlog.Error(err, "fail when call dnsClient.Exchange")
+		return ""
+	}
+
+	if r == nil || len(r.Answer) <= 0 {
 		return ""
 	}
 

@@ -15,7 +15,6 @@ import (
 func (h *ApiHandler) InstallDomainHandlers(e *echo.Group) {
 	e.GET("/domains", h.handleListDomains)
 	e.GET("/domains/:name", h.handleGetDomain)
-	// e.PUT("/domains/:name", h.handleUpdateRegistry)
 	e.POST("/domains", h.handleCreateDomain)
 	e.DELETE("/domains/:name", h.handleDeleteDomain)
 }
@@ -61,7 +60,7 @@ func (h *ApiHandler) handleGetDomain(c echo.Context) error {
 
 func (h *ApiHandler) handleCreateDomain(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "domains/*")
+	h.MustCanManage(currentUser, currentUser.Tenant+"/*", "domains/*")
 
 	domain, err := getDomainFromContext(c)
 	if err != nil {
@@ -77,7 +76,6 @@ func (h *ApiHandler) handleCreateDomain(c echo.Context) error {
 
 func (h *ApiHandler) handleDeleteDomain(c echo.Context) error {
 	var fetched v1alpha1.Domain
-
 	if err := h.resourceManager.Get("", c.Param("name"), &fetched); err != nil {
 		return err
 	}

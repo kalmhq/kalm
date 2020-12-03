@@ -26,7 +26,7 @@ type DomainSpec struct {
 
 // DomainStatus defines the observed state of Domain
 type DomainStatus struct {
-	CNAMEReady                       bool  `json:"cnameReady,omitempty"`
+	CNAMEReady                       bool  `json:"cnameReady"`
 	CheckCountSinceCNAMEReadyUpdated int   `json:"checkCountSinceCNAMEReadyUpdated"`
 	LastCheckTimestamp               int64 `json:"lastCheckTimestamp"`
 }
