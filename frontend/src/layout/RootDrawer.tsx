@@ -31,7 +31,6 @@ import {
   PeopleIcon,
   SettingIcon,
   UsageIcon,
-  WebIcon,
 } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
@@ -137,16 +136,9 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
           canViewTenant() ? { icon: KalmApplicationIcon, text: "Apps", to: "/applications" } : null,
           canViewTenant()
             ? {
-                icon: WebIcon,
-                text: "Domains",
-                to: "/domains",
-              }
-            : null,
-          canEditTenant() || canViewCluster()
-            ? {
                 icon: KalmCertificatesIcon,
-                text: "Certificates",
-                to: "/certificates",
+                text: "Domains & Certs",
+                to: "/domains",
               }
             : null,
           canViewTenant()

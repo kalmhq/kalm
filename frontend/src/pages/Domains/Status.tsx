@@ -1,29 +1,17 @@
-import { createStyles, makeStyles, Theme } from "@material-ui/core";
 import React from "react";
 import { Domain } from "types/domains";
 import { PendingBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {},
-    normalStatus: {
-      color: theme.palette.success.main,
-    },
-    warningStatus: {
-      color: theme.palette.warning.main,
-    },
-  }),
-);
+import { SuccessColorText, WarningColorText } from "widgets/Text";
 
 export const DomainStatus = ({ domain }: { domain: Domain }) => {
-  const classes = useStyles();
-
   if (domain.status === "ready") {
     // why the ready field is a string value ?????
     return (
       <FlexRowItemCenterBox>
-        <FlexRowItemCenterBox className={classes.normalStatus}>Normal</FlexRowItemCenterBox>
+        <FlexRowItemCenterBox>
+          <SuccessColorText>Normal</SuccessColorText>
+        </FlexRowItemCenterBox>
       </FlexRowItemCenterBox>
     );
   } else if (domain.status === "pending") {
@@ -32,7 +20,9 @@ export const DomainStatus = ({ domain }: { domain: Domain }) => {
         <FlexRowItemCenterBox mr={1}>
           <PendingBadge />
         </FlexRowItemCenterBox>
-        <FlexRowItemCenterBox className={classes.warningStatus}>Pending</FlexRowItemCenterBox>
+        <FlexRowItemCenterBox>
+          <WarningColorText>Pending</WarningColorText>
+        </FlexRowItemCenterBox>
       </FlexRowItemCenterBox>
     );
   } else {

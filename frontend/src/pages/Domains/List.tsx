@@ -1,7 +1,7 @@
 import { Box, Button, Link as KMLink } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
-import { deleteCertificateAction } from "actions/certificate";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { deleteDomainAction } from "actions/domains";
+import { setSuccessNotificationAction } from "actions/notification";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
 import { DomainStatus } from "pages/Domains/Status";
@@ -9,60 +9,94 @@ import React, { memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
+import { Certificate } from "types/certificate";
 import { Domain } from "types/domains";
 import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { WebIcon } from "widgets/Icon";
+import { KalmDetailsIcon, WebIcon } from "widgets/Icon";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { KLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
+import { SuccessColorText, WarningColorText } from "widgets/Text";
 
 interface Props extends WithUserAuthProps {}
 
 const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   const dispatch = useDispatch();
-  const { canEditTenant } = props;
-  const { isFirstLoaded, isLoading, domains } = useSelector((state: RootState) => {
+  const { canEditTenant, canViewTenant } = props;
+
+  const { isFirstLoaded, isLoading, domains, certificates } = useSelector((state: RootState) => {
     return {
       isLoading: state.domains.isLoading,
       isFirstLoaded: state.domains.isFirstLoaded,
       domains: state.domains.domains,
+      certificates: state.certificates.certificates,
     };
   });
+
+  const certificatesMap: { [key: string]: Certificate } = {};
+
+  certificates.forEach((certificate) => {
+    certificatesMap[certificate.domains[0]] = certificate;
+  });
+
+  const deleteDomain = (domain: Domain) => {
+    dispatch(deleteDomainAction(domain.name));
+    dispatch(setSuccessNotificationAction(`Successfully deleted domain ${domain.domain}`));
+  };
 
   const renderDomain = (domain: Domain) => {
     return <KLink to={`/domains/${domain.name}`}>{domain.domain}</KLink>;
   };
   const renderType = (domain: Domain) => (domain.isBuiltIn ? "-" : domain.recordType);
   const renderTarget = (domain: Domain) => (domain.isBuiltIn ? "-" : domain.target);
+  const renderCertificate = (domain: Domain) => {
+    if (domain.isBuiltIn) {
+      return "Issued";
+    }
+
+    if (domain.status === "pending") {
+      return "-";
+    }
+
+    const cert = certificatesMap[domain.domain];
+
+    if (cert) {
+      if (cert.ready === "True") {
+        return <SuccessColorText>Issued</SuccessColorText>;
+      } else {
+        return <WarningColorText>Pending</WarningColorText>;
+      }
+    }
+
+    if (domain.status === "ready") {
+      return "Not-issued";
+    }
+  };
   const renderActions = (domain: Domain) => {
-    const { canEditTenant } = props;
     return (
       <>
-        {canEditTenant() && !domain.isBuiltIn && (
+        {canViewTenant() && (
+          <IconLinkWithToolTip tooltipTitle="Details" to={`/domains/${domain.name}`}>
+            <KalmDetailsIcon />
+          </IconLinkWithToolTip>
+        )}
+        {canEditTenant() && (
           <>
             <DeleteButtonWithConfirmPopover
+              disabled={domain.isBuiltIn}
               popupId="delete-domain-popup"
               popupTitle="DELETE DOMAIN?"
-              confirmedAction={() => confirmDelete(domain)}
+              confirmedAction={() => deleteDomain(domain)}
             />
           </>
         )}
       </>
     );
-  };
-
-  const confirmDelete = async (domain: Domain) => {
-    try {
-      const certName = domain.name;
-      await dispatch(deleteCertificateAction(certName));
-      await dispatch(setSuccessNotificationAction(`Successfully deleted certificate '${certName}'`));
-    } catch {
-      dispatch(setErrorNotificationAction());
-    }
   };
 
   const renderStatus = (domain: Domain) => {
@@ -87,6 +121,10 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
         Header: "Status",
         accessor: "status",
       },
+      {
+        Header: "Certificate Status",
+        accessor: "certificate",
+      },
     ];
 
     if (canEditTenant()) {
@@ -108,6 +146,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
         type: renderType(domain),
         target: renderTarget(domain),
         status: renderStatus(domain),
+        certificate: renderCertificate(domain),
         actions: renderActions(domain),
       });
     });
@@ -116,7 +155,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   };
 
   const renderKRTable = () => {
-    return <KRTable showTitle={true} title="Certificates" columns={getKRTableColumns()} data={getKRTableData()} />;
+    return <KRTable showTitle={true} title="Domains" columns={getKRTableColumns()} data={getKRTableData()} />;
   };
 
   const renderEmpty = () => {
@@ -128,7 +167,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
         content={sc.EMPTY_DOMAIN_SUBTITLE}
         button={
           canEditTenant() ? (
-            <CustomizedButton variant="contained" color="primary" component={Link} to="/domain/new">
+            <CustomizedButton variant="contained" color="primary" component={Link} to="/domains/new">
               New Domain
             </CustomizedButton>
           ) : null

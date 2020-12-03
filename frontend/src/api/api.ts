@@ -1,4 +1,4 @@
-import Axios, { AxiosRequestConfig } from "axios";
+import Axios, { AxiosPromise, AxiosRequestConfig } from "axios";
 import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
 import { AcmeServerFormType, AcmeServerInfo, CertificateFormType, CertificateIssuerFormType } from "types/certificate";
@@ -9,7 +9,7 @@ import {
   DeployAccessTokenToAccessToken,
 } from "types/deployAccessToken";
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
-import { Domain } from "types/domains";
+import { Domain, DomainCreation } from "types/domains";
 import { RoleBinding } from "types/member";
 import { Node } from "types/node";
 import { Registry, RegistryFormType } from "types/registry";
@@ -360,25 +360,22 @@ export default class RealApi {
     return res.data;
   };
 
+  public async deleteDomain(name: string) {
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/domains/${name}` });
+  }
+
+  public async createDomain(domainCreation: DomainCreation) {
+    const res = await axiosRequest<Domain>({ method: "post", url: `/${K8sApiVersion}/domains`, data: domainCreation });
+    return res.data;
+  }
+
   public async loadDomains(): Promise<Domain[]> {
-    const domains: Domain[] = [
-      {
-        name: "domain1",
-        domain: "xxxxxxx.asia.kalm-kapps.com",
-        status: "ready",
-        recordType: "CNAME",
-        target: "xxxxxxx.asia.kalm-dns.com",
-        isBuiltIn: true,
-      },
-      {
-        name: "domain2",
-        domain: "www.david.com",
-        status: "pending",
-        recordType: "CNAME",
-        target: "xxxxxxx.asia.kalm-dns.com",
-      },
-    ];
-    return domains;
+    const res = await axiosRequest<Domain[]>({
+      method: "get",
+      url: `/${K8sApiVersion}/domains`,
+    });
+
+    return res.data;
   }
 
   // sso
@@ -546,8 +543,10 @@ const getAxiosClient = (withHeaderToken: boolean) => {
   return instance;
 };
 
-const axiosRequest = (config: AxiosRequestConfig, withHeaderToken: boolean = true) => {
-  return getAxiosClient(withHeaderToken)({
+const axiosRequest = <T = any>(config: AxiosRequestConfig, withHeaderToken: boolean = true): AxiosPromise<T> => {
+  const client = getAxiosClient(withHeaderToken);
+
+  return client({
     ...config,
     url: `${K8sApiPrefix}${config.url}`,
   });

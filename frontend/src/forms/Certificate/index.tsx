@@ -1,15 +1,14 @@
 import { Box, Grid } from "@material-ui/core";
-import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
+import { FinalSelectField } from "forms/Final/select";
 import { FormDataPreview } from "forms/Final/util";
 import { CERTIFICATE_FORM_ID } from "forms/formIDs";
-import { stringArrayTrimAndToLowerCaseParse } from "forms/normalizer";
-import { ValidatorArrayOfIsValidHostInCertificate } from "forms/validator";
+import { trimAndToLowerParse } from "forms/normalizer";
+import { ValidatorIsCommonOrWildcardDNS1123SubDomain } from "forms/validator";
 import React from "react";
-import { Field, FieldRenderProps, Form } from "react-final-form";
-import { connect } from "react-redux";
+import { Field, Form } from "react-final-form";
+import { useSelector } from "react-redux";
 import { RootState } from "reducers";
-import { FormTutorialHelper } from "tutorials/formValueToReudxStoreListener";
-import { TDispatchProp } from "types";
+import { FormTutorialHelper } from "tutorials/formValueToReduxStoreListener";
 import { CertificateFormType } from "types/certificate";
 import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
@@ -17,67 +16,69 @@ import { Body, Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import sc from "../../utils/stringConstants";
 
-const mapStateToProps = (state: RootState) => {
-  return {};
-};
-
-interface OwnProps {
+export interface Props {
   isEdit?: boolean;
   onSubmit: any;
   initialValues: CertificateFormType;
 }
 
-export interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp, OwnProps {}
+const CertificateFormRaw: React.FC<Props> = (props) => {
+  const { onSubmit, initialValues, isEdit } = props;
 
-class CertificateFormRaw extends React.PureComponent<Props> {
-  public render() {
-    const { onSubmit, initialValues, isEdit } = this.props;
-    return (
-      <Form onSubmit={onSubmit} initialValues={initialValues} keepDirtyOnReinitialize>
-        {({ handleSubmit }) => {
-          return (
-            <form onSubmit={handleSubmit} tutorial-anchor-id="certificate-form" id="certificate-form">
-              <Box p={2}>
-                <FormTutorialHelper form={CERTIFICATE_FORM_ID} />
-                <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
-                <KPanel
-                  content={
-                    <Box p={2}>
-                      <Grid container spacing={2}>
-                        <Grid item md={12}>
-                          <Body>{sc.CERT_DNS01}</Body>
-                          <Caption>{sc.CERT_DNS01_DESC}</Caption>
-                        </Grid>
-                        <Grid item md={12}>
-                          <Field
-                            render={(props: FieldRenderProps<string[]>) => (
-                              <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
-                            )}
-                            label="Domains"
-                            name="domains"
-                            validate={ValidatorArrayOfIsValidHostInCertificate}
-                            parse={stringArrayTrimAndToLowerCaseParse}
-                            id="certificate-domains"
-                            placeholder="e.g. foo.com; *.foo.bar.com"
-                          />
-                        </Grid>
+  const { domains } = useSelector((state: RootState) => {
+    return {
+      domains: state.domains.domains,
+    };
+  });
+
+  const readyDomains = domains.filter((x) => !x.isBuiltIn && x.status === "ready");
+
+  return (
+    <Form onSubmit={onSubmit} initialValues={initialValues} keepDirtyOnReinitialize>
+      {({ handleSubmit }) => {
+        return (
+          <form onSubmit={handleSubmit} tutorial-anchor-id="certificate-form" id="certificate-form">
+            <Box p={2}>
+              <FormTutorialHelper form={CERTIFICATE_FORM_ID} />
+              <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
+              <KPanel
+                content={
+                  <Box p={2}>
+                    <Grid container spacing={2}>
+                      <Grid item md={12}>
+                        <Body>{sc.CERT_DNS01}</Body>
+                        <Caption>{sc.CERT_DNS01_DESC}</Caption>
                       </Grid>
-                    </Box>
-                  }
-                />
+                      <Grid item md={12}>
+                        <Field
+                          name="domains"
+                          component={FinalSelectField}
+                          label="Domain"
+                          validate={ValidatorIsCommonOrWildcardDNS1123SubDomain}
+                          parse={(v) => [trimAndToLowerParse(v)] as any}
+                          format={(v) => v[0]}
+                          options={readyDomains.map((x) => ({
+                            value: x.domain,
+                            text: x.domain,
+                          }))}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Box>
+                }
+              />
 
-                <FormDataPreview />
+              <FormDataPreview />
 
-                <Box pt={2}>
-                  <SubmitButton id="save-certificate-button">{isEdit ? "Update" : "Create"}</SubmitButton>
-                </Box>
+              <Box pt={2}>
+                <SubmitButton id="save-certificate-button">{isEdit ? "Update" : "Create"}</SubmitButton>
               </Box>
-            </form>
-          );
-        }}
-      </Form>
-    );
-  }
-}
+            </Box>
+          </form>
+        );
+      }}
+    </Form>
+  );
+};
 
-export const CertificateForm = connect(mapStateToProps)(CertificateFormRaw);
+export const CertificateForm = React.memo(CertificateFormRaw);

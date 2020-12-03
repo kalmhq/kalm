@@ -52,7 +52,7 @@ export const FinalSelectField = ({
   return (
     <FormControl
       classes={{ root: classes.root }}
-      error={touched && error}
+      error={touched && !!error}
       variant="outlined"
       size="small"
       style={{ pointerEvents: "auto" }}

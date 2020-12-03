@@ -10,18 +10,16 @@ import {
   Theme,
   withStyles,
 } from "@material-ui/core";
-import { Alert } from "@material-ui/lab";
 import { WithStyles } from "@material-ui/styles";
 import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
 import React from "react";
-import { connect } from "react-redux";
+import { connect, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { PendingBadge, SuccessBadge } from "widgets/Badge";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
-import DomainStatus from "widgets/DomainStatus";
 import { Expansion } from "widgets/expansion";
 import { CopyIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
@@ -112,7 +110,7 @@ class ACNEServerRaw extends React.PureComponent<ACMEServerGuideProps> {
 
 export const ACMEServer = connect(mapStateToProps)(withStyles(styles)(ACNEServerRaw));
 
-interface DNSConfigGuideProps extends TDispatchProp {
+interface DNSConfigGuideProps {
   items: {
     type: string;
     domain: string;
@@ -122,72 +120,64 @@ interface DNSConfigGuideProps extends TDispatchProp {
   }[];
 }
 
-export const DNSConfigItems = connect()((props: DNSConfigGuideProps) => {
-  const { items, dispatch } = props;
+export const DNSConfigItems = (props: DNSConfigGuideProps) => {
+  const { items } = props;
+  const dispatch = useDispatch();
+
   return (
     <>
-      <Alert severity="info">Please update the following records in your DNS provider.</Alert>
-      <Box mt={2}>
-        {" "}
-        <Table size="small" aria-label="Envs-Table">
-          <TableHead key="title">
-            <TableRow>
-              <TableCell>Status</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Domain</TableCell>
-              <TableCell>Record</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {items.map((item, index) => {
-              const { domain, type, nsRecord, cnameRecord, aRecord } = item;
-              const record = nsRecord || cnameRecord || aRecord || "";
-              return (
-                <TableRow key={index}>
-                  <TableCell>
-                    {type === "NS" && <DomainStatus domain={domain} nsDomain={nsRecord} />}
-                    {type === "A" && <DomainStatus domain={domain} ipAddress={aRecord} />}
-                    {type === "CNAME" && <DomainStatus domain={domain} cnameDomain={cnameRecord} />}
-                  </TableCell>
-                  <TableCell>{type}</TableCell>
-                  <TableCell>
-                    {domain}
-                    <IconButtonWithTooltip
-                      tooltipTitle="Copy"
-                      aria-label="copy"
-                      onClick={() => {
-                        copy(domain);
-                        dispatch(setSuccessNotificationAction("Copied successful!"));
-                      }}
-                    >
-                      <CopyIcon fontSize="small" />
-                    </IconButtonWithTooltip>
-                  </TableCell>
-                  <TableCell>
-                    {!!record ? (
-                      <>
-                        {record}
-                        <IconButtonWithTooltip
-                          tooltipTitle="Copy"
-                          aria-label="copy"
-                          onClick={() => {
-                            copy(record);
-                            dispatch(setSuccessNotificationAction("Copied successful!"));
-                          }}
-                        >
-                          <CopyIcon fontSize="small" />
-                        </IconButtonWithTooltip>
-                      </>
-                    ) : (
-                      "Generating, please wait."
-                    )}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </Box>
+      <Table size="small" aria-label="Envs-Table">
+        <TableHead key="title">
+          <TableRow>
+            <TableCell>Domain</TableCell>
+            <TableCell>Type</TableCell>
+            <TableCell>Record</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {items.map((item, index) => {
+            const { domain, type, nsRecord, cnameRecord, aRecord } = item;
+            const record = nsRecord || cnameRecord || aRecord || "";
+            return (
+              <TableRow key={index}>
+                <TableCell>
+                  {domain}
+                  <IconButtonWithTooltip
+                    tooltipTitle="Copy"
+                    aria-label="copy"
+                    onClick={() => {
+                      copy(domain);
+                      dispatch(setSuccessNotificationAction("Copied successful!"));
+                    }}
+                  >
+                    <CopyIcon fontSize="small" />
+                  </IconButtonWithTooltip>
+                </TableCell>
+                <TableCell>{type}</TableCell>
+                <TableCell>
+                  {!!record ? (
+                    <>
+                      {record}
+                      <IconButtonWithTooltip
+                        tooltipTitle="Copy"
+                        aria-label="copy"
+                        onClick={() => {
+                          copy(record);
+                          dispatch(setSuccessNotificationAction("Copied successful!"));
+                        }}
+                      >
+                        <CopyIcon fontSize="small" />
+                      </IconButtonWithTooltip>
+                    </>
+                  ) : (
+                    "Generating, please wait."
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
     </>
   );
-});
+};

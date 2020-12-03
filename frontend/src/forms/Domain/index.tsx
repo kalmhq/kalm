@@ -48,7 +48,7 @@ const DomainFormRaw: React.FC<Props> = (props) => {
             </KPanel>
 
             <Box pt={2}>
-              <SubmitButton id="save-domain-button">Add</SubmitButton>
+              <SubmitButton id="save-domain-button">Add Domain</SubmitButton>
             </Box>
 
             <FormDataPreview />
