@@ -108,7 +108,7 @@ func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
 	return c.JSON(201, route)
 }
 
-func (h *ApiHandler) isVerifiedUserDomain(domain, tennat string) (bool, error) {
+func (h *ApiHandler) isVerifiedUserDomain(domain, tenantName string) (bool, error) {
 	domainList := v1alpha1.DomainList{}
 	err := h.resourceManager.List(&domainList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenantName})
 	if err != nil {
