@@ -17,9 +17,11 @@ package controllers
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -55,7 +57,55 @@ func (r *DomainReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
+	// do nothing if is kalm builtin domain
+	if domain.Spec.IsKalmBuiltinDomain {
+		return ctrl.Result{}, nil
+	}
+
 	isCNAMEValid := v1alpha1.IsCNAMEConfiguredAsExpected(domain.Spec.Domain, domain.Spec.CNAME)
+	isWildcard := isWildcardDomain(domain.Spec.Domain)
+
+	if isCNAMEValid && !isWildcard {
+		// ensure https cert is ready for the domain
+		httpsCert := v1alpha1.HttpsCert{}
+		isNew := false
+
+		// cert share same name as domain
+		certName := domain.Name
+		if err := r.Get(r.ctx, client.ObjectKey{Name: certName}, &httpsCert); err != nil {
+			if errors.IsNotFound(err) {
+				isNew = true
+			} else {
+				return ctrl.Result{}, err
+			}
+		}
+
+		expectedHttpsCert := v1alpha1.HttpsCert{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: certName,
+				Labels: map[string]string{
+					v1alpha1.TenantNameLabelKey: domain.Labels[v1alpha1.TenantNameLabelKey],
+				},
+			},
+			Spec: v1alpha1.HttpsCertSpec{
+				IsSelfManaged:   false,
+				HttpsCertIssuer: v1alpha1.DefaultHTTP01IssuerName,
+				Domains:         []string{domain.Spec.Domain},
+			},
+		}
+
+		if isNew {
+			httpsCert = expectedHttpsCert
+			if err := r.Create(r.ctx, &httpsCert); err != nil {
+				return ctrl.Result{}, err
+			}
+		} else {
+			httpsCert.Spec = expectedHttpsCert.Spec
+			if err := r.Update(r.ctx, &httpsCert); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+	}
 
 	requeueAfter := decideRequeueAfter(domain, isCNAMEValid)
 
@@ -77,12 +127,16 @@ func (r *DomainReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	// this reconcile act as a never ending loop to check if Domain config is Valid
 	log.Info("requeue check of Domain", "after", requeueAfter)
 	return ctrl.Result{RequeueAfter: requeueAfter}, nil
-	// return ctrl.Result{}, nil
+}
+
+func isWildcardDomain(domain string) bool {
+	return strings.HasPrefix(domain, "*")
 }
 
 // decide time of next re-check
 func decideRequeueAfter(domain v1alpha1.Domain, isReady bool) time.Duration {
 	return 5 * time.Second
+
 	// wasReady := domain.Status.CNAMEReady
 	// if wasReady {
 	// 	// still ok
