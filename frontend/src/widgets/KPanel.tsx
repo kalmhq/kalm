@@ -27,6 +27,7 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
   title?: React.ReactNode;
   content?: React.ReactNode;
   maxWidth?: number | string;
+  style?: React.CSSProperties;
 }
 
 interface State {}
@@ -38,9 +39,9 @@ class KPanelRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { classes, title, content, children } = this.props;
+    const { classes, title, content, children, style } = this.props;
     return (
-      <Paper square variant="outlined">
+      <Paper square variant="outlined" style={style}>
         {title && (
           <Box p={2} className={classes.borderBottom}>
             <Body>{title}</Body>

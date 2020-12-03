@@ -1,9 +1,6 @@
 import { Box, Collapse, Grid, Link } from "@material-ui/core";
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import { setSuccessNotificationAction } from "actions/notification";
-import copy from "copy-to-clipboard";
 import arrayMutators from "final-form-arrays";
 import { AutoCompleteMultipleValue, AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalBoolCheckboxRender, FinalCheckboxGroupRender } from "forms/Final/checkbox";
@@ -13,12 +10,13 @@ import { FormDataPreview } from "forms/Final/util";
 import { ROUTE_FORM_ID } from "forms/formIDs";
 import { NormalizePositiveNumber, stringArrayTrimAndToLowerCaseParse, stringArrayTrimParse } from "forms/normalizer";
 import { RenderHttpRouteDestinations } from "forms/Route/destinations";
-import { ValidatorArrayNotEmpty, ValidatorArrayOfPath, ValidatorIpAndHosts } from "forms/validator";
+import { RouteDomains } from "forms/Route/Domains";
+import { ValidatorArrayNotEmpty, ValidatorArrayOfPath } from "forms/validator";
 import routesGif from "images/routes.gif";
 import React, { useState } from "react";
 import { Field, FieldRenderProps, Form, FormRenderProps } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { Link as RouteLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { FormTutorialHelper } from "tutorials/formValueToReduxStoreListener";
@@ -35,34 +33,7 @@ import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      "& .alert": {
-        marginTop: theme.spacing(1),
-        marginBottom: theme.spacing(1),
-      },
-    },
-    box: {
-      padding: theme.spacing(2),
-      border: "1px solid black",
-      marginBottom: theme.spacing(2),
-    },
-
-    heading: {
-      fontSize: theme.typography.pxToRem(15),
-      flexBasis: "20%",
-      flexShrink: 0,
-    },
-    secondaryHeading: {
-      fontSize: theme.typography.pxToRem(15),
-      color: theme.palette.text.secondary,
-    },
-    secondaryTip: {
-      color: theme.palette.text.secondary,
-    },
-  }),
-);
+// const useStyles = makeStyles((theme: Theme) => createStyles({}));
 
 interface Props {
   isEdit?: boolean;
@@ -83,25 +54,16 @@ const schemaOptions = [
 ];
 
 const RouteFormRaw: React.FC<Props> = (props) => {
-  const classes = useStyles();
-  const dispatch = useDispatch();
   const { isEdit, initial, onSubmit } = props;
   const [isValidCertificationUnfolded, setIsValidCertificationUnfolded] = useState(false);
 
-  const { tutorialState, ingressIP, certificates, form } = useSelector((state: RootState) => {
+  const { tutorialState, certificates } = useSelector((state: RootState) => {
     const certificates = state.certificates.certificates;
-    const domains: Set<string> = new Set();
-
-    certificates.forEach((x) => {
-      x.domains.filter((x) => x !== "*").forEach((domain) => domains.add(domain));
-    });
 
     return {
       tutorialState: state.tutorial,
-      domains: Array.from(domains),
-      ingressIP: state.cluster.info.ingressIP,
+      domains: state.domains.domains,
       certificates,
-      form: ROUTE_FORM_ID,
     };
   });
 
@@ -200,9 +162,9 @@ const RouteFormRaw: React.FC<Props> = (props) => {
           </Box>
         ) : null}
         <Collapse in={isValidCertificationUnfolded}>
-          {validHosts.map(({ host, cert }) => {
+          {validHosts.map(({ host, cert }, index) => {
             return (
-              <Typography key={host}>
+              <Typography key={host + "-" + index}>
                 <strong>{host}</strong> will use{" "}
                 <Link href="#" variant="body2">
                   <strong>{cert.name}</strong>
@@ -241,102 +203,96 @@ const RouteFormRaw: React.FC<Props> = (props) => {
   const validate = (values: HttpRoute) => {
     let errors: any = {};
     const { methods, methodsMode, schemes } = values;
+
     if (methodsMode === methodsModeSpecific) {
       errors.methods = ValidatorArrayNotEmpty(methods);
     }
+
     errors.schemes = ValidatorArrayNotEmpty(schemes);
-    return Object.keys(errors).length > 0 ? errors : finalValidateOrNotBlockByTutorial(values, tutorialState, form);
+
+    return Object.keys(errors).length > 0
+      ? errors
+      : finalValidateOrNotBlockByTutorial(values, tutorialState, ROUTE_FORM_ID);
   };
 
   return (
-    <div className={classes.root}>
-      <Form
-        onSubmit={onSubmit}
-        initialValues={initial}
-        keepDirtyOnReinitialize
-        validate={validate}
-        mutators={{
-          ...arrayMutators,
-        }}
-        render={({ values, errors, handleSubmit, form: { change } }: FormRenderProps<HttpRoute>) => {
-          const { hosts, methodsMode, schemes, httpRedirectToHttps } = values;
-          const hstsDomains = includesForceHttpsDomain(hosts);
-          const methodOptions = httpMethods.map((m) => ({ value: m, label: m }));
+    <Form
+      onSubmit={onSubmit}
+      initialValues={initial}
+      keepDirtyOnReinitialize
+      validate={validate}
+      mutators={{
+        ...arrayMutators,
+      }}
+      render={({ values, handleSubmit, form: { change } }: FormRenderProps<HttpRoute>) => {
+        const { hosts, methodsMode, schemes, httpRedirectToHttps } = values;
 
-          if (!schemes.includes("https")) {
-            if (hstsDomains.length > 0) {
-              if (schemes.includes("http")) {
-                change("schemes", ["http", "https"]);
-              } else {
-                change("schemes", ["https"]);
-              }
+        const hstsDomains = includesForceHttpsDomain(hosts);
+        const methodOptions = httpMethods.map((m) => ({ value: m, label: m }));
+
+        if (!schemes.includes("https")) {
+          if (hstsDomains.length > 0) {
+            if (schemes.includes("http")) {
+              change("schemes", ["http", "https"]);
+            } else {
+              change("schemes", ["https"]);
             }
           }
-          // set httpRedirectToHttps to false if http or https is not in schemes
-          if (!(schemes.includes("http") && schemes.includes("https")) && httpRedirectToHttps) {
-            change("httpRedirectToHttps", false);
-          }
+        }
 
-          return (
-            <form onSubmit={handleSubmit} id="route-form">
-              <FormTutorialHelper form={form} />
-              <Prompt />
+        // set httpRedirectToHttps to false if http or https is not in schemes
+        if (!(schemes.includes("http") && schemes.includes("https")) && httpRedirectToHttps) {
+          change("httpRedirectToHttps", false);
+        }
+
+        return (
+          <form onSubmit={handleSubmit} id="route-form">
+            <FormTutorialHelper form={ROUTE_FORM_ID} />
+            <Prompt />
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <KPanel
+                  title="Domains"
+                  style={{ height: "100%" }}
+                  content={
+                    <Box p={2}>
+                      <RouteDomains />
+                    </Box>
+                  }
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <KPanel
+                  style={{ height: "100%" }}
+                  title="Paths"
+                  content={
+                    <Box p={2}>
+                      <Field
+                        render={(props: FieldRenderProps<string[]>) => (
+                          <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
+                        )}
+                        label="Path Prefixes"
+                        name="paths"
+                        validate={ValidatorArrayOfPath}
+                        parse={stringArrayTrimParse}
+                        placeholder="e.g. /api/v1; /blogs; /assets"
+                        helperText={sc.ROUTE_PATHS_INPUT_HELPER}
+                      />
+                      <Field
+                        type="checkbox"
+                        component={FinalBoolCheckboxRender}
+                        name="stripPath"
+                        label={sc.ROUTE_STRIP_PATH_LABEL}
+                        helperText={sc.ROUTE_STRIP_PATH_HELPER}
+                      />
+                    </Box>
+                  }
+                />
+              </Grid>
+            </Grid>
+            <Box mt={1}>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
-                  <Box mb={2}>
-                    <KPanel
-                      title="Hosts and paths"
-                      content={
-                        <Box p={2}>
-                          <Field
-                            id="route-hosts"
-                            render={(props: FieldRenderProps<string[]>) => (
-                              <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
-                            )}
-                            label="Hosts"
-                            name="hosts"
-                            validate={ValidatorIpAndHosts}
-                            parse={stringArrayTrimAndToLowerCaseParse}
-                            placeholder="e.g. www.example.com"
-                            helperText={
-                              <Caption color="textSecondary">
-                                Your cluster ip is{" "}
-                                <Link
-                                  href="#"
-                                  onClick={() => {
-                                    copy(ingressIP);
-                                    dispatch(setSuccessNotificationAction("Copied successful!"));
-                                  }}
-                                >
-                                  {ingressIP || ""}
-                                </Link>
-                                . {sc.ROUTE_HOSTS_INPUT_HELPER}
-                              </Caption>
-                            }
-                          />
-                          <Field
-                            render={(props: FieldRenderProps<string[]>) => (
-                              <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
-                            )}
-                            label="Path Prefixes"
-                            name="paths"
-                            validate={ValidatorArrayOfPath}
-                            parse={stringArrayTrimParse}
-                            placeholder="e.g. /api/v1; /blogs; /assets"
-                            helperText={sc.ROUTE_PATHS_INPUT_HELPER}
-                          />
-                          <Field
-                            type="checkbox"
-                            component={FinalBoolCheckboxRender}
-                            name="stripPath"
-                            label={sc.ROUTE_STRIP_PATH_LABEL}
-                            helperText={sc.ROUTE_STRIP_PATH_HELPER}
-                          />
-                        </Box>
-                      }
-                    />
-                  </Box>
-
                   <Box mb={2}>
                     <KPanel
                       title="Schemes and Methods"
@@ -417,11 +373,9 @@ const RouteFormRaw: React.FC<Props> = (props) => {
                       }
                     />
                   </Box>
-
                   <Box mb={2}>
                     <KPanel title="Targets" content={renderTargets()} />
                   </Box>
-
                   <Box mb={2}>
                     <KPanel
                       title="Rules"
@@ -437,7 +391,6 @@ const RouteFormRaw: React.FC<Props> = (props) => {
                       }
                     />
                   </Box>
-
                   <Box mb={2}>
                     <Expansion title="Cors" defaultUnfold={false}>
                       <Box p={2}>
@@ -493,16 +446,15 @@ const RouteFormRaw: React.FC<Props> = (props) => {
                       </Box>
                     </Expansion>
                   </Box>
-
                   <SubmitButton id="add-route-submit-button">{isEdit ? "Update" : "Create"} Route</SubmitButton>
                 </Grid>
               </Grid>
-              <FormDataPreview />
-            </form>
-          );
-        }}
-      />
-    </div>
+            </Box>
+            <FormDataPreview />
+          </form>
+        );
+      }}
+    />
   );
 };
 
