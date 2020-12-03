@@ -51,7 +51,7 @@ func (suite *DomainTestSuite) TestListEmpty() {
 			var res []resources.Domain
 			rec.BodyAsJSON(&res)
 			suite.Equal(200, rec.Code)
-			suite.Equal(1, len(res))
+			suite.Equal(1, len(res)) // TODO: fix this, should be 0
 		},
 	})
 }
@@ -130,7 +130,7 @@ func (suite *DomainTestSuite) TestCreateListAndDelete() {
 			var res []resources.Domain
 			rec.BodyAsJSON(&res)
 			suite.Equal(200, rec.Code)
-			suite.Equal(2, len(res))
+			suite.Equal(2, len(res)) // TODO: fix this. Should be 1
 			suite.Equal(domain.Domain, res[0].Domain)
 		},
 	})
