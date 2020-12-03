@@ -62,10 +62,10 @@ func (r *DomainReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	copied := domain.DeepCopy()
 
 	// update status
-	if isCNAMEValid != copied.Status.CNAMEReady {
-		// reset count if CNAME ready changed
-		// copied.Status.CheckCountSinceCNAMEReadyUpdated = 0
-	}
+	// if isCNAMEValid != copied.Status.CNAMEReady {
+	// reset count if CNAME ready changed
+	// copied.Status.CheckCountSinceCNAMEReadyUpdated = 0
+	// }
 	// copied.Status.CheckCountSinceCNAMEReadyUpdated += 1
 	// copied.Status.LastCheckTimestamp = time.Now().Unix()
 	copied.Status.CNAMEReady = isCNAMEValid

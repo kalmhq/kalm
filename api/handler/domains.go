@@ -33,7 +33,8 @@ func (h *ApiHandler) handleListDomains(c echo.Context) error {
 }
 
 func (h *ApiHandler) filterAuthorizedDomains(c echo.Context, action string, records []v1alpha1.Domain) []v1alpha1.Domain {
-	var rst []v1alpha1.Domain
+	rst := []v1alpha1.Domain{}
+
 	for _, record := range records {
 		if !h.clientManager.CanOperateDomains(getCurrentUser(c), action, &record) {
 			continue

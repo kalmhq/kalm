@@ -85,9 +85,10 @@ func (r *Domain) validate() error {
 	return rst
 }
 
-//todo update should be disabled?
+//todo should disable update cuz domain name is auto generated from spec.domain
 func (r *Domain) ValidateUpdate(old runtime.Object) error {
 	domainlog.Info("validate update", "name", r.Name)
+
 	return nil
 }
 
