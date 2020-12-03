@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -85,9 +86,19 @@ func (r *Domain) validate() error {
 	return rst
 }
 
-//todo should disable update cuz domain name is auto generated from spec.domain
+//disable update cuz domain name is auto generated from spec.domain
 func (r *Domain) ValidateUpdate(old runtime.Object) error {
 	domainlog.Info("validate update", "name", r.Name)
+
+	oldDomain, ok := old.(*Domain)
+	if !ok {
+		return fmt.Errorf("old is not *Domain, %+v", old)
+	}
+
+	if oldDomain.Spec.CNAME != r.Spec.CNAME ||
+		oldDomain.Spec.Domain != r.Spec.Domain {
+		return fmt.Errorf("domain is immutable, should not change it")
+	}
 
 	return nil
 }
