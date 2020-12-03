@@ -29,7 +29,6 @@ import { includesForceHttpsDomain } from "utils/domain";
 import { default as sc, default as stringConstants } from "utils/stringConstants";
 import { SubmitButton } from "widgets/Button";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
-import DomainStatus from "widgets/DomainStatus";
 import { Expansion } from "widgets/expansion";
 import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
@@ -262,13 +261,6 @@ const RouteFormRaw: React.FC<Props> = (props) => {
         render={({ values, errors, handleSubmit, form: { change } }: FormRenderProps<HttpRoute>) => {
           const { hosts, methodsMode, schemes, httpRedirectToHttps } = values;
           const hstsDomains = includesForceHttpsDomain(hosts);
-          const icons = hosts.map((host, index) => {
-            if (Array.isArray(errors.hosts) && errors.hosts[index]) {
-              return undefined;
-            } else {
-              return <DomainStatus domain={host} />;
-            }
-          });
           const methodOptions = httpMethods.map((m) => ({ value: m, label: m }));
 
           if (!schemes.includes("https")) {
@@ -301,7 +293,6 @@ const RouteFormRaw: React.FC<Props> = (props) => {
                             render={(props: FieldRenderProps<string[]>) => (
                               <AutoCompleteMultiValuesFreeSolo<string> {...props} options={[]} />
                             )}
-                            icons={icons}
                             label="Hosts"
                             name="hosts"
                             validate={ValidatorIpAndHosts}

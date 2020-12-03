@@ -11,7 +11,6 @@ import { CertificateActions } from "./certificate";
 import { ClusterActions } from "./cluster";
 import { CommonActions } from "./common";
 import { DebounceActions } from "./debounce";
-import { DomainActions } from "./domain";
 import { NamespaceActions } from "./namespace";
 import { NodeActions } from "./node";
 import { RegistriesActions } from "./registry";
@@ -36,7 +35,6 @@ export type Actions =
   | ResourceActions
   | DebounceActions
   | SSOConfigActions
-  | DomainActions
   | DomainsActions
   | DeployAccessTokenActions
   | RoleBindingsActions;

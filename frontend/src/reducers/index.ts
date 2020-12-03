@@ -10,7 +10,6 @@ import cluster, { State as ClusterState } from "./cluster";
 import components, { State as ApplicationComponentState } from "./component";
 import debounce, { State as DebounceState } from "./debounce";
 import dialogs, { State as DialogState } from "./dialog";
-import domain, { State as DomainState } from "./domain";
 import domains, { State as DomainsState } from "./domains";
 import namespaces, { State as NamespacesState } from "./namespaces";
 import nodes, { State as NodesState } from "./node";
@@ -44,7 +43,6 @@ export type RootState = {
   debounce: DebounceState;
   sso: SSOState;
   deployAccessTokens: DeployAccessTokensState;
-  domain: DomainState;
   domains: DomainsState;
 };
 
@@ -69,7 +67,6 @@ const rootReducer = (history: History<LocationState>) =>
     services,
     certificates,
     debounce,
-    domain,
     deployAccessTokens,
     domains,
   });

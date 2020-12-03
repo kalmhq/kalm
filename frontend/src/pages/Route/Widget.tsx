@@ -21,11 +21,8 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { HttpRoute } from "types/route";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { CopyAsCurl } from "widgets/CopyAsCurl";
-import DomainStatus from "widgets/DomainStatus";
 import { EditIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
-import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 import { CenterTypography } from "widgets/Label";
 import { KMLink } from "widgets/Link";
 import { getRouteUrl } from "widgets/OpenInBrowser";
@@ -71,12 +68,11 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
             const url = getRouteUrl(route, clusterInfo, h);
             return (
               <FlexRowItemCenterBox key={h}>
-                <DomainStatus mr={1} domain={h} />
-                <ItemWithHoverIcon icon={<CopyAsCurl route={route} host={h} showIconButton />}>
-                  <KMLink href={url} target="_blank" rel="noopener noreferrer">
-                    {h}
-                  </KMLink>
-                </ItemWithHoverIcon>
+                {/* <ItemWithHoverIcon icon={<CopyAsCurl route={route} host={h} showIconButton />}> */}
+                <KMLink href={url} target="_blank" rel="noopener noreferrer">
+                  {h}
+                </KMLink>
+                {/* </ItemWithHoverIcon> */}
               </FlexRowItemCenterBox>
             );
           })}
