@@ -16,7 +16,7 @@ export interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp
   values: any;
 }
 
-class FormValueToReudxStoreListenerRaw extends React.PureComponent<Props> {
+class FormValueToReduxStoreListenerRaw extends React.PureComponent<Props> {
   componentDidMount() {
     const { dispatch, tutorialDrawerOpen, values, form } = this.props;
     if (tutorialDrawerOpen) {
@@ -35,12 +35,12 @@ class FormValueToReudxStoreListenerRaw extends React.PureComponent<Props> {
   }
 }
 
-const FormValueToReudxStoreListener = connect(mapStateToProps)(FormValueToReudxStoreListenerRaw);
+const FormValueToReduxStoreListener = connect(mapStateToProps)(FormValueToReduxStoreListenerRaw);
 
 export const FormTutorialHelper = (props: { form: string }) => (
   <FormSpy subscription={{ values: true }}>
     {({ values }) => {
-      return <FormValueToReudxStoreListener values={values} form={props.form} />;
+      return <FormValueToReduxStoreListener values={values} form={props.form} />;
     }}
   </FormSpy>
 );

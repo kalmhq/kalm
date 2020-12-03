@@ -1,31 +1,31 @@
 import { api } from "api";
 import { ThunkResult } from "types";
 import {
+  AcmeServerFormType,
+  AcmeServerInfo,
   Certificate,
+  CertificateFormType,
   CertificateIssuer,
+  CertificateIssuerFormType,
+  CREATE_ACME_SERVER,
   CREATE_CERTIFICATE,
   CREATE_CERTIFICATE_ISSUER,
+  DELETE_ACME_SERVER,
   DELETE_CERTIFICATE,
+  dns01Mananged,
+  LOAD_ACME_SERVER_FAILED,
+  LOAD_ACME_SERVER_FULFILLED,
+  LOAD_ACME_SERVER_PENDING,
   LOAD_CERTIFICATES_FAILED,
   LOAD_CERTIFICATES_FULFILLED,
   LOAD_CERTIFICATES_PENDING,
-  LOAD_ACME_SERVER_PENDING,
-  LOAD_ACME_SERVER_FULFILLED,
-  LOAD_ACME_SERVER_FAILED,
-  CREATE_ACME_SERVER,
-  DELETE_ACME_SERVER,
-  SET_IS_SUBMITTING_ACME_SERVER,
   LOAD_CERTIFICATE_ISSUERS_FULFILLED,
   LOAD_CERTIFICATE_ISSUERS_PENDING,
   selfManaged,
-  SetIsSubmittingCertificate,
-  AcmeServerInfo,
-  AcmeServerFormType,
   SetIsSubmittingAcmeServer,
-  dns01Mananged,
+  SetIsSubmittingCertificate,
+  SET_IS_SUBMITTING_ACME_SERVER,
   SET_IS_SUBMITTING_CERTIFICATE,
-  CertificateFormType,
-  CertificateIssuerFormType,
 } from "types/certificate";
 
 export const deleteCertificateAction = (name: string): ThunkResult<Promise<void>> => {
@@ -93,6 +93,7 @@ export const loadCertificateAcmeServerAction = (): ThunkResult<Promise<void>> =>
   };
 };
 
+// TODO: refactor this shit !
 export const createCertificateAction = (
   certificateForm: CertificateFormType,
   isEdit?: boolean,
@@ -111,10 +112,12 @@ export const createCertificateAction = (
         }
         return d;
       });
+
       if (hasWildcardDomains) {
         certContent.httpsCertIssuer = dns01Mananged;
         certContent.domains = domains;
       }
+
       certificate = await api.createCertificate(certContent, isEdit);
     } catch (e) {
       dispatch(setIsSubmittingCertificateAction(false));

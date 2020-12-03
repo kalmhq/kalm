@@ -1,8 +1,8 @@
-import React from "react";
 import { Box, createStyles, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { TDispatchProp } from "types";
+import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
+import { TDispatchProp } from "types";
 import { Body } from "./Label";
 
 const styles = (theme: Theme) =>
@@ -24,7 +24,7 @@ const mapStateToProps = (state: RootState) => {
 // const PANEL_DEFAULT_MAX_WITDTH = 800;
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
-  title?: string;
+  title?: React.ReactNode;
   content?: React.ReactNode;
   maxWidth?: number | string;
 }

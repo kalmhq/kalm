@@ -1,6 +1,6 @@
-import React from "react";
 import { text } from "@storybook/addon-knobs";
-import { SuccessBadge, PendingBadge, WarningBadge, ErrorBadge, UnknownBadge } from "widgets/Badge";
+import React from "react";
+import { ErrorBadge, PendingBadge, SuccessBadge, UnknownBadge, WarningBadge } from "widgets/Badge";
 
 export default {
   title: "Widgets/Badges",

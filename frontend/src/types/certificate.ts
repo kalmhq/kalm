@@ -140,7 +140,7 @@ export const newEmptyCertificateForm: CertificateFormType = {
   managedType: issuerManaged,
   selfManagedCertContent: "",
   selfManagedCertPrivateKey: "",
-  domains: [],
+  domains: [""],
   ready: "",
   reason: "",
 };
@@ -179,7 +179,7 @@ export interface Certificate {
   selfManagedCertPrivateKey: string;
   httpsCertIssuer?: string;
   domains: string[];
-  ready?: string; // why is a string??
+  ready?: "True" | ""; // why is a string??
   reason?: string;
   wildcardCertDNSChallengeDomainMap?: { [key: string]: string };
 }

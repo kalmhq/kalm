@@ -4,9 +4,9 @@ import { Alert } from "@material-ui/lab";
 import { setErrorNotificationAction } from "actions/notification";
 import { deletePersistentVolumeAction } from "actions/persistentVolume";
 import { blinkTopProgressAction } from "actions/settings";
-import { K8sApiPrefix } from "api/realApi";
+import { K8sApiPrefix } from "api/api";
 import { push } from "connected-react-router";
-import { KTooltip } from "widgets/KTooltip";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { StorageType } from "pages/Disks/StorageType";
 import React from "react";
 import { connect } from "react-redux";
@@ -23,9 +23,9 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
+import { KTooltip } from "widgets/KTooltip";
 import { KLink } from "widgets/Link";
 import { BasePage } from "../BasePage";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const mapStateToProps = (state: RootState) => {
   return {

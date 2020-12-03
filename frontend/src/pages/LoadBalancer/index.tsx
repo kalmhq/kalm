@@ -1,13 +1,15 @@
 import { Box, createStyles, Link, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { K8sApiPrefix } from "api/realApi";
+import { K8sApiPrefix } from "api/api";
 import copy from "copy-to-clipboard";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { ClusterInfo } from "types/cluster";
+import sc from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CopyIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
@@ -15,8 +17,6 @@ import { InfoBox } from "widgets/InfoBox";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 import { KRTable } from "widgets/KRTable";
 import { BasePage } from "../BasePage";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
-import sc from "utils/stringConstants";
 const mapStateToProps = (state: RootState) => {
   return {
     ingressInfo: state.cluster.info,
@@ -47,12 +47,6 @@ const styles = (theme: Theme) =>
 interface States {
   loadLoadBalancerInfoError: boolean;
   loadingLoadBalancerInfo: boolean;
-}
-
-interface PortsInfo {
-  httpPort: number;
-  httpsPort: number;
-  tlsPort: number;
 }
 
 type Props = ReturnType<typeof mapStateToProps> & WithUserAuthProps & TDispatchProp & WithStyles<typeof styles>;

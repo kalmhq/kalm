@@ -1,4 +1,3 @@
-import { mockStore } from "@apiType/index";
 import { loadApplicationsAction } from "actions/application";
 import {
   loadCertificateAcmeServerAction,
@@ -7,6 +6,7 @@ import {
 } from "actions/certificate";
 import { loadClusterInfoAction } from "actions/cluster";
 import { loadDeployAccessTokensAction } from "actions/deployAccessToken";
+import { loadDomainsAction } from "actions/domains";
 import { loadNodesAction } from "actions/node";
 import { setErrorNotificationAction } from "actions/notification";
 import { loadPersistentVolumesAction, loadStorageClassesAction } from "actions/persistentVolume";
@@ -15,7 +15,7 @@ import { loadRoutesAction } from "actions/routes";
 import { loadServicesAction } from "actions/service";
 import { loadProtectedEndpointAction, loadSSOConfigAction } from "actions/sso";
 import { getWebsocketInstance } from "actions/websocket";
-import { generateKalmImpersonnation } from "api/realApi";
+import { generateKalmImpersonation } from "api/api";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import throttle from "lodash/throttle";
 import React from "react";
@@ -30,6 +30,7 @@ import {
   RESOURCE_TYPE_APPLICATION,
   RESOURCE_TYPE_COMPONENT,
   RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN,
+  RESOURCE_TYPE_DOMAIN,
   RESOURCE_TYPE_HTTPS_CERT,
   RESOURCE_TYPE_HTTP_ROUTE,
   RESOURCE_TYPE_NODE,
@@ -83,6 +84,7 @@ class WithDataRaw extends React.PureComponent<Props> {
       dispatch(loadServicesAction("")); // for routes destinations
       dispatch(loadPersistentVolumesAction());
       dispatch(loadStorageClassesAction());
+      dispatch(loadDomainsAction());
     }
 
     if (canViewCluster()) {
@@ -96,29 +98,24 @@ class WithDataRaw extends React.PureComponent<Props> {
 
   private connectWebsocket() {
     const { dispatch, authToken, impersonation, impersonationType, canViewTenant } = this.props;
-    let rws: any;
-    if (process.env.REACT_APP_USE_MOCK_API === "true" || process.env.NODE_ENV === "test") {
-      rws = mockStore;
-    } else {
-      rws = getWebsocketInstance();
-      rws.addEventListener("open", () => {
-        const message = {
-          method: "StartWatching",
-          token: authToken,
-          impersonation: generateKalmImpersonnation(impersonation, impersonationType),
-        };
-        rws.send(JSON.stringify(message));
-      });
-    }
+    const rws = getWebsocketInstance();
+    rws.addEventListener("open", () => {
+      const message = {
+        method: "StartWatching",
+        token: authToken,
+        impersonation: generateKalmImpersonation(impersonation, impersonationType),
+      };
+      rws.send(JSON.stringify(message));
+    });
 
-    const reloadResouces = () => {
+    const reloadResources = () => {
       if (canViewTenant()) {
         dispatch(loadPersistentVolumesAction()); // is in use can't watch
         dispatch(loadServicesAction("")); // for routes destinations
       }
     };
 
-    const throttledReloadResouces = throttle(reloadResouces, 10000, { leading: true, trailing: true });
+    const throttledReloadResouces = throttle(reloadResources, 10000, { leading: true, trailing: true });
 
     rws.onmessage = async (event: any) => {
       const data: WatchResMessage = JSON.parse(event.data);
@@ -267,6 +264,17 @@ class WithDataRaw extends React.PureComponent<Props> {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
             kind: RESOURCE_TYPE_ACME_SERVER,
+            payload: {
+              action: data.action,
+              data: data.data,
+            },
+          });
+          break;
+        }
+        case RESOURCE_TYPE_DOMAIN: {
+          dispatch({
+            type: WATCHED_RESOURCE_CHANGE,
+            kind: RESOURCE_TYPE_DOMAIN,
             payload: {
               action: data.action,
               data: data.data,

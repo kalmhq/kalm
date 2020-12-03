@@ -1,23 +1,23 @@
 import { RouterAction } from "connected-react-router";
-import { ThunkAction, ThunkDispatch } from "redux-thunk";
 import { RootState } from "reducers";
+import { ThunkAction, ThunkDispatch } from "redux-thunk";
+import { DeployAccessTokenActions } from "types/deployAccessToken";
+import { VolumeActions } from "types/disk";
+import { DomainsActions } from "types/domains";
+import { RoleBindingsActions } from "types/member";
+import { SSOConfigActions } from "types/sso";
 import { ApplicationActions } from "./application";
 import { CertificateActions } from "./certificate";
 import { ClusterActions } from "./cluster";
 import { CommonActions } from "./common";
+import { DebounceActions } from "./debounce";
 import { NamespaceActions } from "./namespace";
 import { NodeActions } from "./node";
-import { VolumeActions } from "types/disk";
 import { RegistriesActions } from "./registry";
+import { ResourceActions } from "./resources";
 import { RouteActions } from "./route";
 import { ServiceActions } from "./service";
 import { TutorialActions } from "./tutorial";
-import { ResourceActions } from "./resources";
-import { DebounceActions } from "./debounce";
-import { SSOConfigActions } from "types/sso";
-import { DomainActions } from "./domain";
-import { DeployAccessTokenActions } from "types/deployAccessToken";
-import { RoleBindingsActions } from "types/member";
 
 export type Actions =
   | RouterAction
@@ -35,7 +35,7 @@ export type Actions =
   | ResourceActions
   | DebounceActions
   | SSOConfigActions
-  | DomainActions
+  | DomainsActions
   | DeployAccessTokenActions
   | RoleBindingsActions;
 

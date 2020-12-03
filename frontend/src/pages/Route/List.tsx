@@ -17,13 +17,11 @@ import { HttpRoute } from "types/route";
 import sc from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
-import { CopyAsCurl } from "widgets/CopyAsCurl";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { EditIcon, ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
-import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 import { KRTable } from "widgets/KRTable";
 import { KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
@@ -52,11 +50,11 @@ const HostCellRaw = ({ row, clusterInfo }: HostCellProps) => {
         const url = getRouteUrl(row as HttpRoute, clusterInfo, h);
         return (
           <FlexRowItemCenterBox key={h}>
-            <ItemWithHoverIcon icon={<CopyAsCurl route={row as HttpRoute} showIconButton={true} host={h} />}>
-              <KMLink href={url} target="_blank" rel="noopener noreferrer">
-                {h}
-              </KMLink>
-            </ItemWithHoverIcon>
+            {/* <ItemWithHoverIcon icon={<CopyAsCurl route={row as HttpRoute} showIconButton={true} host={h} />}> */}
+            <KMLink href={url} target="_blank" rel="noopener noreferrer">
+              {h}
+            </KMLink>
+            {/* </ItemWithHoverIcon> */}
           </FlexRowItemCenterBox>
         );
       })}

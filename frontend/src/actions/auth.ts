@@ -1,5 +1,5 @@
 import { api } from "api";
-import { stopImpersonating } from "api/realApi";
+import { stopImpersonating } from "api/api";
 import { ThunkResult } from "types";
 import { LoginStatus } from "types/authorization";
 import {

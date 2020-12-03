@@ -1,45 +1,46 @@
-import React from "react";
+import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
+import Impersonate from "@material-ui/icons/AccountCircle";
+import Add from "@material-ui/icons/Add";
+import ArrowBack from "@material-ui/icons/ArrowBack";
 import ArrowDropDown from "@material-ui/icons/ArrowDropDown";
+import BrightnessDark from "@material-ui/icons/Brightness4";
+import BrightnessLight from "@material-ui/icons/Brightness7";
+import Build from "@material-ui/icons/Build";
 import CheckBox from "@material-ui/icons/CheckBox";
 import CheckBoxOutlineBlank from "@material-ui/icons/CheckBoxOutlineBlank";
 import CheckCircleOutline from "@material-ui/icons/CheckCircleOutline";
 import Clear from "@material-ui/icons/Clear";
-import SettingsIcon from "@material-ui/icons/Settings";
 import CreateNewFolder from "@material-ui/icons/CreateNewFolder";
-import OpenInBrowser from "@material-ui/icons/OpenInBrowser";
-import Add from "@material-ui/icons/Add";
+import Dashboard from "@material-ui/icons/Dashboard";
+import UsageIconRaw from "@material-ui/icons/DataUsage";
 import Delete from "@material-ui/icons/Delete";
 import Edit from "@material-ui/icons/Edit";
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
 import FileCopy from "@material-ui/icons/FileCopy";
 import FilterList from "@material-ui/icons/FilterList";
+import Forward from "@material-ui/icons/Forward";
+import GitHubIcon from "@material-ui/icons/GitHub";
+import PeopleAdd from "@material-ui/icons/GroupAdd";
 import Help from "@material-ui/icons/Help";
+import Info from "@material-ui/icons/Info";
+import Menu from "@material-ui/icons/Menu";
+import MenuOpen from "@material-ui/icons/MenuOpen";
 import NoteAdd from "@material-ui/icons/NoteAdd";
+import OpenInBrowser from "@material-ui/icons/OpenInBrowser";
+import People from "@material-ui/icons/People";
 import Publish from "@material-ui/icons/Publish";
-import Build from "@material-ui/icons/Build";
-import ArrowBack from "@material-ui/icons/ArrowBack";
+import SettingsIcon from "@material-ui/icons/Settings";
+import SettingsBackupRestoreIcon from "@material-ui/icons/SettingsBackupRestore";
 import SubjectIcon from "@material-ui/icons/Subject";
-import Dashboard from "@material-ui/icons/Dashboard";
 import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
-import MenuOpen from "@material-ui/icons/MenuOpen";
-import Menu from "@material-ui/icons/Menu";
-import BrightnessLight from "@material-ui/icons/Brightness7";
-import BrightnessDark from "@material-ui/icons/Brightness4";
-import GitHubIcon from "@material-ui/icons/GitHub";
-import Forward from "@material-ui/icons/Forward";
-import People from "@material-ui/icons/People";
-import Info from "@material-ui/icons/Info";
-import PeopleAdd from "@material-ui/icons/GroupAdd";
-import Impersonate from "@material-ui/icons/AccountCircle";
-import UsageIconRaw from "@material-ui/icons/DataUsage";
-import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
-import { grey } from "@material-ui/core/colors";
-import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
-import clsx from "clsx";
-import SettingsBackupRestoreIcon from "@material-ui/icons/SettingsBackupRestore";
 import VpnKey from "@material-ui/icons/VpnKey";
+import Web from "@material-ui/icons/Web";
+import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
+import clsx from "clsx";
 import { getDisplayName } from "permission/utils";
+import React from "react";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -520,6 +521,12 @@ export const GithubIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
   return <GitHubIcon className={className} fontSize={fontSize} style={style} />;
+});
+
+export const WebIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <Web className={className} fontSize={fontSize} style={style} />;
 });
 
 export const MenuIcon = withStyles(styles)((props: ColorIconsProps) => {

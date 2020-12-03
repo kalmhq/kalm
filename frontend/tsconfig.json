@@ -1,5 +1,4 @@
 {
-  "extends": "./tsconfig.paths.json",
   "compilerOptions": {
     "target": "es5",
     "lib": [
@@ -21,7 +20,8 @@
     "noEmit": true,
     "jsx": "react",
     "baseUrl": "./src",
-    "noErrorTruncation": true
+    "noErrorTruncation": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
     "src"
