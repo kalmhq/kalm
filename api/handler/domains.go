@@ -29,7 +29,26 @@ func (h *ApiHandler) handleListDomains(c echo.Context) error {
 
 	afterFilter := h.filterAuthorizedDomains(c, "view", domainList.Items)
 
-	return c.JSON(http.StatusOK, wrapDomainListAsResp(afterFilter))
+	baseDomain := h.BaseDomain
+
+	// TODO: fix this
+	if baseDomain == "" {
+		baseDomain = "asia-northeast3.kapp.live"
+	}
+
+	domains := wrapDomainListAsResp(afterFilter)
+	domains = append([]resources.Domain{
+		{
+			Name:       "default",
+			Domain:     fmt.Sprintf("*%s.%s", currentUser.Tenant, baseDomain),
+			Status:     "ready",
+			RecordType: "CNAME",
+			Target:     "",
+			IsBuiltIn:  true,
+		},
+	}, domains...)
+
+	return c.JSON(http.StatusOK, domains)
 }
 
 func (h *ApiHandler) filterAuthorizedDomains(c echo.Context, action string, records []v1alpha1.Domain) []v1alpha1.Domain {
