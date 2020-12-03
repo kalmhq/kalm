@@ -131,7 +131,7 @@ func (suite *DomainTestSuite) TestCreateListAndDelete() {
 			rec.BodyAsJSON(&res)
 			suite.Equal(200, rec.Code)
 			suite.Equal(2, len(res)) // TODO: fix this. Should be 1
-			suite.Equal(domain.Domain, res[0].Domain)
+			suite.Equal(domain.Domain, res[1].Domain)
 		},
 	})
 
