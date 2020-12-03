@@ -107,7 +107,9 @@ export const RouteDomains: React.FC = () => {
       }
     }
 
-    return <Field name={`hosts[${index}]`} component={FinalTextField} label="Domain" validate={ValidatorRequired} />;
+    return (
+      <Field name={`hosts[${index}]`} component={FinalTextField} disabled label="Domain" validate={ValidatorRequired} />
+    );
   };
 
   return (

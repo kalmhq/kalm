@@ -162,9 +162,9 @@ const RouteFormRaw: React.FC<Props> = (props) => {
           </Box>
         ) : null}
         <Collapse in={isValidCertificationUnfolded}>
-          {validHosts.map(({ host, cert }) => {
+          {validHosts.map(({ host, cert }, index) => {
             return (
-              <Typography key={host}>
+              <Typography key={host + "-" + index}>
                 <strong>{host}</strong> will use{" "}
                 <Link href="#" variant="body2">
                   <strong>{cert.name}</strong>
