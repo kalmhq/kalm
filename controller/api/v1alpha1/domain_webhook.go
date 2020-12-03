@@ -110,6 +110,7 @@ func (r *Domain) ValidateDelete() error {
 
 func IsCNAMEConfiguredAsExpected(domain, expectedCNAME string) bool {
 	directCNAME := getDirectCNAMEOfDomain(domain)
+	domainlog.Info(fmt.Sprintf("directCNAME: %s -> %s, expected: %s", domain, directCNAME, expectedCNAME))
 
 	return directCNAME == expectedCNAME
 }
@@ -134,7 +135,11 @@ func getDirectCNAMEOfDomain(domain string) string {
 		return ""
 	}
 
-	if r == nil || len(r.Answer) <= 0 {
+	if r == nil {
+		domainlog.Info("dns.Msg returned by calling dnsClient.Exchange is nil")
+		return ""
+	} else if len(r.Answer) <= 0 {
+		domainlog.Info("no Answer exist in dns.Msg returned by calling dnsClient.Exchange")
 		return ""
 	}
 

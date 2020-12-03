@@ -1,5 +1,7 @@
 package resources
 
+import "github.com/kalmhq/kalm/controller/api/v1alpha1"
+
 type Domain struct {
 	// Req
 	Domain string `json:"domain"`
@@ -9,4 +11,32 @@ type Domain struct {
 	RecordType string `json:"recordType"`
 	Target     string `json:"target"`
 	IsBuiltIn  bool   `json:"isBuiltIn"`
+}
+
+func WrapDomainAsResp(d v1alpha1.Domain) Domain {
+	var status string
+	if d.Status.CNAMEReady {
+		status = "ready"
+	} else {
+		status = "pending"
+	}
+
+	return Domain{
+		Name:       d.Name,
+		Domain:     d.Spec.Domain,
+		Target:     d.Spec.CNAME,
+		Status:     status,
+		RecordType: "CNAME",
+		IsBuiltIn:  false,
+	}
+}
+
+func WrapDomainListAsResp(list []v1alpha1.Domain) []Domain {
+	rst := []Domain{}
+
+	for _, d := range list {
+		rst = append(rst, WrapDomainAsResp(d))
+	}
+
+	return rst
 }
