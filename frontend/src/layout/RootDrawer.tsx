@@ -121,16 +121,6 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
 
     return [
       {
-        name: "Kalm",
-        items: [
-          {
-            icon: UsageIcon,
-            text: "Usage",
-            to: "/usage",
-          },
-        ],
-      },
-      {
         name: "Application",
         items: [
           canViewTenant() ? { icon: KalmApplicationIcon, text: "Apps", to: "/applications" } : null,
@@ -186,6 +176,13 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
                 icon: KalmRegistryIcon,
                 text: "Pull secrets",
                 to: "/cluster/pull-secrets",
+              }
+            : null,
+          canViewTenant()
+            ? {
+                icon: UsageIcon,
+                text: "Usage",
+                to: "/usage",
               }
             : null,
         ],

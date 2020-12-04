@@ -11,6 +11,8 @@ import (
 )
 
 func (h *ApiHandler) InstallTenantHandlers(e *echo.Group) {
+	e.GET("/tenants/current", h.handleGetCurrentTenant) // Get current virtual cluster info
+
 	e.GET("/tenants", h.handleListTenants)                // Get all virtual clusters info
 	e.GET("/tenants/:name", h.handleGetTenant)            // get single virtual cluster info
 	e.POST("/tenants", h.handleCreateTenant)              // Create virtual cluster
@@ -33,6 +35,19 @@ func (h *ApiHandler) handleListTenants(c echo.Context) error {
 	}
 
 	return c.JSON(200, tenants)
+}
+
+func (h *ApiHandler) handleGetCurrentTenant(c echo.Context) error {
+	currentUser := getCurrentUser(c)
+	h.MustCanManage(currentUser, currentUser.Tenant+"/*", "*/*")
+
+	tenant, err := h.resourceManager.GetTenant(currentUser.Tenant)
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, tenant)
 }
 
 func (h *ApiHandler) handleGetTenant(c echo.Context) error {
