@@ -14,7 +14,8 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorArrayOfIsDNS1123SubDomain, ValidatorRequired } from "../validator";
 
 export const RouteDomains: React.FC = () => {
-  const domains: Domain[] = useSelector((state: RootState) => state.domains.domains);
+  const allDomains: Domain[] = useSelector((state: RootState) => state.domains.domains);
+  const domains = allDomains.filter((x) => x.status === "ready");
   const domainsMap: { [key: string]: Domain } = {};
   domains.forEach((x) => (domainsMap[x.domain] = x));
 

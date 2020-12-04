@@ -1,5 +1,4 @@
 import { Box } from "@material-ui/core";
-import Alert from "@material-ui/lab/Alert/Alert";
 import React from "react";
 import { Certificate, dns01Issuer } from "types/certificate";
 import { DNSConfigItems } from "widgets/ACMEServer";
@@ -8,6 +7,7 @@ import { BlankTargetLink } from "widgets/BlankTargetLink";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { KPanel } from "widgets/KPanel";
 import { DNS01ChallengeLink } from "widgets/Link";
+import { SuccessColorText } from "widgets/Text";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 
 export interface Props {
@@ -20,7 +20,9 @@ const CertificateInfoRaw: React.FC<Props> = (props) => {
       // why the ready field is a string value ?????
       return (
         <FlexRowItemCenterBox>
-          <FlexRowItemCenterBox>Normal</FlexRowItemCenterBox>
+          <FlexRowItemCenterBox>
+            <SuccessColorText>Normal</SuccessColorText>
+          </FlexRowItemCenterBox>
         </FlexRowItemCenterBox>
       );
     } else if (!!cert.reason) {
@@ -40,30 +42,6 @@ const CertificateInfoRaw: React.FC<Props> = (props) => {
   const { cert } = props;
 
   const isDNS01ChallengeType = !(!cert.isSelfManaged && cert.httpsCertIssuer === "default-http01-issuer");
-
-  const renderAlert = () => {
-    if (cert.ready === "True") {
-      return (
-        <Alert square style={{ borderRadius: 0 }} severity="success">
-          Certificate is issued.
-        </Alert>
-      );
-    }
-
-    if (cert.httpsCertIssuer === dns01Issuer) {
-      return (
-        <Alert square style={{ borderRadius: 0 }} severity="info">
-          Please configure the following DNS records in your DNS provider.
-        </Alert>
-      );
-    }
-
-    return (
-      <Alert square style={{ borderRadius: 0 }} severity="info">
-        Certificate will be issued soon.
-      </Alert>
-    );
-  };
 
   const renderDNSTables = () => {
     if (cert.httpsCertIssuer !== dns01Issuer) {
@@ -112,10 +90,7 @@ const CertificateInfoRaw: React.FC<Props> = (props) => {
             { name: "Status", content: renderStatus(cert) },
           ]}
         />
-        <Box mt={2}>
-          {renderAlert()}
-          {renderDNSTables()}
-        </Box>
+        <Box mt={2}>{renderDNSTables()}</Box>
       </Box>
     </KPanel>
   );
