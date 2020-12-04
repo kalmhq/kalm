@@ -52,8 +52,8 @@ export interface WatchResMessage {
 
 const mapStateToProps = (state: RootState) => {
   const hasSelectedTenant = getHasSelectedTenant(state);
+
   return {
-    activeNamespaceName: state.namespaces.active,
     hasSelectedTenant,
   };
 };
