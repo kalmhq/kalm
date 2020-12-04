@@ -141,7 +141,7 @@ func IsCNAMEConfiguredAsExpected(domain, expectedCNAME string) bool {
 func getDirectCNAMEOfDomain(domain string) string {
 	cname, err := net.LookupCNAME(domain)
 	if err == nil {
-		return cname
+		return cleanTailingDotInDomainIfExist(cname)
 	}
 
 	// config, _ := dns.ClientConfigFromFile("/etc/resolv.conf")
@@ -173,9 +173,15 @@ func getDirectCNAMEOfDomain(domain string) string {
 	}
 
 	target := r.Answer[0].(*dns.CNAME).Target
-	if strings.HasSuffix(target, ".") {
-		target = target[:len(target)-1]
-	}
+	target = cleanTailingDotInDomainIfExist(target)
 
 	return target
+}
+
+func cleanTailingDotInDomainIfExist(domain string) string {
+	if strings.HasSuffix(domain, ".") {
+		domain = domain[:len(domain)-1]
+	}
+
+	return domain
 }
