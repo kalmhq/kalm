@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/kalmhq/kalm/api/client"
+	"github.com/kalmhq/kalm/api/config"
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/api/ws"
@@ -10,12 +11,12 @@ import (
 )
 
 type ApiHandler struct {
-	resourceManager   *resources.ResourceManager
-	clientManager     client.ClientManager
-	logger            *zap.Logger
-	IsLocalMode       bool
-	BaseDomain        string
-	ClusterBaseDomain string
+	resourceManager *resources.ResourceManager
+	clientManager   client.ClientManager
+	logger          *zap.Logger
+	IsLocalMode     bool
+	BaseAppDomain   string
+	BaseDNSDomain   string
 }
 
 func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
@@ -108,12 +109,13 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/settings", h.handleListSettings)
 }
 
-func NewApiHandler(clientManager client.ClientManager, isLocalMode bool, clusterBaseDomain string) *ApiHandler {
+func NewApiHandler(clientManager client.ClientManager, isLocalMode bool, domainConfig config.BaseDomainConfig) *ApiHandler {
 	return &ApiHandler{
-		clientManager:     clientManager,
-		logger:            log.DefaultLogger(),
-		resourceManager:   resources.NewResourceManager(clientManager.GetDefaultClusterConfig(), log.DefaultLogger()),
-		IsLocalMode:       isLocalMode,
-		ClusterBaseDomain: clusterBaseDomain,
+		clientManager:   clientManager,
+		logger:          log.DefaultLogger(),
+		resourceManager: resources.NewResourceManager(clientManager.GetDefaultClusterConfig(), log.DefaultLogger()),
+		IsLocalMode:     isLocalMode,
+		BaseDNSDomain:   domainConfig.DNSDomain,
+		BaseAppDomain:   domainConfig.AppDomain,
 	}
 }

@@ -136,7 +136,8 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 								{Name: "KALM_AUTH_PROXY_VERSION", Value: authProxyVersion},
 								{Name: v1alpha1.ENV_USE_LETSENCRYPT_PRODUCTION_API, Value: envUseLetsencryptProductionAPI},
 								{Name: v1alpha1.ENV_KALM_IS_IN_LOCAL_MODE, Value: isLocalMode},
-								{Name: v1alpha1.ENV_KALM_CLUSTER_BASE_DOMAIN, Value: config.Spec.ClusterBaseDomain},
+								{Name: v1alpha1.ENV_KALM_BASE_APP_DOMAIN, Value: config.Spec.BaseAppDomain},
+								{Name: v1alpha1.ENV_KALM_BASE_DNS_DOMAIN, Value: config.Spec.BaseDNSDomain},
 							},
 							Ports: []corev1.ContainerPort{
 								{

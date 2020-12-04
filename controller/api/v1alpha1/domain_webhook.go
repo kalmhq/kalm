@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"crypto/md5"
 	"fmt"
 	"strings"
 
@@ -41,7 +42,25 @@ var _ webhook.Defaulter = &Domain{}
 func (r *Domain) Default() {
 	domainlog.Info("default", "name", r.Name)
 
-	//todo setup cname if is empty
+	//setup cname
+	tenantName := r.Labels[TenantNameLabelKey]
+	if tenantName == "" {
+		return
+	}
+
+	kalmBaseDNSDomain := GetEnvKalmBaseDNSDomain()
+	if kalmBaseDNSDomain == "" {
+		domainlog.Info("kalm baseDNSDomain is empty")
+		return
+	}
+
+	md5Domain := md5.Sum([]byte(r.Spec.Domain))
+	//<md5Domain>-<tenantName>
+	cnamePrefix := fmt.Sprintf("%x-%s", md5Domain, tenantName)
+
+	// <md5Domain-tenantName>-cname.<asia>.kalm-dns.com
+	cname := fmt.Sprintf("%s-cname.%s", cnamePrefix, kalmBaseDNSDomain)
+	r.Spec.CNAME = cname
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-domain,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=domains,versions=v1alpha1,name=vdomain.kb.io

@@ -115,7 +115,8 @@ func (suite *DomainTestSuite) TestCreateListAndDelete() {
 			rec.BodyAsJSON(&res)
 			suite.Equal(201, rec.Code)
 			suite.Equal(domain.Domain, res.Domain)
-			suite.NotEmpty(res.Target)
+			// cname is now generated at webhook
+			// suite.NotEmpty(res.Target)
 
 			domainName = res.Name
 		},

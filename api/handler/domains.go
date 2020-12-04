@@ -28,18 +28,18 @@ func (h *ApiHandler) handleListDomains(c echo.Context) error {
 
 	afterFilter := h.filterAuthorizedDomains(c, "view", domainList.Items)
 
-	baseDomain := h.BaseDomain
+	baseAppDomain := h.BaseAppDomain
 
 	// TODO: fix this
-	if baseDomain == "" {
-		baseDomain = "asia-northeast3.kapp.live"
+	if baseAppDomain == "" {
+		baseAppDomain = "asia-northeast3.kapp.live"
 	}
 
 	domains := resources.WrapDomainListAsResp(afterFilter)
 	domains = append([]resources.Domain{
 		{
 			Name:       "default",
-			Domain:     fmt.Sprintf("*%s.%s", currentUser.Tenant, baseDomain),
+			Domain:     fmt.Sprintf("*%s.%s", currentUser.Tenant, baseAppDomain),
 			Status:     "ready",
 			RecordType: "CNAME",
 			Target:     "",
@@ -121,13 +121,7 @@ func getDomainFromContext(c echo.Context) (*v1alpha1.Domain, error) {
 	tenantName := currentUser.Tenant
 
 	md5Domain := md5.Sum([]byte(resDomain.Domain))
-	name := fmt.Sprintf("%s-%x", currentUser.Tenant, md5Domain)
-
-	// same as domain name
-	cnamePrefix := name
-
-	// <tenantName-md5Domain>-cname.<asia>.kalm-dns.com
-	cname := fmt.Sprintf("%s-cname.%s", cnamePrefix, getKalmDNSBaseDomain())
+	name := fmt.Sprintf("%x-%s", md5Domain, currentUser.Tenant)
 
 	rst := v1alpha1.Domain{
 		ObjectMeta: metav1.ObjectMeta{
@@ -138,14 +132,8 @@ func getDomainFromContext(c echo.Context) (*v1alpha1.Domain, error) {
 		},
 		Spec: v1alpha1.DomainSpec{
 			Domain: resDomain.Domain,
-			CNAME:  cname,
 		},
 	}
 
 	return &rst, nil
-}
-
-// todo get from ENV
-func getKalmDNSBaseDomain() string {
-	return "asia-northeast3.kalm-dns.com"
 }

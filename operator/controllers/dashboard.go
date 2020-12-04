@@ -53,9 +53,14 @@ func getKalmDashboardCommand(config *installv1alpha1.KalmOperatorConfig) string 
 		sb.WriteString(fmt.Sprintf("--kalm-type=%s", config.Spec.KalmType))
 	}
 
-	if config.Spec.ClusterBaseDomain != "" {
+	if config.Spec.BaseAppDomain != "" {
 		sb.WriteString(" ")
-		sb.WriteString(fmt.Sprintf("--cluster-base-domain=%s", config.Spec.ClusterBaseDomain))
+		sb.WriteString(fmt.Sprintf("--base-app-domain=%s", config.Spec.BaseAppDomain))
+	}
+
+	if config.Spec.BaseDNSDomain != "" {
+		sb.WriteString(" ")
+		sb.WriteString(fmt.Sprintf("--base-dns-domain=%s", config.Spec.BaseDNSDomain))
 	}
 
 	return sb.String()

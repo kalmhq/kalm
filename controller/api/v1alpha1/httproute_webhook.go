@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -24,6 +25,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
@@ -106,14 +108,8 @@ func (r *HttpRoute) ValidateDelete() error {
 	return nil
 }
 
-func isHttpRouteValidIfUsingKalmDomain(baseDomain string, httpRoute HttpRoute) (bool, []int) {
-	tenantName := httpRoute.Labels[TenantNameLabelKey]
-
-	return IsHttpRouteSpecValidIfUsingKalmDomain(baseDomain, tenantName, httpRoute.Spec)
-}
-
-func IsHttpRouteSpecValidIfUsingKalmDomain(baseDomain, tenantName string, httpRouteSpec HttpRouteSpec) (bool, []int) {
-	if baseDomain == "" {
+func IsHttpRouteSpecValidIfUsingKalmAppDomain(baseAppDomain, tenantName string, httpRouteSpec HttpRouteSpec) (bool, []int) {
+	if baseAppDomain == "" {
 		// invalid baseDomain always return false
 		return false, []int{}
 	}
@@ -125,11 +121,11 @@ func IsHttpRouteSpecValidIfUsingKalmDomain(baseDomain, tenantName string, httpRo
 
 	var invalidIdx []int
 	for i, host := range httpRouteSpec.Hosts {
-		if !strings.HasSuffix(host, baseDomain) {
+		if !strings.HasSuffix(host, baseAppDomain) {
 			continue
 		}
 
-		validSuffix := fmt.Sprintf("%s.%s", tenantName, baseDomain)
+		validSuffix := getValidSuffixOfAppDomain(tenantName, baseAppDomain)
 		if !strings.HasSuffix(host, validSuffix) {
 			invalidIdx = append(invalidIdx, i)
 		}
@@ -149,29 +145,33 @@ func (r *HttpRoute) validate() error {
 			})
 		}
 
-		isSaaSMode := !isKalmLocalMode()
-		// for saas mode
-		if isSaaSMode {
-			tenantName := r.Labels[TenantNameLabelKey]
-			if tenantName == "" {
-				continue
+		tenantName := r.Labels[TenantNameLabelKey]
+
+		baseAppDomain := GetEnvKalmBaseAppDomain()
+		if baseAppDomain == "" {
+			httproutelog.Error(fmt.Errorf("should set ENV for kalmBaseAppDomain"), "")
+			continue
+		}
+
+		isUsingKalmAppDomain := strings.HasSuffix(host, baseAppDomain)
+
+		if isUsingKalmAppDomain {
+			validSuffix := getValidSuffixOfAppDomain(tenantName, baseAppDomain)
+			if !strings.HasSuffix(host, validSuffix) {
+				rst = append(rst, KalmValidateError{
+					Err:  fmt.Sprintf("invalid usage of kalmDomain for host(%s), should have suffix: %s", host, validSuffix),
+					Path: fmt.Sprintf("spec.hosts[%d]", i),
+				})
 			}
-
-			baseDomain := GetKalmBaseDomainFromEnv()
-			if baseDomain == "" {
-				continue
-			}
-
-			if ok, idxList := isHttpRouteValidIfUsingKalmDomain(baseDomain, *r); !ok {
-
-				validSuffix := fmt.Sprintf("%s.%s", tenantName, baseDomain)
-
-				for _, idx := range idxList {
-					rst = append(rst, KalmValidateError{
-						Err:  fmt.Sprintf("invalid usage of kalmDomain for host(%s), should have suffix: %s", r.Spec.Hosts[idx], validSuffix),
-						Path: fmt.Sprintf("spec.hosts[%d]", idx),
-					})
-				}
+		} else {
+			// for user domain
+			if isVerified, err := isVerifiedUserDomain(host, tenantName); err != nil {
+				return err
+			} else if !isVerified {
+				rst = append(rst, KalmValidateError{
+					Err:  fmt.Sprintf("should verify domain before use it in httpRoute: %s", host),
+					Path: fmt.Sprintf("spec.hosts[%d]", i),
+				})
 			}
 		}
 	}
@@ -222,9 +222,74 @@ func (r *HttpRoute) validate() error {
 	return rst
 }
 
-func isKalmLocalMode() bool {
-	return GetKalmLocalModeFromEnv() == "true"
+func isVerifiedUserDomain(domain, tenantName string) (bool, error) {
+	domainList := DomainList{}
+
+	err := webhookClient.List(context.Background(), &domainList, client.MatchingLabels{TenantNameLabelKey: tenantName})
+	if err != nil {
+		return false, err
+	}
+
+	for _, d := range domainList.Items {
+		if !d.Status.CNAMEReady {
+			continue
+		}
+
+		verifiedDomain := d.Spec.Domain
+		if verifiedDomain == domain {
+			return true, nil
+		}
+
+		if isValidWildcardDomain(verifiedDomain) {
+			if isUnderWildcardDomain(verifiedDomain, domain) {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
+
+func isUnderWildcardDomain(wildcardDomain, domain string) bool {
+	if !isValidWildcardDomain(wildcardDomain) {
+		return false
+	}
+
+	if !isValidDomain(domain) {
+		return false
+	}
+
+	if wildcardDomain == "*" {
+		return true
+	}
+
+	// wildcard domain: *.foo.bar
+	// domain under it: a.foo.bar
+	wildcardDomainParts := strings.Split(wildcardDomain, ".")
+	domainParts := strings.Split(domain, ".")
+
+	if len(wildcardDomainParts) != len(domainParts) {
+		return false
+	}
+
+	// all parts equals except first one
+	for i := 1; i < len(wildcardDomainParts); i++ {
+		if wildcardDomainParts[i] != domainParts[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
+func getValidSuffixOfAppDomain(tenantName, baseAppDomain string) string {
+	validSuffix := fmt.Sprintf("%s.%s", tenantName, baseAppDomain)
+	return validSuffix
+}
+
+// func isKalmInLocalMode() bool {
+// 	return GetEnvKalmIsInLocalMode() == "true"
+// }
 
 func isValidDestinationHost(host string) bool {
 	host = stripIfHasPort(host)
