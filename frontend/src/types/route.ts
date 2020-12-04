@@ -65,7 +65,6 @@ export const httpMethods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", 
 
 export interface HttpRoute {
   name: string;
-  namespace: string;
   hosts: string[];
   paths: string[];
   methods: string[];
@@ -85,7 +84,6 @@ export interface HttpRoute {
 
 export const newEmptyRouteForm = (): HttpRoute => {
   return {
-    namespace: "kalm-system",
     name: "http-route-" + ID(),
     hosts: [],
     paths: ["/"],
