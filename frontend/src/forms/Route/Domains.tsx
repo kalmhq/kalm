@@ -35,7 +35,8 @@ export const RouteDomains: React.FC = () => {
   };
 
   const renderField = (domain: string, index: number) => {
-    if (domain === "") {
+    const exactMatchedDomain = domainsMap[domain];
+    if (domain === "" || (exactMatchedDomain && !exactMatchedDomain.domain.startsWith("*"))) {
       return (
         <Field
           name={`hosts[${index}]`}
@@ -45,19 +46,6 @@ export const RouteDomains: React.FC = () => {
             value: normalizeWildcardDomain(x.domain),
             text: x.domain,
           }))}
-        />
-      );
-    }
-
-    const exactMatchedDomain = domainsMap[domain];
-    if (exactMatchedDomain && !exactMatchedDomain.domain.startsWith("*")) {
-      return (
-        <Field
-          name={`hosts[${index}]`}
-          disabled
-          component={FinalTextField}
-          label="Domain"
-          validate={ValidatorRequired}
         />
       );
     }
