@@ -16,13 +16,15 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"crypto/md5"
 	"fmt"
 	"net"
 	"strings"
 
-	"github.com/miekg/dns"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -43,25 +45,76 @@ var _ webhook.Defaulter = &Domain{}
 func (r *Domain) Default() {
 	domainlog.Info("default", "name", r.Name)
 
-	//setup cname
+	//setup
 	tenantName := r.Labels[TenantNameLabelKey]
 	if tenantName == "" {
 		return
 	}
 
-	kalmBaseDNSDomain := GetEnvKalmBaseDNSDomain()
-	if kalmBaseDNSDomain == "" {
-		domainlog.Info("kalm baseDNSDomain is empty")
+	if !isValidDomain(r.Spec.Domain) {
 		return
 	}
 
-	md5Domain := md5.Sum([]byte(r.Spec.Domain))
-	//<md5Domain>-<tenantName>
-	cnamePrefix := fmt.Sprintf("%x-%s", md5Domain, tenantName)
+	if isRootDomain(r.Spec.Domain) {
+		r.Spec.DNSType = DNSTypeA
+	} else {
+		r.Spec.DNSType = DNSTypeCNAME
+	}
 
-	// <md5Domain-tenantName>-cname.<asia>.kalm-dns.com
-	cname := fmt.Sprintf("%s-cname.%s", cnamePrefix, kalmBaseDNSDomain)
-	r.Spec.CNAME = cname
+	switch r.Spec.DNSType {
+	case DNSTypeCNAME:
+		kalmBaseDNSDomain := GetEnvKalmBaseDNSDomain()
+		if kalmBaseDNSDomain == "" {
+			domainlog.Info("kalm baseDNSDomain is empty")
+			return
+		}
+
+		md5Domain := md5.Sum([]byte(r.Spec.Domain))
+		//<md5Domain>-<tenantName>
+		cnamePrefix := fmt.Sprintf("%x-%s", md5Domain, tenantName)
+
+		// <md5Domain-tenantName>-cname.<asia>.kalm-dns.com
+		cname := fmt.Sprintf("%s-cname.%s", cnamePrefix, kalmBaseDNSDomain)
+		r.Spec.DNSTarget = cname
+	case DNSTypeA:
+		clusterIP, _ := GetClusterIP()
+		r.Spec.DNSTarget = clusterIP
+	}
+}
+
+func isRootDomain(domain string) bool {
+	parts := strings.Split(domain, ".")
+	if isValidDomain(domain) && len(parts) == 2 {
+		return true
+	}
+
+	return false
+}
+
+// from env or svc
+func GetClusterIP() (string, error) {
+	ip := GetEnvKalmClusterIP()
+	if ip != "" {
+		return ip, nil
+	}
+
+	svc := v1.Service{}
+	objKey := types.NamespacedName{
+		Name:      "istio-ingressgateway",
+		Namespace: "istio-system",
+	}
+
+	err := webhookClient.Get(context.Background(), objKey, &svc)
+	if err != nil {
+		return "", err
+	}
+
+	ingress := svc.Status.LoadBalancer.Ingress
+	if len(ingress) > 0 {
+		return ingress[0].IP, nil
+	}
+
+	return "", nil
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-domain,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=domains,versions=v1alpha1,name=vdomain.kb.io
@@ -85,17 +138,25 @@ func (r *Domain) ValidateCreate() error {
 func (r *Domain) validate() error {
 	var rst KalmValidateErrorList
 
-	if r.Spec.CNAME == "" {
-		rst = append(rst, KalmValidateError{
-			Err:  "cname must not be empty",
-			Path: "spec.cname",
-		})
-	}
-
 	if r.Spec.Domain == "" {
 		rst = append(rst, KalmValidateError{
 			Err:  "domain must not be empty",
 			Path: "spec.domain",
+		})
+	}
+
+	if r.Spec.DNSType != DNSTypeCNAME &&
+		r.Spec.DNSType != DNSTypeA {
+		rst = append(rst, KalmValidateError{
+			Err:  "dnsType must either be CNAME or A",
+			Path: "spec.dnsType",
+		})
+	}
+
+	if r.Spec.DNSTarget == "" {
+		rst = append(rst, KalmValidateError{
+			Err:  "dnsTarget must not be empty",
+			Path: "spec.dnsTarget",
 		})
 	}
 
@@ -115,7 +176,8 @@ func (r *Domain) ValidateUpdate(old runtime.Object) error {
 		return fmt.Errorf("old is not *Domain, %+v", old)
 	}
 
-	if oldDomain.Spec.CNAME != r.Spec.CNAME ||
+	if oldDomain.Spec.DNSTarget != r.Spec.DNSTarget ||
+		oldDomain.Spec.DNSType != r.Spec.DNSType ||
 		oldDomain.Spec.Domain != r.Spec.Domain {
 		return fmt.Errorf("domain is immutable, should not change it")
 	}
@@ -128,54 +190,71 @@ func (r *Domain) ValidateDelete() error {
 	return nil
 }
 
-func IsCNAMEConfiguredAsExpected(domain, expectedCNAME string) bool {
-	directCNAME := getDirectCNAMEOfDomain(domain)
+func IsDomainConfiguredAsExpected(domainSpec DomainSpec) (bool, error) {
+	domain := domainSpec.Domain
 
-	isExpected := directCNAME == expectedCNAME
-	domainlog.Info(fmt.Sprintf("directCNAME(%t): %s -> %s, expected: %s", isExpected, domain, directCNAME, expectedCNAME))
+	expected := domainSpec.DNSTarget
 
-	return isExpected
+	switch domainSpec.DNSType {
+	case DNSTypeCNAME:
+		directCNAME, err := getDirectCNAMEOfDomain(domain)
+		if err != nil {
+			if isNoSuchHostDNSError(err) {
+				return false, nil
+			}
+
+			return false, err
+		}
+
+		isExpected := directCNAME == expected
+		domainlog.Info(fmt.Sprintf("directCNAME(%t): %s -> %s, expected: %s", isExpected, domain, directCNAME, expected))
+
+		return isExpected, nil
+	case DNSTypeA:
+		ips, err := net.LookupIP(domain)
+		if err != nil {
+			if isNoSuchHostDNSError(err) {
+				domainlog.Error(err, fmt.Sprintf("no such host err lookupIP(%s)", domain))
+				return false, nil
+			}
+
+			domainlog.Error(err, fmt.Sprintf("fail lookupIP(%s)", domain))
+			return false, err
+		}
+
+		isExpected := false
+		for _, ip := range ips {
+			if ip.String() == expected {
+				isExpected = true
+				break
+			}
+		}
+
+		domainlog.Info(fmt.Sprintf("lookupIP(%t): %s -> %s, expected: %s", isExpected, domain, ips, expected))
+		return isExpected, nil
+	default:
+		domainlog.Info("unknown DNSType", "type:", domainSpec.DNSType)
+		return false, nil
+	}
 }
 
-// https://stackoverflow.com/a/56856437/404145
-func getDirectCNAMEOfDomain(domain string) string {
+func isNoSuchHostDNSError(err error) bool {
+	if dnsErr, ok := err.(*net.DNSError); ok {
+		if strings.Contains(dnsErr.Err, "no such host") {
+			return true
+		}
+	}
+
+	return false
+}
+
+func getDirectCNAMEOfDomain(domain string) (string, error) {
 	cname, err := net.LookupCNAME(domain)
-	if err == nil {
-		return cleanTailingDotInDomainIfExist(cname)
-	}
-
-	// config, _ := dns.ClientConfigFromFile("/etc/resolv.conf")
-	c := new(dns.Client)
-	m := new(dns.Msg)
-
-	// Note the trailing dot. miekg/dns is very low-level and expects canonical names.
-	if !strings.HasSuffix(domain, ".") {
-		domain = domain + "."
-	}
-
-	m.SetQuestion(domain, dns.TypeCNAME)
-	m.RecursionDesired = true
-
-	// r, _, err := c.Exchange(m, config.Servers[0]+":"+config.Port)
-	r, _, err := c.Exchange(m, "8.8.8.8:53")
-
 	if err != nil {
-		domainlog.Error(err, "fail when call dnsClient.Exchange")
-		return ""
+		return "", err
 	}
 
-	if r == nil {
-		domainlog.Info("dns.Msg returned by calling dnsClient.Exchange is nil")
-		return ""
-	} else if len(r.Answer) <= 0 {
-		domainlog.Info("no Answer exist in dns.Msg returned by calling dnsClient.Exchange")
-		return ""
-	}
-
-	target := r.Answer[0].(*dns.CNAME).Target
-	target = cleanTailingDotInDomainIfExist(target)
-
-	return target
+	return cleanTailingDotInDomainIfExist(cname), nil
 }
 
 func cleanTailingDotInDomainIfExist(domain string) string {

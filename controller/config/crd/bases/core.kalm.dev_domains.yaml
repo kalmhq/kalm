@@ -39,7 +39,9 @@ spec:
           type: object
         spec:
           properties:
-            cname:
+            dnsTarget:
+              type: string
+            dnsType:
               type: string
             domain:
               type: string
@@ -53,15 +55,11 @@ spec:
           properties:
             checkCountSinceCNAMEReadyUpdated:
               type: integer
-            cnameReady:
+            isDNSTargetConfigured:
               type: boolean
-            lastCheckTimestamp:
-              format: int64
-              type: integer
           required:
           - checkCountSinceCNAMEReadyUpdated
-          - cnameReady
-          - lastCheckTimestamp
+          - isDNSTargetConfigured
           type: object
       type: object
   version: v1alpha1

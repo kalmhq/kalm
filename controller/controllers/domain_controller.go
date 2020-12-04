@@ -62,10 +62,14 @@ func (r *DomainReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
-	isCNAMEValid := v1alpha1.IsCNAMEConfiguredAsExpected(domain.Spec.Domain, domain.Spec.CNAME)
+	isConfiguredAsExpected, err := v1alpha1.IsDomainConfiguredAsExpected(domain.Spec)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	isWildcard := isWildcardDomain(domain.Spec.Domain)
 
-	if isCNAMEValid && !isWildcard {
+	if isConfiguredAsExpected && !isWildcard {
 		// ensure https cert is ready for the domain
 		httpsCert := v1alpha1.HttpsCert{}
 		isNew := false
@@ -107,20 +111,12 @@ func (r *DomainReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
-	requeueAfter := decideRequeueAfter(domain, isCNAMEValid)
+	requeueAfter := decideRequeueAfter(domain, isConfiguredAsExpected)
 
 	copied := domain.DeepCopy()
 
-	// update status
-	// if isCNAMEValid != copied.Status.CNAMEReady {
-	// reset count if CNAME ready changed
-	// copied.Status.CheckCountSinceCNAMEReadyUpdated = 0
-	// }
-	// copied.Status.CheckCountSinceCNAMEReadyUpdated += 1
-	// copied.Status.LastCheckTimestamp = time.Now().Unix()
-
-	if isCNAMEValid {
-		copied.Status.CNAMEReady = true
+	if isConfiguredAsExpected {
+		copied.Status.IsDNSTargetConfigured = true
 
 		if copied.Status.CheckCountSinceCNAMEReadyUpdated > 0 {
 			//reset
@@ -128,12 +124,12 @@ func (r *DomainReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	} else {
 		// for ready change to not-ready, only set to failed for 10 times
-		if copied.Status.CNAMEReady {
+		if copied.Status.IsDNSTargetConfigured {
 			copied.Status.CheckCountSinceCNAMEReadyUpdated += 1
 
 			threshold := 10
 			if copied.Status.CheckCountSinceCNAMEReadyUpdated > threshold {
-				copied.Status.CNAMEReady = false
+				copied.Status.IsDNSTargetConfigured = false
 			}
 		}
 	}

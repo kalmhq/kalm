@@ -15,7 +15,7 @@ type Domain struct {
 
 func WrapDomainAsResp(d v1alpha1.Domain) Domain {
 	var status string
-	if d.Status.CNAMEReady {
+	if d.Status.IsDNSTargetConfigured {
 		status = "ready"
 	} else {
 		status = "pending"
@@ -24,9 +24,9 @@ func WrapDomainAsResp(d v1alpha1.Domain) Domain {
 	return Domain{
 		Name:       d.Name,
 		Domain:     d.Spec.Domain,
-		Target:     d.Spec.CNAME,
+		Target:     d.Spec.DNSTarget,
 		Status:     status,
-		RecordType: "CNAME",
+		RecordType: string(d.Spec.DNSType),
 		IsBuiltIn:  d.Spec.IsKalmBuiltinDomain,
 	}
 }

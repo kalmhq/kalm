@@ -34,6 +34,12 @@ spec:
         spec:
           description: KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
           properties:
+            baseAppDomain:
+              description: 'like: asia-northeast3.kalm-app.com'
+              type: string
+            baseDNSDomain:
+              description: 'like: asia-northeast3.kalm-dns.com'
+              type: string
             controller:
               description: Controller Config
               properties:
