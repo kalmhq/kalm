@@ -67,7 +67,7 @@ func (r *SingleSignOnConfigReconcilerTask) Run(req ctrl.Request) error {
 	var ssoList corev1alpha1.SingleSignOnConfigList
 
 	if err := r.Reader.List(r.ctx, &ssoList); err != nil {
-		r.Log.Error(err, fmt.Sprintf("List sso error."))
+		r.Log.Error(err, "List sso error.")
 		return err
 	}
 
@@ -477,20 +477,20 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 		copied := r.dexRoute.DeepCopy()
 		copied.Spec = dexRoute.Spec
 
-		if err := ctrl.SetControllerReference(r.ssoConfig, copied, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex dexRoute")
-			return err
-		}
+		// if err := ctrl.SetControllerReference(r.ssoConfig, copied, r.Scheme); err != nil {
+		// 	r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex dexRoute")
+		// 	return err
+		// }
 
 		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.dexRoute)); err != nil {
 			r.Log.Error(err, "Patch dex dexRoute failed.")
 			return err
 		}
 	} else {
-		if err := ctrl.SetControllerReference(r.ssoConfig, &dexRoute, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex dexRoute")
-			return err
-		}
+		// if err := ctrl.SetControllerReference(r.ssoConfig, &dexRoute, r.Scheme); err != nil {
+		// 	r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex dexRoute")
+		// 	return err
+		// }
 
 		if err := r.Create(r.ctx, &dexRoute); err != nil {
 			r.Log.Error(err, "Create dex dexRoute failed.")
@@ -712,20 +712,20 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() err
 		copied := r.authProxyRoute.DeepCopy()
 		copied.Spec = authProxyRoute.Spec
 
-		if err := ctrl.SetControllerReference(r.ssoConfig, copied, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for authProxyRoute")
-			return err
-		}
+		// if err := ctrl.SetControllerReference(r.ssoConfig, copied, r.Scheme); err != nil {
+		// 	r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for authProxyRoute")
+		// 	return err
+		// }
 
 		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.authProxyRoute)); err != nil {
 			r.Log.Error(err, "Patch authProxyRoute failed.")
 			return err
 		}
 	} else {
-		if err := ctrl.SetControllerReference(r.ssoConfig, &authProxyRoute, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for authProxyRoute")
-			return err
-		}
+		// if err := ctrl.SetControllerReference(r.ssoConfig, &authProxyRoute, r.Scheme); err != nil {
+		// 	r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for authProxyRoute")
+		// 	return err
+		// }
 
 		if err := r.Create(r.ctx, &authProxyRoute); err != nil {
 			r.Log.Error(err, "Create authProxyRoute failed.")
