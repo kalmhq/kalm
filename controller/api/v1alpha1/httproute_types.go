@@ -146,6 +146,7 @@ type HttpRouteStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Tenant",type="string",JSONPath=".metadata.labels.tenant"
 // +kubebuilder:printcolumn:name="Hosts",type="string",JSONPath=".spec.hosts"
@@ -161,7 +162,7 @@ type HttpRoute struct {
 }
 
 // +kubebuilder:object:root=true
-
+// +kubebuilder:resource:scope=Cluster
 // HttpRouteList contains a list of HttpRoute
 type HttpRouteList struct {
 	metav1.TypeMeta `json:",inline"`

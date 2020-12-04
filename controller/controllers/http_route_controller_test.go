@@ -29,7 +29,6 @@ func (suite *HttpRouteControllerSuite) SetupSuite() {
 	v1alpha1.SetTenantForObj(&ns, tenant.Name)
 
 	suite.createObject(&ns)
-	suite.ns = &ns
 	suite.tenant = tenant
 }
 
@@ -60,8 +59,7 @@ func (suite *HttpRouteControllerSuite) TestCertDomainMatchHost() {
 func (suite *HttpRouteControllerSuite) TestBasicHttpRoute() {
 	route := v1alpha1.HttpRoute{
 		ObjectMeta: v1.ObjectMeta{
-			Name:      "test",
-			Namespace: suite.ns.Name,
+			Name: "test",
 		},
 		Spec: v1alpha1.HttpRouteSpec{
 			Methods: []v1alpha1.HttpRouteMethod{"GET", "POST"},

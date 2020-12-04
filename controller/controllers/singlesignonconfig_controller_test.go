@@ -67,7 +67,7 @@ func (suite *SSOConfigControllerSuite) checkDexConfigFile(configString, issuer, 
 	}
 
 	if len(config.Connectors) != 1 {
-		suite.logger.Info(fmt.Sprintf("connectors length is not 1"))
+		suite.logger.Info("connectors length is not 1")
 		return false
 	}
 
@@ -77,7 +77,7 @@ func (suite *SSOConfigControllerSuite) checkDexConfigFile(configString, issuer, 
 	}
 
 	if len(config.StaticClients) != 1 || len(config.StaticClients[0].RedirectURIs) != 1 {
-		suite.logger.Info(fmt.Sprintf("StaticClients length is not 1"))
+		suite.logger.Info("StaticClients length is not 1")
 		return false
 	}
 
@@ -104,7 +104,7 @@ func (suite *SSOConfigControllerSuite) TestSSOBasicCRUD() {
 					Type: "gitlab",
 					ID:   "id",
 					Name: "name",
-					Config: &runtime.RawExtension{Raw: []byte(`{ 
+					Config: &runtime.RawExtension{Raw: []byte(`{
 						"clientID": "fake-id",
 						"clientSecret": "fake-sec",
 						"groups": ["fake-group"]
@@ -151,12 +151,11 @@ func (suite *SSOConfigControllerSuite) TestSSOBasicCRUD() {
 		return true
 	})
 
-	// will create a dex route under kalm-system namespace
+	// will create a dex route
 	var route v1alpha1.HttpRoute
 	suite.Eventually(func() bool {
 		if err := suite.K8sClient.Get(suite.ctx, types.NamespacedName{
-			Name:      "dex",
-			Namespace: "kalm-system",
+			Name: "dex",
 		}, &route); err != nil {
 			return false
 		}
@@ -178,8 +177,7 @@ func (suite *SSOConfigControllerSuite) TestSSOBasicCRUD() {
 
 	suite.Eventually(func() bool {
 		if err := suite.K8sClient.Get(suite.ctx, types.NamespacedName{
-			Name:      "dex",
-			Namespace: "kalm-system",
+			Name: "dex",
 		}, &route); err != nil {
 			return false
 		}

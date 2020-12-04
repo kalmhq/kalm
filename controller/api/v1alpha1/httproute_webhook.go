@@ -44,14 +44,6 @@ var _ webhook.Defaulter = &HttpRoute{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *HttpRoute) Default() {
 	httproutelog.Info("default", "name", r.Name)
-
-	if IsKalmSystemNamespace(r.Namespace) {
-		return
-	}
-
-	if err := InheritTenantFromNamespace(r); err != nil {
-		httproutelog.Error(err, "fail to inherit tenant from ns for httpRoute", "httpRoute", r.Name, "ns", r.Namespace)
-	}
 }
 
 // +kubebuilder:webhook:verbs=create;update;delete,path=/validate-core-kalm-dev-v1alpha1-httproute,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=httproutes,versions=v1alpha1,name=vhttproute.kb.io
@@ -62,7 +54,7 @@ var _ webhook.Validator = &HttpRoute{}
 func (r *HttpRoute) ValidateCreate() error {
 	httproutelog.Info("validate create", "name", r.Name)
 
-	if !IsKalmSystemNamespace(r.Namespace) && !HasTenantSet(r) {
+	if !HasTenantSet(r) {
 		return NoTenantFoundError
 	}
 
@@ -86,14 +78,12 @@ func (r *HttpRoute) ValidateCreate() error {
 func (r *HttpRoute) ValidateUpdate(old runtime.Object) error {
 	httproutelog.Info("validate update", "name", r.Name)
 
-	if !IsKalmSystemNamespace(r.Namespace) {
-		if !HasTenantSet(r) {
-			return NoTenantFoundError
-		}
+	if !HasTenantSet(r) {
+		return NoTenantFoundError
+	}
 
-		if IsTenantChanged(r, old) {
-			return TenantChangedError
-		}
+	if IsTenantChanged(r, old) {
+		return TenantChangedError
 	}
 
 	return r.validate()

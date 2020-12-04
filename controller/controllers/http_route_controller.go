@@ -114,7 +114,7 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 	}
 
 	if spec.Mirror != nil {
-		dest := toHttpRouteDestination(spec.Mirror.Destination, 100, route.Namespace)
+		dest := toHttpRouteDestination(spec.Mirror.Destination, 100)
 		httpRoute.Mirror = dest.Destination
 		httpRoute.MirrorPercentage = &istioNetworkingV1Beta1.Percent{
 			Value: float64(spec.Mirror.Percentage),
@@ -198,12 +198,11 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 func (r *HttpRouteReconcilerTask) buildHttpsRedirectEnvoyFilter(route *corev1alpha1.HttpRoute) (*v1alpha32.EnvoyFilter, error) {
 	var tenantName string
 
-	if !corev1alpha1.IsKalmSystemNamespace(route.Namespace) {
-		var err error
-		tenantName, err = corev1alpha1.GetTenantNameFromObj(route)
-		if err != nil {
-			return nil, err
-		}
+	var err error
+	tenantName, err = corev1alpha1.GetTenantNameFromObj(route)
+
+	if err != nil {
+		return nil, err
 	}
 
 	filter := &v1alpha32.EnvoyFilter{
@@ -636,7 +635,7 @@ func (r *HttpRouteReconcilerTask) BuildMatches(route *corev1alpha1.HttpRoute) []
 	return res
 }
 
-func toHttpRouteDestination(destination corev1alpha1.HttpRouteDestination, weight int32, namespace string) *istioNetworkingV1Beta1.HTTPRouteDestination {
+func toHttpRouteDestination(destination corev1alpha1.HttpRouteDestination, weight int32) *istioNetworkingV1Beta1.HTTPRouteDestination {
 	colon := strings.LastIndexByte(destination.Host, ':')
 	var host, port string
 
@@ -645,10 +644,6 @@ func toHttpRouteDestination(destination corev1alpha1.HttpRouteDestination, weigh
 	} else {
 		host = destination.Host[:colon]
 		port = destination.Host[colon+1:]
-	}
-
-	if !strings.Contains(host, ".") {
-		host = fmt.Sprintf("%s.%s.svc.cluster.local", host, namespace)
 	}
 
 	dest := &istioNetworkingV1Beta1.HTTPRouteDestination{
@@ -674,7 +669,7 @@ func (r *HttpRouteReconcilerTask) BuildDestinations(route *corev1alpha1.HttpRout
 	weights := adjustDestinationWeightToSumTo100(route.Spec.Destinations)
 	for i, destination := range route.Spec.Destinations {
 		weight := weights[i]
-		res = append(res, toHttpRouteDestination(destination, weight, route.Namespace))
+		res = append(res, toHttpRouteDestination(destination, weight))
 	}
 
 	return res

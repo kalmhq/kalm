@@ -59,7 +59,7 @@ func (suite *ClusterHandlerTestSuite) TestClusterInfo() {
 			GetClusterViewerRole(),
 		},
 		Method: http.MethodGet,
-		Path:   "/v1alpha1/httproutes/kalm-system",
+		Path:   "/v1alpha1/httproutes",
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var routes []*resources.HttpRoute
 			rec.BodyAsJSON(&routes)
@@ -91,7 +91,7 @@ func (suite *ClusterHandlerTestSuite) TestClusterInfo() {
 			GetClusterViewerRole(),
 		},
 		Method: http.MethodGet,
-		Path:   "/v1alpha1/httproutes/kalm-system",
+		Path:   "/v1alpha1/httproutes",
 		Body:   `{}`,
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var routes []*resources.HttpRoute

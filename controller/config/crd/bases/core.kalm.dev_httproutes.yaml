@@ -24,7 +24,7 @@ spec:
     listKind: HttpRouteList
     plural: httproutes
     singular: httproute
-  scope: Namespaced
+  scope: Cluster
   subresources:
     status: {}
   validation:

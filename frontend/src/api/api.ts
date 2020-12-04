@@ -214,7 +214,7 @@ export default class RealApi {
   public updateHttpRoute = async (httpRoute: HttpRoute) => {
     const res = await axiosRequest({
       method: "put",
-      url: `/${K8sApiVersion}/httproutes/${httpRoute.namespace}/${httpRoute.name}`,
+      url: `/${K8sApiVersion}/httproutes/${httpRoute.name}`,
       data: httpRoute,
     });
     return res.data;
@@ -223,7 +223,7 @@ export default class RealApi {
   public createHttpRoute = async (httpRoute: HttpRoute) => {
     const res = await axiosRequest({
       method: "post",
-      url: `/${K8sApiVersion}/httproutes/${httpRoute.namespace}`,
+      url: `/${K8sApiVersion}/httproutes`,
       data: httpRoute,
     });
     return res.data;
@@ -232,7 +232,7 @@ export default class RealApi {
   public deleteHttpRoute = async (httpRoute: HttpRoute) => {
     const res = await axiosRequest({
       method: "delete",
-      url: `/${K8sApiVersion}/httproutes/${httpRoute.namespace}/${httpRoute.name}`,
+      url: `/${K8sApiVersion}/httproutes/${httpRoute.name}`,
     });
     return res.status === 200;
   };
