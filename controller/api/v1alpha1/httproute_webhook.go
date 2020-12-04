@@ -108,32 +108,6 @@ func (r *HttpRoute) ValidateDelete() error {
 	return nil
 }
 
-func IsHttpRouteSpecValidIfUsingKalmAppDomain(baseAppDomain, tenantName string, httpRouteSpec HttpRouteSpec) (bool, []int) {
-	if baseAppDomain == "" {
-		// invalid baseDomain always return false
-		return false, []int{}
-	}
-
-	if tenantName == "" {
-		// empty tenantName always return false
-		return false, []int{}
-	}
-
-	var invalidIdx []int
-	for i, host := range httpRouteSpec.Hosts {
-		if !strings.HasSuffix(host, baseAppDomain) {
-			continue
-		}
-
-		validSuffix := getValidSuffixOfAppDomain(tenantName, baseAppDomain)
-		if !strings.HasSuffix(host, validSuffix) {
-			invalidIdx = append(invalidIdx, i)
-		}
-	}
-
-	return len(invalidIdx) == 0, invalidIdx
-}
-
 func (r *HttpRoute) validate() error {
 	var rst KalmValidateErrorList
 
@@ -146,32 +120,36 @@ func (r *HttpRoute) validate() error {
 		}
 
 		tenantName := r.Labels[TenantNameLabelKey]
+		isUserTenant := tenantName != DefaultGlobalTenantName && tenantName != DefaultSystemTenantName
 
-		baseAppDomain := GetEnvKalmBaseAppDomain()
-		if baseAppDomain == "" {
-			httproutelog.Error(fmt.Errorf("should set ENV for kalmBaseAppDomain"), "")
-			continue
-		}
-
-		isUsingKalmAppDomain := strings.HasSuffix(host, baseAppDomain)
-
-		if isUsingKalmAppDomain {
-			validSuffix := getValidSuffixOfAppDomain(tenantName, baseAppDomain)
-			if !strings.HasSuffix(host, validSuffix) {
-				rst = append(rst, KalmValidateError{
-					Err:  fmt.Sprintf("invalid usage of kalmDomain for host(%s), should have suffix: %s", host, validSuffix),
-					Path: fmt.Sprintf("spec.hosts[%d]", i),
-				})
+		// only put constrait on user tenant
+		if isUserTenant {
+			baseAppDomain := GetEnvKalmBaseAppDomain()
+			if baseAppDomain == "" {
+				httproutelog.Error(fmt.Errorf("should set ENV for kalmBaseAppDomain"), "")
+				continue
 			}
-		} else {
-			// for user domain
-			if isVerified, err := isVerifiedUserDomain(host, tenantName); err != nil {
-				return err
-			} else if !isVerified {
-				rst = append(rst, KalmValidateError{
-					Err:  fmt.Sprintf("should verify domain before use it in httpRoute: %s", host),
-					Path: fmt.Sprintf("spec.hosts[%d]", i),
-				})
+
+			isUsingKalmAppDomain := strings.HasSuffix(host, baseAppDomain)
+
+			if isUsingKalmAppDomain {
+				validSuffix := getValidSuffixOfAppDomain(tenantName, baseAppDomain)
+				if !strings.HasSuffix(host, validSuffix) {
+					rst = append(rst, KalmValidateError{
+						Err:  fmt.Sprintf("invalid usage of kalmDomain for host(%s), should have suffix: %s", host, validSuffix),
+						Path: fmt.Sprintf("spec.hosts[%d]", i),
+					})
+				}
+			} else {
+				// for user domain
+				if isVerified, err := isVerifiedUserDomain(host, tenantName); err != nil {
+					return err
+				} else if !isVerified {
+					rst = append(rst, KalmValidateError{
+						Err:  fmt.Sprintf("should verify domain before use it in httpRoute: %s", host),
+						Path: fmt.Sprintf("spec.hosts[%d]", i),
+					})
+				}
 			}
 		}
 	}
