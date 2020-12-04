@@ -18,6 +18,7 @@ package v1alpha1
 import (
 	"crypto/md5"
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -138,7 +139,12 @@ func IsCNAMEConfiguredAsExpected(domain, expectedCNAME string) bool {
 
 // https://stackoverflow.com/a/56856437/404145
 func getDirectCNAMEOfDomain(domain string) string {
-	config, _ := dns.ClientConfigFromFile("/etc/resolv.conf")
+	cname, err := net.LookupCNAME(domain)
+	if err == nil {
+		return cleanTailingDotInDomainIfExist(cname)
+	}
+
+	// config, _ := dns.ClientConfigFromFile("/etc/resolv.conf")
 	c := new(dns.Client)
 	m := new(dns.Msg)
 
@@ -149,7 +155,9 @@ func getDirectCNAMEOfDomain(domain string) string {
 
 	m.SetQuestion(domain, dns.TypeCNAME)
 	m.RecursionDesired = true
-	r, _, err := c.Exchange(m, config.Servers[0]+":"+config.Port)
+
+	// r, _, err := c.Exchange(m, config.Servers[0]+":"+config.Port)
+	r, _, err := c.Exchange(m, "8.8.8.8:53")
 
 	if err != nil {
 		domainlog.Error(err, "fail when call dnsClient.Exchange")
@@ -165,9 +173,15 @@ func getDirectCNAMEOfDomain(domain string) string {
 	}
 
 	target := r.Answer[0].(*dns.CNAME).Target
-	if strings.HasSuffix(target, ".") {
-		target = target[:len(target)-1]
-	}
+	target = cleanTailingDotInDomainIfExist(target)
 
 	return target
+}
+
+func cleanTailingDotInDomainIfExist(domain string) string {
+	if strings.HasSuffix(domain, ".") {
+		domain = domain[:len(domain)-1]
+	}
+
+	return domain
 }

@@ -157,6 +157,10 @@ func GetTenantEditorRole(name string) string {
 	return "tenant_" + name + "_editor"
 }
 
+func GetTenantViewerRole(name string) string {
+	return "tenant_" + name + "_viewer"
+}
+
 func (suite *WithControllerTestSuite) SetupApiServerWithoutPolicy() {
 	suite.SetupApiServer("")
 }

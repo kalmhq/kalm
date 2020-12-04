@@ -79,7 +79,7 @@ func (h *ApiHandler) handleGetDomain(c echo.Context) error {
 
 func (h *ApiHandler) handleCreateDomain(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanManage(currentUser, currentUser.Tenant+"/*", "domains/*")
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "domains/*")
 
 	domain, err := getDomainFromContext(c)
 	if err != nil {
