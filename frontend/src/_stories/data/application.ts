@@ -1,17 +1,8 @@
-import {
-  ApplicationComponentDetails,
-  ApplicationDetails,
-  PodStatus,
-  // ApplicationDetails,
-  // LOAD_ALL_NAMESAPCES_COMPONETS,
-  // LOAD_APPLICATIONS_FAILED,
-  // LOAD_APPLICATIONS_FULFILLED,
-  // LOAD_APPLICATIONS_PENDING,
-} from "types/application";
-import { MetricList, MetricItem } from "types/common";
-import { optionsKnob, array, object } from "@storybook/addon-knobs";
+import { array, object, optionsKnob } from "@storybook/addon-knobs";
 import { OptionsKnobOptions } from "@storybook/addon-knobs/dist/components/types";
-import { LOAD_ROUTES_PENDING, LOAD_ROUTES_FULFILLED, HttpRoute } from "types/route";
+import { ApplicationComponentDetails, ApplicationDetails, PodStatus } from "types/application";
+import { MetricItem, MetricList } from "types/common";
+import { HttpRoute, LOAD_ROUTES_FULFILLED, LOAD_ROUTES_PENDING } from "types/route";
 
 export const createRoute = (name: string, namespace: string): HttpRoute[] => {
   const label = "Methods";
@@ -63,7 +54,6 @@ export const createRoute = (name: string, namespace: string): HttpRoute[] => {
       stripPath: true,
       destinations: destinations,
       name: "bookinfo",
-      namespace: name,
     },
   ];
 };

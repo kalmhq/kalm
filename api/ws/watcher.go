@@ -268,7 +268,6 @@ func buildHttpRouteResMessage(c *Client, action string, objWatched interface{}) 
 	}
 
 	if !c.clientManager.CanOperateHttpRoute(c.clientInfo, "view", &resources.HttpRoute{
-		Namespace:     route.Namespace,
 		Name:          route.Name,
 		HttpRouteSpec: &route.Spec,
 	}) {
@@ -276,10 +275,9 @@ func buildHttpRouteResMessage(c *Client, action string, objWatched interface{}) 
 	}
 
 	return &ResMessage{
-		Kind:      "HttpRoute",
-		Namespace: route.Namespace,
-		Action:    action,
-		Data:      resources.BuildHttpRouteFromResource(route),
+		Kind:   "HttpRoute",
+		Action: action,
+		Data:   resources.BuildHttpRouteFromResource(route),
 	}, nil
 }
 

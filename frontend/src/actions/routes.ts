@@ -1,3 +1,5 @@
+import { api } from "api";
+import { ThunkResult } from "types";
 import {
   CREATE_ROUTE_FAILED,
   CREATE_ROUTE_FULFILLED,
@@ -13,9 +15,7 @@ import {
   UPDATE_ROUTE_FULFILLED,
   UPDATE_ROUTE_PENDING,
 } from "types/route";
-import { ThunkResult } from "types";
 import { setErrorNotificationAction } from "./notification";
-import { api } from "api";
 
 export const loadRoutesAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
@@ -36,7 +36,7 @@ export const loadRoutesAction = (): ThunkResult<Promise<void>> => {
 };
 
 export const createRouteAction = (route: HttpRoute): ThunkResult<Promise<void>> => {
-  return async (dispatch, getState) => {
+  return async (dispatch) => {
     try {
       dispatch({ type: CREATE_ROUTE_PENDING });
 
@@ -55,7 +55,7 @@ export const createRouteAction = (route: HttpRoute): ThunkResult<Promise<void>> 
 };
 
 export const updateRouteAction = (route: HttpRoute): ThunkResult<Promise<HttpRoute>> => {
-  return async (dispatch, getState) => {
+  return async (dispatch) => {
     try {
       dispatch({ type: UPDATE_ROUTE_PENDING });
 
@@ -76,7 +76,7 @@ export const updateRouteAction = (route: HttpRoute): ThunkResult<Promise<HttpRou
 };
 
 export const deleteRouteAction = (route: HttpRoute): ThunkResult<Promise<void>> => {
-  return async (dispatch, getState) => {
+  return async (dispatch) => {
     try {
       dispatch({ type: DELETE_ROUTE_PENDING });
 

@@ -67,7 +67,7 @@ func (r *SingleSignOnConfigReconcilerTask) Run(req ctrl.Request) error {
 	var ssoList corev1alpha1.SingleSignOnConfigList
 
 	if err := r.Reader.List(r.ctx, &ssoList); err != nil {
-		r.Log.Error(err, fmt.Sprintf("List sso error."))
+		r.Log.Error(err, "List sso error.")
 		return err
 	}
 
@@ -128,8 +128,7 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 	var route corev1alpha1.HttpRoute
 
 	err = r.Get(r.ctx, types.NamespacedName{
-		Name:      KALM_DEX_NAME,
-		Namespace: KALM_DEX_NAMESPACE,
+		Name: KALM_DEX_NAME,
 	}, &route)
 
 	if err != nil {
@@ -144,8 +143,7 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 	var authProxyRoute corev1alpha1.HttpRoute
 
 	err = r.Get(r.ctx, types.NamespacedName{
-		Name:      KALM_AUTH_PROXY_NAME,
-		Namespace: KALM_DEX_NAMESPACE,
+		Name: KALM_AUTH_PROXY_NAME,
 	}, &authProxyRoute)
 
 	if err != nil {
@@ -434,8 +432,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 
 	dexRoute := corev1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name:      KALM_DEX_NAME,
-			Namespace: KALM_DEX_NAMESPACE,
+			Name: KALM_DEX_NAME,
 			Labels: map[string]string{
 				v1alpha1.TenantNameLabelKey: "global",
 			},
@@ -480,20 +477,20 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 		copied := r.dexRoute.DeepCopy()
 		copied.Spec = dexRoute.Spec
 
-		if err := ctrl.SetControllerReference(r.ssoConfig, copied, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex dexRoute")
-			return err
-		}
+		// if err := ctrl.SetControllerReference(r.ssoConfig, copied, r.Scheme); err != nil {
+		// 	r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex dexRoute")
+		// 	return err
+		// }
 
 		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.dexRoute)); err != nil {
 			r.Log.Error(err, "Patch dex dexRoute failed.")
 			return err
 		}
 	} else {
-		if err := ctrl.SetControllerReference(r.ssoConfig, &dexRoute, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex dexRoute")
-			return err
-		}
+		// if err := ctrl.SetControllerReference(r.ssoConfig, &dexRoute, r.Scheme); err != nil {
+		// 	r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex dexRoute")
+		// 	return err
+		// }
 
 		if err := r.Create(r.ctx, &dexRoute); err != nil {
 			r.Log.Error(err, "Create dex dexRoute failed.")
@@ -678,8 +675,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() err
 
 	authProxyRoute := corev1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name:      KALM_AUTH_PROXY_NAME,
-			Namespace: KALM_DEX_NAMESPACE,
+			Name: KALM_AUTH_PROXY_NAME,
 			Labels: map[string]string{
 				v1alpha1.TenantNameLabelKey: "global",
 			},
@@ -716,20 +712,20 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() err
 		copied := r.authProxyRoute.DeepCopy()
 		copied.Spec = authProxyRoute.Spec
 
-		if err := ctrl.SetControllerReference(r.ssoConfig, copied, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for authProxyRoute")
-			return err
-		}
+		// if err := ctrl.SetControllerReference(r.ssoConfig, copied, r.Scheme); err != nil {
+		// 	r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for authProxyRoute")
+		// 	return err
+		// }
 
 		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.authProxyRoute)); err != nil {
 			r.Log.Error(err, "Patch authProxyRoute failed.")
 			return err
 		}
 	} else {
-		if err := ctrl.SetControllerReference(r.ssoConfig, &authProxyRoute, r.Scheme); err != nil {
-			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for authProxyRoute")
-			return err
-		}
+		// if err := ctrl.SetControllerReference(r.ssoConfig, &authProxyRoute, r.Scheme); err != nil {
+		// 	r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for authProxyRoute")
+		// 	return err
+		// }
 
 		if err := r.Create(r.ctx, &authProxyRoute); err != nil {
 			r.Log.Error(err, "Create authProxyRoute failed.")
@@ -874,6 +870,37 @@ func NewSingleSignOnConfigReconciler(mgr ctrl.Manager) *SingleSignOnConfigReconc
 	return &SingleSignOnConfigReconciler{NewBaseReconciler(mgr, "SingleSignOnConfig")}
 }
 
+// type SSORequestMapper struct {
+// 	*BaseReconciler
+// }
+
+// func (r *SSORequestMapper) Map(object handler.MapObject) []reconcile.Request {
+// 	if route, ok := object.Object.(*corev1alpha1.HttpRoute); ok {
+// 		tenantName, err := v1alpha1.GetTenantNameFromObj(route)
+
+// 		if err != nil || tenantName != "global" {
+// 			return nil
+// 		}
+// 	} else {
+// 		return nil
+// 	}
+
+// 	var ssoList corev1alpha1.SingleSignOnConfigList
+
+// 	if err := r.Reader.List(context.Background(), &ssoList); err != nil {
+// 		r.Log.Error(err, fmt.Sprintf("List sso error in mapper."))
+// 		return nil
+// 	}
+
+// 	res := make([]reconcile.Request, len(ssoList.Items))
+
+// 	for i := range ssoList.Items {
+// 		res[i] = reconcile.Request{NamespacedName: types.NamespacedName{Name: ssoList.Items[i].Name}}
+// 	}
+
+// 	return res
+// }
+
 func (r *SingleSignOnConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Owns(&coreV1.Secret{}).
@@ -881,5 +908,11 @@ func (r *SingleSignOnConfigReconciler) SetupWithManager(mgr ctrl.Manager) error 
 		Owns(&corev1alpha1.HttpRoute{}).
 		Owns(&v1alpha32.ServiceEntry{}).
 		For(&corev1alpha1.SingleSignOnConfig{}).
+		// Watches(
+		// 	&source.Kind{Type: &corev1alpha1.HttpRoute{}},
+		// 	&handler.EnqueueRequestsFromMapFunc{
+		// 		ToRequests: &SSORequestMapper{r.BaseReconciler},
+		// 	},
+		// ).
 		Complete(r)
 }

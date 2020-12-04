@@ -143,9 +143,9 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions = (row: HttpRoute) => {
-    const { dispatch, canEditNamespace } = this.props;
+    const { dispatch, canEditTenant } = this.props;
 
-    return canEditNamespace(row.namespace) ? (
+    return canEditTenant() ? (
       <>
         <IconLinkWithToolTip
           onClick={() => {
@@ -192,10 +192,10 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private showActions() {
-    const { httpRoutes, canEditNamespace } = this.props;
+    const { httpRoutes, canEditTenant } = this.props;
     let show = false;
     httpRoutes.forEach((route) => {
-      if (canEditNamespace(route.namespace)) {
+      if (canEditTenant()) {
         show = true;
       }
     });
@@ -295,9 +295,9 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes, canEditAnyNamespace, canViewNamespace } = this.props;
+    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes, canEditAnyNamespace, canViewTenant } = this.props;
 
-    const filteredRoutes = httpRoutes.filter((route) => canViewNamespace(route.namespace));
+    const filteredRoutes = httpRoutes.filter((route) => canViewTenant());
 
     return (
       <BasePage

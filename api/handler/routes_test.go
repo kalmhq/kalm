@@ -21,20 +21,19 @@ func (suite *RoutesHandlerTestSuite) SetupSuite() {
 func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 	route := resources.HttpRoute{
 		HttpRouteSpec: &v1alpha1.HttpRouteSpec{
-			Hosts:     []string{"test-routes.test"},
+			Hosts:     []string{"example.com"},
 			Paths:     []string{"/"},
 			Methods:   []v1alpha1.HttpRouteMethod{"GET"},
 			Schemes:   []v1alpha1.HttpRouteScheme{"https"},
 			StripPath: false,
 			Destinations: []v1alpha1.HttpRouteDestination{
 				{
-					Host:   "test-routes",
+					Host:   "app.test-routes",
 					Weight: 1,
 				},
 			},
 		},
-		Name:      "test-routes",
-		Namespace: "test-routes",
+		Name: "test-routes",
 	}
 
 	// create a route
@@ -43,7 +42,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 			GetClusterEditorRole(),
 		},
 		Method: http.MethodPost,
-		Path:   "/v1alpha1/httproutes/test-routes",
+		Path:   "/v1alpha1/httproutes",
 		Body:   route,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsUnauthorizedError(rec)
@@ -60,7 +59,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 			GetClusterEditorRole(),
 		},
 		Method: http.MethodGet,
-		Path:   "/v1alpha1/httproutes/test-routes",
+		Path:   "/v1alpha1/httproutes",
 		Body:   route,
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var routesRes []*resources.HttpRoute
@@ -91,27 +90,26 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 	// update a route
 	routeForUpdate := resources.HttpRoute{
 		HttpRouteSpec: &v1alpha1.HttpRouteSpec{
-			Hosts:     []string{"test-routes2.test"},
+			Hosts:     []string{"example2.com"},
 			Paths:     []string{"/"},
 			Methods:   []v1alpha1.HttpRouteMethod{"GET"},
 			Schemes:   []v1alpha1.HttpRouteScheme{"https"},
 			StripPath: false,
 			Destinations: []v1alpha1.HttpRouteDestination{
 				{
-					Host:   "test-routes",
+					Host:   "app.test-routes",
 					Weight: 1,
 				},
 			},
 		},
-		Name:      "test-routes",
-		Namespace: "test-routes",
+		Name: "test-routes",
 	}
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
 			GetClusterEditorRole(),
 		},
 		Method: http.MethodPut,
-		Path:   "/v1alpha1/httproutes/test-routes/test-routes",
+		Path:   "/v1alpha1/httproutes/test-routes",
 		Body:   routeForUpdate,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsUnauthorizedError(rec)
@@ -128,14 +126,14 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 			GetClusterEditorRole(),
 		},
 		Method: http.MethodGet,
-		Path:   "/v1alpha1/httproutes/test-routes",
+		Path:   "/v1alpha1/httproutes",
 		Body:   route,
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var routesResForUpdate []*resources.HttpRoute
 			rec.BodyAsJSON(&routesResForUpdate)
 			suite.NotNil(rec)
 			suite.EqualValues(1, len(routesResForUpdate))
-			suite.EqualValues("test-routes2.test", routesResForUpdate[0].HttpRouteSpec.Hosts[0])
+			suite.EqualValues("example2.com", routesResForUpdate[0].HttpRouteSpec.Hosts[0])
 		},
 	})
 
@@ -145,7 +143,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 			GetClusterEditorRole(),
 		},
 		Method: http.MethodDelete,
-		Path:   "/v1alpha1/httproutes/test-routes/test-routes",
+		Path:   "/v1alpha1/httproutes/test-routes",
 		Body:   routeForUpdate,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsUnauthorizedError(rec)
