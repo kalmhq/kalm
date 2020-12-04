@@ -27,7 +27,7 @@ func WrapDomainAsResp(d v1alpha1.Domain) Domain {
 		Target:     d.Spec.CNAME,
 		Status:     status,
 		RecordType: "CNAME",
-		IsBuiltIn:  false,
+		IsBuiltIn:  d.Spec.IsKalmBuiltinDomain,
 	}
 }
 
