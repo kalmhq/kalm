@@ -93,7 +93,7 @@ func isRootDomain(domain string) bool {
 
 // from env or svc
 func GetClusterIP() (string, error) {
-	ip := GetEnvKalmBaseAppDomain()
+	ip := GetEnvKalmClusterIP()
 	if ip != "" {
 		return ip, nil
 	}
