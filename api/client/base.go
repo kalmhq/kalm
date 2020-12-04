@@ -174,10 +174,7 @@ func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, ro
 			return false
 		}
 
-		var ns string
-		ns = parts[1]
-
-		scope := fmt.Sprintf("%s/%s", route.Tenant, ns)
+		scope := fmt.Sprintf("%s/*", route.Tenant)
 
 		if action == "view" {
 			if !m.CanViewScope(c, scope) {

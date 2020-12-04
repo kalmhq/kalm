@@ -21,14 +21,14 @@ func (suite *RoutesHandlerTestSuite) SetupSuite() {
 func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 	route := resources.HttpRoute{
 		HttpRouteSpec: &v1alpha1.HttpRouteSpec{
-			Hosts:     []string{"test-routes.test"},
+			Hosts:     []string{"example.com"},
 			Paths:     []string{"/"},
 			Methods:   []v1alpha1.HttpRouteMethod{"GET"},
 			Schemes:   []v1alpha1.HttpRouteScheme{"https"},
 			StripPath: false,
 			Destinations: []v1alpha1.HttpRouteDestination{
 				{
-					Host:   "test-routes",
+					Host:   "app.test-routes",
 					Weight: 1,
 				},
 			},
@@ -90,14 +90,14 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 	// update a route
 	routeForUpdate := resources.HttpRoute{
 		HttpRouteSpec: &v1alpha1.HttpRouteSpec{
-			Hosts:     []string{"test-routes2.test"},
+			Hosts:     []string{"example2.com"},
 			Paths:     []string{"/"},
 			Methods:   []v1alpha1.HttpRouteMethod{"GET"},
 			Schemes:   []v1alpha1.HttpRouteScheme{"https"},
 			StripPath: false,
 			Destinations: []v1alpha1.HttpRouteDestination{
 				{
-					Host:   "test-routes",
+					Host:   "app.test-routes",
 					Weight: 1,
 				},
 			},
@@ -133,7 +133,7 @@ func (suite *RoutesHandlerTestSuite) TestRoutesHandler() {
 			rec.BodyAsJSON(&routesResForUpdate)
 			suite.NotNil(rec)
 			suite.EqualValues(1, len(routesResForUpdate))
-			suite.EqualValues("test-routes2.test", routesResForUpdate[0].HttpRouteSpec.Hosts[0])
+			suite.EqualValues("example2.com", routesResForUpdate[0].HttpRouteSpec.Hosts[0])
 		},
 	})
 
