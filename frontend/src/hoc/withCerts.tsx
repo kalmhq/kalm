@@ -1,7 +1,6 @@
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 import { RootState } from "reducers";
-import { TDispatchProp } from "types";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -11,20 +10,18 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-export interface WithCertsProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
-
-export const withCerts = (WrappedComponent: React.ComponentType<any>) => {
-  const HOC: React.ComponentType<WithCertsProps> = class extends React.Component<WithCertsProps> {
-    render() {
-      return <WrappedComponent {...this.props} />;
-    }
-  };
-
-  HOC.displayName = `WithCerts(${getDisplayName(WrappedComponent)})`;
-
-  return connect(mapStateToProps)(HOC);
-};
+export interface WithCertsProps extends ReturnType<typeof mapStateToProps> {}
 
 function getDisplayName(WrappedComponent: React.ComponentType<any>) {
   return WrappedComponent.displayName || WrappedComponent.name || "Component";
 }
+
+export const withCerts = (WrappedComponent: React.ComponentType<any>) => {
+  const HOC: React.FC<WithCertsProps> = (props) => {
+    return <WrappedComponent {...props} {...useSelector(mapStateToProps)} />;
+  };
+
+  HOC.displayName = `WithCerts(${getDisplayName(WrappedComponent)})`;
+
+  return HOC;
+};
