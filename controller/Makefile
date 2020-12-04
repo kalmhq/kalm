@@ -40,7 +40,7 @@ dev: generate fmt vet manifests go-generate setup_webhook_development_env
 	WEBHOOKS_CERTS_DIR=./tmp ENABLE_WEBHOOKS=true go run main.go
 
 dev-local-mode: generate fmt vet manifests go-generate setup_webhook_development_env
-	WEBHOOKS_CERTS_DIR=./tmp ENABLE_WEBHOOKS=true go run main.go --kalm-type=local
+	KALM_IS_IN_LOCAL_MODE=true WEBHOOKS_CERTS_DIR=./tmp ENABLE_WEBHOOKS=true go run main.go
 
 # Install CRDs into a cluster
 install: manifests

@@ -167,6 +167,10 @@ func (m *BaseClientManager) PermissionsGreaterThanOrEqualToAccessToken(c *Client
 }
 
 func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, route *resources.HttpRoute) bool {
+	if c == nil || route == nil {
+		return false
+	}
+
 	for _, dest := range route.HttpRouteSpec.Destinations {
 		parts := strings.Split(dest.Host, ".")
 

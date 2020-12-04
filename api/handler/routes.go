@@ -160,6 +160,10 @@ func getHttpRouteFromContext(c echo.Context) (*resources.HttpRoute, error) {
 		return nil, err
 	}
 
+	if route.HttpRouteSpec == nil {
+		return nil, fmt.Errorf("must provide route spec")
+	}
+
 	return &route, nil
 }
 
