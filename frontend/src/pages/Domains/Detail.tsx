@@ -1,12 +1,11 @@
 import { Button } from "@material-ui/core";
 import Box from "@material-ui/core/Box/Box";
-import { Alert, AlertTitle } from "@material-ui/lab";
 import { createCertificateAction } from "actions/certificate";
 import { deleteDomainAction } from "actions/domains";
 import { setSuccessNotificationAction } from "actions/notification";
 import { push } from "connected-react-router";
 import { BasePage } from "pages/BasePage";
-import { CertificateInfo } from "pages/Certificate/Info";
+import { CertificateInfo } from "pages/Domains/CertInfo";
 import { DomainStatus } from "pages/Domains/Status";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,7 +13,7 @@ import { useRouteMatch } from "react-router-dom";
 import { RootState } from "reducers";
 import { issuerManaged } from "types/certificate";
 import { DNSConfigItems } from "widgets/ACMEServer";
-import { KalmCertificatesIcon } from "widgets/Icon";
+import { HelpIcon, KalmCertificatesIcon } from "widgets/Icon";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { KPanel } from "widgets/KPanel";
 import { Loading } from "widgets/Loading";
@@ -45,8 +44,8 @@ const DomainDetailPageRaw: React.FC = () => {
 
   const cert = certificates.find((x) => x.domains.length === 1 && x.domains[0] === domain.domain);
 
-  const applyCert = () => {
-    dispatch(
+  const applyCert = async () => {
+    await dispatch(
       createCertificateAction(
         {
           name: "",
@@ -58,6 +57,8 @@ const DomainDetailPageRaw: React.FC = () => {
         false,
       ),
     );
+
+    dispatch(push("/domains/" + domain.name + "/tour"));
   };
 
   const deleteDomain = async () => {
@@ -65,31 +66,6 @@ const DomainDetailPageRaw: React.FC = () => {
     dispatch(setSuccessNotificationAction(`Successfully deleted domain ${domain.domain}`));
     dispatch(push("/domains"));
   };
-
-  // const renderHelper = () => {
-  //   return (
-  //     <Box p={2}>
-  //       <CollapseWrapper title="It's pending for a long time, how to debug?">
-  //         <Box mt={2}>
-  //           <p>Dig the your domain by executing following command in a terminal.</p>
-  //           <Box ml={2}>
-  //             <CodeBlock>
-  //               <TextAndCopyButton text={`dig -t txt @8.8.8.8 ${domain.domain}`} />
-  //             </CodeBlock>
-  //             <p>
-  //               if you can find a <strong>{domain.recordType}</strong> record in "ANSWER SECTION" with a value of{" "}
-  //               <strong>{domain.target}</strong>, it means your DNS is added. The status will turn to "Ready" soon.
-  //             </p>
-  //             <p>
-  //               Otherwise, your record is not working yet due to cache or misconfigured. Please check your DNS provider
-  //               config.
-  //             </p>
-  //           </Box>
-  //         </Box>
-  //       </CollapseWrapper>
-  //     </Box>
-  //   );
-  // };
 
   const renderTable = () => {
     return (
@@ -121,6 +97,18 @@ const DomainDetailPageRaw: React.FC = () => {
               </Button>
             )}
 
+            {domain.status !== "ready" || (cert && cert.ready !== "True") ? (
+              <Button
+                startIcon={<HelpIcon />}
+                color="primary"
+                variant="outlined"
+                size="small"
+                onClick={() => dispatch(push("/domains/" + domain.name + "/tour"))}
+              >
+                How to setup DNS records
+              </Button>
+            ) : null}
+
             <DeleteButtonWithConfirmPopover
               useText
               disabled={domain.isBuiltIn}
@@ -139,19 +127,6 @@ const DomainDetailPageRaw: React.FC = () => {
             {renderTable()}
             {!domain.isBuiltIn && (
               <Box mt={2}>
-                <Box>
-                  {domain.status === "pending" ? (
-                    <Alert square style={{ borderRadius: 0 }} severity="info">
-                      <AlertTitle>Not finished yet</AlertTitle>
-                      Add the following record in your DNS provider.
-                    </Alert>
-                  ) : (
-                    <Alert square style={{ borderRadius: 0 }} severity="success">
-                      The following record is configured successfully.
-                    </Alert>
-                  )}
-                </Box>
-
                 <DNSConfigItems
                   items={[
                     {

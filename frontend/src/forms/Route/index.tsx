@@ -1,4 +1,4 @@
-import { Box, Collapse, Grid, Link } from "@material-ui/core";
+import { Box, Collapse, Grid } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import arrayMutators from "final-form-arrays";
@@ -13,7 +13,7 @@ import { RenderHttpRouteDestinations } from "forms/Route/destinations";
 import { RouteDomains } from "forms/Route/Domains";
 import { ValidatorArrayNotEmpty, ValidatorArrayOfPath } from "forms/validator";
 import routesGif from "images/routes.gif";
-import React, { useState } from "react";
+import React from "react";
 import { Field, FieldRenderProps, Form, FormRenderProps } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { useSelector } from "react-redux";
@@ -55,9 +55,7 @@ const schemaOptions = [
 
 const RouteFormRaw: React.FC<Props> = (props) => {
   const { isEdit, initial, onSubmit } = props;
-  const [isValidCertificationUnfolded, setIsValidCertificationUnfolded] = useState(false);
-
-  const { tutorialState, certificates } = useSelector((state: RootState) => {
+  const { tutorialState, certificates, domains } = useSelector((state: RootState) => {
     const certificates = state.certificates.certificates;
 
     return {
@@ -100,20 +98,36 @@ const RouteFormRaw: React.FC<Props> = (props) => {
       return null;
     }
 
-    let hostCertResults: any[] = [];
+    let missingCertsHosts: string[] = [];
 
-    hosts.forEach((host) => {
+    const buildInDomain = domains.find((d) => d.isBuiltIn);
+    let builtInDomainSuffix: string = "";
+
+    if (buildInDomain) {
+      // remove the *
+      builtInDomainSuffix = buildInDomain.domain.slice(1);
+    }
+
+    for (let host of hosts) {
+      if (host === "") {
+        continue;
+      }
+
       const cert = certificates.find((c) => canCertDomainsSuiteForHost(c.domains, host));
 
-      hostCertResults.push({
-        host,
-        cert,
-      });
-    });
+      // Built-in domain always has a cert
+      if (builtInDomainSuffix !== "") {
+        if (host.endsWith(builtInDomainSuffix)) {
+          continue;
+        }
+      }
 
-    const missingCertsCount = hostCertResults.filter((x) => !x.cert).length;
-    const missingCertsHosts = hostCertResults.filter((x) => !x.cert);
-    const validHosts = hostCertResults.filter((x) => !!x.cert);
+      if (!cert) {
+        missingCertsHosts.push(host);
+      }
+    }
+
+    const missingCertsCount = missingCertsHosts.length;
 
     return (
       <Alert severity={missingCertsCount === 0 ? "success" : "warning"}>
@@ -129,7 +143,7 @@ const RouteFormRaw: React.FC<Props> = (props) => {
         {missingCertsHosts.length > 0 ? (
           <>
             <Box marginBottom={1}>
-              {missingCertsHosts.map(({ host }) => {
+              {missingCertsHosts.map((host) => {
                 return (
                   <Box key={host} ml={2} fontWeight="bold">
                     {host}
@@ -140,40 +154,13 @@ const RouteFormRaw: React.FC<Props> = (props) => {
 
             <Box marginBottom={1}>
               <Typography>
-                Default tls certificate will be used for these domains. Invalid SSL certificate / Intermediate
-                certificates error could occur when you try to access this route. Kalm provides a free & simple way to
-                fix this issue in seconds.
-                <RouteLink to="/certificates">Go to certification page</RouteLink>, and create a certificate for your
-                domain.
+                Invalid SSL certificate / Intermediate certificates error could occur when you try to access this route.
+                Go to <RouteLink to="/domains">domains & certificates</RouteLink> page, add your domain, then follow the
+                instruction to apply an certificate.
               </Typography>
             </Box>
           </>
         ) : null}
-
-        {validHosts.length > 0 ? (
-          <Box mt={2} mb={1}>
-            <Link
-              component="button"
-              variant="body2"
-              onClick={() => setIsValidCertificationUnfolded(!isValidCertificationUnfolded)}
-            >
-              View hosts that have valid certificates.
-            </Link>
-          </Box>
-        ) : null}
-        <Collapse in={isValidCertificationUnfolded}>
-          {validHosts.map(({ host, cert }, index) => {
-            return (
-              <Typography key={host + "-" + index}>
-                <strong>{host}</strong> will use{" "}
-                <Link href="#" variant="body2">
-                  <strong>{cert.name}</strong>
-                </Link>{" "}
-                certification.
-              </Typography>
-            );
-          })}
-        </Collapse>
       </Alert>
     );
   };

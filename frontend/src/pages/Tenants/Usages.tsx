@@ -10,7 +10,6 @@ import { BasePage } from "pages/BasePage";
 import React from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "reducers";
-import { TDispatchProp } from "types";
 import { KPanel } from "widgets/KPanel";
 import { Loading } from "../../widgets/Loading";
 
@@ -26,8 +25,6 @@ function LinearProgressWithLabel(props: LinearProgressProps & { value: number })
     </Box>
   );
 }
-
-interface Props extends TDispatchProp {}
 
 const multiples = {
   m: 0.001,
@@ -45,7 +42,7 @@ const multiples = {
   E: 1000 ** 6,
 };
 
-const TenantUsagePageRaw: React.FC<Props> = () => {
+const TenantUsagePageRaw: React.FC = () => {
   // const auth = useSelector((state: RootState) => state.auth);
   const currentTenant = useSelector((state: RootState) => state.tenant.info);
   const isLoading = useSelector((state: RootState) => state.tenant.isLoading);

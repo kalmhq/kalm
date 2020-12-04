@@ -59,10 +59,6 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
       return <SuccessColorText>Issued</SuccessColorText>;
     }
 
-    if (domain.status === "pending") {
-      return "-";
-    }
-
     const cert = certificatesMap[domain.domain];
 
     if (cert) {

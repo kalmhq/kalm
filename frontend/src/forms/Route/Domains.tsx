@@ -14,7 +14,8 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorArrayOfIsDNS1123SubDomain, ValidatorRequired } from "../validator";
 
 export const RouteDomains: React.FC = () => {
-  const domains: Domain[] = useSelector((state: RootState) => state.domains.domains);
+  const allDomains: Domain[] = useSelector((state: RootState) => state.domains.domains);
+  const domains = allDomains.filter((x) => x.status === "ready");
   const domainsMap: { [key: string]: Domain } = {};
   domains.forEach((x) => (domainsMap[x.domain] = x));
 
@@ -34,7 +35,8 @@ export const RouteDomains: React.FC = () => {
   };
 
   const renderField = (domain: string, index: number) => {
-    if (domain === "") {
+    const exactMatchedDomain = domainsMap[domain];
+    if (domain === "" || (exactMatchedDomain && !exactMatchedDomain.domain.startsWith("*"))) {
       return (
         <Field
           name={`hosts[${index}]`}
@@ -44,19 +46,6 @@ export const RouteDomains: React.FC = () => {
             value: normalizeWildcardDomain(x.domain),
             text: x.domain,
           }))}
-        />
-      );
-    }
-
-    const exactMatchedDomain = domainsMap[domain];
-    if (exactMatchedDomain && !exactMatchedDomain.domain.startsWith("*")) {
-      return (
-        <Field
-          name={`hosts[${index}]`}
-          disabled
-          component={FinalTextField}
-          label="Domain"
-          validate={ValidatorRequired}
         />
       );
     }
