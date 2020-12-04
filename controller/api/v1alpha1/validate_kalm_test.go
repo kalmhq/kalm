@@ -2,12 +2,14 @@ package v1alpha1
 
 import (
 	"encoding/json"
+	"fmt"
+	"testing"
+
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apiextensions-apiserver/pkg/apiserver/validation"
 	"k8s.io/apimachinery/pkg/util/sets"
 	yaml2 "k8s.io/apimachinery/pkg/util/yaml"
-	"testing"
 )
 
 var tmp = cmv1alpha2.IssuerConfig{}
@@ -201,16 +203,27 @@ metadata: foobar`
 //}
 
 func TestIsValidDomain(t *testing.T) {
-	domains := []string{
-		"google.com",
-		"map.google.com",
-		"stackoverflow.co.uk",
-		"x.y.com",
-		"10.0.0.1.xip.io",
+	type domainTest struct {
+		domain string
+		result bool
 	}
 
-	for _, d := range domains {
-		assert.True(t, isValidDomain(d), "fail test on "+d)
+	domainTests := []domainTest{
+		{"google.com", true},
+		{"map.google.com", true},
+		{"stackoverflow.co.uk", true},
+		{"x.y.com", true},
+		{"10.0.0.1.xip.io", true},
+
+		{".x.y.com", false},
+		{"*", false},
+		{"a*.com", false},
+		{"a*b.com", false},
+		{"*a.com", false},
+	}
+
+	for _, domainTest := range domainTests {
+		assert.Equal(t, domainTest.result, isValidDomain(domainTest.domain), "fail test on "+domainTest.domain)
 	}
 }
 
@@ -244,5 +257,32 @@ func TestIsValidDomainInCert(t *testing.T) {
 		assert.Equal(t, pair.valid, isValidDomainInCert(pair.domain),
 			"wrong for:"+pair.domain,
 			"should be:", pair.valid)
+	}
+}
+
+func TestIsUnderWildcardDomain(t *testing.T) {
+	type triple struct {
+		wildcard string
+		domain   string
+		result   bool
+	}
+
+	domains := []triple{
+		{"*", "a.com", true},
+		{"*.example.com", "a.example.com", true},
+		{"*.a.b.com", "x.a.b.com", true},
+		{"*.kubeland.com", "alpha.kubeland.com", true},
+		{"*.example.com", "a.not-example.com", false},
+		{"*.example.com", "a.b.example.com", false},
+		{"*.com", "a.com", false},
+		{"a*.example.com", "a.example.com", false},
+		{"*b.example.com", "a.example.com", false},
+		{"a*b.example.com", "a.example.com", false},
+	}
+
+	for _, one := range domains {
+		assert.Equal(t, one.result, isUnderWildcardDomain(one.wildcard, one.domain),
+			fmt.Sprintf("wrong for: %s %s", one.wildcard, one.domain),
+			"should be:", one.result)
 	}
 }
