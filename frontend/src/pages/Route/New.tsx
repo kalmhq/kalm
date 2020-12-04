@@ -17,12 +17,15 @@ interface Props extends WithStyles<typeof styles>, WithNamespaceProps {}
 
 class RouteNewRaw extends React.PureComponent<Props> {
   private onSubmit = async (route: HttpRoute) => {
-    const { activeNamespaceName, dispatch } = this.props;
+    const { applications, dispatch } = this.props;
+
     try {
       if (route.methodsMode === methodsModeAll) {
         route.methods = AllHttpMethods;
       }
-      route.namespace = activeNamespaceName;
+
+      // TODO: change this
+      route.namespace = applications[0].name;
 
       await dispatch(createRouteAction(route));
       await dispatch(setSuccessNotificationAction("Create route successfully"));

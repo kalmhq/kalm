@@ -779,7 +779,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               size="small"
               style={{ textAlign: "center" }}
               component={RouteLink}
-              to="/cluster/registries"
+              to="/cluster/pull-secrets"
             >
               Configure registry
             </Button>

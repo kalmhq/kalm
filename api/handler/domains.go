@@ -9,7 +9,6 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/rand"
 )
 
 func (h *ApiHandler) InstallDomainHandlers(e *echo.Group) {
@@ -29,7 +28,26 @@ func (h *ApiHandler) handleListDomains(c echo.Context) error {
 
 	afterFilter := h.filterAuthorizedDomains(c, "view", domainList.Items)
 
-	return c.JSON(http.StatusOK, wrapDomainListAsResp(afterFilter))
+	baseDomain := h.BaseDomain
+
+	// TODO: fix this
+	if baseDomain == "" {
+		baseDomain = "asia-northeast3.kapp.live"
+	}
+
+	domains := resources.WrapDomainListAsResp(afterFilter)
+	domains = append([]resources.Domain{
+		{
+			Name:       "default",
+			Domain:     fmt.Sprintf("*%s.%s", currentUser.Tenant, baseDomain),
+			Status:     "ready",
+			RecordType: "CNAME",
+			Target:     "",
+			IsBuiltIn:  true,
+		},
+	}, domains...)
+
+	return c.JSON(http.StatusOK, domains)
 }
 
 func (h *ApiHandler) filterAuthorizedDomains(c echo.Context, action string, records []v1alpha1.Domain) []v1alpha1.Domain {
@@ -56,7 +74,7 @@ func (h *ApiHandler) handleGetDomain(c echo.Context) error {
 		return fmt.Errorf("no permission to view this domain: %s", c.Param("name"))
 	}
 
-	return c.JSON(http.StatusOK, wrapDomainAsResp(rst))
+	return c.JSON(http.StatusOK, resources.WrapDomainAsResp(rst))
 }
 
 func (h *ApiHandler) handleCreateDomain(c echo.Context) error {
@@ -72,35 +90,7 @@ func (h *ApiHandler) handleCreateDomain(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(201, wrapDomainAsResp(*domain))
-}
-
-func wrapDomainAsResp(d v1alpha1.Domain) resources.Domain {
-	var status string
-	if d.Status.CNAMEReady {
-		status = "ready"
-	} else {
-		status = "pending"
-	}
-
-	return resources.Domain{
-		Name:       d.Name,
-		Domain:     d.Spec.Domain,
-		Target:     d.Spec.CNAME,
-		Status:     status,
-		RecordType: "CNAME",
-		IsBuiltIn:  false,
-	}
-}
-
-func wrapDomainListAsResp(list []v1alpha1.Domain) []resources.Domain {
-	rst := []resources.Domain{}
-
-	for _, d := range list {
-		rst = append(rst, wrapDomainAsResp(d))
-	}
-
-	return rst
+	return c.JSON(201, resources.WrapDomainAsResp(*domain))
 }
 
 func (h *ApiHandler) handleDeleteDomain(c echo.Context) error {
@@ -133,11 +123,11 @@ func getDomainFromContext(c echo.Context) (*v1alpha1.Domain, error) {
 	md5Domain := md5.Sum([]byte(resDomain.Domain))
 	name := fmt.Sprintf("%s-%x", currentUser.Tenant, md5Domain)
 
-	// todo ensure uniqueness
-	randomPrefix := rand.String(8)
+	// same as domain name
+	cnamePrefix := name
 
-	// xyz-<tenant>-<cname>.<asia>.kalm-dns.com
-	cname := fmt.Sprintf("%s-%s-cname.%s", randomPrefix, tenantName, getKalmDNSBaseDomain())
+	// <tenantName-md5Domain>-cname.<asia>.kalm-dns.com
+	cname := fmt.Sprintf("%s-cname.%s", cnamePrefix, getKalmDNSBaseDomain())
 
 	rst := v1alpha1.Domain{
 		ObjectMeta: metav1.ObjectMeta{

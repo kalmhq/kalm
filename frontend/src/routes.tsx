@@ -28,9 +28,9 @@ import { MemberNewPage } from "pages/Members/New";
 import { NodeListPage } from "pages/Nodes/List";
 import { NoMatch, Page404 } from "pages/NoMatch";
 import { ProfilePage } from "pages/Profile";
-import { RegistryEditPage } from "pages/Registry/Edit";
-import { RegistryListPage } from "pages/Registry/List";
-import { RegistryNewPage } from "pages/Registry/New";
+import { PullSecretsEditPage } from "pages/PullSecrets/Edit";
+import { PullSecretsListPage } from "pages/PullSecrets/List";
+import { PullSecretsNewPage } from "pages/PullSecrets/New";
 import { RouteEditPage } from "pages/Route/Edit";
 import { RouteListPage } from "pages/Route/List";
 import { RouteNewPage } from "pages/Route/New";
@@ -70,9 +70,9 @@ export const KalmRoutes = (
           <Route exact path="/cluster/nodes" component={NodeListPage} />
           <Route exact path="/cluster/loadbalancer" component={LoadBalancerInfoPage} />
           <Route exact path="/cluster/disks" component={DiskListPage} />
-          <Route exact path="/cluster/registries" component={RegistryListPage} />
-          <Route exact path="/cluster/registries/new" component={RegistryNewPage} />
-          <Route exact path="/cluster/registries/:name/edit" component={RegistryEditPage} />
+          <Route exact path="/cluster/pull-secrets" component={PullSecretsListPage} />
+          <Route exact path="/cluster/pull-secrets/new" component={PullSecretsNewPage} />
+          <Route exact path="/cluster/pull-secrets/:name/edit" component={PullSecretsEditPage} />
 
           <Route exact path="/cluster/members" component={RolesListPage} />
           <Route exact path="/cluster/members/new" component={MemberNewPage} />

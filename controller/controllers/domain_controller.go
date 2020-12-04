@@ -135,7 +135,11 @@ func isWildcardDomain(domain string) bool {
 
 // decide time of next re-check
 func decideRequeueAfter(domain v1alpha1.Domain, isReady bool) time.Duration {
-	return 5 * time.Second
+	if isReady {
+		return 30 * time.Second
+	} else {
+		return 5 * time.Second
+	}
 
 	// wasReady := domain.Status.CNAMEReady
 	// if wasReady {

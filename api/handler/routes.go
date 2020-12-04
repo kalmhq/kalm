@@ -77,15 +77,23 @@ func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
 			}
 
 			for _, host := range route.Hosts {
-				// if is XXXasia-northeast3.kapp.live
-				if !strings.HasSuffix(host, kalmBaseDomain) {
-					continue
-				}
 
-				// then must be: YYY<tenant>.asia-northeast3.kapp.live
-				validKalmDomainSuffixForUser := fmt.Sprintf("%s.%s", tenantName, kalmBaseDomain)
-				if !strings.HasSuffix(host, validKalmDomainSuffixForUser) {
-					return fmt.Errorf("httpRoute using KalmDomain must be like: xx-%s", validKalmDomainSuffixForUser)
+				// if is XXXasia-northeast3.kapp.live
+				isUsingKalmBuiltinDomain := strings.HasSuffix(host, kalmBaseDomain)
+
+				if isUsingKalmBuiltinDomain {
+					// then must be: XX<tenant>.asia-northeast3.kapp.live
+					validKalmDomainSuffixForUser := fmt.Sprintf("%s.%s", tenantName, kalmBaseDomain)
+					if !strings.HasSuffix(host, validKalmDomainSuffixForUser) {
+						return fmt.Errorf("httpRoute using KalmDomain must be like: xx-%s", validKalmDomainSuffixForUser)
+					}
+				} else {
+					// for user domain
+					if isVerified, err := h.isVerifiedUserDomain(host, tenantName); err != nil {
+						return err
+					} else if !isVerified {
+						return fmt.Errorf("should verify domain before use it in httpRoute: %s", host)
+					}
 				}
 			}
 		}
@@ -96,6 +104,26 @@ func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
 	}
 
 	return c.JSON(201, route)
+}
+
+func (h *ApiHandler) isVerifiedUserDomain(domain, tenantName string) (bool, error) {
+	domainList := v1alpha1.DomainList{}
+	err := h.resourceManager.List(&domainList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenantName})
+	if err != nil {
+		return false, err
+	}
+
+	for _, d := range domainList.Items {
+		if !d.Status.CNAMEReady {
+			continue
+		}
+
+		if d.Spec.Domain == domain {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {

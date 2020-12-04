@@ -340,8 +340,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
         return "Load Balancer";
       case "disks":
         return "Disks";
-      case "registries":
-        return "Registries";
+      case "pull-secrets":
+        return "Image Pull Secrets";
       case "new":
         return "New";
       case "upload":
