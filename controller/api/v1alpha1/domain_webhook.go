@@ -110,9 +110,11 @@ func (r *Domain) ValidateDelete() error {
 
 func IsCNAMEConfiguredAsExpected(domain, expectedCNAME string) bool {
 	directCNAME := getDirectCNAMEOfDomain(domain)
-	domainlog.Info(fmt.Sprintf("directCNAME: %s -> %s, expected: %s", domain, directCNAME, expectedCNAME))
 
-	return directCNAME == expectedCNAME
+	isExpected := directCNAME == expectedCNAME
+	domainlog.Info(fmt.Sprintf("directCNAME(%t): %s -> %s, expected: %s", isExpected, domain, directCNAME, expectedCNAME))
+
+	return isExpected
 }
 
 // https://stackoverflow.com/a/56856437/404145
