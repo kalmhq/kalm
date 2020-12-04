@@ -232,7 +232,7 @@ func IsDomainConfiguredAsExpected(domainSpec DomainSpec) (bool, error) {
 		domainlog.Info(fmt.Sprintf("lookupIP(%t): %s -> %s, expected: %s", isExpected, domain, ips, expected))
 		return isExpected, nil
 	default:
-		domainlog.Info("unknown DNSType:", domainSpec.DNSType)
+		domainlog.Info("unknown DNSType", "type:", domainSpec.DNSType)
 		return false, nil
 	}
 }

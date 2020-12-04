@@ -121,6 +121,8 @@ func getDomainFromContext(c echo.Context) (*v1alpha1.Domain, error) {
 	tenantName := currentUser.Tenant
 
 	md5Domain := md5.Sum([]byte(resDomain.Domain))
+
+	// <md5Domain>-<tenantName>
 	name := fmt.Sprintf("%x-%s", md5Domain, currentUser.Tenant)
 
 	rst := v1alpha1.Domain{
