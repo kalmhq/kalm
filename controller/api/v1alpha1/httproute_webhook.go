@@ -235,12 +235,51 @@ func isVerifiedUserDomain(domain, tenantName string) (bool, error) {
 			continue
 		}
 
-		if d.Spec.Domain == domain {
+		verifiedDomain := d.Spec.Domain
+		if verifiedDomain == domain {
 			return true, nil
+		}
+
+		if isValidWildcardDomain(verifiedDomain) {
+			if isUnderWildcardDomain(verifiedDomain, domain) {
+				return true, nil
+			}
 		}
 	}
 
 	return false, nil
+}
+
+func isUnderWildcardDomain(wildcardDomain, domain string) bool {
+	if !isValidWildcardDomain(wildcardDomain) {
+		return false
+	}
+
+	if !isValidDomain(domain) {
+		return false
+	}
+
+	if wildcardDomain == "*" {
+		return true
+	}
+
+	// wildcard domain: *.foo.bar
+	// domain under it: a.foo.bar
+	wildcardDomainParts := strings.Split(wildcardDomain, ".")
+	domainParts := strings.Split(domain, ".")
+
+	if len(wildcardDomainParts) != len(domainParts) {
+		return false
+	}
+
+	// all parts equals except first one
+	for i := 1; i < len(wildcardDomainParts); i++ {
+		if wildcardDomainParts[i] != domainParts[i] {
+			return false
+		}
+	}
+
+	return true
 }
 
 func getValidSuffixOfAppDomain(tenantName, baseAppDomain string) string {

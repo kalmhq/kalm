@@ -15,6 +15,7 @@ import { Node } from "types/node";
 import { Registry, RegistryFormType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
+import { Tenant } from "types/tenant";
 
 export default class RealApi {
   public getClusterInfo = async () => {
@@ -24,6 +25,11 @@ export default class RealApi {
 
   public getLoginStatus = async () => {
     const res = await axiosRequest({ method: "get", url: "/login/status" });
+    return res.data;
+  };
+
+  public getCurrentTenant = async () => {
+    const res = await axiosRequest<Tenant>({ method: "get", url: `/${K8sApiVersion}/tenants/current` });
     return res.data;
   };
 
