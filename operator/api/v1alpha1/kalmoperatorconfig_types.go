@@ -51,8 +51,10 @@ type KalmOperatorConfigSpec struct {
 
 	KalmType string `json:"kalmType,omitempty"`
 
-	// like: asia-northeast3.kapp.live
-	ClusterBaseDomain string `json:"clusterBaseDomain,omitempty"`
+	// like: asia-northeast3.kalm-app.com
+	BaseAppDomain string `json:"baseAppDomain,omitempty"`
+	// like: asia-northeast3.kalm-dns.com
+	BaseDNSDomain string `json:"baseDNSDomain,omitempty"`
 
 	// Dashboard Config
 	Dashboard *DashboardConfig `json:"dashboard,omitempty"`
