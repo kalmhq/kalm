@@ -40,20 +40,20 @@ import { SSOPage } from "pages/SSO";
 import { SSOConfigPage } from "pages/SSO/Config";
 import { SystemPage } from "pages/System";
 import { TenantsPage } from "pages/Tenants";
-import { TenantUsagePage } from "pages/Tenants/usage";
+import { TenantUsagePage } from "pages/Tenants/Usages";
 import { VersionPage } from "pages/Version";
 import { RequireAuthorized, RequireNotAuthorized } from "permission/Authorization";
 import React from "react";
 import { Redirect, Route, Switch } from "react-router";
 
-const RequireAuthorizatedDashboard = RequireAuthorized(DashboardLayout);
+const RequireAuthorizedDashboard = RequireAuthorized(DashboardLayout);
 
 export const KalmRoutes = (
   <Switch>
     <Route path="/404" component={Page404} />
     <Route path="/login" component={RequireNotAuthorized(Login)} />
     <Route path="/">
-      <RequireAuthorizatedDashboard>
+      <RequireAuthorizedDashboard>
         <Switch>
           <Route path="/tenants" component={TenantsPage} />
           <Route path="/usage" component={TenantUsagePage} />
@@ -118,7 +118,7 @@ export const KalmRoutes = (
           <Route exact path="/acme/edit" component={CertificateAcmeEditPage} />
           <Route component={NoMatch} />
         </Switch>
-      </RequireAuthorizatedDashboard>
+      </RequireAuthorizedDashboard>
     </Route>
   </Switch>
 );

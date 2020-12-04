@@ -4,7 +4,7 @@ import {
   loadCertificateIssuersAction,
   loadCertificatesAction,
 } from "actions/certificate";
-import { loadClusterInfoAction } from "actions/cluster";
+import { loadClusterInfoAction, loadCurrentTenantInfoAction } from "actions/cluster";
 import { loadDeployAccessTokensAction } from "actions/deployAccessToken";
 import { loadDomainsAction } from "actions/domains";
 import { loadNodesAction } from "actions/node";
@@ -71,7 +71,7 @@ class WithDataRaw extends React.PureComponent<Props> {
   }
 
   private loadData() {
-    const { dispatch, canViewTenant, canViewCluster } = this.props;
+    const { dispatch, canViewTenant, canEditTenant, canViewCluster } = this.props;
 
     dispatch(loadRoutesAction()); // all namespaces
     dispatch(loadApplicationsAction());
@@ -85,6 +85,10 @@ class WithDataRaw extends React.PureComponent<Props> {
       dispatch(loadPersistentVolumesAction());
       dispatch(loadStorageClassesAction());
       dispatch(loadDomainsAction());
+    }
+
+    if (canEditTenant()) {
+      dispatch(loadCurrentTenantInfoAction());
     }
 
     if (canViewCluster()) {

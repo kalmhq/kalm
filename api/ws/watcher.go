@@ -543,6 +543,16 @@ func buildDomainResMessage(c *Client, action string, objWatched interface{}) (*R
 		return nil, errors.New("convert watch obj to Domain failed")
 	}
 
+	tenantName, err := v1alpha1.GetTenantNameFromObj(domain)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if tenantName != c.clientInfo.Tenant {
+		return nil, nil
+	}
+
 	if !c.clientManager.CanOperateDomains(c.clientInfo, "view", domain) {
 		return nil, nil
 	}
