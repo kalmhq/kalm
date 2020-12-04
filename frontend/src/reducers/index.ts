@@ -20,6 +20,7 @@ import routes, { State as RouteState } from "./route";
 import services, { State as ServiceState } from "./service";
 import settings, { State as SettingsState } from "./settings";
 import sso, { State as SSOState } from "./sso";
+import tenant, { State as TenantState } from "./tenant";
 import tutorial, { State as TutorialState } from "./tutorial";
 
 export type RootState = {
@@ -44,6 +45,7 @@ export type RootState = {
   sso: SSOState;
   deployAccessTokens: DeployAccessTokensState;
   domains: DomainsState;
+  tenant: TenantState;
 };
 
 const rootReducer = (history: History<LocationState>) =>
@@ -69,6 +71,7 @@ const rootReducer = (history: History<LocationState>) =>
     debounce,
     deployAccessTokens,
     domains,
+    tenant,
   });
 
 export default rootReducer;

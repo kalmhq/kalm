@@ -27,8 +27,9 @@ export const loadDomainsAction = (): ThunkResult<Promise<void>> => {
           domains,
         },
       });
-    } finally {
+    } catch (e) {
       dispatch({ type: LOAD_DOMAINS_FAILED });
+      throw e;
     }
   };
 };
@@ -48,8 +49,9 @@ export const createDomainAction = (domainCreation: DomainCreation): ThunkResult<
       });
 
       return domain;
-    } finally {
+    } catch (e) {
       dispatch({ type: CREATE_DOMAIN_FAILED });
+      throw e;
     }
   };
 };
@@ -67,8 +69,9 @@ export const deleteDomainAction = (name: string): ThunkResult<Promise<void>> => 
           name,
         },
       });
-    } finally {
+    } catch (e) {
       dispatch({ type: DELETE_DOMAIN_FAILED });
+      throw e;
     }
   };
 };
