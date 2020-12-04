@@ -458,4 +458,4 @@ const RouteFormRaw: React.FC<Props> = (props) => {
   );
 };
 
-export const RouteForm = React.memo(RouteFormRaw);
+export const RouteForm = RouteFormRaw;

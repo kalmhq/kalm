@@ -3,7 +3,7 @@ import { updateRegistryAction } from "actions/registries";
 import { push } from "connected-react-router";
 import { RegistryForm } from "forms/Registry";
 import { BasePage } from "pages/BasePage";
-import React, { FC, memo } from "react";
+import React, { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouteMatch } from "react-router-dom";
 import { RootState } from "reducers";
@@ -57,4 +57,4 @@ const PullSecretsEditPageRaw: FC = () => {
   );
 };
 
-export const PullSecretsEditPage = memo(PullSecretsEditPageRaw);
+export const PullSecretsEditPage = PullSecretsEditPageRaw;

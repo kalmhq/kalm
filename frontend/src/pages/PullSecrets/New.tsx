@@ -3,7 +3,7 @@ import { createRegistryAction } from "actions/registries";
 import { push } from "connected-react-router";
 import { RegistryForm } from "forms/Registry";
 import { BasePage } from "pages/BasePage";
-import React, { FC, memo } from "react";
+import React, { FC } from "react";
 import { useDispatch } from "react-redux";
 import { newEmptyRegistry, RegistryFormType } from "types/registry";
 import { H6 } from "widgets/Label";
@@ -27,4 +27,4 @@ const PullSecretsNewPageRaw: FC = () => {
   );
 };
 
-export const PullSecretsNewPage = memo(PullSecretsNewPageRaw);
+export const PullSecretsNewPage = PullSecretsNewPageRaw;

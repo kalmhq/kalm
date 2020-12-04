@@ -81,4 +81,4 @@ const CertificateFormRaw: React.FC<Props> = (props) => {
   );
 };
 
-export const CertificateForm = React.memo(CertificateFormRaw);
+export const CertificateForm = CertificateFormRaw;

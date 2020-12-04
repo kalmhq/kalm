@@ -5,7 +5,7 @@ import { setSuccessNotificationAction } from "actions/notification";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
 import { DomainStatus } from "pages/Domains/Status";
-import React, { memo } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
@@ -232,4 +232,4 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   );
 };
 
-export const DomainListPage = withUserAuth(memo(DomainListPageRaw));
+export const DomainListPage = withUserAuth(DomainListPageRaw);

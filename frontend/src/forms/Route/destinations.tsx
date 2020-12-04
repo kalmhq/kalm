@@ -160,4 +160,4 @@ const RenderHttpRouteDestinationsRaw: React.FC = () => {
   );
 };
 
-export const RenderHttpRouteDestinations = React.memo(RenderHttpRouteDestinationsRaw);
+export const RenderHttpRouteDestinations = RenderHttpRouteDestinationsRaw;
