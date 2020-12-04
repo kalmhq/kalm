@@ -214,6 +214,7 @@ func IsDomainConfiguredAsExpected(domainSpec DomainSpec) (bool, error) {
 		ips, err := net.LookupIP(domain)
 		if err != nil {
 			if isNoSuchHostDNSError(err) {
+				domainlog.Error(err, fmt.Sprintf("no such host err lookupIP(%s)", domain))
 				return false, nil
 			}
 
