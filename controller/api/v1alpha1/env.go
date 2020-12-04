@@ -13,3 +13,7 @@ func GetEnvKalmBaseDNSDomain() string {
 func GetEnvKalmBaseAppDomain() string {
 	return os.Getenv(ENV_KALM_BASE_APP_DOMAIN)
 }
+
+func GetEnvKalmClusterIP() string {
+	return os.Getenv(ENV_KALM_CLUSTER_IP)
+}

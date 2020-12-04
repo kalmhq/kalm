@@ -19,17 +19,24 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type DNSType string
+
+const (
+	DNSTypeCNAME = "CNAME"
+	DNSTypeA     = "A"
+)
+
 type DomainSpec struct {
-	Domain              string `json:"domain,omitempty"`
-	CNAME               string `json:"cname,omitempty"`
-	IsKalmBuiltinDomain bool   `json:"isKalmBuiltinDomain"`
+	Domain              string  `json:"domain,omitempty"`
+	DNSType             DNSType `json:"dnsType,omitempty"`
+	DNSTarget           string  `json:"dnsTarget,omitempty"`
+	IsKalmBuiltinDomain bool    `json:"isKalmBuiltinDomain"`
 }
 
 // DomainStatus defines the observed state of Domain
 type DomainStatus struct {
-	CNAMEReady                       bool  `json:"cnameReady"`
-	CheckCountSinceCNAMEReadyUpdated int   `json:"checkCountSinceCNAMEReadyUpdated"`
-	LastCheckTimestamp               int64 `json:"lastCheckTimestamp"`
+	IsDNSTargetConfigured            bool `json:"isDNSTargetConfigured"`
+	CheckCountSinceCNAMEReadyUpdated int  `json:"checkCountSinceCNAMEReadyUpdated"`
 }
 
 // +kubebuilder:object:root=true
