@@ -42,16 +42,16 @@ import { SystemPage } from "pages/System";
 import { TenantsPage } from "pages/Tenants";
 import { TenantUsagePage } from "pages/Tenants/usage";
 import { VersionPage } from "pages/Version";
-import { RequireAuthorizated, RequireNotAuthorizated } from "permission/Authorization";
+import { RequireAuthorized, RequireNotAuthorized } from "permission/Authorization";
 import React from "react";
 import { Redirect, Route, Switch } from "react-router";
 
-const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
+const RequireAuthorizatedDashboard = RequireAuthorized(DashboardLayout);
 
 export const KalmRoutes = (
   <Switch>
     <Route path="/404" component={Page404} />
-    <Route path="/login" component={RequireNotAuthorizated(Login)} />
+    <Route path="/login" component={RequireNotAuthorized(Login)} />
     <Route path="/">
       <RequireAuthorizatedDashboard>
         <Switch>
