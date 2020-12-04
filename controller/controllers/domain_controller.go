@@ -118,7 +118,25 @@ func (r *DomainReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	// }
 	// copied.Status.CheckCountSinceCNAMEReadyUpdated += 1
 	// copied.Status.LastCheckTimestamp = time.Now().Unix()
-	copied.Status.CNAMEReady = isCNAMEValid
+
+	if isCNAMEValid {
+		copied.Status.CNAMEReady = true
+
+		if copied.Status.CheckCountSinceCNAMEReadyUpdated > 0 {
+			//reset
+			copied.Status.CheckCountSinceCNAMEReadyUpdated = 0
+		}
+	} else {
+		// for ready change to not-ready, only set to failed for 10 times
+		if copied.Status.CNAMEReady {
+			copied.Status.CheckCountSinceCNAMEReadyUpdated += 1
+
+			threshold := 10
+			if copied.Status.CheckCountSinceCNAMEReadyUpdated > threshold {
+				copied.Status.CNAMEReady = false
+			}
+		}
+	}
 
 	if err := r.Status().Update(r.ctx, copied); err != nil {
 		return ctrl.Result{}, err
@@ -136,7 +154,7 @@ func isWildcardDomain(domain string) bool {
 // decide time of next re-check
 func decideRequeueAfter(domain v1alpha1.Domain, isReady bool) time.Duration {
 	if isReady {
-		return 30 * time.Second
+		return 60 * time.Second
 	} else {
 		return 5 * time.Second
 	}

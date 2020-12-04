@@ -138,7 +138,7 @@ func IsCNAMEConfiguredAsExpected(domain, expectedCNAME string) bool {
 
 // https://stackoverflow.com/a/56856437/404145
 func getDirectCNAMEOfDomain(domain string) string {
-	config, _ := dns.ClientConfigFromFile("/etc/resolv.conf")
+	// config, _ := dns.ClientConfigFromFile("/etc/resolv.conf")
 	c := new(dns.Client)
 	m := new(dns.Msg)
 
@@ -149,7 +149,9 @@ func getDirectCNAMEOfDomain(domain string) string {
 
 	m.SetQuestion(domain, dns.TypeCNAME)
 	m.RecursionDesired = true
-	r, _, err := c.Exchange(m, config.Servers[0]+":"+config.Port)
+
+	// r, _, err := c.Exchange(m, config.Servers[0]+":"+config.Port)
+	r, _, err := c.Exchange(m, "8.8.8.8:53")
 
 	if err != nil {
 		domainlog.Error(err, "fail when call dnsClient.Exchange")
