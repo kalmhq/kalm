@@ -19,6 +19,7 @@ export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
   const HOC: React.ComponentType<WithUserAuthProps> = class extends React.PureComponent<WithUserAuthProps> {
     private canViewPage = () => {
       const { location, canEditTenant, canViewCluster, canViewTenant, canManageCluster } = this.props;
+
       if (location.pathname.includes("/certificates")) {
         return canEditTenant() || canViewCluster();
       } else if (location.pathname.includes("/ci")) {
@@ -29,7 +30,7 @@ export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
         return canViewTenant();
       } else if (location.pathname.includes("/cluster/disks")) {
         return canViewTenant();
-      } else if (location.pathname.includes("/cluster/registries")) {
+      } else if (location.pathname.includes("/cluster/pull-secrets")) {
         return canEditTenant();
       } else if (location.pathname.includes("/sso")) {
         return canViewCluster();

@@ -2,6 +2,7 @@ import { Box, Button, createStyles, Theme, Tooltip, Typography, withStyles, With
 import { indigo } from "@material-ui/core/colors";
 import { setErrorNotificationAction } from "actions/notification";
 import { deleteRegistryAction } from "actions/registries";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
@@ -18,7 +19,6 @@ import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { Loading } from "widgets/Loading";
 import { BasePage } from "../BasePage";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -34,7 +34,7 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-const pageObjectName: string = "Private Registry";
+const pageObjectName: string = "Registry Pull Secret";
 
 interface Props
   extends WithStyles<typeof styles>,
@@ -47,7 +47,7 @@ interface State {
   deletingItemName?: string;
 }
 
-class RegistryListPageRaw extends React.PureComponent<Props, State> {
+class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -126,7 +126,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     const { canEditTenant } = this.props;
     return canEditTenant() ? (
       <>
-        <IconLinkWithToolTip tooltipTitle={"Edit"} to={`/cluster/registries/${row.name}/edit`}>
+        <IconLinkWithToolTip tooltipTitle={"Edit"} to={`/cluster/pull-secrets/${row.name}/edit`}>
           <EditIcon />
         </IconLinkWithToolTip>
         <DeleteButtonWithConfirmPopover
@@ -209,7 +209,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
           size="small"
           component={Link}
           tutorial-anchor-id="add-certificate"
-          to="/cluster/registries/new"
+          to="/cluster/pull-secrets/new"
         >
           New {pageObjectName}
         </Button>
@@ -231,7 +231,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
             size="small"
             component={Link}
             tutorial-anchor-id="add-certificate"
-            to="/cluster/registries/new"
+            to="/cluster/pull-secrets/new"
           >
             New {pageObjectName}
           </Button>
@@ -263,4 +263,4 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const RegistryListPage = withUserAuth(withStyles(styles)(connect(mapStateToProps)(RegistryListPageRaw)));
+export const PullSecretsListPage = withUserAuth(withStyles(styles)(connect(mapStateToProps)(PullSecretsListPageRaw)));

@@ -56,7 +56,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   const renderTarget = (domain: Domain) => (domain.isBuiltIn ? "-" : domain.target);
   const renderCertificate = (domain: Domain) => {
     if (domain.isBuiltIn) {
-      return "Issued";
+      return <SuccessColorText>Issued</SuccessColorText>;
     }
 
     if (domain.status === "pending") {

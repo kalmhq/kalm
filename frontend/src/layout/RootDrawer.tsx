@@ -184,8 +184,8 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
           canEditTenant()
             ? {
                 icon: KalmRegistryIcon,
-                text: "Registries",
-                to: "/cluster/registries",
+                text: "Pull secrets",
+                to: "/cluster/pull-secrets",
               }
             : null,
         ],
