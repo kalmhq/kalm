@@ -167,7 +167,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
                 to: "/cluster/nodes",
               }
             : null,
-          canViewTenant()
+          canViewCluster()
             ? {
                 icon: KalmIngressIcon,
                 text: "Load Balancer",
