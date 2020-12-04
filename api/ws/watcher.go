@@ -38,6 +38,7 @@ func StartWatching(c *Client) {
 	registerWatchHandler(c, &informerCache, &v1alpha1.AccessToken{}, buildAccessTokenResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.RoleBinding{}, buildRoleBindingResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.ACMEServer{}, buildAcmeServerResMessage)
+	registerWatchHandler(c, &informerCache, &v1alpha1.Domain{}, buildDomainResMessage)
 
 	informerCache.Start(c.stopWatcher)
 }
@@ -535,5 +536,22 @@ func buildAcmeServerResMessage(c *Client, action string, objWatched interface{})
 		Kind:   "ACMEServer",
 		Action: action,
 		Data:   resources.BuildACMEServerResponse(acmeServer),
+	}, nil
+}
+
+func buildDomainResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	domain, ok := objWatched.(*v1alpha1.Domain)
+	if !ok {
+		return nil, errors.New("convert watch obj to Domain failed")
+	}
+
+	if !c.clientManager.CanOperateDomains(c.clientInfo, "view", domain) {
+		return nil, nil
+	}
+
+	return &ResMessage{
+		Kind:   "Domain",
+		Action: action,
+		Data:   resources.WrapDomainAsResp(*domain),
 	}, nil
 }
