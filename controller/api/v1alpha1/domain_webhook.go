@@ -18,6 +18,7 @@ package v1alpha1
 import (
 	"crypto/md5"
 	"fmt"
+	"net"
 	"strings"
 
 	"github.com/miekg/dns"
@@ -138,6 +139,11 @@ func IsCNAMEConfiguredAsExpected(domain, expectedCNAME string) bool {
 
 // https://stackoverflow.com/a/56856437/404145
 func getDirectCNAMEOfDomain(domain string) string {
+	cname, err := net.LookupCNAME(domain)
+	if err == nil {
+		return cname
+	}
+
 	// config, _ := dns.ClientConfigFromFile("/etc/resolv.conf")
 	c := new(dns.Client)
 	m := new(dns.Msg)
