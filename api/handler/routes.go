@@ -9,6 +9,7 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"k8s.io/apimachinery/pkg/util/rand"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (h *ApiHandler) InstallHttpRouteHandlers(e *echo.Group) {
@@ -108,6 +109,7 @@ func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
 
 func (h *ApiHandler) isVerifiedUserDomain(domain, tenantName string) (bool, error) {
 	domainList := v1alpha1.DomainList{}
+
 	err := h.resourceManager.List(&domainList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenantName})
 	if err != nil {
 		return false, err
