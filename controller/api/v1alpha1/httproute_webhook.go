@@ -280,8 +280,6 @@ func isUnderWildcardDomain(wildcardDomain, domain string) bool {
 	}
 
 	return true
-
-	return false
 }
 
 func getValidSuffixOfAppDomain(tenantName, baseAppDomain string) string {
