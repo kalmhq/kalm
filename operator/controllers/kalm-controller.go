@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
@@ -82,6 +83,21 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 
 	isLocalMode := strconv.FormatBool(config.Spec.KalmType == "local")
 
+	var cloudflareToken string
+	var cloudflareDomainToZoneConfig map[string]string
+
+	cloudflareConfig := config.Spec.CloudflareConfig
+	if cloudflareConfig != nil {
+		cloudflareToken = cloudflareConfig.APIToken
+		cloudflareDomainToZoneConfig = cloudflareConfig.DomainToZoneIDConfig
+	}
+
+	var configs []string
+	for domain, zone := range cloudflareDomainToZoneConfig {
+		configs = append(configs, fmt.Sprintf("%s:%s", domain, zone))
+	}
+	configStr := strings.Join(configs, ";")
+
 	dpName := "kalm-controller"
 	expectedKalmController := appsV1.Deployment{
 		ObjectMeta: ctrl.ObjectMeta{
@@ -138,6 +154,8 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 								{Name: v1alpha1.ENV_KALM_IS_IN_LOCAL_MODE, Value: isLocalMode},
 								{Name: v1alpha1.ENV_KALM_BASE_APP_DOMAIN, Value: config.Spec.BaseAppDomain},
 								{Name: v1alpha1.ENV_KALM_BASE_DNS_DOMAIN, Value: config.Spec.BaseDNSDomain},
+								{Name: v1alpha1.ENV_CLOUDFLARE_TOKEN, Value: cloudflareToken},
+								{Name: v1alpha1.ENV_CLOUDFLARE_DOMAIN_TO_ZONEID_CONFIG, Value: configStr},
 							},
 							Ports: []corev1.ContainerPort{
 								{
