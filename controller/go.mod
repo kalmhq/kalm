@@ -3,6 +3,7 @@ module github.com/kalmhq/kalm/controller
 go 1.15
 
 require (
+	github.com/cloudflare/cloudflare-go v0.13.5
 	github.com/coreos/prometheus-operator v0.29.0
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/docker/distribution v2.7.1+incompatible

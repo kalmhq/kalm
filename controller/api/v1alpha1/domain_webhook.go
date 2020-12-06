@@ -55,7 +55,7 @@ func (r *Domain) Default() {
 		return
 	}
 
-	if isRootDomain(r.Spec.Domain) {
+	if IsRootDomain(r.Spec.Domain) {
 		r.Spec.DNSType = DNSTypeA
 	} else {
 		r.Spec.DNSType = DNSTypeCNAME
@@ -82,7 +82,7 @@ func (r *Domain) Default() {
 	}
 }
 
-func isRootDomain(domain string) bool {
+func IsRootDomain(domain string) bool {
 	parts := strings.Split(domain, ".")
 	if isValidDomain(domain) && len(parts) == 2 {
 		return true
