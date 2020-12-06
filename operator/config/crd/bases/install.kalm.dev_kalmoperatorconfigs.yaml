@@ -40,6 +40,15 @@ spec:
             baseDNSDomain:
               description: 'like: asia-northeast3.kalm-dns.com'
               type: string
+            cloudflareConfig:
+              properties:
+                apiToken:
+                  type: string
+                domainToZoneIDConfig:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
             controller:
               description: Controller Config
               properties:

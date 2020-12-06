@@ -17,3 +17,11 @@ func GetEnvKalmBaseAppDomain() string {
 func GetEnvKalmClusterIP() string {
 	return os.Getenv(ENV_KALM_CLUSTER_IP)
 }
+
+func GetEnvCloudflareToken() string {
+	return os.Getenv(ENV_CLOUDFLARE_TOKEN)
+}
+
+func GetEnvCloudflareDomainToZoneIDConfig() string {
+	return os.Getenv(ENV_CLOUDFLARE_DOMAIN_TO_ZONEID_CONFIG)
+}

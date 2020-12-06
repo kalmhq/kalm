@@ -56,10 +56,17 @@ type KalmOperatorConfigSpec struct {
 	// like: asia-northeast3.kalm-dns.com
 	BaseDNSDomain string `json:"baseDNSDomain,omitempty"`
 
+	CloudflareConfig *CloudflareConfig `json:"cloudflareConfig,omitempty"`
+
 	// Dashboard Config
 	Dashboard *DashboardConfig `json:"dashboard,omitempty"`
 	// Controller Config
 	Controller *ControllerConfig `json:"controller,omitempty"`
+}
+
+type CloudflareConfig struct {
+	APIToken             string            `json:"apiToken,omitempty"`
+	DomainToZoneIDConfig map[string]string `json:"domainToZoneIDConfig,omitempty"`
 }
 
 // KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
