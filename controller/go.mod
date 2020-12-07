@@ -10,7 +10,7 @@ require (
 	github.com/dop251/goja v0.0.0-20200721192441-a695b0cdd498
 	github.com/elastic/cloud-on-k8s v0.0.0-20200721161711-b12a39f14ab1
 	github.com/go-acme/lego/v3 v3.9.0
-	github.com/go-logr/logr v0.1.0
+	github.com/go-logr/logr v0.2.0
 	github.com/go-openapi/runtime v0.19.20 // indirect
 	github.com/go-openapi/spec v0.19.9 // indirect
 	github.com/go-openapi/validate v0.19.10
@@ -46,11 +46,12 @@ require (
 	istio.io/api v0.0.0-20200722065756-9d7f2a3afc5b
 	istio.io/client-go v0.0.0-20200717004237-1af75184beba
 	istio.io/gogo-genproto v0.0.0-20200720193312-b523a30fe746 // indirect
+	istio.io/pkg v0.0.0-20201203133420-4a552406785d
 	k8s.io/api v0.18.6
 	k8s.io/apiextensions-apiserver v0.18.6
 	k8s.io/apimachinery v0.18.6
 	k8s.io/client-go v0.18.6
-	k8s.io/klog/v2 v2.1.0 // indirect
+	k8s.io/klog v1.0.0
 	k8s.io/kube-aggregator v0.18.0
 	k8s.io/utils v0.0.0-20200720150651-0bdb4ca86cbc // indirect
 	sigs.k8s.io/controller-runtime v0.6.3

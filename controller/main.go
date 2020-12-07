@@ -295,6 +295,9 @@ func main() {
 	//+kubebuilder:scaffold:builder
 
 	//todo start domain check loop
+	go func() {
+
+	}()
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {

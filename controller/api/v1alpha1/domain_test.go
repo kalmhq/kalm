@@ -41,6 +41,18 @@ func TestIsDomainConfiguredAsExpectedCNAME(t *testing.T) {
 	assert.False(t, isAsExpected)
 }
 
+// func TestIsDomainConfiguredAsExpectedARecord2(t *testing.T) {
+// 	domainSpec := DomainSpec{
+// 		Domain:    "foobar.com",
+// 		DNSType:   DNSTypeA,
+// 		DNSTarget: "1.1.1.1",
+// 	}
+
+// 	isAsExpected, err := IsDomainConfiguredAsExpected(domainSpec)
+// 	assert.Nil(t, err)
+// 	assert.True(t, isAsExpected)
+// }
+
 // func TestIsDomainConfiguredAsExpectedCNAME2(t *testing.T) {
 // 	domainSpec := DomainSpec{
 // 		Domain:    "*.w.foobar.xyz",

@@ -18,7 +18,6 @@ package controllers
 import (
 	"context"
 	"strings"
-	"time"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -92,7 +91,7 @@ func (r *DomainReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	// if is userSubDomain, setup IP for CNAME
-	// userSubDomain -> CNAME -> IP
+	//   userSubDomain -> CNAME -> IP
 	// rootDomain is A Record Already
 	if !v1alpha1.IsRootDomain(domain.Spec.Domain) {
 		if err := r.reconcileIPForUserSubDomainCNAME(domain.Spec.DNSTarget); err != nil {
@@ -101,49 +100,16 @@ func (r *DomainReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
-	isConfiguredAsExpected, err := v1alpha1.IsDomainConfiguredAsExpected(domain.Spec)
-	if err != nil {
-		return ctrl.Result{}, err
-	}
-
-	isWildcard := isWildcardDomain(domain.Spec.Domain)
-	if isConfiguredAsExpected && !isWildcard {
+	isConfiguredAsExpected := domain.Status.IsDNSTargetConfigured
+	isValidNoneWildcardDomain := v1alpha1.IsValidNoneWildcardDomain(domain.Spec.Domain)
+	if isConfiguredAsExpected && isValidNoneWildcardDomain {
 		err := r.reconcileHttpsCert(domain)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
 	}
 
-	requeueAfter := decideRequeueAfter(domain, isConfiguredAsExpected)
-
-	copied := domain.DeepCopy()
-
-	if isConfiguredAsExpected {
-		copied.Status.IsDNSTargetConfigured = true
-
-		if copied.Status.CheckCountSinceCNAMEReadyUpdated > 0 {
-			//reset
-			copied.Status.CheckCountSinceCNAMEReadyUpdated = 0
-		}
-	} else {
-		// for ready change to not-ready, only set to failed for 10 times
-		if copied.Status.IsDNSTargetConfigured {
-			copied.Status.CheckCountSinceCNAMEReadyUpdated += 1
-
-			threshold := 10
-			if copied.Status.CheckCountSinceCNAMEReadyUpdated > threshold {
-				copied.Status.IsDNSTargetConfigured = false
-			}
-		}
-	}
-
-	if err := r.Status().Update(r.ctx, copied); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	// this reconcile act as a never ending loop to check if Domain config is Valid
-	log.Info("requeue check of Domain", "after", requeueAfter)
-	return ctrl.Result{RequeueAfter: requeueAfter}, nil
+	return ctrl.Result{}, nil
 }
 
 func (r *DomainReconciler) reconcileHttpsCert(domain corev1alpha1.Domain) error {
@@ -177,7 +143,14 @@ func (r *DomainReconciler) reconcileHttpsCert(domain corev1alpha1.Domain) error 
 
 	if isNew {
 		httpsCert = expectedHttpsCert
+
+		if err := ctrl.SetControllerReference(&domain, &httpsCert, r.Scheme); err != nil {
+			r.EmitWarningEvent(&domain, err, "unable to set domain as owner for HttpsCert when create")
+			return err
+		}
+
 		if err := r.Create(r.ctx, &httpsCert); err != nil {
+			r.EmitWarningEvent(&domain, err, "fail to create HttpCert for domain")
 			return err
 		}
 	} else {
@@ -230,49 +203,6 @@ func (r *DomainReconciler) reconcileIPForUserSubDomainCNAME(cname string) error 
 
 	// otherwise create
 	return r.dnsMgr.CreateDNSRecord(corev1alpha1.DNSTypeA, cname, targetIP)
-}
-
-func isWildcardDomain(domain string) bool {
-	return strings.HasPrefix(domain, "*")
-}
-
-// decide time of next re-check
-func decideRequeueAfter(domain v1alpha1.Domain, isReady bool) time.Duration {
-	if isReady {
-		return 60 * time.Second
-	} else {
-		return 5 * time.Second
-	}
-
-	// wasReady := domain.Status.CNAMEReady
-	// if wasReady {
-	// 	// still ok
-	// 	if isReady {
-	// 		return 1 * time.Hour
-	// 	}
-
-	// 	// ok -> not ok, quick check again
-	// 	return 10 * time.Second
-	// } else {
-	// 	// not ok -> ok, quick check again
-	// 	if isReady {
-	// 		return 10 * time.Second
-	// 	}
-
-	// 	// still not ok
-	// 	checkCount := domain.Status.CheckCountSinceCNAMEReadyUpdated
-	// 	if checkCount <= 10 {
-	// 		return 10 * time.Second
-	// 	} else if checkCount <= 20 {
-	// 		return 20 * time.Second
-	// 	} else if checkCount <= 30 {
-	// 		return 30 * time.Second
-	// 	} else if checkCount <= 60 {
-	// 		return 1 * time.Minute
-	// 	} else {
-	// 		return 1 * time.Hour
-	// 	}
-	// }
 }
 
 func (r *DomainReconciler) SetupWithManager(mgr ctrl.Manager) error {

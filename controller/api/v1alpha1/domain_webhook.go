@@ -55,8 +55,8 @@ func (r *Domain) Default() {
 
 	domain := r.Spec.Domain
 
-	if !isValidNoneWildcardDomain(domain) &&
-		!isValidWildcardDomain(domain) {
+	if !IsValidNoneWildcardDomain(domain) &&
+		!IsValidWildcardDomain(domain) {
 		return
 	}
 
@@ -95,7 +95,7 @@ func (r *Domain) Default() {
 // todo special case like: stackoverflow.co.uk is not handled yet
 func IsRootDomain(domain string) bool {
 	parts := strings.Split(domain, ".")
-	if isValidNoneWildcardDomain(domain) && len(parts) == 2 {
+	if IsValidNoneWildcardDomain(domain) && len(parts) == 2 {
 		return true
 	}
 
@@ -262,10 +262,10 @@ func isNoSuchHostDNSError(err error) bool {
 }
 
 func getDirectCNAMEOfDomain(domain string) (string, error) {
-	cname, _ := net.LookupCNAME(domain)
-	if cname != "" {
-		return cleanTailingDotInDomainIfExist(cname), nil
-	}
+	// cname, _ := net.LookupCNAME(domain)
+	// if cname != "" {
+	// 	return cleanTailingDotInDomainIfExist(cname), nil
+	// }
 
 	c := new(dns.Client)
 	m := new(dns.Msg)

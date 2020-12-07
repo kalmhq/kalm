@@ -79,7 +79,7 @@ func isValidURL(s string) bool {
 
 var domainReg = regexp.MustCompile(`^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$`)
 
-func isValidNoneWildcardDomain(s string) bool {
+func IsValidNoneWildcardDomain(s string) bool {
 	return domainReg.MatchString(s)
 }
 
@@ -88,7 +88,7 @@ func isValidNoneWildcardDomain(s string) bool {
 // false: *.com
 // false: a*.example.com
 // false: a*b.example.com
-func isValidWildcardDomain(s string) bool {
+func IsValidWildcardDomain(s string) bool {
 	if s == "*" {
 		return true
 	}
@@ -101,11 +101,11 @@ func isValidWildcardDomain(s string) bool {
 	first := parts[0]
 	rest := strings.Join(parts[1:], ".")
 
-	return first == "*" && isValidNoneWildcardDomain(rest)
+	return first == "*" && IsValidNoneWildcardDomain(rest)
 }
 
 func isValidDomain(s string) bool {
-	if isValidNoneWildcardDomain(s) || isValidWildcardDomain(s) {
+	if IsValidNoneWildcardDomain(s) || IsValidWildcardDomain(s) {
 		return true
 	}
 
