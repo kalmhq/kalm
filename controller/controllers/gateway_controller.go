@@ -48,8 +48,7 @@ var (
 
 type GatewayReconcilerTask struct {
 	*GatewayReconciler
-	ctx   context.Context
-	certs []*corev1alpha1.HttpsCert
+	ctx context.Context
 }
 
 func (r *GatewayReconcilerTask) ReconcileNamespace() error {

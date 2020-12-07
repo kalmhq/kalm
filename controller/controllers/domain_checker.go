@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-logr/logr"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
-	"k8s.io/klog"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -28,6 +28,8 @@ type DomainChecker struct {
 	failCountMap               map[string]int // for failed
 	verifiedTurnFailedCountMap map[string]int // for verified turn into failed
 	verifiedCountMap           map[string]int // for verified
+
+	log logr.Logger
 }
 
 func NewDomainChecker(mgr manager.Manager) (*DomainChecker, error) {
@@ -51,6 +53,8 @@ func NewDomainChecker(mgr manager.Manager) (*DomainChecker, error) {
 
 	client := mgr.GetClient()
 
+	log := ctrl.Log.WithName("DomainChecker")
+
 	return &DomainChecker{
 		workqueue:                  queue,
 		client:                     client,
@@ -58,6 +62,7 @@ func NewDomainChecker(mgr manager.Manager) (*DomainChecker, error) {
 		failCountMap:               make(map[string]int),
 		verifiedTurnFailedCountMap: make(map[string]int),
 		verifiedCountMap:           make(map[string]int),
+		log:                        log,
 	}, nil
 }
 
@@ -101,7 +106,7 @@ func (c *DomainChecker) processNextWorkItem() bool {
 		}
 
 		c.workqueue.Forget(obj)
-		klog.Infof("Successfully synced '%s'", key)
+		c.log.Info("Processed", "key", key)
 		return nil
 	}(obj)
 
@@ -140,43 +145,13 @@ func (c *DomainChecker) syncHandler(key string) (ctrl.Result, error) {
 
 	requeueAfter := c.decideRequeueAfter(domain, isConfiguredAsExpected)
 
-	copied := domain.DeepCopy()
-
-	if isConfiguredAsExpected {
-		delete(c.verifiedTurnFailedCountMap, domain.Spec.Domain)
-		delete(c.failCountMap, domain.Spec.Domain)
-
-		copied.Status.IsDNSTargetConfigured = true
-
-		cnt := c.verifiedCountMap[domain.Spec.Domain]
-		c.verifiedCountMap[domain.Spec.Domain] = min(cnt+1, MaxCount)
-	} else {
-		delete(c.verifiedCountMap, domain.Spec.Domain)
-
-		// for ready change to not-ready, only set to failed for 10 times
-		wasVerified := copied.Status.IsDNSTargetConfigured
-		if wasVerified {
-			cnt := c.verifiedTurnFailedCountMap[domain.Spec.Domain]
-
-			if cnt > VerifiedTurnFailedCntThreadhold {
-				copied.Status.IsDNSTargetConfigured = false
-
-				delete(c.verifiedTurnFailedCountMap, domain.Spec.Domain)
-			} else {
-				c.verifiedTurnFailedCountMap[domain.Spec.Domain] += cnt
-			}
-		} else {
-			cnt := c.failCountMap[domain.Spec.Domain]
-			c.failCountMap[domain.Spec.Domain] = min(cnt+1, MaxCount)
-		}
-	}
-
+	copied := c.decideStatus(domain, isConfiguredAsExpected)
 	if err := c.client.Status().Update(c.ctx, copied); err != nil {
 		return ctrl.Result{}, err
 	}
 
 	// this reconcile act as a never ending loop to check if Domain config is Valid
-	klog.Info("requeue check of Domain", "requeueAfter", requeueAfter)
+	c.log.Info("requeue check of Domain", "requeueAfter", requeueAfter)
 	return ctrl.Result{RequeueAfter: requeueAfter}, nil
 }
 
@@ -219,4 +194,40 @@ func (c *DomainChecker) decideRequeueAfter(domain v1alpha1.Domain, isReady bool)
 	}
 
 	return 1 * time.Hour
+}
+
+func (c *DomainChecker) decideStatus(domain v1alpha1.Domain, isReady bool) *v1alpha1.Domain {
+
+	copied := domain.DeepCopy()
+
+	if isReady {
+		delete(c.verifiedTurnFailedCountMap, domain.Spec.Domain)
+		delete(c.failCountMap, domain.Spec.Domain)
+
+		copied.Status.IsDNSTargetConfigured = true
+
+		cnt := c.verifiedCountMap[domain.Spec.Domain]
+		c.verifiedCountMap[domain.Spec.Domain] = min(cnt+1, MaxCount)
+	} else {
+		delete(c.verifiedCountMap, domain.Spec.Domain)
+
+		// for ready change to not-ready, only set to failed for 10 times
+		wasVerified := copied.Status.IsDNSTargetConfigured
+		if wasVerified {
+			cnt := c.verifiedTurnFailedCountMap[domain.Spec.Domain]
+
+			if cnt > VerifiedTurnFailedCntThreadhold {
+				copied.Status.IsDNSTargetConfigured = false
+
+				delete(c.verifiedTurnFailedCountMap, domain.Spec.Domain)
+			} else {
+				c.verifiedTurnFailedCountMap[domain.Spec.Domain] += cnt
+			}
+		} else {
+			cnt := c.failCountMap[domain.Spec.Domain]
+			c.failCountMap[domain.Spec.Domain] = min(cnt+1, MaxCount)
+		}
+	}
+
+	return copied
 }
