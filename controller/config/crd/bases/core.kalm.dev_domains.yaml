@@ -20,7 +20,7 @@ spec:
     type: string
   - JSONPath: .status.isDNSTargetConfigured
     name: IsDNSTargetConfigured
-    type: bool
+    type: boolean
   - JSONPath: .metadata.creationTimestamp
     name: Age
     type: date
