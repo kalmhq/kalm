@@ -279,7 +279,8 @@ func getDirectCNAMEOfDomain(domain string) (string, error) {
 	m.RecursionDesired = true
 
 	// explicit use google DNS
-	r, _, err := c.Exchange(m, "8.8.8.8:53")
+	// r, _, err := c.Exchange(m, "8.8.8.8:53")
+	r, _, err := c.Exchange(m, "1.1.1.1:53")
 
 	if err != nil {
 		domainlog.Error(err, "fail when call dnsClient.Exchange")

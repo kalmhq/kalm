@@ -55,9 +55,9 @@ func TestIsDomainConfiguredAsExpectedCNAME(t *testing.T) {
 
 // func TestIsDomainConfiguredAsExpectedCNAME2(t *testing.T) {
 // 	domainSpec := DomainSpec{
-// 		Domain:    "*.w.foobar.xyz",
+// 		Domain:    "t1.foo.xyz",
 // 		DNSType:   DNSTypeCNAME,
-// 		DNSTarget: "e89632a9911c6bb7c6ab1e49875d6acf-cluster-8hfcrsva-cname.asia-northeast3.kalm-dns.com",
+// 		DNSTarget: "982121f3bcc89412f8f79d87d2b9a894-cluster-8hfcrsva-cname.asia-northeast3.kalm-dns.com",
 // 	}
 
 // 	isAsExpected, err := IsDomainConfiguredAsExpected(domainSpec)
