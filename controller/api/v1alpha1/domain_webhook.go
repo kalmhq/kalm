@@ -208,6 +208,8 @@ func IsDomainConfiguredAsExpected(domainSpec DomainSpec) (bool, error) {
 	case DNSTypeCNAME:
 		directCNAME, err := getDirectCNAMEOfDomain(domain)
 		if err != nil {
+			domainlog.Info(fmt.Sprintf("fail when getDirectCNAMEOfDomain(%s)", domain), "err", err)
+
 			if isNoSuchHostDNSError(err) {
 				return false, nil
 			}
