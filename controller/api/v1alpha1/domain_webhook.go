@@ -22,6 +22,8 @@ import (
 	"net"
 	"strings"
 
+	"github.com/miekg/dns"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -260,12 +262,40 @@ func isNoSuchHostDNSError(err error) bool {
 }
 
 func getDirectCNAMEOfDomain(domain string) (string, error) {
-	cname, err := net.LookupCNAME(domain)
+	cname, _ := net.LookupCNAME(domain)
+	if cname != "" {
+		return cleanTailingDotInDomainIfExist(cname), nil
+	}
+
+	c := new(dns.Client)
+	m := new(dns.Msg)
+
+	// Note the trailing dot. miekg/dns is very low-level and expects canonical names.
+	if !strings.HasSuffix(domain, ".") {
+		domain = domain + "."
+	}
+
+	m.SetQuestion(domain, dns.TypeCNAME)
+	m.RecursionDesired = true
+
+	// explicit use google DNS
+	r, _, err := c.Exchange(m, "8.8.8.8:53")
+
 	if err != nil {
+		domainlog.Error(err, "fail when call dnsClient.Exchange")
 		return "", err
 	}
 
-	return cleanTailingDotInDomainIfExist(cname), nil
+	if r == nil {
+		domainlog.Info("dns.Msg returned by calling dnsClient.Exchange is nil")
+		return "", nil
+	} else if len(r.Answer) <= 0 {
+		domainlog.Info("no Answer exist in dns.Msg returned by calling dnsClient.Exchange")
+		return "", nil
+	}
+
+	target := r.Answer[0].(*dns.CNAME).Target
+	return cleanTailingDotInDomainIfExist(target), nil
 }
 
 func cleanTailingDotInDomainIfExist(domain string) string {
