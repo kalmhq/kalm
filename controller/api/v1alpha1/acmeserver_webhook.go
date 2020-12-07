@@ -64,7 +64,7 @@ func (r *ACMEServer) validate() error {
 		})
 	}
 
-	if !isValidDomain(r.Spec.ACMEDomain) {
+	if !isValidNoneWildcardDomain(r.Spec.ACMEDomain) {
 		rst = append(rst, KalmValidateError{
 			Err:  "is not valid domain:" + r.Spec.ACMEDomain,
 			Path: "spec.acmeDomain",
@@ -78,7 +78,7 @@ func (r *ACMEServer) validate() error {
 		})
 	}
 
-	if !isValidDomain(r.Spec.NSDomain) {
+	if !isValidNoneWildcardDomain(r.Spec.NSDomain) {
 		rst = append(rst, KalmValidateError{
 			Err:  "is not valid domain:" + r.Spec.NSDomain,
 			Path: "spec.nsDomain",

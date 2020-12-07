@@ -202,7 +202,7 @@ metadata: foobar`
 //	assert.Equal(t, "spec.components.spec.components.image: Required value", errs[0].Error())
 //}
 
-func TestIsValidDomain(t *testing.T) {
+func TestIsValidNoneWildcardDomain(t *testing.T) {
 	type domainTest struct {
 		domain string
 		result bool
@@ -215,6 +215,7 @@ func TestIsValidDomain(t *testing.T) {
 		{"x.y.com", true},
 		{"10.0.0.1.xip.io", true},
 
+		{"*.x.com", false},
 		{".x.y.com", false},
 		{"*", false},
 		{"a*.com", false},
@@ -223,7 +224,61 @@ func TestIsValidDomain(t *testing.T) {
 	}
 
 	for _, domainTest := range domainTests {
-		assert.Equal(t, domainTest.result, isValidDomain(domainTest.domain), "fail test on "+domainTest.domain)
+		assert.Equal(t, domainTest.result, isValidNoneWildcardDomain(domainTest.domain), "fail test on "+domainTest.domain)
+	}
+}
+
+func TestIsValidWildcardDomain(t *testing.T) {
+	type domainTest struct {
+		domain string
+		result bool
+	}
+
+	domainTests := []domainTest{
+		{"google.com", false},
+		{"map.google.com", false},
+		{"stackoverflow.co.uk", false},
+		{"x.y.com", false},
+		{"10.0.0.1.xip.io", false},
+
+		{"*.com", false},
+		{"*.x.com", true},
+		{".x.y.com", false},
+		{"*", true},
+		{"a*.com", false},
+		{"a*b.com", false},
+		{"*a.com", false},
+	}
+
+	for _, domainTest := range domainTests {
+		assert.Equal(t, domainTest.result, isValidWildcardDomain(domainTest.domain), "fail test on "+domainTest.domain)
+	}
+}
+
+func TestIsRootDomain(t *testing.T) {
+	type domainTest struct {
+		domain string
+		result bool
+	}
+
+	domainTests := []domainTest{
+		{"google.com", true},
+		{"map.google.com", false},
+		// {"stackoverflow.co.uk", true}, //todo
+		{"x.y.com", false},
+		{"10.0.0.1.xip.io", false},
+
+		{"*.com", false},
+		{"*.x.com", false},
+		{".x.y.com", false},
+		{"*", false},
+		{"a*.com", false},
+		{"a*b.com", false},
+		{"*a.com", false},
+	}
+
+	for _, domainTest := range domainTests {
+		assert.Equal(t, domainTest.result, IsRootDomain(domainTest.domain), "fail test on "+domainTest.domain)
 	}
 }
 

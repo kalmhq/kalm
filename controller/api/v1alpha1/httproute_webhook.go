@@ -233,7 +233,7 @@ func isUnderWildcardDomain(wildcardDomain, domain string) bool {
 		return false
 	}
 
-	if !isValidDomain(domain) {
+	if !isValidNoneWildcardDomain(domain) {
 		return false
 	}
 
@@ -277,7 +277,7 @@ func isValidDestinationHost(host string) bool {
 func isValidRouteHost(host string) bool {
 	return isValidK8sHost(host) ||
 		isValidIP(host) ||
-		isValidDomain(host) ||
+		isValidNoneWildcardDomain(host) ||
 		isValidWildcardDomain(host)
 }
 
