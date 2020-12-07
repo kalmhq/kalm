@@ -51,11 +51,19 @@ func (r *Domain) Default() {
 		return
 	}
 
-	if !isValidDomain(r.Spec.Domain) {
+	domain := r.Spec.Domain
+
+	if !isValidNoneWildcardDomain(domain) &&
+		!isValidWildcardDomain(domain) {
 		return
 	}
 
-	if IsRootDomain(r.Spec.Domain) {
+	// special wildcard domain: * is not allowed here
+	if domain == "*" {
+		return
+	}
+
+	if IsRootDomain(domain) {
 		r.Spec.DNSType = DNSTypeA
 	} else {
 		r.Spec.DNSType = DNSTypeCNAME
@@ -69,7 +77,7 @@ func (r *Domain) Default() {
 			return
 		}
 
-		md5Domain := md5.Sum([]byte(r.Spec.Domain))
+		md5Domain := md5.Sum([]byte(domain))
 		//<md5Domain>-<tenantName>
 		cnamePrefix := fmt.Sprintf("%x-%s", md5Domain, tenantName)
 
@@ -82,9 +90,10 @@ func (r *Domain) Default() {
 	}
 }
 
+// todo special case like: stackoverflow.co.uk is not handled yet
 func IsRootDomain(domain string) bool {
 	parts := strings.Split(domain, ".")
-	if isValidDomain(domain) && len(parts) == 2 {
+	if isValidNoneWildcardDomain(domain) && len(parts) == 2 {
 		return true
 	}
 
@@ -199,6 +208,8 @@ func IsDomainConfiguredAsExpected(domainSpec DomainSpec) (bool, error) {
 	case DNSTypeCNAME:
 		directCNAME, err := getDirectCNAMEOfDomain(domain)
 		if err != nil {
+			domainlog.Info(fmt.Sprintf("fail when getDirectCNAMEOfDomain(%s)", domain), "err", err)
+
 			if isNoSuchHostDNSError(err) {
 				return false, nil
 			}

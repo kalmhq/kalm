@@ -2,16 +2,17 @@ package v1alpha1
 
 import (
 	"fmt"
+	"net"
+	"net/url"
+	"regexp"
+	"strings"
+
 	"github.com/go-openapi/validate"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apiextensions-apiserver/pkg/apiserver/validation"
 	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
 	v1validation "k8s.io/apimachinery/pkg/apis/meta/v1/validation"
-	"net"
-	"net/url"
-	"regexp"
-	"strings"
 
 	//"k8s.io/utils/field"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -78,7 +79,7 @@ func isValidURL(s string) bool {
 
 var domainReg = regexp.MustCompile(`^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$`)
 
-func isValidDomain(s string) bool {
+func isValidNoneWildcardDomain(s string) bool {
 	return domainReg.MatchString(s)
 }
 
@@ -100,15 +101,19 @@ func isValidWildcardDomain(s string) bool {
 	first := parts[0]
 	rest := strings.Join(parts[1:], ".")
 
-	return first == "*" && isValidDomain(rest)
+	return first == "*" && isValidNoneWildcardDomain(rest)
 }
 
-func isValidDomainInCert(s string) bool {
-	if isValidDomain(s) || isValidWildcardDomain(s) {
+func isValidDomain(s string) bool {
+	if isValidNoneWildcardDomain(s) || isValidWildcardDomain(s) {
 		return true
 	}
 
 	return false
+}
+
+func isValidDomainInCert(s string) bool {
+	return isValidDomain(s)
 }
 
 // abc-123-xyz
