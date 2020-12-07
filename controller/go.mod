@@ -3,20 +3,20 @@ module github.com/kalmhq/kalm/controller
 go 1.15
 
 require (
+	cloud.google.com/go v0.54.0 // indirect
 	github.com/cloudflare/cloudflare-go v0.13.5
 	github.com/coreos/prometheus-operator v0.29.0
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/dop251/goja v0.0.0-20200721192441-a695b0cdd498
 	github.com/elastic/cloud-on-k8s v0.0.0-20200721161711-b12a39f14ab1
-	github.com/go-acme/lego/v3 v3.9.0
-	github.com/go-logr/logr v0.2.0
+	github.com/go-logr/logr v0.2.1-0.20200730175230-ee2de8da5be6
+	github.com/go-logr/zapr v0.2.0 // indirect
 	github.com/go-openapi/runtime v0.19.20 // indirect
 	github.com/go-openapi/spec v0.19.9 // indirect
 	github.com/go-openapi/validate v0.19.10
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/gogo/protobuf v1.3.1
-	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/google/go-cmp v0.5.1 // indirect
 	github.com/heroku/docker-registry-client v0.0.0-20190909225348-afc9e1acc3d5
 	github.com/imdario/mergo v0.3.10 // indirect
@@ -35,9 +35,6 @@ require (
 	go.mongodb.org/mongo-driver v1.3.5 // indirect
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/mod v0.3.0 // indirect
-	golang.org/x/net v0.0.0-20201031054903-ff519b6c9102 // indirect
-	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
-	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e // indirect
 	golang.org/x/tools v0.0.0-20200616133436-c1934b75d054 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.1.0 // indirect
 	google.golang.org/appengine v1.6.6 // indirect

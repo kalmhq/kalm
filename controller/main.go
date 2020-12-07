@@ -295,9 +295,15 @@ func main() {
 	//+kubebuilder:scaffold:builder
 
 	//todo start domain check loop
-	go func() {
-
-	}()
+	if domainChecker, err := controllers.NewDomainChecker(mgr); err != nil {
+		setupLog.Error(err, "fail NewDomainChecker")
+		os.Exit(1)
+	} else {
+		//todo deal with exit
+		go func() {
+			domainChecker.Run()
+		}()
+	}
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {

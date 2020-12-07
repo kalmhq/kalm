@@ -164,6 +164,11 @@ func (r *GatewayReconcilerTask) HttpGateway() error {
 
 func (r *GatewayReconcilerTask) updateGateway(isCreate bool, gw *v1beta1.Gateway) error {
 	if isCreate {
+		if len(gw.Spec.Servers) == 0 {
+			r.Log.Info("no spec.servers, httpsGateway will not be created")
+			return nil
+		}
+
 		if err := r.Create(r.ctx, gw); err != nil {
 			r.Log.Error(err, fmt.Sprintf("Create gateway %s error.", gw.Name))
 			return err

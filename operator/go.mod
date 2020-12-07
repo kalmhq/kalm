@@ -3,7 +3,7 @@ module github.com/kalmhq/kalm/operator
 go 1.15
 
 require (
-	github.com/go-logr/logr v0.1.0
+	github.com/go-logr/logr v0.2.1-0.20200730175230-ee2de8da5be6
 	github.com/jetstack/cert-manager v0.15.2
 	github.com/kalmhq/kalm/controller v0.0.0-20200722131031-2336d7eaf4c9
 	github.com/prometheus/prometheus v1.8.2
