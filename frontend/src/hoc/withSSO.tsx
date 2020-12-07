@@ -1,5 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 
@@ -18,15 +18,13 @@ const mapStateToProps = (state: RootState) => {
 export interface WithSSOProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
 export const withSSO = (WrappedComponent: React.ComponentType<any>) => {
-  const HOC: React.ComponentType<WithSSOProps> = class extends React.Component<WithSSOProps> {
-    render() {
-      return <WrappedComponent {...this.props} />;
-    }
+  const HOC: React.FC<WithSSOProps> = (props) => {
+    return <WrappedComponent {...props} {...useSelector(mapStateToProps)} />;
   };
 
   HOC.displayName = `WithSSO(${getDisplayName(WrappedComponent)})`;
 
-  return connect(mapStateToProps)(HOC);
+  return HOC;
 };
 
 function getDisplayName(WrappedComponent: React.ComponentType<any>) {

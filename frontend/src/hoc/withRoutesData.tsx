@@ -26,10 +26,8 @@ const mapStateToProps = (
 export interface WithRoutesDataProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
 export const withRoutesData = (WrappedComponent: React.ComponentType<any>) => {
-  const HOC: React.ComponentType<WithRoutesDataProps> = class extends React.Component<WithRoutesDataProps> {
-    render() {
-      return <WrappedComponent {...this.props} />;
-    }
+  const HOC: React.FC<WithRoutesDataProps> = (props) => {
+    return <WrappedComponent {...props} />;
   };
 
   HOC.displayName = `WithRoutesData(${getDisplayName(WrappedComponent)})`;

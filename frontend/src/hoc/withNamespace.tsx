@@ -1,14 +1,14 @@
-import React from "react";
-import { connect } from "react-redux";
+import { Box } from "@material-ui/core";
+import { setCurrentNamespaceAction } from "actions/namespaces";
+import { LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
+import { BasePage } from "pages/BasePage";
+import React, { useEffect } from "react";
+import { connect, useDispatch } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Loading } from "widgets/Loading";
-import { setCurrentNamespaceAction } from "actions/namespaces";
-import { Box } from "@material-ui/core";
-import { BasePage } from "pages/BasePage";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
-import { LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
 
 const mapStateToProps = (
   state: RootState,
@@ -40,53 +40,48 @@ export interface WithNamespaceProps
     RouteComponentProps<{}> {}
 
 export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
-  const HOC: React.ComponentType<WithNamespaceProps> = class extends React.Component<WithNamespaceProps> {
-    componentDidMount() {
-      this.props.dispatch(setCurrentNamespaceAction(this.props.activeNamespaceName, false));
+  const HOC: React.FC<WithNamespaceProps> = (props) => {
+    const dispatch = useDispatch();
+
+    const { isNamespaceFirstLoaded, applications, applicationNameParam, activeNamespaceName } = props;
+
+    const updateCurrent = () => {
+      dispatch(setCurrentNamespaceAction(activeNamespaceName, false));
+    };
+    useEffect(updateCurrent, [activeNamespaceName]);
+
+    if (!isNamespaceFirstLoaded) {
+      return (
+        <Box flex="1" width={LEFT_SECTION_OPEN_WIDTH}>
+          <Loading />
+        </Box>
+      );
     }
 
-    componentDidUpdate(prevProps: any) {
-      if (this.props.activeNamespaceName !== prevProps.activeNamespaceName) {
-        this.props.dispatch(setCurrentNamespaceAction(this.props.activeNamespaceName, false));
-      }
-    }
+    if (applications.length > 0 && applicationNameParam) {
+      let foundApp = false;
+      applications.forEach((app) => {
+        if (app.name === applicationNameParam) {
+          foundApp = true;
+        }
+      });
 
-    render() {
-      const { isNamespaceFirstLoaded, applications, applicationNameParam } = this.props;
-
-      if (!isNamespaceFirstLoaded) {
+      if (!foundApp) {
         return (
-          <Box flex="1" width={LEFT_SECTION_OPEN_WIDTH}>
-            <Loading />
-          </Box>
+          <BasePage>
+            <Box p={2}>
+              <ResourceNotFound
+                text="App not found"
+                redirect={`/applications`}
+                redirectText="Go back to Apps List"
+              ></ResourceNotFound>
+            </Box>
+          </BasePage>
         );
       }
-
-      if (applications.length > 0 && applicationNameParam) {
-        let foundApp = false;
-        applications.forEach((app) => {
-          if (app.name === applicationNameParam) {
-            foundApp = true;
-          }
-        });
-
-        if (!foundApp) {
-          return (
-            <BasePage>
-              <Box p={2}>
-                <ResourceNotFound
-                  text="App not found"
-                  redirect={`/applications`}
-                  redirectText="Go back to Apps List"
-                ></ResourceNotFound>
-              </Box>
-            </BasePage>
-          );
-        }
-      }
-
-      return <WrappedComponent {...this.props} />;
     }
+
+    return <WrappedComponent {...props} />;
   };
 
   HOC.displayName = `WithNamespace(${getDisplayName(WrappedComponent)})`;
