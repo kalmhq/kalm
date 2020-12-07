@@ -28,8 +28,8 @@ type DomainChecker struct {
 	failCountMap               map[string]int // for failed
 	verifiedTurnFailedCountMap map[string]int // for verified turn into failed
 	verifiedCountMap           map[string]int // for verified
-
-	log logr.Logger
+	informerHasSynced          func() bool
+	log                        logr.Logger
 }
 
 func NewDomainChecker(mgr manager.Manager) (*DomainChecker, error) {
@@ -63,6 +63,7 @@ func NewDomainChecker(mgr manager.Manager) (*DomainChecker, error) {
 		verifiedTurnFailedCountMap: make(map[string]int),
 		verifiedCountMap:           make(map[string]int),
 		log:                        log,
+		informerHasSynced:          domainInformer.HasSynced,
 	}, nil
 }
 
@@ -74,15 +75,22 @@ func (dc *DomainChecker) enqueue(obj interface{}) {
 	}
 }
 
-func (dc *DomainChecker) Run() {
+func (dc *DomainChecker) Run(stopCh <-chan struct{}) error {
+	// Wait for the caches to be synced before starting workers
+	dc.log.Info("Waiting for informer caches to sync")
+	if ok := cache.WaitForCacheSync(stopCh, dc.informerHasSynced); !ok {
+		return fmt.Errorf("failed to wait for caches to sync")
+	}
+
 	for dc.processNextWorkItem() {
 	}
+
+	return nil
 }
 
 func (c *DomainChecker) processNextWorkItem() bool {
 	obj, shutdown := c.workqueue.Get()
-
-	fmt.Println("processNextWorkItem", obj, shutdown)
+	c.log.Info("processNextWorkItem", obj, shutdown)
 
 	if shutdown {
 		return false
@@ -101,8 +109,11 @@ func (c *DomainChecker) processNextWorkItem() bool {
 		if rst, err := c.syncHandler(key); err != nil {
 			c.workqueue.AddRateLimited(key)
 			return fmt.Errorf("error syncing '%s': %s, requeuing", key, err.Error())
-		} else {
+		} else if rst.RequeueAfter > 0 {
 			c.workqueue.AddAfter(key, rst.RequeueAfter)
+		} else if rst.Requeue {
+			// immediately retry
+			c.workqueue.AddRateLimited(key)
 		}
 
 		c.workqueue.Forget(obj)
@@ -111,6 +122,7 @@ func (c *DomainChecker) processNextWorkItem() bool {
 	}(obj)
 
 	if err != nil {
+		c.log.Info("fail when handle obj, ignored", "err", err, "obj", obj)
 		return true
 	}
 
@@ -126,7 +138,7 @@ func (c *DomainChecker) syncHandler(key string) (ctrl.Result, error) {
 	domain := v1alpha1.Domain{}
 	if err := c.client.Get(c.ctx, client.ObjectKey{Name: name}, &domain); err != nil {
 		if errors.IsNotFound(err) {
-			//todo clean up
+			//todo clean up DNSRecord
 			return ctrl.Result{}, nil
 		}
 
