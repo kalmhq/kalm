@@ -180,10 +180,8 @@ func (c *DomainChecker) decideRequeueAfter(domain v1alpha1.Domain, isReady bool)
 		return 60 * time.Second
 	}
 
-	failCnt, exist := c.failCountMap[domain.Spec.Domain]
-	if !exist {
-		return 5 * time.Second
-	}
+	failCnt := c.failCountMap[domain.Spec.Domain]
+	c.log.Info("failCount", "domain", domain.Spec.Domain, "cnt", failCnt)
 
 	if failCnt <= 25 {
 		return 5 * time.Second // last for ~2min
@@ -201,29 +199,35 @@ func (c *DomainChecker) decideStatus(domain v1alpha1.Domain, isReady bool) *v1al
 	copied := domain.DeepCopy()
 
 	if isReady {
+		//reset fail count
 		delete(c.verifiedTurnFailedCountMap, domain.Spec.Domain)
 		delete(c.failCountMap, domain.Spec.Domain)
 
-		copied.Status.IsDNSTargetConfigured = true
-
+		// inc verified count
 		cnt := c.verifiedCountMap[domain.Spec.Domain]
 		c.verifiedCountMap[domain.Spec.Domain] = min(cnt+1, MaxCount)
+
+		copied.Status.IsDNSTargetConfigured = true
 	} else {
+		// reset verifiedCnt
 		delete(c.verifiedCountMap, domain.Spec.Domain)
 
-		// for ready change to not-ready, only set to failed for 10 times
+		// for ready change to not-ready, need failCount > threshold
 		wasVerified := copied.Status.IsDNSTargetConfigured
 		if wasVerified {
 			cnt := c.verifiedTurnFailedCountMap[domain.Spec.Domain]
 
-			if cnt > VerifiedTurnFailedCntThreadhold {
+			if cnt <= VerifiedTurnFailedCntThreadhold {
+				// won't set to fail, simply inc failCount
+				c.verifiedTurnFailedCountMap[domain.Spec.Domain] = cnt + 1
+			} else {
+				c.log.Info("verified domain change to un-verified", "domain", domain.Spec.Domain, "failCnt", cnt)
 				copied.Status.IsDNSTargetConfigured = false
 
 				delete(c.verifiedTurnFailedCountMap, domain.Spec.Domain)
-			} else {
-				c.verifiedTurnFailedCountMap[domain.Spec.Domain] += cnt
 			}
 		} else {
+			// inc fail count
 			cnt := c.failCountMap[domain.Spec.Domain]
 			c.failCountMap[domain.Spec.Domain] = min(cnt+1, MaxCount)
 		}
