@@ -28,24 +28,21 @@ func (h *ApiHandler) handleListDomains(c echo.Context) error {
 
 	afterFilter := h.filterAuthorizedDomains(c, "view", domainList.Items)
 
-	baseAppDomain := h.BaseAppDomain
-
-	// TODO: fix this
-	if baseAppDomain == "" {
-		baseAppDomain = "asia-northeast3.kapp.live"
-	}
-
 	domains := resources.WrapDomainListAsResp(afterFilter)
-	domains = append([]resources.Domain{
-		{
-			Name:       "default",
-			Domain:     fmt.Sprintf("*%s.%s", currentUser.Tenant, baseAppDomain),
-			Status:     "ready",
-			RecordType: "CNAME",
-			Target:     "",
-			IsBuiltIn:  true,
-		},
-	}, domains...)
+
+	baseAppDomain := h.BaseAppDomain
+	if baseAppDomain != "" {
+		domains = append([]resources.Domain{
+			{
+				Name:       "default",
+				Domain:     fmt.Sprintf("*%s.%s", currentUser.Tenant, baseAppDomain),
+				Status:     "ready",
+				RecordType: "CNAME",
+				Target:     "",
+				IsBuiltIn:  true,
+			},
+		}, domains...)
+	}
 
 	return c.JSON(http.StatusOK, domains)
 }
