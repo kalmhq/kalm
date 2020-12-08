@@ -224,7 +224,7 @@ func TestIsValidNoneWildcardDomain(t *testing.T) {
 	}
 
 	for _, domainTest := range domainTests {
-		assert.Equal(t, domainTest.result, isValidNoneWildcardDomain(domainTest.domain), "fail test on "+domainTest.domain)
+		assert.Equal(t, domainTest.result, IsValidNoneWildcardDomain(domainTest.domain), "fail test on "+domainTest.domain)
 	}
 }
 
@@ -251,7 +251,7 @@ func TestIsValidWildcardDomain(t *testing.T) {
 	}
 
 	for _, domainTest := range domainTests {
-		assert.Equal(t, domainTest.result, isValidWildcardDomain(domainTest.domain), "fail test on "+domainTest.domain)
+		assert.Equal(t, domainTest.result, IsValidWildcardDomain(domainTest.domain), "fail test on "+domainTest.domain)
 	}
 }
 

@@ -45,7 +45,7 @@ type DomainStatus struct {
 // +kubebuilder:printcolumn:name="Tenant",type="string",JSONPath=".metadata.labels.tenant"
 // +kubebuilder:printcolumn:name="Domain",type="string",JSONPath=".spec.domain"
 // +kubebuilder:printcolumn:name="DNSType",type="string",JSONPath=".spec.dnsType"
-// +kubebuilder:printcolumn:name="IsDNSTargetConfigured",type="string",JSONPath=".status.isDNSTargetConfigured"
+// +kubebuilder:printcolumn:name="IsDNSTargetConfigured",type="boolean",JSONPath=".status.isDNSTargetConfigured"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // Domain is the Schema for the domains API

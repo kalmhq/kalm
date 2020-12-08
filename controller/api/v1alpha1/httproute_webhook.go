@@ -218,7 +218,7 @@ func isVerifiedUserDomain(domain, tenantName string) (bool, error) {
 			return true, nil
 		}
 
-		if isValidWildcardDomain(verifiedDomain) {
+		if IsValidWildcardDomain(verifiedDomain) {
 			if isUnderWildcardDomain(verifiedDomain, domain) {
 				return true, nil
 			}
@@ -229,11 +229,11 @@ func isVerifiedUserDomain(domain, tenantName string) (bool, error) {
 }
 
 func isUnderWildcardDomain(wildcardDomain, domain string) bool {
-	if !isValidWildcardDomain(wildcardDomain) {
+	if !IsValidWildcardDomain(wildcardDomain) {
 		return false
 	}
 
-	if !isValidNoneWildcardDomain(domain) {
+	if !IsValidNoneWildcardDomain(domain) {
 		return false
 	}
 
@@ -277,8 +277,8 @@ func isValidDestinationHost(host string) bool {
 func isValidRouteHost(host string) bool {
 	return isValidK8sHost(host) ||
 		isValidIP(host) ||
-		isValidNoneWildcardDomain(host) ||
-		isValidWildcardDomain(host)
+		IsValidNoneWildcardDomain(host) ||
+		IsValidWildcardDomain(host)
 }
 
 func stripIfHasPort(host string) string {
