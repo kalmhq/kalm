@@ -17,10 +17,8 @@ const mapStateToProps = (state: RootState) => {
 export interface WithRoleBindingProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
 export const withRoleBindings = (WrappedComponent: React.ComponentType<any>) => {
-  const HOC: React.ComponentType<WithRoleBindingProps> = class extends React.Component<WithRoleBindingProps> {
-    render() {
-      return <WrappedComponent {...this.props} />;
-    }
+  const HOC: React.FC<WithRoleBindingProps> = (props) => {
+    return <WrappedComponent {...props} />;
   };
 
   HOC.displayName = `WithRoleBindings(${getDisplayName(WrappedComponent)})`;

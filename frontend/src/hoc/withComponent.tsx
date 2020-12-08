@@ -8,10 +8,10 @@ import { RouteComponentProps } from "react-router-dom";
 import { RootState } from "reducers";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "types";
+import { ApplicationComponentDetails } from "types/application";
 import { Namespaces } from "widgets/Namespaces";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
 import { withNamespace, WithNamespaceProps } from "./withNamespace";
-import { ApplicationComponentDetails } from "types/application";
 
 const mapStateToProps = (
   state: RootState,
@@ -33,29 +33,27 @@ export interface WithComponentProp extends ReturnType<typeof mapStateToProps>, W
 }
 
 export const withComponent = (WrappedComponent: React.ComponentType<any>) => {
-  const withComponent: React.ComponentType<WithComponentProp> = class extends React.Component<WithComponentProp> {
-    render() {
-      if (!this.props.component) {
-        return (
-          <BasePage secondHeaderLeft={<Namespaces />} leftDrawer={<ApplicationSidebar />}>
-            <Box p={2}>
-              <ResourceNotFound
-                text="Component not found"
-                redirect={`/applications/${this.props.applicationName}/components`}
-                redirectText="Go back to Components List"
-              />
-            </Box>
-          </BasePage>
-        );
-      }
-
-      return <WrappedComponent {...this.props} />;
+  const HOC: React.FC<WithComponentProp> = (props) => {
+    if (!props.component) {
+      return (
+        <BasePage secondHeaderLeft={<Namespaces />} leftDrawer={<ApplicationSidebar />}>
+          <Box p={2}>
+            <ResourceNotFound
+              text="Component not found"
+              redirect={`/applications/${props.applicationName}/components`}
+              redirectText="Go back to Components List"
+            />
+          </Box>
+        </BasePage>
+      );
     }
+
+    return <WrappedComponent {...props} />;
   };
 
-  withComponent.displayName = `withComponent(${getDisplayName(WrappedComponent)})`;
-  hoistNonReactStatics(withComponent, WrappedComponent);
-  return withNamespace(connect(mapStateToProps)(withComponent));
+  HOC.displayName = `withComponent(${getDisplayName(WrappedComponent)})`;
+  hoistNonReactStatics(HOC, WrappedComponent);
+  return withNamespace(connect(mapStateToProps)(HOC));
 };
 
 function getDisplayName(WrappedComponent: React.ComponentType) {

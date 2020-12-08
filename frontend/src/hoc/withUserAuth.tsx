@@ -1,6 +1,6 @@
 import { push } from "connected-react-router";
-import React from "react";
-import { connect } from "react-redux";
+import React, { useEffect } from "react";
+import { connect, useDispatch } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
@@ -16,9 +16,9 @@ const mapStateToProps = (state: RootState) => {
 export interface WithUserAuthProps extends ReturnType<typeof mapStateToProps>, TDispatchProp, RouteComponentProps {}
 
 export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
-  const HOC: React.ComponentType<WithUserAuthProps> = class extends React.PureComponent<WithUserAuthProps> {
-    private canViewPage = () => {
-      const { location, canEditTenant, canViewCluster, canViewTenant, canManageCluster } = this.props;
+  const HOC: React.FC<WithUserAuthProps> = (props) => {
+    const canViewPage = () => {
+      const { location, canEditTenant, canViewCluster, canViewTenant, canManageCluster } = props;
 
       if (location.pathname.includes("/certificates")) {
         return canEditTenant() || canViewCluster();
@@ -42,15 +42,15 @@ export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
       return true;
     };
 
-    componentDidMount() {
-      if (!this.canViewPage()) {
-        this.props.dispatch(push("/"));
+    const dispatch = useDispatch();
+    const didMount = () => {
+      if (!canViewPage()) {
+        dispatch(push("/"));
       }
-    }
+    };
+    useEffect(didMount, []);
 
-    render() {
-      return <WrappedComponent {...this.props} />;
-    }
+    return <WrappedComponent {...props} />;
   };
 
   HOC.displayName = `withUserAuth(${getDisplayName(WrappedComponent)})`;

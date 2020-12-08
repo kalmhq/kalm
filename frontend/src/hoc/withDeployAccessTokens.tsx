@@ -16,12 +16,8 @@ const mapStateToProps = (state: RootState) => {
 export interface WithDeployAccessTokensProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
 export const withDeployAccessTokens = (WrappedComponent: React.ComponentType<any>) => {
-  const HOC: React.ComponentType<WithDeployAccessTokensProps> = class extends React.Component<
-    WithDeployAccessTokensProps
-  > {
-    render() {
-      return <WrappedComponent {...this.props} />;
-    }
+  const HOC: React.FC<WithDeployAccessTokensProps> = (props) => {
+    return <WrappedComponent {...props} />;
   };
 
   HOC.displayName = `WithDeployAccessTokens(${getDisplayName(WrappedComponent)})`;

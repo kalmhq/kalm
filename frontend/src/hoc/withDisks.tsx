@@ -16,10 +16,8 @@ const mapStateToProps = (state: RootState) => {
 export interface WithDisksProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
 export const withDisks = (WrappedComponent: React.ComponentType<any>) => {
-  const HOC: React.ComponentType<WithDisksProps> = class extends React.Component<WithDisksProps> {
-    render() {
-      return <WrappedComponent {...this.props} />;
-    }
+  const HOC: React.FC<WithDisksProps> = (props) => {
+    return <WrappedComponent {...props} />;
   };
 
   HOC.displayName = `WithDisks(${getDisplayName(WrappedComponent)})`;

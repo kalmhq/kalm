@@ -16,10 +16,8 @@ export interface WithComponentsProps extends ReturnType<typeof mapStateToProps> 
 }
 
 export const withComponents = (WrappedComponent: React.ComponentType<any>) => {
-  const withComponents: React.ComponentType<WithComponentsProps> = class extends React.Component<WithComponentsProps> {
-    render() {
-      return <WrappedComponent {...this.props} />;
-    }
+  const withComponents: React.FC<WithComponentsProps> = (props) => {
+    return <WrappedComponent {...props} />;
   };
 
   withComponents.displayName = `withComponent(${getDisplayName(WrappedComponent)})`;
