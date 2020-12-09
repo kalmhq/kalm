@@ -90,8 +90,8 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private renderActions = (disk: Disk) => {
-    const { canEditCluster } = this.props;
-    return canEditCluster() ? (
+    const { canEditTenant } = this.props;
+    return canEditTenant() ? (
       <>
         {this.isInUseAndHasComponent(disk) ? (
           <IconButtonWithTooltip
@@ -168,7 +168,7 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private getKRTableColumns() {
-    const { canEditCluster } = this.props;
+    const { canEditTenant } = this.props;
 
     const columns = [
       { Header: "Volume Name", accessor: "name" },
@@ -178,7 +178,7 @@ export class VolumesRaw extends React.Component<Props, States> {
       { Header: "Size", accessor: "capacity" },
     ];
 
-    if (canEditCluster()) {
+    if (canEditTenant()) {
       columns.push({
         Header: "Actions",
         accessor: "actions",

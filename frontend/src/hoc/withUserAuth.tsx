@@ -29,7 +29,7 @@ export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
       } else if (location.pathname.includes("/cluster/loadbalancer")) {
         return canViewTenant();
       } else if (location.pathname.includes("/cluster/disks")) {
-        return canViewTenant();
+        return true;
       } else if (location.pathname.includes("/cluster/pull-secrets")) {
         return canEditTenant();
       } else if (location.pathname.includes("/sso")) {

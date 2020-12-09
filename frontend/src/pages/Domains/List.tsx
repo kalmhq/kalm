@@ -27,7 +27,7 @@ interface Props extends WithUserAuthProps {}
 
 const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   const dispatch = useDispatch();
-  const { canEditTenant, canViewTenant } = props;
+  const { canEditTenant } = props;
 
   const { isFirstLoaded, isLoading, domains, certificates } = useSelector((state: RootState) => {
     return {
@@ -76,11 +76,11 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   const renderActions = (domain: Domain) => {
     return (
       <>
-        {canViewTenant() && (
+        {
           <IconLinkWithToolTip tooltipTitle="Details" to={`/domains/${domain.name}`}>
             <KalmDetailsIcon />
           </IconLinkWithToolTip>
-        )}
+        }
         {canEditTenant() && (
           <>
             <DeleteButtonWithConfirmPopover
