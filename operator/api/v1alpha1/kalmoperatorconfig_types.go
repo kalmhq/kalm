@@ -34,8 +34,9 @@ type DashboardConfig struct {
 type ControllerConfig struct {
 	Version *string `json:"version,omitempty"`
 	// +optional
-	UseLetsEncryptProductionAPI bool   `json:"useLetsencryptProductionAPI"`
-	ExternalDNSServerIP         string `json:"externalDNSServerIP"`
+	UseLetsEncryptProductionAPI bool `json:"useLetsencryptProductionAPI"`
+	// +optional
+	ExternalDNSServerIP string `json:"externalDNSServerIP"`
 }
 
 // KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
