@@ -300,6 +300,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) (err error) {
 		Name:            KalmRouteCertName,
 		HttpsCertIssuer: v1alpha1.DefaultHTTP01IssuerName,
 		Domains:         []string{body.Domain},
+		Tenant:          v1alpha1.DefaultSystemTenantName,
 	}
 
 	protectedEndpoint := &resources.ProtectedEndpoint{
