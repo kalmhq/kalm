@@ -17,6 +17,15 @@ func ExamplegetDirectCNAMEOfDomain() {
 	}
 }
 
+// func TestGetIPOfDomain(t *testing.T) {
+// 	domain := "kalm.dev"
+
+// 	for i := 0; i < 10; i++ {
+// 		ips, err := getIPsOfDomain(domain)
+// 		fmt.Println(ips, err)
+// 	}
+// }
+
 func TestIsDomainConfiguredAsExpectedARecord(t *testing.T) {
 	domainSpec := DomainSpec{
 		Domain:    fmt.Sprintf("random-domain-%s.com", rand.String(10)),
@@ -43,9 +52,9 @@ func TestIsDomainConfiguredAsExpectedCNAME(t *testing.T) {
 
 // func TestIsDomainConfiguredAsExpectedARecord2(t *testing.T) {
 // 	domainSpec := DomainSpec{
-// 		Domain:    "foobar.com",
+// 		Domain:    "kalm.dev",
 // 		DNSType:   DNSTypeA,
-// 		DNSTarget: "1.1.1.1",
+// 		DNSTarget: "134.209.226.211",
 // 	}
 
 // 	isAsExpected, err := IsDomainConfiguredAsExpected(domainSpec)
