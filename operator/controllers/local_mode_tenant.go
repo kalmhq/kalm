@@ -27,6 +27,7 @@ func (r *KalmOperatorConfigReconciler) reconcileDefaultTenantForLocalMode(ctx co
 				v1alpha1.ResourceServicesCount:         resource.MustParse("10000"),
 				v1alpha1.ResourceComponentsCount:       resource.MustParse("10000"),
 				v1alpha1.ResourceCPU:                   resource.MustParse("10000"),
+				v1alpha1.ResourceAccessTokensCount:     resource.MustParse("10000"),
 				v1alpha1.ResourceMemory:                resource.MustParse("10000Gi"),
 				v1alpha1.ResourceStorage:               resource.MustParse("10000Gi"),
 				v1alpha1.ResourceEphemeralStorage:      resource.MustParse("10000Gi"),
