@@ -86,7 +86,7 @@ func (h *ApiHandler) handleCreateDomain(c echo.Context) error {
 	domainVal := domain.Spec.Domain
 	if !v1alpha1.IsValidNoneWildcardDomain(domainVal) &&
 		!v1alpha1.IsValidWildcardDomain(domainVal) {
-		return fmt.Errorf("doamin is valid: %s", domainVal)
+		return fmt.Errorf("domain is valid: %s", domainVal)
 	}
 
 	if err := h.resourceManager.Create(domain); err != nil {

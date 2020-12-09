@@ -116,7 +116,7 @@ func (suite *DomainTestSuite) TestCreateInvalidDomain() {
 			var res resources.Domain
 			rec.BodyAsJSON(&res)
 			suite.Equal(500, rec.Code)
-			suite.Contains(rec.BodyAsString(), "doamin is valid")
+			suite.Contains(rec.BodyAsString(), "domain is valid")
 		},
 	})
 }
