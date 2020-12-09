@@ -65,15 +65,20 @@ func (r *Domain) Default() {
 		return
 	}
 
-	if IsRootDomain(domain) {
+	kalmBaseDNSDomain := GetEnvKalmBaseDNSDomain()
+	isDNSDomainEnabled := kalmBaseDNSDomain != ""
+
+	if IsRootDomain(domain) || !isDNSDomainEnabled {
 		r.Spec.DNSType = DNSTypeA
 	} else {
 		r.Spec.DNSType = DNSTypeCNAME
 	}
 
 	switch r.Spec.DNSType {
+	case DNSTypeA:
+		clusterIP, _ := GetClusterIP()
+		r.Spec.DNSTarget = clusterIP
 	case DNSTypeCNAME:
-		kalmBaseDNSDomain := GetEnvKalmBaseDNSDomain()
 		if kalmBaseDNSDomain == "" {
 			domainlog.Info("kalm baseDNSDomain is empty")
 			return
@@ -86,9 +91,8 @@ func (r *Domain) Default() {
 		// <md5Domain-tenantName>-cname.<asia>.kalm-dns.com
 		cname := fmt.Sprintf("%s-cname.%s", cnamePrefix, kalmBaseDNSDomain)
 		r.Spec.DNSTarget = cname
-	case DNSTypeA:
-		clusterIP, _ := GetClusterIP()
-		r.Spec.DNSTarget = clusterIP
+	default:
+		domainlog.Info("unknown DNSType:" + r.Spec.DNSType)
 	}
 }
 
