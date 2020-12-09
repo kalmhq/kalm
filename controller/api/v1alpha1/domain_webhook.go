@@ -92,7 +92,7 @@ func (r *Domain) Default() {
 		cname := fmt.Sprintf("%s-cname.%s", cnamePrefix, kalmBaseDNSDomain)
 		r.Spec.DNSTarget = cname
 	default:
-		domainlog.Info("unknown DNSType:" + r.Spec.DNSType)
+		domainlog.Info("unknown DNSType", "type", r.Spec.DNSType)
 	}
 }
 
