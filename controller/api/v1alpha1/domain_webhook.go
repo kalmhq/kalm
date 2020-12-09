@@ -228,7 +228,7 @@ func IsDomainConfiguredAsExpected(domainSpec DomainSpec) (bool, error) {
 
 		return isExpected, nil
 	case DNSTypeA:
-		ips, err := net.LookupIP(domain)
+		ips, err := getIPsOfDomain(domain)
 		if err != nil {
 			if isNoSuchHostDNSError(err) {
 				domainlog.Error(err, fmt.Sprintf("no such host err lookupIP(%s)", domain))
@@ -241,7 +241,7 @@ func IsDomainConfiguredAsExpected(domainSpec DomainSpec) (bool, error) {
 
 		isExpected := false
 		for _, ip := range ips {
-			if ip.String() == expected {
+			if ip == expected {
 				isExpected = true
 				break
 			}
@@ -265,6 +265,49 @@ func isNoSuchHostDNSError(err error) bool {
 	return false
 }
 
+func getDNSServerAddress() string {
+	defaultDNSServerIP := "1.1.1.1"
+
+	extDNSServerIP := GetEnvExternalDNSServerIP()
+	if extDNSServerIP == "" {
+		extDNSServerIP = defaultDNSServerIP
+	}
+
+	return fmt.Sprintf("%s:53", extDNSServerIP)
+}
+
+func getIPsOfDomain(domain string) ([]string, error) {
+	c := new(dns.Client)
+	m := new(dns.Msg)
+
+	if !strings.HasSuffix(domain, ".") {
+		domain = domain + "."
+	}
+
+	m.SetQuestion(domain, dns.TypeA)
+	m.RecursionDesired = true
+
+	r, _, err := c.Exchange(m, getDNSServerAddress())
+	if err != nil {
+		domainlog.Error(err, "fail when call dnsClient.Exchange")
+		return nil, err
+	}
+
+	if r == nil {
+		domainlog.Info("dns.Msg returned by calling dnsClient.Exchange is nil")
+		return nil, nil
+	} else if len(r.Answer) <= 0 {
+		domainlog.Info("no Answer exist in dns.Msg returned by calling dnsClient.Exchange")
+		return nil, nil
+	}
+
+	var rst []string
+	for _, ans := range r.Answer {
+		rst = append(rst, ans.(*dns.A).A.String())
+	}
+	return rst, nil
+}
+
 func getDirectCNAMEOfDomain(domain string) (string, error) {
 	// cname, _ := net.LookupCNAME(domain)
 	// if cname != "" {
@@ -282,10 +325,7 @@ func getDirectCNAMEOfDomain(domain string) (string, error) {
 	m.SetQuestion(domain, dns.TypeCNAME)
 	m.RecursionDesired = true
 
-	// explicit use google DNS
-	// r, _, err := c.Exchange(m, "8.8.8.8:53")
-	r, _, err := c.Exchange(m, "1.1.1.1:53")
-
+	r, _, err := c.Exchange(m, getDNSServerAddress())
 	if err != nil {
 		domainlog.Error(err, "fail when call dnsClient.Exchange")
 		return "", err

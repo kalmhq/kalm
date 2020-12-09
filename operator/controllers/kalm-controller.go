@@ -75,10 +75,17 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 	authProxyVersion := getKalmAuthProxyVersion(config)
 
 	var envUseLetsencryptProductionAPI string
-	if config.Spec.Controller != nil && config.Spec.Controller.UseLetsEncryptProductionAPI {
-		envUseLetsencryptProductionAPI = "true"
-	} else {
-		envUseLetsencryptProductionAPI = "false"
+	var extDNSServerIP string
+
+	controllerConfig := config.Spec.Controller
+	if controllerConfig != nil {
+		if controllerConfig.UseLetsEncryptProductionAPI {
+			envUseLetsencryptProductionAPI = "true"
+		} else {
+			envUseLetsencryptProductionAPI = "false"
+		}
+
+		extDNSServerIP = controllerConfig.ExternalDNSServerIP
 	}
 
 	isLocalMode := strconv.FormatBool(config.Spec.KalmType == "local")
@@ -156,6 +163,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 								{Name: v1alpha1.ENV_KALM_BASE_DNS_DOMAIN, Value: config.Spec.BaseDNSDomain},
 								{Name: v1alpha1.ENV_CLOUDFLARE_TOKEN, Value: cloudflareToken},
 								{Name: v1alpha1.ENV_CLOUDFLARE_DOMAIN_TO_ZONEID_CONFIG, Value: configStr},
+								{Name: v1alpha1.ENV_EXTERNAL_DNS_SERVER_IP, Value: extDNSServerIP},
 							},
 							Ports: []corev1.ContainerPort{
 								{
