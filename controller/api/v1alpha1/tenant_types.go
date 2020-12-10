@@ -45,6 +45,22 @@ const (
 	ResourceTenantsCount ResourceName = "tenantsCount"
 )
 
+var ResourceNameList = []ResourceName{
+	ResourceCPU,
+	ResourceMemory,
+	ResourceStorage,
+	ResourceEphemeralStorage,
+	ResourceTraffic,
+	ResourceApplicationsCount,
+	ResourceComponentsCount,
+	ResourceServicesCount,
+	ResourceRoleBindingCount,
+	ResourceAccessTokensCount,
+	ResourceDockerRegistriesCount,
+	ResourceHttpRoutesCount,
+	ResourceHttpsCertsCount,
+}
+
 type ResourceList map[ResourceName]resource.Quantity
 
 type TenantSpec struct {
