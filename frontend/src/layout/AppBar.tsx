@@ -14,7 +14,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
-import { composeTenantLink, getHasSelectedTenant, isSameTenant } from "selectors/tenant";
+import { composeTenantLink, composeTenantText, getHasSelectedTenant, isSameTenant } from "selectors/tenant";
 import { ThemeToggle } from "theme/ThemeToggle";
 import { TDispatch } from "types";
 import { SubjectTypeUser } from "types/member";
@@ -283,7 +283,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                         window.open(url, "_self");
                       }}
                     >
-                      {"   " + t}
+                      {composeTenantText(t)}
                     </MenuItem>
                   </Box>
                 );

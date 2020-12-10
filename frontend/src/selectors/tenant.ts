@@ -16,14 +16,16 @@ export const isSameTenant = (tenantName: string, clusterTenantName: string) => {
   return tenantName === clusterTenantName || clusterTenantName.includes(tenantName);
 };
 
-const kTenantIdPlaceholder = "__TENANTID__";
-const kTenantLinkTemplate = `https://${kTenantIdPlaceholder}.asia-northeast3.kapp.live/`;
-
 export const composeTenantLink = (clusterTenantName: string) => {
   if (clusterTenantName.includes("/")) {
-    const tenantId = clusterTenantName.split("/")[1];
-    return kTenantLinkTemplate.replace(kTenantIdPlaceholder, tenantId);
+    const parts = clusterTenantName.split("/");
+
+    return `https://${parts[1]}.${parts[0]}.kalm.dev`;
   } else {
-    return kTenantLinkTemplate.replace(kTenantIdPlaceholder, clusterTenantName);
+    return `https://${clusterTenantName}.kalm.dev`;
   }
+};
+
+export const composeTenantText = (clusterTenantName: string) => {
+  return clusterTenantName.includes("/") ? clusterTenantName.split("/")[1] : clusterTenantName;
 };

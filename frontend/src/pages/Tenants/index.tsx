@@ -3,7 +3,14 @@ import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { composeTenantLink, getHasSelectedTenant, getUserAvatar, getUserEmail, isSameTenant } from "selectors/tenant";
+import {
+  composeTenantLink,
+  composeTenantText,
+  getHasSelectedTenant,
+  getUserAvatar,
+  getUserEmail,
+  isSameTenant,
+} from "selectors/tenant";
 import { TDispatchProp } from "types";
 import { KPanel } from "widgets/KPanel";
 import { Body } from "widgets/Label";
@@ -85,10 +92,10 @@ class TenantsPageRaw extends React.PureComponent<Props, State> {
                         return (
                           <Box m={1} key={index}>
                             {isSameTenant(t, currentTenant) ? (
-                              <Body>current: {t}</Body>
+                              <Body>current: {composeTenantText(t)}</Body>
                             ) : (
                               <KMLink rel="noopener noreferrer" href={url} target={"_self"}>
-                                click to open {t}
+                                click to open {composeTenantText(t)}
                               </KMLink>
                             )}
                           </Box>
