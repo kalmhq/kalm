@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
 	"istio.io/api/security/v1beta1"
@@ -90,7 +89,8 @@ func getKalmDashboardReplicas(config *installv1alpha1.KalmOperatorConfig) *int32
 	return &n
 }
 
-func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installv1alpha1.KalmOperatorConfig, ctx context.Context, log logr.Logger) error {
+func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(ctx context.Context, config *installv1alpha1.KalmOperatorConfig) error {
+
 	dashboardName := "kalm"
 	dashboard := corev1alpha1.Component{}
 

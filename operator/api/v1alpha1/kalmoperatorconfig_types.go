@@ -54,9 +54,9 @@ type KalmOperatorConfigSpec struct {
 
 	KalmType string `json:"kalmType,omitempty"`
 
-	// like: asia-northeast3.kalm-app.com
+	// like: us-west1-1.clusters.kalm-apps.com
 	BaseAppDomain string `json:"baseAppDomain,omitempty"`
-	// like: asia-northeast3.kalm-dns.com
+	// like: us-west1-1.clusters.kalm-dns.com
 	BaseDNSDomain string `json:"baseDNSDomain,omitempty"`
 
 	CloudflareConfig *CloudflareConfig `json:"cloudflareConfig,omitempty"`

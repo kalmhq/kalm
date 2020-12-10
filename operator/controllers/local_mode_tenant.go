@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"context"
-
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -12,7 +10,7 @@ import (
 
 const DefaultTenantNameForLocalMode = "global"
 
-func (r *KalmOperatorConfigReconciler) reconcileDefaultTenantForLocalMode(ctx context.Context) error {
+func (r *KalmOperatorConfigReconciler) reconcileDefaultTenantForLocalMode() error {
 	expectedTenant := v1alpha1.Tenant{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: DefaultTenantNameForLocalMode,
@@ -39,7 +37,7 @@ func (r *KalmOperatorConfigReconciler) reconcileDefaultTenantForLocalMode(ctx co
 	var tenant v1alpha1.Tenant
 	isNew := false
 
-	if err := r.Get(ctx, client.ObjectKey{Name: DefaultTenantNameForLocalMode}, &tenant); err != nil {
+	if err := r.Get(r.Ctx, client.ObjectKey{Name: DefaultTenantNameForLocalMode}, &tenant); err != nil {
 		if errors.IsNotFound(err) {
 			isNew = true
 		} else {
@@ -50,10 +48,10 @@ func (r *KalmOperatorConfigReconciler) reconcileDefaultTenantForLocalMode(ctx co
 	var err error
 	if isNew {
 		tenant = expectedTenant
-		err = r.Create(ctx, &expectedTenant)
+		err = r.Create(r.Ctx, &expectedTenant)
 	} else {
 		tenant.Spec = expectedTenant.Spec
-		err = r.Update(ctx, &tenant)
+		err = r.Update(r.Ctx, &tenant)
 	}
 
 	return err

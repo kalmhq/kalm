@@ -58,6 +58,7 @@ type KalmOperatorConfigReconciler struct {
 	Log    logr.Logger
 	Scheme *runtime.Scheme
 	Reader client.Reader
+	Ctx    context.Context
 }
 
 //go:generate mkdir -p tmp
@@ -249,16 +250,31 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		}
 	}
 
-	if err := r.reconcileKalmDashboard(config, ctx, log); err != nil {
+	if err := r.reconcileKalmDashboard(ctx, config); err != nil {
 		return err
 	}
 
 	isLocalMode := config.Spec.KalmType == "local"
 	if isLocalMode {
-		if err := r.reconcileDefaultTenantForLocalMode(ctx); err != nil {
+		if err := r.reconcileDefaultTenantForLocalMode(); err != nil {
 			return err
 		}
+	}
 
+	baseDNSDomain := config.Spec.BaseDNSDomain
+	isBaseDNSDomainSet := baseDNSDomain != ""
+
+	if isBaseDNSDomainSet {
+		if err := r.reconcileACMEServer(baseDNSDomain); err != nil {
+			return err
+		}
+	}
+
+	baseAppDomain := config.Spec.BaseAppDomain
+	if baseAppDomain != "" {
+		if err := r.reconcileHttpsCertForBaseAppDomain(baseAppDomain, isBaseDNSDomainSet); err != nil {
+			return err
+		}
 	}
 
 	return nil
