@@ -111,7 +111,7 @@ func (suite *DeployAccessTokenTestSuite) TestCreateAndDeleteDeployAccessToken() 
 					Kind:      "components",
 				},
 			},
-			Creator: "test",
+			Creator: "",
 		},
 	}
 
@@ -130,6 +130,8 @@ func (suite *DeployAccessTokenTestSuite) TestCreateAndDeleteDeployAccessToken() 
 			var res resources.AccessToken
 			rec.BodyAsJSON(&res)
 			suite.Equal(201, rec.Code)
+
+			suite.NotEmpty(res.Creator)
 		},
 	})
 

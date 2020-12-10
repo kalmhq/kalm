@@ -39,9 +39,6 @@ func (h *ApiHandler) handleCreateDeployAccessToken(c echo.Context) error {
 	}
 
 	accessToken.Tenant = currentUser.Tenant
-	if accessToken.Creator == "" {
-		accessToken.Creator = firstNotEmptyStr(currentUser.Email, currentUser.Tenant, currentUser.Name)
-	}
 
 	if !h.clientManager.PermissionsGreaterThanOrEqualToAccessToken(currentUser, accessToken) {
 		return resources.InsufficientPermissionsError
@@ -77,10 +74,12 @@ func (h *ApiHandler) handleCreateDeployAccessToken(c echo.Context) error {
 
 	// Set sensitive fields
 	accessToken.Token = rand.String(128)
-	accessToken.Creator = currentUser.Name
+	if accessToken.Creator == "" {
+		accessToken.Creator = firstNotEmptyStr(currentUser.Name, currentUser.Email, currentUser.Tenant)
+	}
 	accessToken.Name = v1alpha1.GetAccessTokenNameFromToken(accessToken.Token)
-	accessToken, err = h.resourceManager.CreateDeployAccessToken(accessToken)
 
+	accessToken, err = h.resourceManager.CreateDeployAccessToken(accessToken)
 	if err != nil {
 		return err
 	}
