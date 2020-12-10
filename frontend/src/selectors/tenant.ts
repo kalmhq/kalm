@@ -27,7 +27,3 @@ export const composeTenantLink = (clusterTenantName: string) => {
     return kTenantLinkTemplate.replace(kTenantIdPlaceholder, clusterTenantName);
   }
 };
-
-export const getKalmSaaSLink = () => {
-  return "https://kalm-saas-demo.herokuapp.com/";
-};

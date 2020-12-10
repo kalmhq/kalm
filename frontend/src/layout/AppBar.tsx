@@ -14,7 +14,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
-import { composeTenantLink, getHasSelectedTenant, getKalmSaaSLink, isSameTenant } from "selectors/tenant";
+import { composeTenantLink, getHasSelectedTenant, isSameTenant } from "selectors/tenant";
 import { ThemeToggle } from "theme/ThemeToggle";
 import { TDispatch } from "types";
 import { SubjectTypeUser } from "types/member";
@@ -45,6 +45,7 @@ const mapStateToProps = (state: RootState) => {
   const currentTenant = auth.tenant;
   const tenants = auth.tenants;
   const hasSelectedTenant = getHasSelectedTenant(state);
+  const newTenantUrl = state.extraInfo.info.newTenantUrl;
 
   return {
     isOpenRootDrawer: state.settings.isOpenRootDrawer,
@@ -55,6 +56,7 @@ const mapStateToProps = (state: RootState) => {
     email,
     currentTenant,
     tenants,
+    newTenantUrl,
     hasSelectedTenant,
   };
 };
@@ -230,7 +232,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   };
 
   renderTenants = () => {
-    const { hasSelectedTenant, currentTenant, tenants } = this.props;
+    const { hasSelectedTenant, currentTenant, tenants, newTenantUrl } = this.props;
     const { tenantMenuAnchorElement } = this.state;
 
     // FIXME: extract styles to standalone component
@@ -289,8 +291,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
               <Divider />
               <MenuItem
                 onClick={() => {
-                  const url = getKalmSaaSLink();
-                  window.open(url, "_blank");
+                  window.open(newTenantUrl, "_blank");
                 }}
               >
                 Create New Kalm

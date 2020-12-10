@@ -1,21 +1,14 @@
 import { Avatar, Box, createStyles, Divider, Grid, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { BasePage } from "pages/BasePage";
 import React from "react";
+import { connect } from "react-redux";
+import { RootState } from "reducers";
+import { composeTenantLink, getHasSelectedTenant, getUserAvatar, getUserEmail, isSameTenant } from "selectors/tenant";
 import { TDispatchProp } from "types";
 import { KPanel } from "widgets/KPanel";
-import { BasePage } from "pages/BasePage";
-import { Loading } from "../../widgets/Loading";
-import { RootState } from "reducers";
-import { connect } from "react-redux";
-import { KMLink } from "widgets/Link";
 import { Body } from "widgets/Label";
-import {
-  composeTenantLink,
-  getHasSelectedTenant,
-  getKalmSaaSLink,
-  getUserAvatar,
-  getUserEmail,
-  isSameTenant,
-} from "selectors/tenant";
+import { KMLink } from "widgets/Link";
+import { Loading } from "../../widgets/Loading";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -34,8 +27,10 @@ const mapStateToProps = (state: RootState) => {
   const hasSelectedTenant = getHasSelectedTenant(state);
   const email = getUserEmail(state);
   const avatarUrl = getUserAvatar(state);
+  const newTenantUrl = state.extraInfo.info.newTenantUrl;
   return {
     isLoading,
+    newTenantUrl,
     currentTenant,
     tenants,
     hasSelectedTenant,
@@ -66,7 +61,7 @@ class TenantsPageRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { currentTenant, tenants, isLoading, hasSelectedTenant } = this.props;
+    const { currentTenant, tenants, isLoading, hasSelectedTenant, newTenantUrl } = this.props;
 
     if (isLoading) {
       return <Loading />;
@@ -102,7 +97,7 @@ class TenantsPageRaw extends React.PureComponent<Props, State> {
                     ) : (
                       <>
                         You don't have any kalm, please go to Kalm SaaS to subscript new plan.{" "}
-                        <KMLink href={getKalmSaaSLink()} target={"_blank"}>
+                        <KMLink href={newTenantUrl} target={"_blank"}>
                           Open Kalm SaaS
                         </KMLink>{" "}
                       </>

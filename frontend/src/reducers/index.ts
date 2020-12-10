@@ -11,6 +11,7 @@ import components, { State as ApplicationComponentState } from "./component";
 import debounce, { State as DebounceState } from "./debounce";
 import dialogs, { State as DialogState } from "./dialog";
 import domains, { State as DomainsState } from "./domains";
+import extraInfo, { State as ExtraInfoState } from "./extraInfo";
 import namespaces, { State as NamespacesState } from "./namespaces";
 import nodes, { State as NodesState } from "./node";
 import notification, { State as NotificationState } from "./notification";
@@ -38,6 +39,7 @@ export type RootState = {
   roles: RolesState;
   routes: RouteState;
   cluster: ClusterState;
+  extraInfo: ExtraInfoState;
   tutorial: TutorialState;
   services: ServiceState;
   certificates: CertificateState;
@@ -66,6 +68,7 @@ const rootReducer = (history: History<LocationState>) =>
     routes,
     tutorial,
     cluster,
+    extraInfo,
     services,
     certificates,
     debounce,

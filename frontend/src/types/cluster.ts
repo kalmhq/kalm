@@ -9,7 +9,11 @@ export const LOAD_TENANT_INFO_PENDING = "LOAD_TENANT_INFO_PENDING";
 export const LOAD_TENANT_INFO_FULFILLED = "LOAD_TENANT_INFO_FULFILLED";
 export const LOAD_TENANT_INFO_FAILED = "LOAD_TENANT_INFO_FAILED";
 
-export const LOAD_EXTRA_INFO_FULFILED;
+export const LOAD_EXTRA_INFO_FULFILLED = "LOAD_EXTRA_INFO_FULFILLED";
+
+export interface ExtraInfo {
+  newTenantUrl: string;
+}
 
 export interface ClusterInfo {
   ingressIP: string;
@@ -70,8 +74,14 @@ export interface LoadTenantInfoFulfilledAction {
   payload: Tenant;
 }
 
+export interface LoadExtraInfoFulfilledAction {
+  type: typeof LOAD_EXTRA_INFO_FULFILLED;
+  payload: ExtraInfo;
+}
+
 export type ClusterActions =
   | LoadClusterInfoStatusAction
   | LoadClusterInfoFulfilledAction
   | LoadTenantInfoStatusAction
-  | LoadTenantInfoFulfilledAction;
+  | LoadTenantInfoFulfilledAction
+  | LoadExtraInfoFulfilledAction;
