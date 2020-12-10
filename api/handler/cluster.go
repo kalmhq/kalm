@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -193,6 +194,14 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 	}
 
 	return info
+}
+
+func (h *ApiHandler) handleExtraInfo(c echo.Context) error {
+	newTenantUrl := os.Getenv("KALM_NEW_TENANT_URL")
+
+	return c.JSON(200, map[string]interface{}{
+		"newTenantUrl": newTenantUrl,
+	})
 }
 
 func (h *ApiHandler) handleClusterInfo(c echo.Context) error {

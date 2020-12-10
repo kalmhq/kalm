@@ -118,7 +118,7 @@ class RenderProbe extends React.PureComponent<Props> {
             <Field<string | undefined>
               name={`${name}.httpGet.host`}
               component={RenderNestedTextfield}
-              placeholder="0.0.0.0"
+              placeholder="localhost"
               style={{ width: 80 }}
             />
             :
@@ -313,7 +313,6 @@ class RenderProbe extends React.PureComponent<Props> {
       change(name, {
         httpGet: {
           scheme: "HTTP",
-          host: "0.0.0.0",
           path: "/health",
           port: potentialPort ? potentialPort.containerPort : 8080,
         },
@@ -339,7 +338,6 @@ class RenderProbe extends React.PureComponent<Props> {
       change(name, {
         tcpSocket: {
           port: potentialPort ? potentialPort.containerPort : 8080,
-          host: "0.0.0.0",
         },
         failureThreshold: 3,
         periodSeconds: 10,

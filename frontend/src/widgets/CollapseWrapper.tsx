@@ -1,8 +1,8 @@
-import { Collapse, Box } from "@material-ui/core";
-import React, { ReactNode } from "react";
-import { KMLink } from "./Link";
+import { Box, Collapse } from "@material-ui/core";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import React, { MouseEvent, ReactNode } from "react";
 import { FlexRowItemCenterBox } from "./Box";
+import { KMLink } from "./Link";
 
 interface Props {
   title: ReactNode;
@@ -15,7 +15,14 @@ export const CollapseWrapper = ({ title, defaultOpen, showIcon, children }: Prop
   const [open, setOpen] = React.useState(!!defaultOpen);
   return (
     <>
-      <KMLink component="button" variant="body2" onClick={() => setOpen(!open)}>
+      <KMLink
+        component="button"
+        variant="body2"
+        onClick={(e: MouseEvent) => {
+          e.preventDefault();
+          setOpen(!open);
+        }}
+      >
         <FlexRowItemCenterBox>
           {showIcon ? (
             <Box style={{ display: "flex", alignItems: "center" }}>

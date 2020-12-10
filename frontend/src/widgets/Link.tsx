@@ -1,6 +1,6 @@
+import { Link as MLink, LinkProps as MLinkProps, useTheme } from "@material-ui/core";
 import React from "react";
 import { Link, LinkProps } from "react-router-dom";
-import { Link as MLink, LinkProps as MLinkProps, useTheme } from "@material-ui/core";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
 
 export function KLink(props: LinkProps) {

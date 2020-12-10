@@ -59,6 +59,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.POST("/reset", h.handleResetCluster)
 
 	gv1Alpha1WithAuth.GET("/cluster", h.handleClusterInfo)
+	gv1Alpha1WithAuth.GET("/extraInfo", h.handleExtraInfo)
 
 	gv1Alpha1WithAuth.GET("/loadbalancers", h.handleLoadBalancers)
 	gv1Alpha1WithAuth.GET("/services", h.handleListClusterServices)

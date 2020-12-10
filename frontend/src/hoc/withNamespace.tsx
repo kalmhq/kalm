@@ -48,7 +48,8 @@ export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
     const updateCurrent = () => {
       dispatch(setCurrentNamespaceAction(activeNamespaceName, false));
     };
-    useEffect(updateCurrent, [activeNamespaceName]);
+
+    useEffect(updateCurrent, [activeNamespaceName, dispatch]);
 
     if (!isNamespaceFirstLoaded) {
       return (

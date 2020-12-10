@@ -123,7 +123,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
       {
         name: "Application",
         items: [
-          canViewTenant() ? { icon: KalmApplicationIcon, text: "Apps", to: "/applications" } : null,
+          { icon: KalmApplicationIcon, text: "Apps", to: "/applications" },
           canViewTenant()
             ? {
                 icon: KalmCertificatesIcon,
