@@ -67,6 +67,8 @@ func (suite *TenantHandlerTestSuite) TestTenantCRUD() {
 
 			tenant = &res[0]
 
+			suite.Equal(13, len(tenant.ConsumedResources))
+
 			cpuQuantity := tenant.ResourcesQuotas[v1alpha1.ResourceCPU]
 			cpu, _ := (&cpuQuantity).AsInt64()
 
@@ -123,6 +125,8 @@ func (suite *TenantHandlerTestSuite) TestTenantCRUD() {
 			var res resources.Tenant
 			rec.BodyAsJSON(&res)
 			suite.True(res.Paused)
+
+			suite.Equal(13, len(res.ConsumedResources))
 		},
 	})
 

@@ -80,7 +80,7 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 
 		return ctrl.Result{}, err
 	} else if size > 1 {
-		return ctrl.Result{}, fmt.Errorf("at most 1 cofig for acmeServer, see: %d", size)
+		return ctrl.Result{}, fmt.Errorf("at most 1 config for acmeServer, see: %d", size)
 	}
 
 	acmeServer := acmeServerList.Items[0]

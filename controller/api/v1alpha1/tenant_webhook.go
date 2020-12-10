@@ -52,6 +52,7 @@ func checkAndUpdateClusterResourceQuota(tenant Tenant, remainingRetry int) error
 	err := webhookClient.Get(context.Background(), client.ObjectKey{Name: ClusterResourceQuotaName}, &clusterResourceQuota)
 	if err != nil {
 		if errors.IsNotFound(err) {
+			// if ClusterResourceQuota is not created, we will allow tenant creation by default
 			return nil
 		}
 

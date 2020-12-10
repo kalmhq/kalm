@@ -117,13 +117,15 @@ func (resourceManager *ResourceManager) ResumeTenant(name string) error {
 }
 
 func fromCRDTenant(tenant *v1alpha1.Tenant) *Tenant {
+	completeUsedResourceQuota := v1alpha1.FillMissingResourceAsZero(tenant.Status.UsedResourceQuota)
+
 	return &Tenant{
 		ID:                tenant.Name, // TODO: which field should be used as an id?
 		Name:              tenant.Name,
 		Owners:            tenant.Spec.Owners,
 		Paused:            tenant.Spec.Paused,
 		ResourcesQuotas:   tenant.Spec.ResourceQuota,
-		ConsumedResources: tenant.Status.UsedResourceQuota,
+		ConsumedResources: completeUsedResourceQuota,
 	}
 }
 

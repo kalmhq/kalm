@@ -7,6 +7,7 @@ import (
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
@@ -278,4 +279,17 @@ func tryGetResourceKey(obj interface{}) (string, bool) {
 
 	tenantLog.Info("fail to get key of obj:", obj)
 	return "", false
+}
+
+func FillMissingResourceAsZero(res ResourceList) ResourceList {
+	rst := make(ResourceList)
+	for _, resName := range ResourceNameList {
+		rst[resName] = *resource.NewQuantity(0, resource.DecimalSI)
+	}
+
+	for resName, quantity := range res {
+		rst[resName] = quantity
+	}
+
+	return rst
 }
