@@ -262,9 +262,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 	}
 
 	baseDNSDomain := config.Spec.BaseDNSDomain
-	isBaseDNSDomainSet := baseDNSDomain != ""
-
-	if isBaseDNSDomainSet {
+	if baseDNSDomain != "" {
 		if err := r.reconcileACMEServer(baseDNSDomain); err != nil {
 			return err
 		}
@@ -272,7 +270,9 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 
 	baseAppDomain := config.Spec.BaseAppDomain
 	if baseAppDomain != "" {
-		if err := r.reconcileHttpsCertForBaseAppDomain(baseAppDomain, isBaseDNSDomainSet); err != nil {
+		applyForWildcardCert := baseDNSDomain != ""
+
+		if err := r.reconcileHttpsCertForDomain(baseAppDomain, applyForWildcardCert); err != nil {
 			return err
 		}
 	}
