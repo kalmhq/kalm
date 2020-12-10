@@ -131,13 +131,11 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
                 to: "/domains",
               }
             : null,
-          canViewTenant()
-            ? {
-                text: "Routes",
-                to: "/routes",
-                icon: KalmRoutesIcon,
-              }
-            : null,
+          {
+            text: "Routes",
+            to: "/routes",
+            icon: KalmRoutesIcon,
+          },
           canEditTenant()
             ? {
                 icon: CIIcon,
@@ -164,13 +162,11 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
                 to: "/cluster/loadbalancer",
               }
             : null,
-          canViewTenant()
-            ? {
-                icon: KalmVolumeIcon,
-                text: "Disks",
-                to: "/cluster/disks",
-              }
-            : null,
+          {
+            icon: KalmVolumeIcon,
+            text: "Disks",
+            to: "/cluster/disks",
+          },
           canEditTenant()
             ? {
                 icon: KalmRegistryIcon,
