@@ -26,9 +26,10 @@ type NameValue struct {
 }
 
 type DashboardConfig struct {
-	Version *string     `json:"version,omitempty"`
-	Args    []string    `json:"args,omitempty"`
-	Envs    []NameValue `json:"envs,omitempty"`
+	Version  *string     `json:"version,omitempty"`
+	Args     []string    `json:"args,omitempty"`
+	Envs     []NameValue `json:"envs,omitempty"`
+	Replicas *int32      `json:"replicas,omitempty"`
 }
 
 type ControllerConfig struct {

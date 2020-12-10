@@ -78,6 +78,9 @@ spec:
                     - value
                     type: object
                   type: array
+                replicas:
+                  format: int32
+                  type: integer
                 version:
                   type: string
               type: object

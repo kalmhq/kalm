@@ -80,6 +80,16 @@ func getKalmDashboardEnvs(config *installv1alpha1.KalmOperatorConfig) []corev1al
 	return envs
 }
 
+func getKalmDashboardReplicas(config *installv1alpha1.KalmOperatorConfig) *int32 {
+	if config.Spec.Dashboard != nil && config.Spec.Dashboard.Replicas != nil {
+		return config.Spec.Dashboard.Replicas
+	}
+
+	n := int32(1)
+
+	return &n
+}
+
 func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installv1alpha1.KalmOperatorConfig, ctx context.Context, log logr.Logger) error {
 	dashboardName := "kalm"
 	dashboard := corev1alpha1.Component{}
@@ -107,9 +117,10 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installv1a
 			},
 		},
 		Spec: corev1alpha1.ComponentSpec{
-			Image:   fmt.Sprintf("%s:%s", KalmDashboardImgRepo, dashboardVersion),
-			Command: command,
-			Env:     envs,
+			Image:    fmt.Sprintf("%s:%s", KalmDashboardImgRepo, dashboardVersion),
+			Command:  command,
+			Env:      envs,
+			Replicas: getKalmDashboardReplicas(config),
 			Ports: []corev1alpha1.Port{
 				{
 					Protocol:      corev1alpha1.PortProtocolHTTP,
