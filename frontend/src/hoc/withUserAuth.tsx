@@ -17,38 +17,39 @@ export interface WithUserAuthProps extends ReturnType<typeof mapStateToProps>, T
 
 export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
   const HOC: React.FC<WithUserAuthProps> = (props) => {
-    const canViewPage = () => {
-      const { location, canEditTenant, canViewCluster, canViewTenant, canManageCluster } = props;
-
-      if (location.pathname.includes("/certificates")) {
-        return canEditTenant() || canViewCluster();
-      } else if (location.pathname.includes("/ci")) {
-        return canEditTenant();
-      } else if (location.pathname.includes("/cluster/nodes")) {
-        return canViewCluster();
-      } else if (location.pathname.includes("/cluster/loadbalancer")) {
-        return canViewTenant();
-      } else if (location.pathname.includes("/cluster/disks")) {
-        return true;
-      } else if (location.pathname.includes("/cluster/pull-secrets")) {
-        return canEditTenant();
-      } else if (location.pathname.includes("/sso")) {
-        return canViewCluster();
-      } else if (location.pathname.includes("/cluster/members")) {
-        return canManageCluster();
-      } else if (location.pathname.includes("/version")) {
-        return canManageCluster();
-      }
-      return true;
-    };
-
     const dispatch = useDispatch();
+    const { location, canEditTenant, canViewCluster, canViewTenant, canManageCluster } = props;
+
     const didMount = () => {
+      const canViewPage = () => {
+        if (location.pathname.includes("/certificates")) {
+          return canEditTenant() || canViewCluster();
+        } else if (location.pathname.includes("/ci")) {
+          return canEditTenant();
+        } else if (location.pathname.includes("/cluster/nodes")) {
+          return canViewCluster();
+        } else if (location.pathname.includes("/cluster/loadbalancer")) {
+          return canViewTenant();
+        } else if (location.pathname.includes("/cluster/disks")) {
+          return true;
+        } else if (location.pathname.includes("/cluster/pull-secrets")) {
+          return canEditTenant();
+        } else if (location.pathname.includes("/sso")) {
+          return canViewCluster();
+        } else if (location.pathname.includes("/cluster/members")) {
+          return canManageCluster();
+        } else if (location.pathname.includes("/version")) {
+          return canManageCluster();
+        }
+        return true;
+      };
+
       if (!canViewPage()) {
         dispatch(push("/"));
       }
     };
-    useEffect(didMount, []);
+
+    useEffect(didMount, [dispatch, location, canEditTenant, canViewCluster, canViewTenant, canManageCluster]);
 
     return <WrappedComponent {...props} />;
   };
