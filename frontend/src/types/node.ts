@@ -1,7 +1,7 @@
 import { Metrics } from "./common";
 
 export const LOAD_NODES_PENDING = "LOAD_NODES_PENDING";
-export const LOAD_NODES_FULFILlED = "LOAD_NODES_FULFILlED";
+export const LOAD_NODES_FULFILLED = "LOAD_NODES_FULFILLED";
 export const LOAD_NODES_FAILED = "LOAD_NODES_FAILED";
 
 export type ResourceList = {
@@ -71,7 +71,7 @@ export type NodesListResponse = {
 };
 
 export interface LoadNodesAction {
-  type: typeof LOAD_NODES_FULFILlED;
+  type: typeof LOAD_NODES_FULFILLED;
   payload: NodesListResponse;
 }
 

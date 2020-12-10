@@ -2,12 +2,14 @@ import { SSOConfig } from "types/sso";
 import { Tenant } from "types/tenant";
 
 export const LOAD_CLUSTER_INFO_PENDING = "LOAD_CLUSTER_INFO_PENDING";
-export const LOAD_CLUSTER_INFO_FULFILlED = "LOAD_CLUSTER_INFO_FULFILlED";
+export const LOAD_CLUSTER_INFO_FULFILLED = "LOAD_CLUSTER_INFO_FULFILLED";
 export const LOAD_CLUSTER_INFO_FAILED = "LOAD_CLUSTER_INFO_FAILED";
 
 export const LOAD_TENANT_INFO_PENDING = "LOAD_TENANT_INFO_PENDING";
-export const LOAD_TENANT_INFO_FULFILlED = "LOAD_TENANT_INFO_FULFILlED";
+export const LOAD_TENANT_INFO_FULFILLED = "LOAD_TENANT_INFO_FULFILLED";
 export const LOAD_TENANT_INFO_FAILED = "LOAD_TENANT_INFO_FAILED";
+
+export const LOAD_EXTRA_INFO_FULFILED;
 
 export interface ClusterInfo {
   ingressIP: string;
@@ -51,7 +53,7 @@ export type InitializeClusterResponse = {
 };
 
 export interface LoadClusterInfoFulfilledAction {
-  type: typeof LOAD_CLUSTER_INFO_FULFILlED;
+  type: typeof LOAD_CLUSTER_INFO_FULFILLED;
   payload: ClusterInfo;
 }
 
@@ -64,7 +66,7 @@ export interface LoadTenantInfoStatusAction {
 }
 
 export interface LoadTenantInfoFulfilledAction {
-  type: typeof LOAD_TENANT_INFO_FULFILlED;
+  type: typeof LOAD_TENANT_INFO_FULFILLED;
   payload: Tenant;
 }
 

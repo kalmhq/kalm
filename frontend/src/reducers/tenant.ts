@@ -1,6 +1,6 @@
 import produce from "immer";
 import { Actions } from "types";
-import { LOAD_TENANT_INFO_FAILED, LOAD_TENANT_INFO_FULFILlED, LOAD_TENANT_INFO_PENDING } from "types/cluster";
+import { LOAD_TENANT_INFO_FAILED, LOAD_TENANT_INFO_FULFILLED, LOAD_TENANT_INFO_PENDING } from "types/cluster";
 import { LOGOUT } from "types/common";
 import { Tenant } from "types/tenant";
 
@@ -31,7 +31,7 @@ const reducer = produce((state: State, action: Actions) => {
       state.isLoading = false;
       return;
     }
-    case LOAD_TENANT_INFO_FULFILlED: {
+    case LOAD_TENANT_INFO_FULFILLED: {
       state.isFirstLoaded = true;
       state.isLoading = false;
       state.info = action.payload;

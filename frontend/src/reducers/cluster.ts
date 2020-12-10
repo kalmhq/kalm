@@ -3,7 +3,7 @@ import { Actions } from "types";
 import {
   ClusterInfo,
   LOAD_CLUSTER_INFO_FAILED,
-  LOAD_CLUSTER_INFO_FULFILlED,
+  LOAD_CLUSTER_INFO_FULFILLED,
   LOAD_CLUSTER_INFO_PENDING,
 } from "types/cluster";
 import { LOGOUT } from "types/common";
@@ -35,7 +35,7 @@ const reducer = produce((state: State, action: Actions) => {
       state.isLoading = false;
       return;
     }
-    case LOAD_CLUSTER_INFO_FULFILlED: {
+    case LOAD_CLUSTER_INFO_FULFILLED: {
       state.isFirstLoaded = true;
       state.isLoading = false;
       state.info = action.payload;

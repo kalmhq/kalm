@@ -2,7 +2,7 @@ import produce from "immer";
 import { addOrUpdateInArray, isInArray, removeInArray } from "reducers/utils";
 import { Actions } from "types";
 import { LOGOUT, Metrics } from "types/common";
-import { LOAD_NODES_FAILED, LOAD_NODES_FULFILlED, LOAD_NODES_PENDING, Node } from "types/node";
+import { LOAD_NODES_FAILED, LOAD_NODES_FULFILLED, LOAD_NODES_PENDING, Node } from "types/node";
 import {
   RESOURCE_ACTION_ADD,
   RESOURCE_ACTION_DELETE,
@@ -85,7 +85,7 @@ const reducer = produce((state: State, action: Actions) => {
       state.isLoading = false;
       return;
     }
-    case LOAD_NODES_FULFILlED: {
+    case LOAD_NODES_FULFILLED: {
       state.isLoading = false;
       state.isFirstLoaded = true;
       state.nodes = action.payload.nodes;
