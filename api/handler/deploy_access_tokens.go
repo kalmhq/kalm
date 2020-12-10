@@ -34,12 +34,14 @@ func (h *ApiHandler) handleCreateDeployAccessToken(c echo.Context) error {
 	currentUser := getCurrentUser(c)
 
 	accessToken, err := bindAccessTokenFromRequestBody(c)
-
 	if err != nil {
 		return err
 	}
 
 	accessToken.Tenant = currentUser.Tenant
+	if accessToken.Creator == "" {
+		accessToken.Creator = firstNotEmptyStr(currentUser.Email, currentUser.Tenant, currentUser.Name)
+	}
 
 	if !h.clientManager.PermissionsGreaterThanOrEqualToAccessToken(currentUser, accessToken) {
 		return resources.InsufficientPermissionsError
@@ -84,4 +86,14 @@ func (h *ApiHandler) handleCreateDeployAccessToken(c echo.Context) error {
 	}
 
 	return c.JSON(201, accessToken)
+}
+
+func firstNotEmptyStr(strList ...string) string {
+	for _, str := range strList {
+		if str != "" {
+			return str
+		}
+	}
+
+	return ""
 }
