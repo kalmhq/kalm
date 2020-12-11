@@ -13,6 +13,7 @@ export const LOAD_EXTRA_INFO_FULFILLED = "LOAD_EXTRA_INFO_FULFILLED";
 
 export interface ExtraInfo {
   newTenantUrl: string;
+  mode: "local" | "multiple-tenancy";
 }
 
 export interface ClusterInfo {
