@@ -54,6 +54,8 @@ type KalmOperatorConfigSpec struct {
 
 	KalmType string `json:"kalmType,omitempty"`
 
+	PhysicalClusterID string `json:"physicalClusterId,omitempty"`
+
 	// like: asia-northeast3.kalm-app.com
 	BaseAppDomain string `json:"baseAppDomain,omitempty"`
 	// like: asia-northeast3.kalm-dns.com

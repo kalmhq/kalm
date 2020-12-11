@@ -89,6 +89,8 @@ spec:
             kalmVersion:
               description: deprecated
               type: string
+            physicalClusterId:
+              type: string
             skipCertManagerInstallation:
               type: boolean
             skipIstioInstallation:
