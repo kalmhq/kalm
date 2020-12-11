@@ -3,6 +3,7 @@ tmp
 coverage.txt
 .DS_Store
 *.log
+*debug_test.go
 
 *.local.yaml
 .vscode
