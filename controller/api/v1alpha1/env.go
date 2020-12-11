@@ -6,6 +6,10 @@ func GetEnvKalmIsInLocalMode() string {
 	return os.Getenv(ENV_KALM_IS_IN_LOCAL_MODE)
 }
 
+func GetEnvPhysicalClusterID() string {
+	return os.Getenv(ENV_KALM_PHYSICAL_CLUSTER_ID)
+}
+
 func GetEnvKalmBaseDNSDomain() string {
 	return os.Getenv(ENV_KALM_BASE_DNS_DOMAIN)
 }

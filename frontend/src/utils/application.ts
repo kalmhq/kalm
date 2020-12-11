@@ -12,6 +12,7 @@ import {
   workloadTypeServer,
 } from "types/componentTemplate";
 import { formatDate, formatTimeDistance } from "utils/date";
+import { sizeStringToMi } from "./sizeConv";
 
 export const componentDetailsToComponent = (componentDetails: ApplicationComponentDetails): ApplicationComponent => {
   const component = produce(componentDetails, (draft) => {
@@ -155,10 +156,10 @@ export const correctComponentFormValuesForInit = (
       draft.cpuRequest = component.resourceRequirements?.requests?.cpu;
     }
     if (component.memoryLimit) {
-      draft.memoryLimit = component.resourceRequirements?.limits?.memory;
+      draft.memoryLimit = sizeStringToMi(component.memoryLimit) + "Mi";
     }
     if (component.memoryRequest) {
-      draft.memoryRequest = component.resourceRequirements?.requests?.memory;
+      draft.memoryRequest = sizeStringToMi(component.memoryRequest) + "Mi";
     }
   });
 

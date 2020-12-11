@@ -7,6 +7,8 @@ import { NormalizePorts, stringArrayTrimParse } from "forms/normalizer";
 import { withSSO, WithSSOProps } from "hoc/withSSO";
 import React from "react";
 import { Field, FieldRenderProps } from "react-final-form";
+import { useSelector } from "react-redux";
+import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { ComponentLike } from "types/componentTemplate";
 import { Loading } from "widgets/Loading";
@@ -18,32 +20,37 @@ interface Props extends WithSSOProps, TDispatchProp {
   change: FormApi["change"];
 }
 
-class ComponentAccessRaw extends React.PureComponent<Props> {
-  private handleCheckBoxChangeClick = () => {
-    const { change, protectedEndpoint } = this.props;
+const ComponentAccessRaw: React.FC<Props> = (props) => {
+  const { ssoConfig, protectedEndpoint, change, isSSOConfigLoaded, isSSOConfigLoading, ports } = props;
+
+  const handleCheckBoxChangeClick = () => {
     change("protectedEndpoint", !!protectedEndpoint ? undefined : {});
   };
 
-  public render() {
-    const { ssoConfig, isSSOConfigLoaded, isSSOConfigLoading, ports } = this.props;
+  const { isExtraInfoLoading, isExtraInfoLoaded, isMultipleTenancyMode } = useSelector((state: RootState) => ({
+    isExtraInfoLoading: state.extraInfo.isLoading,
+    isExtraInfoLoaded: state.extraInfo.isFirstLoaded,
+    isMultipleTenancyMode: state.extraInfo.info.mode === "multiple-tenancy",
+  }));
 
-    if (isSSOConfigLoading && !isSSOConfigLoaded) {
-      return <Loading />;
-    }
+  if ((isSSOConfigLoading && !isSSOConfigLoaded) || (isExtraInfoLoading && !isExtraInfoLoaded)) {
+    return <Loading />;
+  }
 
-    if (!ssoConfig || !ssoConfig.domain) {
-      return (
-        <Alert severity="info">
-          <span>
-            Your cluster doesn't have <strong>Single Sign-on</strong> configured. Component access feature is disabled.{" "}
-            {/* <BlankTargetLink href="/#">Learn More(TODO)</BlankTargetLink> */}
-          </span>
-        </Alert>
-      );
-    }
+  let allGroups: string[] = [];
 
-    let allGroups: string[] = [];
+  if (!isMultipleTenancyMode && (!ssoConfig || !ssoConfig.domain)) {
+    return (
+      <Alert severity="info">
+        <span>
+          Your cluster doesn't have <strong>Single Sign-on</strong> configured. Component access feature is disabled.{" "}
+          {/* <BlankTargetLink href="/#">Learn More(TODO)</BlankTargetLink> */}
+        </span>
+      </Alert>
+    );
+  }
 
+  if (ssoConfig) {
     ssoConfig.connectors?.forEach((x) => {
       if (x.config) {
         if ("orgs" in x.config) {
@@ -57,48 +64,48 @@ class ComponentAccessRaw extends React.PureComponent<Props> {
         }
       }
     });
+  }
 
-    const ps = ports?.map((x) => x.containerPort) || [];
+  const ps = ports?.map((x) => x.containerPort) || [];
 
-    return (
-      <Grid container spacing={2}>
+  return (
+    <Grid container spacing={2}>
+      <Grid item xs={12}>
+        <FormControlLabel
+          control={<Checkbox checked={!!props.protectedEndpoint} onChange={handleCheckBoxChangeClick} />}
+          label="Only users authenticated by Single Sign-on can access"
+        />
+      </Grid>
+      <>
         <Grid item xs={12}>
-          <FormControlLabel
-            control={<Checkbox checked={!!this.props.protectedEndpoint} onChange={this.handleCheckBoxChangeClick} />}
-            label="Only users authenticated by Single Sign-on can access"
+          <Field
+            render={(props: FieldRenderProps<number[]>) => (
+              <AutoCompleteMultiValuesFreeSolo<number> {...props} options={ps} />
+            )}
+            label="Ports"
+            name="protectedEndpoint.ports"
+            disabled={!props.protectedEndpoint}
+            placeholder="Select specific ports"
+            parse={NormalizePorts}
+            helperText={sc.PROTECTED_ENDPOINT_PORT}
           />
         </Grid>
-        <>
-          <Grid item xs={12}>
-            <Field
-              render={(props: FieldRenderProps<number[]>) => (
-                <AutoCompleteMultiValuesFreeSolo<number> {...props} options={ps} />
-              )}
-              label="Ports"
-              name="protectedEndpoint.ports"
-              disabled={!this.props.protectedEndpoint}
-              placeholder="Select specific ports"
-              parse={NormalizePorts}
-              helperText={sc.PROTECTED_ENDPOINT_PORT}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Field
-              render={(props: FieldRenderProps<string[]>) => (
-                <AutoCompleteMultiValuesFreeSolo<string> {...props} options={allGroups} />
-              )}
-              label="Grant to specific groups"
-              name="protectedEndpoint.groups"
-              placeholder="e.g. my-github-org:a-team-name. a-gitlab-group-name"
-              parse={stringArrayTrimParse}
-              helperText={sc.PROTECTED_ENDPOINT_SPECIFIC_GROUPS}
-              disabled={!this.props.protectedEndpoint}
-            />
-          </Grid>
-        </>
-      </Grid>
-    );
-  }
-}
+        <Grid item xs={12}>
+          <Field
+            render={(props: FieldRenderProps<string[]>) => (
+              <AutoCompleteMultiValuesFreeSolo<string> {...props} options={allGroups} />
+            )}
+            label="Grant to specific groups"
+            name="protectedEndpoint.groups"
+            placeholder="e.g. my-github-org:a-team-name. a-gitlab-group-name"
+            parse={stringArrayTrimParse}
+            helperText={sc.PROTECTED_ENDPOINT_SPECIFIC_GROUPS}
+            disabled={!props.protectedEndpoint}
+          />
+        </Grid>
+      </>
+    </Grid>
+  );
+};
 
 export const ComponentAccess = withSSO(ComponentAccessRaw) as any;

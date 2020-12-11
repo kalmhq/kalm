@@ -311,7 +311,7 @@ test("ValidatorCPU", () => {
   const testCases = [
     [undefined, undefined],
     ["10m", undefined],
-    ["0.00001m", "The minimum support is 0.001 Core"],
+    ["0.1m", "The minimum support is 1m"],
   ];
 
   testCases.forEach((testCase) => {

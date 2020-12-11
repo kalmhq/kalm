@@ -25,6 +25,7 @@ const unitMap: { [key: string]: number } = {
   Pi: 2 ** 50,
   Ei: 2 ** 60,
   m: 0.001,
+  u: 0.001 ** 2,
   k: 10 ** 3,
   M: 10 ** 6,
   G: 10 ** 9,
@@ -41,7 +42,6 @@ export const sizeStringToNumber = (str: string) => {
   }
 
   let base = parseFloat(matches.groups.value);
-
   if (matches.groups.unit && unitMap[matches.groups.unit]) {
     base = base * unitMap[matches.groups.unit];
   }

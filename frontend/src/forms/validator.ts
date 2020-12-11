@@ -238,8 +238,8 @@ export const ValidatorMemory = yupValidatorWrap<string | undefined>(
 export const ValidatorCPU = yupValidatorWrap<string | undefined>(
   string().test(
     "Validate CPU",
-    "The minimum support is 0.001 Core",
-    (value) => value === undefined || parseFloat(`${value}`) >= 0.001,
+    "The minimum support is 1m",
+    (value) => value === undefined || parseFloat(`${value}`) >= 1,
   ),
 );
 

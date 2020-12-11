@@ -629,6 +629,11 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 				},
 				{
 					Type:  corev1alpha1.EnvVarTypeStatic,
+					Name:  corev1alpha1.ENV_KALM_PHYSICAL_CLUSTER_ID,
+					Value: corev1alpha1.GetEnvPhysicalClusterID(),
+				},
+				{
+					Type:  corev1alpha1.EnvVarTypeStatic,
 					Name:  v1alpha1.ENV_KALM_IS_IN_LOCAL_MODE,
 					Value: strconv.FormatBool(r.ssoConfig.Spec.IsKalmInLocalMode),
 				},

@@ -200,6 +200,10 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterListenerPatches(req ct
 	var grantedTenants string
 	if len(r.endpoint.Spec.Tenants) > 0 {
 		grantedTenants = strings.Join(r.endpoint.Spec.Tenants, "|")
+	} else {
+		// TODO: handle error
+		tenantName, _ := v1alpha1.GetTenantNameFromObj(r.endpoint)
+		grantedTenants = tenantName
 	}
 
 	patch := &v1alpha32.EnvoyFilter_Patch{

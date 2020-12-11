@@ -49,9 +49,56 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
     super(props);
     this.state = {};
   }
-  private renderNetwork() {
+
+  private renderStatefulSetNetwork() {
     const { component, activeNamespaceName } = this.props;
     const hasService = component.ports && component.ports!.length > 0;
+
+    return (
+      <Expansion title={"Networking"} defaultUnfold>
+        <Box p={2}>
+          {component.pods.map((pod) => (
+            <Box key={pod.name} mb={2}>
+              <H6>{pod.name}</H6>
+              <Body>
+                Cluster FQDN DNS:{" "}
+                <strong>
+                  {hasService
+                    ? `${pod.name}.${component.name}-headless.${activeNamespaceName}.svc.cluster.local`
+                    : "none"}
+                </strong>
+              </Body>
+              <Body>
+                Cluster DNS:{" "}
+                <strong>{hasService ? `${pod.name}.${component.name}-headless.${activeNamespaceName}` : "none"}</strong>
+              </Body>
+              <Body>
+                Namespace DNS: <strong>{hasService ? `${pod.name}.${component.name}-headless` : "none"}</strong>
+              </Body>
+            </Box>
+          ))}
+        </Box>
+        {component.ports && (
+          <VerticalHeadTable
+            items={component.ports?.map((port) => ({
+              name: "Exposed port: " + port.protocol,
+              content: (
+                <span>
+                  Expose port <strong>{port.containerPort}</strong> to cluster port{" "}
+                  <strong>{port.servicePort || port.containerPort}</strong>
+                </span>
+              ),
+            }))}
+          />
+        )}
+      </Expansion>
+    );
+  }
+
+  private renderCommonNetwork() {
+    const { component, activeNamespaceName } = this.props;
+    const hasService = component.ports && component.ports!.length > 0;
+
     return (
       <Expansion title={"Networking"} defaultUnfold>
         <Box p={2}>
@@ -81,6 +128,14 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
         )}
       </Expansion>
     );
+  }
+
+  private renderNetwork() {
+    if (this.props.component.workloadType === "statefulset") {
+      return this.renderStatefulSetNetwork();
+    }
+
+    return this.renderCommonNetwork();
   }
 
   private renderRoutes() {

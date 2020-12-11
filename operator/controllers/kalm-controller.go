@@ -89,6 +89,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(config *installv1
 	}
 
 	isLocalMode := strconv.FormatBool(config.Spec.KalmType == "local")
+	physicalClusterID := config.Spec.PhysicalClusterID
 
 	var cloudflareToken string
 	var cloudflareDomainToZoneConfig map[string]string
@@ -159,6 +160,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(config *installv1
 								{Name: "KALM_AUTH_PROXY_VERSION", Value: authProxyVersion},
 								{Name: v1alpha1.ENV_USE_LETSENCRYPT_PRODUCTION_API, Value: envUseLetsencryptProductionAPI},
 								{Name: v1alpha1.ENV_KALM_IS_IN_LOCAL_MODE, Value: isLocalMode},
+								{Name: v1alpha1.ENV_KALM_PHYSICAL_CLUSTER_ID, Value: physicalClusterID},
 								{Name: v1alpha1.ENV_KALM_BASE_APP_DOMAIN, Value: config.Spec.BaseAppDomain},
 								{Name: v1alpha1.ENV_KALM_BASE_DNS_DOMAIN, Value: config.Spec.BaseDNSDomain},
 								{Name: v1alpha1.ENV_CLOUDFLARE_TOKEN, Value: cloudflareToken},
