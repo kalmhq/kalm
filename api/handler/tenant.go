@@ -65,13 +65,11 @@ func (h *ApiHandler) handleCreateTenant(c echo.Context) error {
 	h.MustCanManageCluster(getCurrentUser(c))
 
 	tenant, err := getResourcesTenantFromContext(c)
-
 	if err != nil {
 		return err
 	}
 
 	tenant, err = h.resourceManager.CreateTenant(tenant)
-
 	if err != nil {
 		return err
 	}
