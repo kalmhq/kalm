@@ -70,7 +70,6 @@ func (h *ApiHandler) handleCreateTenant(c echo.Context) error {
 	}
 
 	tenant, err = h.resourceManager.CreateTenant(tenant)
-
 	if err != nil {
 		return err
 	}

@@ -57,14 +57,13 @@ func (h *ApiHandler) getApplicationFromContext(c echo.Context) *coreV1.Namespace
 func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 	currentUser := getCurrentUser(c)
 	namespaces, err := h.resourceManager.GetNamespaces(belongsToTenant(currentUser.Tenant))
-	namespaces = h.filterAuthorizedApplications(c, namespaces)
-
 	if err != nil {
 		return err
 	}
 
-	res, err := h.resourceManager.BuildApplicationListResponse(namespaces)
+	namespaces = h.filterAuthorizedApplications(c, namespaces)
 
+	res, err := h.resourceManager.BuildApplicationListResponse(namespaces)
 	if err != nil {
 		return err
 	}
