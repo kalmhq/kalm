@@ -2,118 +2,53 @@
 
 1. start localhost k8s cluster
 
-```bash
-minikube start --memory 8192 --cpus 4  --kubernetes-version v1.15.0
-minikube addons enable metrics-server
-```
+    ```bash
+    minikube start --memory 8192 --cpus 4  --kubernetes-version v1.15.0
+    minikube addons enable metrics-server
+    ```
+2. Start operator
 
-2. Install CRD and Start Controller
+    ```
+    # in a new bash session
+    cd operator
+    make install
+    make run
+    ```
+3. Apply operator config
+    ```
+    # in a new bash session
+    kubectl apply -f operator/config/samples/install_v1alpha1_kalmoperatorconfig_ignore_kalm_controller.yaml
 
-Kalm needs two components as dependencies, please install it first:
+    # check if istio and cert-manager are installed
+    kubectl get pods -A
+    ```
 
-1. kong-controller
-2. cert-manager
+4. Start Controller
 
-You have to install them manually for now:
+    ```
+    # in a new bash session
+    cd controller
+    make install
+    make run
+    ```
 
-```bash
-# install kong-controller, ref: https://github.com/Kong/kubernetes-ingress-controller#get-started
-kubectl apply -f https://bit.ly/k4k8s
+5. Start Api Server
 
-# install cert-manager, ref: https://cert-manager.io/docs/installation/kubernetes/#installing-with-regular-manifests
-kubectl create namespace cert-manager
+    ```bash
+    cd api
+    air
 
-kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.13.1/cert-manager.yaml
-```
+    # if you don't have air installed
+    go get -u github.com/cosmtrek/air
+    ```
 
-and after cert-manager running, you can install controller.
+6. Start frontend
 
-```bash
-cd controller
-make install
-make run
-```
+    ```bash
+    cd frontend
 
-> This step is **optional**. You can find some samples in config/samples dir. Choose the ones you need then install them.
+    # before start, copy .env.sample to .env, then edit .env
 
-```bash
-kubectl apply -f config/samples/___.yaml
-```
-
-3. install istio
-
-```bash
-# go to a dir which you want to install istioctl in
-curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.5.2 sh -
-
-# enter istio dir
-cd istio-1.5.2
-
-# export binary path
-export PATH=$PWD/bin:$PATH
-
-# install operator. operator is a k8s crd controller.
-istioctl operator init
-
-# Outputs:
-#
-# Using operator Deployment image: docker.io/istio/operator:1.5.2
-# - Applying manifest for component Operator...
-# ✔ Finished applying manifest for component Operator.
-# Component Operator installed successfully.
-# *** Success. ***
-
-# check status by running the following command. Wait the pod to become ready.
-# This state may last for a few minutes based on your network.
-kubectl get pods -n istio-operator
-```
-
-launch istio in our cluster
-
-```bash
-# go to kalm root dir, install istio config. The operator will install istio components for us.
-kubectl apply -f resources/istiocontrolplane.yaml
-
-# check istio components status
-kubectl get pods -n istio-system
-
-# You should be able see the following pods up and running.
-# NAME                                    READY   STATUS    RESTARTS   AGE
-# istio-ingressgateway-6d5cfb5dcb-n4xbz   1/1     Running   0          9h
-# istiod-768488f855-vt8d7                 1/1     Running   0          9h
-# kiali-7ff568c949-ql8dc                  1/1     Running   0          5h10m
-# prometheus-fd997976c-qzqr5              2/2     Running   0          9h
-```
-
-4. Start Api Server
-
-```bash
-cd api
-go run .
-```
-
-5. Start frontend
-
-```bash
-cd frontend
-
-# before start, copy .env.sample to .env, then edit .env
-
-npm install
-npm run start
-```
-
-before you start, you need to apply a token for authorization. If you already have token you can skip this step. Otherwise, please follow [Create test service account](./create-test-service-account.md) to get a token.
-
-You should login with this token on login page.
-
-6. test kalm hipster
-
-```bash
-
-kubectl apply -f controller/config/samples/core_v1alpha1_application-hipster.yaml
-
-kubectl port-forward $(kubectl get pod -n kalm-hipster -l kalm-component=frontend  -o jsonpath='{.items[0].metadata.name}') -n kalm-hipster 8080:8080
-
-view http://localhost:8080
-```
+    npm install
+    npm run start
+    ```
