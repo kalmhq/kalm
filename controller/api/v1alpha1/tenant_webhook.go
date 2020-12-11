@@ -43,6 +43,10 @@ var _ webhook.Validator = &Tenant{}
 func (r *Tenant) ValidateCreate() error {
 	tenantlog.Info("validate create", "name", r.Name)
 
+	if missingList, ok := r.isResourceListComplete(); !ok {
+		return fmt.Errorf("missing resource: %s", missingList)
+	}
+
 	return checkAndUpdateClusterResourceQuota(*r, 3)
 }
 
@@ -135,13 +139,16 @@ func SumTenantResourceWithCurrentOne(tenantList []Tenant, current Tenant, ignore
 func (r *Tenant) ValidateUpdate(old runtime.Object) error {
 	tenantlog.Info("validate update", "name", r.Name)
 
+	if missingList, ok := r.isResourceListComplete(); !ok {
+		return fmt.Errorf("missing resource: %s", missingList)
+	}
+
 	oldTenant, ok := old.(*Tenant)
 	if !ok {
 		return fmt.Errorf("old object is not Tenant")
 	}
 
 	isRequiringMore, _ := ExistGreaterResourceInList(r.Spec.ResourceQuota, oldTenant.Spec.ResourceQuota)
-
 	if !isRequiringMore {
 		return nil
 	}
@@ -152,4 +159,20 @@ func (r *Tenant) ValidateUpdate(old runtime.Object) error {
 func (r *Tenant) ValidateDelete() error {
 	tenantlog.Info("validate delete", "name", r.Name)
 	return nil
+}
+
+func (r *Tenant) isResourceListComplete() ([]ResourceName, bool) {
+	tenantResourceList := r.Spec.ResourceQuota
+
+	zeroQuantity := resource.NewQuantity(0, resource.DecimalSI)
+
+	missingResources := []ResourceName{}
+	for _, resName := range ResourceNameList {
+		quantity, exist := tenantResourceList[resName]
+		if !exist || quantity.Cmp(*zeroQuantity) <= 0 {
+			missingResources = append(missingResources, resName)
+		}
+	}
+
+	return missingResources, len(missingResources) == 0
 }
