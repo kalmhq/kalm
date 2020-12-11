@@ -197,8 +197,14 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterListenerPatches(req ct
 		grantedGroups = strings.Join(r.endpoint.Spec.Groups, "|")
 	}
 
-	// TODO: handle error
-	tenantName, _ := v1alpha1.GetTenantNameFromObj(r.endpoint)
+	var grantedTenants string
+	if len(r.endpoint.Spec.Tenants) > 0 {
+		grantedTenants = strings.Join(r.endpoint.Spec.Tenants, "|")
+	} else {
+		// TODO: handle error
+		tenantName, _ := v1alpha1.GetTenantNameFromObj(r.endpoint)
+		grantedTenants = tenantName
+	}
 
 	patch := &v1alpha32.EnvoyFilter_Patch{
 		Operation: v1alpha32.EnvoyFilter_Patch_INSERT_BEFORE,
@@ -231,7 +237,7 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterListenerPatches(req ct
 							},
 							map[string]interface{}{
 								"key":   KALM_SSO_GRANTED_TENANTS_HEADER,
-								"value": tenantName,
+								"value": grantedTenants,
 							},
 							map[string]interface{}{
 								"key":   KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER,

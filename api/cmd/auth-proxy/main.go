@@ -398,15 +398,19 @@ func inGrantedTenants(c echo.Context, idToken *oidc.IDToken) bool {
 	}
 
 	tenants := strings.Split(grantedTenants, "|")
-	var claim Claims
-	_ = idToken.Claims(&claim)
-
 	physicalClusterID := v1alpha1.GetEnvPhysicalClusterID()
-
 	gm := make(map[string]struct{}, len(tenants))
+
 	for _, g := range tenants {
+		if g == "*" {
+			return true
+		}
+
 		gm[fmt.Sprintf("%s/%s", physicalClusterID, g)] = struct{}{}
 	}
+
+	var claim Claims
+	_ = idToken.Claims(&claim)
 
 	for _, g := range claim.Tenants {
 		if _, ok := gm[g]; ok {
