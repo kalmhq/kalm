@@ -245,7 +245,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 			return err
 		}
 
-		if err := r.reconcileKalmController(ctx, config); err != nil {
+		if err := r.reconcileKalmController(config); err != nil {
 			return err
 		}
 	}

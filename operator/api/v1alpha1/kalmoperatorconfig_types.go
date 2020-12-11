@@ -54,10 +54,14 @@ type KalmOperatorConfigSpec struct {
 
 	KalmType string `json:"kalmType,omitempty"`
 
+	// like: us-west1-1.kalm.dev
+	BaseDashboardDomain string `json:"baseDashboardDomain,omitempty"`
 	// like: us-west1-1.clusters.kalm-apps.com
 	BaseAppDomain string `json:"baseAppDomain,omitempty"`
 	// like: us-west1-1.clusters.kalm-dns.com
 	BaseDNSDomain string `json:"baseDNSDomain,omitempty"`
+	// like: https://staging.kalm.dev/oidc
+	OIDCIssuerURL string `json:"oidcIssuerURL,omitempty"`
 
 	CloudflareConfig *CloudflareConfig `json:"cloudflareConfig,omitempty"`
 

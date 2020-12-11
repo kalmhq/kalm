@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -18,16 +17,17 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Context, config *installv1alpha1.KalmOperatorConfig) error {
+func (r *KalmOperatorConfigReconciler) reconcileKalmController(config *installv1alpha1.KalmOperatorConfig) error {
 	// ensure existence of ns: NamespaceKalmSystem
 	expectedNs := corev1.Namespace{
 		ObjectMeta: ctrl.ObjectMeta{
 			Name: NamespaceKalmSystem,
 			Labels: map[string]string{
-				"control-plane":      "controller",
-				"kalm-enabled":       "true",
-				"istio-injection":    "enabled",
-				"kalm-control-plane": "true",
+				"control-plane":             "controller",
+				"kalm-enabled":              "true",
+				"istio-injection":           "enabled",
+				"kalm-control-plane":        "true",
+				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultSystemTenantName,
 			},
 		},
 	}
@@ -35,7 +35,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 	ns := corev1.Namespace{}
 	nsIsNew := false
 
-	err := r.Get(ctx, client.ObjectKey{Name: NamespaceKalmSystem}, &ns)
+	err := r.Get(r.Ctx, client.ObjectKey{Name: NamespaceKalmSystem}, &ns)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			nsIsNew = true
@@ -46,7 +46,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 
 	if nsIsNew {
 		ns = expectedNs
-		if err := r.Create(ctx, &ns); err != nil {
+		if err := r.Create(r.Ctx, &ns); err != nil {
 			return err
 		}
 	} else {
@@ -59,7 +59,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 			copiedNS.Labels[k] = v
 		}
 
-		if err := r.Update(ctx, copiedNS); err != nil {
+		if err := r.Update(r.Ctx, copiedNS); err != nil {
 			return err
 		}
 	}
@@ -211,7 +211,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 	var dp appsV1.Deployment
 	var isNew bool
 
-	err = r.Get(ctx, client.ObjectKey{Namespace: NamespaceKalmSystem, Name: dpName}, &dp)
+	err = r.Get(r.Ctx, client.ObjectKey{Namespace: NamespaceKalmSystem, Name: dpName}, &dp)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			isNew = true
@@ -222,12 +222,12 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(ctx context.Conte
 
 	if isNew {
 		dp = expectedKalmController
-		err = r.Create(ctx, &dp)
+		err = r.Create(r.Ctx, &dp)
 	} else {
 		copiedDP := dp.DeepCopy()
 		copiedDP.Spec = expectedKalmController.Spec
 
-		err = r.Update(ctx, copiedDP)
+		err = r.Update(r.Ctx, copiedDP)
 	}
 
 	return err
