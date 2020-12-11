@@ -51,6 +51,9 @@ export const loadSimpleOptionsAction = (namespace?: string): ThunkResult<Promise
     if (!namespace) {
       namespace = getState().namespaces.active;
     }
+    if (!namespace) {
+      return;
+    }
     const simpleOptions = await api.getSimpleOptions(namespace);
 
     dispatch({
@@ -65,7 +68,9 @@ export const loadStatefulSetOptionsAction = (namespace?: string): ThunkResult<Pr
     if (!namespace) {
       namespace = getState().namespaces.active;
     }
-
+    if (!namespace) {
+      return;
+    }
     const statefulSetOptions = await api.getStatefulSetOptions(namespace);
 
     dispatch({
