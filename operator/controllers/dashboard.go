@@ -252,6 +252,7 @@ const (
 	SSO_NAME                  = "sso"
 )
 
+// - wildcard cert
 // - httpRoute
 // - protectedEndpoint
 // - sso to kalm-SaaS
@@ -259,6 +260,10 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(config *insta
 	baseDomain := config.Spec.BaseDashboardDomain
 	if baseDomain == "" {
 		return nil
+	}
+
+	if err := r.reconcileHttpsCertForDomain(baseDomain, true); err != nil {
+		return err
 	}
 
 	if err := r.reconcileHttpRouteForDashboard(baseDomain); err != nil {
@@ -279,6 +284,47 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(config *insta
 
 	return nil
 }
+
+// func (r *KalmOperatorConfigReconciler) reconcileHttpsCertForDashboard(baseDashboardDomain string) error {
+// 	certName := fmt.Sprintf("kalmoperator-dashboard-%s", keepOnlyLetters(baseDashboardDomain, "-"))
+// 	domains := []string{
+// 		baseDashboardDomain,
+// 		fmt.Sprintf("*.%s", baseDashboardDomain),
+// 	}
+
+// 	expectedCert := v1alpha1.HttpsCert{
+// 		ObjectMeta: metav1.ObjectMeta{
+// 			Name: certName,
+// 			Labels: map[string]string{
+// 				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultSystemTenantName,
+// 			},
+// 		},
+// 		Spec: v1alpha1.HttpsCertSpec{
+// 			HttpsCertIssuer: v1alpha1.DefaultDNS01IssuerName,
+// 			Domains:         domains,
+// 		},
+// 	}
+
+// 	var httpsCert v1alpha1.HttpsCert
+// 	var isNew bool
+
+// 	if err := r.Get(r.Ctx, client.ObjectKey{Name: expectedCert.Name}, &httpsCert); err != nil {
+// 		if errors.IsNotFound(err) {
+// 			isNew = true
+// 			httpsCert = expectedCert
+// 		} else {
+// 			return err
+// 		}
+// 	} else {
+// 		httpsCert.Spec = expectedCert.Spec
+// 	}
+
+// 	if isNew {
+// 		return r.Create(r.Ctx, &httpsCert)
+// 	} else {
+// 		return r.Update(r.Ctx, &httpsCert)
+// 	}
+// }
 
 func (r *KalmOperatorConfigReconciler) reconcileHttpRouteForDashboard(baseDashboardDomain string) error {
 	domains := []string{

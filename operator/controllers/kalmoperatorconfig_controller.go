@@ -250,7 +250,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		}
 	}
 
-	if err := r.reconcileKalmDashboard(ctx, config); err != nil {
+	if err := r.reconcileKalmDashboard(config); err != nil {
 		return err
 	}
 
@@ -270,6 +270,8 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 
 	baseAppDomain := config.Spec.BaseAppDomain
 	if baseAppDomain != "" {
+		// baseDNSDomain exist -> ACMEServer ok -> so we can apply for wildcard cert
+		// maybe a more strict check on kalmoperatorconfig for SaaS mode is a better way to simplify the logic
 		applyForWildcardCert := baseDNSDomain != ""
 
 		if err := r.reconcileHttpsCertForDomain(baseAppDomain, applyForWildcardCert); err != nil {
