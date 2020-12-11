@@ -9,8 +9,9 @@ export const LOAD_TENANT_INFO_PENDING = "LOAD_TENANT_INFO_PENDING";
 export const LOAD_TENANT_INFO_FULFILLED = "LOAD_TENANT_INFO_FULFILLED";
 export const LOAD_TENANT_INFO_FAILED = "LOAD_TENANT_INFO_FAILED";
 
+export const LOAD_EXTRA_INFO_PENDING = "LOAD_EXTRA_INFO_PENDING";
 export const LOAD_EXTRA_INFO_FULFILLED = "LOAD_EXTRA_INFO_FULFILLED";
-
+export const LOAD_EXTRA_INFO_FAILED = "LOAD_EXTRA_INFO_FAILED";
 export interface ExtraInfo {
   newTenantUrl: string;
   mode: "local" | "multiple-tenancy";
@@ -70,6 +71,10 @@ export interface LoadTenantInfoStatusAction {
   type: typeof LOAD_TENANT_INFO_PENDING | typeof LOAD_TENANT_INFO_FAILED;
 }
 
+export interface LoadExtraInfoStatusAction {
+  type: typeof LOAD_EXTRA_INFO_PENDING | typeof LOAD_EXTRA_INFO_FAILED;
+}
+
 export interface LoadTenantInfoFulfilledAction {
   type: typeof LOAD_TENANT_INFO_FULFILLED;
   payload: Tenant;
@@ -85,4 +90,5 @@ export type ClusterActions =
   | LoadClusterInfoFulfilledAction
   | LoadTenantInfoStatusAction
   | LoadTenantInfoFulfilledAction
-  | LoadExtraInfoFulfilledAction;
+  | LoadExtraInfoFulfilledAction
+  | LoadExtraInfoStatusAction;
