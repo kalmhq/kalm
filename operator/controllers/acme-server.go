@@ -40,13 +40,14 @@ func (r *KalmOperatorConfigReconciler) reconcileACMEServer(baseDNSDomain string)
 			isNew = true
 			acmeServer = expectedACMEServer
 		} else {
-			acmeServer.Spec = expectedACMEServer.Spec
+			return err
 		}
 	}
 
 	if isNew {
 		return r.Create(r.Ctx, &acmeServer)
 	} else {
+		acmeServer.Spec = expectedACMEServer.Spec
 		return r.Update(r.Ctx, &acmeServer)
 	}
 }

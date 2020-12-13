@@ -128,7 +128,7 @@ func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	if err == retryLaterErr {
 		r.Log.Info("Dependency not ready, retry after 5 seconds")
 		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
-	} else {
+	} else if err != nil {
 		r.Log.Info("reconcileResources fail", "error", err)
 	}
 
