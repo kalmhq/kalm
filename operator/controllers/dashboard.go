@@ -282,7 +282,7 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(config *insta
 
 	oidcIssuerURL := config.Spec.OIDCIssuerURL
 	if oidcIssuerURL != "" {
-		err := r.reconcileSSOForOIDCIssuer(oidcIssuerURL)
+		err := r.reconcileSSOForOIDCIssuer(oidcIssuerURL, baseDomain)
 		if err != nil {
 			r.Log.Info("reconcileSSOForOIDCIssuer fail", "error", err)
 			return err
@@ -426,7 +426,7 @@ func (r *KalmOperatorConfigReconciler) reconcileProtectedEndpointForDashboard(ba
 	}
 }
 
-func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(issuerURL string) error {
+func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(issuerURL, authProxyDomain string) error {
 	expirySec := uint32(300)
 
 	expectedSSO := v1alpha1.SingleSignOnConfig{
@@ -440,6 +440,7 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(issuerURL strin
 		Spec: v1alpha1.SingleSignOnConfigSpec{
 			Issuer:               issuerURL,
 			IDTokenExpirySeconds: &expirySec,
+			Domain:               authProxyDomain,
 		},
 	}
 
