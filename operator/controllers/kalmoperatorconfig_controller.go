@@ -125,10 +125,11 @@ func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	config := &configs.Items[0]
 
 	err := r.reconcileResources(config, ctx, log)
-
 	if err == retryLaterErr {
 		r.Log.Info("Dependency not ready, retry after 5 seconds")
 		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+	} else {
+		r.Log.Info("reconcileResources fail", "error", err)
 	}
 
 	return ctrl.Result{}, err
@@ -246,17 +247,20 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		}
 
 		if err := r.reconcileKalmController(config); err != nil {
+			r.Log.Info("reconcileKalmController fail", "error", err)
 			return err
 		}
 	}
 
 	if err := r.reconcileKalmDashboard(config); err != nil {
+		r.Log.Info("reconcileKalmDashboard fail", "error", err)
 		return err
 	}
 
 	isLocalMode := config.Spec.KalmType == "local"
 	if isLocalMode {
 		if err := r.reconcileDefaultTenantForLocalMode(); err != nil {
+			r.Log.Info("reconcileDefaultTenantForLocalMode fail", "error", err)
 			return err
 		}
 	}
@@ -264,6 +268,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 	baseDNSDomain := config.Spec.BaseDNSDomain
 	if baseDNSDomain != "" {
 		if err := r.reconcileACMEServer(baseDNSDomain); err != nil {
+			r.Log.Info("reconcileACMEServer fail", "error", err)
 			return err
 		}
 	}
@@ -275,6 +280,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		applyForWildcardCert := baseDNSDomain != ""
 
 		if err := r.reconcileHttpsCertForDomain(baseAppDomain, applyForWildcardCert); err != nil {
+			r.Log.Info("reconcileHttpsCertForDomain fail", "error", err)
 			return err
 		}
 	}
