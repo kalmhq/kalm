@@ -96,10 +96,12 @@ const dashboardName = "kalm"
 func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installv1alpha1.KalmOperatorConfig) error {
 
 	if err := r.reconcileDashboardComponent(config); err != nil {
+		r.Log.Info("reconcileDashboardComponent fail", "error", err)
 		return err
 	}
 
 	if err := r.reconcileAuthzPolicyForDashboard(); err != nil {
+		r.Log.Info("reconcileAuthzPolicyForDashboard fail", "error", err)
 		return err
 	}
 
@@ -108,6 +110,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installv1a
 	if isSaaSMode && baseDashboardDomain != "" {
 		err := r.reconcileAccessForDashboard(config)
 		if err != nil {
+			r.Log.Info("reconcileAccessForDashboard fail", "error", err)
 			return err
 		}
 	}
@@ -263,14 +266,17 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(config *insta
 	}
 
 	if err := r.reconcileHttpsCertForDomain(baseDomain, true); err != nil {
+		r.Log.Info("reconcileHttpsCertForDomain fail", "error", err)
 		return err
 	}
 
 	if err := r.reconcileHttpRouteForDashboard(baseDomain); err != nil {
+		r.Log.Info("reconcileHttpRouteForDashboard fail", "error", err)
 		return err
 	}
 
 	if err := r.reconcileProtectedEndpointForDashboard(baseDomain); err != nil {
+		r.Log.Info("reconcileProtectedEndpointForDashboard fail", "error", err)
 		return err
 	}
 
@@ -278,6 +284,7 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(config *insta
 	if oidcIssuerURL != "" {
 		err := r.reconcileSSOForOIDCIssuer(oidcIssuerURL)
 		if err != nil {
+			r.Log.Info("reconcileSSOForOIDCIssuer fail", "error", err)
 			return err
 		}
 	}
@@ -376,7 +383,7 @@ func (r *KalmOperatorConfigReconciler) reconcileHttpRouteForDashboard(baseDashbo
 		return r.Create(r.Ctx, &route)
 	} else {
 		route.Spec = expectedRoute.Spec
-		return r.Create(r.Ctx, &route)
+		return r.Update(r.Ctx, &route)
 	}
 }
 
