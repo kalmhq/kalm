@@ -68,18 +68,15 @@ const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, De
 const mapStateToProps = (state: RootState) => {
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");
-  let currentTabIndex = tabs.map((t) => t.replace(/\s/g, "")).indexOf(`${anchor}`);
-  if (currentTabIndex < 0) {
-    currentTabIndex = 0;
-  }
 
   return {
     registries: state.registries.registries,
     tutorialState: state.tutorial,
     isSubmittingApplicationComponent: state.components.isSubmittingApplicationComponent,
     nodeLabels: state.nodes.labels,
-    currentTabIndex,
+    anchor,
     form: COMPONENT_FORM_ID,
+    tenant: state.auth.tenant,
   };
 };
 
@@ -149,7 +146,13 @@ interface State {}
 type RenderProps = FormRenderProps<ComponentLike>;
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
-  private tabs = tabs;
+  get tabs() {
+    const { tenant } = this.props;
+    if (tenant) {
+      return tabs.filter((tab) => tab !== Scheduling);
+    }
+    return tabs;
+  }
 
   private loadRequiredData() {
     const { dispatch } = this.props;
@@ -502,21 +505,25 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Nodes</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <Grid item xs={12}>
-          <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
-        </Grid>
-        <Grid item xs={12}>
-          <Field
-            name="preferNotCoLocated"
-            component={FinalBoolCheckboxRender}
-            label={sc.SCHEDULING_COLOCATE_CHECKBOX}
-          />
-        </Grid>
+        {this.props.tenant ? null : (
+          <>
+            <Grid item xs={12}>
+              <SectionTitle>
+                <Subtitle1>Nodes</Subtitle1>
+              </SectionTitle>
+            </Grid>
+            <Grid item xs={12}>
+              <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
+            </Grid>
+            <Grid item xs={12}>
+              <Field
+                name="preferNotCoLocated"
+                component={FinalBoolCheckboxRender}
+                label={sc.SCHEDULING_COLOCATE_CHECKBOX}
+              />
+            </Grid>
+          </>
+        )}
       </Grid>
     );
   }
@@ -583,8 +590,18 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private getCurrentTabIndex() {
+    const { anchor } = this.props;
+    let currentTabIndex = this.tabs.map((t) => t.replace(/\s/g, "")).indexOf(`${anchor}`);
+    if (currentTabIndex < 0) {
+      currentTabIndex = 0;
+    }
+    return currentTabIndex;
+  }
+
   private renderTabDetails(isEdit: boolean) {
-    const { classes, currentTabIndex } = this.props;
+    const { classes } = this.props;
+    const currentTabIndex = this.getCurrentTabIndex();
 
     return (
       <>
@@ -632,7 +649,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderTabs() {
-    const { classes, currentTabIndex } = this.props;
+    const { classes } = this.props;
+    const currentTabIndex = this.getCurrentTabIndex();
+
     return (
       <FormSpy subscription={{ errors: true }}>
         {({ errors }: FormSpyRenderProps<ComponentLike>) => {
@@ -737,6 +756,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             );
           }}
         </FormSpy>
+
+        <Box p={1}>{this.renderScheduling()}</Box>
       </Grid>
     );
   }
