@@ -56,6 +56,7 @@ type ProtectedEndpointStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:printcolumn:name="Tenant",type="string",JSONPath=".metadata.labels.tenant"
 // +kubebuilder:printcolumn:name="Type",type="string",JSONPath=".spec.type"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // ProtectedEndpoint is the Schema for the protectedendpoints API
 type ProtectedEndpoint struct {
