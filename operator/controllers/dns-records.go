@@ -18,7 +18,7 @@ func (r *KalmOperatorConfigReconciler) reconcileDNSRecords(config *installv1alph
 	}
 
 	cloudflareConfig := config.Spec.CloudflareConfig
-	if cloudflareConfig != nil {
+	if cloudflareConfig == nil {
 		r.Log.Info("cloudflareConfig not exist, reconcileDNSRecords skipped")
 		return nil
 	}
