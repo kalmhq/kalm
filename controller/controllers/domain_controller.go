@@ -197,7 +197,7 @@ func (r *DomainReconciler) reconcileIPForUserSubDomainCNAME(cname string) error 
 				return nil
 			}
 
-			return r.dnsMgr.UpdateDNSRecord(corev1alpha1.DNSTypeA, cname, targetIP)
+			return r.dnsMgr.UpsertDNSRecord(corev1alpha1.DNSTypeA, cname, targetIP)
 		}
 	}
 

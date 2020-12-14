@@ -19,8 +19,8 @@ func (r *KalmOperatorConfigReconciler) reconcileACMEServer(baseDNSDomain string)
 		return nil
 	}
 
-	acmeDomain := fmt.Sprintf("acme.%s", baseDNSDomain)
-	nsDomain := fmt.Sprintf("ns-acme.%s", baseDNSDomain)
+	acmeDomain := getBaseACMEDomain(baseDNSDomain)
+	nsDomain := getBaseNSDomain(baseDNSDomain)
 
 	expectedACMEServer := v1alpha1.ACMEServer{
 		ObjectMeta: ctrl.ObjectMeta{
@@ -50,4 +50,22 @@ func (r *KalmOperatorConfigReconciler) reconcileACMEServer(baseDNSDomain string)
 		acmeServer.Spec = expectedACMEServer.Spec
 		return r.Update(r.Ctx, &acmeServer)
 	}
+}
+
+func getBaseACMEDomain(baseDNSDomain string) string {
+	if baseDNSDomain == "" {
+		return ""
+	}
+
+	acmeDomain := fmt.Sprintf("acme.%s", baseDNSDomain)
+	return acmeDomain
+}
+
+func getBaseNSDomain(baseDNSDomain string) string {
+	if baseDNSDomain == "" {
+		return ""
+	}
+
+	nsDomain := fmt.Sprintf("ns-acme.%s", baseDNSDomain)
+	return nsDomain
 }

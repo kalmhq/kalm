@@ -11,19 +11,18 @@ import (
 
 // example: us-west1-1.clusters.kalm-apps.com
 func (r *KalmOperatorConfigReconciler) reconcileHttpsCertForDomain(baseAppDomain string, applyForWildcardCert bool) error {
-	var certName string
+	certName := getCertName(baseAppDomain, applyForWildcardCert)
+
 	var certIssuer string
 	var domains []string
 
 	if applyForWildcardCert {
-		certName = fmt.Sprintf("kalmoperator-dns01-%s", keepOnlyLetters(baseAppDomain, "-"))
 		certIssuer = v1alpha1.DefaultDNS01IssuerName
 		domains = []string{
 			baseAppDomain,
 			fmt.Sprintf("*.%s", baseAppDomain),
 		}
 	} else {
-		certName = fmt.Sprintf("kalmoperator-http01-%s", keepOnlyLetters(baseAppDomain, "-"))
 		certIssuer = v1alpha1.DefaultHTTP01IssuerName
 		domains = []string{
 			baseAppDomain,
@@ -62,6 +61,18 @@ func (r *KalmOperatorConfigReconciler) reconcileHttpsCertForDomain(baseAppDomain
 	} else {
 		return r.Update(r.Ctx, &httpsCert)
 	}
+}
+
+func getCertName(domain string, applyForWildcardCert bool) string {
+	var certName string
+
+	if applyForWildcardCert {
+		certName = fmt.Sprintf("kalmoperator-dns01-%s", keepOnlyLetters(domain, "-"))
+	} else {
+		certName = fmt.Sprintf("kalmoperator-http01-%s", keepOnlyLetters(domain, "-"))
+	}
+
+	return certName
 }
 
 func keepOnlyLetters(domain, replace string) string {

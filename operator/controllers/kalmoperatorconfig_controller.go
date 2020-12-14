@@ -285,6 +285,14 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		}
 	}
 
+	cloudflareConfig := config.Spec.CloudflareConfig
+	if cloudflareConfig != nil {
+		if err := r.reconcileDNSRecords(config); err != nil {
+			r.Log.Info("reconcileDNSRecords fail", "error", err)
+			return err
+		}
+	}
+
 	return nil
 }
 
