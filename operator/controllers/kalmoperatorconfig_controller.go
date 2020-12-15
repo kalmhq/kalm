@@ -300,6 +300,13 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		r.Log.Info("cloudflareConfig not set, reconcileDNSRecords() skipped")
 	}
 
+	if !isLocalMode {
+		if err := r.reconcileAccessTokenForSaaS(config); err != nil {
+			r.Log.Info("reconcileAccessTokenForSaaS fail", "error", err)
+			return err
+		}
+	}
+
 	return nil
 }
 
