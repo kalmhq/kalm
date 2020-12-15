@@ -953,7 +953,8 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(
 				Namespace:   r.component.Namespace,
 			},
 			Spec: appsV1.StatefulSetSpec{
-				Template: *spec,
+				Template:    *spec,
+				ServiceName: getNameForHeadlessService(r.component.Name),
 				Selector: &metaV1.LabelSelector{
 					MatchLabels: labelMap,
 				},
