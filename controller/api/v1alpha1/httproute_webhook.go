@@ -67,6 +67,11 @@ func (r *HttpRoute) ValidateCreate() error {
 	// limit the count of routes
 	tenantName := r.Labels[TenantNameLabelKey]
 
+	if tenantName == DefaultGlobalTenantName ||
+		tenantName == DefaultSystemTenantName {
+		return nil
+	}
+
 	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Create, false)
 	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
 		httproutelog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
@@ -97,6 +102,11 @@ func (r *HttpRoute) ValidateDelete() error {
 
 	tenantName := r.Labels[TenantNameLabelKey]
 	if tenantName == "" {
+		return nil
+	}
+
+	if tenantName == DefaultGlobalTenantName ||
+		tenantName == DefaultSystemTenantName {
 		return nil
 	}
 
