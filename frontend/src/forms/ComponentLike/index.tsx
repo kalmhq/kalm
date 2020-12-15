@@ -76,7 +76,7 @@ const mapStateToProps = (state: RootState) => {
     nodeLabels: state.nodes.labels,
     anchor,
     form: COMPONENT_FORM_ID,
-    tenant: state.auth.tenant,
+    mode: state.extraInfo.info.mode,
   };
 };
 
@@ -147,8 +147,8 @@ type RenderProps = FormRenderProps<ComponentLike>;
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   get tabs() {
-    const { tenant } = this.props;
-    if (tenant) {
+    const { mode } = this.props;
+    if (mode === "multiple-tenancy") {
       return tabs.filter((tab) => tab !== Scheduling);
     }
     return tabs;
@@ -505,7 +505,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        {this.props.tenant ? null : (
+        {this.props.mode === "multiple-tenancy" ? null : (
           <>
             <Grid item xs={12}>
               <SectionTitle>
