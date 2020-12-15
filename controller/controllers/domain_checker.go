@@ -195,15 +195,15 @@ func (c *DomainChecker) decideRequeueAfter(domain v1alpha1.Domain, isReady bool)
 	failCnt := c.failCountMap[domain.Spec.Domain]
 	c.log.Info("failCount", "domain", domain.Spec.Domain, "cnt", failCnt)
 
-	if failCnt <= 25 {
-		return 5 * time.Second // last for ~2min
-	} else if failCnt <= 50 {
-		return 10 * time.Second // last for ~4min
-	} else if failCnt <= 100 {
-		return 30 * time.Second // last for ~25min
+	if failCnt <= 60 {
+		return 5 * time.Second // last for ~5min
+	} else if failCnt <= 120 {
+		return 10 * time.Second // last for ~10min
+	} else if failCnt <= 180 {
+		return 30 * time.Second // last for ~30min
 	}
 
-	return 1 * time.Hour
+	return 5 * time.Minute
 }
 
 func (c *DomainChecker) decideStatus(domain v1alpha1.Domain, isReady bool) *v1alpha1.Domain {
