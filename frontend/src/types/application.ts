@@ -1,8 +1,7 @@
-import { ComponentLike } from "./componentTemplate";
 import { MetricList, Metrics } from "./common";
+import { ComponentLike } from "./componentTemplate";
 
 export const CREATE_APPLICATION = "CREATE_APPLICATION";
-export const UPDATE_APPLICATION = "UPDATE_APPLICATION";
 export const DELETE_APPLICATION = "DELETE_APPLICATION";
 export const LOAD_APPLICATIONS_PENDING = "LOAD_APPLICATIONS_PENDING";
 export const LOAD_APPLICATIONS_FULFILLED = "LOAD_APPLICATIONS_FULFILLED";
@@ -96,13 +95,6 @@ export interface ApplicationDetails extends Application {
 
 export interface CreateApplicationAction {
   type: typeof CREATE_APPLICATION;
-  payload: {
-    application: ApplicationDetails;
-  };
-}
-
-export interface UpdateApplicationAction {
-  type: typeof UPDATE_APPLICATION;
   payload: {
     application: ApplicationDetails;
   };
@@ -208,7 +200,6 @@ export interface SetIsSubmittingApplicationComponent {
 
 export type ApplicationActions =
   | CreateApplicationAction
-  | UpdateApplicationAction
   | DeleteApplicationAction
   | LoadApplicationsFulfilledAction
   | LoadApplicationsPendingAction

@@ -1,5 +1,6 @@
 import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { updateComponentAction } from "actions/component";
+import { setSuccessNotificationAction } from "actions/notification";
 import { push } from "connected-react-router";
 import { ComponentLikeForm } from "forms/ComponentLike";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
@@ -36,6 +37,7 @@ class ComponentEditRaw extends React.PureComponent<Props> {
       });
     }
     await dispatch(updateComponentAction(formValues, activeNamespaceName));
+    dispatch(setSuccessNotificationAction("Update component successfully"));
     dispatch(push(`/applications/${activeNamespaceName}/components/${component.name}`));
   };
 

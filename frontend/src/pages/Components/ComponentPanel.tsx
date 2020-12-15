@@ -1,6 +1,6 @@
 import { Box, Button, Container, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteComponentAction } from "actions/component";
-import { Expansion, ExpansionProps } from "widgets/expansion";
+import { setSuccessNotificationAction } from "actions/notification";
 import { PodsTable } from "pages/Components/PodsTable";
 import React from "react";
 import { connect } from "react-redux";
@@ -9,9 +9,10 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Application, ApplicationComponentDetails } from "types/application";
 import { WorkloadType } from "types/componentTemplate";
-import { Subtitle1, Caption } from "widgets/Label";
+import { Expansion, ExpansionProps } from "widgets/expansion";
 import { KalmComponentsIcon } from "widgets/Icon";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { Caption, Subtitle1 } from "widgets/Label";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -143,7 +144,10 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
               useText
               popupId="delete-component-popup"
               popupTitle="DELETE COMPONENT?"
-              confirmedAction={() => dispatch(deleteComponentAction(component.name, application.name))}
+              confirmedAction={async () => {
+                await dispatch(deleteComponentAction(component.name, application.name));
+                dispatch(setSuccessNotificationAction("Delete component successfully"));
+              }}
             />
           </>
         )}

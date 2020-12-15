@@ -1,6 +1,6 @@
 import { Box, Button, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteComponentAction } from "actions/component";
-import { Expansion, ExpansionProps } from "widgets/expansion";
+import { setSuccessNotificationAction } from "actions/notification";
 import { PodsTable } from "pages/Components/PodsTable";
 import { ComponentStatus } from "pages/Components/Status";
 import React from "react";
@@ -10,9 +10,10 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Application, ApplicationComponentDetails } from "types/application";
 import { WorkloadType } from "types/componentTemplate";
+import { Expansion, ExpansionProps } from "widgets/expansion";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { Subtitle1 } from "widgets/Label";
 import { ComponentBrifeInfo } from "./BrifeInfo";
-import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -106,7 +107,10 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
             useText
             popupId="delete-component-popup"
             popupTitle="DELETE COMPONENT?"
-            confirmedAction={() => dispatch(deleteComponentAction(component.name, application.name))}
+            confirmedAction={async () => {
+              await dispatch(deleteComponentAction(component.name, application.name));
+              dispatch(setSuccessNotificationAction("Delete component successfully"));
+            }}
           />
         </Box>
         <ComponentBrifeInfo component={component} activeNamespaceName={application.name} />
