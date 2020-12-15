@@ -8,12 +8,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const DefaultTenantNameForLocalMode = "global"
+const DefaultTenantName = "global"
 
 func (r *KalmOperatorConfigReconciler) reconcileDefaultTenantForLocalMode() error {
 	expectedTenant := v1alpha1.Tenant{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: DefaultTenantNameForLocalMode,
+			Name: DefaultTenantName,
 		},
 		Spec: v1alpha1.TenantSpec{
 			TenantDisplayName: "auto-tenant-for-local-mode",
@@ -34,10 +34,41 @@ func (r *KalmOperatorConfigReconciler) reconcileDefaultTenantForLocalMode() erro
 		},
 	}
 
+	return r.createOrUpdateTenant(expectedTenant)
+}
+
+func (r *KalmOperatorConfigReconciler) reconcileDefaultTenantForSaaSMode() error {
+	expectedTenant := v1alpha1.Tenant{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: DefaultTenantName,
+		},
+		Spec: v1alpha1.TenantSpec{
+			TenantDisplayName: "auto-tenant-for-saas-mode",
+			ResourceQuota: map[v1alpha1.ResourceName]resource.Quantity{
+				v1alpha1.ResourceCPU:                   resource.MustParse("10"),
+				v1alpha1.ResourceMemory:                resource.MustParse("10Gi"),
+				v1alpha1.ResourceStorage:               resource.MustParse("100Gi"),
+				v1alpha1.ResourceEphemeralStorage:      resource.MustParse("100Gi"),
+				v1alpha1.ResourceHttpRoutesCount:       resource.MustParse("100"),
+				v1alpha1.ResourceHttpsCertsCount:       resource.MustParse("100"),
+				v1alpha1.ResourceDockerRegistriesCount: resource.MustParse("100"),
+				v1alpha1.ResourceApplicationsCount:     resource.MustParse("100"),
+				v1alpha1.ResourceServicesCount:         resource.MustParse("100"),
+				v1alpha1.ResourceComponentsCount:       resource.MustParse("100"),
+				v1alpha1.ResourceAccessTokensCount:     resource.MustParse("100"),
+			},
+			Owners: []string{"kalm-operator"},
+		},
+	}
+
+	return r.createOrUpdateTenant(expectedTenant)
+}
+
+func (r *KalmOperatorConfigReconciler) createOrUpdateTenant(expectedTenant v1alpha1.Tenant) error {
 	var tenant v1alpha1.Tenant
 	isNew := false
 
-	if err := r.Get(r.Ctx, client.ObjectKey{Name: DefaultTenantNameForLocalMode}, &tenant); err != nil {
+	if err := r.Get(r.Ctx, client.ObjectKey{Name: DefaultTenantName}, &tenant); err != nil {
 		if errors.IsNotFound(err) {
 			isNew = true
 		} else {

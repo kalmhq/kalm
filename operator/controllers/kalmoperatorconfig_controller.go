@@ -263,6 +263,11 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 			r.Log.Info("reconcileDefaultTenantForLocalMode fail", "error", err)
 			return err
 		}
+	} else {
+		if err := r.reconcileDefaultTenantForSaaSMode(); err != nil {
+			r.Log.Info("reconcileDefaultTenantForSaaSMode fail", "error", err)
+			return err
+		}
 	}
 
 	baseDNSDomain := config.Spec.BaseDNSDomain
