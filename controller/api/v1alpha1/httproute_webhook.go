@@ -209,7 +209,8 @@ func isVerifiedUserDomain(domain, tenantName string) (bool, error) {
 	}
 
 	for _, d := range domainList.Items {
-		if !d.Status.IsDNSTargetConfigured {
+		if !d.Status.IsDNSTargetConfigured &&
+			!d.Status.IsTxtConfigured {
 			continue
 		}
 

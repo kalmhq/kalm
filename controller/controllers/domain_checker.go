@@ -28,6 +28,7 @@ type DomainChecker struct {
 	failCountMap               map[string]int // for failed
 	verifiedTurnFailedCountMap map[string]int // for verified turn into failed
 	verifiedCountMap           map[string]int // for verified
+	txtTurnFailedCountMap      map[string]int // for verified turn into failed
 	informerHasSynced          func() bool
 	log                        logr.Logger
 }
@@ -150,14 +151,19 @@ func (c *DomainChecker) syncHandler(key string) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
-	isConfiguredAsExpected, err := v1alpha1.IsDomainConfiguredAsExpected(domain.Spec)
+	isDNSTargetConfiguredRight, err := v1alpha1.IsDNSTargetConfiguredAsExpected(domain.Spec)
 	if err != nil {
 		return ctrl.Result{RequeueAfter: 10 * time.Second}, err
 	}
 
-	requeueAfter := c.decideRequeueAfter(domain, isConfiguredAsExpected)
+	isTxtConfiguredRight, err := v1alpha1.IsDomainTxtConfiguredAsExpected(domain.Spec)
+	if err != nil {
+		c.log.Info("IsDomainTxtConfiguredAsExpected failed, ignored", "err", err)
+	}
 
-	copied := c.decideStatus(domain, isConfiguredAsExpected)
+	requeueAfter := c.decideRequeueAfter(domain, isDNSTargetConfiguredRight)
+
+	copied := c.decideStatus(domain, isDNSTargetConfiguredRight, isTxtConfiguredRight)
 	if err := c.client.Status().Update(c.ctx, copied); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -206,11 +212,11 @@ func (c *DomainChecker) decideRequeueAfter(domain v1alpha1.Domain, isReady bool)
 	return 5 * time.Minute
 }
 
-func (c *DomainChecker) decideStatus(domain v1alpha1.Domain, isReady bool) *v1alpha1.Domain {
+func (c *DomainChecker) decideStatus(domain v1alpha1.Domain, isDNSTargetReady, isDNSTxtReady bool) *v1alpha1.Domain {
 
 	copied := domain.DeepCopy()
 
-	if isReady {
+	if isDNSTargetReady {
 		//reset fail count
 		delete(c.verifiedTurnFailedCountMap, domain.Spec.Domain)
 		delete(c.failCountMap, domain.Spec.Domain)
@@ -242,6 +248,24 @@ func (c *DomainChecker) decideStatus(domain v1alpha1.Domain, isReady bool) *v1al
 			// inc fail count
 			cnt := c.failCountMap[domain.Spec.Domain]
 			c.failCountMap[domain.Spec.Domain] = min(cnt+1, MaxCount)
+		}
+	}
+
+	if isDNSTxtReady {
+		copied.Status.IsTxtConfigured = isDNSTxtReady
+		delete(c.txtTurnFailedCountMap, domain.Spec.Domain)
+	} else {
+		txtWasReady := domain.Status.IsTxtConfigured
+
+		if txtWasReady {
+			c.txtTurnFailedCountMap[domain.Spec.Domain] += 1
+
+			// only set false if failCnt > threshold
+			if c.txtTurnFailedCountMap[domain.Spec.Domain] > VerifiedTurnFailedCntThreadhold {
+				copied.Status.IsTxtConfigured = false
+			}
+		} else {
+			copied.Status.IsTxtConfigured = false
 		}
 	}
 

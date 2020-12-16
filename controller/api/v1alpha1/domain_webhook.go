@@ -27,6 +27,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/rand"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -93,6 +94,10 @@ func (r *Domain) Default() {
 		r.Spec.DNSTarget = cname
 	default:
 		domainlog.Info("unknown DNSType", "type", r.Spec.DNSType)
+	}
+
+	if r.Spec.Txt == "" {
+		r.Spec.Txt = rand.String(128)
 	}
 }
 
@@ -205,7 +210,27 @@ func (r *Domain) ValidateDelete() error {
 	return nil
 }
 
-func IsDomainConfiguredAsExpected(domainSpec DomainSpec) (bool, error) {
+func IsDomainTxtConfiguredAsExpected(domainSpec DomainSpec) (bool, error) {
+	expectedTxt := domainSpec.Txt
+	if expectedTxt == "" {
+		return true, nil
+	}
+
+	txtList, err := getTxtListOfDomain(domainSpec.Domain)
+	if err != nil {
+		return false, err
+	}
+
+	for _, txt := range txtList {
+		if txt == expectedTxt {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func IsDNSTargetConfiguredAsExpected(domainSpec DomainSpec) (bool, error) {
 	domain := domainSpec.Domain
 
 	expected := domainSpec.DNSTarget
@@ -341,6 +366,34 @@ func getDirectCNAMEOfDomain(domain string) (string, error) {
 
 	target := r.Answer[0].(*dns.CNAME).Target
 	return cleanTailingDotInDomainIfExist(target), nil
+}
+
+func getTxtListOfDomain(domain string) ([]string, error) {
+	c := new(dns.Client)
+	m := new(dns.Msg)
+
+	if !strings.HasSuffix(domain, ".") {
+		domain = domain + "."
+	}
+
+	m.SetQuestion(domain, dns.TypeTXT)
+
+	r, _, err := c.Exchange(m, getDNSServerAddress())
+	if err != nil {
+		domainlog.Error(err, "fail when call dnsClient.Exchange")
+		return nil, err
+	}
+
+	if r == nil {
+		domainlog.Info("dns.Msg returned by calling dnsClient.Exchange is nil")
+		return nil, nil
+	} else if len(r.Answer) <= 0 {
+		domainlog.Info("no Answer exist in dns.Msg returned by calling dnsClient.Exchange")
+		return nil, nil
+	}
+
+	txt := r.Answer[0].(*dns.TXT).Txt
+	return txt, nil
 }
 
 func cleanTailingDotInDomainIfExist(domain string) string {
