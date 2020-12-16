@@ -8,11 +8,12 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof styles> {
+export interface RichEditorProps extends WithStyles<typeof styles> {
   value: string;
   mode?: string;
   readOnly?: boolean;
   onChange?: (value: string, event?: any) => void;
+  onBlur?: (value: string, event?: any) => void;
   height?: string;
   wrapEnabled?: boolean;
   tabSize?: number;
@@ -37,8 +38,8 @@ const detectMode = (text: string): string => {
   }
 };
 
-class RichEditorRaw extends React.PureComponent<Props, State> {
-  constructor(props: Props) {
+class RichEditorRaw extends React.PureComponent<RichEditorProps, State> {
+  constructor(props: RichEditorProps) {
     super(props);
     this.state = {
       mode: "text",
@@ -77,7 +78,7 @@ class RichEditorRaw extends React.PureComponent<Props, State> {
       return null;
     }
 
-    const { readOnly, tabSize, height, wrapEnabled, classes, value, onChange } = this.props;
+    const { readOnly, tabSize, height, wrapEnabled, classes, value, onChange, onBlur } = this.props;
     return (
       <AceEditor
         className={classes.root}
@@ -86,6 +87,7 @@ class RichEditorRaw extends React.PureComponent<Props, State> {
         value={value}
         height={height}
         onChange={onChange}
+        onBlur={onBlur}
         readOnly={readOnly}
         tabSize={tabSize}
         name="rich-editor"
