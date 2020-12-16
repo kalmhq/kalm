@@ -11,23 +11,34 @@ type Domain struct {
 	RecordType string `json:"recordType"`
 	Target     string `json:"target"`
 	IsBuiltIn  bool   `json:"isBuiltIn"`
+	Txt        string `json:"txt"`
+	TxtStatus  string `json:"txtStatus"`
 }
 
 func WrapDomainAsResp(d v1alpha1.Domain) Domain {
-	var status string
+	var targetStatus string
 	if d.Status.IsDNSTargetConfigured {
-		status = "ready"
+		targetStatus = "ready"
 	} else {
-		status = "pending"
+		targetStatus = "pending"
+	}
+
+	var txtStatus string
+	if d.Status.IsTxtConfigured {
+		txtStatus = "ready"
+	} else {
+		txtStatus = "pending"
 	}
 
 	return Domain{
 		Name:       d.Name,
 		Domain:     d.Spec.Domain,
 		Target:     d.Spec.DNSTarget,
-		Status:     status,
+		Status:     targetStatus,
 		RecordType: string(d.Spec.DNSType),
 		IsBuiltIn:  d.Spec.IsKalmBuiltinDomain,
+		Txt:        d.Spec.Txt,
+		TxtStatus:  txtStatus,
 	}
 }
 
