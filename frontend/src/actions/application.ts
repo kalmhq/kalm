@@ -1,5 +1,4 @@
 import { api } from "api";
-import { push } from "connected-react-router";
 import { ThunkResult } from "types";
 import {
   Application,
@@ -18,10 +17,8 @@ import {
   SetIsSubmittingApplicationComponent,
   SET_IS_SUBMITTING_APPLICATION,
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
-  UPDATE_APPLICATION,
 } from "types/application";
 import { setCurrentNamespaceAction } from "./namespaces";
-import { setSuccessNotificationAction } from "./notification";
 
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<Application>> => {
   return async (dispatch) => {
@@ -42,50 +39,7 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
       type: CREATE_APPLICATION,
       payload: { application },
     });
-    dispatch(setSuccessNotificationAction("Create application successfully"));
     return application;
-  };
-};
-
-export const updateApplicationAction = (applicationRaw: Application): ThunkResult<Promise<void>> => {
-  return async (dispatch) => {
-    // const testErrors = [
-    //   {
-    //     key: ".name",
-    //     message: "name errors"
-    //   },
-    //   {
-    //     key: ".components[1].name",
-    //     message: "components name errors"
-    //   },
-    //   {
-    //     key: ".components[1].ports",
-    //     message: "components ports errors"
-    //   }
-    // ];
-    // const submitErrors = resErrorsToSubmitErrors(testErrors);
-    // console.log("throw", submitErrors);
-    // throw new SubmissionError(submitErrors);
-
-    dispatch(setIsSubmittingApplicationAction(true));
-
-    let application: ApplicationDetails;
-
-    try {
-      application = await api.updateApplication(applicationRaw);
-    } catch (e) {
-      dispatch(setIsSubmittingApplicationAction(false));
-      throw e;
-    }
-
-    dispatch(setIsSubmittingApplicationAction(false));
-
-    dispatch({
-      type: UPDATE_APPLICATION,
-      payload: { application },
-    });
-    dispatch(setSuccessNotificationAction("Edit application successfully"));
-    dispatch(push("/applications"));
   };
 };
 

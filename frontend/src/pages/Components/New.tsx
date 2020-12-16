@@ -1,5 +1,6 @@
 import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { createComponentAction } from "actions/component";
+import { setSuccessNotificationAction } from "actions/notification";
 import { push } from "connected-react-router";
 import { ComponentLikeForm } from "forms/ComponentLike";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
@@ -23,6 +24,7 @@ class ComponentNewRaw extends React.PureComponent<Props> {
     }
 
     await dispatch(createComponentAction(formValues, activeNamespaceName));
+    dispatch(setSuccessNotificationAction("Create component successfully"));
     dispatch(push(`/applications/${activeNamespaceName}/components`));
   };
 

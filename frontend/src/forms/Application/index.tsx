@@ -1,6 +1,7 @@
 import { Box, createStyles } from "@material-ui/core";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { createApplicationAction } from "actions/application";
+import { setSuccessNotificationAction } from "actions/notification";
 import { push } from "connected-react-router";
 import { FinalTextField } from "forms/Final/textfield";
 import { FormDataPreview } from "forms/Final/util";
@@ -54,6 +55,7 @@ const ApplicationForm: React.FC<Props> = () => {
 
   const onSubmit = async (applicationFormValue: Application) => {
     await dispatch(createApplicationAction(applicationFormValue));
+    dispatch(setSuccessNotificationAction("Create application successfully"));
     dispatch(push(`/applications/${applicationFormValue.name}/components/new`));
   };
 

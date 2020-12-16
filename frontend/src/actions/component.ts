@@ -12,7 +12,6 @@ import {
 } from "types/application";
 import { correctComponentFormValuesForSubmit } from "utils/application";
 import { setIsSubmittingApplicationComponentAction } from "./application";
-import { setSuccessNotificationAction } from "./notification";
 
 export const loadComponentsAction = (namespace: string): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
@@ -63,7 +62,6 @@ export const createComponentAction = (
       type: CREATE_COMPONENT,
       payload: { applicationName, component },
     });
-    dispatch(setSuccessNotificationAction("Create component successfully"));
   };
 };
 
@@ -94,7 +92,6 @@ export const updateComponentAction = (
       type: UPDATE_COMPONENT,
       payload: { applicationName, component },
     });
-    dispatch(setSuccessNotificationAction("Update component successfully"));
   };
 };
 
@@ -110,6 +107,5 @@ export const deleteComponentAction = (componentName: string, applicationName?: s
       type: DELETE_COMPONENT,
       payload: { applicationName, componentName },
     });
-    dispatch(setSuccessNotificationAction("Delete component successfully"));
   };
 };
