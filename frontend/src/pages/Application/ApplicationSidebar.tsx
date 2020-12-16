@@ -14,6 +14,7 @@ import { DashboardIcon, KalmComponentsIcon, PeopleIcon } from "widgets/Icon";
 const mapStateToProps = (state: RootState) => {
   return {
     activeNamespaceName: state.namespaces.active,
+    mode: state.extraInfo.info.mode,
   };
 };
 
@@ -56,14 +57,14 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private getMenuData() {
-    const { activeNamespaceName, canManageNamespace: canManageScope } = this.props;
+    const { activeNamespaceName, canManageNamespace: canManageScope, mode } = this.props;
     const menus = [];
     menus.push({
       text: "Components",
       to: "/applications/" + activeNamespaceName + "/components",
       icon: <KalmComponentsIcon />,
     });
-    if (canManageScope(activeNamespaceName)) {
+    if (mode === "local" && canManageScope(activeNamespaceName)) {
       menus.push({
         text: sc.APP_MEMBERS_PAGE_NAME,
         to: "/applications/" + activeNamespaceName + "/members",
