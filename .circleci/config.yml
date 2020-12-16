@@ -262,6 +262,7 @@ workflows:
             tags:
               only: /^v.*/
       - deploy-dashboard:
+          name: deploy-dashboard-demo-cluster
           context: deploy-demo-cluster
           requires:
             - build-push-dashboard-image
@@ -271,6 +272,16 @@ workflows:
                 - master
                 - multiple-tenancy
                 - cert
+      - deploy-dashboard:
+          name: deploy-dashboard-internal-cluster
+          context: deploy-internal-cluster
+          requires:
+            - build-push-dashboard-image
+          filters:
+            branches:
+              only:
+                - master
+                - multiple-tenancy
       #- deploy-auth-proxy:
       #    context: deploy-demo-cluster
       #    requires:
