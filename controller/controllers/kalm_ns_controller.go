@@ -106,15 +106,19 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	tenant := ns.Labels[v1alpha1.TenantNameLabelKey]
 	isKalmCtrlPlaneNS := ns.Labels[v1alpha1.KalmControlPlaneLabelKey]
 
-	if tenant != "" {
-		if err := r.reconcileNetworkPoliciesForTenant(ns.Name, tenant); err != nil {
-			return ctrl.Result{}, err
-		}
-	} else if isKalmCtrlPlaneNS == "true" {
+	if isKalmCtrlPlaneNS == "true" ||
+		tenant == v1alpha1.DefaultGlobalTenantName ||
+		tenant == v1alpha1.DefaultSystemTenantName {
+
 		// disable network isolation for kalm-ctrl-plane for now
 		// if err := r.reconcileNetworkPoliciesForCtrlPlane(ns.Name); err != nil {
 		// 	return ctrl.Result{}, err
 		// }
+
+	} else if tenant != "" {
+		if err := r.reconcileNetworkPoliciesForTenant(ns.Name, tenant); err != nil {
+			return ctrl.Result{}, err
+		}
 	} else {
 		r.Log.Info("see ns neither tenant nor ctrl-plane", "ns", ns.Name)
 	}
