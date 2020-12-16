@@ -22,10 +22,12 @@ export const KRTable = ({
   title,
   columns,
   data,
+  outlined,
 }: {
   showTitle?: boolean;
   title?: string;
   columns: { Header: any; accessor: any; Cell?: any }[];
+  outlined?: boolean;
   data: any[];
 }) => {
   // https://reactjs.org/docs/hooks-faq.html#is-it-safe-to-omit-functions-from-the-list-of-dependencies
@@ -92,9 +94,9 @@ export const KRTable = ({
   );
 
   return (
-    <Paper variant="outlined" square>
+    <Paper variant={"outlined"} square style={outlined ? { border: "none", width: "100%" } : {}}>
       {showTitle ? (
-        <Grid container spacing={2}>
+        <Grid container spacing={outlined ? 0 : 2}>
           <Grid item md={9}>
             <Box display="flex" alignItems="center" padding="8px 16px">
               <Body>{title || ""}</Body>

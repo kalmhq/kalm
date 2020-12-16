@@ -35,7 +35,6 @@ import { CopyIcon, WrenchIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 import { SecretValueLabel } from "widgets/Label";
-import { RichEditor } from "widgets/RichEditor";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 
@@ -133,7 +132,7 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 
 interface State {}
 
-class ComponentBrifeInfoRaw extends React.PureComponent<Props, State> {
+class ComponentBriefInfoRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {};
@@ -488,4 +487,4 @@ class ComponentBrifeInfoRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ComponentBrifeInfo = withStyles(styles)(connect(mapStateToProps)(ComponentBrifeInfoRaw));
+export const ComponentBriefInfo = withStyles(styles)(connect(mapStateToProps)(ComponentBriefInfoRaw));

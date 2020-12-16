@@ -11,7 +11,7 @@ import { TDispatchProp } from "types";
 import { Application, ApplicationComponentDetails } from "types/application";
 import { WorkloadType } from "types/componentTemplate";
 import { Subtitle1 } from "widgets/Label";
-import { ComponentBrifeInfo } from "./BrifeInfo";
+import { ComponentBriefInfo } from "./BriefInfo";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const styles = (theme: Theme) =>
@@ -109,7 +109,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
             confirmedAction={() => dispatch(deleteComponentAction(component.name, application.name))}
           />
         </Box>
-        <ComponentBrifeInfo component={component} activeNamespaceName={application.name} />
+        <ComponentBriefInfo component={component} activeNamespaceName={application.name} />
 
         {this.renderPods()}
       </Box>
