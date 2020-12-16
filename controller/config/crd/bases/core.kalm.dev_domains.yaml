@@ -59,19 +59,21 @@ spec:
               type: string
             isKalmBuiltinDomain:
               type: boolean
+            txt:
+              type: string
           required:
           - isKalmBuiltinDomain
           type: object
         status:
           description: DomainStatus defines the observed state of Domain
           properties:
-            checkCountSinceCNAMEReadyUpdated:
-              type: integer
             isDNSTargetConfigured:
               type: boolean
+            isTxtConfigured:
+              type: boolean
           required:
-          - checkCountSinceCNAMEReadyUpdated
           - isDNSTargetConfigured
+          - isTxtConfigured
           type: object
       type: object
   version: v1alpha1
