@@ -16,6 +16,7 @@ import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { blinkTopProgressAction } from "actions/settings";
 import { Expansion, ExpansionProps } from "widgets/expansion";
+import { renderCopyableValue } from "pages/Components/InfoComponents";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -64,7 +65,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
   }
 
   private getKRTableData() {
-    const { component, classes } = this.props;
+    const { component, classes, dispatch } = this.props;
     const data: any[] = [];
 
     data.push({
@@ -73,14 +74,14 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
           <Box className={classes.componentIcon} pr={2}>
             <KalmComponentsIcon fontSize={"default"} />
           </Box>
-          <Box display="flex" minWidth={200}>
+          <Box display="flex" minWidth={100}>
             <Subtitle1>{component.name}</Subtitle1>
           </Box>
         </Box>
       ),
       pods: this.getPodsNumber(),
       type: component.workloadType,
-      image: component.image,
+      image: renderCopyableValue(component.image, dispatch),
       actions: this.componentControls(),
     });
 

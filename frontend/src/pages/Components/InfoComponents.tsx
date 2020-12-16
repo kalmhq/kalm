@@ -30,3 +30,29 @@ export const renderCommandValue = (value: any, dispatch: any) => {
     );
   }
 };
+
+export const renderCopyableValue = (value: any, dispatch: any) => {
+  if (value === undefined || value === "") {
+    return null;
+  } else {
+    return (
+      <ItemWithHoverIcon
+        icon={
+          <IconButtonWithTooltip
+            tooltipTitle="Copy"
+            aria-label="copy"
+            onClick={(e) => {
+              e.stopPropagation();
+              copy(value);
+              dispatch(setSuccessNotificationAction("Copied successful!"));
+            }}
+          >
+            <CopyIcon fontSize="small" />
+          </IconButtonWithTooltip>
+        }
+      >
+        {value}
+      </ItemWithHoverIcon>
+    );
+  }
+};

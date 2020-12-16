@@ -15,12 +15,10 @@ import {
   WithStyles,
 } from "@material-ui/core";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import { setSuccessNotificationAction } from "actions/notification";
 import clsx from "clsx";
 import { push } from "connected-react-router";
-import copy from "copy-to-clipboard";
 import { HealthTab, NetworkingTab } from "forms/ComponentLike";
-import { renderCommandValue } from "pages/Components/InfoComponents";
+import { renderCommandValue, renderCopyableValue } from "pages/Components/InfoComponents";
 import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
 import React from "react";
 import { connect } from "react-redux";
@@ -31,7 +29,7 @@ import { Probe } from "types/componentTemplate";
 import { getComponentCreatedFromAndAtString } from "utils/application";
 import { sizeStringToGi, sizeStringToMi } from "utils/sizeConv";
 import stringConsts from "utils/stringConstants";
-import { CopyIcon, WrenchIcon } from "widgets/Icon";
+import { WrenchIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 import { SecretValueLabel } from "widgets/Label";
@@ -321,31 +319,6 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderCopiableValue = (value: any) => {
-    if (value === undefined || value === "") {
-      return "-";
-    } else {
-      return (
-        <ItemWithHoverIcon
-          icon={
-            <IconButtonWithTooltip
-              tooltipTitle="Copy"
-              aria-label="copy"
-              onClick={() => {
-                copy(value);
-                this.props.dispatch(setSuccessNotificationAction("Copied successful!"));
-              }}
-            >
-              <CopyIcon fontSize="small" />
-            </IconButtonWithTooltip>
-          }
-        >
-          {value}
-        </ItemWithHoverIcon>
-      );
-    }
-  };
-
   private renderEnvs = () => {
     const { component, classes } = this.props;
     const envs = component.env;
@@ -465,7 +438,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
           { name: "Namespace", content: activeNamespaceName },
           { name: "Workload Type", content: component.workloadType },
           { name: "Pod Status", content: this.renderComponentStatus() },
-          { name: "Image", content: this.renderCopiableValue(component.image) },
+          { name: "Image", content: renderCopyableValue(component.image, dispatch) },
           { name: "Command", content: renderCommandValue(component.command, dispatch) },
           { name: "Environment Variables", content: this.renderEnvs() },
           { name: "Configuration Files", content: this.renderConfigFiles() },
