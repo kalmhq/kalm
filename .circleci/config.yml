@@ -326,6 +326,7 @@ workflows:
             tags:
               only: /^v.*/
       - deploy-controller:
+          name: deploy-controller-to-demo-cluster
           context: deploy-demo-cluster
           requires:
             - build-push-controller-image
@@ -377,6 +378,7 @@ workflows:
           requires:
             - hold
       - deploy-operator:
+          name: deploy-operator-to-demo-cluster
           context: deploy-demo-cluster
           requires:
             - build-push-operator-image
