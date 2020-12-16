@@ -20,6 +20,7 @@ import clsx from "clsx";
 import { push } from "connected-react-router";
 import copy from "copy-to-clipboard";
 import { HealthTab, NetworkingTab } from "forms/ComponentLike";
+import { renderCommandValue } from "pages/Components/InfoComponents";
 import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
 import React from "react";
 import { connect } from "react-redux";
@@ -455,7 +456,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { component, activeNamespaceName } = this.props;
+    const { component, activeNamespaceName, dispatch } = this.props;
     return (
       <VerticalHeadTable
         items={[
@@ -465,7 +466,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
           { name: "Workload Type", content: component.workloadType },
           { name: "Pod Status", content: this.renderComponentStatus() },
           { name: "Image", content: this.renderCopiableValue(component.image) },
-          { name: "Command", content: this.renderCopiableValue(component.command) },
+          { name: "Command", content: renderCommandValue(component.command, dispatch) },
           { name: "Environment Variables", content: this.renderEnvs() },
           { name: "Configuration Files", content: this.renderConfigFiles() },
           { name: "Exposed Ports", content: this.renderPorts() },

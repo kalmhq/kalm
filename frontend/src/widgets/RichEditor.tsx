@@ -17,6 +17,7 @@ export interface RichEditorProps extends WithStyles<typeof styles> {
   height?: string;
   wrapEnabled?: boolean;
   tabSize?: number;
+  disabled?: boolean;
 }
 
 interface State {
@@ -64,7 +65,7 @@ class RichEditorRaw extends React.PureComponent<RichEditorProps, State> {
       } else if (mode === "nginx") {
         import("ace-builds/src-noconflict/mode-nginx");
       } else {
-        import("ace-builds/src-noconflict/mode-text");
+        import("ace-builds/src-noconflict/mode-sh");
       }
 
       import("ace-builds/src-noconflict/theme-monokai");
@@ -84,6 +85,7 @@ class RichEditorRaw extends React.PureComponent<RichEditorProps, State> {
         className={classes.root}
         mode={this.getMode()}
         theme="monokai"
+        ref="aceEditor"
         value={value}
         height={height}
         onChange={onChange}

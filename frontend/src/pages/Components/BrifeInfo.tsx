@@ -20,6 +20,7 @@ import clsx from "clsx";
 import { push } from "connected-react-router";
 import copy from "copy-to-clipboard";
 import { HealthTab, NetworkingTab } from "forms/ComponentLike";
+import { renderCommandValue } from "pages/Components/InfoComponents";
 import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
 import React from "react";
 import { connect } from "react-redux";
@@ -34,6 +35,7 @@ import { CopyIcon, WrenchIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 import { SecretValueLabel } from "widgets/Label";
+import { RichEditor } from "widgets/RichEditor";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 
@@ -461,10 +463,10 @@ class ComponentBrifeInfoRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { component } = this.props;
+    const { component, dispatch } = this.props;
     const items = [
       { name: "Image", content: this.renderCopiableValue(component.image) },
-      { name: "Command", content: this.renderCopiableValue(component.command) },
+      { name: "Command", content: renderCommandValue(component.command, dispatch) },
       { name: "Environment Variables", content: this.renderEnvs() },
       { name: "Configuration Files", content: this.renderConfigFiles() },
       { name: "Exposed Ports", content: this.renderPorts() },
