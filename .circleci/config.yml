@@ -258,7 +258,6 @@ workflows:
               only:
                 - master
                 - multiple-tenancy
-                - cert
             tags:
               only: /^v.*/
       - deploy-dashboard:
@@ -271,7 +270,6 @@ workflows:
               only:
                 - master
                 - multiple-tenancy
-                - cert
       - deploy-dashboard:
           name: deploy-dashboard-internal-cluster
           context: deploy-internal-cluster
@@ -325,7 +323,6 @@ workflows:
               only:
                 - master
                 - multiple-tenancy
-                - cert
             tags:
               only: /^v.*/
       - deploy-controller:
@@ -337,7 +334,26 @@ workflows:
               only:
                 - master
                 - multiple-tenancy
-                - cert
+      - deploy-controller:
+          name: deploy-controller-to-internal-cluster
+          context: deploy-internal-cluster
+          requires:
+            - build-push-controller-image
+          filters:
+            branches:
+              only:
+                - master
+                - multiple-tenancy
+      - deploy-controller:
+          name: deploy-controller-to-west1-1-cluster
+          context: deploy-us-west1-1-cluster
+          requires:
+            - build-push-controller-image
+          filters:
+            branches:
+              only:
+                - master
+                - multiple-tenancy
   operator:
     jobs:
       - build-push-operator-image:
@@ -369,4 +385,23 @@ workflows:
               only:
                 - master
                 - multiple-tenancy
-                - cert
+      - deploy-operator:
+          name: deploy-operator-to-internal-cluster
+          context: deploy-internal-cluster
+          requires:
+            - build-push-operator-image
+          filters:
+            branches:
+              only:
+                - master
+                - multiple-tenancy
+      - deploy-operator:
+          name: deploy-operator-to-us-west1-1-cluster
+          context: deploy-us-west1-1-cluster
+          requires:
+            - build-push-operator-image
+          filters:
+            branches:
+              only:
+                - master
+                - multiple-tenancy
