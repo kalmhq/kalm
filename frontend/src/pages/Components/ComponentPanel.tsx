@@ -1,18 +1,22 @@
-import { Box, Button, Container, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteComponentAction } from "actions/component";
 import { setSuccessNotificationAction } from "actions/notification";
 import { PodsTable } from "pages/Components/PodsTable";
 import React from "react";
 import { connect } from "react-redux";
-import { Link } from "react-router-dom";
+import { KRTable } from "widgets/KRTable";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Application, ApplicationComponentDetails } from "types/application";
 import { WorkloadType } from "types/componentTemplate";
-import { Expansion, ExpansionProps } from "widgets/expansion";
-import { KalmComponentsIcon } from "widgets/Icon";
+
+import { Subtitle1 } from "widgets/Label";
+import { EditIcon, KalmComponentsIcon, KalmViewListIcon } from "widgets/Icon";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
-import { Caption, Subtitle1 } from "widgets/Label";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { blinkTopProgressAction } from "actions/settings";
+import { Expansion, ExpansionProps } from "widgets/expansion";
+import { renderCopyableValue } from "pages/Components/InfoComponents";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -50,42 +54,42 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     super(props);
     this.state = {};
   }
+  private getKRTableColumns() {
+    return [
+      { Header: "", accessor: "componentName" },
+      { Header: "Pods", accessor: "pods" },
+      { Header: "Type", accessor: "type" },
+      { Header: "Image", accessor: "image" },
+      { Header: "Actions", accessor: "actions" },
+    ];
+  }
 
-  private renderSummary(component: ApplicationComponentDetails) {
-    const { classes } = this.props;
-    return (
-      <Container>
-        <Grid container className={classes.componentTitleRow} spacing={2}>
-          <Grid item xs={3}>
-            <Box display={"flex"}>
-              <Box className={classes.componentIcon} pr={2}>
-                <KalmComponentsIcon fontSize={"default"} />
-              </Box>
-              <Box display="flex" minWidth={200}>
-                <Subtitle1>{component.name}</Subtitle1>
-              </Box>
-            </Box>
-          </Grid>
-          <Grid item xs={8}>
-            <Grid container spacing={10} justify={"flex-start"}>
-              <Grid item>
-                <Caption>Pods</Caption>
-                <Subtitle1>{this.getPodsNumber()}</Subtitle1>
-              </Grid>
-              <Grid item>
-                <Caption>Type</Caption>
-                <Subtitle1>{component.workloadType}</Subtitle1>
-              </Grid>
-              <Grid item>
-                <Caption>Image</Caption>
-                <Subtitle1>{component.image}</Subtitle1>
-              </Grid>
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid>{this.componentControls()}</Grid>
-      </Container>
-    );
+  private getKRTableData() {
+    const { component, classes, dispatch } = this.props;
+    const data: any[] = [];
+
+    data.push({
+      componentName: (
+        <Box display={"flex"}>
+          <Box className={classes.componentIcon} pr={2}>
+            <KalmComponentsIcon fontSize={"default"} />
+          </Box>
+          <Box display="flex" minWidth={100}>
+            <Subtitle1>{component.name}</Subtitle1>
+          </Box>
+        </Box>
+      ),
+      pods: this.getPodsNumber(),
+      type: component.workloadType,
+      image: renderCopyableValue(component.image, dispatch),
+      actions: this.componentControls(),
+    });
+
+    return data;
+  }
+
+  private renderSummary() {
+    return <KRTable outlined columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
   }
 
   private getPodsNumber = (): string => {
@@ -118,39 +122,41 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     const { component, application, dispatch, canEdit } = this.props;
     return (
       <Box pb={2} pt={2}>
-        <Button
-          component={Link}
-          style={{ marginRight: 20 }}
-          color="primary"
+        <IconLinkWithToolTip
+          onClick={() => {
+            blinkTopProgressAction();
+          }}
           size="small"
-          variant="outlined"
+          tooltipTitle="Details"
           to={`/applications/${application.name}/components/${component.name}`}
         >
-          View Details
-        </Button>
-        {canEdit && (
-          <>
-            <Button
-              component={Link}
-              style={{ marginRight: 20 }}
-              color="primary"
-              size="small"
-              variant="outlined"
-              to={`/applications/${application.name}/components/${component.name}/edit`}
-            >
-              Edit
-            </Button>
-            <DeleteButtonWithConfirmPopover
-              useText
-              popupId="delete-component-popup"
-              popupTitle="DELETE COMPONENT?"
-              confirmedAction={async () => {
-                await dispatch(deleteComponentAction(component.name, application.name));
-                dispatch(setSuccessNotificationAction("Delete component successfully"));
-              }}
-            />
-          </>
-        )}
+          <KalmViewListIcon />
+        </IconLinkWithToolTip>
+
+        {canEdit ? (
+          <IconLinkWithToolTip
+            onClick={() => {
+              blinkTopProgressAction();
+            }}
+            tooltipTitle="Edit"
+            size="small"
+            to={`/applications/${application.name}/components/${component.name}/edit`}
+          >
+            <EditIcon />
+          </IconLinkWithToolTip>
+        ) : null}
+
+        {canEdit ? (
+          <DeleteButtonWithConfirmPopover
+            iconSize="small"
+            popupId="delete-pod-popup"
+            popupTitle="DELETE COMPONENT?"
+            confirmedAction={async () => {
+              await dispatch(deleteComponentAction(component.name, application.name));
+              dispatch(setSuccessNotificationAction("Delete component successfully"));
+            }}
+          />
+        ) : null}
       </Box>
     );
   };
@@ -163,7 +169,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     }
 
     return (
-      <Expansion defaultUnfold={defaultUnfold} title={this.renderSummary(component)} high={true}>
+      <Expansion defaultUnfold={defaultUnfold} title={this.renderSummary()} high={true}>
         {this.renderPods()}
       </Expansion>
     );

@@ -13,7 +13,7 @@ import { WorkloadType } from "types/componentTemplate";
 import { Expansion, ExpansionProps } from "widgets/expansion";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { Subtitle1 } from "widgets/Label";
-import { ComponentBrifeInfo } from "./BrifeInfo";
+import { ComponentBriefInfo } from "./BriefInfo";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -113,7 +113,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
             }}
           />
         </Box>
-        <ComponentBrifeInfo component={component} activeNamespaceName={application.name} />
+        <ComponentBriefInfo component={component} activeNamespaceName={application.name} />
 
         {this.renderPods()}
       </Box>
