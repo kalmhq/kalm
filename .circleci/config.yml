@@ -282,6 +282,16 @@ workflows:
               only:
                 - master
                 - multiple-tenancy
+      - deploy-dashboard:
+          name: deploy-dashboard-to-us-west1-1-cluster
+          context: deploy-us-west1-1-cluster
+          requires:
+            - build-push-dashboard-image
+          filters:
+            branches:
+              only:
+                - master
+                - multiple-tenancy
       #- deploy-auth-proxy:
       #    context: deploy-demo-cluster
       #    requires:
