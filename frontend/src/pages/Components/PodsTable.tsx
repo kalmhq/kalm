@@ -207,7 +207,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
   }
 
   private renderKRTable() {
-    return <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+    return <KRTable noOutline columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
   }
 
   public render() {

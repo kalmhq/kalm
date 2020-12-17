@@ -4,15 +4,15 @@ import {
   ExpansionPanel,
   ExpansionPanelDetails,
   ExpansionPanelSummary,
+  makeStyles,
   Theme,
   Typography,
 } from "@material-ui/core";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import { WithStyles, withStyles } from "@material-ui/styles";
 import clsx from "clsx";
-import React from "react";
+import React, { useState } from "react";
 
-const styles = (theme: Theme) =>
+const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       "&expanded": {
@@ -52,11 +52,13 @@ const styles = (theme: Theme) =>
       color: theme.palette.error.main,
     },
     detailsRoot: {
+      padding: 0,
       // background: "#fff",
     },
-  });
+  }),
+);
 
-export interface ExpansionProps extends WithStyles<typeof styles> {
+export interface ExpansionProps {
   title: React.ReactNode;
   hasError?: boolean;
   subTitle?: string;
@@ -66,21 +68,12 @@ export interface ExpansionProps extends WithStyles<typeof styles> {
   high?: boolean;
 }
 
-interface State {
-  isUnfolded: boolean;
-}
+export const Expansion: React.FC<ExpansionProps> = (props) => {
+  const { defaultUnfold, subTitle, title, children, hasError, nested, high } = props;
+  const classes = useStyles();
+  const [isUnfolded, setIsUnfolded] = useState(!!defaultUnfold);
 
-class ExpansionRaw extends React.PureComponent<ExpansionProps, State> {
-  constructor(props: ExpansionProps) {
-    super(props);
-    this.state = {
-      isUnfolded: !!props.defaultUnfold,
-    };
-  }
-
-  private renderHeader = () => {
-    const { title, subTitle, classes } = this.props;
-
+  const renderHeader = () => {
     if (typeof title === "string") {
       return (
         <>
@@ -93,27 +86,21 @@ class ExpansionRaw extends React.PureComponent<ExpansionProps, State> {
     return title;
   };
 
-  public render() {
-    const { isUnfolded } = this.state;
-    const { classes, children, hasError, nested, high } = this.props;
-    return (
-      <ExpansionPanel
-        square
-        className={clsx(high ? classes.highRoot : classes.root)}
-        variant={nested ? "elevation" : "outlined"}
-        elevation={0}
-        expanded={isUnfolded}
-        onChange={() => this.setState({ isUnfolded: !isUnfolded })}
-      >
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} className={clsx({ [classes.error]: hasError })}>
-          {this.renderHeader()}
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails classes={{ root: classes.detailsRoot }} style={{ padding: nested ? 0 : 8 }}>
-          <Box width={1}>{children}</Box>
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
-    );
-  }
-}
-
-export const Expansion = withStyles(styles)(ExpansionRaw);
+  return (
+    <ExpansionPanel
+      square
+      className={clsx(high ? classes.highRoot : classes.root)}
+      variant={nested ? "elevation" : "outlined"}
+      elevation={0}
+      expanded={isUnfolded}
+      onChange={() => setIsUnfolded(!isUnfolded)}
+    >
+      <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} className={clsx({ [classes.error]: hasError })}>
+        {renderHeader()}
+      </ExpansionPanelSummary>
+      <ExpansionPanelDetails classes={{ root: classes.detailsRoot }}>
+        <Box width={1}>{children}</Box>
+      </ExpansionPanelDetails>
+    </ExpansionPanel>
+  );
+};

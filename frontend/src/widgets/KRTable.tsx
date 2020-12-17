@@ -1,3 +1,4 @@
+import { Box, Grid, TextField } from "@material-ui/core";
 import Paper from "@material-ui/core/Paper";
 import MuiTable from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -6,8 +7,7 @@ import TableHead from "@material-ui/core/TableHead";
 import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
 import React, { useCallback } from "react";
-import { usePagination, useTable, useGlobalFilter, useAsyncDebounce } from "react-table";
-import { TextField, Grid, Box } from "@material-ui/core";
+import { useAsyncDebounce, useGlobalFilter, usePagination, useTable } from "react-table";
 import { FilterListIcon } from "./Icon";
 import { Body } from "./Label";
 
@@ -22,12 +22,12 @@ export const KRTable = ({
   title,
   columns,
   data,
-  outlined,
+  noOutline,
 }: {
   showTitle?: boolean;
   title?: string;
   columns: { Header: any; accessor: any; Cell?: any }[];
-  outlined?: boolean;
+  noOutline?: boolean;
   data: any[];
 }) => {
   // https://reactjs.org/docs/hooks-faq.html#is-it-safe-to-omit-functions-from-the-list-of-dependencies
@@ -94,9 +94,9 @@ export const KRTable = ({
   );
 
   return (
-    <Paper variant={"outlined"} square style={outlined ? { border: "none", width: "100%" } : {}}>
+    <Paper variant={"outlined"} square style={noOutline ? { border: "none", width: "100%" } : {}}>
       {showTitle ? (
-        <Grid container spacing={outlined ? 0 : 2}>
+        <Grid container spacing={noOutline ? 0 : 2}>
           <Grid item md={9}>
             <Box display="flex" alignItems="center" padding="8px 16px">
               <Body>{title || ""}</Body>

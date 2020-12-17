@@ -1,6 +1,5 @@
 import { Box, createStyles, Grid, Link, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import { Expansion } from "widgets/expansion";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import React, { ReactElement } from "react";
@@ -10,6 +9,7 @@ import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { HttpBytesSizeChart } from "widgets/charts/httpBytesSizeChart";
 import { HttpStatusCodeLineChart } from "widgets/charts/httpStatusCodeChart";
 import { DoughnutChart } from "widgets/DoughnutChart";
+import { Expansion } from "widgets/expansion";
 import { KRTable } from "widgets/KRTable";
 import { BigCPULineChart, BigMemoryLineChart } from "widgets/SmallLineChart";
 
@@ -275,7 +275,12 @@ class DetailsRaw extends React.PureComponent<Props, State> {
 
   private renderWarningsKRTable() {
     return (
-      <KRTable showTitle={false} columns={this.getWarningsKRTableColumns()} data={this.getWarningsKRTableData()} />
+      <KRTable
+        showTitle={false}
+        noOutline
+        columns={this.getWarningsKRTableColumns()}
+        data={this.getWarningsKRTableData()}
+      />
     );
   }
 
@@ -291,7 +296,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <Expansion title="Workload" defaultUnfold>
-          <Box display="flex" justifyContent={"space-around"}>
+          <Box display="flex" justifyContent={"space-around"} p={2}>
             <DoughnutChart
               title="Components"
               labels={["Running", "Pending", "Error"]}
