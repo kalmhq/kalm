@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Link as KMLink, Theme, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Link as KMLink, Theme, Tooltip, WithStyles } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
@@ -221,7 +221,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     let pods = [];
 
     component.pods?.forEach((pod, index) => {
-      pods.push(getPod({ info: pod, key: index }));
+      pods.push(<Tooltip title={pod.message ?? pod.name}>{getPod({ info: pod, key: index })}</Tooltip>);
     });
 
     return (
