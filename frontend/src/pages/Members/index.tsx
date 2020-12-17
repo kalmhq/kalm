@@ -32,9 +32,13 @@ import { Namespaces } from "widgets/Namespaces";
 const styles = (theme: Theme) => createStyles({});
 
 const mapStateToProps = (state: RootState) => {
-  const newTenantUrl = state.extraInfo.info.newTenantUrl;
+  const { newTenantUrl, mode } = state.extraInfo.info;
+  const tenant = state.auth.tenant;
+
   return {
+    mode,
     newTenantUrl,
+    tenant,
   };
 };
 
@@ -55,7 +59,11 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderSecondHeaderRight = () => {
-    const { activeNamespaceName } = this.props;
+    const { activeNamespaceName, mode } = this.props;
+
+    if (mode === "multiple-tenancy") {
+      return null;
+    }
 
     return (
       <>
@@ -73,7 +81,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderMultipleTenancyEmpty = () => {
-    const { newTenantUrl } = this.props;
+    const { newTenantUrl, tenant } = this.props;
     const isClusterLevel = this.isClusterLevel();
 
     return (
@@ -90,7 +98,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
             variant="contained"
             color="primary"
             onClick={() => {
-              window.open(newTenantUrl, "_blank");
+              window.open(newTenantUrl + `/clusters/${tenant}/members`, "_blank");
             }}
           >
             Manage Members with Kalm SaaS
@@ -304,10 +312,12 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
 
   private renderContent() {
     const roleBindings = this.getRoleBindings();
-    const { newTenantUrl } = this.props;
-    if (newTenantUrl && newTenantUrl.length > 0) {
+    const { mode } = this.props;
+
+    if (mode === "multiple-tenancy") {
       return this.renderMultipleTenancyEmpty();
     }
+
     return roleBindings.length > 0 ? (
       <KRTable showTitle={true} title="Members" columns={this.getKRTableColumns()} data={this.getKRTableData()} />
     ) : (

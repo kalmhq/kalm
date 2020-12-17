@@ -289,16 +289,6 @@ class ComponentRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           {components && components.length > 0 ? (
             <>
-              {/* {components?.map((component, index) => (
-                <Box pb={1} key={component.name}>
-                  <ComponentPanel
-                    component={component}
-                    application={activeNamespace!}
-                    defaultUnfold={index === 0}
-                    canEdit={canEditNamespace(appName)}
-                  />
-                </Box>
-              ))} */}
               <Box pb={1}>
                 <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />
               </Box>
