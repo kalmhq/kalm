@@ -8,6 +8,7 @@ const (
 
 	// Event Reason
 	ReasonExceedingQuota = "ExceedingQuota"
+	ReasonReschedule     = "ReSchedule"
 
 	// Tenant
 	// currently system tenant and global tenant sharing same name: global

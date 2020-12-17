@@ -48,7 +48,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
-	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
 
 const (
@@ -66,7 +65,7 @@ type ComponentReconcilerTask struct {
 
 	// The following fields will be filled by calling SetupAttributes() function
 	ctx       context.Context
-	component *corev1alpha1.Component
+	component *v1alpha1.Component
 	namespace corev1.Namespace
 
 	// related resources
@@ -77,7 +76,7 @@ type ComponentReconcilerTask struct {
 	deployment      *appsV1.Deployment
 	daemonSet       *appsV1.DaemonSet
 	statefulSet     *appsV1.StatefulSet
-	pluginBindings  *corev1alpha1.ComponentPluginBindingList
+	pluginBindings  *v1alpha1.ComponentPluginBindingList
 }
 
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=components,verbs=get;list;watch;create;update;patch;delete
@@ -125,9 +124,9 @@ type ComponentPluginBindingsMapper struct {
 }
 
 func (r *ComponentPluginBindingsMapper) Map(object handler.MapObject) []reconcile.Request {
-	if binding, ok := object.Object.(*corev1alpha1.ComponentPluginBinding); ok {
+	if binding, ok := object.Object.(*v1alpha1.ComponentPluginBinding); ok {
 		if binding.Spec.ComponentName == "" {
-			var componentList corev1alpha1.ComponentList
+			var componentList v1alpha1.ComponentList
 			err := r.Reader.List(context.Background(), &componentList, client.InNamespace(binding.Namespace))
 			if err != nil {
 				r.Log.Error(err, "Can't list components in mapper.")
@@ -210,8 +209,8 @@ func (r *ComponentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1alpha1.Component{}).
-		Watches(&source.Kind{Type: &corev1alpha1.ComponentPluginBinding{}}, &handler.EnqueueRequestsFromMapFunc{
+		For(&v1alpha1.Component{}).
+		Watches(&source.Kind{Type: &v1alpha1.ComponentPluginBinding{}}, &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &ComponentPluginBindingsMapper{r.BaseReconciler},
 		}).
 		Owns(&appsV1.Deployment{}).
@@ -324,7 +323,7 @@ func GetPodSecurityContextFromAnnotation(annotations map[string]string) *corev1.
 //	}
 //
 //	if r.component.Spec.WorkloadType == "" {
-//		r.component.Spec.WorkloadType = corev1alpha1.WorkloadTypeServer
+//		r.component.Spec.WorkloadType = v1alpha1.WorkloadTypeServer
 //	}
 //
 //	if r.component.Spec.DnsPolicy == "" {
@@ -346,7 +345,7 @@ func GetPodSecurityContextFromAnnotation(annotations map[string]string) *corev1.
 //
 //	for i := range r.component.Spec.Env {
 //		if r.component.Spec.Env[i].Type == "" {
-//			r.component.Spec.Env[i].Type = corev1alpha1.EnvVarTypeStatic
+//			r.component.Spec.Env[i].Type = v1alpha1.EnvVarTypeStatic
 //		}
 //	}
 //
@@ -392,7 +391,7 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 			r.service.Spec.Selector = labels
 		}
 
-		if r.component.Spec.WorkloadType == corev1alpha1.WorkloadTypeStatefulSet {
+		if r.component.Spec.WorkloadType == v1alpha1.WorkloadTypeStatefulSet {
 			r.component.Spec.EnableHeadlessService = true
 		}
 
@@ -432,7 +431,7 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 				Port:       int32(port.ServicePort),
 			}
 
-			if port.Protocol == corev1alpha1.PortProtocolUDP {
+			if port.Protocol == v1alpha1.PortProtocolUDP {
 				sp.Protocol = corev1.ProtocolUDP
 			} else {
 				sp.Protocol = corev1.ProtocolTCP
@@ -461,7 +460,7 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 			}
 		}
 
-		if r.component.Spec.EnableHeadlessService || r.component.Spec.WorkloadType == corev1alpha1.WorkloadTypeStatefulSet {
+		if r.component.Spec.EnableHeadlessService || r.component.Spec.WorkloadType == v1alpha1.WorkloadTypeStatefulSet {
 			r.headlessService.Spec.Ports = ps
 			if newHeadlessService {
 				if err := ctrl.SetControllerReference(r.component, r.headlessService, r.Scheme); err != nil {
@@ -529,7 +528,7 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 			}
 
 			// TODO, should we support to use https in a upstream server?
-			if port.Protocol == corev1alpha1.PortProtocolHTTPS {
+			if port.Protocol == v1alpha1.PortProtocolHTTPS {
 				policy.Tls = &v1alpha32.ClientTLSSettings{
 					Mode: v1alpha32.ClientTLSSettings_SIMPLE,
 				}
@@ -641,7 +640,7 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 	if isComponentLabeledAsExceedingQuota(r.component) &&
 		(r.component.Spec.Replicas == nil || *r.component.Spec.Replicas > 0) {
 
-		err := r.forceScaleDownExceedingQuotaComponent(r.component)
+		err := r.forceScaleDownExceedingQuotaComponent()
 		if err == nil {
 			r.Log.Info("succeed force scale down exceeding quota comp", "comp name", r.component.Name)
 		} else {
@@ -665,25 +664,25 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 	}
 
 	switch r.component.Spec.WorkloadType {
-	case corev1alpha1.WorkloadTypeServer, "":
+	case v1alpha1.WorkloadTypeServer, "":
 		if err := r.prepareVolsForSimpleWorkload(template); err != nil {
 			return err
 		}
 
 		return r.ReconcileDeployment(template)
-	case corev1alpha1.WorkloadTypeCronjob:
+	case v1alpha1.WorkloadTypeCronjob:
 		if err := r.prepareVolsForSimpleWorkload(template); err != nil {
 			return err
 		}
 
 		return r.ReconcileCronJob(template)
-	case corev1alpha1.WorkloadTypeDaemonSet:
+	case v1alpha1.WorkloadTypeDaemonSet:
 		if err := r.prepareVolsForSimpleWorkload(template); err != nil {
 			return err
 		}
 
 		return r.ReconcileDaemonSet(template)
-	case corev1alpha1.WorkloadTypeStatefulSet:
+	case v1alpha1.WorkloadTypeStatefulSet:
 		volClaimTemplates, err := r.prepareVolsForSTS(template)
 		if err != nil {
 			return err
@@ -699,13 +698,17 @@ func isComponentLabeledAsExceedingQuota(comp *v1alpha1.Component) bool {
 	return comp.Labels[v1alpha1.KalmLabelKeyExceedingQuota] == "true"
 }
 
-func (r *ComponentReconcilerTask) forceScaleDownExceedingQuotaComponent(comp *v1alpha1.Component) (err error) {
+func (r *ComponentReconcilerTask) forceScaleDownExceedingQuotaComponent() (err error) {
+	comp := r.component
 	// if comp already marked exceedingQuota and spec.replicas == 0
 	// we need do nothing more
 	if comp.Labels[v1alpha1.KalmLabelKeyExceedingQuota] == "true" &&
 		comp.Spec.Replicas != nil && *comp.Spec.Replicas == 0 {
 		return nil
 	}
+
+	msg := "force scale down exceeding quota component"
+	r.EmitNormalEvent(r.component, v1alpha1.ReasonExceedingQuota, msg)
 
 	copy := comp.DeepCopy()
 
@@ -1136,43 +1139,43 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *corev1.
 		var valueFrom *corev1.EnvVarSource
 
 		switch env.Type {
-		case "", corev1alpha1.EnvVarTypeStatic:
+		case "", v1alpha1.EnvVarTypeStatic:
 			value = env.Value
-		case corev1alpha1.EnvVarTypeExternal:
+		case v1alpha1.EnvVarTypeExternal:
 			//value, err = r.FindShareEnvValue(env.Value)
 			//
 			////  if the env can't be found in sharedEnv, ignore it
 			//if err != nil {
 			//	continue
 			//}
-		case corev1alpha1.EnvVarTypeLinked:
+		case v1alpha1.EnvVarTypeLinked:
 			value, err = r.getValueOfLinkedEnv(env)
 			if err != nil {
 				return nil, err
 			}
-		case corev1alpha1.EnvVarTypeFieldRef:
+		case v1alpha1.EnvVarTypeFieldRef:
 			valueFrom = &corev1.EnvVarSource{
 				FieldRef: &corev1.ObjectFieldSelector{
 					FieldPath: env.Value,
 				},
 			}
-		case corev1alpha1.EnvVarTypeBuiltin:
+		case v1alpha1.EnvVarTypeBuiltin:
 			switch env.Value {
-			case corev1alpha1.EnvVarBuiltinHost:
+			case v1alpha1.EnvVarBuiltinHost:
 				valueFrom = &corev1.EnvVarSource{
 					FieldRef: &corev1.ObjectFieldSelector{
 						APIVersion: "v1",
 						FieldPath:  "spec.nodeName",
 					},
 				}
-			case corev1alpha1.EnvVarBuiltinNamespace:
+			case v1alpha1.EnvVarBuiltinNamespace:
 				valueFrom = &corev1.EnvVarSource{
 					FieldRef: &corev1.ObjectFieldSelector{
 						APIVersion: "v1",
 						FieldPath:  "metadata.namespace",
 					},
 				}
-			case corev1alpha1.EnvVarBuiltinPodName:
+			case v1alpha1.EnvVarBuiltinPodName:
 				valueFrom = &corev1.EnvVarSource{
 					FieldRef: &corev1.ObjectFieldSelector{
 						APIVersion: "v1",
@@ -1221,7 +1224,7 @@ func getVolName(componentName, diskPath string) string {
 	return fmt.Sprintf("%s-%x", componentName, md5.Sum([]byte(diskPath)))
 }
 
-func (r *ComponentReconcilerTask) getValueOfLinkedEnv(env corev1alpha1.EnvVar) (string, error) {
+func (r *ComponentReconcilerTask) getValueOfLinkedEnv(env v1alpha1.EnvVar) (string, error) {
 	if env.Value == "" {
 		return env.Value, nil
 	}
@@ -1259,7 +1262,7 @@ func (r *ComponentReconcilerTask) getValueOfLinkedEnv(env corev1alpha1.EnvVar) (
 	return fmt.Sprintf("%s%s%s", env.Prefix, value, env.Suffix), nil
 }
 
-func (r *ComponentReconcilerTask) initPluginRuntime(component *corev1alpha1.Component) *js.Runtime {
+func (r *ComponentReconcilerTask) initPluginRuntime(component *v1alpha1.Component) *js.Runtime {
 	rt := vm.InitRuntime()
 
 	rt.Set("getApplicationName", func(call js.FunctionCall) js.Value {
@@ -1276,7 +1279,7 @@ func (r *ComponentReconcilerTask) initPluginRuntime(component *corev1alpha1.Comp
 	return rt
 }
 
-func (r *ComponentReconcilerTask) runPlugins(methodName string, component *corev1alpha1.Component, desc interface{}, args ...interface{}) (err error) {
+func (r *ComponentReconcilerTask) runPlugins(methodName string, component *v1alpha1.Component, desc interface{}, args ...interface{}) (err error) {
 
 	if r.pluginBindings == nil {
 		return nil
@@ -1347,7 +1350,7 @@ func (r *ComponentReconcilerTask) runPlugins(methodName string, component *corev
 	return nil
 }
 
-func findPluginAndValidateConfigNew(pluginBinding *corev1alpha1.ComponentPluginBinding, methodName string, component *corev1alpha1.Component) (*ComponentPluginProgram, []byte, error) {
+func findPluginAndValidateConfigNew(pluginBinding *v1alpha1.ComponentPluginBinding, methodName string, component *v1alpha1.Component) (*ComponentPluginProgram, []byte, error) {
 	pluginProgram := componentPluginsCache.Get(pluginBinding.Spec.PluginName)
 
 	if pluginProgram == nil {
@@ -1362,7 +1365,7 @@ func findPluginAndValidateConfigNew(pluginBinding *corev1alpha1.ComponentPluginB
 
 	if workloadType == "" {
 		// TODO are we safe to remove this fallback value?
-		workloadType = corev1alpha1.WorkloadTypeServer
+		workloadType = v1alpha1.WorkloadTypeServer
 	}
 
 	if !pluginProgram.AvailableForAllWorkloadTypes && !pluginProgram.AvailableWorkloadTypes[workloadType] {
@@ -1469,7 +1472,7 @@ func (r *ComponentReconcilerTask) decideAffinity() (*corev1.Affinity, bool) {
 }
 
 func (r *ComponentReconcilerTask) SetupAttributes(req ctrl.Request) (err error) {
-	var component corev1alpha1.Component
+	var component v1alpha1.Component
 	err = r.Reader.Get(r.ctx, req.NamespacedName, &component)
 
 	if err != nil {
@@ -1525,7 +1528,7 @@ func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 		}
 	}
 
-	var bindingList corev1alpha1.ComponentPluginBindingList
+	var bindingList v1alpha1.ComponentPluginBindingList
 
 	if err := r.Reader.List(r.ctx, &bindingList, client.MatchingLabels{
 		v1alpha1.KalmLabelComponentKey: r.component.Name,
@@ -1569,13 +1572,13 @@ func (r *ComponentReconcilerTask) LoadResources() (err error) {
 	}
 
 	switch r.component.Spec.WorkloadType {
-	case corev1alpha1.WorkloadTypeServer, "":
+	case v1alpha1.WorkloadTypeServer, "":
 		return r.LoadDeployment()
-	case corev1alpha1.WorkloadTypeCronjob:
+	case v1alpha1.WorkloadTypeCronjob:
 		return r.LoadCronJob()
-	case corev1alpha1.WorkloadTypeDaemonSet:
+	case v1alpha1.WorkloadTypeDaemonSet:
 		return r.LoadDaemonSet()
-	case corev1alpha1.WorkloadTypeStatefulSet:
+	case v1alpha1.WorkloadTypeStatefulSet:
 		return r.LoadStatefulSet()
 	}
 
@@ -1639,7 +1642,7 @@ func (r *ComponentReconcilerTask) LoadService() error {
 }
 
 func (r *ComponentReconcilerTask) LoadComponentPluginBinding() error {
-	var bindings corev1alpha1.ComponentPluginBindingList
+	var bindings v1alpha1.ComponentPluginBindingList
 
 	if err := r.Reader.List(r.ctx, &bindings, client.InNamespace(r.component.Namespace)); err != nil {
 		r.WarningEvent(err, "get plugin bindings error")
@@ -1706,12 +1709,12 @@ func (r *ComponentReconcilerTask) LoadItem(dest runtime.Object) (err error) {
 	return nil
 }
 
-func (r *ComponentReconcilerTask) insertBuiltInPluginImpls(rt *js.Runtime, pluginName, methodName string, component *corev1alpha1.Component, desc interface{}, args []interface{}) {
+func (r *ComponentReconcilerTask) insertBuiltInPluginImpls(rt *js.Runtime, pluginName, methodName string, component *v1alpha1.Component, desc interface{}, args []interface{}) {
 	// TODO
 }
 
-func isStatefulSet(component *corev1alpha1.Component) bool {
-	return component.Spec.WorkloadType == corev1alpha1.WorkloadTypeStatefulSet
+func isStatefulSet(component *v1alpha1.Component) bool {
+	return component.Spec.WorkloadType == v1alpha1.WorkloadTypeStatefulSet
 }
 
 func (r *ComponentReconcilerTask) preparePreInjectedFiles(
@@ -1791,7 +1794,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSTS(podTemplate *corev1.PodTempl
 		// used in volumeMount, correspond to volume's name or volClaimTemplate's name
 		volName := getVolName(component.Name, disk.Path)
 
-		if disk.Type == corev1alpha1.VolumeTypeTemporaryDisk {
+		if disk.Type == v1alpha1.VolumeTypeTemporaryDisk {
 			volumes = append(volumes, corev1.Volume{
 				Name: volName,
 				VolumeSource: corev1.VolumeSource{
@@ -1801,7 +1804,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSTS(podTemplate *corev1.PodTempl
 					},
 				},
 			})
-		} else if disk.Type == corev1alpha1.VolumeTypeTemporaryMemory {
+		} else if disk.Type == v1alpha1.VolumeTypeTemporaryMemory {
 			volumes = append(volumes, corev1.Volume{
 				Name: volName,
 				VolumeSource: corev1.VolumeSource{
@@ -1811,8 +1814,8 @@ func (r *ComponentReconcilerTask) prepareVolsForSTS(podTemplate *corev1.PodTempl
 					},
 				},
 			})
-		} else if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim ||
-			disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaimTemplate {
+		} else if disk.Type == v1alpha1.VolumeTypePersistentVolumeClaim ||
+			disk.Type == v1alpha1.VolumeTypePersistentVolumeClaimTemplate {
 
 			volClaimTemplateName := disk.PVC
 			// for volClaimTemplate, volName == pvcName
@@ -1881,7 +1884,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *corev1.
 		volName := getVolName(component.Name, disk.Path)
 
 		switch disk.Type {
-		case corev1alpha1.VolumeTypeTemporaryDisk:
+		case v1alpha1.VolumeTypeTemporaryDisk:
 			volumes = append(volumes, corev1.Volume{
 				Name: volName,
 				VolumeSource: corev1.VolumeSource{
@@ -1891,7 +1894,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *corev1.
 					},
 				},
 			})
-		case corev1alpha1.VolumeTypeTemporaryMemory:
+		case v1alpha1.VolumeTypeTemporaryMemory:
 			volumes = append(volumes, corev1.Volume{
 				Name: volName,
 				VolumeSource: corev1.VolumeSource{
@@ -1901,7 +1904,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *corev1.
 					},
 				},
 			})
-		case corev1alpha1.VolumeTypeHostPath:
+		case v1alpha1.VolumeTypeHostPath:
 			volumes = append(volumes, corev1.Volume{
 				Name: volName,
 				VolumeSource: corev1.VolumeSource{
@@ -1910,7 +1913,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *corev1.
 					},
 				},
 			})
-		case corev1alpha1.VolumeTypePersistentVolumeClaim:
+		case v1alpha1.VolumeTypePersistentVolumeClaim:
 			pvcName := disk.PVC
 			volName = pvcName
 

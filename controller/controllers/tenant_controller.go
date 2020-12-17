@@ -286,6 +286,8 @@ func (r *TenantReconciler) tryReScheduleExceedingQuotaComponent(comp *v1alpha1.C
 		return nil
 	}
 
+	r.EmitNormalEvent(comp, v1alpha1.ReasonReschedule, "re-schedule exceeding quota component")
+
 	// clean exceeding quota label
 	delete(comp.Labels, v1alpha1.KalmLabelKeyExceedingQuota)
 
