@@ -9,7 +9,7 @@ export const StringConstants = {
   LIMIT_NOT_SET: "Limit Not Set",
   REQUEST_NOT_SET: "Request Not Set",
   NAME_RULE: "Names can only use digits(0-9), lowercase letters(a-z), and dashes(-). Maximum length is 63 characters.",
-  PORT_ROUTE_QUESTION: "Want to have your container accessible to external sources?",
+  PORT_ROUTE_QUESTION: "Want to access your application / service with a domain?",
   COMPONENT_TYPE_SERVICE_OPTION: "Default choice - Suitable for most continuous services",
   COMPONENT_TYPE_CRONJOB_OPTION: "Scheduled tasks to be ran at specific times",
   COMPONENT_TYPE_DAEMON_OPTION: "For system services which should be deployed once per node",
