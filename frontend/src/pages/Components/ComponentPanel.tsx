@@ -1,22 +1,21 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteComponentAction } from "actions/component";
 import { setSuccessNotificationAction } from "actions/notification";
+import { blinkTopProgressAction } from "actions/settings";
+import { renderCopyableValue } from "pages/Components/InfoComponents";
 import { PodsTable } from "pages/Components/PodsTable";
 import React from "react";
 import { connect } from "react-redux";
-import { KRTable } from "widgets/KRTable";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Application, ApplicationComponentDetails } from "types/application";
 import { WorkloadType } from "types/componentTemplate";
-
-import { Subtitle1 } from "widgets/Label";
-import { EditIcon, KalmComponentsIcon, KalmViewListIcon } from "widgets/Icon";
-import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
-import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
-import { blinkTopProgressAction } from "actions/settings";
 import { Expansion, ExpansionProps } from "widgets/expansion";
-import { renderCopyableValue } from "pages/Components/InfoComponents";
+import { EditIcon, KalmComponentsIcon, KalmViewListIcon } from "widgets/Icon";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { KRTable } from "widgets/KRTable";
+import { Subtitle1 } from "widgets/Label";
 
 const styles = (theme: Theme) =>
   createStyles({

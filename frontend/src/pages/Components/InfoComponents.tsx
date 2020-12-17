@@ -1,10 +1,10 @@
+import { setSuccessNotificationAction } from "actions/notification";
+import copy from "copy-to-clipboard";
 import React from "react";
+import { CopyIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 import { RichEditor } from "widgets/RichEditor";
-import copy from "copy-to-clipboard";
-import { CopyIcon } from "widgets/Icon";
-import { setSuccessNotificationAction } from "actions/notification";
 
 export const renderCommandValue = (value: any, dispatch: any) => {
   if (value === undefined || value === "") {
@@ -16,6 +16,7 @@ export const renderCommandValue = (value: any, dispatch: any) => {
           <IconButtonWithTooltip
             tooltipTitle="Copy"
             aria-label="copy"
+            size="small"
             onClick={() => {
               copy(value);
               dispatch(setSuccessNotificationAction("Copied successful!"));
@@ -41,6 +42,7 @@ export const renderCopyableValue = (value: any, dispatch: any) => {
           <IconButtonWithTooltip
             tooltipTitle="Copy"
             aria-label="copy"
+            size="small"
             onClick={(e) => {
               e.stopPropagation();
               copy(value);

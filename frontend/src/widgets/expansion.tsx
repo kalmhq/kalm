@@ -9,8 +9,8 @@ import {
 } from "@material-ui/core";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { WithStyles, withStyles } from "@material-ui/styles";
-import React from "react";
 import clsx from "clsx";
+import React from "react";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -108,7 +108,7 @@ class ExpansionRaw extends React.PureComponent<ExpansionProps, State> {
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} className={clsx({ [classes.error]: hasError })}>
           {this.renderHeader()}
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails classes={{ root: classes.detailsRoot }} style={nested ? { padding: 0 } : { padding: 8 }}>
+        <ExpansionPanelDetails classes={{ root: classes.detailsRoot }} style={{ padding: nested ? 0 : 8 }}>
           <Box width={1}>{children}</Box>
         </ExpansionPanelDetails>
       </ExpansionPanel>
