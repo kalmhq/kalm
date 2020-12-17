@@ -82,10 +82,10 @@ export interface HttpRoute {
   methodsMode?: string;
 }
 
-export const newEmptyRouteForm = (): HttpRoute => {
+export const newEmptyRouteForm = (defaultDomain?: string): HttpRoute => {
   return {
     name: "http-route-" + ID(),
-    hosts: [],
+    hosts: [defaultDomain ?? ""],
     paths: ["/"],
     conditions: [],
     destinations: [],
