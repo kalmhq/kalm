@@ -128,9 +128,9 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			return ctrl.Result{}, err
 		}
 
-		if err := r.reconcileCommonSecret(ns.Name); err != nil {
-			return ctrl.Result{}, err
-		}
+		// if err := r.reconcileCommonSecret(ns.Name); err != nil {
+		// 	return ctrl.Result{}, err
+		// }
 	}
 
 	// todo weird logic to process all ns here
@@ -536,14 +536,14 @@ func (r *KalmNSReconciler) reconcileDefaultHTTP01Issuer() error {
 	return nil
 }
 
-var CommonConfigMapName = "common"
+var NSScopeSharedConfigMapName = "namespace-scope-shared-envs"
 
 func (r *KalmNSReconciler) reconcileCommonConfigMap(nsName string) error {
 
 	initCM := v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: nsName,
-			Name:      CommonConfigMapName,
+			Name:      NSScopeSharedConfigMapName,
 		},
 	}
 
@@ -564,29 +564,29 @@ func (r *KalmNSReconciler) reconcileCommonConfigMap(nsName string) error {
 	return nil
 }
 
-var CommonSecretName = "common"
+// var CommonSecretName = "namespace-scope-shared-envs"
 
-func (r *KalmNSReconciler) reconcileCommonSecret(nsName string) error {
+// func (r *KalmNSReconciler) reconcileCommonSecret(nsName string) error {
 
-	initSecret := v1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: nsName,
-			Name:      CommonSecretName,
-		},
-	}
+// 	initSecret := v1.Secret{
+// 		ObjectMeta: metav1.ObjectMeta{
+// 			Namespace: nsName,
+// 			Name:      CommonSecretName,
+// 		},
+// 	}
 
-	key := client.ObjectKey{
-		Namespace: initSecret.Namespace,
-		Name:      initSecret.Name,
-	}
+// 	key := client.ObjectKey{
+// 		Namespace: initSecret.Namespace,
+// 		Name:      initSecret.Name,
+// 	}
 
-	if err := r.Get(r.ctx, key, &v1.Secret{}); err != nil {
-		if errors.IsNotFound(err) {
-			return r.Create(r.ctx, &initSecret)
-		} else {
-			return err
-		}
-	}
+// 	if err := r.Get(r.ctx, key, &v1.Secret{}); err != nil {
+// 		if errors.IsNotFound(err) {
+// 			return r.Create(r.ctx, &initSecret)
+// 		} else {
+// 			return err
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
