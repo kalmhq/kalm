@@ -123,6 +123,17 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		r.Log.Info("see ns neither tenant nor ctrl-plane", "ns", ns.Name)
 	}
 
+	if ns.Labels[KalmEnableLabelName] == "true" {
+		if err := r.reconcileCommonConfigMap(ns.Name); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		if err := r.reconcileCommonSecret(ns.Name); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
+	// todo weird logic to process all ns here
 	var namespaceList v1.NamespaceList
 	if err := r.List(ctx, &namespaceList, client.HasLabels([]string{KalmEnableLabelName})); err != nil {
 		err = client.IgnoreNotFound(err)
@@ -178,7 +189,7 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
-	// todo weird here
+	// todo weird to process cert logic here
 
 	// check if default caIssuer & cert is created
 	if err := r.reconcileDefaultCAIssuerAndCert(); err != nil {
@@ -518,6 +529,62 @@ func (r *KalmNSReconciler) reconcileDefaultHTTP01Issuer() error {
 	} else {
 		currentIssuer.Spec = expectedHTTP01Issuer.Spec
 		if err := r.Update(r.ctx, &currentIssuer); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+var CommonConfigMapName = "common"
+
+func (r *KalmNSReconciler) reconcileCommonConfigMap(nsName string) error {
+
+	initCM := v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: nsName,
+			Name:      CommonConfigMapName,
+		},
+	}
+
+	cmKey := client.ObjectKey{
+		Namespace: initCM.Namespace,
+		Name:      initCM.Name,
+	}
+
+	// simply ensure this configMap exist
+	if err := r.Get(r.ctx, cmKey, &v1.ConfigMap{}); err != nil {
+		if errors.IsNotFound(err) {
+			return r.Create(r.ctx, &initCM)
+		} else {
+			return err
+		}
+	}
+
+	return nil
+}
+
+var CommonSecretName = "common"
+
+func (r *KalmNSReconciler) reconcileCommonSecret(nsName string) error {
+
+	initSecret := v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: nsName,
+			Name:      CommonSecretName,
+		},
+	}
+
+	key := client.ObjectKey{
+		Namespace: initSecret.Namespace,
+		Name:      initSecret.Namespace,
+	}
+
+	// simply ensure this configMap exist
+	if err := r.Get(r.ctx, key, &v1.Secret{}); err != nil {
+		if errors.IsNotFound(err) {
+			return r.Create(r.ctx, &initSecret)
+		} else {
 			return err
 		}
 	}
