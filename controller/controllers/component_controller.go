@@ -708,7 +708,7 @@ func (r *ComponentReconcilerTask) forceScaleDownExceedingQuotaComponent() (err e
 	}
 
 	msg := "force scale down exceeding quota component"
-	r.EmitWarningEvent(r.component, v1alpha1.ReasonExceedingQuota, msg)
+	r.EmitNormalEvent(r.component, v1alpha1.ReasonExceedingQuota, msg)
 
 	copy := comp.DeepCopy()
 
