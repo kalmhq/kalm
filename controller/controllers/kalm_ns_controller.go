@@ -577,10 +577,9 @@ func (r *KalmNSReconciler) reconcileCommonSecret(nsName string) error {
 
 	key := client.ObjectKey{
 		Namespace: initSecret.Namespace,
-		Name:      initSecret.Namespace,
+		Name:      initSecret.Name,
 	}
 
-	// simply ensure this configMap exist
 	if err := r.Get(r.ctx, key, &v1.Secret{}); err != nil {
 		if errors.IsNotFound(err) {
 			return r.Create(r.ctx, &initSecret)
