@@ -2,24 +2,30 @@ import { Box, Button, createStyles, Link as KMLink, Theme, WithStyles } from "@m
 import { indigo } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
+import { deleteComponentAction } from "actions/component";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
-import { ComponentPanel } from "pages/Components/ComponentPanel";
+import { renderCopyableValue } from "pages/Components/InfoComponents";
+import { getPod } from "pages/Components/Pod";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
-import { ApplicationDetails } from "types/application";
+import { ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { KalmComponentsIcon } from "widgets/Icon";
+import { EditIcon, KalmComponentsIcon, KalmViewListIcon } from "widgets/Icon";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
+import { KRTable } from "widgets/KRTable";
+import { Subtitle1 } from "widgets/Label";
 import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
 
@@ -30,6 +36,10 @@ const styles = (theme: Theme) =>
       display: "flex",
       justifyContent: "center",
       paddingTop: "110px",
+    },
+    componentIcon: {
+      height: "1.25rem",
+      color: theme.palette.type === "light" ? theme.palette.primary.light : "#FFFFFF",
     },
   });
 
@@ -160,9 +170,116 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     return <InfoBox title={title} options={options} />;
   }
 
+  private getKRTableColumns() {
+    return [
+      { Header: "", accessor: "componentName" },
+      { Header: "Pods", accessor: "pods" },
+      { Header: "Type", accessor: "type" },
+      { Header: "Image", accessor: "image" },
+      { Header: "Actions", accessor: "actions" },
+    ];
+  }
+  private getKRTableData() {
+    const { components, classes, dispatch } = this.props;
+    const data: any[] = [];
+    components &&
+      components.forEach((component, index) => {
+        data.push({
+          componentName: (
+            <Box display={"flex"}>
+              <Box className={classes.componentIcon} pr={2}>
+                <KalmComponentsIcon fontSize={"default"} />
+              </Box>
+              <Box display="flex" minWidth={100}>
+                <Subtitle1>{component.name}</Subtitle1>
+              </Box>
+            </Box>
+          ),
+          pods: this.getPodsStatus(component),
+          type: component.workloadType,
+          image: renderCopyableValue(component.image, dispatch),
+          actions: this.componentControls(component),
+        });
+      });
+    return data;
+  }
+
+  private getPodsNumber = (component: ApplicationComponentDetails): string => {
+    let runningCount = 0;
+
+    component.pods?.forEach((pod) => {
+      if (pod.status === "Succeeded" || pod.status === "Running") {
+        runningCount = runningCount + 1;
+      }
+    });
+
+    return `${runningCount}/${component.pods.length}`;
+  };
+
+  private getPodsStatus = (component: ApplicationComponentDetails) => {
+    // @ts-ignore
+    let pods = [];
+
+    component.pods?.forEach((pod, index) => {
+      pods.push(getPod({ info: pod, key: index }));
+    });
+
+    return (
+      <Box display={"flex"} flexDirection="row" maxWidth={100} flexWrap="wrap">
+        {
+          // @ts-ignore
+          pods.length > 0 ? pods : "No Pods"
+        }
+      </Box>
+    );
+  };
+
+  private componentControls = (component: ApplicationComponentDetails) => {
+    const { activeNamespaceName, dispatch, canEditNamespace } = this.props;
+    const appName = activeNamespaceName;
+    return (
+      <Box pb={2} pt={2}>
+        <IconLinkWithToolTip
+          onClick={() => {
+            blinkTopProgressAction();
+          }}
+          size="small"
+          tooltipTitle="Details"
+          to={`/applications/${appName}/components/${component.name}`}
+        >
+          <KalmViewListIcon />
+        </IconLinkWithToolTip>
+
+        {canEditNamespace(activeNamespaceName) ? (
+          <IconLinkWithToolTip
+            onClick={() => {
+              blinkTopProgressAction();
+            }}
+            tooltipTitle="Edit"
+            size="small"
+            to={`/applications/${appName}/components/${component.name}/edit`}
+          >
+            <EditIcon />
+          </IconLinkWithToolTip>
+        ) : null}
+
+        {canEditNamespace(activeNamespaceName) ? (
+          <DeleteButtonWithConfirmPopover
+            iconSize="small"
+            popupId="delete-pod-popup"
+            popupTitle="DELETE COMPONENT?"
+            confirmedAction={async () => {
+              await dispatch(deleteComponentAction(component.name, activeNamespaceName));
+              dispatch(setSuccessNotificationAction("Delete component successfully"));
+            }}
+          />
+        ) : null}
+      </Box>
+    );
+  };
+
   public render() {
-    const { components, activeNamespace, canEditNamespace } = this.props;
-    const appName = activeNamespace!.name;
+    const { components } = this.props;
     return (
       <BasePage
         secondHeaderRight={this.renderSecondHeaderRight()}
@@ -174,7 +291,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           {components && components.length > 0 ? (
             <>
-              {components?.map((component, index) => (
+              {/* {components?.map((component, index) => (
                 <Box pb={1} key={component.name}>
                   <ComponentPanel
                     component={component}
@@ -183,7 +300,10 @@ class ComponentRaw extends React.PureComponent<Props, State> {
                     canEdit={canEditNamespace(appName)}
                   />
                 </Box>
-              ))}
+              ))} */}
+              <Box pb={1}>
+                <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />
+              </Box>
               {this.renderInfoBox()}
             </>
           ) : (
