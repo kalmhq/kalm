@@ -14,7 +14,6 @@ import { DashboardIcon, KalmComponentsIcon, PeopleIcon } from "widgets/Icon";
 const mapStateToProps = (state: RootState) => {
   return {
     activeNamespaceName: state.namespaces.active,
-    mode: state.extraInfo.info.mode,
   };
 };
 

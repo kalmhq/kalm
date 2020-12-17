@@ -63,6 +63,7 @@ func NewDomainChecker(mgr manager.Manager) (*DomainChecker, error) {
 		failCountMap:               make(map[string]int),
 		verifiedTurnFailedCountMap: make(map[string]int),
 		verifiedCountMap:           make(map[string]int),
+		txtTurnFailedCountMap:      make(map[string]int),
 		log:                        log,
 		informerHasSynced:          domainInformer.HasSynced,
 	}, nil

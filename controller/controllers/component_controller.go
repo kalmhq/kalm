@@ -1193,20 +1193,20 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *corev1.
 	envFromCommonCM := corev1.EnvFromSource{
 		ConfigMapRef: &corev1.ConfigMapEnvSource{
 			LocalObjectReference: corev1.LocalObjectReference{
-				Name: CommonConfigMapName,
+				Name: NSScopeSharedConfigMapName,
 			},
 		},
 	}
 
-	envFromCommonSec := corev1.EnvFromSource{
-		SecretRef: &corev1.SecretEnvSource{
-			LocalObjectReference: corev1.LocalObjectReference{
-				Name: CommonConfigMapName,
-			},
-		},
-	}
+	// envFromCommonSec := corev1.EnvFromSource{
+	// 	SecretRef: &corev1.SecretEnvSource{
+	// 		LocalObjectReference: corev1.LocalObjectReference{
+	// 			Name: NSScopeSharedConfigMapName,
+	// 		},
+	// 	},
+	// }
 
-	mainContainer.EnvFrom = append(mainContainer.EnvFrom, envFromCommonCM, envFromCommonSec)
+	mainContainer.EnvFrom = append(mainContainer.EnvFrom, envFromCommonCM)
 
 	err = r.runPlugins(ComponentPluginMethodAfterPodTemplateGeneration, component, template, template)
 	if err != nil {
