@@ -202,24 +202,12 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     return data;
   }
 
-  private getPodsNumber = (component: ApplicationComponentDetails): string => {
-    let runningCount = 0;
-
-    component.pods?.forEach((pod) => {
-      if (pod.status === "Succeeded" || pod.status === "Running") {
-        runningCount = runningCount + 1;
-      }
-    });
-
-    return `${runningCount}/${component.pods.length}`;
-  };
-
   private getPodsStatus = (component: ApplicationComponentDetails) => {
     // @ts-ignore
     let pods = [];
 
     component.pods?.forEach((pod, index) => {
-      pods.push(<Tooltip title={pod.message ?? pod.name}>{getPod({ info: pod, key: index })}</Tooltip>);
+      pods.push(<Tooltip title={pod.statusText ?? pod.name}>{getPod({ info: pod, key: index })}</Tooltip>);
     });
 
     return (

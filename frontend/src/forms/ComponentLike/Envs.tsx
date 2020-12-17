@@ -51,6 +51,7 @@ class RenderEnvs extends React.PureComponent<Props> {
             <Alert severity="error">{error}</Alert>
           </Box>
         ) : null}
+        {this.renderAddButton()}
         {fields.value &&
           fields.value.map((env: ComponentLikeEnv, index: number) => {
             return (
@@ -87,7 +88,6 @@ class RenderEnvs extends React.PureComponent<Props> {
               </Fade>
             );
           })}
-        {this.renderAddButton()}
       </>
     );
   }

@@ -11,7 +11,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
-import { WorkloadType } from "types/componentTemplate";
+import { ComponentLikePort, WorkloadType } from "types/componentTemplate";
 import { Expansion } from "widgets/expansion";
 import { Body, H6 } from "widgets/Label";
 import { Namespaces } from "widgets/Namespaces";
@@ -50,6 +50,10 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
     this.state = {};
   }
 
+  private getServicePort = (port: ComponentLikePort) => {
+    return port.servicePort || port.containerPort;
+  };
+
   private renderStatefulSetNetwork() {
     const { component, activeNamespaceName } = this.props;
     const hasService = component.ports && component.ports!.length > 0;
@@ -85,7 +89,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
               content: (
                 <span>
                   Expose port <strong>{port.containerPort}</strong> to cluster port{" "}
-                  <strong>{port.servicePort || port.containerPort}</strong>
+                  <strong>{this.getServicePort(port)}</strong>
                 </span>
               ),
             }))}
