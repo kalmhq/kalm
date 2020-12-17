@@ -26,7 +26,7 @@ export const renderCommandValue = (value: any, dispatch: any) => {
           </IconButtonWithTooltip>
         }
       >
-        <RichEditor height="100px" wrapEnabled readOnly value={`${value}`} />
+        <RichEditor showLineNumbers={false} wrapEnabled readOnly value={`${value}`} />
       </ItemWithHoverIcon>
     );
   }
