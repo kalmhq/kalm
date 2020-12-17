@@ -25,7 +25,6 @@ import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
-import { Subtitle1 } from "widgets/Label";
 import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
 
@@ -180,18 +179,17 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     ];
   }
   private getKRTableData() {
-    const { components, classes, dispatch } = this.props;
+    const { components, dispatch, activeNamespaceName } = this.props;
     const data: any[] = [];
     components &&
       components.forEach((component, index) => {
         data.push({
           componentName: (
             <Box display={"flex"}>
-              <Box className={classes.componentIcon} pr={2}>
-                <KalmComponentsIcon fontSize={"default"} />
-              </Box>
               <Box display="flex" minWidth={100}>
-                <Subtitle1>{component.name}</Subtitle1>
+                <KMLink component={Link} to={`/applications/${activeNamespaceName}/components/${component.name}`}>
+                  {component.name}
+                </KMLink>
               </Box>
             </Box>
           ),
@@ -228,7 +226,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
       <Box display={"flex"} flexDirection="row" maxWidth={100} flexWrap="wrap">
         {
           // @ts-ignore
-          pods.length > 0 ? pods : "No Pods"
+          pods.length > 0 ? pods : "-"
         }
       </Box>
     );
@@ -238,7 +236,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     const { activeNamespaceName, dispatch, canEditNamespace } = this.props;
     const appName = activeNamespaceName;
     return (
-      <Box pb={2} pt={2}>
+      <Box>
         <IconLinkWithToolTip
           onClick={() => {
             blinkTopProgressAction();
