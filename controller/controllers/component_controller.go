@@ -34,7 +34,7 @@ import (
 	appsV1 "k8s.io/api/apps/v1"
 	batchV1 "k8s.io/api/batch/v1"
 	batchV1Beta1 "k8s.io/api/batch/v1beta1"
-	coreV1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -67,12 +67,12 @@ type ComponentReconcilerTask struct {
 	// The following fields will be filled by calling SetupAttributes() function
 	ctx       context.Context
 	component *corev1alpha1.Component
-	namespace coreV1.Namespace
+	namespace corev1.Namespace
 
 	// related resources
-	service         *coreV1.Service
+	service         *corev1.Service
 	destinationRule *v1alpha3.DestinationRule
-	headlessService *coreV1.Service
+	headlessService *corev1.Service
 	cronJob         *batchV1Beta1.CronJob
 	deployment      *appsV1.Deployment
 	daemonSet       *appsV1.DaemonSet
@@ -191,9 +191,9 @@ func (r *ComponentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return err
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &coreV1.Service{}, ownerKey, func(rawObj runtime.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &corev1.Service{}, ownerKey, func(rawObj runtime.Object) []string {
 		// grab the job object, extract the owner...
-		service := rawObj.(*coreV1.Service)
+		service := rawObj.(*corev1.Service)
 		owner := metaV1.GetControllerOf(service)
 
 		if owner == nil {
@@ -218,7 +218,7 @@ func (r *ComponentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&batchV1Beta1.CronJob{}).
 		Owns(&appsV1.DaemonSet{}).
 		Owns(&appsV1.StatefulSet{}).
-		Owns(&coreV1.Service{}).
+		Owns(&corev1.Service{}).
 		Complete(r)
 }
 func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
@@ -277,8 +277,8 @@ func (r *ComponentReconcilerTask) GetAnnotations() map[string]string {
 	return res
 }
 
-func GetPodSecurityContextFromAnnotation(annotations map[string]string) *coreV1.PodSecurityContext {
-	securityContext := new(coreV1.PodSecurityContext)
+func GetPodSecurityContextFromAnnotation(annotations map[string]string) *corev1.PodSecurityContext {
+	securityContext := new(corev1.PodSecurityContext)
 	annotationFound := false
 
 	for k, v := range annotations {
@@ -353,7 +353,7 @@ func GetPodSecurityContextFromAnnotation(annotations map[string]string) *coreV1.
 //	return r.Update(r.ctx, r.component)
 //}
 
-func IsNamespaceKalmEnabled(namespace coreV1.Namespace) bool {
+func IsNamespaceKalmEnabled(namespace corev1.Namespace) bool {
 	if v, exist := namespace.Labels[KalmEnableLabelName]; !exist || v != KalmEnableLabelValue {
 		return false
 	}
@@ -378,13 +378,13 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 
 		if r.service == nil {
 			newService = true
-			r.service = &coreV1.Service{
+			r.service = &corev1.Service{
 				ObjectMeta: metaV1.ObjectMeta{
 					Name:      r.component.Name,
 					Namespace: r.component.Namespace,
 					Labels:    labels,
 				},
-				Spec: coreV1.ServiceSpec{
+				Spec: corev1.ServiceSpec{
 					Selector: labels,
 				},
 			}
@@ -399,13 +399,13 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 		if r.component.Spec.EnableHeadlessService {
 			if r.headlessService == nil {
 				newHeadlessService = true
-				r.headlessService = &coreV1.Service{
+				r.headlessService = &corev1.Service{
 					ObjectMeta: metaV1.ObjectMeta{
 						Name:      getNameForHeadlessService(r.component.Name),
 						Namespace: r.component.Namespace,
 						Labels:    labels,
 					},
-					Spec: coreV1.ServiceSpec{
+					Spec: corev1.ServiceSpec{
 						Selector:  labels,
 						ClusterIP: "None",
 					},
@@ -416,7 +416,7 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 			}
 		}
 
-		var ps []coreV1.ServicePort
+		var ps []corev1.ServicePort
 		for _, port := range r.component.Spec.Ports {
 			// if service port is missing, set it same as containerPort
 			if port.ServicePort == 0 && port.ContainerPort != 0 {
@@ -426,16 +426,16 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 			// https://istio.io/latest/docs/ops/configuration/traffic-management/protocol-selection/
 			serverPortName := fmt.Sprintf("%s-%d", port.Protocol, port.ServicePort)
 
-			sp := coreV1.ServicePort{
+			sp := corev1.ServicePort{
 				Name:       serverPortName,
 				TargetPort: intstr.FromInt(int(port.ContainerPort)),
 				Port:       int32(port.ServicePort),
 			}
 
 			if port.Protocol == corev1alpha1.PortProtocolUDP {
-				sp.Protocol = coreV1.ProtocolUDP
+				sp.Protocol = corev1.ProtocolUDP
 			} else {
-				sp.Protocol = coreV1.ProtocolTCP
+				sp.Protocol = corev1.ProtocolTCP
 			}
 
 			ps = append(ps, sp)
@@ -724,7 +724,7 @@ func (r *ComponentReconcilerTask) forceScaleDownExceedingQuotaComponent(comp *v1
 	return r.Update(r.ctx, copy)
 }
 
-func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.PodTemplateSpec) (err error) {
+func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *corev1.PodTemplateSpec) (err error) {
 	component := r.component
 	ctx := r.ctx
 	deployment := r.deployment
@@ -807,7 +807,7 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 	return nil
 }
 
-func (r *ComponentReconcilerTask) ReconcileDaemonSet(podTemplateSpec *coreV1.PodTemplateSpec) error {
+func (r *ComponentReconcilerTask) ReconcileDaemonSet(podTemplateSpec *corev1.PodTemplateSpec) error {
 	labelMap := r.GetLabels()
 	annotations := r.GetAnnotations()
 
@@ -859,7 +859,7 @@ func (r *ComponentReconcilerTask) ReconcileDaemonSet(podTemplateSpec *coreV1.Pod
 	return nil
 }
 
-func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTemplateSpec) (err error) {
+func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *corev1.PodTemplateSpec) (err error) {
 	log := r.Log
 	ctx := r.ctx
 	cj := r.cronJob
@@ -868,10 +868,10 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 	annotations := r.GetAnnotations()
 
 	// restartPolicy
-	if podTemplateSpec.Spec.RestartPolicy == coreV1.RestartPolicyAlways ||
+	if podTemplateSpec.Spec.RestartPolicy == corev1.RestartPolicyAlways ||
 		podTemplateSpec.Spec.RestartPolicy == "" {
 
-		podTemplateSpec.Spec.RestartPolicy = coreV1.RestartPolicyOnFailure
+		podTemplateSpec.Spec.RestartPolicy = corev1.RestartPolicyOnFailure
 
 	}
 
@@ -931,8 +931,8 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 }
 
 func (r *ComponentReconcilerTask) ReconcileStatefulSet(
-	spec *coreV1.PodTemplateSpec,
-	volClaimTemplates []coreV1.PersistentVolumeClaim,
+	spec *corev1.PodTemplateSpec,
+	volClaimTemplates []corev1.PersistentVolumeClaim,
 ) error {
 
 	log := r.Log
@@ -999,7 +999,7 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(
 	return nil
 }
 
-func (r *ComponentReconcilerTask) FixProbe(probe *coreV1.Probe) *coreV1.Probe {
+func (r *ComponentReconcilerTask) FixProbe(probe *corev1.Probe) *corev1.Probe {
 	if probe == nil {
 		return nil
 	}
@@ -1013,7 +1013,7 @@ func (r *ComponentReconcilerTask) FixProbe(probe *coreV1.Probe) *coreV1.Probe {
 	return probe
 }
 
-func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.PodTemplateSpec, err error) {
+func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *corev1.PodTemplateSpec, err error) {
 	component := r.component
 
 	labels := r.GetLabels()
@@ -1026,36 +1026,36 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	if r.component.Spec.IstioResourceRequirements != nil {
 		for resName, quantity := range r.component.Spec.IstioResourceRequirements.Limits {
 			switch resName {
-			case coreV1.ResourceCPU:
+			case corev1.ResourceCPU:
 				annotations["sidecar.istio.io/proxyCPULimit"] = quantity.String()
-			case coreV1.ResourceMemory:
+			case corev1.ResourceMemory:
 				annotations["sidecar.istio.io/proxyMemoryLimit"] = quantity.String()
 			}
 		}
 		for resName, quantity := range r.component.Spec.IstioResourceRequirements.Requests {
 			switch resName {
-			case coreV1.ResourceCPU:
+			case corev1.ResourceCPU:
 				annotations["sidecar.istio.io/proxyCPU"] = quantity.String()
-			case coreV1.ResourceMemory:
+			case corev1.ResourceMemory:
 				annotations["sidecar.istio.io/proxyMemory"] = quantity.String()
 			}
 		}
 	}
 
-	template = &coreV1.PodTemplateSpec{
+	template = &corev1.PodTemplateSpec{
 		ObjectMeta: metaV1.ObjectMeta{
 			Labels:      labels,
 			Annotations: annotations,
 		},
-		Spec: coreV1.PodSpec{
-			Containers: []coreV1.Container{
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
 				{
 					Name:  component.Name,
 					Image: component.Spec.Image,
-					Env:   []coreV1.EnvVar{},
-					Resources: coreV1.ResourceRequirements{
-						Requests: make(map[coreV1.ResourceName]resource.Quantity),
-						Limits:   make(map[coreV1.ResourceName]resource.Quantity),
+					Env:   []corev1.EnvVar{},
+					Resources: corev1.ResourceRequirements{
+						Requests: make(map[corev1.ResourceName]resource.Quantity),
+						Limits:   make(map[corev1.ResourceName]resource.Quantity),
 					},
 					ReadinessProbe: r.FixProbe(component.Spec.ReadinessProbe),
 					LivenessProbe:  r.FixProbe(component.Spec.LivenessProbe),
@@ -1084,7 +1084,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 		}
 	}
 
-	var pullImageSecrets coreV1.SecretList
+	var pullImageSecrets corev1.SecretList
 	if err := r.Client.List(
 		r.ctx,
 		&pullImageSecrets,
@@ -1095,7 +1095,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 		return nil, err
 	}
 
-	pullImageSecretRefs := make([]coreV1.LocalObjectReference, len(pullImageSecrets.Items))
+	pullImageSecretRefs := make([]corev1.LocalObjectReference, len(pullImageSecrets.Items))
 
 	pullImgSecs := pullImageSecrets.Items
 	sort.Slice(pullImgSecs, func(i, j int) bool {
@@ -1103,7 +1103,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	})
 
 	for i, secret := range pullImgSecs {
-		pullImageSecretRefs[i] = coreV1.LocalObjectReference{
+		pullImageSecretRefs[i] = corev1.LocalObjectReference{
 			Name: secret.Name,
 		}
 	}
@@ -1130,10 +1130,10 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	}
 
 	// apply envs
-	var envs []coreV1.EnvVar
+	var envs []corev1.EnvVar
 	for _, env := range component.Spec.Env {
 		var value string
-		var valueFrom *coreV1.EnvVarSource
+		var valueFrom *corev1.EnvVarSource
 
 		switch env.Type {
 		case "", corev1alpha1.EnvVarTypeStatic:
@@ -1151,30 +1151,30 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 				return nil, err
 			}
 		case corev1alpha1.EnvVarTypeFieldRef:
-			valueFrom = &coreV1.EnvVarSource{
-				FieldRef: &coreV1.ObjectFieldSelector{
+			valueFrom = &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
 					FieldPath: env.Value,
 				},
 			}
 		case corev1alpha1.EnvVarTypeBuiltin:
 			switch env.Value {
 			case corev1alpha1.EnvVarBuiltinHost:
-				valueFrom = &coreV1.EnvVarSource{
-					FieldRef: &coreV1.ObjectFieldSelector{
+				valueFrom = &corev1.EnvVarSource{
+					FieldRef: &corev1.ObjectFieldSelector{
 						APIVersion: "v1",
 						FieldPath:  "spec.nodeName",
 					},
 				}
 			case corev1alpha1.EnvVarBuiltinNamespace:
-				valueFrom = &coreV1.EnvVarSource{
-					FieldRef: &coreV1.ObjectFieldSelector{
+				valueFrom = &corev1.EnvVarSource{
+					FieldRef: &corev1.ObjectFieldSelector{
 						APIVersion: "v1",
 						FieldPath:  "metadata.namespace",
 					},
 				}
 			case corev1alpha1.EnvVarBuiltinPodName:
-				valueFrom = &coreV1.EnvVarSource{
-					FieldRef: &coreV1.ObjectFieldSelector{
+				valueFrom = &corev1.EnvVarSource{
+					FieldRef: &corev1.ObjectFieldSelector{
 						APIVersion: "v1",
 						FieldPath:  "metadata.name",
 					},
@@ -1182,13 +1182,31 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 			}
 		}
 
-		envs = append(envs, coreV1.EnvVar{
+		envs = append(envs, corev1.EnvVar{
 			Name:      env.Name,
 			Value:     value,
 			ValueFrom: valueFrom,
 		})
 	}
 	mainContainer.Env = envs
+
+	envFromCommonCM := corev1.EnvFromSource{
+		ConfigMapRef: &corev1.ConfigMapEnvSource{
+			LocalObjectReference: corev1.LocalObjectReference{
+				Name: CommonConfigMapName,
+			},
+		},
+	}
+
+	envFromCommonSec := corev1.EnvFromSource{
+		SecretRef: &corev1.SecretEnvSource{
+			LocalObjectReference: corev1.LocalObjectReference{
+				Name: CommonConfigMapName,
+			},
+		},
+	}
+
+	mainContainer.EnvFrom = append(mainContainer.EnvFrom, envFromCommonCM, envFromCommonSec)
 
 	err = r.runPlugins(ComponentPluginMethodAfterPodTemplateGeneration, component, template, template)
 	if err != nil {
@@ -1213,7 +1231,7 @@ func (r *ComponentReconcilerTask) getValueOfLinkedEnv(env corev1alpha1.EnvVar) (
 		return "", fmt.Errorf("wrong componentPort config %s, format error", env.Value)
 	}
 
-	var service coreV1.Service
+	var service corev1.Service
 	err := r.Reader.Get(r.ctx, types.NamespacedName{
 		Namespace: r.component.Namespace,
 		Name:      parts[0],
@@ -1373,8 +1391,8 @@ func findPluginAndValidateConfigNew(pluginBinding *corev1alpha1.ComponentPluginB
 	return pluginProgram, nil, nil
 }
 
-func (r *ComponentReconcilerTask) getPVC(pvcName string) (*coreV1.PersistentVolumeClaim, error) {
-	pvcList := coreV1.PersistentVolumeClaimList{}
+func (r *ComponentReconcilerTask) getPVC(pvcName string) (*corev1.PersistentVolumeClaim, error) {
+	pvcList := corev1.PersistentVolumeClaimList{}
 
 	err := r.List(
 		r.ctx,
@@ -1396,26 +1414,26 @@ func (r *ComponentReconcilerTask) getPVC(pvcName string) (*coreV1.PersistentVolu
 	return nil, nil
 }
 
-func (r *ComponentReconcilerTask) decideAffinity() (*coreV1.Affinity, bool) {
+func (r *ComponentReconcilerTask) decideAffinity() (*corev1.Affinity, bool) {
 	component := &r.component.Spec
 
-	var nodeSelectorTerms []coreV1.NodeSelectorTerm
+	var nodeSelectorTerms []corev1.NodeSelectorTerm
 	for label, v := range component.NodeSelectorLabels {
-		nodeSelectorTerms = append(nodeSelectorTerms, coreV1.NodeSelectorTerm{
-			MatchExpressions: []coreV1.NodeSelectorRequirement{
+		nodeSelectorTerms = append(nodeSelectorTerms, corev1.NodeSelectorTerm{
+			MatchExpressions: []corev1.NodeSelectorRequirement{
 				{
 					Key:      label,
-					Operator: coreV1.NodeSelectorOpIn,
+					Operator: corev1.NodeSelectorOpIn,
 					Values:   []string{v},
 				},
 			},
 		})
 	}
 
-	var nodeAffinity *coreV1.NodeAffinity
+	var nodeAffinity *corev1.NodeAffinity
 	if len(nodeSelectorTerms) > 0 {
-		nodeAffinity = &coreV1.NodeAffinity{
-			RequiredDuringSchedulingIgnoredDuringExecution: &coreV1.NodeSelector{
+		nodeAffinity = &corev1.NodeAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
 				NodeSelectorTerms: nodeSelectorTerms,
 			},
 		}
@@ -1423,13 +1441,13 @@ func (r *ComponentReconcilerTask) decideAffinity() (*coreV1.Affinity, bool) {
 
 	labelsOfThisComponent := r.GetLabels()
 
-	var podAntiAffinity *coreV1.PodAntiAffinity
+	var podAntiAffinity *corev1.PodAntiAffinity
 	if component.PreferNotCoLocated {
-		podAntiAffinity = &coreV1.PodAntiAffinity{
-			PreferredDuringSchedulingIgnoredDuringExecution: []coreV1.WeightedPodAffinityTerm{
+		podAntiAffinity = &corev1.PodAntiAffinity{
+			PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
 				{
 					Weight: 1,
-					PodAffinityTerm: coreV1.PodAffinityTerm{
+					PodAffinityTerm: corev1.PodAffinityTerm{
 						TopologyKey: "kubernetes.io/hostname",
 						LabelSelector: &metaV1.LabelSelector{
 							MatchLabels: labelsOfThisComponent,
@@ -1444,7 +1462,7 @@ func (r *ComponentReconcilerTask) decideAffinity() (*coreV1.Affinity, bool) {
 		return nil, false
 	}
 
-	return &coreV1.Affinity{
+	return &corev1.Affinity{
 		NodeAffinity:    nodeAffinity,
 		PodAntiAffinity: podAntiAffinity,
 	}, true
@@ -1459,7 +1477,7 @@ func (r *ComponentReconcilerTask) SetupAttributes(req ctrl.Request) (err error) 
 	}
 	r.component = &component
 
-	var ns coreV1.Namespace
+	var ns corev1.Namespace
 	err = r.Reader.Get(r.ctx, types.NamespacedName{
 		Name: component.Namespace,
 	}, &ns)
@@ -1585,7 +1603,7 @@ func (r *ComponentReconcilerTask) LoadDestinationRule() error {
 }
 
 func (r *ComponentReconcilerTask) LoadService() error {
-	var service coreV1.Service
+	var service corev1.Service
 	if err := r.Reader.Get(
 		r.ctx,
 		types.NamespacedName{
@@ -1601,7 +1619,7 @@ func (r *ComponentReconcilerTask) LoadService() error {
 		r.service = &service
 	}
 
-	var headlessService coreV1.Service
+	var headlessService corev1.Service
 	if err := r.Reader.Get(
 		r.ctx,
 		types.NamespacedName{
@@ -1697,9 +1715,9 @@ func isStatefulSet(component *corev1alpha1.Component) bool {
 }
 
 func (r *ComponentReconcilerTask) preparePreInjectedFiles(
-	template *coreV1.PodTemplateSpec,
-	volumes *[]coreV1.Volume,
-	volumeMounts *[]coreV1.VolumeMount,
+	template *corev1.PodTemplateSpec,
+	volumes *[]corev1.Volume,
+	volumeMounts *[]corev1.VolumeMount,
 ) error {
 	component := r.component
 
@@ -1707,15 +1725,15 @@ func (r *ComponentReconcilerTask) preparePreInjectedFiles(
 		return nil
 	}
 
-	*volumes = append(*volumes, coreV1.Volume{
+	*volumes = append(*volumes, corev1.Volume{
 		Name: "pre-injected-files-volume",
-		VolumeSource: coreV1.VolumeSource{
-			EmptyDir: &coreV1.EmptyDirVolumeSource{},
+		VolumeSource: corev1.VolumeSource{
+			EmptyDir: &corev1.EmptyDirVolumeSource{},
 		},
 	})
 
 	if len(template.Spec.InitContainers) == 0 {
-		template.Spec.InitContainers = []coreV1.Container{}
+		template.Spec.InitContainers = []corev1.Container{}
 	}
 
 	var injectCommands []string
@@ -1736,7 +1754,7 @@ func (r *ComponentReconcilerTask) preparePreInjectedFiles(
 
 		injectCommands = append(injectCommands, cmd)
 
-		*volumeMounts = append(*volumeMounts, coreV1.VolumeMount{
+		*volumeMounts = append(*volumeMounts, corev1.VolumeMount{
 			Name:      "pre-injected-files-volume",
 			MountPath: file.MountPath,
 			SubPath:   baseName,
@@ -1744,11 +1762,11 @@ func (r *ComponentReconcilerTask) preparePreInjectedFiles(
 		})
 	}
 
-	template.Spec.InitContainers = append(template.Spec.InitContainers, coreV1.Container{
+	template.Spec.InitContainers = append(template.Spec.InitContainers, corev1.Container{
 		Name:         "inject-files",
 		Image:        "busybox",
 		Command:      []string{"sh", "-c", fmt.Sprintf("%s", strings.Join(injectCommands, " && "))},
-		VolumeMounts: []coreV1.VolumeMount{{MountPath: "/files", Name: "pre-injected-files-volume"}},
+		VolumeMounts: []corev1.VolumeMount{{MountPath: "/files", Name: "pre-injected-files-volume"}},
 	})
 
 	return nil
@@ -1758,12 +1776,12 @@ func (r *ComponentReconcilerTask) preparePreInjectedFiles(
 //
 // - temp vol as podTemplate.volumes
 // - persistent vol as volClaimTemplate
-func (r *ComponentReconcilerTask) prepareVolsForSTS(podTemplate *coreV1.PodTemplateSpec) ([]coreV1.PersistentVolumeClaim, error) {
+func (r *ComponentReconcilerTask) prepareVolsForSTS(podTemplate *corev1.PodTemplateSpec) ([]corev1.PersistentVolumeClaim, error) {
 	component := r.component
 
-	var volumes []coreV1.Volume
-	var volumeMounts []coreV1.VolumeMount
-	var volClaimTemplates []coreV1.PersistentVolumeClaim
+	var volumes []corev1.Volume
+	var volumeMounts []corev1.VolumeMount
+	var volClaimTemplates []corev1.PersistentVolumeClaim
 
 	if err := r.preparePreInjectedFiles(podTemplate, &volumes, &volumeMounts); err != nil {
 		return nil, err
@@ -1774,21 +1792,21 @@ func (r *ComponentReconcilerTask) prepareVolsForSTS(podTemplate *coreV1.PodTempl
 		volName := getVolName(component.Name, disk.Path)
 
 		if disk.Type == corev1alpha1.VolumeTypeTemporaryDisk {
-			volumes = append(volumes, coreV1.Volume{
+			volumes = append(volumes, corev1.Volume{
 				Name: volName,
-				VolumeSource: coreV1.VolumeSource{
-					EmptyDir: &coreV1.EmptyDirVolumeSource{
-						Medium:    coreV1.StorageMediumDefault,
+				VolumeSource: corev1.VolumeSource{
+					EmptyDir: &corev1.EmptyDirVolumeSource{
+						Medium:    corev1.StorageMediumDefault,
 						SizeLimit: &disk.Size,
 					},
 				},
 			})
 		} else if disk.Type == corev1alpha1.VolumeTypeTemporaryMemory {
-			volumes = append(volumes, coreV1.Volume{
+			volumes = append(volumes, corev1.Volume{
 				Name: volName,
-				VolumeSource: coreV1.VolumeSource{
-					EmptyDir: &coreV1.EmptyDirVolumeSource{
-						Medium:    coreV1.StorageMediumMemory,
+				VolumeSource: corev1.VolumeSource{
+					EmptyDir: &corev1.EmptyDirVolumeSource{
+						Medium:    corev1.StorageMediumMemory,
 						SizeLimit: &disk.Size,
 					},
 				},
@@ -1804,17 +1822,17 @@ func (r *ComponentReconcilerTask) prepareVolsForSTS(podTemplate *coreV1.PodTempl
 				KalmLabelVolClaimTemplateName: volClaimTemplateName,
 			})
 
-			expectedVolClaimTemplate := coreV1.PersistentVolumeClaim{
+			expectedVolClaimTemplate := corev1.PersistentVolumeClaim{
 				ObjectMeta: metaV1.ObjectMeta{
 					Name:      volClaimTemplateName,
 					Namespace: r.component.Namespace,
 					Labels:    labels,
 				},
-				Spec: coreV1.PersistentVolumeClaimSpec{
-					AccessModes: []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
-					Resources: coreV1.ResourceRequirements{
-						Requests: coreV1.ResourceList{
-							coreV1.ResourceStorage: disk.Size,
+				Spec: corev1.PersistentVolumeClaimSpec{
+					AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+					Resources: corev1.ResourceRequirements{
+						Requests: corev1.ResourceList{
+							corev1.ResourceStorage: disk.Size,
 						},
 					},
 					StorageClassName: disk.StorageClassName,
@@ -1828,7 +1846,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSTS(podTemplate *coreV1.PodTempl
 		}
 
 		// all mounted into container
-		volumeMounts = append(volumeMounts, coreV1.VolumeMount{
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			Name:      volName,
 			MountPath: disk.Path,
 		})
@@ -1847,11 +1865,11 @@ func (r *ComponentReconcilerTask) prepareVolsForSTS(podTemplate *coreV1.PodTempl
 
 // StatefulSet is very different when using PVC
 // so all other workloads are simple except for STS
-func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.PodTemplateSpec) error {
+func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *corev1.PodTemplateSpec) error {
 	component := r.component
 
-	var volumes []coreV1.Volume
-	var volumeMounts []coreV1.VolumeMount
+	var volumes []corev1.Volume
+	var volumeMounts []corev1.VolumeMount
 
 	if err := r.preparePreInjectedFiles(template, &volumes, &volumeMounts); err != nil {
 		return err
@@ -1864,30 +1882,30 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 
 		switch disk.Type {
 		case corev1alpha1.VolumeTypeTemporaryDisk:
-			volumes = append(volumes, coreV1.Volume{
+			volumes = append(volumes, corev1.Volume{
 				Name: volName,
-				VolumeSource: coreV1.VolumeSource{
-					EmptyDir: &coreV1.EmptyDirVolumeSource{
-						Medium:    coreV1.StorageMediumDefault,
+				VolumeSource: corev1.VolumeSource{
+					EmptyDir: &corev1.EmptyDirVolumeSource{
+						Medium:    corev1.StorageMediumDefault,
 						SizeLimit: &disk.Size,
 					},
 				},
 			})
 		case corev1alpha1.VolumeTypeTemporaryMemory:
-			volumes = append(volumes, coreV1.Volume{
+			volumes = append(volumes, corev1.Volume{
 				Name: volName,
-				VolumeSource: coreV1.VolumeSource{
-					EmptyDir: &coreV1.EmptyDirVolumeSource{
-						Medium:    coreV1.StorageMediumMemory,
+				VolumeSource: corev1.VolumeSource{
+					EmptyDir: &corev1.EmptyDirVolumeSource{
+						Medium:    corev1.StorageMediumMemory,
 						SizeLimit: &disk.Size,
 					},
 				},
 			})
 		case corev1alpha1.VolumeTypeHostPath:
-			volumes = append(volumes, coreV1.Volume{
+			volumes = append(volumes, corev1.Volume{
 				Name: volName,
-				VolumeSource: coreV1.VolumeSource{
-					HostPath: &coreV1.HostPathVolumeSource{
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
 						Path: disk.HostPath,
 					},
 				},
@@ -1896,7 +1914,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 			pvcName := disk.PVC
 			volName = pvcName
 
-			var pvc *coreV1.PersistentVolumeClaim
+			var pvc *corev1.PersistentVolumeClaim
 			pvcExist := false
 
 			pvcFetched, err := r.getPVC(pvcName)
@@ -1908,17 +1926,17 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 				pvc = pvcFetched
 				pvcExist = true
 			} else {
-				expectedPVC := &coreV1.PersistentVolumeClaim{
+				expectedPVC := &corev1.PersistentVolumeClaim{
 					ObjectMeta: metaV1.ObjectMeta{
 						Name:      pvcName,
 						Namespace: r.component.Namespace,
 						Labels:    r.GetLabels(),
 					},
-					Spec: coreV1.PersistentVolumeClaimSpec{
-						AccessModes: []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
-						Resources: coreV1.ResourceRequirements{
-							Requests: coreV1.ResourceList{
-								coreV1.ResourceStorage: disk.Size,
+					Spec: corev1.PersistentVolumeClaimSpec{
+						AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+						Resources: corev1.ResourceRequirements{
+							Requests: corev1.ResourceList{
+								corev1.ResourceStorage: disk.Size,
 							},
 						},
 						StorageClassName: disk.StorageClassName,
@@ -1954,10 +1972,10 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 			}
 
 			// pvc as volume
-			volumes = append(volumes, coreV1.Volume{
+			volumes = append(volumes, corev1.Volume{
 				Name: volName,
-				VolumeSource: coreV1.VolumeSource{
-					PersistentVolumeClaim: &coreV1.PersistentVolumeClaimVolumeSource{
+				VolumeSource: corev1.VolumeSource{
+					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 						ClaimName: pvcName,
 					},
 				},
@@ -1967,7 +1985,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 			return fmt.Errorf("unknown disk type: %s", disk.Type)
 		}
 
-		volumeMounts = append(volumeMounts, coreV1.VolumeMount{
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
 			Name:      volName,
 			MountPath: disk.Path,
 		})
@@ -1983,7 +2001,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 
 // 2. diff ns pv reuse, remove old pvc, clean ref in pv
 func (r *ComponentReconcilerTask) reconcilePVForReUse(
-	pvc coreV1.PersistentVolumeClaim,
+	pvc corev1.PersistentVolumeClaim,
 	pvName string,
 ) error {
 
@@ -1992,7 +2010,7 @@ func (r *ComponentReconcilerTask) reconcilePVForReUse(
 		return nil
 	}
 
-	var pv coreV1.PersistentVolume
+	var pv corev1.PersistentVolume
 	if err := r.Get(r.ctx, types.NamespacedName{Name: pvName}, &pv); err != nil {
 		return err
 	}
@@ -2007,7 +2025,7 @@ func (r *ComponentReconcilerTask) reconcilePVForReUse(
 	ownerNs := pv.Spec.ClaimRef.Namespace
 	ownerName := pv.Spec.ClaimRef.Name
 
-	var ownerPVC coreV1.PersistentVolumeClaim
+	var ownerPVC corev1.PersistentVolumeClaim
 	err := r.Get(r.ctx, types.NamespacedName{Name: ownerName, Namespace: ownerNs}, &ownerPVC)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -2020,7 +2038,7 @@ func (r *ComponentReconcilerTask) reconcilePVForReUse(
 			return err
 		}
 	} else {
-		if pv.Spec.PersistentVolumeReclaimPolicy != coreV1.PersistentVolumeReclaimRetain {
+		if pv.Spec.PersistentVolumeReclaimPolicy != corev1.PersistentVolumeReclaimRetain {
 			// pvc not safe to delete, nothing we can do but warning the user
 			r.WarningEvent(
 				fmt.Errorf("cannotBoundPV"),
@@ -2059,15 +2077,15 @@ func (r *ComponentReconcilerTask) reconcilePVForReUse(
 	return nil
 }
 
-func cleanPVToBeAvailable(pv *coreV1.PersistentVolume) {
+func cleanPVToBeAvailable(pv *corev1.PersistentVolume) {
 	pv.Spec.ClaimRef = nil
 
 	// to be bound by new pvc, reset clean label
 	delete(pv.Labels, KalmLabelCleanIfPVCGone)
 }
 
-func (r *ComponentReconcilerTask) pvcIsInUsed(pvc coreV1.PersistentVolumeClaim) (bool, error) {
-	var podList coreV1.PodList
+func (r *ComponentReconcilerTask) pvcIsInUsed(pvc corev1.PersistentVolumeClaim) (bool, error) {
+	var podList corev1.PodList
 	err := r.List(r.ctx, &podList, client.InNamespace(pvc.Namespace))
 	if errors.IsNotFound(err) {
 		return false, err
