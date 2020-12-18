@@ -33,6 +33,7 @@ import (
 	"istio.io/client-go/pkg/apis/networking/v1alpha3"
 	appsV1 "k8s.io/api/apps/v1"
 	batchV1 "k8s.io/api/batch/v1"
+	v1 "k8s.io/api/batch/v1"
 	batchV1Beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -41,6 +42,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/rand"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -862,6 +864,51 @@ func (r *ComponentReconcilerTask) ReconcileDaemonSet(podTemplateSpec *corev1.Pod
 	return nil
 }
 
+func (r *ComponentReconcilerTask) ReconcileImmediateJob(podTemplateSpec *corev1.PodTemplateSpec) (err error) {
+	log := r.Log
+	component := r.component
+	labelMap := r.GetLabels()
+	annotations := r.GetAnnotations()
+	ctx := r.ctx
+
+	name := fmt.Sprintf("%s-manual-trigger-%s", component.Name, rand.String(8))
+
+	job := &v1.Job{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name:        name,
+			Namespace:   r.namespace.Name,
+			Labels:      labelMap,
+			Annotations: annotations,
+		},
+		Spec: v1.JobSpec{
+			Template: *podTemplateSpec,
+		},
+	}
+
+	if err := ctrl.SetControllerReference(component, job, r.Scheme); err != nil {
+		r.WarningEvent(err, "unable to set owner for job")
+		return err
+	}
+
+	copied := r.component.DeepCopy()
+	copied.Spec.ImmediateTrigger = false
+
+	if err := r.Patch(ctx, copied, client.MergeFrom(r.component)); err != nil {
+		log.Error(err, "unable to Update ImmediateTrigger flag to false")
+		r.WarningEvent(err, "UpdateImmediateTriggerToFalseFailed", r.component.Name)
+		return err
+	}
+
+	if err := r.Create(ctx, job); err != nil {
+		log.Error(err, "unable to create Immediate Job for Component")
+		r.WarningEvent(err, "JobCreatedFailed", job.Name)
+		return err
+	}
+
+	r.NormalEvent("JobCreated", job.Name+" is created.")
+	return nil
+}
+
 func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *corev1.PodTemplateSpec) (err error) {
 	log := r.Log
 	ctx := r.ctx
@@ -928,6 +975,10 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *corev1.PodTe
 		}
 
 		r.NormalEvent("CronJobUpdated", cj.Name+" is updated.")
+	}
+
+	if r.component.Spec.ImmediateTrigger {
+		return r.ReconcileImmediateJob(podTemplateSpec)
 	}
 
 	return nil

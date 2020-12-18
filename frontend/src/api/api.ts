@@ -200,6 +200,14 @@ export default class RealApi {
     });
   };
 
+  public triggerApplicationComponentJob = async (applicationName: string, componentName: string) => {
+    await axiosRequest({
+      method: "post",
+      url: `/${K8sApiVersion}/applications/${applicationName}/components/${componentName}/jobs`,
+      data: {},
+    });
+  };
+
   // plugins
 
   public getApplicationPlugins = async () => {
