@@ -177,7 +177,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
           ""
         ) : (
           <IconLinkWithToolTip
-            disabled={canEditNamespace(appName)}
+            disabled={!canEditNamespace(appName)}
             onClick={() => {
               blinkTopProgressAction();
             }}
