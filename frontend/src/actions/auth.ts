@@ -7,7 +7,6 @@ import {
   LOAD_LOGIN_STATUS_FULFILLED,
   LOAD_LOGIN_STATUS_PENDING,
   LOGOUT,
-  LogoutAction,
   SET_AUTH_TOKEN,
 } from "types/common";
 import { setErrorNotificationAction } from "./notification";
@@ -54,9 +53,22 @@ export const validateTokenAction = (token: string): ThunkResult<Promise<string>>
   };
 };
 
-export const logoutAction = (): LogoutAction => {
-  stopImpersonating();
-  return {
-    type: LOGOUT,
+export const logoutAction = (): ThunkResult<Promise<void>> => {
+  return async (dispatch, getState) => {
+    if (getState().extraInfo.info.mode === "multiple-tenancy") {
+      try {
+        await api.oidcLogout();
+        dispatch({
+          type: LOGOUT,
+        });
+      } catch (e) {
+        console.log(e);
+      }
+    } else {
+      stopImpersonating();
+      dispatch({
+        type: LOGOUT,
+      });
+    }
   };
 };
