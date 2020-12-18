@@ -43,6 +43,7 @@ import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
 import { getDisplayName } from "permission/utils";
 import React from "react";
+import PlayArrow from "@material-ui/icons/PlayArrow";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -596,6 +597,13 @@ export const LockIcon = withStyles(styles)((props: ColorIconsProps) => {
   const className = getClassNameByColorName(props);
   return <Lock className={className} fontSize={fontSize} style={style} />;
 });
+
+export const PlayIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <PlayArrow className={className} fontSize={fontSize} style={style} />;
+});
+
 export const CIIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
