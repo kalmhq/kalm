@@ -392,15 +392,16 @@ func getTxtListOfDomain(domain string) ([]string, error) {
 		return nil, nil
 	}
 
+	rst := []string{}
 	for _, ans := range r.Answer {
 		domainlog.Info("getTxtListOfDomain ans", "domain", domain, "detail", ans)
 
 		if txt, ok := ans.(*dns.TXT); ok {
-			return txt.Txt, nil
+			rst = append(rst, txt.Txt...)
 		}
 	}
 
-	return nil, nil
+	return rst, nil
 }
 
 func cleanTailingDotInDomainIfExist(domain string) string {
