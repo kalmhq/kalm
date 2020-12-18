@@ -59,6 +59,10 @@ func (h *ApiHandler) handleTriggerJob(c echo.Context) error {
 		return errors.NewBadRequest("component is not a cronjob")
 	}
 
+	component.TypeMeta = metaV1.TypeMeta{
+		Kind:       "Component",
+		APIVersion: "core.kalm.dev/v1alpha1",
+	}
 	copied := component.DeepCopy()
 	copied.Spec.ImmediateTrigger = true
 

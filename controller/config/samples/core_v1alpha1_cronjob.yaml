@@ -1,0 +1,31 @@
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kalm-system
+  labels:
+    istio-injection: enabled
+    kalm-enabled: "true"
+    tenant: global
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cronjob
+  labels:
+    istio-injection: enabled
+    kalm-enabled: "true"
+    tenant: global
+---
+apiVersion: core.kalm.dev/v1alpha1
+kind: Component
+metadata:
+  name: hello-world
+  namespace: cronjob
+  labels:
+    tenant: global
+spec:
+  image: kalmhq/echoserver:latest
+  workloadType: cronjob
+  command: ls
+  schedule: "*/5 * * * *"

@@ -870,8 +870,8 @@ func (r *ComponentReconcilerTask) ReconcileImmediateJob(podTemplateSpec *corev1.
 	labelMap := r.GetLabels()
 	annotations := r.GetAnnotations()
 	ctx := r.ctx
-
 	name := fmt.Sprintf("%s-manual-trigger-%s", component.Name, rand.String(8))
+	template := podTemplateSpec
 
 	job := &v1.Job{
 		ObjectMeta: metaV1.ObjectMeta{
@@ -881,7 +881,7 @@ func (r *ComponentReconcilerTask) ReconcileImmediateJob(podTemplateSpec *corev1.
 			Annotations: annotations,
 		},
 		Spec: v1.JobSpec{
-			Template: *podTemplateSpec,
+			Template: *template,
 		},
 	}
 
@@ -917,11 +917,32 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *corev1.PodTe
 	labelMap := r.GetLabels()
 	annotations := r.GetAnnotations()
 
-	// restartPolicy
-	if podTemplateSpec.Spec.RestartPolicy == corev1.RestartPolicyAlways ||
-		podTemplateSpec.Spec.RestartPolicy == "" {
+	template := podTemplateSpec.DeepCopy()
+	// To kill the sidecar after the process is completed
+	// https://github.com/istio/istio/issues/6324#issuecomment-457742042
+	// t := true
+	// template.Spec.ShareProcessNamespace = &t
+	// mainContainer := &template.Spec.Containers[0]
+	// mainContainer.Lifecycle = &corev1.Lifecycle{
+	//	PreStop: &corev1.Handler{
+	//		Exec: &corev1.ExecAction{
+	// 			Command: []string{"pkill", "-f", "/usr/local/bin/pilot-agent"},
+	// 		},
+	//	},
+	//}
 
-		podTemplateSpec.Spec.RestartPolicy = corev1.RestartPolicyOnFailure
+	template.ObjectMeta.Annotations["sidecar.istio.io/inject"] = "false"
+
+	// template.ObjectMeta = metaV1.ObjectMeta{
+	// 	Annotations: annotations,
+	// 	Labels:      labelMap,
+	// }
+
+	// restartPolicy
+	if template.Spec.RestartPolicy == corev1.RestartPolicyAlways ||
+		template.Spec.RestartPolicy == "" {
+
+		template.Spec.RestartPolicy = corev1.RestartPolicyOnFailure
 
 	}
 
@@ -932,7 +953,7 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *corev1.PodTe
 		Schedule: component.Spec.Schedule,
 		JobTemplate: batchV1Beta1.JobTemplateSpec{
 			Spec: batchV1.JobSpec{
-				Template: *podTemplateSpec,
+				Template: *template,
 			},
 		},
 		SuccessfulJobsHistoryLimit: &successJobHistoryLimit,
@@ -978,7 +999,7 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *corev1.PodTe
 	}
 
 	if r.component.Spec.ImmediateTrigger {
-		return r.ReconcileImmediateJob(podTemplateSpec)
+		return r.ReconcileImmediateJob(template)
 	}
 
 	return nil
