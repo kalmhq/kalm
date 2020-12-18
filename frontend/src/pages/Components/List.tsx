@@ -174,8 +174,6 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     return (
       <Box>
         {component.protectedEndpoint ? (
-          ""
-        ) : (
           <IconLinkWithToolTip
             disabled={!canEditNamespace(appName)}
             onClick={() => {
@@ -187,6 +185,8 @@ class ComponentRaw extends React.PureComponent<Props, State> {
           >
             <LockIcon fontSize="small" color="default" />
           </IconLinkWithToolTip>
+        ) : (
+          ""
         )}
       </Box>
     );
