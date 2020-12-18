@@ -117,6 +117,7 @@ interface DNSConfigGuideProps {
     nsRecord?: string;
     cnameRecord?: string;
     aRecord?: string;
+    txtRecord?: string;
   }[];
 }
 
@@ -136,8 +137,8 @@ export const DNSConfigItems = (props: DNSConfigGuideProps) => {
         </TableHead>
         <TableBody>
           {items.map((item, index) => {
-            const { domain, type, nsRecord, cnameRecord, aRecord } = item;
-            const record = nsRecord || cnameRecord || aRecord || "";
+            const { domain, type, nsRecord, cnameRecord, aRecord, txtRecord } = item;
+            const record = nsRecord || cnameRecord || aRecord || txtRecord || "";
             return (
               <TableRow key={index}>
                 <TableCell>

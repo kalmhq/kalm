@@ -1,11 +1,10 @@
 import React from "react";
-import { Domain } from "types/domains";
 import { PendingBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { SuccessColorText, WarningColorText } from "widgets/Text";
 
-export const DomainStatus = ({ domain }: { domain: Domain }) => {
-  if (domain.status === "ready") {
+export const DomainStatus = ({ status }: { status: "pending" | "ready" }) => {
+  if (status === "ready") {
     // why the ready field is a string value ?????
     return (
       <FlexRowItemCenterBox>
@@ -14,7 +13,7 @@ export const DomainStatus = ({ domain }: { domain: Domain }) => {
         </FlexRowItemCenterBox>
       </FlexRowItemCenterBox>
     );
-  } else if (domain.status === "pending") {
+  } else if (status === "pending") {
     return (
       <FlexRowItemCenterBox>
         <FlexRowItemCenterBox mr={1}>
