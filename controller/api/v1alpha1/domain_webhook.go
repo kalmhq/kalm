@@ -27,7 +27,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/rand"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -75,6 +74,8 @@ func (r *Domain) Default() {
 		r.Spec.DNSType = DNSTypeCNAME
 	}
 
+	md5Domain := md5.Sum([]byte(domain))
+
 	switch r.Spec.DNSType {
 	case DNSTypeA:
 		clusterIP, _ := GetClusterIP()
@@ -85,7 +86,6 @@ func (r *Domain) Default() {
 			return
 		}
 
-		md5Domain := md5.Sum([]byte(domain))
 		//<md5Domain>-<tenantName>
 		cnamePrefix := fmt.Sprintf("%x-%s", md5Domain, tenantName)
 
@@ -97,7 +97,7 @@ func (r *Domain) Default() {
 	}
 
 	if r.Spec.Txt == "" {
-		r.Spec.Txt = rand.String(128)
+		r.Spec.Txt = fmt.Sprintf("%x", md5Domain)
 	}
 }
 
