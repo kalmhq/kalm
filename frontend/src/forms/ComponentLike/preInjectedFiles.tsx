@@ -148,7 +148,12 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
             />
           </Grid>
         </Grid>
-        <RichEditor value={fileContentValue} onChange={this.handleChangeEditor.bind(this)} />
+        <RichEditor
+          value={fileContentValue}
+          onChange={this.handleChangeEditor.bind(this)}
+          height="300px"
+          minLines={80}
+        />
       </ControlledDialog>
     );
   };

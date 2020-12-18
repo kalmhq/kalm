@@ -1,4 +1,4 @@
-import { Box, Button, Collapse, Fade, Grid, Link, Paper, Popper } from "@material-ui/core";
+import { Box, Button, Fade, Grid, Link, Paper, Popper } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
 import { normalizePort } from "forms/normalizer";
 import { POPPER_ZINDEX } from "layout/Constants";
@@ -212,16 +212,11 @@ export const Ports = () => {
 };
 
 export const IngressHint = () => {
-  const [open, setOpen] = React.useState(false);
-
   return (
     <>
-      <Link style={{ cursor: "pointer" }} onClick={() => setOpen(!open)}>
+      <Link style={{ cursor: "pointer" }} href={"/routes"} target="_blank" rel="noopener noreferrer">
         {sc.PORT_ROUTE_QUESTION}
       </Link>
-      <Box pt={1}>
-        <Collapse in={open}>{sc.PORT_ROUTE_ANSWER}</Collapse>
-      </Box>
     </>
   );
 };

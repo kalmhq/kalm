@@ -8,6 +8,7 @@ type FinalCodeEditorProps = RichEditorProps &
     startAdornment?: React.ReactNode;
     endAdornment?: React.ReactNode;
     htmlType?: string;
+    showLineNumbers?: boolean;
   };
 
 export const FinalCodeEditor = ({
@@ -37,9 +38,12 @@ export const FinalCodeEditor = ({
     },
     [onBlur, handleBlur],
   );
-
   return (
-    <FormControl fullWidth error={!!error}>
+    <FormControl
+      fullWidth
+      error={!!error}
+      style={{ border: "1px solid #aaa", borderRadius: 4, paddingTop: 2, paddingBottom: 2 }}
+    >
       {/* {title ? <FormLabel component="legend">{title}</FormLabel> : null} */}
       {showError && error ? <FormHelperText>{error}</FormHelperText> : null}
       <RichEditor
@@ -49,7 +53,8 @@ export const FinalCodeEditor = ({
         value={`${value}`}
         onChange={onChange}
         onBlur={onBlurCallback}
-        // placeholder={helperText}
+        placeholder={helperText}
+        showLineNumbers={false}
         // helperText={showError ? error || submitError : helperText ? helperText : ""}
         // InputLabelProps={{
         //   shrink: true,

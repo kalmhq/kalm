@@ -26,6 +26,7 @@ func TestRootDomainWebhookDefault(t *testing.T) {
 
 	assert.Equal(t, "A", string(d.Spec.DNSType))
 	assert.Equal(t, "1.1.1.1", d.Spec.DNSTarget)
+	assert.Equal(t, "36e9498b339f6578751164d26c7ac9c1", d.Spec.Txt)
 }
 
 func TestSubDomainWebhookDefault(t *testing.T) {
@@ -46,6 +47,7 @@ func TestSubDomainWebhookDefault(t *testing.T) {
 
 	assert.Equal(t, "CNAME", string(d.Spec.DNSType))
 	assert.Equal(t, "d39aad95357511f3201c3f355271e5d5-fake-tenant-cname.dns.foobar.com", d.Spec.DNSTarget)
+	assert.Equal(t, "d39aad95357511f3201c3f355271e5d5", d.Spec.Txt)
 }
 
 func TestWildcardDomainWebhookDefault(t *testing.T) {
@@ -66,4 +68,5 @@ func TestWildcardDomainWebhookDefault(t *testing.T) {
 
 	assert.Equal(t, "CNAME", string(d.Spec.DNSType))
 	assert.Equal(t, "2c6b61109f99375642cd8527c523a367-fake-tenant-cname.dns.foobar.com", d.Spec.DNSTarget)
+	assert.Equal(t, "2c6b61109f99375642cd8527c523a367", d.Spec.Txt)
 }

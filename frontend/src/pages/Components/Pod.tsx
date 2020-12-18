@@ -32,7 +32,7 @@ export const getPod = ({ info, key }: IPod) => {
       return <PodRunningBox key={key} />;
     case "Succeeded":
       return <PodRunningBox key={key} />;
-    case "Error":
+    case "Failed":
       return <PodErrorBox key={key} />;
     default:
       return <PodStopBox key={key} />;

@@ -1,4 +1,4 @@
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles, withTheme, WithTheme } from "@material-ui/core";
 import React from "react";
 
 const styles = (theme: Theme) =>
@@ -8,7 +8,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-export interface RichEditorProps extends WithStyles<typeof styles> {
+export interface RichEditorProps extends WithStyles<typeof styles>, WithTheme {
   value: string;
   mode?: string;
   readOnly?: boolean;
@@ -18,6 +18,9 @@ export interface RichEditorProps extends WithStyles<typeof styles> {
   wrapEnabled?: boolean;
   tabSize?: number;
   disabled?: boolean;
+  placeholder?: string;
+  showLineNumbers?: boolean;
+  minLines?: number;
 }
 
 interface State {
@@ -67,24 +70,52 @@ class RichEditorRaw extends React.PureComponent<RichEditorProps, State> {
       } else {
         import("ace-builds/src-noconflict/mode-sh");
       }
-
-      import("ace-builds/src-noconflict/theme-monokai");
+      this.reloadTheme();
       this.setState({ AceEditor: AceEditor.default });
     });
   }
+  private reloadTheme() {
+    const { theme } = this.props;
+    if (theme.palette.type === "light") {
+      import("ace-builds/src-noconflict/theme-xcode");
+    } else {
+      import("ace-builds/src-noconflict/theme-monokai");
+    }
+  }
+  public componentDidUpdate(prevProps: RichEditorProps, prevState: State) {
+    const { theme } = this.props;
+    const { theme: prevTheme } = prevProps;
+    if (theme.palette.type !== prevTheme.palette.type) {
+      this.reloadTheme();
+    }
+  }
 
   public render() {
+    const { theme } = this.props;
     const { AceEditor } = this.state;
     if (!AceEditor) {
       return null;
     }
 
-    const { readOnly, tabSize, height, wrapEnabled, classes, value, onChange, onBlur } = this.props;
+    const {
+      readOnly,
+      tabSize,
+      height,
+      wrapEnabled,
+      placeholder,
+      classes,
+      value,
+      onChange,
+      onBlur,
+      showLineNumbers = true,
+      minLines,
+    } = this.props;
+
     return (
       <AceEditor
         className={classes.root}
         mode={this.getMode()}
-        theme="monokai"
+        theme={theme.palette.type === "light" ? "xcode" : "monokai"}
         ref="aceEditor"
         value={value}
         height={height}
@@ -94,16 +125,22 @@ class RichEditorRaw extends React.PureComponent<RichEditorProps, State> {
         tabSize={tabSize}
         name="rich-editor"
         width="100%"
+        minLines={!minLines ? 1 : 80}
+        maxLines={20}
+        placeholder={placeholder}
         wrapEnabled={wrapEnabled}
+        highlightActiveLine={true}
         editorProps={{ $blockScrolling: true }}
+        showGutter={!!showLineNumbers ? true : false}
         setOptions={{
           enableBasicAutocompletion: true,
           enableLiveAutocompletion: true,
           enableSnippets: true,
+          showLineNumbers: !!showLineNumbers ? true : false,
         }}
       />
     );
   }
 }
 
-export const RichEditor = withStyles(styles)(RichEditorRaw);
+export const RichEditor = withStyles(styles)(withTheme(RichEditorRaw));

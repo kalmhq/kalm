@@ -1,6 +1,7 @@
 import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
 import React from "react";
+import { shortnessImage } from "utils/string";
 import { CopyIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
@@ -26,7 +27,7 @@ export const renderCommandValue = (value: any, dispatch: any) => {
           </IconButtonWithTooltip>
         }
       >
-        <RichEditor height="100px" wrapEnabled readOnly value={`${value}`} />
+        <RichEditor showLineNumbers={false} wrapEnabled readOnly value={`${value}`} />
       </ItemWithHoverIcon>
     );
   }
@@ -40,7 +41,7 @@ export const renderCopyableValue = (value: any, dispatch: any) => {
       <ItemWithHoverIcon
         icon={
           <IconButtonWithTooltip
-            tooltipTitle="Copy"
+            tooltipTitle={`Copy ${value}`}
             aria-label="copy"
             size="small"
             onClick={(e) => {
@@ -53,7 +54,7 @@ export const renderCopyableValue = (value: any, dispatch: any) => {
           </IconButtonWithTooltip>
         }
       >
-        {value}
+        {shortnessImage(value)}
       </ItemWithHoverIcon>
     );
   }

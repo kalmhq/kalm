@@ -17,6 +17,15 @@ func ExamplegetDirectCNAMEOfDomain() {
 	}
 }
 
+// func ExampleGetTxtListOfDomain() {
+// 	domain := "example.com"
+
+// 	txtList, _ := getTxtListOfDomain(domain)
+// 	fmt.Println(txtList)
+// 	// Output:
+// 	// [v=spf1 -all 8j5nfqld20zpcyr8xjw0ydcfq9rk8hgm]
+// }
+
 // func TestGetIPOfDomain(t *testing.T) {
 // 	domain := "kalm.dev"
 

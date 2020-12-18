@@ -331,6 +331,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="command"
             label="Command"
             placeholder={sc.COMMAND_INPUT_PLACEHOLDER}
+            height="100%"
+            showLineNumbers={false}
           />
         </Grid>
       </>
