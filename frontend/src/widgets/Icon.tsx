@@ -38,6 +38,7 @@ import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import ViewList from "@material-ui/icons/ViewList";
 import VpnKey from "@material-ui/icons/VpnKey";
 import Web from "@material-ui/icons/Web";
+import Lock from "@material-ui/icons/Lock";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
 import { getDisplayName } from "permission/utils";
@@ -590,6 +591,11 @@ export const InfoIcon = withStyles(styles)((props: ColorIconsProps) => {
   return <Info className={className} fontSize={fontSize} style={style} />;
 });
 
+export const LockIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <Lock className={className} fontSize={fontSize} style={style} />;
+});
 export const CIIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);

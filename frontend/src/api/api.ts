@@ -28,6 +28,11 @@ export default class RealApi {
     return res.data;
   };
 
+  public oidcLogout = async () => {
+    const res = await axiosRequest({ method: "get", url: "/oidc/logout" });
+    return res.data;
+  };
+
   public getCurrentTenant = async () => {
     const res = await axiosRequest<Tenant>({ method: "get", url: `/${K8sApiVersion}/tenants/current` });
     return res.data;

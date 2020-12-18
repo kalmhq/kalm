@@ -20,7 +20,7 @@ import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { EditIcon, KalmComponentsIcon, KalmViewListIcon } from "widgets/Icon";
+import { EditIcon, KalmComponentsIcon, KalmViewListIcon, LockIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
@@ -168,9 +168,33 @@ class ComponentRaw extends React.PureComponent<Props, State> {
 
     return <InfoBox title={title} options={options} />;
   }
+  private renderProtected(component: ApplicationComponentDetails) {
+    const { activeNamespaceName, canEditNamespace } = this.props;
+    const appName = activeNamespaceName;
+    return (
+      <Box>
+        {component.protectedEndpoint ? (
+          <IconLinkWithToolTip
+            disabled={!canEditNamespace(appName)}
+            onClick={() => {
+              blinkTopProgressAction();
+            }}
+            size="small"
+            tooltipTitle="Protected"
+            to={`/applications/${appName}/components/${component.name}/edit#Access`}
+          >
+            <LockIcon fontSize="small" color="default" />
+          </IconLinkWithToolTip>
+        ) : (
+          ""
+        )}
+      </Box>
+    );
+  }
 
   private getKRTableColumns() {
     return [
+      { Header: "", accessor: "protected" },
       { Header: "", accessor: "componentName" },
       { Header: "Pods", accessor: "pods" },
       { Header: "Type", accessor: "type" },
@@ -184,6 +208,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     components &&
       components.forEach((component, index) => {
         data.push({
+          protected: this.renderProtected(component),
           componentName: (
             <Box display={"flex"}>
               <Box display="flex" minWidth={100}>
@@ -203,19 +228,23 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   }
 
   private getPodsStatus = (component: ApplicationComponentDetails) => {
-    // @ts-ignore
-    let pods = [];
+    let pods: React.ReactElement[] = [];
 
     component.pods?.forEach((pod, index) => {
-      pods.push(<Tooltip title={pod.statusText ?? pod.name}>{getPod({ info: pod, key: index })}</Tooltip>);
+      if (pod.statusText !== "Terminated: Completed") {
+        pods.push(<Tooltip title={`${pod.name} ${pod.statusText}`}>{getPod({ info: pod, key: index })}</Tooltip>);
+      }
     });
 
     return (
       <Box display={"flex"} flexDirection="row" maxWidth={100} flexWrap="wrap">
-        {
-          // @ts-ignore
-          pods.length > 0 ? pods : "-"
-        }
+        {pods.length > 0 ? (
+          pods
+        ) : (
+          <Box width={12} display={"flex"} flexDirection="row" justifyContent={"center"}>
+            -
+          </Box>
+        )}
       </Box>
     );
   };
