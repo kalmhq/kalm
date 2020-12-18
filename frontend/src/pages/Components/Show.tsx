@@ -16,6 +16,8 @@ import { Expansion } from "widgets/expansion";
 import { Body, H6 } from "widgets/Label";
 import { Namespaces } from "widgets/Namespaces";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
+import { api } from "api";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -176,7 +178,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
   }
 
   private renderSecondHeaderRight() {
-    const { classes, component, activeNamespaceName, canEditNamespace } = this.props;
+    const { classes, component, activeNamespaceName, canEditNamespace, dispatch } = this.props;
 
     return (
       <div className={classes.secondHeaderRight}>
@@ -187,10 +189,29 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
             component={Link}
             color="primary"
             size="small"
+            className={classes.secondHeaderRightItem}
             variant="outlined"
             to={`/applications/${activeNamespaceName}/components/${component.name}/edit`}
           >
             Edit
+          </Button>
+        )}
+
+        {component.workloadType === "cronjob" && (
+          <Button
+            color="primary"
+            size="small"
+            variant="outlined"
+            onClick={async () => {
+              try {
+                await api.triggerApplicationComponentJob(activeNamespaceName, component.name);
+                dispatch(setSuccessNotificationAction(`Trigger Cronjob ${component.name} successful!`));
+              } catch (error) {
+                dispatch(setErrorNotificationAction(`Trigger Cronjob ${component.name} failed: ${error}`));
+              }
+            }}
+          >
+            Run Once
           </Button>
         )}
       </div>

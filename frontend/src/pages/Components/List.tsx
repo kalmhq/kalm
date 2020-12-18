@@ -20,13 +20,14 @@ import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { EditIcon, KalmComponentsIcon, KalmViewListIcon, LockIcon } from "widgets/Icon";
-import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { EditIcon, KalmComponentsIcon, KalmViewListIcon, LockIcon, PlayIcon } from "widgets/Icon";
+import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
+import { api } from "api";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -264,7 +265,6 @@ class ComponentRaw extends React.PureComponent<Props, State> {
         >
           <KalmViewListIcon />
         </IconLinkWithToolTip>
-
         {canEditNamespace(activeNamespaceName) ? (
           <IconLinkWithToolTip
             onClick={() => {
@@ -288,6 +288,23 @@ class ComponentRaw extends React.PureComponent<Props, State> {
               dispatch(setSuccessNotificationAction("Delete component successfully"));
             }}
           />
+        ) : null}
+        {component.workloadType === "cronjob" ? (
+          <IconButtonWithTooltip
+            onClick={async () => {
+              blinkTopProgressAction();
+              try {
+                await api.triggerApplicationComponentJob(appName, component.name);
+                dispatch(setSuccessNotificationAction(`Trigger Cronjob ${component.name} successful!`));
+              } catch (error) {
+                dispatch(setErrorNotificationAction(`Trigger Cronjob ${component.name} failed: ${error}`));
+              }
+            }}
+            tooltipTitle="Trigger"
+            size="small"
+          >
+            <PlayIcon />
+          </IconButtonWithTooltip>
         ) : null}
       </Box>
     );
