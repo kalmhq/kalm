@@ -27,6 +27,9 @@ interface IPod {
 }
 
 export const getPod = ({ info, key }: IPod) => {
+  if (info.statusText === "Terminated: Completed") {
+    return <>-</>;
+  }
   switch (info.status) {
     case "Running":
       return <PodRunningBox key={key} />;

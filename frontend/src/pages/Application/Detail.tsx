@@ -185,18 +185,6 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private getPodsNumber = (component: ApplicationComponentDetails): string => {
-    let runningCount = 0;
-
-    component.pods?.forEach((pod) => {
-      if (pod.status === "Succeeded" || pod.status === "Running") {
-        runningCount = runningCount + 1;
-      }
-    });
-
-    return `${runningCount}/${component.pods.length}`;
-  };
-
   private getPieChartData() {
     const { components } = this.props;
 
