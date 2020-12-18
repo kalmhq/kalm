@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Link as KMLink, Theme, Tooltip, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Link as KMLink, Theme, WithStyles } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
@@ -28,6 +28,7 @@ import { KRTable } from "widgets/KRTable";
 import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
 import { api } from "api";
+import { getPodLogQuery } from "pages/Application/Log";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -219,7 +220,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
               </Box>
             </Box>
           ),
-          pods: this.getPodsStatus(component),
+          pods: this.getPodsStatus(component, activeNamespaceName),
           type: component.workloadType,
           image: renderCopyableValue(component.image, dispatch),
           actions: this.componentControls(component),
@@ -228,12 +229,25 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     return data;
   }
 
-  private getPodsStatus = (component: ApplicationComponentDetails) => {
+  private getPodsStatus = (component: ApplicationComponentDetails, activeNamespaceName: string) => {
     let pods: React.ReactElement[] = [];
 
     component.pods?.forEach((pod, index) => {
       if (pod.statusText !== "Terminated: Completed") {
-        pods.push(<Tooltip title={`${pod.name} ${pod.statusText}`}>{getPod({ info: pod, key: index })}</Tooltip>);
+        pods.push(
+          <IconLinkWithToolTip
+            onClick={() => {
+              blinkTopProgressAction();
+            }}
+            size="small"
+            tooltipTitle={`${pod.name} ${pod.statusText}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            to={`/applications/${activeNamespaceName}/logs?` + getPodLogQuery(activeNamespaceName, pod)}
+          >
+            {getPod({ info: pod, key: index })}
+          </IconLinkWithToolTip>,
+        );
       }
     });
 
