@@ -644,6 +644,10 @@ func handleOIDCCallback(c echo.Context) error {
 	return c.Redirect(302, uri.String())
 }
 
+type LogoutRes struct {
+	EndSessionEndpoint string `json:"endSessionEndpoint"`
+}
+
 func handleOIDCLogout(c echo.Context) error {
 	if getOauth2Config() == nil {
 		return c.String(503, "Please configure KALM OIDC environments.")
@@ -652,7 +656,8 @@ func handleOIDCLogout(c echo.Context) error {
 	clearTokenInCookie(c)
 
 	endSessionEndpoint := os.Getenv("KALM_OIDC_PROVIDER_URL") + "/session/end"
-	return c.Redirect(302, endSessionEndpoint)
+
+	return c.JSON(200, &LogoutRes{endSessionEndpoint})
 }
 
 func handleLog(c echo.Context) error {
