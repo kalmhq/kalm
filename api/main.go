@@ -176,12 +176,12 @@ func startMainServer(runningConfig *config.Config, k8sClientConfig *rest.Config)
 	staticFileRoot := os.Getenv("STATIC_FILE_ROOT")
 
 	if staticFileRoot != "" {
+		e.Use(CacheControl)
+
 		e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 			Root:  staticFileRoot,
 			HTML5: true,
 		}))
-
-		e.Use(CacheControl)
 	}
 
 	e.Validator = &server.CustomValidator{Validator: validator.New()}
