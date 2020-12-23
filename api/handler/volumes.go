@@ -57,8 +57,14 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 			continue
 		}
 
+		// permission
 		pvcScope := kalmPVCTenant + "/" + kalmPVC.Namespace
 		if !h.clientManager.CanViewScope(currentUser, pvcScope) {
+			continue
+		}
+
+		// only show disk under current tenant to avoid confusion
+		if currentUser.Tenant != kalmPVCTenant {
 			continue
 		}
 
