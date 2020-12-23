@@ -53,7 +53,7 @@ interface Props
 
 interface State {}
 
-class CIPageRaw extends React.PureComponent<Props, State> {
+class WebhookPageRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {};
@@ -63,11 +63,11 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     return (
       <EmptyInfoBox
         image={<CIIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={sc.EMPTY_CI_TITLE}
-        content={sc.EMPTY_CI_SUBTITLE}
+        title={sc.EMPTY_WEBHOOK_TITLE}
+        content={sc.EMPTY_WEBHOOK_SUBTITLE}
         button={
           this.canEdit() ? (
-            <CustomizedButton component={Link} variant="contained" to="/ci/keys/new" color="primary">
+            <CustomizedButton component={Link} variant="contained" to="/webhooks/keys/new" color="primary">
               New Deploy Key
             </CustomizedButton>
           ) : null
@@ -120,7 +120,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
           }}
           // size="small"
           tooltipTitle="Details"
-          to={`/ci/keys/${rowData.name}`}
+          to={`/webhooks/keys/${rowData.name}`}
         >
           <KalmDetailsIcon />
         </IconLinkWithToolTip>
@@ -178,7 +178,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderKRTable() {
-    return <KRTable showTitle={true} title="CI/CD" columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
+    return <KRTable showTitle={true} title="Webhook" columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
   }
 
   private renderContent = () => {
@@ -228,7 +228,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
         secondHeaderRight={
           this.canEdit() ? (
             <>
-              <Button component={Link} color="primary" variant="outlined" size="small" to="/ci/keys/new">
+              <Button component={Link} color="primary" variant="outlined" size="small" to="/webhooks/keys/new">
                 New Deploy Token
               </Button>
             </>
@@ -242,6 +242,6 @@ class CIPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const CIPage = withNamespace(
-  withUserAuth(withStyles(styles)(withDeployAccessTokens(connect(mapStateToProps)(CIPageRaw)))),
+export const WebhookPage = withNamespace(
+  withUserAuth(withStyles(styles)(withDeployAccessTokens(connect(mapStateToProps)(WebhookPageRaw)))),
 );

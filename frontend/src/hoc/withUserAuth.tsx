@@ -24,7 +24,7 @@ export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
       const canViewPage = () => {
         if (location.pathname.includes("/certificates")) {
           return canEditTenant() || canViewCluster();
-        } else if (location.pathname.includes("/ci")) {
+        } else if (location.pathname.includes("/webhooks")) {
           return canEditTenant();
         } else if (location.pathname.includes("/cluster/nodes")) {
           return canViewCluster();

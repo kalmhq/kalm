@@ -114,7 +114,7 @@ class DeployAccessTokenDetailPageRaw extends React.PureComponent<Props> {
               <Box mt={2}>
                 <Subtitle2>Endpoint</Subtitle2>
                 <Box mt={2} ml={2}>
-                  <CodeBlock>{`POST https://<your-kalm-host>/webhook/components`}</CodeBlock>
+                  <CodeBlock>{`POST https://<your-kalm-host>/webhooks/components`}</CodeBlock>
                 </Box>
               </Box>
               <Box mt={2}>
@@ -220,7 +220,7 @@ class DeployAccessTokenDetailPageRaw extends React.PureComponent<Props> {
       "componentName": "<component-name>",
       "imageTag":      "<image-tag>"
     }' \\
-    https://<your-kalm-host>/webhook/components`;
+    https://<your-kalm-host>/webhooks/components`;
 
     const githubAction = `name: Call Kalm Deploy Webhook
 
@@ -383,14 +383,14 @@ workflows:
               color="primary"
               variant="outlined"
               size="small"
-              to={`/ci/keys/${deployAccessToken.name}/edit`}
+              to={`/webhooks/keys/${deployAccessToken.name}/edit`}
             >
               Edit
             </Button> */}
             <DeleteButtonWithConfirmPopover
               useText
-              popupId="delete-ci-popup"
-              popupTitle="DELETE CI?"
+              popupId="delete-webhook-popup"
+              popupTitle="DELETE WEBHOOK?"
               confirmedAction={this.handleDelete}
             />
           </>
