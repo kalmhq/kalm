@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/kalmhq/kalm/api/log"
+	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/net/http2"
 	"k8s.io/client-go/rest"
@@ -159,6 +160,13 @@ func initClusterK8sClientConfiguration(config *config.Config) (cfg *rest.Config,
 	return
 }
 
+func CacheControl(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		c.Response().Header().Set("Cache-Control", "no-cache")
+		return next(c)
+	}
+}
+
 func startMainServer(runningConfig *config.Config, k8sClientConfig *rest.Config) {
 	e := server.NewEchoInstance()
 
@@ -168,6 +176,8 @@ func startMainServer(runningConfig *config.Config, k8sClientConfig *rest.Config)
 	staticFileRoot := os.Getenv("STATIC_FILE_ROOT")
 
 	if staticFileRoot != "" {
+		e.Use(CacheControl)
+
 		e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 			Root:  staticFileRoot,
 			HTML5: true,

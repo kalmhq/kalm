@@ -57,10 +57,8 @@ export const logoutAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (getState().extraInfo.info.mode === "multiple-tenancy") {
       try {
-        await api.oidcLogout();
-        dispatch({
-          type: LOGOUT,
-        });
+        const res = await api.oidcLogout();
+        window.location.href = res.endSessionEndpoint;
       } catch (e) {
         console.log(e);
       }
