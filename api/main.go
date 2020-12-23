@@ -179,7 +179,9 @@ func startMainServer(runningConfig *config.Config, k8sClientConfig *rest.Config)
 		e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 			Root:  staticFileRoot,
 			HTML5: true,
-		}), CacheControl)
+		}))
+
+		e.Use(CacheControl)
 	}
 
 	e.Validator = &server.CustomValidator{Validator: validator.New()}
