@@ -8,6 +8,7 @@ import (
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
+	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -50,12 +51,18 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 
 	respVolumes := []resources.Volume{}
 	for _, kalmPVC := range kalmPVCList.Items {
-		if !h.clientManager.CanViewScope(currentUser, currentUser.Tenant+"/"+kalmPVC.Namespace) {
+		kalmPVCTenant := kalmPVC.Labels[v1alpha1.TenantNameLabelKey]
+		if kalmPVCTenant == "" {
+			h.logger.Warn("pvc without tenant", zap.String("pvc", fmt.Sprintf("%s/%s", kalmPVC.Namespace, kalmPVC.Name)))
+			continue
+		}
+
+		pvcScope := kalmPVCTenant + "/" + kalmPVC.Namespace
+		if !h.clientManager.CanViewScope(currentUser, pvcScope) {
 			continue
 		}
 
 		respVolume, err := h.resourceManager.BuildVolumeResponse(kalmPVC)
-
 		if err != nil {
 			return err
 		}
