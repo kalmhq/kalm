@@ -152,6 +152,7 @@ func (c *DomainChecker) syncHandler(key string) (ctrl.Result, error) {
 
 	// do nothing if not ready to check
 	if !domain.Spec.DNSTargetReadyToCheck && !domain.Spec.TxtReadyToCheck {
+		c.log.Info("not ready to check, skipped", "domain", domain.Spec.Domain)
 		return ctrl.Result{}, nil
 	}
 
@@ -159,6 +160,7 @@ func (c *DomainChecker) syncHandler(key string) (ctrl.Result, error) {
 
 	var requeueAfter time.Duration
 	if domain.Spec.DNSTargetReadyToCheck {
+		c.log.Info("dnsTarget ready to check", "domain", domain.Spec.Domain)
 
 		isDNSTargetConfiguredRight, err := v1alpha1.IsDNSTargetConfiguredAsExpected(domain.Spec)
 		if err != nil {
@@ -174,6 +176,8 @@ func (c *DomainChecker) syncHandler(key string) (ctrl.Result, error) {
 	}
 
 	if domain.Spec.TxtReadyToCheck {
+		c.log.Info("txt ready to check", "domain", domain.Spec.Domain)
+
 		isTxtConfiguredRight, err := v1alpha1.IsDomainTxtConfiguredAsExpected(domain.Spec)
 		if err != nil {
 			c.log.Info("IsDomainTxtConfiguredAsExpected failed", "err", err)
