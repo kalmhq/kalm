@@ -32,7 +32,7 @@ type DomainSpec struct {
 	DNSTarget             string  `json:"dnsTarget,omitempty"`
 	Txt                   string  `json:"txt,omitempty"`
 	IsKalmBuiltinDomain   bool    `json:"isKalmBuiltinDomain"`
-	DNSTargetReadyToCheck bool    `json:"dsnTargetReadyToCheck,omitempty"`
+	DNSTargetReadyToCheck bool    `json:"dnsTargetReadyToCheck,omitempty"`
 	TxtReadyToCheck       bool    `json:"txtReadyToCheck,omitempty"`
 }
 

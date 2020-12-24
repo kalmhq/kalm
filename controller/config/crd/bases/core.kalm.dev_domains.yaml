@@ -53,12 +53,12 @@ spec:
           properties:
             dnsTarget:
               type: string
+            dnsTargetReadyToCheck:
+              type: boolean
             dnsType:
               type: string
             domain:
               type: string
-            dsnTargetReadyToCheck:
-              type: boolean
             isKalmBuiltinDomain:
               type: boolean
             txt:
