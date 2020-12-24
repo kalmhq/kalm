@@ -57,10 +57,14 @@ spec:
               type: string
             domain:
               type: string
+            dsnTargetReadyToCheck:
+              type: boolean
             isKalmBuiltinDomain:
               type: boolean
             txt:
               type: string
+            txtReadyToCheck:
+              type: boolean
           required:
           - isKalmBuiltinDomain
           type: object

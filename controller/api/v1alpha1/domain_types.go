@@ -32,8 +32,8 @@ type DomainSpec struct {
 	DNSTarget             string  `json:"dnsTarget,omitempty"`
 	Txt                   string  `json:"txt,omitempty"`
 	IsKalmBuiltinDomain   bool    `json:"isKalmBuiltinDomain"`
-	DNSTargetReadyToCheck bool    `json:"dsnTargetReadyToCheck"`
-	TxtReadyToCheck       bool    `json:"txtReadyToCheck"`
+	DNSTargetReadyToCheck bool    `json:"dsnTargetReadyToCheck,omitempty"`
+	TxtReadyToCheck       bool    `json:"txtReadyToCheck,omitempty"`
 }
 
 // DomainStatus defines the observed state of Domain
