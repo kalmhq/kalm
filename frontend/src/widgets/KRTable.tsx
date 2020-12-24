@@ -67,6 +67,7 @@ export const KRTable = ({
       filterTypes,
       globalFilter: "kFilter",
       initialState: { pageIndex: 0, pageSize: DefaultPageSize },
+      autoResetPage: false,
     },
     useGlobalFilter,
     usePagination,
