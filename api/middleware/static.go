@@ -190,6 +190,8 @@ func StaticWithConfig(config StaticConfig) echo.MiddlewareFunc {
 			}
 
 			if fi.IsDir() {
+				c.Response().Header().Set("Cache-Control", "no-cache")
+
 				index := filepath.Join(name, config.Index)
 				fi, err = os.Stat(index)
 

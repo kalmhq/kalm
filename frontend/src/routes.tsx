@@ -11,9 +11,9 @@ import { CertificateEditPage } from "pages/Certificate/Edit";
 import { CertificateListPage } from "pages/Certificate/List";
 import { CertificateNewPage } from "pages/Certificate/New";
 import { CertificateUploadPage } from "pages/Certificate/Upload";
-import { CIPage } from "pages/CI";
-import { DeployAccessTokenDetailPage } from "pages/CI/Detail";
-import { DeployAccessTokenNewPage } from "pages/CI/New";
+import { WebhookPage } from "pages/Webhook";
+import { DeployAccessTokenDetailPage } from "pages/Webhook/Detail";
+import { DeployAccessTokenNewPage } from "pages/Webhook/New";
 import { ComponentEditPage } from "pages/Components/Edit";
 import { ComponentListPage } from "pages/Components/List";
 import { ComponentNewPage } from "pages/Components/New";
@@ -79,10 +79,10 @@ export const KalmRoutes = (
           <Route exact path="/cluster/members/new" component={MemberNewPage} />
           <Route exact path="/cluster/members/:name/edit" component={RolesListPage} />
 
-          <Route exact path="/ci" component={CIPage} />
-          <Redirect exact path="/ci/keys" to="/ci" />
-          <Route exact path="/ci/keys/new" component={DeployAccessTokenNewPage} />
-          <Route exact path="/ci/keys/:name" component={DeployAccessTokenDetailPage} />
+          <Route exact path="/webhooks" component={WebhookPage} />
+          <Redirect exact path="/webhooks/keys" to="/webhooks" />
+          <Route exact path="/webhooks/keys/new" component={DeployAccessTokenNewPage} />
+          <Route exact path="/webhooks/keys/:name" component={DeployAccessTokenDetailPage} />
 
           <Route exact path="/applications" component={ApplicationListPage} />
           <Route exact path="/applications/new" component={ApplicationNewPage} />
