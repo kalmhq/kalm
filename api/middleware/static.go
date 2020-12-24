@@ -160,6 +160,10 @@ func StaticWithConfig(config StaticConfig) echo.MiddlewareFunc {
 			}
 
 			p := c.Request().URL.Path
+			if p == "/" {
+				c.Response().Header().Set("Cache-Control", "no-cache")
+			}
+
 			if strings.HasSuffix(c.Path(), "*") { // When serving from a group, e.g. `/static*`.
 				p = c.Param("*")
 			}
