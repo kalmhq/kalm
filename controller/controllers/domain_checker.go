@@ -49,6 +49,9 @@ func NewDomainChecker(mgr manager.Manager) (*DomainChecker, error) {
 
 	domainInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: domainChecker.enqueue,
+		UpdateFunc: func(old, new interface{}) {
+			domainChecker.enqueue(new)
+		},
 	})
 
 	client := mgr.GetClient()
