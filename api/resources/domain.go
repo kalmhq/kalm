@@ -6,13 +6,15 @@ type Domain struct {
 	// Req
 	Domain string `json:"domain"`
 	// Resp
-	Name       string `json:"name"`
-	Status     string `json:"status"`
-	RecordType string `json:"recordType"`
-	Target     string `json:"target"`
-	IsBuiltIn  bool   `json:"isBuiltIn"`
-	Txt        string `json:"txt"`
-	TxtStatus  string `json:"txtStatus"`
+	Name                  string `json:"name"`
+	Status                string `json:"status"`
+	RecordType            string `json:"recordType"`
+	Target                string `json:"target"`
+	IsBuiltIn             bool   `json:"isBuiltIn"`
+	Txt                   string `json:"txt"`
+	TxtStatus             string `json:"txtStatus"`
+	DNSTargetReadyToCheck bool   `json:"dnsTargetReadyToCheck"`
+	TxtReadyToCheck       bool   `json:"txtReadyToCheck"`
 }
 
 func WrapDomainAsResp(d v1alpha1.Domain) Domain {
@@ -31,14 +33,16 @@ func WrapDomainAsResp(d v1alpha1.Domain) Domain {
 	}
 
 	return Domain{
-		Name:       d.Name,
-		Domain:     d.Spec.Domain,
-		Target:     d.Spec.DNSTarget,
-		Status:     targetStatus,
-		RecordType: string(d.Spec.DNSType),
-		IsBuiltIn:  d.Spec.IsKalmBuiltinDomain,
-		Txt:        d.Spec.Txt,
-		TxtStatus:  txtStatus,
+		Name:                  d.Name,
+		Domain:                d.Spec.Domain,
+		Target:                d.Spec.DNSTarget,
+		Status:                targetStatus,
+		RecordType:            string(d.Spec.DNSType),
+		IsBuiltIn:             d.Spec.IsKalmBuiltinDomain,
+		Txt:                   d.Spec.Txt,
+		TxtStatus:             txtStatus,
+		DNSTargetReadyToCheck: d.Spec.DNSTargetReadyToCheck,
+		TxtReadyToCheck:       d.Spec.TxtReadyToCheck,
 	}
 }
 
