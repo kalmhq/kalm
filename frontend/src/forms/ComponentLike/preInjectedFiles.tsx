@@ -49,7 +49,12 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
   private handleDiscard(isInvalidFile: boolean | undefined) {
     const { fields, dispatch } = this.props;
     const { editingFileIndex } = this.state;
-    if (isInvalidFile) {
+    if (
+      !fields.value ||
+      !fields.value[editingFileIndex] ||
+      !fields.value[editingFileIndex].mountPath ||
+      !fields.value[editingFileIndex].content
+    ) {
       fields.remove(editingFileIndex);
     }
     dispatch(closeDialogAction(updateContentDialogID));
