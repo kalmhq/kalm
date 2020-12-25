@@ -3,6 +3,7 @@ package ws
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
@@ -10,6 +11,7 @@ import (
 	"github.com/kalmhq/kalm/controller/controllers"
 	"go.uber.org/zap"
 	coreV1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	toolscache "k8s.io/client-go/tools/cache"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -43,6 +45,21 @@ func StartWatching(c *Client) {
 	informerCache.Start(c.stopWatcher)
 }
 
+func getKindAndKey(obj interface{}) string {
+	kind := "unknown"
+	if rtObj, ok := obj.(runtime.Object); ok {
+		kind = rtObj.GetObjectKind().GroupVersionKind().Kind
+	}
+
+	key := "unknown"
+	objMeta, err := meta.Accessor(obj)
+	if err == nil {
+		key = fmt.Sprintf("%s/%s", objMeta.GetNamespace(), objMeta.GetName())
+	}
+
+	return fmt.Sprintf("kind: %s, key: %s", kind, key)
+}
+
 func registerWatchHandler(c *Client,
 	informerCache *cache.Cache,
 	runtimeObj runtime.Object,
@@ -58,7 +75,7 @@ func registerWatchHandler(c *Client,
 		AddFunc: func(obj interface{}) {
 			resMessage, err := buildResMessage(c, "Add", obj)
 			if err != nil {
-				log.Error("build res message error, Add,", zap.Error(err), zap.Any("obj", obj))
+				log.Error("build res message error, Add,", zap.Error(err), zap.Any("obj", getKindAndKey(obj)))
 				return
 			}
 
@@ -69,7 +86,7 @@ func registerWatchHandler(c *Client,
 		DeleteFunc: func(obj interface{}) {
 			resMessage, err := buildResMessage(c, "Delete", obj)
 			if err != nil {
-				log.Error("build res message error, Delete,", zap.Error(err), zap.Any("obj", obj))
+				log.Error("build res message error, Delete,", zap.Error(err), zap.Any("obj", getKindAndKey(obj)))
 				return
 			}
 			if resMessage != nil {
@@ -79,7 +96,7 @@ func registerWatchHandler(c *Client,
 		UpdateFunc: func(oldObj, obj interface{}) {
 			resMessage, err := buildResMessage(c, "Update", obj)
 			if err != nil {
-				log.Error("build res message error, Update,", zap.Error(err), zap.Any("obj", obj))
+				log.Error("build res message error, Update,", zap.Error(err), zap.Any("obj", getKindAndKey(obj)))
 				return
 			}
 			if resMessage != nil {
@@ -239,7 +256,6 @@ func buildPodResMessage(c *Client, action string, objWatched interface{}) (*ResM
 	}
 
 	tenantName, err := v1alpha1.GetTenantNameFromObj(pod)
-
 	if err != nil {
 		return nil, err
 	}
@@ -544,7 +560,6 @@ func buildDomainResMessage(c *Client, action string, objWatched interface{}) (*R
 	}
 
 	tenantName, err := v1alpha1.GetTenantNameFromObj(domain)
-
 	if err != nil {
 		return nil, err
 	}

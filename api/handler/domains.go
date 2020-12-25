@@ -15,6 +15,7 @@ func (h *ApiHandler) InstallDomainHandlers(e *echo.Group) {
 	e.GET("/domains", h.handleListDomains)
 	e.GET("/domains/:name", h.handleGetDomain)
 	e.POST("/domains", h.handleCreateDomain)
+	e.PUT("/domains/:name", h.handleTriggerDomainCheck)
 	e.DELETE("/domains/:name", h.handleDeleteDomain)
 }
 
@@ -94,6 +95,41 @@ func (h *ApiHandler) handleCreateDomain(c echo.Context) error {
 	}
 
 	return c.JSON(201, resources.WrapDomainAsResp(*domain))
+}
+
+type TriggerDomainCheckReq struct {
+	DNSTargetReadyToCheck bool `json:"dnsTargetReadyToCheck"`
+	TxtReadyToCheck       bool `json:"txtReadyToCheck"`
+}
+
+func (h *ApiHandler) handleTriggerDomainCheck(c echo.Context) error {
+	var fetched v1alpha1.Domain
+	if err := h.resourceManager.Get("", c.Param("name"), &fetched); err != nil {
+		return err
+	}
+
+	if !h.clientManager.CanOperateDomains(getCurrentUser(c), "manage", &fetched) {
+		return resources.InsufficientPermissionsError
+	}
+
+	req := TriggerDomainCheckReq{}
+	if err := c.Bind(&req); err != nil {
+		return err
+	}
+
+	copied := fetched.DeepCopy()
+	if req.DNSTargetReadyToCheck {
+		copied.Spec.DNSTargetReadyToCheck = true
+	}
+	if req.TxtReadyToCheck {
+		copied.Spec.TxtReadyToCheck = true
+	}
+
+	if err := h.resourceManager.Update(copied); err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, copied)
 }
 
 func (h *ApiHandler) handleDeleteDomain(c echo.Context) error {
