@@ -49,7 +49,12 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
   private handleDiscard(isInvalidFile: boolean | undefined) {
     const { fields, dispatch } = this.props;
     const { editingFileIndex } = this.state;
-    if (isInvalidFile) {
+    if (
+      !fields.value ||
+      !fields.value[editingFileIndex] ||
+      !fields.value[editingFileIndex].mountPath ||
+      !fields.value[editingFileIndex].content
+    ) {
       fields.remove(editingFileIndex);
     }
     dispatch(closeDialogAction(updateContentDialogID));
@@ -164,7 +169,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     let fieldsNodes: any = [];
     if (fields.value) {
       fields.value.forEach((injectedFile: PreInjectedFile, index: number) => {
-        if (injectedFile.mountPath) {
+        if (injectedFile && injectedFile.mountPath) {
           fieldsNodes.push(
             <Grid container spacing={1} key={index}>
               <Grid item xs={4}>

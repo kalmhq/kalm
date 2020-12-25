@@ -39,7 +39,7 @@ class TargetsRaw extends React.PureComponent<Props> {
       <Flowspace
         background="rgba(0,0,0,0)"
         style={{
-          width: 300,
+          width: 400,
           height: spaceHeight,
           overflow: "hidden",
           backgroundColor: "rgba(0,0,0,0)",
