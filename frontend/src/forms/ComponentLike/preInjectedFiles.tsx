@@ -164,7 +164,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     let fieldsNodes: any = [];
     if (fields.value) {
       fields.value.forEach((injectedFile: PreInjectedFile, index: number) => {
-        if (injectedFile.mountPath) {
+        if (injectedFile && injectedFile.mountPath) {
           fieldsNodes.push(
             <Grid container spacing={1} key={index}>
               <Grid item xs={4}>
