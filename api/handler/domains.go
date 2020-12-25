@@ -98,7 +98,7 @@ func (h *ApiHandler) handleCreateDomain(c echo.Context) error {
 }
 
 type TriggerDomainCheckReq struct {
-	DNSTargetReadyToCheck bool `json:"dsnTargetReadyToCheck"`
+	DNSTargetReadyToCheck bool `json:"dnsTargetReadyToCheck"`
 	TxtReadyToCheck       bool `json:"txtReadyToCheck"`
 }
 
