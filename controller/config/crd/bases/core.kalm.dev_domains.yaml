@@ -53,6 +53,8 @@ spec:
           properties:
             dnsTarget:
               type: string
+            dnsTargetReadyToCheck:
+              type: boolean
             dnsType:
               type: string
             domain:
@@ -61,6 +63,8 @@ spec:
               type: boolean
             txt:
               type: string
+            txtReadyToCheck:
+              type: boolean
           required:
           - isKalmBuiltinDomain
           type: object

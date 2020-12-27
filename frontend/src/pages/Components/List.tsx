@@ -5,10 +5,12 @@ import { deleteApplicationAction } from "actions/application";
 import { deleteComponentAction } from "actions/component";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { blinkTopProgressAction } from "actions/settings";
+import { api } from "api";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
+import { getPodLogQuery } from "pages/Application/Log";
 import { renderCopyableValue } from "pages/Components/InfoComponents";
 import { getPod } from "pages/Components/Pod";
 import React from "react";
@@ -27,8 +29,6 @@ import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
-import { api } from "api";
-import { getPodLogQuery } from "pages/Application/Log";
 import { RoutesPopover } from "widgets/RoutesPopover";
 
 const styles = (theme: Theme) =>
@@ -408,7 +408,12 @@ class ComponentRaw extends React.PureComponent<Props, State> {
           {components && components.length > 0 ? (
             <>
               <Box pb={1}>
-                <KRTable columns={this.getKRTableColumns()} data={this.getKRTableData()} />
+                <KRTable
+                  showTitle={true}
+                  title="Components"
+                  columns={this.getKRTableColumns()}
+                  data={this.getKRTableData()}
+                />
               </Box>
               {this.renderInfoBox()}
             </>
