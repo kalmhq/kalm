@@ -173,6 +173,11 @@ func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, ro
 		return false
 	}
 
+	if route.Tenant == "" {
+		log.Info("route tenant is empty", zap.String("routeName", route.Name), zap.Any("route", route))
+		return false
+	}
+
 	log.Info("check CanOperateHttpRoute", zap.String("route", route.Name))
 
 	for _, dest := range route.HttpRouteSpec.Destinations {

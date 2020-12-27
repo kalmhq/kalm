@@ -300,6 +300,7 @@ func buildHttpRouteResMessage(c *Client, action string, objWatched interface{}) 
 
 	if !c.clientManager.CanOperateHttpRoute(c.clientInfo, "view", &resources.HttpRoute{
 		Name:          route.Name,
+		Tenant:        routeTenant,
 		HttpRouteSpec: &route.Spec,
 	}) {
 		log.Info("permission denied", zap.Any("route", route))
