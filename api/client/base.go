@@ -182,9 +182,12 @@ func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, ro
 		}
 	}
 
-	log.Info("check CanOperateHttpRoute, pass host check", zap.String("route", route.Name))
-
 	scope := fmt.Sprintf("%s/*", route.Tenant)
+
+	log.Info("check CanOperateHttpRoute, pass host check",
+		zap.String("client", c.Tenant),
+		zap.String("route", route.Name),
+		zap.String("scope", scope))
 
 	if action == "view" {
 		if !m.CanViewScope(c, scope) {

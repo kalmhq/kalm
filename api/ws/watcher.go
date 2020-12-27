@@ -286,8 +286,15 @@ func buildHttpRouteResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, errors.New("convert watch obj to Node failed")
 	}
 
-	if route.Labels[v1alpha1.TenantNameLabelKey] != c.clientInfo.Tenant {
-		log.Info("tenant not match", zap.Any("route", route))
+	routeTenant := route.Labels[v1alpha1.TenantNameLabelKey]
+	clientTenant := c.clientInfo.Tenant
+	if routeTenant != clientTenant {
+
+		log.Info("tenant not match",
+			zap.String("routeTenant", routeTenant),
+			zap.String("clientTenant", clientTenant),
+			zap.Any("route", route))
+
 		return nil, nil
 	}
 
