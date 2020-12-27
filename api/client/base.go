@@ -7,10 +7,12 @@ import (
 
 	"github.com/casbin/casbin/v2/persist"
 	"github.com/kalmhq/kalm/api/auth"
+	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/rbac"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
+	"go.uber.org/zap"
 	"k8s.io/client-go/rest"
 )
 
@@ -171,26 +173,36 @@ func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, ro
 		return false
 	}
 
+	log.Info("check CanOperateHttpRoute", zap.String("route", route.Name))
+
 	for _, dest := range route.HttpRouteSpec.Destinations {
 		parts := strings.Split(dest.Host, ".")
-
 		if len(parts) < 2 {
 			return false
 		}
-
-		scope := fmt.Sprintf("%s/*", route.Tenant)
-
-		if action == "view" {
-			if !m.CanViewScope(c, scope) {
-				return false
-			}
-		} else if action == "edit" {
-			if !m.CanEditScope(c, scope) {
-				return false
-			}
-		}
 	}
 
+	log.Info("check CanOperateHttpRoute, pass host check", zap.String("route", route.Name))
+
+	scope := fmt.Sprintf("%s/*", route.Tenant)
+
+	if action == "view" {
+		if !m.CanViewScope(c, scope) {
+			return false
+		}
+	} else if action == "edit" {
+		if !m.CanEditScope(c, scope) {
+			return false
+		}
+	} else if action == "manage" {
+		if !m.CanManageScope(c, scope) {
+			return false
+		}
+	} else {
+		return false
+	}
+
+	log.Info("check CanOperateHttpRoute, pass permission check", zap.String("route", route.Name))
 	return true
 }
 

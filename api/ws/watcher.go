@@ -10,7 +10,8 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"go.uber.org/zap"
-	coreV1 "k8s.io/api/core/v1"
+	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
 	toolscache "k8s.io/client-go/tools/cache"
@@ -19,22 +20,25 @@ import (
 
 func StartWatching(c *Client) {
 	informerCache, err := cache.New(c.clientInfo.Cfg, cache.Options{})
-
 	if err != nil {
 		log.Error("new cache error", zap.Error(err))
 		return
 	}
 
-	registerWatchHandler(c, &informerCache, &coreV1.Namespace{}, buildNamespaceResMessage)
+	fmt.Println("start watching...")
+
+	registerWatchHandler(c, &informerCache, &corev1.Namespace{}, buildNamespaceResMessage)
+	registerWatchHandler(c, &informerCache, &corev1.Service{}, buildComponentResMessageCausedByService)
+	registerWatchHandler(c, &informerCache, &corev1.Service{}, buildServiceResMessage)
+	registerWatchHandler(c, &informerCache, &corev1.Pod{}, buildPodResMessage)
+	registerWatchHandler(c, &informerCache, &corev1.Node{}, buildNodeResMessage)
+	registerWatchHandler(c, &informerCache, &corev1.PersistentVolumeClaim{}, buildVolumeResMessage)
+	registerWatchHandler(c, &informerCache, &batchv1.Job{}, buildJobResMessage)
+
 	registerWatchHandler(c, &informerCache, &v1alpha1.Component{}, buildComponentResMessage)
-	registerWatchHandler(c, &informerCache, &coreV1.Service{}, buildComponentResMessageCausedByService)
-	registerWatchHandler(c, &informerCache, &coreV1.Service{}, buildServiceResMessage)
-	registerWatchHandler(c, &informerCache, &coreV1.Pod{}, buildPodResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.HttpRoute{}, buildHttpRouteResMessage)
-	registerWatchHandler(c, &informerCache, &coreV1.Node{}, buildNodeResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.HttpsCert{}, buildHttpsCertResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.DockerRegistry{}, buildRegistryResMessage)
-	registerWatchHandler(c, &informerCache, &coreV1.PersistentVolumeClaim{}, buildVolumeResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.SingleSignOnConfig{}, buildSSOConfigResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.ProtectedEndpoint{}, buildProtectEndpointResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.AccessToken{}, buildAccessTokenResMessage)
@@ -108,7 +112,7 @@ func registerWatchHandler(c *Client,
 }
 
 func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
-	namespace, ok := objWatched.(*coreV1.Namespace)
+	namespace, ok := objWatched.(*corev1.Namespace)
 	if !ok {
 		return nil, errors.New("convert watch obj to Namespace failed")
 	}
@@ -190,7 +194,7 @@ func buildComponentResMessage(c *Client, action string, objWatched interface{}) 
 }
 
 func buildComponentResMessageCausedByService(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
-	service, ok := objWatched.(*coreV1.Service)
+	service, ok := objWatched.(*corev1.Service)
 	if !ok {
 		return nil, errors.New("convert watch obj to Service failed")
 	}
@@ -221,7 +225,7 @@ func buildComponentResMessageCausedByService(c *Client, action string, objWatche
 }
 
 func buildServiceResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
-	service, ok := objWatched.(*coreV1.Service)
+	service, ok := objWatched.(*corev1.Service)
 
 	if !ok {
 		return nil, errors.New("convert watch obj to Service failed")
@@ -245,7 +249,7 @@ func buildServiceResMessage(c *Client, action string, objWatched interface{}) (*
 }
 
 func buildPodResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
-	pod, ok := objWatched.(*coreV1.Pod)
+	pod, ok := objWatched.(*corev1.Pod)
 	if !ok {
 		return nil, errors.New("convert watch obj to Pod failed")
 	}
@@ -278,15 +282,20 @@ func buildPodResMessage(c *Client, action string, objWatched interface{}) (*ResM
 
 func buildHttpRouteResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
 	route, ok := objWatched.(*v1alpha1.HttpRoute)
-
 	if !ok {
 		return nil, errors.New("convert watch obj to Node failed")
+	}
+
+	if route.Labels[v1alpha1.TenantNameLabelKey] != c.clientInfo.Tenant {
+		log.Info("tenant not match", zap.Any("route", route))
+		return nil, nil
 	}
 
 	if !c.clientManager.CanOperateHttpRoute(c.clientInfo, "view", &resources.HttpRoute{
 		Name:          route.Name,
 		HttpRouteSpec: &route.Spec,
 	}) {
+		log.Info("permission denied", zap.Any("route", route))
 		return nil, nil
 	}
 
@@ -298,7 +307,7 @@ func buildHttpRouteResMessage(c *Client, action string, objWatched interface{}) 
 }
 
 func buildNodeResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
-	node, ok := objWatched.(*coreV1.Node)
+	node, ok := objWatched.(*corev1.Node)
 
 	if !ok {
 		return nil, errors.New("convert watch obj to Node failed")
@@ -374,8 +383,13 @@ func buildRegistryResMessage(c *Client, action string, objWatched interface{}) (
 	}, nil
 }
 
+func buildJobResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	//todo
+	return nil, nil
+}
+
 func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
-	pvc, ok := objWatched.(*coreV1.PersistentVolumeClaim)
+	pvc, ok := objWatched.(*corev1.PersistentVolumeClaim)
 	if !ok {
 		return nil, errors.New("convert watch obj to PersistentVolume failed")
 	}

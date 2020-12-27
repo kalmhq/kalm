@@ -75,7 +75,6 @@ func (suite *WithControllerTestSuite) SetupSuite() {
 	}
 
 	cfg, err := suite.testEnv.Start()
-
 	if err != nil {
 		panic(err)
 	}
@@ -83,7 +82,6 @@ func (suite *WithControllerTestSuite) SetupSuite() {
 	suite.cfg = cfg
 
 	clt, err := client.New(cfg, client.Options{Scheme: scheme.Scheme})
-
 	if err != nil {
 		panic(err)
 	}

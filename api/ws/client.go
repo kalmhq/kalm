@@ -104,9 +104,9 @@ func (c *Client) read() {
 			c.sendWatchResMessage(&ResMessage{Kind: "PlainMessage", Data: "Started"})
 			go StartWatching(c)
 		}
-
 	}
 }
+
 func (c *Client) Builder() *resources.ResourceManager {
 	return resources.NewResourceManager(c.clientInfo.Cfg, c.logger)
 }
