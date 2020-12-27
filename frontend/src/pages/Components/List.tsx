@@ -30,6 +30,7 @@ import { KRTable } from "widgets/KRTable";
 import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
 import { RoutesPopover } from "widgets/RoutesPopover";
+import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -204,6 +205,8 @@ class ComponentRaw extends React.PureComponent<Props, State> {
       { Header: "", accessor: "protected" },
       { Header: "", accessor: "componentName" },
       { Header: "Pods", accessor: "pods" },
+      { Header: "CPU", accessor: "cpu" },
+      { Header: "Memory", accessor: "memory" },
       { Header: "Type", accessor: "type" },
       { Header: "Image", accessor: "image" },
       { Header: "Routes", accessor: "routes" },
@@ -227,6 +230,8 @@ class ComponentRaw extends React.PureComponent<Props, State> {
             </Box>
           ),
           pods: this.getPodsStatus(component, activeNamespaceName),
+          cpu: this.renderCPU(component),
+          memory: this.renderMemory(component),
           type: component.workloadType,
           image: this.renderImage(component.image),
           routes: this.renderExternalAccesses(component, activeNamespaceName),
@@ -258,12 +263,34 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     return applicationRoutes;
   };
 
+  private hasPods = () => {
+    const { components } = this.props;
+    let count = 0;
+    components.forEach((component) => {
+      component.pods?.forEach((podStatus) => {
+        count++;
+      });
+    });
+
+    return count !== 0;
+  };
+
   private renderImage = (imageName: string) => {
     const { registries, dispatch } = this.props;
     const hosts = registries.map((r) => {
       return r.host.toLowerCase().replace("https://", "").replace("http://", "");
     });
     return renderCopyableImageName(imageName, dispatch, hosts);
+  };
+
+  private renderCPU = (component: ApplicationComponentDetails) => {
+    const metrics = component.metrics;
+    return <SmallCPULineChart data={metrics && metrics.cpu} hoverText={this.hasPods() ? "" : "No data"} />;
+  };
+
+  private renderMemory = (component: ApplicationComponentDetails) => {
+    const metrics = component.metrics;
+    return <SmallMemoryLineChart data={metrics && metrics.memory} hoverText={this.hasPods() ? "" : "No data"} />;
   };
 
   private renderExternalAccesses = (component: ApplicationComponentDetails, applicationName: string) => {
