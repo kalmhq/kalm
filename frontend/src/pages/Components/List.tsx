@@ -11,7 +11,7 @@ import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { getPodLogQuery } from "pages/Application/Log";
-import { renderCopyableValue } from "pages/Components/InfoComponents";
+import { renderCopyableImageName } from "pages/Components/InfoComponents";
 import { getPod } from "pages/Components/Pod";
 import React from "react";
 import { connect } from "react-redux";
@@ -49,10 +49,12 @@ const mapStateToProps = (state: RootState) => {
   const routesMap = state.routes.httpRoutes;
   const clusterInfo = state.cluster.info;
   const httpRoutes = state.routes.httpRoutes;
+  const registriesState = state.registries;
   return {
     clusterInfo,
     routesMap,
     httpRoutes,
+    registries: registriesState.registries,
   };
 };
 
@@ -209,7 +211,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     ];
   }
   private getKRTableData() {
-    const { components, dispatch, activeNamespaceName } = this.props;
+    const { components, activeNamespaceName } = this.props;
     const data: any[] = [];
     components &&
       components.forEach((component, index) => {
@@ -226,7 +228,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
           ),
           pods: this.getPodsStatus(component, activeNamespaceName),
           type: component.workloadType,
-          image: renderCopyableValue(component.image, dispatch),
+          image: this.renderImage(component.image),
           routes: this.renderExternalAccesses(component, activeNamespaceName),
           actions: this.componentControls(component),
         });
@@ -256,38 +258,20 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     return applicationRoutes;
   };
 
+  private renderImage = (imageName: string) => {
+    const { registries, dispatch } = this.props;
+    const hosts = registries.map((r) => {
+      return r.host.toLowerCase().replace("https://", "").replace("http://", "");
+    });
+    return renderCopyableImageName(imageName, dispatch, hosts);
+  };
+
   private renderExternalAccesses = (component: ApplicationComponentDetails, applicationName: string) => {
     const { canViewNamespace, canEditNamespace } = this.props;
     const applicationRoutes = this.getRoutes(component.name, applicationName);
 
     if (applicationRoutes && applicationRoutes.length > 0 && canViewNamespace(applicationName)) {
       return (
-        // <PopupState variant="popover" popupId={applicationName}>
-        //   {(popupState) => (
-        //     <>
-        //       <KMLink component="button" variant="body2" color={"inherit"} {...bindTrigger(popupState)}>
-        //         {pluralize("route", applicationRoutes.length)}
-        //       </KMLink>
-        //       <Popover
-        //         style={{ zIndex: POPPER_ZINDEX }}
-        //         {...bindPopover(popupState)}
-        //         anchorOrigin={{
-        //           vertical: "bottom",
-        //           horizontal: "center",
-        //         }}
-        //         transformOrigin={{
-        //           vertical: "top",
-        //           horizontal: "center",
-        //         }}
-        //       >
-        //         <Box p={2}>
-        //           <RouteWidgets routes={applicationRoutes} canEdit={canEditNamespace(applicationName)} />
-        //         </Box>
-        //       </Popover>
-        //     </>
-        //   )}
-        // </PopupState>
-
         <RoutesPopover
           applicationRoutes={applicationRoutes}
           applicationName={applicationName}

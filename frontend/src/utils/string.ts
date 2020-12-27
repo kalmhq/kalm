@@ -14,6 +14,14 @@ export const pluralize = (str: string, num: number) => {
 export const shortness = (str: string, leading = 30) => {
   return `${str.slice(0, leading)}...`;
 };
-export const shortnessImage = (str: string) => {
-  return str.split(":")[0];
+export const shortnessImage = (str: string, privateHosts?: string[]) => {
+  let result = str.split(":")[0];
+  if (privateHosts) {
+    privateHosts.forEach((h) => {
+      if (result.startsWith(h)) {
+        result = result.replace(h + "/", "");
+      }
+    });
+  }
+  return result;
 };
