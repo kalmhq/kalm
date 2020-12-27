@@ -353,8 +353,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
         return "SSO";
       case "acme":
         return "ACME DNS Server";
-      case "ci":
-        return "CI";
+      case "webhooks":
+        return "Webhooks";
       case "metrics":
         return StringConstants.APP_DASHBOARD_PAGE_NAME;
       case "tenants":
