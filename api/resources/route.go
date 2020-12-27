@@ -59,7 +59,6 @@ func (resourceManager *ResourceManager) GetHttpRoute(namespace, name string) (*H
 
 func (resourceManager *ResourceManager) GetHttpRoutes(listOptions ...client.ListOption) ([]*HttpRoute, error) {
 	var routes v1alpha1.HttpRouteList
-
 	if err := resourceManager.List(&routes, listOptions...); err != nil {
 		return nil, err
 	}
