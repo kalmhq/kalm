@@ -4,7 +4,6 @@ import Step from "@material-ui/core/Step";
 import StepContent from "@material-ui/core/StepContent";
 import StepLabel from "@material-ui/core/StepLabel";
 import Stepper from "@material-ui/core/Stepper";
-import { boolean } from "@storybook/addon-knobs";
 import { BasePage } from "pages/BasePage";
 import { CertStatus } from "pages/Domains/CertStatus";
 import { DomainStatus } from "pages/Domains/Status";
