@@ -29,6 +29,7 @@ import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
 import { api } from "api";
 import { getPodLogQuery } from "pages/Application/Log";
+import { RoutesPopover } from "widgets/RoutesPopover";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -47,9 +48,11 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   const routesMap = state.routes.httpRoutes;
   const clusterInfo = state.cluster.info;
+  const httpRoutes = state.routes.httpRoutes;
   return {
     clusterInfo,
     routesMap,
+    httpRoutes,
   };
 };
 
@@ -201,6 +204,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
       { Header: "Pods", accessor: "pods" },
       { Header: "Type", accessor: "type" },
       { Header: "Image", accessor: "image" },
+      { Header: "Routes", accessor: "routes" },
       { Header: "Actions", accessor: "actions" },
     ];
   }
@@ -223,11 +227,77 @@ class ComponentRaw extends React.PureComponent<Props, State> {
           pods: this.getPodsStatus(component, activeNamespaceName),
           type: component.workloadType,
           image: renderCopyableValue(component.image, dispatch),
+          routes: this.renderExternalAccesses(component, activeNamespaceName),
           actions: this.componentControls(component),
         });
       });
     return data;
   }
+
+  private getRoutes = (componentName: string, applicationName: string) => {
+    const { httpRoutes } = this.props;
+    const applicationRoutes = httpRoutes.filter((x) => {
+      let isCurrent = false;
+      x.destinations.map((target) => {
+        const hostInfos = target.host.split(".");
+        if (
+          hostInfos[0] &&
+          hostInfos[0].startsWith(componentName) &&
+          hostInfos[1] &&
+          hostInfos[1].startsWith(applicationName)
+        ) {
+          isCurrent = true;
+        }
+        return target;
+      });
+      return isCurrent;
+    });
+    console.log(applicationRoutes);
+    return applicationRoutes;
+  };
+
+  private renderExternalAccesses = (component: ApplicationComponentDetails, applicationName: string) => {
+    const { canViewNamespace, canEditNamespace } = this.props;
+    const applicationRoutes = this.getRoutes(component.name, applicationName);
+
+    if (applicationRoutes && applicationRoutes.length > 0 && canViewNamespace(applicationName)) {
+      return (
+        // <PopupState variant="popover" popupId={applicationName}>
+        //   {(popupState) => (
+        //     <>
+        //       <KMLink component="button" variant="body2" color={"inherit"} {...bindTrigger(popupState)}>
+        //         {pluralize("route", applicationRoutes.length)}
+        //       </KMLink>
+        //       <Popover
+        //         style={{ zIndex: POPPER_ZINDEX }}
+        //         {...bindPopover(popupState)}
+        //         anchorOrigin={{
+        //           vertical: "bottom",
+        //           horizontal: "center",
+        //         }}
+        //         transformOrigin={{
+        //           vertical: "top",
+        //           horizontal: "center",
+        //         }}
+        //       >
+        //         <Box p={2}>
+        //           <RouteWidgets routes={applicationRoutes} canEdit={canEditNamespace(applicationName)} />
+        //         </Box>
+        //       </Popover>
+        //     </>
+        //   )}
+        // </PopupState>
+
+        <RoutesPopover
+          applicationRoutes={applicationRoutes}
+          applicationName={applicationName}
+          canEdit={canEditNamespace(applicationName)}
+        />
+      );
+    } else {
+      return "-";
+    }
+  };
 
   private getPodsStatus = (component: ApplicationComponentDetails, activeNamespaceName: string) => {
     let pods: React.ReactElement[] = [];

@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Grid, Popover, Theme, Tooltip, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Grid, Theme, Tooltip, WithStyles } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
@@ -8,9 +8,6 @@ import { push } from "connected-react-router";
 import { tenantApplicationNameFormat } from "forms/normalizer";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
-import { POPPER_ZINDEX } from "layout/Constants";
-import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
-import { RouteWidgets } from "pages/Route/Widget";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
@@ -18,7 +15,6 @@ import { RootState } from "reducers";
 import { primaryColor } from "theme/theme";
 import { ApplicationDetails } from "types/application";
 import { getApplicationCreatedAtString } from "utils/application";
-import { pluralize } from "utils/string";
 import sc from "utils/stringConstants";
 import { ApplicationCard } from "widgets/ApplicationCard";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
@@ -30,8 +26,9 @@ import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWi
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { KRTable } from "widgets/KRTable";
 import { Caption } from "widgets/Label";
-import { KLink, KMLink } from "widgets/Link";
+import { KLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
+import { RoutesPopover } from "widgets/RoutesPopover";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 
@@ -223,31 +220,11 @@ class ApplicationListRaw extends React.PureComponent<Props> {
 
     if (applicationRoutes && applicationRoutes.length > 0 && canViewNamespace(applicationName)) {
       return (
-        <PopupState variant="popover" popupId={applicationName}>
-          {(popupState) => (
-            <>
-              <KMLink component="button" variant="body2" color={"inherit"} {...bindTrigger(popupState)}>
-                {pluralize("route", applicationRoutes.length)}
-              </KMLink>
-              <Popover
-                style={{ zIndex: POPPER_ZINDEX }}
-                {...bindPopover(popupState)}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "center",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "center",
-                }}
-              >
-                <Box p={2}>
-                  <RouteWidgets routes={applicationRoutes} canEdit={canEditNamespace(applicationName)} />
-                </Box>
-              </Popover>
-            </>
-          )}
-        </PopupState>
+        <RoutesPopover
+          applicationRoutes={applicationRoutes}
+          applicationName={applicationName}
+          canEdit={canEditNamespace(applicationName)}
+        />
       );
     } else {
       return "-";
