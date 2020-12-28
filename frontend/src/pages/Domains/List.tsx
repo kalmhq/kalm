@@ -52,8 +52,8 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   const renderDomain = (domain: Domain) => {
     return <KLink to={`/domains/${domain.name}`}>{domain.domain}</KLink>;
   };
-  const renderType = (domain: Domain) => (domain.isBuiltIn ? "-" : domain.recordType);
-  const renderTarget = (domain: Domain) => (domain.isBuiltIn ? "-" : domain.target);
+  // const renderType = (domain: Domain) => (domain.isBuiltIn ? "-" : domain.recordType);
+  // const renderTarget = (domain: Domain) => (domain.isBuiltIn ? "-" : domain.target);
   const renderCertificate = (domain: Domain) => {
     if (domain.isBuiltIn) {
       return <SuccessColorText>Issued</SuccessColorText>;
@@ -95,9 +95,21 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
     );
   };
 
-  const renderStatus = (domain: Domain) => {
-    return <DomainStatus domain={domain} />;
+  const renderTxtRecordStatus = (domain: Domain) => {
+    if (domain.isBuiltIn) {
+      return <span>-</span>;
+    }
+
+    return <DomainStatus status={domain.txtStatus} />;
   };
+
+  // const renderTrafficRecordStatus = (domain: Domain) => {
+  //   if (domain.isBuiltIn) {
+  //     return <span>-</span>;
+  //   }
+
+  //   return <DomainStatus status={domain.status} />;
+  // };
 
   const getKRTableColumns = () => {
     const columns = [
@@ -105,18 +117,22 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
         Header: "Domain",
         accessor: "domain",
       },
+      // {
+      //   Header: "Type",
+      //   accessor: "type",
+      // },
+      // {
+      //   Header: "Target",
+      //   accessor: "target",
+      // },
       {
-        Header: "Type",
-        accessor: "type",
+        Header: "TXT Record",
+        accessor: "txtRecordStatus",
       },
-      {
-        Header: "Target",
-        accessor: "target",
-      },
-      {
-        Header: "Status",
-        accessor: "status",
-      },
+      // {
+      // Header: "Traffic Record",
+      // accessor: "trafficRecordStatus",
+      // },
       {
         Header: "Certificate Status",
         accessor: "certificate",
@@ -139,9 +155,8 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
     domains.forEach((domain) => {
       data.push({
         domain: renderDomain(domain),
-        type: renderType(domain),
-        target: renderTarget(domain),
-        status: renderStatus(domain),
+        txtRecordStatus: renderTxtRecordStatus(domain),
+        // trafficRecordStatus: renderTrafficRecordStatus(domain),
         certificate: renderCertificate(domain),
         actions: renderActions(domain),
       });

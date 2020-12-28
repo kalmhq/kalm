@@ -9,6 +9,7 @@ import { push } from "connected-react-router";
 import arrayMutators from "final-form-arrays";
 import { Disks } from "forms/ComponentLike/Disks";
 import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
+import { FinalCodeEditor } from "forms/Final/codeEditor";
 import { FinalRadioGroupRender } from "forms/Final/radio";
 import { FinalSelectField } from "forms/Final/select";
 import { FormDataPreview } from "forms/Final/util";
@@ -33,7 +34,6 @@ import {
 import { PublicRegistriesList } from "types/registry";
 import sc from "utils/stringConstants";
 import { SubmitButton } from "widgets/Button";
-import { KalmConsoleIcon } from "widgets/Icon";
 import { KPanel } from "widgets/KPanel";
 import { KTooltip } from "widgets/KTooltip";
 import { Body2, Subtitle1 } from "widgets/Label";
@@ -315,7 +315,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderCommandAndArgs() {
-    const { theme } = this.props;
     return (
       <>
         <Grid item xs={12}>
@@ -328,11 +327,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={12}>
           <Field
-            component={FinalTextField}
-            startAdornment={<KalmConsoleIcon color={theme.palette.type === "light" ? "default" : "inherit"} />}
+            component={FinalCodeEditor}
             name="command"
             label="Command"
             placeholder={sc.COMMAND_INPUT_PLACEHOLDER}
+            height="100%"
+            showLineNumbers={false}
           />
         </Grid>
       </>

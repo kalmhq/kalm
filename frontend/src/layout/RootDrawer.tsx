@@ -139,8 +139,8 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
           canEditTenant()
             ? {
                 icon: CIIcon,
-                text: "CI / CD",
-                to: "/ci",
+                text: "Webhooks",
+                to: "/webhooks",
               }
             : null,
         ],

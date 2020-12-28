@@ -69,6 +69,8 @@ export const IconLinkWithToolTip = withStyles(styles)(
       WithStyles<typeof styles> & {
         tooltipTitle: string;
         to: string;
+        rel?: string;
+        target?: string;
         tooltipPlacement?:
           | "bottom-end"
           | "bottom-start"
@@ -84,7 +86,7 @@ export const IconLinkWithToolTip = withStyles(styles)(
           | "top";
       },
   ) => {
-    const { tooltipTitle, tooltipPlacement, classes, to, ...iconButtonProps } = props;
+    const { tooltipTitle, tooltipPlacement, classes, to, target, rel, ...iconButtonProps } = props;
 
     const tooltipChild = (
       <IconButton className={classes.button} {...iconButtonProps}>
@@ -97,7 +99,7 @@ export const IconLinkWithToolTip = withStyles(styles)(
     }
 
     return (
-      <Link to={to}>
+      <Link to={to} target={target} rel={rel}>
         <Tooltip title={tooltipTitle} placement={tooltipPlacement}>
           {tooltipChild}
         </Tooltip>

@@ -53,11 +53,17 @@ spec:
           properties:
             dnsTarget:
               type: string
+            dnsTargetReadyToCheck:
+              type: boolean
             dnsType:
               type: string
             domain:
               type: string
             isKalmBuiltinDomain:
+              type: boolean
+            txt:
+              type: string
+            txtReadyToCheck:
               type: boolean
           required:
           - isKalmBuiltinDomain
@@ -65,13 +71,13 @@ spec:
         status:
           description: DomainStatus defines the observed state of Domain
           properties:
-            checkCountSinceCNAMEReadyUpdated:
-              type: integer
             isDNSTargetConfigured:
               type: boolean
+            isTxtConfigured:
+              type: boolean
           required:
-          - checkCountSinceCNAMEReadyUpdated
           - isDNSTargetConfigured
+          - isTxtConfigured
           type: object
       type: object
   version: v1alpha1

@@ -69,13 +69,16 @@ const DomainDetailPageRaw: React.FC = () => {
 
   const renderTable = () => {
     return (
-      <VerticalHeadTable
-        items={[
-          { name: "Name", content: domain.name },
-          { name: "Domain", content: domain.domain },
-          { name: "Status", content: <DomainStatus domain={domain} /> },
-        ]}
-      />
+      <>
+        <VerticalHeadTable
+          items={[
+            { name: "Name", content: domain.name },
+            { name: "Domain", content: domain.domain },
+            { name: `TXT Record Status`, content: <DomainStatus status={domain.txtStatus} /> },
+            // { name: `${domain.recordType} Record Status`, content: <DomainStatus status={domain.status} /> },
+          ]}
+        />
+      </>
     );
   };
 
@@ -84,7 +87,7 @@ const DomainDetailPageRaw: React.FC = () => {
       secondHeaderRight={
         canEditTenant() ? (
           <>
-            {!cert && !domain.isBuiltIn && domain.status === "ready" && (
+            {!cert && !domain.isBuiltIn && domain.txtStatus === "ready" && (
               <Button
                 startIcon={<KalmCertificatesIcon />}
                 color="primary"
@@ -97,7 +100,7 @@ const DomainDetailPageRaw: React.FC = () => {
               </Button>
             )}
 
-            {domain.status !== "ready" || (cert && cert.ready !== "True") ? (
+            {domain.status !== "ready" || domain.txtStatus !== "ready" || (cert && cert.ready !== "True") ? (
               <Button
                 startIcon={<HelpIcon />}
                 color="primary"
@@ -129,6 +132,11 @@ const DomainDetailPageRaw: React.FC = () => {
               <Box mt={2}>
                 <DNSConfigItems
                   items={[
+                    {
+                      domain: domain.domain,
+                      type: "TXT",
+                      txtRecord: domain.txt,
+                    },
                     {
                       domain: domain.domain,
                       type: domain.recordType,

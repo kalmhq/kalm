@@ -17,6 +17,8 @@ export interface Domain {
   recordType: "CNAME" | "A";
   target: string;
   isBuiltIn?: boolean;
+  txt: string;
+  txtStatus: "pending" | "ready";
 }
 
 export interface DomainCreation {

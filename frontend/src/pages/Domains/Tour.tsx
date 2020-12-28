@@ -1,12 +1,14 @@
+import { Button } from "@material-ui/core";
 import Box from "@material-ui/core/Box/Box";
 import Step from "@material-ui/core/Step";
 import StepContent from "@material-ui/core/StepContent";
 import StepLabel from "@material-ui/core/StepLabel";
 import Stepper from "@material-ui/core/Stepper";
+import { api } from "api";
 import { BasePage } from "pages/BasePage";
 import { CertStatus } from "pages/Domains/CertStatus";
 import { DomainStatus } from "pages/Domains/Status";
-import React from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { useRouteMatch } from "react-router-dom";
 import { RootState } from "reducers";
@@ -31,6 +33,9 @@ const DomainTourPageRaw: React.FC = () => {
   const router = useRouteMatch<{ name: string }>();
   const domain = domains.find((x) => x.name === router.params.name);
 
+  const [checkTXT, setCheckTXT] = useState(false);
+  const [checkCNAME, setCheckCNAME] = useState(false);
+
   if (isLoading && !isFirstLoaded) {
     return <Loading />;
   }
@@ -48,7 +53,11 @@ const DomainTourPageRaw: React.FC = () => {
           <p>Dig the your domain by executing following command in a terminal.</p>
           <Box ml={2}>
             <CodeBlock>
-              <TextAndCopyButton text={`dig @8.8.8.8 "${domain}"`} />
+              {type === "TXT" ? (
+                <TextAndCopyButton text={`dig -t txt @8.8.8.8 "${domain}"`} />
+              ) : (
+                <TextAndCopyButton text={`dig @8.8.8.8 "${domain}"`} />
+              )}
             </CodeBlock>
             <p>
               if you can find a <strong>{type}</strong> record in "ANSWER SECTION" with a value of{" "}
@@ -71,24 +80,17 @@ const DomainTourPageRaw: React.FC = () => {
       completed: false,
     },
     {
-      title: `Verify your domain.`,
+      title: `Verify your domain by adding a TXT record.`,
       content: (
         <Box>
-          <Box mt={1}>
-            <DomainStatus domain={domain} />
-          </Box>
-
-          <Box mt={2}>
-            Add {domain.recordType === "A" ? "an" : "a"} {domain.recordType} Record in your DNS config panel you just
-            open.
-          </Box>
+          <Box mt={2}>Add a TXT Record in your DNS config panel you just open.</Box>
           <Box mt={2}>
             <DNSConfigItems
               items={[
                 {
                   domain: domain.domain,
-                  type: domain.recordType,
-                  cnameRecord: domain.target,
+                  type: "TXT",
+                  cnameRecord: domain.txt,
                 },
               ]}
             />
@@ -101,10 +103,28 @@ const DomainTourPageRaw: React.FC = () => {
             Wait for changes to take effect. Generally it will take effect within a few minutes to a few hours.
           </Box>
 
-          <Box mt={2}>{renderHelper(domain.domain, domain.recordType, domain.target)}</Box>
+          <Box mt={2}>{renderHelper(domain.domain, "TXT", domain.txt)}</Box>
+          <Box mt={2} display="flex" flexDirection="row">
+            <Button
+              variant="outlined"
+              color="primary"
+              size="small"
+              onClick={() => {
+                setCheckTXT(true);
+                api.triggerDomainCheck(domain.name, checkCNAME, true);
+              }}
+            >
+              Check TXT Status
+            </Button>
+            {checkTXT && (
+              <Box pl={2} display="flex">
+                <DomainStatus status={domain.txtStatus} />
+              </Box>
+            )}
+          </Box>
         </Box>
       ),
-      completed: domain.status === "ready",
+      completed: domain.txtStatus === "ready",
     },
   ];
 
@@ -118,9 +138,6 @@ const DomainTourPageRaw: React.FC = () => {
         title: `Apply a certificate`,
         content: (
           <Box>
-            <Box mt={1}>
-              <CertStatus cert={cert} />
-            </Box>
             <Box mt={2}>Add a CNAME Record in your DNS config panel.</Box>
             <Box mt={2}>
               <DNSConfigItems
@@ -141,12 +158,63 @@ const DomainTourPageRaw: React.FC = () => {
             </Box>
 
             <Box mt={2}>{renderHelper(firstDomain, "CNAME", firstTarget)}</Box>
+            <Box mt={2} display="flex" flexDirection="row">
+              <Button
+                variant="outlined"
+                color="primary"
+                size="small"
+                onClick={() => {
+                  setCheckCNAME(true);
+                  api.triggerDomainCheck(domain.name, true, checkTXT);
+                }}
+              >
+                Check CNAME Status
+              </Button>
+              {checkCNAME && (
+                <Box pl={2} display="flex">
+                  <CertStatus cert={cert} />
+                </Box>
+              )}
+            </Box>
           </Box>
         ),
         completed: cert.ready === "True",
       });
     }
   }
+
+  steps.push({
+    title: `Configure ${domain.recordType} record to allow traffic to enter your cluster.`,
+    content: (
+      <Box>
+        <Box mt={2}>
+          Add {domain.recordType === "A" ? "an" : "a"} {domain.recordType} Record in your DNS config panel you just
+          open.
+        </Box>
+        <Box mt={2}>
+          <DNSConfigItems
+            items={[
+              {
+                domain: domain.domain,
+                type: domain.recordType,
+                cnameRecord: domain.target,
+              },
+            ]}
+          />
+        </Box>
+        <Box mt={2}>
+          Check to make sure they’re correct, then <strong>Save the changes</strong>.
+        </Box>
+
+        <Box mt={2}>
+          Wait for changes to take effect. Generally it will take effect within a few minutes to a few hours.
+        </Box>
+
+        <Box mt={2}>{renderHelper(domain.domain, domain.recordType, domain.target)}</Box>
+      </Box>
+    ),
+    completed: domain.status === "ready",
+  });
 
   return (
     <BasePage>

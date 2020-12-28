@@ -18,6 +18,7 @@ func (h *ApiHandler) InstallComponentsHandlers(e *echo.Group) {
 	e.PUT("/applications/:applicationName/components/:name", h.handleUpdateComponent)
 	e.DELETE("/applications/:applicationName/components/:name", h.handleDeleteComponent)
 	e.POST("/applications/:applicationName/components", h.handleCreateComponent)
+	e.POST("/applications/:applicationName/components/:name/jobs", h.handleTriggerJob)
 }
 
 func (h *ApiHandler) handleListComponents(c echo.Context) error {
@@ -41,6 +42,35 @@ func (h *ApiHandler) handleListComponents(c echo.Context) error {
 	}
 
 	return c.JSON(200, res)
+}
+
+func (h *ApiHandler) handleTriggerJob(c echo.Context) error {
+	currentUser := getCurrentUser(c)
+	applicationName := c.Param("applicationName")
+	componentName := c.Param("name")
+	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+applicationName, "components/"+componentName)
+
+	var component v1alpha1.Component
+	if err := h.resourceManager.Get(applicationName, c.Param("name"), &component); err != nil {
+		return err
+	}
+
+	if component.Spec.WorkloadType != v1alpha1.WorkloadTypeCronjob {
+		return errors.NewBadRequest("component is not a cronjob")
+	}
+
+	component.TypeMeta = metaV1.TypeMeta{
+		Kind:       "Component",
+		APIVersion: "core.kalm.dev/v1alpha1",
+	}
+	copied := component.DeepCopy()
+	copied.Spec.ImmediateTrigger = true
+
+	if err := h.resourceManager.Apply(copied); err != nil {
+		return err
+	}
+
+	return c.NoContent(http.StatusNoContent)
 }
 
 func (h *ApiHandler) handleCreateComponent(c echo.Context) error {

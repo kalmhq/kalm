@@ -112,6 +112,10 @@ type ComponentSpec struct {
 
 	// +optional
 	Priority int `json:"priority"`
+
+	// This is only meaningful if this component is a cronjob workload.
+	// Controller should immediately trigger a job and set its value to false if it's true.
+	ImmediateTrigger bool `json:"immediateTrigger,omitempty"`
 }
 
 // ComponentStatus defines the observed state of Component

@@ -49,7 +49,12 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
   private handleDiscard(isInvalidFile: boolean | undefined) {
     const { fields, dispatch } = this.props;
     const { editingFileIndex } = this.state;
-    if (isInvalidFile) {
+    if (
+      !fields.value ||
+      !fields.value[editingFileIndex] ||
+      !fields.value[editingFileIndex].mountPath ||
+      !fields.value[editingFileIndex].content
+    ) {
       fields.remove(editingFileIndex);
     }
     dispatch(closeDialogAction(updateContentDialogID));
@@ -98,7 +103,8 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     const syncErrors = fields.error as { [key: string]: string }[] | undefined;
     const { editingFileIndex, fileContentValue } = this.state;
     const file = editingFileIndex > -1 && fields.value ? fields.value[editingFileIndex] : null;
-    const mountPathTmp = file && file.mountPathTmp ? file.mountPathTmp : "";
+    const mountPathTmp = file ? (file.mountPath ? file.mountPath : file.mountPathTmp || "") : "";
+
     const isInvalidFile =
       !mountPathTmp ||
       !fileContentValue ||
@@ -148,7 +154,12 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
             />
           </Grid>
         </Grid>
-        <RichEditor value={fileContentValue} onChange={this.handleChangeEditor.bind(this)} />
+        <RichEditor
+          value={fileContentValue}
+          onChange={this.handleChangeEditor.bind(this)}
+          height="300px"
+          minLines={80}
+        />
       </ControlledDialog>
     );
   };
@@ -159,7 +170,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     let fieldsNodes: any = [];
     if (fields.value) {
       fields.value.forEach((injectedFile: PreInjectedFile, index: number) => {
-        if (injectedFile.mountPath) {
+        if (injectedFile && injectedFile.mountPath) {
           fieldsNodes.push(
             <Grid container spacing={1} key={index}>
               <Grid item xs={4}>

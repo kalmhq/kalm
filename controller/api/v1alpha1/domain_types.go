@@ -28,16 +28,19 @@ const (
 )
 
 type DomainSpec struct {
-	Domain              string  `json:"domain,omitempty"`
-	DNSType             DNSType `json:"dnsType,omitempty"`
-	DNSTarget           string  `json:"dnsTarget,omitempty"`
-	IsKalmBuiltinDomain bool    `json:"isKalmBuiltinDomain"`
+	Domain                string  `json:"domain,omitempty"`
+	DNSType               DNSType `json:"dnsType,omitempty"`
+	DNSTarget             string  `json:"dnsTarget,omitempty"`
+	Txt                   string  `json:"txt,omitempty"`
+	IsKalmBuiltinDomain   bool    `json:"isKalmBuiltinDomain"`
+	DNSTargetReadyToCheck bool    `json:"dnsTargetReadyToCheck,omitempty"`
+	TxtReadyToCheck       bool    `json:"txtReadyToCheck,omitempty"`
 }
 
 // DomainStatus defines the observed state of Domain
 type DomainStatus struct {
-	IsDNSTargetConfigured            bool `json:"isDNSTargetConfigured"`
-	CheckCountSinceCNAMEReadyUpdated int  `json:"checkCountSinceCNAMEReadyUpdated"`
+	IsDNSTargetConfigured bool `json:"isDNSTargetConfigured"`
+	IsTxtConfigured       bool `json:"isTxtConfigured"`
 }
 
 // +kubebuilder:object:root=true

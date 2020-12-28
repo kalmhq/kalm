@@ -35,12 +35,15 @@ import SettingsBackupRestoreIcon from "@material-ui/icons/SettingsBackupRestore"
 import SubjectIcon from "@material-ui/icons/Subject";
 import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
+import ViewList from "@material-ui/icons/ViewList";
 import VpnKey from "@material-ui/icons/VpnKey";
 import Web from "@material-ui/icons/Web";
+import Lock from "@material-ui/icons/Lock";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
 import { getDisplayName } from "permission/utils";
 import React from "react";
+import PlayArrow from "@material-ui/icons/PlayArrow";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -535,6 +538,12 @@ export const MenuIcon = withStyles(styles)((props: ColorIconsProps) => {
   return <Menu className={className} fontSize={fontSize} style={style} />;
 });
 
+export const KalmViewListIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <ViewList className={className} fontSize={fontSize} style={style} />;
+});
+
 export const MenuOpenIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
@@ -581,6 +590,18 @@ export const InfoIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
   return <Info className={className} fontSize={fontSize} style={style} />;
+});
+
+export const LockIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <Lock className={className} fontSize={fontSize} style={style} />;
+});
+
+export const PlayIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <PlayArrow className={className} fontSize={fontSize} style={style} />;
 });
 
 export const CIIcon = withStyles(styles)((props: ColorIconsProps) => {

@@ -38,6 +38,12 @@ g, david, ns1Owner
 p, david, view, tenant1/ns2, components/specific-prefix-*
 g, dvd, clusterOwner
 g, dvd2, clusterViewer
+
+p, tenant_foo_owner, view,   foo/*, */*
+p, tenant_foo_owner, edit,   foo/*, */*
+p, tenant_foo_owner, manage, foo/*, */*
+
+g, f@bar.com, tenant_foo_owner
 `))
 
 	assert.Nil(t, err)
@@ -88,6 +94,10 @@ g, dvd2, clusterViewer
 	assert.True(t, canAccess)
 
 	canAccess, err = e.Enforce("dvd2", "view", "some-random-tenant/*", "services/*")
+	assert.Nil(t, err)
+	assert.True(t, canAccess)
+
+	canAccess, err = e.Enforce("f@bar.com", "view", "foo/*", "*/*")
 	assert.Nil(t, err)
 	assert.True(t, canAccess)
 }

@@ -11,11 +11,13 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
-import { WorkloadType } from "types/componentTemplate";
+import { ComponentLikePort, WorkloadType } from "types/componentTemplate";
 import { Expansion } from "widgets/expansion";
 import { Body, H6 } from "widgets/Label";
 import { Namespaces } from "widgets/Namespaces";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
+import { api } from "api";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -49,6 +51,10 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
     super(props);
     this.state = {};
   }
+
+  private getServicePort = (port: ComponentLikePort) => {
+    return port.servicePort || port.containerPort;
+  };
 
   private renderStatefulSetNetwork() {
     const { component, activeNamespaceName } = this.props;
@@ -85,7 +91,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
               content: (
                 <span>
                   Expose port <strong>{port.containerPort}</strong> to cluster port{" "}
-                  <strong>{port.servicePort || port.containerPort}</strong>
+                  <strong>{this.getServicePort(port)}</strong>
                 </span>
               ),
             }))}
@@ -150,7 +156,9 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
     );
     return (
       <Expansion title={"Routes"} defaultUnfold>
-        <RouteWidgets routes={routes} canEdit={canEditNamespace(activeNamespaceName)} />
+        <Box p={2}>
+          <RouteWidgets routes={routes} canEdit={canEditNamespace(activeNamespaceName)} />
+        </Box>
       </Expansion>
     );
   }
@@ -170,7 +178,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
   }
 
   private renderSecondHeaderRight() {
-    const { classes, component, activeNamespaceName, canEditNamespace } = this.props;
+    const { classes, component, activeNamespaceName, canEditNamespace, dispatch } = this.props;
 
     return (
       <div className={classes.secondHeaderRight}>
@@ -181,10 +189,29 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
             component={Link}
             color="primary"
             size="small"
+            className={classes.secondHeaderRightItem}
             variant="outlined"
             to={`/applications/${activeNamespaceName}/components/${component.name}/edit`}
           >
             Edit
+          </Button>
+        )}
+
+        {component.workloadType === "cronjob" && (
+          <Button
+            color="primary"
+            size="small"
+            variant="outlined"
+            onClick={async () => {
+              try {
+                await api.triggerApplicationComponentJob(activeNamespaceName, component.name);
+                dispatch(setSuccessNotificationAction(`Trigger Cronjob ${component.name} successful!`));
+              } catch (error) {
+                dispatch(setErrorNotificationAction(`Trigger Cronjob ${component.name} failed: ${error}`));
+              }
+            }}
+          >
+            Run Once
           </Button>
         )}
       </div>

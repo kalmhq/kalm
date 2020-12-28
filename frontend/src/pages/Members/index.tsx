@@ -32,8 +32,13 @@ import { Namespaces } from "widgets/Namespaces";
 const styles = (theme: Theme) => createStyles({});
 
 const mapStateToProps = (state: RootState) => {
+  const { newTenantUrl, mode } = state.extraInfo.info;
+  const tenant = state.auth.tenant;
+
   return {
-    // xxx: state.get("xxx").get("xxx"),
+    mode,
+    newTenantUrl,
+    tenant,
   };
 };
 
@@ -54,7 +59,11 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderSecondHeaderRight = () => {
-    const { activeNamespaceName } = this.props;
+    const { activeNamespaceName, mode } = this.props;
+
+    if (mode === "multiple-tenancy") {
+      return null;
+    }
 
     return (
       <>
@@ -71,6 +80,33 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     );
   };
 
+  private renderMultipleTenancyEmpty = () => {
+    const { newTenantUrl, tenant } = this.props;
+    const isClusterLevel = this.isClusterLevel();
+
+    return (
+      <EmptyInfoBox
+        image={<PeopleIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        title={isClusterLevel ? "This cluster is managed with Kalm SaaS" : "This application is managed with Kalm SaaS"}
+        content={
+          isClusterLevel
+            ? "Please go to Kalm SaaS page for relevant settings"
+            : "Please go to Kalm SaaS page for relevant settings"
+        }
+        button={
+          <CustomizedButton
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              window.open(newTenantUrl + `/clusters/${tenant}/members`, "_blank");
+            }}
+          >
+            Manage Members with Kalm SaaS
+          </CustomizedButton>
+        }
+      />
+    );
+  };
   private renderEmpty = () => {
     const { dispatch, activeNamespaceName } = this.props;
     const isClusterLevel = this.isClusterLevel();
@@ -274,8 +310,22 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     return pathname.startsWith("/cluster/members") || pathname.startsWith("/applications/kalm-system");
   }
 
-  public render() {
+  private renderContent() {
     const roleBindings = this.getRoleBindings();
+    const { mode } = this.props;
+
+    if (mode === "multiple-tenancy") {
+      return this.renderMultipleTenancyEmpty();
+    }
+
+    return roleBindings.length > 0 ? (
+      <KRTable showTitle={true} title="Members" columns={this.getKRTableColumns()} data={this.getKRTableData()} />
+    ) : (
+      this.renderEmpty()
+    );
+  }
+
+  public render() {
     return (
       <BasePage
         secondHeaderRight={this.renderSecondHeaderRight()}
@@ -283,11 +333,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
         leftDrawer={this.isClusterLevel() ? null : <ApplicationSidebar />}
       >
         <Box p={2}>
-          {roleBindings.length > 0 ? (
-            <KRTable showTitle={true} title="Members" columns={this.getKRTableColumns()} data={this.getKRTableData()} />
-          ) : (
-            this.renderEmpty()
-          )}
+          {this.renderContent()}
           <Box mt={2}>{this.renderInfoBox()}</Box>
         </Box>
       </BasePage>

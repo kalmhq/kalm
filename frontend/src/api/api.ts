@@ -28,6 +28,11 @@ export default class RealApi {
     return res.data;
   };
 
+  public oidcLogout = async () => {
+    const res = await axiosRequest({ method: "get", url: "/oidc/logout" });
+    return res.data;
+  };
+
   public getCurrentTenant = async () => {
     const res = await axiosRequest<Tenant>({ method: "get", url: `/${K8sApiVersion}/tenants/current` });
     return res.data;
@@ -197,6 +202,14 @@ export default class RealApi {
     await axiosRequest({
       method: "delete",
       url: `/${K8sApiVersion}/applications/${applicationName}/components/${name}`,
+    });
+  };
+
+  public triggerApplicationComponentJob = async (applicationName: string, componentName: string) => {
+    await axiosRequest({
+      method: "post",
+      url: `/${K8sApiVersion}/applications/${applicationName}/components/${componentName}/jobs`,
+      data: {},
     });
   };
 
@@ -380,6 +393,18 @@ export default class RealApi {
       method: "post",
       url: `/${K8sApiVersion}/domains`,
       data: domainCreation,
+    });
+    return res.data;
+  }
+
+  public async triggerDomainCheck(name: string, dnsTargetReadyToCheck: boolean, txtReadyToCheck: boolean) {
+    const res = await axiosRequest<Domain>({
+      method: "put",
+      url: `/${K8sApiVersion}/domains/${name}`,
+      data: {
+        dnsTargetReadyToCheck,
+        txtReadyToCheck,
+      },
     });
     return res.data;
   }

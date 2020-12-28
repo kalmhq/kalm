@@ -2,7 +2,7 @@ import { Box, Button, Grid } from "@material-ui/core";
 import InputAdornment from "@material-ui/core/InputAdornment/InputAdornment";
 import { FinalSelectField } from "forms/Final/select";
 import { FinalTextField } from "forms/Final/textfield";
-import { trimAndToLowerParse } from "forms/normalizer";
+import { trimAndToLowerParse, normalizeWildcardDomain } from "forms/normalizer";
 import React from "react";
 import { Field } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
@@ -15,24 +15,9 @@ import { ValidatorArrayOfIsDNS1123SubDomain, ValidatorRequired } from "../valida
 
 export const RouteDomains: React.FC = () => {
   const allDomains: Domain[] = useSelector((state: RootState) => state.domains.domains);
-  const domains = allDomains.filter((x) => x.status === "ready");
+  const domains = allDomains.filter((x) => x.txtStatus === "ready" || x.isBuiltIn);
   const domainsMap: { [key: string]: Domain } = {};
   domains.forEach((x) => (domainsMap[x.domain] = x));
-
-  // a.com -> a.com
-  // *.foo.bar -> .foo.bar
-  // *alice.foo.bar -> --alice.foo.bar
-  const normalizeWildcardDomain = (domain: string) => {
-    if (domain.startsWith("*")) {
-      if (domain.length > 1 && domain[1] !== ".") {
-        return "--" + domain.slice(1);
-      } else {
-        return domain.slice(1);
-      }
-    }
-
-    return domain;
-  };
 
   const renderField = (domain: string, index: number) => {
     const exactMatchedDomain = domainsMap[domain];

@@ -23,7 +23,7 @@ class DeployAccessTokenNewPageRaw extends React.PureComponent<Props, State> {
     await dispatch(createDeployAccessTokenAction(config));
 
     dispatch(setSuccessNotificationAction("Create Deploy key Successfully"));
-    dispatch(push("/ci/keys/" + config.name));
+    dispatch(push("/webhooks/keys/" + config.name));
 
     return;
   };

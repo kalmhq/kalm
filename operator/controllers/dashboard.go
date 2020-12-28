@@ -11,10 +11,13 @@ import (
 	"istio.io/api/security/v1beta1"
 	v1beta13 "istio.io/api/type/v1beta1"
 	v1beta12 "istio.io/client-go/pkg/apis/security/v1beta1"
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -158,6 +161,34 @@ func (r *KalmOperatorConfigReconciler) reconcileDashboardComponent(config *insta
 					Protocol:      corev1alpha1.PortProtocolHTTP,
 					ContainerPort: 3001,
 					ServicePort:   80,
+				},
+			},
+			LivenessProbe: &corev1.Probe{
+				InitialDelaySeconds: 15,
+				PeriodSeconds:       10,
+				SuccessThreshold:    1,
+				TimeoutSeconds:      1,
+				FailureThreshold:    3,
+				Handler: v1.Handler{
+					HTTPGet: &v1.HTTPGetAction{
+						Path:   "/ping",
+						Port:   intstr.FromInt(3001),
+						Scheme: v1.URISchemeHTTP,
+					},
+				},
+			},
+			ReadinessProbe: &corev1.Probe{
+				InitialDelaySeconds: 15,
+				PeriodSeconds:       10,
+				SuccessThreshold:    1,
+				TimeoutSeconds:      1,
+				FailureThreshold:    3,
+				Handler: v1.Handler{
+					HTTPGet: &v1.HTTPGetAction{
+						Path:   "/ping",
+						Port:   intstr.FromInt(3001),
+						Scheme: v1.URISchemeHTTP,
+					},
 				},
 			},
 		},

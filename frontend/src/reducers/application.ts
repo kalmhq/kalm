@@ -1,16 +1,16 @@
+import produce from "immer";
 import { Actions } from "types";
 import {
   ApplicationDetails,
   CREATE_APPLICATION,
   DELETE_APPLICATION,
-  LOAD_APPLICATION_FAILED,
-  LOAD_APPLICATION_FULFILLED,
-  LOAD_APPLICATION_PENDING,
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
+  LOAD_APPLICATION_FAILED,
+  LOAD_APPLICATION_FULFILLED,
+  LOAD_APPLICATION_PENDING,
   SET_IS_SUBMITTING_APPLICATION,
-  UPDATE_APPLICATION,
 } from "types/application";
 import { LOGOUT } from "types/common";
 import {
@@ -20,8 +20,7 @@ import {
   RESOURCE_TYPE_APPLICATION,
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
-import { addOrUpdateInArray, removeInArrayByName, isInArray, removeInArray } from "./utils";
-import produce from "immer";
+import { addOrUpdateInArray, isInArray, removeInArray, removeInArrayByName } from "./utils";
 
 export type State = {
   applications: ApplicationDetails[];
@@ -76,10 +75,6 @@ const reducer = produce((state: State, action: Actions) => {
       return;
     }
     case CREATE_APPLICATION: {
-      state.applications = addOrUpdateInArray(state.applications, action.payload.application);
-      return;
-    }
-    case UPDATE_APPLICATION: {
       state.applications = addOrUpdateInArray(state.applications, action.payload.application);
       return;
     }

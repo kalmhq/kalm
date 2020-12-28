@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/kalmhq/kalm/api/log"
-	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/net/http2"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -18,6 +17,7 @@ import (
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/config"
 	"github.com/kalmhq/kalm/api/handler"
+	"github.com/kalmhq/kalm/api/middleware"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/api/server"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"

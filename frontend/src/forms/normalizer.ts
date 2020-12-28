@@ -197,3 +197,18 @@ export const tenantApplicationNameFormat = (tenantName: string) => (value: strin
 
   return value;
 };
+
+// a.com -> a.com
+// *.foo.bar -> .foo.bar
+// *alice.foo.bar -> --alice.foo.bar
+export const normalizeWildcardDomain = (domain: string) => {
+  if (domain.startsWith("*")) {
+    if (domain.length > 1 && domain[1] !== ".") {
+      return "--" + domain.slice(1);
+    } else {
+      return domain.slice(1);
+    }
+  }
+
+  return domain;
+};

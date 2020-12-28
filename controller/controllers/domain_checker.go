@@ -49,6 +49,9 @@ func NewDomainChecker(mgr manager.Manager) (*DomainChecker, error) {
 
 	domainInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: domainChecker.enqueue,
+		UpdateFunc: func(old, new interface{}) {
+			domainChecker.enqueue(new)
+		},
 	})
 
 	client := mgr.GetClient()
@@ -150,20 +153,56 @@ func (c *DomainChecker) syncHandler(key string) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
-	isConfiguredAsExpected, err := v1alpha1.IsDomainConfiguredAsExpected(domain.Spec)
-	if err != nil {
-		return ctrl.Result{RequeueAfter: 10 * time.Second}, err
+	// do nothing if not ready to check
+	if !domain.Spec.DNSTargetReadyToCheck && !domain.Spec.TxtReadyToCheck {
+		c.log.Info("not ready to check, skipped", "domain", domain.Spec.Domain)
+		return ctrl.Result{}, nil
 	}
 
-	requeueAfter := c.decideRequeueAfter(domain, isConfiguredAsExpected)
+	copiedDomain := domain.DeepCopy()
 
-	copied := c.decideStatus(domain, isConfiguredAsExpected)
-	if err := c.client.Status().Update(c.ctx, copied); err != nil {
+	var requeueAfter time.Duration
+	if domain.Spec.DNSTargetReadyToCheck {
+		c.log.Info("dnsTarget ready to check", "domain", domain.Spec.Domain)
+
+		isDNSTargetConfiguredRight, err := v1alpha1.IsDNSTargetConfiguredAsExpected(domain.Spec)
+		if err != nil {
+			return ctrl.Result{RequeueAfter: 10 * time.Second}, err
+		}
+
+		dnsRequeueAfter := c.decideRequeueAfterForDNSTarget(domain, isDNSTargetConfiguredRight)
+		if requeueAfter.Seconds() == 0 {
+			requeueAfter = dnsRequeueAfter
+		}
+
+		c.decideDNSTargetStatus(copiedDomain, isDNSTargetConfiguredRight)
+	}
+
+	if domain.Spec.TxtReadyToCheck {
+		c.log.Info("txt ready to check", "domain", domain.Spec.Domain)
+
+		isTxtConfiguredRight, err := v1alpha1.IsDomainTxtConfiguredAsExpected(domain.Spec)
+		if err != nil {
+			c.log.Info("IsDomainTxtConfiguredAsExpected failed", "err", err)
+			return ctrl.Result{RequeueAfter: 10 * time.Second}, err
+		}
+
+		txtRequeueAfter := c.decideRequeueAfterForTxt(domain, isTxtConfiguredRight)
+		if requeueAfter.Seconds() == 0 ||
+			requeueAfter.Seconds() > txtRequeueAfter.Seconds() {
+			requeueAfter = txtRequeueAfter
+		}
+
+		c.decideTxtStatus(copiedDomain, isTxtConfiguredRight)
+	}
+
+	if err := c.client.Status().Update(c.ctx, copiedDomain); err != nil {
 		return ctrl.Result{}, err
 	}
 
 	// this reconcile act as a never ending loop to check if Domain config is Valid
 	c.log.Info("requeue check of Domain", "requeueAfter", requeueAfter)
+
 	return ctrl.Result{RequeueAfter: requeueAfter}, nil
 }
 
@@ -175,10 +214,31 @@ func min(m, n int) int {
 	return n
 }
 
+func getDomainDNSKey(domain v1alpha1.Domain, isDNSTarget bool) string {
+	var dnsType string
+	if isDNSTarget {
+		dnsType = string(domain.Spec.DNSType)
+	} else {
+		dnsType = "TXT"
+	}
+
+	return fmt.Sprintf("%s-%s", domain.Spec.Domain, dnsType)
+}
+
+func (c *DomainChecker) decideRequeueAfterForDNSTarget(domain v1alpha1.Domain, isReady bool) time.Duration {
+	return c.decideRequeueAfter(domain, true, isReady)
+}
+
+func (c *DomainChecker) decideRequeueAfterForTxt(domain v1alpha1.Domain, isReady bool) time.Duration {
+	return c.decideRequeueAfter(domain, false, isReady)
+}
+
 // decide time of next re-check
-func (c *DomainChecker) decideRequeueAfter(domain v1alpha1.Domain, isReady bool) time.Duration {
+func (c *DomainChecker) decideRequeueAfter(domain v1alpha1.Domain, isDNSTarget bool, isReady bool) time.Duration {
+	key := getDomainDNSKey(domain, isDNSTarget)
+
 	if isReady {
-		cnt := c.verifiedCountMap[domain.Spec.Domain]
+		cnt := c.verifiedCountMap[key]
 
 		if cnt < 10 {
 			return 1 * time.Minute // 1min
@@ -187,63 +247,88 @@ func (c *DomainChecker) decideRequeueAfter(domain v1alpha1.Domain, isReady bool)
 		}
 	}
 
-	wasReady := domain.Status.IsDNSTargetConfigured
+	var wasReady bool
+	if isDNSTarget {
+		wasReady = domain.Status.IsDNSTargetConfigured
+	} else {
+		wasReady = domain.Status.IsTxtConfigured
+	}
+
 	if wasReady {
 		return 60 * time.Second
 	}
 
-	failCnt := c.failCountMap[domain.Spec.Domain]
-	c.log.Info("failCount", "domain", domain.Spec.Domain, "cnt", failCnt)
+	failCnt := c.failCountMap[key]
+	c.log.Info("failCount", "key", key, "cnt", failCnt)
 
-	if failCnt <= 25 {
-		return 5 * time.Second // last for ~2min
-	} else if failCnt <= 50 {
-		return 10 * time.Second // last for ~4min
-	} else if failCnt <= 100 {
-		return 30 * time.Second // last for ~25min
+	if failCnt <= 60 {
+		return 5 * time.Second // last for ~5min
+	} else if failCnt <= 120 {
+		return 10 * time.Second // last for ~10min
+	} else if failCnt <= 180 {
+		return 30 * time.Second // last for ~30min
 	}
 
-	return 1 * time.Hour
+	return 5 * time.Minute
 }
 
-func (c *DomainChecker) decideStatus(domain v1alpha1.Domain, isReady bool) *v1alpha1.Domain {
+func (c *DomainChecker) decideDNSTargetStatus(domain *v1alpha1.Domain, isDNSTargetReady bool) {
+	c.decideStatus(domain, true, isDNSTargetReady)
+}
 
-	copied := domain.DeepCopy()
+func (c *DomainChecker) decideTxtStatus(domain *v1alpha1.Domain, isTxtReady bool) {
+	c.decideStatus(domain, false, isTxtReady)
+}
+
+func (c *DomainChecker) decideStatus(copied *v1alpha1.Domain, isDNSTarget, isReady bool) {
+	key := getDomainDNSKey(*copied, isDNSTarget)
 
 	if isReady {
 		//reset fail count
-		delete(c.verifiedTurnFailedCountMap, domain.Spec.Domain)
-		delete(c.failCountMap, domain.Spec.Domain)
+		delete(c.verifiedTurnFailedCountMap, key)
+		delete(c.failCountMap, key)
 
 		// inc verified count
-		cnt := c.verifiedCountMap[domain.Spec.Domain]
-		c.verifiedCountMap[domain.Spec.Domain] = min(cnt+1, MaxCount)
+		cnt := c.verifiedCountMap[key]
+		c.verifiedCountMap[key] = min(cnt+1, MaxCount)
 
-		copied.Status.IsDNSTargetConfigured = true
+		if isDNSTarget {
+			copied.Status.IsDNSTargetConfigured = true
+		} else {
+			copied.Status.IsTxtConfigured = true
+		}
 	} else {
 		// reset verifiedCnt
-		delete(c.verifiedCountMap, domain.Spec.Domain)
+		delete(c.verifiedCountMap, key)
 
 		// for ready change to not-ready, need failCount > threshold
-		wasVerified := copied.Status.IsDNSTargetConfigured
+		var wasVerified bool
+		if isDNSTarget {
+			wasVerified = copied.Status.IsDNSTargetConfigured
+		} else {
+			wasVerified = copied.Status.IsTxtConfigured
+		}
+
 		if wasVerified {
-			cnt := c.verifiedTurnFailedCountMap[domain.Spec.Domain]
+			cnt := c.verifiedTurnFailedCountMap[key]
 
 			if cnt <= VerifiedTurnFailedCntThreadhold {
 				// won't set to fail, simply inc failCount
-				c.verifiedTurnFailedCountMap[domain.Spec.Domain] = cnt + 1
+				c.verifiedTurnFailedCountMap[key] = cnt + 1
 			} else {
-				c.log.Info("verified domain change to un-verified", "domain", domain.Spec.Domain, "failCnt", cnt)
-				copied.Status.IsDNSTargetConfigured = false
+				c.log.Info("verified domain change to un-verified", "key", key, "failCnt", cnt)
+				if isDNSTarget {
+					copied.Status.IsDNSTargetConfigured = false
+				} else {
+					copied.Status.IsTxtConfigured = false
+				}
 
-				delete(c.verifiedTurnFailedCountMap, domain.Spec.Domain)
+				delete(c.verifiedTurnFailedCountMap, key)
 			}
 		} else {
 			// inc fail count
-			cnt := c.failCountMap[domain.Spec.Domain]
-			c.failCountMap[domain.Spec.Domain] = min(cnt+1, MaxCount)
+			cnt := c.failCountMap[key]
+			c.failCountMap[key] = min(cnt+1, MaxCount)
 		}
 	}
-
-	return copied
 }

@@ -17,6 +17,15 @@ func ExamplegetDirectCNAMEOfDomain() {
 	}
 }
 
+// func ExampleGetTxtListOfDomain() {
+// 	domain := "example.com"
+
+// 	txtList, _ := getTxtListOfDomain(domain)
+// 	fmt.Println(txtList)
+// 	// Output:
+// 	// [v=spf1 -all 8j5nfqld20zpcyr8xjw0ydcfq9rk8hgm]
+// }
+
 // func TestGetIPOfDomain(t *testing.T) {
 // 	domain := "kalm.dev"
 
@@ -26,50 +35,50 @@ func ExamplegetDirectCNAMEOfDomain() {
 // 	}
 // }
 
-func TestIsDomainConfiguredAsExpectedARecord(t *testing.T) {
+func TestIsDNSTargetConfiguredAsExpectedARecord(t *testing.T) {
 	domainSpec := DomainSpec{
 		Domain:    fmt.Sprintf("random-domain-%s.com", rand.String(10)),
 		DNSType:   DNSTypeA,
 		DNSTarget: "1.1.1.1",
 	}
 
-	isAsExpected, err := IsDomainConfiguredAsExpected(domainSpec)
+	isAsExpected, err := IsDNSTargetConfiguredAsExpected(domainSpec)
 	assert.Nil(t, err)
 	assert.False(t, isAsExpected)
 }
 
-func TestIsDomainConfiguredAsExpectedCNAME(t *testing.T) {
+func TestIsDNSTargetConfiguredAsExpectedCNAME(t *testing.T) {
 	domainSpec := DomainSpec{
 		Domain:    fmt.Sprintf("random-domain-%s.com", rand.String(10)),
 		DNSType:   DNSTypeCNAME,
 		DNSTarget: "fake-cname-target.com",
 	}
 
-	isAsExpected, err := IsDomainConfiguredAsExpected(domainSpec)
+	isAsExpected, err := IsDNSTargetConfiguredAsExpected(domainSpec)
 	assert.Nil(t, err)
 	assert.False(t, isAsExpected)
 }
 
-// func TestIsDomainConfiguredAsExpectedARecord2(t *testing.T) {
+// func TestIsDNSTargetConfiguredAsExpectedARecord2(t *testing.T) {
 // 	domainSpec := DomainSpec{
 // 		Domain:    "kalm.dev",
 // 		DNSType:   DNSTypeA,
 // 		DNSTarget: "134.209.226.211",
 // 	}
 
-// 	isAsExpected, err := IsDomainConfiguredAsExpected(domainSpec)
+// 	isAsExpected, err := IsDNSTargetConfiguredAsExpected(domainSpec)
 // 	assert.Nil(t, err)
 // 	assert.True(t, isAsExpected)
 // }
 
-// func TestIsDomainConfiguredAsExpectedCNAME2(t *testing.T) {
+// func TestIsDNSTargetConfiguredAsExpectedCNAME2(t *testing.T) {
 // 	domainSpec := DomainSpec{
 // 		Domain:    "t1.foo.xyz",
 // 		DNSType:   DNSTypeCNAME,
 // 		DNSTarget: "982121f3bcc89412f8f79d87d2b9a894-cluster-8hfcrsva-cname.asia-northeast3.kalm-dns.com",
 // 	}
 
-// 	isAsExpected, err := IsDomainConfiguredAsExpected(domainSpec)
+// 	isAsExpected, err := IsDNSTargetConfiguredAsExpected(domainSpec)
 // 	assert.Nil(t, err)
 // 	assert.True(t, isAsExpected)
 // }
