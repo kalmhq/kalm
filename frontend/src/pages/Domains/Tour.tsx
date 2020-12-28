@@ -111,7 +111,7 @@ const DomainTourPageRaw: React.FC = () => {
               size="small"
               onClick={() => {
                 setCheckTXT(true);
-                api.triggerDomainCheck(domain.domain, checkCNAME, true);
+                api.triggerDomainCheck(domain.name, checkCNAME, true);
               }}
             >
               Check TXT Status
@@ -165,7 +165,7 @@ const DomainTourPageRaw: React.FC = () => {
                 size="small"
                 onClick={() => {
                   setCheckCNAME(true);
-                  api.triggerDomainCheck(domain.domain, true, checkTXT);
+                  api.triggerDomainCheck(domain.name, true, checkTXT);
                 }}
               >
                 Check CNAME Status
