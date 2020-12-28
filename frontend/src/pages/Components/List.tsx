@@ -11,7 +11,7 @@ import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { getPodLogQuery } from "pages/Application/Log";
-import { renderCopyableValue } from "pages/Components/InfoComponents";
+import { renderCopyableImageName } from "pages/Components/InfoComponents";
 import { getPod } from "pages/Components/Pod";
 import React from "react";
 import { connect } from "react-redux";
@@ -29,6 +29,8 @@ import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
+import { RoutesPopover } from "widgets/RoutesPopover";
+import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -47,9 +49,13 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   const routesMap = state.routes.httpRoutes;
   const clusterInfo = state.cluster.info;
+  const httpRoutes = state.routes.httpRoutes;
+  const registriesState = state.registries;
   return {
     clusterInfo,
     routesMap,
+    httpRoutes,
+    registries: registriesState.registries,
   };
 };
 
@@ -199,13 +205,16 @@ class ComponentRaw extends React.PureComponent<Props, State> {
       { Header: "", accessor: "protected" },
       { Header: "", accessor: "componentName" },
       { Header: "Pods", accessor: "pods" },
+      { Header: "CPU", accessor: "cpu" },
+      { Header: "Memory", accessor: "memory" },
       { Header: "Type", accessor: "type" },
       { Header: "Image", accessor: "image" },
+      { Header: "Routes", accessor: "routes" },
       { Header: "Actions", accessor: "actions" },
     ];
   }
   private getKRTableData() {
-    const { components, dispatch, activeNamespaceName } = this.props;
+    const { components, activeNamespaceName } = this.props;
     const data: any[] = [];
     components &&
       components.forEach((component, index) => {
@@ -221,13 +230,85 @@ class ComponentRaw extends React.PureComponent<Props, State> {
             </Box>
           ),
           pods: this.getPodsStatus(component, activeNamespaceName),
+          cpu: this.renderCPU(component),
+          memory: this.renderMemory(component),
           type: component.workloadType,
-          image: renderCopyableValue(component.image, dispatch),
+          image: this.renderImage(component.image),
+          routes: this.renderExternalAccesses(component, activeNamespaceName),
           actions: this.componentControls(component),
         });
       });
     return data;
   }
+
+  private getRoutes = (componentName: string, applicationName: string) => {
+    const { httpRoutes } = this.props;
+    const applicationRoutes = httpRoutes.filter((x) => {
+      let isCurrent = false;
+      x.destinations.map((target) => {
+        const hostInfos = target.host.split(".");
+        if (
+          hostInfos[0] &&
+          hostInfos[0].startsWith(componentName) &&
+          hostInfos[1] &&
+          hostInfos[1].startsWith(applicationName)
+        ) {
+          isCurrent = true;
+        }
+        return target;
+      });
+      return isCurrent;
+    });
+    console.log(applicationRoutes);
+    return applicationRoutes;
+  };
+
+  private hasPods = () => {
+    const { components } = this.props;
+    let count = 0;
+    components.forEach((component) => {
+      component.pods?.forEach((podStatus) => {
+        count++;
+      });
+    });
+
+    return count !== 0;
+  };
+
+  private renderImage = (imageName: string) => {
+    const { registries, dispatch } = this.props;
+    const hosts = registries.map((r) => {
+      return r.host.toLowerCase().replace("https://", "").replace("http://", "");
+    });
+    return renderCopyableImageName(imageName, dispatch, hosts);
+  };
+
+  private renderCPU = (component: ApplicationComponentDetails) => {
+    const metrics = component.metrics;
+    return <SmallCPULineChart data={metrics && metrics.cpu} hoverText={this.hasPods() ? "" : "No data"} />;
+  };
+
+  private renderMemory = (component: ApplicationComponentDetails) => {
+    const metrics = component.metrics;
+    return <SmallMemoryLineChart data={metrics && metrics.memory} hoverText={this.hasPods() ? "" : "No data"} />;
+  };
+
+  private renderExternalAccesses = (component: ApplicationComponentDetails, applicationName: string) => {
+    const { canViewNamespace, canEditNamespace } = this.props;
+    const applicationRoutes = this.getRoutes(component.name, applicationName);
+
+    if (applicationRoutes && applicationRoutes.length > 0 && canViewNamespace(applicationName)) {
+      return (
+        <RoutesPopover
+          applicationRoutes={applicationRoutes}
+          applicationName={applicationName}
+          canEdit={canEditNamespace(applicationName)}
+        />
+      );
+    } else {
+      return "-";
+    }
+  };
 
   private getPodsStatus = (component: ApplicationComponentDetails, activeNamespaceName: string) => {
     let pods: React.ReactElement[] = [];

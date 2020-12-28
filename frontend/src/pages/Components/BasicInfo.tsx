@@ -18,7 +18,7 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import clsx from "clsx";
 import { push } from "connected-react-router";
 import { HealthTab, NetworkingTab } from "forms/ComponentLike";
-import { renderCommandValue, renderCopyableValue } from "pages/Components/InfoComponents";
+import { renderCommandValue, renderCopyableImageName } from "pages/Components/InfoComponents";
 import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
 import React from "react";
 import { connect } from "react-redux";
@@ -440,7 +440,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
           { name: "Namespace", content: activeNamespaceName },
           { name: "Workload Type", content: component.workloadType },
           { name: "Pod Status", content: this.renderComponentStatus() },
-          { name: "Image", content: renderCopyableValue(component.image, dispatch) },
+          { name: "Image", content: renderCopyableImageName(component.image, dispatch) },
           { name: "Command", content: renderCommandValue(component.command, dispatch) },
           { name: "Environment Variables", content: this.renderEnvs() },
           { name: "Configuration Files", content: this.renderConfigFiles() },

@@ -33,7 +33,7 @@ export const renderCommandValue = (value: any, dispatch: any) => {
   }
 };
 
-export const renderCopyableValue = (value: any, dispatch: any) => {
+export const renderCopyableImageName = (value: any, dispatch: any, privateHosts?: string[]) => {
   if (value === undefined || value === "") {
     return null;
   } else {
@@ -54,7 +54,7 @@ export const renderCopyableValue = (value: any, dispatch: any) => {
           </IconButtonWithTooltip>
         }
       >
-        {shortnessImage(value)}
+        {shortnessImage(value, privateHosts)}
       </ItemWithHoverIcon>
     );
   }
