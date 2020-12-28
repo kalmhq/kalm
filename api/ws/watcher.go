@@ -392,8 +392,37 @@ func buildRegistryResMessage(c *Client, action string, objWatched interface{}) (
 }
 
 func buildJobResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
-	//todo
-	return nil, nil
+	job, ok := objWatched.(*batchv1.Job)
+	if !ok {
+		return nil, errors.New("convert watch obj to Job failed")
+	}
+
+	if job.Labels["kalm-managed"] != "true" {
+		return nil, nil
+	}
+
+	jobTenant := job.Labels[v1alpha1.TenantNameLabelKey]
+	if jobTenant == "" {
+		return nil, nil
+	}
+
+	curTenant := c.clientInfo.Tenant
+	if jobTenant != curTenant {
+		return nil, nil
+	}
+
+	scope := curTenant + "/" + job.Namespace
+	obj := fmt.Sprintf("jobs/%s", job.Name)
+	if !c.clientManager.CanView(c.clientInfo, scope, obj) {
+		return nil, nil
+	}
+
+	return &ResMessage{
+		Namespace: job.Namespace,
+		Kind:      "Job",
+		Action:    action,
+		Data:      resources.BuildJobFromResource(job),
+	}, nil
 }
 
 func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
@@ -403,7 +432,6 @@ func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*R
 	}
 
 	label := pvc.Labels["kalm-managed"]
-
 	if label != "true" {
 		return &ResMessage{}, nil
 	}
@@ -420,7 +448,6 @@ func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*R
 	//}
 
 	tenantName, err := v1alpha1.GetTenantNameFromObj(pvc)
-
 	if err != nil {
 		return nil, err
 	}
@@ -430,7 +457,6 @@ func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*R
 	}
 
 	volume, err := builder.BuildVolumeResponse(*pvc)
-
 	if err != nil {
 		return nil, err
 	}

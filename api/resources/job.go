@@ -1,0 +1,61 @@
+package resources
+
+import (
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	batchv1 "k8s.io/api/batch/v1"
+	v1 "k8s.io/api/core/v1"
+)
+
+type Job struct {
+	Tenant string `json:"tenant"`
+
+	Namespace         string `json:"namespace"`
+	Name              string `json:"name"`
+	CronJob           string `json:"cronJob"`
+	Complete          bool   `json:"complete"`
+	StartTimestamp    *int64 `json:"startTimestamp,omitempty"`
+	CompleteTimestamp *int64 `json:"completeTimestamp,omitempty"`
+}
+
+func BuildJobFromResource(job *batchv1.Job) *Job {
+	tenantName, _ := v1alpha1.GetTenantNameFromObj(job)
+
+	var cronJob string
+	for _, ownerRef := range job.OwnerReferences {
+		if ownerRef.Kind != "CronJob" {
+			continue
+		}
+
+		cronJob = ownerRef.Name
+		break
+	}
+
+	var complete bool
+	for _, cond := range job.Status.Conditions {
+		if cond.Type != batchv1.JobComplete {
+			continue
+		}
+
+		complete = cond.Status == v1.ConditionTrue
+	}
+
+	var startTs int64
+	if job.Status.StartTime != nil {
+		startTs = job.Status.StartTime.Unix()
+	}
+
+	var compTs int64
+	if job.Status.CompletionTime != nil {
+		compTs = job.Status.CompletionTime.Unix()
+	}
+
+	return &Job{
+		Tenant:            tenantName,
+		Namespace:         job.Namespace,
+		Name:              job.Name,
+		CronJob:           cronJob,
+		Complete:          complete,
+		StartTimestamp:    &startTs,
+		CompleteTimestamp: &compTs,
+	}
+}
