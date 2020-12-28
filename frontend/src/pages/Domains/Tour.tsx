@@ -4,6 +4,7 @@ import Step from "@material-ui/core/Step";
 import StepContent from "@material-ui/core/StepContent";
 import StepLabel from "@material-ui/core/StepLabel";
 import Stepper from "@material-ui/core/Stepper";
+import { api } from "api";
 import { BasePage } from "pages/BasePage";
 import { CertStatus } from "pages/Domains/CertStatus";
 import { DomainStatus } from "pages/Domains/Status";
@@ -110,6 +111,7 @@ const DomainTourPageRaw: React.FC = () => {
               size="small"
               onClick={() => {
                 setCheckTXT(true);
+                api.triggerDomainCheck(domain.domain, checkCNAME, true);
               }}
             >
               Check TXT Status
@@ -163,6 +165,7 @@ const DomainTourPageRaw: React.FC = () => {
                 size="small"
                 onClick={() => {
                   setCheckCNAME(true);
+                  api.triggerDomainCheck(domain.domain, true, checkTXT);
                 }}
               >
                 Check CNAME Status
