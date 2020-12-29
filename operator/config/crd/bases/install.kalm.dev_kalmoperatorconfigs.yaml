@@ -35,10 +35,13 @@ spec:
           description: KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
           properties:
             baseAppDomain:
-              description: 'like: asia-northeast3.kalm-app.com'
+              description: 'like: us-west1-1.clusters.kalm-apps.com'
               type: string
             baseDNSDomain:
-              description: 'like: asia-northeast3.kalm-dns.com'
+              description: 'like: us-west1-1.clusters.kalm-dns.com'
+              type: string
+            baseDashboardDomain:
+              description: 'like: us-west1-1.kalm.dev'
               type: string
             cloudflareConfig:
               properties:
@@ -88,6 +91,9 @@ spec:
               type: string
             kalmVersion:
               description: deprecated
+              type: string
+            oidcIssuerURL:
+              description: 'like: https://staging.kalm.dev/oidc'
               type: string
             physicalClusterId:
               type: string

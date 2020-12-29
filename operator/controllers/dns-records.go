@@ -109,6 +109,7 @@ func (r *KalmOperatorConfigReconciler) reconcileDNSRecords(config *installv1alph
 	baseDashboardDomain := config.Spec.BaseDashboardDomain
 	if baseDashboardDomain != "" && baseDNSDomain != "" {
 		// ACME challenge
+		// todo add retry here
 		acmeDomain := r.getOperatorReconciledDNS01HttpscertDomain(baseDashboardDomain)
 		if acmeDomain == "" {
 			r.Log.Info("no acmeRecord found, ignored", "domain", baseDashboardDomain)
@@ -117,6 +118,8 @@ func (r *KalmOperatorConfigReconciler) reconcileDNSRecords(config *installv1alph
 			err := dnsManager.UpsertDNSRecord(v1alpha1.DNSTypeCNAME, intermediateACMEChallengeDomainForDash, acmeDomain)
 			if err != nil {
 				r.Log.Info("UpsertDNSRecord failed, ignored", "error", err)
+			} else {
+				r.Log.Info("UpsertDNSRecord succeed", "record", fmt.Sprintf("%s -> %s", intermediateACMEChallengeDomainForDash, acmeDomain))
 			}
 		}
 
