@@ -397,6 +397,18 @@ export default class RealApi {
     return res.data;
   }
 
+  public async triggerDomainCheck(name: string, dnsTargetReadyToCheck: boolean, txtReadyToCheck: boolean) {
+    const res = await axiosRequest<Domain>({
+      method: "put",
+      url: `/${K8sApiVersion}/domains/${name}`,
+      data: {
+        dnsTargetReadyToCheck,
+        txtReadyToCheck,
+      },
+    });
+    return res.data;
+  }
+
   public async loadDomains(): Promise<Domain[]> {
     const res = await axiosRequest<Domain[]>({
       method: "get",

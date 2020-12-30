@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 
@@ -90,6 +91,7 @@ func main() {
 		Log:    ctrl.Log.WithName("controllers").WithName("KalmOperatorConfig"),
 		Reader: mgr.GetAPIReader(),
 		Scheme: mgr.GetScheme(),
+		Ctx:    context.Background(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "KalmOperatorConfig")
 		os.Exit(1)

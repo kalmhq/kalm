@@ -29,8 +29,8 @@ func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
 
 func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
 	currentUser := getCurrentUser(c)
-	var route *resources.HttpRoute
 
+	var route *resources.HttpRoute
 	if route, err = getHttpRouteFromContext(c); err != nil {
 		return err
 	}
@@ -55,10 +55,20 @@ func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
 
 func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
 	currentUser := getCurrentUser(c)
-	var route *resources.HttpRoute
 
+	var route *resources.HttpRoute
 	if route, err = getHttpRouteFromContext(c); err != nil {
 		return err
+	}
+
+	if resRoute, err := h.resourceManager.GetHttpRoute("", c.Param("name")); err != nil {
+		return nil
+	} else {
+		route.Tenant = resRoute.Tenant
+	}
+
+	if route.Tenant == "" {
+		return fmt.Errorf("no tenant info for httpRoute: %s", route.Name)
 	}
 
 	// TODO: check if current user can edit all old http route destinations
@@ -75,7 +85,6 @@ func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
 
 func (h *ApiHandler) handleDeleteRoute(c echo.Context) (err error) {
 	route, err := h.resourceManager.GetHttpRoute("", c.Param("name"))
-
 	if err != nil {
 		return nil
 	}

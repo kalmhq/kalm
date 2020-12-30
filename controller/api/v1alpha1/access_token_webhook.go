@@ -55,19 +55,24 @@ var _ webhook.Validator = &AccessToken{}
 func (r *AccessToken) ValidateCreate() error {
 	accesstokenlog.Info("validate create", "name", r.Name)
 
+	tenantName, err := GetTenantNameFromObj(r)
+	if err != nil {
+		return err
+	} else if tenantName == "" {
+		return NoTenantLabelSetError
+	}
+
+	if tenantName == DefaultGlobalTenantName ||
+		tenantName == DefaultSystemTenantName {
+		return nil
+	}
+
 	if !HasTenantSet(r) {
 		return NoTenantFoundError
 	}
 
 	if err := r.validate(); err != nil {
 		return err
-	}
-
-	tenantName, err := GetTenantNameFromObj(r)
-	if err != nil {
-		return err
-	} else if tenantName == "" {
-		return NoTenantFoundError
 	}
 
 	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Create, false)
@@ -125,6 +130,11 @@ func (r *AccessToken) ValidateDelete() error {
 		return nil
 	} else if tenantName == "" {
 		accesstokenlog.Error(err, "no tenant name, ignored", "ns/name", getKey(r))
+		return nil
+	}
+
+	if tenantName == DefaultGlobalTenantName ||
+		tenantName == DefaultSystemTenantName {
 		return nil
 	}
 
