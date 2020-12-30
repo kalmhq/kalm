@@ -9,7 +9,7 @@ import { NavLink, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import sc from "utils/stringConstants";
-import { DashboardIcon, KalmComponentsIcon, PeopleIcon } from "widgets/Icon";
+import { DashboardIcon, KalmComponentsIcon, PeopleIcon, SettingIcon } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -56,7 +56,7 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private getMenuData() {
-    const { activeNamespaceName, canManageNamespace: canManageScope } = this.props;
+    const { activeNamespaceName, canManageNamespace: canManageScope, canEditTenant } = this.props;
     const menus = [];
     menus.push({
       text: "Components",
@@ -76,6 +76,14 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
       highlightWhenExact: true,
       icon: <DashboardIcon />,
     });
+    if (canEditTenant()) {
+      menus.push({
+        text: sc.APP_SETTINGS_PAGE_NAME,
+        to: "/applications/" + activeNamespaceName + "/settings",
+        highlightWhenExact: true,
+        icon: <SettingIcon />,
+      });
+    }
     return menus;
   }
 

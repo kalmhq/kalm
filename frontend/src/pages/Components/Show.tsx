@@ -18,6 +18,8 @@ import { Namespaces } from "widgets/Namespaces";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 import { api } from "api";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
+import { deleteComponentAction } from "actions/component";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -182,21 +184,6 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
 
     return (
       <div className={classes.secondHeaderRight}>
-        <H6 className={classes.secondHeaderRightItem}>Component {component.name}</H6>
-        {canEditNamespace(activeNamespaceName) && (
-          <Button
-            tutorial-anchor-id="edit-component"
-            component={Link}
-            color="primary"
-            size="small"
-            className={classes.secondHeaderRightItem}
-            variant="outlined"
-            to={`/applications/${activeNamespaceName}/components/${component.name}/edit`}
-          >
-            Edit
-          </Button>
-        )}
-
         {component.workloadType === "cronjob" && (
           <Button
             color="primary"
@@ -214,6 +201,35 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
             Run Once
           </Button>
         )}
+
+        <H6 className={classes.secondHeaderRightItem}>Component {component.name}</H6>
+        {canEditNamespace(activeNamespaceName) && (
+          <Button
+            tutorial-anchor-id="edit-component"
+            component={Link}
+            color="primary"
+            size="small"
+            className={classes.secondHeaderRightItem}
+            variant="outlined"
+            to={`/applications/${activeNamespaceName}/components/${component.name}/edit`}
+          >
+            Edit
+          </Button>
+        )}
+        {canEditNamespace(activeNamespaceName) ? (
+          <DeleteButtonWithConfirmPopover
+            iconSize="small"
+            popupId="delete-pod-popup"
+            text="Delete"
+            useText={true}
+            targetText={component.name}
+            popupTitle="DELETE COMPONENT?"
+            confirmedAction={async () => {
+              await dispatch(deleteComponentAction(component.name, activeNamespaceName));
+              dispatch(setSuccessNotificationAction("Delete component successfully"));
+            }}
+          />
+        ) : null}
       </div>
     );
   }

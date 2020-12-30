@@ -127,6 +127,15 @@ class WebhookPageRaw extends React.PureComponent<Props, State> {
         <DeleteButtonWithConfirmPopover
           popupId="delete-ci-popup"
           popupTitle="DELETE CI?"
+          popupContent={
+            <Box>
+              This action cannot be undone. This will permanently delete
+              <Typography color={"primary"} align={"center"}>
+                {rowData.name}
+              </Typography>
+            </Box>
+          }
+          targetText={rowData.name}
           confirmedAction={() => dispatch(deleteDeployAccessTokenAction(rowData))}
         />
       </>

@@ -1,4 +1,4 @@
-import { Box, Button, Link as KMLink } from "@material-ui/core";
+import { Box, Button, Link as KMLink, Typography } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import { deleteDomainAction } from "actions/domains";
 import { setSuccessNotificationAction } from "actions/notification";
@@ -87,6 +87,15 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
               disabled={domain.isBuiltIn}
               popupId="delete-domain-popup"
               popupTitle="DELETE DOMAIN?"
+              popupContent={
+                <Box>
+                  This action cannot be undone. This will permanently delete
+                  <Typography color={"primary"} align={"center"}>
+                    {domain.domain}
+                  </Typography>
+                </Box>
+              }
+              targetText={domain.domain}
               confirmedAction={() => deleteDomain(domain)}
             />
           </>

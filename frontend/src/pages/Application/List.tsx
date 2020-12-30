@@ -23,7 +23,6 @@ import { CustomizedButton } from "widgets/Button";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { KalmApplicationIcon, KalmDetailsIcon, KalmGridViewIcon, KalmListViewIcon } from "widgets/Icon";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
-import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { KRTable } from "widgets/KRTable";
 import { Caption } from "widgets/Label";
 import { KLink } from "widgets/Link";
@@ -232,7 +231,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderActions = (applicationDetails: ApplicationDetails) => {
-    const { canViewNamespace, canEditTenant } = this.props;
+    const { canViewNamespace } = this.props;
     return (
       <>
         {canViewNamespace(applicationDetails.name) && (
@@ -246,15 +245,6 @@ class ApplicationListRaw extends React.PureComponent<Props> {
           >
             <KalmDetailsIcon />
           </IconLinkWithToolTip>
-        )}
-
-        {canEditTenant() && (
-          <DeleteButtonWithConfirmPopover
-            popupId="delete-application-popup"
-            popupTitle="DELETE APPLICATION?"
-            disabled={applicationDetails.name === "kalm-system"}
-            confirmedAction={() => this.confirmDelete(applicationDetails)}
-          />
         )}
       </>
     );

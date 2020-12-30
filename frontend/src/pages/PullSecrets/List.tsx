@@ -132,6 +132,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
         <DeleteButtonWithConfirmPopover
           popupId="delete-registry-popup"
           popupTitle="DELETE REGISTRY?"
+          targetText={row.name}
           confirmedAction={() => this.confirmDelete(row)}
         />
       </>
