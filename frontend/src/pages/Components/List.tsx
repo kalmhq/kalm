@@ -28,9 +28,9 @@ import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { Namespaces } from "widgets/Namespaces";
-import { BasePage } from "../BasePage";
 import { RoutesPopover } from "widgets/RoutesPopover";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
+import { BasePage } from "../BasePage";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -278,7 +278,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   private renderImage = (imageName: string) => {
     const { registries, dispatch } = this.props;
     const hosts = registries.map((r) => {
-      return r.host.toLowerCase().replace("https://", "").replace("http://", "");
+      return r.host && r.host.toLowerCase().replace("https://", "").replace("http://", "");
     });
     return renderCopyableImageName(imageName, dispatch, hosts);
   };
