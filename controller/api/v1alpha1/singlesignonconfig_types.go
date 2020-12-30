@@ -47,9 +47,11 @@ type TemporaryDexUser struct {
 
 // SingleSignOnConfigSpec defines the desired state of SingleSignOnConfig
 type SingleSignOnConfigSpec struct {
-	// These two are for arbitrary oidc provider
-	Issuer  string `json:"issuer,omitempty"`
-	JwksURI string `json:"jwksUri,omitempty"`
+	// These four are for arbitrary oidc provider
+	Issuer             string `json:"issuer,omitempty"`
+	IssuerClientId     string `json:"issuerClientId,omitempty"`
+	IssuerClientSecret string `json:"issuerClientSecret,omitempty"`
+	JwksURI            string `json:"jwksUri,omitempty"`
 
 	// The following are for kalm dex oidc provider
 	Domain string `json:"domain,omitempty"`

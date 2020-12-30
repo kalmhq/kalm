@@ -311,12 +311,14 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(config *insta
 		return err
 	}
 
-	oidcIssuerURL := config.Spec.OIDCIssuerURL
-	if oidcIssuerURL != "" {
-		err := r.reconcileSSOForOIDCIssuer(oidcIssuerURL, baseDomain)
+	oidcIssuer := config.Spec.OIDCIssuer
+	if oidcIssuer != nil {
+		err := r.reconcileSSOForOIDCIssuer(oidcIssuer, baseDomain)
 		if err != nil {
 			r.Log.Info("reconcileSSOForOIDCIssuer fail", "error", err)
 			return err
+		} else {
+			r.Log.Info("reconcileSSOForOIDCIssuer succeed")
 		}
 	}
 
@@ -457,7 +459,11 @@ func (r *KalmOperatorConfigReconciler) reconcileProtectedEndpointForDashboard(ba
 	}
 }
 
-func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(issuerURL, authProxyDomain string) error {
+func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(oidcIssuer *installv1alpha1.OIDCIssuerConfig, authProxyDomain string) error {
+	if oidcIssuer == nil {
+		return fmt.Errorf("oidcIssuerConfig should not be nil")
+	}
+
 	expirySec := uint32(300)
 
 	expectedSSO := v1alpha1.SingleSignOnConfig{
@@ -469,7 +475,9 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(issuerURL, auth
 			},
 		},
 		Spec: v1alpha1.SingleSignOnConfigSpec{
-			Issuer:               issuerURL,
+			Issuer:               oidcIssuer.IssuerURL,
+			IssuerClientId:       oidcIssuer.ClientId,
+			IssuerClientSecret:   oidcIssuer.ClientSecret,
 			IDTokenExpirySeconds: &expirySec,
 			Domain:               authProxyDomain,
 		},
