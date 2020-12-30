@@ -4,6 +4,7 @@ import { ApplicationListPage } from "pages/Application/List";
 import { Log } from "pages/Application/Log";
 import { ApplicationNewPage } from "pages/Application/New";
 import { ApplicationShowPage } from "pages/Application/Show";
+import { ApplicationSettingsPage } from "pages/Application/Settings";
 import { CertificateAcmePage } from "pages/Certificate/Acme";
 import { CertificateAcmeEditPage } from "pages/Certificate/AcmeEdit";
 import { CertificateDetailPage } from "pages/Certificate/Detail";
@@ -88,6 +89,7 @@ export const KalmRoutes = (
           <Route exact path="/applications/new" component={ApplicationNewPage} />
           <Route exact path="/applications/:applicationName/" component={ComponentListPage} />
           <Route exact path="/applications/:applicationName/metrics" component={ApplicationShowPage} />
+          <Route exact path="/applications/:applicationName/settings" component={ApplicationSettingsPage} />
 
           <Route exact path="/routes" component={RouteListPage} />
           <Route exact path="/routes/new" component={RouteNewPage} />

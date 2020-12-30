@@ -2,7 +2,6 @@ import { Box, Button, createStyles, Link as KMLink, Theme, WithStyles } from "@m
 import { indigo } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
-import { deleteComponentAction } from "actions/component";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { blinkTopProgressAction } from "actions/settings";
 import { api } from "api";
@@ -24,13 +23,12 @@ import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { EditIcon, KalmComponentsIcon, KalmViewListIcon, LockIcon, PlayIcon } from "widgets/Icon";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
-import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { Namespaces } from "widgets/Namespaces";
-import { BasePage } from "../BasePage";
 import { RoutesPopover } from "widgets/RoutesPopover";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
+import { BasePage } from "../BasePage";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -259,7 +257,6 @@ class ComponentRaw extends React.PureComponent<Props, State> {
       });
       return isCurrent;
     });
-    console.log(applicationRoutes);
     return applicationRoutes;
   };
 
@@ -278,7 +275,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   private renderImage = (imageName: string) => {
     const { registries, dispatch } = this.props;
     const hosts = registries.map((r) => {
-      return r.host.toLowerCase().replace("https://", "").replace("http://", "");
+      return r.host && r.host.toLowerCase().replace("https://", "").replace("http://", "");
     });
     return renderCopyableImageName(imageName, dispatch, hosts);
   };
@@ -320,6 +317,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
             onClick={() => {
               blinkTopProgressAction();
             }}
+            key={index}
             size="small"
             tooltipTitle={`${pod.name} ${pod.statusText}`}
             target="_blank"
@@ -373,17 +371,6 @@ class ComponentRaw extends React.PureComponent<Props, State> {
           </IconLinkWithToolTip>
         ) : null}
 
-        {canEditNamespace(activeNamespaceName) ? (
-          <DeleteButtonWithConfirmPopover
-            iconSize="small"
-            popupId="delete-pod-popup"
-            popupTitle="DELETE COMPONENT?"
-            confirmedAction={async () => {
-              await dispatch(deleteComponentAction(component.name, activeNamespaceName));
-              dispatch(setSuccessNotificationAction("Delete component successfully"));
-            }}
-          />
-        ) : null}
         {component.workloadType === "cronjob" ? (
           <IconButtonWithTooltip
             onClick={async () => {
