@@ -518,6 +518,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <Grid item xs={12}>
               <Field
                 name="preferNotCoLocated"
+                type="checkbox"
                 component={FinalBoolCheckboxRender}
                 label={sc.SCHEDULING_COLOCATE_CHECKBOX}
               />
