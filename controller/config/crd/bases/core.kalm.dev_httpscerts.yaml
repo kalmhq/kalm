@@ -18,6 +18,9 @@ spec:
   - JSONPath: .status.conditions[0].message
     name: Message
     type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
   group: core.kalm.dev
   names:
     kind: HttpsCert

@@ -16,6 +16,9 @@ spec:
   - JSONPath: .spec.issuer
     name: Issuer
     type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
   group: core.kalm.dev
   names:
     kind: SingleSignOnConfig
@@ -87,7 +90,11 @@ spec:
             isKalmInLocalMode:
               type: boolean
             issuer:
-              description: These two are for arbitrary oidc provider
+              description: These four are for arbitrary oidc provider
+              type: string
+            issuerClientId:
+              type: string
+            issuerClientSecret:
               type: string
             jwksUri:
               type: string
