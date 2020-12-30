@@ -11,6 +11,7 @@ import {
   IconButton,
   Popover,
   Theme,
+  Typography,
   WithStyles,
   withStyles,
 } from "@material-ui/core";
@@ -231,6 +232,16 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
           <DeleteButtonWithConfirmPopover
             popupId="delete-application-popup"
             popupTitle="DELETE APPLICATION?"
+            popupContent={
+              <Box>
+                This action cannot be undone. This will permanently delete all resources under namespace{" "}
+                <Typography color={"primary"} align={"center"}>
+                  {application.name}
+                </Typography>
+                includes: components, environment configs, config files etc.
+              </Box>
+            }
+            targetText={application.name}
             confirmedAction={() => confirmDelete(application)}
           />
         )}

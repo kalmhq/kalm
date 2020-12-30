@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import CheckIcon from "@material-ui/icons/Check";
 import { deleteRouteAction } from "actions/routes";
@@ -159,6 +159,15 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         <DeleteButtonWithConfirmPopover
           popupId="delete-route-popup"
           popupTitle="DELETE ROUTE?"
+          popupContent={
+            <Box>
+              This action cannot be undone. This will permanently delete
+              <Typography color={"primary"} align={"center"}>
+                {row.hosts[0]}
+              </Typography>
+            </Box>
+          }
+          targetText={row.hosts[0]}
           confirmedAction={() => dispatch(deleteRouteAction(row))}
         />
       </>

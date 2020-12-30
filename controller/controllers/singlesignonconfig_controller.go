@@ -330,6 +330,15 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileSecret() error {
 			},
 		}
 
+		// in SaaS mode, clientId & secret should be generated from kalm-SaaS
+		if r.ssoConfig.Spec.Issuer != "" &&
+			r.ssoConfig.Spec.IssuerClientId != "" &&
+			r.ssoConfig.Spec.IssuerClientSecret != "" {
+
+			secret.Data["client_id"] = []byte(r.ssoConfig.Spec.IssuerClientId)
+			secret.Data["client_secret"] = []byte(r.ssoConfig.Spec.IssuerClientSecret)
+		}
+
 		if err := ctrl.SetControllerReference(r.ssoConfig, &secret, r.Scheme); err != nil {
 			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for auth-proxy secret")
 			return err

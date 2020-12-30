@@ -109,7 +109,7 @@ export const StringConstants = {
   ROUTE_MULTIPLE_TARGETS_HELPER: "You can add more than one targets, click here to learn more.",
   ROUTE_MULTIPLE_TARGETS_DESC:
     "If you wanna process a A/B test, you can add extra targets and assign weights to them, KALM will automatic distribute requets to different target.",
-  CI_INFO_BOX_TEXT:
+  WEBHOOK_INFO_BOX_TEXT:
     "You can call webhook directly. In addition, we also provide some out-of-the-box tools to help you connect with commonly used CI tools.",
   DISKS_INFOBOX_BOX1:
     "You don't need to apply disk manually. Disk will be created when you declare authentic disks in component form.",
@@ -118,6 +118,7 @@ export const StringConstants = {
   APP_TUTORIAL_TOOLTIPS: "Toggle tutorial",
   APP_AUTH_TOOLTIPS: "Auth menu",
   APP_DASHBOARD_PAGE_NAME: "Dashboard",
+  APP_SETTINGS_PAGE_NAME: "Settings",
   APP_MEMBERS_PAGE_NAME: "Members",
   PROTECTED_ENDPOINT_PORT:
     "Select the ports you want to protect. Leave blank to protected all ports of this component.",

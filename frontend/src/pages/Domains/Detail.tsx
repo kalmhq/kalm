@@ -1,4 +1,4 @@
-import { Button } from "@material-ui/core";
+import { Button, Typography } from "@material-ui/core";
 import Box from "@material-ui/core/Box/Box";
 import { createCertificateAction } from "actions/certificate";
 import { deleteDomainAction } from "actions/domains";
@@ -117,6 +117,15 @@ const DomainDetailPageRaw: React.FC = () => {
               disabled={domain.isBuiltIn}
               text="Delete"
               popupId="delete-Domain"
+              popupContent={
+                <Box>
+                  This action cannot be undone. This will permanently delete
+                  <Typography color={"primary"} align={"center"}>
+                    {domain.domain}
+                  </Typography>
+                </Box>
+              }
+              targetText={domain.domain}
               popupTitle="Are your sure to delete this domain?"
               confirmedAction={deleteDomain}
             />

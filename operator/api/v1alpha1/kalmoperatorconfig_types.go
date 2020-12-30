@@ -56,10 +56,14 @@ type KalmOperatorConfigSpec struct {
 
 	PhysicalClusterID string `json:"physicalClusterId,omitempty"`
 
-	// like: asia-northeast3.kalm-app.com
+	// like: us-west1-1.kalm.dev
+	BaseDashboardDomain string `json:"baseDashboardDomain,omitempty"`
+	// like: us-west1-1.clusters.kalm-apps.com
 	BaseAppDomain string `json:"baseAppDomain,omitempty"`
-	// like: asia-northeast3.kalm-dns.com
+	// like: us-west1-1.clusters.kalm-dns.com
 	BaseDNSDomain string `json:"baseDNSDomain,omitempty"`
+
+	OIDCIssuer *OIDCIssuerConfig `json:"oidcIssuer,omitempty"`
 
 	CloudflareConfig *CloudflareConfig `json:"cloudflareConfig,omitempty"`
 
@@ -67,6 +71,13 @@ type KalmOperatorConfigSpec struct {
 	Dashboard *DashboardConfig `json:"dashboard,omitempty"`
 	// Controller Config
 	Controller *ControllerConfig `json:"controller,omitempty"`
+}
+
+type OIDCIssuerConfig struct {
+	// like: https://staging.kalm.dev/oidc
+	IssuerURL    string `json:"issuerURL,omitempty"`
+	ClientId     string `json:"clientId,omitempty"`
+	ClientSecret string `json:"clientSecret,omitempty"`
 }
 
 type CloudflareConfig struct {
