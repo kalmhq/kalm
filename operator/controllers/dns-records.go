@@ -102,33 +102,13 @@ func (r *KalmOperatorConfigReconciler) reconcileDNSRecords(config *installv1alph
 
 	// dashboard
 	//
-	// CNAME 中转  _acme-challenge.BASE-DASHBOARD-DOMAIN → dashboard-acme-challenge.tmp.clusters.kalm-dns.com → xxx.acme.tmp.clusters.kalm-dns.com
-	// A     中转              (*.)BASE-DASHBOARD-DOMAIN →             dashboard-ip.tmp.clusters.kalm-dns.com → ClusterIP
+	// A     (*.)BASE-DASHBOARD-DOMAIN → dashboard-ip.tmp.clusters.kalm-dns.com → ClusterIP
 	//
 	// benifit of using intermediate domains: dashboard's direct CNAME record is predictable
-	baseDashboardDomain := config.Spec.BaseDashboardDomain
-	if baseDashboardDomain != "" && baseDNSDomain != "" {
-		// ACME challenge
-		// todo add retry here
-		acmeDomain := r.getOperatorReconciledDNS01HttpscertDomain(baseDashboardDomain)
-		if acmeDomain == "" {
-			r.Log.Info("no acmeRecord found, ignored", "domain", baseDashboardDomain)
-		} else {
-			intermediateACMEChallengeDomainForDash := fmt.Sprintf("dashboard-acme-challenge.%s", baseDNSDomain)
-			err := dnsManager.UpsertDNSRecord(v1alpha1.DNSTypeCNAME, intermediateACMEChallengeDomainForDash, acmeDomain)
-			if err != nil {
-				r.Log.Info("UpsertDNSRecord failed, ignored", "error", err)
-			} else {
-				r.Log.Info("UpsertDNSRecord succeed", "record", fmt.Sprintf("%s -> %s", intermediateACMEChallengeDomainForDash, acmeDomain))
-			}
-		}
-
-		// A records
-		if clusterIP != "" {
-			intermediateDomainForDashboardIP := fmt.Sprintf("dashboard-ip.%s", baseDNSDomain)
-			if err := dnsManager.UpsertDNSRecord(v1alpha1.DNSTypeA, intermediateDomainForDashboardIP, clusterIP); err != nil {
-				r.Log.Info("UpsertDNSRecord failed, ignored", "error", err)
-			}
+	if baseDNSDomain != "" && clusterIP != "" {
+		intermediateDomainForDashboardIP := fmt.Sprintf("dashboard-ip.%s", baseDNSDomain)
+		if err := dnsManager.UpsertDNSRecord(v1alpha1.DNSTypeA, intermediateDomainForDashboardIP, clusterIP); err != nil {
+			r.Log.Info("UpsertDNSRecord failed, ignored", "error", err)
 		}
 	}
 
