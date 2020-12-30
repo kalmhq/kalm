@@ -67,7 +67,7 @@ class ApplicationSettingsRaw extends React.PureComponent<Props> {
     return (
       <BasePage
         secondHeaderLeft={<Namespaces />}
-        secondHeaderRight={<Body>{sc.APP_DASHBOARD_PAGE_NAME}</Body>}
+        secondHeaderRight={<Body>{sc.APP_SETTINGS_PAGE_NAME}</Body>}
         leftDrawer={<ApplicationSidebar />}
       >
         <Box p={2}>
