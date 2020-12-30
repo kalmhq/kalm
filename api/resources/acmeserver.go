@@ -2,8 +2,8 @@ package resources
 
 import (
 	"fmt"
+
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
-	"github.com/kalmhq/kalm/controller/controllers"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 )
@@ -23,7 +23,7 @@ type ACMEServerResp struct {
 func (resourceManager *ResourceManager) CreateACMEServer(server *ACMEServer) (*ACMEServer, error) {
 	resource := &v1alpha1.ACMEServer{
 		ObjectMeta: controllerruntime.ObjectMeta{
-			Name: controllers.ACMEServerName,
+			Name: v1alpha1.ACMEServerName,
 		},
 		Spec: v1alpha1.ACMEServerSpec{
 			ACMEDomain: server.ACMEDomain,
@@ -43,7 +43,7 @@ func (resourceManager *ResourceManager) CreateACMEServer(server *ACMEServer) (*A
 func (resourceManager *ResourceManager) UpdateACMEServer(server *ACMEServer) (*ACMEServer, error) {
 	expectedACMEServer := v1alpha1.ACMEServer{
 		ObjectMeta: controllerruntime.ObjectMeta{
-			Name: controllers.ACMEServerName,
+			Name: v1alpha1.ACMEServerName,
 		},
 		Spec: v1alpha1.ACMEServerSpec{
 			ACMEDomain: server.ACMEDomain,
@@ -61,8 +61,8 @@ func (resourceManager *ResourceManager) UpdateACMEServer(server *ACMEServer) (*A
 		return nil, nil
 	}
 
-	if acmeServer.Name != controllers.ACMEServerName {
-		return nil, fmt.Errorf("should only 1 acmeServer named as %s exist", controllers.ACMEServerName)
+	if acmeServer.Name != v1alpha1.ACMEServerName {
+		return nil, fmt.Errorf("should only 1 acmeServer named as %s exist", v1alpha1.ACMEServerName)
 	}
 
 	acmeServer.Spec = expectedACMEServer.Spec
@@ -90,7 +90,7 @@ func (resourceManager *ResourceManager) GetACMEServer() (*v1alpha1.ACMEServer, e
 	for i := range acmeServerList.Items {
 		acmeServer := &acmeServerList.Items[i]
 
-		if acmeServer.Name != controllers.ACMEServerName {
+		if acmeServer.Name != v1alpha1.ACMEServerName {
 			continue
 		}
 
@@ -137,7 +137,7 @@ func (resourceManager *ResourceManager) GetACMEServerAsResp() (*ACMEServerResp, 
 func (resourceManager *ResourceManager) DeleteACMEServer() error {
 	return resourceManager.Delete(&v1alpha1.ACMEServer{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name: controllers.ACMEServerName,
+			Name: v1alpha1.ACMEServerName,
 		},
 	})
 }

@@ -58,6 +58,7 @@ type KalmOperatorConfigReconciler struct {
 	Log    logr.Logger
 	Scheme *runtime.Scheme
 	Reader client.Reader
+	Ctx    context.Context
 }
 
 //go:generate mkdir -p tmp
@@ -124,10 +125,11 @@ func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	config := &configs.Items[0]
 
 	err := r.reconcileResources(config, ctx, log)
-
 	if err == retryLaterErr {
 		r.Log.Info("Dependency not ready, retry after 5 seconds")
 		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+	} else if err != nil {
+		r.Log.Info("reconcileResources fail", "error", err)
 	}
 
 	return ctrl.Result{}, err
@@ -244,21 +246,65 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 			return err
 		}
 
-		if err := r.reconcileKalmController(ctx, config); err != nil {
+		if err := r.reconcileKalmController(config); err != nil {
+			r.Log.Info("reconcileKalmController fail", "error", err)
 			return err
 		}
 	}
 
-	if err := r.reconcileKalmDashboard(config, ctx, log); err != nil {
+	if err := r.reconcileKalmDashboard(config); err != nil {
+		r.Log.Info("reconcileKalmDashboard fail", "error", err)
 		return err
 	}
 
 	isLocalMode := config.Spec.KalmType == "local"
 	if isLocalMode {
-		if err := r.reconcileDefaultTenantForLocalMode(ctx); err != nil {
+		if err := r.reconcileDefaultTenantForLocalMode(); err != nil {
+			r.Log.Info("reconcileDefaultTenantForLocalMode fail", "error", err)
 			return err
 		}
+	} else {
+		if err := r.reconcileDefaultTenantForSaaSMode(); err != nil {
+			r.Log.Info("reconcileDefaultTenantForSaaSMode fail", "error", err)
+			return err
+		}
+	}
 
+	baseDNSDomain := config.Spec.BaseDNSDomain
+	if baseDNSDomain != "" {
+		if err := r.reconcileACMEServer(baseDNSDomain); err != nil {
+			r.Log.Info("reconcileACMEServer fail", "error", err)
+			return err
+		}
+	}
+
+	baseAppDomain := config.Spec.BaseAppDomain
+	if baseAppDomain != "" {
+		// baseDNSDomain exist -> ACMEServer ok -> so we can apply for wildcard cert
+		// maybe a more strict check on kalmoperatorconfig for SaaS mode is a better way to simplify the logic
+		applyForWildcardCert := baseDNSDomain != ""
+
+		if err := r.reconcileHttpsCertForDomain(baseAppDomain, applyForWildcardCert); err != nil {
+			r.Log.Info("reconcileHttpsCertForDomain fail", "error", err)
+			return err
+		}
+	}
+
+	cloudflareConfig := config.Spec.CloudflareConfig
+	if cloudflareConfig != nil {
+		if err := r.reconcileDNSRecords(config); err != nil {
+			r.Log.Info("reconcileDNSRecords fail", "error", err)
+			return err
+		}
+	} else {
+		r.Log.Info("cloudflareConfig not set, reconcileDNSRecords() skipped")
+	}
+
+	if !isLocalMode {
+		if err := r.reconcileAccessTokenForSaaS(config); err != nil {
+			r.Log.Info("reconcileAccessTokenForSaaS fail", "error", err)
+			return err
+		}
 	}
 
 	return nil
