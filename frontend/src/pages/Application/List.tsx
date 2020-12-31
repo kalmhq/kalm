@@ -371,7 +371,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   }
 
   private renderGrid = () => {
-    const { applications, componentsMap, canEditNamespace, canViewNamespace } = this.props;
+    const { applications, componentsMap, canEditNamespace, canViewNamespace, auth } = this.props;
 
     const filteredApps = applications.filter((app) => {
       return canViewNamespace(app.name) || canEditNamespace(app.name);
@@ -383,6 +383,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
         <Grid key={index} item sm={6} md={4} lg={3}>
           <ApplicationCard
             application={app}
+            tenant={auth.tenant}
             componentsMap={componentsMap}
             httpRoutes={applicationRoutes}
             confirmDelete={this.confirmDelete}

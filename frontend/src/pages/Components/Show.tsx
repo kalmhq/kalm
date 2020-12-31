@@ -1,4 +1,7 @@
 import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { deleteComponentAction } from "actions/component";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { api } from "api";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
@@ -13,13 +16,10 @@ import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { ComponentLikePort, WorkloadType } from "types/componentTemplate";
 import { Expansion } from "widgets/expansion";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { Body, H6 } from "widgets/Label";
 import { Namespaces } from "widgets/Namespaces";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
-import { api } from "api";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
-import { deleteComponentAction } from "actions/component";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -171,6 +171,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
       <Expansion title="pods" defaultUnfold>
         <PodsTable
           activeNamespaceName={activeNamespaceName}
+          component={component}
           pods={component.pods}
           workloadType={component.workloadType as WorkloadType}
           canEdit={canEditNamespace(activeNamespaceName)}

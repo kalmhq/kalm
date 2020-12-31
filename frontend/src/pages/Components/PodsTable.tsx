@@ -5,11 +5,12 @@ import { setErrorNotificationAction, setSuccessNotificationAction } from "action
 import { blinkTopProgressAction } from "actions/settings";
 import { api } from "api";
 import { getPodLogQuery } from "pages/Application/Log";
+import { PodCPUChart, PodMemoryChart } from "pages/Components/Chart";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { PodStatus } from "types/application";
+import { ApplicationComponentDetails, PodStatus } from "types/application";
 import { WorkloadType } from "types/componentTemplate";
 import { formatTimeDistance } from "utils/date";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
@@ -17,7 +18,6 @@ import { KalmConsoleIcon, KalmLogIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { DeleteButtonWithConfirmPopover, IconWithPopover } from "widgets/IconWithPopover";
 import { KRTable } from "widgets/KRTable";
-import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -30,6 +30,7 @@ const mapStateToProps = (state: RootState) => {
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   activeNamespaceName: string;
+  component: ApplicationComponentDetails;
   workloadType: WorkloadType;
   pods: PodStatus[];
   canEdit?: boolean;
@@ -64,11 +65,13 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
   };
 
   private renderPodCPU = (pod: PodStatus) => {
-    return <SmallCPULineChart data={pod.metrics.cpu!} />;
+    // return <SmallCPULineChart data={pod.metrics.cpu!} />;
+    return <PodCPUChart pod={pod} component={this.props.component} />;
   };
 
   private renderPodMemory = (pod: PodStatus) => {
-    return <SmallMemoryLineChart data={pod.metrics.memory!} />;
+    return <PodMemoryChart pod={pod} component={this.props.component} />;
+    // return <SmallMemoryLineChart data={pod.metrics.memory!} />;
   };
 
   private renderPodActions = (pod: PodStatus) => {
