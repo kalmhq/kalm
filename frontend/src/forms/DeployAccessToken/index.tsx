@@ -88,7 +88,7 @@ const DeployAccessTokenFormRaw: React.FC<Props> = (props) => {
       onSubmit={onSubmit}
       keepDirtyOnReinitialize
       render={({ handleSubmit, values }: FormRenderProps) => (
-        <form onSubmit={handleSubmit} id="deployKey-form">
+        <form onSubmit={handleSubmit} id="webhook-form">
           <Prompt />
           <KPanel>
             <Box p={2}>
@@ -153,7 +153,7 @@ const DeployAccessTokenFormRaw: React.FC<Props> = (props) => {
           </FormSpy>
 
           <Box mt={2}>
-            <SubmitButton id="save-deployKey-button">Create Deploy Key</SubmitButton>
+            <SubmitButton id="save-webhook-button">Create webhook</SubmitButton>
           </Box>
 
           <FormDataPreview />

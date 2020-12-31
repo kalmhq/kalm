@@ -22,7 +22,7 @@ class DeployAccessTokenNewPageRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
     await dispatch(createDeployAccessTokenAction(config));
 
-    dispatch(setSuccessNotificationAction("Create Deploy key Successfully"));
+    dispatch(setSuccessNotificationAction("Create Webhook Successfully"));
     dispatch(push("/webhooks/keys/" + config.name));
 
     return;
@@ -30,7 +30,7 @@ class DeployAccessTokenNewPageRaw extends React.PureComponent<Props, State> {
 
   public render() {
     return (
-      <BasePage secondHeaderRight={"New Deploy Key"}>
+      <BasePage secondHeaderRight={"New Webhook"}>
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item md={8}>

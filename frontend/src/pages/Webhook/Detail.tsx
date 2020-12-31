@@ -16,15 +16,15 @@ import {
   DeployAccessTokenScopeComponent,
   DeployAccessTokenScopeNamespace,
 } from "types/deployAccessToken";
+import { CodeBlock } from "widgets/CodeBlock";
 import { CopyIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle2 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
-import { RichEditor } from "widgets/RichEditor";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
-import { CodeBlock } from "widgets/CodeBlock";
+import { RichEditor } from "widgets/RichEditor";
 
 const TAB_CURL = "curl";
 const TAB_GITHUB_ACTION = "Github Action";
@@ -365,7 +365,7 @@ workflows:
         <BasePage>
           <Box p={2}>
             <ResourceNotFound
-              text={`Deploy key ${match.params.name} not found.`}
+              text={`Webhook ${match.params.name} not found.`}
               redirect={`/applications`}
               redirectText="Go back to Apps List"
             ></ResourceNotFound>
