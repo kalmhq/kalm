@@ -288,14 +288,18 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                   </Box>
                 );
               })}
-              <Divider />
-              <MenuItem
-                onClick={() => {
-                  window.open(newTenantUrl, "_blank");
-                }}
-              >
-                Create New Kalm
-              </MenuItem>
+              {newTenantUrl.length > 0 && (
+                <>
+                  <Divider />
+                  <MenuItem
+                    onClick={() => {
+                      window.open(newTenantUrl, "_blank");
+                    }}
+                  >
+                    Create New Kalm
+                  </MenuItem>
+                </>
+              )}
             </Menu>
           </>
         ) : (
