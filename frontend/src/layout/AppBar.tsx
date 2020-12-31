@@ -288,7 +288,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                   </Box>
                 );
               })}
-              {newTenantUrl.length > 0 && (
+              {newTenantUrl && newTenantUrl.length > 0 && (
                 <>
                   <Divider />
                   <MenuItem
