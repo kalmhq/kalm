@@ -41,8 +41,9 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
   }
 
   private openEditDialog = (file: PreInjectedFile, index: number) => {
-    const { dispatch } = this.props;
+    const { dispatch, fields } = this.props;
     this.setState({ editingFileIndex: index, fileContentValue: file.content });
+    fields.update(index, { ...file, mountPathTmp: file.mountPath });
     dispatch(openDialogAction(UpdateContentDialogID));
   };
 

@@ -13,15 +13,13 @@
 
 # ns
 - op: add
-  path: /webhooks/14/objectSelector
-  value:
-    matchExpressions:
-      - { key: tenant, operator: Exists }
-- op: add
   path: /webhooks/14/namespaceSelector
   value:
     matchLabels:
       kalm-enabled: "true"
+    matchExpressions:
+      - { key: tenant, operator: Exists }
+      - { key: kalm-control-plane, operator: DoesNotExist }
 # pod
 - op: add
   path: /webhooks/15/objectSelector
@@ -33,6 +31,8 @@
   value:
     matchLabels:
       kalm-enabled: "true"
+    matchExpressions:
+      - { key: kalm-control-plane, operator: DoesNotExist }
 # pvc
 - op: add
   path: /webhooks/16/objectSelector
@@ -44,6 +44,8 @@
   value:
     matchLabels:
       kalm-enabled: "true"
+    matchExpressions:
+      - { key: kalm-control-plane, operator: DoesNotExist }
 # svc
 - op: add
   path: /webhooks/17/objectSelector
@@ -55,3 +57,5 @@
   value:
     matchLabels:
       kalm-enabled: "true"
+    matchExpressions:
+      - { key: kalm-control-plane, operator: DoesNotExist }

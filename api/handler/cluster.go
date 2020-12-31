@@ -201,7 +201,7 @@ func (h *ApiHandler) handleExtraInfo(c echo.Context) error {
 
 	var mode string
 
-	if v1alpha1.GetEnvKalmIsInLocalMode() == "true" {
+	if h.IsLocalMode {
 		mode = "local"
 	} else {
 		mode = "multiple-tenancy"

@@ -3,6 +3,9 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"testing"
+
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	appsV1 "k8s.io/api/apps/v1"
@@ -13,7 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"testing"
 )
 
 type ComponentControllerSuite struct {
@@ -678,4 +680,15 @@ func genPVWithClaimRef(pvc coreV1.PersistentVolumeClaim) coreV1.PersistentVolume
 	}
 
 	return pv
+}
+
+func TestRegexSplit(t *testing.T) {
+	command := "-abc \n --c 3 --detf=4\t\n--efd=313"
+
+	space := regexp.MustCompile(`\s+`)
+	parts := space.Split(command, -1)
+
+	if len(parts) != 5 {
+		t.Fail()
+	}
 }
