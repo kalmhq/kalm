@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -1151,7 +1152,11 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *corev1.
 	}
 
 	if component.Spec.Command != "" {
-		if strings.Contains(component.Spec.Command, " ") {
+		if strings.HasPrefix(component.Spec.Command, "-") {
+			space := regexp.MustCompile(`\s+`)
+			parts := space.Split(component.Spec.Command, -1)
+			mainContainer.Args = parts
+		} else if strings.Contains(component.Spec.Command, " ") {
 			mainContainer.Command = []string{"sh"}
 			mainContainer.Args = []string{"-c", component.Spec.Command}
 		} else {

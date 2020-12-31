@@ -50,6 +50,10 @@ var _ webhook.Defaulter = &Component{}
 func (r *Component) Default() {
 	componentlog.Info("default", "ns", r.Namespace, "name", r.Name)
 
+	if r.Spec.Command != "" {
+		r.Spec.Command = strings.TrimSpace(r.Spec.Command)
+	}
+
 	if r.Spec.WorkloadType == "" {
 		r.Spec.WorkloadType = WorkloadTypeServer
 	}
