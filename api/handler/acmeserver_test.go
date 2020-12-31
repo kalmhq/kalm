@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/kalmhq/kalm/api/resources"
-	"github.com/kalmhq/kalm/controller/controllers"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -31,7 +31,7 @@ func (suite *ACMEServerHandlerTestSuite) TestGetEmpty() {
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodGet,
-    	Path:      "/v1alpha1/acmeserver",
+		Path:      "/v1alpha1/acmeserver",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsUnauthorizedError(rec, "view", "cluster")
 		},
@@ -66,7 +66,7 @@ func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 			rec.BodyAsJSON(&res)
 
 			suite.Equal(201, rec.Code)
-			suite.Equal(controllers.ACMEServerName, res.Name)
+			suite.Equal(v1alpha1.ACMEServerName, res.Name)
 		},
 	})
 
@@ -85,7 +85,7 @@ func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 			var acmeResp resources.ACMEServerResp
 			rec.BodyAsJSON(&acmeResp)
 
-			suite.Equal(controllers.ACMEServerName, acmeResp.Name)
+			suite.Equal(v1alpha1.ACMEServerName, acmeResp.Name)
 			suite.Equal(acmeDomain, acmeResp.ACMEDomain)
 			suite.Equal(nsDomain, acmeResp.NSDomain)
 			suite.Equal("", acmeResp.IPForNameServer)

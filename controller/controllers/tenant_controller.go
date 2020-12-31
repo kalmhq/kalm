@@ -68,8 +68,16 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	} else {
 		// tenant being deleted, clean child resources
 		if utils.ContainsString(tenant.Finalizers, TenantFinalizerName) {
-			if err := r.deleteExternalResources(tenant); err != nil {
-				return ctrl.Result{}, err
+
+			// only clean sub-resource if not global tenant
+
+			if tenantName == v1alpha1.DefaultGlobalTenantName ||
+				tenantName == v1alpha1.DefaultSystemTenantName {
+				logger.Info("deleting global tenant, clean sub-resource skipped cause its too dangerous")
+			} else {
+				if err := r.deleteExternalResources(tenant); err != nil {
+					return ctrl.Result{}, err
+				}
 			}
 
 			tenant.Finalizers = utils.RemoveString(tenant.Finalizers, TenantFinalizerName)

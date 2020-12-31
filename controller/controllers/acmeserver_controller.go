@@ -39,6 +39,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
 
@@ -50,8 +51,6 @@ type ACMEServerReconciler struct {
 
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=acmeservers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=acmeservers/status,verbs=get;update;patch
-
-const ACMEServerName = "acme-server"
 
 func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("acmeserver", req.NamespacedName)
@@ -239,7 +238,7 @@ func getSVCNameForACMEDNS() string {
 	if os.Getenv("ACME_DNS_HOST") != "" {
 		host = os.Getenv("ACME_DNS_HOST")
 	} else {
-		host = fmt.Sprintf("%s.%s.svc.cluster.local", ACMEServerName, KalmSystemNamespace)
+		host = fmt.Sprintf("%s.%s.svc.cluster.local", v1alpha1.ACMEServerName, KalmSystemNamespace)
 	}
 
 	return host
@@ -328,7 +327,7 @@ type ACMEDNSComponentMapper struct {
 }
 
 func (A ACMEDNSComponentMapper) Map(object handler.MapObject) []reconcile.Request {
-	if object.Meta.GetName() != ACMEServerName {
+	if object.Meta.GetName() != v1alpha1.ACMEServerName {
 		return nil
 	}
 
@@ -455,7 +454,7 @@ func trimPrefixOfWildcardDomains(domains []string) []string {
 }
 
 func GetNameForLoadBalanceServiceForNSDomain() string {
-	return "lb-svc-" + ACMEServerName
+	return "lb-svc-" + v1alpha1.ACMEServerName
 }
 
 func (r *ACMEServerReconciler) reconcileLoadBalanceServiceForNSDomain(acmeServer corev1alpha1.ACMEServer) error {
@@ -475,7 +474,7 @@ func (r *ACMEServerReconciler) reconcileLoadBalanceServiceForNSDomain(acmeServer
 				},
 			},
 			Selector: map[string]string{
-				"app": ACMEServerName,
+				"app": v1alpha1.ACMEServerName,
 			},
 		},
 	}
@@ -658,9 +657,9 @@ func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.AC
 	expectedComp := corev1alpha1.Component{
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: KalmSystemNamespace,
-			Name:      ACMEServerName,
+			Name:      v1alpha1.ACMEServerName,
 			Labels: map[string]string{
-				"app": ACMEServerName,
+				"app": v1alpha1.ACMEServerName,
 			},
 		},
 		Spec: corev1alpha1.ComponentSpec{
@@ -762,7 +761,7 @@ func (r *ACMEServerReconciler) installACMEServer(cert corev1alpha1.HttpsCert) er
 
 	expectedACMEServer := corev1alpha1.ACMEServer{
 		ObjectMeta: ctrl.ObjectMeta{
-			Name: ACMEServerName,
+			Name: v1alpha1.ACMEServerName,
 		},
 		Spec: corev1alpha1.ACMEServerSpec{
 			ACMEDomain: acmeDomain,

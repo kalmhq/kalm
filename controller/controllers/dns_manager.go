@@ -18,7 +18,7 @@ type DNSRecord struct {
 type DNSManager interface {
 	CreateDNSRecord(dnsType v1alpha1.DNSType, name, content string) error
 	DeleteDNSRecord(dnsType v1alpha1.DNSType, name string) error
-	UpdateDNSRecord(dnsType v1alpha1.DNSType, name, content string) error
+	UpsertDNSRecord(dnsType v1alpha1.DNSType, name, content string) error
 	GetDNSRecords(domain string) ([]DNSRecord, error)
 }
 
@@ -93,7 +93,7 @@ func (m CloudflareDNSManager) DeleteDNSRecord(dnsType v1alpha1.DNSType, domain s
 	return nil
 }
 
-func (m CloudflareDNSManager) UpdateDNSRecord(dnsType v1alpha1.DNSType, name, content string) error {
+func (m CloudflareDNSManager) UpsertDNSRecord(dnsType v1alpha1.DNSType, name, content string) error {
 	m.DeleteDNSRecord(dnsType, name)
 
 	return m.CreateDNSRecord(dnsType, name, content)

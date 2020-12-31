@@ -41,7 +41,7 @@ import Web from "@material-ui/icons/Web";
 import Lock from "@material-ui/icons/Lock";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
-import { getDisplayName } from "permission/utils";
+// import { getDisplayName } from "permission/utils";
 import React from "react";
 import PlayArrow from "@material-ui/icons/PlayArrow";
 
@@ -146,19 +146,24 @@ const getClassNameByColorName = (props: ColorIconsProps, defaultColor?: string) 
   return className;
 };
 
-const wrapperIcon = (WrappedIcon: React.ComponentType<any>) => {
-  const KIcon: React.ComponentType<ColorIconsProps> = class extends React.Component<ColorIconsProps> {
-    render() {
-      const { fontSize, style } = this.props;
-      const className = getClassNameByColorName(this.props, "default");
-      return <WrappedIcon {...this.props} className={className} fontSize={fontSize} style={style} />;
-    }
-  };
-  KIcon.displayName = `KIcon(${getDisplayName(WrappedIcon)})`;
-  return withStyles(styles)(KIcon);
-};
+// const wrapperIcon = (WrappedIcon: React.ComponentType<any>) => {
+//   const KIcon: React.ComponentType<ColorIconsProps> = class extends React.Component<ColorIconsProps> {
+//     render() {
+//       const { fontSize, style } = this.props;
+//       const className = getClassNameByColorName(this.props, "default");
+//       return <WrappedIcon {...this.props} className={className} fontSize={fontSize} style={style} />;
+//     }
+//   };
+//   KIcon.displayName = `KIcon(${getDisplayName(WrappedIcon)})`;
+//   return withStyles(styles)(KIcon);
+// };
 
-export const UsageIcon = wrapperIcon(UsageIconRaw);
+// export getDisplayName UsageIcon = wrapperIcon(UsageIconRaw);
+export const UsageIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props, "default");
+  return <UsageIconRaw className={className} fontSize={fontSize} style={style} />;
+});
 
 export const HelpIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;

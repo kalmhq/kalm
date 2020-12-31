@@ -151,6 +151,7 @@ type HttpRouteStatus struct {
 // +kubebuilder:printcolumn:name="Tenant",type="string",JSONPath=".metadata.labels.tenant"
 // +kubebuilder:printcolumn:name="Hosts",type="string",JSONPath=".spec.hosts"
 // +kubebuilder:printcolumn:name="Paths",type="string",JSONPath=".spec.paths"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // HttpRoute is the Schema for the httproutes API
 type HttpRoute struct {

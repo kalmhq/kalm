@@ -24,6 +24,7 @@ type DNSType string
 const (
 	DNSTypeCNAME = "CNAME"
 	DNSTypeA     = "A"
+	DNSTypeNS    = "NS"
 )
 
 type DomainSpec struct {

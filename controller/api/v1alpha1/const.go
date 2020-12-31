@@ -17,6 +17,8 @@ const (
 	//   globalTenant used for local mode user workload
 	DefaultSystemTenantName = "global"
 	DefaultGlobalTenantName = "global"
+
+	ACMEServerName = "acme-server"
 )
 
 // Error

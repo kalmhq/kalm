@@ -21,12 +21,12 @@ import { ValidatorInjectedFilePath } from "../validator";
 interface State {
   editingFileIndex: number;
   fileContentValue: string;
-  activeIndex: number;
+  latestIndex: number;
 }
 
 interface Props extends FieldArrayRenderProps<PreInjectedFile, any>, TDispatchProp {}
 
-const updateContentDialogID = "update-content-dialog";
+const UpdateContentDialogID = "update-content-dialog";
 
 class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
@@ -36,42 +36,34 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     this.state = {
       editingFileIndex: -1,
       fileContentValue: "",
-      activeIndex: fields.value ? fields.value.length : 0,
+      latestIndex: fields.value ? fields.value.length : 0,
     };
   }
 
-  private privateOpenEditDialog = (file: PreInjectedFile, index: number) => {
-    const { dispatch } = this.props;
+  private openEditDialog = (file: PreInjectedFile, index: number) => {
+    const { dispatch, fields } = this.props;
     this.setState({ editingFileIndex: index, fileContentValue: file.content });
-    dispatch(openDialogAction(updateContentDialogID));
+    fields.update(index, { ...file, mountPathTmp: file.mountPath });
+    dispatch(openDialogAction(UpdateContentDialogID));
   };
 
-  private handleDiscard(isInvalidFile: boolean | undefined) {
+  private handleDiscard() {
     const { fields, dispatch } = this.props;
     const { editingFileIndex } = this.state;
-    if (
-      !fields.value ||
-      !fields.value[editingFileIndex] ||
-      !fields.value[editingFileIndex].mountPath ||
-      !fields.value[editingFileIndex].content
-    ) {
+    if (fields.value && fields.value[editingFileIndex] && !fields.value[editingFileIndex].mountPath) {
       fields.remove(editingFileIndex);
     }
-    dispatch(closeDialogAction(updateContentDialogID));
+    dispatch(closeDialogAction(UpdateContentDialogID));
   }
 
-  private handleSave(isInvalidFile: boolean | undefined, file: any, mountPathTmp: string) {
+  private handleSave(file: any, mountPathTmp: string) {
     const { fields, dispatch } = this.props;
-    const { editingFileIndex, activeIndex, fileContentValue } = this.state;
-    if (isInvalidFile) {
-      return;
-    }
-
+    const { editingFileIndex, latestIndex, fileContentValue } = this.state;
     fields.update(editingFileIndex, { ...file, content: fileContentValue, mountPath: mountPathTmp });
-    if (editingFileIndex === activeIndex) {
-      this.setState({ activeIndex: activeIndex + 1 });
+    if (editingFileIndex === latestIndex) {
+      this.setState({ latestIndex: latestIndex + 1 });
     }
-    dispatch(closeDialogAction(updateContentDialogID));
+    dispatch(closeDialogAction(UpdateContentDialogID));
   }
 
   private handleChangeEditor(value: string) {
@@ -80,53 +72,45 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
 
   private handleRemove(index: number) {
     const { fields } = this.props;
-    const { activeIndex } = this.state;
+    const { latestIndex } = this.state;
     fields.remove(index);
-    this.setState({ activeIndex: activeIndex - 1 });
+    this.setState({ latestIndex: latestIndex - 1 });
   }
 
   private handlePush() {
-    const { activeIndex } = this.state;
+    const { latestIndex } = this.state;
     const { fields } = this.props;
-    const initFile = { readonly: true, content: "", mountPath: "" };
-    if (!fields.value || fields.value.length <= activeIndex) {
-      fields.push(initFile);
-    } else {
-      fields.pop();
-      fields.push(initFile);
-    }
-    this.privateOpenEditDialog(initFile, activeIndex);
+    const initFile = { readonly: false, content: "", mountPath: "" };
+    fields.push(initFile);
+    this.openEditDialog(initFile, latestIndex);
   }
 
   private renderEditContentDialog = () => {
-    const { fields } = this.props;
-    const syncErrors = fields.error as { [key: string]: string }[] | undefined;
+    const {
+      fields,
+      meta: { error },
+    } = this.props;
     const { editingFileIndex, fileContentValue } = this.state;
     const file = editingFileIndex > -1 && fields.value ? fields.value[editingFileIndex] : null;
-    const mountPathTmp = file ? (file.mountPath ? file.mountPath : file.mountPathTmp || "") : "";
-
-    const isInvalidFile =
-      !mountPathTmp ||
-      !fileContentValue ||
-      (syncErrors && syncErrors[editingFileIndex] && !!syncErrors[editingFileIndex].mountPathTmp);
+    const mountPathTmp = file ? file.mountPath || file.mountPathTmp || "" : "";
 
     return (
       <ControlledDialog
-        dialogID={updateContentDialogID}
+        dialogID={UpdateContentDialogID}
         title="Edit file content"
         dialogProps={{
           fullWidth: true,
           maxWidth: "sm",
         }}
-        closeCallback={this.handleDiscard.bind(this, isInvalidFile)}
+        closeCallback={this.handleDiscard.bind(this)}
         actions={
           <>
-            <Button onClick={this.handleDiscard.bind(this, isInvalidFile)} color="primary">
+            <Button onClick={this.handleDiscard.bind(this)} color="primary">
               Discard
             </Button>
             <Button
-              disabled={isInvalidFile}
-              onClick={this.handleSave.bind(this, isInvalidFile, file, mountPathTmp)}
+              disabled={error && error[editingFileIndex]}
+              onClick={this.handleSave.bind(this, file, mountPathTmp)}
               color="primary"
             >
               Save
@@ -150,6 +134,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
             <Field
               name={`preInjectedFiles.${editingFileIndex}.readonly`}
               component={FinalBoolCheckboxRender}
+              type="checkbox"
               label="Read Only"
             />
           </Grid>
@@ -189,7 +174,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
                   tooltipPlacement="top"
                   tooltipTitle="Edit"
                   aria-label="edit"
-                  onClick={this.privateOpenEditDialog.bind(this, injectedFile, index)}
+                  onClick={this.openEditDialog.bind(this, injectedFile, index)}
                 >
                   <EditIcon />
                 </IconButtonWithTooltip>

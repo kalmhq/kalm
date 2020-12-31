@@ -80,6 +80,7 @@ type HttpsCertCondition struct {
 // +kubebuilder:printcolumn:name="Tenant",type="string",JSONPath=".metadata.labels.tenant"
 // +kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.conditions[0].status`
 // +kubebuilder:printcolumn:name="Message",type=string,JSONPath=`.status.conditions[0].message`
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // HttpsCert is the Schema for the httpscerts API
 type HttpsCert struct {

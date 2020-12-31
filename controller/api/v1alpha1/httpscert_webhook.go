@@ -82,6 +82,11 @@ func (r *HttpsCert) ValidateCreate() error {
 		return nil
 	}
 
+	if tenantName == DefaultGlobalTenantName ||
+		tenantName == DefaultSystemTenantName {
+		return nil
+	}
+
 	//todo how to tell if this is dryRun?
 	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Create, false)
 	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
@@ -113,6 +118,11 @@ func (r *HttpsCert) ValidateDelete() error {
 
 	tenantName := r.Labels[TenantNameLabelKey]
 	if tenantName == "" {
+		return nil
+	}
+
+	if tenantName == DefaultGlobalTenantName ||
+		tenantName == DefaultSystemTenantName {
 		return nil
 	}
 

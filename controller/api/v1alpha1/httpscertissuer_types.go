@@ -83,6 +83,7 @@ type HttpsCertIssuer struct {
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="ok",type="boolean",JSONPath=".status.ok"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // HttpsCertIssuerList contains a list of HttpsCertIssuer
 type HttpsCertIssuerList struct {

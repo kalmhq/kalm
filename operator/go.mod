@@ -8,6 +8,7 @@ require (
 	github.com/kalmhq/kalm/controller v0.0.0-20200722131031-2336d7eaf4c9
 	github.com/prometheus/prometheus v1.8.2
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
+	gotest.tools v2.2.0+incompatible
 	istio.io/api v0.0.0-20200722065756-9d7f2a3afc5b
 	istio.io/client-go v0.0.0-20200717004237-1af75184beba
 	k8s.io/api v0.18.6
