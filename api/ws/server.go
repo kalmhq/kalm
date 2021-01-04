@@ -23,10 +23,10 @@ type WsHandler struct {
 	clientManager client.ClientManager
 	clientPool    *ClientPool
 	logger        *zap.Logger
-	isLocalMode   bool
+	KalmMode      v1alpha1.KalmMode
 }
 
-func NewWsHandler(clientManager client.ClientManager, isLocalMode bool) *WsHandler {
+func NewWsHandler(clientManager client.ClientManager, kalmMode v1alpha1.KalmMode) *WsHandler {
 	clientPool := NewClientPool()
 	go clientPool.run()
 
@@ -34,7 +34,7 @@ func NewWsHandler(clientManager client.ClientManager, isLocalMode bool) *WsHandl
 		clientManager: clientManager,
 		clientPool:    clientPool,
 		logger:        log.DefaultLogger(),
-		isLocalMode:   isLocalMode,
+		KalmMode:      kalmMode,
 	}
 }
 
@@ -59,13 +59,16 @@ func (h *WsHandler) Serve(c echo.Context) error {
 
 	clientInfo, err := h.clientManager.GetClientInfoFromContext(c)
 	if err == nil && clientInfo != nil {
-		if h.isLocalMode {
+		if h.KalmMode == v1alpha1.KalmModeLocal ||
+			h.KalmMode == v1alpha1.KalmModeBYOC {
+
 			if clientInfo.Tenant == "" {
 				clientInfo.Tenant = v1alpha1.DefaultGlobalTenantName
 			}
 			if len(clientInfo.Tenants) == 0 {
 				clientInfo.Tenants = []string{v1alpha1.DefaultGlobalTenantName}
 			}
+
 		}
 
 		clt.clientInfo = clientInfo

@@ -19,7 +19,7 @@ type Config struct {
 	KubernetesApiServerAddress    string
 	KubernetesApiServerCAFilePath string
 	KubeConfigPath                string
-	KalmType                      string
+	KalmMode                      string
 	ClusterBaseDNSDomain          string
 	ClusterBaseAppDomain          string
 	CorsAllowedOrigins            cli.StringSlice

@@ -22,20 +22,20 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func getKalmDashboardVersion(config *installv1alpha1.KalmOperatorConfig) string {
-	c := config.Spec.Dashboard
-	if c != nil {
-		if c.Version != nil && *c.Version != "" {
-			return *c.Version
+func getKalmDashboardVersion(configSpec installv1alpha1.KalmOperatorConfigSpec) string {
+	dashboardConfig := configSpec.Dashboard
+	if dashboardConfig != nil {
+		if dashboardConfig.Version != nil && *dashboardConfig.Version != "" {
+			return *dashboardConfig.Version
 		}
 	}
 
-	if config.Spec.Version != "" {
-		return config.Spec.Version
+	if configSpec.Version != "" {
+		return configSpec.Version
 	}
 
-	if config.Spec.KalmVersion != "" {
-		return config.Spec.KalmVersion
+	if configSpec.KalmVersion != "" {
+		return configSpec.KalmVersion
 	}
 
 	return "latest"
@@ -54,7 +54,7 @@ func getKalmDashboardCommand(config *installv1alpha1.KalmOperatorConfig) string 
 
 	if config.Spec.KalmType != "" {
 		sb.WriteString(" ")
-		sb.WriteString(fmt.Sprintf("--kalm-type=%s", config.Spec.KalmType))
+		sb.WriteString(fmt.Sprintf("--kalm-mode=%s", DecideKalmMode(config.Spec)))
 	}
 
 	if config.Spec.BaseAppDomain != "" {
@@ -108,9 +108,10 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installv1a
 		return err
 	}
 
-	isSaaSMode := config.Spec.KalmType != "local"
-	baseDashboardDomain := config.Spec.BaseDashboardDomain
-	if isSaaSMode && baseDashboardDomain != "" {
+	isSaaSMode := config.Spec.SaaSModeConfig != nil
+	isBYOCMode := config.Spec.BYOCModeConfig != nil
+
+	if isSaaSMode || isBYOCMode {
 		err := r.reconcileAccessForDashboard(config)
 		if err != nil {
 			r.Log.Info("reconcileAccessForDashboard fail", "error", err)
@@ -139,7 +140,7 @@ func (r *KalmOperatorConfigReconciler) reconcileDashboardComponent(config *insta
 		return r.Delete(context.Background(), &dashboard)
 	}
 
-	dashboardVersion := getKalmDashboardVersion(config)
+	dashboardVersion := getKalmDashboardVersion(config.Spec)
 	command := getKalmDashboardCommand(config)
 	envs := getKalmDashboardEnvs(config)
 
@@ -291,7 +292,18 @@ const (
 // - protectedEndpoint
 // - sso to kalm-SaaS
 func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(config *installv1alpha1.KalmOperatorConfig) error {
-	baseDomain := config.Spec.BaseDashboardDomain
+
+	var baseDomain string
+	var oidcIssuer *installv1alpha1.OIDCIssuerConfig
+
+	if config.Spec.SaaSModeConfig != nil {
+		baseDomain = config.Spec.SaaSModeConfig.BaseDashboardDomain
+		oidcIssuer = config.Spec.SaaSModeConfig.OIDCIssuer
+	} else if config.Spec.BYOCModeConfig != nil {
+		baseDomain = config.Spec.BYOCModeConfig.BaseDashboardDomain
+		oidcIssuer = config.Spec.BYOCModeConfig.OIDCIssuer
+	}
+
 	if baseDomain == "" {
 		return nil
 	}
@@ -311,7 +323,6 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(config *insta
 		return err
 	}
 
-	oidcIssuer := config.Spec.OIDCIssuer
 	if oidcIssuer != nil {
 		err := r.reconcileSSOForOIDCIssuer(oidcIssuer, baseDomain)
 		if err != nil {
@@ -324,47 +335,6 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(config *insta
 
 	return nil
 }
-
-// func (r *KalmOperatorConfigReconciler) reconcileHttpsCertForDashboard(baseDashboardDomain string) error {
-// 	certName := fmt.Sprintf("kalmoperator-dashboard-%s", keepOnlyLetters(baseDashboardDomain, "-"))
-// 	domains := []string{
-// 		baseDashboardDomain,
-// 		fmt.Sprintf("*.%s", baseDashboardDomain),
-// 	}
-
-// 	expectedCert := v1alpha1.HttpsCert{
-// 		ObjectMeta: metav1.ObjectMeta{
-// 			Name: certName,
-// 			Labels: map[string]string{
-// 				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultSystemTenantName,
-// 			},
-// 		},
-// 		Spec: v1alpha1.HttpsCertSpec{
-// 			HttpsCertIssuer: v1alpha1.DefaultDNS01IssuerName,
-// 			Domains:         domains,
-// 		},
-// 	}
-
-// 	var httpsCert v1alpha1.HttpsCert
-// 	var isNew bool
-
-// 	if err := r.Get(r.Ctx, client.ObjectKey{Name: expectedCert.Name}, &httpsCert); err != nil {
-// 		if errors.IsNotFound(err) {
-// 			isNew = true
-// 			httpsCert = expectedCert
-// 		} else {
-// 			return err
-// 		}
-// 	} else {
-// 		httpsCert.Spec = expectedCert.Spec
-// 	}
-
-// 	if isNew {
-// 		return r.Create(r.Ctx, &httpsCert)
-// 	} else {
-// 		return r.Update(r.Ctx, &httpsCert)
-// 	}
-// }
 
 func (r *KalmOperatorConfigReconciler) reconcileHttpRouteForDashboard(baseDashboardDomain string) error {
 	domains := []string{

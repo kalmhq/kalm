@@ -6,6 +6,7 @@ import (
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/api/ws"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 )
@@ -14,9 +15,10 @@ type ApiHandler struct {
 	resourceManager *resources.ResourceManager
 	clientManager   client.ClientManager
 	logger          *zap.Logger
-	IsLocalMode     bool
-	BaseAppDomain   string
-	BaseDNSDomain   string
+	// IsLocalMode     bool
+	KalmMode      v1alpha1.KalmMode
+	BaseAppDomain string
+	BaseDNSDomain string
 }
 
 func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
@@ -32,7 +34,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	e.GET("/policies", h.handlePolicies, h.GetUserMiddleware, h.RequireUserMiddleware)
 
 	// watch
-	wsHandler := ws.NewWsHandler(h.clientManager, h.IsLocalMode)
+	wsHandler := ws.NewWsHandler(h.clientManager, h.KalmMode)
 	e.GET("/ws", wsHandler.Serve)
 
 	// login
@@ -48,7 +50,8 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1.GET("/exec", h.execWebsocketHandler)
 
 	var gv1Alpha1WithAuth *echo.Group
-	if h.IsLocalMode {
+	if h.KalmMode == v1alpha1.KalmModeLocal {
+		//todo in local mode, all as global tenant?
 		gv1Alpha1WithAuth = gv1Alpha1.Group("", h.GetUserMiddleware, h.RequireUserMiddleware, h.SetTenantForLocalModeIfMissing)
 	} else {
 		gv1Alpha1WithAuth = gv1Alpha1.Group("", h.GetUserMiddleware, h.RequireUserMiddleware)
@@ -110,12 +113,12 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/settings", h.handleListSettings)
 }
 
-func NewApiHandler(clientManager client.ClientManager, isLocalMode bool, domainConfig config.BaseDomainConfig) *ApiHandler {
+func NewApiHandler(clientManager client.ClientManager, kalmMode string, domainConfig config.BaseDomainConfig) *ApiHandler {
 	return &ApiHandler{
 		clientManager:   clientManager,
 		logger:          log.DefaultLogger(),
 		resourceManager: resources.NewResourceManager(clientManager.GetDefaultClusterConfig(), log.DefaultLogger()),
-		IsLocalMode:     isLocalMode,
+		KalmMode:        v1alpha1.KalmMode(kalmMode),
 		BaseDNSDomain:   domainConfig.DNSDomain,
 		BaseAppDomain:   domainConfig.AppDomain,
 	}

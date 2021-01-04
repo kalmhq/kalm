@@ -84,11 +84,11 @@ func main() {
 				EnvVars:     []string{"KUBE_CONFIG_PATH"},
 			},
 			&cli.StringFlag{
-				Name:        "kalm-type",
+				Name:        "kalm-mode",
 				Usage:       "",
 				DefaultText: "saas",
-				Destination: &runningConfig.KalmType,
-				EnvVars:     []string{"KALM_TYPE"},
+				Destination: &runningConfig.KalmMode,
+				EnvVars:     []string{"KALM_MODE"},
 			},
 			&cli.StringFlag{
 				Name:        "base-dns-domain",
@@ -183,9 +183,8 @@ func startMainServer(runningConfig *config.Config, k8sClientConfig *rest.Config)
 		clientManager = client.NewStandardClientManager(k8sClientConfig)
 	}
 
-	isLocalMode := runningConfig.KalmType == "local"
+	apiHandler := handler.NewApiHandler(clientManager, runningConfig.KalmMode, runningConfig.DomainConfig())
 
-	apiHandler := handler.NewApiHandler(clientManager, isLocalMode, runningConfig.DomainConfig())
 	apiHandler.InstallMainRoutes(e)
 	apiHandler.InstallWebhookRoutes(e)
 
