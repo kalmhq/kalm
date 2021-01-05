@@ -312,12 +312,16 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 	}
 
 	if configSpec.SaaSModeConfig != nil {
-		if err := r.reconcileAccessTokenForSaaS(config); err != nil {
+		if err := r.reconcileRootAccessTokenForSaaS(); err != nil {
 			r.Log.Info("reconcileAccessTokenForSaaS fail", "error", err)
 			return err
 		}
 	} else if configSpec.BYOCModeConfig != nil {
-		//todo create accessToken & register in kalm-saas
+		//todo register in kalm-saas
+		if err := r.reconcileRootAccessTokenForBYOC(); err != nil {
+			r.Log.Info("reconcileRootAccessTokenForBYOC fail", "error", err)
+			return err
+		}
 	}
 
 	return nil
