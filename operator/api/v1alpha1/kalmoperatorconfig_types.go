@@ -42,16 +42,16 @@ type ControllerConfig struct {
 
 // KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
 type KalmOperatorConfigSpec struct {
-	SkipIstioInstallation          bool `json:"skipIstioInstallation,omitempty"`
-	SkipCertManagerInstallation    bool `json:"skipCertManagerInstallation,omitempty"`
-	SkipKalmControllerInstallation bool `json:"skipKalmControllerInstallation,omitempty"`
-	SkipKalmDashboardInstallation  bool `json:"skipKalmDashboardInstallation,omitempty"`
+	SkipIstioInstallation       bool `json:"skipIstioInstallation,omitempty"`
+	SkipCertManagerInstallation bool `json:"skipCertManagerInstallation,omitempty"`
+	// SkipKalmControllerInstallation bool `json:"skipKalmControllerInstallation,omitempty"`
+	SkipKalmDashboardInstallation bool `json:"skipKalmDashboardInstallation,omitempty"`
 
 	// deprecated, use Version instead
 	KalmVersion string `json:"kalmVersion,omitempty"`
 	Version     string `json:"version,omitempty"`
 
-	// deprecated, use Type instead
+	// deprecated
 	KalmType string `json:"kalmType,omitempty"`
 	// Type     v1alpha1.KalmType `json:"type,omitempty"`
 
@@ -79,11 +79,11 @@ type KalmOperatorConfigSpec struct {
 }
 
 type BYOCModeConfig struct {
-	// like: us-west1-1.kalm.dev
+	// like: foobar.byoc.kalm.dev
 	BaseDashboardDomain string `json:"baseDashboardDomain,omitempty"`
-	// like: us-west1-1.clusters.kalm-apps.com
+	// like: foobar.byoc-clusters.kalm-apps.com
 	BaseAppDomain string `json:"baseAppDomain,omitempty"`
-	// like: us-west1-1.clusters.kalm-dns.com
+	// like: foobar.byoc-clusters.kalm-dns.com
 	BaseDNSDomain string `json:"baseDNSDomain,omitempty"`
 
 	OIDCIssuer *OIDCIssuerConfig `json:"oidcIssuer,omitempty"`
@@ -102,7 +102,6 @@ type SaaSModeConfig struct {
 	CloudflareConfig *CloudflareConfig `json:"cloudflareConfig,omitempty"`
 }
 
-//todo
 type LocalModeConfig struct {
 }
 

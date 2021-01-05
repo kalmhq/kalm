@@ -71,7 +71,7 @@ type SingleSignOnConfigSpec struct {
 	IDTokenExpirySeconds *uint32 `json:"idTokenExpirySeconds,omitempty"`
 
 	// +optional
-	IsKalmInLocalMode bool `json:"isKalmInLocalMode"`
+	KalmMode string `json:"kalmMode"`
 }
 
 // SingleSignOnConfigStatus defines the observed state of SingleSignOnConfig

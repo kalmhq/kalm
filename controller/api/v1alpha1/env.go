@@ -2,12 +2,12 @@ package v1alpha1
 
 import "os"
 
-func GetEnvKalmIsInLocalMode() string {
-	return os.Getenv(ENV_KALM_IS_IN_LOCAL_MODE)
-}
-
 func GetEnvPhysicalClusterID() string {
 	return os.Getenv(ENV_KALM_PHYSICAL_CLUSTER_ID)
+}
+
+func GetEnvKalmMode() string {
+	return os.Getenv(ENV_KALM_MODE)
 }
 
 func GetEnvKalmBaseDNSDomain() string {

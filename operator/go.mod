@@ -11,6 +11,7 @@ require (
 	gotest.tools v2.2.0+incompatible
 	istio.io/api v0.0.0-20200722065756-9d7f2a3afc5b
 	istio.io/client-go v0.0.0-20200717004237-1af75184beba
+	istio.io/pkg v0.0.0-20201203133420-4a552406785d
 	k8s.io/api v0.18.6
 	k8s.io/apiextensions-apiserver v0.18.6
 	k8s.io/apimachinery v0.18.6

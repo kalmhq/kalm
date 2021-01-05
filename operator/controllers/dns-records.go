@@ -10,20 +10,22 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (r *KalmOperatorConfigReconciler) reconcileDNSRecords(config *installv1alpha1.KalmOperatorConfig) error {
+func (r *KalmOperatorConfigReconciler) reconcileDNSRecords(configSpec installv1alpha1.KalmOperatorConfigSpec) error {
 	// currently only reconcile for SaaS mode
-	if config.Spec.KalmType == "local" {
-		r.Log.Info("kalmType is local, reconcileDNSRecords skipped")
+	if configSpec.SaaSModeConfig == nil {
+		r.Log.Info("kalmMode is not saas, reconcileDNSRecords skipped")
 		return nil
 	}
 
-	cloudflareConfig := config.Spec.CloudflareConfig
+	saasModeConfig := configSpec.SaaSModeConfig
+
+	cloudflareConfig := saasModeConfig.CloudflareConfig
 	if cloudflareConfig == nil {
 		r.Log.Info("cloudflareConfig not exist, reconcileDNSRecords skipped")
 		return nil
 	}
 
-	baseDNSDomain := config.Spec.BaseDNSDomain
+	baseDNSDomain := saasModeConfig.BaseDNSDomain
 	if baseDNSDomain == "" {
 		r.Log.Info("baseDNSDomain is not set, reconcileDNSRecords skipped")
 		return nil
@@ -74,7 +76,7 @@ func (r *KalmOperatorConfigReconciler) reconcileDNSRecords(config *installv1alph
 	//
 	// CNAME, _acme-challenge.tmp.clusters.kalm-apps.com → xxx.acme.tmp.clusters.kalm-dns.com
 	// A,                 (*.)tmp.clusters.kalm-apps.com → ClusterIP (2, with and without prefix: *.)
-	baseAppDomain := config.Spec.BaseAppDomain
+	baseAppDomain := saasModeConfig.BaseAppDomain
 	if baseAppDomain != "" {
 		// find if acme-server has generated domain record
 		acmeDomain := r.getOperatorReconciledDNS01HttpscertDomain(baseAppDomain)

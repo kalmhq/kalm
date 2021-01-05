@@ -63,7 +63,8 @@ func getOauth2Config() *oauth2.Config {
 	clientSecret = os.Getenv("KALM_OIDC_CLIENT_SECRET")
 	oidcProviderUrl := os.Getenv("KALM_OIDC_PROVIDER_URL")
 	authProxyURL = os.Getenv("KALM_OIDC_AUTH_PROXY_URL")
-	isKalmInLocalMode := os.Getenv(v1alpha1.ENV_KALM_IS_IN_LOCAL_MODE) == "true"
+	// isKalmInLocalMode := os.Getenv(v1alpha1.ENV_KALM_MODE) == "true"
+	kalmMode := v1alpha1.KalmMode(os.Getenv(v1alpha1.ENV_KALM_MODE))
 
 	logger.Info(fmt.Sprintf("ClientID: %s", clientID))
 	logger.Info(fmt.Sprintf("oidcProviderUrl: %s", oidcProviderUrl))
@@ -85,10 +86,14 @@ func getOauth2Config() *oauth2.Config {
 	oidcVerifier = provider.Verifier(&oidc.Config{ClientID: clientID})
 
 	scopes := []string{}
-	if isKalmInLocalMode {
+	switch kalmMode {
+	case v1alpha1.KalmModeLocal:
 		scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups", "offline_access")
-	} else {
+	case v1alpha1.KalmModeSaaS:
 		// for SaaS version, introduce extra scope: tenants
+		scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups", "offline_access", "tenants")
+	case v1alpha1.KalmModeBYOC:
+		// same as SaaS mode
 		scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups", "offline_access", "tenants")
 	}
 

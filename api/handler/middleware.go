@@ -6,6 +6,7 @@ import (
 
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/resources"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"k8s.io/apimachinery/pkg/api/errors"
 )
@@ -43,7 +44,7 @@ func (h *ApiHandler) RequireUserMiddleware(next echo.HandlerFunc) echo.HandlerFu
 		}
 
 		// for SaaS version, tenants must be set
-		if !h.IsLocalMode {
+		if h.KalmMode == v1alpha1.KalmModeSaaS {
 			if len(currentUser.Tenants) == 0 {
 				return errors.NewUnauthorized("No tenants")
 			}

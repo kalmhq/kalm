@@ -6,6 +6,7 @@ import (
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
+	"istio.io/pkg/log"
 	appsV1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -16,7 +17,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (r *KalmOperatorConfigReconciler) reconcileKalmController(config *installv1alpha1.KalmOperatorConfig) error {
+func (r *KalmOperatorConfigReconciler) reconcileKalmController(configSpec installv1alpha1.KalmOperatorConfigSpec) error {
+
+	if err := r.applyFromYaml(r.Ctx, "kalm.yaml"); err != nil {
+		log.Error(err, "install kalm error.")
+		return err
+	}
+
 	// ensure existence of ns: NamespaceKalmSystem
 	expectedNs := corev1.Namespace{
 		ObjectMeta: ctrl.ObjectMeta{
@@ -68,10 +75,10 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(config *installv1
 	terminationGracePeriodSeconds := int64(10)
 	secVolSourceDefaultMode := int32(420)
 
-	controllerImgTag := getKalmControllerVersion(config.Spec)
+	controllerImgTag := getKalmControllerVersion(configSpec)
 	img := fmt.Sprintf("%s:%s", KalmControllerImgRepo, controllerImgTag)
 
-	envVars := getEnvVarsForController(config.Spec)
+	envVars := getEnvVarsForController(configSpec)
 
 	dpName := "kalm-controller"
 	expectedKalmController := appsV1.Deployment{

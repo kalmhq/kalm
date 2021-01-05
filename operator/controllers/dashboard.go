@@ -41,39 +41,39 @@ func getKalmDashboardVersion(configSpec installv1alpha1.KalmOperatorConfigSpec) 
 	return "latest"
 }
 
-func getKalmDashboardCommand(config *installv1alpha1.KalmOperatorConfig) string {
+func getKalmDashboardCommand(configSpec installv1alpha1.KalmOperatorConfigSpec) string {
 	var sb strings.Builder
 	sb.WriteString("./kalm-api-server")
 
-	if config.Spec.Dashboard != nil {
-		for _, item := range config.Spec.Dashboard.Args {
+	if configSpec.Dashboard != nil {
+		for _, item := range configSpec.Dashboard.Args {
 			sb.WriteString(" ")
 			sb.WriteString(item)
 		}
 	}
 
-	if config.Spec.KalmType != "" {
-		sb.WriteString(" ")
-		sb.WriteString(fmt.Sprintf("--kalm-mode=%s", DecideKalmMode(config.Spec)))
-	}
+	// if configSpec.KalmType != "" {
+	// 	sb.WriteString(" ")
+	// 	sb.WriteString(fmt.Sprintf("--kalm-mode=%s", DecideKalmMode(configSpec)))
+	// }
 
-	if config.Spec.BaseAppDomain != "" {
-		sb.WriteString(" ")
-		sb.WriteString(fmt.Sprintf("--base-app-domain=%s", config.Spec.BaseAppDomain))
-	}
+	// if configSpec.BaseAppDomain != "" {
+	// 	sb.WriteString(" ")
+	// 	sb.WriteString(fmt.Sprintf("--base-app-domain=%s", configSpec.BaseAppDomain))
+	// }
 
-	if config.Spec.BaseDNSDomain != "" {
-		sb.WriteString(" ")
-		sb.WriteString(fmt.Sprintf("--base-dns-domain=%s", config.Spec.BaseDNSDomain))
-	}
+	// if configSpec.BaseDNSDomain != "" {
+	// 	sb.WriteString(" ")
+	// 	sb.WriteString(fmt.Sprintf("--base-dns-domain=%s", configSpec.BaseDNSDomain))
+	// }
 
 	return sb.String()
 }
 
-func getKalmDashboardEnvs(config *installv1alpha1.KalmOperatorConfig) []corev1alpha1.EnvVar {
+func getKalmDashboardEnvs(configSpec installv1alpha1.KalmOperatorConfigSpec) []corev1alpha1.EnvVar {
 	var envs []corev1alpha1.EnvVar
-	if config.Spec.Dashboard != nil {
-		for _, nv := range config.Spec.Dashboard.Envs {
+	if configSpec.Dashboard != nil {
+		for _, nv := range configSpec.Dashboard.Envs {
 			envs = append(envs, corev1alpha1.EnvVar{
 				Name:  nv.Name,
 				Value: nv.Value,
@@ -81,12 +81,34 @@ func getKalmDashboardEnvs(config *installv1alpha1.KalmOperatorConfig) []corev1al
 			})
 		}
 	}
+
+	var baseAppDomain string
+	if configSpec.BYOCModeConfig != nil && configSpec.BYOCModeConfig.BaseAppDomain != "" {
+		baseAppDomain = configSpec.BYOCModeConfig.BaseAppDomain
+	} else if configSpec.SaaSModeConfig != nil && configSpec.SaaSModeConfig.BaseAppDomain != "" {
+		baseAppDomain = configSpec.SaaSModeConfig.BaseAppDomain
+	}
+
+	// BaseAppDomain
+	envs = append(envs, corev1alpha1.EnvVar{
+		Name:  v1alpha1.ENV_KALM_BASE_APP_DOMAIN,
+		Value: baseAppDomain,
+		Type:  corev1alpha1.EnvVarTypeStatic,
+	})
+
+	// KalmMode
+	envs = append(envs, corev1alpha1.EnvVar{
+		Name:  v1alpha1.ENV_KALM_MODE,
+		Value: string(DecideKalmMode(configSpec)),
+		Type:  corev1alpha1.EnvVarTypeStatic,
+	})
+
 	return envs
 }
 
-func getKalmDashboardReplicas(config *installv1alpha1.KalmOperatorConfig) *int32 {
-	if config.Spec.Dashboard != nil && config.Spec.Dashboard.Replicas != nil {
-		return config.Spec.Dashboard.Replicas
+func getKalmDashboardReplicas(configSpec installv1alpha1.KalmOperatorConfigSpec) *int32 {
+	if configSpec.Dashboard != nil && configSpec.Dashboard.Replicas != nil {
+		return configSpec.Dashboard.Replicas
 	}
 
 	n := int32(1)
@@ -96,9 +118,9 @@ func getKalmDashboardReplicas(config *installv1alpha1.KalmOperatorConfig) *int32
 
 const dashboardName = "kalm"
 
-func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installv1alpha1.KalmOperatorConfig) error {
+func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(configSpec installv1alpha1.KalmOperatorConfigSpec) error {
 
-	if err := r.reconcileDashboardComponent(config); err != nil {
+	if err := r.reconcileDashboardComponent(configSpec); err != nil {
 		r.Log.Info("reconcileDashboardComponent fail", "error", err)
 		return err
 	}
@@ -108,11 +130,11 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installv1a
 		return err
 	}
 
-	isSaaSMode := config.Spec.SaaSModeConfig != nil
-	isBYOCMode := config.Spec.BYOCModeConfig != nil
+	isSaaSMode := configSpec.SaaSModeConfig != nil
+	isBYOCMode := configSpec.BYOCModeConfig != nil
 
 	if isSaaSMode || isBYOCMode {
-		err := r.reconcileAccessForDashboard(config)
+		err := r.reconcileAccessForDashboard(configSpec)
 		if err != nil {
 			r.Log.Info("reconcileAccessForDashboard fail", "error", err)
 			return err
@@ -122,7 +144,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(config *installv1a
 	return nil
 }
 
-func (r *KalmOperatorConfigReconciler) reconcileDashboardComponent(config *installv1alpha1.KalmOperatorConfig) error {
+func (r *KalmOperatorConfigReconciler) reconcileDashboardComponent(configSpec installv1alpha1.KalmOperatorConfigSpec) error {
 	dashboardName := "kalm"
 	dashboard := corev1alpha1.Component{}
 
@@ -131,7 +153,7 @@ func (r *KalmOperatorConfigReconciler) reconcileDashboardComponent(config *insta
 		Namespace: NamespaceKalmSystem,
 	}
 
-	if config.Spec.SkipKalmDashboardInstallation {
+	if configSpec.SkipKalmDashboardInstallation {
 		err := r.Get(r.Ctx, componentKey, &dashboard)
 		if errors.IsNotFound(err) {
 			return nil
@@ -140,9 +162,9 @@ func (r *KalmOperatorConfigReconciler) reconcileDashboardComponent(config *insta
 		return r.Delete(context.Background(), &dashboard)
 	}
 
-	dashboardVersion := getKalmDashboardVersion(config.Spec)
-	command := getKalmDashboardCommand(config)
-	envs := getKalmDashboardEnvs(config)
+	dashboardVersion := getKalmDashboardVersion(configSpec)
+	command := getKalmDashboardCommand(configSpec)
+	envs := getKalmDashboardEnvs(configSpec)
 
 	expectedDashboard := corev1alpha1.Component{
 		ObjectMeta: ctrl.ObjectMeta{
@@ -156,7 +178,7 @@ func (r *KalmOperatorConfigReconciler) reconcileDashboardComponent(config *insta
 			Image:    fmt.Sprintf("%s:%s", KalmDashboardImgRepo, dashboardVersion),
 			Command:  command,
 			Env:      envs,
-			Replicas: getKalmDashboardReplicas(config),
+			Replicas: getKalmDashboardReplicas(configSpec),
 			Ports: []corev1alpha1.Port{
 				{
 					Protocol:      corev1alpha1.PortProtocolHTTP,
@@ -291,17 +313,17 @@ const (
 // - httpRoute
 // - protectedEndpoint
 // - sso to kalm-SaaS
-func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(config *installv1alpha1.KalmOperatorConfig) error {
+func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(configSpec installv1alpha1.KalmOperatorConfigSpec) error {
 
 	var baseDomain string
 	var oidcIssuer *installv1alpha1.OIDCIssuerConfig
 
-	if config.Spec.SaaSModeConfig != nil {
-		baseDomain = config.Spec.SaaSModeConfig.BaseDashboardDomain
-		oidcIssuer = config.Spec.SaaSModeConfig.OIDCIssuer
-	} else if config.Spec.BYOCModeConfig != nil {
-		baseDomain = config.Spec.BYOCModeConfig.BaseDashboardDomain
-		oidcIssuer = config.Spec.BYOCModeConfig.OIDCIssuer
+	if configSpec.SaaSModeConfig != nil {
+		baseDomain = configSpec.SaaSModeConfig.BaseDashboardDomain
+		oidcIssuer = configSpec.SaaSModeConfig.OIDCIssuer
+	} else if configSpec.BYOCModeConfig != nil {
+		baseDomain = configSpec.BYOCModeConfig.BaseDashboardDomain
+		oidcIssuer = configSpec.BYOCModeConfig.OIDCIssuer
 	}
 
 	if baseDomain == "" {

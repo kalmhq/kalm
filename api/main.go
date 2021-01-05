@@ -83,25 +83,25 @@ func main() {
 				Destination: &runningConfig.KubeConfigPath,
 				EnvVars:     []string{"KUBE_CONFIG_PATH"},
 			},
-			&cli.StringFlag{
-				Name:        "kalm-mode",
-				Usage:       "",
-				DefaultText: "saas",
-				Destination: &runningConfig.KalmMode,
-				EnvVars:     []string{"KALM_MODE"},
-			},
-			&cli.StringFlag{
-				Name:        "base-dns-domain",
-				Usage:       "",
-				Destination: &runningConfig.ClusterBaseDNSDomain,
-				EnvVars:     []string{"BASE_DNS_DOMAIN"},
-			},
-			&cli.StringFlag{
-				Name:        "base-app-domain",
-				Usage:       "",
-				Destination: &runningConfig.ClusterBaseAppDomain,
-				EnvVars:     []string{"BASE_APP_DOMAIN"},
-			},
+			// &cli.StringFlag{
+			// 	Name:        "kalm-mode",
+			// 	Usage:       "",
+			// 	DefaultText: "saas",
+			// 	Destination: &runningConfig.KalmMode,
+			// 	EnvVars:     []string{"KALM_MODE"},
+			// },
+			// &cli.StringFlag{
+			// 	Name:        "base-dns-domain",
+			// 	Usage:       "",
+			// 	Destination: &runningConfig.ClusterBaseDNSDomain,
+			// 	EnvVars:     []string{"BASE_DNS_DOMAIN"},
+			// },
+			// &cli.StringFlag{
+			// 	Name:        "base-app-domain",
+			// 	Usage:       "",
+			// 	Destination: &runningConfig.ClusterBaseAppDomain,
+			// 	EnvVars:     []string{"BASE_APP_DOMAIN"},
+			// },
 			&cli.BoolFlag{
 				Name:        "enable-debug-apis",
 				Value:       false,
@@ -183,7 +183,7 @@ func startMainServer(runningConfig *config.Config, k8sClientConfig *rest.Config)
 		clientManager = client.NewStandardClientManager(k8sClientConfig)
 	}
 
-	apiHandler := handler.NewApiHandler(clientManager, runningConfig.KalmMode, runningConfig.DomainConfig())
+	apiHandler := handler.NewApiHandler(clientManager)
 
 	apiHandler.InstallMainRoutes(e)
 	apiHandler.InstallWebhookRoutes(e)

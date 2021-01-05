@@ -87,8 +87,6 @@ spec:
             idTokenExpirySeconds:
               format: int32
               type: integer
-            isKalmInLocalMode:
-              type: boolean
             issuer:
               description: These four are for arbitrary oidc provider
               type: string
@@ -97,6 +95,8 @@ spec:
             issuerClientSecret:
               type: string
             jwksUri:
+              type: string
+            kalmMode:
               type: string
             port:
               type: integer

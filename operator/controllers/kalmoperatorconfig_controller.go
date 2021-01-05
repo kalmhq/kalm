@@ -241,90 +241,17 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		}
 	}
 
-	if !config.Spec.SkipKalmControllerInstallation {
-		if err := r.applyFromYaml(ctx, "kalm.yaml"); err != nil {
-			log.Error(err, "install kalm error.")
-			return err
-		}
-
-		if err := r.reconcileKalmController(config); err != nil {
-			r.Log.Info("reconcileKalmController fail", "error", err)
-			return err
-		}
-	}
-
-	if err := r.reconcileKalmDashboard(config); err != nil {
-		r.Log.Info("reconcileKalmDashboard fail", "error", err)
-		return err
-	}
-
 	configSpec := config.Spec
 	if configSpec.SaaSModeConfig != nil {
-		if err := r.reconcileDefaultTenantForSaaSMode(); err != nil {
-			r.Log.Info("reconcileDefaultTenantForSaaSMode fail", "error", err)
-			return err
-		}
+		return r.reconcileSaaSMode(configSpec)
+	} else if configSpec.BYOCModeConfig != nil {
+		return r.reconcileBYOCMode(configSpec)
 	} else if configSpec.LocalModeConfig != nil {
-		if err := r.reconcileDefaultTenantForLocalMode(); err != nil {
-			r.Log.Info("reconcileDefaultTenantForLocalMode fail", "error", err)
-			return err
-		}
-	} else if configSpec.BYOCModeConfig != nil {
-		if err := r.reconcileDefaultTenantForBYOCMode(); err != nil {
-			r.Log.Info("reconcileDefaultTenantForBYOCMode fail", "error", err)
-			return err
-		}
+		return r.reconcileLocalMode(configSpec)
+	} else {
+		r.Log.Info("must specify at least one of: saasModeConfig, byocModeConfig and localModeConfig")
+		return nil
 	}
-
-	var baseDNSDomain string
-	var baseAppDomain string
-	if configSpec.SaaSModeConfig != nil {
-		baseDNSDomain = configSpec.SaaSModeConfig.BaseDNSDomain
-		baseAppDomain = configSpec.SaaSModeConfig.BaseAppDomain
-	} else if configSpec.BYOCModeConfig != nil {
-		baseDNSDomain = configSpec.BYOCModeConfig.BaseDNSDomain
-		baseAppDomain = configSpec.BYOCModeConfig.BaseAppDomain
-	}
-
-	if baseDNSDomain != "" {
-		if err := r.reconcileACMEServer(baseDNSDomain); err != nil {
-			r.Log.Info("reconcileACMEServer fail", "error", err)
-			return err
-		}
-	}
-
-	if baseAppDomain != "" {
-		// baseDNSDomain exist -> ACMEServer ok -> so we can apply for wildcard cert
-		// maybe a more strict check on kalmoperatorconfig for SaaS mode is a better way to simplify the logic
-		applyForWildcardCert := baseDNSDomain != ""
-
-		if err := r.reconcileHttpsCertForDomain(baseAppDomain, applyForWildcardCert); err != nil {
-			r.Log.Info("reconcileHttpsCertForDomain fail", "error", err)
-			return err
-		}
-	}
-
-	if configSpec.SaaSModeConfig != nil && configSpec.SaaSModeConfig.CloudflareConfig != nil {
-		if err := r.reconcileDNSRecords(config); err != nil {
-			r.Log.Info("reconcileDNSRecords fail", "error", err)
-			return err
-		}
-	}
-
-	if configSpec.SaaSModeConfig != nil {
-		if err := r.reconcileRootAccessTokenForSaaS(); err != nil {
-			r.Log.Info("reconcileAccessTokenForSaaS fail", "error", err)
-			return err
-		}
-	} else if configSpec.BYOCModeConfig != nil {
-		//todo register in kalm-saas
-		if err := r.reconcileRootAccessTokenForBYOC(); err != nil {
-			r.Log.Info("reconcileRootAccessTokenForBYOC fail", "error", err)
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx context.Context) error {
