@@ -15,8 +15,6 @@ type ApiHandler struct {
 	clientManager   client.ClientManager
 	logger          *zap.Logger
 	KalmMode        v1alpha1.KalmMode
-	// BaseAppDomain   string
-	// BaseDNSDomain   string
 }
 
 func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
