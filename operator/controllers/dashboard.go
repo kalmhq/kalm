@@ -346,7 +346,7 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(configSpec in
 	}
 
 	if oidcIssuer != nil {
-		err := r.reconcileSSOForOIDCIssuer(oidcIssuer, baseDomain)
+		err := r.reconcileSSOForOIDCIssuer(oidcIssuer, baseDomain, DecideKalmMode(configSpec))
 		if err != nil {
 			r.Log.Info("reconcileSSOForOIDCIssuer fail", "error", err)
 			return err
@@ -451,7 +451,11 @@ func (r *KalmOperatorConfigReconciler) reconcileProtectedEndpointForDashboard(ba
 	}
 }
 
-func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(oidcIssuer *installv1alpha1.OIDCIssuerConfig, authProxyDomain string) error {
+func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
+	oidcIssuer *installv1alpha1.OIDCIssuerConfig,
+	authProxyDomain string,
+	kalmMode v1alpha1.KalmMode) error {
+
 	if oidcIssuer == nil {
 		return fmt.Errorf("oidcIssuerConfig should not be nil")
 	}
@@ -472,6 +476,7 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(oidcIssuer *ins
 			IssuerClientSecret:   oidcIssuer.ClientSecret,
 			IDTokenExpirySeconds: &expirySec,
 			Domain:               authProxyDomain,
+			KalmMode:             string(kalmMode),
 		},
 	}
 

@@ -95,6 +95,8 @@ func getOauth2Config() *oauth2.Config {
 	case v1alpha1.KalmModeBYOC:
 		// same as SaaS mode
 		scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups", "offline_access", "tenants")
+	default:
+		log.Info("unknown kalmMode", zap.Any("mode", kalmMode))
 	}
 
 	oauth2Config = &oauth2.Config{
