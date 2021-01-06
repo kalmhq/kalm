@@ -79,7 +79,7 @@ type KalmOperatorConfigSpec struct {
 }
 
 type BYOCModeConfig struct {
-	Owner string
+	Owner string `json:"owner,omitempty"`
 
 	// like: foobar.byoc.kalm.dev
 	BaseDashboardDomain string `json:"baseDashboardDomain,omitempty"`
