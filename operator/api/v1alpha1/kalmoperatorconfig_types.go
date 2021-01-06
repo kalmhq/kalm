@@ -79,6 +79,8 @@ type KalmOperatorConfigSpec struct {
 }
 
 type BYOCModeConfig struct {
+	Owner string
+
 	// like: foobar.byoc.kalm.dev
 	BaseDashboardDomain string `json:"baseDashboardDomain,omitempty"`
 	// like: foobar.byoc-clusters.kalm-apps.com

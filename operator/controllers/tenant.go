@@ -39,7 +39,7 @@ func (r *KalmOperatorConfigReconciler) reconcileDefaultTenantForLocalMode() erro
 	return r.createOrUpdateTenant(expectedTenant)
 }
 
-func (r *KalmOperatorConfigReconciler) reconcileDefaultTenantForBYOCMode() error {
+func (r *KalmOperatorConfigReconciler) reconcileDefaultTenantForBYOCMode(owner string) error {
 	expectedTenant := v1alpha1.Tenant{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: DefaultTenantName,
@@ -61,7 +61,7 @@ func (r *KalmOperatorConfigReconciler) reconcileDefaultTenantForBYOCMode() error
 				v1alpha1.ResourceAccessTokensCount:     resource.MustParse("9999"),
 				v1alpha1.ResourceRoleBindingCount:      resource.MustParse("9999"),
 			},
-			Owners: []string{"kalm-operator"},
+			Owners: []string{owner},
 		},
 	}
 
