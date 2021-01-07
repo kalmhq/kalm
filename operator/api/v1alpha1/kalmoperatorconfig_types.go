@@ -51,26 +51,14 @@ type KalmOperatorConfigSpec struct {
 	KalmVersion string `json:"kalmVersion,omitempty"`
 	Version     string `json:"version,omitempty"`
 
-	// deprecated
+	// deprecated, diff mode has diff config now
 	KalmType string `json:"kalmType,omitempty"`
-	// Type     v1alpha1.KalmType `json:"type,omitempty"`
 
 	BYOCModeConfig  *BYOCModeConfig  `json:"byocModeConfig,omitempty"`
 	SaaSModeConfig  *SaaSModeConfig  `json:"saasModeConfig,omitempty"`
 	LocalModeConfig *LocalModeConfig `json:"localModeConfig,omitempty"`
 
 	PhysicalClusterID string `json:"physicalClusterId,omitempty"`
-
-	// // like: us-west1-1.kalm.dev
-	// BaseDashboardDomain string `json:"baseDashboardDomain,omitempty"`
-	// // like: us-west1-1.clusters.kalm-apps.com
-	// BaseAppDomain string `json:"baseAppDomain,omitempty"`
-	// // like: us-west1-1.clusters.kalm-dns.com
-	// BaseDNSDomain string `json:"baseDNSDomain,omitempty"`
-
-	// OIDCIssuer *OIDCIssuerConfig `json:"oidcIssuer,omitempty"`
-
-	// CloudflareConfig *CloudflareConfig `json:"cloudflareConfig,omitempty"`
 
 	// Dashboard Config
 	Dashboard *DashboardConfig `json:"dashboard,omitempty"`
@@ -79,7 +67,9 @@ type KalmOperatorConfigSpec struct {
 }
 
 type BYOCModeConfig struct {
-	Owner string `json:"owner,omitempty"`
+	ClusterName    string `json:"clusterName,omitempty"`
+	KalmSaaSDomain string `json:"kalmSaaSDomain,omitempty"`
+	Owner          string `json:"owner,omitempty"`
 
 	// like: foobar.byoc.kalm.dev
 	BaseDashboardDomain string `json:"baseDashboardDomain,omitempty"`
@@ -121,6 +111,11 @@ type CloudflareConfig struct {
 
 // KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
 type KalmOperatorConfigStatus struct {
+	BYOCModeStatus *BYOCModeStatus `json:"byocModeStatus,omitempty"`
+}
+
+type BYOCModeStatus struct {
+	ClusterInfoHasSendToKalmSaaS bool `json:"clusterInfoHasSendToKalmSaaS,omitempty"`
 }
 
 // +kubebuilder:object:root=true

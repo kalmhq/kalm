@@ -245,7 +245,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 	if configSpec.SaaSModeConfig != nil {
 		return r.reconcileSaaSMode(configSpec)
 	} else if configSpec.BYOCModeConfig != nil {
-		return r.reconcileBYOCMode(configSpec)
+		return r.reconcileBYOCMode(config)
 	} else if configSpec.LocalModeConfig != nil {
 		return r.reconcileLocalMode(configSpec)
 	} else {

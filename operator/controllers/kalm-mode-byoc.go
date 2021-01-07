@@ -1,8 +1,20 @@
 package controllers
 
-import installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
 
-func (r *KalmOperatorConfigReconciler) reconcileBYOCMode(configSpec installv1alpha1.KalmOperatorConfigSpec) error {
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
+	v1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+func (r *KalmOperatorConfigReconciler) reconcileBYOCMode(config *installv1alpha1.KalmOperatorConfig) error {
+	configSpec := config.Spec
+
 	if err := r.reconcileKalmController(configSpec); err != nil {
 		r.Log.Info("reconcileKalmController fail", "error", err)
 		return err
@@ -43,5 +55,132 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode(configSpec installv1alp
 		return err
 	}
 
-	return nil
+	if config.Status.BYOCModeStatus != nil && config.Status.BYOCModeStatus.ClusterInfoHasSendToKalmSaaS {
+		return nil
+	}
+
+	// if installation is ready
+	// - post cluster info to kalm-SaaS
+	// - update status
+	clusterInfo, ready := r.getClusterInfoIfIsReady(byocModeConfig)
+	if !ready {
+		r.Log.Info("BYOC cluster not ready yet, will wait...")
+		return nil
+	}
+
+	// call Kalm-SaaS API
+	if ok, err := r.reportClusterInfoToKalmSaaS(clusterInfo, byocModeConfig.KalmSaaSDomain, byocModeConfig.ClusterName); err != nil {
+		r.Log.Error(err, "reportClusterInfoToKalmSaaS failed")
+		return err
+	} else if !ok {
+		r.Log.Info("fail to report BYOC cluster info to Kalm-SaaS, will retry later...")
+		return nil
+	} else {
+		if config.Status.BYOCModeStatus == nil {
+			config.Status.BYOCModeStatus = &installv1alpha1.BYOCModeStatus{}
+		}
+
+		config.Status.BYOCModeStatus.ClusterInfoHasSendToKalmSaaS = true
+
+		return r.Status().Update(r.Ctx, config)
+	}
+}
+
+type ClusterInfo struct {
+	ClusterIP         string `json:"clusterIP,omitempty"`
+	ACMEServerIP      string `json:"acmeServerIP,omitempty"`
+	ACMEDomainForApps string `json:"acmeDomainForApps,omitempty"`
+	RootAccessToken   string `json:"rootAccessToken,omitempty"`
+}
+
+func (r *KalmOperatorConfigReconciler) getClusterInfoIfIsReady(byocModeConfig *installv1alpha1.BYOCModeConfig) (ClusterInfo, bool) {
+
+	clusterIP := r.getClusterIP()
+	acmeServerIP := r.getACMEServerIP()
+	domain, _ := r.getACMEDomainForApps(byocModeConfig.BaseAppDomain)
+	token, _ := r.getRootAccessToken()
+
+	isReady := clusterIP != "" && acmeServerIP != "" && domain != "" && token != ""
+
+	return ClusterInfo{
+		ClusterIP:         clusterIP,
+		ACMEServerIP:      acmeServerIP,
+		ACMEDomainForApps: domain,
+		RootAccessToken:   token,
+	}, isReady
+}
+
+func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo ClusterInfo, kalmSaaSDomain string, clusterName string) (bool, error) {
+	token, err := r.getTokenForKalmSaaS()
+	if err != nil {
+		return false, err
+	}
+
+	kalmSaaSAPI := fmt.Sprintf("https://%s/byoc/clusters/%s/clusterInfo?token=%s", kalmSaaSDomain, clusterName, token)
+
+	payload, _ := json.Marshal(clusterInfo)
+	resp, err := http.Post(kalmSaaSAPI, "application/json; charset=UTF-8", bytes.NewReader(payload))
+	if err != nil {
+		return false, err
+	}
+
+	if resp.StatusCode != 200 {
+		r.Log.Info("reportClusterInfoToKalmSaaS failed", "resp", resp.Body)
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (r *KalmOperatorConfigReconciler) getACMEDomainForApps(appsDomain string) (string, error) {
+	certList := v1alpha1.HttpsCertList{}
+	if err := r.List(r.Ctx, &certList); err != nil {
+		return "", err
+	}
+
+	for _, cert := range certList.Items {
+		for _, domain := range cert.Spec.Domains {
+			if domain != appsDomain {
+				continue
+			}
+
+			if cert.Status.WildcardCertDNSChallengeDomainMap == nil {
+				continue
+			}
+
+			return cert.Status.WildcardCertDNSChallengeDomainMap[appsDomain], nil
+		}
+	}
+
+	return "", nil
+}
+
+func (r *KalmOperatorConfigReconciler) getRootAccessToken() (string, error) {
+	accessTokenList := v1alpha1.AccessTokenList{}
+
+	//todo more strict label on this token
+	filter := client.MatchingLabels(map[string]string{"tenant": "global"})
+
+	if err := r.List(r.Ctx, &accessTokenList, filter); err != nil {
+		return "", err
+	}
+
+	if len(accessTokenList.Items) <= 0 {
+		return "", fmt.Errorf("expected rootAccessToken not exist")
+	}
+
+	token := accessTokenList.Items[0]
+	return token.Spec.Token, nil
+}
+
+func (r *KalmOperatorConfigReconciler) getTokenForKalmSaaS() (string, error) {
+	ns := "kalm-operator"
+	secName := "kalm-saas-token"
+
+	sec := v1.Secret{}
+	if err := r.Get(r.Ctx, client.ObjectKey{Namespace: ns, Name: secName}, &sec); err != nil {
+		return "", err
+	}
+
+	return string(sec.Data["TOKEN"]), nil
 }

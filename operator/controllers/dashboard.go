@@ -317,20 +317,23 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(configSpec in
 
 	var baseDomain string
 	var oidcIssuer *installv1alpha1.OIDCIssuerConfig
+	var applyForWildcardCert bool
 
 	if configSpec.SaaSModeConfig != nil {
 		baseDomain = configSpec.SaaSModeConfig.BaseDashboardDomain
 		oidcIssuer = configSpec.SaaSModeConfig.OIDCIssuer
+		applyForWildcardCert = true
 	} else if configSpec.BYOCModeConfig != nil {
 		baseDomain = configSpec.BYOCModeConfig.BaseDashboardDomain
 		oidcIssuer = configSpec.BYOCModeConfig.OIDCIssuer
+		applyForWildcardCert = false
 	}
 
 	if baseDomain == "" {
 		return nil
 	}
 
-	if err := r.reconcileHttpsCertForDomain(baseDomain, true); err != nil {
+	if err := r.reconcileHttpsCertForDomain(baseDomain, applyForWildcardCert); err != nil {
 		r.Log.Info("reconcileHttpsCertForDomain fail", "error", err)
 		return err
 	}

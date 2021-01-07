@@ -155,3 +155,22 @@ func (r *KalmOperatorConfigReconciler) getClusterIP() string {
 		return ing[0].IP
 	}
 }
+
+func (r *KalmOperatorConfigReconciler) getACMEServerIP() string {
+	svc := corev1.Service{}
+	svcObjKey := client.ObjectKey{
+		Namespace: "kalm-system",
+		Name:      "lb-svc-acme-server",
+	}
+
+	if err := r.Get(r.Ctx, svcObjKey, &svc); err != nil {
+		return ""
+	} else {
+		ing := svc.Status.LoadBalancer.Ingress
+		if len(ing) <= 0 {
+			return ""
+		}
+
+		return ing[0].IP
+	}
+}
