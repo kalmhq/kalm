@@ -29,7 +29,7 @@
     # in a new bash session
     cd controller
     make install
-    make run
+    make dev
     ```
 
 5. Start Api Server
