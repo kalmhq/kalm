@@ -100,6 +100,13 @@ export const correctComponentFormValuesForSubmit = (
       };
       draft.resourceRequirements = resourceRequirements;
     }
+
+    if (componentValues.readinessProbe?.httpGet?.host === "localhost") {
+      delete draft.readinessProbe?.httpGet?.host;
+    }
+    if (componentValues.livenessProbe?.httpGet?.host === "localhost") {
+      delete draft.livenessProbe?.httpGet?.host;
+    }
   });
 
   return componentValues;
