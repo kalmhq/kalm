@@ -87,7 +87,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     return (
       <EmptyInfoBox
         image={<PeopleIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={isClusterLevel ? "This cluster is managed with Kalm SaaS" : "This application is managed with Kalm SaaS"}
+        title={isClusterLevel ? "This cluster is managed with Kalm SaaS" : "This cluster is managed with Kalm SaaS"}
         content={
           isClusterLevel
             ? "Please go to Kalm SaaS page for relevant settings"
