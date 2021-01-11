@@ -19,25 +19,21 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // DNSRecordSpec defines the desired state of DNSRecord
 type DNSRecordSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of DNSRecord. Edit DNSRecord_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Domain    string  `json:"domain,omitempty"`
+	DNSType   DNSType `json:"dnsType,omitempty"`
+	DNSTarget string  `json:"dnsTarget,omitempty"`
 }
 
 // DNSRecordStatus defines the observed state of DNSRecord
 type DNSRecordStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	IsConfigured bool `json:"isConfigured"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:subresource:status
 
 // DNSRecord is the Schema for the dnsrecords API
 type DNSRecord struct {
