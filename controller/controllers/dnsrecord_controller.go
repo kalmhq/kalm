@@ -72,7 +72,7 @@ func (r *DNSRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	err := r.dnsMgr.UpsertDNSRecord(record.Spec.DNSType, record.Spec.Domain, record.Spec.DNSTarget)
 	if err != nil {
 		if err == NoCloudflareZoneIDForDomainError {
-			log.Error(err, "unknown domain for this dnsManager, ignored")
+			log.Error(err, "unknown domain for this dnsManager, ignored", "domain", record.Spec.Domain)
 
 			return ctrl.Result{}, nil
 		}

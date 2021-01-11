@@ -94,9 +94,31 @@ func (m CloudflareDNSManager) DeleteDNSRecord(dnsType v1alpha1.DNSType, domain s
 }
 
 func (m CloudflareDNSManager) UpsertDNSRecord(dnsType v1alpha1.DNSType, name, content string) error {
+	// skip if DNSRecord already exist
+	if exist, _ := m.Exist(dnsType, name, content); exist {
+		return nil
+	}
+
 	_ = m.DeleteDNSRecord(dnsType, name)
 
 	return m.CreateDNSRecord(dnsType, name, content)
+}
+
+func (m CloudflareDNSManager) Exist(dnsType v1alpha1.DNSType, name, content string) (bool, error) {
+	records, err := m.GetDNSRecords(name)
+	if err != nil {
+		return false, err
+	}
+
+	for _, r := range records {
+		if r.DNSType != dnsType || r.Content != content {
+			continue
+		}
+
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func (m CloudflareDNSManager) GetDNSRecords(domain string) ([]DNSRecord, error) {
