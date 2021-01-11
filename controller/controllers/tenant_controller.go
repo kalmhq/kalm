@@ -169,7 +169,7 @@ func getOwnerRoleBindingName(ownerEmail string) string {
 func (r *TenantReconciler) ReconcileOwnerRolebindings(tenant *v1alpha1.Tenant) error {
 	var rolebindings v1alpha1.RoleBindingList
 
-	if err := r.Reader.List(r.ctx, &rolebindings, client.MatchingFields{
+	if err := r.Reader.List(r.ctx, &rolebindings, client.MatchingLabels{
 		v1alpha1.TenantNameLabelKey: tenant.Name,
 		"tenantOwner":               "true",
 	}); err != nil {
@@ -277,7 +277,7 @@ func (r *TenantReconciler) ReconcileTenantOwnerApplicationRolebinding(tenant *v1
 func (r *TenantReconciler) ReconcileTenantOwnerApplicationsRolebindings(tenant *v1alpha1.Tenant) error {
 	var applications corev1.NamespaceList
 
-	if err := r.Reader.List(r.ctx, &applications, client.MatchingFields{
+	if err := r.Reader.List(r.ctx, &applications, client.MatchingLabels{
 		v1alpha1.TenantNameLabelKey: tenant.Name,
 	}); err != nil {
 		return err
