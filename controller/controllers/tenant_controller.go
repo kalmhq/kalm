@@ -54,7 +54,7 @@ func (m MapperForNamespaces) Map(mapObj handler.MapObject) []reconcile.Request {
 func (r *TenantReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.Tenant{}).
-		For(&v1alpha1.RoleBinding{}).
+		Owns(&v1alpha1.RoleBinding{}).
 		Watches(&source.Kind{Type: &corev1.Namespace{}}, &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: MapperForNamespaces{},
 		}).
