@@ -69,6 +69,8 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	h.InstallRegistriesHandlers(gv1Alpha1WithAuth)
 	h.InstallDomainHandlers(gv1Alpha1WithAuth)
 
+	h.InstallDNSRecordHandlers(gv1Alpha1WithAuth)
+
 	gv1Alpha1WithAuth.DELETE("/pods/:namespace/:name", h.handleDeletePod)
 
 	gv1Alpha1WithAuth.GET("/rolebindings", h.handleListRoleBindings)
