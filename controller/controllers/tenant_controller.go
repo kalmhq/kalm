@@ -112,8 +112,13 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
-	r.ReconcileOwnerRolebindings(&tenant)
-	r.ReconcileTenantOwnerApplicationsRolebindings(&tenant)
+	if err := r.ReconcileOwnerRolebindings(&tenant); err != nil {
+		logger.Error(err, "ReconcileOwnerRolebindings error")
+	}
+
+	if err := r.ReconcileTenantOwnerApplicationsRolebindings(&tenant); err != nil {
+		logger.Error(err, "ReconcileTenantOwnerApplicationsRolebindings error")
+	}
 
 	surplusResource, noNegative := v1alpha1.GetSurplusResource(tenant)
 
