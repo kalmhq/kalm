@@ -77,7 +77,6 @@ func BuildTenantOwnerPolicies(tenant string) string {
 	t := template.Must(template.New("policy").Parse(`
 # {{ .name }} tenant owner policies
 p, tenant_{{ .tenant }}_owner, view, */*, storageClasses/*
-
 p, tenant_{{ .tenant }}_owner, view, {{ .tenant }}/*, */*
 p, tenant_{{ .tenant }}_owner, edit, {{ .tenant }}/*, */*
 p, tenant_{{ .tenant }}_owner, manage, {{ .tenant }}/*, */*
@@ -123,6 +122,8 @@ func roleValueToPolicyValue(tenant, ns, role string) string {
 		return "role_cluster_editor"
 	case v1alpha1.ClusterRoleOwner:
 		return "role_cluster_owner"
+	case v1alpha1.TenantRoleOwner:
+		return fmt.Sprintf("tenant_%s_owner", tenant)
 	default:
 		return fmt.Sprintf("role_%s_%s_%s", tenant, ns, role)
 	}
@@ -148,11 +149,11 @@ func (m *StandardClientManager) UpdatePolicies() {
 	for _, tenant := range m.Tenants {
 		sb.WriteString(BuildTenantOwnerPolicies(tenant.Name))
 
-		for _, owner := range tenant.Spec.Owners {
-			sb.WriteString(
-				fmt.Sprintf("g, %s, tenant_%s_owner\n", ToSafeSubject(owner, v1alpha1.SubjectTypeUser), tenant.Name),
-			)
-		}
+		// for _, owner := range tenant.Spec.Owners {
+		// 	sb.WriteString(
+		// 		fmt.Sprintf("g, %s, tenant_%s_owner\n", ToSafeSubject(owner, v1alpha1.SubjectTypeUser), tenant.Name),
+		// 	)
+		// }
 	}
 
 	for i := range m.AccessTokens {

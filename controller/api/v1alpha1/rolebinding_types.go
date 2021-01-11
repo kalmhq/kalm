@@ -26,6 +26,7 @@ const (
 	ClusterRoleViewer = "clusterViewer"
 	ClusterRoleEditor = "clusterEditor"
 	ClusterRoleOwner  = "clusterOwner"
+	TenantRoleOwner   = "tenantOwner"
 
 	SubjectTypeUser  = "user"
 	SubjectTypeGroup = "group"
