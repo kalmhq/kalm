@@ -8,6 +8,22 @@ metadata:
   creationTimestamp: null
   name: dnsrecords.core.kalm.dev
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.domain
+    name: Domain
+    type: string
+  - JSONPath: .spec.dnsType
+    name: DNSType
+    type: string
+  - JSONPath: .spec.dnsTarget
+    name: DNSTarget
+    type: string
+  - JSONPath: .status.isConfigured
+    name: IsConfigured
+    type: boolean
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
   group: core.kalm.dev
   names:
     kind: DNSRecord

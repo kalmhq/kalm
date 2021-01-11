@@ -34,6 +34,11 @@ type DNSRecordStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Domain",type="string",JSONPath=".spec.domain"
+// +kubebuilder:printcolumn:name="DNSType",type="string",JSONPath=".spec.dnsType"
+// +kubebuilder:printcolumn:name="DNSTarget",type="string",JSONPath=".spec.dnsTarget"
+// +kubebuilder:printcolumn:name="IsConfigured",type="boolean",JSONPath=".status.isConfigured"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // DNSRecord is the Schema for the dnsrecords API
 type DNSRecord struct {
