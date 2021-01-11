@@ -70,13 +70,21 @@ func (r *DNSRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	err := r.dnsMgr.UpsertDNSRecord(record.Spec.DNSType, record.Spec.Domain, record.Spec.DNSTarget)
-	if err == NoCloudflareZoneIDForDomainError {
-		log.Error(err, "unknown domain for this dnsManager, ignored")
+	if err != nil {
+		if err == NoCloudflareZoneIDForDomainError {
+			log.Error(err, "unknown domain for this dnsManager, ignored")
 
-		return ctrl.Result{}, nil
+			return ctrl.Result{}, nil
+		}
+
+		return ctrl.Result{}, err
 	}
 
-	return ctrl.Result{}, err
+	copied := record.DeepCopy()
+	//todo query to ensure record does exist
+	copied.Status.IsConfigured = true
+
+	return ctrl.Result{}, r.Status().Update(r.ctx, copied)
 }
 
 func (r *DNSRecordReconciler) SetupWithManager(mgr ctrl.Manager) error {
