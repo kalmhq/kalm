@@ -94,7 +94,7 @@ func (m CloudflareDNSManager) DeleteDNSRecord(dnsType v1alpha1.DNSType, domain s
 }
 
 func (m CloudflareDNSManager) UpsertDNSRecord(dnsType v1alpha1.DNSType, name, content string) error {
-	m.DeleteDNSRecord(dnsType, name)
+	_ = m.DeleteDNSRecord(dnsType, name)
 
 	return m.CreateDNSRecord(dnsType, name, content)
 }

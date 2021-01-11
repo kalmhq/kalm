@@ -196,6 +196,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = controllers.NewDNSRecordReconciler(mgr).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller: DNSRecord")
+		os.Exit(1)
+	}
+
 	// only run webhook if explicitly declared
 	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
 		v1alpha1.InitializeWebhookClient(mgr)

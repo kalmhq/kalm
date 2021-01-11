@@ -167,7 +167,7 @@ func wrapDNSRecordAsResp(record *v1alpha1.DNSRecord) DNSRecord {
 }
 
 func wrapDNSRecordListAsResp(records []v1alpha1.DNSRecord) []DNSRecord {
-	var rst []DNSRecord
+	rst := []DNSRecord{}
 
 	for _, r := range records {
 		rst = append(rst, wrapDNSRecordAsResp(&r))

@@ -18,31 +18,64 @@ package controllers
 import (
 	"context"
 
-	"github.com/go-logr/logr"
-	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
 
 // DNSRecordReconciler reconciles a DNSRecord object
 type DNSRecordReconciler struct {
-	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	*BaseReconciler
+	ctx    context.Context
+	dnsMgr DNSManager
+}
+
+func NewDNSRecordReconciler(mgr ctrl.Manager) *DNSRecordReconciler {
+	var dnsMgr DNSManager
+	if cloudflareDNSMgr, err := initCloudflareDNSManagerFromEnv(); err != nil {
+		ctrl.Log.Info("failed when initCloudflareDNSManagerFromEnv", "err", err)
+	} else {
+		dnsMgr = cloudflareDNSMgr
+	}
+
+	return &DNSRecordReconciler{
+		BaseReconciler: NewBaseReconciler(mgr, "DNSRecord"),
+		ctx:            context.Background(),
+		dnsMgr:         dnsMgr,
+	}
 }
 
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=dnsrecords,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=dnsrecords/status,verbs=get;update;patch
 
 func (r *DNSRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	_ = r.Log.WithValues("dnsrecord", req.NamespacedName)
+	log := r.Log.WithValues("dnsrecord", req.NamespacedName)
 
-	// your logic here
+	if r.dnsMgr == nil {
+		log.Info("dnsMgr not initialized, reconcile skipped")
+		return ctrl.Result{}, nil
+	}
 
-	return ctrl.Result{}, nil
+	record := v1alpha1.DNSRecord{}
+	if err := r.Get(r.ctx, client.ObjectKey{Name: req.Name}, &record); err != nil {
+		if errors.IsNotFound(err) {
+			return ctrl.Result{}, nil
+		}
+
+		return ctrl.Result{}, err
+	}
+
+	err := r.dnsMgr.UpsertDNSRecord(record.Spec.DNSType, record.Spec.Domain, record.Spec.DNSTarget)
+	if err == NoCloudflareZoneIDForDomainError {
+		log.Error(err, "unknown domain for this dnsManager, ignored")
+
+		return ctrl.Result{}, nil
+	}
+
+	return ctrl.Result{}, err
 }
 
 func (r *DNSRecordReconciler) SetupWithManager(mgr ctrl.Manager) error {
