@@ -19,12 +19,12 @@ func (h *ApiHandler) InstallDNSRecordHandlers(e *echo.Group) {
 }
 
 type DNSRecord struct {
-	Domain    string
-	DNSType   string
-	DNSTarget string
+	Domain    string `json:"domain"`
+	DNSType   string `json:"dnsType"`
+	DNSTarget string `json:"dnsTarget"`
 	//resp
-	Name         string
-	IsConfigured bool
+	Name         string `json:"name"`
+	IsConfigured bool   `json:"isConfigured"`
 }
 
 func (h *ApiHandler) handleListDNSRecords(c echo.Context) error {
