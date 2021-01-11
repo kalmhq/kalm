@@ -95,6 +95,7 @@ type SaaSModeConfig struct {
 }
 
 type LocalModeConfig struct {
+	CloudflareConfig *CloudflareConfig `json:"cloudflareConfig,omitempty"`
 }
 
 type OIDCIssuerConfig struct {

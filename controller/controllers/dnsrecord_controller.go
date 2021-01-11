@@ -51,6 +51,7 @@ func NewDNSRecordReconciler(mgr ctrl.Manager) *DNSRecordReconciler {
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=dnsrecords,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=dnsrecords/status,verbs=get;update;patch
 
+// todo: 1. finalizer for DNSRecord to clean DNSRecord in cloudflare
 func (r *DNSRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("dnsrecord", req.NamespacedName)
 

@@ -45,6 +45,10 @@ spec:
                 baseDashboardDomain:
                   description: 'like: foobar.byoc.kalm.dev'
                   type: string
+                clusterName:
+                  type: string
+                kalmSaaSDomain:
+                  type: string
                 oidcIssuer:
                   properties:
                     clientId:
@@ -94,12 +98,22 @@ spec:
                   type: string
               type: object
             kalmType:
-              description: deprecated
+              description: deprecated, diff mode has diff config now
               type: string
             kalmVersion:
               description: deprecated, use Version instead
               type: string
             localModeConfig:
+              properties:
+                cloudflareConfig:
+                  properties:
+                    apiToken:
+                      type: string
+                    domainToZoneIDConfig:
+                      additionalProperties:
+                        type: string
+                      type: object
+                  type: object
               type: object
             physicalClusterId:
               type: string
@@ -146,6 +160,12 @@ spec:
           type: object
         status:
           description: KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
+          properties:
+            byocModeStatus:
+              properties:
+                clusterInfoHasSendToKalmSaaS:
+                  type: boolean
+              type: object
           type: object
       type: object
   version: v1alpha1

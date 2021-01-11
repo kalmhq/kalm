@@ -221,11 +221,16 @@ func getEnvVarsForController(configSpec installv1alpha1.KalmOperatorConfigSpec) 
 	var cloudflareDomainToZoneConfigStr string
 	var cloudflareToken string
 
+	var cloudflareConfig *installv1alpha1.CloudflareConfig
 	if configSpec.SaaSModeConfig != nil {
-		saasConfig := configSpec.SaaSModeConfig
-		cloudflareDomainToZoneConfigStr = getCloudflareDomainToZoneConfigStr(saasConfig.CloudflareConfig)
+		cloudflareConfig = configSpec.SaaSModeConfig.CloudflareConfig
+	} else if configSpec.LocalModeConfig != nil {
+		cloudflareConfig = configSpec.LocalModeConfig.CloudflareConfig
+	}
 
-		cloudflareToken = saasConfig.CloudflareConfig.APIToken
+	if cloudflareConfig != nil {
+		cloudflareDomainToZoneConfigStr = getCloudflareDomainToZoneConfigStr(cloudflareConfig)
+		cloudflareToken = cloudflareConfig.APIToken
 	}
 
 	var baseAppDomain string
