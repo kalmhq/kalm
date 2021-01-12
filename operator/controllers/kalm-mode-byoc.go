@@ -56,6 +56,7 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode(config *installv1alpha1
 	}
 
 	if config.Status.BYOCModeStatus != nil && config.Status.BYOCModeStatus.ClusterInfoHasSendToKalmSaaS {
+		r.Log.Info("ClusterInfoHasSendToKalmSaaS is true, report skipped")
 		return nil
 	}
 
