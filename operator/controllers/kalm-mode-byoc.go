@@ -65,7 +65,7 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode(config *installv1alpha1
 	// - update status
 	clusterInfo, ready := r.getClusterInfoIfIsReady(byocModeConfig)
 	if !ready {
-		r.Log.Info("BYOC cluster not ready yet, will wait...")
+		r.Log.Info("BYOC cluster not ready yet, will wait...", "clusterInfo", clusterInfo)
 		return nil
 	}
 
