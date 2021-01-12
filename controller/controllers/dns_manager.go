@@ -116,7 +116,7 @@ func (m CloudflareDNSManager) Exist(dnsType v1alpha1.DNSType, name, content stri
 	}
 
 	for _, r := range records {
-		if r.DNSType != dnsType || r.Content != content {
+		if r.DNSType != dnsType || r.Name != name || r.Content != content {
 			continue
 		}
 
