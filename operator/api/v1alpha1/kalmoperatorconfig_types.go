@@ -120,6 +120,7 @@ type BYOCModeStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // KalmOperatorConfig is the Schema for the kalmoperatorconfigs API
 type KalmOperatorConfig struct {
