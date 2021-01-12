@@ -118,7 +118,7 @@ func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo C
 		return false, err
 	}
 
-	kalmSaaSAPI := fmt.Sprintf("https://%s/byoc/clusters/%s/clusterInfo?token=%s", kalmSaaSDomain, clusterName, token)
+	kalmSaaSAPI := fmt.Sprintf("https://%s/api/v1/clusters/%s/byoc?token=%s", kalmSaaSDomain, clusterName, token)
 	payload, _ := json.Marshal(clusterInfo)
 
 	r.Log.Info("reportClusterInfoToKalmSaaS", "api", kalmSaaSAPI, "payload", string(payload))
