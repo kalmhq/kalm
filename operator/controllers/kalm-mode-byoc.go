@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -118,15 +119,17 @@ func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo C
 	}
 
 	kalmSaaSAPI := fmt.Sprintf("https://%s/byoc/clusters/%s/clusterInfo?token=%s", kalmSaaSDomain, clusterName, token)
-
 	payload, _ := json.Marshal(clusterInfo)
+
+	r.Log.Info("reportClusterInfoToKalmSaaS", "api", kalmSaaSAPI, "payload", string(payload))
+
 	resp, err := http.Post(kalmSaaSAPI, "application/json; charset=UTF-8", bytes.NewReader(payload))
 	if err != nil {
 		return false, err
 	}
 
 	if resp.StatusCode != 200 {
-		r.Log.Info("reportClusterInfoToKalmSaaS failed", "resp", resp.Body)
+		r.Log.Info("reportClusterInfoToKalmSaaS failed", "resp", resp.Body, "status", resp.StatusCode)
 		return false, nil
 	}
 
@@ -183,5 +186,16 @@ func (r *KalmOperatorConfigReconciler) getTokenForKalmSaaS() (string, error) {
 		return "", err
 	}
 
-	return string(sec.Data["TOKEN"]), nil
+	data := sec.Data["TOKEN"]
+	return parseBase64EncodedString(data)
+}
+
+func parseBase64EncodedString(data []byte) (string, error) {
+	oriTxt := make([]byte, len(data))
+	l, err := base64.StdEncoding.Decode(oriTxt, data)
+	if err != nil {
+		return "", err
+	}
+
+	return string(oriTxt[:l]), nil
 }
