@@ -68,7 +68,7 @@ class TenantsPageRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { currentTenant, tenants, isLoading, hasSelectedTenant, newTenantUrl } = this.props;
+    const { currentTenant, tenants, isLoading, newTenantUrl } = this.props;
 
     if (isLoading) {
       return <Loading />;
@@ -78,7 +78,7 @@ class TenantsPageRaw extends React.PureComponent<Props, State> {
 
     return (
       <BasePage>
-        {tenants.length > 0 && !hasSelectedTenant && (
+        {tenants.length > 0 ? (
           <Box p={2}>
             <Grid container spacing={2}>
               <Grid item xs={8} sm={8} md={8}>
@@ -86,34 +86,32 @@ class TenantsPageRaw extends React.PureComponent<Props, State> {
                   <Box display={"flex"} flexDirection={"column"} p={2}>
                     {this.renderUserInfo()}
                     <Divider />
-                    {tenants.length > 0 ? (
-                      tenants.map((t, index) => {
-                        const url = composeTenantLink(t);
-                        return (
-                          <Box m={1} key={index}>
-                            {isSameTenant(t, currentTenant) ? (
-                              <Body>current: {composeTenantText(t)}</Body>
-                            ) : (
-                              <KMLink rel="noopener noreferrer" href={url} target={"_self"}>
-                                click to open {composeTenantText(t)}
-                              </KMLink>
-                            )}
-                          </Box>
-                        );
-                      })
-                    ) : (
-                      <>
-                        You don't have any kalm, please go to Kalm SaaS to subscript new plan.{" "}
-                        <KMLink href={newTenantUrl} target={"_blank"}>
-                          Open Kalm SaaS
-                        </KMLink>{" "}
-                      </>
-                    )}
+                    {tenants.map((t, index) => {
+                      const url = composeTenantLink(t);
+                      return (
+                        <Box m={1} key={index}>
+                          {isSameTenant(t, currentTenant) ? (
+                            <Body>current: {composeTenantText(t)}</Body>
+                          ) : (
+                            <KMLink rel="noopener noreferrer" href={url} target={"_self"}>
+                              click to open {composeTenantText(t)}
+                            </KMLink>
+                          )}
+                        </Box>
+                      );
+                    })}
                   </Box>
                 </KPanel>
               </Grid>
             </Grid>
           </Box>
+        ) : (
+          <>
+            You don't have any cluster, please go to create one.{" "}
+            <KMLink href={newTenantUrl} target={"_blank"}>
+              Go to create
+            </KMLink>{" "}
+          </>
         )}
       </BasePage>
     );
