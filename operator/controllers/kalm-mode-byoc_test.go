@@ -17,5 +17,4 @@ func TestParseBase64EncodedString(t *testing.T) {
 	decoded, err := base64.StdEncoding.DecodeString(string(data))
 	assert.Nil(t, err)
 	assert.Equal(t, "TPhVEBaYMZhjKN6sLUlJ2JnMjhhsameC", string(decoded))
-
 }

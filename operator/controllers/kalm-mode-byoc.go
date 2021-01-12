@@ -187,7 +187,8 @@ func (r *KalmOperatorConfigReconciler) getTokenForKalmSaaS() (string, error) {
 	}
 
 	data := sec.Data["TOKEN"]
-	return parseBase64EncodedString(data)
+	return string(data), nil
+	// return parseBase64EncodedString(data)
 }
 
 func parseBase64EncodedString(data []byte) (string, error) {
