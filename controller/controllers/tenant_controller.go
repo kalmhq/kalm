@@ -159,11 +159,11 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-func getOwnerRoleBindingName(ownerEmail string) string {
+func getOwnerRoleBindingName(tenantName, ownerEmail string) string {
 	ownerEmail = strings.ReplaceAll(ownerEmail, "@", "-")
 	ownerEmail = strings.ReplaceAll(ownerEmail, ".", "-")
 	ownerEmail = strings.ReplaceAll(ownerEmail, "_", "-")
-	return "owner-" + strings.ToLower(ownerEmail)
+	return fmt.Sprintf("tenant-%s-owner-%s", tenantName, strings.ToLower(ownerEmail))
 }
 
 func (r *TenantReconciler) ReconcileOwnerRolebindings(tenant *v1alpha1.Tenant) error {
@@ -178,7 +178,7 @@ func (r *TenantReconciler) ReconcileOwnerRolebindings(tenant *v1alpha1.Tenant) e
 
 	ownerMap := map[string]struct{}{}
 	for _, ownerEmail := range tenant.Spec.Owners {
-		ownerMap[getOwnerRoleBindingName(ownerEmail)] = struct{}{}
+		ownerMap[getOwnerRoleBindingName(tenant.Name, ownerEmail)] = struct{}{}
 	}
 
 	roleBindingsMap := map[string]*v1alpha1.RoleBinding{}
@@ -190,7 +190,7 @@ func (r *TenantReconciler) ReconcileOwnerRolebindings(tenant *v1alpha1.Tenant) e
 	needDelete := map[string]*v1alpha1.RoleBinding{}
 
 	for _, ownerEmail := range tenant.Spec.Owners {
-		name := getOwnerRoleBindingName(ownerEmail)
+		name := getOwnerRoleBindingName(tenant.Name, ownerEmail)
 
 		if _, ok := roleBindingsMap[name]; !ok {
 			needCreate[name] = &v1alpha1.RoleBinding{
@@ -240,7 +240,7 @@ func (r *TenantReconciler) ReconcileOwnerRolebindings(tenant *v1alpha1.Tenant) e
 
 func (r *TenantReconciler) ReconcileTenantOwnerApplicationRolebinding(tenant *v1alpha1.Tenant, ownerEmail, applicationName string) error {
 	var rolebinding v1alpha1.RoleBinding
-	name := getOwnerRoleBindingName(ownerEmail)
+	name := getOwnerRoleBindingName(tenant.Name, ownerEmail)
 
 	if err := r.Reader.Get(r.ctx, types.NamespacedName{
 		Namespace: applicationName,
