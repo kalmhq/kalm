@@ -89,7 +89,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
         >
           <KalmLogIcon />
         </IconLinkWithToolTip>
-        {canEdit ? (
+        {canEdit && pod.status === "Running" ? (
           <IconLinkWithToolTip
             onClick={() => {
               blinkTopProgressAction();
