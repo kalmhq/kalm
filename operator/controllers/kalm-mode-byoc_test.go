@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/base64"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,4 +13,9 @@ func TestParseBase64EncodedString(t *testing.T) {
 	str, err := parseBase64EncodedString(data)
 	assert.Nil(t, err)
 	assert.Equal(t, "TPhVEBaYMZhjKN6sLUlJ2JnMjhhsameC", str)
+
+	decoded, err := base64.StdEncoding.DecodeString(string(data))
+	assert.Nil(t, err)
+	assert.Equal(t, "TPhVEBaYMZhjKN6sLUlJ2JnMjhhsameC", string(decoded))
+
 }

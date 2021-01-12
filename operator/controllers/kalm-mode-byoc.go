@@ -191,11 +191,10 @@ func (r *KalmOperatorConfigReconciler) getTokenForKalmSaaS() (string, error) {
 }
 
 func parseBase64EncodedString(data []byte) (string, error) {
-	oriTxt := make([]byte, len(data))
-	l, err := base64.StdEncoding.Decode(oriTxt, data)
+	decoded, err := base64.StdEncoding.DecodeString(string(data))
 	if err != nil {
 		return "", err
 	}
 
-	return string(oriTxt[:l]), nil
+	return string(decoded), nil
 }
