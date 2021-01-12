@@ -77,12 +77,17 @@ func (r *DNSRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			return ctrl.Result{}, nil
 		}
 
+		log.Error(err, "fail to UpsertDNSRecord", "record", record.Spec)
+		return ctrl.Result{}, err
+	}
+
+	recordExist, err := r.dnsMgr.Exist(record.Spec.DNSType, record.Spec.Domain, record.Spec.DNSTarget)
+	if err != nil {
 		return ctrl.Result{}, err
 	}
 
 	copied := record.DeepCopy()
-	//todo query to ensure record does exist
-	copied.Status.IsConfigured = true
+	copied.Status.IsConfigured = recordExist
 
 	return ctrl.Result{}, r.Status().Update(r.ctx, copied)
 }

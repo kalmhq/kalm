@@ -19,6 +19,7 @@ type DNSManager interface {
 	CreateDNSRecord(dnsType v1alpha1.DNSType, name, content string) error
 	DeleteDNSRecord(dnsType v1alpha1.DNSType, name string) error
 	UpsertDNSRecord(dnsType v1alpha1.DNSType, name, content string) error
+	Exist(dnsType v1alpha1.DNSType, name, content string) (bool, error)
 	GetDNSRecords(domain string) ([]DNSRecord, error)
 }
 
