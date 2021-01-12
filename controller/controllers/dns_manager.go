@@ -6,7 +6,10 @@ import (
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
+
+var mLog = ctrl.Log.WithName("DNSManager")
 
 type DNSRecord struct {
 	ID      string
@@ -106,6 +109,7 @@ func (m CloudflareDNSManager) UpsertDNSRecord(dnsType v1alpha1.DNSType, name, co
 }
 
 func (m CloudflareDNSManager) Exist(dnsType v1alpha1.DNSType, name, content string) (bool, error) {
+
 	records, err := m.GetDNSRecords(name)
 	if err != nil {
 		return false, err
@@ -116,9 +120,12 @@ func (m CloudflareDNSManager) Exist(dnsType v1alpha1.DNSType, name, content stri
 			continue
 		}
 
+		mLog.Info("dnsRecord exist", "r", r)
+
 		return true, nil
 	}
 
+	mLog.Info("dnsRecord not exist", "type", dnsType, "name", name, "content", content)
 	return false, nil
 }
 
