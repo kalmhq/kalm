@@ -4,6 +4,7 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type Job struct {
@@ -58,4 +59,25 @@ func BuildJobFromResource(job *batchv1.Job) *Job {
 		StartTimestamp:    &startTs,
 		CompleteTimestamp: &compTs,
 	}
+}
+
+type JobListChannel struct {
+	List  chan *batchv1.JobList
+	Error chan error
+}
+
+func (resourceManager *ResourceManager) GetJobListChannel(opts ...client.ListOption) *JobListChannel {
+	channel := &JobListChannel{
+		List:  make(chan *batchv1.JobList, 1),
+		Error: make(chan error, 1),
+	}
+
+	go func() {
+		var list batchv1.JobList
+		err := resourceManager.List(&list, opts...)
+		channel.List <- &list
+		channel.Error <- err
+	}()
+
+	return channel
 }

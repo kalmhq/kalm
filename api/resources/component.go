@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -101,6 +102,7 @@ type ComponentDetails struct {
 	IstioMetricHistories *IstioMetricHistories `json:"istioMetricHistories"`
 	Services             []ServiceStatus       `json:"services"`
 	Pods                 []PodStatus           `json:"pods"`
+	Jobs                 []JobStatus           `json:"jobs,omitempty"`
 }
 
 func (resourceManager *ResourceManager) BuildComponentDetails(
@@ -120,6 +122,7 @@ func (resourceManager *ResourceManager) BuildComponentDetails(
 			ServiceList:                resourceManager.GetServiceListChannel(nsListOption, belongsToComponent),
 			ComponentPluginBindingList: resourceManager.GetComponentPluginBindingListChannel(nsListOption, belongsToComponent),
 			ProtectedEndpointList:      resourceManager.GetProtectedEndpointsChannel(nsListOption),
+			JobsList:                   resourceManager.GetJobListChannel(nsListOption),
 		}
 
 		resources, err = resourceChannels.ToResources()
@@ -203,6 +206,39 @@ func (resourceManager *ResourceManager) BuildComponentDetails(
 		Pods:                 podsStatus,
 	}
 
+	if component.Spec.WorkloadType == v1alpha1.WorkloadTypeCronjob {
+		jobs := findJobs(resources.JobList, component.Name)
+		jobsStatus := make([]JobStatus, len(jobs))
+
+		for i, job := range jobs {
+			var startTimestamp int64
+			var completionTimestamp int64
+
+			if job.Status.StartTime != nil {
+				startTimestamp = job.Status.StartTime.UnixNano() / int64(time.Millisecond)
+			}
+
+			if job.Status.CompletionTime != nil {
+				completionTimestamp = job.Status.CompletionTime.UnixNano() / int64(time.Millisecond)
+			}
+
+			jobsStatus[i] = JobStatus{
+				Name:                 job.Name,
+				CreationTimestamp:    job.CreationTimestamp.UnixNano() / int64(time.Millisecond),
+				CreationTimestampNew: job.CreationTimestamp.UnixNano() / int64(time.Millisecond),
+				Parallelism:          job.Spec.Parallelism,
+				Completions:          job.Spec.Completions,
+				StartTimestamp:       startTimestamp,
+				CompletionTimestamp:  completionTimestamp,
+				Succeeded:            job.Status.Succeeded,
+				Failed:               job.Status.Failed,
+				Active:               job.Status.Active,
+			}
+		}
+
+		details.Jobs = jobsStatus
+	}
+
 	for i := range resources.ProtectedEndpoints {
 		protectedEndpoint := resources.ProtectedEndpoints[i]
 
@@ -269,6 +305,7 @@ func (resourceManager *ResourceManager) BuildComponentDetailsResponse(
 		ServiceList:                resourceManager.GetServiceListChannel(nsListOption),
 		ComponentPluginBindingList: resourceManager.GetComponentPluginBindingListChannel(nsListOption),
 		ProtectedEndpointList:      resourceManager.GetProtectedEndpointsChannel(nsListOption),
+		JobsList:                   resourceManager.GetJobListChannel(nsListOption),
 	}
 
 	resources, err := resourceChannels.ToResources()
