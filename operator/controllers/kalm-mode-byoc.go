@@ -92,7 +92,7 @@ type ClusterInfo struct {
 	ClusterIP         string `json:"clusterIP,omitempty"`
 	ACMEServerIP      string `json:"acmeServerIP,omitempty"`
 	ACMEDomainForApps string `json:"acmeDomainForApps,omitempty"`
-	RootAccessToken   string `json:"rootAccessToken,omitempty"`
+	AccessToken       string `json:"accessToken,omitempty"`
 }
 
 func (r *KalmOperatorConfigReconciler) getClusterInfoIfIsReady(byocModeConfig *installv1alpha1.BYOCModeConfig) (ClusterInfo, bool) {
@@ -108,7 +108,7 @@ func (r *KalmOperatorConfigReconciler) getClusterInfoIfIsReady(byocModeConfig *i
 		ClusterIP:         clusterIP,
 		ACMEServerIP:      acmeServerIP,
 		ACMEDomainForApps: domain,
-		RootAccessToken:   token,
+		AccessToken:       token,
 	}, isReady
 }
 
