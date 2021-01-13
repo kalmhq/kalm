@@ -49,7 +49,7 @@ type PreInjectFile struct {
 // ComponentSpec defines the desired state of Component
 type ComponentSpec struct {
 	// labels will add to pods
-	Labels map[string]string `json:"Labels,omitempty"`
+	Labels map[string]string `json:"labels,omitempty"`
 
 	// annotations will add to pods
 	Annotations map[string]string `json:"Annotations,omitempty"`
