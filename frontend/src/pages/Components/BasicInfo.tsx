@@ -18,6 +18,7 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import clsx from "clsx";
 import { push } from "connected-react-router";
 import { HealthTab, NetworkingTab } from "forms/ComponentLike";
+import { ComponentCPUChart, ComponentMemoryChart } from "pages/Components/Chart";
 import { renderCommandValue, renderCopyableImageName } from "pages/Components/InfoComponents";
 import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
 import React from "react";
@@ -33,7 +34,6 @@ import { WrenchIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 import { SecretValueLabel } from "widgets/Label";
-import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 
 const styles = (theme: Theme) =>
@@ -196,7 +196,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
           {component.cpuRequest ? `Request: ${component.cpuRequest}` : stringConsts.REQUEST_NOT_SET}
         </Grid>
         <Grid item md={8}>
-          Usage: <SmallCPULineChart data={component.metrics?.cpu} />
+          <ComponentCPUChart component={component} />
         </Grid>
       </Grid>
     );
@@ -217,7 +217,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
             : stringConsts.REQUEST_NOT_SET}
         </Grid>
         <Grid item md={8}>
-          Usage: <SmallMemoryLineChart data={component.metrics?.memory} />
+          <ComponentMemoryChart component={component} />
         </Grid>
       </Grid>
     );

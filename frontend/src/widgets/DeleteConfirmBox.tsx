@@ -21,7 +21,7 @@ const useStyles = makeStyles<Theme, IDeleteConfirmBox>((theme) =>
   }),
 );
 export const DeleteConfirmBox = (props: IDeleteConfirmBox) => {
-  const { popupTitle, label, placeholder, popupContent, target, deleteAction, cancelAction } = props;
+  const { popupTitle, placeholder, popupContent, target, deleteAction, cancelAction } = props;
   const [userInput, setUserInput] = useState("");
   const [hasVerified, setHasVerified] = useState(target !== undefined ? false : true);
   const classes = useStyles(props);
@@ -34,7 +34,7 @@ export const DeleteConfirmBox = (props: IDeleteConfirmBox) => {
         {target && (
           <TextField
             fullWidth
-            label={"Please confirm " + label}
+            label={"Please confirm the name"}
             placeholder={placeholder}
             autoFocus
             value={userInput}

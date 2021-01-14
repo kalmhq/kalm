@@ -1,18 +1,18 @@
 import { Box, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
+import { deleteApplicationAction } from "actions/application";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { push } from "connected-react-router";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import React from "react";
 import { connect } from "react-redux";
-import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
-import { Body } from "widgets/Label";
-import { Namespaces } from "widgets/Namespaces";
-import { BasePage } from "../BasePage";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { RootState } from "reducers";
 import sc from "utils/stringConstants";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { deleteApplicationAction } from "actions/application";
-import { push } from "connected-react-router";
 import { InfoBox } from "widgets/InfoBox";
+import { Body } from "widgets/Label";
+import { Namespaces } from "widgets/Namespaces";
+import { BasePage } from "../BasePage";
 
 const mapStateToProps = (_state: RootState) => {
   return {};
@@ -48,10 +48,10 @@ class ApplicationSettingsRaw extends React.PureComponent<Props> {
             popupTitle={`DELETE APPLICATION?`}
             popupContent={
               <Box>
-                This action cannot be undone. This will permanently delete all resources under namespace{" "}
-                <Typography color={"primary"} align={"center"}>
+                This action cannot be undone. This will permanently delete all resources under application{" "}
+                <Typography color={"primary"} align={"center"} component="span">
                   {activeNamespaceName}
-                </Typography>
+                </Typography>{" "}
                 includes: components, environment configs, config files etc.
               </Box>
             }
@@ -71,7 +71,7 @@ class ApplicationSettingsRaw extends React.PureComponent<Props> {
         leftDrawer={<ApplicationSidebar />}
       >
         <Box p={2}>
-          <InfoBox title={"DangerZone"} options={options} />
+          <InfoBox title={"Dangerous Zone"} options={options} />
         </Box>
       </BasePage>
     );

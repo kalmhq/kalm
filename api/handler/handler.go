@@ -72,6 +72,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	h.InstallDNSRecordHandlers(gv1Alpha1WithAuth)
 
 	gv1Alpha1WithAuth.DELETE("/pods/:namespace/:name", h.handleDeletePod)
+	gv1Alpha1WithAuth.DELETE("/jobs/:namespace/:name", h.handleDeleteJob)
 
 	gv1Alpha1WithAuth.GET("/rolebindings", h.handleListRoleBindings)
 	gv1Alpha1WithAuth.POST("/rolebindings", h.handleCreateRoleBinding)

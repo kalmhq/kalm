@@ -6,6 +6,7 @@ import (
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
+	batchV1 "k8s.io/api/batch/v1"
 	coreV1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -35,13 +36,30 @@ type PodStatus struct {
 	// Is terminating
 	IsTerminating bool `json:"isTerminating"`
 
-	PodIPs            []string          `json:"podIps"`
-	HostIP            string            `json:"hostIp"`
-	CreationTimestamp int64             `json:"createTimestamp"`
-	StartTimestamp    int64             `json:"startTimestamp"`
-	Containers        []ContainerStatus `json:"containers"`
-	Metrics           MetricHistories   `json:"metrics"`
-	Warnings          []coreV1.Event    `json:"warnings"`
+	PodIPs               []string          `json:"podIps"`
+	HostIP               string            `json:"hostIp"`
+	CreationTimestamp    int64             `json:"createTimestamp"`
+	CreationTimestampNew int64             `json:"creationTimestamp"`
+	StartTimestamp       int64             `json:"startTimestamp"`
+	Containers           []ContainerStatus `json:"containers"`
+	Metrics              MetricHistories   `json:"metrics"`
+	Warnings             []coreV1.Event    `json:"warnings"`
+}
+
+type JobStatus struct {
+	// meta
+	Name                 string `json:"name"`
+	CreationTimestamp    int64  `json:"createTimestamp"`
+	CreationTimestampNew int64  `json:"creationTimestamp"`
+	// spec
+	Parallelism *int32 `json:"parallelism,omitempty"`
+	Completions *int32 `json:"completions,omitempty"`
+	// status
+	Active              int32 `json:"active"`
+	Succeeded           int32 `json:"succeeded"`
+	Failed              int32 `json:"failed"`
+	StartTimestamp      int64 `json:"startTimestamp"`
+	CompletionTimestamp int64 `json:"completionTimestamp"`
 }
 
 type ContainerStatus struct {
@@ -281,19 +299,20 @@ func GetPodStatus(pod coreV1.Pod, events []coreV1.Event, workloadType v1alpha1.W
 	status := getPodStatusPhase(pod, warnings, workloadType)
 
 	return &PodStatus{
-		Name:              pod.Name,
-		Node:              pod.Spec.NodeName,
-		Status:            status,
-		StatusText:        statusText,
-		Restarts:          restarts,
-		Phase:             pod.Status.Phase,
-		PodIPs:            ips, // TODO, when to use host ip??
-		HostIP:            pod.Status.HostIP,
-		IsTerminating:     pod.DeletionTimestamp != nil,
-		CreationTimestamp: pod.CreationTimestamp.UnixNano() / int64(time.Millisecond),
-		StartTimestamp:    startTimestamp,
-		Containers:        containers,
-		Warnings:          warnings,
+		Name:                 pod.Name,
+		Node:                 pod.Spec.NodeName,
+		Status:               status,
+		StatusText:           statusText,
+		Restarts:             restarts,
+		Phase:                pod.Status.Phase,
+		PodIPs:               ips, // TODO, when to use host ip??
+		HostIP:               pod.Status.HostIP,
+		IsTerminating:        pod.DeletionTimestamp != nil,
+		CreationTimestamp:    pod.CreationTimestamp.UnixNano() / int64(time.Millisecond),
+		CreationTimestampNew: pod.CreationTimestamp.UnixNano() / int64(time.Millisecond),
+		StartTimestamp:       startTimestamp,
+		Containers:           containers,
+		Warnings:             warnings,
 	}
 }
 
@@ -303,6 +322,22 @@ func findPods(list *coreV1.PodList, componentName string) []coreV1.Pod {
 	}
 
 	var res []coreV1.Pod
+
+	for i := range list.Items {
+		if list.Items[i].Labels["kalm-component"] == componentName {
+			res = append(res, list.Items[i])
+		}
+	}
+
+	return res
+}
+
+func findJobs(list *batchV1.JobList, componentName string) []batchV1.Job {
+	if list == nil {
+		return nil
+	}
+
+	var res []batchV1.Job
 
 	for i := range list.Items {
 		if list.Items[i].Labels["kalm-component"] == componentName {
