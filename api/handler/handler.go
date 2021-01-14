@@ -5,7 +5,6 @@ import (
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/api/ws"
-	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 )
@@ -14,7 +13,7 @@ type ApiHandler struct {
 	resourceManager *resources.ResourceManager
 	clientManager   client.ClientManager
 	logger          *zap.Logger
-	KalmMode        v1alpha1.KalmMode
+	// KalmMode        v1alpha1.KalmMode
 }
 
 func (h *ApiHandler) InstallWebhookRoutes(e *echo.Echo) {
@@ -30,7 +29,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	e.GET("/policies", h.handlePolicies, h.GetUserMiddleware, h.RequireUserMiddleware)
 
 	// watch
-	wsHandler := ws.NewWsHandler(h.clientManager, h.KalmMode)
+	wsHandler := ws.NewWsHandler(h.clientManager)
 	e.GET("/ws", wsHandler.Serve)
 
 	// login
@@ -46,12 +45,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1.GET("/exec", h.execWebsocketHandler)
 
 	var gv1Alpha1WithAuth *echo.Group
-	if h.KalmMode == v1alpha1.KalmModeLocal {
-		//todo in local mode, all as global tenant?
-		gv1Alpha1WithAuth = gv1Alpha1.Group("", h.GetUserMiddleware, h.RequireUserMiddleware, h.SetTenantForLocalModeIfMissing)
-	} else {
-		gv1Alpha1WithAuth = gv1Alpha1.Group("", h.GetUserMiddleware, h.RequireUserMiddleware)
-	}
+	gv1Alpha1WithAuth = gv1Alpha1.Group("", h.GetUserMiddleware, h.RequireUserMiddleware)
 
 	// initialize the cluster
 	gv1Alpha1WithAuth.POST("/initialize", h.handleInitializeCluster)
@@ -113,12 +107,12 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 }
 
 func NewApiHandler(clientManager client.ClientManager) *ApiHandler {
-	kalmMode := v1alpha1.KalmMode(v1alpha1.GetEnvKalmMode())
+	// kalmMode := v1alpha1.KalmMode(v1alpha1.GetEnvKalmMode())
 
 	return &ApiHandler{
 		clientManager:   clientManager,
 		logger:          log.DefaultLogger(),
 		resourceManager: resources.NewResourceManager(clientManager.GetDefaultClusterConfig(), log.DefaultLogger()),
-		KalmMode:        kalmMode,
+		// KalmMode:        kalmMode,
 	}
 }

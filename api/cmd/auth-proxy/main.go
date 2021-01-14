@@ -63,7 +63,6 @@ func getOauth2Config() *oauth2.Config {
 	clientSecret = os.Getenv("KALM_OIDC_CLIENT_SECRET")
 	oidcProviderUrl := os.Getenv("KALM_OIDC_PROVIDER_URL")
 	authProxyURL = os.Getenv("KALM_OIDC_AUTH_PROXY_URL")
-	// isKalmInLocalMode := os.Getenv(v1alpha1.ENV_KALM_MODE) == "true"
 	kalmMode := v1alpha1.KalmMode(os.Getenv(v1alpha1.ENV_KALM_MODE))
 
 	logger.Info(fmt.Sprintf("ClientID: %s", clientID))

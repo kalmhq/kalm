@@ -53,16 +53,6 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 	res.Tenants = clientInfo.Tenants
 	res.Tenant = clientInfo.Tenant
 
-	if h.KalmMode == v1alpha1.KalmModeLocal {
-		if len(res.Tenants) == 0 {
-			res.Tenants = []string{DefaultTenantUserForLocal}
-		}
-
-		if res.Tenant == "" {
-			res.Tenant = DefaultTenantUserForLocal
-		}
-	}
-
 	var subjects []string
 	if clientInfo.Impersonation == "" {
 		subjects = make([]string, len(clientInfo.Groups)+1)

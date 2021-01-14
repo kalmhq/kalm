@@ -341,6 +341,8 @@ func (m *StandardClientManager) GetClientInfoFromContext(c echo.Context) (*Clien
 			clientInfo.Tenants = []string{}
 		}
 
+		//todo what if tenant is set?
+
 		// todo quick fix, ugly
 		if v1alpha1.KalmMode(v1alpha1.GetEnvKalmMode()) == v1alpha1.KalmModeBYOC {
 			clientInfo.Tenant = v1alpha1.DefaultGlobalTenantName
