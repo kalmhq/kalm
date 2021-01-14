@@ -1559,7 +1559,7 @@ func (r *ComponentReconcilerTask) SetupAttributes(req ctrl.Request) (err error) 
 
 	// If current controller is running under multi-tenancy mode
 	// No matter what's the original values of these fields are, they will be ignored.
-	if v1alpha1.GetEnvKalmIsInLocalMode() == "false" {
+	if v1alpha1.GetEnvKalmMode() == string(v1alpha1.KalmModeSaaS) {
 		r.component.Spec.Labels = nil
 		r.component.Spec.NodeSelectorLabels = nil
 		r.component.Spec.IstioResourceRequirements = nil
