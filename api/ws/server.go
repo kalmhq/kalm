@@ -22,7 +22,6 @@ type WsHandler struct {
 	clientManager client.ClientManager
 	clientPool    *ClientPool
 	logger        *zap.Logger
-	// KalmMode      v1alpha1.KalmMode
 }
 
 func NewWsHandler(clientManager client.ClientManager) *WsHandler {
@@ -33,7 +32,6 @@ func NewWsHandler(clientManager client.ClientManager) *WsHandler {
 		clientManager: clientManager,
 		clientPool:    clientPool,
 		logger:        log.DefaultLogger(),
-		// KalmMode:      kalmMode,
 	}
 }
 

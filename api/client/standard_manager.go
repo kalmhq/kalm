@@ -341,61 +341,54 @@ func (m *StandardClientManager) GetClientInfoFromContext(c echo.Context) (*Clien
 			clientInfo.Tenants = []string{}
 		}
 
-		//todo what if tenant is set?
+		switch len(clientInfo.Tenants) {
+		case 0:
+			clientInfo.Tenant = ""
+		case 1:
+			parts := strings.Split(clientInfo.Tenants[0], "/")
 
-		// todo quick fix, ugly
-		if v1alpha1.KalmMode(v1alpha1.GetEnvKalmMode()) == v1alpha1.KalmModeBYOC {
-			clientInfo.Tenant = v1alpha1.DefaultGlobalTenantName
-		} else {
-			switch len(clientInfo.Tenants) {
-			case 0:
-				clientInfo.Tenant = ""
-			case 1:
-				parts := strings.Split(clientInfo.Tenants[0], "/")
+			if len(parts) == 2 {
+				clientInfo.Tenant = parts[1]
+			}
+		default:
 
-				if len(parts) == 2 {
-					clientInfo.Tenant = parts[1]
-				}
-			default:
+			m := make(map[string]struct{})
 
-				m := make(map[string]struct{})
+			for _, tenant := range clientInfo.Tenants {
+				parts := strings.Split(tenant, "/")
 
-				for _, tenant := range clientInfo.Tenants {
-					parts := strings.Split(tenant, "/")
-
-					if len(parts) != 2 {
-						continue
-					}
-
-					// TODO check part[0] is current cluster
-
-					m[parts[1]] = struct{}{}
+				if len(parts) != 2 {
+					continue
 				}
 
-				cookie, err := c.Cookie("selected-tenant")
+				// TODO check part[0] is current cluster
 
-				if err == nil {
-					if _, ok := m[cookie.Value]; ok {
-						clientInfo.Tenant = cookie.Value
-					}
+				m[parts[1]] = struct{}{}
+			}
+
+			cookie, err := c.Cookie("selected-tenant")
+
+			if err == nil {
+				if _, ok := m[cookie.Value]; ok {
+					clientInfo.Tenant = cookie.Value
 				}
+			}
 
-				if clientInfo.Tenant == "" {
-					lowercaseHost := strings.ToLower(c.Request().Host)
+			if clientInfo.Tenant == "" {
+				lowercaseHost := strings.ToLower(c.Request().Host)
 
-					if strings.HasSuffix(lowercaseHost, "kapp.live") || strings.HasSuffix(lowercaseHost, "kalm.dev") {
-						// for kalm dashboard, visiting url should be like:
-						//   <tenantName>.<regionName>.kalm.dev
-						// which indicates the current tenant
-						hostParts := strings.Split(c.Request().Host, ".")
+				if strings.HasSuffix(lowercaseHost, "kapp.live") || strings.HasSuffix(lowercaseHost, "kalm.dev") {
+					// for kalm dashboard, visiting url should be like:
+					//   <tenantName>.<regionName>.kalm.dev
+					// which indicates the current tenant
+					hostParts := strings.Split(c.Request().Host, ".")
 
-						if len(hostParts) == 4 {
-							tenantName := hostParts[0]
+					if len(hostParts) == 4 {
+						tenantName := hostParts[0]
 
-							// if exist in Kalm-Sso-Userinfo.tenants
-							if _, ok := m[tenantName]; ok {
-								clientInfo.Tenant = tenantName
-							}
+						// if exist in Kalm-Sso-Userinfo.tenants
+						if _, ok := m[tenantName]; ok {
+							clientInfo.Tenant = tenantName
 						}
 					}
 				}

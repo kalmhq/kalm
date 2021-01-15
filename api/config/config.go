@@ -19,10 +19,7 @@ type Config struct {
 	KubernetesApiServerAddress    string
 	KubernetesApiServerCAFilePath string
 	KubeConfigPath                string
-	// KalmMode                      string
-	// ClusterBaseDNSDomain          string
-	// ClusterBaseAppDomain          string
-	CorsAllowedOrigins cli.StringSlice
+	CorsAllowedOrigins            cli.StringSlice
 
 	EnableAdminServerDebugRoutes bool
 }
@@ -31,13 +28,6 @@ type BaseDomainConfig struct {
 	DNSDomain string
 	AppDomain string
 }
-
-// func (c *Config) DomainConfig() BaseDomainConfig {
-// 	return BaseDomainConfig{
-// 		DNSDomain: c.ClusterBaseDNSDomain,
-// 		AppDomain: c.ClusterBaseAppDomain,
-// 	}
-// }
 
 // Built-time env
 var (

@@ -465,6 +465,11 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 
 	expirySec := uint32(300)
 
+	var needExtraOAuthScope bool
+	if kalmMode == v1alpha1.KalmModeBYOC || kalmMode == v1alpha1.KalmModeSaaS {
+		needExtraOAuthScope = true
+	}
+
 	expectedSSO := v1alpha1.SingleSignOnConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: v1alpha1.KalmSystemNamespace,
@@ -479,7 +484,7 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 			IssuerClientSecret:   oidcIssuer.ClientSecret,
 			IDTokenExpirySeconds: &expirySec,
 			Domain:               authProxyDomain,
-			KalmMode:             string(kalmMode),
+			NeedExtraOAuthScope:  needExtraOAuthScope,
 		},
 	}
 
