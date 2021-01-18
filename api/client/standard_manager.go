@@ -337,69 +337,78 @@ func (m *StandardClientManager) GetClientInfoFromContext(c echo.Context) (*Clien
 			clientInfo.Groups = []string{}
 		}
 
-		if clientInfo.Tenants == nil {
-			clientInfo.Tenants = []string{}
-		}
-
-		switch len(clientInfo.Tenants) {
-		case 0:
-			clientInfo.Tenant = ""
-		case 1:
-			parts := strings.Split(clientInfo.Tenants[0], "/")
-
-			if len(parts) == 2 {
-				clientInfo.Tenant = parts[1]
-			}
-		default:
-
-			m := make(map[string]struct{})
-
-			for _, tenant := range clientInfo.Tenants {
-				parts := strings.Split(tenant, "/")
-
-				if len(parts) != 2 {
-					continue
-				}
-
-				// TODO check part[0] is current cluster
-
-				m[parts[1]] = struct{}{}
-			}
-
-			cookie, err := c.Cookie("selected-tenant")
-
-			if err == nil {
-				if _, ok := m[cookie.Value]; ok {
-					clientInfo.Tenant = cookie.Value
-				}
-			}
-
-			if clientInfo.Tenant == "" {
-				lowercaseHost := strings.ToLower(c.Request().Host)
-
-				if strings.HasSuffix(lowercaseHost, "kapp.live") || strings.HasSuffix(lowercaseHost, "kalm.dev") {
-					// for kalm dashboard, visiting url should be like:
-					//   <tenantName>.<regionName>.kalm.dev
-					// which indicates the current tenant
-					hostParts := strings.Split(c.Request().Host, ".")
-
-					if len(hostParts) == 4 {
-						tenantName := hostParts[0]
-
-						// if exist in Kalm-Sso-Userinfo.tenants
-						if _, ok := m[tenantName]; ok {
-							clientInfo.Tenant = tenantName
-						}
-					}
-				}
-			}
-		}
+		decideClientInfoTenant(&clientInfo, c)
 
 		m.SetImpersonation(&clientInfo, c.Request().Header.Get("Kalm-Impersonation"))
 		return &clientInfo, nil
 	}
 
 	return nil, errors.NewUnauthorized("")
+}
+
+func decideClientInfoTenant(clientInfo *ClientInfo, c echo.Context) {
+
+	if clientInfo.Tenants == nil {
+		clientInfo.Tenants = []string{}
+	}
+
+	switch len(clientInfo.Tenants) {
+	case 0:
+		// if no tenant is specified, fallback to default tenant: global
+		// mainly used in local & BYOC mode
+		// tenant only indicates which cluster current user is trying to operate,
+		// whether this use has the permission to operator is controlled by RBAC rules.
+		clientInfo.Tenant = v1alpha1.DefaultGlobalTenantName
+	case 1:
+		parts := strings.Split(clientInfo.Tenants[0], "/")
+
+		if len(parts) == 2 {
+			clientInfo.Tenant = parts[1]
+		}
+	default:
+
+		m := make(map[string]struct{})
+
+		for _, tenant := range clientInfo.Tenants {
+			parts := strings.Split(tenant, "/")
+
+			if len(parts) != 2 {
+				continue
+			}
+
+			// TODO check part[0] is current cluster
+
+			m[parts[1]] = struct{}{}
+		}
+
+		cookie, err := c.Cookie("selected-tenant")
+
+		if err == nil {
+			if _, ok := m[cookie.Value]; ok {
+				clientInfo.Tenant = cookie.Value
+			}
+		}
+
+		if clientInfo.Tenant == "" {
+			lowercaseHost := strings.ToLower(c.Request().Host)
+
+			if strings.HasSuffix(lowercaseHost, "kapp.live") || strings.HasSuffix(lowercaseHost, "kalm.dev") {
+				// for kalm dashboard, visiting url should be like:
+				//   <tenantName>.<regionName>.kalm.dev
+				// which indicates the current tenant
+				hostParts := strings.Split(c.Request().Host, ".")
+
+				if len(hostParts) == 4 {
+					tenantName := hostParts[0]
+
+					// if exist in Kalm-Sso-Userinfo.tenants
+					if _, ok := m[tenantName]; ok {
+						clientInfo.Tenant = tenantName
+					}
+				}
+			}
+		}
+	}
 }
 
 // Since the token is validated by api server, so we don't need to valid the token again here.
