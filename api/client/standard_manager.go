@@ -359,6 +359,7 @@ func decideClientInfoTenant(clientInfo *ClientInfo, c echo.Context) {
 		// tenant only indicates which cluster current user is trying to operate,
 		// whether this use has the permission to operator is controlled by RBAC rules.
 		clientInfo.Tenant = v1alpha1.DefaultGlobalTenantName
+		clientInfo.Tenants = []string{v1alpha1.DefaultGlobalTenantName}
 	case 1:
 		parts := strings.Split(clientInfo.Tenants[0], "/")
 
