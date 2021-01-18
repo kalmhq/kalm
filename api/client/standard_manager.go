@@ -368,7 +368,7 @@ func decideClientInfoTenant(clientInfo *ClientInfo, c echo.Context) {
 		}
 	default:
 
-		m := make(map[string]struct{})
+		tenantMap := make(map[string]struct{})
 
 		for _, tenant := range clientInfo.Tenants {
 			parts := strings.Split(tenant, "/")
@@ -379,13 +379,12 @@ func decideClientInfoTenant(clientInfo *ClientInfo, c echo.Context) {
 
 			// TODO check part[0] is current cluster
 
-			m[parts[1]] = struct{}{}
+			tenantMap[parts[1]] = struct{}{}
 		}
 
 		cookie, err := c.Cookie("selected-tenant")
-
 		if err == nil {
-			if _, ok := m[cookie.Value]; ok {
+			if _, ok := tenantMap[cookie.Value]; ok {
 				clientInfo.Tenant = cookie.Value
 			}
 		}
@@ -395,15 +394,26 @@ func decideClientInfoTenant(clientInfo *ClientInfo, c echo.Context) {
 
 			if strings.HasSuffix(lowercaseHost, "kapp.live") || strings.HasSuffix(lowercaseHost, "kalm.dev") {
 				// for kalm dashboard, visiting url should be like:
+				//
+				// SaaS:
 				//   <tenantName>.<regionName>.kalm.dev
 				// which indicates the current tenant
+				//
+				// BYOC:
+				//   <clusterName>.byoc.kalm.dev
 				hostParts := strings.Split(c.Request().Host, ".")
 
 				if len(hostParts) == 4 {
-					tenantName := hostParts[0]
+					var tenantName string
+
+					if hostParts[1] == "byoc" {
+						tenantName = v1alpha1.DefaultGlobalTenantName
+					} else {
+						tenantName = hostParts[0]
+					}
 
 					// if exist in Kalm-Sso-Userinfo.tenants
-					if _, ok := m[tenantName]; ok {
+					if _, ok := tenantMap[tenantName]; ok {
 						clientInfo.Tenant = tenantName
 					}
 				}
