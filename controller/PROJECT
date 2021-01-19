@@ -55,4 +55,7 @@ resources:
 - group: core
   kind: Domain
   version: v1alpha1
+- group: core
+  kind: DNSRecord
+  version: v1alpha1
 version: "2"

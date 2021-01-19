@@ -3,10 +3,14 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
+	"testing"
+	"time"
+
 	"github.com/jetstack/cert-manager/pkg/api"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
-	"io/ioutil"
 	appsV1 "k8s.io/api/apps/v1"
 	authorizationv1 "k8s.io/api/authorization/v1"
 	coreV1 "k8s.io/api/core/v1"
@@ -14,10 +18,7 @@ import (
 	rbacV1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
-	"path/filepath"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
-	"testing"
-	"time"
 
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -192,7 +193,7 @@ func (suite *PSPSuite) TestCreateDefaultSaAndPSPRoleBinding() {
 			return false
 		}
 
-		return deployment.Spec.Template.Labels["foo"] == "bar"
+		return true
 	}, "can't get deployment")
 
 	// test role binding and psp auth

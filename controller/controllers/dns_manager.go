@@ -6,7 +6,10 @@ import (
 
 	"github.com/cloudflare/cloudflare-go"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
+
+var mLog = ctrl.Log.WithName("DNSManager")
 
 type DNSRecord struct {
 	ID      string
@@ -19,6 +22,7 @@ type DNSManager interface {
 	CreateDNSRecord(dnsType v1alpha1.DNSType, name, content string) error
 	DeleteDNSRecord(dnsType v1alpha1.DNSType, name string) error
 	UpsertDNSRecord(dnsType v1alpha1.DNSType, name, content string) error
+	Exist(dnsType v1alpha1.DNSType, name, content string) (bool, error)
 	GetDNSRecords(domain string) ([]DNSRecord, error)
 }
 
@@ -94,9 +98,35 @@ func (m CloudflareDNSManager) DeleteDNSRecord(dnsType v1alpha1.DNSType, domain s
 }
 
 func (m CloudflareDNSManager) UpsertDNSRecord(dnsType v1alpha1.DNSType, name, content string) error {
-	m.DeleteDNSRecord(dnsType, name)
+	// skip if DNSRecord already exist
+	if exist, _ := m.Exist(dnsType, name, content); exist {
+		return nil
+	}
+
+	_ = m.DeleteDNSRecord(dnsType, name)
 
 	return m.CreateDNSRecord(dnsType, name, content)
+}
+
+func (m CloudflareDNSManager) Exist(dnsType v1alpha1.DNSType, name, content string) (bool, error) {
+
+	records, err := m.GetDNSRecords(name)
+	if err != nil {
+		return false, err
+	}
+
+	for _, r := range records {
+		if r.DNSType != dnsType || r.Name != name || r.Content != content {
+			continue
+		}
+
+		mLog.Info("dnsRecord exist", "r", r)
+
+		return true, nil
+	}
+
+	mLog.Info("dnsRecord not exist", "type", dnsType, "name", name, "content", content)
+	return false, nil
 }
 
 func (m CloudflareDNSManager) GetDNSRecords(domain string) ([]DNSRecord, error) {
