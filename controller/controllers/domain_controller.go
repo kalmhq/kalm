@@ -110,7 +110,9 @@ func (r *DomainReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	// if is userSubDomain, setup IP for CNAME
 	//   userSubDomain -> CNAME -> IP
 	// rootDomain is A Record Already
-	if !v1alpha1.IsRootDomain(domain.Spec.Domain) {
+	isUserSubDomain := !v1alpha1.IsRootDomain(domain.Spec.Domain)
+	isTypeCNAME := domain.Spec.DNSType == v1alpha1.DNSTypeCNAME
+	if isUserSubDomain && isTypeCNAME {
 		if err := r.reconcileIPForUserSubDomainCNAME(domain.Spec.DNSTarget); err != nil {
 			log.Info("reconcileIPForUserSubDomainCNAME fail", "err", err)
 			return ctrl.Result{}, err
