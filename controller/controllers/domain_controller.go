@@ -188,13 +188,6 @@ func (r *DomainReconciler) reconcileIPForUserSubDomainCNAME(cname string) error 
 		return nil
 	}
 
-	// skip if already exist
-	baseDNSDomain := corev1alpha1.GetEnvKalmBaseDNSDomain()
-	records, err := r.dnsMgr.GetDNSRecords(baseDNSDomain)
-	if err != nil {
-		return err
-	}
-
 	targetIP, err := corev1alpha1.GetClusterIP()
 	if err != nil {
 		return err
@@ -204,22 +197,7 @@ func (r *DomainReconciler) reconcileIPForUserSubDomainCNAME(cname string) error 
 		return nil
 	}
 
-	for _, record := range records {
-		if record.DNSType != corev1alpha1.DNSTypeA {
-			continue
-		}
-
-		if record.Name == cname {
-			if record.Content == targetIP {
-				return nil
-			}
-
-			return r.dnsMgr.UpsertDNSRecord(corev1alpha1.DNSTypeA, cname, targetIP)
-		}
-	}
-
-	// otherwise create
-	return r.dnsMgr.CreateDNSRecord(corev1alpha1.DNSTypeA, cname, targetIP)
+	return r.dnsMgr.UpsertDNSRecord(corev1alpha1.DNSTypeA, cname, targetIP)
 }
 
 func (r *DomainReconciler) SetupWithManager(mgr ctrl.Manager) error {
