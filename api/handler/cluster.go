@@ -199,18 +199,13 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 func (h *ApiHandler) handleExtraInfo(c echo.Context) error {
 	newTenantUrl := os.Getenv("KALM_NEW_TENANT_URL")
 
-	var mode string
-	if h.KalmMode == v1alpha1.KalmModeLocal {
-		mode = "local"
-	} else if h.KalmMode == v1alpha1.KalmModeSaaS {
-		mode = "multiple-tenancy"
-	} else if h.KalmMode == v1alpha1.KalmModeBYOC {
-		mode = "byoc"
-	}
+	isLocalMode := h.KalmMode == v1alpha1.KalmModeLocal
 
 	return c.JSON(200, map[string]interface{}{
-		"newTenantUrl": newTenantUrl,
-		"mode":         mode,
+		"newTenantUrl":                                newTenantUrl,
+		"isFrontendMembersManagementEnabled":          isLocalMode,
+		"isFrontendComponentSchedulingFeatureEnabled": isLocalMode,
+		"isFrontendSSOPageEnabled":                    isLocalMode,
 	})
 }
 

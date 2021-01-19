@@ -76,7 +76,7 @@ const mapStateToProps = (state: RootState) => {
     nodeLabels: state.nodes.labels,
     anchor,
     form: COMPONENT_FORM_ID,
-    mode: state.extraInfo.info.mode,
+    isFrontendComponentSchedulingFeatureEnabled: state.extraInfo.info.isFrontendComponentSchedulingFeatureEnabled,
   };
 };
 
@@ -147,10 +147,12 @@ type RenderProps = FormRenderProps<ComponentLike>;
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   get tabs() {
-    const { mode } = this.props;
-    if (mode === "multiple-tenancy") {
+    const { isFrontendComponentSchedulingFeatureEnabled } = this.props;
+
+    if (!isFrontendComponentSchedulingFeatureEnabled) {
       return tabs.filter((tab) => tab !== Scheduling);
     }
+
     return tabs;
   }
 
@@ -505,7 +507,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        {this.props.mode === "multiple-tenancy" ? null : (
+        {this.props.isFrontendComponentSchedulingFeatureEnabled && (
           <>
             <Grid item xs={12}>
               <SectionTitle>
