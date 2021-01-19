@@ -32,11 +32,11 @@ import { Namespaces } from "widgets/Namespaces";
 const styles = (theme: Theme) => createStyles({});
 
 const mapStateToProps = (state: RootState) => {
-  const { newTenantUrl, mode } = state.extraInfo.info;
+  const { newTenantUrl, isFrontendMembersManagementEnabled } = state.extraInfo.info;
   const tenant = state.auth.tenant;
 
   return {
-    mode,
+    isFrontendMembersManagementEnabled,
     newTenantUrl,
     tenant,
   };
@@ -59,10 +59,10 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderSecondHeaderRight = () => {
-    const { activeNamespaceName, mode } = this.props;
+    const { activeNamespaceName, isFrontendMembersManagementEnabled } = this.props;
     const { newTenantUrl, tenant } = this.props;
 
-    if (mode === "multiple-tenancy") {
+    if (isFrontendMembersManagementEnabled) {
       return (
         <Button
           color="primary"
@@ -91,7 +91,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderEmpty = () => {
-    const { dispatch, activeNamespaceName, mode } = this.props;
+    const { dispatch, activeNamespaceName, isFrontendMembersManagementEnabled } = this.props;
     const { newTenantUrl, tenant } = this.props;
     const isClusterLevel = this.isClusterLevel();
 
@@ -99,7 +99,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
 
     if (isClusterLevel) {
       link = "/cluster/members/new";
-    } else if (mode === "multiple-tenancy") {
+    } else if (isFrontendMembersManagementEnabled) {
       link = newTenantUrl + `/clusters/${tenant}/members`;
     } else {
       link = `/applications/${activeNamespaceName}/members/new`;
@@ -176,7 +176,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderRole = (roleBinding: RoleBinding) => {
-    if (this.props.mode === "multiple-tenancy") {
+    if (!this.props.isFrontendMembersManagementEnabled) {
       switch (roleBinding.role) {
         case "clusterViewer":
           return "Cluster Viewer";
@@ -270,7 +270,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderActions = (roleBinding: RoleBinding) => {
-    const { dispatch, mode } = this.props;
+    const { dispatch, isFrontendMembersManagementEnabled } = this.props;
 
     return (
       <>
@@ -284,7 +284,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
         >
           <ImpersonateIcon />
         </IconButtonWithTooltip>
-        {mode === "multiple-tenancy" ? null : (
+        {isFrontendMembersManagementEnabled && (
           <DeleteButtonWithConfirmPopover
             popupId={`delete-member-${roleBinding.namespace}-${roleBinding.name}-popup`}
             popupTitle="DELETE Member"

@@ -199,17 +199,11 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 func (h *ApiHandler) handleExtraInfo(c echo.Context) error {
 	newTenantUrl := os.Getenv("KALM_NEW_TENANT_URL")
 
-	var mode string
-
-	if h.IsLocalMode {
-		mode = "local"
-	} else {
-		mode = "multiple-tenancy"
-	}
-
 	return c.JSON(200, map[string]interface{}{
-		"newTenantUrl": newTenantUrl,
-		"mode":         mode,
+		"newTenantUrl":                                newTenantUrl,
+		"isFrontendMembersManagementEnabled":          h.IsLocalMode,
+		"isFrontendComponentSchedulingFeatureEnabled": h.IsLocalMode,
+		"isFrontendSSOPageEnabled":                    h.IsLocalMode,
 	})
 }
 
