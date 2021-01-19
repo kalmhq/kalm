@@ -63,7 +63,7 @@ func getOauth2Config() *oauth2.Config {
 	clientSecret = os.Getenv("KALM_OIDC_CLIENT_SECRET")
 	oidcProviderUrl := os.Getenv("KALM_OIDC_PROVIDER_URL")
 	authProxyURL = os.Getenv("KALM_OIDC_AUTH_PROXY_URL")
-	isKalmInLocalMode := os.Getenv(v1alpha1.ENV_KALM_IS_IN_LOCAL_MODE) == "true"
+	needExtraOAuthScope := os.Getenv(v1alpha1.ENV_NEED_EXTRA_OAUTH_SCOPE) == "true"
 
 	logger.Info(fmt.Sprintf("ClientID: %s", clientID))
 	logger.Info(fmt.Sprintf("oidcProviderUrl: %s", oidcProviderUrl))
@@ -84,12 +84,10 @@ func getOauth2Config() *oauth2.Config {
 
 	oidcVerifier = provider.Verifier(&oidc.Config{ClientID: clientID})
 
-	scopes := []string{}
-	if isKalmInLocalMode {
-		scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups", "offline_access")
-	} else {
-		// for SaaS version, introduce extra scope: tenants
-		scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups", "offline_access", "tenants")
+	scopes := []string{oidc.ScopeOpenID, "profile", "email", "groups", "offline_access"}
+	if needExtraOAuthScope {
+		// for saas and byoc
+		scopes = append(scopes, "tenants")
 	}
 
 	oauth2Config = &oauth2.Config{

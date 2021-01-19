@@ -31,7 +31,7 @@ func (h *ApiHandler) handleListDomains(c echo.Context) error {
 
 	domains := resources.WrapDomainListAsResp(afterFilter)
 
-	baseAppDomain := h.BaseAppDomain
+	baseAppDomain := v1alpha1.GetEnvKalmBaseAppDomain()
 	if baseAppDomain != "" {
 		domains = append([]resources.Domain{
 			{

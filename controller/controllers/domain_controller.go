@@ -17,6 +17,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -36,10 +37,32 @@ type DomainReconciler struct {
 }
 
 func NewDomainReconciler(mgr ctrl.Manager) *DomainReconciler {
+	var dnsMgr DNSManager
+	if cloudflareDNSMgr, err := initCloudflareDNSManagerFromEnv(); err != nil {
+		ctrl.Log.Info("failed when initCloudflareDNSManagerFromEnv", "err", err)
+	} else {
+		dnsMgr = cloudflareDNSMgr
+	}
+
+	return &DomainReconciler{
+		BaseReconciler: NewBaseReconciler(mgr, "Domain"),
+		ctx:            context.Background(),
+		dnsMgr:         dnsMgr,
+	}
+}
+
+func initCloudflareDNSManagerFromEnv() (*CloudflareDNSManager, error) {
 	token := corev1alpha1.GetEnvCloudflareToken()
+	if token == "" {
+		return nil, fmt.Errorf("ENV: CLOUDFLARE_TOKEN not exist")
+	}
 
 	// domain1:zone1;domain2:zone2
 	domain2ZoneConfig := corev1alpha1.GetEnvCloudflareDomainToZoneIDConfig()
+	if domain2ZoneConfig == "" {
+		return nil, fmt.Errorf("ENV: CLOUDFLARE_DOMAIN_TO_ZONEID_CONFIG not exist")
+	}
+
 	domain2ZoneMap := make(map[string]string)
 	for _, pair := range strings.Split(domain2ZoneConfig, ";") {
 		parts := strings.Split(pair, ":")
@@ -50,18 +73,12 @@ func NewDomainReconciler(mgr ctrl.Manager) *DomainReconciler {
 		domain2ZoneMap[parts[0]] = parts[1]
 	}
 
-	var dnsMgr DNSManager
-	if cloudflareDNSMgr, err := NewCloudflareDNSManager(token, domain2ZoneMap); err != nil {
-		ctrl.Log.Info("failed when NewCloudflareDNSManager", "err", err)
-	} else {
-		dnsMgr = cloudflareDNSMgr
+	cloudflareDNSMgr, err := NewCloudflareDNSManager(token, domain2ZoneMap)
+	if err != nil {
+		return nil, err
 	}
 
-	return &DomainReconciler{
-		BaseReconciler: NewBaseReconciler(mgr, "Domain"),
-		ctx:            context.Background(),
-		dnsMgr:         dnsMgr,
-	}
+	return cloudflareDNSMgr, nil
 }
 
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=domains,verbs=get;list;watch;create;update;patch;delete

@@ -42,20 +42,46 @@ type ControllerConfig struct {
 
 // KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
 type KalmOperatorConfigSpec struct {
-	SkipIstioInstallation          bool `json:"skipIstioInstallation,omitempty"`
-	SkipCertManagerInstallation    bool `json:"skipCertManagerInstallation,omitempty"`
-	SkipKalmControllerInstallation bool `json:"skipKalmControllerInstallation,omitempty"`
-	SkipKalmDashboardInstallation  bool `json:"skipKalmDashboardInstallation,omitempty"`
+	SkipIstioInstallation       bool `json:"skipIstioInstallation,omitempty"`
+	SkipCertManagerInstallation bool `json:"skipCertManagerInstallation,omitempty"`
+	// SkipKalmControllerInstallation bool `json:"skipKalmControllerInstallation,omitempty"`
+	SkipKalmDashboardInstallation bool `json:"skipKalmDashboardInstallation,omitempty"`
 
-	// deprecated
+	// deprecated, use Version instead
 	KalmVersion string `json:"kalmVersion,omitempty"`
+	Version     string `json:"version,omitempty"`
 
-	Version string `json:"version,omitempty"`
-
+	// deprecated, diff mode has diff config now
 	KalmType string `json:"kalmType,omitempty"`
+
+	BYOCModeConfig  *BYOCModeConfig  `json:"byocModeConfig,omitempty"`
+	SaaSModeConfig  *SaaSModeConfig  `json:"saasModeConfig,omitempty"`
+	LocalModeConfig *LocalModeConfig `json:"localModeConfig,omitempty"`
 
 	PhysicalClusterID string `json:"physicalClusterId,omitempty"`
 
+	// Dashboard Config
+	Dashboard *DashboardConfig `json:"dashboard,omitempty"`
+	// Controller Config
+	Controller *ControllerConfig `json:"controller,omitempty"`
+}
+
+type BYOCModeConfig struct {
+	ClusterName    string `json:"clusterName,omitempty"`
+	KalmSaaSDomain string `json:"kalmSaaSDomain,omitempty"`
+	Owner          string `json:"owner,omitempty"`
+
+	// like: foobar.byoc.kalm.dev
+	BaseDashboardDomain string `json:"baseDashboardDomain,omitempty"`
+	// like: foobar.byoc-clusters.kalm-apps.com
+	BaseAppDomain string `json:"baseAppDomain,omitempty"`
+	// like: foobar.byoc-clusters.kalm-dns.com
+	BaseDNSDomain string `json:"baseDNSDomain,omitempty"`
+
+	OIDCIssuer *OIDCIssuerConfig `json:"oidcIssuer,omitempty"`
+}
+
+type SaaSModeConfig struct {
 	// like: us-west1-1.kalm.dev
 	BaseDashboardDomain string `json:"baseDashboardDomain,omitempty"`
 	// like: us-west1-1.clusters.kalm-apps.com
@@ -66,11 +92,10 @@ type KalmOperatorConfigSpec struct {
 	OIDCIssuer *OIDCIssuerConfig `json:"oidcIssuer,omitempty"`
 
 	CloudflareConfig *CloudflareConfig `json:"cloudflareConfig,omitempty"`
+}
 
-	// Dashboard Config
-	Dashboard *DashboardConfig `json:"dashboard,omitempty"`
-	// Controller Config
-	Controller *ControllerConfig `json:"controller,omitempty"`
+type LocalModeConfig struct {
+	CloudflareConfig *CloudflareConfig `json:"cloudflareConfig,omitempty"`
 }
 
 type OIDCIssuerConfig struct {
@@ -87,9 +112,15 @@ type CloudflareConfig struct {
 
 // KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
 type KalmOperatorConfigStatus struct {
+	BYOCModeStatus *BYOCModeStatus `json:"byocModeStatus,omitempty"`
+}
+
+type BYOCModeStatus struct {
+	ClusterInfoHasSendToKalmSaaS bool `json:"clusterInfoHasSendToKalmSaaS,omitempty"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // KalmOperatorConfig is the Schema for the kalmoperatorconfigs API
 type KalmOperatorConfig struct {

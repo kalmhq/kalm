@@ -2,12 +2,21 @@ package controllers
 
 import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
-	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/rand"
 )
 
-func (r *KalmOperatorConfigReconciler) reconcileAccessTokenForSaaS(config *installv1alpha1.KalmOperatorConfig) error {
+func (r *KalmOperatorConfigReconciler) reconcileRootAccessTokenForBYOC() error {
+	memo := "created by kalm-operator when initializing BYOC cluster"
+	return r.reconcileRootAccessToken(memo)
+}
+
+func (r *KalmOperatorConfigReconciler) reconcileRootAccessTokenForSaaS() error {
+	memo := "created by kalm-operator when initializing SaaS cluster"
+	return r.reconcileRootAccessToken(memo)
+}
+
+func (r *KalmOperatorConfigReconciler) reconcileRootAccessToken(memo string) error {
 	tokenList := v1alpha1.AccessTokenList{}
 
 	if err := r.List(r.Ctx, &tokenList); err != nil {
@@ -35,7 +44,7 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessTokenForSaaS(config *insta
 			},
 		},
 		Spec: v1alpha1.AccessTokenSpec{
-			Memo:  "created by kalm-operator when initializing cluster",
+			Memo:  memo,
 			Token: token,
 			Rules: []v1alpha1.AccessTokenRule{
 				{

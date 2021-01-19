@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
+	"istio.io/pkg/log"
 	appsV1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -17,7 +17,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (r *KalmOperatorConfigReconciler) reconcileKalmController(config *installv1alpha1.KalmOperatorConfig) error {
+func (r *KalmOperatorConfigReconciler) reconcileKalmController(configSpec installv1alpha1.KalmOperatorConfigSpec) error {
+
+	if err := r.applyFromYaml(r.Ctx, "kalm.yaml"); err != nil {
+		log.Error(err, "install kalm error.")
+		return err
+	}
+
 	// ensure existence of ns: NamespaceKalmSystem
 	expectedNs := corev1.Namespace{
 		ObjectMeta: ctrl.ObjectMeta{
@@ -69,42 +75,10 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(config *installv1
 	terminationGracePeriodSeconds := int64(10)
 	secVolSourceDefaultMode := int32(420)
 
-	controllerImgTag := getKalmControllerVersion(config)
+	controllerImgTag := getKalmControllerVersion(configSpec)
 	img := fmt.Sprintf("%s:%s", KalmControllerImgRepo, controllerImgTag)
 
-	authProxyVersion := getKalmAuthProxyVersion(config)
-
-	var envUseLetsencryptProductionAPI string
-	var extDNSServerIP string
-
-	controllerConfig := config.Spec.Controller
-	if controllerConfig != nil {
-		if controllerConfig.UseLetsEncryptProductionAPI {
-			envUseLetsencryptProductionAPI = "true"
-		} else {
-			envUseLetsencryptProductionAPI = "false"
-		}
-
-		extDNSServerIP = controllerConfig.ExternalDNSServerIP
-	}
-
-	isLocalMode := strconv.FormatBool(config.Spec.KalmType == "local")
-	physicalClusterID := config.Spec.PhysicalClusterID
-
-	var cloudflareToken string
-	var cloudflareDomainToZoneConfig map[string]string
-
-	cloudflareConfig := config.Spec.CloudflareConfig
-	if cloudflareConfig != nil {
-		cloudflareToken = cloudflareConfig.APIToken
-		cloudflareDomainToZoneConfig = cloudflareConfig.DomainToZoneIDConfig
-	}
-
-	var configs []string
-	for domain, zone := range cloudflareDomainToZoneConfig {
-		configs = append(configs, fmt.Sprintf("%s:%s", domain, zone))
-	}
-	configStr := strings.Join(configs, ";")
+	envVars := getEnvVarsForController(configSpec)
 
 	dpName := "kalm-controller"
 	expectedKalmController := appsV1.Deployment{
@@ -154,19 +128,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(config *installv1
 							Image:           img,
 							ImagePullPolicy: "Always",
 							Name:            "manager",
-							Env: []corev1.EnvVar{
-								{Name: "ENABLE_WEBHOOKS", Value: "true"},
-								{Name: "KALM_VERSION", Value: controllerImgTag},
-								{Name: "KALM_AUTH_PROXY_VERSION", Value: authProxyVersion},
-								{Name: v1alpha1.ENV_USE_LETSENCRYPT_PRODUCTION_API, Value: envUseLetsencryptProductionAPI},
-								{Name: v1alpha1.ENV_KALM_IS_IN_LOCAL_MODE, Value: isLocalMode},
-								{Name: v1alpha1.ENV_KALM_PHYSICAL_CLUSTER_ID, Value: physicalClusterID},
-								{Name: v1alpha1.ENV_KALM_BASE_APP_DOMAIN, Value: config.Spec.BaseAppDomain},
-								{Name: v1alpha1.ENV_KALM_BASE_DNS_DOMAIN, Value: config.Spec.BaseDNSDomain},
-								{Name: v1alpha1.ENV_CLOUDFLARE_TOKEN, Value: cloudflareToken},
-								{Name: v1alpha1.ENV_CLOUDFLARE_DOMAIN_TO_ZONEID_CONFIG, Value: configStr},
-								{Name: v1alpha1.ENV_EXTERNAL_DNS_SERVER_IP, Value: extDNSServerIP},
-							},
+							Env:             envVars,
 							Ports: []corev1.ContainerPort{
 								{
 									Name:          "webhook-server",
@@ -235,6 +197,86 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(config *installv1
 	return err
 }
 
+func getEnvVarsForController(configSpec installv1alpha1.KalmOperatorConfigSpec) []corev1.EnvVar {
+	controllerImgTag := getKalmControllerVersion(configSpec)
+	authProxyVersion := getKalmAuthProxyVersion(configSpec)
+
+	var envUseLetsencryptProductionAPI string
+	var extDNSServerIP string
+
+	controllerConfig := configSpec.Controller
+	if controllerConfig != nil {
+		if controllerConfig.UseLetsEncryptProductionAPI {
+			envUseLetsencryptProductionAPI = "true"
+		} else {
+			envUseLetsencryptProductionAPI = "false"
+		}
+
+		extDNSServerIP = controllerConfig.ExternalDNSServerIP
+	}
+
+	kalmMode := DecideKalmMode(configSpec)
+	physicalClusterID := configSpec.PhysicalClusterID
+
+	var cloudflareDomainToZoneConfigStr string
+	var cloudflareToken string
+
+	var cloudflareConfig *installv1alpha1.CloudflareConfig
+	if configSpec.SaaSModeConfig != nil {
+		cloudflareConfig = configSpec.SaaSModeConfig.CloudflareConfig
+	} else if configSpec.LocalModeConfig != nil {
+		cloudflareConfig = configSpec.LocalModeConfig.CloudflareConfig
+	}
+
+	if cloudflareConfig != nil {
+		cloudflareDomainToZoneConfigStr = getCloudflareDomainToZoneConfigStr(cloudflareConfig)
+		cloudflareToken = cloudflareConfig.APIToken
+	}
+
+	var baseAppDomain string
+	var baseDNSDomain string
+
+	if configSpec.SaaSModeConfig != nil {
+		baseAppDomain = configSpec.SaaSModeConfig.BaseAppDomain
+		baseDNSDomain = configSpec.SaaSModeConfig.BaseDNSDomain
+	} else if configSpec.BYOCModeConfig != nil {
+		baseAppDomain = configSpec.BYOCModeConfig.BaseAppDomain
+		baseDNSDomain = configSpec.BYOCModeConfig.BaseDNSDomain
+	}
+
+	envVars := []corev1.EnvVar{
+		{Name: "ENABLE_WEBHOOKS", Value: "true"},
+		{Name: "KALM_VERSION", Value: controllerImgTag},
+		{Name: "KALM_AUTH_PROXY_VERSION", Value: authProxyVersion},
+		{Name: v1alpha1.ENV_USE_LETSENCRYPT_PRODUCTION_API, Value: envUseLetsencryptProductionAPI},
+		{Name: v1alpha1.ENV_KALM_MODE, Value: string(kalmMode)},
+		{Name: v1alpha1.ENV_KALM_PHYSICAL_CLUSTER_ID, Value: physicalClusterID},
+		{Name: v1alpha1.ENV_KALM_BASE_APP_DOMAIN, Value: baseAppDomain},
+		{Name: v1alpha1.ENV_KALM_BASE_DNS_DOMAIN, Value: baseDNSDomain},
+		{Name: v1alpha1.ENV_CLOUDFLARE_TOKEN, Value: cloudflareToken},
+		{Name: v1alpha1.ENV_CLOUDFLARE_DOMAIN_TO_ZONEID_CONFIG, Value: cloudflareDomainToZoneConfigStr},
+		{Name: v1alpha1.ENV_EXTERNAL_DNS_SERVER_IP, Value: extDNSServerIP},
+	}
+
+	return envVars
+}
+
+func getCloudflareDomainToZoneConfigStr(cloudflareConfig *installv1alpha1.CloudflareConfig) string {
+	var cloudflareDomainToZoneConfig map[string]string
+
+	if cloudflareConfig != nil {
+		cloudflareDomainToZoneConfig = cloudflareConfig.DomainToZoneIDConfig
+	}
+
+	var configs []string
+	for domain, zone := range cloudflareDomainToZoneConfig {
+		configs = append(configs, fmt.Sprintf("%s:%s", domain, zone))
+	}
+	configStr := strings.Join(configs, ";")
+
+	return configStr
+}
+
 func getControllerArgs() []string {
 	args := []string{
 		"--enable-leader-election",
@@ -244,25 +286,25 @@ func getControllerArgs() []string {
 	return args
 }
 
-func getKalmControllerVersion(config *installv1alpha1.KalmOperatorConfig) string {
-	c := config.Spec.Controller
+func getKalmControllerVersion(configSpec installv1alpha1.KalmOperatorConfigSpec) string {
+	c := configSpec.Controller
 	if c != nil {
 		if c.Version != nil && *c.Version != "" {
 			return *c.Version
 		}
 	}
 
-	if config.Spec.Version != "" {
-		return config.Spec.Version
+	if configSpec.Version != "" {
+		return configSpec.Version
 	}
 
-	if config.Spec.KalmVersion != "" {
-		return config.Spec.KalmVersion
+	if configSpec.KalmVersion != "" {
+		return configSpec.KalmVersion
 	}
 
 	return "latest"
 }
 
-func getKalmAuthProxyVersion(config *installv1alpha1.KalmOperatorConfig) string {
-	return getKalmDashboardVersion(config)
+func getKalmAuthProxyVersion(configSpec installv1alpha1.KalmOperatorConfigSpec) string {
+	return getKalmDashboardVersion(configSpec)
 }

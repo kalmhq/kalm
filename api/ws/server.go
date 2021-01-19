@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/log"
-	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 )
@@ -23,10 +22,9 @@ type WsHandler struct {
 	clientManager client.ClientManager
 	clientPool    *ClientPool
 	logger        *zap.Logger
-	isLocalMode   bool
 }
 
-func NewWsHandler(clientManager client.ClientManager, isLocalMode bool) *WsHandler {
+func NewWsHandler(clientManager client.ClientManager) *WsHandler {
 	clientPool := NewClientPool()
 	go clientPool.run()
 
@@ -34,7 +32,6 @@ func NewWsHandler(clientManager client.ClientManager, isLocalMode bool) *WsHandl
 		clientManager: clientManager,
 		clientPool:    clientPool,
 		logger:        log.DefaultLogger(),
-		isLocalMode:   isLocalMode,
 	}
 }
 
@@ -59,15 +56,6 @@ func (h *WsHandler) Serve(c echo.Context) error {
 
 	clientInfo, err := h.clientManager.GetClientInfoFromContext(c)
 	if err == nil && clientInfo != nil {
-		if h.isLocalMode {
-			if clientInfo.Tenant == "" {
-				clientInfo.Tenant = v1alpha1.DefaultGlobalTenantName
-			}
-			if len(clientInfo.Tenants) == 0 {
-				clientInfo.Tenants = []string{v1alpha1.DefaultGlobalTenantName}
-			}
-		}
-
 		clt.clientInfo = clientInfo
 	}
 

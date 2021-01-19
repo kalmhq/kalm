@@ -20,25 +20,67 @@ spec:
     plural: kalmoperatorconfigs
     singular: kalmoperatorconfig
   scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: KalmOperatorConfig is the Schema for the kalmoperatorconfigs API
       properties:
         apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
+          description:
+            "APIVersion defines the versioned schema of this representation
             of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources"
           type: string
         kind:
-          description: 'Kind is a string value representing the REST resource this
+          description:
+            "Kind is a string value representing the REST resource this
             object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"
           type: string
         metadata:
           type: object
         spec:
           description: KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
           properties:
+            byocModeConfig:
+              properties:
+                baseAppDomain:
+                  description: "like: foobar.byoc-clusters.kalm-apps.com"
+                  type: string
+                baseDNSDomain:
+                  description: "like: foobar.byoc-clusters.kalm-dns.com"
+                  type: string
+                baseDashboardDomain:
+                  description: "like: foobar.byoc.kalm.dev"
+                  type: string
+                clusterName:
+                  type: string
+                kalmSaaSDomain:
+                  type: string
+                oidcIssuer:
+                  properties:
+                    clientId:
+                      type: string
+                    clientSecret:
+                      type: string
+                    issuerURL:
+                      description: "like: https://staging.kalm.dev/oidc"
+                      type: string
+                  type: object
+                owner:
+                  type: string
+              type: object
+            controller:
+              description: Controller Config
+              properties:
+                externalDNSServerIP:
+                  type: string
+                useLetsencryptProductionAPI:
+                  type: boolean
+                version:
+                  type: string
+              type: object
             dashboard:
               description: Dashboard Config
               properties:
@@ -58,25 +100,81 @@ spec:
                       - value
                     type: object
                   type: array
+                replicas:
+                  format: int32
+                  type: integer
                 version:
                   type: string
               type: object
-            kalmVersion:
-              description: deprecated
+            kalmType:
+              description: deprecated, diff mode has diff config now
               type: string
+            kalmVersion:
+              description: deprecated, use Version instead
+              type: string
+            localModeConfig:
+              properties:
+                cloudflareConfig:
+                  properties:
+                    apiToken:
+                      type: string
+                    domainToZoneIDConfig:
+                      additionalProperties:
+                        type: string
+                      type: object
+                  type: object
+              type: object
+            physicalClusterId:
+              type: string
+            saasModeConfig:
+              properties:
+                baseAppDomain:
+                  description: "like: us-west1-1.clusters.kalm-apps.com"
+                  type: string
+                baseDNSDomain:
+                  description: "like: us-west1-1.clusters.kalm-dns.com"
+                  type: string
+                baseDashboardDomain:
+                  description: "like: us-west1-1.kalm.dev"
+                  type: string
+                cloudflareConfig:
+                  properties:
+                    apiToken:
+                      type: string
+                    domainToZoneIDConfig:
+                      additionalProperties:
+                        type: string
+                      type: object
+                  type: object
+                oidcIssuer:
+                  properties:
+                    clientId:
+                      type: string
+                    clientSecret:
+                      type: string
+                    issuerURL:
+                      description: "like: https://staging.kalm.dev/oidc"
+                      type: string
+                  type: object
+              type: object
             skipCertManagerInstallation:
               type: boolean
             skipIstioInstallation:
               type: boolean
-            skipKalmControllerInstallation:
-              type: boolean
             skipKalmDashboardInstallation:
+              description: SkipKalmControllerInstallation bool `json:"skipKalmControllerInstallation,omitempty"`
               type: boolean
             version:
               type: string
           type: object
         status:
           description: KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
+          properties:
+            byocModeStatus:
+              properties:
+                clusterInfoHasSendToKalmSaaS:
+                  type: boolean
+              type: object
           type: object
       type: object
   version: v1alpha1
@@ -95,12 +193,12 @@ apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   annotations:
-    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: "*"
   name: kalm-privileged
 spec:
   allowPrivilegeEscalation: true
   allowedCapabilities:
-    - '*'
+    - "*"
   fsGroup:
     rule: RunAsAny
   hostIPC: true
@@ -117,7 +215,7 @@ spec:
   supplementalGroups:
     rule: RunAsAny
   volumes:
-    - '*'
+    - "*"
 ---
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
@@ -211,27 +309,27 @@ rules:
       - serviceaccounts
       - services
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - acme.cert-manager.io
     resources:
-      - '*'
+      - "*"
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - admissionregistration.k8s.io
     resources:
       - mutatingwebhookconfigurations
       - validatingwebhookconfigurations
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - apiextensions.k8s.io
     resources:
       - customresourcedefinitions
       - customresourcedefinitions.apiextensions.k8s.io
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - apiregistration.k8s.io
     resources:
@@ -251,7 +349,7 @@ rules:
       - replicasets
       - statefulsets
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - auditregistration.k8s.io
     resources:
@@ -264,33 +362,33 @@ rules:
   - apiGroups:
       - authentication.istio.io
     resources:
-      - '*'
+      - "*"
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - autoscaling
     resources:
       - horizontalpodautoscalers
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - cert-manager.io
     resources:
-      - '*'
+      - "*"
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - config.istio.io
     resources:
-      - '*'
+      - "*"
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - core.kalm.dev
     resources:
-      - '*'
+      - "*"
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - extensions
     resources:
@@ -302,13 +400,13 @@ rules:
       - replicasets
       - statefulsets
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - install.istio.io
     resources:
-      - '*'
+      - "*"
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - install.kalm.dev
     resources:
@@ -339,16 +437,16 @@ rules:
   - apiGroups:
       - networking.istio.io
     resources:
-      - '*'
+      - "*"
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - policy
     resources:
       - poddisruptionbudgets*
       - podsecuritypolicies
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - rbac.authorization.k8s.io
     resources:
@@ -357,13 +455,13 @@ rules:
       - rolebindings
       - roles
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - rbac.istio.io
     resources:
-      - '*'
+      - "*"
     verbs:
-      - '*'
+      - "*"
   - apiGroups:
       - route.openshift.io
     resources:
@@ -373,9 +471,9 @@ rules:
   - apiGroups:
       - security.istio.io
     resources:
-      - '*'
+      - "*"
     verbs:
-      - '*'
+      - "*"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole

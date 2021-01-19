@@ -1,0 +1,20 @@
+# permissions for end users to view dnsrecords.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dnsrecord-viewer-role
+rules:
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - dnsrecords
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - dnsrecords/status
+  verbs:
+  - get

@@ -15,25 +15,6 @@ const (
 	DefaultTenantUserForLocal = "global"
 )
 
-func (h *ApiHandler) SetTenantForLocalModeIfMissing(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		currentUser, ok := c.Get(CURRENT_USER_KEY).(*client.ClientInfo)
-		if !ok || currentUser == nil {
-			return nil
-		}
-
-		if len(currentUser.Tenants) == 0 {
-			currentUser.Tenants = []string{DefaultTenantUserForLocal}
-		}
-
-		if currentUser.Tenant == "" {
-			currentUser.Tenant = DefaultTenantUserForLocal
-		}
-
-		return next(c)
-	}
-}
-
 func (h *ApiHandler) RequireUserMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		currentUser := c.Get(CURRENT_USER_KEY).(*client.ClientInfo)
@@ -42,20 +23,17 @@ func (h *ApiHandler) RequireUserMiddleware(next echo.HandlerFunc) echo.HandlerFu
 			return errors.NewUnauthorized("")
 		}
 
-		// for SaaS version, tenants must be set
-		if !h.IsLocalMode {
-			if len(currentUser.Tenants) == 0 {
-				return errors.NewUnauthorized("No tenants")
-			}
+		if len(currentUser.Tenants) == 0 {
+			return errors.NewUnauthorized("No tenants")
+		}
 
-			if currentUser.Tenant == "" {
-				return errors.NewBadRequest(
-					fmt.Sprintf(
-						"Can not figure out which tenant you are using. Your tenants are %s. Try set \"selected-tenant\" in cookie, or use original kalm dashboard url.",
-						strings.Join(currentUser.Tenants, ", "),
-					),
-				)
-			}
+		if currentUser.Tenant == "" {
+			return errors.NewBadRequest(
+				fmt.Sprintf(
+					"Can not figure out which tenant you are using. Your tenants are %s. Try set \"selected-tenant\" in cookie, or use original kalm dashboard url.",
+					strings.Join(currentUser.Tenants, ", "),
+				),
+			)
 		}
 
 		return next(c)
