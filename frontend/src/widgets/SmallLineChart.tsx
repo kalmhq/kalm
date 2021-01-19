@@ -9,6 +9,7 @@ import React from "react";
 import { ChartData, Line } from "react-chartjs-2";
 import { MetricList } from "types/common";
 import { getStartTimestamp, TimestampFilter } from "utils/date";
+import { formatCPU, formatMemory } from "utils/sizeConv";
 import { KTooltip } from "widgets/KTooltip";
 import { WarningColorText } from "widgets/Text";
 
@@ -319,37 +320,6 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
 }
 
 export const LineChart = withStyles(lineChartStyles)(LineChartRaw);
-
-export const formatMemory = (value: number, si?: boolean): string => {
-  const thresh = si ? 1000 : 1024;
-  if (Math.abs(value) < thresh) {
-    return value + " B";
-  }
-  const units = si ? ["k", "M", "G", "T", "P", "E", "Z", "Y"] : ["Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"];
-  let u = -1;
-  do {
-    value /= thresh;
-    ++u;
-  } while (Math.abs(value) >= thresh && u < units.length - 1);
-  return value.toFixed(1) + " " + units[u];
-
-  // const MiBytes = 1024 * 1024;
-  // return (value / MiBytes).toFixed(0) + " Mi";
-};
-
-export const formatNumerical = (value: number): string => {
-  return value.toString();
-};
-
-const formatCPU = (value: number): string => {
-  value = parseInt(`${value}`);
-
-  if (value < 1000) {
-    return value + " m";
-  }
-
-  return value / 1000 + " Core";
-};
 
 export const BigCPULineChart = (props: Pick<LineChartProps, "data" | "yAxesWidth" | "filter">) => {
   return (

@@ -40,6 +40,7 @@ import {
   RESOURCE_TYPE_ROLE_BINDING,
   RESOURCE_TYPE_SERVICE,
   RESOURCE_TYPE_SSO,
+  RESOURCE_TYPE_TENANT,
   RESOURCE_TYPE_VOLUME,
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
@@ -285,6 +286,17 @@ class WithDataRaw extends React.PureComponent<Props> {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
             kind: RESOURCE_TYPE_DOMAIN,
+            payload: {
+              action: data.action,
+              data: data.data,
+            },
+          });
+          break;
+        }
+        case RESOURCE_TYPE_TENANT: {
+          dispatch({
+            type: WATCHED_RESOURCE_CHANGE,
+            kind: RESOURCE_TYPE_TENANT,
             payload: {
               action: data.action,
               data: data.data,

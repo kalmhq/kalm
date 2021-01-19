@@ -45,6 +45,7 @@ func StartWatching(c *Client) {
 	registerWatchHandler(c, &informerCache, &v1alpha1.RoleBinding{}, buildRoleBindingResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.ACMEServer{}, buildAcmeServerResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.Domain{}, buildDomainResMessage)
+	registerWatchHandler(c, &informerCache, &v1alpha1.Tenant{}, buildTenantResMessage)
 
 	informerCache.Start(c.stopWatcher)
 }
@@ -624,5 +625,22 @@ func buildDomainResMessage(c *Client, action string, objWatched interface{}) (*R
 		Kind:   "Domain",
 		Action: action,
 		Data:   resources.WrapDomainAsResp(*domain),
+	}, nil
+}
+
+func buildTenantResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	tenant, ok := objWatched.(*v1alpha1.Tenant)
+	if !ok {
+		return nil, errors.New("convert watch obj to Tenant failed")
+	}
+
+	if tenant.Name != c.clientInfo.Tenant {
+		return nil, nil
+	}
+
+	return &ResMessage{
+		Kind:   "Tenant",
+		Action: action,
+		Data:   resources.FromCRDTenant(tenant),
 	}, nil
 }
