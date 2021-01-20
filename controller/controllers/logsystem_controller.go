@@ -21,6 +21,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
@@ -183,12 +184,18 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicLoki() error {
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: r.req.Namespace,
 			Name:      names.Loki,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultGlobalTenantName,
+			},
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			Annotations: map[string]string{
 				"sidecar.istio.io/inject":                         "false",
 				"core.kalm.dev/podExt-securityContext-runAsGroup": "0",
 				"core.kalm.dev/podExt-securityContext-runAsUser":  "0",
+			},
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultGlobalTenantName,
 			},
 			Image:        lokiImage,
 			WorkloadType: corev1alpha1.WorkloadTypeStatefulSet,
@@ -292,8 +299,14 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: r.req.Namespace,
 			Name:      names.Grafana,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultGlobalTenantName,
+			},
 		},
 		Spec: corev1alpha1.ComponentSpec{
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultGlobalTenantName,
+			},
 			Image:        grafanaImage,
 			WorkloadType: corev1alpha1.WorkloadTypeServer,
 			Replicas:     &replicas,
@@ -409,10 +422,16 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicPromtail() error {
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: r.req.Namespace,
 			Name:      names.Promtail,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultGlobalTenantName,
+			},
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			Annotations: map[string]string{
 				"sidecar.istio.io/inject": "false",
+			},
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultGlobalTenantName,
 			},
 			Image:        promtailImage,
 			WorkloadType: corev1alpha1.WorkloadTypeDaemonSet,
