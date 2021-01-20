@@ -24,7 +24,10 @@ import (
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/utils"
 )
+
+const DNSRecordFinalizer = "dns-record-finalizer"
 
 // DNSRecordReconciler reconciles a DNSRecord object
 type DNSRecordReconciler struct {
@@ -69,6 +72,28 @@ func (r *DNSRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
+	copied := record.DeepCopy()
+
+	if record.DeletionTimestamp != nil {
+		// ensure DNS Record is deleted before deletion of CDR
+		if exist, err := r.dnsMgr.Exist(record.Spec.DNSType, record.Spec.Domain, record.Spec.DNSTarget); err != nil {
+			return ctrl.Result{}, err
+		} else if exist {
+			if err := r.dnsMgr.DeleteDNSRecord(record.Spec.DNSType, record.Spec.Domain); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+		copied.Finalizers = utils.RemoveString(copied.Finalizers, DNSRecordFinalizer)
+
+		return ctrl.Result{}, r.Update(r.ctx, copied)
+	} else {
+		if !utils.ContainsString(copied.Finalizers, DNSRecordFinalizer) {
+			copied.Finalizers = append(copied.Finalizers, DNSRecordFinalizer)
+			return ctrl.Result{}, r.Update(r.ctx, copied)
+		}
+	}
+
 	err := r.dnsMgr.UpsertDNSRecord(record.Spec.DNSType, record.Spec.Domain, record.Spec.DNSTarget)
 	if err != nil {
 		if err == NoCloudflareZoneIDForDomainError {
@@ -86,7 +111,6 @@ func (r *DNSRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
-	copied := record.DeepCopy()
 	copied.Status.IsConfigured = recordExist
 
 	return ctrl.Result{}, r.Status().Update(r.ctx, copied)
