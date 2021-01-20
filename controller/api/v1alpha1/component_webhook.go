@@ -138,7 +138,8 @@ func (r *Component) ValidateCreate() error {
 
 		tenant, err := GetTenantFromObj(r)
 		if err != nil {
-			return NoTenantFoundError
+			componentlog.Info("fail to get tenant from obj", "obj", getKey(r), "err", err)
+			return err
 		}
 
 		// pre-check if resource of this component will exceed quota
