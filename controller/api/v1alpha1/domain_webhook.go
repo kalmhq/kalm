@@ -199,7 +199,7 @@ func (r *Domain) ValidateUpdate(old runtime.Object) error {
 	if oldDomain.Spec.DNSTarget != r.Spec.DNSTarget ||
 		oldDomain.Spec.DNSType != r.Spec.DNSType ||
 		oldDomain.Spec.Domain != r.Spec.Domain {
-		return fmt.Errorf("domain is immutable, should not change it")
+		return fmt.Errorf("domain is immutable, should not change it, old: %+v, new: %+v", oldDomain, r)
 	}
 
 	return nil
