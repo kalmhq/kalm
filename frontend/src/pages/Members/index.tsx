@@ -62,7 +62,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     const { activeNamespaceName, isFrontendMembersManagementEnabled } = this.props;
     const { newTenantUrl, tenant } = this.props;
 
-    if (isFrontendMembersManagementEnabled) {
+    if (!isFrontendMembersManagementEnabled) {
       return (
         <Button
           color="primary"
