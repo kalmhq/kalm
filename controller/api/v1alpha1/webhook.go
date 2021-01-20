@@ -137,25 +137,21 @@ func GetTenantByName(tenantName string) (*Tenant, error) {
 
 func InheritTenantFromNamespace(obj runtime.Object) error {
 	objMeta, err := meta.Accessor(obj)
-
 	if err != nil {
 		return err
 	}
 
 	namespaceName := objMeta.GetNamespace()
-
 	if namespaceName == "" {
 		return fmt.Errorf("can't use InheritTenantFromNamespace for a cluster scope resource")
 	}
 
 	labels := objMeta.GetLabels()
-
 	if labels == nil {
 		labels = make(map[string]string)
 	}
 
 	var namespace v1.Namespace
-
 	if err := webhookClient.Get(context.Background(), types.NamespacedName{Name: namespaceName}, &namespace); err != nil {
 		return nil
 	}
@@ -165,18 +161,17 @@ func InheritTenantFromNamespace(obj runtime.Object) error {
 		return err
 	}
 
-	namespaceLabels := namespaceMeta.GetLabels()
-
 	var tenant string
 
+	namespaceLabels := namespaceMeta.GetLabels()
 	if namespaceLabels != nil {
 		tenant = namespaceLabels[TenantNameLabelKey]
 	}
 
-	if tenant == "" {
-		//?
-		tenant = DefaultFakeTenantName
-	}
+	// if tenant == "" {
+	// 	//?
+	// 	tenant = DefaultFakeTenantName
+	// }
 
 	labels[TenantNameLabelKey] = tenant
 	objMeta.SetLabels(labels)

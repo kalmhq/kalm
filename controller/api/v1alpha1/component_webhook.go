@@ -138,7 +138,7 @@ func (r *Component) ValidateCreate() error {
 
 		tenant, err := GetTenantFromObj(r)
 		if err != nil {
-			componentlog.Info("fail to get tenant from obj", "obj", getKey(r), "err", err)
+			componentlog.Info("err when GetTenantFromObj", "obj", getKey(r), "err", err)
 			return err
 		}
 
@@ -226,9 +226,13 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 				return nil
 			}
 
-			fmt.Println(">>>>>>>>", isMarkedAsExceedingQuota, tryingToUseMore, r.Labels)
+			componentlog.Info("exceed resource quota",
+				"isMarkedAsExceedingQuota", isMarkedAsExceedingQuota,
+				"tryingToUseMore", tryingToUseMore,
+				"labels", r.Labels)
 
 			emitWarning(r, ReasonExceedingQuota, fmt.Sprintf("update of component will exceed resource quota, denied, exceeding list: %s", infoList))
+
 			return fmt.Errorf("update this component will exceed resource quota")
 		}
 	}
