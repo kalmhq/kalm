@@ -2,6 +2,7 @@ import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@mater
 import { deleteComponentAction } from "actions/component";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { api } from "api";
+import { push } from "connected-react-router";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
@@ -227,6 +228,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
             popupTitle="DELETE COMPONENT?"
             confirmedAction={async () => {
               await dispatch(deleteComponentAction(component.name, activeNamespaceName));
+              dispatch(push("/applications/" + activeNamespaceName + "/components"));
               dispatch(setSuccessNotificationAction("Delete component successfully"));
             }}
           />
