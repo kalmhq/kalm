@@ -226,9 +226,11 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           {
             title: "Wait the component to be running.",
             shouldCompleteByState: (state: RootState) => {
-              const components = state.components.components[applicationName];
+              const components =
+                state.components.components[applicationName] ||
+                state.components.components[tenantName + "-" + applicationName];
 
-              if (!components) {
+              if (!components || components.length === 0) {
                 return false;
               }
 
