@@ -3,11 +3,10 @@
 1. start localhost k8s cluster
 
     ```bash
-    minikube start --memory 8192 --cpus 4  --kubernetes-version v1.15.0
+    minikube start --memory 8192 --cpus 4  --kubernetes-version v1.18.0
     minikube addons enable metrics-server
     ```
 2. Start operator
-
     ```
     # in a new bash session
     cd operator
@@ -24,7 +23,6 @@
     ```
 
 4. Start Controller
-
     ```
     # in a new bash session
     cd controller
@@ -33,13 +31,13 @@
     ```
 
 5. Start Api Server
-
     ```bash
     cd api
-    air
 
     # if you don't have air installed
     go get -u github.com/cosmtrek/air
+
+    air
     ```
 
 6. Start frontend
@@ -51,4 +49,11 @@
 
     npm install
     npm run start
+    ```
+
+7. Get a access token
+    ```bash
+    curl -X POST http://localhost:3010/admin/debug/admin
+
+    # use the token to login via frontend
     ```
