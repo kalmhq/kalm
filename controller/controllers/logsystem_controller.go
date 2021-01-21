@@ -297,13 +297,6 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 
 	replicas := int32(1)
 
-	provisionDataSourceConfig, err := r.getProvisionDataSourceConfigForGrafana(names.Loki)
-	if err != nil {
-		return err
-	}
-
-	r.Log.Info("provisionDataSourceConfig", "content", provisionDataSourceConfig)
-
 	grafana := &corev1alpha1.Component{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: r.req.Namespace,
@@ -368,13 +361,13 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 					},
 				},
 			},
-			PreInjectedFiles: []corev1alpha1.PreInjectFile{
-				{
-					MountPath: "/etc/grafana/provisioning/datasources/loki.yaml",
-					Content:   provisionDataSourceConfig,
-					Runnable:  false,
-				},
-			},
+			// PreInjectedFiles: []corev1alpha1.PreInjectFile{
+			// 	{
+			// 		MountPath: "/etc/grafana/provisioning/datasources/loki.yaml",
+			// 		Content:   provisionDataSourceConfig,
+			// 		Runnable:  false,
+			// 	},
+			// },
 		},
 	}
 
@@ -389,6 +382,21 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 			return err
 		}
 	} else {
+		provisionDataSourceConfig, err := r.getProvisionDataSourceConfigForGrafana(names.Loki)
+		if err == nil {
+			grafana.Spec.PreInjectedFiles = []corev1alpha1.PreInjectFile{
+				{
+					MountPath: "/etc/grafana/provisioning/datasources/loki.yaml",
+					Content:   provisionDataSourceConfig,
+					Runnable:  false,
+				},
+			}
+		} else {
+			r.Log.Info("fail getProvisionDataSourceConfigForGrafana", "err", err)
+		}
+
+		r.Log.Info("provisionDataSourceConfig", "content", provisionDataSourceConfig)
+
 		copied := r.grafana.DeepCopy()
 		copied.Spec = grafana.Spec
 
