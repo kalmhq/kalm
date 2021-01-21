@@ -399,7 +399,7 @@ workflows:
                   </Typography>
                 </Box>
               }
-              targetText={deployAccessToken.name}
+              targetText={"delete"}
               confirmedAction={this.handleDelete}
             />
           </>

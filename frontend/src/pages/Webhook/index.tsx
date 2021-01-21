@@ -135,7 +135,7 @@ class WebhookPageRaw extends React.PureComponent<Props, State> {
               </Typography>
             </Box>
           }
-          targetText={rowData.name}
+          targetText={"delete"}
           confirmedAction={() => dispatch(deleteDeployAccessTokenAction(rowData))}
         />
       </>
