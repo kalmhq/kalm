@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -93,6 +94,63 @@ func (suite *HttpRouteControllerSuite) TestBasicHttpRoute() {
 	v1alpha1.SetTenantForObj(&route, suite.tenant.Name)
 
 	suite.createObject(&route)
+}
+
+func (suite *ComponentControllerSuite) TestDestinationStatus() {
+
+	component := generateEmptyComponent(suite.ns.Name)
+	route := v1alpha1.HttpRoute{
+		ObjectMeta: v1.ObjectMeta{
+			Name: "test",
+		},
+		Spec: v1alpha1.HttpRouteSpec{
+			Methods: []v1alpha1.HttpRouteMethod{"GET", "POST"},
+			Hosts:   []string{"example.com", "example.io"},
+			Paths:   []string{"/", "/api"},
+			Schemes: []v1alpha1.HttpRouteScheme{"http", "https"},
+			Conditions: []v1alpha1.HttpRouteCondition{
+				{
+					Type:     v1alpha1.HttpRouteConditionTypeHeader,
+					Name:     "test-server",
+					Operator: v1alpha1.HRCOEqual,
+					Value:    "nginx",
+				},
+				{
+					Type:     v1alpha1.HttpRouteConditionTypeHeader,
+					Name:     "accept",
+					Operator: v1alpha1.HRCOMatchRegexp,
+					Value:    "ns/json",
+				},
+			},
+			StripPath: true,
+			Destinations: []v1alpha1.HttpRouteDestination{
+				{
+					Host:   (component.Name + "." + component.Namespace + ".svc.cluster.local:" + fmt.Sprint(component.Spec.Ports[0].ServicePort)),
+					Weight: 100,
+				},
+			},
+		},
+	}
+	suite.createObject(&route)
+	suite.Eventually(func() bool {
+		return route.Status.DestinationsStatus[0].Status == "normal"
+	}, "route destination status should be normal")
+
+	// update component port
+	suite.reloadComponent(component)
+	component.Spec.Ports[0].ServicePort = 3322
+	suite.updateComponent(component)
+	suite.Eventually(func() bool {
+		return route.Status.DestinationsStatus[0].Status == "error"
+	}, "route destination status should be error")
+
+	// Delete component port
+	suite.reloadComponent(component)
+	component.Spec.Ports = component.Spec.Ports[:0]
+	suite.updateComponent(component)
+	suite.Eventually(func() bool {
+		return route.Status.DestinationsStatus[0].Status == "error"
+	}, "route destination status should be error")
 }
 
 func TestHttpRouteControllerSuite(t *testing.T) {

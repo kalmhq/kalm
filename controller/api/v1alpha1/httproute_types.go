@@ -140,9 +140,15 @@ type HttpRouteSpec struct {
 	CORS   *HttpRouteCORS   `json:"cors,omitempty"`
 }
 
+type HttpRouteDestinationStatus struct {
+	Status string `json:"status"`
+	Error  string `json:"error,omitempty"`
+}
+
 // HttpRouteStatus defines the observed state of HttpRoute
 type HttpRouteStatus struct {
-	HostCertifications map[string]string `json:"hostCertifications,omitempty"`
+	HostCertifications map[string]string            `json:"hostCertifications,omitempty"`
+	DestinationsStatus []HttpRouteDestinationStatus `json:"destinationsStatus"`
 }
 
 // +kubebuilder:object:root=true
