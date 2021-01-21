@@ -398,32 +398,30 @@ func buildJobResMessage(c *Client, action string, objWatched interface{}) (*ResM
 		return nil, errors.New("convert watch obj to Job failed")
 	}
 
-	if job.Labels["kalm-managed"] != "true" {
+	componentName := job.Labels["kalm-component"]
+	if componentName == "" {
+		return &ResMessage{}, nil
+	}
+
+	tenantName, err := v1alpha1.GetTenantNameFromObj(job)
+	if err != nil {
+		return nil, err
+	}
+
+	if tenantName != c.clientInfo.Tenant {
 		return nil, nil
 	}
 
-	jobTenant := job.Labels[v1alpha1.TenantNameLabelKey]
-	if jobTenant == "" {
+	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+job.Namespace) {
 		return nil, nil
 	}
 
-	curTenant := c.clientInfo.Tenant
-	if jobTenant != curTenant {
-		return nil, nil
+	component, err := c.Builder().GetComponent(job.Namespace, componentName)
+	if err != nil {
+		return nil, err
 	}
 
-	scope := curTenant + "/" + job.Namespace
-	obj := fmt.Sprintf("jobs/%s", job.Name)
-	if !c.clientManager.CanView(c.clientInfo, scope, obj) {
-		return nil, nil
-	}
-
-	return &ResMessage{
-		Namespace: job.Namespace,
-		Kind:      "Job",
-		Action:    action,
-		Data:      resources.BuildJobFromResource(job),
-	}, nil
+	return componentToResMessage(c, "Update", component)
 }
 
 func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
