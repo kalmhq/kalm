@@ -11,12 +11,14 @@ import {
 } from "@material-ui/lab";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import clsx from "clsx";
+import debug from "debug";
 import React, { ReactNode } from "react";
 import { FieldRenderProps } from "react-final-form";
 import { theme } from "theme/theme";
 import { KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
 import { Caption } from "widgets/Label";
 
+const autoCompleteDebug = debug("kalm:auto-compolete");
 export interface AutoCompleteForRenderOption {
   value: string;
   label: string;
@@ -203,6 +205,8 @@ export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueP
     groupUl,
   } = AutoCompleteSingleValueStyle();
 
+  autoCompleteDebug("optionsForRender:", options, optionsForRender);
+
   return (
     <Autocomplete
       openOnFocus
@@ -250,6 +254,8 @@ export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueP
           return value;
         }
 
+        autoCompleteDebug("getOptionLabel:", value, option);
+
         return option.label;
       }}
       renderOption={(value) => {
@@ -262,6 +268,8 @@ export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueP
         if (!option) {
           return null;
         }
+
+        autoCompleteDebug("renderOption:", value, option);
 
         return (
           <div className={groupUl} key={option!.label}>
@@ -302,6 +310,7 @@ export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueP
       onBlur={onBlur}
       forcePopupIcon={true}
       onChange={(_: any, value: string | null) => {
+        autoCompleteDebug("onChange value:", value);
         onChange(value);
       }}
       renderInput={(params) => {
