@@ -326,13 +326,17 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 			},
 			Env: []corev1alpha1.EnvVar{
 				{
-					Name:  "GF_AUTH_ANONYMOUS_ENABLED",
+					Name:  "GF_AUTH_PROXY_ENABLED",
 					Value: "true",
 				},
-				{
-					Name:  "GF_AUTH_ANONYMOUS_ORG_ROLE",
-					Value: "Admin",
-				},
+				// {
+				// 	Name:  "GF_AUTH_ANONYMOUS_ENABLED",
+				// 	Value: "true",
+				// },
+				// {
+				// 	Name:  "GF_AUTH_ANONYMOUS_ORG_ROLE",
+				// 	Value: "Admin",
+				// },
 			},
 			ReadinessProbe: &v1.Probe{
 				PeriodSeconds:    10,
