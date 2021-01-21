@@ -14,9 +14,10 @@ import (
 	"github.com/kalmhq/kalm/controller/api/builtin"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -371,10 +372,23 @@ func randomName() string {
 }
 
 func (suite *BasicSuite) SetupTenant() *v1alpha1.Tenant {
+	// ensure ns: kalm-system exist
+	ns := corev1.Namespace{}
+	err := suite.K8sClient.Get(context.Background(), client.ObjectKey{Name: "kalm-system"}, &ns)
+	if errors.IsNotFound(err) {
+		ns = corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "kalm-system"}}
+		_ = suite.K8sClient.Create(context.Background(), &ns)
+
+		suite.Eventually(func() bool {
+			err := suite.K8sClient.Get(context.Background(), client.ObjectKey{Name: "kalm-system"}, &ns)
+			return err == nil
+		})
+	}
+
 	name := randomName()
 
 	tenant := &v1alpha1.Tenant{
-		ObjectMeta: metaV1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
 		Spec: v1alpha1.TenantSpec{
@@ -408,7 +422,7 @@ func (suite *BasicSuite) SetupTenant() *v1alpha1.Tenant {
 	return tenant
 }
 
-func (suite *BasicSuite) SetupKalmEnabledNs(nameOpt ...string) v1.Namespace {
+func (suite *BasicSuite) SetupKalmEnabledNs(nameOpt ...string) corev1.Namespace {
 	tenant := suite.SetupTenant()
 
 	var name string
@@ -419,8 +433,8 @@ func (suite *BasicSuite) SetupKalmEnabledNs(nameOpt ...string) v1.Namespace {
 		name = randomName()
 	}
 
-	ns := v1.Namespace{
-		ObjectMeta: metaV1.ObjectMeta{
+	ns := corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 			Labels: map[string]string{
 				KalmEnableLabelName:         "true",
@@ -439,9 +453,9 @@ func (suite *BasicSuite) SetupKalmEnabledNs(nameOpt ...string) v1.Namespace {
 	return ns
 }
 
-func (suite *BasicSuite) ensureNsExists(name string) v1.Namespace {
-	ns := v1.Namespace{
-		ObjectMeta: metaV1.ObjectMeta{
+func (suite *BasicSuite) ensureNsExists(name string) corev1.Namespace {
+	ns := corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
 	}
