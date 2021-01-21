@@ -368,6 +368,12 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 		}
 		for j := range route.Spec.Destinations {
 			destination := route.Spec.Destinations[j]
+
+			route.Status.DestinationsStatus[j] = corev1alpha1.HttpRouteDestinationStatus{
+				Status: "error",
+				Error:  "No HttpRoute destination matched",
+			}
+
 			for _, component := range componentList.Items {
 				for _, port := range component.Spec.Ports {
 					if destination.Host == (component.Name + "." + component.Namespace + ".svc.cluster.local:" + fmt.Sprint(port.ServicePort)) {
@@ -376,13 +382,6 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 							Error:  "",
 						}
 					}
-				}
-			}
-
-			if route.Status.DestinationsStatus[j].Status != "normal" {
-				route.Status.DestinationsStatus[j] = corev1alpha1.HttpRouteDestinationStatus{
-					Status: "error",
-					Error:  "No HttpRoute destination matched",
 				}
 			}
 		}
@@ -820,7 +819,7 @@ func (*WatchAllKalmEnvoyFilter) Map(object handler.MapObject) []reconcile.Reques
 }
 func (*WatchAllKalmComponent) Map(object handler.MapObject) []reconcile.Request {
 	component, ok := object.Object.(*corev1alpha1.Component)
-	if !ok || component.Labels == nil || component.Labels[KALM_ROUTE_LABEL] != "true" {
+	if !ok || component.Labels == nil {
 		return nil
 	}
 	return []reconcile.Request{{NamespacedName: types.NamespacedName{}}}

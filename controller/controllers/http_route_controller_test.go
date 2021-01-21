@@ -99,7 +99,7 @@ func (suite *HttpRouteControllerSuite) TestBasicHttpRoute() {
 	suite.createObject(&route)
 }
 
-func (suite *HttpRouteControllerSuite) TestDestinationStatus() {
+func (suite *HttpRouteControllerSuite) TestDestinationsStatus() {
 
 	component := generateEmptyComponent(suite.ns.Name)
 	suite.createComponent(component)
@@ -150,7 +150,6 @@ func (suite *HttpRouteControllerSuite) TestDestinationStatus() {
 	suite.reloadComponent(component)
 	component.Spec.Ports[0].ServicePort = 3322
 	suite.updateComponent(component)
-
 	suite.Eventually(func() bool {
 		suite.reloadObject(types.NamespacedName{Name: route.Name}, &route)
 		return len(route.Status.DestinationsStatus) >= 1 &&
