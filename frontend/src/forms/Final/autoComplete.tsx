@@ -207,57 +207,33 @@ export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueP
 
   autoCompleteDebug("optionsForRender:", options, optionsForRender);
 
+  const getOptionFromValue = (value: string, callback: (op: AutoCompleteForRenderOption) => string): string => {
+    if (!optionsForRender) {
+      return NO_GROUP;
+    }
+
+    const option = optionsForRender?.find((x) => x.value === value);
+
+    if (!option) {
+      return value;
+    }
+
+    return callback(option);
+  };
+
   return (
     <Autocomplete
       openOnFocus
       noOptionsText={noOptionsText}
       options={options}
       size="small"
-      groupBy={(value) => {
-        if (!optionsForRender) {
-          return NO_GROUP;
-        }
-
-        const option = optionsForRender?.find((x) => x.value === value);
-
-        if (!option) {
-          return value;
-        }
-
-        return option.group;
-      }}
+      groupBy={(value) => getOptionFromValue(value, (op) => op.group)}
       filterOptions={createFilterOptions({
         ignoreCase: true,
         matchFrom: "any",
-        stringify: (value: string) => {
-          if (!optionsForRender) {
-            return value;
-          }
-
-          const option = optionsForRender?.find((x) => x.value === value);
-
-          if (!option) {
-            return value;
-          }
-
-          return option.label;
-        },
+        stringify: (value) => getOptionFromValue(value, (op) => op.label),
       })}
-      getOptionLabel={(value: string) => {
-        if (!optionsForRender) {
-          return value;
-        }
-
-        const option = optionsForRender?.find((x) => x.value === value);
-
-        if (!option) {
-          return value;
-        }
-
-        autoCompleteDebug("getOptionLabel:", value, option);
-
-        return option.label;
-      }}
+      getOptionLabel={(value) => getOptionFromValue(value, (op) => op.label)}
       renderOption={(value) => {
         if (!optionsForRender) {
           return value;
@@ -272,7 +248,7 @@ export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueP
         autoCompleteDebug("renderOption:", value, option);
 
         return (
-          <div className={groupUl} key={option!.label}>
+          <div className={groupUl} key={option!.label} data-value={value}>
             <Typography>{option!.label}</Typography>
           </div>
         );
@@ -310,7 +286,6 @@ export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueP
       onBlur={onBlur}
       forcePopupIcon={true}
       onChange={(_: any, value: string | null) => {
-        autoCompleteDebug("onChange value:", value);
         onChange(value);
       }}
       renderInput={(params) => {
