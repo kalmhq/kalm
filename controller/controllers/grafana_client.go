@@ -41,13 +41,13 @@ const GrafanaNS = "log"
 const GrafanaService = "test-grafana"
 const GrafanaServicePort = 3000
 
-var GrafanaAPI = fmt.Sprintf("http//%s.%s:%d", GrafanaService, GrafanaNS, GrafanaServicePort)
+// var GrafanaAPI = fmt.Sprintf("http://%s.%s:%d", GrafanaService, GrafanaNS, GrafanaServicePort)
 
 //todo move to secret
 const grafanaAdmin = "admin"
 const grafanaAdminPwd = "admin"
 
-var GrafanaAPIBasicAuth = fmt.Sprintf("http//%s:%s@%s.%s:%d", grafanaAdmin, grafanaAdminPwd, GrafanaService, GrafanaNS, GrafanaServicePort)
+var GrafanaAPIBasicAuth = fmt.Sprintf("http://%s:%s@%s.%s:%d", grafanaAdmin, grafanaAdminPwd, GrafanaService, GrafanaNS, GrafanaServicePort)
 
 // func (c GrafanaClient) ExistOrg(org string) (bool, error) {
 // 	return false, nil
