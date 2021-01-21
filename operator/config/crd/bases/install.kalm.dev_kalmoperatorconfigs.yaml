@@ -15,6 +15,8 @@ spec:
     plural: kalmoperatorconfigs
     singular: kalmoperatorconfig
   scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: KalmOperatorConfig is the Schema for the kalmoperatorconfigs API
@@ -34,23 +36,33 @@ spec:
         spec:
           description: KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
           properties:
-            baseAppDomain:
-              description: 'like: us-west1-1.clusters.kalm-apps.com'
-              type: string
-            baseDNSDomain:
-              description: 'like: us-west1-1.clusters.kalm-dns.com'
-              type: string
-            baseDashboardDomain:
-              description: 'like: us-west1-1.kalm.dev'
-              type: string
-            cloudflareConfig:
+            byocModeConfig:
               properties:
-                apiToken:
+                baseAppDomain:
+                  description: 'like: foobar.byoc-clusters.kalm-apps.com'
                   type: string
-                domainToZoneIDConfig:
-                  additionalProperties:
-                    type: string
+                baseDNSDomain:
+                  description: 'like: foobar.byoc-clusters.kalm-dns.com'
+                  type: string
+                baseDashboardDomain:
+                  description: 'like: foobar.byoc.kalm.dev'
+                  type: string
+                clusterName:
+                  type: string
+                kalmSaaSDomain:
+                  type: string
+                oidcIssuer:
+                  properties:
+                    clientId:
+                      type: string
+                    clientSecret:
+                      type: string
+                    issuerURL:
+                      description: 'like: https://staging.kalm.dev/oidc'
+                      type: string
                   type: object
+                owner:
+                  type: string
               type: object
             controller:
               description: Controller Config
@@ -88,35 +100,74 @@ spec:
                   type: string
               type: object
             kalmType:
+              description: deprecated, diff mode has diff config now
               type: string
             kalmVersion:
-              description: deprecated
+              description: deprecated, use Version instead
               type: string
-            oidcIssuer:
+            localModeConfig:
               properties:
-                clientId:
-                  type: string
-                clientSecret:
-                  type: string
-                issuerURL:
-                  description: 'like: https://staging.kalm.dev/oidc'
-                  type: string
+                cloudflareConfig:
+                  properties:
+                    apiToken:
+                      type: string
+                    domainToZoneIDConfig:
+                      additionalProperties:
+                        type: string
+                      type: object
+                  type: object
               type: object
             physicalClusterId:
               type: string
+            saasModeConfig:
+              properties:
+                baseAppDomain:
+                  description: 'like: us-west1-1.clusters.kalm-apps.com'
+                  type: string
+                baseDNSDomain:
+                  description: 'like: us-west1-1.clusters.kalm-dns.com'
+                  type: string
+                baseDashboardDomain:
+                  description: 'like: us-west1-1.kalm.dev'
+                  type: string
+                cloudflareConfig:
+                  properties:
+                    apiToken:
+                      type: string
+                    domainToZoneIDConfig:
+                      additionalProperties:
+                        type: string
+                      type: object
+                  type: object
+                oidcIssuer:
+                  properties:
+                    clientId:
+                      type: string
+                    clientSecret:
+                      type: string
+                    issuerURL:
+                      description: 'like: https://staging.kalm.dev/oidc'
+                      type: string
+                  type: object
+              type: object
             skipCertManagerInstallation:
               type: boolean
             skipIstioInstallation:
               type: boolean
-            skipKalmControllerInstallation:
-              type: boolean
             skipKalmDashboardInstallation:
+              description: SkipKalmControllerInstallation bool `json:"skipKalmControllerInstallation,omitempty"`
               type: boolean
             version:
               type: string
           type: object
         status:
           description: KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
+          properties:
+            byocModeStatus:
+              properties:
+                clusterInfoHasSendToKalmSaaS:
+                  type: boolean
+              type: object
           type: object
       type: object
   version: v1alpha1

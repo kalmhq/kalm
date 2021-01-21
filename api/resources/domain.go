@@ -5,16 +5,22 @@ import "github.com/kalmhq/kalm/controller/api/v1alpha1"
 type Domain struct {
 	// Req
 	Domain string `json:"domain"`
+
 	// Resp
-	Name                  string `json:"name"`
-	Status                string `json:"status"`
-	RecordType            string `json:"recordType"`
-	Target                string `json:"target"`
-	IsBuiltIn             bool   `json:"isBuiltIn"`
-	Txt                   string `json:"txt"`
-	TxtStatus             string `json:"txtStatus"`
-	DNSTargetReadyToCheck bool   `json:"dnsTargetReadyToCheck"`
-	TxtReadyToCheck       bool   `json:"txtReadyToCheck"`
+	Name      string `json:"name"`
+	IsBuiltIn bool   `json:"isBuiltIn"`
+
+	// A or CNAME record
+	Status     string `json:"status"`
+	RecordType string `json:"recordType"`
+	Target     string `json:"target"`
+
+	// TXT record
+	Txt       string `json:"txt"`
+	TxtStatus string `json:"txtStatus"`
+
+	DNSTargetReadyToCheck bool `json:"dnsTargetReadyToCheck"`
+	TxtReadyToCheck       bool `json:"txtReadyToCheck"`
 }
 
 func WrapDomainAsResp(d v1alpha1.Domain) Domain {

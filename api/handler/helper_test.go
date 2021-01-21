@@ -13,7 +13,6 @@ import (
 	"time"
 
 	client2 "github.com/kalmhq/kalm/api/client"
-	"github.com/kalmhq/kalm/api/config"
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/server"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -94,7 +93,7 @@ func (suite *WithControllerTestSuite) SetupSuite() {
 func (suite *WithControllerTestSuite) SetupApiServer(policies ...string) *echo.Echo {
 	e := server.NewEchoInstance()
 	clientManager := client2.NewFakeClientManager(suite.cfg, strings.Join(policies, ""))
-	apiHandler := NewApiHandler(clientManager, false, config.BaseDomainConfig{})
+	apiHandler := NewApiHandler(clientManager)
 	apiHandler.InstallMainRoutes(e)
 	apiHandler.InstallWebhookRoutes(e)
 	return e

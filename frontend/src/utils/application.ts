@@ -11,7 +11,7 @@ import {
   VolumeTypePersistentVolumeClaimTemplateNew,
   workloadTypeServer,
 } from "types/componentTemplate";
-import { formatDate, formatTimeDistance } from "utils/date";
+import { formatAgeFromNow, formatDate } from "utils/date";
 import { sizeStringToMi } from "./sizeConv";
 
 export const componentDetailsToComponent = (componentDetails: ApplicationComponentDetails): ApplicationComponent => {
@@ -99,6 +99,13 @@ export const correctComponentFormValuesForSubmit = (
         },
       };
       draft.resourceRequirements = resourceRequirements;
+    }
+
+    if (componentValues.readinessProbe?.httpGet?.host === "localhost") {
+      delete draft.readinessProbe?.httpGet?.host;
+    }
+    if (componentValues.livenessProbe?.httpGet?.host === "localhost") {
+      delete draft.livenessProbe?.httpGet?.host;
     }
   });
 
@@ -194,7 +201,7 @@ export const getComponentCreatedAtString = (component: ApplicationComponentDetai
 export const getComponentCreatedFromAndAtString = (component: ApplicationComponentDetails): string => {
   const createdAt = getComponentCreatedAtDate(component);
   const createdAtString =
-    createdAt <= new Date(0) ? "-" : `${formatTimeDistance(createdAt)} ago(${formatDate(createdAt)})`;
+    createdAt <= new Date(0) ? "-" : `${formatAgeFromNow(createdAt)} ago(${formatDate(createdAt)})`;
   return createdAtString;
 };
 

@@ -1,0 +1,24 @@
+# permissions for end users to edit dnsrecords.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dnsrecord-editor-role
+rules:
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - dnsrecords
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - dnsrecords/status
+  verbs:
+  - get

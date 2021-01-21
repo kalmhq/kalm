@@ -19,6 +19,9 @@ export interface Domain {
   isBuiltIn?: boolean;
   txt: string;
   txtStatus: "pending" | "ready";
+
+  dnsTargetReadyToCheck: boolean;
+  txtReadyToCheck: boolean;
 }
 
 export interface DomainCreation {

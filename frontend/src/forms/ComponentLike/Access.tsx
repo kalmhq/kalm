@@ -27,10 +27,10 @@ const ComponentAccessRaw: React.FC<Props> = (props) => {
     change("protectedEndpoint", !!protectedEndpoint ? undefined : {});
   };
 
-  const { isExtraInfoLoading, isExtraInfoLoaded, isMultipleTenancyMode } = useSelector((state: RootState) => ({
+  const { isExtraInfoLoading, isExtraInfoLoaded, isFrontendSSOPageEnabled } = useSelector((state: RootState) => ({
     isExtraInfoLoading: state.extraInfo.isLoading,
     isExtraInfoLoaded: state.extraInfo.isFirstLoaded,
-    isMultipleTenancyMode: state.extraInfo.info.mode === "multiple-tenancy",
+    isFrontendSSOPageEnabled: state.extraInfo.info.isFrontendSSOPageEnabled,
   }));
 
   if ((isSSOConfigLoading && !isSSOConfigLoaded) || (isExtraInfoLoading && !isExtraInfoLoaded)) {
@@ -39,7 +39,7 @@ const ComponentAccessRaw: React.FC<Props> = (props) => {
 
   let allGroups: string[] = [];
 
-  if (!isMultipleTenancyMode && (!ssoConfig || !ssoConfig.domain)) {
+  if (isFrontendSSOPageEnabled && (!ssoConfig || !ssoConfig.domain)) {
     return (
       <Alert severity="info">
         <span>
@@ -76,7 +76,7 @@ const ComponentAccessRaw: React.FC<Props> = (props) => {
           label="Only users authenticated by Single Sign-on can access"
         />
       </Grid>
-      {isMultipleTenancyMode ? null : (
+      {isFrontendSSOPageEnabled && (
         <>
           <Grid item xs={12}>
             <Field

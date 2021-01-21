@@ -4,7 +4,7 @@ import { deleteDomainAction } from "actions/domains";
 import { setSuccessNotificationAction } from "actions/notification";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
-import { DomainStatus } from "pages/Domains/Status";
+import { DomainTxtRecordStatus } from "pages/Domains/Status";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -89,8 +89,8 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
               popupTitle="DELETE DOMAIN?"
               popupContent={
                 <Box>
-                  This action cannot be undone. This will permanently delete
-                  <Typography color={"primary"} align={"center"}>
+                  This action cannot be undone. This will permanently delete{" "}
+                  <Typography color={"primary"} align={"center"} component="span">
                     {domain.domain}
                   </Typography>
                 </Box>
@@ -109,7 +109,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
       return <span>-</span>;
     }
 
-    return <DomainStatus status={domain.txtStatus} />;
+    return <DomainTxtRecordStatus domain={domain} />;
   };
 
   // const renderTrafficRecordStatus = (domain: Domain) => {

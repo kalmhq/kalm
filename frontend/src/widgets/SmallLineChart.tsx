@@ -1,14 +1,17 @@
 import { Theme, withTheme, WithTheme } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
+import Tooltip from "@material-ui/core/Tooltip/Tooltip";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import * as chartjs from "chart.js";
 import { format } from "date-fns";
-import { KTooltip } from "widgets/KTooltip";
 import React from "react";
 // @ts-ignore
 import { ChartData, Line } from "react-chartjs-2";
 import { MetricList } from "types/common";
-import { TimestampFilter, getStartTimestamp } from "utils/date";
+import { getStartTimestamp, TimestampFilter } from "utils/date";
+import { formatCPU, formatMemory } from "utils/sizeConv";
+import { KTooltip } from "widgets/KTooltip";
+import { WarningColorText } from "widgets/Text";
 
 const smallLineChartStyles = (theme: Theme) =>
   createStyles({
@@ -38,6 +41,7 @@ interface Props extends WithStyles<typeof smallLineChartStyles>, WithTheme {
   formatValue?: (value: number) => string;
   borderColor?: string;
   backgroundColor?: string;
+  limit?: number;
 }
 
 const emptyChartDataX = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -77,9 +81,11 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
   };
 
   private renderText() {
-    const { data, formatValue } = this.props;
+    const { limit, data, formatValue } = this.props;
     // let text = "Data available soon";
     let text = "";
+    let percentage: React.ReactNode;
+    let title: string = "";
 
     if (data && data.length > 0) {
       if (formatValue) {
@@ -87,9 +93,29 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
       } else {
         text = data[data.length - 1]!.y.toString();
       }
+
+      if (limit) {
+        const p = Math.round((data[data.length - 1]!.y / limit) * 100);
+        if (p > 85) {
+          title = "Occupy more than 85% of resources, please consider modifying the resource limit.";
+          percentage = <WarningColorText>({p}%)</WarningColorText>;
+        } else if (p < 15) {
+          title = "Only takes up less than 15% of resources, please consider modifying the resource limit.";
+          percentage = <WarningColorText>({p}%)</WarningColorText>;
+        } else {
+          percentage = <span>({p}%)</span>;
+        }
+      }
     }
 
-    return <div className={this.props.classes.text}>{text}</div>;
+    const content = (
+      <div className={this.props.classes.text}>
+        {text}
+        {percentage}
+      </div>
+    );
+
+    return title !== "" ? <Tooltip title={title}>{content}</Tooltip> : content;
   }
 
   private hasData = () => {
@@ -183,6 +209,7 @@ interface LineChartProps extends WithStyles<typeof lineChartStyles> {
   formatValue?: (value: number) => string;
   borderColor?: string;
   backgroundColor?: string;
+  limit?: number;
 }
 
 class LineChartRaw extends React.PureComponent<LineChartProps> {
@@ -225,7 +252,7 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
   };
 
   public render() {
-    const { classes, width, height, formatValue, title, yAxesWidth } = this.props;
+    const { classes, width, limit, height, formatValue, title, yAxesWidth } = this.props;
     return (
       <div style={{ width, height }} className={classes.root}>
         <Line
@@ -244,7 +271,13 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
                   // @ts-ignore
                   const value: number = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
                   // @ts-ignore
-                  return formatValue ? formatValue(value) : value;
+                  let res = formatValue ? formatValue(value) : value.toString();
+
+                  if (limit) {
+                    res = res + ` (${3}%)`;
+                  }
+
+                  return res;
                 },
                 title: (tooltipItem: chartjs.ChartTooltipItem[], data: chartjs.ChartData): string => {
                   // @ts-ignore
@@ -288,32 +321,6 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
 
 export const LineChart = withStyles(lineChartStyles)(LineChartRaw);
 
-export const formatMemory = (value: number, si?: boolean): string => {
-  // const thresh = si ? 1000 : 1024;
-  // if (Math.abs(value) < thresh) {
-  //   return value + " B";
-  // }
-  // const units = si ? ["k", "M", "G", "T", "P", "E", "Z", "Y"] : ["Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"];
-  // let u = -1;
-  // do {
-  //   value /= thresh;
-  //   ++u;
-  // } while (Math.abs(value) >= thresh && u < units.length - 1);
-  // return value.toFixed(1) + " " + units[u];
-
-  const MiBytes = 1024 * 1024;
-  return (value / MiBytes).toFixed(0) + " Mi";
-};
-
-export const formatNumerical = (value: number): string => {
-  return value.toString();
-};
-
-const formatCPU = (value: number): string => {
-  return value + " m";
-  // return value / 1000 + " Core";
-};
-
 export const BigCPULineChart = (props: Pick<LineChartProps, "data" | "yAxesWidth" | "filter">) => {
   return (
     <LineChart
@@ -342,7 +349,7 @@ export const BigMemoryLineChart = (props: Pick<LineChartProps, "data" | "yAxesWi
   );
 };
 
-export const SmallMemoryLineChart = (props: Pick<Props, "data" | "hoverText">) => {
+export const SmallMemoryLineChart = (props: Pick<Props, "limit" | "data" | "hoverText">) => {
   return (
     <SmallLineChart
       {...props}
@@ -355,7 +362,7 @@ export const SmallMemoryLineChart = (props: Pick<Props, "data" | "hoverText">) =
   );
 };
 
-export const SmallCPULineChart = (props: Pick<Props, "data" | "hoverText">) => {
+export const SmallCPULineChart = (props: Pick<Props, "limit" | "data" | "hoverText">) => {
   return (
     <SmallLineChart
       {...props}
@@ -368,7 +375,7 @@ export const SmallCPULineChart = (props: Pick<Props, "data" | "hoverText">) => {
   );
 };
 
-export const CardMemoryLineChart = (props: Pick<Props, "data" | "hoverText">) => {
+export const CardMemoryLineChart = (props: Pick<Props, "limit" | "data" | "hoverText">) => {
   return (
     <SmallLineChart
       {...props}
@@ -381,7 +388,7 @@ export const CardMemoryLineChart = (props: Pick<Props, "data" | "hoverText">) =>
   );
 };
 
-export const CardCPULineChart = (props: Pick<Props, "data" | "hoverText">) => {
+export const CardCPULineChart = (props: Pick<Props, "limit" | "data" | "hoverText">) => {
   return (
     <SmallLineChart
       {...props}

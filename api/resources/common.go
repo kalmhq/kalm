@@ -9,6 +9,7 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"go.uber.org/zap"
 	appV1 "k8s.io/api/apps/v1"
+	batchV1 "k8s.io/api/batch/v1"
 	coreV1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,6 +40,7 @@ type ResourceChannels struct {
 	SecretList                 *SecretListChannel
 	IstioMetricList            *IstioMetricListChannel
 	ProtectedEndpointList      *ProtectedEndpointListChannel
+	JobsList                   *JobListChannel
 }
 
 type Resources struct {
@@ -58,6 +60,7 @@ type Resources struct {
 	Secrets            []coreV1.Secret
 	HttpsCertIssuers   []v1alpha1.HttpsCertIssuer
 	ProtectedEndpoints []v1alpha1.ProtectedEndpoint
+	JobList            *batchV1.JobList
 }
 
 var ListAll = metaV1.ListOptions{
@@ -165,6 +168,14 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 			return nil, err
 		}
 		resources.ProtectedEndpoints = <-c.ProtectedEndpointList.List
+	}
+
+	if c.JobsList != nil {
+		err = <-c.JobsList.Error
+		if err != nil {
+			return nil, err
+		}
+		resources.JobList = <-c.JobsList.List
 	}
 
 	return resources, nil

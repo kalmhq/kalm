@@ -113,6 +113,10 @@ func getResourceOfPod(pod corev1.Pod) ResourceList {
 	}
 
 	for _, container := range pod.Spec.Containers {
+		if container.Name == "istio-proxy" {
+			continue
+		}
+
 		for resName, quantity := range container.Resources.Limits {
 			switch resName {
 			case v1.ResourceCPU:

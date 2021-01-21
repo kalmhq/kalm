@@ -32,11 +32,11 @@ import { Namespaces } from "widgets/Namespaces";
 const styles = (theme: Theme) => createStyles({});
 
 const mapStateToProps = (state: RootState) => {
-  const { newTenantUrl, mode } = state.extraInfo.info;
+  const { newTenantUrl, isFrontendMembersManagementEnabled } = state.extraInfo.info;
   const tenant = state.auth.tenant;
 
   return {
-    mode,
+    isFrontendMembersManagementEnabled,
     newTenantUrl,
     tenant,
   };
@@ -59,10 +59,20 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderSecondHeaderRight = () => {
-    const { activeNamespaceName, mode } = this.props;
+    const { activeNamespaceName, isFrontendMembersManagementEnabled } = this.props;
+    const { newTenantUrl, tenant } = this.props;
 
-    if (mode === "multiple-tenancy") {
-      return null;
+    if (!isFrontendMembersManagementEnabled) {
+      return (
+        <Button
+          color="primary"
+          size="small"
+          variant="outlined"
+          onClick={() => window.open(newTenantUrl + `/clusters/${tenant}/members`, "_blank")}
+        >
+          Manage Members
+        </Button>
+      );
     }
 
     return (
@@ -80,36 +90,20 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderMultipleTenancyEmpty = () => {
+  private renderEmpty = () => {
+    const { dispatch, activeNamespaceName, isFrontendMembersManagementEnabled } = this.props;
     const { newTenantUrl, tenant } = this.props;
     const isClusterLevel = this.isClusterLevel();
 
-    return (
-      <EmptyInfoBox
-        image={<PeopleIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={isClusterLevel ? "This cluster is managed with Kalm SaaS" : "This application is managed with Kalm SaaS"}
-        content={
-          isClusterLevel
-            ? "Please go to Kalm SaaS page for relevant settings"
-            : "Please go to Kalm SaaS page for relevant settings"
-        }
-        button={
-          <CustomizedButton
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              window.open(newTenantUrl + `/clusters/${tenant}/members`, "_blank");
-            }}
-          >
-            Manage Members with Kalm SaaS
-          </CustomizedButton>
-        }
-      />
-    );
-  };
-  private renderEmpty = () => {
-    const { dispatch, activeNamespaceName } = this.props;
-    const isClusterLevel = this.isClusterLevel();
+    let link: string = "";
+
+    if (isClusterLevel) {
+      link = "/cluster/members/new";
+    } else if (isFrontendMembersManagementEnabled) {
+      link = newTenantUrl + `/clusters/${tenant}/members`;
+    } else {
+      link = `/applications/${activeNamespaceName}/members/new`;
+    }
 
     return (
       <EmptyInfoBox
@@ -130,14 +124,15 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
             color="primary"
             onClick={() => {
               blinkTopProgressAction();
-              dispatch(
-                push(
-                  this.isClusterLevel() ? `/cluster/members/new` : `/applications/${activeNamespaceName}/members/new`,
-                ),
-              );
+
+              if (link.startsWith("http")) {
+                return window.open(link, "_blank");
+              }
+
+              dispatch(push(link));
             }}
           >
-            Grant permissions
+            Add members
           </CustomizedButton>
         }
       />
@@ -181,6 +176,23 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderRole = (roleBinding: RoleBinding) => {
+    if (!this.props.isFrontendMembersManagementEnabled) {
+      switch (roleBinding.role) {
+        case "clusterViewer":
+          return "Cluster Viewer";
+        case "clusterEditor":
+          return "Cluster Editor";
+        case "clusterOwner":
+          return "Cluster Owner";
+        case "viewer":
+          return "Viewer";
+        case "editor":
+          return "Editor";
+        case "owner":
+          return "Owner";
+      }
+    }
+
     const { canManageCluster, canManageNamespace, activeNamespaceName } = this.props;
 
     const items = this.isClusterLevel()
@@ -228,7 +240,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     const data: any[] = [];
 
     roleBindings &&
-      roleBindings.forEach((roleBinding, index) => {
+      roleBindings.forEach((roleBinding) => {
         data.push({
           name: roleBinding.name,
           subject: roleBinding.subject,
@@ -258,7 +270,8 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderActions = (roleBinding: RoleBinding) => {
-    const { dispatch } = this.props;
+    const { dispatch, isFrontendMembersManagementEnabled } = this.props;
+
     return (
       <>
         <IconButtonWithTooltip
@@ -271,11 +284,13 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
         >
           <ImpersonateIcon />
         </IconButtonWithTooltip>
-        <DeleteButtonWithConfirmPopover
-          popupId={`delete-member-${roleBinding.namespace}-${roleBinding.name}-popup`}
-          popupTitle="DELETE Member"
-          confirmedAction={() => dispatch(deleteRoleBindingsAction(roleBinding.namespace, roleBinding.name))}
-        />
+        {isFrontendMembersManagementEnabled && (
+          <DeleteButtonWithConfirmPopover
+            popupId={`delete-member-${roleBinding.namespace}-${roleBinding.name}-popup`}
+            popupTitle="DELETE Member"
+            confirmedAction={() => dispatch(deleteRoleBindingsAction(roleBinding.namespace, roleBinding.name))}
+          />
+        )}
       </>
     );
   };
@@ -312,11 +327,6 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
 
   private renderContent() {
     const roleBindings = this.getRoleBindings();
-    const { mode } = this.props;
-
-    if (mode === "multiple-tenancy") {
-      return this.renderMultipleTenancyEmpty();
-    }
 
     return roleBindings.length > 0 ? (
       <KRTable showTitle={true} title="Members" columns={this.getKRTableColumns()} data={this.getKRTableData()} />

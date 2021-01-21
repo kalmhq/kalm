@@ -199,17 +199,13 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 func (h *ApiHandler) handleExtraInfo(c echo.Context) error {
 	newTenantUrl := os.Getenv("KALM_NEW_TENANT_URL")
 
-	var mode string
-
-	if h.IsLocalMode {
-		mode = "local"
-	} else {
-		mode = "multiple-tenancy"
-	}
+	isLocalMode := h.KalmMode == v1alpha1.KalmModeLocal
 
 	return c.JSON(200, map[string]interface{}{
-		"newTenantUrl": newTenantUrl,
-		"mode":         mode,
+		"newTenantUrl":                                newTenantUrl,
+		"isFrontendMembersManagementEnabled":          isLocalMode,
+		"isFrontendComponentSchedulingFeatureEnabled": isLocalMode,
+		"isFrontendSSOPageEnabled":                    isLocalMode,
 	})
 }
 
@@ -286,8 +282,9 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) (err error) {
 
 	ssoConfig := &resources.SSOConfig{
 		SingleSignOnConfigSpec: &v1alpha1.SingleSignOnConfigSpec{
-			Domain:            body.Domain,
-			IsKalmInLocalMode: h.IsLocalMode,
+			Domain: body.Domain,
+			// for local mode, no
+			NeedExtraOAuthScope: false,
 		},
 	}
 

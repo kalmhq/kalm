@@ -55,18 +55,16 @@ export const validateTokenAction = (token: string): ThunkResult<Promise<string>>
 
 export const logoutAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
-    if (getState().extraInfo.info.mode === "multiple-tenancy") {
-      try {
-        const res = await api.oidcLogout();
-        window.location.href = res.endSessionEndpoint;
-      } catch (e) {
-        console.log(e);
-      }
-    } else {
-      stopImpersonating();
-      dispatch({
-        type: LOGOUT,
-      });
+    try {
+      const res = await api.oidcLogout();
+      window.location.href = res.endSessionEndpoint;
+    } catch (e) {
+      console.log(e);
     }
+
+    stopImpersonating();
+    dispatch({
+      type: LOGOUT,
+    });
   };
 };

@@ -14,6 +14,7 @@ import { loadRegistriesAction } from "actions/registries";
 import { loadRoutesAction } from "actions/routes";
 import { loadServicesAction } from "actions/service";
 import { loadProtectedEndpointAction, loadSSOConfigAction } from "actions/sso";
+import { loadRoleBindingsAction } from "actions/user";
 import { getWebsocketInstance } from "actions/websocket";
 import { generateKalmImpersonation } from "api/api";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
@@ -39,6 +40,7 @@ import {
   RESOURCE_TYPE_ROLE_BINDING,
   RESOURCE_TYPE_SERVICE,
   RESOURCE_TYPE_SSO,
+  RESOURCE_TYPE_TENANT,
   RESOURCE_TYPE_VOLUME,
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
@@ -71,7 +73,7 @@ class WithDataRaw extends React.PureComponent<Props> {
   }
 
   private loadData() {
-    const { dispatch, canViewTenant, canEditTenant, canViewCluster } = this.props;
+    const { dispatch, canViewTenant, canEditTenant, canViewCluster, canManageTenant } = this.props;
 
     dispatch(loadExtraInfoAction());
     dispatch(loadRoutesAction()); // all namespaces
@@ -90,6 +92,10 @@ class WithDataRaw extends React.PureComponent<Props> {
 
     if (canEditTenant()) {
       dispatch(loadCurrentTenantInfoAction());
+    }
+
+    if (canManageTenant()) {
+      dispatch(loadRoleBindingsAction());
     }
 
     if (canViewCluster()) {
@@ -280,6 +286,17 @@ class WithDataRaw extends React.PureComponent<Props> {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
             kind: RESOURCE_TYPE_DOMAIN,
+            payload: {
+              action: data.action,
+              data: data.data,
+            },
+          });
+          break;
+        }
+        case RESOURCE_TYPE_TENANT: {
+          dispatch({
+            type: WATCHED_RESOURCE_CHANGE,
+            kind: RESOURCE_TYPE_TENANT,
             payload: {
               action: data.action,
               data: data.data,

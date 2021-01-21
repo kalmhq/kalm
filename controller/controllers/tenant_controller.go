@@ -5,16 +5,22 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/utils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 var tenantCtrlLog = logf.Log.WithName("tenant-controller")
@@ -31,9 +37,27 @@ func NewTenantReconciler(mgr ctrl.Manager) *TenantReconciler {
 	}
 }
 
+type MapperForNamespaces struct{}
+
+func (m MapperForNamespaces) Map(mapObj handler.MapObject) []reconcile.Request {
+	tenantName, err := v1alpha1.GetTenantNameFromObj(mapObj.Object)
+
+	if err != nil {
+		return nil
+	}
+
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{
+		Name: tenantName,
+	}}}
+}
+
 func (r *TenantReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.Tenant{}).
+		Owns(&v1alpha1.RoleBinding{}).
+		Watches(&source.Kind{Type: &corev1.Namespace{}}, &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: MapperForNamespaces{},
+		}).
 		Complete(r)
 }
 
@@ -43,7 +67,6 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	tenantName := req.Name
 
 	logger := r.Log.WithValues("tenant", tenantName)
-
 	logger.Info("reconciling tenant")
 
 	var tenant v1alpha1.Tenant
@@ -89,6 +112,14 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
+	if err := r.ReconcileOwnerRolebindings(&tenant); err != nil {
+		logger.Error(err, "ReconcileOwnerRolebindings error")
+	}
+
+	if err := r.ReconcileTenantOwnerApplicationsRolebindings(&tenant); err != nil {
+		logger.Error(err, "ReconcileTenantOwnerApplicationsRolebindings error")
+	}
+
 	surplusResource, noNegative := v1alpha1.GetSurplusResource(tenant)
 
 	if noNegative {
@@ -126,6 +157,182 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func getOwnerRoleBindingName(tenantName, ownerEmail string) string {
+	ownerEmail = strings.ReplaceAll(ownerEmail, "@", "-")
+	ownerEmail = strings.ReplaceAll(ownerEmail, ".", "-")
+	ownerEmail = strings.ReplaceAll(ownerEmail, "_", "-")
+	return fmt.Sprintf("tenant-%s-owner-%s", tenantName, strings.ToLower(ownerEmail))
+}
+
+// tenant owner role bindings. They will be created under kalm-system namespace.
+func (r *TenantReconciler) ReconcileOwnerRolebindings(tenant *v1alpha1.Tenant) error {
+	var rolebindings v1alpha1.RoleBindingList
+
+	if err := r.Reader.List(r.ctx, &rolebindings, client.MatchingLabels{
+		v1alpha1.TenantNameLabelKey: tenant.Name,
+		"tenantOwner":               "true",
+	}); err != nil {
+		return err
+	}
+
+	ownerMap := map[string]struct{}{}
+	for _, ownerEmail := range tenant.Spec.Owners {
+		ownerMap[getOwnerRoleBindingName(tenant.Name, ownerEmail)] = struct{}{}
+	}
+
+	roleBindingsMap := map[string]*v1alpha1.RoleBinding{}
+	for _, rolebinding := range rolebindings.Items {
+		roleBindingsMap[rolebinding.Name] = &rolebinding
+	}
+
+	needCreate := map[string]*v1alpha1.RoleBinding{}
+	needDelete := map[string]*v1alpha1.RoleBinding{}
+
+	for _, ownerEmail := range tenant.Spec.Owners {
+		name := getOwnerRoleBindingName(tenant.Name, ownerEmail)
+
+		if _, ok := roleBindingsMap[name]; !ok {
+			needCreate[name] = &v1alpha1.RoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Name:      name,
+					Namespace: v1alpha1.KalmSystemNamespace,
+					Labels: map[string]string{
+						v1alpha1.TenantNameLabelKey: tenant.Name,
+						"tenantOwner":               "true",
+					},
+				},
+				Spec: v1alpha1.RoleBindingSpec{
+					Subject:     ownerEmail,
+					SubjectType: v1alpha1.SubjectTypeUser,
+					Role:        v1alpha1.TenantRoleOwner,
+					Creator:     "kalm-controller",
+				},
+			}
+		}
+	}
+
+	for i := range rolebindings.Items {
+		rolebinding := rolebindings.Items[i]
+		if _, ok := ownerMap[rolebinding.Name]; !ok {
+			needDelete[rolebinding.Name] = &rolebinding
+		}
+	}
+
+	for _, item := range needCreate {
+		_ = ctrl.SetControllerReference(tenant, item, r.Scheme)
+
+		if err := r.Client.Create(r.ctx, item); err != nil {
+			r.Log.Error(err, "create tenant owner role binding error")
+			return err
+		}
+	}
+
+	for _, item := range needDelete {
+		if err := r.Client.Delete(r.ctx, item); err != nil {
+			r.Log.Error(err, "delete tenant owner role binding error")
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Each owner will have a role binding under each application
+func (r *TenantReconciler) ReconcileTenantOwnerApplicationRolebinding(tenant *v1alpha1.Tenant, applicationName string) error {
+	var rolebindings v1alpha1.RoleBindingList
+
+	if err := r.Reader.List(r.ctx, &rolebindings, client.MatchingLabels{
+		v1alpha1.TenantNameLabelKey: tenant.Name,
+		"tenantOwner":               "true",
+	}, client.InNamespace(applicationName)); err != nil {
+		return err
+	}
+
+	ownerMap := map[string]struct{}{}
+	for _, ownerEmail := range tenant.Spec.Owners {
+		ownerMap[getOwnerRoleBindingName(tenant.Name, ownerEmail)] = struct{}{}
+	}
+
+	roleBindingsMap := map[string]*v1alpha1.RoleBinding{}
+	for _, rolebinding := range rolebindings.Items {
+		roleBindingsMap[rolebinding.Name] = &rolebinding
+	}
+
+	needCreate := map[string]*v1alpha1.RoleBinding{}
+	needDelete := map[string]*v1alpha1.RoleBinding{}
+
+	for _, ownerEmail := range tenant.Spec.Owners {
+		name := getOwnerRoleBindingName(tenant.Name, ownerEmail)
+
+		if _, ok := roleBindingsMap[name]; !ok {
+			needCreate[name] = &v1alpha1.RoleBinding{
+				ObjectMeta: v1.ObjectMeta{
+					Namespace: applicationName,
+					Name:      name,
+					Labels: map[string]string{
+						v1alpha1.TenantNameLabelKey: tenant.Name,
+						"tenantOwner":               "true",
+					},
+				},
+				Spec: v1alpha1.RoleBindingSpec{
+					Subject:     ownerEmail,
+					SubjectType: v1alpha1.SubjectTypeUser,
+					Role:        v1alpha1.RoleOwner,
+					Creator:     "kalm-controller",
+				},
+			}
+		}
+	}
+
+	for i := range rolebindings.Items {
+		rolebinding := rolebindings.Items[i]
+		if _, ok := ownerMap[rolebinding.Name]; !ok {
+			needDelete[rolebinding.Name] = &rolebinding
+		}
+	}
+
+	for _, item := range needCreate {
+		_ = ctrl.SetControllerReference(tenant, item, r.Scheme)
+
+		if err := r.Client.Create(r.ctx, item); err != nil {
+			r.Log.Error(err, "create tenant owner role binding for application error")
+			return err
+		}
+	}
+
+	for _, item := range needDelete {
+		if err := r.Client.Delete(r.ctx, item); err != nil {
+			r.Log.Error(err, "delete tenant owner role binding for application error")
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *TenantReconciler) ReconcileTenantOwnerApplicationsRolebindings(tenant *v1alpha1.Tenant) error {
+	var applications corev1.NamespaceList
+
+	if err := r.Reader.List(r.ctx, &applications, client.MatchingLabels{
+		v1alpha1.TenantNameLabelKey: tenant.Name,
+	}); err != nil {
+		return err
+	}
+
+	for _, application := range applications.Items {
+		if application.Name == v1alpha1.KalmSystemNamespace {
+			continue
+		}
+
+		if err := r.ReconcileTenantOwnerApplicationRolebinding(tenant, application.Name); err != nil {
+			r.Log.Error(err, fmt.Sprintf("create tenant owner roleBindings in application %s error", application.Name))
+			return err
+		}
+	}
+
+	return nil
 }
 
 // two types of child resources: namespaced & not-namespaced

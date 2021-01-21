@@ -68,7 +68,7 @@ class WebhookPageRaw extends React.PureComponent<Props, State> {
         button={
           this.canEdit() ? (
             <CustomizedButton component={Link} variant="contained" to="/webhooks/keys/new" color="primary">
-              New Deploy Key
+              New Webhook
             </CustomizedButton>
           ) : null
         }
@@ -216,7 +216,7 @@ class WebhookPageRaw extends React.PureComponent<Props, State> {
       {
         title: (
           <KMLink href="https://kalm.dev/docs/next/crd/component" target="_blank">
-            How a deploy token works?
+            How a webhook works?
           </KMLink>
         ),
         draft: true,
@@ -238,7 +238,7 @@ class WebhookPageRaw extends React.PureComponent<Props, State> {
           this.canEdit() ? (
             <>
               <Button component={Link} color="primary" variant="outlined" size="small" to="/webhooks/keys/new">
-                New Deploy Token
+                New Webhook
               </Button>
             </>
           ) : null

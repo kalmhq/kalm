@@ -28,7 +28,7 @@ func (resourceManager *ResourceManager) GetTenants() ([]*Tenant, error) {
 	res := make([]*Tenant, 0, len(fetched.Items))
 
 	for i := range fetched.Items {
-		res = append(res, fromCRDTenant(&fetched.Items[i]))
+		res = append(res, FromCRDTenant(&fetched.Items[i]))
 	}
 
 	return res, nil
@@ -57,7 +57,7 @@ func (resourceManager *ResourceManager) GetTenant(name string) (*Tenant, error) 
 		return nil, err
 	}
 
-	return fromCRDTenant(&fetched), nil
+	return FromCRDTenant(&fetched), nil
 }
 
 func (resourceManager *ResourceManager) CreateTenant(tenant *Tenant) (*Tenant, error) {
@@ -67,7 +67,7 @@ func (resourceManager *ResourceManager) CreateTenant(tenant *Tenant) (*Tenant, e
 		return nil, err
 	}
 
-	return fromCRDTenant(crdTenant), nil
+	return FromCRDTenant(crdTenant), nil
 }
 
 func (resourceManager *ResourceManager) UpdateTenant(tenant *Tenant) (*Tenant, error) {
@@ -77,7 +77,7 @@ func (resourceManager *ResourceManager) UpdateTenant(tenant *Tenant) (*Tenant, e
 		return nil, err
 	}
 
-	return fromCRDTenant(crdTenant), nil
+	return FromCRDTenant(crdTenant), nil
 }
 
 func (resourceManager *ResourceManager) DeleteTenant(name string) error {
@@ -116,7 +116,7 @@ func (resourceManager *ResourceManager) ResumeTenant(name string) error {
 ]`)))
 }
 
-func fromCRDTenant(tenant *v1alpha1.Tenant) *Tenant {
+func FromCRDTenant(tenant *v1alpha1.Tenant) *Tenant {
 	completeUsedResourceQuota := v1alpha1.FillMissingResourceAsZero(tenant.Status.UsedResourceQuota)
 
 	return &Tenant{

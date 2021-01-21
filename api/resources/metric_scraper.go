@@ -259,10 +259,16 @@ func UpdateDatabase(db *sql.DB, nodeMetrics *v1beta1.NodeMetricsList, podMetrics
 	for _, v := range podMetrics.Items {
 		component := ""
 		_, ok := v.ObjectMeta.Labels["kalm-component"]
+
 		if ok {
 			component = v.ObjectMeta.Labels["kalm-component"]
 		}
+
 		for _, u := range v.Containers {
+			if u.Name == "istio-proxy" {
+				continue
+			}
+
 			_, err = stmt.Exec(v.UID, v.Name, v.Namespace, u.Name, component, u.Usage.Cpu().MilliValue(), u.Usage.Memory().MilliValue()/1000, u.Usage.StorageEphemeral().MilliValue()/1000)
 			if err != nil {
 				return err

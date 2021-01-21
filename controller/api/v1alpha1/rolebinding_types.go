@@ -26,6 +26,7 @@ const (
 	ClusterRoleViewer = "clusterViewer"
 	ClusterRoleEditor = "clusterEditor"
 	ClusterRoleOwner  = "clusterOwner"
+	TenantRoleOwner   = "tenantOwner"
 
 	SubjectTypeUser  = "user"
 	SubjectTypeGroup = "group"
@@ -38,7 +39,7 @@ type RoleBindingSpec struct {
 	// +kubebuilder:validation:Enum=user;group
 	SubjectType string `json:"subjectType"`
 
-	// +kubebuilder:validation:Enum=viewer;editor;owner;clusterViewer;clusterEditor;clusterOwner
+	// +kubebuilder:validation:Enum=viewer;editor;owner;clusterViewer;clusterEditor;clusterOwner;tenantOwner
 	Role string `json:"role"`
 
 	// Creator of this binding

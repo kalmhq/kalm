@@ -17,6 +17,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -36,10 +37,32 @@ type DomainReconciler struct {
 }
 
 func NewDomainReconciler(mgr ctrl.Manager) *DomainReconciler {
+	var dnsMgr DNSManager
+	if cloudflareDNSMgr, err := initCloudflareDNSManagerFromEnv(); err != nil {
+		ctrl.Log.Info("failed when initCloudflareDNSManagerFromEnv", "err", err)
+	} else {
+		dnsMgr = cloudflareDNSMgr
+	}
+
+	return &DomainReconciler{
+		BaseReconciler: NewBaseReconciler(mgr, "Domain"),
+		ctx:            context.Background(),
+		dnsMgr:         dnsMgr,
+	}
+}
+
+func initCloudflareDNSManagerFromEnv() (*CloudflareDNSManager, error) {
 	token := corev1alpha1.GetEnvCloudflareToken()
+	if token == "" {
+		return nil, fmt.Errorf("ENV: CLOUDFLARE_TOKEN not exist")
+	}
 
 	// domain1:zone1;domain2:zone2
 	domain2ZoneConfig := corev1alpha1.GetEnvCloudflareDomainToZoneIDConfig()
+	if domain2ZoneConfig == "" {
+		return nil, fmt.Errorf("ENV: CLOUDFLARE_DOMAIN_TO_ZONEID_CONFIG not exist")
+	}
+
 	domain2ZoneMap := make(map[string]string)
 	for _, pair := range strings.Split(domain2ZoneConfig, ";") {
 		parts := strings.Split(pair, ":")
@@ -50,18 +73,12 @@ func NewDomainReconciler(mgr ctrl.Manager) *DomainReconciler {
 		domain2ZoneMap[parts[0]] = parts[1]
 	}
 
-	var dnsMgr DNSManager
-	if cloudflareDNSMgr, err := NewCloudflareDNSManager(token, domain2ZoneMap); err != nil {
-		ctrl.Log.Info("failed when NewCloudflareDNSManager", "err", err)
-	} else {
-		dnsMgr = cloudflareDNSMgr
+	cloudflareDNSMgr, err := NewCloudflareDNSManager(token, domain2ZoneMap)
+	if err != nil {
+		return nil, err
 	}
 
-	return &DomainReconciler{
-		BaseReconciler: NewBaseReconciler(mgr, "Domain"),
-		ctx:            context.Background(),
-		dnsMgr:         dnsMgr,
-	}
+	return cloudflareDNSMgr, nil
 }
 
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=domains,verbs=get;list;watch;create;update;patch;delete
@@ -93,7 +110,9 @@ func (r *DomainReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	// if is userSubDomain, setup IP for CNAME
 	//   userSubDomain -> CNAME -> IP
 	// rootDomain is A Record Already
-	if !v1alpha1.IsRootDomain(domain.Spec.Domain) {
+	isUserSubDomain := !v1alpha1.IsRootDomain(domain.Spec.Domain)
+	isTypeCNAME := domain.Spec.DNSType == v1alpha1.DNSTypeCNAME
+	if isUserSubDomain && isTypeCNAME {
 		if err := r.reconcileIPForUserSubDomainCNAME(domain.Spec.DNSTarget); err != nil {
 			log.Info("reconcileIPForUserSubDomainCNAME fail", "err", err)
 			return ctrl.Result{}, err
@@ -171,13 +190,6 @@ func (r *DomainReconciler) reconcileIPForUserSubDomainCNAME(cname string) error 
 		return nil
 	}
 
-	// skip if already exist
-	baseDNSDomain := corev1alpha1.GetEnvKalmBaseDNSDomain()
-	records, err := r.dnsMgr.GetDNSRecords(baseDNSDomain)
-	if err != nil {
-		return err
-	}
-
 	targetIP, err := corev1alpha1.GetClusterIP()
 	if err != nil {
 		return err
@@ -187,22 +199,7 @@ func (r *DomainReconciler) reconcileIPForUserSubDomainCNAME(cname string) error 
 		return nil
 	}
 
-	for _, record := range records {
-		if record.DNSType != corev1alpha1.DNSTypeA {
-			continue
-		}
-
-		if record.Name == cname {
-			if record.Content == targetIP {
-				return nil
-			}
-
-			return r.dnsMgr.UpsertDNSRecord(corev1alpha1.DNSTypeA, cname, targetIP)
-		}
-	}
-
-	// otherwise create
-	return r.dnsMgr.CreateDNSRecord(corev1alpha1.DNSTypeA, cname, targetIP)
+	return r.dnsMgr.UpsertDNSRecord(corev1alpha1.DNSTypeA, cname, targetIP)
 }
 
 func (r *DomainReconciler) SetupWithManager(mgr ctrl.Manager) error {

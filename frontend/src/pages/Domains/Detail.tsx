@@ -6,7 +6,7 @@ import { setSuccessNotificationAction } from "actions/notification";
 import { push } from "connected-react-router";
 import { BasePage } from "pages/BasePage";
 import { CertificateInfo } from "pages/Domains/CertInfo";
-import { DomainStatus } from "pages/Domains/Status";
+import { DomainTxtRecordStatus } from "pages/Domains/Status";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouteMatch } from "react-router-dom";
@@ -74,7 +74,7 @@ const DomainDetailPageRaw: React.FC = () => {
           items={[
             { name: "Name", content: domain.name },
             { name: "Domain", content: domain.domain },
-            { name: `TXT Record Status`, content: <DomainStatus status={domain.txtStatus} /> },
+            { name: `TXT Record Status`, content: <DomainTxtRecordStatus domain={domain} /> },
             // { name: `${domain.recordType} Record Status`, content: <DomainStatus status={domain.status} /> },
           ]}
         />
@@ -108,7 +108,7 @@ const DomainDetailPageRaw: React.FC = () => {
                 size="small"
                 onClick={() => dispatch(push("/domains/" + domain.name + "/tour"))}
               >
-                How to setup DNS records
+                Setup Tour
               </Button>
             ) : null}
 
@@ -119,8 +119,8 @@ const DomainDetailPageRaw: React.FC = () => {
               popupId="delete-Domain"
               popupContent={
                 <Box>
-                  This action cannot be undone. This will permanently delete
-                  <Typography color={"primary"} align={"center"}>
+                  This action cannot be undone. This will permanently delete{" "}
+                  <Typography color={"primary"} align={"center"} component="span">
                     {domain.domain}
                   </Typography>
                 </Box>

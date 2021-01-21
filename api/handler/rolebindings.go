@@ -46,7 +46,9 @@ func (h *ApiHandler) handleCreateRoleBinding(c echo.Context) (err error) {
 	}
 
 	roleBinding.Name = roleBinding.GetNameBaseOnRoleAndSubject()
-	roleBinding.Spec.Creator = getCurrentUser(c).Name
+
+	curUser := getCurrentUser(c)
+	roleBinding.Spec.Creator = chooseFirstNonEmpty(curUser.Name, curUser.Email)
 
 	switch roleBinding.Spec.Role {
 	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
@@ -58,6 +60,18 @@ func (h *ApiHandler) handleCreateRoleBinding(c echo.Context) (err error) {
 	}
 
 	return c.JSON(http.StatusCreated, roleBinding)
+}
+
+func chooseFirstNonEmpty(strs ...string) string {
+	for _, str := range strs {
+		if str == "" {
+			continue
+		}
+
+		return str
+	}
+
+	return ""
 }
 
 func (h *ApiHandler) handleUpdateRoleBinding(c echo.Context) error {

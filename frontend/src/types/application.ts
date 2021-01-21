@@ -62,11 +62,25 @@ export type PodStatus = {
   metrics: Metrics;
 };
 
+export type JobStatus = {
+  name: string;
+  active: number;
+  completionTimestamp: number;
+  completions: number;
+  createTimestamp: number;
+  creationTimestamp: number;
+  failed: number;
+  parallelism: number;
+  startTimestamp: number;
+  succeeded: number;
+};
+
 export interface ApplicationComponent extends ComponentLike {}
 
 export interface ApplicationComponentDetails extends ApplicationComponent {
   metrics: Metrics;
   pods: PodStatus[];
+  jobs?: JobStatus[];
   services: ServiceStatus[];
   istioMetricHistories: IstioMetricHistories;
 }

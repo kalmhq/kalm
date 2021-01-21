@@ -10,6 +10,7 @@ import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { getPodLogQuery } from "pages/Application/Log";
+import { ComponentCPUChart, ComponentMemoryChart } from "pages/Components/Chart";
 import { renderCopyableImageName } from "pages/Components/InfoComponents";
 import { getPod } from "pages/Components/Pod";
 import React from "react";
@@ -27,7 +28,6 @@ import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 import { Namespaces } from "widgets/Namespaces";
 import { RoutesPopover } from "widgets/RoutesPopover";
-import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 
 const styles = (theme: Theme) =>
@@ -206,7 +206,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
       { Header: "CPU", accessor: "cpu" },
       { Header: "Memory", accessor: "memory" },
       { Header: "Type", accessor: "type" },
-      { Header: "Image", accessor: "image" },
+      // { Header: "Image", accessor: "image" },
       { Header: "Routes", accessor: "routes" },
       { Header: "Actions", accessor: "actions" },
     ];
@@ -231,7 +231,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
           cpu: this.renderCPU(component),
           memory: this.renderMemory(component),
           type: component.workloadType,
-          image: this.renderImage(component.image),
+          // image: this.renderImage(component.image),
           routes: this.renderExternalAccesses(component, activeNamespaceName),
           actions: this.componentControls(component),
         });
@@ -281,13 +281,11 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   };
 
   private renderCPU = (component: ApplicationComponentDetails) => {
-    const metrics = component.metrics;
-    return <SmallCPULineChart data={metrics && metrics.cpu} hoverText={this.hasPods() ? "" : "No data"} />;
+    return <ComponentCPUChart component={component} />;
   };
 
   private renderMemory = (component: ApplicationComponentDetails) => {
-    const metrics = component.metrics;
-    return <SmallMemoryLineChart data={metrics && metrics.memory} hoverText={this.hasPods() ? "" : "No data"} />;
+    return <ComponentMemoryChart component={component} />;
   };
 
   private renderExternalAccesses = (component: ApplicationComponentDetails, applicationName: string) => {

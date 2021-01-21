@@ -146,6 +146,7 @@ export const DNSConfigItems = (props: DNSConfigGuideProps) => {
                   <IconButtonWithTooltip
                     tooltipTitle="Copy"
                     aria-label="copy"
+                    size="small"
                     onClick={() => {
                       copy(domain);
                       dispatch(setSuccessNotificationAction("Copied successful!"));
@@ -162,6 +163,7 @@ export const DNSConfigItems = (props: DNSConfigGuideProps) => {
                       <IconButtonWithTooltip
                         tooltipTitle="Copy"
                         aria-label="copy"
+                        size="small"
                         onClick={() => {
                           copy(record);
                           dispatch(setSuccessNotificationAction("Copied successful!"));

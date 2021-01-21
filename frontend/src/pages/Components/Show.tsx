@@ -1,10 +1,15 @@
 import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { deleteComponentAction } from "actions/component";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { api } from "api";
+import { push } from "connected-react-router";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { BasePage } from "pages/BasePage";
 import { ComponentBasicInfo } from "pages/Components/BasicInfo";
+import { JobsTable } from "pages/Components/JobsTables";
 import { PodsTable } from "pages/Components/PodsTable";
 import { RouteWidgets } from "pages/Route/Widget";
 import React from "react";
@@ -13,13 +18,10 @@ import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { ComponentLikePort, WorkloadType } from "types/componentTemplate";
 import { Expansion } from "widgets/expansion";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { Body, H6 } from "widgets/Label";
 import { Namespaces } from "widgets/Namespaces";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
-import { api } from "api";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
-import { deleteComponentAction } from "actions/component";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -171,7 +173,24 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
       <Expansion title="pods" defaultUnfold>
         <PodsTable
           activeNamespaceName={activeNamespaceName}
+          component={component}
           pods={component.pods}
+          workloadType={component.workloadType as WorkloadType}
+          canEdit={canEditNamespace(activeNamespaceName)}
+        />
+      </Expansion>
+    );
+  }
+
+  private renderJobs() {
+    const { component, activeNamespaceName, canEditNamespace } = this.props;
+
+    return (
+      <Expansion title="Jobs" defaultUnfold>
+        <JobsTable
+          activeNamespaceName={activeNamespaceName}
+          component={component}
+          jobs={component.jobs!}
           workloadType={component.workloadType as WorkloadType}
           canEdit={canEditNamespace(activeNamespaceName)}
         />
@@ -226,6 +245,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
             popupTitle="DELETE COMPONENT?"
             confirmedAction={async () => {
               await dispatch(deleteComponentAction(component.name, activeNamespaceName));
+              dispatch(push("/applications/" + activeNamespaceName + "/components"));
               dispatch(setSuccessNotificationAction("Delete component successfully"));
             }}
           />
@@ -246,6 +266,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
           <Expansion title={"Basic"} defaultUnfold>
             <ComponentBasicInfo component={component} activeNamespaceName={activeNamespaceName} />
           </Expansion>
+          {!!component.jobs && this.renderJobs()}
           {this.renderPods()}
           {this.renderNetwork()}
           {this.renderRoutes()}

@@ -10,6 +10,7 @@ import { BasePage } from "pages/BasePage";
 import React from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "reducers";
+import { formatCPU, formatMemory, sizeStringToNumber } from "utils/sizeConv";
 import { KPanel } from "widgets/KPanel";
 import { Loading } from "../../widgets/Loading";
 
@@ -89,13 +90,20 @@ const TenantUsagePageRaw: React.FC = () => {
 
   for (let key in currentTenant.resourceQuotas) {
     let name = key;
+    let content = `${currentTenant.consumedResources[key]} / ${currentTenant.resourceQuotas[key]}`;
 
     switch (key) {
       case "cpu":
         name = "CPU";
+        content = `${formatCPU(sizeStringToNumber(currentTenant.consumedResources[key]) * 1000)} / ${formatCPU(
+          sizeStringToNumber(currentTenant.resourceQuotas[key]) * 1000,
+        )}`;
         break;
       case "memory":
         name = "Memory";
+        content = `${formatMemory(sizeStringToNumber(currentTenant.consumedResources[key]))} / ${formatMemory(
+          sizeStringToNumber(currentTenant.resourceQuotas[key]),
+        )}`;
         break;
       case "applicationsCount":
         name = "Applications Count";
@@ -111,8 +119,8 @@ const TenantUsagePageRaw: React.FC = () => {
     }
 
     items.push({
-      name: name,
-      content: `${currentTenant.consumedResources[key]} / ${currentTenant.resourceQuotas[key]}`,
+      name,
+      content,
       percentage: getPercentage(currentTenant.consumedResources[key], currentTenant.resourceQuotas[key]),
     });
   }

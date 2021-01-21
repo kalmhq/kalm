@@ -8,43 +8,43 @@ export const LOAD_DEPLOY_KEYS_FAILED = "LOAD_DEPLOY_KEYS_FAILED";
 export const LOAD_DEPLOY_KEYS_FULFILLED = "LOAD_DEPLOY_KEYS_FULFILLED";
 export const LOAD_DEPLOY_KEYS_PENDING = "LOAD_DEPLOY_KEYS_PENDING";
 
-export type DeployKeyScope = string;
+export type WebhookScope = string;
 
-export const DeployKeyScopeCluster: DeployKeyScope = "cluster";
-export const DeployKeyScopeNamespace: DeployKeyScope = "namespace";
-export const DeployKeyScopeComponent: DeployKeyScope = "component";
+export const WebhookScopeCluster: WebhookScope = "cluster";
+export const WebhookScopeNamespace: WebhookScope = "namespace";
+export const WebhookScopeComponent: WebhookScope = "component";
 
-export interface DeployKey {
+export interface Webhook {
   name: string;
-  scope: DeployKeyScope;
+  scope: WebhookScope;
   resources: string[];
   key: string;
   creator: string;
 }
 
-export const newEmptyDeployKeyForm: DeployKey = {
+export const newEmptyWebhookForm: Webhook = {
   name: "",
-  scope: DeployKeyScopeCluster,
+  scope: WebhookScopeCluster,
   resources: [],
   key: "",
   creator: "",
 };
 
-export interface LoadDeployKeysAction {
+export interface LoadWebhooksAction {
   type: typeof LOAD_DEPLOY_KEYS_FULFILLED;
-  payload: DeployKey[];
+  payload: Webhook[];
 }
 
-export interface DeleteDeployKeyAction {
+export interface DeleteWebhookAction {
   type: typeof DELETE_DEPLOY_KEY_FULFILLED;
 }
 
-export interface CreateDeployKeyAction {
+export interface CreateWebhookAction {
   type: typeof CREATE_DEPLOY_KEY_FULFILLED;
-  payload: DeployKey;
+  payload: Webhook;
 }
 
-export interface DeployKeyStateAction {
+export interface WebhookStateAction {
   type:
     | typeof CREATE_DEPLOY_KEY_FAILED
     | typeof CREATE_DEPLOY_KEY_PENDING
@@ -54,8 +54,4 @@ export interface DeployKeyStateAction {
     | typeof LOAD_DEPLOY_KEYS_PENDING;
 }
 
-export type DeployKeyActions =
-  | DeployKeyStateAction
-  | LoadDeployKeysAction
-  | DeleteDeployKeyAction
-  | CreateDeployKeyAction;
+export type WebhookActions = WebhookStateAction | LoadWebhooksAction | DeleteWebhookAction | CreateWebhookAction;

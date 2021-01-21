@@ -28,10 +28,10 @@ import { pluralize } from "utils/string";
 import { DoughnutChart } from "widgets/DoughnutChart";
 import { KalmApplicationIcon, KalmComponentsIcon, KalmDetailsIcon, KalmRoutesIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { Caption, H6 } from "widgets/Label";
 import { KLink, KMLink } from "widgets/Link";
 import { CardCPULineChart, CardMemoryLineChart } from "widgets/SmallLineChart";
-import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
 const ApplicationCardStyles = (theme: Theme) =>
   createStyles({
@@ -53,6 +53,7 @@ const ApplicationCardStyles = (theme: Theme) =>
 
 type ApplicationCardProps = {
   application: ApplicationDetails;
+  tenant: string;
   componentsMap: { [key: string]: ApplicationComponentDetails[] };
   httpRoutes: HttpRoute[];
   canEdit: boolean;
@@ -62,10 +63,10 @@ type ApplicationCardProps = {
 
 class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
   private renderName = () => {
-    const { application } = this.props;
+    const { application, tenant } = this.props;
     return (
       <KLink to={`/applications/${application.name}/components`} onClick={() => blinkTopProgressAction()}>
-        <H6>{application.name}</H6>
+        <H6>{application.name.replace(new RegExp(`^${tenant}-`), "")}</H6>
       </KLink>
     );
   };
