@@ -421,13 +421,13 @@ func (r *LogSystemReconcilerTask) getProvisionDataSourceConfigForGrafana(lokiNam
     type: loki
     access: proxy
     isDefault: true
-	url: http://%s:3100
-	orgId: %d
-	jsonData:
-	  httpHeaderName1: X-Scope-OrgID
-	secureJsonData:
-	  httpHeaderValue1: %d
-	`
+    url: http://%s:3100
+    orgId: %d
+    jsonData:
+      httpHeaderName1: X-Scope-OrgID
+    secureJsonData:
+      httpHeaderValue1: %d
+`
 
 	orgs, err := r.grafanaClient.ListOrgs()
 	if err != nil {
