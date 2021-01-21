@@ -392,8 +392,12 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 		copied := r.grafana.DeepCopy()
 		copied.Spec = grafana.Spec
 
-		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.grafana)); err != nil {
-			r.Log.Error(err, "Patch grafana component failed.")
+		// if err := r.Patch(r.ctx, copied, client.MergeFrom(r.grafana)); err != nil {
+		// 	r.Log.Error(err, "Patch grafana component failed.")
+		// 	return err
+		// }
+		if err := r.Update(r.ctx, copied); err != nil {
+			r.Log.Error(err, "Update grafana component failed.")
 			return err
 		}
 	}
