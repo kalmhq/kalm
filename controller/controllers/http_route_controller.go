@@ -378,6 +378,8 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 					}
 				}
 			}
+
+			// todo have issue set to error if status is not empty
 			if route.Status.DestinationsStatus[j].Status == "" {
 				route.Status.DestinationsStatus[j] = corev1alpha1.HttpRouteDestinationStatus{
 					Status: "error",

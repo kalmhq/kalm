@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 type HttpRouteControllerSuite struct {
@@ -30,6 +31,8 @@ func (suite *HttpRouteControllerSuite) SetupSuite() {
 	v1alpha1.SetTenantForObj(&ns, tenant.Name)
 
 	suite.createObject(&ns)
+
+	suite.ns = &ns
 	suite.tenant = tenant
 }
 
@@ -96,9 +99,11 @@ func (suite *HttpRouteControllerSuite) TestBasicHttpRoute() {
 	suite.createObject(&route)
 }
 
-func (suite *ComponentControllerSuite) TestDestinationStatus() {
+func (suite *HttpRouteControllerSuite) TestDestinationStatus() {
 
 	component := generateEmptyComponent(suite.ns.Name)
+	suite.createComponent(component)
+
 	route := v1alpha1.HttpRoute{
 		ObjectMeta: v1.ObjectMeta{
 			Name: "test",
@@ -131,17 +136,25 @@ func (suite *ComponentControllerSuite) TestDestinationStatus() {
 			},
 		},
 	}
+
+	v1alpha1.SetTenantForObj(&route, suite.tenant.Name)
 	suite.createObject(&route)
+
 	suite.Eventually(func() bool {
-		return route.Status.DestinationsStatus[0].Status == "normal"
+		suite.reloadObject(types.NamespacedName{Name: route.Name}, &route)
+		return len(route.Status.DestinationsStatus) >= 1 &&
+			route.Status.DestinationsStatus[0].Status == "normal"
 	}, "route destination status should be normal")
 
 	// update component port
 	suite.reloadComponent(component)
 	component.Spec.Ports[0].ServicePort = 3322
 	suite.updateComponent(component)
+
 	suite.Eventually(func() bool {
-		return route.Status.DestinationsStatus[0].Status == "error"
+		suite.reloadObject(types.NamespacedName{Name: route.Name}, &route)
+		return len(route.Status.DestinationsStatus) >= 1 &&
+			route.Status.DestinationsStatus[0].Status == "error"
 	}, "route destination status should be error")
 
 	// Delete component port
@@ -149,7 +162,9 @@ func (suite *ComponentControllerSuite) TestDestinationStatus() {
 	component.Spec.Ports = component.Spec.Ports[:0]
 	suite.updateComponent(component)
 	suite.Eventually(func() bool {
-		return route.Status.DestinationsStatus[0].Status == "error"
+		suite.reloadObject(types.NamespacedName{Name: route.Name}, &route)
+		return len(route.Status.DestinationsStatus) >= 1 &&
+			route.Status.DestinationsStatus[0].Status == "error"
 	}, "route destination status should be error")
 }
 

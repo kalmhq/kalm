@@ -136,7 +136,7 @@ func (r *HttpRoute) validate() error {
 		if isUserTenant {
 			baseAppDomain := GetEnvKalmBaseAppDomain()
 			if baseAppDomain == "" {
-				httproutelog.Error(fmt.Errorf("should set ENV for kalmBaseAppDomain"), "")
+				httproutelog.Info("should set ENV for kalmBaseAppDomain")
 				continue
 			}
 
