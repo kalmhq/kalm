@@ -14,13 +14,13 @@ const twoDestinationList: HttpRouteDestination[] = [firstDestination, secondDest
 const threeDestinationList: HttpRouteDestination[] = [firstDestination, secondDestination, secondDestination];
 
 export const OneDestinationTarget = () => {
-  return <Targets destinations={oneDestinationList} />;
+  return <Targets destinations={oneDestinationList} destinationsStatus={[]} />;
 };
 
 export const TwoDestinationsTarget = () => {
-  return <Targets destinations={twoDestinationList} />;
+  return <Targets destinations={twoDestinationList} destinationsStatus={[]} />;
 };
 
 export const ThreeDestinationsTarget = () => {
-  return <Targets destinations={threeDestinationList} />;
+  return <Targets destinations={threeDestinationList} destinationsStatus={[]} />;
 };

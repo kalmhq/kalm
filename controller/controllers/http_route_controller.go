@@ -379,8 +379,7 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 				}
 			}
 
-			// todo have issue set to error if status is not empty
-			if route.Status.DestinationsStatus[j].Status == "" {
+			if route.Status.DestinationsStatus[j].Status != "normal" {
 				route.Status.DestinationsStatus[j] = corev1alpha1.HttpRouteDestinationStatus{
 					Status: "error",
 					Error:  "No HttpRoute destination matched",
