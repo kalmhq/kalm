@@ -228,10 +228,23 @@ spec:
         status:
           description: HttpRouteStatus defines the observed state of HttpRoute
           properties:
+            destinationsStatus:
+              items:
+                properties:
+                  error:
+                    type: string
+                  status:
+                    type: string
+                required:
+                - status
+                type: object
+              type: array
             hostCertifications:
               additionalProperties:
                 type: string
               type: object
+          required:
+          - destinationsStatus
           type: object
       type: object
   version: v1alpha1

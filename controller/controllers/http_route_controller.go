@@ -357,6 +357,37 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 		}
 	}
 
+	var componentList corev1alpha1.ComponentList
+	if err := r.Reader.List(r.ctx, &componentList); err != nil {
+		return err
+	}
+	for i := range r.routes {
+		route := r.routes[i]
+		if len(route.Status.DestinationsStatus) != len(route.Spec.Destinations) {
+			route.Status.DestinationsStatus = make([]corev1alpha1.HttpRouteDestinationStatus, len(route.Spec.Destinations))
+		}
+		for j := range route.Spec.Destinations {
+			destination := route.Spec.Destinations[j]
+			for _, component := range componentList.Items {
+				for _, port := range component.Spec.Ports {
+					if destination.Host == (component.Name + "." + component.Namespace + ".svc.cluster.local:" + fmt.Sprint(port.ServicePort)) {
+						route.Status.DestinationsStatus[j] = corev1alpha1.HttpRouteDestinationStatus{
+							Status: "normal",
+							Error:  "",
+						}
+					}
+				}
+			}
+			if route.Status.DestinationsStatus[j].Status == "" {
+				route.Status.DestinationsStatus[j] = corev1alpha1.HttpRouteDestinationStatus{
+					Status: "error",
+					Error:  "No HttpRoute destination matched",
+				}
+			}
+		}
+		r.Status().Update(r.ctx, &route)
+	}
+
 	for host, routes := range hostVirtualService {
 		// Less reports whether the element with
 		// index i should sort before the element with index j.
@@ -759,6 +790,7 @@ func NewHttpRouteReconciler(mgr ctrl.Manager) *HttpRouteReconciler {
 type WatchAllKalmGateway struct{}
 type WatchAllKalmVirtualService struct{}
 type WatchAllKalmEnvoyFilter struct{}
+type WatchAllKalmComponent struct{}
 
 func (*WatchAllKalmGateway) Map(object handler.MapObject) []reconcile.Request {
 	gateway, ok := object.Object.(*v1beta1.Gateway)
@@ -785,6 +817,13 @@ func (*WatchAllKalmEnvoyFilter) Map(object handler.MapObject) []reconcile.Reques
 	}
 	return []reconcile.Request{{NamespacedName: types.NamespacedName{}}}
 }
+func (*WatchAllKalmComponent) Map(object handler.MapObject) []reconcile.Request {
+	component, ok := object.Object.(*corev1alpha1.Component)
+	if !ok || component.Labels == nil || component.Labels[KALM_ROUTE_LABEL] != "true" {
+		return nil
+	}
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{}}}
+}
 
 func (r *HttpRouteReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
@@ -805,6 +844,12 @@ func (r *HttpRouteReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			&source.Kind{Type: &v1alpha32.EnvoyFilter{}},
 			&handler.EnqueueRequestsFromMapFunc{
 				ToRequests: &WatchAllKalmEnvoyFilter{},
+			},
+		).
+		Watches(
+			&source.Kind{Type: &corev1alpha1.Component{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: &WatchAllKalmComponent{},
 			},
 		).
 		Complete(r)
