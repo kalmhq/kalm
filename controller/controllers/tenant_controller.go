@@ -27,13 +27,15 @@ var tenantCtrlLog = logf.Log.WithName("tenant-controller")
 
 type TenantReconciler struct {
 	*BaseReconciler
-	ctx context.Context
+	ctx           context.Context
+	GrafanaClient IGrafanaClient
 }
 
 func NewTenantReconciler(mgr ctrl.Manager) *TenantReconciler {
 	return &TenantReconciler{
 		BaseReconciler: NewBaseReconciler(mgr, "Tenant"),
 		ctx:            context.Background(),
+		GrafanaClient:  GrafanaClient{},
 	}
 }
 
@@ -154,6 +156,10 @@ func (r *TenantReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 				return ctrl.Result{}, err
 			}
 		}
+	}
+
+	if err := r.ReconcileForTenantIfPLGExist(tenantName); err != nil {
+		return ctrl.Result{}, nil
 	}
 
 	return ctrl.Result{}, nil
@@ -530,4 +536,31 @@ func (r *TenantReconciler) tryMarkComponentAsExceedingQuota(comp *v1alpha1.Compo
 	comp.Labels[v1alpha1.KalmLabelKeyExceedingQuota] = "true"
 
 	return r.Update(r.ctx, comp)
+}
+
+// 1. create org if not exist
+// 2. add users into org, todo what about local & byoc mode?
+// 3. create data-source for the org
+func (r *TenantReconciler) ReconcileForTenantIfPLGExist(tenantName string) error {
+	orgName := tenantName
+
+	// org
+	if _, err := r.GrafanaClient.CreateOrg(orgName); err != nil {
+		return err
+	}
+
+	// user
+	// todo for now, only tenant owners, need fix this
+	tenant := v1alpha1.Tenant{}
+	if err := r.Get(r.ctx, client.ObjectKey{Name: tenantName}, &tenant); err != nil {
+		return err
+	}
+
+	for _, owner := range tenant.Spec.Owners {
+		if _, err := r.GrafanaClient.AddUserToOrg(owner, orgName); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

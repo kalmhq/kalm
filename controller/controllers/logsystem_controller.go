@@ -40,12 +40,13 @@ type LogSystemReconciler struct {
 
 type LogSystemReconcilerTask struct {
 	*LogSystemReconciler
-	req       *ctrl.Request
-	ctx       context.Context
-	logSystem *corev1alpha1.LogSystem
-	loki      *corev1alpha1.Component
-	grafana   *corev1alpha1.Component
-	promtail  *corev1alpha1.Component
+	req           *ctrl.Request
+	ctx           context.Context
+	logSystem     *corev1alpha1.LogSystem
+	loki          *corev1alpha1.Component
+	grafana       *corev1alpha1.Component
+	promtail      *corev1alpha1.Component
+	grafanaClient *GrafanaClient
 }
 
 type LogSystemComponentNames struct {
@@ -77,6 +78,7 @@ func (r *LogSystemReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		LogSystemReconciler: r,
 		ctx:                 context.Background(),
 		req:                 &req,
+		grafanaClient:       &GrafanaClient{},
 	}
 
 	err := task.Run(req)
@@ -295,6 +297,13 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 
 	replicas := int32(1)
 
+	provisionDataSourceConfig, err := r.getProvisionDataSourceConfigForGrafana(names.Loki)
+	if err != nil {
+		return err
+	}
+
+	r.Log.Info("provisionDataSourceConfig", "content", provisionDataSourceConfig)
+
 	grafana := &corev1alpha1.Component{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: r.req.Namespace,
@@ -315,14 +324,13 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 			// Will integrate kalm permission later.
 			// Don't open port to avoid grafana access from outside.
 
-			//Ports: []corev1alpha1.Port{
-			//
-			//	{
-			//		ContainerPort: 3000,
-			//		ServicePort:   3000,
-			//		Protocol:      corev1alpha1.PortProtocolHTTP,
-			//	},
-			//},
+			Ports: []corev1alpha1.Port{
+				{
+					ContainerPort: 3000,
+					ServicePort:   3000,
+					Protocol:      corev1alpha1.PortProtocolHTTP,
+				},
+			},
 			Env: []corev1alpha1.EnvVar{
 				{
 					Name:  "GF_AUTH_ANONYMOUS_ENABLED",
@@ -363,16 +371,8 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 			PreInjectedFiles: []corev1alpha1.PreInjectFile{
 				{
 					MountPath: "/etc/grafana/provisioning/datasources/loki.yaml",
-					Content: fmt.Sprintf(`
-apiVersion: 1
-datasources:
-  - name: Loki
-    type: loki
-    access: proxy
-    isDefault: true
-    url: http://%s:3100
-`, names.Loki),
-					Runnable: false,
+					Content:   provisionDataSourceConfig,
+					Runnable:  false,
 				},
 			},
 		},
@@ -399,6 +399,41 @@ datasources:
 	}
 
 	return nil
+}
+
+// https://grafana.com/docs/grafana/latest/administration/provisioning/#example-data-source-config-file
+func (r *LogSystemReconcilerTask) getProvisionDataSourceConfigForGrafana(lokiName string) (string, error) {
+
+	var dataSourceTemplate = `
+  - name: Loki
+    type: loki
+    access: proxy
+    isDefault: true
+	url: http://%s:3100
+	orgId: %d
+	jsonData:
+	  httpHeaderName1: X-Scope-OrgID
+	secureJsonData:
+	  httpHeaderValue1: %d
+	`
+
+	orgs, err := r.grafanaClient.ListOrgs()
+	if err != nil {
+		return "", err
+	}
+
+	var dataSources string
+	for _, org := range orgs {
+		dataSources += fmt.Sprintf(dataSourceTemplate, lokiName, org.ID, org.ID)
+	}
+
+	template := `
+apiVersion: 1
+datasources:
+%s
+`
+
+	return fmt.Sprintf(template, dataSources), nil
 }
 
 func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicPromtail() error {
