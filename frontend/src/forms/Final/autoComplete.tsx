@@ -264,7 +264,7 @@ export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueP
         }
 
         return (
-          <div className={groupUl}>
+          <div className={groupUl} key={option!.label}>
             <Typography>{option!.label}</Typography>
           </div>
         );
