@@ -13,7 +13,7 @@ import {
   withStyles,
 } from "@material-ui/core";
 import { api } from "api";
-import { Expansion } from "widgets/expansion";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { bindTrigger } from "material-ui-popup-state";
 import { NodeStatus } from "pages/Nodes/NodeStatus";
@@ -22,10 +22,11 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Node } from "types/node";
-import { formatTimeDistance, TimestampFilter } from "utils/date";
+import { formatAgeFromNow, TimestampFilter } from "utils/date";
 import { customBindHover, customBindPopover } from "utils/popper";
 import { sizeStringToNumber } from "utils/sizeConv";
 import sc from "utils/stringConstants";
+import { Expansion } from "widgets/expansion";
 import { InfoBox } from "widgets/InfoBox";
 import { Subtitle1 } from "widgets/Label";
 import { InfoPaper } from "widgets/Paper";
@@ -36,7 +37,6 @@ import { NodeCPU, NodesCPU } from "./CPU";
 import { NodeMemory, NodesMemory } from "./Memory";
 import { NodePods } from "./Pods";
 import { ResourceRank } from "./ResourceRank";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -117,7 +117,7 @@ export class NodeListRaw extends React.Component<Props, States> {
             </Grid>
             <Grid item>{node.roles.join(",")}</Grid>
             <Grid item>{node.status.nodeInfo.kubeletVersion}</Grid>
-            <Grid item>Age: {formatTimeDistance(node.creationTimestamp)}</Grid>
+            <Grid item>Age: {formatAgeFromNow(node.creationTimestamp)}</Grid>
             <Grid item>{node.statusTexts.join(",")}</Grid>
             <Grid item>
               <Box display="flex">
@@ -199,7 +199,7 @@ export class NodeListRaw extends React.Component<Props, States> {
             },
             {
               name: "Age",
-              content: formatTimeDistance(node.creationTimestamp),
+              content: formatAgeFromNow(node.creationTimestamp),
             },
             {
               name: "CPU",

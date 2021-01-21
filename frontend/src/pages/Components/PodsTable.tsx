@@ -12,7 +12,7 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { ApplicationComponentDetails, PodStatus } from "types/application";
 import { WorkloadType } from "types/componentTemplate";
-import { formatTimeDistance } from "utils/date";
+import { formatAgeFromNow } from "utils/date";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { KalmConsoleIcon, KalmLogIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
@@ -61,7 +61,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
   };
 
   private renderPodAGE = (pod: PodStatus) => {
-    return formatTimeDistance(pod.createTimestamp);
+    return formatAgeFromNow(pod.createTimestamp);
   };
 
   private renderPodCPU = (pod: PodStatus) => {
