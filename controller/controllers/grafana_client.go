@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/grafana-tools/sdk"
 	"k8s.io/apimachinery/pkg/util/rand"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -218,6 +219,12 @@ func (c *grafanaClient) CreateDatasourceIfNotExist(orgID uint) error {
 	}
 
 	if statusMsg.ID == nil {
+		spew.Dump(statusMsg)
+
+		if statusMsg.Message != nil {
+			grafanaLog.Info("fail to create datasource", "msg", *statusMsg.Message)
+		}
+
 		return fmt.Errorf("fail to create datasource, resp: %+v", statusMsg)
 	}
 

@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.54.0 // indirect
 	github.com/cloudflare/cloudflare-go v0.13.5
 	github.com/coreos/prometheus-operator v0.29.0
+	github.com/davecgh/go-spew v1.1.1
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/dop251/goja v0.0.0-20200721192441-a695b0cdd498
