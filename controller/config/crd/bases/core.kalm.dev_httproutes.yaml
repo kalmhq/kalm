@@ -231,11 +231,14 @@ spec:
             destinationsStatus:
               items:
                 properties:
+                  destinationHost:
+                    type: string
                   error:
                     type: string
                   status:
                     type: string
                 required:
+                - destinationHost
                 - status
                 type: object
               type: array
