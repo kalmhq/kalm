@@ -391,15 +391,6 @@ workflows:
               useText
               popupId="delete-webhook-popup"
               popupTitle="DELETE WEBHOOK?"
-              popupContent={
-                <Box>
-                  This action cannot be undone. This will permanently delete
-                  <Typography color={"primary"} align={"center"}>
-                    {deployAccessToken.name}
-                  </Typography>
-                </Box>
-              }
-              targetText={"delete"}
               confirmedAction={this.handleDelete}
             />
           </>

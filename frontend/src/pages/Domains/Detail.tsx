@@ -125,7 +125,7 @@ const DomainDetailPageRaw: React.FC = () => {
                   </Typography>
                 </Box>
               }
-              targetText={"delete"}
+              targetText={domain.domain}
               popupTitle="Are your sure to delete this domain?"
               confirmedAction={deleteDomain}
             />
