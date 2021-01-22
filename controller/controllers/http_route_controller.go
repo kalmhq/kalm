@@ -366,7 +366,6 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 	for _, service := range serviceList.Items {
 		for _, servicePort := range service.Spec.Ports {
 			host := service.Name + "." + service.Namespace + ".svc.cluster.local:" + fmt.Sprint(servicePort.Port)
-			fmt.Println(("-----------------------xxxxxxxxxxx1, service host: "), host)
 			hostsMap[host] = true
 		}
 	}
@@ -378,7 +377,6 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 		}
 		for j := range route.Spec.Destinations {
 			destination := route.Spec.Destinations[j]
-			fmt.Println(("-----------------------xxxxxxxxxxx2, destination host: "), destination.Host)
 			_, matchedTarget := hostsMap[destination.Host]
 			if matchedTarget {
 				route.Status.DestinationsStatus[j] = corev1alpha1.HttpRouteDestinationStatus{
