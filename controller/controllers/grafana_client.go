@@ -199,7 +199,7 @@ func (c *grafanaClient) CreateDatasourceIfNotExist(orgID uint) error {
 	}
 
 	datasource := sdk.Datasource{
-		Name:      "Loki",
+		Name:      fmt.Sprintf("Loki-%d", orgID),
 		Type:      "loki",
 		Access:    "proxy", //?
 		IsDefault: true,    //?
