@@ -29,6 +29,7 @@ import (
 	istioNetworkingV1Beta1 "istio.io/api/networking/v1beta1"
 	v1alpha32 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -357,10 +358,19 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 		}
 	}
 
-	var componentList corev1alpha1.ComponentList
-	if err := r.Reader.List(r.ctx, &componentList); err != nil {
+	var serviceList corev1.ServiceList
+	if err := r.Reader.List(r.ctx, &serviceList); err != nil {
 		return err
 	}
+	hostsMap := make(map[string]bool)
+	for _, service := range serviceList.Items {
+		for _, servicePort := range service.Spec.Ports {
+			host := service.Name + "." + service.Namespace + ".svc.cluster.local:" + fmt.Sprint(servicePort.Port)
+			fmt.Println(("-----------------------xxxxxxxxxxx1, service host: "), host)
+			hostsMap[host] = true
+		}
+	}
+
 	for i := range r.routes {
 		route := r.routes[i]
 		if len(route.Status.DestinationsStatus) != len(route.Spec.Destinations) {
@@ -368,21 +378,21 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 		}
 		for j := range route.Spec.Destinations {
 			destination := route.Spec.Destinations[j]
-
-			route.Status.DestinationsStatus[j] = corev1alpha1.HttpRouteDestinationStatus{
-				Status: "error",
-				Error:  "No HttpRoute destination matched",
-			}
-
-			for _, component := range componentList.Items {
-				for _, port := range component.Spec.Ports {
-					if destination.Host == (component.Name + "." + component.Namespace + ".svc.cluster.local:" + fmt.Sprint(port.ServicePort)) {
-						route.Status.DestinationsStatus[j] = corev1alpha1.HttpRouteDestinationStatus{
-							Status: "normal",
-							Error:  "",
-						}
-					}
+			fmt.Println(("-----------------------xxxxxxxxxxx2, destination host: "), destination.Host)
+			_, matchedTarget := hostsMap[destination.Host]
+			if matchedTarget {
+				route.Status.DestinationsStatus[j] = corev1alpha1.HttpRouteDestinationStatus{
+					DestinationHost: destination.Host,
+					Status:          "normal",
+					Error:           "",
 				}
+			} else {
+				route.Status.DestinationsStatus[j] = corev1alpha1.HttpRouteDestinationStatus{
+					DestinationHost: destination.Host,
+					Status:          "error",
+					Error:           "No HttpRoute destination matched",
+				}
+
 			}
 		}
 		r.Status().Update(r.ctx, &route)
@@ -790,7 +800,7 @@ func NewHttpRouteReconciler(mgr ctrl.Manager) *HttpRouteReconciler {
 type WatchAllKalmGateway struct{}
 type WatchAllKalmVirtualService struct{}
 type WatchAllKalmEnvoyFilter struct{}
-type WatchAllKalmComponent struct{}
+type WatchAllService struct{}
 
 func (*WatchAllKalmGateway) Map(object handler.MapObject) []reconcile.Request {
 	gateway, ok := object.Object.(*v1beta1.Gateway)
@@ -817,9 +827,9 @@ func (*WatchAllKalmEnvoyFilter) Map(object handler.MapObject) []reconcile.Reques
 	}
 	return []reconcile.Request{{NamespacedName: types.NamespacedName{}}}
 }
-func (*WatchAllKalmComponent) Map(object handler.MapObject) []reconcile.Request {
-	component, ok := object.Object.(*corev1alpha1.Component)
-	if !ok || component.Labels == nil {
+func (*WatchAllService) Map(object handler.MapObject) []reconcile.Request {
+	_, ok := object.Object.(*corev1.Service)
+	if !ok {
 		return nil
 	}
 	return []reconcile.Request{{NamespacedName: types.NamespacedName{}}}
@@ -847,9 +857,9 @@ func (r *HttpRouteReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			},
 		).
 		Watches(
-			&source.Kind{Type: &corev1alpha1.Component{}},
+			&source.Kind{Type: &corev1.Service{}},
 			&handler.EnqueueRequestsFromMapFunc{
-				ToRequests: &WatchAllKalmComponent{},
+				ToRequests: &WatchAllService{},
 			},
 		).
 		Complete(r)

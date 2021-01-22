@@ -141,8 +141,9 @@ type HttpRouteSpec struct {
 }
 
 type HttpRouteDestinationStatus struct {
-	Status string `json:"status"`
-	Error  string `json:"error,omitempty"`
+	DestinationHost string `json:"destinationHost"`
+	Status          string `json:"status"`
+	Error           string `json:"error,omitempty"`
 }
 
 // HttpRouteStatus defines the observed state of HttpRoute
