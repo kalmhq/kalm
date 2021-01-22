@@ -1,7 +1,9 @@
 import { Box, createStyles, Theme, withStyles, WithStyles, withTheme, WithTheme } from "@material-ui/core";
 import { Flowpoint, Flowspace } from "flowpoints";
 import React from "react";
-import { HttpRouteDestination } from "types/route";
+import { HttpRouteDestination, HttpRouteDestinationStatus } from "types/route";
+import { ErrorIcon } from "./Icon";
+import { KTooltip } from "./KTooltip";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -10,11 +12,12 @@ const styles = (theme: Theme) =>
 
 interface Props extends WithStyles<typeof styles>, WithTheme {
   destinations: HttpRouteDestination[];
+  destinationsStatus?: HttpRouteDestinationStatus[];
 }
 
 class TargetsRaw extends React.PureComponent<Props> {
   public render() {
-    const { destinations, theme } = this.props;
+    const { destinations, destinationsStatus, theme } = this.props;
     let sum = 0;
     destinations.forEach((x) => (sum += x.weight));
     const size = destinations.length;
@@ -63,6 +66,7 @@ class TargetsRaw extends React.PureComponent<Props> {
         />
 
         {destinations.map((x, index) => {
+          const hasError: boolean = !!destinationsStatus && destinationsStatus[index]?.status === "error";
           return (
             <Flowpoint
               variant="filled"
@@ -70,7 +74,7 @@ class TargetsRaw extends React.PureComponent<Props> {
                 backgroundColor: theme.palette.type === "light" ? "#AACAF1" : theme.palette.primary.light,
                 border: "1px #AACAF1",
                 fontSize: "12px",
-                color: "#000",
+                color: hasError ? "#f44336" : "#000",
                 textAlign: "center",
                 width: "auto",
                 minWidth: "112px",
@@ -85,11 +89,17 @@ class TargetsRaw extends React.PureComponent<Props> {
               dragY={false}
               onClick={() => {}}
             >
-              <Box>
-                {x.host
-                  // .replace(`.${activeNamespaceName}.svc.cluster.local`, "")
-                  .replace(`.svc.cluster.local`, "")}
-              </Box>
+              <KTooltip
+                title={hasError ? destinationsStatus![index]?.error : ""}
+                disableHoverListener={hasError ? false : true}
+              >
+                <Box display="flex" alignItems="center" marginTop={hasError ? "-3px" : "0"}>
+                  {hasError ? <ErrorIcon /> : null}
+                  {x.host
+                    // .replace(`.${activeNamespaceName}.svc.cluster.local`, "")
+                    .replace(`.svc.cluster.local`, "")}
+                </Box>
+              </KTooltip>
               {size > 1 && <Box>{Math.floor((x.weight / sum) * 1000 + 0.5) / 10}%</Box>}
             </Flowpoint>
           );

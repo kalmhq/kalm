@@ -119,7 +119,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderTargets = (row: HttpRoute) => {
-    return <Targets destinations={row.destinations} />;
+    return <Targets destinations={row.destinations} destinationsStatus={row.destinationsStatus} />;
   };
 
   private renderAdvanced(row: HttpRoute) {

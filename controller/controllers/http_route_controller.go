@@ -29,6 +29,7 @@ import (
 	istioNetworkingV1Beta1 "istio.io/api/networking/v1beta1"
 	v1alpha32 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -355,6 +356,44 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 				hostVirtualService[host] = r.buildIstioHttpRoutes(&route)
 			}
 		}
+	}
+
+	var serviceList corev1.ServiceList
+	if err := r.Reader.List(r.ctx, &serviceList); err != nil {
+		return err
+	}
+	hostsMap := make(map[string]bool)
+	for _, service := range serviceList.Items {
+		for _, servicePort := range service.Spec.Ports {
+			host := service.Name + "." + service.Namespace + ".svc.cluster.local:" + fmt.Sprint(servicePort.Port)
+			hostsMap[host] = true
+		}
+	}
+
+	for i := range r.routes {
+		route := r.routes[i]
+		if len(route.Status.DestinationsStatus) != len(route.Spec.Destinations) {
+			route.Status.DestinationsStatus = make([]corev1alpha1.HttpRouteDestinationStatus, len(route.Spec.Destinations))
+		}
+		for j := range route.Spec.Destinations {
+			destination := route.Spec.Destinations[j]
+			_, matchedTarget := hostsMap[destination.Host]
+			if matchedTarget {
+				route.Status.DestinationsStatus[j] = corev1alpha1.HttpRouteDestinationStatus{
+					DestinationHost: destination.Host,
+					Status:          "normal",
+					Error:           "",
+				}
+			} else {
+				route.Status.DestinationsStatus[j] = corev1alpha1.HttpRouteDestinationStatus{
+					DestinationHost: destination.Host,
+					Status:          "error",
+					Error:           "No HttpRoute destination matched",
+				}
+
+			}
+		}
+		r.Status().Update(r.ctx, &route)
 	}
 
 	for host, routes := range hostVirtualService {
@@ -759,6 +798,7 @@ func NewHttpRouteReconciler(mgr ctrl.Manager) *HttpRouteReconciler {
 type WatchAllKalmGateway struct{}
 type WatchAllKalmVirtualService struct{}
 type WatchAllKalmEnvoyFilter struct{}
+type WatchAllService struct{}
 
 func (*WatchAllKalmGateway) Map(object handler.MapObject) []reconcile.Request {
 	gateway, ok := object.Object.(*v1beta1.Gateway)
@@ -785,6 +825,13 @@ func (*WatchAllKalmEnvoyFilter) Map(object handler.MapObject) []reconcile.Reques
 	}
 	return []reconcile.Request{{NamespacedName: types.NamespacedName{}}}
 }
+func (*WatchAllService) Map(object handler.MapObject) []reconcile.Request {
+	_, ok := object.Object.(*corev1.Service)
+	if !ok {
+		return nil
+	}
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{}}}
+}
 
 func (r *HttpRouteReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
@@ -805,6 +852,12 @@ func (r *HttpRouteReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			&source.Kind{Type: &v1alpha32.EnvoyFilter{}},
 			&handler.EnqueueRequestsFromMapFunc{
 				ToRequests: &WatchAllKalmEnvoyFilter{},
+			},
+		).
+		Watches(
+			&source.Kind{Type: &corev1.Service{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: &WatchAllService{},
 			},
 		).
 		Complete(r)
