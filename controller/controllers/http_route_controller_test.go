@@ -22,15 +22,9 @@ func (suite *HttpRouteControllerSuite) SetupSuite() {
 	suite.BasicSuite.SetupSuite()
 	tenant := suite.SetupTenant()
 
-	ns := coreV1.Namespace{
-		ObjectMeta: v1.ObjectMeta{
-			Name: "test-namespace",
-		},
-	}
-
+	ns := suite.SetupKalmEnabledNs("")
 	v1alpha1.SetTenantForObj(&ns, tenant.Name)
-
-	suite.createObject(&ns)
+	suite.updateObject(&ns)
 
 	suite.ns = &ns
 	suite.tenant = tenant
