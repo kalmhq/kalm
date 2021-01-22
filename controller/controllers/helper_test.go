@@ -372,19 +372,6 @@ func randomName() string {
 }
 
 func (suite *BasicSuite) SetupTenant() *v1alpha1.Tenant {
-	// ensure ns: kalm-system exist
-	ns := corev1.Namespace{}
-	err := suite.K8sClient.Get(context.Background(), client.ObjectKey{Name: "kalm-system"}, &ns)
-	if errors.IsNotFound(err) {
-		ns = corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "kalm-system"}}
-		_ = suite.K8sClient.Create(context.Background(), &ns)
-
-		suite.Eventually(func() bool {
-			err := suite.K8sClient.Get(context.Background(), client.ObjectKey{Name: "kalm-system"}, &ns)
-			return err == nil
-		})
-	}
-
 	name := randomName()
 
 	tenant := &v1alpha1.Tenant{
@@ -418,6 +405,23 @@ func (suite *BasicSuite) SetupTenant() *v1alpha1.Tenant {
 		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: tenant.Name}, tenant)
 		return err == nil
 	})
+
+	// ensure ns: kalm-system exist
+	ns := corev1.Namespace{}
+	err := suite.K8sClient.Get(context.Background(), client.ObjectKey{Name: "kalm-system"}, &ns)
+
+	if errors.IsNotFound(err) {
+		ns = corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "kalm-system", Labels: map[string]string{
+			KalmEnableLabelName:         "true",
+			v1alpha1.TenantNameLabelKey: v1alpha1.DefaultGlobalTenantName,
+		}}}
+		_ = suite.K8sClient.Create(context.Background(), &ns)
+
+		suite.Eventually(func() bool {
+			err := suite.K8sClient.Get(context.Background(), client.ObjectKey{Name: "kalm-system"}, &ns)
+			return err == nil
+		})
+	}
 
 	return tenant
 }
