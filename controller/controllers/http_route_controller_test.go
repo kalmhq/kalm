@@ -100,7 +100,7 @@ func (suite *HttpRouteControllerSuite) TestDestinationsStatus() {
 
 	route := v1alpha1.HttpRoute{
 		ObjectMeta: v1.ObjectMeta{
-			Name: "test",
+			Name: "test2",
 		},
 		Spec: v1alpha1.HttpRouteSpec{
 			Methods: []v1alpha1.HttpRouteMethod{"GET", "POST"},

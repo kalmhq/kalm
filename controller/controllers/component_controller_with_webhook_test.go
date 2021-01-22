@@ -149,17 +149,15 @@ func (suite *ComponentControllerWithWebhookSuite) TestComponentWithWebhookUpdati
 		appCnt := statusResList[v1alpha1.ResourceApplicationsCount]
 		compCnt := statusResList[v1alpha1.ResourceComponentsCount]
 		svcCnt := statusResList[v1alpha1.ResourceServicesCount]
-		rbCnt := statusResList[v1alpha1.ResourceRoleBindingCount]
-
-		fmt.Println("size", len(statusResList))
-		fmt.Println("status", statusResList)
+		rbCnt := statusResList[v1alpha1.ResourceRoleBindingCount] // 2
 
 		one := resource.MustParse("1")
+		two := resource.MustParse("2")
 
 		return expectedSize &&
 			appCnt.Cmp(one) == 0 &&
 			compCnt.Cmp(one) == 0 &&
 			svcCnt.Cmp(one) == 0 &&
-			rbCnt.Cmp(one) == 0
+			rbCnt.Cmp(two) == 0
 	})
 }
