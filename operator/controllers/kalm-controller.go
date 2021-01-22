@@ -235,13 +235,16 @@ func getEnvVarsForController(configSpec installv1alpha1.KalmOperatorConfigSpec) 
 
 	var baseAppDomain string
 	var baseDNSDomain string
+	var baseDashboardDomain string
 
 	if configSpec.SaaSModeConfig != nil {
 		baseAppDomain = configSpec.SaaSModeConfig.BaseAppDomain
 		baseDNSDomain = configSpec.SaaSModeConfig.BaseDNSDomain
+		baseDashboardDomain = configSpec.SaaSModeConfig.BaseDashboardDomain
 	} else if configSpec.BYOCModeConfig != nil {
 		baseAppDomain = configSpec.BYOCModeConfig.BaseAppDomain
 		baseDNSDomain = configSpec.BYOCModeConfig.BaseDNSDomain
+		baseDashboardDomain = configSpec.BYOCModeConfig.BaseDashboardDomain
 	}
 
 	envVars := []corev1.EnvVar{
@@ -253,6 +256,7 @@ func getEnvVarsForController(configSpec installv1alpha1.KalmOperatorConfigSpec) 
 		{Name: v1alpha1.ENV_KALM_PHYSICAL_CLUSTER_ID, Value: physicalClusterID},
 		{Name: v1alpha1.ENV_KALM_BASE_APP_DOMAIN, Value: baseAppDomain},
 		{Name: v1alpha1.ENV_KALM_BASE_DNS_DOMAIN, Value: baseDNSDomain},
+		{Name: v1alpha1.ENV_KALM_BASE_DASHBOARD_DOMAIN, Value: baseDashboardDomain},
 		{Name: v1alpha1.ENV_CLOUDFLARE_TOKEN, Value: cloudflareToken},
 		{Name: v1alpha1.ENV_CLOUDFLARE_DOMAIN_TO_ZONEID_CONFIG, Value: cloudflareDomainToZoneConfigStr},
 		{Name: v1alpha1.ENV_EXTERNAL_DNS_SERVER_IP, Value: extDNSServerIP},

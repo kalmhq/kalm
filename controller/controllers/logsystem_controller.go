@@ -18,6 +18,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"text/template"
 
@@ -431,6 +432,10 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 		return err
 	}
 
+	if err := r.reconcileAccessForGrafana(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -472,40 +477,152 @@ func (r *LogSystemReconcilerTask) reconcileDataForGrafana() error {
 	return nil
 }
 
-// https://grafana.com/docs/grafana/latest/administration/provisioning/#example-data-source-config-file
-func (r *LogSystemReconcilerTask) getProvisionDataSourceConfigForGrafana(lokiName string) (string, error) {
-
-	var dataSourceTemplate = `
-  - name: Loki
-    type: loki
-    access: proxy
-    isDefault: true
-    url: http://%s:3100
-    orgId: %d
-    jsonData:
-      httpHeaderName1: X-Scope-OrgID
-    secureJsonData:
-      httpHeaderValue1: %d
-`
-
-	orgs, err := r.grafanaClient.ListOrgs()
-	if err != nil {
-		return "", err
+func (r *LogSystemReconcilerTask) reconcileAccessForGrafana() error {
+	if err := r.reconcileHttpRouteForGrafana(); err != nil {
+		return err
 	}
 
-	var dataSources string
-	for _, org := range orgs {
-		dataSources += fmt.Sprintf(dataSourceTemplate, lokiName, org.ID, org.ID)
+	if err := r.reconcileProtectedEndpointForGrafana(); err != nil {
+		return err
 	}
 
-	template := `
-apiVersion: 1
-datasources:
-%s
-`
-
-	return fmt.Sprintf(template, dataSources), nil
+	return nil
 }
+
+const KalmGrafanaRouteName = "kalm-grafana"
+
+func (r *LogSystemReconcilerTask) reconcileHttpRouteForGrafana() error {
+	baseDashboardDomain := os.Getenv(v1alpha1.ENV_KALM_BASE_DASHBOARD_DOMAIN)
+
+	expectedRoute := v1alpha1.HttpRoute{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: KalmGrafanaRouteName,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultSystemTenantName,
+			},
+		},
+		Spec: v1alpha1.HttpRouteSpec{
+			Hosts: []string{
+				baseDashboardDomain,
+				fmt.Sprintf("*.%s", baseDashboardDomain),
+			},
+			Paths:     []string{"/grafana"},
+			StripPath: true,
+			Schemes: []v1alpha1.HttpRouteScheme{
+				"https", "http",
+			},
+			Methods: []v1alpha1.HttpRouteMethod{
+				"GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE", "CONNECT",
+			},
+			HttpRedirectToHttps: true,
+			Destinations: []v1alpha1.HttpRouteDestination{
+				{
+					// todo update this
+					Host:   "test-grafana.log.svc.cluster.local:3000",
+					Weight: 1,
+				},
+			},
+		},
+	}
+
+	route := v1alpha1.HttpRoute{}
+	isNew := false
+
+	routeObjKey := client.ObjectKey{Name: KalmGrafanaRouteName}
+	if err := r.Get(r.ctx, routeObjKey, &route); err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+
+		isNew = true
+	}
+
+	if isNew {
+		route = expectedRoute
+		return r.Create(r.ctx, &route)
+	} else {
+		route.Spec = expectedRoute.Spec
+		return r.Update(r.ctx, &route)
+	}
+}
+
+const KalmGrafanaProtectedEndpointName = "kalm-grafana"
+
+func (r *LogSystemReconcilerTask) reconcileProtectedEndpointForGrafana() error {
+
+	expectedEndpoint := v1alpha1.ProtectedEndpoint{
+		ObjectMeta: metav1.ObjectMeta{
+			//todo update this
+			Namespace: "log",
+			Name:      KalmGrafanaProtectedEndpointName,
+			Labels: map[string]string{
+				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultSystemTenantName,
+			},
+		},
+		Spec: v1alpha1.ProtectedEndpointSpec{
+			EndpointName:                KalmGrafanaRouteName,
+			Ports:                       []uint32{3000},
+			AllowToPassIfHasBearerToken: true,
+			Tenants:                     []string{"*"},
+		},
+	}
+
+	endpoint := v1alpha1.ProtectedEndpoint{}
+	isNew := false
+
+	objKey := client.ObjectKey{Namespace: v1alpha1.KalmSystemNamespace, Name: KalmGrafanaProtectedEndpointName}
+
+	if err := r.Get(r.ctx, objKey, &endpoint); err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+
+		isNew = true
+	}
+
+	if isNew {
+		endpoint = expectedEndpoint
+		return r.Create(r.ctx, &endpoint)
+	} else {
+		endpoint.Spec = expectedEndpoint.Spec
+		return r.Update(r.ctx, &endpoint)
+	}
+}
+
+// https://grafana.com/docs/grafana/latest/administration/provisioning/#example-data-source-config-file
+// func (r *LogSystemReconcilerTask) getProvisionDataSourceConfigForGrafana(lokiName string) (string, error) {
+
+// 	var dataSourceTemplate = `
+//   - name: Loki
+//     type: loki
+//     access: proxy
+//     isDefault: true
+//     url: http://%s:3100
+//     orgId: %d
+//     jsonData:
+//       httpHeaderName1: X-Scope-OrgID
+//     secureJsonData:
+//       httpHeaderValue1: %d
+// `
+
+// 	orgs, err := r.grafanaClient.ListOrgs()
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	var dataSources string
+// 	for _, org := range orgs {
+// 		dataSources += fmt.Sprintf(dataSourceTemplate, lokiName, org.ID, org.ID)
+// 	}
+
+// 	template := `
+// apiVersion: 1
+// datasources:
+// %s
+// `
+
+// 	return fmt.Sprintf(template, dataSources), nil
+// }
 
 func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicPromtail() error {
 	names := r.getComponentNames()
