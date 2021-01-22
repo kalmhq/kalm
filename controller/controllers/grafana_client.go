@@ -97,7 +97,7 @@ func (c *grafanaClient) GetOrCreateOrgIfNotExist(orgName string) (*sdk.Org, erro
 		return nil, fmt.Errorf("create org failed, org: %s, msg: %+v", orgName, statMsg)
 	}
 
-	org.ID = *statMsg.ID
+	org.ID = *statMsg.OrgID
 	return &org, nil
 }
 
