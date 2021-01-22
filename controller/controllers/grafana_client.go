@@ -22,10 +22,10 @@ type IGrafanaClient interface {
 	// RemoveUserFromOrg(email string, org string) error
 	// CreateDataSourceForOrg(tenant string, org string) error
 	// CreateDashboardForOrg(tenant string, org string) error
-	CreateDatasourceIfNotExist() error
+	CreateDatasourceIfNotExist(orgID uint) error
 }
 
-var _ IGrafanaClient = grafanaClient{}
+var _ IGrafanaClient = &grafanaClient{}
 
 type grafanaClient struct {
 	client *sdk.Client
@@ -57,7 +57,7 @@ var grafanaBasicAuth = fmt.Sprintf("%s:%s", grafanaAdmin, grafanaAdminPwd)
 var GrafanaAPIBasicAuth = fmt.Sprintf("http://%s:%s@%s.%s:%d", grafanaAdmin, grafanaAdminPwd, GrafanaService, GrafanaNS, GrafanaServicePort)
 
 // https://grafana.com/docs/grafana/latest/http_api/org/#search-all-organizations
-func (c grafanaClient) ListOrgs() ([]sdk.Org, error) {
+func (c *grafanaClient) ListOrgs() ([]sdk.Org, error) {
 	grafanaLog.Info("listing org")
 
 	orgs, err := c.client.GetAllOrgs(c.ctx)
@@ -71,7 +71,7 @@ func (c grafanaClient) ListOrgs() ([]sdk.Org, error) {
 }
 
 // https://grafana.com/docs/grafana/latest/http_api/org/#create-organization
-func (c grafanaClient) GetOrCreateOrgIfNotExist(orgName string) (*sdk.Org, error) {
+func (c *grafanaClient) GetOrCreateOrgIfNotExist(orgName string) (*sdk.Org, error) {
 	grafanaLog.Info("creating org", "name", orgName)
 
 	// check if exist
@@ -101,7 +101,7 @@ func (c grafanaClient) GetOrCreateOrgIfNotExist(orgName string) (*sdk.Org, error
 	return &org, nil
 }
 
-func (c grafanaClient) ExistUser(email string) (bool, error) {
+func (c *grafanaClient) ExistUser(email string) (bool, error) {
 	perpage := 100
 	page := 1
 
@@ -138,7 +138,7 @@ func (c grafanaClient) existUserInOrg(email string, orgID uint) (bool, error) {
 //   https://grafana.com/docs/grafana/latest/http_api/admin/#global-users
 // add existing user to org:
 //   https://grafana.com/docs/grafana/latest/http_api/org/#add-user-in-organization
-func (c grafanaClient) AddUserToOrg(email string, orgID uint) (createSuccess bool, err error) {
+func (c *grafanaClient) AddUserToOrg(email string, orgID uint) (createSuccess bool, err error) {
 	grafanaLog.Info("adding user to org", "user", email, "org", orgID)
 
 	exist, err := c.ExistUser(email)
@@ -178,11 +178,11 @@ func (c grafanaClient) AddUserToOrg(email string, orgID uint) (createSuccess boo
 	return true, nil
 }
 
-func (c grafanaClient) RemoveUserFromOrg(email, org string) error {
+func (c *grafanaClient) RemoveUserFromOrg(email, org string) error {
 	panic("not impled yet")
 }
 
-func (c grafanaClient) CreateDatasourceIfNotExist(orgID uint) error {
+func (c *grafanaClient) CreateDatasourceIfNotExist(orgID uint) error {
 	datasourceList, err := c.client.GetAllDatasources(c.ctx)
 	if err != nil {
 		return err

@@ -26,6 +26,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -329,6 +330,10 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 					Name:  "GF_AUTH_PROXY_ENABLED",
 					Value: "true",
 				},
+				{
+					Name:  "GF_DATABASE_PATH",
+					Value: "/data/grafana.db",
+				},
 				// {
 				// 	Name:  "GF_AUTH_ANONYMOUS_ENABLED",
 				// 	Value: "true",
@@ -337,6 +342,14 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 				// 	Name:  "GF_AUTH_ANONYMOUS_ORG_ROLE",
 				// 	Value: "Admin",
 				// },
+			},
+			Volumes: []v1alpha1.Volume{
+				{
+					Size: resource.MustParse("1Gi"),
+					Type: corev1alpha1.VolumeTypePersistentVolumeClaim,
+					Path: "/data",
+					PVC:  "storage",
+				},
 			},
 			ReadinessProbe: &v1.Probe{
 				PeriodSeconds:    10,
