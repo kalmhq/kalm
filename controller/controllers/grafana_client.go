@@ -184,13 +184,25 @@ func (c *grafanaClient) RemoveUserFromOrg(email, org string) error {
 }
 
 func (c *grafanaClient) CreateDatasourceIfNotExist(orgID uint) error {
+	// switch to this org
+	_, err := c.client.SwitchActualUserContext(c.ctx, orgID)
+	if err != nil {
+		grafanaLog.Info("fail to switch orgID", "err", err)
+		return err
+	}
+
+	//check if datasource exist
 	datasourceList, err := c.client.GetAllDatasources(c.ctx)
 	if err != nil {
 		return err
 	}
 
+	datasourceName := "Loki"
 	for _, source := range datasourceList {
-		if source.OrgID != orgID {
+		// if source.OrgID != orgID {
+		// 	continue
+		// }
+		if source.Name != datasourceName {
 			continue
 		}
 
@@ -199,7 +211,8 @@ func (c *grafanaClient) CreateDatasourceIfNotExist(orgID uint) error {
 	}
 
 	datasource := sdk.Datasource{
-		Name:      fmt.Sprintf("Loki-%d", orgID),
+		// Name:      fmt.Sprintf("Loki-%d", orgID),
+		Name:      datasourceName,
 		Type:      "loki",
 		Access:    "proxy", //?
 		IsDefault: true,    //?
