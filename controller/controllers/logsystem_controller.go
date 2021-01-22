@@ -46,7 +46,7 @@ type LogSystemReconcilerTask struct {
 	loki          *corev1alpha1.Component
 	grafana       *corev1alpha1.Component
 	promtail      *corev1alpha1.Component
-	grafanaClient *GrafanaClient
+	grafanaClient *grafanaClient
 }
 
 type LogSystemComponentNames struct {
@@ -78,7 +78,7 @@ func (r *LogSystemReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		LogSystemReconciler: r,
 		ctx:                 context.Background(),
 		req:                 &req,
-		grafanaClient:       &GrafanaClient{},
+		grafanaClient:       &grafanaClient{},
 	}
 
 	err := task.Run(req)
@@ -386,20 +386,20 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 			return err
 		}
 	} else {
-		provisionDataSourceConfig, err := r.getProvisionDataSourceConfigForGrafana(names.Loki)
-		if err == nil {
-			grafana.Spec.PreInjectedFiles = []corev1alpha1.PreInjectFile{
-				{
-					MountPath: "/etc/grafana/provisioning/datasources/loki.yaml",
-					Content:   provisionDataSourceConfig,
-					Runnable:  false,
-				},
-			}
-		} else {
-			r.Log.Info("fail getProvisionDataSourceConfigForGrafana", "err", err)
-		}
+		// provisionDataSourceConfig, err := r.getProvisionDataSourceConfigForGrafana(names.Loki)
+		// if err == nil {
+		// 	grafana.Spec.PreInjectedFiles = []corev1alpha1.PreInjectFile{
+		// 		{
+		// 			MountPath: "/etc/grafana/provisioning/datasources/loki.yaml",
+		// 			Content:   provisionDataSourceConfig,
+		// 			Runnable:  false,
+		// 		},
+		// 	}
+		// } else {
+		// 	r.Log.Info("fail getProvisionDataSourceConfigForGrafana", "err", err)
+		// }
 
-		r.Log.Info("provisionDataSourceConfig", "content", provisionDataSourceConfig)
+		// r.Log.Info("provisionDataSourceConfig", "content", provisionDataSourceConfig)
 
 		copied := r.grafana.DeepCopy()
 		copied.Spec = grafana.Spec
@@ -411,6 +411,48 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 		if err := r.Update(r.ctx, copied); err != nil {
 			r.Log.Error(err, "Update grafana component failed.")
 			return err
+		}
+	}
+
+	if err := r.reconcileDataForGrafana(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ensure:
+// - org
+// - user
+// - datasource
+// - dashboard
+func (r *LogSystemReconcilerTask) reconcileDataForGrafana() error {
+	client := NewGrafanaClient()
+	if org, err := client.client.GetActualOrg(client.ctx); err != nil {
+		return err
+	} else {
+		r.Log.Info("Grafana API is ready", "curOrg", org)
+	}
+
+	var tenantList v1alpha1.TenantList
+	if err := r.List(r.ctx, &tenantList); err != nil {
+		return err
+	}
+
+	for _, tenant := range tenantList.Items {
+		orgName := tenant.Name
+		org, err := client.GetOrCreateOrgIfNotExist(orgName)
+		if err != nil {
+			r.Log.Info("fail to GetOrCreateOrgIfNotExist, ignored", "org", orgName, "err", err)
+			continue
+		}
+
+		// todo add user to org
+
+		// datasource
+		if err := client.CreateDatasourceIfNotExist(org.ID); err != nil {
+			r.Log.Info("fail to CreateDatasourceIfNotExist, ignored", "org", org, "err", err)
+			continue
 		}
 	}
 

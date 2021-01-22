@@ -18,6 +18,7 @@ require (
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/gogo/protobuf v1.3.1
 	github.com/google/go-cmp v0.5.1 // indirect
+	github.com/grafana-tools/sdk v0.0.0-20210121201358-e16eca879125
 	github.com/heroku/docker-registry-client v0.0.0-20190909225348-afc9e1acc3d5
 	github.com/imdario/mergo v0.3.10 // indirect
 	github.com/jetstack/cert-manager v0.15.2

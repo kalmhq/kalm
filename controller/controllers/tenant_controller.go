@@ -35,7 +35,7 @@ func NewTenantReconciler(mgr ctrl.Manager) *TenantReconciler {
 	return &TenantReconciler{
 		BaseReconciler: NewBaseReconciler(mgr, "Tenant"),
 		ctx:            context.Background(),
-		GrafanaClient:  GrafanaClient{},
+		GrafanaClient:  NewGrafanaClient(),
 	}
 }
 
@@ -545,7 +545,8 @@ func (r *TenantReconciler) ReconcileForTenantIfPLGExist(tenantName string) error
 	orgName := tenantName
 
 	// org
-	if _, err := r.GrafanaClient.CreateOrg(orgName); err != nil {
+	org, err := r.GrafanaClient.GetOrCreateOrgIfNotExist(orgName)
+	if err != nil {
 		return err
 	}
 
@@ -557,7 +558,7 @@ func (r *TenantReconciler) ReconcileForTenantIfPLGExist(tenantName string) error
 	}
 
 	for _, owner := range tenant.Spec.Owners {
-		if _, err := r.GrafanaClient.AddUserToOrg(owner, orgName); err != nil {
+		if _, err := r.GrafanaClient.AddUserToOrg(owner, org.ID); err != nil {
 			return err
 		}
 	}
