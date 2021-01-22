@@ -100,60 +100,72 @@ const RenderHttpRouteDestinationsRaw: React.FC = () => {
             </Alert>
           </Collapse>
           {fields.value &&
-            fields.value.map((destination, index) => (
-              <Grid container spacing={2} key={index} alignItems="center">
-                <Grid item xs={8} sm={8} md={6} lg={4} xl={4}>
-                  <Field
-                    name={`destinations.${index}.host`}
-                    render={(props: FieldRenderProps<string>) => (
-                      <AutoCompleteSingleValue
-                        {...props}
-                        options={options.map((x) => x.value)}
-                        optionsForRender={options}
-                      />
-                    )}
-                    label="Choose a target"
-                    validate={ValidatorRequired}
-                    options={options}
-                    noOptionsText={
-                      <Alert severity="warning">
-                        <AlertTitle>No valid targets found.</AlertTitle>
-                        <Typography>
-                          If you can't find the target you want, please check if you have configured ports on the
-                          component. Only components that have ports will appear in the options.
-                        </Typography>
-                      </Alert>
-                    }
-                  />
-                </Grid>
-                {fields.value.length > 1 ? (
-                  <Grid item md={2}>
+            fields.value.map((destination, index) => {
+              const fixedOptions = options.some((o) => o.value === destination.host)
+                ? options
+                : [
+                    ...options,
+                    {
+                      value: destination.host,
+                      label: destination.host.replace(".svc.cluster.local", ""),
+                      group: "No matched hosts",
+                    },
+                  ];
+              return (
+                <Grid container spacing={2} key={index} alignItems="center">
+                  <Grid item xs={8} sm={8} md={6} lg={4} xl={4}>
                     <Field
-                      name={`destinations.${index}.weight`}
-                      render={(props: FieldRenderProps<number>) => (
-                        <FinialSliderRender {...props} step={1} min={0} max={10} />
+                      name={`destinations.${index}.host`}
+                      render={(props: FieldRenderProps<string>) => (
+                        <AutoCompleteSingleValue
+                          {...props}
+                          options={fixedOptions.map((o) => o.value)}
+                          optionsForRender={fixedOptions}
+                        />
                       )}
-                      label="Weight"
+                      label="Choose a target"
+                      validate={ValidatorRequired}
+                      options={fixedOptions}
+                      noOptionsText={
+                        <Alert severity="warning">
+                          <AlertTitle>No valid targets found.</AlertTitle>
+                          <Typography>
+                            If you can't find the target you want, please check if you have configured ports on the
+                            component. Only components that have ports will appear in the options.
+                          </Typography>
+                        </Alert>
+                      }
                     />
                   </Grid>
-                ) : null}
-                <Grid item md={1}>
-                  <IconButtonWithTooltip
-                    tooltipPlacement="top"
-                    tooltipTitle="Delete"
-                    aria-label="delete"
-                    onClick={() => fields.remove(index)}
-                  >
-                    <DeleteIcon />
-                  </IconButtonWithTooltip>
-                </Grid>
-                {destination.weight === 0 ? (
-                  <Grid item md={3}>
-                    <Warning /> Requests won't go into this target since it has 0 weight.
+                  {fields.value.length > 1 ? (
+                    <Grid item md={2}>
+                      <Field
+                        name={`destinations.${index}.weight`}
+                        render={(props: FieldRenderProps<number>) => (
+                          <FinialSliderRender {...props} step={1} min={0} max={10} />
+                        )}
+                        label="Weight"
+                      />
+                    </Grid>
+                  ) : null}
+                  <Grid item md={1}>
+                    <IconButtonWithTooltip
+                      tooltipPlacement="top"
+                      tooltipTitle="Delete"
+                      aria-label="delete"
+                      onClick={() => fields.remove(index)}
+                    >
+                      <DeleteIcon />
+                    </IconButtonWithTooltip>
                   </Grid>
-                ) : null}
-              </Grid>
-            ))}{" "}
+                  {destination.weight === 0 ? (
+                    <Grid item md={3}>
+                      <Warning /> Requests won't go into this target since it has 0 weight.
+                    </Grid>
+                  ) : null}
+                </Grid>
+              );
+            })}{" "}
         </div>
       )}
     />

@@ -37,7 +37,7 @@ func (suite *SSOConfigControllerSuite) TearDownSuite() {
 }
 
 func (suite *SSOConfigControllerSuite) SetupTest() {
-	suite.SetupKalmEnabledNs("kalm-system")
+	suite.SetupTenant()
 	suite.ctx = context.Background()
 }
 

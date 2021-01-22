@@ -83,7 +83,7 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
           ))}
         </TableCell>
         <TableCell>
-          <Targets destinations={route.destinations} />
+          <Targets destinations={route.destinations} destinationsStatus={route.destinationsStatus} />
         </TableCell>
         <TableCell>
           {canEdit && (

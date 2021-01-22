@@ -224,7 +224,7 @@ func (r *TenantReconciler) ReconcileOwnerRolebindings(tenant *v1alpha1.Tenant) e
 		_ = ctrl.SetControllerReference(tenant, item, r.Scheme)
 
 		if err := r.Client.Create(r.ctx, item); err != nil {
-			r.Log.Error(err, "create tenant owner role binding error")
+			r.Log.Error(err, "create tenant owner role binding error", "tenant", tenant.Name)
 			return err
 		}
 	}

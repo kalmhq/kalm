@@ -43,8 +43,9 @@ func (resourceManager *ResourceManager) GetHttpRouteListChannel(listOptions ...c
 
 type HttpRoute struct {
 	*v1alpha1.HttpRouteSpec `json:",inline"`
-	Name                    string `json:"name"`
-	Tenant                  string `json:"tenant"`
+	DestinationsStatus      []v1alpha1.HttpRouteDestinationStatus `json:"destinationsStatus,omitempty"`
+	Name                    string                                `json:"name"`
+	Tenant                  string                                `json:"tenant"`
 }
 
 func (resourceManager *ResourceManager) GetHttpRoute(namespace, name string) (*HttpRoute, error) {
@@ -76,9 +77,10 @@ func BuildHttpRouteFromResource(route *v1alpha1.HttpRoute) *HttpRoute {
 	tenantName, _ := v1alpha1.GetTenantNameFromObj(route)
 
 	return &HttpRoute{
-		HttpRouteSpec: &route.Spec,
-		Name:          route.Name,
-		Tenant:        tenantName,
+		HttpRouteSpec:      &route.Spec,
+		DestinationsStatus: route.Status.DestinationsStatus,
+		Name:               route.Name,
+		Tenant:             tenantName,
 	}
 }
 
