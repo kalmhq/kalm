@@ -204,11 +204,11 @@ func (c *grafanaClient) CreateDatasourceIfNotExist(orgID uint) error {
 		IsDefault: true,    //?
 		URL:       fmt.Sprintf("http://%s:3100", lokiService),
 		OrgID:     orgID,
-		JSONData: map[string]interface{}{
+		JSONData: map[string]string{
 			"httpHeaderName1": "X-Scope-OrgID",
 		},
-		SecureJSONData: map[string]interface{}{
-			"httpHeaderValue1": orgID,
+		SecureJSONData: map[string]string{
+			"httpHeaderValue1": fmt.Sprintf("%d", orgID),
 		},
 	}
 
