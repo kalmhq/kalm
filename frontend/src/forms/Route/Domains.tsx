@@ -2,7 +2,7 @@ import { Box, Button, Grid } from "@material-ui/core";
 import InputAdornment from "@material-ui/core/InputAdornment/InputAdornment";
 import { FinalSelectField } from "forms/Final/select";
 import { FinalTextField } from "forms/Final/textfield";
-import { trimAndToLowerParse, normalizeWildcardDomain } from "forms/normalizer";
+import { normalizeWildcardDomain, trimAndToLowerParse } from "forms/normalizer";
 import React from "react";
 import { Field } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
@@ -67,6 +67,11 @@ export const RouteDomains: React.FC = () => {
           return value + domainStaticSuffix;
         };
 
+        let domainStaticSuffixDisplayValue = domainStaticSuffix;
+        if (domainStaticSuffixDisplayValue.endsWith("kalm-apps.com") && domainStaticSuffixDisplayValue.length > 40) {
+          domainStaticSuffixDisplayValue = domainStaticSuffixDisplayValue.slice(0, 40) + "...";
+        }
+
         return (
           <Field
             name={`hosts[${index}]`}
@@ -74,7 +79,7 @@ export const RouteDomains: React.FC = () => {
             format={format}
             autoFocus
             component={FinalTextField}
-            endAdornment={<InputAdornment position="end">{domainStaticSuffix}</InputAdornment>}
+            endAdornment={<InputAdornment position="end">{domainStaticSuffixDisplayValue}</InputAdornment>}
             label="Domain"
           />
         );

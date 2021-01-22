@@ -54,6 +54,13 @@ func (m CloudflareDNSManager) CreateDNSRecord(dnsType v1alpha1.DNSType, name, co
 
 	zoneID, exist := m.Domain2ZoneIDMap[rootDomain]
 	if !exist {
+		mLog.Info("domain not exist in Domain2ZoneIDMap when CreateDNSRecord()",
+			"dnsType", dnsType,
+			"name", name,
+			"content", content,
+			"rootDomain", rootDomain,
+		)
+
 		return NoCloudflareZoneIDForDomainError
 	}
 

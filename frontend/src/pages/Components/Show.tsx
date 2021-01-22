@@ -2,12 +2,14 @@ import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@mater
 import { deleteComponentAction } from "actions/component";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { api } from "api";
+import { push } from "connected-react-router";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { BasePage } from "pages/BasePage";
 import { ComponentBasicInfo } from "pages/Components/BasicInfo";
+import { JobsTable } from "pages/Components/JobsTables";
 import { PodsTable } from "pages/Components/PodsTable";
 import { RouteWidgets } from "pages/Route/Widget";
 import React from "react";
@@ -180,6 +182,22 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderJobs() {
+    const { component, activeNamespaceName, canEditNamespace } = this.props;
+
+    return (
+      <Expansion title="Jobs" defaultUnfold>
+        <JobsTable
+          activeNamespaceName={activeNamespaceName}
+          component={component}
+          jobs={component.jobs!}
+          workloadType={component.workloadType as WorkloadType}
+          canEdit={canEditNamespace(activeNamespaceName)}
+        />
+      </Expansion>
+    );
+  }
+
   private renderSecondHeaderRight() {
     const { classes, component, activeNamespaceName, canEditNamespace, dispatch } = this.props;
 
@@ -227,6 +245,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
             popupTitle="DELETE COMPONENT?"
             confirmedAction={async () => {
               await dispatch(deleteComponentAction(component.name, activeNamespaceName));
+              dispatch(push("/applications/" + activeNamespaceName + "/components"));
               dispatch(setSuccessNotificationAction("Delete component successfully"));
             }}
           />
@@ -247,6 +266,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
           <Expansion title={"Basic"} defaultUnfold>
             <ComponentBasicInfo component={component} activeNamespaceName={activeNamespaceName} />
           </Expansion>
+          {!!component.jobs && this.renderJobs()}
           {this.renderPods()}
           {this.renderNetwork()}
           {this.renderRoutes()}

@@ -265,6 +265,10 @@ export default class RealApi {
     return await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/pods/${namespace}/${name}` });
   };
 
+  public deleteJob = async (namespace: string, name: string) => {
+    return await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/jobs/${namespace}/${name}` });
+  };
+
   // RoleBindings
 
   public loadRoleBindings = async () => {

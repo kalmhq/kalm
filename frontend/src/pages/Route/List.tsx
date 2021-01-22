@@ -167,7 +167,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
               </Typography>
             </Box>
           }
-          targetText={row.hosts[0]}
+          targetText={"delete"}
           confirmedAction={() => dispatch(deleteRouteAction(row))}
         />
       </>

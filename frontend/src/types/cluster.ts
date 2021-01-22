@@ -14,7 +14,9 @@ export const LOAD_EXTRA_INFO_FULFILLED = "LOAD_EXTRA_INFO_FULFILLED";
 export const LOAD_EXTRA_INFO_FAILED = "LOAD_EXTRA_INFO_FAILED";
 export interface ExtraInfo {
   newTenantUrl: string;
-  mode: "local" | "multiple-tenancy";
+  isFrontendMembersManagementEnabled: boolean;
+  isFrontendComponentSchedulingFeatureEnabled: boolean;
+  isFrontendSSOPageEnabled: boolean;
 }
 
 export interface ClusterInfo {

@@ -11,12 +11,14 @@ import {
 } from "@material-ui/lab";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import clsx from "clsx";
+import debug from "debug";
 import React, { ReactNode } from "react";
 import { FieldRenderProps } from "react-final-form";
 import { theme } from "theme/theme";
 import { KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
 import { Caption } from "widgets/Label";
 
+const autoCompleteDebug = debug("kalm:auto-compolete");
 export interface AutoCompleteForRenderOption {
   value: string;
   label: string;
@@ -203,55 +205,35 @@ export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueP
     groupUl,
   } = AutoCompleteSingleValueStyle();
 
+  autoCompleteDebug("optionsForRender:", options, optionsForRender);
+
+  const getOptionFromValue = (value: string, callback: (op: AutoCompleteForRenderOption) => string): string => {
+    if (!optionsForRender) {
+      return NO_GROUP;
+    }
+
+    const option = optionsForRender?.find((x) => x.value === value);
+
+    if (!option) {
+      return value;
+    }
+
+    return callback(option);
+  };
+
   return (
     <Autocomplete
       openOnFocus
       noOptionsText={noOptionsText}
       options={options}
       size="small"
-      groupBy={(value) => {
-        if (!optionsForRender) {
-          return NO_GROUP;
-        }
-
-        const option = optionsForRender?.find((x) => x.value === value);
-
-        if (!option) {
-          return value;
-        }
-
-        return option.group;
-      }}
+      groupBy={(value) => getOptionFromValue(value, (op) => op.group)}
       filterOptions={createFilterOptions({
         ignoreCase: true,
         matchFrom: "any",
-        stringify: (value: string) => {
-          if (!optionsForRender) {
-            return value;
-          }
-
-          const option = optionsForRender?.find((x) => x.value === value);
-
-          if (!option) {
-            return value;
-          }
-
-          return option.label;
-        },
+        stringify: (value) => getOptionFromValue(value, (op) => op.label),
       })}
-      getOptionLabel={(value: string) => {
-        if (!optionsForRender) {
-          return value;
-        }
-
-        const option = optionsForRender?.find((x) => x.value === value);
-
-        if (!option) {
-          return value;
-        }
-
-        return option.label;
-      }}
+      getOptionLabel={(value) => getOptionFromValue(value, (op) => op.label)}
       renderOption={(value) => {
         if (!optionsForRender) {
           return value;
@@ -263,8 +245,10 @@ export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueP
           return null;
         }
 
+        autoCompleteDebug("renderOption:", value, option);
+
         return (
-          <div className={groupUl}>
+          <div className={groupUl} key={option!.label} data-value={value}>
             <Typography>{option!.label}</Typography>
           </div>
         );

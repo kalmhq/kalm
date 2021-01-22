@@ -95,7 +95,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
                   </Typography>
                 </Box>
               }
-              targetText={domain.domain}
+              targetText={"delete"}
               confirmedAction={() => deleteDomain(domain)}
             />
           </>
