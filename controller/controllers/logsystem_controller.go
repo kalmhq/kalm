@@ -299,6 +299,8 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 
 	replicas := int32(1)
 
+	baseDashboardDomain := os.Getenv(v1alpha1.ENV_KALM_BASE_DASHBOARD_DOMAIN)
+
 	grafana := &corev1alpha1.Component{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: r.req.Namespace,
@@ -334,6 +336,18 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 				{
 					Name:  "GF_DATABASE_PATH",
 					Value: "/data/grafana.db",
+				},
+				{
+					Name:  "GF_SERVE_FROM_SUB_PATH", //see details at https://grafana.com/docs/grafana/latest/administration/configuration/#serve_from_sub_path
+					Value: "true",
+				},
+				{
+					Name:  "GF_SERVER_DOMAIN",
+					Value: baseDashboardDomain,
+				},
+				{
+					Name:  "GF_SERVER_ROOT_URL",
+					Value: "%(protocol)s://%(domain)s:%(http_port)s/grafana/",
 				},
 				// {
 				// 	Name:  "GF_AUTH_ANONYMOUS_ENABLED",
