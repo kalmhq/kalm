@@ -173,7 +173,7 @@ export class NodeListRaw extends React.Component<Props, States> {
         }
       >
         {this.props.canEditCluster() ? (
-          <Box pb={2} pt={2}>
+          <Box p={2}>
             <Button
               style={{ marginRight: 20 }}
               color="primary"
