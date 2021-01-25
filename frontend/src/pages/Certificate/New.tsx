@@ -3,7 +3,7 @@ import { createCertificateAction } from "actions/certificate";
 import { push } from "connected-react-router";
 import { CertificateForm } from "forms/Certificate";
 import { BasePage } from "pages/BasePage";
-import React from "react";
+import React, { useState } from "react";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { Certificate, CertificateFormType, newEmptyCertificateForm } from "types/certificate";
@@ -16,43 +16,37 @@ const styles = (theme: Theme) =>
 
 export interface Props extends WithStyles<typeof styles>, TDispatchProp {}
 
-interface State {
-  newCert: Certificate;
-}
-class CertificateNewRaw extends React.Component<Props, State> {
-  private submit = async (certificate: CertificateFormType) => {
+const CertificateNewRaw: React.FC<Props> = (props) => {
+  const [newCert, setNewCert] = useState<Certificate | null>(null);
+
+  const submit = async (certificate: CertificateFormType) => {
     try {
-      const { dispatch } = this.props;
+      const { dispatch } = props;
       const cert = await dispatch(createCertificateAction(certificate, false));
-      this.setState({
-        newCert: cert,
-      });
-      this.onSubmitSuccess();
+      setNewCert(cert);
+      onSubmitSuccess();
     } catch (e) {
       console.log(e);
     }
   };
 
-  private onSubmitSuccess = () => {
-    const { dispatch } = this.props;
-    const { newCert } = this.state;
-    dispatch(push(`/certificates/${newCert.name}`));
+  const onSubmitSuccess = () => {
+    const { dispatch } = props;
+    dispatch(push(`/certificates/${newCert?.name}`));
   };
 
-  public render() {
-    const { classes } = this.props;
-    return (
-      <BasePage secondHeaderRight={<H6>New Certificate</H6>}>
-        <div className={classes.root}>
-          <Grid container spacing={2}>
-            <Grid item xs={8} sm={8} md={8}>
-              <CertificateForm onSubmit={this.submit} initialValues={newEmptyCertificateForm} />
-            </Grid>
+  const { classes } = props;
+  return (
+    <BasePage secondHeaderRight={<H6>New Certificate</H6>}>
+      <div className={classes.root}>
+        <Grid container spacing={2}>
+          <Grid item xs={8} sm={8} md={8}>
+            <CertificateForm onSubmit={submit} initialValues={newEmptyCertificateForm} />
           </Grid>
-        </div>
-      </BasePage>
-    );
-  }
-}
+        </Grid>
+      </div>
+    </BasePage>
+  );
+};
 
 export const CertificateNewPage = withStyles(styles)(connect()(CertificateNewRaw));

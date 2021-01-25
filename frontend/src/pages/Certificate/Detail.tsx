@@ -42,11 +42,9 @@ export interface Props
     WithStyles<typeof styles>,
     TDispatchProp {}
 
-interface State {}
-
-class CertificateDetailRaw extends React.PureComponent<Props, State> {
-  private renderDomainGuide = (cert: Certificate | undefined) => {
-    const { ingressIP, acmeServer } = this.props;
+const CertificateDetailRaw: React.FC<Props> = (props) => {
+  const renderDomainGuide = (cert: Certificate | undefined) => {
+    const { ingressIP, acmeServer } = props;
 
     if (cert === undefined) {
       return null;
@@ -100,8 +98,8 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderSecondaryHeader() {
-    const { dispatch, location } = this.props;
+  const renderSecondaryHeader = () => {
+    const { dispatch, location } = props;
     const coms = location.pathname.split("/");
     const certName = coms[coms.length - 1];
 
@@ -121,9 +119,9 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
         }}
       />
     );
-  }
+  };
 
-  private renderStatus = (cert: Certificate) => {
+  const renderStatus = (cert: Certificate) => {
     if (cert.ready === "True") {
       // why the ready field is a string value ?????
       return (
@@ -145,8 +143,8 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderLongWaitingHelper() {
-    const { location, acmeServer, certificates } = this.props;
+  const renderLongWaitingHelper = () => {
+    const { location, acmeServer, certificates } = props;
     const parts = location.pathname.split("/");
     const certName = parts[parts.length - 1];
     const cert = certificates.find((item) => item.name === certName);
@@ -219,70 +217,68 @@ class CertificateDetailRaw extends React.PureComponent<Props, State> {
         </CollapseWrapper>
       </Box>
     );
+  };
+
+  const { certificates, location, isLoading, isFirstLoaded } = props;
+  if (isLoading && !isFirstLoaded) {
+    return <Loading />;
   }
 
-  public render() {
-    const { certificates, location, isLoading, isFirstLoaded } = this.props;
-    if (isLoading && !isFirstLoaded) {
-      return <Loading />;
-    }
+  const coms = location.pathname.split("/");
+  const certName = coms[coms.length - 1];
+  const certInfoList = certificates.filter((item) => item.name === certName);
+  const cert = certInfoList[0];
 
-    const coms = location.pathname.split("/");
-    const certName = coms[coms.length - 1];
-    const certInfoList = certificates.filter((item) => item.name === certName);
-    const cert = certInfoList[0];
+  if (!cert) {
+    return <CertificateNotFound />;
+  }
 
-    if (!cert) {
-      return <CertificateNotFound />;
-    }
+  const isDNS01ChallengeType = !(!cert.isSelfManaged && cert.httpsCertIssuer === "default-http01-issuer");
 
-    const isDNS01ChallengeType = !(!cert.isSelfManaged && cert.httpsCertIssuer === "default-http01-issuer");
-
-    return (
-      <BasePage secondHeaderRight={this.renderSecondaryHeader()}>
-        <Box p={2}>
-          {isDNS01ChallengeType && (
-            <Box mt={2} mb={2}>
-              <ACMEServer />
-            </Box>
-          )}
-
-          <KPanel title="Certificate Info">
-            <Box p={2}>
-              <VerticalHeadTable
-                items={[
-                  { name: "Name", content: certName },
-                  {
-                    name: "Type",
-                    content: cert?.isSelfManaged ? "Uploaded" : "Let's Encrypt",
-                  },
-                  {
-                    name: "Challenge Type",
-                    content: !isDNS01ChallengeType ? (
-                      <BlankTargetLink href={"https://letsencrypt.org/docs/challenge-types/#http-01-challenge"}>
-                        HTTP-01 challenge
-                      </BlankTargetLink>
-                    ) : (
-                      <DNS01ChallengeLink />
-                    ),
-                  },
-                  { name: "Status", content: this.renderStatus(cert) },
-                ]}
-              />
-            </Box>
-
-            {this.renderLongWaitingHelper()}
-          </KPanel>
-
-          <Box mt={2}>
-            <KPanel title="Domains">
-              <Box p={2}>{this.renderDomainGuide(cert)}</Box>
-            </KPanel>
+  return (
+    <BasePage secondHeaderRight={renderSecondaryHeader()}>
+      <Box p={2}>
+        {isDNS01ChallengeType && (
+          <Box mt={2} mb={2}>
+            <ACMEServer />
           </Box>
+        )}
+
+        <KPanel title="Certificate Info">
+          <Box p={2}>
+            <VerticalHeadTable
+              items={[
+                { name: "Name", content: certName },
+                {
+                  name: "Type",
+                  content: cert?.isSelfManaged ? "Uploaded" : "Let's Encrypt",
+                },
+                {
+                  name: "Challenge Type",
+                  content: !isDNS01ChallengeType ? (
+                    <BlankTargetLink href={"https://letsencrypt.org/docs/challenge-types/#http-01-challenge"}>
+                      HTTP-01 challenge
+                    </BlankTargetLink>
+                  ) : (
+                    <DNS01ChallengeLink />
+                  ),
+                },
+                { name: "Status", content: renderStatus(cert) },
+              ]}
+            />
+          </Box>
+
+          {renderLongWaitingHelper()}
+        </KPanel>
+
+        <Box mt={2}>
+          <KPanel title="Domains">
+            <Box p={2}>{renderDomainGuide(cert)}</Box>
+          </KPanel>
         </Box>
-      </BasePage>
-    );
-  }
-}
+      </Box>
+    </BasePage>
+  );
+};
 
 export const CertificateDetailPage = withStyles(styles)(connect(mapStateToProps)(withRouter(CertificateDetailRaw)));
