@@ -16,16 +16,12 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 	"strings"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
-
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
@@ -56,25 +52,7 @@ var _ webhook.Validator = &HttpRoute{}
 func (r *HttpRoute) ValidateCreate() error {
 	httproutelog.Info("validate create", "name", r.Name)
 
-	if !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
-
 	if err := r.validate(); err != nil {
-		return err
-	}
-
-	// limit the count of routes
-	tenantName := r.Labels[TenantNameLabelKey]
-
-	if tenantName == DefaultGlobalTenantName ||
-		tenantName == DefaultSystemTenantName {
-		return nil
-	}
-
-	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Create, false)
-	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
-		httproutelog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
 		return err
 	}
 
@@ -85,36 +63,12 @@ func (r *HttpRoute) ValidateCreate() error {
 func (r *HttpRoute) ValidateUpdate(old runtime.Object) error {
 	httproutelog.Info("validate update", "name", r.Name)
 
-	if !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
-
-	if IsTenantChanged(r, old) {
-		return TenantChangedError
-	}
-
 	return r.validate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *HttpRoute) ValidateDelete() error {
 	httproutelog.Info("validate delete", "name", r.Name)
-
-	tenantName := r.Labels[TenantNameLabelKey]
-	if tenantName == "" {
-		return nil
-	}
-
-	if tenantName == DefaultGlobalTenantName ||
-		tenantName == DefaultSystemTenantName {
-		return nil
-	}
-
-	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Delete, false)
-	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
-		httproutelog.Error(err, "fail when try to release resource, ignored", "ns/name", getKey(r))
-	}
-
 	return nil
 }
 
@@ -127,40 +81,6 @@ func (r *HttpRoute) validate() error {
 				Err:  "invalid route host:" + host,
 				Path: fmt.Sprintf("spec.hosts[%d]", i),
 			})
-		}
-
-		tenantName := r.Labels[TenantNameLabelKey]
-		isUserTenant := tenantName != DefaultGlobalTenantName && tenantName != DefaultSystemTenantName
-
-		// only put constrait on user tenant
-		if isUserTenant {
-			baseAppDomain := GetEnvKalmBaseAppDomain()
-			if baseAppDomain == "" {
-				httproutelog.Info("should set ENV for kalmBaseAppDomain")
-				continue
-			}
-
-			isUsingKalmAppDomain := strings.HasSuffix(host, baseAppDomain)
-
-			if isUsingKalmAppDomain {
-				validSuffix := getValidSuffixOfAppDomain(tenantName, baseAppDomain)
-				if !strings.HasSuffix(host, validSuffix) {
-					rst = append(rst, KalmValidateError{
-						Err:  fmt.Sprintf("invalid usage of kalmDomain for host(%s), should have suffix: %s", host, validSuffix),
-						Path: fmt.Sprintf("spec.hosts[%d]", i),
-					})
-				}
-			} else {
-				// for user domain
-				if isVerified, err := isVerifiedUserDomain(host, tenantName); err != nil {
-					return err
-				} else if !isVerified {
-					rst = append(rst, KalmValidateError{
-						Err:  fmt.Sprintf("should verify domain before use it in httpRoute: %s", host),
-						Path: fmt.Sprintf("spec.hosts[%d]", i),
-					})
-				}
-			}
 		}
 	}
 
@@ -210,34 +130,34 @@ func (r *HttpRoute) validate() error {
 	return rst
 }
 
-func isVerifiedUserDomain(domain, tenantName string) (bool, error) {
-	domainList := DomainList{}
+// func isVerifiedUserDomain(domain, tenantName string) (bool, error) {
+// 	domainList := DomainList{}
 
-	err := webhookClient.List(context.Background(), &domainList, client.MatchingLabels{TenantNameLabelKey: tenantName})
-	if err != nil {
-		return false, err
-	}
+// 	err := webhookClient.List(context.Background(), &domainList, client.MatchingLabels{TenantNameLabelKey: tenantName})
+// 	if err != nil {
+// 		return false, err
+// 	}
 
-	for _, d := range domainList.Items {
-		if !d.Status.IsDNSTargetConfigured &&
-			!d.Status.IsTxtConfigured {
-			continue
-		}
+// 	for _, d := range domainList.Items {
+// 		if !d.Status.IsDNSTargetConfigured &&
+// 			!d.Status.IsTxtConfigured {
+// 			continue
+// 		}
 
-		verifiedDomain := d.Spec.Domain
-		if verifiedDomain == domain {
-			return true, nil
-		}
+// 		verifiedDomain := d.Spec.Domain
+// 		if verifiedDomain == domain {
+// 			return true, nil
+// 		}
 
-		if IsValidWildcardDomain(verifiedDomain) {
-			if isUnderWildcardDomain(verifiedDomain, domain) {
-				return true, nil
-			}
-		}
-	}
+// 		if IsValidWildcardDomain(verifiedDomain) {
+// 			if isUnderWildcardDomain(verifiedDomain, domain) {
+// 				return true, nil
+// 			}
+// 		}
+// 	}
 
-	return false, nil
-}
+// 	return false, nil
+// }
 
 func isUnderWildcardDomain(wildcardDomain, domain string) bool {
 	if !IsValidWildcardDomain(wildcardDomain) {

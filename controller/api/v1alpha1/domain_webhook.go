@@ -16,7 +16,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
 	"crypto/md5"
 	"fmt"
 	"net"
@@ -24,9 +23,7 @@ import (
 
 	"github.com/miekg/dns"
 
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -46,12 +43,6 @@ var _ webhook.Defaulter = &Domain{}
 
 func (r *Domain) Default() {
 	domainlog.Info("default", "name", r.Name)
-
-	//setup
-	tenantName := r.Labels[TenantNameLabelKey]
-	if tenantName == "" {
-		return
-	}
 
 	domain := r.Spec.Domain
 
@@ -87,7 +78,7 @@ func (r *Domain) Default() {
 		}
 
 		//<md5Domain>-<tenantName>
-		cnamePrefix := fmt.Sprintf("%x-%s", md5Domain, tenantName)
+		cnamePrefix := fmt.Sprintf("%x", md5Domain)
 
 		// <md5Domain-tenantName>-cname.<asia>.kalm-dns.com
 		cname := fmt.Sprintf("%s-cname.%s", cnamePrefix, kalmBaseDNSDomain)
@@ -118,21 +109,22 @@ func GetClusterIP() (string, error) {
 		return ip, nil
 	}
 
-	svc := v1.Service{}
-	objKey := types.NamespacedName{
-		Name:      "istio-ingressgateway",
-		Namespace: "istio-system",
-	}
+	// svc := v1.Service{}
+	// objKey := types.NamespacedName{
+	// 	Name:      "istio-ingressgateway",
+	// 	Namespace: "istio-system",
+	// }
 
-	err := webhookClient.Get(context.Background(), objKey, &svc)
-	if err != nil {
-		return "", err
-	}
+	// // todo fix this webhookClient
+	// err := webhookClient.Get(context.Background(), objKey, &svc)
+	// if err != nil {
+	// 	return "", err
+	// }
 
-	ingress := svc.Status.LoadBalancer.Ingress
-	if len(ingress) > 0 {
-		return ingress[0].IP, nil
-	}
+	// ingress := svc.Status.LoadBalancer.Ingress
+	// if len(ingress) > 0 {
+	// 	return ingress[0].IP, nil
+	// }
 
 	return "", nil
 }
@@ -143,12 +135,6 @@ var _ webhook.Validator = &Domain{}
 
 func (r *Domain) ValidateCreate() error {
 	domainlog.Info("validate create", "name", r.Name)
-
-	tenantName := r.Labels[TenantNameLabelKey]
-	if tenantName == "" {
-		return NoTenantLabelSetError
-	}
-
 	return r.validate()
 }
 

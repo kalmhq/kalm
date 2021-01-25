@@ -14,20 +14,16 @@ import (
 
 type HttpRouteControllerSuite struct {
 	BasicSuite
-	ns     *coreV1.Namespace
-	tenant *v1alpha1.Tenant
+	ns *coreV1.Namespace
 }
 
 func (suite *HttpRouteControllerSuite) SetupSuite() {
 	suite.BasicSuite.SetupSuite()
-	tenant := suite.SetupTenant()
 
 	ns := suite.SetupKalmEnabledNs("")
-	v1alpha1.SetTenantForObj(&ns, tenant.Name)
 	suite.updateObject(&ns)
 
 	suite.ns = &ns
-	suite.tenant = tenant
 }
 
 func TestRegexp(t *testing.T) {
@@ -88,8 +84,6 @@ func (suite *HttpRouteControllerSuite) TestBasicHttpRoute() {
 		},
 	}
 
-	v1alpha1.SetTenantForObj(&route, suite.tenant.Name)
-
 	suite.createObject(&route)
 }
 
@@ -131,7 +125,6 @@ func (suite *HttpRouteControllerSuite) TestDestinationsStatus() {
 		},
 	}
 
-	v1alpha1.SetTenantForObj(&route, suite.tenant.Name)
 	suite.createObject(&route)
 
 	suite.Eventually(func() bool {

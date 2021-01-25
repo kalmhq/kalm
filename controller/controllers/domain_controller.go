@@ -149,9 +149,6 @@ func (r *DomainReconciler) reconcileHttpsCert(domain corev1alpha1.Domain) error 
 	expectedHttpsCert := v1alpha1.HttpsCert{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: certName,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: domain.Labels[v1alpha1.TenantNameLabelKey],
-			},
 		},
 		Spec: v1alpha1.HttpsCertSpec{
 			IsSelfManaged:   false,
@@ -190,10 +187,11 @@ func (r *DomainReconciler) reconcileIPForUserSubDomainCNAME(cname string) error 
 		return nil
 	}
 
-	targetIP, err := corev1alpha1.GetClusterIP()
+	targetIP, err := r.GetClusterIP()
 	if err != nil {
 		return err
 	}
+
 	if targetIP == "" {
 		r.Log.Info("ClusterIP empty, reconcileIPForUserSubDomainCNAME ignored")
 		return nil
