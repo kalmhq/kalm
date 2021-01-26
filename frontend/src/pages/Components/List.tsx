@@ -11,9 +11,8 @@ import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { getPodLogQuery } from "pages/Application/Log";
 import { ComponentCPUChart, ComponentMemoryChart } from "pages/Components/Chart";
-import { renderCopyableImageName } from "pages/Components/InfoComponents";
 import { getPod } from "pages/Components/Pod";
-import React from "react";
+import React, { useState } from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
@@ -69,39 +68,29 @@ interface State {
   deletingComponentItem?: ApplicationDetails;
 }
 
-class ComponentRaw extends React.PureComponent<Props, State> {
-  private defaultState = {
-    isDeleteConfirmDialogOpen: false,
-    deletingComponentItem: undefined,
+const ComponentRaw: React.FC<Props> = (props) => {
+  const [isDeleteConfirmDialogOpen, setIsDeleteConfirmDialogOpen] = useState(false);
+  const [deletingComponentItem] = useState<ApplicationDetails | undefined>(undefined);
+
+  const closeDeleteConfirmDialog = () => {
+    setIsDeleteConfirmDialogOpen(false);
   };
 
-  constructor(props: Props) {
-    super(props);
-    this.state = this.defaultState;
-  }
-
-  private closeDeleteConfirmDialog = () => {
-    this.setState({ isDeleteConfirmDialogOpen: false });
-  };
-
-  private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen, deletingComponentItem } = this.state;
-
+  const renderDeleteConfirmDialog = () => {
     return (
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
-        onClose={this.closeDeleteConfirmDialog}
+        onClose={closeDeleteConfirmDialog}
         title={`${sc.ARE_YOU_SURE_PREFIX} this Application(${deletingComponentItem?.name})?`}
         content="This application is already disabled. You will lost this application config, and this action is irrevocable."
-        onAgree={this.confirmDelete}
+        onAgree={confirmDelete}
       />
     );
   };
 
-  private confirmDelete = async () => {
-    const { dispatch } = this.props;
+  const confirmDelete = async () => {
+    const { dispatch } = props;
     try {
-      const { deletingComponentItem } = this.state;
       if (deletingComponentItem) {
         await dispatch(deleteApplicationAction(deletingComponentItem.name));
         await dispatch(setSuccessNotificationAction("Successfully delete an application"));
@@ -111,8 +100,8 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderSecondHeaderRight() {
-    const { activeNamespaceName, canEditNamespace } = this.props;
+  const renderSecondHeaderRight = () => {
+    const { activeNamespaceName, canEditNamespace } = props;
 
     return (
       <>
@@ -130,10 +119,10 @@ class ComponentRaw extends React.PureComponent<Props, State> {
         )}
       </>
     );
-  }
+  };
 
-  private renderEmpty() {
-    const { dispatch, activeNamespaceName, canEditNamespace } = this.props;
+  const renderEmpty = () => {
+    const { dispatch, activeNamespaceName, canEditNamespace } = props;
 
     return (
       <EmptyInfoBox
@@ -156,9 +145,9 @@ class ComponentRaw extends React.PureComponent<Props, State> {
         }
       />
     );
-  }
+  };
 
-  private renderInfoBox() {
+  const renderInfoBox = () => {
     const title = "References";
 
     const options = [
@@ -173,9 +162,9 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     ];
 
     return <InfoBox title={title} options={options} />;
-  }
-  private renderProtected(component: ApplicationComponentDetails) {
-    const { activeNamespaceName, canEditNamespace } = this.props;
+  };
+  const renderProtected = (component: ApplicationComponentDetails) => {
+    const { activeNamespaceName, canEditNamespace } = props;
     const appName = activeNamespaceName;
     return (
       <Box>
@@ -196,9 +185,9 @@ class ComponentRaw extends React.PureComponent<Props, State> {
         )}
       </Box>
     );
-  }
+  };
 
-  private getKRTableColumns() {
+  const getKRTableColumns = () => {
     return [
       { Header: "", accessor: "protected" },
       { Header: "", accessor: "componentName" },
@@ -210,14 +199,14 @@ class ComponentRaw extends React.PureComponent<Props, State> {
       { Header: "Routes", accessor: "routes" },
       { Header: "Actions", accessor: "actions" },
     ];
-  }
-  private getKRTableData() {
-    const { components, activeNamespaceName } = this.props;
+  };
+  const getKRTableData = () => {
+    const { components, activeNamespaceName } = props;
     const data: any[] = [];
     components &&
       components.forEach((component, index) => {
         data.push({
-          protected: this.renderProtected(component),
+          protected: renderProtected(component),
           componentName: (
             <Box display={"flex"}>
               <Box display="flex" minWidth={100}>
@@ -227,20 +216,20 @@ class ComponentRaw extends React.PureComponent<Props, State> {
               </Box>
             </Box>
           ),
-          pods: this.getPodsStatus(component, activeNamespaceName),
-          cpu: this.renderCPU(component),
-          memory: this.renderMemory(component),
+          pods: getPodsStatus(component, activeNamespaceName),
+          cpu: renderCPU(component),
+          memory: renderMemory(component),
           type: component.workloadType,
-          // image: this.renderImage(component.image),
-          routes: this.renderExternalAccesses(component, activeNamespaceName),
-          actions: this.componentControls(component),
+          // image: renderImage(component.image),
+          routes: renderExternalAccesses(component, activeNamespaceName),
+          actions: componentControls(component),
         });
       });
     return data;
-  }
+  };
 
-  private getRoutes = (componentName: string, applicationName: string) => {
-    const { httpRoutes } = this.props;
+  const getRoutes = (componentName: string, applicationName: string) => {
+    const { httpRoutes } = props;
     const applicationRoutes = httpRoutes.filter((x) => {
       let isCurrent = false;
       x.destinations.map((target) => {
@@ -260,37 +249,17 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     return applicationRoutes;
   };
 
-  private hasPods = () => {
-    const { components } = this.props;
-    let count = 0;
-    components.forEach((component) => {
-      component.pods?.forEach((podStatus) => {
-        count++;
-      });
-    });
-
-    return count !== 0;
-  };
-
-  private renderImage = (imageName: string) => {
-    const { registries, dispatch } = this.props;
-    const hosts = registries.map((r) => {
-      return r.host && r.host.toLowerCase().replace("https://", "").replace("http://", "");
-    });
-    return renderCopyableImageName(imageName, dispatch, hosts);
-  };
-
-  private renderCPU = (component: ApplicationComponentDetails) => {
+  const renderCPU = (component: ApplicationComponentDetails) => {
     return <ComponentCPUChart component={component} />;
   };
 
-  private renderMemory = (component: ApplicationComponentDetails) => {
+  const renderMemory = (component: ApplicationComponentDetails) => {
     return <ComponentMemoryChart component={component} />;
   };
 
-  private renderExternalAccesses = (component: ApplicationComponentDetails, applicationName: string) => {
-    const { canViewNamespace, canEditNamespace } = this.props;
-    const applicationRoutes = this.getRoutes(component.name, applicationName);
+  const renderExternalAccesses = (component: ApplicationComponentDetails, applicationName: string) => {
+    const { canViewNamespace, canEditNamespace } = props;
+    const applicationRoutes = getRoutes(component.name, applicationName);
 
     if (applicationRoutes && applicationRoutes.length > 0 && canViewNamespace(applicationName)) {
       return (
@@ -305,7 +274,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private getPodsStatus = (component: ApplicationComponentDetails, activeNamespaceName: string) => {
+  const getPodsStatus = (component: ApplicationComponentDetails, activeNamespaceName: string) => {
     let pods: React.ReactElement[] = [];
 
     component.pods?.forEach((pod, index) => {
@@ -341,8 +310,8 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private componentControls = (component: ApplicationComponentDetails) => {
-    const { activeNamespaceName, dispatch, canEditNamespace } = this.props;
+  const componentControls = (component: ApplicationComponentDetails) => {
+    const { activeNamespaceName, dispatch, canEditNamespace } = props;
     const appName = activeNamespaceName;
     return (
       <Box>
@@ -390,37 +359,30 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  public render() {
-    const { components } = this.props;
-    return (
-      <BasePage
-        secondHeaderRight={this.renderSecondHeaderRight()}
-        secondHeaderLeft={<Namespaces />}
-        leftDrawer={<ApplicationSidebar />}
-      >
-        {this.renderDeleteConfirmDialog()}
+  const { components } = props;
+  return (
+    <BasePage
+      secondHeaderRight={renderSecondHeaderRight()}
+      secondHeaderLeft={<Namespaces />}
+      leftDrawer={<ApplicationSidebar />}
+    >
+      {renderDeleteConfirmDialog()}
 
-        <Box p={2}>
-          {components && components.length > 0 ? (
-            <>
-              <Box pb={1}>
-                <KRTable
-                  showTitle={true}
-                  title="Components"
-                  columns={this.getKRTableColumns()}
-                  data={this.getKRTableData()}
-                />
-              </Box>
-              {this.renderInfoBox()}
-            </>
-          ) : (
-            this.renderEmpty()
-          )}
-        </Box>
-      </BasePage>
-    );
-  }
-}
+      <Box p={2}>
+        {components && components.length > 0 ? (
+          <>
+            <Box pb={1}>
+              <KRTable showTitle={true} title="Components" columns={getKRTableColumns()} data={getKRTableData()} />
+            </Box>
+            {renderInfoBox()}
+          </>
+        ) : (
+          renderEmpty()
+        )}
+      </Box>
+    </BasePage>
+  );
+};
 
 export const ComponentListPage = withStyles(styles)(
   withNamespace(withUserAuth(connect(mapStateToProps)(ComponentRaw))),
