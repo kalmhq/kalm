@@ -28,8 +28,6 @@ type ClientInfo struct {
 	Email             string       `json:"email"`
 	EmailVerified     bool         `json:"email_verified"`
 	Groups            []string     `json:"groups"`
-	Tenant            string       `json:"tenant"`
-	Tenants           []string     `json:"tenants"`
 	Impersonation     string       `json:"impersonation"`
 	ImpersonationType string       `json:"impersonationType"`
 }
@@ -44,9 +42,9 @@ type ClientManager interface {
 	CanView(client *ClientInfo, scope string, obj string) bool
 	CanEdit(client *ClientInfo, scope string, obj string) bool
 	CanManage(client *ClientInfo, scope string, obj string) bool
-	CanViewScope(client *ClientInfo, scope string) bool
-	CanEditScope(client *ClientInfo, scope string) bool
-	CanManageScope(client *ClientInfo, scope string) bool
+	CanViewNamespace(client *ClientInfo, scope string) bool
+	CanEditNamespace(client *ClientInfo, scope string) bool
+	CanManageNamespace(client *ClientInfo, scope string) bool
 	CanViewCluster(client *ClientInfo) bool
 	CanEditCluster(client *ClientInfo) bool
 	CanManageCluster(client *ClientInfo) bool
@@ -132,16 +130,16 @@ func (m *BaseClientManager) CanManage(client *ClientInfo, scope string, obj stri
 	return m.wrapper(client, m.RBACEnforcer.CanManage, scope, obj)
 }
 
-func (m *BaseClientManager) CanViewScope(client *ClientInfo, scope string) bool {
-	return m.wrapper(client, m.RBACEnforcer.CanViewScope, scope)
+func (m *BaseClientManager) CanViewNamespace(client *ClientInfo, scope string) bool {
+	return m.wrapper(client, m.RBACEnforcer.CanViewCluster, scope)
 }
 
-func (m *BaseClientManager) CanEditScope(client *ClientInfo, scope string) bool {
-	return m.wrapper(client, m.RBACEnforcer.CanEditScope, scope)
+func (m *BaseClientManager) CanEditNamespace(client *ClientInfo, scope string) bool {
+	return m.wrapper(client, m.RBACEnforcer.CanEditNamespace, scope)
 }
 
-func (m *BaseClientManager) CanManageScope(client *ClientInfo, scope string) bool {
-	return m.wrapper(client, m.RBACEnforcer.CanManageScope, scope)
+func (m *BaseClientManager) CanManageNamespace(client *ClientInfo, scope string) bool {
+	return m.wrapper(client, m.RBACEnforcer.CanManageNamespace, scope)
 }
 
 func (m *BaseClientManager) CanViewCluster(client *ClientInfo) bool {
@@ -173,11 +171,6 @@ func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, ro
 		return false
 	}
 
-	if route.Tenant == "" {
-		log.Info("route tenant is empty", zap.String("routeName", route.Name), zap.Any("route", route))
-		return false
-	}
-
 	log.Info("check CanOperateHttpRoute", zap.String("route", route.Name))
 
 	for _, dest := range route.HttpRouteSpec.Destinations {
@@ -195,15 +188,15 @@ func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, ro
 		zap.String("scope", scope))
 
 	if action == "view" {
-		if !m.CanViewScope(c, scope) {
+		if !m.CanViewNamespace(c, scope) {
 			return false
 		}
 	} else if action == "edit" {
-		if !m.CanEditScope(c, scope) {
+		if !m.CanEditNamespace(c, scope) {
 			return false
 		}
 	} else if action == "manage" {
-		if !m.CanManageScope(c, scope) {
+		if !m.CanManageNamespace(c, scope) {
 			return false
 		}
 	} else {
@@ -222,7 +215,7 @@ func (m *BaseClientManager) CanManageRoleBinding(c *ClientInfo, roleBinding *v1a
 		// TODO: handle the error
 		tenantName, _ := v1alpha1.GetTenantNameFromObj(roleBinding)
 		scope := fmt.Sprintf("%s/%s", tenantName, roleBinding.Namespace)
-		return m.CanManageScope(c, scope)
+		return m.CanManageNamespace(c, scope)
 	}
 }
 

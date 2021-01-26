@@ -262,7 +262,7 @@ func (m *StandardClientManager) SetImpersonation(clientInfo *ClientInfo, rawImpe
 		}
 	}
 
-	if m.CanManageScope(clientInfo, clientInfo.Tenant+"/*") {
+	if m.CanManageNamespace(clientInfo, clientInfo.Tenant+"/*") {
 		impersonation, impersonationType, err := parseImpersonationString(rawImpersonation)
 
 		if err != nil {

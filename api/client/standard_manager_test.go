@@ -36,7 +36,7 @@ func TestPolicyUpdate(t *testing.T) {
 
 	// before create tenant
 	scope := fmt.Sprintf("%s/*", tenantName)
-	assert.False(t, clientMgr.RBACEnforcer.CanViewScope(sub, scope))
+	assert.False(t, clientMgr.RBACEnforcer.CanViewNamespace(sub, scope))
 
 	tenant := v1alpha1.Tenant{
 		ObjectMeta: metav1.ObjectMeta{
@@ -62,6 +62,6 @@ func TestPolicyUpdate(t *testing.T) {
 	// after create tenant
 	// if the controller is not running, this asset can't pass
 	// assert.Eventually(t, func() bool {
-	//   return clientMgr.RBACEnforcer.CanViewScope(sub, scope)
+	//   return clientMgr.RBACEnforcer.CanViewNamespace(sub, scope)
 	// }, 5*time.Second, 100*time.Millisecond, fmt.Sprintf("sub(%s) should can view scope(%s)", sub, scope))
 }
