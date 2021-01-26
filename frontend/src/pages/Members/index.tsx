@@ -50,17 +50,15 @@ interface Props
     WithUserAuthProps,
     WithRoleBindingProps {}
 
-interface State {}
+const RolesListPageRaw: React.FC<Props> = (props) => {
+  const {
+    location: { pathname },
+  } = props;
+  const isClusterLevel = pathname.startsWith("/cluster/members") || pathname.startsWith("/applications/kalm-system");
 
-class RolesListPageRaw extends React.PureComponent<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {};
-  }
-
-  private renderSecondHeaderRight = () => {
-    const { activeNamespaceName, isFrontendMembersManagementEnabled } = this.props;
-    const { newTenantUrl, tenant } = this.props;
+  const renderSecondHeaderRight = () => {
+    const { activeNamespaceName, isFrontendMembersManagementEnabled } = props;
+    const { newTenantUrl, tenant } = props;
 
     if (!isFrontendMembersManagementEnabled) {
       return (
@@ -82,7 +80,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
           color="primary"
           size="small"
           variant="outlined"
-          to={this.isClusterLevel() ? `/cluster/members/new` : `/applications/${activeNamespaceName}/members/new`}
+          to={isClusterLevel ? `/cluster/members/new` : `/applications/${activeNamespaceName}/members/new`}
         >
           Grant permissions
         </Button>
@@ -90,10 +88,9 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderEmpty = () => {
-    const { dispatch, activeNamespaceName, isFrontendMembersManagementEnabled } = this.props;
-    const { newTenantUrl, tenant } = this.props;
-    const isClusterLevel = this.isClusterLevel();
+  const renderEmpty = () => {
+    const { dispatch, activeNamespaceName, isFrontendMembersManagementEnabled } = props;
+    const { newTenantUrl, tenant } = props;
 
     let link: string = "";
 
@@ -139,7 +136,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private getKRTableColumns() {
+  const getKRTableColumns = () => {
     return [
       {
         Header: "Type",
@@ -158,13 +155,13 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
         accessor: "actions",
       },
     ];
-  }
+  };
 
-  private changeRole = async (roleBinding: RoleBinding, newRole: string) => {
+  const changeRole = async (roleBinding: RoleBinding, newRole: string) => {
     if (roleBinding.role === newRole) {
       return;
     }
-    const { dispatch } = this.props;
+    const { dispatch } = props;
     await dispatch(
       updateRoleBindingsAction(
         produce(roleBinding, (draft) => {
@@ -175,8 +172,8 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     await dispatch(setSuccessNotificationAction("Update role successfully"));
   };
 
-  private renderRole = (roleBinding: RoleBinding) => {
-    if (!this.props.isFrontendMembersManagementEnabled) {
+  const renderRole = (roleBinding: RoleBinding) => {
+    if (!props.isFrontendMembersManagementEnabled) {
       switch (roleBinding.role) {
         case "clusterViewer":
           return "Cluster Viewer";
@@ -193,9 +190,9 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
       }
     }
 
-    const { canManageCluster, canManageNamespace, activeNamespaceName } = this.props;
+    const { canManageCluster, canManageNamespace, activeNamespaceName } = props;
 
-    const items = this.isClusterLevel()
+    const items = isClusterLevel
       ? [
           <MenuItem key="clusterViewer" value="clusterViewer">
             Cluster Viewer
@@ -227,16 +224,16 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
         size="small"
         SelectProps={{ displayEmpty: true }}
         value={roleBinding.role}
-        disabled={this.isClusterLevel() ? !canManageCluster() : !canManageNamespace(activeNamespaceName)}
-        onChange={(event) => this.changeRole(roleBinding, event.target.value)}
+        disabled={isClusterLevel ? !canManageCluster() : !canManageNamespace(activeNamespaceName)}
+        onChange={(event) => changeRole(roleBinding, event.target.value)}
       >
         {items}
       </TextField>
     );
   };
 
-  private getKRTableData() {
-    const roleBindings = this.getRoleBindings();
+  const getKRTableData = () => {
+    const roleBindings = getRoleBindings();
     const data: any[] = [];
 
     roleBindings &&
@@ -244,22 +241,22 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
         data.push({
           name: roleBinding.name,
           subject: roleBinding.subject,
-          type: this.renderSubjectType(roleBinding),
-          role: this.renderRole(roleBinding),
-          actions: this.renderActions(roleBinding),
+          type: renderSubjectType(roleBinding),
+          role: renderRole(roleBinding),
+          actions: renderActions(roleBinding),
         });
       });
 
     return data;
-  }
+  };
 
-  private getRoleBindings = (): RoleBinding[] => {
-    const { roleBindings, activeNamespaceName } = this.props;
-    const filterNamespace = this.isClusterLevel() ? "kalm-system" : activeNamespaceName;
+  const getRoleBindings = (): RoleBinding[] => {
+    const { roleBindings, activeNamespaceName } = props;
+    const filterNamespace = isClusterLevel ? "kalm-system" : activeNamespaceName;
     return roleBindings.filter((x) => x.namespace === filterNamespace);
   };
 
-  private renderSubjectType = (roleBinding: RoleBinding) => {
+  const renderSubjectType = (roleBinding: RoleBinding) => {
     if (roleBinding.subjectType === SubjectTypeUser) {
       return "User";
     } else if (roleBinding.subjectType === SubjectTypeGroup) {
@@ -269,8 +266,8 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderActions = (roleBinding: RoleBinding) => {
-    const { dispatch, isFrontendMembersManagementEnabled } = this.props;
+  const renderActions = (roleBinding: RoleBinding) => {
+    const { dispatch, isFrontendMembersManagementEnabled } = props;
 
     return (
       <>
@@ -295,7 +292,7 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderInfoBox = () => {
+  const renderInfoBox = () => {
     const title = "References";
 
     const options = [
@@ -318,38 +315,29 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
     return <InfoBox title={title} options={options} />;
   };
 
-  private isClusterLevel() {
-    const {
-      location: { pathname },
-    } = this.props;
-    return pathname.startsWith("/cluster/members") || pathname.startsWith("/applications/kalm-system");
-  }
-
-  private renderContent() {
-    const roleBindings = this.getRoleBindings();
+  const renderContent = () => {
+    const roleBindings = getRoleBindings();
 
     return roleBindings.length > 0 ? (
-      <KRTable showTitle={true} title="Members" columns={this.getKRTableColumns()} data={this.getKRTableData()} />
+      <KRTable showTitle={true} title="Members" columns={getKRTableColumns()} data={getKRTableData()} />
     ) : (
-      this.renderEmpty()
+      renderEmpty()
     );
-  }
+  };
 
-  public render() {
-    return (
-      <BasePage
-        secondHeaderRight={this.renderSecondHeaderRight()}
-        secondHeaderLeft={this.isClusterLevel() ? null : <Namespaces />}
-        leftDrawer={this.isClusterLevel() ? null : <ApplicationSidebar />}
-      >
-        <Box p={2}>
-          {this.renderContent()}
-          <Box mt={2}>{this.renderInfoBox()}</Box>
-        </Box>
-      </BasePage>
-    );
-  }
-}
+  return (
+    <BasePage
+      secondHeaderRight={renderSecondHeaderRight()}
+      secondHeaderLeft={isClusterLevel ? null : <Namespaces />}
+      leftDrawer={isClusterLevel ? null : <ApplicationSidebar />}
+    >
+      <Box p={2}>
+        {renderContent()}
+        <Box mt={2}>{renderInfoBox()}</Box>
+      </Box>
+    </BasePage>
+  );
+};
 
 export const RolesListPage = withStyles(styles)(
   withNamespace(withUserAuth(withRoleBindings(connect(mapStateToProps)(withRouter(RolesListPageRaw))))),

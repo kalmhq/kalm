@@ -26,47 +26,43 @@ interface Props
     TDispatchProp,
     WithNamespaceProps {}
 
-class MemberNewPageRaw extends React.PureComponent<Props> {
-  private onSubmit = async (values: RoleBinding) => {
-    const { dispatch, activeNamespaceName } = this.props;
-    values.namespace = this.isClusterLevel() ? "kalm-system" : activeNamespaceName;
+const MemberNewPageRaw: React.FC<Props> = (props) => {
+  const {
+    location: { pathname },
+  } = props;
+  const isClusterLevel = pathname.startsWith("/cluster/members") || pathname.startsWith("/applications/kalm-system");
+
+  const onSubmit = async (values: RoleBinding) => {
+    const { dispatch, activeNamespaceName } = props;
+
+    values.namespace = isClusterLevel ? "kalm-system" : activeNamespaceName;
     await dispatch(createRoleBindingsAction(values));
     await dispatch(setSuccessNotificationAction("Successfully create role binding"));
-    if (this.isClusterLevel()) {
+    if (isClusterLevel) {
       await dispatch(push("/cluster/members"));
     } else {
       await dispatch(push("/applications/" + activeNamespaceName + "/members"));
     }
   };
 
-  private isClusterLevel() {
-    const {
-      location: { pathname },
-    } = this.props;
-    return pathname.startsWith("/cluster/members") || pathname.startsWith("/applications/kalm-system");
-  }
-
-  public render() {
-    const isClusterLevel = this.isClusterLevel();
-    return (
-      <BasePage
-        secondHeaderLeft={isClusterLevel ? null : <Namespaces />}
-        leftDrawer={isClusterLevel ? null : <ApplicationSidebar />}
-      >
-        <Box p={2}>
-          <Grid container spacing={2}>
-            <Grid item xs={8} sm={8} md={8}>
-              <MemberForm
-                initial={newEmptyRoleBinding(isClusterLevel)}
-                onSubmit={this.onSubmit}
-                isClusterLevel={isClusterLevel}
-              />
-            </Grid>
+  return (
+    <BasePage
+      secondHeaderLeft={isClusterLevel ? null : <Namespaces />}
+      leftDrawer={isClusterLevel ? null : <ApplicationSidebar />}
+    >
+      <Box p={2}>
+        <Grid container spacing={2}>
+          <Grid item xs={8} sm={8} md={8}>
+            <MemberForm
+              initial={newEmptyRoleBinding(isClusterLevel)}
+              onSubmit={onSubmit}
+              isClusterLevel={isClusterLevel}
+            />
           </Grid>
-        </Box>
-      </BasePage>
-    );
-  }
-}
+        </Grid>
+      </Box>
+    </BasePage>
+  );
+};
 
 export const MemberNewPage = withStyles(styles)(withNamespace(connect(mapStateToProps)(withRouter(MemberNewPageRaw))));

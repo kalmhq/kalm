@@ -3,8 +3,8 @@ import GithubIcon from "@material-ui/icons/GitHub";
 import MenuBookIcon from "@material-ui/icons/MenuBook";
 import SupervisorAccountIcon from "@material-ui/icons/SupervisorAccount";
 import React from "react";
-import { BasePage } from "../BasePage";
 import { RaisedButton } from "widgets/Button";
+import { BasePage } from "../BasePage";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -26,69 +26,66 @@ const styles = (theme: Theme) =>
 
 interface Props extends WithStyles<typeof styles> {}
 
-class Dashboard extends React.PureComponent<Props> {
-  public render() {
-    const { classes } = this.props;
+const Dashboard: React.FC<Props> = (props) => {
+  const { classes } = props;
 
-    return (
-      <BasePage>
-        <div className={classes.container}>
-          <Typography className={classes.description}>
-            Kalm is a central hub for you to manage your devop tasks. It let you manage, monitoring{" "}
-            <strong>Applications</strong> make up of microservices.
-          </Typography>
+  return (
+    <BasePage>
+      <div className={classes.container}>
+        <Typography className={classes.description}>
+          Kalm is a central hub for you to manage your devop tasks. It let you manage, monitoring{" "}
+          <strong>Applications</strong> make up of microservices.
+        </Typography>
 
-          <Grid container spacing={3}>
-            <Grid item md={3}>
-              <Typography variant="h5" className={classes.cardTitle}>
-                Learn Kalm
-              </Typography>
-              <Typography className={classes.cardDescription}>
-                Run a single image is easy, but not for application made up of a bunch of components. Kalm aim to help
-                you handle complicated application with ease. Kalm is build on top of kubernetes. It provides your some
-                best practices of using kubernets and hide obscure details. Wondering what all that means? Have a look
-                at the Kalm documentation.
-              </Typography>
-              <div>
-                <RaisedButton size="small" startIcon={<MenuBookIcon />}>
-                  Document
-                </RaisedButton>
-              </div>
-            </Grid>
-            <Grid item md={3}>
-              <Typography variant="h5" className={classes.cardTitle}>
-                Get Start
-              </Typography>
-              <Typography className={classes.cardDescription}>
-                If you don't know where to start. There are several tutorials of how to use kalm. Please go throught
-                them first. You can also view each page of this dashboard, some details on each page can be helpful to
-                you.
-              </Typography>
-              <div>
-                <RaisedButton size="small" startIcon={<SupervisorAccountIcon />}>
-                  Get Start
-                </RaisedButton>
-              </div>
-            </Grid>
-            <Grid item md={3}>
-              <Typography variant="h5" className={classes.cardTitle}>
-                Contribute
-              </Typography>
-              <Typography className={classes.cardDescription}>
-                Kalm system is an open source system hosted on github under Apache V2 License. See our roadmap for the
-                plans. Pull requests are welcomed.
-              </Typography>
-              <div>
-                <RaisedButton variant="contained" size="small" startIcon={<GithubIcon />}>
-                  Github
-                </RaisedButton>
-              </div>
-            </Grid>
+        <Grid container spacing={3}>
+          <Grid item md={3}>
+            <Typography variant="h5" className={classes.cardTitle}>
+              Learn Kalm
+            </Typography>
+            <Typography className={classes.cardDescription}>
+              Run a single image is easy, but not for application made up of a bunch of components. Kalm aim to help you
+              handle complicated application with ease. Kalm is build on top of kubernetes. It provides your some best
+              practices of using kubernets and hide obscure details. Wondering what all that means? Have a look at the
+              Kalm documentation.
+            </Typography>
+            <div>
+              <RaisedButton size="small" startIcon={<MenuBookIcon />}>
+                Document
+              </RaisedButton>
+            </div>
           </Grid>
-        </div>
-      </BasePage>
-    );
-  }
-}
+          <Grid item md={3}>
+            <Typography variant="h5" className={classes.cardTitle}>
+              Get Start
+            </Typography>
+            <Typography className={classes.cardDescription}>
+              If you don't know where to start. There are several tutorials of how to use kalm. Please go throught them
+              first. You can also view each page of this dashboard, some details on each page can be helpful to you.
+            </Typography>
+            <div>
+              <RaisedButton size="small" startIcon={<SupervisorAccountIcon />}>
+                Get Start
+              </RaisedButton>
+            </div>
+          </Grid>
+          <Grid item md={3}>
+            <Typography variant="h5" className={classes.cardTitle}>
+              Contribute
+            </Typography>
+            <Typography className={classes.cardDescription}>
+              Kalm system is an open source system hosted on github under Apache V2 License. See our roadmap for the
+              plans. Pull requests are welcomed.
+            </Typography>
+            <div>
+              <RaisedButton variant="contained" size="small" startIcon={<GithubIcon />}>
+                Github
+              </RaisedButton>
+            </div>
+          </Grid>
+        </Grid>
+      </div>
+    </BasePage>
+  );
+};
 
 export default withStyles(styles)(Dashboard);
