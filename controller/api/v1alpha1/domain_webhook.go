@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"crypto/md5"
 	"fmt"
 	"net"
@@ -23,15 +24,20 @@ import (
 
 	"github.com/miekg/dns"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 var domainlog = logf.Log.WithName("domain-resource")
+var webhookClient client.Client
 
 func (r *Domain) SetupWebhookWithManager(mgr ctrl.Manager) error {
+	webhookClient = mgr.GetClient()
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
@@ -109,22 +115,21 @@ func GetClusterIP() (string, error) {
 		return ip, nil
 	}
 
-	// svc := v1.Service{}
-	// objKey := types.NamespacedName{
-	// 	Name:      "istio-ingressgateway",
-	// 	Namespace: "istio-system",
-	// }
+	svc := corev1.Service{}
+	objKey := types.NamespacedName{
+		Name:      "istio-ingressgateway",
+		Namespace: "istio-system",
+	}
 
-	// // todo fix this webhookClient
-	// err := webhookClient.Get(context.Background(), objKey, &svc)
-	// if err != nil {
-	// 	return "", err
-	// }
+	err := webhookClient.Get(context.Background(), objKey, &svc)
+	if err != nil {
+		return "", err
+	}
 
-	// ingress := svc.Status.LoadBalancer.Ingress
-	// if len(ingress) > 0 {
-	// 	return ingress[0].IP, nil
-	// }
+	ingress := svc.Status.LoadBalancer.Ingress
+	if len(ingress) > 0 {
+		return ingress[0].IP, nil
+	}
 
 	return "", nil
 }
