@@ -85,8 +85,6 @@ func getKalmDashboardEnvs(configSpec installv1alpha1.KalmOperatorConfigSpec) []c
 	var baseAppDomain string
 	if configSpec.BYOCModeConfig != nil && configSpec.BYOCModeConfig.BaseAppDomain != "" {
 		baseAppDomain = configSpec.BYOCModeConfig.BaseAppDomain
-	} else if configSpec.SaaSModeConfig != nil && configSpec.SaaSModeConfig.BaseAppDomain != "" {
-		baseAppDomain = configSpec.SaaSModeConfig.BaseAppDomain
 	}
 
 	// BaseAppDomain
@@ -130,10 +128,8 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(configSpec install
 		return err
 	}
 
-	isSaaSMode := configSpec.SaaSModeConfig != nil
 	isBYOCMode := configSpec.BYOCModeConfig != nil
-
-	if isSaaSMode || isBYOCMode {
+	if isBYOCMode {
 		err := r.reconcileAccessForDashboard(configSpec)
 		if err != nil {
 			r.Log.Info("reconcileAccessForDashboard fail", "error", err)
@@ -170,9 +166,6 @@ func (r *KalmOperatorConfigReconciler) reconcileDashboardComponent(configSpec in
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: NamespaceKalmSystem,
 			Name:      dashboardName,
-			Labels: map[string]string{
-				corev1alpha1.TenantNameLabelKey: corev1alpha1.DefaultSystemTenantName,
-			},
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			Image:    fmt.Sprintf("%s:%s", KalmDashboardImgRepo, dashboardVersion),
@@ -319,11 +312,7 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(configSpec in
 	var oidcIssuer *installv1alpha1.OIDCIssuerConfig
 	var applyForWildcardCert bool
 
-	if configSpec.SaaSModeConfig != nil {
-		baseDomain = configSpec.SaaSModeConfig.BaseDashboardDomain
-		oidcIssuer = configSpec.SaaSModeConfig.OIDCIssuer
-		applyForWildcardCert = true
-	} else if configSpec.BYOCModeConfig != nil {
+	if configSpec.BYOCModeConfig != nil {
 		baseDomain = configSpec.BYOCModeConfig.BaseDashboardDomain
 		oidcIssuer = configSpec.BYOCModeConfig.OIDCIssuer
 		applyForWildcardCert = false
@@ -370,9 +359,6 @@ func (r *KalmOperatorConfigReconciler) reconcileHttpRouteForDashboard(baseDashbo
 	expectedRoute := v1alpha1.HttpRoute{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: KalmRouteName,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultSystemTenantName,
-			},
 		},
 		Spec: v1alpha1.HttpRouteSpec{
 			Hosts: domains,
@@ -420,9 +406,6 @@ func (r *KalmOperatorConfigReconciler) reconcileProtectedEndpointForDashboard(ba
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: v1alpha1.KalmSystemNamespace,
 			Name:      KalmProtectedEndpointName,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultSystemTenantName,
-			},
 		},
 		Spec: v1alpha1.ProtectedEndpointSpec{
 			EndpointName:                "kalm",
@@ -474,9 +457,6 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: v1alpha1.KalmSystemNamespace,
 			Name:      SSO_NAME,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultSystemTenantName,
-			},
 		},
 		Spec: v1alpha1.SingleSignOnConfigSpec{
 			Issuer:               oidcIssuer.IssuerURL,

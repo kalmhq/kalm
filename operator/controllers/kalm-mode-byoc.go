@@ -21,11 +21,6 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode(config *installv1alpha1
 		return err
 	}
 
-	if err := r.reconcileDefaultTenantForBYOCMode(configSpec.BYOCModeConfig.Owner); err != nil {
-		r.Log.Info("reconcileDefaultTenantForSaaSMode fail", "error", err)
-		return err
-	}
-
 	if err := r.reconcileKalmDashboard(configSpec); err != nil {
 		r.Log.Info("reconcileKalmDashboard fail", "error", err)
 		return err

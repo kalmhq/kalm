@@ -32,9 +32,6 @@ func (r *KalmOperatorConfigReconciler) reconcileHttpsCertForDomain(baseAppDomain
 	expectedHttpsCert := v1alpha1.HttpsCert{
 		ObjectMeta: ctrl.ObjectMeta{
 			Name: certName,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultSystemTenantName,
-			},
 		},
 		Spec: v1alpha1.HttpsCertSpec{
 			HttpsCertIssuer: certIssuer,

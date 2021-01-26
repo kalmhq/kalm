@@ -29,11 +29,10 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(configSpec instal
 		ObjectMeta: ctrl.ObjectMeta{
 			Name: NamespaceKalmSystem,
 			Labels: map[string]string{
-				"control-plane":             "controller",
-				"kalm-enabled":              "true",
-				"istio-injection":           "enabled",
-				"kalm-control-plane":        "true",
-				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultSystemTenantName,
+				"control-plane":      "controller",
+				"kalm-enabled":       "true",
+				"istio-injection":    "enabled",
+				"kalm-control-plane": "true",
 			},
 		},
 	}
@@ -222,9 +221,7 @@ func getEnvVarsForController(configSpec installv1alpha1.KalmOperatorConfigSpec) 
 	var cloudflareToken string
 
 	var cloudflareConfig *installv1alpha1.CloudflareConfig
-	if configSpec.SaaSModeConfig != nil {
-		cloudflareConfig = configSpec.SaaSModeConfig.CloudflareConfig
-	} else if configSpec.LocalModeConfig != nil {
+	if configSpec.LocalModeConfig != nil {
 		cloudflareConfig = configSpec.LocalModeConfig.CloudflareConfig
 	}
 
@@ -236,10 +233,7 @@ func getEnvVarsForController(configSpec installv1alpha1.KalmOperatorConfigSpec) 
 	var baseAppDomain string
 	var baseDNSDomain string
 
-	if configSpec.SaaSModeConfig != nil {
-		baseAppDomain = configSpec.SaaSModeConfig.BaseAppDomain
-		baseDNSDomain = configSpec.SaaSModeConfig.BaseDNSDomain
-	} else if configSpec.BYOCModeConfig != nil {
+	if configSpec.BYOCModeConfig != nil {
 		baseAppDomain = configSpec.BYOCModeConfig.BaseAppDomain
 		baseDNSDomain = configSpec.BYOCModeConfig.BaseDNSDomain
 	}

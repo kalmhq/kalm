@@ -54,8 +54,8 @@ type KalmOperatorConfigSpec struct {
 	// deprecated, diff mode has diff config now
 	KalmType string `json:"kalmType,omitempty"`
 
-	BYOCModeConfig  *BYOCModeConfig  `json:"byocModeConfig,omitempty"`
-	SaaSModeConfig  *SaaSModeConfig  `json:"saasModeConfig,omitempty"`
+	BYOCModeConfig *BYOCModeConfig `json:"byocModeConfig,omitempty"`
+	// SaaSModeConfig  *SaaSModeConfig  `json:"saasModeConfig,omitempty"`
 	LocalModeConfig *LocalModeConfig `json:"localModeConfig,omitempty"`
 
 	PhysicalClusterID string `json:"physicalClusterId,omitempty"`
