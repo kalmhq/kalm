@@ -377,8 +377,13 @@ func (suite *BasicSuite) ensureNsExists(name string) corev1.Namespace {
 	ns := corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
+			Labels: map[string]string{
+				v1alpha1.KalmEnableLabelName: "true",
+			},
 		},
 	}
-	suite.K8sClient.Create(context.Background(), &ns)
+
+	_ = suite.K8sClient.Create(context.Background(), &ns)
+
 	return ns
 }

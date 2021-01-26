@@ -30,6 +30,7 @@ func TestSSOConfigControllerSuite(t *testing.T) {
 func (suite *SSOConfigControllerSuite) SetupSuite() {
 	suite.BasicSuite.SetupSuite(true)
 	suite.logger = ctrl.Log
+	suite.ensureNsExists("kalm-system")
 }
 
 func (suite *SSOConfigControllerSuite) TearDownSuite() {
@@ -140,6 +141,7 @@ func (suite *SSOConfigControllerSuite) TestSSOBasicCRUD() {
 	var deployment appsV1.Deployment
 
 	suite.Eventually(func() bool {
+
 		if err := suite.K8sClient.Get(suite.ctx, types.NamespacedName{
 			Name:      "dex",
 			Namespace: "kalm-system",

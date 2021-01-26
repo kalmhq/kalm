@@ -615,6 +615,8 @@ func (r *ComponentReconcilerTask) ReconcileComponentPluginBinding() error {
 func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 
 	if !IsNamespaceKalmEnabled(r.namespace) {
+		r.Log.Info("not kalm-enabled, clean workload of component", "comp", r.component.Name)
+
 		if r.deployment != nil {
 			if err := r.Delete(r.ctx, r.deployment); err != nil {
 				return err
