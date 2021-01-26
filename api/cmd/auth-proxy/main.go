@@ -20,7 +20,6 @@ import (
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/server"
 	"github.com/kalmhq/kalm/api/utils"
-	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
@@ -63,7 +62,6 @@ func getOauth2Config() *oauth2.Config {
 	clientSecret = os.Getenv("KALM_OIDC_CLIENT_SECRET")
 	oidcProviderUrl := os.Getenv("KALM_OIDC_PROVIDER_URL")
 	authProxyURL = os.Getenv("KALM_OIDC_AUTH_PROXY_URL")
-	needExtraOAuthScope := os.Getenv(v1alpha1.ENV_NEED_EXTRA_OAUTH_SCOPE) == "true"
 
 	logger.Info(fmt.Sprintf("ClientID: %s", clientID))
 	logger.Info(fmt.Sprintf("oidcProviderUrl: %s", oidcProviderUrl))
@@ -85,10 +83,6 @@ func getOauth2Config() *oauth2.Config {
 	oidcVerifier = provider.Verifier(&oidc.Config{ClientID: clientID})
 
 	scopes := []string{oidc.ScopeOpenID, "profile", "email", "groups", "offline_access"}
-	if needExtraOAuthScope {
-		// for saas and byoc
-		scopes = append(scopes, "tenants")
-	}
 
 	oauth2Config = &oauth2.Config{
 		ClientID:     clientID,
@@ -157,8 +151,7 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 ///////////////////////////////////
 
 type Claims struct {
-	Groups  []string `json:"groups"`
-	Tenants []string `json:"tenants"`
+	Groups []string `json:"groups"`
 }
 
 func handleExtAuthz(c echo.Context) error {
@@ -246,11 +239,6 @@ func handleExtAuthz(c echo.Context) error {
 			clearTokenInCookie(c)
 			return c.JSON(401, "The jwt token is invalid, expired, revoked, or was issued to another client.")
 		}
-	}
-
-	if !inGrantedTenants(c, idToken) {
-		clearTokenInCookie(c)
-		return c.JSON(401, "You don't in any granted tenants. Contact you admin please.")
 	}
 
 	if !inGrantedGroups(c, idToken) {
@@ -386,37 +374,6 @@ func getTokenFromRequest(c echo.Context) (*auth_proxy.ThinToken, error) {
 func shouldLetPass(c echo.Context) bool {
 	return c.Request().Header.Get(controllers.KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER) == "true" &&
 		strings.HasPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
-}
-
-func inGrantedTenants(c echo.Context, idToken *oidc.IDToken) bool {
-	grantedTenants := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_TENANTS_HEADER)
-
-	if grantedTenants == "" {
-		return true
-	}
-
-	tenants := strings.Split(grantedTenants, "|")
-	physicalClusterID := v1alpha1.GetEnvPhysicalClusterID()
-	gm := make(map[string]struct{}, len(tenants))
-
-	for _, g := range tenants {
-		if g == "*" {
-			return true
-		}
-
-		gm[fmt.Sprintf("%s/%s", physicalClusterID, g)] = struct{}{}
-	}
-
-	var claim Claims
-	_ = idToken.Claims(&claim)
-
-	for _, g := range claim.Tenants {
-		if _, ok := gm[g]; ok {
-			return true
-		}
-	}
-
-	return false
 }
 
 func inGrantedGroups(c echo.Context, idToken *oidc.IDToken) bool {
