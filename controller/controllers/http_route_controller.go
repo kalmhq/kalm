@@ -45,7 +45,7 @@ const (
 	KALM_ROUTE_LABEL = "kalm-route"
 )
 
-const KALM_SSO_GRANTED_TENANTS_HEADER = "kalm-sso-granted-tenants"
+// const KALM_SSO_GRANTED_TENANTS_HEADER = "kalm-sso-granted-tenants"
 const KALM_SSO_GRANTED_GROUPS_HEADER = "kalm-sso-granted-groups"
 const KALM_SSO_USERINFO_HEADER = "kalm-sso-userinfo"
 const KALM_SSO_SET_COOKIE_PAYLOAD_HEADER = "kalm-set-cookie"
@@ -197,14 +197,6 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 // Kalm route level http to https redirect is achieved by adding envoy filter for istio ingress gateway
 //
 func (r *HttpRouteReconcilerTask) buildHttpsRedirectEnvoyFilter(route *corev1alpha1.HttpRoute) (*v1alpha32.EnvoyFilter, error) {
-	var tenantName string
-
-	var err error
-	tenantName, err = corev1alpha1.GetTenantNameFromObj(route)
-
-	if err != nil {
-		return nil, err
-	}
 
 	filter := &v1alpha32.EnvoyFilter{
 		ObjectMeta: metaV1.ObjectMeta{
@@ -247,10 +239,6 @@ func (r *HttpRouteReconcilerTask) buildHttpsRedirectEnvoyFilter(route *corev1alp
 				},
 			},
 		},
-	}
-
-	if tenantName != "" {
-		filter.Labels[corev1alpha1.TenantNameLabelKey] = tenantName
 	}
 
 	// TODO route and filter are in different namespace. Can't set owner relationship for them.

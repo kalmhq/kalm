@@ -207,26 +207,6 @@ rules:
 - apiGroups:
   - core.kalm.dev
   resources:
-  - clusterresourcequota
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - core.kalm.dev
-  resources:
-  - clusterresourcequota/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - core.kalm.dev
-  resources:
   - componentpluginbindings
   verbs:
   - create

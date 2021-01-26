@@ -319,9 +319,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileSecret() error {
 			ObjectMeta: metaV1.ObjectMeta{
 				Namespace: KALM_DEX_NAMESPACE,
 				Name:      KALM_AUTH_PROXY_SECRET_NAME,
-				Labels: map[string]string{
-					v1alpha1.TenantNameLabelKey: "global",
-				},
 			},
 			Data: map[string][]byte{
 				"client_id":     []byte("kalm-sso"),
@@ -367,9 +364,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      KALM_DEX_NAME,
 			Namespace: KALM_DEX_NAMESPACE,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: "global",
-			},
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			Annotations: map[string]string{
@@ -442,9 +436,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 	dexRoute := corev1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: KALM_DEX_NAME,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: "global",
-			},
 		},
 		Spec: corev1alpha1.HttpRouteSpec{
 			Hosts: []string{
@@ -525,9 +516,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileExternalAuthProxyServiceEntr
 		ObjectMeta: metaV1.ObjectMeta{
 			Namespace: KALM_DEX_NAMESPACE,
 			Name:      KALM_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: "global",
-			},
 		},
 		Spec: v1alpha3.ServiceEntry{
 			Hosts: []string{ssoConfig.Spec.ExternalEnvoyExtAuthz.Host},
@@ -600,9 +588,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      KALM_AUTH_PROXY_NAME,
 			Namespace: KALM_DEX_NAMESPACE,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: "global",
-			},
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			WorkloadType: corev1alpha1.WorkloadTypeServer,
@@ -690,9 +675,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() err
 	authProxyRoute := corev1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: KALM_AUTH_PROXY_NAME,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: "global",
-			},
 		},
 		Spec: corev1alpha1.HttpRouteSpec{
 			Hosts: []string{
@@ -811,9 +793,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRouteCert() error {
 				ObjectMeta: metaV1.ObjectMeta{
 					Name:      certName,
 					Namespace: KALM_DEX_NAMESPACE,
-					Labels: map[string]string{
-						v1alpha1.TenantNameLabelKey: "global",
-					},
 				},
 				Spec: corev1alpha1.HttpsCertSpec{
 					HttpsCertIssuer: corev1alpha1.DefaultHTTP01IssuerName,

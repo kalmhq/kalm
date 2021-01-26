@@ -176,11 +176,6 @@ func (r *KalmPVReconciler) reconcilePV(pvName string) error {
 	pv.Labels[v1alpha1.KalmLabelNamespaceKey] = pvc.Labels[v1alpha1.KalmLabelNamespaceKey]
 	// to be selectable by PV
 	pv.Labels[KalmLabelPV] = pv.Name
-	// inherit tenant
-	tenant := pvc.Labels[v1alpha1.TenantNameLabelKey]
-	if tenant != "" {
-		pv.Labels[v1alpha1.TenantNameLabelKey] = tenant
-	}
 
 	// bounded pvc exist, safe to clean locker label
 	delete(pv.Labels, KalmLabelPVLocker)
@@ -292,7 +287,6 @@ func (r *KalmPVReconciler) reconcileOrphanPV(orphanPV *corev1.PersistentVolume) 
 				KalmLabelManaged:               "true",
 				v1alpha1.KalmLabelComponentKey: orphanPV.Labels[v1alpha1.KalmLabelComponentKey],
 				v1alpha1.KalmLabelNamespaceKey: orphanPV.Labels[v1alpha1.KalmLabelNamespaceKey],
-				v1alpha1.TenantNameLabelKey:    orphanPV.Labels[v1alpha1.TenantNameLabelKey],
 			},
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{

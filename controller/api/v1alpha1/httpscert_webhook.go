@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"strings"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -75,25 +74,6 @@ func (r *HttpsCert) ValidateCreate() error {
 		return err
 	}
 
-	tenantName := r.Labels[TenantNameLabelKey]
-	if tenantName == "" {
-		// todo, what's the tenant for system cert?
-		httpscertlog.Info("see httpsCert without tenant", "name", r.Name)
-		return nil
-	}
-
-	if tenantName == DefaultGlobalTenantName ||
-		tenantName == DefaultSystemTenantName {
-		return nil
-	}
-
-	//todo how to tell if this is dryRun?
-	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Create, false)
-	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
-		httproutelog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
-		return err
-	}
-
 	return nil
 }
 
@@ -101,35 +81,12 @@ func (r *HttpsCert) ValidateCreate() error {
 func (r *HttpsCert) ValidateUpdate(old runtime.Object) error {
 	httpscertlog.Info("validate update", "name", r.Name)
 
-	// if !HasTenantSet(r) {
-	// 	return NoTenantFoundError
-	// }
-
-	// if IsTenantChanged(r, old) {
-	// 	return TenantChangedError
-	// }
-
 	return r.validate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *HttpsCert) ValidateDelete() error {
 	httpscertlog.Info("validate delete", "name", r.Name)
-
-	tenantName := r.Labels[TenantNameLabelKey]
-	if tenantName == "" {
-		return nil
-	}
-
-	if tenantName == DefaultGlobalTenantName ||
-		tenantName == DefaultSystemTenantName {
-		return nil
-	}
-
-	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Delete, false)
-	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
-		httproutelog.Error(err, "fail when try to update resource, ignored", "ns/name", getKey(r))
-	}
 
 	return nil
 }

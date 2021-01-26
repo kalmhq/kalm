@@ -37,7 +37,6 @@ func (suite *SSOConfigControllerSuite) TearDownSuite() {
 }
 
 func (suite *SSOConfigControllerSuite) SetupTest() {
-	suite.SetupTenant()
 	suite.ctx = context.Background()
 }
 

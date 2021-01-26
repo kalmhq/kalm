@@ -85,8 +85,6 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 		component.Labels = make(map[string]string)
 	}
 
-	component.Labels[v1alpha1.TenantNameLabelKey] = v1alpha1.DefaultGlobalTenantName
-
 	suite.createComponent(component)
 
 	key := types.NamespacedName{
