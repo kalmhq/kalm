@@ -227,19 +227,11 @@ func (m *StandardClientManager) GetClientInfoFromToken(tokenString string) (*Cli
 		return nil, errors.NewUnauthorized("access token is expired")
 	}
 
-	tenantName, err := v1alpha1.GetTenantNameFromObj(accessToken)
-
-	if err != nil {
-		return nil, err
-	}
-
 	clientInfo := &ClientInfo{
 		Cfg:           m.ClusterConfig,
 		Name:          accessToken.Name,
 		Email:         accessToken.Name,
 		EmailVerified: false,
-		Tenant:        tenantName,
-		Tenants:       []string{tenantName},
 		Groups:        []string{},
 	}
 
@@ -262,43 +254,43 @@ func (m *StandardClientManager) SetImpersonation(clientInfo *ClientInfo, rawImpe
 		}
 	}
 
-	if m.CanManageNamespace(clientInfo, clientInfo.Tenant+"/*") {
-		impersonation, impersonationType, err := parseImpersonationString(rawImpersonation)
+	// if m.CanManageNamespace(clientInfo, "*") {
+	// 	impersonation, impersonationType, err := parseImpersonationString(rawImpersonation)
 
-		if err != nil {
-			log.Error("parse impersonation raw string failed", zap.Error(err))
-			return
-		}
+	// 	if err != nil {
+	// 		log.Error("parse impersonation raw string failed", zap.Error(err))
+	// 		return
+	// 	}
 
-		if impersonation == "" || impersonationType == "" {
-			return
-		}
+	// 	if impersonation == "" || impersonationType == "" {
+	// 		return
+	// 	}
 
-		policies, err := m.GetRBACEnforcer().GetImplicitPermissionsForUser(ToSafeSubject(impersonation, impersonationType))
+	// 	policies, err := m.GetRBACEnforcer().GetImplicitPermissionsForUser(ToSafeSubject(impersonation, impersonationType))
 
-		if err != nil {
-			log.Error("get implicit permissions for error", zap.String("user", ToSafeSubject(impersonation, impersonationType)), zap.Error(err))
-			return
-		}
+	// 	if err != nil {
+	// 		log.Error("get implicit permissions for error", zap.String("user", ToSafeSubject(impersonation, impersonationType)), zap.Error(err))
+	// 		return
+	// 	}
 
-		for _, policy := range policies {
-			if !m.Can(clientInfo, policy[1], policy[2], policy[3]) {
-				// Can't impersonate. The goal user has at least one permission that current user don't have
-				log.Debug(
-					"Impersonate failed",
-					zap.String("currentUser", clientInfo.Email),
-					zap.String("goal user", ToSafeSubject(impersonation, impersonationType)),
-					zap.String("action", policy[1]),
-					zap.String("scope", policy[2]),
-					zap.String("object", policy[3]),
-				)
-				return
-			}
-		}
+	// 	for _, policy := range policies {
+	// 		if !m.Can(clientInfo, policy[1], policy[2], policy[3]) {
+	// 			// Can't impersonate. The goal user has at least one permission that current user don't have
+	// 			log.Debug(
+	// 				"Impersonate failed",
+	// 				zap.String("currentUser", clientInfo.Email),
+	// 				zap.String("goal user", ToSafeSubject(impersonation, impersonationType)),
+	// 				zap.String("action", policy[1]),
+	// 				zap.String("scope", policy[2]),
+	// 				zap.String("object", policy[3]),
+	// 			)
+	// 			return
+	// 		}
+	// 	}
 
-		clientInfo.Impersonation = impersonation
-		clientInfo.ImpersonationType = impersonationType
-	}
+	// 	clientInfo.Impersonation = impersonation
+	// 	clientInfo.ImpersonationType = impersonationType
+	// }
 }
 
 func (m *StandardClientManager) GetClientInfoFromContext(c echo.Context) (*ClientInfo, error) {
@@ -337,89 +329,11 @@ func (m *StandardClientManager) GetClientInfoFromContext(c echo.Context) (*Clien
 			clientInfo.Groups = []string{}
 		}
 
-		decideClientInfoTenant(&clientInfo, c)
-
 		m.SetImpersonation(&clientInfo, c.Request().Header.Get("Kalm-Impersonation"))
 		return &clientInfo, nil
 	}
 
 	return nil, errors.NewUnauthorized("")
-}
-
-func decideClientInfoTenant(clientInfo *ClientInfo, c echo.Context) {
-
-	if clientInfo.Tenants == nil {
-		clientInfo.Tenants = []string{}
-	}
-
-	switch len(clientInfo.Tenants) {
-	case 0:
-		// if no tenant is specified, fallback to default tenant: global
-		// mainly used in local & BYOC mode
-		// tenant only indicates which cluster current user is trying to operate,
-		// whether this use has the permission to operator is controlled by RBAC rules.
-		clientInfo.Tenant = v1alpha1.DefaultGlobalTenantName
-		clientInfo.Tenants = []string{v1alpha1.DefaultGlobalTenantName}
-	case 1:
-		parts := strings.Split(clientInfo.Tenants[0], "/")
-
-		if len(parts) == 2 {
-			clientInfo.Tenant = parts[1]
-		}
-	default:
-
-		tenantMap := make(map[string]struct{})
-
-		for _, tenant := range clientInfo.Tenants {
-			parts := strings.Split(tenant, "/")
-
-			if len(parts) != 2 {
-				continue
-			}
-
-			// TODO check part[0] is current cluster
-
-			tenantMap[parts[1]] = struct{}{}
-		}
-
-		cookie, err := c.Cookie("selected-tenant")
-		if err == nil {
-			if _, ok := tenantMap[cookie.Value]; ok {
-				clientInfo.Tenant = cookie.Value
-			}
-		}
-
-		if clientInfo.Tenant == "" {
-			lowercaseHost := strings.ToLower(c.Request().Host)
-
-			if strings.HasSuffix(lowercaseHost, "kapp.live") || strings.HasSuffix(lowercaseHost, "kalm.dev") {
-				// for kalm dashboard, visiting url should be like:
-				//
-				// SaaS:
-				//   <tenantName>.<regionName>.kalm.dev
-				// which indicates the current tenant
-				//
-				// BYOC:
-				//   <clusterName>.byoc.kalm.dev
-				hostParts := strings.Split(c.Request().Host, ".")
-
-				if len(hostParts) == 4 {
-					var tenantName string
-
-					if hostParts[1] == "byoc" {
-						tenantName = v1alpha1.DefaultGlobalTenantName
-					} else {
-						tenantName = hostParts[0]
-					}
-
-					// if exist in Kalm-Sso-Userinfo.tenants
-					if _, ok := tenantMap[tenantName]; ok {
-						clientInfo.Tenant = tenantName
-					}
-				}
-			}
-		}
-	}
 }
 
 // Since the token is validated by api server, so we don't need to valid the token again here.

@@ -28,15 +28,13 @@ func (m *FakeClientManager) GetClientInfoFromToken(token string) (*ClientInfo, e
 		return nil, errors.NewUnauthorized("No token found in request header")
 	}
 
-	email, tenant, groups := parseFakeToken(token)
+	email, groups := parseFakeToken(token)
 
 	return &ClientInfo{
 		Cfg:           m.ClusterConfig,
 		Name:          email,
 		Email:         email,
 		EmailVerified: true,
-		Tenant:        tenant,
-		Tenants:       []string{tenant},
 		Groups:        groups,
 	}, nil
 }
@@ -46,14 +44,11 @@ func (m *FakeClientManager) GetClientInfoFromContext(c echo.Context) (*ClientInf
 	return m.GetClientInfoFromToken(token)
 }
 
-func ToFakeToken(email string, tenant string, roles ...string) string {
+func ToFakeToken(email string, roles ...string) string {
 	var sb strings.Builder
 
 	sb.WriteString("email=")
 	sb.WriteString(email)
-
-	sb.WriteString(" tenant=")
-	sb.WriteString(tenant)
 
 	sb.WriteString(" groups=")
 	for i := range roles {
@@ -65,7 +60,7 @@ func ToFakeToken(email string, tenant string, roles ...string) string {
 	return sb.String()
 }
 
-func parseFakeToken(token string) (email string, tenant string, roles []string) {
+func parseFakeToken(token string) (email string, roles []string) {
 	defer func() {
 		if r := recover(); r != nil {
 			email = "empty"
@@ -73,16 +68,15 @@ func parseFakeToken(token string) (email string, tenant string, roles []string) 
 		}
 	}()
 
-	var re = regexp.MustCompile(`email=(.*) tenant=(.*) groups=(.*)`)
+	var re = regexp.MustCompile(`email=(.*) groups=(.*)`)
 	match := re.FindStringSubmatch(token)
 
 	if match == nil {
-		return "", "", nil
+		return "", nil
 	}
 
 	email = match[1]
-	tenant = match[2]
-	rolesString := match[3]
+	rolesString := match[2]
 
 	if len(rolesString) == 0 {
 		return

@@ -46,8 +46,6 @@ func (m *LocalClientManager) GetClientInfoFromContext(c echo.Context) (*ClientIn
 		Name:          localhostAdminUser,
 		Email:         localhostAdminUser,
 		EmailVerified: false,
-		Tenant:        "global",
-		Tenants:       []string{"global"},
 		Groups:        []string{},
 	}
 
