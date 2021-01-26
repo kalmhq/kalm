@@ -58,7 +58,6 @@ func (resourceManager *ResourceManager) GetComponentListChannel(namespaces strin
 type Component struct {
 	Name                            string                 `json:"name"`
 	Namespace                       string                 `json:"namespace"`
-	Tenant                          string                 `json:"tenant"`
 	Plugins                         []runtime.RawExtension `json:"plugins,omitempty"`
 	*v1alpha1.ComponentSpec         `json:",inline"`
 	*v1alpha1.ProtectedEndpointSpec `json:"protectedEndpoint,omitempty"`

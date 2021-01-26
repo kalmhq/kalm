@@ -45,7 +45,6 @@ type HttpRoute struct {
 	*v1alpha1.HttpRouteSpec `json:",inline"`
 	DestinationsStatus      []v1alpha1.HttpRouteDestinationStatus `json:"destinationsStatus,omitempty"`
 	Name                    string                                `json:"name"`
-	Tenant                  string                                `json:"tenant"`
 }
 
 func (resourceManager *ResourceManager) GetHttpRoute(namespace, name string) (*HttpRoute, error) {
@@ -74,13 +73,10 @@ func (resourceManager *ResourceManager) GetHttpRoutes(listOptions ...client.List
 }
 
 func BuildHttpRouteFromResource(route *v1alpha1.HttpRoute) *HttpRoute {
-	tenantName, _ := v1alpha1.GetTenantNameFromObj(route)
-
 	return &HttpRoute{
 		HttpRouteSpec:      &route.Spec,
 		DestinationsStatus: route.Status.DestinationsStatus,
 		Name:               route.Name,
-		Tenant:             tenantName,
 	}
 }
 
@@ -88,9 +84,6 @@ func (resourceManager *ResourceManager) CreateHttpRoute(routeSpec *HttpRoute) (*
 	route := &v1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: routeSpec.Name,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: routeSpec.Tenant,
-			},
 		},
 		Spec: *routeSpec.HttpRouteSpec,
 	}
