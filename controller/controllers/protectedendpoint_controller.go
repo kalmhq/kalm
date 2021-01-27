@@ -189,7 +189,7 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilter(req ctrl.Request) *v1
 	}
 }
 
-func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterListenerPatches(req ctrl.Request) []*v1alpha32.EnvoyFilter_EnvoyConfigObjectPatch {
+func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterListenerPatches(_ ctrl.Request) []*v1alpha32.EnvoyFilter_EnvoyConfigObjectPatch {
 	oidcProviderInfo := GetOIDCProviderInfo(r.ssoConfig)
 
 	var grantedGroups string

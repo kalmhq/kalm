@@ -574,7 +574,7 @@ func (r *LogSystemReconcilerTask) reconcileProtectedEndpointForGrafana() error {
 			},
 		},
 		Spec: v1alpha1.ProtectedEndpointSpec{
-			EndpointName:                KalmGrafanaRouteName,
+			EndpointName:                "test-grafana",
 			Ports:                       []uint32{3000},
 			AllowToPassIfHasBearerToken: true,
 			Tenants:                     []string{"*"},
