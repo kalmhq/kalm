@@ -2,7 +2,7 @@ import Axios, { AxiosPromise, AxiosRequestConfig } from "axios";
 import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
 import { AcmeServerFormType, AcmeServerInfo, CertificateFormType, CertificateIssuerFormType } from "types/certificate";
-import { ExtraInfo, InitializeClusterResponse } from "types/cluster";
+import { InitializeClusterResponse } from "types/cluster";
 import {
   AccessTokenToDeployAccessToken,
   DeployAccessToken,
@@ -38,11 +38,6 @@ export default class RealApi {
       false,
     );
     return res.status === 200;
-  };
-
-  public loadExtraInfo = async () => {
-    const res = await axiosRequest<ExtraInfo>({ method: "get", url: `/${K8sApiVersion}/extraInfo` });
-    return res.data;
   };
 
   public getNodes = async () => {
