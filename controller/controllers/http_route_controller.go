@@ -52,6 +52,9 @@ const KALM_SSO_SET_COOKIE_PAYLOAD_HEADER = "kalm-set-cookie"
 const KALM_ROUTE_HEADER = "kalm-route"
 const KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER = "allow-to-pass-if-has-bearer-token"
 
+//todo why upper case won't work?
+const X_WEBAUTH_USER_HEADER = "x-webauth-user"
+
 var DANGEROUS_HEADERS = []string{
 	KALM_SSO_USERINFO_HEADER,
 	KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER,

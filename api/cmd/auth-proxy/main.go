@@ -263,6 +263,17 @@ func handleExtAuthz(c echo.Context) error {
 	parts := strings.Split(token.IDTokenString, ".")
 	c.Response().Header().Set(controllers.KALM_SSO_USERINFO_HEADER, parts[1])
 
+	var claims struct {
+		Email string `json:"email"`
+	}
+	if err := idToken.Claims(&claims); err != nil {
+		// handle error
+		logger.Info("fail to parse claims in idToken, ignored", zap.String("err", err.Error()))
+	} else {
+		logger.Info("email in idToken", zap.String("email", claims.Email))
+		c.Response().Header().Set(controllers.X_WEBAUTH_USER_HEADER, claims.Email)
+	}
+
 	return c.NoContent(200)
 }
 
