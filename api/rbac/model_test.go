@@ -13,29 +13,29 @@ func TestCasbinModel(t *testing.T) {
 	assert.Nil(t, err)
 
 	e, err := casbin.NewEnforcer(mod, NewStringPolicyAdapter(`
-p, alice, view, ns1, dataType1/*
-p, bob, edit, ns1, dataType2/*
+p, alice, view, ns1, *
+p, bob, edit, ns1, *
 
-p, ns1Viewer, view, ns1, */*
-p, ns1Editor, edit, ns1, */*
+p, ns1Viewer, view, ns1, *
+p, ns1Editor, edit, ns1, *
 
 g, ns1Owner, ns1Viewer
 g, ns1Owner, ns1Editor
 
-p, ns2Viewer, view, ns2, */*
-p, ns2Editor, edit, ns2, */*
+p, ns2Viewer, view, ns2, *
+p, ns2Editor, edit, ns2, *
 
 g, ns2Owner, ns2Viewer
 g, ns2Owner, ns2Editor
 
-p, clusterViewer, view, *, */*
-p, clusterEditor, edit, *, */*
+p, clusterViewer, view, *, *
+p, clusterEditor, edit, *, *
 
 g, clusterOwner, clusterViewer
 g, clusterOwner, clusterEditor
 
 g, david, ns1Owner
-p, david, view, ns2, components/specific-prefix-*
+p, david, view, ns2, specific-prefix-*
 g, dvd, clusterOwner
 g, dvd2, clusterViewer
 `))
@@ -47,43 +47,39 @@ g, dvd2, clusterViewer
 
 	var canAccess bool
 
-	canAccess, err = e.Enforce("alice", "view", "ns1", "dataType1/*")
+	canAccess, err = e.Enforce("alice", "view", "ns1", "*")
 	assert.Nil(t, err)
 	assert.True(t, canAccess)
 
-	canAccess, err = e.Enforce("alice", "view", "ns1", "dataType3/*")
+	canAccess, err = e.Enforce("alice", "delete", "ns1", "*")
 	assert.Nil(t, err)
 	assert.False(t, canAccess)
 
-	canAccess, err = e.Enforce("alice", "delete", "ns1", "dataType2/*")
+	canAccess, err = e.Enforce("bob", "edit", "ns1", "*")
+	assert.Nil(t, err)
+	assert.True(t, canAccess)
+
+	canAccess, err = e.Enforce("david", "edit", "ns1", "*")
+	assert.Nil(t, err)
+	assert.True(t, canAccess)
+
+	canAccess, err = e.Enforce("david", "view", "ns1", "*")
+	assert.Nil(t, err)
+	assert.True(t, canAccess)
+
+	canAccess, err = e.Enforce("david", "edit", "ns2", "*")
 	assert.Nil(t, err)
 	assert.False(t, canAccess)
 
-	canAccess, err = e.Enforce("bob", "edit", "ns1", "dataType2/*")
+	canAccess, err = e.Enforce("david", "view", "ns2", "specific-prefix-123")
 	assert.Nil(t, err)
 	assert.True(t, canAccess)
 
-	canAccess, err = e.Enforce("david", "edit", "ns1", "dataType2/*")
-	assert.Nil(t, err)
-	assert.True(t, canAccess)
-
-	canAccess, err = e.Enforce("david", "view", "ns1", "anotherDataType/*")
-	assert.Nil(t, err)
-	assert.True(t, canAccess)
-
-	canAccess, err = e.Enforce("david", "edit", "ns2", "ataType2/*")
+	canAccess, err = e.Enforce("david", "view", "ns3", "specific-prefix-123")
 	assert.Nil(t, err)
 	assert.False(t, canAccess)
 
-	canAccess, err = e.Enforce("david", "view", "ns2", "components/specific-prefix-123")
-	assert.Nil(t, err)
-	assert.True(t, canAccess)
-
-	canAccess, err = e.Enforce("david", "view", "ns3", "components/specific-prefix-123")
-	assert.Nil(t, err)
-	assert.False(t, canAccess)
-
-	canAccess, err = e.Enforce("dvd2", "view", "*", "services/*")
+	canAccess, err = e.Enforce("dvd2", "view", "*", "*")
 	assert.Nil(t, err)
 	assert.True(t, canAccess)
 }

@@ -21,7 +21,7 @@ type StorageClass struct {
 }
 
 func (h *ApiHandler) handleListStorageClasses(c echo.Context) error {
-	h.MustCanView(getCurrentUser(c), "*/*", "storageClasses/*")
+	h.MustCanView(getCurrentUser(c), "*", "storageClasses/*")
 
 	var storageClassList v1.StorageClassList
 

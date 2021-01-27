@@ -6,7 +6,7 @@ import { push } from "connected-react-router";
 import { FinalTextField } from "forms/Final/textfield";
 import { FormDataPreview } from "forms/Final/util";
 import { APPLICATION_FORM_ID } from "forms/formIDs";
-import { tenantApplicationNameFormat, tenantApplicationNameParse } from "forms/normalizer";
+import { trimAndToLowerParse } from "forms/normalizer";
 import React from "react";
 import { Field, Form, FormRenderProps } from "react-final-form";
 import { useDispatch, useSelector } from "react-redux";
@@ -45,10 +45,9 @@ interface Props {}
 const ApplicationForm: React.FC<Props> = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const { tutorialState, tenant, form } = useSelector((state: RootState) => {
+  const { tutorialState, form } = useSelector((state: RootState) => {
     return {
       tutorialState: state.tutorial,
-      tenant: state.auth.tenant,
       form: APPLICATION_FORM_ID,
     };
   });
@@ -78,8 +77,7 @@ const ApplicationForm: React.FC<Props> = () => {
                   component={FinalTextField}
                   autoFocus
                   validate={ValidatorIsDNS123Label}
-                  parse={tenantApplicationNameParse(tenant)}
-                  format={tenantApplicationNameFormat(tenant)}
+                  parse={trimAndToLowerParse}
                   placeholder="e.g. my-application; production"
                   helperText="Must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character"
                 />

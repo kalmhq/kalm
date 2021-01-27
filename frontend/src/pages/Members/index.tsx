@@ -32,13 +32,8 @@ import { Namespaces } from "widgets/Namespaces";
 const styles = (theme: Theme) => createStyles({});
 
 const mapStateToProps = (state: RootState) => {
-  const { newTenantUrl, isFrontendMembersManagementEnabled } = state.extraInfo.info;
-  const tenant = state.auth.tenant;
-
   return {
-    isFrontendMembersManagementEnabled,
-    newTenantUrl,
-    tenant,
+    isFrontendMembersManagementEnabled: state.extraInfo.info.isFrontendComponentSchedulingFeatureEnabled,
   };
 };
 
@@ -60,19 +55,9 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
 
   private renderSecondHeaderRight = () => {
     const { activeNamespaceName, isFrontendMembersManagementEnabled } = this.props;
-    const { newTenantUrl, tenant } = this.props;
 
     if (!isFrontendMembersManagementEnabled) {
-      return (
-        <Button
-          color="primary"
-          size="small"
-          variant="outlined"
-          onClick={() => window.open(newTenantUrl + `/clusters/${tenant}/members`, "_blank")}
-        >
-          Manage Members
-        </Button>
-      );
+      return null;
     }
 
     return (
@@ -91,16 +76,13 @@ class RolesListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderEmpty = () => {
-    const { dispatch, activeNamespaceName, isFrontendMembersManagementEnabled } = this.props;
-    const { newTenantUrl, tenant } = this.props;
+    const { dispatch, activeNamespaceName } = this.props;
     const isClusterLevel = this.isClusterLevel();
 
     let link: string = "";
 
     if (isClusterLevel) {
       link = "/cluster/members/new";
-    } else if (isFrontendMembersManagementEnabled) {
-      link = newTenantUrl + `/clusters/${tenant}/members`;
     } else {
       link = `/applications/${activeNamespaceName}/members/new`;
     }

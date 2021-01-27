@@ -58,9 +58,9 @@ func NewLocalClientManager(cfg *rest.Config) *LocalClientManager {
 	return &LocalClientManager{
 		BaseClientManager: NewBaseClientManager(rbac.NewStringPolicyAdapter(
 			fmt.Sprintf(`
-p, role_admin, manage, */*, */*
-p, role_admin, view, */*, */*
-p, role_admin, edit, */*, */*
+p, role_admin, manage, *, *
+p, role_admin, view, *, *
+p, role_admin, edit, *, *
 g, %s, role_admin
 `, ToSafeSubject(localhostAdminUser, v1alpha1.SubjectTypeUser)),
 		)),

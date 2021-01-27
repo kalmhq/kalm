@@ -3,8 +3,8 @@ import { Login } from "layout/Login";
 import { ApplicationListPage } from "pages/Application/List";
 import { Log } from "pages/Application/Log";
 import { ApplicationNewPage } from "pages/Application/New";
-import { ApplicationShowPage } from "pages/Application/Show";
 import { ApplicationSettingsPage } from "pages/Application/Settings";
+import { ApplicationShowPage } from "pages/Application/Show";
 import { CertificateAcmePage } from "pages/Certificate/Acme";
 import { CertificateAcmeEditPage } from "pages/Certificate/AcmeEdit";
 import { CertificateDetailPage } from "pages/Certificate/Detail";
@@ -12,9 +12,6 @@ import { CertificateEditPage } from "pages/Certificate/Edit";
 import { CertificateListPage } from "pages/Certificate/List";
 import { CertificateNewPage } from "pages/Certificate/New";
 import { CertificateUploadPage } from "pages/Certificate/Upload";
-import { WebhookPage } from "pages/Webhook";
-import { DeployAccessTokenDetailPage } from "pages/Webhook/Detail";
-import { DeployAccessTokenNewPage } from "pages/Webhook/New";
 import { ComponentEditPage } from "pages/Components/Edit";
 import { ComponentListPage } from "pages/Components/List";
 import { ComponentNewPage } from "pages/Components/New";
@@ -41,9 +38,10 @@ import { SetupPage } from "pages/Setup";
 import { SSOPage } from "pages/SSO";
 import { SSOConfigPage } from "pages/SSO/Config";
 import { SystemPage } from "pages/System";
-import { TenantsPage } from "pages/Tenants";
-import { TenantUsagePage } from "pages/Tenants/Usages";
 import { VersionPage } from "pages/Version";
+import { WebhookPage } from "pages/Webhook";
+import { DeployAccessTokenDetailPage } from "pages/Webhook/Detail";
+import { DeployAccessTokenNewPage } from "pages/Webhook/New";
 import { RequireAuthorized, RequireNotAuthorized } from "permission/Authorization";
 import React from "react";
 import { Redirect, Route, Switch } from "react-router";
@@ -57,8 +55,6 @@ export const KalmRoutes = (
     <Route path="/">
       <RequireAuthorizedDashboard>
         <Switch>
-          <Route path="/tenants" component={TenantsPage} />
-          <Route path="/usage" component={TenantUsagePage} />
           <Route exact path="/profile" component={ProfilePage} />
 
           <Route exact path="/system" component={SystemPage} />

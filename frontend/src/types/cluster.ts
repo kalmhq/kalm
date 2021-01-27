@@ -1,19 +1,13 @@
 import { SSOConfig } from "types/sso";
-import { Tenant } from "types/tenant";
 
 export const LOAD_CLUSTER_INFO_PENDING = "LOAD_CLUSTER_INFO_PENDING";
 export const LOAD_CLUSTER_INFO_FULFILLED = "LOAD_CLUSTER_INFO_FULFILLED";
 export const LOAD_CLUSTER_INFO_FAILED = "LOAD_CLUSTER_INFO_FAILED";
 
-export const LOAD_TENANT_INFO_PENDING = "LOAD_TENANT_INFO_PENDING";
-export const LOAD_TENANT_INFO_FULFILLED = "LOAD_TENANT_INFO_FULFILLED";
-export const LOAD_TENANT_INFO_FAILED = "LOAD_TENANT_INFO_FAILED";
-
 export const LOAD_EXTRA_INFO_PENDING = "LOAD_EXTRA_INFO_PENDING";
 export const LOAD_EXTRA_INFO_FULFILLED = "LOAD_EXTRA_INFO_FULFILLED";
 export const LOAD_EXTRA_INFO_FAILED = "LOAD_EXTRA_INFO_FAILED";
 export interface ExtraInfo {
-  newTenantUrl: string;
   isFrontendMembersManagementEnabled: boolean;
   isFrontendComponentSchedulingFeatureEnabled: boolean;
   isFrontendSSOPageEnabled: boolean;
@@ -69,17 +63,8 @@ export interface LoadClusterInfoStatusAction {
   type: typeof LOAD_CLUSTER_INFO_PENDING | typeof LOAD_CLUSTER_INFO_FAILED;
 }
 
-export interface LoadTenantInfoStatusAction {
-  type: typeof LOAD_TENANT_INFO_PENDING | typeof LOAD_TENANT_INFO_FAILED;
-}
-
 export interface LoadExtraInfoStatusAction {
   type: typeof LOAD_EXTRA_INFO_PENDING | typeof LOAD_EXTRA_INFO_FAILED;
-}
-
-export interface LoadTenantInfoFulfilledAction {
-  type: typeof LOAD_TENANT_INFO_FULFILLED;
-  payload: Tenant;
 }
 
 export interface LoadExtraInfoFulfilledAction {
@@ -90,7 +75,5 @@ export interface LoadExtraInfoFulfilledAction {
 export type ClusterActions =
   | LoadClusterInfoStatusAction
   | LoadClusterInfoFulfilledAction
-  | LoadTenantInfoStatusAction
-  | LoadTenantInfoFulfilledAction
   | LoadExtraInfoFulfilledAction
   | LoadExtraInfoStatusAction;

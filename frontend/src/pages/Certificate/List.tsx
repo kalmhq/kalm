@@ -99,10 +99,10 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderActions = (cert: Certificate) => {
-    const { canEditTenant } = this.props;
+    const { canEditCluster } = this.props;
     return (
       <>
-        {canEditTenant() && (
+        {canEditCluster() && (
           <>
             {cert.isSelfManaged && (
               <IconLinkWithToolTip tooltipTitle="Edit" aria-label="edit" to={`/certificates/${cert.name}/edit`}>
@@ -182,7 +182,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private getKRTableColumns() {
-    const { canEditTenant } = this.props;
+    const { canEditCluster } = this.props;
 
     const columns = [
       {
@@ -211,7 +211,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       },
     ];
 
-    if (canEditTenant()) {
+    if (canEditCluster()) {
       columns.push({
         Header: "Actions",
         accessor: "actions",
@@ -247,14 +247,14 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderEmpty() {
-    const { canEditTenant } = this.props;
+    const { canEditCluster } = this.props;
     return (
       <EmptyInfoBox
         image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={sc.EMPTY_CERT_TITLE}
         content={sc.EMPTY_CERT_SUBTITLE}
         button={
-          canEditTenant() ? (
+          canEditCluster() ? (
             <CustomizedButton variant="contained" color="primary" component={Link} to="/certificates/new">
               New Certificate
             </CustomizedButton>
@@ -301,11 +301,11 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isFirstLoaded, isLoading, certificates, canEditTenant } = this.props;
+    const { isFirstLoaded, isLoading, certificates, canEditCluster } = this.props;
     return (
       <BasePage
         secondHeaderRight={
-          canEditTenant() ? (
+          canEditCluster() ? (
             <>
               {/* <H6>Certificates</H6> */}
               <Button

@@ -45,9 +45,9 @@ type StandardClientManager struct {
 func BuildClusterRolePolicies() string {
 	return `
 # cluster role policies
-p, role_cluster_viewer, view, *, */*
-p, role_cluster_editor, edit, *, */*
-p, role_cluster_owner, manage, *, */*
+p, role_cluster_viewer, view, *, *
+p, role_cluster_editor, edit, *, *
+p, role_cluster_owner, manage, *, *
 g, role_cluster_editor, role_cluster_viewer
 g, role_cluster_owner, role_cluster_editor
 `
@@ -56,11 +56,11 @@ g, role_cluster_owner, role_cluster_editor
 func BuildRolePoliciesForNamespace(namespace string) string {
 	t := template.Must(template.New("policy").Parse(`
 # {{ .name }} application role policies
-p, role_{{ .name }}_viewer, view, {{ .name }}, */*
+p, role_{{ .name }}_viewer, view, {{ .name }}, *
 p, role_{{ .name }}_viewer, view, *, storageClasses/*
-p, role_{{ .name }}_editor, edit, {{ .name }}, */*
+p, role_{{ .name }}_editor, edit, {{ .name }}, *
 p, role_{{ .name }}_editor, view, *, registries/*
-p, role_{{ .name }}_owner, manage, {{ .name }}, */*
+p, role_{{ .name }}_owner, manage, {{ .name }}, *
 g, role_{{ .name }}_editor, role_{{ .name }}_viewer
 g, role_{{ .name }}_owner, role_{{ .name }}_editor
 `))

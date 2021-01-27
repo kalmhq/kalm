@@ -5,7 +5,6 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { ThunkDispatch } from "redux-thunk";
-import { getHasSelectedTenant } from "selectors/tenant";
 import { Actions } from "types";
 import { Loading } from "widgets/Loading";
 import { getDisplayName } from "./utils";
@@ -16,16 +15,12 @@ const mapStateToProps = (state: RootState) => {
   const firstLoaded = auth.firstLoaded;
   const isLoading = auth.isLoading;
   const policies = auth.policies;
-  const tenants = auth.tenants;
-  const hasSelectedTenant = getHasSelectedTenant(state);
 
   return {
     isLoading,
     authorized,
     firstLoaded,
     policies,
-    tenants,
-    hasSelectedTenant,
   };
 };
 
@@ -51,7 +46,7 @@ export const Authorized = ({ mustAuthorized, mustNotAuthorized }: Options) => (
     }
 
     componentDidUpdate() {
-      const { firstLoaded, authorized, isLoading, policies, hasSelectedTenant, dispatch } = this.props;
+      const { firstLoaded, authorized, isLoading, policies, dispatch } = this.props;
 
       if (isLoading && !firstLoaded) {
         return;
@@ -59,10 +54,6 @@ export const Authorized = ({ mustAuthorized, mustNotAuthorized }: Options) => (
 
       if (!authorized && mustAuthorized) {
         dispatch(push("/login"));
-      }
-
-      if (authorized && !hasSelectedTenant) {
-        dispatch(push("/tenants"));
       }
 
       if (authorized && mustNotAuthorized) {

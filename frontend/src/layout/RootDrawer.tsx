@@ -30,7 +30,6 @@ import {
   KalmVolumeIcon,
   PeopleIcon,
   SettingIcon,
-  UsageIcon,
 } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
@@ -117,14 +116,14 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private getSideBarData() {
-    const { canEditTenant, canViewCluster, canManageCluster, canViewTenant } = this.props;
+    const { canEditAnyNamespace, canViewCluster, canManageCluster, canEditCluster } = this.props;
 
     return [
       {
         name: "Application",
         items: [
           { icon: KalmApplicationIcon, text: "Apps", to: "/applications" },
-          canViewTenant()
+          canEditCluster()
             ? {
                 icon: KalmCertificatesIcon,
                 text: "Domains & Certs",
@@ -136,7 +135,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
             to: "/routes",
             icon: KalmRoutesIcon,
           },
-          canEditTenant()
+          canEditAnyNamespace()
             ? {
                 icon: CIIcon,
                 text: "Webhooks",
@@ -167,18 +166,11 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
             text: "Disks",
             to: "/cluster/disks",
           },
-          canEditTenant()
+          canEditAnyNamespace()
             ? {
                 icon: KalmRegistryIcon,
                 text: "Pull secrets",
                 to: "/cluster/pull-secrets",
-              }
-            : null,
-          canViewTenant()
-            ? {
-                icon: UsageIcon,
-                text: "Usage",
-                to: "/usage",
               }
             : null,
         ],

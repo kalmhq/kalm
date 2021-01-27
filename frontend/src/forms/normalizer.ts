@@ -181,22 +181,6 @@ export const combineParsers = function (...fns: StringParser[]): StringParser {
 };
 
 export const trimAndToLowerParse = combineParsers(trimParse, toLowerCaseStringParse);
-export const tenantApplicationNameParse = (tenantName: string) =>
-  combineParsers(trimAndToLowerParse, (value: string) => {
-    if (!value.startsWith(tenantName + "-")) {
-      return tenantName + "-" + value;
-    }
-
-    return value;
-  });
-
-export const tenantApplicationNameFormat = (tenantName: string) => (value: string) => {
-  if (value.startsWith(tenantName + "-")) {
-    return value.slice(tenantName.length + 1);
-  }
-
-  return value;
-};
 
 // a.com -> a.com
 // *.foo.bar -> .foo.bar

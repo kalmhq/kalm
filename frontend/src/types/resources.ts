@@ -9,7 +9,6 @@ import { AcmeServerInfo, Certificate } from "./certificate";
 import { Disk } from "./disk";
 import { Registry } from "./registry";
 import { HttpRoute } from "./route";
-import { Tenant } from "./tenant";
 
 export const WATCHED_RESOURCE_CHANGE = "WATCHED_RESOURCE_CHANGE";
 
@@ -31,7 +30,6 @@ export const RESOURCE_TYPE_SERVICE = "Service";
 export const RESOURCE_TYPE_ROLE_BINDING = "RoleBinding";
 export const RESOURCE_TYPE_ACME_SERVER = "ACMEServer";
 export const RESOURCE_TYPE_DOMAIN = "Domain";
-export const RESOURCE_TYPE_TENANT = "Tenant";
 
 export type ResourceActionType =
   | typeof RESOURCE_ACTION_UPDATE
@@ -166,15 +164,6 @@ export interface DomainResourceAction {
   };
 }
 
-export interface TenantResourceAction {
-  type: typeof WATCHED_RESOURCE_CHANGE;
-  kind: typeof RESOURCE_TYPE_TENANT;
-  payload: {
-    action: ResourceActionType;
-    data: Tenant;
-  };
-}
-
 export type ResourceActions =
   | NodeResourceAction
   | ApplicationResourceAction
@@ -189,5 +178,4 @@ export type ResourceActions =
   | ServiceResourceAction
   | RoleBindingResourceAction
   | DomainResourceAction
-  | TenantResourceAction
   | ACMEServerResourceAction;

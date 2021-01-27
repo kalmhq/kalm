@@ -5,7 +5,6 @@ import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { push } from "connected-react-router";
-import { tenantApplicationNameFormat } from "forms/normalizer";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
@@ -89,17 +88,16 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderName = (applicationDetails: ApplicationDetails) => {
-    const { auth, canViewNamespace } = this.props;
-    const displayApplicationName = tenantApplicationNameFormat(auth.tenant)(applicationDetails.name);
+    const { canViewNamespace } = this.props;
 
     return (
       <>
         {canViewNamespace(applicationDetails.name) ? (
           <KLink to={`/applications/${applicationDetails.name}/components`} onClick={() => blinkTopProgressAction()}>
-            {displayApplicationName}
+            {applicationDetails.name}
           </KLink>
         ) : (
-          displayApplicationName
+          applicationDetails.name
         )}
       </>
     );
@@ -251,11 +249,11 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   };
 
   private renderSecondHeaderRight() {
-    const { usingApplicationCard, dispatch, canEditTenant } = this.props;
+    const { usingApplicationCard, dispatch, canEditCluster } = this.props;
     return (
       <>
         {/* <H6>Applications</H6> */}
-        {canEditTenant() && (
+        {canEditCluster() && (
           <Button
             tutorial-anchor-id="add-application"
             component={Link}
@@ -286,7 +284,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   }
 
   private renderEmpty() {
-    const { dispatch, canEditTenant } = this.props;
+    const { dispatch, canEditCluster } = this.props;
 
     return (
       <EmptyInfoBox
@@ -294,7 +292,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
         title={sc.EMPTY_APP_TITLE}
         content={sc.EMPTY_APP_SUBTITLE}
         button={
-          canEditTenant() && (
+          canEditCluster() && (
             <CustomizedButton
               variant="contained"
               color="primary"
@@ -371,7 +369,7 @@ class ApplicationListRaw extends React.PureComponent<Props> {
   }
 
   private renderGrid = () => {
-    const { applications, componentsMap, canEditNamespace, canViewNamespace, auth } = this.props;
+    const { applications, componentsMap, canEditNamespace, canViewNamespace } = this.props;
 
     const filteredApps = applications.filter((app) => {
       return canViewNamespace(app.name) || canEditNamespace(app.name);
@@ -383,7 +381,6 @@ class ApplicationListRaw extends React.PureComponent<Props> {
         <Grid key={index} item sm={6} md={4} lg={3}>
           <ApplicationCard
             application={app}
-            tenant={auth.tenant}
             componentsMap={componentsMap}
             httpRoutes={applicationRoutes}
             confirmDelete={this.confirmDelete}

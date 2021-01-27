@@ -53,7 +53,6 @@ const ApplicationCardStyles = (theme: Theme) =>
 
 type ApplicationCardProps = {
   application: ApplicationDetails;
-  tenant: string;
   componentsMap: { [key: string]: ApplicationComponentDetails[] };
   httpRoutes: HttpRoute[];
   canEdit: boolean;
@@ -63,10 +62,10 @@ type ApplicationCardProps = {
 
 class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
   private renderName = () => {
-    const { application, tenant } = this.props;
+    const { application } = this.props;
     return (
       <KLink to={`/applications/${application.name}/components`} onClick={() => blinkTopProgressAction()}>
-        <H6>{application.name.replace(new RegExp(`^${tenant}-`), "")}</H6>
+        <H6>{application.name}</H6>
       </KLink>
     );
   };

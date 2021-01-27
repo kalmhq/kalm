@@ -159,7 +159,7 @@ func (h *ApiHandler) handleAvailableVolsForSimpleWorkload(c echo.Context) error 
 		return fmt.Errorf("must provide namespace in query")
 	}
 
-	h.MustCanView(currentUser, ns, "*/*")
+	h.MustCanView(currentUser, ns, "*")
 
 	vols, err := h.findAvailableVolsForSimpleWorkload(getCurrentUser(c), ns)
 	if err != nil {
@@ -177,7 +177,7 @@ func (h *ApiHandler) handleAvailableVolsForSts(c echo.Context) error {
 		return fmt.Errorf("must provide namespace in query")
 	}
 
-	h.MustCanView(currentUser, ns, "*/*")
+	h.MustCanView(currentUser, ns, "*")
 
 	vols, err := h.findAvailableVolsForSts(ns)
 	if err != nil {

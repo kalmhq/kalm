@@ -27,7 +27,7 @@ interface Props extends WithUserAuthProps {}
 
 const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   const dispatch = useDispatch();
-  const { canEditTenant } = props;
+  const { canEditCluster } = props;
 
   const { isFirstLoaded, isLoading, domains, certificates } = useSelector((state: RootState) => {
     return {
@@ -81,7 +81,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
             <KalmDetailsIcon />
           </IconLinkWithToolTip>
         }
-        {canEditTenant() && (
+        {canEditCluster() && (
           <>
             <DeleteButtonWithConfirmPopover
               disabled={domain.isBuiltIn}
@@ -148,7 +148,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
       },
     ];
 
-    if (canEditTenant()) {
+    if (canEditCluster()) {
       columns.push({
         Header: "Actions",
         accessor: "actions",
@@ -179,14 +179,14 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   };
 
   const renderEmpty = () => {
-    const { canEditTenant } = props;
+    const { canEditCluster } = props;
     return (
       <EmptyInfoBox
         image={<WebIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={sc.EMPTY_DOMAIN_TITLE}
         content={sc.EMPTY_DOMAIN_SUBTITLE}
         button={
-          canEditTenant() ? (
+          canEditCluster() ? (
             <CustomizedButton variant="contained" color="primary" component={Link} to="/domains/new">
               New Domain
             </CustomizedButton>
@@ -226,7 +226,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   return (
     <BasePage
       secondHeaderRight={
-        canEditTenant() ? (
+        canEditCluster() ? (
           <>
             <Button
               color="primary"

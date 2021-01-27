@@ -143,9 +143,9 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions = (row: HttpRoute) => {
-    const { dispatch, canEditTenant } = this.props;
+    const { dispatch, canEditCluster } = this.props;
 
-    return canEditTenant() ? (
+    return canEditCluster() ? (
       <>
         <IconLinkWithToolTip
           onClick={() => {
@@ -166,7 +166,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderEmpty() {
-    const { dispatch, canEditTenant } = this.props;
+    const { dispatch, canEditCluster } = this.props;
 
     return (
       <EmptyInfoBox
@@ -174,7 +174,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         title={sc.EMPTY_ROUTES_TITLE}
         content={sc.EMPTY_ROUTES_SUBTITLE}
         button={
-          canEditTenant() ? (
+          canEditCluster() ? (
             <CustomizedButton
               variant="contained"
               color="primary"
@@ -192,10 +192,10 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private showActions() {
-    const { httpRoutes, canEditTenant } = this.props;
+    const { httpRoutes, canEditCluster } = this.props;
     let show = false;
     httpRoutes.forEach((route) => {
-      if (canEditTenant()) {
+      if (canEditCluster()) {
         show = true;
       }
     });
@@ -295,9 +295,9 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes, canEditAnyNamespace, canViewTenant } = this.props;
+    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes, canEditAnyNamespace, canViewCluster } = this.props;
 
-    const filteredRoutes = httpRoutes.filter((route) => canViewTenant());
+    const filteredRoutes = httpRoutes.filter((route) => canViewCluster());
 
     return (
       <BasePage

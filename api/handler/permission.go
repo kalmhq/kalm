@@ -47,13 +47,13 @@ func (h *ApiHandler) MustCanManage(user *client.ClientInfo, namespace string, ob
 }
 
 func (h *ApiHandler) MustCanEditCluster(user *client.ClientInfo) {
-	h.MustCan(user, "edit", "*", "*/*")
+	h.MustCan(user, "edit", "*", "*")
 }
 
 func (h *ApiHandler) MustCanViewCluster(user *client.ClientInfo) {
-	h.MustCan(user, "view", "*", "*/*")
+	h.MustCan(user, "view", "*", "*")
 }
 
 func (h *ApiHandler) MustCanManageCluster(user *client.ClientInfo) {
-	h.MustCan(user, "manage", "*", "*/*")
+	h.MustCan(user, "manage", "*", "*")
 }

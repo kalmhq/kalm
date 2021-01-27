@@ -6,7 +6,6 @@ import Warning from "@material-ui/icons/Warning";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { AutoCompleteForRenderOption, AutoCompleteSingleValue } from "forms/Final/autoComplete";
 import { FinialSliderRender } from "forms/Final/slicer";
-import { tenantApplicationNameFormat } from "forms/normalizer";
 import React from "react";
 import { Field, FieldRenderProps } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
@@ -25,10 +24,9 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorArrayNotEmpty, ValidatorRequired } from "../validator";
 
 const RenderHttpRouteDestinationsRaw: React.FC = () => {
-  const { services, tenant } = useSelector((state: RootState) => {
+  const { services } = useSelector((state: RootState) => {
     return {
       services: state.services.services,
-      tenant: state.auth.tenant,
     };
   });
 
@@ -61,7 +59,7 @@ const RenderHttpRouteDestinationsRaw: React.FC = () => {
           );
         })
         .forEach((port) => {
-          const displayNamespace = tenantApplicationNameFormat(tenant)(svc.namespace);
+          const displayNamespace = svc.namespace;
           options.push({
             value: `${svc.name}.${svc.namespace}.svc.cluster.local:${port.port}`,
             label: svc.name + ":" + port.port + `(${port.appProtocol})`,

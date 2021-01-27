@@ -123,8 +123,8 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions(row: Registry) {
-    const { canEditTenant } = this.props;
-    return canEditTenant() ? (
+    const { canEditCluster } = this.props;
+    return canEditCluster() ? (
       <>
         <IconLinkWithToolTip tooltipTitle={"Edit"} to={`/cluster/pull-secrets/${row.name}/edit`}>
           <EditIcon />
@@ -140,7 +140,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private getKRTableColumns() {
-    const { canEditTenant } = this.props;
+    const { canEditCluster } = this.props;
 
     const columns = [
       {
@@ -165,7 +165,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
       },
     ];
 
-    if (canEditTenant()) {
+    if (canEditCluster()) {
       columns.push({
         Header: "Actions",
         accessor: "actions",
@@ -219,8 +219,8 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderEmpty() {
-    const { canEditTenant } = this.props;
-    return canEditTenant() ? (
+    const { canEditCluster } = this.props;
+    return canEditCluster() ? (
       <EmptyInfoBox
         image={<KalmRegistryIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={sc.EMPTY_REGISTRY_TITLE}
@@ -246,9 +246,9 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isLoading, isFirstLoaded, registries, canEditTenant } = this.props;
+    const { isLoading, isFirstLoaded, registries, canEditCluster } = this.props;
     return (
-      <BasePage secondHeaderRight={canEditTenant() ? this.renderSecondHeaderRight() : null}>
+      <BasePage secondHeaderRight={canEditCluster() ? this.renderSecondHeaderRight() : null}>
         <Box p={2}>
           {isLoading && !isFirstLoaded ? (
             <Loading />

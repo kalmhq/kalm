@@ -7,32 +7,19 @@ import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { closeTutorialDrawerAction, openTutorialDrawerAction } from "actions/tutorial";
 import { stopImpersonating } from "api/api";
 import { push } from "connected-react-router";
-import { tenantApplicationNameFormat } from "forms/normalizer";
 import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
 import { connect } from "react-redux";
 import { Link, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
-import { composeTenantLink, composeTenantText, getHasSelectedTenant, isSameTenant } from "selectors/tenant";
 import { ThemeToggle } from "theme/ThemeToggle";
 import { TDispatch } from "types";
 import { SubjectTypeUser } from "types/member";
 import StringConstants from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { CustomizedButton } from "widgets/Button";
-import {
-  ArrowDropDownIcon,
-  HelpIcon,
-  ImpersonateIcon,
-  KalmLogo2Icon,
-  KalmTextLogoIcon,
-  KalmUserIcon,
-  MenuIcon,
-  MenuOpenIcon,
-} from "widgets/Icon";
+import { HelpIcon, ImpersonateIcon, KalmUserIcon, MenuIcon, MenuOpenIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { Caption } from "widgets/Label";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
 
 const mapStateToProps = (state: RootState) => {
@@ -42,10 +29,6 @@ const mapStateToProps = (state: RootState) => {
   const email = auth.email;
   const impersonation = auth.impersonation;
   const impersonationType = auth.impersonationType;
-  const currentTenant = auth.tenant;
-  const tenants = auth.tenants;
-  const hasSelectedTenant = getHasSelectedTenant(state);
-  const newTenantUrl = state.extraInfo.info.newTenantUrl;
 
   return {
     isOpenRootDrawer: state.settings.isOpenRootDrawer,
@@ -54,10 +37,6 @@ const mapStateToProps = (state: RootState) => {
     impersonationType,
     activeNamespace,
     email,
-    currentTenant,
-    tenants,
-    newTenantUrl,
-    hasSelectedTenant,
   };
 };
 
@@ -140,7 +119,6 @@ interface Props
 
 interface State {
   authMenuAnchorElement: null | HTMLElement;
-  tenantMenuAnchorElement: null | HTMLElement;
 }
 
 class AppBarComponentRaw extends React.PureComponent<Props, State> {
@@ -151,7 +129,6 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
 
     this.state = {
       authMenuAnchorElement: null,
-      tenantMenuAnchorElement: null,
     };
   }
 
@@ -231,87 +208,6 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     return <ThemeToggle />;
   };
 
-  renderTenants = () => {
-    const { hasSelectedTenant, currentTenant, tenants, newTenantUrl } = this.props;
-    const { tenantMenuAnchorElement } = this.state;
-
-    // FIXME: extract styles to standalone component
-    return (
-      <div key={"tenants"}>
-        {hasSelectedTenant ? (
-          <>
-            <CustomizedButton
-              onClick={(event: React.MouseEvent<HTMLElement>) => {
-                this.setState({ tenantMenuAnchorElement: event.currentTarget });
-              }}
-              color="primary"
-              style={{ color: "white", fontWeight: 700, fontSize: 16, textTransform: "capitalize" }}
-            >
-              {currentTenant}
-              <ArrowDropDownIcon color={"white"} />
-            </CustomizedButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={tenantMenuAnchorElement}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "bottom",
-                horizontal: "left",
-              }}
-              open={Boolean(tenantMenuAnchorElement)}
-              onClose={() => {
-                this.setState({ tenantMenuAnchorElement: null });
-              }}
-            >
-              <MenuItem disabled={true} style={{ height: 30, paddingLeft: 0 }}>
-                <Box pl={2} pb={1}>
-                  <Caption style={{ textTransform: "uppercase" }}>Clusters</Caption>
-                </Box>
-              </MenuItem>
-              <Divider />
-              {tenants.map((t, index) => {
-                return (
-                  <Box m={1} key={index}>
-                    <MenuItem
-                      disabled={isSameTenant(currentTenant, t)}
-                      onClick={() => {
-                        const url = composeTenantLink(t);
-                        window.open(url, "_self");
-                      }}
-                    >
-                      {composeTenantText(t)}
-                    </MenuItem>
-                  </Box>
-                );
-              })}
-              {newTenantUrl && newTenantUrl.length > 0 && (
-                <>
-                  <Divider />
-                  <MenuItem
-                    onClick={() => {
-                      window.open(newTenantUrl, "_blank");
-                    }}
-                  >
-                    Create New Kalm
-                  </MenuItem>
-                </>
-              )}
-            </Menu>
-          </>
-        ) : (
-          <>
-            <KalmLogo2Icon />
-            <KalmTextLogoIcon />
-          </>
-        )}
-      </div>
-    );
-  };
-
   renderTutorialIcon = () => {
     const { tutorialDrawerOpen, dispatch } = this.props;
     return (
@@ -328,7 +224,6 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   };
 
   private renderBreadcrumbContent = (path: string) => {
-    const { currentTenant } = this.props;
     switch (path) {
       case "applications":
       case "":
@@ -361,40 +256,31 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
         return "Webhooks";
       case "metrics":
         return StringConstants.APP_DASHBOARD_PAGE_NAME;
-      case "tenants":
-        return "Welcome";
-      case "usage":
-        return "Usage";
       default:
-        return tenantApplicationNameFormat(currentTenant)(path);
+        return path;
     }
   };
 
   render() {
-    const { classes, dispatch, isOpenRootDrawer, location, clusterInfo, hasSelectedTenant } = this.props;
+    const { classes, dispatch, isOpenRootDrawer, location, clusterInfo } = this.props;
     const pathArray = location.pathname.split("/");
     return (
       <AppBar ref={this.headerRef} id="header" position="relative" className={classes.appBar}>
         <div className={classes.barContainer}>
           <div className={classes.barLeft}>
-            {hasSelectedTenant ? (
-              <IconButton
-                className={classes.shrinkButton}
-                onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !isOpenRootDrawer }))}
-                // size={"small"}
-              >
-                {isOpenRootDrawer ? <MenuOpenIcon color="white" /> : <MenuIcon color="white" />}
-              </IconButton>
-            ) : (
-              <Box paddingLeft={2} paddingRight={0} />
-            )}
+            <IconButton
+              className={classes.shrinkButton}
+              onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !isOpenRootDrawer }))}
+              // size={"small"}
+            >
+              {isOpenRootDrawer ? <MenuOpenIcon color="white" /> : <MenuIcon color="white" />}
+            </IconButton>
+
             <FlexRowItemCenterBox>
               <Breadcrumbs aria-label="breadcrumb" className={classes.breadcrumb}>
                 {pathArray.map((path, index) => {
                   if (path === "cluster") {
                     return null;
-                  } else if (index === 0) {
-                    return this.renderTenants();
                   } else if (index + 1 === pathArray.length) {
                     return (
                       <span key={index} className={`${classes.breadLink} disabled`}>
@@ -428,14 +314,10 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             )}
             <Divider orientation="vertical" flexItem color="inherit" />
             <Box className={classes.barAvatar}>{this.renderThemeIcon()}</Box>
-            {hasSelectedTenant ? (
-              <>
-                <Divider orientation="vertical" flexItem color="inherit" />
-                <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
-                <Divider orientation="vertical" flexItem color="inherit" />
-                <div className={classes.barAvatar}>{this.renderAuth()}</div>
-              </>
-            ) : null}
+            <Divider orientation="vertical" flexItem color="inherit" />
+            <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
+            <Divider orientation="vertical" flexItem color="inherit" />
+            <div className={classes.barAvatar}>{this.renderAuth()}</div>
           </div>
         </div>
       </AppBar>

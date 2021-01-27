@@ -18,22 +18,22 @@ export interface WithUserAuthProps extends ReturnType<typeof mapStateToProps>, T
 export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
   const HOC: React.FC<WithUserAuthProps> = (props) => {
     const dispatch = useDispatch();
-    const { location, canEditTenant, canViewCluster, canViewTenant, canManageCluster } = props;
+    const { location, canEditCluster, canViewCluster, canEditAnyNamespace, canManageCluster } = props;
 
     const didMount = () => {
       const canViewPage = () => {
         if (location.pathname.includes("/certificates")) {
-          return canEditTenant() || canViewCluster();
+          return canEditCluster();
         } else if (location.pathname.includes("/webhooks")) {
-          return canEditTenant();
+          return canEditAnyNamespace();
         } else if (location.pathname.includes("/cluster/nodes")) {
           return canViewCluster();
         } else if (location.pathname.includes("/cluster/loadbalancer")) {
-          return canViewTenant();
+          return canViewCluster();
         } else if (location.pathname.includes("/cluster/disks")) {
           return true;
         } else if (location.pathname.includes("/cluster/pull-secrets")) {
-          return canEditTenant();
+          return canEditCluster();
         } else if (location.pathname.includes("/sso")) {
           return canViewCluster();
         } else if (location.pathname.includes("/cluster/members")) {
@@ -49,7 +49,7 @@ export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
       }
     };
 
-    useEffect(didMount, [dispatch, location, canEditTenant, canViewCluster, canViewTenant, canManageCluster]);
+    useEffect(didMount, [dispatch, location, canEditCluster, canViewCluster, canEditAnyNamespace, canManageCluster]);
 
     return <WrappedComponent {...props} />;
   };

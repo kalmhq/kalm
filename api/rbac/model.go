@@ -11,7 +11,7 @@ const (
 )
 
 const (
-	AnyResource = "*/*"
+	AnyResource = "*"
 )
 
 const AnyNamespace = "*"

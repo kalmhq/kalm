@@ -20,13 +20,13 @@ import { Loading } from "widgets/Loading";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 
 const DomainDetailPageRaw: React.FC = () => {
-  const { domains, isLoading, isFirstLoaded, certificates, canEditTenant } = useSelector((state: RootState) => {
+  const { domains, isLoading, isFirstLoaded, certificates, canEditCluster } = useSelector((state: RootState) => {
     return {
       isLoading: state.domains.isLoading,
       isFirstLoaded: state.domains.isFirstLoaded,
       domains: state.domains.domains,
       certificates: state.certificates.certificates,
-      canEditTenant: state.auth.permissionMethods.canEditTenant,
+      canEditCluster: state.auth.permissionMethods.canEditCluster,
     };
   });
 
@@ -85,7 +85,7 @@ const DomainDetailPageRaw: React.FC = () => {
   return (
     <BasePage
       secondHeaderRight={
-        canEditTenant() ? (
+        canEditCluster() ? (
           <>
             {!cert && !domain.isBuiltIn && domain.txtStatus === "ready" && (
               <Button
