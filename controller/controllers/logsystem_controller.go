@@ -18,13 +18,15 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"text/template"
 
-	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
-	v1 "k8s.io/api/core/v1"
-	rbacV1 "k8s.io/api/rbac/v1"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -41,10 +43,10 @@ type LogSystemReconcilerTask struct {
 	*LogSystemReconciler
 	req       *ctrl.Request
 	ctx       context.Context
-	logSystem *corev1alpha1.LogSystem
-	loki      *corev1alpha1.Component
-	grafana   *corev1alpha1.Component
-	promtail  *corev1alpha1.Component
+	logSystem *v1alpha1.LogSystem
+	loki      *v1alpha1.Component
+	grafana   *v1alpha1.Component
+	promtail  *v1alpha1.Component
 }
 
 type LogSystemComponentNames struct {
@@ -100,7 +102,7 @@ func (r *LogSystemReconcilerTask) Run(req ctrl.Request) error {
 
 func (r *LogSystemReconcilerTask) ReconcileResources() error {
 	switch r.logSystem.Spec.Stack {
-	case corev1alpha1.LogSystemStackPLGMonolithic:
+	case v1alpha1.LogSystemStackPLGMonolithic:
 		return r.ReconcilePLGMonolithic()
 	default:
 		return fmt.Errorf("This stack is not yet implemented")
@@ -110,7 +112,7 @@ func (r *LogSystemReconcilerTask) ReconcileResources() error {
 func (r *LogSystemReconcilerTask) LoadPLGMonolithicResources() error {
 	names := r.getComponentNames()
 
-	var loki corev1alpha1.Component
+	var loki v1alpha1.Component
 	if err := r.Get(r.ctx, r.NameToNamespacedName(names.Loki), &loki); err != nil {
 		if errors.IsNotFound(err) {
 			return nil
@@ -119,7 +121,7 @@ func (r *LogSystemReconcilerTask) LoadPLGMonolithicResources() error {
 	}
 	r.loki = &loki
 
-	var grafana corev1alpha1.Component
+	var grafana v1alpha1.Component
 	if err := r.Get(r.ctx, r.NameToNamespacedName(names.Grafana), &grafana); err != nil {
 		if errors.IsNotFound(err) {
 			return nil
@@ -128,7 +130,7 @@ func (r *LogSystemReconcilerTask) LoadPLGMonolithicResources() error {
 	}
 	r.grafana = &grafana
 
-	var promtail corev1alpha1.Component
+	var promtail v1alpha1.Component
 	if err := r.Get(r.ctx, r.NameToNamespacedName(names.Promtail), &promtail); err != nil {
 		if errors.IsNotFound(err) {
 			return nil
@@ -166,7 +168,7 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicLoki() error {
 	lokiImage := r.logSystem.Spec.PLGConfig.Loki.Image
 
 	if lokiImage == "" {
-		lokiImage = corev1alpha1.LokiImage
+		lokiImage = v1alpha1.LokiImage
 	}
 
 	if r.loki != nil {
@@ -179,68 +181,68 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicLoki() error {
 
 	lokiConfig := r.GetPLGMonolithicLokiConfig()
 
-	loki := &corev1alpha1.Component{
+	loki := &v1alpha1.Component{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: r.req.Namespace,
 			Name:      names.Loki,
 		},
-		Spec: corev1alpha1.ComponentSpec{
+		Spec: v1alpha1.ComponentSpec{
 			Annotations: map[string]string{
 				"sidecar.istio.io/inject":                         "false",
 				"core.kalm.dev/podExt-securityContext-runAsGroup": "0",
 				"core.kalm.dev/podExt-securityContext-runAsUser":  "0",
 			},
 			Image:        lokiImage,
-			WorkloadType: corev1alpha1.WorkloadTypeStatefulSet,
+			WorkloadType: v1alpha1.WorkloadTypeStatefulSet,
 			Replicas:     &replicas,
 			Command:      "loki -config.file=/etc/loki/loki.yaml",
-			Ports: []corev1alpha1.Port{
+			Ports: []v1alpha1.Port{
 				{
 					ContainerPort: 3100,
 					ServicePort:   3100,
-					Protocol:      corev1alpha1.PortProtocolHTTP,
+					Protocol:      v1alpha1.PortProtocolHTTP,
 				},
 			},
-			ReadinessProbe: &v1.Probe{
+			ReadinessProbe: &corev1.Probe{
 				InitialDelaySeconds: 15,
 				PeriodSeconds:       10,
 				SuccessThreshold:    1,
 				TimeoutSeconds:      1,
 				FailureThreshold:    3,
-				Handler: v1.Handler{
-					HTTPGet: &v1.HTTPGetAction{
+				Handler: corev1.Handler{
+					HTTPGet: &corev1.HTTPGetAction{
 						Path:   "/ready",
 						Port:   intstr.FromInt(3100),
-						Scheme: v1.URISchemeHTTP,
+						Scheme: corev1.URISchemeHTTP,
 					},
 				},
 			},
-			LivenessProbe: &v1.Probe{
+			LivenessProbe: &corev1.Probe{
 				InitialDelaySeconds: 45,
 				PeriodSeconds:       10,
 				SuccessThreshold:    1,
 				TimeoutSeconds:      1,
 				FailureThreshold:    3,
-				Handler: v1.Handler{
-					HTTPGet: &v1.HTTPGetAction{
+				Handler: corev1.Handler{
+					HTTPGet: &corev1.HTTPGetAction{
 						Path:   "/ready",
 						Port:   intstr.FromInt(3100),
-						Scheme: v1.URISchemeHTTP,
+						Scheme: corev1.URISchemeHTTP,
 					},
 				},
 			},
-			PreInjectedFiles: []corev1alpha1.PreInjectFile{
+			PreInjectedFiles: []v1alpha1.PreInjectFile{
 				{
 					MountPath: "/etc/loki/loki.yaml",
 					Content:   lokiConfig,
 					Runnable:  false,
 				},
 			},
-			Volumes: []corev1alpha1.Volume{
+			Volumes: []v1alpha1.Volume{
 				{
 					Size:             *r.logSystem.Spec.PLGConfig.Loki.DiskSize,
 					StorageClassName: r.logSystem.Spec.PLGConfig.Loki.StorageClass,
-					Type:             corev1alpha1.VolumeTypePersistentVolumeClaimTemplate,
+					Type:             v1alpha1.VolumeTypePersistentVolumeClaimTemplate,
 					Path:             "/data",
 					PVC:              "storage",
 				},
@@ -277,7 +279,7 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 	grafanaImage := r.logSystem.Spec.PLGConfig.Grafana.Image
 
 	if grafanaImage == "" {
-		grafanaImage = corev1alpha1.GrafanaImage
+		grafanaImage = v1alpha1.GrafanaImage
 	}
 
 	if r.grafana != nil {
@@ -287,67 +289,96 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 	}
 
 	replicas := int32(1)
+	baseDashboardDomain := os.Getenv(v1alpha1.ENV_KALM_BASE_DASHBOARD_DOMAIN)
 
-	grafana := &corev1alpha1.Component{
+	grafana := &v1alpha1.Component{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: r.req.Namespace,
 			Name:      names.Grafana,
 		},
-		Spec: corev1alpha1.ComponentSpec{
+		Spec: v1alpha1.ComponentSpec{
 			Image:        grafanaImage,
-			WorkloadType: corev1alpha1.WorkloadTypeServer,
+			WorkloadType: v1alpha1.WorkloadTypeServer,
 			Replicas:     &replicas,
 
 			// Use anonymous in this version
 			// Will integrate kalm permission later.
 			// Don't open port to avoid grafana access from outside.
 
-			//Ports: []corev1alpha1.Port{
-			//
-			//	{
-			//		ContainerPort: 3000,
-			//		ServicePort:   3000,
-			//		Protocol:      corev1alpha1.PortProtocolHTTP,
-			//	},
-			//},
-			Env: []corev1alpha1.EnvVar{
+			Ports: []v1alpha1.Port{
+
 				{
-					Name:  "GF_AUTH_ANONYMOUS_ENABLED",
+					ContainerPort: 3000,
+					ServicePort:   3000,
+					Protocol:      v1alpha1.PortProtocolHTTP,
+				},
+			},
+			Env: []v1alpha1.EnvVar{
+				{
+					Name:  "GF_AUTH_PROXY_ENABLED",
 					Value: "true",
 				},
 				{
-					Name:  "GF_AUTH_ANONYMOUS_ORG_ROLE",
-					Value: "Admin",
+					Name:  "GF_DATABASE_PATH",
+					Value: "/data/grafana.db",
+				},
+				{
+					Name:  "GF_SERVE_FROM_SUB_PATH", //see details at https://grafana.com/docs/grafana/latest/administration/configuration/#serve_from_sub_path
+					Value: "true",
+				},
+				{
+					Name:  "GF_SERVER_DOMAIN",
+					Value: baseDashboardDomain,
+				},
+				{
+					Name:  "GF_SERVER_ROOT_URL",
+					Value: "%(protocol)s://%(domain)s:%(http_port)s/grafana/",
+				},
+				// {
+				//      Name:  "GF_AUTH_ANONYMOUS_ENABLED",
+				//      Value: "true",
+				// },
+				// {
+				//      Name:  "GF_AUTH_ANONYMOUS_ORG_ROLE",
+				//      Value: "Admin",
+				// },
+			},
+			Volumes: []v1alpha1.Volume{
+				{
+					Size: resource.MustParse("1Gi"), //todo move to config
+					Type: v1alpha1.VolumeTypePersistentVolumeClaim,
+					Path: "/data",
+					PVC:  "storage",
 				},
 			},
-			ReadinessProbe: &v1.Probe{
+			ReadinessProbe: &corev1.Probe{
 				PeriodSeconds:    10,
 				SuccessThreshold: 1,
 				TimeoutSeconds:   1,
 				FailureThreshold: 3,
-				Handler: v1.Handler{
-					HTTPGet: &v1.HTTPGetAction{
+				Handler: corev1.Handler{
+					HTTPGet: &corev1.HTTPGetAction{
 						Path:   "/api/health",
 						Port:   intstr.FromInt(3000),
-						Scheme: v1.URISchemeHTTP,
+						Scheme: corev1.URISchemeHTTP,
 					},
 				},
 			},
-			LivenessProbe: &v1.Probe{
+			LivenessProbe: &corev1.Probe{
 				InitialDelaySeconds: 60,
 				PeriodSeconds:       10,
 				SuccessThreshold:    1,
 				TimeoutSeconds:      30,
 				FailureThreshold:    10,
-				Handler: v1.Handler{
-					HTTPGet: &v1.HTTPGetAction{
+				Handler: corev1.Handler{
+					HTTPGet: &corev1.HTTPGetAction{
 						Path:   "/api/health",
 						Port:   intstr.FromInt(3000),
-						Scheme: v1.URISchemeHTTP,
+						Scheme: corev1.URISchemeHTTP,
 					},
 				},
 			},
-			PreInjectedFiles: []corev1alpha1.PreInjectFile{
+			PreInjectedFiles: []v1alpha1.PreInjectFile{
 				{
 					MountPath: "/etc/grafana/provisioning/datasources/loki.yaml",
 					Content: fmt.Sprintf(`
@@ -379,13 +410,167 @@ datasources:
 		copied := r.grafana.DeepCopy()
 		copied.Spec = grafana.Spec
 
-		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.grafana)); err != nil {
-			r.Log.Error(err, "Patch grafana component failed.")
+		if err := r.Update(r.ctx, copied); err != nil {
+			r.Log.Error(err, "Update grafana component failed.")
 			return err
 		}
 	}
 
+	if err := r.reconcileDataForGrafana(); err != nil {
+		return err
+	}
+
+	if err := r.reconcileAccessForGrafana(); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+// ensure:
+// - org
+// - user
+// - datasource
+// - dashboard
+func (r *LogSystemReconcilerTask) reconcileDataForGrafana() error {
+	//todo
+	// client := NewGrafanaClient()
+	// if org, err := client.client.GetActualOrg(client.ctx); err != nil {
+	// 	return err
+	// } else {
+	// 	r.Log.Info("Grafana API is ready", "curOrg", org)
+	// }
+
+	// var tenantList v1alpha1.TenantList
+	// if err := r.List(r.ctx, &tenantList); err != nil {
+	// 	return err
+	// }
+
+	// for _, tenant := range tenantList.Items {
+	// 	orgName := tenant.Name
+	// 	org, err := client.GetOrCreateOrgIfNotExist(orgName)
+	// 	if err != nil {
+	// 		r.Log.Info("fail to GetOrCreateOrgIfNotExist, ignored", "org", orgName, "err", err)
+	// 		continue
+	// 	}
+
+	// 	// todo add user to org
+
+	// 	// datasource
+	// 	if err := client.CreateDatasourceIfNotExist(org.ID); err != nil {
+	// 		r.Log.Info("fail to CreateDatasourceIfNotExist, ignored", "org", org, "err", err)
+	// 		continue
+	// 	}
+	// }
+
+	return nil
+}
+
+func (r *LogSystemReconcilerTask) reconcileAccessForGrafana() error {
+	if err := r.reconcileHttpRouteForGrafana(); err != nil {
+		return err
+	}
+
+	if err := r.reconcileProtectedEndpointForGrafana(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *LogSystemReconcilerTask) reconcileHttpRouteForGrafana() error {
+	baseDashboardDomain := os.Getenv(v1alpha1.ENV_KALM_BASE_DASHBOARD_DOMAIN)
+
+	const KalmGrafanaRouteName = "kalm-grafana"
+
+	expectedRoute := v1alpha1.HttpRoute{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: KalmGrafanaRouteName,
+		},
+		Spec: v1alpha1.HttpRouteSpec{
+			Hosts: []string{
+				baseDashboardDomain,
+				fmt.Sprintf("*.%s", baseDashboardDomain),
+			},
+			Paths:     []string{"/grafana"},
+			StripPath: true,
+			Schemes: []v1alpha1.HttpRouteScheme{
+				"https", "http",
+			},
+			Methods: []v1alpha1.HttpRouteMethod{
+				"GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE", "CONNECT",
+			},
+			HttpRedirectToHttps: true,
+			Destinations: []v1alpha1.HttpRouteDestination{
+				{
+					Host: fmt.Sprintf("%s.%s.svc.cluster.local:3000",
+						r.getComponentNames().Grafana,
+						r.grafana.Namespace,
+					),
+					Weight: 1,
+				},
+			},
+		},
+	}
+
+	route := v1alpha1.HttpRoute{}
+	isNew := false
+
+	routeObjKey := client.ObjectKey{Name: KalmGrafanaRouteName}
+	if err := r.Get(r.ctx, routeObjKey, &route); err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+
+		isNew = true
+	}
+
+	if isNew {
+		route = expectedRoute
+		return r.Create(r.ctx, &route)
+	} else {
+		route.Spec = expectedRoute.Spec
+		return r.Update(r.ctx, &route)
+	}
+}
+
+func (r *LogSystemReconcilerTask) reconcileProtectedEndpointForGrafana() error {
+	const KalmGrafanaProtectedEndpointName = "kalm-grafana"
+
+	expectedEndpoint := v1alpha1.ProtectedEndpoint{
+		ObjectMeta: metav1.ObjectMeta{
+			//todo update this
+			Namespace: "log",
+			Name:      KalmGrafanaProtectedEndpointName,
+		},
+		Spec: v1alpha1.ProtectedEndpointSpec{
+			EndpointName:                r.getComponentNames().Grafana,
+			Ports:                       []uint32{3000},
+			AllowToPassIfHasBearerToken: true,
+			Tenants:                     []string{"*"},
+		},
+	}
+
+	endpoint := v1alpha1.ProtectedEndpoint{}
+	isNew := false
+
+	objKey := client.ObjectKey{Namespace: v1alpha1.KalmSystemNamespace, Name: KalmGrafanaProtectedEndpointName}
+
+	if err := r.Get(r.ctx, objKey, &endpoint); err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+
+		isNew = true
+	}
+
+	if isNew {
+		endpoint = expectedEndpoint
+		return r.Create(r.ctx, &endpoint)
+	} else {
+		endpoint.Spec = expectedEndpoint.Spec
+		return r.Update(r.ctx, &endpoint)
+	}
 }
 
 func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicPromtail() error {
@@ -394,7 +579,7 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicPromtail() error {
 	promtailImage := r.logSystem.Spec.PLGConfig.Promtail.Image
 
 	if promtailImage == "" {
-		promtailImage = corev1alpha1.PromtailImage
+		promtailImage = v1alpha1.PromtailImage
 	}
 
 	if r.promtail != nil {
@@ -405,73 +590,73 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicPromtail() error {
 
 	promtailConfig := r.GetPLGMonolithicPromtailConfig()
 
-	promtail := &corev1alpha1.Component{
+	promtail := &v1alpha1.Component{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: r.req.Namespace,
 			Name:      names.Promtail,
 		},
-		Spec: corev1alpha1.ComponentSpec{
+		Spec: v1alpha1.ComponentSpec{
 			Annotations: map[string]string{
 				"sidecar.istio.io/inject": "false",
 			},
 			Image:        promtailImage,
-			WorkloadType: corev1alpha1.WorkloadTypeDaemonSet,
+			WorkloadType: v1alpha1.WorkloadTypeDaemonSet,
 			Command:      fmt.Sprintf("promtail -log.level=debug -print-config-stderr -config.file=/etc/promtail/promtail.yaml -client.url=http://%s:3100/loki/api/v1/push", names.Loki),
-			Ports: []corev1alpha1.Port{
+			Ports: []v1alpha1.Port{
 				{
 					ContainerPort: 3101,
 					ServicePort:   3101,
-					Protocol:      corev1alpha1.PortProtocolHTTP,
+					Protocol:      v1alpha1.PortProtocolHTTP,
 				},
 			},
-			Env: []corev1alpha1.EnvVar{
+			Env: []v1alpha1.EnvVar{
 				{
 					Name:  "HOSTNAME",
-					Type:  corev1alpha1.EnvVarTypeBuiltin,
-					Value: corev1alpha1.EnvVarBuiltinHost,
+					Type:  v1alpha1.EnvVarTypeBuiltin,
+					Value: v1alpha1.EnvVarBuiltinHost,
 				},
 			},
-			ReadinessProbe: &v1.Probe{
+			ReadinessProbe: &corev1.Probe{
 				PeriodSeconds:       10,
 				SuccessThreshold:    1,
 				TimeoutSeconds:      1,
 				FailureThreshold:    5,
 				InitialDelaySeconds: 10,
-				Handler: v1.Handler{
-					HTTPGet: &v1.HTTPGetAction{
+				Handler: corev1.Handler{
+					HTTPGet: &corev1.HTTPGetAction{
 						Path:   "/ready",
 						Port:   intstr.FromInt(3101),
-						Scheme: v1.URISchemeHTTP,
+						Scheme: corev1.URISchemeHTTP,
 					},
 				},
 			},
-			PreInjectedFiles: []corev1alpha1.PreInjectFile{
+			PreInjectedFiles: []v1alpha1.PreInjectFile{
 				{
 					MountPath: "/etc/promtail/promtail.yaml",
 					Content:   promtailConfig,
 					Runnable:  false,
 				},
 			},
-			Volumes: []corev1alpha1.Volume{
+			Volumes: []v1alpha1.Volume{
 				{
 					Path:     "/var/lib/docker/containers",
 					HostPath: "/var/lib/docker/containers",
-					Type:     corev1alpha1.VolumeTypeHostPath,
+					Type:     v1alpha1.VolumeTypeHostPath,
 				},
 				{
 					Path:     "/var/log/pods",
 					HostPath: "/var/log/pods",
-					Type:     corev1alpha1.VolumeTypeHostPath,
+					Type:     v1alpha1.VolumeTypeHostPath,
 				},
 				{
 					Path:     "/run/promtail",
 					HostPath: "/run/promtail",
-					Type:     corev1alpha1.VolumeTypeHostPath,
+					Type:     v1alpha1.VolumeTypeHostPath,
 				},
 			},
-			RunnerPermission: &corev1alpha1.RunnerPermission{
+			RunnerPermission: &v1alpha1.RunnerPermission{
 				RoleType: "clusterRole",
-				Rules: []rbacV1.PolicyRule{
+				Rules: []rbacv1.PolicyRule{
 					{
 						APIGroups: []string{""},
 						Resources: []string{"nodes", "nodes/proxy", "services", "endpoints", "pods"},
@@ -864,7 +1049,7 @@ func (r *LogSystemReconcilerTask) CleanResources() error {
 	names := r.getComponentNames()
 
 	if r.loki != nil {
-		if err := r.Delete(r.ctx, &corev1alpha1.Component{
+		if err := r.Delete(r.ctx, &v1alpha1.Component{
 			ObjectMeta: metav1.ObjectMeta{Name: names.Loki, Namespace: r.req.Namespace},
 		}); err != nil {
 			return err
@@ -872,7 +1057,7 @@ func (r *LogSystemReconcilerTask) CleanResources() error {
 	}
 
 	if r.grafana != nil {
-		if err := r.Delete(r.ctx, &corev1alpha1.Component{
+		if err := r.Delete(r.ctx, &v1alpha1.Component{
 			ObjectMeta: metav1.ObjectMeta{Name: names.Grafana, Namespace: r.req.Namespace},
 		}); err != nil {
 			return err
@@ -880,7 +1065,7 @@ func (r *LogSystemReconcilerTask) CleanResources() error {
 	}
 
 	if r.promtail != nil {
-		if err := r.Delete(r.ctx, &corev1alpha1.Component{
+		if err := r.Delete(r.ctx, &v1alpha1.Component{
 			ObjectMeta: metav1.ObjectMeta{Name: names.Promtail, Namespace: r.req.Namespace},
 		}); err != nil {
 			return err
@@ -891,7 +1076,7 @@ func (r *LogSystemReconcilerTask) CleanResources() error {
 }
 
 func (r *LogSystemReconcilerTask) LoadResources(req ctrl.Request) error {
-	var logSystem corev1alpha1.LogSystem
+	var logSystem v1alpha1.LogSystem
 	if err := r.Get(r.ctx, req.NamespacedName, &logSystem); err != nil {
 		if errors.IsNotFound(err) {
 			return nil
@@ -906,8 +1091,8 @@ func (r *LogSystemReconcilerTask) LoadResources(req ctrl.Request) error {
 
 func (r *LogSystemReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1alpha1.LogSystem{}).
-		Owns(&corev1alpha1.Component{}).
+		For(&v1alpha1.LogSystem{}).
+		Owns(&v1alpha1.Component{}).
 		Complete(r)
 }
 
