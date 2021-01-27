@@ -37,10 +37,6 @@ var _ webhook.Defaulter = &ComponentPluginBinding{}
 
 func (r *ComponentPluginBinding) Default() {
 	componentpluginbindinglog.Info("default", "name", r.Name)
-
-	if err := InheritTenantFromNamespace(r); err != nil {
-		componentpluginbindinglog.Error(err, "fail to inherit tenant from ns", "componentPluginBingding", r.Name, "ns", r.Namespace)
-	}
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-componentpluginbinding,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=componentpluginbindings,versions=v1alpha1,name=vcomponentpluginbinding.kb.io
@@ -51,24 +47,12 @@ var _ webhook.Validator = &ComponentPluginBinding{}
 func (r *ComponentPluginBinding) ValidateCreate() error {
 	componentpluginbindinglog.Info("validate create", "name", r.Name)
 
-	if !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
-
 	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *ComponentPluginBinding) ValidateUpdate(old runtime.Object) error {
 	componentpluginbindinglog.Info("validate update", "name", r.Name)
-
-	if !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
-
-	if IsTenantChanged(r, old) {
-		return TenantChangedError
-	}
 
 	return r.validate()
 }

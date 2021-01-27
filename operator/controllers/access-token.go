@@ -17,18 +17,17 @@ func (r *KalmOperatorConfigReconciler) reconcileRootAccessTokenForSaaS() error {
 }
 
 func (r *KalmOperatorConfigReconciler) reconcileRootAccessToken(memo string) error {
-	tokenList := v1alpha1.AccessTokenList{}
 
+	tokenList := v1alpha1.AccessTokenList{}
 	if err := r.List(r.Ctx, &tokenList); err != nil {
 		return err
 	}
 
 	// token name is sha256(rand(128))
-	// so we only check if a token labels with global tenant is generated
+	// so we only check if a token with given memo is generated
 	for _, token := range tokenList.Items {
-		tenantName := token.Labels[v1alpha1.TenantNameLabelKey]
-		if tenantName == v1alpha1.DefaultSystemTenantName {
-			r.Log.Info("accessToken labeled with global tenant is found, create token skipped")
+		if token.Spec.Memo == memo {
+			r.Log.Info("accessToken with given memo is found, create token skipped")
 			return nil
 		}
 	}
@@ -39,9 +38,6 @@ func (r *KalmOperatorConfigReconciler) reconcileRootAccessToken(memo string) err
 	expectedAccessToken := v1alpha1.AccessToken{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultSystemTenantName,
-			},
 		},
 		Spec: v1alpha1.AccessTokenSpec{
 			Memo:  memo,

@@ -8,11 +8,6 @@ func (r *KalmOperatorConfigReconciler) reconcileLocalMode(configSpec installv1al
 		return err
 	}
 
-	if err := r.reconcileDefaultTenantForLocalMode(); err != nil {
-		r.Log.Info("reconcileDefaultTenantForLocalMode fail", "error", err)
-		return err
-	}
-
 	if err := r.reconcileKalmDashboard(configSpec); err != nil {
 		r.Log.Info("reconcileKalmDashboard fail", "error", err)
 		return err

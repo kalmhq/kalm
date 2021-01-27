@@ -261,11 +261,6 @@ func (in *KalmOperatorConfigSpec) DeepCopyInto(out *KalmOperatorConfigSpec) {
 		*out = new(BYOCModeConfig)
 		(*in).DeepCopyInto(*out)
 	}
-	if in.SaaSModeConfig != nil {
-		in, out := &in.SaaSModeConfig, &out.SaaSModeConfig
-		*out = new(SaaSModeConfig)
-		(*in).DeepCopyInto(*out)
-	}
 	if in.LocalModeConfig != nil {
 		in, out := &in.LocalModeConfig, &out.LocalModeConfig
 		*out = new(LocalModeConfig)

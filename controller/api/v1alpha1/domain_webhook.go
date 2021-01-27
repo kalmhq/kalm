@@ -24,17 +24,20 @@ import (
 
 	"github.com/miekg/dns"
 
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 var domainlog = logf.Log.WithName("domain-resource")
+var webhookClient client.Client
 
 func (r *Domain) SetupWebhookWithManager(mgr ctrl.Manager) error {
+	webhookClient = mgr.GetClient()
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
@@ -46,12 +49,6 @@ var _ webhook.Defaulter = &Domain{}
 
 func (r *Domain) Default() {
 	domainlog.Info("default", "name", r.Name)
-
-	//setup
-	tenantName := r.Labels[TenantNameLabelKey]
-	if tenantName == "" {
-		return
-	}
 
 	domain := r.Spec.Domain
 
@@ -87,7 +84,7 @@ func (r *Domain) Default() {
 		}
 
 		//<md5Domain>-<tenantName>
-		cnamePrefix := fmt.Sprintf("%x-%s", md5Domain, tenantName)
+		cnamePrefix := fmt.Sprintf("%x", md5Domain)
 
 		// <md5Domain-tenantName>-cname.<asia>.kalm-dns.com
 		cname := fmt.Sprintf("%s-cname.%s", cnamePrefix, kalmBaseDNSDomain)
@@ -118,7 +115,7 @@ func GetClusterIP() (string, error) {
 		return ip, nil
 	}
 
-	svc := v1.Service{}
+	svc := corev1.Service{}
 	objKey := types.NamespacedName{
 		Name:      "istio-ingressgateway",
 		Namespace: "istio-system",
@@ -143,12 +140,6 @@ var _ webhook.Validator = &Domain{}
 
 func (r *Domain) ValidateCreate() error {
 	domainlog.Info("validate create", "name", r.Name)
-
-	tenantName := r.Labels[TenantNameLabelKey]
-	if tenantName == "" {
-		return NoTenantLabelSetError
-	}
-
 	return r.validate()
 }
 
