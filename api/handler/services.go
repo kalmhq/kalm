@@ -10,12 +10,12 @@ func (h *ApiHandler) handleListClusterServices(c echo.Context) error {
 	currentUser := getCurrentUser(c)
 
 	if namespace != "" {
-		h.MustCanView(currentUser, currentUser.Tenant+"/"+namespace, "services/*")
+		h.MustCanView(currentUser, namespace, "services/*")
 	} else {
-		h.MustCanView(currentUser, currentUser.Tenant+"/*", "services/*")
+		h.MustCanView(currentUser, "*", "services/*")
 	}
 
-	list, err := h.resourceManager.GetServices(belongsToTenant(currentUser.Tenant), client.InNamespace(namespace))
+	list, err := h.resourceManager.GetServices(client.InNamespace(namespace))
 
 	if err != nil {
 		return err

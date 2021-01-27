@@ -15,9 +15,7 @@ func (h *ApiHandler) InstallHttpRouteHandlers(e *echo.Group) {
 }
 
 func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
-	currentUser := getCurrentUser(c)
-
-	list, err := h.resourceManager.GetHttpRoutes(belongsToTenant(currentUser.Tenant))
+	list, err := h.resourceManager.GetHttpRoutes()
 	list = h.filterAuthorizedHttpRoutes(c, list)
 
 	if err != nil {
@@ -34,13 +32,6 @@ func (h *ApiHandler) handleCreateRoute(c echo.Context) (err error) {
 	if route, err = getHttpRouteFromContext(c); err != nil {
 		return err
 	}
-
-	tenantName := currentUser.Tenant
-	if tenantName == "" {
-		return fmt.Errorf("should set tenant but empty")
-	}
-
-	route.Tenant = tenantName
 
 	if !h.clientManager.CanOperateHttpRoute(currentUser, "edit", route) {
 		return resources.InsufficientPermissionsError
@@ -61,14 +52,8 @@ func (h *ApiHandler) handleUpdateRoute(c echo.Context) (err error) {
 		return err
 	}
 
-	if resRoute, err := h.resourceManager.GetHttpRoute("", c.Param("name")); err != nil {
+	if _, err := h.resourceManager.GetHttpRoute("", c.Param("name")); err != nil {
 		return nil
-	} else {
-		route.Tenant = resRoute.Tenant
-	}
-
-	if route.Tenant == "" {
-		return fmt.Errorf("no tenant info for httpRoute: %s", route.Name)
 	}
 
 	// TODO: check if current user can edit all old http route destinations

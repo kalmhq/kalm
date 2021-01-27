@@ -63,7 +63,6 @@ func (suite *DomainTestSuite) TestPermission() {
 	// auth fail
 	rolesListWillFailAuthz := [][]string{
 		{GetClusterViewerRole()},
-		{GetTenantViewerRole(defaultTenant)},
 	}
 
 	for _, roles := range rolesListWillFailAuthz {
@@ -81,9 +80,7 @@ func (suite *DomainTestSuite) TestPermission() {
 	// auth pass
 	rolesListWillPassAuthz := [][]string{
 		{GetClusterEditorRole()},
-		// {GetTenantEditorRole(defaultTenant)}, //todo why this fail?
 		{GetClusterOwnerRole()},
-		{GetTenantOwnerRole(defaultTenant)},
 	}
 
 	for _, roles := range rolesListWillPassAuthz {

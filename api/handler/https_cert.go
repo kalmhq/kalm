@@ -5,7 +5,6 @@ import (
 
 	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/api/resources"
-	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -23,11 +22,9 @@ func (h *ApiHandler) InstallHttpsCertsHandlers(e *echo.Group) {
 
 func (h *ApiHandler) handleListHttpsCerts(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanView(currentUser, currentUser.Tenant+"/*", "httpsCerts/*")
+	h.MustCanView(currentUser, "*", "httpsCerts/*")
 
-	httpsCerts, err := h.resourceManager.GetHttpsCerts(client.MatchingLabels{
-		v1alpha1.TenantNameLabelKey: getCurrentUser(c).Tenant,
-	})
+	httpsCerts, err := h.resourceManager.GetHttpsCerts()
 
 	if err != nil {
 		return err
@@ -38,7 +35,7 @@ func (h *ApiHandler) handleListHttpsCerts(c echo.Context) error {
 
 func (h *ApiHandler) handleGetHttpsCert(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanView(currentUser, currentUser.Tenant+"/*", "httpsCerts/"+c.Param("name"))
+	h.MustCanView(currentUser, "*", "httpsCerts/"+c.Param("name"))
 
 	cert, err := h.getHttpsCertFromContext(c)
 
@@ -51,7 +48,7 @@ func (h *ApiHandler) handleGetHttpsCert(c echo.Context) error {
 
 func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "httpsCerts/*")
+	h.MustCanEdit(currentUser, "*", "httpsCerts/*")
 
 	httpsCert, err := bindHttpsCertFromRequestBody(c)
 
@@ -62,8 +59,6 @@ func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
 	if httpsCert.IsSelfManaged {
 		return fmt.Errorf("for selfManaged certs, use /upload instead")
 	}
-
-	httpsCert.Tenant = currentUser.Tenant
 
 	httpsCertResp, err := h.resourceManager.CreateAutoManagedHttpsCert(httpsCert)
 
@@ -76,7 +71,7 @@ func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
 
 func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "httpsCerts/*")
+	h.MustCanEdit(currentUser, "*", "httpsCerts/*")
 
 	httpsCert, err := bindHttpsCertFromRequestBody(c)
 
@@ -87,8 +82,6 @@ func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
 	if !httpsCert.IsSelfManaged {
 		return fmt.Errorf("can only upload selfManaged certs")
 	}
-
-	httpsCert.Tenant = currentUser.Tenant
 
 	httpsCertResp, err := h.resourceManager.CreateSelfManagedHttpsCert(httpsCert)
 
@@ -101,7 +94,7 @@ func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
 
 func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "httpsCerts/"+c.Param("name"))
+	h.MustCanEdit(currentUser, "*", "httpsCerts/"+c.Param("name"))
 
 	httpsCert, err := bindHttpsCertFromRequestBody(c)
 
@@ -117,7 +110,6 @@ func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
 		return errors.NewBadRequest("Name in url and body are mismatched")
 	}
 
-	httpsCert.Tenant = currentUser.Tenant
 	httpsCertResp, err := h.resourceManager.UpdateSelfManagedCert(httpsCert)
 
 	if err != nil {
@@ -129,7 +121,7 @@ func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
 
 func (h *ApiHandler) handleDeleteHttpsCert(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "httpsCerts/"+c.Param("name"))
+	h.MustCanEdit(currentUser, "*", "httpsCerts/"+c.Param("name"))
 
 	if err := h.resourceManager.DeleteHttpsCert(c.Param("name")); err != nil {
 		return err
@@ -149,11 +141,7 @@ func bindHttpsCertFromRequestBody(c echo.Context) (*resources.HttpsCert, error) 
 }
 
 func (h *ApiHandler) getHttpsCertFromContext(c echo.Context) (*resources.HttpsCertResp, error) {
-	currentUser := getCurrentUser(c)
-
-	list, err := h.resourceManager.GetHttpsCerts(client.MatchingLabels{
-		v1alpha1.TenantNameLabelKey: currentUser.Tenant,
-	}, client.MatchingField("metadata.name", c.Param("name")), client.Limit(1))
+	list, err := h.resourceManager.GetHttpsCerts(client.MatchingField("metadata.name", c.Param("name")), client.Limit(1))
 
 	if err != nil {
 		return nil, err

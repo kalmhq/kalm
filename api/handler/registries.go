@@ -5,7 +5,6 @@ import (
 
 	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/api/resources"
-	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -19,11 +18,7 @@ func (h *ApiHandler) InstallRegistriesHandlers(e *echo.Group) {
 }
 
 func (h *ApiHandler) getRegistryFromContext(c echo.Context) (*resources.DockerRegistry, error) {
-	currentUser := getCurrentUser(c)
-
-	list, err := h.resourceManager.GetDockerRegistries(client.MatchingLabels{
-		v1alpha1.TenantNameLabelKey: currentUser.Tenant,
-	}, client.MatchingField("metadata.name", c.Param("name")), client.Limit(1))
+	list, err := h.resourceManager.GetDockerRegistries(client.MatchingField("metadata.name", c.Param("name")), client.Limit(1))
 
 	if err != nil {
 		return nil, err
@@ -40,11 +35,9 @@ func (h *ApiHandler) getRegistryFromContext(c echo.Context) (*resources.DockerRe
 
 func (h *ApiHandler) handleListRegistries(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanView(currentUser, currentUser.Tenant+"/*", "registries/*")
+	h.MustCanView(currentUser, "*", "registries/*")
 
-	list, err := h.resourceManager.GetDockerRegistries(client.MatchingLabels{
-		v1alpha1.TenantNameLabelKey: getCurrentUser(c).Tenant,
-	})
+	list, err := h.resourceManager.GetDockerRegistries()
 
 	if err != nil {
 		return err
@@ -55,7 +48,7 @@ func (h *ApiHandler) handleListRegistries(c echo.Context) error {
 
 func (h *ApiHandler) handleGetRegistry(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanView(currentUser, currentUser.Tenant+"/*", "registries/"+c.Param("name"))
+	h.MustCanView(currentUser, "*", "registries/"+c.Param("name"))
 
 	registry, err := h.getRegistryFromContext(c)
 
@@ -68,14 +61,12 @@ func (h *ApiHandler) handleGetRegistry(c echo.Context) error {
 
 func (h *ApiHandler) handleCreateRegistry(c echo.Context) (err error) {
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "registries/*")
+	h.MustCanEdit(currentUser, "*", "registries/*")
 
 	var registry *resources.DockerRegistry
 	if registry, err = bindDockerRegistryFromRequestBody(c); err != nil {
 		return err
 	}
-
-	registry.Tenant = currentUser.Tenant
 
 	if registry, err = h.resourceManager.CreateDockerRegistry(registry); err != nil {
 		return err
@@ -86,7 +77,7 @@ func (h *ApiHandler) handleCreateRegistry(c echo.Context) (err error) {
 
 func (h *ApiHandler) handleUpdateRegistry(c echo.Context) (err error) {
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "registries/"+c.Param("name"))
+	h.MustCanEdit(currentUser, "*", "registries/"+c.Param("name"))
 
 	var registry *resources.DockerRegistry
 	if registry, err = bindDockerRegistryFromRequestBody(c); err != nil {
@@ -97,8 +88,6 @@ func (h *ApiHandler) handleUpdateRegistry(c echo.Context) (err error) {
 		return fmt.Errorf("Name in body and url are mismatched")
 	}
 
-	registry.Tenant = currentUser.Tenant
-
 	if registry, err = h.resourceManager.UpdateDockerRegistry(registry); err != nil {
 		return err
 	}
@@ -108,17 +97,7 @@ func (h *ApiHandler) handleUpdateRegistry(c echo.Context) (err error) {
 
 func (h *ApiHandler) handleDeleteRegistry(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "registries/"+c.Param("name"))
-
-	registry, err := h.getRegistryFromContext(c)
-
-	if err != nil {
-		return err
-	}
-
-	if registry.Tenant != currentUser.Tenant {
-		return resources.NotTenantOwnerError
-	}
+	h.MustCanEdit(currentUser, "*", "registries/"+c.Param("name"))
 
 	if err := h.resourceManager.DeleteDockerRegistry(c.Param("name")); err != nil {
 		return err

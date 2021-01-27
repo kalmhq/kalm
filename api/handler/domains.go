@@ -20,10 +20,8 @@ func (h *ApiHandler) InstallDomainHandlers(e *echo.Group) {
 }
 
 func (h *ApiHandler) handleListDomains(c echo.Context) error {
-	currentUser := getCurrentUser(c)
-
 	var domainList v1alpha1.DomainList
-	if err := h.resourceManager.List(&domainList, belongsToTenant(currentUser.Tenant)); err != nil {
+	if err := h.resourceManager.List(&domainList); err != nil {
 		return err
 	}
 
@@ -36,7 +34,7 @@ func (h *ApiHandler) handleListDomains(c echo.Context) error {
 		domains = append([]resources.Domain{
 			{
 				Name:       "default",
-				Domain:     fmt.Sprintf("*%s.%s", currentUser.Tenant, baseAppDomain),
+				Domain:     baseAppDomain,
 				Status:     "ready",
 				RecordType: "CNAME",
 				Target:     "",
@@ -77,7 +75,7 @@ func (h *ApiHandler) handleGetDomain(c echo.Context) error {
 
 func (h *ApiHandler) handleCreateDomain(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "domains/*")
+	h.MustCanEdit(currentUser, "*", "domains/*")
 
 	domain, err := getDomainFromContext(c)
 	if err != nil {
@@ -156,20 +154,14 @@ func getDomainFromContext(c echo.Context) (*v1alpha1.Domain, error) {
 		return nil, err
 	}
 
-	currentUser := getCurrentUser(c)
-	tenantName := currentUser.Tenant
-
 	md5Domain := md5.Sum([]byte(resDomain.Domain))
 
-	// <md5Domain>-<tenantName>
-	name := fmt.Sprintf("%x-%s", md5Domain, currentUser.Tenant)
+	// <md5Domain>
+	name := fmt.Sprintf("%x", md5Domain)
 
 	rst := v1alpha1.Domain{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: tenantName,
-			},
 		},
 		Spec: v1alpha1.DomainSpec{
 			Domain: resDomain.Domain,

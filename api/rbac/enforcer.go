@@ -17,10 +17,8 @@ type Enforcer interface {
 	CanEdit(subject, namespace, resource string) bool
 	CanManage(subject, namespace, resource string) bool
 
-	// Because the permissions of kalm are organized by tenant and application,
+	// Because the permissions of kalm are organized by application,
 	// the following functions should be more convenience to use.
-	// Namespace should follow the format of "${tenantName}/${applicationName}"
-	// TODO: rename these functions
 	CanViewNamespace(subject, namespace string) bool
 	CanEditNamespace(subject, namespace string) bool
 	CanManageNamespace(subject, namespace string) bool

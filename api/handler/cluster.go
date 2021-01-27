@@ -2,7 +2,6 @@ package handler
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -197,12 +196,9 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 }
 
 func (h *ApiHandler) handleExtraInfo(c echo.Context) error {
-	newTenantUrl := os.Getenv("KALM_NEW_TENANT_URL")
-
 	isLocalMode := h.KalmMode == v1alpha1.KalmModeLocal
 
 	return c.JSON(200, map[string]interface{}{
-		"newTenantUrl":                                newTenantUrl,
 		"isFrontendMembersManagementEnabled":          isLocalMode,
 		"isFrontendComponentSchedulingFeatureEnabled": isLocalMode,
 		"isFrontendSSOPageEnabled":                    isLocalMode,
@@ -276,8 +272,7 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) (err error) {
 				},
 			},
 		},
-		Name:   KalmRouteName,
-		Tenant: currentUser.Tenant,
+		Name: KalmRouteName,
 	}
 
 	ssoConfig := &resources.SSOConfig{
@@ -315,7 +310,6 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) (err error) {
 		Name:            KalmRouteCertName,
 		HttpsCertIssuer: v1alpha1.DefaultHTTP01IssuerName,
 		Domains:         []string{body.Domain},
-		Tenant:          v1alpha1.DefaultSystemTenantName,
 	}
 
 	protectedEndpoint := &resources.ProtectedEndpoint{

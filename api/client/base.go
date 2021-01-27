@@ -131,7 +131,7 @@ func (m *BaseClientManager) CanManage(client *ClientInfo, scope string, obj stri
 }
 
 func (m *BaseClientManager) CanViewNamespace(client *ClientInfo, scope string) bool {
-	return m.wrapper(client, m.RBACEnforcer.CanViewCluster, scope)
+	return m.wrapper(client, m.RBACEnforcer.CanViewNamespace, scope)
 }
 
 func (m *BaseClientManager) CanEditNamespace(client *ClientInfo, scope string) bool {
@@ -180,22 +180,20 @@ func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, ro
 		}
 	}
 
-	scope := fmt.Sprintf("%s/*", route.Tenant)
-
 	log.Info("check CanOperateHttpRoute, pass host check",
 		zap.String("route", route.Name),
-		zap.String("name", scope))
+		zap.String("name", "*"))
 
 	if action == "view" {
-		if !m.CanViewNamespace(c, scope) {
+		if !m.CanViewNamespace(c, "*") {
 			return false
 		}
 	} else if action == "edit" {
-		if !m.CanEditNamespace(c, scope) {
+		if !m.CanEditNamespace(c, "*") {
 			return false
 		}
 	} else if action == "manage" {
-		if !m.CanManageNamespace(c, scope) {
+		if !m.CanManageNamespace(c, "*") {
 			return false
 		}
 	} else {
@@ -211,27 +209,23 @@ func (m *BaseClientManager) CanManageRoleBinding(c *ClientInfo, roleBinding *v1a
 	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
 		return m.CanManageCluster(c)
 	default:
-		// TODO: handle the error
-		tenantName, _ := v1alpha1.GetTenantNameFromObj(roleBinding)
-		scope := fmt.Sprintf("%s/%s", tenantName, roleBinding.Namespace)
-		return m.CanManageNamespace(c, scope)
+		return m.CanManageNamespace(c, roleBinding.Namespace)
 	}
 }
 
 func (m *BaseClientManager) CanOperateDomains(c *ClientInfo, action string, domain *v1alpha1.Domain) bool {
-	scope := fmt.Sprintf("%s/*", domain.Labels[v1alpha1.TenantNameLabelKey])
 	obj := fmt.Sprintf("domains/%s", domain.Name)
 
 	if action == "view" {
-		if m.CanView(c, scope, obj) {
+		if m.CanView(c, "*", obj) {
 			return true
 		}
 	} else if action == "edit" {
-		if m.CanEdit(c, scope, obj) {
+		if m.CanEdit(c, "*", obj) {
 			return true
 		}
 	} else if action == "manage" {
-		if m.CanManage(c, scope, obj) {
+		if m.CanManage(c, "*", obj) {
 			return true
 		}
 	}

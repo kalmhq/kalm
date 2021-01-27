@@ -38,7 +38,6 @@ type StandardClientManager struct {
 	mut           *sync.RWMutex
 	Applications  map[string]*coreV1.Namespace
 	AccessTokens  map[string]*v1alpha1.AccessToken
-	Tenants       map[string]*v1alpha1.Tenant
 	RoleBindings  map[string]*v1alpha1.RoleBinding
 	StopWatchChan chan struct{}
 }
@@ -46,44 +45,28 @@ type StandardClientManager struct {
 func BuildClusterRolePolicies() string {
 	return `
 # cluster role policies
-p, role_cluster_viewer, view, */*, */*
-p, role_cluster_editor, edit, */*, */*
-p, role_cluster_owner, manage, */*, */*
+p, role_cluster_viewer, view, *, */*
+p, role_cluster_editor, edit, *, */*
+p, role_cluster_owner, manage, *, */*
 g, role_cluster_editor, role_cluster_viewer
 g, role_cluster_owner, role_cluster_editor
 `
 }
 
-func BuildRolePoliciesForTenantAndNamespace(tenant, name string) string {
+func BuildRolePoliciesForNamespace(namespace string) string {
 	t := template.Must(template.New("policy").Parse(`
 # {{ .name }} application role policies
-p, role_{{ .tenant }}_{{ .name }}_viewer, view, {{ .tenant }}/{{ .name }}, */*
-p, role_{{ .tenant }}_{{ .name }}_viewer, view, */*, storageClasses/*
-p, role_{{ .tenant }}_{{ .name }}_editor, edit, {{ .tenant }}/{{ .name }}, */*
-p, role_{{ .tenant }}_{{ .name }}_editor, view, {{ .tenant }}/*, registries/*
-p, role_{{ .tenant }}_{{ .name }}_owner, manage, {{ .tenant }}/{{ .name }}, */*
-
-g, role_{{ .tenant }}_{{ .name }}_editor, role_{{ .tenant }}_{{ .name }}_viewer
-g, role_{{ .tenant }}_{{ .name }}_owner, role_{{ .tenant }}_{{ .name }}_editor
+p, role_{{ .name }}_viewer, view, {{ .name }}, */*
+p, role_{{ .name }}_viewer, view, *, storageClasses/*
+p, role_{{ .name }}_editor, edit, {{ .name }}, */*
+p, role_{{ .name }}_editor, view, *, registries/*
+p, role_{{ .name }}_owner, manage, {{ .name }}, */*
+g, role_{{ .name }}_editor, role_{{ .name }}_viewer
+g, role_{{ .name }}_owner, role_{{ .name }}_editor
 `))
 
 	strBuffer := &strings.Builder{}
-	_ = t.Execute(strBuffer, map[string]string{"name": name, "tenant": tenant})
-
-	return strBuffer.String()
-}
-
-func BuildTenantOwnerPolicies(tenant string) string {
-	t := template.Must(template.New("policy").Parse(`
-# {{ .name }} tenant owner policies
-p, tenant_{{ .tenant }}_owner, view, */*, storageClasses/*
-p, tenant_{{ .tenant }}_owner, view, {{ .tenant }}/*, */*
-p, tenant_{{ .tenant }}_owner, edit, {{ .tenant }}/*, */*
-p, tenant_{{ .tenant }}_owner, manage, {{ .tenant }}/*, */*
-`))
-
-	strBuffer := &strings.Builder{}
-	_ = t.Execute(strBuffer, map[string]string{"tenant": tenant})
+	_ = t.Execute(strBuffer, map[string]string{"name": namespace})
 
 	return strBuffer.String()
 }
@@ -92,21 +75,12 @@ func GetPoliciesFromAccessToken(accessToken *resources.AccessToken) [][]string {
 	var res = [][]string{}
 	for _, rule := range accessToken.Rules {
 
-		var scope string
-
-		// TODO: should work, But not clean.
-		if accessToken.Tenant == "global" {
-			scope = fmt.Sprintf("*/%s", rule.Namespace)
-		} else {
-			scope = fmt.Sprintf("%s/%s", accessToken.Tenant, rule.Namespace)
-		}
-
 		obj := fmt.Sprintf("%s/%s", rule.Kind, rule.Name)
 
 		res = append(res, []string{
 			ToSafeSubject(accessToken.Name, v1alpha1.SubjectTypeUser),
 			string(rule.Verb),
-			scope,
+			rule.Namespace,
 			obj,
 		})
 	}
@@ -114,7 +88,7 @@ func GetPoliciesFromAccessToken(accessToken *resources.AccessToken) [][]string {
 	return res
 }
 
-func roleValueToPolicyValue(tenant, ns, role string) string {
+func roleValueToPolicyValue(ns, role string) string {
 	switch role {
 	case v1alpha1.ClusterRoleViewer:
 		return "role_cluster_viewer"
@@ -122,10 +96,8 @@ func roleValueToPolicyValue(tenant, ns, role string) string {
 		return "role_cluster_editor"
 	case v1alpha1.ClusterRoleOwner:
 		return "role_cluster_owner"
-	case v1alpha1.TenantRoleOwner:
-		return fmt.Sprintf("tenant_%s_owner", tenant)
 	default:
-		return fmt.Sprintf("role_%s_%s_%s", tenant, ns, role)
+		return fmt.Sprintf("role_%s_%s", ns, role)
 	}
 
 }
@@ -140,20 +112,7 @@ func (m *StandardClientManager) UpdatePolicies() {
 			continue
 		}
 
-		// TODO: error
-		tenantName, _ := v1alpha1.GetTenantNameFromObj(application)
-
-		sb.WriteString(BuildRolePoliciesForTenantAndNamespace(tenantName, application.Name))
-	}
-
-	for _, tenant := range m.Tenants {
-		sb.WriteString(BuildTenantOwnerPolicies(tenant.Name))
-
-		// for _, owner := range tenant.Spec.Owners {
-		// 	sb.WriteString(
-		// 		fmt.Sprintf("g, %s, tenant_%s_owner\n", ToSafeSubject(owner, v1alpha1.SubjectTypeUser), tenant.Name),
-		// 	)
-		// }
+		sb.WriteString(BuildRolePoliciesForNamespace(application.Name))
 	}
 
 	for i := range m.AccessTokens {
@@ -163,16 +122,9 @@ func (m *StandardClientManager) UpdatePolicies() {
 			continue
 		}
 
-		tenantName, err := v1alpha1.GetTenantNameFromObj(accessToken)
-
-		if err != nil {
-			log.Error(fmt.Sprintf("Can't find tenantName from AccessToken %s", accessToken.Name))
-			continue
-		}
-
 		sb.WriteString(fmt.Sprintf("# policies for access token %s\n", accessToken.Name))
 
-		for _, policy := range GetPoliciesFromAccessToken(&resources.AccessToken{Name: accessToken.Name, Tenant: tenantName, AccessTokenSpec: &accessToken.Spec}) {
+		for _, policy := range GetPoliciesFromAccessToken(&resources.AccessToken{Name: accessToken.Name, AccessTokenSpec: &accessToken.Spec}) {
 			sb.WriteString(
 				fmt.Sprintf(
 					"p, %s, %s, %s, %s\n",
@@ -190,14 +142,11 @@ func (m *StandardClientManager) UpdatePolicies() {
 			continue
 		}
 
-		// TODO: handle error
-		tenantName, _ := v1alpha1.GetTenantNameFromObj(roleBinding)
-
 		sb.WriteString(fmt.Sprintf("# policies for rolebinding %s\n", roleBinding.Name))
 		sb.WriteString(fmt.Sprintf(
 			"g, %s, %s\n",
 			ToSafeSubject(roleBinding.Spec.Subject, roleBinding.Spec.SubjectType),
-			roleValueToPolicyValue(tenantName, roleBinding.Namespace, roleBinding.Spec.Role)),
+			roleValueToPolicyValue(roleBinding.Namespace, roleBinding.Spec.Role)),
 		)
 	}
 
@@ -363,7 +312,6 @@ func NewStandardClientManager(cfg *rest.Config) *StandardClientManager {
 		PolicyAdapter:     policyAdapter,
 		ClusterConfig:     cfg,
 		mut:               &sync.RWMutex{},
-		Tenants:           make(map[string]*v1alpha1.Tenant),
 		Applications:      make(map[string]*coreV1.Namespace),
 		AccessTokens:      make(map[string]*v1alpha1.AccessToken),
 		RoleBindings:      make(map[string]*v1alpha1.RoleBinding),
@@ -481,40 +429,6 @@ func setupResourcesWatcher(cfg *rest.Config, manager *StandardClientManager) {
 				defer manager.mut.Unlock()
 				if accessToken, ok := obj.(*v1alpha1.AccessToken); ok {
 					manager.AccessTokens[accessToken.Name] = accessToken
-					manager.UpdatePolicies()
-				}
-			},
-		})
-	} else {
-		log.Error("get informer error", zap.Error(err))
-		panic(err)
-	}
-
-	if informer, err := informerCache.GetInformer(context.Background(), &v1alpha1.Tenant{}); err == nil {
-		informer.AddEventHandler(toolscache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
-				manager.mut.Lock()
-				defer manager.mut.Unlock()
-
-				if tenant, ok := obj.(*v1alpha1.Tenant); ok {
-					manager.Tenants[tenant.Name] = tenant
-					manager.UpdatePolicies()
-				}
-			},
-			DeleteFunc: func(obj interface{}) {
-				manager.mut.Lock()
-				defer manager.mut.Unlock()
-
-				if tenant, ok := obj.(*v1alpha1.Tenant); ok {
-					delete(manager.Tenants, tenant.Name)
-					manager.UpdatePolicies()
-				}
-			},
-			UpdateFunc: func(oldObj, obj interface{}) {
-				manager.mut.Lock()
-				defer manager.mut.Unlock()
-				if tenant, ok := obj.(*v1alpha1.Tenant); ok {
-					manager.Tenants[tenant.Name] = tenant
 					manager.UpdatePolicies()
 				}
 			},

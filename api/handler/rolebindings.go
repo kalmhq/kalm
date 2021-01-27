@@ -12,11 +12,9 @@ import (
 )
 
 func (h *ApiHandler) handleListRoleBindings(c echo.Context) error {
-	currentUser := getCurrentUser(c)
-
 	var roleBindingList v1alpha1.RoleBindingList
 
-	if err := h.resourceManager.List(&roleBindingList, belongsToTenant(currentUser.Tenant)); err != nil {
+	if err := h.resourceManager.List(&roleBindingList); err != nil {
 		return err
 	}
 
@@ -134,8 +132,6 @@ func (h *ApiHandler) handleGetServiceAccount(c echo.Context) error {
 }
 
 func getRoleBindingFromContext(c echo.Context) (*v1alpha1.RoleBinding, error) {
-	currentUser := getCurrentUser(c)
-
 	var roleBinding resources.RoleBinding
 
 	if err := c.Bind(&roleBinding); err != nil {
@@ -146,9 +142,6 @@ func getRoleBindingFromContext(c echo.Context) (*v1alpha1.RoleBinding, error) {
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      roleBinding.Name,
 			Namespace: roleBinding.Namespace,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: currentUser.Tenant,
-			},
 		},
 		Spec: *roleBinding.RoleBindingSpec,
 	}

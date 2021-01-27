@@ -45,7 +45,6 @@ func StartWatching(c *Client) {
 	registerWatchHandler(c, &informerCache, &v1alpha1.RoleBinding{}, buildRoleBindingResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.ACMEServer{}, buildAcmeServerResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.Domain{}, buildDomainResMessage)
-	registerWatchHandler(c, &informerCache, &v1alpha1.Tenant{}, buildTenantResMessage)
 
 	informerCache.Start(c.stopWatcher)
 }
@@ -126,17 +125,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, nil
 	}
 
-	tenantName, err := v1alpha1.GetTenantNameFromObj(namespace)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if tenantName != c.clientInfo.Tenant {
-		return nil, nil
-	}
-
-	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+namespace.Name) {
+	if !c.clientManager.CanViewNamespace(c.clientInfo, namespace.Name) {
 		return nil, nil
 	}
 
@@ -177,17 +166,7 @@ func buildComponentResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, errors.New("convert watch obj to Component failed")
 	}
 
-	tenantName, err := v1alpha1.GetTenantNameFromObj(component)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if tenantName != c.clientInfo.Tenant {
-		return nil, nil
-	}
-
-	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+component.Namespace) {
+	if !c.clientManager.CanViewNamespace(c.clientInfo, component.Namespace) {
 		return nil, nil
 	}
 
@@ -206,13 +185,7 @@ func buildComponentResMessageCausedByService(c *Client, action string, objWatche
 		return nil, nil
 	}
 
-	tenantName, _ := v1alpha1.GetTenantNameFromObj(service)
-
-	if tenantName != c.clientInfo.Tenant {
-		return nil, nil
-	}
-
-	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+service.Namespace) {
+	if !c.clientManager.CanViewNamespace(c.clientInfo, service.Namespace) {
 		return nil, nil
 	}
 
@@ -232,13 +205,7 @@ func buildServiceResMessage(c *Client, action string, objWatched interface{}) (*
 		return nil, errors.New("convert watch obj to Service failed")
 	}
 
-	tenantName, _ := v1alpha1.GetTenantNameFromObj(service)
-
-	if tenantName != c.clientInfo.Tenant {
-		return nil, nil
-	}
-
-	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+service.Namespace) {
+	if !c.clientManager.CanViewNamespace(c.clientInfo, service.Namespace) {
 		return nil, nil
 	}
 
@@ -260,16 +227,7 @@ func buildPodResMessage(c *Client, action string, objWatched interface{}) (*ResM
 		return &ResMessage{}, nil
 	}
 
-	tenantName, err := v1alpha1.GetTenantNameFromObj(pod)
-	if err != nil {
-		return nil, err
-	}
-
-	if tenantName != c.clientInfo.Tenant {
-		return nil, nil
-	}
-
-	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+pod.Namespace) {
+	if !c.clientManager.CanViewNamespace(c.clientInfo, pod.Namespace) {
 		return nil, nil
 	}
 
@@ -287,21 +245,8 @@ func buildHttpRouteResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, errors.New("convert watch obj to Node failed")
 	}
 
-	routeTenant := route.Labels[v1alpha1.TenantNameLabelKey]
-	clientTenant := c.clientInfo.Tenant
-	if routeTenant != clientTenant {
-
-		log.Info("tenant not match",
-			zap.String("routeTenant", routeTenant),
-			zap.String("clientTenant", clientTenant),
-			zap.Any("route", route))
-
-		return nil, nil
-	}
-
 	if !c.clientManager.CanOperateHttpRoute(c.clientInfo, "view", &resources.HttpRoute{
 		Name:          route.Name,
-		Tenant:        routeTenant,
 		HttpRouteSpec: &route.Spec,
 	}) {
 		log.Info("permission denied", zap.Any("route", route))
@@ -340,16 +285,6 @@ func buildHttpsCertResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, errors.New("convert watch obj to HttpsCert failed")
 	}
 
-	tenantName, err := v1alpha1.GetTenantNameFromObj(httpsCert)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if tenantName != c.clientInfo.Tenant {
-		return nil, nil
-	}
-
 	return &ResMessage{
 		Kind:   "HttpsCert",
 		Action: action,
@@ -362,16 +297,6 @@ func buildRegistryResMessage(c *Client, action string, objWatched interface{}) (
 
 	if !ok {
 		return nil, errors.New("convert watch obj to Registry failed")
-	}
-
-	tenantName, err := v1alpha1.GetTenantNameFromObj(registry)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if tenantName != c.clientInfo.Tenant {
-		return nil, nil
 	}
 
 	if !c.clientManager.CanViewCluster(c.clientInfo) {
@@ -403,16 +328,7 @@ func buildJobResMessage(c *Client, action string, objWatched interface{}) (*ResM
 		return &ResMessage{}, nil
 	}
 
-	tenantName, err := v1alpha1.GetTenantNameFromObj(job)
-	if err != nil {
-		return nil, err
-	}
-
-	if tenantName != c.clientInfo.Tenant {
-		return nil, nil
-	}
-
-	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+job.Namespace) {
+	if !c.clientManager.CanViewNamespace(c.clientInfo, job.Namespace) {
 		return nil, nil
 	}
 
@@ -445,15 +361,6 @@ func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*R
 	//		return nil, err
 	//	}
 	//}
-
-	tenantName, err := v1alpha1.GetTenantNameFromObj(pvc)
-	if err != nil {
-		return nil, err
-	}
-
-	if tenantName != c.clientInfo.Tenant {
-		return nil, nil
-	}
 
 	volume, err := builder.BuildVolumeResponse(*pvc)
 	if err != nil {
@@ -503,17 +410,7 @@ func buildProtectEndpointResMessage(c *Client, action string, objWatched interfa
 		return nil, errors.New("convert watch obj to ProtectedEndpoint failed")
 	}
 
-	tenantName, err := v1alpha1.GetTenantNameFromObj(endpoint)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if tenantName != c.clientInfo.Tenant {
-		return nil, nil
-	}
-
-	if !c.clientManager.CanViewScope(c.clientInfo, c.clientInfo.Tenant+"/"+endpoint.Namespace) {
+	if !c.clientManager.CanViewNamespace(c.clientInfo, endpoint.Namespace) {
 		return nil, nil
 	}
 
@@ -531,21 +428,10 @@ func buildAccessTokenResMessage(c *Client, action string, objWatched interface{}
 		return nil, errors.New("convert watch obj to DeployKey failed")
 	}
 
-	tenantName, err := v1alpha1.GetTenantNameFromObj(accessToken)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if tenantName != c.clientInfo.Tenant {
-		return nil, nil
-	}
-
 	if accessToken.Labels != nil && accessToken.Labels[resources.AccessTokenTypeLabelKey] == resources.DeployAccessTokenLabelValue {
 		if !c.clientManager.PermissionsGreaterThanOrEqualToAccessToken(c.clientInfo, &resources.AccessToken{
 			Name:            accessToken.Name,
 			AccessTokenSpec: &accessToken.Spec,
-			Tenant:          tenantName,
 		}) {
 			return nil, nil
 		}
@@ -606,15 +492,6 @@ func buildDomainResMessage(c *Client, action string, objWatched interface{}) (*R
 		return nil, errors.New("convert watch obj to Domain failed")
 	}
 
-	tenantName, err := v1alpha1.GetTenantNameFromObj(domain)
-	if err != nil {
-		return nil, err
-	}
-
-	if tenantName != c.clientInfo.Tenant {
-		return nil, nil
-	}
-
 	if !c.clientManager.CanOperateDomains(c.clientInfo, "view", domain) {
 		return nil, nil
 	}
@@ -623,22 +500,5 @@ func buildDomainResMessage(c *Client, action string, objWatched interface{}) (*R
 		Kind:   "Domain",
 		Action: action,
 		Data:   resources.WrapDomainAsResp(*domain),
-	}, nil
-}
-
-func buildTenantResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
-	tenant, ok := objWatched.(*v1alpha1.Tenant)
-	if !ok {
-		return nil, errors.New("convert watch obj to Tenant failed")
-	}
-
-	if tenant.Name != c.clientInfo.Tenant {
-		return nil, nil
-	}
-
-	return &ResMessage{
-		Kind:   "Tenant",
-		Action: action,
-		Data:   resources.FromCRDTenant(tenant),
 	}, nil
 }

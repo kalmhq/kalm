@@ -107,8 +107,7 @@ func (h *ApiHandler) handleCreateSSOConfig(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleListProtectedEndpoints(c echo.Context) error {
-	currentUser := getCurrentUser(c)
-	endpoints, err := h.resourceManager.ListProtectedEndpoints(belongsToTenant(currentUser.Tenant))
+	endpoints, err := h.resourceManager.ListProtectedEndpoints()
 
 	if err != nil {
 		return err
@@ -127,7 +126,7 @@ func (h *ApiHandler) handleDeleteProtectedEndpoints(c echo.Context) error {
 	}
 
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+protectedEndpoint.Namespace, "protectedEndpoints/"+protectedEndpoint.Name)
+	h.MustCanEdit(currentUser, protectedEndpoint.Namespace, "protectedEndpoints/"+protectedEndpoint.Name)
 
 	err := h.resourceManager.DeleteProtectedEndpoints(protectedEndpoint)
 
@@ -146,9 +145,8 @@ func (h *ApiHandler) handleCreateProtectedEndpoints(c echo.Context) error {
 	}
 
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+protectedEndpoint.Namespace, "protectedEndpoints/*")
+	h.MustCanEdit(currentUser, protectedEndpoint.Namespace, "protectedEndpoints/*")
 
-	protectedEndpoint.Tenant = currentUser.Tenant
 	protectedEndpoint, err := h.resourceManager.CreateProtectedEndpoint(protectedEndpoint)
 
 	if err != nil {
@@ -166,7 +164,7 @@ func (h *ApiHandler) handleUpdateProtectedEndpoints(c echo.Context) error {
 	}
 
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+protectedEndpoint.Namespace, "protectedEndpoints/"+protectedEndpoint.Name)
+	h.MustCanEdit(currentUser, protectedEndpoint.Namespace, "protectedEndpoints/"+protectedEndpoint.Name)
 
 	protectedEndpoint, err := h.resourceManager.UpdateProtectedEndpoint(protectedEndpoint)
 

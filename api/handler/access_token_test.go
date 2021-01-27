@@ -29,7 +29,6 @@ func (suite *AccessTokenTestSuite) TeardownSuite() {
 }
 
 func (suite *AccessTokenTestSuite) TestGetEmptyList() {
-
 	// list
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
@@ -60,10 +59,10 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 		},
 	}
 
-	// A namespace owner in the default tenant can't create access token
+	// A namespace owner can't create access token
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetEditorRoleOfScope(defaultTenant, "ns1"),
+			GetEditorRoleOfNamespace("ns1"),
 		},
 		Namespace: "ns1",
 		Method:    http.MethodPost,
@@ -79,7 +78,7 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 	// create
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetTenantOwnerRole(defaultTenant),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodPost,
 		Body:   key,
@@ -94,10 +93,10 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 		},
 	})
 
-	// list in same tenant
+	// list
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetTenantOwnerRole(defaultTenant),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/access_tokens",
@@ -112,26 +111,10 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 		},
 	})
 
-	// list in another tenant, should get 0
-	suite.DoTestRequest(&TestRequestContext{
-		Roles: []string{
-			GetTenantOwnerRole("anotherTenant"),
-		},
-		Tenant: "anotherTenant",
-		Method: http.MethodGet,
-		Path:   "/v1alpha1/access_tokens",
-		TestWithRoles: func(rec *ResponseRecorder) {
-			var resList []resources.AccessToken
-			rec.BodyAsJSON(&resList)
-			suite.Equal(200, rec.Code)
-			suite.Equal(0, len(resList))
-		},
-	})
-
 	// Delete
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetTenantOwnerRole(defaultTenant),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodDelete,
 		Path:   "/v1alpha1/access_tokens",
@@ -147,7 +130,7 @@ func (suite *AccessTokenTestSuite) TestCreateAndDelete() {
 	// list again
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetTenantOwnerRole(defaultTenant),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/access_tokens",

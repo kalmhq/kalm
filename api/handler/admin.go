@@ -5,11 +5,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/rand"
 )
@@ -31,9 +29,8 @@ func (h *ApiHandler) InstallAdminRoutes(e *echo.Echo) {
 func (h *ApiHandler) InstallAdminDebugRoutes(e *echo.Echo) {
 	// debug routes, should not open when deploying on a production server
 	g := e.Group("/admin/debug")
-	g.POST("/tenant", h.handleCreateTemporaryTenant, h.GetUserMiddleware, h.RequireUserMiddleware)
 	g.POST("/admin", h.handleCreateTemporaryAdmin, h.GetUserMiddleware, h.RequireUserMiddleware)
-	g.POST("/clear", h.handleDebugCleanTenantAndAccessTokens, h.GetUserMiddleware, h.RequireUserMiddleware)
+	g.POST("/clear", h.handleDebugCleanAccessTokens, h.GetUserMiddleware, h.RequireUserMiddleware)
 }
 
 func (h *ApiHandler) handlePolicies(c echo.Context) error {
@@ -63,10 +60,7 @@ func handleApiRoutes(c echo.Context) error {
 	return c.JSON(200, c.Echo().Routes())
 }
 
-func (h *ApiHandler) handleDebugCleanTenantAndAccessTokens(c echo.Context) error {
-	var tenants v1alpha1.TenantList
-	_ = h.resourceManager.List(&tenants)
-
+func (h *ApiHandler) handleDebugCleanAccessTokens(c echo.Context) error {
 	var tokens v1alpha1.AccessTokenList
 	_ = h.resourceManager.List(&tokens)
 
@@ -74,24 +68,15 @@ func (h *ApiHandler) handleDebugCleanTenantAndAccessTokens(c echo.Context) error
 		_ = h.resourceManager.Delete(&tokens.Items[i])
 	}
 
-	for i := range tenants.Items {
-		_ = h.resourceManager.Delete(&tenants.Items[i])
-	}
-
 	return nil
 }
 
 func (h *ApiHandler) handleCreateTemporaryAdmin(c echo.Context) error {
-	tenantName := "global"
-
 	ownerToken := rand.String(128)
 	ownerTokenName := v1alpha1.GetAccessTokenNameFromToken(ownerToken)
 	ownerAccessToken := &v1alpha1.AccessToken{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: ownerTokenName,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: tenantName,
-			},
 		},
 		Spec: v1alpha1.AccessTokenSpec{
 			Token: ownerToken,
@@ -125,9 +110,6 @@ func (h *ApiHandler) handleCreateTemporaryAdmin(c echo.Context) error {
 	viewerAccessToken := &v1alpha1.AccessToken{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: viewerTokenName,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: tenantName,
-			},
 		},
 		Spec: v1alpha1.AccessTokenSpec{
 			Token: viewerToken,
@@ -149,9 +131,6 @@ func (h *ApiHandler) handleCreateTemporaryAdmin(c echo.Context) error {
 	editorAccessToken := &v1alpha1.AccessToken{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: editorTokenName,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: tenantName,
-			},
 		},
 		Spec: v1alpha1.AccessTokenSpec{
 			Token: editorToken,
@@ -174,40 +153,6 @@ func (h *ApiHandler) handleCreateTemporaryAdmin(c echo.Context) error {
 		},
 	}
 
-	var tenant v1alpha1.Tenant
-	if err := h.resourceManager.Get("", "tenant", &tenant); err != nil {
-		tenant = v1alpha1.Tenant{
-			ObjectMeta: metaV1.ObjectMeta{
-				Name: tenantName,
-			},
-			Spec: v1alpha1.TenantSpec{
-				TenantDisplayName: "test-tenant-global",
-				ResourceQuota: map[v1alpha1.ResourceName]resource.Quantity{
-					v1alpha1.ResourceAccessTokensCount:     resource.MustParse("100"),
-					v1alpha1.ResourceApplicationsCount:     resource.MustParse("100"),
-					v1alpha1.ResourceServicesCount:         resource.MustParse("100"),
-					v1alpha1.ResourceComponentsCount:       resource.MustParse("100"),
-					v1alpha1.ResourceCPU:                   resource.MustParse("100"),
-					v1alpha1.ResourceMemory:                resource.MustParse("100Gi"),
-					v1alpha1.ResourceStorage:               resource.MustParse("100"),
-					v1alpha1.ResourceEphemeralStorage:      resource.MustParse("100"),
-					v1alpha1.ResourceTraffic:               resource.MustParse("100"),
-					v1alpha1.ResourceRoleBindingCount:      resource.MustParse("100"),
-					v1alpha1.ResourceDockerRegistriesCount: resource.MustParse("100"),
-					v1alpha1.ResourceHttpRoutesCount:       resource.MustParse("100"),
-					v1alpha1.ResourceHttpsCertsCount:       resource.MustParse("100"),
-				},
-				Owners: []string{ownerTokenName},
-			},
-		}
-
-		if err := h.resourceManager.Create(&tenant); err != nil {
-			if !errors.IsAlreadyExists(err) {
-				return err
-			}
-		}
-	}
-
 	if err := h.resourceManager.Create(ownerAccessToken); err != nil {
 		return err
 	}
@@ -227,86 +172,6 @@ Cluster Editor Token: {{ .editorToken }}
 
 	strBuffer := &strings.Builder{}
 	_ = t.Execute(strBuffer, map[string]string{"ownerToken": ownerToken, "viewerToken": viewerToken, "editorToken": editorToken})
-
-	return c.String(200, strBuffer.String())
-}
-
-func (h *ApiHandler) handleCreateTemporaryTenant(c echo.Context) error {
-	token := rand.String(128)
-	accessTokenName := v1alpha1.GetAccessTokenNameFromToken(token)
-	tenantName := "tenant-" + rand.String(8)
-
-	accessToken := &v1alpha1.AccessToken{
-		ObjectMeta: metaV1.ObjectMeta{
-			Name: accessTokenName,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: tenantName,
-			},
-		},
-		Spec: v1alpha1.AccessTokenSpec{
-			Token: token,
-			Rules: []v1alpha1.AccessTokenRule{
-				{
-					Verb:      "view",
-					Namespace: "*",
-					Kind:      "*",
-					Name:      "*",
-				},
-				{
-					Verb:      "edit",
-					Namespace: "*",
-					Kind:      "*",
-					Name:      "*",
-				},
-				{
-					Verb:      "manage",
-					Namespace: "*",
-					Kind:      "*",
-					Name:      "*",
-				},
-			},
-			Creator:   getCurrentUser(c).Name,
-			ExpiredAt: nil,
-		},
-	}
-
-	tenant := &v1alpha1.Tenant{
-		ObjectMeta: metaV1.ObjectMeta{
-			Name: tenantName,
-		},
-		Spec: v1alpha1.TenantSpec{
-			TenantDisplayName: tenantName,
-			ResourceQuota: map[v1alpha1.ResourceName]resource.Quantity{
-				v1alpha1.ResourceAccessTokensCount: resource.MustParse("100"),
-				v1alpha1.ResourceRoleBindingCount:  resource.MustParse("100"),
-				v1alpha1.ResourceApplicationsCount: resource.MustParse("100"),
-				v1alpha1.ResourceServicesCount:     resource.MustParse("100"),
-				v1alpha1.ResourceComponentsCount:   resource.MustParse("100"),
-				v1alpha1.ResourceCPU:               resource.MustParse("100"),
-				v1alpha1.ResourceMemory:            resource.MustParse("100Gi"),
-			},
-			Owners: []string{accessTokenName},
-		},
-	}
-
-	if err := h.resourceManager.Create(tenant); err != nil {
-		if !errors.IsAlreadyExists(err) {
-			return err
-		}
-	}
-
-	if err := h.resourceManager.Create(accessToken); err != nil {
-		return err
-	}
-
-	t := template.Must(template.New("policy").Parse(`New temporary tenant created.
-
-Name: {{ .tenantName }}
-OwnerToken {{ .token }}
-`))
-
-	strBuffer := &strings.Builder{}
-	_ = t.Execute(strBuffer, map[string]string{"tenantName": tenantName, "token": token})
 
 	return c.String(200, strBuffer.String())
 }

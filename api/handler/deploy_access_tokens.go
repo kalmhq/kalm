@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"fmt"
-
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
@@ -18,9 +16,7 @@ func (h *ApiHandler) InstallDeployAccessTokenHandlers(e *echo.Group) {
 }
 
 func (h *ApiHandler) handleListDeployAccessTokens(c echo.Context) error {
-	currentUser := getCurrentUser(c)
-
-	keys, err := h.resourceManager.GetDeployAccessTokens(belongsToTenant(currentUser.Tenant))
+	keys, err := h.resourceManager.GetDeployAccessTokens()
 	keys = h.filterAuthorizedAccessTokens(c, keys)
 
 	if err != nil {
@@ -37,8 +33,6 @@ func (h *ApiHandler) handleCreateDeployAccessToken(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-
-	accessToken.Tenant = currentUser.Tenant
 
 	if !h.clientManager.PermissionsGreaterThanOrEqualToAccessToken(currentUser, accessToken) {
 		return resources.InsufficientPermissionsError
@@ -59,23 +53,13 @@ func (h *ApiHandler) handleCreateDeployAccessToken(c echo.Context) error {
 			if err := h.resourceManager.Get("", rule.Namespace, &ns); err != nil {
 				return err
 			}
-
-			tenantName, err := v1alpha1.GetTenantNameFromObj(&ns)
-
-			if err != nil {
-				return err
-			}
-
-			if tenantName != currentUser.Tenant {
-				return fmt.Errorf("namespace %s doesn't belong to tenant %s", rule.Namespace, currentUser.Tenant)
-			}
 		}
 	}
 
 	// Set sensitive fields
 	accessToken.Token = rand.String(128)
 	if accessToken.Creator == "" {
-		accessToken.Creator = firstNotEmptyStr(currentUser.Name, currentUser.Email, currentUser.Tenant)
+		accessToken.Creator = firstNotEmptyStr(currentUser.Name, currentUser.Email)
 	}
 	accessToken.Name = v1alpha1.GetAccessTokenNameFromToken(accessToken.Token)
 

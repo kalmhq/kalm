@@ -56,6 +56,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 
 	gv1Alpha1WithAuth.GET("/loadbalancers", h.handleLoadBalancers)
 	gv1Alpha1WithAuth.GET("/services", h.handleListClusterServices)
+	gv1Alpha1WithAuth.GET("/services/:namespace", h.handleListClusterServices)
 	gv1Alpha1WithAuth.GET("/componentplugins", h.handleListComponentPlugins)
 
 	h.InstallApplicationsHandlers(gv1Alpha1WithAuth)
@@ -101,7 +102,6 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	h.InstallSSOHandlers(gv1Alpha1WithAuth)
 	h.InstallProtectedEndpointHandlers(gv1Alpha1WithAuth)
 	h.InstallACMEServerHandlers(gv1Alpha1WithAuth)
-	h.InstallTenantHandlers(gv1Alpha1WithAuth)
 
 	gv1Alpha1WithAuth.GET("/settings", h.handleListSettings)
 }

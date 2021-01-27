@@ -8,8 +8,8 @@ import (
 
 func TestFakeToken(t *testing.T) {
 
-	token := ToFakeToken("foo@bar", "tenant", "roleA", "roleB", "groupC")
-	assert.Equal(t, "email=foo@bar tenant=tenant groups=roleA,roleB,groupC", token)
+	token := ToFakeToken("foo@bar", "roleA", "roleB", "groupC")
+	assert.Equal(t, "email=foo@bar groups=roleA,roleB,groupC", token)
 
 	email, roles := parseFakeToken(token)
 

@@ -19,12 +19,7 @@ func (h *ApiHandler) InstallAccessTokensHandlers(e *echo.Group) {
 // handlers
 
 func (h *ApiHandler) handleListAccessTokens(c echo.Context) error {
-	currentUser := getCurrentUser(c)
-
-	tokens, err := h.resourceManager.GetAccessTokens(
-		belongsToTenant(currentUser.Tenant),
-	)
-
+	tokens, err := h.resourceManager.GetAccessTokens()
 	tokens = h.filterAuthorizedAccessTokens(c, tokens)
 
 	if err != nil {
@@ -46,9 +41,6 @@ func (h *ApiHandler) handleCreateAccessToken(c echo.Context) error {
 	accessToken.Token = rand.String(128)
 	accessToken.Creator = currentUser.Name
 	accessToken.Name = v1alpha1.GetAccessTokenNameFromToken(accessToken.Token)
-	accessToken.Tenant = currentUser.Tenant
-
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "accessTokens/*")
 
 	if !h.clientManager.PermissionsGreaterThanOrEqualToAccessToken(currentUser, accessToken) {
 		return resources.InsufficientPermissionsError
@@ -73,7 +65,6 @@ func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
 	}
 
 	tokens, err := h.resourceManager.GetAccessTokens(
-		belongsToTenant(currentUser.Tenant),
 		hasName(accessToken.Name),
 		limitOne(),
 	)
@@ -88,10 +79,8 @@ func (h *ApiHandler) handleDeleteAccessToken(c echo.Context) error {
 
 	token := tokens[0]
 
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "accessTokens/*")
-
 	if !h.clientManager.PermissionsGreaterThanOrEqualToAccessToken(currentUser, &resources.AccessToken{
-		Name: token.Name, AccessTokenSpec: token.AccessTokenSpec, Tenant: token.Tenant,
+		Name: token.Name, AccessTokenSpec: token.AccessTokenSpec,
 	}) {
 		return resources.InsufficientPermissionsError
 	}

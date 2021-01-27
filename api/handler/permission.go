@@ -27,7 +27,6 @@ func (h *ApiHandler) MustCan(user *client.ClientInfo, action string, scope strin
 		panic(&resources.UnauthorizedError{
 			Email:  user.Email,
 			Groups: user.Groups,
-			Tenant: user.Tenant,
 			Action: action,
 			Scope:  scope,
 			Object: object,
@@ -35,28 +34,26 @@ func (h *ApiHandler) MustCan(user *client.ClientInfo, action string, scope strin
 	}
 }
 
-func (h *ApiHandler) MustCanEdit(user *client.ClientInfo, scope string, object string) {
-	h.MustCan(user, "edit", scope, object)
+func (h *ApiHandler) MustCanEdit(user *client.ClientInfo, namespace string, object string) {
+	h.MustCan(user, "edit", namespace, object)
 }
 
-func (h *ApiHandler) MustCanView(user *client.ClientInfo, scope string, object string) {
-	h.MustCan(user, "view", scope, object)
+func (h *ApiHandler) MustCanView(user *client.ClientInfo, namespace string, object string) {
+	h.MustCan(user, "view", namespace, object)
 }
 
-func (h *ApiHandler) MustCanManage(user *client.ClientInfo, scope string, object string) {
-	h.MustCan(user, "manage", scope, object)
+func (h *ApiHandler) MustCanManage(user *client.ClientInfo, namespace string, object string) {
+	h.MustCan(user, "manage", namespace, object)
 }
 
 func (h *ApiHandler) MustCanEditCluster(user *client.ClientInfo) {
-	h.MustCan(user, "edit", "*/*", "*/*")
+	h.MustCan(user, "edit", "*", "*/*")
 }
 
 func (h *ApiHandler) MustCanViewCluster(user *client.ClientInfo) {
-	h.MustCan(user, "view", "*/*", "*/*")
+	h.MustCan(user, "view", "*", "*/*")
 }
 
 func (h *ApiHandler) MustCanManageCluster(user *client.ClientInfo) {
-	h.MustCan(user, "manage", "*/*", "*/*")
+	h.MustCan(user, "manage", "*", "*/*")
 }
-
-

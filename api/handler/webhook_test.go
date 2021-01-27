@@ -66,7 +66,7 @@ func (suite *WebhookHandlerTestSuite) TestWebhookHandler() {
 	suite.DoTestRequest(&TestRequestContext{
 		User: accessToken.Name,
 		Roles: []string{
-			GetEditorRoleOfScope(defaultTenant, suite.namespace),
+			GetEditorRoleOfNamespace(suite.namespace),
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodPost,
