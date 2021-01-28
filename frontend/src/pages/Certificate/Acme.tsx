@@ -3,10 +3,10 @@ import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
-import { TDispatchProp } from "types";
 import { RootState } from "reducers";
-import { H6 } from "widgets/Label";
+import { TDispatchProp } from "types";
 import { ACMEServer } from "widgets/ACMEServer";
+import { H6 } from "widgets/Label";
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
   return {};
@@ -20,20 +20,18 @@ export interface Props
     TDispatchProp,
     ReturnType<typeof mapStateToProps> {}
 
-class CertificateAcmeRaw extends React.PureComponent<Props> {
-  public render() {
-    return (
-      <BasePage secondHeaderRight={<H6>ACME DNS Server</H6>}>
-        <Box p={2}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={12} md={12}>
-              <ACMEServer />
-            </Grid>
+const CertificateAcmeRaw: React.FC<Props> = (props) => {
+  return (
+    <BasePage secondHeaderRight={<H6>ACME DNS Server</H6>}>
+      <Box p={2}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={12} md={12}>
+            <ACMEServer />
           </Grid>
-        </Box>
-      </BasePage>
-    );
-  }
-}
+        </Grid>
+      </Box>
+    </BasePage>
+  );
+};
 
 export const CertificateAcmePage = withStyles(styles)(connect(mapStateToProps)(withRouter(CertificateAcmeRaw)));

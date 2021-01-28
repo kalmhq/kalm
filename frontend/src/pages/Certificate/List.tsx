@@ -64,21 +64,8 @@ interface Props
     ReturnType<typeof mapStateToProps>,
     TDispatchProp {}
 
-interface State {
-  isDeleteConfirmDialogOpen: boolean;
-  deletingCertificate: Certificate | null;
-}
-
-class CertificateListPageRaw extends React.PureComponent<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      isDeleteConfirmDialogOpen: false,
-      deletingCertificate: null,
-    };
-  }
-
-  private renderName = (cert: Certificate) => {
+const CertificateListPageRaw: React.FC<Props> = (props) => {
+  const renderName = (cert: Certificate) => {
     return (
       <Typography variant={"subtitle2"}>
         <KLink to={`/certificates/${cert.name}`}>{cert.name}</KLink>
@@ -86,8 +73,8 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderDomains = (cert: Certificate) => {
-    const { classes } = this.props;
+  const renderDomains = (cert: Certificate) => {
+    const { classes } = props;
 
     return (
       <Box className={classes.domainsColumn}>
@@ -98,8 +85,8 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderActions = (cert: Certificate) => {
-    const { canEditCluster } = this.props;
+  const renderActions = (cert: Certificate) => {
+    const { canEditCluster } = props;
     return (
       <>
         {canEditCluster() && (
@@ -112,7 +99,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
             <DeleteButtonWithConfirmPopover
               popupId="delete-certificate-popup"
               popupTitle="DELETE CERTIFICATE?"
-              confirmedAction={() => this.confirmDelete(cert)}
+              confirmedAction={() => confirmDelete(cert)}
             />
           </>
         )}
@@ -120,21 +107,8 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private closeDeleteConfirmDialog = () => {
-    this.setState({
-      isDeleteConfirmDialogOpen: false,
-    });
-  };
-
-  private showDeleteConfirmDialog = (deletingCertificate: Certificate) => {
-    this.setState({
-      isDeleteConfirmDialogOpen: true,
-      deletingCertificate,
-    });
-  };
-
-  private confirmDelete = async (cert: Certificate) => {
-    const { dispatch } = this.props;
+  const confirmDelete = async (cert: Certificate) => {
+    const { dispatch } = props;
     try {
       const certName = cert.name;
       await dispatch(deleteCertificateAction(certName));
@@ -144,8 +118,8 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderStatus = (cert: Certificate) => {
-    const { classes } = this.props;
+  const renderStatus = (cert: Certificate) => {
+    const { classes } = props;
     const ready = cert.ready;
 
     if (ready === "True") {
@@ -169,20 +143,20 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderType = (cert: Certificate) => {
+  const renderType = (cert: Certificate) => {
     return cert.isSelfManaged ? "Uploaded" : "Let's Encrypt";
   };
 
-  private renderIsSignedByTrustedCA = (cert: Certificate) => {
+  const renderIsSignedByTrustedCA = (cert: Certificate) => {
     return cert.isSignedByTrustedCA ? "Yes" : "No";
   };
 
-  private renderExpireTimestamp = (cert: Certificate) => {
+  const renderExpireTimestamp = (cert: Certificate) => {
     return cert.expireTimestamp ? formatDate(new Date(cert.expireTimestamp! * 1000)) : "-";
   };
 
-  private getKRTableColumns() {
-    const { canEditCluster } = this.props;
+  const getKRTableColumns = () => {
+    const { canEditCluster } = props;
 
     const columns = [
       {
@@ -219,35 +193,33 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     }
 
     return columns;
-  }
+  };
 
-  private getKRTableData() {
-    const { certificates } = this.props;
+  const getKRTableData = () => {
+    const { certificates } = props;
     const data: any[] = [];
 
     certificates.forEach((cert, index) => {
       data.push({
-        name: this.renderName(cert),
-        domains: this.renderDomains(cert),
-        status: this.renderStatus(cert),
-        isSelfManaged: this.renderType(cert),
-        isSignedByTrustedCA: this.renderIsSignedByTrustedCA(cert),
-        expireTimestamp: this.renderExpireTimestamp(cert),
-        actions: this.renderActions(cert),
+        name: renderName(cert),
+        domains: renderDomains(cert),
+        status: renderStatus(cert),
+        isSelfManaged: renderType(cert),
+        isSignedByTrustedCA: renderIsSignedByTrustedCA(cert),
+        expireTimestamp: renderExpireTimestamp(cert),
+        actions: renderActions(cert),
       });
     });
 
     return data;
-  }
+  };
 
-  private renderKRTable() {
-    return (
-      <KRTable showTitle={true} title="Certificates" columns={this.getKRTableColumns()} data={this.getKRTableData()} />
-    );
-  }
+  const renderKRTable = () => {
+    return <KRTable showTitle={true} title="Certificates" columns={getKRTableColumns()} data={getKRTableData()} />;
+  };
 
-  private renderEmpty() {
-    const { canEditCluster } = this.props;
+  const renderEmpty = () => {
+    const { canEditCluster } = props;
     return (
       <EmptyInfoBox
         image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
@@ -262,9 +234,9 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         }
       />
     );
-  }
+  };
 
-  private renderInfoBox() {
+  const renderInfoBox = () => {
     const title = "Certificates";
 
     const options = [
@@ -298,57 +270,56 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     ];
 
     return <InfoBox title={title} options={options} />;
-  }
+  };
 
-  public render() {
-    const { isFirstLoaded, isLoading, certificates, canEditCluster } = this.props;
-    return (
-      <BasePage
-        secondHeaderRight={
-          canEditCluster() ? (
-            <>
-              {/* <H6>Certificates</H6> */}
-              <Button
-                color="primary"
-                variant="outlined"
-                size="small"
-                component={Link}
-                tutorial-anchor-id="add-certificate"
-                to="/certificates/new"
-              >
-                New Certificate
-              </Button>
-              <Button
-                color="primary"
-                variant="outlined"
-                size="small"
-                component={Link}
-                tutorial-anchor-id="upload-certificate"
-                to="/certificates/upload"
-              >
-                Upload Certificate
-              </Button>
-            </>
-          ) : null
-        }
-      >
-        <Box p={2}>
-          <ACMEServer />
-          <Box mt={2}>
-            {isLoading && !isFirstLoaded ? (
-              <Loading />
-            ) : certificates && certificates.length > 0 ? (
-              this.renderKRTable()
-            ) : (
-              this.renderEmpty()
-            )}
-          </Box>
-          <Box mt={2}>{this.renderInfoBox()}</Box>
+  const { isFirstLoaded, isLoading, certificates, canEditCluster } = props;
+  return (
+    <BasePage
+      secondHeaderRight={
+        canEditCluster() ? (
+          <>
+            {/* <H6>Certificates</H6> */}
+            <Button
+              color="primary"
+              variant="outlined"
+              size="small"
+              component={Link}
+              tutorial-anchor-id="add-certificate"
+              to="/certificates/new"
+            >
+              New Certificate
+            </Button>
+            <Button
+              color="primary"
+              variant="outlined"
+              size="small"
+              component={Link}
+              tutorial-anchor-id="upload-certificate"
+              to="/certificates/upload"
+            >
+              Upload Certificate
+            </Button>
+          </>
+        ) : null
+      }
+    >
+      <Box p={2}>
+        <ACMEServer />
+        <Box mt={2}>
+          {isLoading && !isFirstLoaded ? (
+            <Loading />
+          ) : certificates && certificates.length > 0 ? (
+            renderKRTable()
+          ) : (
+            renderEmpty()
+          )}
         </Box>
-      </BasePage>
-    );
-  }
-}
+        <Box mt={2}>{renderInfoBox()}</Box>
+      </Box>
+      <Box mt={2}>{renderInfoBox()}</Box>
+    </BasePage>
+  );
+};
 
 export const CertificateListPage = withUserAuth(
   withStyles(styles)(connect(mapStateToProps)(CertificateDataWrapper(CertificateListPageRaw))),

@@ -1,15 +1,15 @@
 import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { editAcmeServerAction } from "actions/certificate";
 import { push } from "connected-react-router";
+import { AcmeForm } from "forms/Certificate/acmeForm";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
-import { withRouter, RouteComponentProps } from "react-router-dom";
-import { TDispatchProp } from "types";
-import { editAcmeServerAction } from "actions/certificate";
+import { RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
+import { TDispatchProp } from "types";
 import { AcmeServerFormType } from "types/certificate";
 import { H6 } from "widgets/Label";
-import { AcmeForm } from "forms/Certificate/acmeForm";
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
   const acmeServer = state.certificates.acmeServer;
@@ -39,37 +39,35 @@ export interface Props
     TDispatchProp,
     ReturnType<typeof mapStateToProps> {}
 
-class CertificateAcmeEditRaw extends React.PureComponent<Props> {
-  private submit = async (acmeServer: AcmeServerFormType) => {
+const CertificateAcmeEditRaw: React.FC<Props> = (props) => {
+  const submit = async (acmeServer: AcmeServerFormType) => {
     try {
-      const { dispatch } = this.props;
+      const { dispatch } = props;
       await dispatch(editAcmeServerAction(acmeServer));
-      this.onSubmitSuccess();
+      onSubmitSuccess();
     } catch (e) {
       console.log(e);
     }
   };
-  private onSubmitSuccess = () => {
-    const { dispatch, location } = this.props;
+  const onSubmitSuccess = () => {
+    const { dispatch, location } = props;
     const coms = location.search.replace("?", "").split("=");
     const target = coms[coms.length - 1];
     dispatch(push("/certificates/" + target));
   };
 
-  public render() {
-    const { initialValues, classes } = this.props;
-    return (
-      <BasePage secondHeaderRight={<H6>Edit ACME DNS Server</H6>}>
-        <div className={classes.root}>
-          <Grid container spacing={2}>
-            <Grid item xs={8} sm={8} md={8}>
-              <AcmeForm onSubmit={this.submit} initial={initialValues} />
-            </Grid>
+  const { initialValues, classes } = props;
+  return (
+    <BasePage secondHeaderRight={<H6>Edit ACME DNS Server</H6>}>
+      <div className={classes.root}>
+        <Grid container spacing={2}>
+          <Grid item xs={8} sm={8} md={8}>
+            <AcmeForm onSubmit={submit} initial={initialValues} />
           </Grid>
-        </div>
-      </BasePage>
-    );
-  }
-}
+        </Grid>
+      </div>
+    </BasePage>
+  );
+};
 
 export const CertificateAcmeEditPage = withStyles(styles)(connect(mapStateToProps)(withRouter(CertificateAcmeEditRaw)));

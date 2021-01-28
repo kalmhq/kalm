@@ -48,20 +48,13 @@ interface Props
     WithUserAuthProps,
     WithRoutesDataProps {}
 
-interface State {}
-
-class ComponentShowRaw extends React.PureComponent<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {};
-  }
-
-  private getServicePort = (port: ComponentLikePort) => {
+const ComponentShowRaw: React.FC<Props> = (props) => {
+  const getServicePort = (port: ComponentLikePort) => {
     return port.servicePort || port.containerPort;
   };
 
-  private renderStatefulSetNetwork() {
-    const { component, activeNamespaceName } = this.props;
+  const renderStatefulSetNetwork = () => {
+    const { component, activeNamespaceName } = props;
     const hasService = component.ports && component.ports!.length > 0;
 
     return (
@@ -95,7 +88,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
               content: (
                 <span>
                   Expose port <strong>{port.containerPort}</strong> to cluster port{" "}
-                  <strong>{this.getServicePort(port)}</strong>
+                  <strong>{getServicePort(port)}</strong>
                 </span>
               ),
             }))}
@@ -103,10 +96,10 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
         )}
       </Expansion>
     );
-  }
+  };
 
-  private renderCommonNetwork() {
-    const { component, activeNamespaceName } = this.props;
+  const renderCommonNetwork = () => {
+    const { component, activeNamespaceName } = props;
     const hasService = component.ports && component.ports!.length > 0;
 
     return (
@@ -138,18 +131,18 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
         )}
       </Expansion>
     );
-  }
+  };
 
-  private renderNetwork() {
-    if (this.props.component.workloadType === "statefulset") {
-      return this.renderStatefulSetNetwork();
+  const renderNetwork = () => {
+    if (props.component.workloadType === "statefulset") {
+      return renderStatefulSetNetwork();
     }
 
-    return this.renderCommonNetwork();
-  }
+    return renderCommonNetwork();
+  };
 
-  private renderRoutes() {
-    const { httpRoutes, component, activeNamespaceName, canEditNamespace } = this.props;
+  const renderRoutes = () => {
+    const { httpRoutes, component, activeNamespaceName, canEditNamespace } = props;
 
     const serviceName = `${component.name}`;
 
@@ -165,9 +158,9 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
         </Box>
       </Expansion>
     );
-  }
-  private renderPods() {
-    const { component, activeNamespaceName, canEditNamespace } = this.props;
+  };
+  const renderPods = () => {
+    const { component, activeNamespaceName, canEditNamespace } = props;
 
     return (
       <Expansion title="pods" defaultUnfold>
@@ -180,10 +173,10 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
         />
       </Expansion>
     );
-  }
+  };
 
-  private renderJobs() {
-    const { component, activeNamespaceName, canEditNamespace } = this.props;
+  const renderJobs = () => {
+    const { component, activeNamespaceName, canEditNamespace } = props;
 
     return (
       <Expansion title="Jobs" defaultUnfold>
@@ -196,10 +189,10 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
         />
       </Expansion>
     );
-  }
+  };
 
-  private renderSecondHeaderRight() {
-    const { classes, component, activeNamespaceName, canEditNamespace, dispatch } = this.props;
+  const renderSecondHeaderRight = () => {
+    const { classes, component, activeNamespaceName, canEditNamespace, dispatch } = props;
 
     return (
       <div className={classes.secondHeaderRight}>
@@ -252,29 +245,27 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
         ) : null}
       </div>
     );
-  }
+  };
 
-  public render() {
-    const { component, activeNamespaceName } = this.props;
-    return (
-      <BasePage
-        secondHeaderRight={this.renderSecondHeaderRight()}
-        secondHeaderLeft={<Namespaces />}
-        leftDrawer={<ApplicationSidebar />}
-      >
-        <Box p={2}>
-          <Expansion title={"Basic"} defaultUnfold>
-            <ComponentBasicInfo component={component} activeNamespaceName={activeNamespaceName} />
-          </Expansion>
-          {!!component.jobs && this.renderJobs()}
-          {this.renderPods()}
-          {this.renderNetwork()}
-          {this.renderRoutes()}
-        </Box>
-      </BasePage>
-    );
-  }
-}
+  const { component, activeNamespaceName } = props;
+  return (
+    <BasePage
+      secondHeaderRight={renderSecondHeaderRight()}
+      secondHeaderLeft={<Namespaces />}
+      leftDrawer={<ApplicationSidebar />}
+    >
+      <Box p={2}>
+        <Expansion title={"Basic"} defaultUnfold>
+          <ComponentBasicInfo component={component} activeNamespaceName={activeNamespaceName} />
+        </Expansion>
+        {!!component.jobs && renderJobs()}
+        {renderPods()}
+        {renderNetwork()}
+        {renderRoutes()}
+      </Box>
+    </BasePage>
+  );
+};
 
 export const ComponentShowPage = withStyles(styles)(
   withUserAuth(connect(mapStateToProps)(withRoutesData(withComponent(ComponentShowRaw)))),

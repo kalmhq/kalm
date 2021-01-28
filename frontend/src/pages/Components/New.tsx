@@ -15,9 +15,9 @@ const styles = (theme: Theme) => createStyles({});
 
 interface Props extends WithStyles<typeof styles>, WithNamespaceProps {}
 
-class ComponentNewRaw extends React.PureComponent<Props> {
-  private submit = async (formValues: ComponentLike) => {
-    const { dispatch, activeNamespaceName } = this.props;
+const ComponentNewRaw: React.FC<Props> = (props) => {
+  const submit = async (formValues: ComponentLike) => {
+    const { dispatch, activeNamespaceName } = props;
 
     if (formValues.preInjectedFiles) {
       formValues.preInjectedFiles = formValues.preInjectedFiles?.filter((file) => file.mountPath || file.content);
@@ -28,23 +28,21 @@ class ComponentNewRaw extends React.PureComponent<Props> {
     dispatch(push(`/applications/${activeNamespaceName}/components`));
   };
 
-  public render() {
-    return (
-      <BasePage
-        secondHeaderLeft={<Namespaces />}
-        leftDrawer={<ApplicationSidebar />}
-        secondHeaderRight="Create Component"
-      >
-        <Box p={2}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <ComponentLikeForm _initialValues={newEmptyComponentLike} onSubmit={this.submit} />
-            </Grid>
+  return (
+    <BasePage
+      secondHeaderLeft={<Namespaces />}
+      leftDrawer={<ApplicationSidebar />}
+      secondHeaderRight="Create Component"
+    >
+      <Box p={2}>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <ComponentLikeForm _initialValues={newEmptyComponentLike} onSubmit={submit} />
           </Grid>
-        </Box>
-      </BasePage>
-    );
-  }
-}
+        </Grid>
+      </Box>
+    </BasePage>
+  );
+};
 
 export const ComponentNewPage = withNamespace(withStyles(styles)(connect()(ComponentNewRaw)));

@@ -1,13 +1,13 @@
-import React from "react";
-import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
-import { connect } from "react-redux";
-import { TDispatchProp } from "types";
-import { newEmptyCertificateUploadForm, CertificateFormType } from "types/certificate";
+import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { createCertificateAction } from "actions/certificate";
+import { push } from "connected-react-router";
 import { CertificateUploadForm } from "forms/Certificate/uploadForm";
 import { BasePage } from "pages/BasePage";
+import React from "react";
+import { connect } from "react-redux";
+import { TDispatchProp } from "types";
+import { CertificateFormType, newEmptyCertificateUploadForm } from "types/certificate";
 import { H6 } from "widgets/Label";
-import { push } from "connected-react-router";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -16,35 +16,33 @@ const styles = (theme: Theme) =>
 
 export interface Props extends WithStyles<typeof styles>, TDispatchProp {}
 
-class CertificateUploadRaw extends React.PureComponent<Props> {
-  private submit = async (certificate: CertificateFormType) => {
+const CertificateUploadRaw: React.FC<Props> = (props) => {
+  const submit = async (certificate: CertificateFormType) => {
     try {
-      const { dispatch } = this.props;
+      const { dispatch } = props;
       await dispatch(createCertificateAction(certificate, false));
-      this.onSubmitSuccess();
+      onSubmitSuccess();
     } catch (e) {
       console.log(e);
     }
   };
 
-  private onSubmitSuccess = () => {
-    this.props.dispatch(push("/certificates"));
+  const onSubmitSuccess = () => {
+    props.dispatch(push("/certificates"));
   };
 
-  public render() {
-    const { classes } = this.props;
-    return (
-      <BasePage secondHeaderRight={<H6>Upload Certificate</H6>}>
-        <div className={classes.root}>
-          <Grid container spacing={2}>
-            <Grid item xs={8} sm={8} md={8}>
-              <CertificateUploadForm onSubmit={this.submit} initialValues={newEmptyCertificateUploadForm} />
-            </Grid>
+  const { classes } = props;
+  return (
+    <BasePage secondHeaderRight={<H6>Upload Certificate</H6>}>
+      <div className={classes.root}>
+        <Grid container spacing={2}>
+          <Grid item xs={8} sm={8} md={8}>
+            <CertificateUploadForm onSubmit={submit} initialValues={newEmptyCertificateUploadForm} />
           </Grid>
-        </div>
-      </BasePage>
-    );
-  }
-}
+        </Grid>
+      </div>
+    </BasePage>
+  );
+};
 
 export const CertificateUploadPage = withStyles(styles)(connect()(CertificateUploadRaw));
