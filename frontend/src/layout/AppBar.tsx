@@ -43,8 +43,8 @@ const mapStateToProps = (state: RootState) => {
 const styles = (theme: Theme) =>
   createStyles({
     appBar: {
-      color: "white",
-      backgroundColor: theme.palette.type === "light" ? theme.palette.primary.main : theme.palette.background.paper,
+      color: "black",
+      backgroundColor: theme.palette.type === "light" ? "#fff" : theme.palette.background.paper,
       position: "fixed",
       top: 0,
       transition: theme.transitions.create("all", {
@@ -71,10 +71,10 @@ const styles = (theme: Theme) =>
       // margin: `0 10px`
     },
     breadcrumb: {
-      color: "#eeeeee",
+      color: theme.palette.type === "light" ? "#000" : "#fff",
     },
     breadLink: {
-      color: "#eeeeee",
+      color: theme.palette.type === "light" ? "#000" : "#fff",
       fontSize: "18px",
       fontWeight: "normal",
       padding: "0 0",
@@ -82,18 +82,18 @@ const styles = (theme: Theme) =>
       paddingRight: 5,
       borderBottom: "2px solid transparent",
       "&.disabled": {
-        color: "#FFF",
+        color: theme.palette.type === "light" ? "#000" : "#fff",
         cursor: "unset",
       },
       "&.disabled:hover": {
-        color: "#FFF",
+        color: theme.palette.type === "light" ? "#000" : "#fff",
         backgroundColor: "unset",
         fontWeight: "unset",
         borderBottom: "2px solid transparent",
       },
       "&:hover": {
-        color: "white",
-        borderBottom: "2px solid white",
+        color: theme.palette.type === "light" ? "#000" : "#fff",
+        borderBottom: "2px solid #000",
       },
     },
     barRight: {
@@ -153,7 +153,11 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           }}
           color="inherit"
         >
-          {!impersonation ? <KalmUserIcon /> : <ImpersonateIcon style={{ color: deepOrange[400] }} />}
+          {!impersonation ? (
+            <KalmUserIcon style={{ color: "#000" }} />
+          ) : (
+            <ImpersonateIcon style={{ color: deepOrange[400] }} />
+          )}
         </IconButtonWithTooltip>
         <Menu
           id="menu-appbar"
@@ -218,7 +222,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           tutorialDrawerOpen ? dispatch(closeTutorialDrawerAction()) : dispatch(openTutorialDrawerAction());
         }}
       >
-        <HelpIcon style={{ fill: "white" }} />
+        <HelpIcon style={{ fill: "black" }} />
       </IconButtonWithTooltip>
     );
   };
@@ -312,11 +316,9 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                 </Button>
               </Box>
             )}
-            <Divider orientation="vertical" flexItem color="inherit" />
+
             <Box className={classes.barAvatar}>{this.renderThemeIcon()}</Box>
-            <Divider orientation="vertical" flexItem color="inherit" />
             <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
-            <Divider orientation="vertical" flexItem color="inherit" />
             <div className={classes.barAvatar}>{this.renderAuth()}</div>
           </div>
         </div>

@@ -8,7 +8,8 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {},
     leftDrawerBox: {
-      borderRight: `1px solid ${theme.palette.divider}`,
+      // borderRight: `1px solid ${theme.palette.divider}`,
+      background: theme.palette.background.paper,
     },
   });
 

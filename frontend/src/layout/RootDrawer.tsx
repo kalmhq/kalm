@@ -54,7 +54,7 @@ const styles = (theme: Theme) =>
     },
     listItemSeleted: {
       borderLeft: `4px solid ${
-        theme.palette.type === "light" ? theme.palette.primary.dark : theme.palette.primary.light
+        theme.palette.type === "light" ? theme.palette.primary.main : theme.palette.primary.light
       }`,
     },
     listSubHeader: {
