@@ -4,7 +4,6 @@ import Button from "@material-ui/core/Button";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { stopImpersonating } from "api/api";
-import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
@@ -129,8 +128,6 @@ class ProfilePageRaw extends React.PureComponent<Props, State> {
 
   private stopImpersonation = async () => {
     stopImpersonating();
-    await this.props.dispatch(push("/"));
-    window.location.reload();
   };
 
   private renderBasicInfo = () => {

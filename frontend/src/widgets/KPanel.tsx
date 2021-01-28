@@ -10,6 +10,7 @@ const styles = (theme: Theme) =>
     root: {},
     paper: {
       borderRadius: "10px",
+      overflow: "hidden",
     },
     borderBottom: {
       // borderBottom: `1px solid ${theme.palette.divider}`,

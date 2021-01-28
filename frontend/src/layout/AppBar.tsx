@@ -182,8 +182,6 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             <MenuItem
               onClick={async () => {
                 stopImpersonating();
-                await dispatch(push("/"));
-                window.location.reload();
               }}
             >
               {impersonationType === SubjectTypeUser

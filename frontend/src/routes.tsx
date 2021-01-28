@@ -21,7 +21,8 @@ import { DomainListPage } from "pages/Domains/List";
 import { DomainNewPage } from "pages/Domains/New";
 import { DomainTourPage } from "pages/Domains/Tour";
 import { LoadBalancerInfoPage } from "pages/LoadBalancer";
-import { RolesListPage } from "pages/Members";
+import { MemberListPage } from "pages/Members";
+import { MemberPage } from "pages/Members/Details";
 import { MemberNewPage } from "pages/Members/New";
 import { NodeListPage } from "pages/Nodes/List";
 import { NoMatch, Page404 } from "pages/NoMatch";
@@ -71,9 +72,10 @@ export const KalmRoutes = (
           <Route exact path="/cluster/pull-secrets/new" component={PullSecretsNewPage} />
           <Route exact path="/cluster/pull-secrets/:name/edit" component={PullSecretsEditPage} />
 
-          <Route exact path="/cluster/members" component={RolesListPage} />
-          <Route exact path="/cluster/members/new" component={MemberNewPage} />
-          <Route exact path="/cluster/members/:name/edit" component={RolesListPage} />
+          <Route exact path="/members" component={MemberListPage} />
+          <Route exact path="/members/new" component={MemberNewPage} />
+          <Route exact path="/members/:email" component={MemberPage} />
+          <Route exact path="/members/:name/edit" component={MemberListPage} />
 
           <Route exact path="/webhooks" component={WebhookPage} />
           <Redirect exact path="/webhooks/keys" to="/webhooks" />
@@ -95,10 +97,6 @@ export const KalmRoutes = (
           <Route exact path="/applications/:applicationName/components/new" component={ComponentNewPage} />
           <Route exact path="/applications/:applicationName/components/:name" component={ComponentShowPage} />
           <Route exact path="/applications/:applicationName/components/:name/edit" component={ComponentEditPage} />
-
-          <Route exact path="/applications/:applicationName/members" component={RolesListPage} />
-          <Route exact path="/applications/:applicationName/members/new" component={MemberNewPage} />
-          <Route exact path="/applications/:applicationName/members/:name/edit" component={RolesListPage} />
 
           <Route exact path="/applications/:applicationName/logs" component={Log} />
           <Route exact path="/applications/:applicationName/shells" component={Log} />

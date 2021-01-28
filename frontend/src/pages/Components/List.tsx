@@ -62,12 +62,6 @@ interface Props
     WithNamespaceProps,
     ReturnType<typeof mapStateToProps> {}
 
-interface State {
-  isDeleteConfirmDialogOpen: boolean;
-  // TODO correct here
-  deletingComponentItem?: ApplicationDetails;
-}
-
 const ComponentRaw: React.FC<Props> = (props) => {
   const [isDeleteConfirmDialogOpen, setIsDeleteConfirmDialogOpen] = useState(false);
   const [deletingComponentItem] = useState<ApplicationDetails | undefined>(undefined);

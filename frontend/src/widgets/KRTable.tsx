@@ -123,6 +123,11 @@ export const KRTable = ({
           ))}
         </TableHead>
         <TableBody>
+          {page.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={columns.length}>No Data</TableCell>
+            </TableRow>
+          )}
           {page.map((row, i) => {
             prepareRow(row);
             return (

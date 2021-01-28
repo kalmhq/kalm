@@ -195,7 +195,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
             ? {
                 icon: PeopleIcon,
                 text: "Members",
-                to: "/cluster/members",
+                to: "/members",
               }
             : null,
           canManageCluster()

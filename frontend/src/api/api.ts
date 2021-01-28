@@ -520,10 +520,21 @@ export const generateKalmImpersonation = (subject: string, subjectType: string) 
 
 export const impersonate = (subject: string, subjectType: string) => {
   window.localStorage.setItem(IMPERSONATION_KEY, generateKalmImpersonation(subject, subjectType));
+  window.location.href = "/";
 };
 
 export const stopImpersonating = () => {
+  const data = window.localStorage.getItem(IMPERSONATION_KEY) || "";
   window.localStorage.removeItem(IMPERSONATION_KEY);
+  const match = data.match(/subject=(.*)?; /);
+
+  if (!match) {
+    window.location.href = "/";
+    return;
+  }
+
+  const email = match[1];
+  window.location.href = "/members/" + email;
 };
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;

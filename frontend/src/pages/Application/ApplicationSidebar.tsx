@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 import { NavLink, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import sc from "utils/stringConstants";
-import { DashboardIcon, KalmComponentsIcon, PeopleIcon, SettingIcon } from "widgets/Icon";
+import { DashboardIcon, KalmComponentsIcon, SettingIcon } from "widgets/Icon";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -53,14 +53,6 @@ const ApplicationViewDrawerRaw: React.FC<Props> = (props) => {
       to: "/applications/" + activeNamespaceName + "/components",
       icon: <KalmComponentsIcon />,
     });
-
-    if (canManageNamespace(activeNamespaceName)) {
-      menus.push({
-        text: sc.APP_MEMBERS_PAGE_NAME,
-        to: "/applications/" + activeNamespaceName + "/members",
-        icon: <PeopleIcon />,
-      });
-    }
 
     menus.push({
       text: sc.APP_DASHBOARD_PAGE_NAME,

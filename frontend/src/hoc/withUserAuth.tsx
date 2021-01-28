@@ -36,7 +36,7 @@ export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
           return canEditCluster();
         } else if (location.pathname.includes("/sso")) {
           return canViewCluster();
-        } else if (location.pathname.includes("/cluster/members")) {
+        } else if (location.pathname.includes("/members")) {
           return canManageCluster();
         } else if (location.pathname.includes("/version")) {
           return canManageCluster();

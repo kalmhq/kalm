@@ -215,6 +215,8 @@ export const ValidatorPort = yupValidatorWrap<number | undefined>(
   number().test("", "Can't use 443 port", (value) => value !== 443),
 );
 
+export const ValidatorIsEmail = yupValidatorWrap<string>(string().required("Required").email("invalid email address"));
+
 export const ValidatorRequired = yupValidatorWrap<any>(
   mixed()
     .required("Required") // mixed.required() will not validate empty string
