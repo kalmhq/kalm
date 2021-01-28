@@ -12,6 +12,21 @@ let themeRaw = createMuiTheme({
 
 const lightTheme = createMuiTheme({
   overrides: {
+    MuiPaper: {
+      rounded: {
+        borderRadius: "10px",
+      },
+    },
+    MuiExpansionPanel: {
+      rounded: {
+        borderRadius: "10px",
+      },
+    },
+    MuiButton: {
+      root: {
+        borderRadius: "10px",
+      },
+    },
     MuiTableCell: {
       head: {
         color: "rgba(0, 0, 0, 0.5)",
@@ -43,6 +58,21 @@ const lightTheme = createMuiTheme({
 
 const darkTheme = createMuiTheme({
   overrides: {
+    MuiPaper: {
+      rounded: {
+        borderRadius: "10px",
+      },
+    },
+    MuiExpansionPanel: {
+      rounded: {
+        borderRadius: "10px",
+      },
+    },
+    MuiButton: {
+      root: {
+        borderRadius: "10px",
+      },
+    },
     MuiPopover: {
       paper: {
         border: "1px solid rgba(255, 255, 255, 0.12)",

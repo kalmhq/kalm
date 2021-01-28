@@ -1,6 +1,7 @@
 import {
   createStyles,
   Drawer,
+  IconButton,
   List,
   ListItem,
   ListItemIcon,
@@ -9,7 +10,7 @@ import {
   Theme,
 } from "@material-ui/core";
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { blinkTopProgressAction } from "actions/settings";
+import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import clsx from "clsx";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { APP_BAR_HEIGHT, LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
@@ -28,6 +29,8 @@ import {
   KalmRegistryIcon,
   KalmRoutesIcon,
   KalmVolumeIcon,
+  MenuIcon,
+  MenuOpenIcon,
   PeopleIcon,
   SettingIcon,
 } from "widgets/Icon";
@@ -59,7 +62,7 @@ const styles = (theme: Theme) =>
     },
     listSubHeader: {
       textTransform: "uppercase",
-      color: theme.palette.text.secondary,
+      color: theme.palette.type === "light" ? "#000" : "inherit",
       "font-size": theme.typography.subtitle1.fontSize,
     },
     ListItemText: {
@@ -70,12 +73,16 @@ const styles = (theme: Theme) =>
       width: LEFT_SECTION_OPEN_WIDTH,
       flexShrink: 0,
       whiteSpace: "nowrap",
+      position: "relative",
     },
     drawerPaper: {
       width: LEFT_SECTION_OPEN_WIDTH,
       paddingTop: APP_BAR_HEIGHT,
     },
-
+    drawerPaperClose: {
+      width: LEFT_SECTION_OPEN_WIDTH,
+      paddingTop: APP_BAR_HEIGHT + 48,
+    },
     // material-ui official
     drawerOpen: {
       width: LEFT_SECTION_OPEN_WIDTH,
@@ -100,23 +107,27 @@ const styles = (theme: Theme) =>
       height: 48,
       paddingLeft: 12,
     },
+    shrinkButton: {
+      position: "absolute",
+      zIndex: 1,
+      right: 8,
+      top: APP_BAR_HEIGHT + 8,
+    },
+    shrinkButtonClose: {
+      position: "absolute",
+      zIndex: 1,
+      right: 0,
+      top: APP_BAR_HEIGHT,
+    },
   });
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, WithUserAuthProps {
   dispatch: TDispatch;
 }
 
-interface State {}
-
-class RootDrawerRaw extends React.PureComponent<Props, State> {
-  constructor(props: Props) {
-    super(props);
-
-    this.state = {};
-  }
-
-  private getSideBarData() {
-    const { canEditAnyNamespace, canViewCluster, canManageCluster, canEditCluster } = this.props;
+const RootDrawerRaw: React.FC<Props> = (props) => {
+  const getSideBarData = () => {
+    const { canEditAnyNamespace, canViewCluster, canManageCluster, canEditCluster } = props;
 
     return [
       {
@@ -208,76 +219,81 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
         ],
       },
     ];
-  }
+  };
 
-  render() {
-    const { classes, pathname, isOpenRootDrawer: open } = this.props;
-    return (
-      <Drawer
-        variant="permanent"
-        className={clsx(classes.drawer, {
+  const { classes, pathname, isOpenRootDrawer: open, dispatch } = props;
+  return (
+    <Drawer
+      variant="permanent"
+      className={clsx(classes.drawer, {
+        [classes.drawerOpen]: open,
+        [classes.drawerClose]: !open,
+      })}
+      classes={{
+        paper: clsx(open ? classes.drawerPaper : classes.drawerPaperClose, {
           [classes.drawerOpen]: open,
           [classes.drawerClose]: !open,
-        })}
-        classes={{
-          paper: clsx(classes.drawerPaper, {
-            [classes.drawerOpen]: open,
-            [classes.drawerClose]: !open,
-          }),
-        }}
+        }),
+      }}
+    >
+      <IconButton
+        className={open ? classes.shrinkButton : classes.shrinkButtonClose}
+        onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !open }))}
+        // size={"small"}
       >
-        <List style={{ paddingTop: open ? 8 : 0 }}>
-          {this.getSideBarData().map((group) => {
-            if (!group) {
-              return null;
-            }
+        {open ? <MenuOpenIcon /> : <MenuIcon />}
+      </IconButton>
+      <List style={{ paddingTop: open ? 8 : 0 }}>
+        {getSideBarData().map((group) => {
+          if (!group) {
+            return null;
+          }
 
-            if (group.items.filter((x) => !!x).length === 0) {
-              return null;
-            }
+          if (group.items.filter((x) => !!x).length === 0) {
+            return null;
+          }
 
-            return (
-              <React.Fragment key={group.name}>
-                {open ? (
-                  <ListSubheader disableSticky={true} className={classes.listSubHeader}>
-                    {group.name}
-                  </ListSubheader>
-                ) : null}
+          return (
+            <React.Fragment key={group.name}>
+              {open ? (
+                <ListSubheader disableSticky={true} className={classes.listSubHeader}>
+                  {group.name}
+                </ListSubheader>
+              ) : null}
 
-                {group.items!.map((item) => {
-                  if (!item) {
-                    return null;
-                  }
-                  return (
-                    <ListItem
-                      onClick={() => blinkTopProgressAction()}
-                      className={clsx(classes.listItem, {
-                        [classes.itemBorder]: !open,
-                      })}
-                      classes={{
-                        selected: classes.listItemSeleted,
-                      }}
-                      button
-                      component={NavLink}
-                      to={item.to}
-                      key={item.text}
-                      tutorial-anchor-id={"first-level-sidebar-item-" + item.text.toLocaleLowerCase()}
-                      selected={pathname.startsWith(item.to.split("?")[0])}
-                    >
-                      <ListItemIcon>
-                        <item.icon />
-                      </ListItemIcon>
-                      {open ? <ListItemText classes={{ primary: classes.ListItemText }} primary={item.text} /> : null}
-                    </ListItem>
-                  );
-                })}
-              </React.Fragment>
-            );
-          })}
-        </List>
-      </Drawer>
-    );
-  }
-}
+              {group.items!.map((item) => {
+                if (!item) {
+                  return null;
+                }
+                return (
+                  <ListItem
+                    onClick={() => blinkTopProgressAction()}
+                    className={clsx(classes.listItem, {
+                      [classes.itemBorder]: !open,
+                    })}
+                    classes={{
+                      selected: classes.listItemSeleted,
+                    }}
+                    button
+                    component={NavLink}
+                    to={item.to}
+                    key={item.text}
+                    tutorial-anchor-id={"first-level-sidebar-item-" + item.text.toLocaleLowerCase()}
+                    selected={pathname.startsWith(item.to.split("?")[0])}
+                  >
+                    <ListItemIcon>
+                      <item.icon />
+                    </ListItemIcon>
+                    {open ? <ListItemText classes={{ primary: classes.ListItemText }} primary={item.text} /> : null}
+                  </ListItem>
+                );
+              })}
+            </React.Fragment>
+          );
+        })}
+      </List>
+    </Drawer>
+  );
+};
 
 export const RootDrawer = withUserAuth(connect(mapStateToProps)(withStyles(styles)(RootDrawerRaw)));

@@ -1,9 +1,9 @@
-import { AppBar, Box, Breadcrumbs, createStyles, Divider, IconButton, Menu, MenuItem, Theme } from "@material-ui/core";
+import { AppBar, Box, Breadcrumbs, createStyles, Divider, Menu, MenuItem, Theme } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import deepOrange from "@material-ui/core/colors/deepOrange";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { logoutAction } from "actions/auth";
-import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
+import { blinkTopProgressAction } from "actions/settings";
 import { closeTutorialDrawerAction, openTutorialDrawerAction } from "actions/tutorial";
 import { stopImpersonating } from "api/api";
 import { push } from "connected-react-router";
@@ -18,7 +18,7 @@ import { TDispatch } from "types";
 import { SubjectTypeUser } from "types/member";
 import StringConstants from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { HelpIcon, ImpersonateIcon, KalmUserIcon, MenuIcon, MenuOpenIcon } from "widgets/Icon";
+import { HelpIcon, ImpersonateIcon, KalmIcon, KalmUserIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
 
@@ -264,19 +264,15 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   };
 
   render() {
-    const { classes, dispatch, isOpenRootDrawer, location, clusterInfo } = this.props;
+    const { classes, location, clusterInfo } = this.props;
     const pathArray = location.pathname.split("/");
     return (
       <AppBar ref={this.headerRef} id="header" position="relative" className={classes.appBar}>
         <div className={classes.barContainer}>
           <div className={classes.barLeft}>
-            <IconButton
-              className={classes.shrinkButton}
-              onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !isOpenRootDrawer }))}
-              // size={"small"}
-            >
-              {isOpenRootDrawer ? <MenuOpenIcon /> : <MenuIcon />}
-            </IconButton>
+            <Box p={2}>
+              <KalmIcon />
+            </Box>
 
             <FlexRowItemCenterBox>
               <Breadcrumbs aria-label="breadcrumb" className={classes.breadcrumb}>

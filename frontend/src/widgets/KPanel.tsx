@@ -8,10 +8,7 @@ import { Body } from "./Label";
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
-    paper: {
-      borderRadius: "10px",
-      overflow: "hidden",
-    },
+    paper: {},
     borderBottom: {
       // borderBottom: `1px solid ${theme.palette.divider}`,
       // height: "40px",

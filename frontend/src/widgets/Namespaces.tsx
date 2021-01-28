@@ -29,9 +29,12 @@ const styles = (theme: Theme) =>
       width: "100%",
       justifyContent: "space-between",
       paddingLeft: 24,
+      paddingTop: 16,
       textTransform: "lowercase",
       border: 0,
       borderRadius: 0,
+      color: theme.palette.type === "light" ? "#000" : "inherit",
+      fontSize: theme.typography.subtitle1.fontSize,
     },
     menuList: {
       width: LEFT_SECTION_OPEN_WIDTH,
@@ -133,7 +136,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
               {...TransitionProps}
               style={{ transformOrigin: placement === "bottom" ? "center top" : "center bottom" }}
             >
-              <Paper variant="outlined" square>
+              <Paper variant="outlined">
                 <ClickAwayListener onClickAway={this.handleClose}>
                   <MenuList
                     autoFocusItem={open}

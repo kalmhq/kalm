@@ -118,7 +118,6 @@ const styles = (theme: Theme) =>
       position: "fixed",
       zIndex: COMPONENT_DEPLOY_BUTTON_ZINDEX,
       bottom: theme.spacing(3),
-      borderRadius: "10px",
       height: "40px",
     },
   });
