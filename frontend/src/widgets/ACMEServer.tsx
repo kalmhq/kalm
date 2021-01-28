@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   createStyles,
   Table,
   TableBody,
@@ -15,7 +14,6 @@ import { setSuccessNotificationAction } from "actions/notification";
 import copy from "copy-to-clipboard";
 import React from "react";
 import { connect, useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { PendingBadge, SuccessBadge } from "widgets/Badge";
@@ -63,11 +61,6 @@ class ACNEServerRaw extends React.PureComponent<ACMEServerGuideProps> {
             },
           ]}
         />
-        <Box mt={2}>
-          <Button color="primary" variant="outlined" size="small" component={Link} to={`/acme/edit`}>
-            Edit
-          </Button>
-        </Box>
       </>
     );
   };
@@ -94,7 +87,7 @@ class ACNEServerRaw extends React.PureComponent<ACMEServerGuideProps> {
     }
 
     return (
-      <Expansion title={title} defaultUnfold={!isReady}>
+      <Expansion title={title} defaultUnfold={true}>
         <Box p={2}>
           <Body>
             ACME dns server can help you apply and renew wildcard certificates from Let's Encrypt. This only needs to be

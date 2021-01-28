@@ -277,7 +277,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
               onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !isOpenRootDrawer }))}
               // size={"small"}
             >
-              {isOpenRootDrawer ? <MenuOpenIcon color="white" /> : <MenuIcon color="white" />}
+              {isOpenRootDrawer ? <MenuOpenIcon /> : <MenuIcon />}
             </IconButton>
 
             <FlexRowItemCenterBox>

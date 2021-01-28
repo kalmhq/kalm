@@ -32,9 +32,7 @@ import { Namespaces } from "widgets/Namespaces";
 const styles = (theme: Theme) => createStyles({});
 
 const mapStateToProps = (state: RootState) => {
-  return {
-    isFrontendMembersManagementEnabled: state.extraInfo.info.isFrontendComponentSchedulingFeatureEnabled,
-  };
+  return {};
 };
 
 interface Props
@@ -52,11 +50,7 @@ const RolesListPageRaw: React.FC<Props> = (props) => {
   const isClusterLevel = pathname.startsWith("/cluster/members") || pathname.startsWith("/applications/kalm-system");
 
   const renderSecondHeaderRight = () => {
-    const { activeNamespaceName, isFrontendMembersManagementEnabled } = props;
-
-    if (!isFrontendMembersManagementEnabled) {
-      return null;
-    }
+    const { activeNamespaceName } = props;
 
     return (
       <>
@@ -155,23 +149,6 @@ const RolesListPageRaw: React.FC<Props> = (props) => {
   };
 
   const renderRole = (roleBinding: RoleBinding) => {
-    if (!props.isFrontendMembersManagementEnabled) {
-      switch (roleBinding.role) {
-        case "clusterViewer":
-          return "Cluster Viewer";
-        case "clusterEditor":
-          return "Cluster Editor";
-        case "clusterOwner":
-          return "Cluster Owner";
-        case "viewer":
-          return "Viewer";
-        case "editor":
-          return "Editor";
-        case "owner":
-          return "Owner";
-      }
-    }
-
     const { canManageCluster, canManageNamespace, activeNamespaceName } = props;
 
     const items = isClusterLevel
@@ -249,7 +226,7 @@ const RolesListPageRaw: React.FC<Props> = (props) => {
   };
 
   const renderActions = (roleBinding: RoleBinding) => {
-    const { dispatch, isFrontendMembersManagementEnabled } = props;
+    const { dispatch } = props;
 
     return (
       <>
@@ -263,13 +240,11 @@ const RolesListPageRaw: React.FC<Props> = (props) => {
         >
           <ImpersonateIcon />
         </IconButtonWithTooltip>
-        {isFrontendMembersManagementEnabled && (
-          <DeleteButtonWithConfirmPopover
-            popupId={`delete-member-${roleBinding.namespace}-${roleBinding.name}-popup`}
-            popupTitle="DELETE Member"
-            confirmedAction={() => dispatch(deleteRoleBindingsAction(roleBinding.namespace, roleBinding.name))}
-          />
-        )}
+        <DeleteButtonWithConfirmPopover
+          popupId={`delete-member-${roleBinding.namespace}-${roleBinding.name}-popup`}
+          popupTitle="DELETE Member"
+          confirmedAction={() => dispatch(deleteRoleBindingsAction(roleBinding.namespace, roleBinding.name))}
+        />
       </>
     );
   };

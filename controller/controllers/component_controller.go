@@ -236,6 +236,10 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 		return nil
 	}
 
+	if !r.namespace.ObjectMeta.DeletionTimestamp.IsZero() {
+		return nil
+	}
+
 	if err := r.ReconcileService(); err != nil {
 		return err
 	}

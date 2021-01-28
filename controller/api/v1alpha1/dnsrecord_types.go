@@ -19,6 +19,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type DNSType string
+
+const (
+	DNSTypeCNAME = "CNAME"
+	DNSTypeA     = "A"
+	DNSTypeNS    = "NS"
+)
+
 // DNSRecordSpec defines the desired state of DNSRecord
 type DNSRecordSpec struct {
 	Domain    string  `json:"domain,omitempty"`

@@ -31,7 +31,7 @@ const CertificateFormRaw: React.FC<Props> = (props) => {
     };
   });
 
-  const readyDomains = domains.filter((x) => !x.isBuiltIn && x.status === "ready");
+  const readyDomains = domains;
 
   return (
     <Form onSubmit={onSubmit} initialValues={initialValues} keepDirtyOnReinitialize>

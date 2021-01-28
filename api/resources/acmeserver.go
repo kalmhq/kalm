@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 )
@@ -41,6 +42,16 @@ func (resourceManager *ResourceManager) CreateACMEServer(server *ACMEServer) (*A
 }
 
 func (resourceManager *ResourceManager) UpdateACMEServer(server *ACMEServer) (*ACMEServer, error) {
+	acmeServer, err := resourceManager.GetACMEServer()
+
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return resourceManager.CreateACMEServer(server)
+		}
+
+		return nil, err
+	}
+
 	expectedACMEServer := v1alpha1.ACMEServer{
 		ObjectMeta: controllerruntime.ObjectMeta{
 			Name: v1alpha1.ACMEServerName,
@@ -51,18 +62,8 @@ func (resourceManager *ResourceManager) UpdateACMEServer(server *ACMEServer) (*A
 		},
 	}
 
-	acmeServer, err := resourceManager.GetACMEServer()
-
-	if err != nil {
-		return nil, err
-	}
-
 	if acmeServer == nil {
-		return nil, nil
-	}
-
-	if acmeServer.Name != v1alpha1.ACMEServerName {
-		return nil, fmt.Errorf("should only 1 acmeServer named as %s exist", v1alpha1.ACMEServerName)
+		return resourceManager.CreateACMEServer(server)
 	}
 
 	acmeServer.Spec = expectedACMEServer.Spec

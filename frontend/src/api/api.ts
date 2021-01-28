@@ -2,7 +2,7 @@ import Axios, { AxiosPromise, AxiosRequestConfig } from "axios";
 import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
 import { AcmeServerFormType, AcmeServerInfo, CertificateFormType, CertificateIssuerFormType } from "types/certificate";
-import { ExtraInfo, InitializeClusterResponse } from "types/cluster";
+import { InitializeClusterResponse } from "types/cluster";
 import {
   AccessTokenToDeployAccessToken,
   DeployAccessToken,
@@ -38,11 +38,6 @@ export default class RealApi {
       false,
     );
     return res.status === 200;
-  };
-
-  public loadExtraInfo = async () => {
-    const res = await axiosRequest<ExtraInfo>({ method: "get", url: `/${K8sApiVersion}/extraInfo` });
-    return res.data;
   };
 
   public getNodes = async () => {
@@ -349,24 +344,13 @@ export default class RealApi {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/httpscerts/${name}` });
   };
 
-  // certificate acme server
-  public createAcmeServer = async (acmeServer: AcmeServerFormType): Promise<AcmeServerInfo> => {
-    const res = await axiosRequest({
-      method: "post",
-      url: `/${K8sApiVersion}/acmeserver`,
-      data: acmeServer,
-    });
-
-    return res.data;
-  };
-
-  public editAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
-    await axiosRequest({ method: "put", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
+  public setAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
+    await axiosRequest({ method: "post", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
     return; //Immutable.fromJS(res.data);
   };
 
-  public deleteAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
-    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
+  public deleteAcmeServer = async (): Promise<void> => {
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/acmeserver` });
     return;
   };
 

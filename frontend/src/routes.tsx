@@ -5,8 +5,7 @@ import { Log } from "pages/Application/Log";
 import { ApplicationNewPage } from "pages/Application/New";
 import { ApplicationSettingsPage } from "pages/Application/Settings";
 import { ApplicationShowPage } from "pages/Application/Show";
-import { CertificateAcmePage } from "pages/Certificate/Acme";
-import { CertificateAcmeEditPage } from "pages/Certificate/AcmeEdit";
+import { ACMEPage } from "pages/Certificate/Acme";
 import { CertificateDetailPage } from "pages/Certificate/Detail";
 import { CertificateEditPage } from "pages/Certificate/Edit";
 import { CertificateListPage } from "pages/Certificate/List";
@@ -106,6 +105,7 @@ export const KalmRoutes = (
 
           <Route exact path="/domains" component={DomainListPage} />
           <Route exact path="/domains/new" component={DomainNewPage} />
+          <Route exact path="/domains/acme" component={ACMEPage} />
           <Route exact path="/domains/:name" component={DomainDetailPage} />
           <Route exact path="/domains/:name/tour" component={DomainTourPage} />
 
@@ -114,8 +114,6 @@ export const KalmRoutes = (
           <Route exact path="/certificates/upload" component={CertificateUploadPage} />
           <Route exact path="/certificates/:name/edit" component={CertificateEditPage} />
           <Route exact path="/certificates/:name" component={CertificateDetailPage} />
-          <Route exact path="/acme" component={CertificateAcmePage} />
-          <Route exact path="/acme/edit" component={CertificateAcmeEditPage} />
           <Route component={NoMatch} />
         </Switch>
       </RequireAuthorizedDashboard>

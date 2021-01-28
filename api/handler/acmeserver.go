@@ -8,38 +8,9 @@ import (
 )
 
 func (h *ApiHandler) InstallACMEServerHandlers(e *echo.Group) {
-	e.POST("/acmeserver", h.handleCreateACMEServer)
+	e.POST("/acmeserver", h.handleUpdateACMEServer)
 	e.GET("/acmeserver", h.handleGetACMEServer)
-	e.PUT("/acmeserver", h.handleUpdateACMEServer)
 	e.DELETE("/acmeserver", h.handleDeleteACMEServer)
-}
-
-func (h *ApiHandler) handleCreateACMEServer(c echo.Context) error {
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
-	}
-
-	acmeServer, err := bindACMEServerFromRequestBody(c)
-
-	if err != nil {
-		return err
-	}
-
-	if acmeServer.NSDomain == "" {
-		return fmt.Errorf("nsDomain is blank")
-	}
-
-	if acmeServer.ACMEDomain == "" {
-		return fmt.Errorf("acmeDomain is blank")
-	}
-
-	acmeServer, err = h.resourceManager.CreateACMEServer(acmeServer)
-
-	if err != nil {
-		return err
-	}
-
-	return c.JSON(201, acmeServer)
 }
 
 func (h *ApiHandler) handleUpdateACMEServer(c echo.Context) error {
@@ -48,6 +19,7 @@ func (h *ApiHandler) handleUpdateACMEServer(c echo.Context) error {
 	}
 
 	acmeServer, err := bindACMEServerFromRequestBody(c)
+
 	if err != nil {
 		return err
 	}

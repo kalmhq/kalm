@@ -4,7 +4,7 @@ import {
   loadCertificateIssuersAction,
   loadCertificatesAction,
 } from "actions/certificate";
-import { loadClusterInfoAction, loadExtraInfoAction } from "actions/cluster";
+import { loadClusterInfoAction } from "actions/cluster";
 import { loadDeployAccessTokensAction } from "actions/deployAccessToken";
 import { loadDomainsAction } from "actions/domains";
 import { loadNodesAction } from "actions/node";
@@ -65,7 +65,6 @@ class WithDataRaw extends React.PureComponent<Props> {
   private loadData() {
     const { dispatch } = this.props;
 
-    dispatch(loadExtraInfoAction());
     dispatch(loadRoutesAction()); // all namespaces
     dispatch(loadApplicationsAction());
     dispatch(loadDeployAccessTokensAction());

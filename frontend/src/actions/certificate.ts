@@ -2,12 +2,10 @@ import { api } from "api";
 import { ThunkResult } from "types";
 import {
   AcmeServerFormType,
-  AcmeServerInfo,
   Certificate,
   CertificateFormType,
   CertificateIssuer,
   CertificateIssuerFormType,
-  CREATE_ACME_SERVER,
   CREATE_CERTIFICATE,
   CREATE_CERTIFICATE_ISSUER,
   DELETE_ACME_SERVER,
@@ -22,10 +20,6 @@ import {
   LOAD_CERTIFICATE_ISSUERS_FULFILLED,
   LOAD_CERTIFICATE_ISSUERS_PENDING,
   selfManaged,
-  SetIsSubmittingAcmeServer,
-  SetIsSubmittingCertificate,
-  SET_IS_SUBMITTING_ACME_SERVER,
-  SET_IS_SUBMITTING_CERTIFICATE,
 } from "types/certificate";
 
 export const deleteCertificateAction = (name: string): ThunkResult<Promise<void>> => {
@@ -99,8 +93,6 @@ export const createCertificateAction = (
   isEdit?: boolean,
 ): ThunkResult<Promise<Certificate>> => {
   return async (dispatch) => {
-    dispatch(setIsSubmittingCertificateAction(true));
-
     let certificate: Certificate;
     try {
       certificateForm.isSelfManaged = certificateForm.managedType === selfManaged;
@@ -120,10 +112,8 @@ export const createCertificateAction = (
 
       certificate = await api.createCertificate(certContent, isEdit);
     } catch (e) {
-      dispatch(setIsSubmittingCertificateAction(false));
       throw e;
     }
-    dispatch(setIsSubmittingCertificateAction(false));
 
     dispatch({ type: CREATE_CERTIFICATE, payload: { certificate } });
     return certificate;
@@ -135,84 +125,37 @@ export const createCertificateIssuerAction = (
   isEdit?: boolean,
 ): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
-    dispatch(setIsSubmittingCertificateAction(true));
-
     let certificateIssuer: CertificateIssuer;
     try {
       certificateIssuer = await api.createCertificateIssuer(certificateIssuerForm, isEdit);
     } catch (e) {
-      dispatch(setIsSubmittingCertificateAction(false));
       throw e;
     }
-    dispatch(setIsSubmittingCertificateAction(false));
 
     dispatch({ type: CREATE_CERTIFICATE_ISSUER, payload: { certificateIssuer } });
   };
 };
 
-export const createAcmeServerAction = (acmeServerContent: AcmeServerFormType): ThunkResult<Promise<void>> => {
+export const deleteAcmeServerAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
-    dispatch(setIsSubmittingAcmeServer(true));
-
-    let acmeServer: AcmeServerInfo;
     try {
-      acmeServer = await api.createAcmeServer(acmeServerContent);
+      await api.deleteAcmeServer();
     } catch (e) {
-      dispatch(setIsSubmittingAcmeServer(false));
       throw e;
     }
-    dispatch(setIsSubmittingAcmeServer(false));
-
-    dispatch({ type: CREATE_ACME_SERVER, payload: { acmeServer } });
-  };
-};
-
-export const deleteAcmeServerAction = (acmeServerContent: AcmeServerFormType): ThunkResult<Promise<void>> => {
-  return async (dispatch) => {
-    dispatch(setIsSubmittingAcmeServer(true));
-
-    try {
-      await api.deleteAcmeServer(acmeServerContent);
-    } catch (e) {
-      dispatch(setIsSubmittingAcmeServer(false));
-      throw e;
-    }
-    dispatch(setIsSubmittingAcmeServer(false));
 
     dispatch({ type: DELETE_ACME_SERVER, payload: { acmeServer: null } });
   };
 };
 
-export const editAcmeServerAction = (acmeServerContent: AcmeServerFormType): ThunkResult<Promise<void>> => {
+export const setAcmeServerAction = (acmeServerContent: AcmeServerFormType): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
-    dispatch(setIsSubmittingAcmeServer(true));
-
     try {
-      await api.editAcmeServer(acmeServerContent);
+      await api.setAcmeServer(acmeServerContent);
     } catch (e) {
-      dispatch(setIsSubmittingAcmeServer(false));
       throw e;
     }
-    dispatch(setIsSubmittingAcmeServer(false));
 
     dispatch(loadCertificateAcmeServerAction());
-  };
-};
-
-export const setIsSubmittingCertificateAction = (isSubmittingCertificate: boolean): SetIsSubmittingCertificate => {
-  return {
-    type: SET_IS_SUBMITTING_CERTIFICATE,
-    payload: {
-      isSubmittingCertificate,
-    },
-  };
-};
-
-export const setIsSubmittingAcmeServer = (isSubmittingAcme: boolean): SetIsSubmittingAcmeServer => {
-  return {
-    type: SET_IS_SUBMITTING_ACME_SERVER,
-    payload: {
-      isSubmittingAcmeServer: isSubmittingAcme,
-    },
   };
 };

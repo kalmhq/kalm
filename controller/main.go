@@ -264,20 +264,6 @@ func main() {
 
 	stopCh := ctrl.SetupSignalHandler()
 
-	//start domain check loop
-	if domainChecker, err := controllers.NewDomainChecker(mgr); err != nil {
-		setupLog.Error(err, "fail NewDomainChecker")
-		os.Exit(1)
-	} else {
-		go func() {
-			if err := domainChecker.Run(stopCh); err != nil {
-				setupLog.Error(err, "domainChecker exit with err")
-			} else {
-				setupLog.Info("domainChecker exit")
-			}
-		}()
-	}
-
 	setupLog.Info("starting manager")
 	if err := mgr.Start(stopCh); err != nil {
 		setupLog.Error(err, "problem running manager")

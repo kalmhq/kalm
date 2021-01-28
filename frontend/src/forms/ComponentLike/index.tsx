@@ -76,7 +76,6 @@ const mapStateToProps = (state: RootState) => {
     nodeLabels: state.nodes.labels,
     anchor,
     form: COMPONENT_FORM_ID,
-    isFrontendComponentSchedulingFeatureEnabled: state.extraInfo.info.isFrontendComponentSchedulingFeatureEnabled,
   };
 };
 
@@ -148,12 +147,6 @@ type RenderProps = FormRenderProps<ComponentLike>;
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   get tabs() {
-    const { isFrontendComponentSchedulingFeatureEnabled } = this.props;
-
-    if (!isFrontendComponentSchedulingFeatureEnabled) {
-      return tabs.filter((tab) => tab !== Scheduling);
-    }
-
     return tabs;
   }
 
@@ -502,26 +495,24 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        {this.props.isFrontendComponentSchedulingFeatureEnabled && (
-          <>
-            <Grid item xs={12}>
-              <SectionTitle>
-                <Subtitle1>Nodes</Subtitle1>
-              </SectionTitle>
-            </Grid>
-            <Grid item xs={12}>
-              <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
-            </Grid>
-            <Grid item xs={12}>
-              <Field
-                name="preferNotCoLocated"
-                type="checkbox"
-                component={FinalBoolCheckboxRender}
-                label={sc.SCHEDULING_COLOCATE_CHECKBOX}
-              />
-            </Grid>
-          </>
-        )}
+        <>
+          <Grid item xs={12}>
+            <SectionTitle>
+              <Subtitle1>Nodes</Subtitle1>
+            </SectionTitle>
+          </Grid>
+          <Grid item xs={12}>
+            <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
+          </Grid>
+          <Grid item xs={12}>
+            <Field
+              name="preferNotCoLocated"
+              type="checkbox"
+              component={FinalBoolCheckboxRender}
+              label={sc.SCHEDULING_COLOCATE_CHECKBOX}
+            />
+          </Grid>
+        </>
       </Grid>
     );
   }
