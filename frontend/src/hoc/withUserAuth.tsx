@@ -35,11 +35,11 @@ export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
         } else if (location.pathname.includes("/cluster/pull-secrets")) {
           return canEditCluster();
         } else if (location.pathname.includes("/sso")) {
-          return canViewCluster();
+          return canManageCluster();
         } else if (location.pathname.includes("/members")) {
           return canManageCluster();
         } else if (location.pathname.includes("/version")) {
-          return canManageCluster();
+          return canViewCluster();
         }
         return true;
       };

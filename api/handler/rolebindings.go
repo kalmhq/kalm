@@ -12,15 +12,17 @@ import (
 )
 
 func (h *ApiHandler) handleListRoleBindings(c echo.Context) error {
+	h.MustCanManageCluster(getCurrentUser(c))
 	var roleBindingList v1alpha1.RoleBindingList
 
 	if err := h.resourceManager.List(&roleBindingList); err != nil {
 		return err
 	}
 
-	roleBindings := h.filterAuthorizedRoleBindings(c, roleBindingList.Items)
+	roleBindings := roleBindingList.Items
 
 	res := make([]*resources.RoleBinding, 0, len(roleBindings))
+
 	for i := range roleBindings {
 		res = append(res, &resources.RoleBinding{
 			Namespace:       roleBindings[i].Namespace,
@@ -33,14 +35,11 @@ func (h *ApiHandler) handleListRoleBindings(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateRoleBinding(c echo.Context) (err error) {
+	h.MustCanManageCluster(getCurrentUser(c))
 	roleBinding, err := getRoleBindingFromContext(c)
 
 	if err != nil {
 		return err
-	}
-
-	if !h.clientManager.CanManageRoleBinding(getCurrentUser(c), roleBinding) {
-		return resources.InsufficientPermissionsError
 	}
 
 	roleBinding.Name = roleBinding.GetNameBaseOnRoleAndSubject()
@@ -73,6 +72,7 @@ func chooseFirstNonEmpty(strs ...string) string {
 }
 
 func (h *ApiHandler) handleUpdateRoleBinding(c echo.Context) error {
+	h.MustCanManageCluster(getCurrentUser(c))
 	roleBinding, err := getRoleBindingFromContext(c)
 
 	if err != nil {
@@ -82,10 +82,6 @@ func (h *ApiHandler) handleUpdateRoleBinding(c echo.Context) error {
 	var fetched v1alpha1.RoleBinding
 	if err := h.resourceManager.Get(roleBinding.Namespace, roleBinding.Name, &fetched); err != nil {
 		return err
-	}
-
-	if !h.clientManager.CanManageRoleBinding(getCurrentUser(c), &fetched) {
-		return resources.InsufficientPermissionsError
 	}
 
 	copied := fetched.DeepCopy()
@@ -99,14 +95,11 @@ func (h *ApiHandler) handleUpdateRoleBinding(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteRoleBinding(c echo.Context) error {
+	h.MustCanManageCluster(getCurrentUser(c))
 	var fetched v1alpha1.RoleBinding
 
 	if err := h.resourceManager.Get(c.Param("namespace"), c.Param("name"), &fetched); err != nil {
 		return err
-	}
-
-	if !h.clientManager.CanManageRoleBinding(getCurrentUser(c), &fetched) {
-		return resources.InsufficientPermissionsError
 	}
 
 	err := h.resourceManager.Delete(&fetched)
@@ -152,19 +145,4 @@ func getRoleBindingFromContext(c echo.Context) (*v1alpha1.RoleBinding, error) {
 	}
 
 	return binding, nil
-}
-
-func (h *ApiHandler) filterAuthorizedRoleBindings(c echo.Context, records []v1alpha1.RoleBinding) []v1alpha1.RoleBinding {
-	l := len(records)
-	user := getCurrentUser(c)
-
-	for i := 0; i < l; i++ {
-		if !h.clientManager.CanManageRoleBinding(user, &records[i]) {
-			records[l-1], records[i] = records[i], records[l-1]
-			i--
-			l--
-		}
-	}
-
-	return records[:l]
 }

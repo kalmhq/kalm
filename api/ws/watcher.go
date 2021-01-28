@@ -453,7 +453,7 @@ func buildRoleBindingResMessage(c *Client, action string, objWatched interface{}
 		return nil, errors.New("convert watch obj to RoleBinding failed")
 	}
 
-	if !c.clientManager.CanManageRoleBinding(c.clientInfo, roleBinding) {
+	if !c.clientManager.CanManageCluster(c.clientInfo) {
 		return nil, nil
 	}
 

@@ -5,7 +5,6 @@ import { deleteAllRoleBindingsAction } from "actions/user";
 import { impersonate } from "api/api";
 import { push } from "connected-react-router";
 import { useRoleBindings } from "hoc/withRoleBinding";
-import { useAuth } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { useDispatch } from "react-redux";
@@ -23,8 +22,6 @@ import { KRTable } from "widgets/KRTable";
 
 export const MemberListPage: React.FC = () => {
   const dispatch = useDispatch();
-
-  const { canManageCluster } = useAuth();
   const { roleBindings } = useRoleBindings();
 
   const renderSecondHeaderRight = () => {
@@ -114,16 +111,14 @@ export const MemberListPage: React.FC = () => {
   const renderActions = (roleBinding: RoleBinding) => {
     return (
       <>
-        {canManageCluster() && (
-          <IconButtonWithTooltip
-            onClick={async () => {
-              impersonate(roleBinding.subject, roleBinding.subjectType);
-            }}
-            tooltipTitle="Impersonate"
-          >
-            <ImpersonateIcon />
-          </IconButtonWithTooltip>
-        )}
+        <IconButtonWithTooltip
+          onClick={async () => {
+            impersonate(roleBinding.subject, roleBinding.subjectType);
+          }}
+          tooltipTitle="Impersonate"
+        >
+          <ImpersonateIcon />
+        </IconButtonWithTooltip>
         <DeleteButtonWithConfirmPopover
           popupId={`delete-member-${roleBinding.namespace}-${roleBinding.name}-popup`}
           popupTitle={`DELETE ${roleBinding.subject}`}

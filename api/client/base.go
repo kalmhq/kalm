@@ -52,7 +52,6 @@ type ClientManager interface {
 	// special resources
 	CanOperateHttpRoute(c *ClientInfo, action string, route *resources.HttpRoute) bool
 	PermissionsGreaterThanOrEqualToAccessToken(c *ClientInfo, accessToken *resources.AccessToken) bool
-	CanManageRoleBinding(c *ClientInfo, roleBinding *v1alpha1.RoleBinding) bool
 	CanOperateDomains(c *ClientInfo, action string, domain *v1alpha1.Domain) bool
 
 	GetRBACEnforcer() rbac.Enforcer
@@ -202,15 +201,6 @@ func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, ro
 
 	log.Info("check CanOperateHttpRoute, pass permission check", zap.String("route", route.Name))
 	return true
-}
-
-func (m *BaseClientManager) CanManageRoleBinding(c *ClientInfo, roleBinding *v1alpha1.RoleBinding) bool {
-	switch roleBinding.Spec.Role {
-	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
-		return m.CanManageCluster(c)
-	default:
-		return m.CanManageNamespace(c, roleBinding.Namespace)
-	}
 }
 
 func (m *BaseClientManager) CanOperateDomains(c *ClientInfo, action string, domain *v1alpha1.Domain) bool {

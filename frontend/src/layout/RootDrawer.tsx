@@ -189,19 +189,13 @@ const RootDrawerRaw: React.FC<Props> = (props) => {
       {
         name: "Settings",
         items: [
-          canViewCluster()
+          canManageCluster()
             ? {
                 icon: SettingIcon,
                 text: "Single Sign-on",
                 to: "/sso",
               }
             : null,
-
-          // {
-          //   icon: SettingIcon,
-          //   text: "System",
-          //   to: "/system",
-          // },
           canManageCluster()
             ? {
                 icon: PeopleIcon,
@@ -209,7 +203,7 @@ const RootDrawerRaw: React.FC<Props> = (props) => {
                 to: "/members",
               }
             : null,
-          canManageCluster()
+          canViewCluster()
             ? {
                 icon: InfoIcon,
                 text: "Version",

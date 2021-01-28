@@ -24,8 +24,16 @@ func PermissionPanicRecoverMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 func (h *ApiHandler) MustCan(user *client.ClientInfo, action string, namespace string, object string) {
 	if !h.clientManager.Can(user, action, namespace, object) {
+
+		var email string
+		if user.Impersonation != "" {
+			email = user.Impersonation
+		} else {
+			email = user.Email
+		}
+
 		panic(&resources.UnauthorizedError{
-			Email:     user.Email,
+			Email:     email,
 			Groups:    user.Groups,
 			Action:    action,
 			Namespace: namespace,

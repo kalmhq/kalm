@@ -45,9 +45,6 @@ const applicationRoleOptions = [
   <MenuItem key="editor" value="editor">
     Editor
   </MenuItem>,
-  <MenuItem key="owner" value="owner">
-    Owner
-  </MenuItem>,
 ];
 
 const clusterRoleOptions = [
