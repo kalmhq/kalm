@@ -39,11 +39,11 @@ var NoClusterEditorRoleError = errors.NewUnauthorized("Require editor role in cl
 var NoClusterOwnerRoleError = errors.NewUnauthorized("Require owner role in cluster level")
 
 type UnauthorizedError struct {
-	Email  string
-	Groups []string
-	Action string
-	Scope  string
-	Object string
+	Email     string
+	Groups    []string
+	Action    string
+	Namespace string
+	Object    string
 }
 
 func (e *UnauthorizedError) StatusCode() int {
@@ -63,5 +63,5 @@ func (e *UnauthorizedError) Error() string {
 		groupsString = "N/A"
 	}
 
-	return fmt.Sprintf("fail the auth check: [action: %s, scope: %s, object: %s], userAuthInfo: [user: %s, groups: %s]", e.Action, e.Scope, e.Object, e.Email, groupsString)
+	return fmt.Sprintf("fail the auth check: [action: %s, namespace: %s, object: %s], userAuthInfo: [user: %s, groups: %s]", e.Action, e.Namespace, e.Object, e.Email, groupsString)
 }

@@ -1,6 +1,6 @@
 import { push } from "connected-react-router";
 import React, { useEffect } from "react";
-import { connect, useDispatch } from "react-redux";
+import { connect, useDispatch, useSelector } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
@@ -62,3 +62,7 @@ export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
 function getDisplayName(WrappedComponent: React.ComponentType<any>) {
   return WrappedComponent.displayName || WrappedComponent.name || "Component";
 }
+
+export const useAuth = () => {
+  return useSelector(mapStateToProps);
+};

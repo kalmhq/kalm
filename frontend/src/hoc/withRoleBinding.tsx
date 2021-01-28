@@ -1,5 +1,5 @@
 import React from "react";
-import { connect } from "react-redux";
+import { connect, useSelector } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 
@@ -29,3 +29,7 @@ export const withRoleBindings = (WrappedComponent: React.ComponentType<any>) => 
 function getDisplayName(WrappedComponent: React.ComponentType<any>) {
   return WrappedComponent.displayName || WrappedComponent.name || "Component";
 }
+
+export const useRoleBindings = () => {
+  return useSelector(mapStateToProps);
+};

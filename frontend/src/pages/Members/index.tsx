@@ -1,18 +1,15 @@
-import { Avatar, Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Avatar, Box, Button } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import { blinkTopProgressAction } from "actions/settings";
 import { deleteAllRoleBindingsAction } from "actions/user";
 import { impersonate } from "api/api";
 import { push } from "connected-react-router";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import { WithRoleBindingProps, withRoleBindings } from "hoc/withRoleBinding";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
+import { useRoleBindings } from "hoc/withRoleBinding";
+import { useAuth } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
 import React from "react";
-import { connect } from "react-redux";
-import { Link, withRouter } from "react-router-dom";
-import { RootState } from "reducers";
-import { TDispatchProp } from "types";
+import { useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
 import { RoleBinding } from "types/member";
 import { gravatar } from "utils/gavatar";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
@@ -24,22 +21,12 @@ import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 
-const styles = (theme: Theme) => createStyles({});
+export const MemberListPage: React.FC = () => {
+  const dispatch = useDispatch();
 
-const mapStateToProps = (state: RootState) => {
-  return {};
-};
+  const { canManageCluster } = useAuth();
+  const { roleBindings } = useRoleBindings();
 
-interface Props
-  extends WithStyles<typeof styles>,
-    ReturnType<typeof mapStateToProps>,
-    TDispatchProp,
-    WithNamespaceProps,
-    WithUserAuthProps,
-    WithRoleBindingProps {}
-
-const RolesListPageRaw: React.FC<Props> = (props) => {
-  const { dispatch } = props;
   const renderSecondHeaderRight = () => {
     return (
       <>
@@ -100,7 +87,6 @@ const RolesListPageRaw: React.FC<Props> = (props) => {
   };
 
   const getKRTableData = () => {
-    const { roleBindings } = props;
     const data: any[] = [];
 
     const exist: { [key: string]: boolean } = {};
@@ -111,7 +97,11 @@ const RolesListPageRaw: React.FC<Props> = (props) => {
 
         data.push({
           name: roleBinding.name,
-          avatar: <Avatar src={gravatar(roleBinding.subject, { size: 36 })} />,
+          avatar: (
+            <Link to={`/members/${roleBinding.subject}`}>
+              <Avatar src={gravatar(roleBinding.subject, { size: 36 })} />
+            </Link>
+          ),
           subject: <Link to={`/members/${roleBinding.subject}`}>{roleBinding.subject}</Link>,
           actions: renderActions(roleBinding),
         });
@@ -122,18 +112,18 @@ const RolesListPageRaw: React.FC<Props> = (props) => {
   };
 
   const renderActions = (roleBinding: RoleBinding) => {
-    const { dispatch } = props;
-
     return (
       <>
-        <IconButtonWithTooltip
-          onClick={async () => {
-            impersonate(roleBinding.subject, roleBinding.subjectType);
-          }}
-          tooltipTitle="Impersonate"
-        >
-          <ImpersonateIcon />
-        </IconButtonWithTooltip>
+        {canManageCluster() && (
+          <IconButtonWithTooltip
+            onClick={async () => {
+              impersonate(roleBinding.subject, roleBinding.subjectType);
+            }}
+            tooltipTitle="Impersonate"
+          >
+            <ImpersonateIcon />
+          </IconButtonWithTooltip>
+        )}
         <DeleteButtonWithConfirmPopover
           popupId={`delete-member-${roleBinding.namespace}-${roleBinding.name}-popup`}
           popupTitle={`DELETE ${roleBinding.subject}`}
@@ -167,8 +157,6 @@ const RolesListPageRaw: React.FC<Props> = (props) => {
   };
 
   const renderContent = () => {
-    const { roleBindings } = props;
-
     return roleBindings.length > 0 ? (
       <KRTable showTitle={true} title="Members" columns={getKRTableColumns()} data={getKRTableData()} />
     ) : (
@@ -185,7 +173,3 @@ const RolesListPageRaw: React.FC<Props> = (props) => {
     </BasePage>
   );
 };
-
-export const MemberListPage = withStyles(styles)(
-  withNamespace(withUserAuth(withRoleBindings(connect(mapStateToProps)(withRouter(RolesListPageRaw))))),
-);

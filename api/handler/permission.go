@@ -22,14 +22,14 @@ func PermissionPanicRecoverMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func (h *ApiHandler) MustCan(user *client.ClientInfo, action string, scope string, object string) {
-	if !h.clientManager.Can(user, action, scope, object) {
+func (h *ApiHandler) MustCan(user *client.ClientInfo, action string, namespace string, object string) {
+	if !h.clientManager.Can(user, action, namespace, object) {
 		panic(&resources.UnauthorizedError{
-			Email:  user.Email,
-			Groups: user.Groups,
-			Action: action,
-			Scope:  scope,
-			Object: object,
+			Email:     user.Email,
+			Groups:    user.Groups,
+			Action:    action,
+			Namespace: namespace,
+			Object:    object,
 		})
 	}
 }

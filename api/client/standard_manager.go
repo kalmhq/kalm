@@ -33,6 +33,8 @@ type StandardClientManager struct {
 
 	ClusterConfig *rest.Config
 
+	StaticPolicies string
+
 	// Access tokens, roleBindings, applications are rarely changed.
 	// It is efficient to hold all roles and access tokens in memory to authorize requests.
 	mut           *sync.RWMutex
@@ -105,6 +107,7 @@ func roleValueToPolicyValue(ns, role string) string {
 func (m *StandardClientManager) UpdatePolicies() {
 	var sb strings.Builder
 
+	sb.WriteString(m.StaticPolicies)
 	sb.WriteString(BuildClusterRolePolicies())
 
 	for _, application := range m.Applications {
@@ -202,44 +205,6 @@ func (m *StandardClientManager) SetImpersonation(clientInfo *ClientInfo, rawImpe
 			log.Error("parse impersonation raw string failed", zap.Error(err))
 		}
 	}
-
-	// if m.CanManageNamespace(clientInfo, "*") {
-	// 	impersonation, impersonationType, err := parseImpersonationString(rawImpersonation)
-
-	// 	if err != nil {
-	// 		log.Error("parse impersonation raw string failed", zap.Error(err))
-	// 		return
-	// 	}
-
-	// 	if impersonation == "" || impersonationType == "" {
-	// 		return
-	// 	}
-
-	// 	policies, err := m.GetRBACEnforcer().GetImplicitPermissionsForUser(ToSafeSubject(impersonation, impersonationType))
-
-	// 	if err != nil {
-	// 		log.Error("get implicit permissions for error", zap.String("user", ToSafeSubject(impersonation, impersonationType)), zap.Error(err))
-	// 		return
-	// 	}
-
-	// 	for _, policy := range policies {
-	// 		if !m.Can(clientInfo, policy[1], policy[2], policy[3]) {
-	// 			// Can't impersonate. The goal user has at least one permission that current user don't have
-	// 			log.Debug(
-	// 				"Impersonate failed",
-	// 				zap.String("currentUser", clientInfo.Email),
-	// 				zap.String("goal user", ToSafeSubject(impersonation, impersonationType)),
-	// 				zap.String("action", policy[1]),
-	// 				zap.String("scope", policy[2]),
-	// 				zap.String("object", policy[3]),
-	// 			)
-	// 			return
-	// 		}
-	// 	}
-
-	// 	clientInfo.Impersonation = impersonation
-	// 	clientInfo.ImpersonationType = impersonationType
-	// }
 }
 
 func (m *StandardClientManager) GetClientInfoFromContext(c echo.Context) (*ClientInfo, error) {
@@ -304,10 +269,11 @@ func tryToParseEntityFromToken(tokenString string) string {
 	return "token"
 }
 
-func NewStandardClientManager(cfg *rest.Config) *StandardClientManager {
+func NewStandardClientManager(cfg *rest.Config, staticPolicies string) *StandardClientManager {
 	policyAdapter := rbac.NewStringPolicyAdapter(``)
 
 	manager := &StandardClientManager{
+		StaticPolicies:    staticPolicies,
 		BaseClientManager: NewBaseClientManager(policyAdapter),
 		PolicyAdapter:     policyAdapter,
 		ClusterConfig:     cfg,

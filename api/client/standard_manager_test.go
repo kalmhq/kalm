@@ -22,7 +22,7 @@ func TestPolicyUpdate(t *testing.T) {
 	cfg, err := testEnv.Start()
 	assert.Nil(t, err)
 
-	clientMgr := NewStandardClientManager(cfg)
+	clientMgr := NewStandardClientManager(cfg, "")
 
 	owner := "f@bar.com"
 	sub := ToSafeSubject(owner, v1alpha1.SubjectTypeUser)
