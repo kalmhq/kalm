@@ -6,7 +6,7 @@ import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { Certificate, CertificateFormType, newEmptyCertificateForm } from "types/certificate";
+import { CertificateFormType, newEmptyCertificateForm } from "types/certificate";
 import { H6 } from "widgets/Label";
 
 const styles = (theme: Theme) =>
@@ -16,31 +16,21 @@ const styles = (theme: Theme) =>
 
 export interface Props extends WithStyles<typeof styles>, TDispatchProp {}
 
-interface State {
-  newCert: Certificate;
-}
+interface State {}
 class CertificateNewRaw extends React.Component<Props, State> {
   private submit = async (certificate: CertificateFormType) => {
     try {
       const { dispatch } = this.props;
       const cert = await dispatch(createCertificateAction(certificate, false));
-      this.setState({
-        newCert: cert,
-      });
-      this.onSubmitSuccess();
+      dispatch(push(`/certificates/${cert.name}`));
     } catch (e) {
       console.log(e);
     }
   };
 
-  private onSubmitSuccess = () => {
-    const { dispatch } = this.props;
-    const { newCert } = this.state;
-    dispatch(push(`/certificates/${newCert.name}`));
-  };
-
   public render() {
     const { classes } = this.props;
+
     return (
       <BasePage secondHeaderRight={<H6>New Certificate</H6>}>
         <div className={classes.root}>

@@ -13,15 +13,8 @@ export const DELETE_DOMAIN_FULFILLED = "DELETE_DOMAIN_FULFILLED";
 export interface Domain {
   name: string;
   domain: string;
-  status: "pending" | "ready";
   recordType: "CNAME" | "A";
   target: string;
-  isBuiltIn?: boolean;
-  txt: string;
-  txtStatus: "pending" | "ready";
-
-  dnsTargetReadyToCheck: boolean;
-  txtReadyToCheck: boolean;
 }
 
 export interface DomainCreation {

@@ -1,10 +1,10 @@
 import { Box, Button, Link as KMLink, Typography } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
+import { deleteCertificateAction } from "actions/certificate";
 import { deleteDomainAction } from "actions/domains";
 import { setSuccessNotificationAction } from "actions/notification";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
-import { DomainTxtRecordStatus } from "pages/Domains/Status";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -44,21 +44,24 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
     certificatesMap[certificate.domains[0]] = certificate;
   });
 
-  const deleteDomain = (domain: Domain) => {
-    dispatch(deleteDomainAction(domain.name));
+  const deleteDomain = async (domain: Domain) => {
+    const promises = [];
+    promises.push(dispatch(deleteDomainAction(domain.name)));
+    const cert = certificates.find((x) => x.domains.length === 1 && x.domains[0] === domain.domain);
+
+    if (cert) {
+      promises.push(dispatch(deleteCertificateAction(cert.name)));
+    }
+
+    await Promise.all(promises);
+
     dispatch(setSuccessNotificationAction(`Successfully deleted domain ${domain.domain}`));
   };
 
   const renderDomain = (domain: Domain) => {
     return <KLink to={`/domains/${domain.name}`}>{domain.domain}</KLink>;
   };
-  // const renderType = (domain: Domain) => (domain.isBuiltIn ? "-" : domain.recordType);
-  // const renderTarget = (domain: Domain) => (domain.isBuiltIn ? "-" : domain.target);
   const renderCertificate = (domain: Domain) => {
-    if (domain.isBuiltIn) {
-      return <SuccessColorText>Issued</SuccessColorText>;
-    }
-
     const cert = certificatesMap[domain.domain];
 
     if (cert) {
@@ -69,9 +72,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
       }
     }
 
-    if (domain.status === "ready") {
-      return "Not-issued";
-    }
+    return <span>Not applied</span>;
   };
   const renderActions = (domain: Domain) => {
     return (
@@ -84,7 +85,6 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
         {canEditCluster() && (
           <>
             <DeleteButtonWithConfirmPopover
-              disabled={domain.isBuiltIn}
               popupId="delete-domain-popup"
               popupTitle="DELETE DOMAIN?"
               popupContent={
@@ -95,7 +95,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
                   </Typography>
                 </Box>
               }
-              targetText={"delete"}
+              targetText={domain.domain}
               confirmedAction={() => deleteDomain(domain)}
             />
           </>
@@ -104,44 +104,12 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
     );
   };
 
-  const renderTxtRecordStatus = (domain: Domain) => {
-    if (domain.isBuiltIn) {
-      return <span>-</span>;
-    }
-
-    return <DomainTxtRecordStatus domain={domain} />;
-  };
-
-  // const renderTrafficRecordStatus = (domain: Domain) => {
-  //   if (domain.isBuiltIn) {
-  //     return <span>-</span>;
-  //   }
-
-  //   return <DomainStatus status={domain.status} />;
-  // };
-
   const getKRTableColumns = () => {
     const columns = [
       {
         Header: "Domain",
         accessor: "domain",
       },
-      // {
-      //   Header: "Type",
-      //   accessor: "type",
-      // },
-      // {
-      //   Header: "Target",
-      //   accessor: "target",
-      // },
-      {
-        Header: "TXT Record",
-        accessor: "txtRecordStatus",
-      },
-      // {
-      // Header: "Traffic Record",
-      // accessor: "trafficRecordStatus",
-      // },
       {
         Header: "Certificate Status",
         accessor: "certificate",
@@ -164,7 +132,6 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
     domains.forEach((domain) => {
       data.push({
         domain: renderDomain(domain),
-        txtRecordStatus: renderTxtRecordStatus(domain),
         // trafficRecordStatus: renderTrafficRecordStatus(domain),
         certificate: renderCertificate(domain),
         actions: renderActions(domain),
@@ -187,9 +154,11 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
         content={sc.EMPTY_DOMAIN_SUBTITLE}
         button={
           canEditCluster() ? (
-            <CustomizedButton variant="contained" color="primary" component={Link} to="/domains/new">
-              New Domain
-            </CustomizedButton>
+            <>
+              <CustomizedButton variant="contained" color="primary" component={Link} to="/domains/new">
+                New Domain
+              </CustomizedButton>
+            </>
           ) : null
         }
       />
@@ -237,6 +206,16 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
               to="/domains/new"
             >
               New Domain
+            </Button>
+            <Button
+              color="primary"
+              variant="outlined"
+              size="small"
+              component={Link}
+              tutorial-anchor-id="add-domain"
+              to="/domains/acme"
+            >
+              Manage ACME DNS server
             </Button>
           </>
         ) : null

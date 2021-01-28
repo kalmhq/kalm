@@ -344,24 +344,13 @@ export default class RealApi {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/httpscerts/${name}` });
   };
 
-  // certificate acme server
-  public createAcmeServer = async (acmeServer: AcmeServerFormType): Promise<AcmeServerInfo> => {
-    const res = await axiosRequest({
-      method: "post",
-      url: `/${K8sApiVersion}/acmeserver`,
-      data: acmeServer,
-    });
-
-    return res.data;
-  };
-
-  public editAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
-    await axiosRequest({ method: "put", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
+  public setAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
+    await axiosRequest({ method: "post", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
     return; //Immutable.fromJS(res.data);
   };
 
-  public deleteAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
-    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
+  public deleteAcmeServer = async (): Promise<void> => {
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/acmeserver` });
     return;
   };
 

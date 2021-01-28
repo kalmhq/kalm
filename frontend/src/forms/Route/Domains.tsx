@@ -15,7 +15,7 @@ import { ValidatorArrayOfIsDNS1123SubDomain, ValidatorRequired } from "../valida
 
 export const RouteDomains: React.FC = () => {
   const allDomains: Domain[] = useSelector((state: RootState) => state.domains.domains);
-  const domains = allDomains.filter((x) => x.txtStatus === "ready" || x.isBuiltIn);
+  const domains = allDomains;
   const domainsMap: { [key: string]: Domain } = {};
   domains.forEach((x) => (domainsMap[x.domain] = x));
 

@@ -55,7 +55,7 @@ const schemaOptions = [
 
 const RouteFormRaw: React.FC<Props> = (props) => {
   const { isEdit, initial, onSubmit } = props;
-  const { tutorialState, certificates, domains } = useSelector((state: RootState) => {
+  const { tutorialState, certificates } = useSelector((state: RootState) => {
     const certificates = state.certificates.certificates;
 
     return {
@@ -100,27 +100,12 @@ const RouteFormRaw: React.FC<Props> = (props) => {
 
     let missingCertsHosts: string[] = [];
 
-    const buildInDomain = domains.find((d) => d.isBuiltIn);
-    let builtInDomainSuffix: string = "";
-
-    if (buildInDomain) {
-      // remove the *
-      builtInDomainSuffix = buildInDomain.domain.slice(1);
-    }
-
     for (let host of hosts) {
       if (host === "") {
         continue;
       }
 
       const cert = certificates.find((c) => canCertDomainsSuiteForHost(c.domains, host));
-
-      // Built-in domain always has a cert
-      if (builtInDomainSuffix !== "") {
-        if (host.endsWith(builtInDomainSuffix)) {
-          continue;
-        }
-      }
 
       if (!cert) {
         missingCertsHosts.push(host);

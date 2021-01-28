@@ -9,18 +9,15 @@ metadata:
   name: domains.core.kalm.dev
 spec:
   additionalPrinterColumns:
-  - JSONPath: .metadata.labels.tenant
-    name: Tenant
-    type: string
   - JSONPath: .spec.domain
     name: Domain
     type: string
   - JSONPath: .spec.dnsType
     name: DNSType
     type: string
-  - JSONPath: .status.isDNSTargetConfigured
-    name: IsDNSTargetConfigured
-    type: boolean
+  - JSONPath: .spec.dnsTarget
+    name: DNSTarget
+    type: string
   - JSONPath: .metadata.creationTimestamp
     name: Age
     type: date
@@ -53,31 +50,13 @@ spec:
           properties:
             dnsTarget:
               type: string
-            dnsTargetReadyToCheck:
-              type: boolean
             dnsType:
               type: string
             domain:
               type: string
-            isKalmBuiltinDomain:
-              type: boolean
-            txt:
-              type: string
-            txtReadyToCheck:
-              type: boolean
-          required:
-          - isKalmBuiltinDomain
           type: object
         status:
           description: DomainStatus defines the observed state of Domain
-          properties:
-            isDNSTargetConfigured:
-              type: boolean
-            isTxtConfigured:
-              type: boolean
-          required:
-          - isDNSTargetConfigured
-          - isTxtConfigured
           type: object
       type: object
   version: v1alpha1
