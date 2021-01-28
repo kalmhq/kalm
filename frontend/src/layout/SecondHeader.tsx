@@ -39,6 +39,7 @@ const styles = (theme: Theme) =>
       height: SECOND_HEADER_HEIGHT,
       display: "flex",
       alignItems: "center",
+      paddingTop: 16,
       "& > *": {
         marginLeft: 20,
       },
