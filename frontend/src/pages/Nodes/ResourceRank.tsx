@@ -75,7 +75,7 @@ class ResourceRankRaw extends React.PureComponent<Props, State> {
           return (
             <Box display="flex" pb={1} key={index}>
               <Box width={maxBarWidth} mr={0.5}>
-                <Paper variant="elevation" square>
+                <Paper variant="elevation">
                   <Box className={classes.barWrapper}>
                     <Box width={(a.value / maxValue) * maxBarWidth} className={classes.bar}></Box>
                     <Box pl={1} pr={1} className={classes.barText}>

@@ -1,14 +1,14 @@
+import { Button, createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
+import { validateTokenAction } from "actions/auth";
 import { push } from "connected-react-router";
 import React, { ChangeEvent } from "react";
 import { connect } from "react-redux";
+import { RootState } from "reducers";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "types";
-import { validateTokenAction } from "actions/auth";
-import { RootState } from "reducers";
-import { Button, createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
-import { grey } from "@material-ui/core/colors";
-import { KMLink } from "widgets/Link";
 import { KalmLogo2Icon, KalmTextLogoIcon } from "widgets/Icon";
+import { KMLink } from "widgets/Link";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -114,7 +114,7 @@ export class LoginRaw extends React.PureComponent<Props, State> {
     );
     return (
       <div>
-        <Paper className={classes.loginPaper} square>
+        <Paper className={classes.loginPaper}>
           <div className={classes.paperContainer}>
             <div className={classes.portalText}>
               <KalmLogo2Icon style={{ width: 64, height: 64 }} />

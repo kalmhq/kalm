@@ -95,7 +95,7 @@ export const KRTable = ({
   );
 
   return (
-    <Paper variant={"outlined"} square style={noOutline ? { border: "none", width: "100%" } : {}}>
+    <Paper variant={"outlined"} style={noOutline ? { border: "none", width: "100%" } : {}}>
       {showTitle ? (
         <Grid container spacing={noOutline ? 0 : 2}>
           <Grid item md={9}>

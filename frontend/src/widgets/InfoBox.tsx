@@ -32,7 +32,7 @@ class InfoBoxRaw extends React.PureComponent<Props> {
     }
 
     return (
-      <Paper square variant="outlined" className={classes.root}>
+      <Paper variant="outlined" className={classes.root}>
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item md={12}>

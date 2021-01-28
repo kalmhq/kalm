@@ -22,7 +22,7 @@ export const Methods = ({ methods }: { methods: string[] }) => {
               <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
                 {({ TransitionProps }) => (
                   <Fade {...TransitionProps} timeout={100}>
-                    <Paper variant="outlined" square>
+                    <Paper variant="outlined">
                       <Box display={"flex"} width={300} flexWrap={"wrap"} pt={1} pl={1}>
                         {httpMethods.map((m) => {
                           return (

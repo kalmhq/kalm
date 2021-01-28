@@ -88,7 +88,6 @@ export const Expansion: React.FC<ExpansionProps> = (props) => {
 
   return (
     <ExpansionPanel
-      square
       className={clsx(high ? classes.highRoot : classes.root)}
       variant={nested ? "elevation" : "outlined"}
       elevation={0}

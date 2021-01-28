@@ -310,7 +310,7 @@ const ComponentBriefInfoRaw: React.FC<Props> = (props) => {
       return null;
     }
     return (
-      <ExpansionPanel square className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={envs.length <= 1}>
+      <ExpansionPanel className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={envs.length <= 1}>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>{envs.length} variables</ExpansionPanelSummary>
         <ExpansionPanelDetails>
           <Table size="small" aria-label="Envs-Table">
@@ -384,7 +384,7 @@ const ComponentBriefInfoRaw: React.FC<Props> = (props) => {
       return null;
     }
     return (
-      <ExpansionPanel square className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={false}>
+      <ExpansionPanel className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={false}>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
           {disks?.length} {disks?.length > 1 ? "disks" : "disk"}
         </ExpansionPanelSummary>

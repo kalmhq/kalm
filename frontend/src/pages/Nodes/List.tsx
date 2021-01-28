@@ -132,7 +132,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                         <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
-                              <Paper variant="outlined" square>
+                              <Paper variant="outlined">
                                 <ResourceRank title="Pods" allocateds={cpuRankData} />
                               </Paper>
                             </Fade>
@@ -157,7 +157,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                         <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
-                              <Paper variant="outlined" square>
+                              <Paper variant="outlined">
                                 <ResourceRank title="Pods" allocateds={memoryRankData} />
                               </Paper>
                             </Fade>
@@ -227,7 +227,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                         >
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
-                              <Paper variant="outlined" square>
+                              <Paper variant="outlined">
                                 <ResourceRank title="Pods" allocateds={cpuRankData} />
                               </Paper>
                             </Fade>
@@ -257,7 +257,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                         >
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
-                              <Paper variant="outlined" square>
+                              <Paper variant="outlined">
                                 <ResourceRank title="Pods" allocateds={memoryRankData} />
                               </Paper>
                             </Fade>
@@ -406,7 +406,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                         <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
-                              <Paper variant="outlined" square>
+                              <Paper variant="outlined">
                                 <ResourceRank title="Applications" allocateds={cpuRankData} />
                               </Paper>
                             </Fade>
@@ -431,7 +431,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                         <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
-                              <Paper variant="outlined" square>
+                              <Paper variant="outlined">
                                 <ResourceRank title="Applications" allocateds={memoryRankData} />
                               </Paper>
                             </Fade>

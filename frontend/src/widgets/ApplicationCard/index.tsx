@@ -252,7 +252,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
   public render() {
     const { application, classes } = this.props;
     return (
-      <Card raised={false} elevation={0} square className={classes.root}>
+      <Card raised={false} elevation={0} className={classes.root}>
         <CardHeader
           avatar={
             <Avatar

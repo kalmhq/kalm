@@ -1,4 +1,4 @@
-import { Box, createStyles, Paper, Theme, withStyles, WithStyles, Typography } from "@material-ui/core";
+import { Box, createStyles, Paper, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -31,7 +31,7 @@ class EmptyInfoBoxRaw extends React.PureComponent<Props, State> {
   public render() {
     const { image, title, content, button } = this.props;
     return (
-      <Paper square variant="outlined">
+      <Paper variant="outlined">
         <Box p={2}>
           <Box p={2} display="flex" justifyContent="center">
             {image ? image : null}
