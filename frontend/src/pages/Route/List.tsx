@@ -295,9 +295,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes, canEditAnyNamespace, canViewCluster } = this.props;
-
-    const filteredRoutes = httpRoutes.filter((route) => canViewCluster());
+    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes, canEditAnyNamespace } = this.props;
 
     return (
       <BasePage
@@ -319,7 +317,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           {isRoutesLoading && !isRoutesFirstLoaded ? (
             <Loading />
-          ) : filteredRoutes && filteredRoutes.length > 0 ? (
+          ) : httpRoutes && httpRoutes.length > 0 ? (
             <>
               {this.renderKRTable()}
               {this.renderInfoBox()}

@@ -69,18 +69,22 @@ class WithDataRaw extends React.PureComponent<Props> {
     dispatch(loadApplicationsAction());
     dispatch(loadDeployAccessTokensAction());
     dispatch(loadProtectedEndpointAction());
-    dispatch(loadCertificatesAction());
     dispatch(loadRegistriesAction());
     dispatch(loadServicesAction("")); // for routes destinations
     dispatch(loadPersistentVolumesAction());
     dispatch(loadStorageClassesAction());
-    dispatch(loadDomainsAction());
+
     if (canManageCluster()) {
+      dispatch(loadSSOConfigAction());
       dispatch(loadRoleBindingsAction());
+      dispatch(loadCertificateAcmeServerAction());
+      dispatch(loadCertificateIssuersAction());
     }
-    dispatch(loadCertificateIssuersAction());
-    dispatch(loadCertificateAcmeServerAction());
-    dispatch(loadSSOConfigAction());
+
+    // The following two are required for routes
+    dispatch(loadCertificatesAction());
+    dispatch(loadDomainsAction());
+
     dispatch(loadNodesAction());
     dispatch(loadClusterInfoAction());
   }

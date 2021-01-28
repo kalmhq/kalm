@@ -285,6 +285,11 @@ func buildHttpsCertResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, errors.New("convert watch obj to HttpsCert failed")
 	}
 
+	// TODO: certs are required to support http route
+	// if !c.clientManager.CanManageCluster(c.clientInfo) {
+	// 	return nil, nil
+	// }
+
 	return &ResMessage{
 		Kind:   "HttpsCert",
 		Action: action,
@@ -492,9 +497,10 @@ func buildDomainResMessage(c *Client, action string, objWatched interface{}) (*R
 		return nil, errors.New("convert watch obj to Domain failed")
 	}
 
-	if !c.clientManager.CanOperateDomains(c.clientInfo, "view", domain) {
-		return nil, nil
-	}
+	// TODO: certs are required to support http route
+	// if !c.clientManager.CanManageCluster(c.clientInfo) {
+	// 	return nil, nil
+	// }
 
 	return &ResMessage{
 		Kind:   "Domain",

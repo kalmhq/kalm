@@ -19,46 +19,32 @@ func (h *ApiHandler) InstallDomainHandlers(e *echo.Group) {
 }
 
 func (h *ApiHandler) handleListDomains(c echo.Context) error {
+	// TODO: certs are required to support http route
+	// h.MustCanManageCluster(getCurrentUser(c))
+
 	var domainList v1alpha1.DomainList
 	if err := h.resourceManager.List(&domainList); err != nil {
 		return err
 	}
 
-	afterFilter := h.filterAuthorizedDomains(c, "view", domainList.Items)
-	domains := resources.WrapDomainListAsResp(afterFilter)
+	domains := resources.WrapDomainListAsResp(domainList.Items)
 	return c.JSON(http.StatusOK, domains)
 }
 
-func (h *ApiHandler) filterAuthorizedDomains(c echo.Context, action string, records []v1alpha1.Domain) []v1alpha1.Domain {
-	rst := []v1alpha1.Domain{}
-
-	for _, record := range records {
-		if !h.clientManager.CanOperateDomains(getCurrentUser(c), action, &record) {
-			continue
-		}
-
-		rst = append(rst, record)
-	}
-
-	return rst
-}
-
 func (h *ApiHandler) handleGetDomain(c echo.Context) error {
+	// TODO: certs are required to support http route
+	// h.MustCanManageCluster(getCurrentUser(c))
+
 	var rst v1alpha1.Domain
 	if err := h.resourceManager.Get("", c.Param("name"), &rst); err != nil {
 		return err
-	}
-
-	if !h.clientManager.CanOperateDomains(getCurrentUser(c), "view", &rst) {
-		return fmt.Errorf("no permission to view this domain: %s", c.Param("name"))
 	}
 
 	return c.JSON(http.StatusOK, resources.WrapDomainAsResp(rst))
 }
 
 func (h *ApiHandler) handleCreateDomain(c echo.Context) error {
-	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, "*", "domains/*")
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	domain, err := getDomainFromContext(c)
 	if err != nil {
@@ -79,13 +65,10 @@ func (h *ApiHandler) handleCreateDomain(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteDomain(c echo.Context) error {
+	h.MustCanManageCluster(getCurrentUser(c))
 	var fetched v1alpha1.Domain
 	if err := h.resourceManager.Get("", c.Param("name"), &fetched); err != nil {
 		return err
-	}
-
-	if !h.clientManager.CanOperateDomains(getCurrentUser(c), "manage", &fetched) {
-		return resources.InsufficientPermissionsError
 	}
 
 	err := h.resourceManager.Delete(&fetched)

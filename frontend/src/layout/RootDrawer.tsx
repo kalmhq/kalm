@@ -127,14 +127,14 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 
 const RootDrawerRaw: React.FC<Props> = (props) => {
   const getSideBarData = () => {
-    const { canEditAnyNamespace, canViewCluster, canManageCluster, canEditCluster } = props;
+    const { canEditAnyNamespace, canViewCluster, canManageCluster } = props;
 
     return [
       {
         name: "Application",
         items: [
           { icon: KalmApplicationIcon, text: "Apps", to: "/applications" },
-          canEditCluster()
+          canManageCluster()
             ? {
                 icon: KalmCertificatesIcon,
                 text: "Domains & Certs",

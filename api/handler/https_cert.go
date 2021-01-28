@@ -21,8 +21,8 @@ func (h *ApiHandler) InstallHttpsCertsHandlers(e *echo.Group) {
 // handlers
 
 func (h *ApiHandler) handleListHttpsCerts(c echo.Context) error {
-	currentUser := getCurrentUser(c)
-	h.MustCanView(currentUser, "*", "httpsCerts/*")
+	// TODO: certs are required to support http route
+	// h.MustCanManageCluster(getCurrentUser(c))
 
 	httpsCerts, err := h.resourceManager.GetHttpsCerts()
 
@@ -34,8 +34,8 @@ func (h *ApiHandler) handleListHttpsCerts(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleGetHttpsCert(c echo.Context) error {
-	currentUser := getCurrentUser(c)
-	h.MustCanView(currentUser, "*", "httpsCerts/"+c.Param("name"))
+	// TODO: certs are required to support http route
+	// h.MustCanManageCluster(getCurrentUser(c))
 
 	cert, err := h.getHttpsCertFromContext(c)
 
@@ -47,8 +47,7 @@ func (h *ApiHandler) handleGetHttpsCert(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
-	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, "*", "httpsCerts/*")
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	httpsCert, err := bindHttpsCertFromRequestBody(c)
 
@@ -70,8 +69,7 @@ func (h *ApiHandler) handleCreateHttpsCert(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
-	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, "*", "httpsCerts/*")
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	httpsCert, err := bindHttpsCertFromRequestBody(c)
 
@@ -93,8 +91,7 @@ func (h *ApiHandler) handleUploadHttpsCert(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
-	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, "*", "httpsCerts/"+c.Param("name"))
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	httpsCert, err := bindHttpsCertFromRequestBody(c)
 
@@ -120,8 +117,7 @@ func (h *ApiHandler) handleUpdateHttpsCert(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteHttpsCert(c echo.Context) error {
-	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, "*", "httpsCerts/"+c.Param("name"))
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	if err := h.resourceManager.DeleteHttpsCert(c.Param("name")); err != nil {
 		return err

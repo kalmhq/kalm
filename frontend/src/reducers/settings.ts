@@ -16,7 +16,7 @@ export type State = SettingObject;
 const initialState = {
   isDisplayingHelpers: window.localStorage.getItem("isDisplayingHelpers") === "true",
   isOpenRootDrawer: window.localStorage.getItem("isOpenRootDrawer") !== "false",
-  usingApplicationCard: window.localStorage.getItem("usingApplicationCard") === "true",
+  usingApplicationCard: false,
   usingTheme: window.localStorage.getItem("usingTheme") ?? "light",
   isShowTopProgress: false,
 };

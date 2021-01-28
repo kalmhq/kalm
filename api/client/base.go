@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -52,7 +51,6 @@ type ClientManager interface {
 	// special resources
 	CanOperateHttpRoute(c *ClientInfo, action string, route *resources.HttpRoute) bool
 	PermissionsGreaterThanOrEqualToAccessToken(c *ClientInfo, accessToken *resources.AccessToken) bool
-	CanOperateDomains(c *ClientInfo, action string, domain *v1alpha1.Domain) bool
 
 	GetRBACEnforcer() rbac.Enforcer
 }
@@ -201,26 +199,6 @@ func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, ro
 
 	log.Info("check CanOperateHttpRoute, pass permission check", zap.String("route", route.Name))
 	return true
-}
-
-func (m *BaseClientManager) CanOperateDomains(c *ClientInfo, action string, domain *v1alpha1.Domain) bool {
-	obj := fmt.Sprintf("domains/%s", domain.Name)
-
-	if action == "view" {
-		if m.CanView(c, "*", obj) {
-			return true
-		}
-	} else if action == "edit" {
-		if m.CanEdit(c, "*", obj) {
-			return true
-		}
-	} else if action == "manage" {
-		if m.CanManage(c, "*", obj) {
-			return true
-		}
-	}
-
-	return false
 }
 
 func extractAuthTokenFromClientRequestContext(c echo.Context) string {

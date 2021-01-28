@@ -3,7 +3,7 @@ import { indigo } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
+import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
@@ -20,8 +20,8 @@ import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { KalmApplicationIcon, KalmDetailsIcon, KalmGridViewIcon, KalmListViewIcon } from "widgets/Icon";
-import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { KalmApplicationIcon, KalmDetailsIcon } from "widgets/Icon";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { KRTable } from "widgets/KRTable";
 import { Caption } from "widgets/Label";
 import { KLink } from "widgets/Link";
@@ -249,7 +249,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
   };
 
   const renderSecondHeaderRight = () => {
-    const { usingApplicationCard, dispatch, canEditCluster } = props;
+    const { canEditCluster } = props;
     return (
       <>
         {/* <H6>Applications</H6> */}
@@ -265,7 +265,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
             {sc.NEW_APP_BUTTON}
           </Button>
         )}
-        <IconButtonWithTooltip
+        {/* <IconButtonWithTooltip
           tooltipTitle={usingApplicationCard ? "Using List View" : "Using Card View"}
           aria-label={usingApplicationCard ? "Using List View" : "Using Card View"}
           onClick={() =>
@@ -278,7 +278,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
           style={{ marginLeft: 12 }}
         >
           {usingApplicationCard ? <KalmGridViewIcon /> : <KalmListViewIcon />}
-        </IconButtonWithTooltip>
+        </IconButtonWithTooltip> */}
       </>
     );
   };
