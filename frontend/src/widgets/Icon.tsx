@@ -24,26 +24,26 @@ import GitHubIcon from "@material-ui/icons/GitHub";
 import PeopleAdd from "@material-ui/icons/GroupAdd";
 import Help from "@material-ui/icons/Help";
 import Info from "@material-ui/icons/Info";
+import Lock from "@material-ui/icons/Lock";
 import Menu from "@material-ui/icons/Menu";
 import MenuOpen from "@material-ui/icons/MenuOpen";
 import NoteAdd from "@material-ui/icons/NoteAdd";
 import OpenInBrowser from "@material-ui/icons/OpenInBrowser";
 import People from "@material-ui/icons/People";
+import PlayArrow from "@material-ui/icons/PlayArrow";
 import Publish from "@material-ui/icons/Publish";
 import SettingsIcon from "@material-ui/icons/Settings";
 import SettingsBackupRestoreIcon from "@material-ui/icons/SettingsBackupRestore";
 import SubjectIcon from "@material-ui/icons/Subject";
+import ViewList from "@material-ui/icons/ViewList";
 import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
-import ViewList from "@material-ui/icons/ViewList";
 import VpnKey from "@material-ui/icons/VpnKey";
 import Web from "@material-ui/icons/Web";
-import Lock from "@material-ui/icons/Lock";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
 // import { getDisplayName } from "permission/utils";
 import React from "react";
-import PlayArrow from "@material-ui/icons/PlayArrow";
 
 const styles = (theme: Theme) =>
   createStyles({

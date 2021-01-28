@@ -1,10 +1,14 @@
 import { createMuiTheme, PaletteType } from "@material-ui/core";
-import { indigo } from "@material-ui/core/colors";
+import { blue } from "@material-ui/core/colors";
 
-export const primaryBackgroud = indigo[50];
-export const primaryColor = indigo[700];
+export const primaryBackgroud = blue[50];
+export const primaryColor = "#36A7FC";
 
-let themeRaw = createMuiTheme({});
+let themeRaw = createMuiTheme({
+  typography: {
+    fontFamily: "Lato, Roboto, Helvetica, Arial, sans-serif",
+  },
+});
 
 const lightTheme = createMuiTheme({
   overrides: {
@@ -19,12 +23,19 @@ const lightTheme = createMuiTheme({
     },
   },
   palette: {
-    primary: indigo,
-    secondary: {
-      light: indigo[100],
-      main: indigo[200],
-      dark: indigo[300],
+    primary: {
+      main: primaryColor,
       contrastText: "#FFFFFF",
+    },
+    secondary: {
+      light: blue[100],
+      main: blue[200],
+      dark: blue[300],
+      contrastText: "#FFFFFF",
+    },
+    background: {
+      paper: "#fff",
+      default: "#e5e5e5",
     },
     type: "light",
   },
@@ -45,16 +56,16 @@ const darkTheme = createMuiTheme({
   },
   palette: {
     primary: {
-      light: indigo[200],
-      main: indigo[300],
-      dark: indigo[400],
+      light: blue[200],
+      main: blue[300],
+      dark: blue[400],
       contrastText: "#FFFFFF",
     },
     // secondary: amber,
     secondary: {
-      light: indigo[100],
-      main: indigo[200],
-      dark: indigo[300],
+      light: blue[100],
+      main: blue[200],
+      dark: blue[300],
       contrastText: "#FFFFFF",
     },
     background: {

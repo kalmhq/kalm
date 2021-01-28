@@ -1,6 +1,6 @@
 export default {
   type: {
-    primary: '"Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif',
+    primary: '"Lato", "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif',
     code: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace',
   },
   weight: {

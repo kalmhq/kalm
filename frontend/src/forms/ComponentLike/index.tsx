@@ -116,10 +116,11 @@ const styles = (theme: Theme) =>
       marginLeft: theme.spacing(1),
     },
     deployBtn: {
-      width: 360,
       position: "fixed",
       zIndex: COMPONENT_DEPLOY_BUTTON_ZINDEX,
       bottom: theme.spacing(3),
+      borderRadius: "10px",
+      height: "40px",
     },
   });
 
@@ -418,12 +419,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Resources</Subtitle1>
-          </SectionTitle>
-        </Grid>
-
-        <Grid item xs={6}>
           <Field<string | undefined>
             component={FinalTextField}
             name="cpuLimit"
@@ -444,7 +439,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <Field<string | undefined>
             component={FinalTextField}
             name="memoryLimit"
@@ -466,7 +461,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <Field<string | undefined>
             component={FinalTextField}
             name="cpuRequest"
@@ -486,7 +481,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <Field<string | undefined>
             component={FinalTextField}
             name="memoryRequest"
@@ -660,7 +655,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         {({ errors }: FormSpyRenderProps<ComponentLike>) => {
           return (
             <Tabs
-              className={clsx(classes.borderBottom, classes.tabsRoot)}
+              className={clsx(classes.tabsRoot)}
               value={currentTabIndex}
               variant="scrollable"
               scrollButtons="auto"
@@ -693,7 +688,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderMain(isEdit: boolean) {
     return (
       <Grid container spacing={2}>
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <Field
             autoFocus
             component={FinalTextField}
@@ -706,7 +701,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             helperText={isEdit ? "Name can't be changed." : sc.NAME_RULE}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <Field
             component={FinalTextField}
             id="component-image"
@@ -720,7 +715,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <FormSpy subscription={{ values: true }}>
             {({ values }: FormSpyRenderProps<ComponentLike>) => {
               let hasVolumes = false;
@@ -751,7 +746,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {({ values }: FormSpyRenderProps<ComponentLike>) => {
             return (
               <>
-                <Grid item xs={6}>
+                <Grid item xs={12}>
                   {this.renderReplicasOrSchedule(values.workloadType)}
                 </Grid>
                 {this.renderPrivateRegistryAlert(values.image)}
@@ -759,8 +754,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             );
           }}
         </FormSpy>
-
-        <Box p={1}>{this.renderScheduling()}</Box>
       </Grid>
     );
   }
@@ -821,7 +814,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <Grid container spacing={2}>
-        <Grid item xs={6} sm={6} md={6}>
+        <Grid item xs={12} sm={12} md={12} style={{ display: "flex", justifyContent: "flex-end" }}>
           <SubmitButton
             pending={isSubmittingApplicationComponent}
             disabled={isSubmittingApplicationComponent}
@@ -853,13 +846,29 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <form onSubmit={handleSubmit} className={classes.root} id="component-form">
             <FormTutorialHelper form={form} />
             <Prompt />
-            <KPanel
-              content={
-                <Box p={2} tutorial-anchor-id="component-from-basic">
-                  {this.renderMain(isEdit)}
-                </Box>
-              }
-            />
+            <Grid container spacing={2}>
+              <Grid item xs={6} sm={6} md={6}>
+                <KPanel
+                  title="Define Component"
+                  content={
+                    <Box p={2} tutorial-anchor-id="component-from-basic">
+                      {this.renderMain(isEdit)}
+                    </Box>
+                  }
+                />
+              </Grid>
+              <Grid item xs={6} sm={6} md={6}>
+                <KPanel
+                  title="Resource Limits"
+                  content={
+                    <Box p={2} tutorial-anchor-id="component-from-basic">
+                      {this.renderScheduling()}
+                    </Box>
+                  }
+                />
+              </Grid>
+            </Grid>
+
             <Box mt={2}>
               <KPanel
                 content={

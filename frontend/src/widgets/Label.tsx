@@ -2,8 +2,8 @@ import { Box, Typography, TypographyProps } from "@material-ui/core";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import React from "react";
 import { theme } from "theme/theme";
-import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 import { VisibilityIcon, VisibilityOffIcon } from "./Icon";
+import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 
 const styles = () =>
   createStyles({

@@ -1,4 +1,4 @@
-export const APP_BAR_HEIGHT = 48;
+export const APP_BAR_HEIGHT = 60;
 export const SECOND_HEADER_HEIGHT = 48;
 export const LEFT_SECTION_OPEN_WIDTH = 220;
 export const LEFT_SECTION_CLOSE_WIDTH = 48;
