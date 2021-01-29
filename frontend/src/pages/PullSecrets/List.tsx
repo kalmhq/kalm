@@ -1,5 +1,5 @@
 import { Box, Button, createStyles, Theme, Tooltip, Typography, withStyles, WithStyles } from "@material-ui/core";
-import { indigo } from "@material-ui/core/colors";
+import { blue } from "@material-ui/core/colors";
 import { setErrorNotificationAction } from "actions/notification";
 import { deleteRegistryAction } from "actions/registries";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
@@ -222,7 +222,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
     const { canEditCluster } = this.props;
     return canEditCluster() ? (
       <EmptyInfoBox
-        image={<KalmRegistryIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        image={<KalmRegistryIcon style={{ height: 120, width: 120, color: blue[200] }} />}
         title={sc.EMPTY_REGISTRY_TITLE}
         content={sc.EMPTY_REGISTRY_SUBTITLE}
         button={

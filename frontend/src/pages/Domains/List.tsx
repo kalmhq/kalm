@@ -1,5 +1,5 @@
 import { Box, Button, Link as KMLink, Typography } from "@material-ui/core";
-import { indigo } from "@material-ui/core/colors";
+import { blue } from "@material-ui/core/colors";
 import { deleteCertificateAction } from "actions/certificate";
 import { deleteDomainAction } from "actions/domains";
 import { setSuccessNotificationAction } from "actions/notification";
@@ -149,7 +149,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
     const { canEditCluster } = props;
     return (
       <EmptyInfoBox
-        image={<WebIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        image={<WebIcon style={{ height: 120, width: 120, color: blue[200] }} />}
         title={sc.EMPTY_DOMAIN_TITLE}
         content={sc.EMPTY_DOMAIN_SUBTITLE}
         button={

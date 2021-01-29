@@ -8,7 +8,7 @@ import {
   withStyles,
   WithStyles,
 } from "@material-ui/core";
-import { indigo } from "@material-ui/core/colors";
+import { blue } from "@material-ui/core/colors";
 import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
@@ -222,7 +222,7 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
     const { canEditCluster } = props;
     return (
       <EmptyInfoBox
-        image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: blue[200] }} />}
         title={sc.EMPTY_CERT_TITLE}
         content={sc.EMPTY_CERT_SUBTITLE}
         button={

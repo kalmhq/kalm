@@ -1,5 +1,5 @@
 import { Avatar, Box, Button } from "@material-ui/core";
-import { indigo } from "@material-ui/core/colors";
+import { blue } from "@material-ui/core/colors";
 import { blinkTopProgressAction } from "actions/settings";
 import { deleteAllRoleBindingsAction } from "actions/user";
 import { impersonate } from "api/api";
@@ -41,7 +41,7 @@ export const MemberListPage: React.FC = () => {
 
     return (
       <EmptyInfoBox
-        image={<PeopleIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        image={<PeopleIcon style={{ height: 120, width: 120, color: blue[200] }} />}
         title={"Your cluster has not been authorized to other members"}
         content={"Authorize other members to manage this cluster together."}
         button={

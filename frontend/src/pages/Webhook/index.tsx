@@ -8,7 +8,7 @@ import {
   WithStyles,
   withStyles,
 } from "@material-ui/core";
-import { indigo } from "@material-ui/core/colors";
+import { blue } from "@material-ui/core/colors";
 import { deleteDeployAccessTokenAction } from "actions/deployAccessToken";
 import { blinkTopProgressAction } from "actions/settings";
 import { withDeployAccessTokens, WithDeployAccessTokensProps } from "hoc/withDeployAccessTokens";
@@ -62,7 +62,7 @@ class WebhookPageRaw extends React.PureComponent<Props, State> {
   private renderEmpty() {
     return (
       <EmptyInfoBox
-        image={<CIIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        image={<CIIcon style={{ height: 120, width: 120, color: blue[200] }} />}
         title={sc.EMPTY_WEBHOOK_TITLE}
         content={sc.EMPTY_WEBHOOK_SUBTITLE}
         button={

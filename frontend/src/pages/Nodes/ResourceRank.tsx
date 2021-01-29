@@ -1,5 +1,5 @@
 import { Box, createStyles, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { indigo } from "@material-ui/core/colors";
+import { blue } from "@material-ui/core/colors";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -16,7 +16,7 @@ const styles = (theme: Theme) =>
     },
     bar: {
       height: 22,
-      backgroundColor: theme.palette.type === "light" ? indigo[200] : indigo[400],
+      backgroundColor: theme.palette.type === "light" ? blue[200] : blue[400],
     },
     barText: {
       height: 22,

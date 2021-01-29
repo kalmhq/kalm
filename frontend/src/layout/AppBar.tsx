@@ -18,7 +18,7 @@ import { TDispatch } from "types";
 import { SubjectTypeUser } from "types/member";
 import StringConstants from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { HelpIcon, ImpersonateIcon, KalmIcon, KalmUserIcon } from "widgets/Icon";
+import { HelpIconNew, ImpersonateIcon, KalmIcon, KalmUserIconNew } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
 
@@ -29,6 +29,7 @@ const mapStateToProps = (state: RootState) => {
   const email = auth.email;
   const impersonation = auth.impersonation;
   const impersonationType = auth.impersonationType;
+  const usingTheme = state.settings.usingTheme;
 
   return {
     isOpenRootDrawer: state.settings.isOpenRootDrawer,
@@ -37,6 +38,7 @@ const mapStateToProps = (state: RootState) => {
     impersonationType,
     activeNamespace,
     email,
+    usingTheme,
   };
 };
 
@@ -133,7 +135,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   }
 
   renderAuth() {
-    const { impersonation, impersonationType, email, dispatch } = this.props;
+    const { impersonation, impersonationType, email, dispatch, usingTheme } = this.props;
     const { authMenuAnchorElement } = this.state;
 
     let emailForDisplay: string = email;
@@ -154,7 +156,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           color="inherit"
         >
           {!impersonation ? (
-            <KalmUserIcon style={{ color: "#000" }} />
+            <KalmUserIconNew theme={usingTheme} />
           ) : (
             <ImpersonateIcon style={{ color: deepOrange[400] }} />
           )}
@@ -211,7 +213,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   };
 
   renderTutorialIcon = () => {
-    const { tutorialDrawerOpen, dispatch } = this.props;
+    const { tutorialDrawerOpen, dispatch, usingTheme } = this.props;
     return (
       <IconButtonWithTooltip
         tooltipTitle={StringConstants.APP_TUTORIAL_TOOLTIPS}
@@ -220,7 +222,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           tutorialDrawerOpen ? dispatch(closeTutorialDrawerAction()) : dispatch(openTutorialDrawerAction());
         }}
       >
-        <HelpIcon style={{ fill: "black" }} />
+        <HelpIconNew theme={usingTheme} />
       </IconButtonWithTooltip>
     );
   };

@@ -1,5 +1,5 @@
 import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { indigo } from "@material-ui/core/colors";
+import { blue } from "@material-ui/core/colors";
 import CheckIcon from "@material-ui/icons/Check";
 import { deleteRouteAction } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
@@ -170,7 +170,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
 
     return (
       <EmptyInfoBox
-        image={<KalmRoutesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        image={<KalmRoutesIcon style={{ height: 120, width: 120, color: blue[200] }} />}
         title={sc.EMPTY_ROUTES_TITLE}
         content={sc.EMPTY_ROUTES_SUBTITLE}
         button={
