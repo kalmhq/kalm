@@ -52,7 +52,7 @@ import {
 import { ComponentAccess } from "./Access";
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
-import { IngressHint, Ports } from "./Ports";
+import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { ProbeFields } from "./Probes";
 
@@ -125,7 +125,7 @@ const styles = (theme: Theme) =>
 /**
  * A Styled component representing helper text.
  */
-const HelperTextSection: React.FC<{}> = ({ children }) => (
+export const HelperTextSection: React.FC<{}> = ({ children }) => (
   <Grid item xs={8}>
     {children}
   </Grid>
@@ -223,89 +223,24 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   };
 
   private preInjectedFiles = () => {
-    return (
-      <>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Config Files</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <Grid item xs={12}>
-          <HelperTextSection>
-            {sc.CONFIG_COMMAND_HELPER}
-            <span>&nbsp;</span>
-            <Link href="https://kalm.dev/docs/guide-config#adding-a-config-file" target="_blank">
-              {sc.LEARN_MORE_LABEL}
-            </Link>
-          </HelperTextSection>
-        </Grid>
-        <Grid item xs={12}>
-          <PreInjectedFiles />
-        </Grid>
-      </>
-    );
+    return <PreInjectedFiles />;
   };
 
   private renderEnvs() {
-    return (
-      <>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Environment Variables</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <Grid item xs={12}>
-          <HelperTextSection>
-            {sc.ENV_VAR_HELPER}
-            <span>&nbsp;</span>
-            <Link href="https://kalm.dev/docs/guide-config#environment-varibles" target="_blank">
-              {sc.LEARN_MORE_LABEL}
-            </Link>
-          </HelperTextSection>
-        </Grid>
-        <Grid item xs={12}>
-          <Envs />
-        </Grid>
-      </>
-    );
+    return <Envs />;
   }
 
   public renderPorts() {
-    return (
-      <>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Ports</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <HelperTextSection>{sc.PORTS_HELPER}</HelperTextSection>
-        <Grid item xs={12}>
-          <Ports />
-        </Grid>
-        <Grid item xs={12}>
-          <IngressHint />
-        </Grid>
-      </>
-    );
+    return <Ports />;
   }
 
   private renderDisks(isEdit: boolean) {
     return (
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Disks</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <HelperTextSection>{sc.DISKS_HELPER}</HelperTextSection>
-        <Grid item xs={12}>
-          <FormSpy subscription={{ values: true }}>
-            {({ values }: FormSpyRenderProps<ComponentLike>) => {
-              return <Disks isEdit={isEdit} workloadType={values.workloadType} componentName={values.name} />;
-            }}
-          </FormSpy>
-        </Grid>
-      </Grid>
+      <FormSpy subscription={{ values: true }}>
+        {({ values }: FormSpyRenderProps<ComponentLike>) => {
+          return <Disks isEdit={isEdit} workloadType={values.workloadType} componentName={values.name} />;
+        }}
+      </FormSpy>
     );
   }
 
