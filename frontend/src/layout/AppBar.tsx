@@ -227,8 +227,9 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
 
   private renderBreadcrumbContent = (path: string) => {
     switch (path) {
-      case "applications":
       case "":
+        return "Kalm";
+      case "applications":
         return "Apps";
       case "routes":
         return "Routes";
@@ -271,7 +272,9 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
         <div className={classes.barContainer}>
           <div className={classes.barLeft}>
             <Box p={2}>
-              <KalmIcon />
+              <Link to={"/"} onClick={() => blinkTopProgressAction()}>
+                <KalmIcon />
+              </Link>
             </Box>
 
             <FlexRowItemCenterBox>
