@@ -33,12 +33,12 @@ func (suite *HttpsCertIssuerTestSuite) TearDownTest() {
 func (suite *HttpsCertIssuerTestSuite) TestGetEmptyHCIssuerList() {
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodGet,
 		Path:   "/v1alpha1/httpscertissuers",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsUnauthorizedError(rec, "viewer", "cluster")
+			suite.IsUnauthorizedError(rec, "manage")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res []resources.HttpsCertIssuer
@@ -51,7 +51,7 @@ func (suite *HttpsCertIssuerTestSuite) TestGetEmptyHCIssuerList() {
 func (suite *HttpsCertIssuerTestSuite) TestCreateHttpsCertIssuer() {
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/httpscertissuers",
@@ -60,7 +60,7 @@ func (suite *HttpsCertIssuerTestSuite) TestCreateHttpsCertIssuer() {
   "caForTest": {}
 }`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsUnauthorizedError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "manage")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var issuer resources.HttpsCertIssuer
@@ -85,7 +85,7 @@ func (suite *HttpsCertIssuerTestSuite) TestCreateHttpsCertIssuer() {
 func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/httpscertissuers",
@@ -97,7 +97,7 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
   }
 }`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsUnauthorizedError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "manage")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var issuer resources.HttpsCertIssuer
@@ -131,7 +131,7 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
 
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodPut,
 		Path:   "/v1alpha1/httpscertissuers/my-foobar-issuer",
@@ -143,7 +143,7 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
   }
 }`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsUnauthorizedError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "manage")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res v1alpha1.HttpsCertIssuerList
@@ -178,7 +178,7 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
 func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCertIssuer() {
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/httpscertissuers",
@@ -190,7 +190,7 @@ func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCertIssuer() {
   }
 }`,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsUnauthorizedError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "manage")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var issuer resources.HttpsCertIssuer
@@ -211,12 +211,12 @@ func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCertIssuer() {
 
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodDelete,
 		Path:   "/v1alpha1/httpscertissuers/my-foobar-issuer",
 		TestWithoutRoles: func(rec *ResponseRecorder) {
-			suite.IsUnauthorizedError(rec, "editor", "cluster")
+			suite.IsUnauthorizedError(rec, "manage")
 		},
 		TestWithRoles: func(rec *ResponseRecorder) {
 			var res v1alpha1.HttpsCertIssuerList

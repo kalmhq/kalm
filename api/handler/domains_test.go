@@ -79,7 +79,7 @@ func (suite *DomainTestSuite) TestPermission() {
 
 	// auth pass
 	rolesListWillPassAuthz := [][]string{
-		{GetClusterEditorRole()},
+		// {GetClusterEditorRole()},
 		{GetClusterOwnerRole()},
 	}
 
