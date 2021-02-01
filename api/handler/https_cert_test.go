@@ -57,7 +57,7 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
 
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/httpscerts",
@@ -101,7 +101,7 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
 func (suite *HttpsCertTestSuite) TestCreateHttpsCertWithoutSetIssuer() {
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/httpscerts",
@@ -202,7 +202,7 @@ func (suite *HttpsCertTestSuite) TestUploadHttpsCert() {
 
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/httpscerts/upload",
@@ -256,7 +256,7 @@ func (suite *HttpsCertTestSuite) TestUpdateSelfManagedHttpsCert() {
 	// Upload
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/httpscerts/upload",
@@ -277,7 +277,7 @@ func (suite *HttpsCertTestSuite) TestUpdateSelfManagedHttpsCert() {
 	// update
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodPut,
 		Path:   "/v1alpha1/httpscerts/" + httpsCert.Name,
@@ -300,7 +300,7 @@ func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
 
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodPost,
 		Path:   "/v1alpha1/httpscerts",
@@ -320,7 +320,7 @@ func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
 	// Delete
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetClusterEditorRole(),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodDelete,
 		Path:   "/v1alpha1/httpscerts/" + httpsCert.Name,
