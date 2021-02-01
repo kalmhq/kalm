@@ -447,6 +447,10 @@ func (r *ACMEServerReconciler) reconcileLoadBalanceServiceForNSDomain(acmeServer
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: KalmSystemNamespace,
 			Name:      GetNameForLoadBalanceServiceForNSDomain(),
+			//todo tmp fix for aws
+			Annotations: map[string]string{
+				"service.beta.kubernetes.io/aws-load-balancer-type": "nlb",
+			},
 		},
 		Spec: corev1.ServiceSpec{
 			Type: corev1.ServiceTypeLoadBalancer,
@@ -492,6 +496,14 @@ func (r *ACMEServerReconciler) reconcileLoadBalanceServiceForNSDomain(acmeServer
 
 		copied.Spec.Selector = expectedLBService.Spec.Selector
 		copied.Spec.Type = expectedLBService.Spec.Type
+
+		if copied.Annotations == nil {
+			copied.Annotations = make(map[string]string)
+		}
+		for k, v := range expectedLBService.Annotations {
+			copied.Annotations[k] = v
+		}
+
 		//nodePort is auto set
 		//copied.Spec.Ports = expectedLBService.Spec.Ports
 
