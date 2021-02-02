@@ -87,6 +87,7 @@ type ClusterInfo struct {
 	ClusterIP         string `json:"cluster_ip,omitempty"`
 	ClusterHost       string `json:"cluster_host,omitempty"`
 	ACMEServerIP      string `json:"acme_server_ip,omitempty"`
+	ACMEServerHost    string `json:"acme_server_host,omitempty"`
 	ACMEDomainForApps string `json:"acme_domain_for_apps,omitempty"`
 	AccessToken       string `json:"access_token,omitempty"`
 	CallbackSecret    string `json:"callback_secret,omitempty"`
@@ -95,16 +96,21 @@ type ClusterInfo struct {
 func (r *KalmOperatorConfigReconciler) getClusterInfoIfIsReady(byocModeConfig *installv1alpha1.BYOCModeConfig) (ClusterInfo, bool) {
 	callbackSecret, _ := r.getCallbackSecret()
 	clusterIP, clusterHost := r.getClusterIPAndHostname()
-	acmeServerIP := r.getACMEServerIP()
+	acmeServerIP, acmeServerHostname := r.getACMEServerIPAndHostname()
 	domain, _ := r.getACMEDomainForApps(byocModeConfig.BaseAppDomain)
 	accessToken, _ := r.getRootAccessToken()
 
-	isReady := clusterIP != "" && acmeServerIP != "" && domain != "" && accessToken != "" && callbackSecret != ""
+	isReady := (clusterIP != "" || clusterHost != "") &&
+		(acmeServerIP != "" || acmeServerHostname != "") &&
+		domain != "" &&
+		accessToken != "" &&
+		callbackSecret != ""
 
 	info := ClusterInfo{
 		ClusterIP:         clusterIP,
 		ClusterHost:       clusterHost,
 		ACMEServerIP:      acmeServerIP,
+		ACMEServerHost:    acmeServerHostname,
 		ACMEDomainForApps: domain,
 		AccessToken:       accessToken,
 		CallbackSecret:    callbackSecret,
