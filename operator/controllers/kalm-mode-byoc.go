@@ -165,8 +165,7 @@ func (r *KalmOperatorConfigReconciler) getACMEDomainForApps(appsDomain string) (
 func (r *KalmOperatorConfigReconciler) getRootAccessToken() (string, error) {
 	accessTokenList := v1alpha1.AccessTokenList{}
 
-	//todo more strict label on this token
-	filter := client.MatchingLabels(map[string]string{"tenant": "global"})
+	filter := client.MatchingLabels(map[string]string{rootAccessTokenLabel: "true"})
 
 	if err := r.List(r.Ctx, &accessTokenList, filter); err != nil {
 		return "", err

@@ -11,10 +11,7 @@ func (r *KalmOperatorConfigReconciler) reconcileRootAccessTokenForBYOC() error {
 	return r.reconcileRootAccessToken(memo)
 }
 
-func (r *KalmOperatorConfigReconciler) reconcileRootAccessTokenForSaaS() error {
-	memo := "created by kalm-operator when initializing SaaS cluster"
-	return r.reconcileRootAccessToken(memo)
-}
+const rootAccessTokenLabel = "root-access-token"
 
 func (r *KalmOperatorConfigReconciler) reconcileRootAccessToken(memo string) error {
 
@@ -24,12 +21,13 @@ func (r *KalmOperatorConfigReconciler) reconcileRootAccessToken(memo string) err
 	}
 
 	// token name is sha256(rand(128))
-	// so we only check if a token with given memo is generated
+	// so we only check if a token with given label
 	for _, token := range tokenList.Items {
-		if token.Spec.Memo == memo {
-			r.Log.Info("accessToken with given memo is found, create token skipped")
-			return nil
+		if token.Labels[rootAccessTokenLabel] != "true" {
+			continue
 		}
+
+		return nil
 	}
 
 	token := rand.String(128)
@@ -38,6 +36,9 @@ func (r *KalmOperatorConfigReconciler) reconcileRootAccessToken(memo string) err
 	expectedAccessToken := v1alpha1.AccessToken{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
+			Labels: map[string]string{
+				rootAccessTokenLabel: "true",
+			},
 		},
 		Spec: v1alpha1.AccessTokenSpec{
 			Memo:  memo,
