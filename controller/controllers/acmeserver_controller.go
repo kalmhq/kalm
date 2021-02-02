@@ -599,18 +599,31 @@ func (r *ACMEServerReconciler) reconcileStatus(server corev1alpha1.ACMEServer) e
 	}
 
 	ingList := svc.Status.LoadBalancer.Ingress
-	if len(ingList) <= 0 || ingList[0].IP == "" {
+	if len(ingList) <= 0 || (ingList[0].IP == "" && ingList[0].Hostname == "") {
 		r.Log.Info("loadBalancer IP for lb-svc not ready yet")
 
 		server.Status.IPForNameServer = ""
 		server.Status.Ready = false
 	} else {
-		server.Status.IPForNameServer = ingList[0].IP
+		// todo IP or hostname
+		server.Status.IPForNameServer = firstNonEmpty(ingList[0].IP, ingList[0].Hostname)
 		// todo more strict check
 		server.Status.Ready = true
 	}
 
 	return r.Status().Update(r.ctx, &server)
+}
+
+func firstNonEmpty(strs ...string) string {
+	for _, str := range strs {
+		if str == "" {
+			continue
+		}
+
+		return str
+	}
+
+	return ""
 }
 
 var ErrLBSvcForACMEServerNotReady = fmt.Errorf("LoadBalancer service for ACMEServer not ready yet")
