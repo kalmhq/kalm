@@ -24,17 +24,16 @@ import (
 	"strings"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
-	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/utils"
 	"gopkg.in/yaml.v3"
 	"istio.io/api/networking/v1alpha3"
 	v1alpha32 "istio.io/client-go/pkg/apis/networking/v1alpha3"
-	coreV1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
-	rbacV1 "k8s.io/api/rbac/v1"
+	corev1 "k8s.io/api/core/v1"
+
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -54,17 +53,17 @@ type SingleSignOnConfigReconciler struct {
 type SingleSignOnConfigReconcilerTask struct {
 	*SingleSignOnConfigReconciler
 	ctx                   context.Context
-	ssoConfig             *corev1alpha1.SingleSignOnConfig
-	secret                *coreV1.Secret
-	dexComponent          *corev1alpha1.Component
-	authProxyComponent    *corev1alpha1.Component
-	dexRoute              *corev1alpha1.HttpRoute
-	authProxyRoute        *corev1alpha1.HttpRoute
+	ssoConfig             *v1alpha1.SingleSignOnConfig
+	secret                *corev1.Secret
+	dexComponent          *v1alpha1.Component
+	authProxyComponent    *v1alpha1.Component
+	dexRoute              *v1alpha1.HttpRoute
+	authProxyRoute        *v1alpha1.HttpRoute
 	externalEnvoyExtAuthz *v1alpha32.ServiceEntry
 }
 
 func (r *SingleSignOnConfigReconcilerTask) Run(req ctrl.Request) error {
-	var ssoList corev1alpha1.SingleSignOnConfigList
+	var ssoList v1alpha1.SingleSignOnConfigList
 
 	if err := r.Reader.List(r.ctx, &ssoList); err != nil {
 		r.Log.Error(err, "List sso error.")
@@ -93,7 +92,7 @@ func (r *SingleSignOnConfigReconcilerTask) Run(req ctrl.Request) error {
 }
 
 func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
-	var dexComponent corev1alpha1.Component
+	var dexComponent v1alpha1.Component
 
 	err := r.Get(r.ctx, types.NamespacedName{
 		Name:      KALM_DEX_NAME,
@@ -109,7 +108,7 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 		r.dexComponent = &dexComponent
 	}
 
-	var authProxyComponent corev1alpha1.Component
+	var authProxyComponent v1alpha1.Component
 
 	err = r.Get(r.ctx, types.NamespacedName{
 		Name:      KALM_AUTH_PROXY_NAME,
@@ -125,7 +124,7 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 		r.authProxyComponent = &authProxyComponent
 	}
 
-	var route corev1alpha1.HttpRoute
+	var route v1alpha1.HttpRoute
 
 	err = r.Get(r.ctx, types.NamespacedName{
 		Name: KALM_DEX_NAME,
@@ -140,7 +139,7 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 		r.dexRoute = &route
 	}
 
-	var authProxyRoute corev1alpha1.HttpRoute
+	var authProxyRoute v1alpha1.HttpRoute
 
 	err = r.Get(r.ctx, types.NamespacedName{
 		Name: KALM_AUTH_PROXY_NAME,
@@ -171,7 +170,7 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 		r.externalEnvoyExtAuthz = &externalEnvoyExtAuthz
 	}
 
-	var secret coreV1.Secret
+	var secret corev1.Secret
 
 	err = r.Get(r.ctx, types.NamespacedName{
 		Name:      KALM_AUTH_PROXY_SECRET_NAME,
@@ -222,7 +221,7 @@ func (r *SingleSignOnConfigReconcilerTask) DeleteResources() error {
 	return nil
 }
 
-func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *corev1alpha1.SingleSignOnConfig) (string, error) {
+func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *v1alpha1.SingleSignOnConfig) (string, error) {
 	oidcProviderInfo := GetOIDCProviderInfo(ssoConfig)
 
 	var expirySeconds uint32
@@ -230,7 +229,7 @@ func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *corev1a
 	if ssoConfig.Spec.IDTokenExpirySeconds != nil {
 		expirySeconds = *ssoConfig.Spec.IDTokenExpirySeconds
 	} else {
-		expirySeconds = corev1alpha1.SSODefaultIDTokenExpirySeconds
+		expirySeconds = v1alpha1.SSODefaultIDTokenExpirySeconds
 	}
 
 	config := map[string]interface{}{
@@ -315,8 +314,8 @@ func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *corev1a
 
 func (r *SingleSignOnConfigReconcilerTask) ReconcileSecret() error {
 	if r.secret == nil {
-		secret := coreV1.Secret{
-			ObjectMeta: metaV1.ObjectMeta{
+		secret := corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
 				Namespace: KALM_DEX_NAMESPACE,
 				Name:      KALM_AUTH_PROXY_SECRET_NAME,
 			},
@@ -327,7 +326,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileSecret() error {
 			},
 		}
 
-		// in SaaS mode, clientId & secret should be generated from kalm-SaaS
+		// in BYOC mode, clientId & secret should be generated from kalm-SaaS
 		if r.ssoConfig.Spec.Issuer != "" &&
 			r.ssoConfig.Spec.IssuerClientId != "" &&
 			r.ssoConfig.Spec.IssuerClientSecret != "" {
@@ -342,11 +341,24 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileSecret() error {
 		}
 
 		if err := r.Create(r.ctx, &secret); err != nil {
-			r.Log.Error(err, "Create auth-proxy secret failed.")
+			r.Log.Error(err, "create auth-proxy secret failed.")
 			return err
 		}
 
 		r.secret = &secret
+	} else {
+		if r.ssoConfig.Spec.Issuer != "" &&
+			r.ssoConfig.Spec.IssuerClientId != "" &&
+			r.ssoConfig.Spec.IssuerClientSecret != "" {
+
+			r.secret.Data["client_id"] = []byte(r.ssoConfig.Spec.IssuerClientId)
+			r.secret.Data["client_secret"] = []byte(r.ssoConfig.Spec.IssuerClientSecret)
+
+			if err := r.Update(r.ctx, r.secret); err != nil {
+				r.Log.Error(err, "update auth-proxy secret failed.")
+				return err
+			}
+		}
 	}
 
 	return nil
@@ -360,33 +372,33 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 		return err
 	}
 
-	dexComponent := corev1alpha1.Component{
-		ObjectMeta: metaV1.ObjectMeta{
+	dexComponent := v1alpha1.Component{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      KALM_DEX_NAME,
 			Namespace: KALM_DEX_NAMESPACE,
 		},
-		Spec: corev1alpha1.ComponentSpec{
+		Spec: v1alpha1.ComponentSpec{
 			Annotations: map[string]string{
 				"sidecar.istio.io/inject": "false",
 			},
-			WorkloadType: corev1alpha1.WorkloadTypeServer,
+			WorkloadType: v1alpha1.WorkloadTypeServer,
 			Image:        "quay.io/dexidp/dex:v2.24.0",
 			Command:      "/usr/local/bin/dex serve /etc/dex/cfg/config.yaml",
-			Ports: []corev1alpha1.Port{
+			Ports: []v1alpha1.Port{
 				{
 					ContainerPort: 5556,
-					Protocol:      corev1alpha1.PortProtocolHTTP,
+					Protocol:      v1alpha1.PortProtocolHTTP,
 				},
 			},
-			PreInjectedFiles: []corev1alpha1.PreInjectFile{
+			PreInjectedFiles: []v1alpha1.PreInjectFile{
 				{
 					MountPath: "/etc/dex/cfg/config.yaml",
 					Content:   configFileContent,
 				},
 			},
-			RunnerPermission: &corev1alpha1.RunnerPermission{
+			RunnerPermission: &v1alpha1.RunnerPermission{
 				RoleType: "clusterRole",
-				Rules: []rbacV1.PolicyRule{
+				Rules: []rbacv1.PolicyRule{
 					{
 						APIGroups: []string{"dex.coreos.com"},
 						Resources: []string{"*"},
@@ -433,15 +445,15 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 	timeout := 5
 
-	dexRoute := corev1alpha1.HttpRoute{
-		ObjectMeta: metaV1.ObjectMeta{
+	dexRoute := v1alpha1.HttpRoute{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: KALM_DEX_NAME,
 		},
-		Spec: corev1alpha1.HttpRouteSpec{
+		Spec: v1alpha1.HttpRouteSpec{
 			Hosts: []string{
 				r.ssoConfig.Spec.Domain,
 			},
-			Methods: []corev1alpha1.HttpRouteMethod{
+			Methods: []v1alpha1.HttpRouteMethod{
 				"GET",
 				"POST",
 				"PUT",
@@ -453,19 +465,19 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 				"TRACE",
 			},
 			Paths: []string{"/dex"},
-			Schemes: []corev1alpha1.HttpRouteScheme{
-				corev1alpha1.HttpRouteScheme("http"),
-				corev1alpha1.HttpRouteScheme("https"),
+			Schemes: []v1alpha1.HttpRouteScheme{
+				v1alpha1.HttpRouteScheme("http"),
+				v1alpha1.HttpRouteScheme("https"),
 			},
 			HttpRedirectToHttps: !r.ssoConfig.Spec.UseHttp,
-			Destinations: []corev1alpha1.HttpRouteDestination{
+			Destinations: []v1alpha1.HttpRouteDestination{
 				{
 					Host:   fmt.Sprintf("%s.%s.svc.cluster.local:%d", KALM_DEX_NAME, KALM_DEX_NAMESPACE, 5556),
 					Weight: 1,
 				},
 			},
 			Timeout: &timeout,
-			Retries: &corev1alpha1.HttpRouteRetries{
+			Retries: &v1alpha1.HttpRouteRetries{
 				Attempts:             3,
 				PerTtyTimeoutSeconds: 2,
 				RetryOn:              []string{"gateway-error", "connect-failure", "refused-stream"},
@@ -501,7 +513,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 	return nil
 }
 
-func (r *SingleSignOnConfigReconcilerTask) ReconcileExternalAuthProxyServiceEntry(ssoConfig *corev1alpha1.SingleSignOnConfig) error {
+func (r *SingleSignOnConfigReconcilerTask) ReconcileExternalAuthProxyServiceEntry(ssoConfig *v1alpha1.SingleSignOnConfig) error {
 	var externalEnvoyExtAuthzProtocol, externalEnvoyExtAuthzName string
 
 	if ssoConfig.Spec.ExternalEnvoyExtAuthz.Scheme == "http" {
@@ -513,7 +525,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileExternalAuthProxyServiceEntr
 	}
 
 	externalEnvoyExtAuthz := v1alpha32.ServiceEntry{
-		ObjectMeta: metaV1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Namespace: KALM_DEX_NAMESPACE,
 			Name:      KALM_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME,
 		},
@@ -584,58 +596,58 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 		authProxyImgTag = DefaultAuthProxyImgTag
 	}
 
-	authProxyComponent := corev1alpha1.Component{
-		ObjectMeta: metaV1.ObjectMeta{
+	authProxyComponent := v1alpha1.Component{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      KALM_AUTH_PROXY_NAME,
 			Namespace: KALM_DEX_NAMESPACE,
 		},
-		Spec: corev1alpha1.ComponentSpec{
-			WorkloadType: corev1alpha1.WorkloadTypeServer,
+		Spec: v1alpha1.ComponentSpec{
+			WorkloadType: v1alpha1.WorkloadTypeServer,
 			Image:        fmt.Sprintf("kalmhq/kalm:%s", authProxyImgTag),
 			Command:      "./auth-proxy",
-			Ports: []corev1alpha1.Port{
+			Ports: []v1alpha1.Port{
 				{
 					ContainerPort: 3002,
 					ServicePort:   80,
-					Protocol:      corev1alpha1.PortProtocolHTTP2,
+					Protocol:      v1alpha1.PortProtocolHTTP2,
 				},
 			},
-			Env: []corev1alpha1.EnvVar{
+			Env: []v1alpha1.EnvVar{
 				{
-					Type:  corev1alpha1.EnvVarTypeStatic,
+					Type:  v1alpha1.EnvVarTypeStatic,
 					Name:  "KALM_OIDC_CLIENT_ID",
 					Value: clientID,
 				},
 				{
-					Type:  corev1alpha1.EnvVarTypeStatic,
+					Type:  v1alpha1.EnvVarTypeStatic,
 					Name:  "KALM_OIDC_CLIENT_SECRET",
 					Value: clientSecret,
 				},
 				{
-					Type:  corev1alpha1.EnvVarTypeStatic,
+					Type:  v1alpha1.EnvVarTypeStatic,
 					Name:  "KALM_OIDC_PROVIDER_URL",
 					Value: oidcProviderInfo.Issuer,
 				},
 				{
-					Type:  corev1alpha1.EnvVarTypeStatic,
+					Type:  v1alpha1.EnvVarTypeStatic,
 					Name:  "KALM_OIDC_AUTH_PROXY_URL",
 					Value: oidcProviderInfo.AuthProxyExternalUrl,
 				},
 				{
-					Type:  corev1alpha1.EnvVarTypeStatic,
-					Name:  corev1alpha1.ENV_KALM_PHYSICAL_CLUSTER_ID,
-					Value: corev1alpha1.GetEnvPhysicalClusterID(),
+					Type:  v1alpha1.EnvVarTypeStatic,
+					Name:  v1alpha1.ENV_KALM_PHYSICAL_CLUSTER_ID,
+					Value: v1alpha1.GetEnvPhysicalClusterID(),
 				},
 				{
-					Type:  corev1alpha1.EnvVarTypeStatic,
+					Type:  v1alpha1.EnvVarTypeStatic,
 					Name:  v1alpha1.ENV_NEED_EXTRA_OAUTH_SCOPE,
 					Value: strconv.FormatBool(r.ssoConfig.Spec.NeedExtraOAuthScope),
 				},
 			},
-			ResourceRequirements: &coreV1.ResourceRequirements{
-				Requests: map[v1.ResourceName]resource.Quantity{
-					v1.ResourceCPU:    resource.MustParse("10m"),
-					v1.ResourceMemory: resource.MustParse("10Mi"),
+			ResourceRequirements: &corev1.ResourceRequirements{
+				Requests: map[corev1.ResourceName]resource.Quantity{
+					corev1.ResourceCPU:    resource.MustParse("10m"),
+					corev1.ResourceMemory: resource.MustParse("10Mi"),
 				},
 			},
 		},
@@ -672,31 +684,31 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() error {
 	timeout := 5
 
-	authProxyRoute := corev1alpha1.HttpRoute{
-		ObjectMeta: metaV1.ObjectMeta{
+	authProxyRoute := v1alpha1.HttpRoute{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: KALM_AUTH_PROXY_NAME,
 		},
-		Spec: corev1alpha1.HttpRouteSpec{
+		Spec: v1alpha1.HttpRouteSpec{
 			Hosts: []string{
 				r.ssoConfig.Spec.Domain,
 			},
-			Methods: []corev1alpha1.HttpRouteMethod{
+			Methods: []v1alpha1.HttpRouteMethod{
 				"GET",
 			},
 			Paths: []string{"/oidc/login", "/oidc/callback"},
-			Schemes: []corev1alpha1.HttpRouteScheme{
-				corev1alpha1.HttpRouteScheme("http"),
-				corev1alpha1.HttpRouteScheme("https"),
+			Schemes: []v1alpha1.HttpRouteScheme{
+				v1alpha1.HttpRouteScheme("http"),
+				v1alpha1.HttpRouteScheme("https"),
 			},
 			HttpRedirectToHttps: !r.ssoConfig.Spec.UseHttp,
-			Destinations: []corev1alpha1.HttpRouteDestination{
+			Destinations: []v1alpha1.HttpRouteDestination{
 				{
 					Host:   fmt.Sprintf("%s.%s.svc.cluster.local", KALM_AUTH_PROXY_NAME, KALM_DEX_NAMESPACE),
 					Weight: 1,
 				},
 			},
 			Timeout: &timeout,
-			Retries: &corev1alpha1.HttpRouteRetries{
+			Retries: &v1alpha1.HttpRouteRetries{
 				Attempts:             3,
 				PerTtyTimeoutSeconds: 2,
 				RetryOn:              []string{"gateway-error", "connect-failure", "refused-stream"},
@@ -782,20 +794,20 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRouteCert() error {
 
 	certName := "sso-domain-" + strings.ReplaceAll(strings.ToLower(r.ssoConfig.Spec.Domain), ".", "-")
 
-	var cert corev1alpha1.HttpsCert
+	var cert v1alpha1.HttpsCert
 
 	if err := r.Reader.Get(r.ctx, types.NamespacedName{
 		Name:      certName,
 		Namespace: KALM_DEX_NAMESPACE,
 	}, &cert); err != nil {
 		if errors.IsNotFound(err) {
-			res := corev1alpha1.HttpsCert{
-				ObjectMeta: metaV1.ObjectMeta{
+			res := v1alpha1.HttpsCert{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      certName,
 					Namespace: KALM_DEX_NAMESPACE,
 				},
-				Spec: corev1alpha1.HttpsCertSpec{
-					HttpsCertIssuer: corev1alpha1.DefaultHTTP01IssuerName,
+				Spec: v1alpha1.HttpsCertSpec{
+					HttpsCertIssuer: v1alpha1.DefaultHTTP01IssuerName,
 					Domains:         []string{r.ssoConfig.Spec.Domain},
 				},
 			}
@@ -868,7 +880,7 @@ func NewSingleSignOnConfigReconciler(mgr ctrl.Manager) *SingleSignOnConfigReconc
 // }
 
 // func (r *SSORequestMapper) Map(object handler.MapObject) []reconcile.Request {
-// 	if route, ok := object.Object.(*corev1alpha1.HttpRoute); ok {
+// 	if route, ok := object.Object.(*v1alpha1.HttpRoute); ok {
 // 		tenantName, err := v1alpha1.GetTenantNameFromObj(route)
 
 // 		if err != nil || tenantName != "global" {
@@ -878,7 +890,7 @@ func NewSingleSignOnConfigReconciler(mgr ctrl.Manager) *SingleSignOnConfigReconc
 // 		return nil
 // 	}
 
-// 	var ssoList corev1alpha1.SingleSignOnConfigList
+// 	var ssoList v1alpha1.SingleSignOnConfigList
 
 // 	if err := r.Reader.List(context.Background(), &ssoList); err != nil {
 // 		r.Log.Error(err, fmt.Sprintf("List sso error in mapper."))
@@ -896,13 +908,13 @@ func NewSingleSignOnConfigReconciler(mgr ctrl.Manager) *SingleSignOnConfigReconc
 
 func (r *SingleSignOnConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		Owns(&coreV1.Secret{}).
-		Owns(&corev1alpha1.Component{}).
-		Owns(&corev1alpha1.HttpRoute{}).
+		Owns(&corev1.Secret{}).
+		Owns(&v1alpha1.Component{}).
+		Owns(&v1alpha1.HttpRoute{}).
 		Owns(&v1alpha32.ServiceEntry{}).
-		For(&corev1alpha1.SingleSignOnConfig{}).
+		For(&v1alpha1.SingleSignOnConfig{}).
 		// Watches(
-		// 	&source.Kind{Type: &corev1alpha1.HttpRoute{}},
+		// 	&source.Kind{Type: &v1alpha1.HttpRoute{}},
 		// 	&handler.EnqueueRequestsFromMapFunc{
 		// 		ToRequests: &SSORequestMapper{r.BaseReconciler},
 		// 	},
