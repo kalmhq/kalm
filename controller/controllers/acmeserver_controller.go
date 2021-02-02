@@ -142,8 +142,8 @@ nsname = "ACME_DOMAIN_PLACEHOLDER"
 # predefined records served in addition to the TXT
 records = [
     # domain pointing to the public IP of your acme-dns server
-    "ACME_DOMAIN_PLACEHOLDER. A  NS_DOMAIN_IP_PLACEHOLDER",
-    # specify that acme.example.xyz will resolve any *.acme.example.xyz records
+	#"ACME_DOMAIN_PLACEHOLDER. A  NS_DOMAIN_IP_PLACEHOLDER",
+    # specify that ns-acme.example.xyz will resolve any *.acme.example.xyz records
     "ACME_DOMAIN_PLACEHOLDER. NS NS_DOMAIN_PLACEHOLDER.",
 ]
 # debug messages from CORS etc
@@ -626,14 +626,16 @@ func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.AC
 		return err
 	}
 
-	if len(lbSvc.Status.LoadBalancer.Ingress) <= 0 ||
-		lbSvc.Status.LoadBalancer.Ingress[0].IP == "" {
+	lbIngress := lbSvc.Status.LoadBalancer.Ingress
+	if len(lbIngress) <= 0 || (lbIngress[0].IP == "" && lbIngress[0].Hostname == "") {
 
 		r.Log.Info("loadBalancer for ACME DNS not ready yet")
 		return ErrLBSvcForACMEServerNotReady
 	}
 
+	// test if ip config for ns-acme.xxx is not necessary
 	ip := lbSvc.Status.LoadBalancer.Ingress[0].IP
+	// hostname := lbSvc.Status.LoadBalancer.Ingress[0].Hostname
 
 	acmeDomain := acmeServer.Spec.ACMEDomain
 	nsDomain := acmeServer.Spec.NSDomain
