@@ -67,7 +67,7 @@ type KalmOperatorConfigSpec struct {
 }
 
 type BYOCModeConfig struct {
-	ClusterName    string `json:"clusterName,omitempty"`
+	ClusterUUID    string `json:"clusterUUID,omitempty"`
 	KalmSaaSDomain string `json:"kalmSaaSDomain,omitempty"`
 	// Owner          string `json:"owner,omitempty"`
 

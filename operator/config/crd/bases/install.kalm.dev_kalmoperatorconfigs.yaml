@@ -47,7 +47,7 @@ spec:
                 baseDashboardDomain:
                   description: 'like: foobar.byoc.kalm.dev'
                   type: string
-                clusterName:
+                clusterUUID:
                   type: string
                 kalmSaaSDomain:
                   type: string
@@ -61,8 +61,6 @@ spec:
                       description: 'like: https://staging.kalm.dev/oidc'
                       type: string
                   type: object
-                owner:
-                  type: string
               type: object
             controller:
               description: Controller Config

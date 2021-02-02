@@ -66,7 +66,7 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode(config *installv1alpha1
 	}
 
 	// call Kalm-SaaS API
-	if ok, err := r.reportClusterInfoToKalmSaaS(clusterInfo, byocModeConfig.KalmSaaSDomain, byocModeConfig.ClusterName); err != nil {
+	if ok, err := r.reportClusterInfoToKalmSaaS(clusterInfo, byocModeConfig.KalmSaaSDomain, byocModeConfig.ClusterUUID); err != nil {
 		r.Log.Error(err, "reportClusterInfoToKalmSaaS failed")
 		return err
 	} else if !ok {
@@ -84,36 +84,38 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode(config *installv1alpha1
 }
 
 type ClusterInfo struct {
-	ClusterIP         string `json:"clusterIP,omitempty"`
-	ACMEServerIP      string `json:"acmeServerIP,omitempty"`
-	ACMEDomainForApps string `json:"acmeDomainForApps,omitempty"`
-	AccessToken       string `json:"accessToken,omitempty"`
+	ClusterIP         string `json:"cluster_ip,omitempty"`
+	ClusterHost       string `json:"cluster_host,omitempty"`
+	ACMEServerIP      string `json:"acme_server_ip,omitempty"`
+	ACMEDomainForApps string `json:"acme_domain_for_apps,omitempty"`
+	AccessToken       string `json:"access_token,omitempty"`
+	CallbackSecret    string `json:"callback_secret,omitempty"`
 }
 
 func (r *KalmOperatorConfigReconciler) getClusterInfoIfIsReady(byocModeConfig *installv1alpha1.BYOCModeConfig) (ClusterInfo, bool) {
-
-	clusterIP := r.getClusterIP()
+	callbackSecret, _ := r.getCallbackSecret()
+	clusterIP, clusterHost := r.getClusterIPAndHostname()
 	acmeServerIP := r.getACMEServerIP()
 	domain, _ := r.getACMEDomainForApps(byocModeConfig.BaseAppDomain)
-	token, _ := r.getRootAccessToken()
+	accessToken, _ := r.getRootAccessToken()
 
-	isReady := clusterIP != "" && acmeServerIP != "" && domain != "" && token != ""
+	isReady := clusterIP != "" && acmeServerIP != "" && domain != "" && accessToken != "" && callbackSecret != ""
 
-	return ClusterInfo{
+	info := ClusterInfo{
 		ClusterIP:         clusterIP,
+		ClusterHost:       clusterHost,
 		ACMEServerIP:      acmeServerIP,
 		ACMEDomainForApps: domain,
-		AccessToken:       token,
-	}, isReady
-}
-
-func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo ClusterInfo, kalmSaaSDomain string, clusterName string) (bool, error) {
-	token, err := r.getTokenForKalmSaaS()
-	if err != nil {
-		return false, err
+		AccessToken:       accessToken,
+		CallbackSecret:    callbackSecret,
 	}
 
-	kalmSaaSAPI := fmt.Sprintf("https://%s/api/v1/clusters/%s/byoc?token=%s", kalmSaaSDomain, clusterName, token)
+	return info, isReady
+}
+
+func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo ClusterInfo, kalmSaaSDomain string, uuid string) (bool, error) {
+
+	kalmSaaSAPI := fmt.Sprintf("https://%s/api/v1/clusters/%s", kalmSaaSDomain, uuid)
 	payload, _ := json.Marshal(clusterInfo)
 
 	r.Log.Info("reportClusterInfoToKalmSaaS", "api", kalmSaaSAPI, "payload", string(payload))
@@ -172,7 +174,7 @@ func (r *KalmOperatorConfigReconciler) getRootAccessToken() (string, error) {
 	return token.Spec.Token, nil
 }
 
-func (r *KalmOperatorConfigReconciler) getTokenForKalmSaaS() (string, error) {
+func (r *KalmOperatorConfigReconciler) getCallbackSecret() (string, error) {
 	ns := "kalm-operator"
 	secName := "kalm-saas-token"
 
