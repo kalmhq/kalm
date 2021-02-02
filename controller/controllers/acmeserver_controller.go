@@ -124,7 +124,7 @@ func pickStorageClass(list v1.StorageClassList) v1.StorageClass {
 	return scList[0]
 }
 
-func genContentForACMEServerConfig(acmeDomain, nsDomain, nsDomainIP string) string {
+func genContentForACMEServerConfig(acmeDomain, nsDomain string) string {
 	template := `
 [general]
 # DNS interface. Note that systemd-resolved may reserve port 53 on 127.0.0.53
@@ -142,7 +142,7 @@ nsname = "ACME_DOMAIN_PLACEHOLDER"
 # predefined records served in addition to the TXT
 records = [
     # domain pointing to the public IP of your acme-dns server
-	#"ACME_DOMAIN_PLACEHOLDER. A  NS_DOMAIN_IP_PLACEHOLDER",
+    #"ACME_DOMAIN_PLACEHOLDER. A  NS_DOMAIN_IP_PLACEHOLDER", # this record seems not necessary 
     # specify that ns-acme.example.xyz will resolve any *.acme.example.xyz records
     "ACME_DOMAIN_PLACEHOLDER. NS NS_DOMAIN_PLACEHOLDER.",
 ]
@@ -193,7 +193,7 @@ logformat = "text"`
 
 	rst := strings.ReplaceAll(template, "ACME_DOMAIN_PLACEHOLDER", acmeDomain)
 	rst = strings.ReplaceAll(rst, "NS_DOMAIN_PLACEHOLDER", nsDomain)
-	rst = strings.ReplaceAll(rst, "NS_DOMAIN_IP_PLACEHOLDER", nsDomainIP)
+	// rst = strings.ReplaceAll(rst, "NS_DOMAIN_IP_PLACEHOLDER", nsDomainIP)
 
 	return rst
 }
@@ -447,7 +447,7 @@ func (r *ACMEServerReconciler) reconcileLoadBalanceServiceForNSDomain(acmeServer
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: KalmSystemNamespace,
 			Name:      GetNameForLoadBalanceServiceForNSDomain(),
-			//todo tmp fix for aws
+			//todo tmp fix for aws, this will use NLB(which support UDP)instead of CLB
 			Annotations: map[string]string{
 				"service.beta.kubernetes.io/aws-load-balancer-type": "nlb",
 			},
@@ -600,13 +600,15 @@ func (r *ACMEServerReconciler) reconcileStatus(server corev1alpha1.ACMEServer) e
 
 	ingList := svc.Status.LoadBalancer.Ingress
 	if len(ingList) <= 0 || (ingList[0].IP == "" && ingList[0].Hostname == "") {
-		r.Log.Info("loadBalancer IP for lb-svc not ready yet")
+		r.Log.Info("loadBalancer ip & hostname for lb-svc not ready yet")
 
-		server.Status.IPForNameServer = ""
+		server.Status.NameServerIP = ""
+		server.Status.NameServerHostname = ""
 		server.Status.Ready = false
 	} else {
-		// todo IP or hostname
-		server.Status.IPForNameServer = firstNonEmpty(ingList[0].IP, ingList[0].Hostname)
+		server.Status.NameServerIP = ingList[0].IP
+		server.Status.NameServerHostname = ingList[0].Hostname
+
 		// todo more strict check
 		server.Status.Ready = true
 	}
@@ -630,30 +632,30 @@ var ErrLBSvcForACMEServerNotReady = fmt.Errorf("LoadBalancer service for ACMESer
 
 func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.ACMEServer) error {
 	// find if lb-svc IP is ready
-	var lbSvc corev1.Service
-	err := r.Get(r.ctx, client.ObjectKey{
-		Namespace: KalmSystemNamespace,
-		Name:      GetNameForLoadBalanceServiceForNSDomain(),
-	}, &lbSvc)
-	if err != nil {
-		return err
-	}
+	// var lbSvc corev1.Service
+	// err := r.Get(r.ctx, client.ObjectKey{
+	// 	Namespace: KalmSystemNamespace,
+	// 	Name:      GetNameForLoadBalanceServiceForNSDomain(),
+	// }, &lbSvc)
+	// if err != nil {
+	// 	return err
+	// }
 
-	lbIngress := lbSvc.Status.LoadBalancer.Ingress
-	if len(lbIngress) <= 0 || (lbIngress[0].IP == "" && lbIngress[0].Hostname == "") {
+	// lbIngress := lbSvc.Status.LoadBalancer.Ingress
+	// if len(lbIngress) <= 0 || (lbIngress[0].IP == "" && lbIngress[0].Hostname == "") {
 
-		r.Log.Info("loadBalancer for ACME DNS not ready yet")
-		return ErrLBSvcForACMEServerNotReady
-	}
+	// 	r.Log.Info("loadBalancer for ACME DNS not ready yet")
+	// 	return ErrLBSvcForACMEServerNotReady
+	// }
 
 	// test if ip config for ns-acme.xxx is not necessary
-	ip := lbSvc.Status.LoadBalancer.Ingress[0].IP
+	// ip := lbSvc.Status.LoadBalancer.Ingress[0].IP
 	// hostname := lbSvc.Status.LoadBalancer.Ingress[0].Hostname
 
 	acmeDomain := acmeServer.Spec.ACMEDomain
 	nsDomain := acmeServer.Spec.NSDomain
 
-	acmeServerConfigContent := genContentForACMEServerConfig(acmeDomain, nsDomain, ip)
+	acmeServerConfigContent := genContentForACMEServerConfig(acmeDomain, nsDomain)
 
 	var scList v1.StorageClassList
 	if err := r.List(r.ctx, &scList); err != nil {
@@ -711,7 +713,7 @@ func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.AC
 	isNew := false
 	comp := corev1alpha1.Component{}
 
-	err = r.Get(r.ctx, client.ObjectKey{Namespace: expectedComp.Namespace, Name: expectedComp.Name}, &comp)
+	err := r.Get(r.ctx, client.ObjectKey{Namespace: expectedComp.Namespace, Name: expectedComp.Name}, &comp)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			isNew = true

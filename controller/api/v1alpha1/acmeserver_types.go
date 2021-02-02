@@ -33,10 +33,9 @@ type ACMEServerSpec struct {
 
 // ACMEServerStatus defines the observed state of ACMEServer
 type ACMEServerStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-	Ready           bool   `json:"ready"`
-	IPForNameServer string `json:"ipForNameServer"`
+	Ready              bool   `json:"ready"`
+	NameServerIP       string `json:"nameServerIP,omitempty"`
+	NameServerHostname string `json:"nameServerHostname,omitempty"`
 }
 
 // +kubebuilder:object:root=true
