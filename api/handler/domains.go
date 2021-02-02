@@ -28,6 +28,19 @@ func (h *ApiHandler) handleListDomains(c echo.Context) error {
 	}
 
 	domains := resources.WrapDomainListAsResp(domainList.Items)
+
+	baseAppDomain := v1alpha1.GetEnvKalmBaseAppDomain()
+	if baseAppDomain != "" {
+		domains = append([]resources.Domain{
+			{
+				Name:       "default",
+				Domain:     "*." + baseAppDomain,
+				RecordType: "CNAME",
+				Target:     "",
+			},
+		}, domains...)
+	}
+
 	return c.JSON(http.StatusOK, domains)
 }
 
