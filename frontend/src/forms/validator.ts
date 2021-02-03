@@ -134,6 +134,11 @@ const IsDNS1123SubDomain = string()
   .matches(new RegExp(`^${dns1123SubDomainFmt}$`), InvalidDNS1123SubDomain)
   .max(253);
 
+const IsDNS1123SubDomainWithOptionalWildcardPrefix = string()
+  .required("Required")
+  .matches(new RegExp(`^(\\*\\.|\\*)?${dns1123SubDomainFmt}$`), InvalidDNS1123SubDomain)
+  .max(253);
+
 // wildcard definition - RFC 1034 section 4.3.3.
 // examples:
 // - valid: *.bar.com, *.foo.bar.com
@@ -170,6 +175,11 @@ export const ValidatorIsDNS1123SubDomain = yupValidatorWrap<string>(IsDNS1123Sub
 export const ValidatorArrayOfIsDNS1123SubDomain = yupValidatorWrapForArray<string>(
   Yup.array<string>().required("Should have at least one item"),
   IsDNS1123SubDomain,
+);
+
+export const ValidatorArrayOfIsDNS1123SubDomainWithOptionalWildcardPrefix = yupValidatorWrapForArray<string>(
+  Yup.array<string>().required("Should have at least one item"),
+  IsDNS1123SubDomainWithOptionalWildcardPrefix,
 );
 
 export const ValidatorArrayOfIsValidHostInCertificate = yupValidatorWrapForArray<string>(
