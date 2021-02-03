@@ -100,24 +100,6 @@ func randomDomain() resources.Domain {
 	return resources.Domain{Domain: fmt.Sprintf("%s-example.com", rand.String(10))}
 }
 
-func (suite *DomainTestSuite) TestCreateInvalidDomain() {
-
-	invalidDomain := resources.Domain{Domain: "a.b.c"}
-
-	suite.DoTestRequest(&TestRequestContext{
-		Roles:  []string{GetClusterOwnerRole()},
-		Method: http.MethodPost,
-		Body:   invalidDomain,
-		Path:   "/v1alpha1/domains",
-		TestWithRoles: func(rec *ResponseRecorder) {
-			var res resources.Domain
-			rec.BodyAsJSON(&res)
-			suite.Equal(500, rec.Code)
-			suite.Contains(rec.BodyAsString(), "domain is valid")
-		},
-	})
-}
-
 func (suite *DomainTestSuite) TestCreateListAndDelete() {
 	// create
 	var domainName string
