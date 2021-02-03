@@ -90,6 +90,13 @@ func (r *Domain) validate() error {
 		})
 	}
 
+	if !isValidDomainInCert(r.Spec.Domain) {
+		rst = append(rst, KalmValidateError{
+			Err:  "domain is not valid",
+			Path: "spec.domain",
+		})
+	}
+
 	if r.Spec.DNSType != DNSTypeCNAME &&
 		r.Spec.DNSType != DNSTypeA {
 		rst = append(rst, KalmValidateError{
