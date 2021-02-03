@@ -51,6 +51,11 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode(config *installv1alpha1
 		return err
 	}
 
+	if err := r.reconcileRoleBindingForOwner(byocModeConfig.Owner); err != nil {
+		r.Log.Info("reconcileRoleBindingForOwner fail", "error", err)
+		return err
+	}
+
 	if config.Status.BYOCModeStatus != nil && config.Status.BYOCModeStatus.ClusterInfoHasSendToKalmSaaS {
 		r.Log.Info("ClusterInfoHasSendToKalmSaaS is true, report skipped")
 		return nil
