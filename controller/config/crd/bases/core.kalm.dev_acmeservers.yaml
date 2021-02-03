@@ -53,15 +53,13 @@ spec:
         status:
           description: ACMEServerStatus defines the observed state of ACMEServer
           properties:
-            ipForNameServer:
+            nameServerHostname:
+              type: string
+            nameServerIP:
               type: string
             ready:
-              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
-                of cluster Important: Run "make" to regenerate code after modifying
-                this file'
               type: boolean
           required:
-          - ipForNameServer
           - ready
           type: object
       type: object
