@@ -136,7 +136,7 @@ const IsDNS1123SubDomain = string()
 
 const IsDNS1123SubDomainWithOptionalWildcardPrefix = string()
   .required("Required")
-  .matches(new RegExp(`^(\\*\\.|\\*)?${dns1123SubDomainFmt}$`), InvalidDNS1123SubDomain)
+  .matches(new RegExp(`^(\\*\\.|\\*-*)?${dns1123SubDomainFmt}$`), InvalidDNS1123SubDomain)
   .max(253);
 
 // wildcard definition - RFC 1034 section 4.3.3.

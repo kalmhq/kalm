@@ -20,6 +20,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/kalmhq/kalm/controller/validation"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -130,86 +131,18 @@ func (r *HttpRoute) validate() error {
 	return rst
 }
 
-// func isVerifiedUserDomain(domain, tenantName string) (bool, error) {
-// 	domainList := DomainList{}
-
-// 	err := webhookClient.List(context.Background(), &domainList, client.MatchingLabels{TenantNameLabelKey: tenantName})
-// 	if err != nil {
-// 		return false, err
-// 	}
-
-// 	for _, d := range domainList.Items {
-// 		if !d.Status.IsDNSTargetConfigured &&
-// 			!d.Status.IsTxtConfigured {
-// 			continue
-// 		}
-
-// 		verifiedDomain := d.Spec.Domain
-// 		if verifiedDomain == domain {
-// 			return true, nil
-// 		}
-
-// 		if IsValidWildcardDomain(verifiedDomain) {
-// 			if isUnderWildcardDomain(verifiedDomain, domain) {
-// 				return true, nil
-// 			}
-// 		}
-// 	}
-
-// 	return false, nil
-// }
-
-func isUnderWildcardDomain(wildcardDomain, domain string) bool {
-	if !IsValidWildcardDomain(wildcardDomain) {
-		return false
-	}
-
-	if !IsValidNoneWildcardDomain(domain) {
-		return false
-	}
-
-	if wildcardDomain == "*" {
-		return true
-	}
-
-	// wildcard domain: *.foo.bar
-	// domain under it: a.foo.bar
-	wildcardDomainParts := strings.Split(wildcardDomain, ".")
-	domainParts := strings.Split(domain, ".")
-
-	if len(wildcardDomainParts) != len(domainParts) {
-		return false
-	}
-
-	// all parts equals except first one
-	for i := 1; i < len(wildcardDomainParts); i++ {
-		if wildcardDomainParts[i] != domainParts[i] {
-			return false
-		}
-	}
-
-	return true
-}
-
 func getValidSuffixOfAppDomain(tenantName, baseAppDomain string) string {
 	validSuffix := fmt.Sprintf("%s.%s", tenantName, baseAppDomain)
 	return validSuffix
 }
 
-// func isKalmInLocalMode() bool {
-// 	return GetEnvKalmIsInLocalMode() == "true"
-// }
-
 func isValidDestinationHost(host string) bool {
 	host = stripIfHasPort(host)
-	return isValidK8sHost(host)
+	return validation.ValidateFQDN(host) == nil
 }
 
 func isValidRouteHost(host string) bool {
-	return isValidK8sHost(host) ||
-		isValidIP(host) ||
-		IsValidNoneWildcardDomain(host) ||
-		IsValidWildcardDomain(host)
+	return validation.ValidateWildcardDomain(host) == nil || validation.ValidateIPAddress(host) == nil
 }
 
 func stripIfHasPort(host string) string {

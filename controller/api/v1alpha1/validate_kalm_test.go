@@ -1,15 +1,11 @@
 package v1alpha1
 
 import (
-	"encoding/json"
-	"fmt"
 	"testing"
 
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	"github.com/kalmhq/kalm/controller/validation"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/apiextensions-apiserver/pkg/apiserver/validation"
-	"k8s.io/apimachinery/pkg/util/sets"
-	yaml2 "k8s.io/apimachinery/pkg/util/yaml"
 )
 
 var tmp = cmv1alpha2.IssuerConfig{}
@@ -61,147 +57,6 @@ status:
   conditions: []
   storedVersions: []`)
 
-func TestValidateUsingOpenAPI(t *testing.T) {
-
-	validator, err := getValidatorForKalmSpec(crdDefinitionInYaml)
-	assert.Nil(t, err)
-
-	goodSampleApp := `apiVersion: core.kalm.dev/v1alpha1
-kind: Application
-metadata:
-  name: socks
-  namespace: kalm-socks`
-
-	badSampleApp := `apiVersion: core.kalm.dev/v1alpha1
-kind: Application
-metadata: foobar`
-
-	tests := []struct {
-		appSpec        string
-		expectedErrors []string
-	}{
-		{
-			appSpec:        goodSampleApp,
-			expectedErrors: nil,
-		},
-		{
-			appSpec:        badSampleApp,
-			expectedErrors: []string{`metadata: Invalid value: "string": metadata in body must be of type object: "string"`},
-		},
-		{
-			appSpec:        `kind: 123`,
-			expectedErrors: []string{`kind: Invalid value: "number": kind in body must be of type string: "number"`},
-		},
-	}
-
-	for i, test := range tests {
-
-		// yaml -> json
-		jsonInBytes, err := yaml2.ToJSON([]byte(test.appSpec))
-		assert.Nil(t, err)
-
-		unstructured := make(map[string]interface{})
-		err = json.Unmarshal(jsonInBytes, &unstructured)
-		assert.Nil(t, err)
-
-		errs := validation.ValidateCustomResource(nil, unstructured, validator)
-		if len(errs) > 0 {
-			if test.expectedErrors == nil {
-				t.Errorf("unexpected validation error for %v: %v", unstructured, errs)
-			} else {
-				sawErrors := sets.NewString()
-				for _, err := range errs {
-					sawErrors.Insert(err.Error())
-					//fmt.Println("sawError", err.Field)
-				}
-
-				expectErrs := sets.NewString(test.expectedErrors...)
-
-				for _, unexpectedError := range sawErrors.Difference(expectErrs).List() {
-					t.Errorf("%d: unexpected error: %s", i, unexpectedError)
-				}
-			}
-		} else {
-			if test.expectedErrors == nil {
-				continue
-			}
-
-			t.Errorf("missing validation errors: %v", test.expectedErrors)
-		}
-	}
-}
-
-//func TestTryValidateOpenAPIV3(t *testing.T) {
-//
-//	app := Application{
-//		Spec: ApplicationSpec{
-//			Components: []ComponentSpec{
-//				{
-//					WorkloadType: "not-exist-type",
-//				},
-//			},
-//		},
-//	}
-//
-//	errList := tryValidateUsingOpenAPIV3(app)
-//
-//	assert.NotNil(t, errList)
-//	assert.Equal(t, 2, len(errList))
-//	fmt.Println(errList)
-//}
-//
-//func TestUsingRealKalmCRD(t *testing.T) {
-//	realCrdDef, err := ioutil.ReadFile("../../config/crd/bases/core.kalm.dev_applications.yaml")
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	validator, err := getValidatorForKalmSpec(realCrdDef)
-//	assert.NotNil(t, validator)
-//	assert.Nil(t, err)
-//
-//	appSpecWithoutImage := `apiVersion: core.kalm.dev/v1alpha1
-//kind: Application
-//metadata:
-//  name: socks
-//  namespace: kalm-socks
-//spec:
-//  isActive: true
-//  components:
-//    - name: payment
-//      dependencies:
-//        - shippingservice
-//      #image: weaveworksdemos/payment:0.4.3
-//      cpu: 100m
-//      memory: 100Mi
-//      ports:
-//        - name: http
-//          containerPort: 80
-//      livenessProbe:
-//        httpGet:
-//          path: /health
-//          port: 80
-//        initialDelaySeconds: 300
-//        periodSeconds: 3
-//      readinessProbe:
-//        httpGet:
-//          path: /health
-//          port: 80
-//        initialDelaySeconds: 180
-//        periodSeconds: 3`
-//
-//	jsonInBytes, err := yaml2.ToJSON([]byte(appSpecWithoutImage))
-//	assert.Nil(t, err)
-//
-//	unstructured := make(map[string]interface{})
-//	err = json.Unmarshal(jsonInBytes, &unstructured)
-//	assert.Nil(t, err)
-//
-//	errs := validation.ValidateCustomResource(field.NewPath("spec", "components"), unstructured, validator)
-//	assert.Equal(t, 1, len(errs))
-//	assert.Equal(t, "spec.components.spec.components.image: Required value", errs[0].Error())
-//}
-
 func TestIsValidNoneWildcardDomain(t *testing.T) {
 	type domainTest struct {
 		domain string
@@ -224,7 +79,7 @@ func TestIsValidNoneWildcardDomain(t *testing.T) {
 	}
 
 	for _, domainTest := range domainTests {
-		assert.Equal(t, domainTest.result, IsValidNoneWildcardDomain(domainTest.domain), "fail test on "+domainTest.domain)
+		assert.Equal(t, domainTest.result, validation.ValidateFQDN(domainTest.domain) == nil, "fail test on "+domainTest.domain)
 	}
 }
 
@@ -244,14 +99,14 @@ func TestIsValidWildcardDomain(t *testing.T) {
 		{"*.com", false},
 		{"*.x.com", true},
 		{".x.y.com", false},
-		{"*", true},
+		{"*", false},
 		{"a*.com", false},
 		{"a*b.com", false},
 		{"*a.com", false},
 	}
 
 	for _, domainTest := range domainTests {
-		assert.Equal(t, domainTest.result, IsValidWildcardDomain(domainTest.domain), "fail test on "+domainTest.domain)
+		assert.Equal(t, domainTest.result, IsValidWildcardDomainInCert(domainTest.domain), "fail test on "+domainTest.domain)
 	}
 }
 
@@ -300,8 +155,9 @@ func TestIsValidDomainInCert(t *testing.T) {
 	}
 
 	domains := []pair{
-		{"*", true},
 		{"*.example.com", true},
+		{"*", false},
+		{"*foo.example.com", false},
 		{"*.com", false},
 		{"a*.example.com", false},
 		{"*b.example.com", false},
@@ -310,34 +166,7 @@ func TestIsValidDomainInCert(t *testing.T) {
 
 	for _, pair := range domains {
 		assert.Equal(t, pair.valid, isValidDomainInCert(pair.domain),
-			"wrong for:"+pair.domain,
-			"should be:", pair.valid)
-	}
-}
-
-func TestIsUnderWildcardDomain(t *testing.T) {
-	type triple struct {
-		wildcard string
-		domain   string
-		result   bool
-	}
-
-	domains := []triple{
-		{"*", "a.com", true},
-		{"*.example.com", "a.example.com", true},
-		{"*.a.b.com", "x.a.b.com", true},
-		{"*.kubeland.com", "alpha.kubeland.com", true},
-		{"*.example.com", "a.not-example.com", false},
-		{"*.example.com", "a.b.example.com", false},
-		{"*.com", "a.com", false},
-		{"a*.example.com", "a.example.com", false},
-		{"*b.example.com", "a.example.com", false},
-		{"a*b.example.com", "a.example.com", false},
-	}
-
-	for _, one := range domains {
-		assert.Equal(t, one.result, isUnderWildcardDomain(one.wildcard, one.domain),
-			fmt.Sprintf("wrong for: %s %s", one.wildcard, one.domain),
-			"should be:", one.result)
+			"wrong for: "+pair.domain+
+				" should be: ", pair.valid)
 	}
 }
