@@ -122,7 +122,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
       <>
         <KPanel title={"Single Sign-on configuration Details"}>
           <Box p={2}>
-            <pre>Dex OIDC Issuer: https://{ssoConfig.domain}/dex</pre>
+            <pre>OIDC Issuer: https://{ssoConfig.domain}/dex</pre>
             {ssoConfig.connectors && ssoConfig.connectors.map(this.renderConnectorDetails)}
           </Box>
 
