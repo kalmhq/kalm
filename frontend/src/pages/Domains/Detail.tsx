@@ -137,15 +137,17 @@ const DomainDetailPageRaw: React.FC = () => {
           <Box p={2}>
             {renderTable()}
             <Box mt={2}>
-              <DNSConfigItems
-                items={[
-                  {
-                    domain: domain.domain,
-                    type: domain.recordType,
-                    cnameRecord: domain.target,
-                  },
-                ]}
-              />
+              {domain.name !== "default" && (
+                <DNSConfigItems
+                  items={[
+                    {
+                      domain: domain.domain,
+                      type: domain.recordType,
+                      cnameRecord: domain.target,
+                    },
+                  ]}
+                />
+              )}
             </Box>
           </Box>
         </KPanel>

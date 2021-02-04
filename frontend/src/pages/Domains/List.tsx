@@ -38,22 +38,22 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
     };
   });
 
-  const certificatesMap: { [key: string]: Certificate } = {};
-
-  certificates.forEach((certificate) => {
-    certificatesMap[certificate.domains[0]] = certificate;
-  });
-
-  const deleteDomain = async (domain: Domain) => {
-    const promises = [];
-    promises.push(dispatch(deleteDomainAction(domain.name)));
-
+  const findCert = (domain: Domain): Certificate | undefined => {
     let cert: Certificate | undefined;
 
     cert = certificates.find((x) => x.domains.length === 1 && x.domains[0] === domain.domain);
     if (!cert) {
       cert = certificates.find((x) => !!x.domains.find((y) => y === domain.domain));
     }
+
+    return cert;
+  };
+
+  const deleteDomain = async (domain: Domain) => {
+    const promises = [];
+    promises.push(dispatch(deleteDomainAction(domain.name)));
+
+    const cert = findCert(domain);
 
     if (cert) {
       promises.push(dispatch(deleteCertificateAction(cert.name)));
@@ -68,7 +68,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
     return <KLink to={`/domains/${domain.name}`}>{domain.domain}</KLink>;
   };
   const renderCertificate = (domain: Domain) => {
-    const cert = certificatesMap[domain.domain];
+    const cert = findCert(domain);
 
     if (cert) {
       if (cert.ready === "True") {

@@ -316,7 +316,6 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
         </Box>
         <Box mt={2}>{renderInfoBox()}</Box>
       </Box>
-      <Box mt={2}>{renderInfoBox()}</Box>
     </BasePage>
   );
 };

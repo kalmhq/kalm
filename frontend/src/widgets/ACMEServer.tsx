@@ -81,7 +81,7 @@ class ACNEServerRaw extends React.PureComponent<ACMEServerGuideProps> {
     let isReady: boolean =
       acmeServer.ready &&
       acmeServer.acmeDomain.length > 0 &&
-      acmeServer.ipForNameServer.length > 0 &&
+      (!!acmeServer.ipForNameServer || !!acmeServer.hostnameForNameServer) &&
       acmeServer.nsDomain.length > 0;
 
     let title: React.ReactNode = null;

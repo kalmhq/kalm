@@ -8,7 +8,6 @@ import { Field, Form, FormRenderProps } from "react-final-form";
 import { RoleBinding, SubjectTypeUser } from "types/member";
 import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
-import { Prompt } from "widgets/Prompt";
 
 // const clusterRolesOptions = [
 //   { text: "Cluster Viewer", value: "clusterViewer", desc: "Read-only access in cluster scope" },
@@ -44,7 +43,6 @@ const MemberFormRaw: React.FC<Props> = (props) => {
       onSubmit={onSubmit}
       render={({ handleSubmit, values }: FormRenderProps<RoleBinding>) => (
         <form onSubmit={handleSubmit}>
-          <Prompt />
           <KPanel title="Add a new member">
             <Box p={2}>
               <Field
