@@ -353,7 +353,6 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(configSpec in
 func (r *KalmOperatorConfigReconciler) reconcileHttpRouteForDashboard(baseDashboardDomain string) error {
 	domains := []string{
 		baseDashboardDomain,
-		fmt.Sprintf("*.%s", baseDashboardDomain),
 	}
 
 	expectedRoute := v1alpha1.HttpRoute{
