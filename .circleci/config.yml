@@ -243,7 +243,7 @@ workflows:
           type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
           filters:
             branches:
-              ignore: master
+              ignore: main
       - build-push-dashboard-image:
           name: manual-build-push-dashboard-image
           context: kalm-ci
@@ -258,6 +258,7 @@ workflows:
               only:
                 - master
                 - multiple-tenancy
+                - main
             tags:
               only: /^v.*/
       - deploy-dashboard:
@@ -298,7 +299,7 @@ workflows:
           type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
           filters:
             branches:
-              ignore: master
+              ignore: main
       - build-push-controller-image:
           name: manual-build-push-controller-image
           context: kalm-ci
@@ -312,6 +313,7 @@ workflows:
             branches:
               only:
                 - master
+                - main
                 - multiple-tenancy
             tags:
               only: /^v.*/
@@ -345,13 +347,14 @@ workflows:
                 - master
                 - multiple-tenancy
                 - cert
+                - main
             tags:
               only: /^v.*/
       - hold:
           type: approval
           filters:
             branches:
-              ignore: master
+              ignore: main
       - build-push-operator-image:
           name: manual-build-push-operator-image
           context: kalm-ci
