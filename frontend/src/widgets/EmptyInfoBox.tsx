@@ -6,7 +6,15 @@ import { TDispatchProp } from "types";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {},
+    root: {
+      minHeight: 680,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    content: {
+      maxWidth: 580,
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -29,10 +37,10 @@ class EmptyInfoBoxRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { image, title, content, button } = this.props;
+    const { image, title, content, button, classes } = this.props;
     return (
-      <Paper variant="outlined">
-        <Box p={2}>
+      <Paper variant="outlined" className={classes.root}>
+        <Box p={2} className={classes.content}>
           <Box p={2} display="flex" justifyContent="center">
             {image ? image : null}
           </Box>
