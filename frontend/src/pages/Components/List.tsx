@@ -368,7 +368,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
             <Box pb={1}>
               <KRTable showTitle={true} title="Components" columns={getKRTableColumns()} data={getKRTableData()} />
             </Box>
-            {renderInfoBox()}
+            {/* {renderInfoBox()} */}
           </>
         ) : (
           renderEmpty()
