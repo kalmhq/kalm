@@ -12,7 +12,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouteMatch } from "react-router-dom";
 import { RootState } from "reducers";
-import { issuerManaged } from "types/certificate";
+import { Certificate, issuerManaged } from "types/certificate";
 import { DNSConfigItems } from "widgets/ACMEServer";
 import { CodeBlock } from "widgets/CodeBlock";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
@@ -53,7 +53,12 @@ const DomainTourPageRaw: React.FC = () => {
 
   const isWildcard = domain.domain.startsWith("*");
 
-  const cert = certificates.find((x) => x.domains.length === 1 && x.domains[0] === domain.domain);
+  let cert: Certificate | undefined;
+
+  cert = certificates.find((x) => x.domains.length === 1 && x.domains[0] === domain.domain);
+  if (!cert) {
+    cert = certificates.find((x) => !!x.domains.find((y) => y === domain.domain));
+  }
 
   const renderHelper = (domain: string, type: string, target: string, proxyWarning: boolean = false) => {
     return (

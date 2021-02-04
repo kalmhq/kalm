@@ -191,6 +191,7 @@ export interface AcmeServerInfo {
   acmeDomain: string;
   nsDomain: string;
   ipForNameServer: string;
+  hostnameForNameServer: string;
   ready: boolean;
 }
 

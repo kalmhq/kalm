@@ -54,11 +54,17 @@ class ACNEServerRaw extends React.PureComponent<ACMEServerGuideProps> {
               type: "NS",
               nsRecord: acmeServer.nsDomain,
             },
-            {
-              domain: acmeServer.nsDomain,
-              type: "A",
-              aRecord: acmeServer.ipForNameServer,
-            },
+            !!acmeServer.ipForNameServer
+              ? {
+                  domain: acmeServer.nsDomain,
+                  type: "A",
+                  aRecord: acmeServer.ipForNameServer,
+                }
+              : {
+                  domain: acmeServer.nsDomain,
+                  type: "CNAME",
+                  aRecord: acmeServer.hostnameForNameServer,
+                },
           ]}
         />
       </>
