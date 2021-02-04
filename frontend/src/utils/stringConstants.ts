@@ -116,7 +116,7 @@ export const StringConstants = {
   HSTS_DOMAINS_REQUIRED_HTTPS: "domains is included on the HSTS preload list, HTTPS is required.",
   APP_THEME_TOOLTIPS: "Toggle light/dark theme",
   APP_TUTORIAL_TOOLTIPS: "Toggle tutorial",
-  APP_AUTH_TOOLTIPS: "Auth menu",
+  APP_AUTH_TOOLTIPS: "User settings",
   APP_DASHBOARD_PAGE_NAME: "Dashboard",
   APP_SETTINGS_PAGE_NAME: "Settings",
   APP_MEMBERS_PAGE_NAME: "Members",
