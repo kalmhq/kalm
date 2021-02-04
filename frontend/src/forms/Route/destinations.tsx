@@ -99,16 +99,6 @@ const RenderHttpRouteDestinationsRaw: React.FC = () => {
           </Collapse>
           {fields.value &&
             fields.value.map((destination, index) => {
-              const fixedOptions = options.some((o) => o.value === destination.host)
-                ? options
-                : [
-                    ...options,
-                    {
-                      value: destination.host,
-                      label: destination.host.replace(".svc.cluster.local", ""),
-                      group: "No matched hosts",
-                    },
-                  ];
               return (
                 <Grid container spacing={2} key={index} alignItems="center">
                   <Grid item xs={8} sm={8} md={6} lg={4} xl={4}>
@@ -117,13 +107,13 @@ const RenderHttpRouteDestinationsRaw: React.FC = () => {
                       render={(props: FieldRenderProps<string>) => (
                         <AutoCompleteSingleValue
                           {...props}
-                          options={fixedOptions.map((o) => o.value)}
-                          optionsForRender={fixedOptions}
+                          options={options.map((o) => o.value)}
+                          optionsForRender={options}
                         />
                       )}
                       label="Choose a target"
                       validate={ValidatorRequired}
-                      options={fixedOptions}
+                      options={options}
                       noOptionsText={
                         <Alert severity="warning">
                           <AlertTitle>No valid targets found.</AlertTitle>
