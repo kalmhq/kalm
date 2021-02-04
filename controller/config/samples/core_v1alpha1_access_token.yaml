@@ -1,0 +1,20 @@
+apiVersion: core.kalm.dev/v1alpha1
+kind: AccessToken
+metadata:
+  name: 15d334735e41813f3afb68b630df3f6dd6579315af8dd0de17797653b53d7633
+spec:
+  token: pmkgpnxazqdtcxmairxaaxrumgzgkaqbclawrcxqieygjckqwkooklheibcslbpy
+  creator: test
+  rules:
+  - verb: view
+    name: "*"
+    namespace: "*"
+    kind: "*"
+  - verb: edit
+    name: "*"
+    namespace: "*"
+    kind: "*"
+  - verb: manage
+    name: "*"
+    namespace: "*"
+    kind: "*"
