@@ -215,19 +215,10 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
         options={[
           {
             title: (
-              <KMLink href="https://kalm.dev/docs/next/auth/sso" target="_blank">
+              <KMLink href="https://docs.kalm.dev/auth/sso" target="_blank">
                 Single Sign-On Guide
               </KMLink>
             ),
-            content: "",
-          },
-          {
-            title: (
-              <KMLink href="https://kalm.dev/docs/certs" target="_blank">
-                How to add a new user?(TODO)
-              </KMLink>
-            ),
-            draft: true,
             content: "",
           },
         ]}
@@ -249,9 +240,9 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
     return (
       <BasePage>
         <Box p={2}>{!!ssoConfig ? this.renderConfigDetails() : this.renderEmpty()}</Box>
-        <Box pb={2} pl={2} pr={2}>
+        {/* <Box pb={2} pl={2} pr={2}>
           {this.renderInfoBox()}
-        </Box>
+        </Box> */}
       </BasePage>
     );
   }

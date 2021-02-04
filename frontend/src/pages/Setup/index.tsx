@@ -220,7 +220,7 @@ class SetupPageRaw extends React.PureComponent<Props, State> {
               {" "}
               Kalm is unable to retrieve your cluster ip or host name. Please check the status of your load balancer. If
               you are using minikube, please check{" "}
-              <BlankTargetLink href="https://kalm.dev/docs/guide-minikube#step-2-start-a-minikube-cluster">
+              <BlankTargetLink href="https://docs.kalm.dev/guide-minikube#step-2-start-a-minikube-cluster">
                 this doc
               </BlankTargetLink>
               .

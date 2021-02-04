@@ -171,13 +171,14 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const renderInfoBox = () => {
     const title = "Domains";
 
     const options = [
       {
         title: (
-          <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+          <KMLink href="https://docs.kalm.dev/TODO" target="_blank">
             How to update my domain DNS records? (TODO)
           </KMLink>
         ),
@@ -186,7 +187,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
       },
       {
         title: (
-          <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+          <KMLink href="https://docs.kalm.dev/TODO" target="_blank">
             What's the difference between Domain and Certificate? (TODO)
           </KMLink>
         ),
@@ -231,7 +232,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
         <Box>
           {isLoading && !isFirstLoaded ? <Loading /> : domains && domains.length > 0 ? renderKRTable() : renderEmpty()}
         </Box>
-        <Box mt={2}>{renderInfoBox()}</Box>
+        {/* <Box mt={2}>{renderInfoBox()}</Box> */}
       </Box>
     </BasePage>
   );

@@ -218,7 +218,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
           <HelperTextSection>
             {sc.CONFIG_COMMAND_HELPER}
             <span>&nbsp;</span>
-            <Link href="https://kalm.dev/docs/guide-config#adding-a-config-file" target="_blank">
+            <Link href="https://docs.kalm.dev/guide-config#adding-a-config-file" target="_blank">
               {sc.LEARN_MORE_LABEL}
             </Link>
           </HelperTextSection>

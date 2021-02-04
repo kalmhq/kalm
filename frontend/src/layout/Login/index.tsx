@@ -106,7 +106,7 @@ export class LoginRaw extends React.PureComponent<Props, State> {
     const { error } = this.state;
     const instructions = (
       <>
-        <KMLink target="_blank" href="https://kalm.dev/docs/install#step-4-admin-service-account">
+        <KMLink target="_blank" href="https://docs.kalm.dev/install#step-4-admin-service-account">
           View instructions
         </KMLink>{" "}
         for token geneneration

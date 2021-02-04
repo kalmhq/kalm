@@ -147,7 +147,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
     const options = [
       {
         title: (
-          <KMLink href="https://kalm.dev/docs/next/crd/component" target="_blank">
+          <KMLink href="https://docs.kalm.dev/crd/component" target="_blank">
             Component CRD
           </KMLink>
         ),

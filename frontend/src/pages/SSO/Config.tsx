@@ -44,7 +44,7 @@ class SSOConfigFormPageRaw extends React.PureComponent<Props, State> {
     return !!this.props.ssoConfig;
   };
   private renderInfoBox() {
-    return <InfoBox title={pageObjectName} options={[]} guideLink={"https://kalm.dev/docs/next/auth/sso"} />;
+    return <InfoBox title={pageObjectName} options={[]} guideLink={"https://docs.kalm.dev/auth/sso"} />;
   }
 
   public render() {
@@ -63,7 +63,7 @@ class SSOConfigFormPageRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           <SSOConfigForm onSubmit={this.submit} initial={ssoConfig ? ssoConfig : newEmptySSOConfig()} />
         </Box>
-        <Box p={2}>{this.renderInfoBox()}</Box>
+        {/* <Box p={2}>{this.renderInfoBox()}</Box> */}
       </BasePage>
     );
   }

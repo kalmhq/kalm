@@ -272,7 +272,7 @@ export class VolumesRaw extends React.Component<Props, States> {
 
           {persistentVolumes.length > 0 ? this.renderKRTable() : this.renderEmpty()}
         </Box>
-        <Box p={2}>{this.renderInfoBox()}</Box>
+        {/* <Box p={2}>{this.renderInfoBox()}</Box> */}
       </BasePage>
     );
   }
