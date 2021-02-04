@@ -453,7 +453,7 @@ export class NodeListRaw extends React.Component<Props, States> {
             </Box>
           ))}
         </Box>
-        <Box p={2}>{this.renderInfoBox()}</Box>
+        {/* <Box p={2}>{this.renderInfoBox()}</Box> */}
       </BasePage>
     );
   }

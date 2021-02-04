@@ -242,7 +242,7 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
     const options = [
       {
         title: (
-          <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+          <KMLink href="https://docs.kalm.dev/certs" target="_blank">
             Certificate Docs
           </KMLink>
         ),
@@ -250,7 +250,7 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
       },
       {
         title: (
-          <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+          <KMLink href="https://docs.kalm.dev/certs" target="_blank">
             What's an ACME DNS server?(TODO)
           </KMLink>
         ),
@@ -260,7 +260,7 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
       },
       {
         title: (
-          <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+          <KMLink href="https://docs.kalm.dev/certs" target="_blank">
             HttpCert CRD
           </KMLink>
         ),

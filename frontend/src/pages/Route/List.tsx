@@ -246,7 +246,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     const options = [
       {
         title: (
-          <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+          <KMLink href="https://docs.kalm.dev/TODO" target="_blank">
             How a http route works?
           </KMLink>
         ),
@@ -254,7 +254,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
       },
       {
         title: (
-          <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+          <KMLink href="https://docs.kalm.dev/TODO" target="_blank">
             HttpRoute CRD
           </KMLink>
         ),
@@ -320,7 +320,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           ) : httpRoutes && httpRoutes.length > 0 ? (
             <>
               {this.renderKRTable()}
-              {this.renderInfoBox()}
+              {/* {this.renderInfoBox()} */}
             </>
           ) : (
             this.renderEmpty()

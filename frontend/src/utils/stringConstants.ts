@@ -71,7 +71,7 @@ export const StringConstants = {
   EMPTY_VOLUME_TITLE: "You don’t have any Disks.",
   EMPTY_VOLUME_SUBTITLE:
     "Disks can be attached to Components to provide persistent storage. Disks can be created in the App Components page, and will show up here automatically.",
-  EMPTY_REGISTRY_TITLE: "You haven't configured any Private Registry Secrets.",
+  EMPTY_REGISTRY_TITLE: "You haven't added any Private Registries",
   EMPTY_REGISTRY_SUBTITLE:
     "To pull images hosted on a private registry, first add a pull secret here. Public registries such as Docker Hub can be used directly.",
   EMPTY_SSO_TITLE: "You haven't configured Single Sign-On.",

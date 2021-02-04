@@ -34,7 +34,7 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-const pageObjectName: string = "Registry Pull Secret";
+const pageObjectName: string = "Private Registry";
 
 interface Props
   extends WithStyles<typeof styles>,
@@ -206,13 +206,13 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
         {/* <H6>Private Docker Registries</H6> */}
         <Button
           color="primary"
-          variant="outlined"
+          variant="contained"
           size="small"
           component={Link}
           tutorial-anchor-id="add-certificate"
           to="/cluster/pull-secrets/new"
         >
-          New {pageObjectName}
+          Add {pageObjectName}
         </Button>
       </>
     );
@@ -234,7 +234,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
             tutorial-anchor-id="add-certificate"
             to="/cluster/pull-secrets/new"
           >
-            New {pageObjectName}
+            Add {pageObjectName}
           </Button>
         }
       />
@@ -242,7 +242,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderInfoBox() {
-    return <InfoBox title={pageObjectName} options={[]} guideLink={"https://kalm.dev/docs/registry"} />;
+    return <InfoBox title={pageObjectName} options={[]} guideLink={"https://docs.kalm.dev/registry"} />;
   }
 
   public render() {

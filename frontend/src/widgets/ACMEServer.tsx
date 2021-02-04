@@ -97,7 +97,7 @@ class ACNEServerRaw extends React.PureComponent<ACMEServerGuideProps> {
         <Box p={2}>
           <Body>
             ACME dns server can help you apply and renew wildcard certificates from Let's Encrypt. This only needs to be
-            configured once. <BlankTargetLink href="https://kalm.dev/docs">Learn More (TODO)</BlankTargetLink>
+            configured once. <BlankTargetLink href="https://docs.kalm.dev">Learn More (TODO)</BlankTargetLink>
           </Body>
 
           {this.renderContent()}

@@ -61,7 +61,7 @@ class RenderEnvs extends React.PureComponent<Props> {
           <HelperTextSection>
             {sc.ENV_VAR_HELPER}
             <span>&nbsp;</span>
-            <Link href="https://kalm.dev/docs/guide-config#environment-varibles" target="_blank">
+            <Link href="https://docs.kalm.dev/guide-config#environment-varibles" target="_blank">
               {sc.LEARN_MORE_LABEL}
             </Link>
           </HelperTextSection>

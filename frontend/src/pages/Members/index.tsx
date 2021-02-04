@@ -191,17 +191,7 @@ export const MemberListPage: React.FC = () => {
 
     const options = [
       {
-        title: (
-          <BlankTargetLink href="https://kalm.dev/docs/next/auth/overview">How kalm permission works?</BlankTargetLink>
-        ),
-        content: "",
-      },
-      {
-        title: (
-          <BlankTargetLink href="https://kalm.dev/docs/next/auth/roles">
-            What's the permissions of a role?
-          </BlankTargetLink>
-        ),
+        title: <BlankTargetLink href="https://docs.kalm.dev/auth/roles">Detailed Permissions Table</BlankTargetLink>,
         content: "",
       },
     ];

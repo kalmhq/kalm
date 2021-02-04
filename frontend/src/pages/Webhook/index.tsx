@@ -206,7 +206,7 @@ class WebhookPageRaw extends React.PureComponent<Props, State> {
     const options = [
       {
         title: (
-          <KMLink href="https://kalm.dev/docs/next/crd/component" target="_blank">
+          <KMLink href="https://docs.kalm.dev/crd/component" target="_blank">
             How a webhook works?
           </KMLink>
         ),
@@ -236,7 +236,7 @@ class WebhookPageRaw extends React.PureComponent<Props, State> {
         }
       >
         {this.renderContent()}
-        {this.renderInfoBox()}
+        {/* {this.renderInfoBox()} */}
       </BasePage>
     );
   }

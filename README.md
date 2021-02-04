@@ -35,7 +35,7 @@ Kalm is currently in Closed Beta.
 
 ## Installation
 
-Kalm can be used with any Kubernetes cluster. For getting started on localhost, see our [guide](https://kalm.dev/docs/install#step-1-prerequisites) on installing `kubectl` and creating a `minikube` cluster.
+Kalm can be used with any Kubernetes cluster. For getting started on localhost, see our [guide](https://docs.kalm.dev/install#step-1-prerequisites) on installing `kubectl` and creating a `minikube` cluster.
 
 If you already have access to an existing cluster via kubectl, deploy Kalm via:
 
@@ -43,7 +43,7 @@ If you already have access to an existing cluster via kubectl, deploy Kalm via:
 curl -sL https://get.kalm.dev | bash
 ```
 
-The whole process typically takes up to 5-10 minutes. Relax or check out the <a href="https://kalm.dev/docs" target="_blank">docs</a> in the mean time.
+The whole process typically takes up to 5-10 minutes. Relax or check out the <a href="https://docs.kalm.dev" target="_blank">docs</a> in the mean time.
 
 Once the installation is complete, open a port to the web server.
 
@@ -55,7 +55,7 @@ Kalm should now be accessible at [http://localhost:3010](http://localhost:3010).
 
 ## Docs & Guides
 
-Detailed Documentation and Guides can be found at https://kalm.dev/docs.
+Detailed Documentation and Guides can be found at https://docs.kalm.dev
 
 ## License
 
