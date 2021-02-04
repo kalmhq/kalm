@@ -228,7 +228,7 @@ class WebhookPageRaw extends React.PureComponent<Props, State> {
         secondHeaderRight={
           this.canEdit() ? (
             <>
-              <Button component={Link} color="primary" variant="outlined" size="small" to="/webhooks/keys/new">
+              <Button component={Link} color="primary" variant="contained" size="small" to="/webhooks/keys/new">
                 New Webhook
               </Button>
             </>
