@@ -205,7 +205,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
           <>
             <Button
               color="primary"
-              variant="outlined"
+              variant="contained"
               size="small"
               component={Link}
               tutorial-anchor-id="add-domain"
@@ -215,7 +215,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
             </Button>
             <Button
               color="primary"
-              variant="outlined"
+              variant="contained"
               size="small"
               component={Link}
               tutorial-anchor-id="add-domain"

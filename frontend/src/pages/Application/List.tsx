@@ -259,7 +259,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
             component={Link}
             color="primary"
             size="small"
-            variant="outlined"
+            variant="contained"
             to={`/applications/new`}
           >
             {sc.NEW_APP_BUTTON}

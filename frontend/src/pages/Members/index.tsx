@@ -56,7 +56,7 @@ export const MemberListPage: React.FC = () => {
   const renderSecondHeaderRight = () => {
     return (
       <>
-        <Button component={Link} color="primary" size="small" variant="outlined" to={`/members/new`}>
+        <Button component={Link} color="primary" size="small" variant="contained" to={`/members/new`}>
           Add Member
         </Button>
       </>
@@ -87,7 +87,7 @@ export const MemberListPage: React.FC = () => {
               dispatch(push(link));
             }}
           >
-            Add members
+            Add member
           </CustomizedButton>
         }
       />
