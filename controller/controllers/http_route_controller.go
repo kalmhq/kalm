@@ -355,6 +355,11 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 		for _, servicePort := range service.Spec.Ports {
 			host := service.Name + "." + service.Namespace + ".svc.cluster.local:" + fmt.Sprint(servicePort.Port)
 			hostsMap[host] = true
+
+			if servicePort.Protocol == corev1.ProtocolTCP && servicePort.Port == 80 {
+				host := service.Name + "." + service.Namespace + ".svc.cluster.local"
+				hostsMap[host] = true
+			}
 		}
 	}
 
