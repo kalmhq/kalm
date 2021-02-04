@@ -306,7 +306,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
               component={Link}
               color="primary"
               size="small"
-              variant="outlined"
+              variant="contained"
               to={`/routes/new`}
             >
               Add Route

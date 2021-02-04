@@ -141,6 +141,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const renderInfoBox = () => {
     const title = "References";
 
