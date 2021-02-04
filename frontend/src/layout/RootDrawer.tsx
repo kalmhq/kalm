@@ -180,7 +180,7 @@ const RootDrawerRaw: React.FC<Props> = (props) => {
           canEditAnyNamespace()
             ? {
                 icon: KalmRegistryIcon,
-                text: "Pull secrets",
+                text: "Pull Secrets",
                 to: "/cluster/pull-secrets",
               }
             : null,
