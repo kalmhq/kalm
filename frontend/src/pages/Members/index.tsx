@@ -20,6 +20,35 @@ import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
 
+const getRoleDescFromRoleBinding = (rolebinding: RoleBinding) => {
+  switch (rolebinding.namespace) {
+    case "kalm-system": {
+      switch (rolebinding.role) {
+        case "clusterViewer":
+          return "Cluster Viewer";
+        case "clusterEditor":
+          return "Cluster Editor";
+        case "clusterOwner":
+          return "Cluster Owner";
+        default:
+          return rolebinding.role;
+      }
+    }
+    default: {
+      switch (rolebinding.role) {
+        case "viewer":
+          return `${rolebinding.namespace} Viewer`;
+        case "editor":
+          return `${rolebinding.namespace} Editor`;
+        case "owner":
+          return `${rolebinding.namespace} Owner`;
+        default:
+          return rolebinding.role;
+      }
+    }
+  }
+};
+
 export const MemberListPage: React.FC = () => {
   const dispatch = useDispatch();
   const { roleBindings } = useRoleBindings();
@@ -75,7 +104,10 @@ export const MemberListPage: React.FC = () => {
         Header: "User",
         accessor: "subject",
       },
-
+      {
+        Header: "Role",
+        accessor: "roles",
+      },
       {
         Header: "Action",
         accessor: "actions",
@@ -86,24 +118,50 @@ export const MemberListPage: React.FC = () => {
   const getKRTableData = () => {
     const data: any[] = [];
 
-    const exist: { [key: string]: boolean } = {};
-
-    roleBindings.forEach((roleBinding) => {
-      if (!exist[roleBinding.subject]) {
-        exist[roleBinding.subject] = true;
-
-        data.push({
-          name: roleBinding.name,
-          avatar: (
-            <Link to={`/members/${roleBinding.subject}`}>
-              <Avatar src={gravatar(roleBinding.subject, { size: 36 })} />
-            </Link>
-          ),
-          subject: <Link to={`/members/${roleBinding.subject}`}>{roleBinding.subject}</Link>,
-          actions: renderActions(roleBinding),
-        });
+    const roles: { [key: string]: { roles: string[]; rolebinding: RoleBinding } } = {};
+    for (let rolebinding of roleBindings) {
+      if (!roles[rolebinding.subject]) {
+        roles[rolebinding.subject] = { roles: [], rolebinding };
       }
-    });
+
+      roles[rolebinding.subject].roles.push(getRoleDescFromRoleBinding(rolebinding));
+    }
+
+    for (let subject in roles) {
+      data.push({
+        avatar: (
+          <Link to={`/members/${subject}`}>
+            <Avatar src={gravatar(subject, { size: 36 })} />
+          </Link>
+        ),
+        roles: (
+          <Box>
+            {roles[subject].roles.map((x) => (
+              <Box>{x}</Box>
+            ))}
+          </Box>
+        ),
+        subject: <Link to={`/members/${subject}`}>{subject}</Link>,
+        actions: renderActions(roles[subject].rolebinding),
+      });
+    }
+
+    // roleBindings.forEach((roleBinding) => {
+    //   if (!exist[roleBinding.subject]) {
+    //     exist[roleBinding.subject] = true;
+
+    //     data.push({
+    //       name: roleBinding.name,
+    //       avatar: (
+    //         <Link to={`/members/${roleBinding.subject}`}>
+    //           <Avatar src={gravatar(roleBinding.subject, { size: 36 })} />
+    //         </Link>
+    //       ),
+    //       subject: <Link to={`/members/${roleBinding.subject}`}>{roleBinding.subject}</Link>,
+    //       actions: renderActions(roleBinding),
+    //     });
+    //   }
+    // });
 
     return data;
   };
