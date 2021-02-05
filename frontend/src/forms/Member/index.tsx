@@ -5,7 +5,7 @@ import { trimAndToLowerParse } from "forms/normalizer";
 import { ValidatorIsEmail } from "forms/validator";
 import React from "react";
 import { Field, Form, FormRenderProps } from "react-final-form";
-import { RoleBinding, SubjectTypeUser } from "types/member";
+import { RoleBinding } from "types/member";
 import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 
@@ -52,9 +52,7 @@ const MemberFormRaw: React.FC<Props> = (props) => {
                 validate={ValidatorIsEmail}
                 parse={trimAndToLowerParse}
                 placeholder={"e.g. user@example.com"}
-                helperText={
-                  values.subjectType === SubjectTypeUser ? "Please type the user email" : "Please type the group name"
-                }
+                helperText="Please type the new member's email"
               />
             </Box>
           </KPanel>
