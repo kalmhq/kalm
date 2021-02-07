@@ -7,19 +7,18 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
 	"istio.io/pkg/log"
-	appsV1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/apps/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (r *KalmOperatorConfigReconciler) reconcileKalmController(configSpec installv1alpha1.KalmOperatorConfigSpec) error {
 
-	if err := r.applyFromYaml(r.Ctx, "kalm.yaml"); err != nil {
+	if err := r.applyFromYaml("kalm.yaml"); err != nil {
 		log.Error(err, "install kalm error.")
 		return err
 	}
@@ -80,7 +79,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(configSpec instal
 	envVars := getEnvVarsForController(configSpec)
 
 	dpName := "kalm-controller"
-	expectedKalmController := appsV1.Deployment{
+	expectedKalmController := appsv1.Deployment{
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: NamespaceKalmSystem,
 			Name:      dpName,
@@ -88,8 +87,8 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(configSpec instal
 				"control-plane": "controller",
 			},
 		},
-		Spec: v1.DeploymentSpec{
-			Selector: &metaV1.LabelSelector{
+		Spec: appsv1.DeploymentSpec{
+			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					"control-plane": "controller",
 				},
@@ -171,7 +170,7 @@ func (r *KalmOperatorConfigReconciler) reconcileKalmController(configSpec instal
 		},
 	}
 
-	var dp appsV1.Deployment
+	var dp appsv1.Deployment
 	var isNew bool
 
 	err = r.Get(r.Ctx, client.ObjectKey{Namespace: NamespaceKalmSystem, Name: dpName}, &dp)

@@ -89,7 +89,7 @@ func main() {
 	if err = (&controllers.KalmOperatorConfigReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("KalmOperatorConfig"),
-		Reader: mgr.GetAPIReader(),
+		// Reader: mgr.GetAPIReader(),
 		Scheme: mgr.GetScheme(),
 		Ctx:    context.Background(),
 	}).SetupWithManager(mgr); err != nil {

@@ -300,6 +300,7 @@ const (
 	KalmRouteName             = "kalm-route"
 	KalmProtectedEndpointName = "kalm"
 	SSO_NAME                  = "sso"
+	HttpsCertNameDashboard    = "dashboard"
 )
 
 // - wildcard cert
@@ -322,7 +323,7 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(configSpec in
 		return nil
 	}
 
-	if err := r.reconcileHttpsCertForDomain(baseDomain, applyForWildcardCert); err != nil {
+	if err := r.reconcileHttpsCertForDomain(baseDomain, applyForWildcardCert, HttpsCertNameDashboard); err != nil {
 		r.Log.Info("reconcileHttpsCertForDomain fail", "error", err)
 		return err
 	}

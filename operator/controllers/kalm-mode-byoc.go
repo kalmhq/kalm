@@ -9,11 +9,16 @@ import (
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (r *KalmOperatorConfigReconciler) reconcileBYOCMode(config *installv1alpha1.KalmOperatorConfig) error {
+	if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstallingKalm); err != nil {
+		return err
+	}
+
 	configSpec := config.Spec
 
 	if err := r.reconcileKalmController(configSpec); err != nil {
@@ -77,15 +82,18 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode(config *installv1alpha1
 	} else if !ok {
 		r.Log.Info("fail to report BYOC cluster info to Kalm-SaaS, will retry later...")
 		return nil
-	} else {
-		if config.Status.BYOCModeStatus == nil {
-			config.Status.BYOCModeStatus = &installv1alpha1.BYOCModeStatus{}
-		}
-
-		config.Status.BYOCModeStatus.ClusterInfoHasSendToKalmSaaS = true
-
-		return r.Status().Update(r.Ctx, config)
 	}
+
+	// check if everything is ok now
+	if yes, err := r.isBYOCModeFullySetup(); err != nil {
+		return err
+	} else if yes {
+		if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstalled); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 type ClusterInfo struct {
@@ -144,6 +152,115 @@ func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo C
 	return true, nil
 }
 
+func (r *KalmOperatorConfigReconciler) updateInstallProcess(newStatus installv1alpha1.InstallStatus) (updated bool, err error) {
+	config := r.config
+	curStatus := config.Status.InstallStatus
+
+	if curStatus != nil && indexOfStatus(newStatus) <= indexOfStatus(*curStatus) {
+		return false, nil
+	}
+
+	// report progress first for byoc, so if fail, we have chance to report again
+	if config.Spec.BYOCModeConfig != nil {
+		if ok, err := r.reportInstallProcessToKalmSaaS(newStatus); err != nil {
+			return false, err
+		} else if !ok {
+			return false, fmt.Errorf("reportInstallProcessToKalmSaaS failed")
+		}
+	}
+
+	// update to new install status
+	config.Status.InstallStatus = &newStatus
+	if err := r.Status().Update(r.Ctx, config); err != nil {
+		return false, err
+	}
+
+	return true, err
+}
+
+func indexOfStatus(status installv1alpha1.InstallStatus) int {
+	for i, item := range installv1alpha1.InstallStatusList {
+		if status == item {
+			return i
+		}
+	}
+
+	return -1
+}
+
+func (r *KalmOperatorConfigReconciler) reportInstallProcessToKalmSaaS(state installv1alpha1.InstallStatus) (bool, error) {
+	if r.config == nil || r.config.Spec.BYOCModeConfig == nil {
+		return false, fmt.Errorf("not KalmOperatorConfig or BYOCConfig found")
+	}
+
+	kalmSaaSDomain := r.config.Spec.BYOCModeConfig.KalmSaaSDomain
+	uuid := r.config.Spec.BYOCModeConfig.ClusterUUID
+
+	callbackSecret, _ := r.getCallbackSecret()
+
+	kalmSaaSAPI := fmt.Sprintf("https://%s/api/v1/clusters/%s", kalmSaaSDomain, uuid)
+
+	payload := struct {
+		State          installv1alpha1.InstallStatus `json:"state,omitempty"`
+		CallbackSecret string                        `json:"callback_secret,omitempty"`
+	}{
+		state,
+		callbackSecret,
+	}
+	payloadJson, _ := json.Marshal(payload)
+
+	r.Log.Info("reportInstallProcessToKalmSaaS", "api", kalmSaaSAPI, "payload", string(payloadJson))
+
+	client := &http.Client{}
+
+	req, err := http.NewRequest(http.MethodPut, kalmSaaSAPI, bytes.NewBuffer(payloadJson))
+	if err != nil {
+		return false, err
+	}
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return false, err
+	}
+
+	if resp.StatusCode != 200 {
+		r.Log.Info("reportInstallProcessToKalmSaaS failed", "resp", resp.Body, "status", resp.StatusCode)
+		return false, nil
+	}
+
+	return true, nil
+}
+
+// currently only check if HttpsCert for dashboard is ready
+// this is the most time consuming task, usually finished last
+func (r *KalmOperatorConfigReconciler) isBYOCModeFullySetup() (bool, error) {
+	var httpsCert v1alpha1.HttpsCert
+
+	objKey := client.ObjectKey{Name: HttpsCertNameDashboard}
+	if err := r.Get(r.Ctx, objKey, &httpsCert); err != nil {
+		if errors.IsNotFound(err) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	for _, cond := range httpsCert.Status.Conditions {
+		if cond.Type != v1alpha1.HttpsCertConditionReady {
+			continue
+		}
+
+		if cond.Status != corev1.ConditionTrue {
+			continue
+		}
+
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func (r *KalmOperatorConfigReconciler) getACMEDomainForApps(appsDomain string) (string, error) {
 	certList := v1alpha1.HttpsCertList{}
 	if err := r.List(r.Ctx, &certList); err != nil {
@@ -188,7 +305,7 @@ func (r *KalmOperatorConfigReconciler) getCallbackSecret() (string, error) {
 	ns := "kalm-operator"
 	secName := "kalm-saas-token"
 
-	sec := v1.Secret{}
+	sec := corev1.Secret{}
 	if err := r.Get(r.Ctx, client.ObjectKey{Namespace: ns, Name: secName}, &sec); err != nil {
 		return "", err
 	}
