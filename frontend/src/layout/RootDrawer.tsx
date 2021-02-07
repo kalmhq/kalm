@@ -24,7 +24,6 @@ import {
   InfoIcon,
   KalmApplicationIcon,
   KalmCertificatesIcon,
-  KalmIngressIcon,
   KalmNodeIcon,
   KalmRegistryIcon,
   KalmRoutesIcon,
@@ -165,13 +164,13 @@ const RootDrawerRaw: React.FC<Props> = (props) => {
                 to: "/cluster/nodes",
               }
             : null,
-          canViewCluster()
-            ? {
-                icon: KalmIngressIcon,
-                text: "Load Balancer",
-                to: "/cluster/loadbalancer",
-              }
-            : null,
+          // canViewCluster()
+          //   ? {
+          //       icon: KalmIngressIcon,
+          //       text: "Load Balancer",
+          //       to: "/cluster/loadbalancer",
+          //     }
+          //   : null,
           {
             icon: KalmVolumeIcon,
             text: "Disks",
