@@ -31,7 +31,6 @@ const (
 
 	// Two special roles, they should exist in kalm-system namespace
 	// If a subject has a rolebinding of suspended, it will lose all permissions regardless of other role bindings
-	// TODO: implement this in kalm-api
 	RoleSuspended = "suspended"
 
 	// no permissions, just a placeholder to support kalm frontend
