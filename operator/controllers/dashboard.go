@@ -116,7 +116,8 @@ func getKalmDashboardReplicas(configSpec installv1alpha1.KalmOperatorConfigSpec)
 
 const dashboardName = "kalm"
 
-func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(configSpec installv1alpha1.KalmOperatorConfigSpec) error {
+func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard() error {
+	configSpec := r.config.Spec
 
 	if err := r.reconcileDashboardComponent(configSpec); err != nil {
 		r.Log.Info("reconcileDashboardComponent fail", "error", err)

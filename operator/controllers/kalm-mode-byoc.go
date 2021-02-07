@@ -14,23 +14,23 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (r *KalmOperatorConfigReconciler) reconcileBYOCMode(config *installv1alpha1.KalmOperatorConfig) error {
+func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
+
 	if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstallingKalm); err != nil {
 		return err
 	}
 
-	configSpec := config.Spec
-
-	if err := r.reconcileKalmController(configSpec); err != nil {
+	if err := r.reconcileKalmController(); err != nil {
 		r.Log.Info("reconcileKalmController fail", "error", err)
 		return err
 	}
 
-	if err := r.reconcileKalmDashboard(configSpec); err != nil {
+	if err := r.reconcileKalmDashboard(); err != nil {
 		r.Log.Info("reconcileKalmDashboard fail", "error", err)
 		return err
 	}
 
+	configSpec := r.config.Spec
 	byocModeConfig := configSpec.BYOCModeConfig
 
 	baseDNSDomain := byocModeConfig.BaseDNSDomain
@@ -61,27 +61,32 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode(config *installv1alpha1
 		return err
 	}
 
-	if config.Status.BYOCModeStatus != nil && config.Status.BYOCModeStatus.ClusterInfoHasSendToKalmSaaS {
-		r.Log.Info("ClusterInfoHasSendToKalmSaaS is true, report skipped")
-		return nil
-	}
+	status := r.config.Status
+	shouldReportClusterInfo := status.InstallStatus == nil ||
+		indexOfStatus(*status.InstallStatus) < indexOfStatus(installv1alpha1.InstallStateClusterInfoReported)
 
-	// if installation is ready
-	// - post cluster info to kalm-SaaS
-	// - update status
-	clusterInfo, ready := r.getClusterInfoIfIsReady(byocModeConfig)
-	if !ready {
-		r.Log.Info("BYOC cluster not ready yet, will wait...", "clusterInfo", clusterInfo)
-		return nil
-	}
+	if shouldReportClusterInfo {
+		// post cluster info to kalm-SaaS
+		clusterInfo, ready := r.getClusterInfoIfIsReady(byocModeConfig)
+		if !ready {
+			r.Log.Info("BYOC cluster not ready yet, will wait...", "clusterInfo", clusterInfo)
+			return nil
+		}
 
-	// call Kalm-SaaS API
-	if ok, err := r.reportClusterInfoToKalmSaaS(clusterInfo, byocModeConfig.KalmSaaSDomain, byocModeConfig.ClusterUUID); err != nil {
-		r.Log.Error(err, "reportClusterInfoToKalmSaaS failed")
-		return err
-	} else if !ok {
-		r.Log.Info("fail to report BYOC cluster info to Kalm-SaaS, will retry later...")
-		return nil
+		// call Kalm-SaaS API
+		if ok, err := r.reportClusterInfoToKalmSaaS(clusterInfo, byocModeConfig.KalmSaaSDomain, byocModeConfig.ClusterUUID); err != nil {
+			r.Log.Error(err, "reportClusterInfoToKalmSaaS failed")
+			return err
+		} else if !ok {
+			r.Log.Info("fail to report BYOC cluster info to Kalm-SaaS, will retry later...")
+			return nil
+		} else {
+			if _, err := r.updateInstallProcess(installv1alpha1.InstallStateClusterInfoReported); err != nil {
+				return err
+			}
+		}
+	} else {
+		r.Log.Info("ClusterInfo already reported")
 	}
 
 	// check if everything is ok now
@@ -149,9 +154,11 @@ func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo C
 		return false, nil
 	}
 
-	return true, nil
+	return true, err
 }
 
+// - update kalmOperatorConfig install status
+// - for byoc, report install progress
 func (r *KalmOperatorConfigReconciler) updateInstallProcess(newStatus installv1alpha1.InstallStatus) (updated bool, err error) {
 	config := r.config
 	curStatus := config.Status.InstallStatus
@@ -162,10 +169,17 @@ func (r *KalmOperatorConfigReconciler) updateInstallProcess(newStatus installv1a
 
 	// report progress first for byoc, so if fail, we have chance to report again
 	if config.Spec.BYOCModeConfig != nil {
-		if ok, err := r.reportInstallProcessToKalmSaaS(newStatus); err != nil {
-			return false, err
-		} else if !ok {
-			return false, fmt.Errorf("reportInstallProcessToKalmSaaS failed")
+		ok, err := r.reportInstallProcessToKalmSaaS(newStatus)
+
+		// only deal with failure for final state: INSTALLED
+		// cuz if this missed, SaaS will be in wrong state
+		// other states can be skipped
+		if newStatus == installv1alpha1.InstallStateInstalled {
+			if err != nil {
+				return false, err
+			} else if !ok {
+				return false, fmt.Errorf("reportInstallProcessToKalmSaaS failed for status: %s", newStatus)
+			}
 		}
 	}
 

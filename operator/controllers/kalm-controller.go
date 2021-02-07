@@ -16,7 +16,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (r *KalmOperatorConfigReconciler) reconcileKalmController(configSpec installv1alpha1.KalmOperatorConfigSpec) error {
+func (r *KalmOperatorConfigReconciler) reconcileKalmController() error {
+	configSpec := r.config.Spec
 
 	if err := r.applyFromYaml("kalm.yaml"); err != nil {
 		log.Error(err, "install kalm error.")

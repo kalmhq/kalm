@@ -113,11 +113,12 @@ type CloudflareConfig struct {
 type InstallStatus string
 
 var (
-	InstallStateInstalling        InstallStatus = "INSTALLING"
-	InstallStateInstallingCertMgr InstallStatus = "INSTALLING_CERT_MANAGER"
-	InstallStateInstallingIstio   InstallStatus = "INSTALLING_ISTIO"
-	InstallStateInstallingKalm    InstallStatus = "INSTALLING_KALM"
-	InstallStateInstalled         InstallStatus = "INSTALLED"
+	InstallStateInstalling          InstallStatus = "INSTALLING"
+	InstallStateInstallingCertMgr   InstallStatus = "INSTALLING_CERT_MANAGER"
+	InstallStateInstallingIstio     InstallStatus = "INSTALLING_ISTIO"
+	InstallStateInstallingKalm      InstallStatus = "INSTALLING_KALM"
+	InstallStateClusterInfoReported InstallStatus = "CLUSTER_INFO_REPORTED"
+	InstallStateInstalled           InstallStatus = "INSTALLED"
 )
 
 var InstallStatusList = []InstallStatus{
@@ -125,12 +126,13 @@ var InstallStatusList = []InstallStatus{
 	InstallStateInstallingCertMgr,
 	InstallStateInstallingIstio,
 	InstallStateInstallingKalm,
+	InstallStateClusterInfoReported,
 	InstallStateInstalled,
 }
 
 type KalmOperatorConfigStatus struct {
-	BYOCModeStatus *BYOCModeStatus `json:"byocModeStatus,omitempty"`
-	InstallStatus  *InstallStatus  `json:"installStatus,omitempty"`
+	// BYOCModeStatus *BYOCModeStatus `json:"byocModeStatus,omitempty"`
+	InstallStatus *InstallStatus `json:"installStatus,omitempty"`
 }
 
 type BYOCModeStatus struct {

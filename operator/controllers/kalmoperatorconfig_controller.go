@@ -126,8 +126,9 @@ func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	}
 
 	config := &configs.Items[0]
+	r.config = config
 
-	err := r.reconcileResources(config)
+	err := r.reconcileResources()
 	if err == retryLaterErr {
 		r.Log.Info("Dependency not ready, retry after 5 seconds")
 		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
@@ -198,7 +199,8 @@ var retryLaterErr = fmt.Errorf("retry later")
 
 const istioPromRecordingRulesFileName = "istio-prom-recording-rules.yaml"
 
-func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha1.KalmOperatorConfig) error {
+func (r *KalmOperatorConfigReconciler) reconcileResources() error {
+	config := r.config
 
 	if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstalling); err != nil {
 		return err
@@ -226,7 +228,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 			return err
 		}
 
-		if err := r.AddRecordingRulesForIstioPrometheus(r.Ctx); err != nil {
+		if err := r.AddRecordingRulesForIstioPrometheus(); err != nil {
 			log.Error(err, "add recording rules form istio prometheus failed.")
 			return err
 		}
@@ -253,18 +255,18 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 
 	configSpec := config.Spec
 	if configSpec.BYOCModeConfig != nil {
-		return r.reconcileBYOCMode(config)
+		return r.reconcileBYOCMode()
 	} else if configSpec.LocalModeConfig != nil {
-		return r.reconcileLocalMode(configSpec)
+		return r.reconcileLocalMode()
 	} else {
 		r.Log.Info("must specify at least one of: byocModeConfig and localModeConfig")
 		return nil
 	}
 }
 
-func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx context.Context) error {
+func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus() error {
 	cmPrometheus := corev1.ConfigMap{}
-	err := r.Get(ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &cmPrometheus)
+	err := r.Get(r.Ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &cmPrometheus)
 
 	if err != nil {
 		if !errors.IsNotFound(err) {
@@ -277,7 +279,7 @@ func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx c
 	}
 
 	dpPrometheus := appsv1.Deployment{}
-	err = r.Get(ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &dpPrometheus)
+	err = r.Get(r.Ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &dpPrometheus)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			return err
@@ -299,7 +301,7 @@ func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx c
 		cmPrometheus.Data["prometheus.yml"] = pConfig.String()
 		cmPrometheus.Data[istioPromRecordingRulesFileName] = string(MustAsset("istio-prom-recording-rules.yaml"))
 
-		if err := r.Update(ctx, &cmPrometheus); err != nil {
+		if err := r.Update(r.Ctx, &cmPrometheus); err != nil {
 			return err
 		}
 
@@ -307,7 +309,7 @@ func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx c
 		dpPrometheusCopy := dpPrometheus.DeepCopy()
 		dpPrometheusCopy.Spec.Template.ObjectMeta.Labels["date"] = strconv.Itoa(int(time.Now().Unix()))
 
-		err = r.Patch(ctx, dpPrometheusCopy, client.MergeFrom(&dpPrometheus))
+		err = r.Patch(r.Ctx, dpPrometheusCopy, client.MergeFrom(&dpPrometheus))
 
 		if err != nil {
 			return err
