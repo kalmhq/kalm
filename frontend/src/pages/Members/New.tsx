@@ -1,10 +1,11 @@
 import { Box, Grid } from "@material-ui/core";
+import { createRoleBindingsAction } from "actions/user";
 import { push } from "connected-react-router";
 import { MemberForm } from "forms/Member";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { useDispatch } from "react-redux";
-import { RoleBinding } from "types/member";
+import { RoleBinding, SubjectTypeUser } from "types/member";
 
 interface Props {}
 
@@ -12,7 +13,17 @@ export const MemberNewPage: React.FC<Props> = (props) => {
   const dispatch = useDispatch();
 
   const onSubmit = async (values: RoleBinding) => {
-    dispatch(push("/members/" + values.subject));
+    await dispatch(
+      createRoleBindingsAction({
+        subject: values.subject,
+        namespace: "kalm-system",
+        subjectType: SubjectTypeUser,
+        role: "placeholder",
+        name: "",
+        expiredAtTimestamp: 0,
+      }),
+    );
+    dispatch(push("/members"));
   };
 
   return (

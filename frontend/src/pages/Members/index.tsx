@@ -30,6 +30,10 @@ const getRoleDescFromRoleBinding = (rolebinding: RoleBinding) => {
           return "Cluster Editor";
         case "clusterOwner":
           return "Cluster Owner";
+        case "placeholder":
+          return "None";
+        case "suspended":
+          return "Suspended";
         default:
           return rolebinding.role;
       }
@@ -124,6 +128,10 @@ export const MemberListPage: React.FC = () => {
         roles[rolebinding.subject] = { roles: [], rolebinding };
       }
 
+      if (rolebinding.role === "placeholder") {
+        continue;
+      }
+
       roles[rolebinding.subject].roles.push(getRoleDescFromRoleBinding(rolebinding));
     }
 
@@ -135,11 +143,7 @@ export const MemberListPage: React.FC = () => {
           </Link>
         ),
         roles: (
-          <Box>
-            {roles[subject].roles.map((x) => (
-              <Box>{x}</Box>
-            ))}
-          </Box>
+          <Box>{roles[subject]?.roles?.length > 0 ? roles[subject].roles.map((x) => <Box>{x}</Box>) : "None"}</Box>
         ),
         subject: <Link to={`/members/${subject}`}>{subject}</Link>,
         actions: renderActions(roles[subject].rolebinding),

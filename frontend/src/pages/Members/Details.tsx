@@ -48,7 +48,7 @@ const applicationRoleOptions = [
 ];
 
 const clusterRoleOptions = [
-  <MenuItem value="">
+  <MenuItem value="placeholder">
     <em>None</em>
   </MenuItem>,
   <MenuItem key="viewer" value="clusterViewer">
