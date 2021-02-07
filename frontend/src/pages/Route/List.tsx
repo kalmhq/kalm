@@ -295,12 +295,12 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes, canEditAnyNamespace } = this.props;
+    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes, canEditCluster } = this.props;
 
     return (
       <BasePage
         secondHeaderRight={
-          canEditAnyNamespace() ? (
+          canEditCluster() ? (
             <Button
               tutorial-anchor-id="add-route"
               component={Link}
