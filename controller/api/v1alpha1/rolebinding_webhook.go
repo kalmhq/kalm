@@ -115,7 +115,7 @@ func (r *RoleBinding) validate() error {
 	var rst KalmValidateErrorList
 
 	switch r.Spec.Role {
-	case ClusterRoleEditor, ClusterRoleOwner, ClusterRoleViewer:
+	case ClusterRoleEditor, ClusterRoleOwner, ClusterRoleViewer, RolePlaceholder, RoleSuspended:
 		if r.Namespace != KalmSystemNamespace {
 			rst = append(rst, KalmValidateError{
 				Err:  "cluster role binding mush be created in kalm-system namespace",
