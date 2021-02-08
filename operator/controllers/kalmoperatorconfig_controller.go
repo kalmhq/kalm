@@ -59,7 +59,6 @@ type KalmOperatorConfigReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
-	// Reader client.Reader
 	Ctx    context.Context
 	config *installv1alpha1.KalmOperatorConfig
 }
@@ -100,7 +99,6 @@ type KalmOperatorConfigReconciler struct {
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=*,verbs=*
 
 func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
 	log := r.Log.WithValues("kalmoperatorconfig", req.NamespacedName)
 
 	log.Info("KalmOperatorConfigReconciler reconciling...")
@@ -109,7 +107,7 @@ func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	// this controller won't do anything to the system.
 
 	var configs installv1alpha1.KalmOperatorConfigList
-	if err := r.List(ctx, &configs); err != nil {
+	if err := r.List(r.Ctx, &configs); err != nil {
 		log.Error(err, "list configs error")
 		return ctrl.Result{}, err
 	}
@@ -393,7 +391,7 @@ func (k KalmEssentialNSWatcher) Map(object handler.MapObject) []reconcile.Reques
 
 		return []reconcile.Request{{
 			NamespacedName: types.NamespacedName{
-				Name:      "reconcile-caused-by-essential-ns-change",
+				Name:      "NS-CHANGE",
 				Namespace: curNS,
 			}},
 		}
@@ -420,13 +418,27 @@ func (k KalmDeploymentInEssentialNSWatcher) Map(object handler.MapObject) []reco
 
 		return []reconcile.Request{{
 			NamespacedName: types.NamespacedName{
-				Name:      "reconcile-caused-by-dp-change-in-essential-ns-" + object.Meta.GetName(),
+				Name:      "DP-CHANGE-" + object.Meta.GetName(),
 				Namespace: curNS,
 			},
 		}}
 	}
 
 	return nil
+}
+
+type DashboardHttpsCertWatcher struct{}
+
+func (w DashboardHttpsCertWatcher) Map(obj handler.MapObject) []reconcile.Request {
+	if obj.Meta.GetName() != HttpsCertNameDashboard {
+		return nil
+	}
+
+	return []reconcile.Request{{
+		NamespacedName: types.NamespacedName{
+			Name: "HttpsCert-CHANGE-" + HttpsCertNameDashboard,
+		},
+	}}
 }
 
 func (r *KalmOperatorConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
@@ -440,6 +452,10 @@ func (r *KalmOperatorConfigReconciler) SetupWithManager(mgr ctrl.Manager) error 
 		}).
 		Watches(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &KalmIstioPrometheusWather{},
+		}).
+		// for BYOC mode, watch dashboard HttpsCert
+		Watches(&source.Kind{Type: &v1alpha1.HttpsCert{}}, &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: &DashboardHttpsCertWatcher{},
 		}).
 		Complete(r)
 }
