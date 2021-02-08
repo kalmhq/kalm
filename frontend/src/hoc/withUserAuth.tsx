@@ -18,7 +18,7 @@ export interface WithUserAuthProps extends ReturnType<typeof mapStateToProps>, T
 export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
   const HOC: React.FC<WithUserAuthProps> = (props) => {
     const dispatch = useDispatch();
-    const { location, canEditCluster, canViewCluster, canEditAnyNamespace, canManageCluster } = props;
+    const { location, canEditCluster, canViewCluster, canManageCluster } = props;
 
     const didMount = () => {
       const canViewPage = () => {
@@ -27,7 +27,7 @@ export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
         } else if (location.pathname.includes("/domains")) {
           return canManageCluster();
         } else if (location.pathname.includes("/webhooks")) {
-          return canEditAnyNamespace();
+          return canEditCluster();
         } else if (location.pathname.includes("/cluster/nodes")) {
           return canViewCluster();
         } else if (location.pathname.includes("/cluster/loadbalancer")) {
@@ -51,7 +51,7 @@ export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
       }
     };
 
-    useEffect(didMount, [dispatch, location, canEditCluster, canViewCluster, canEditAnyNamespace, canManageCluster]);
+    useEffect(didMount, [dispatch, location, canEditCluster, canViewCluster, canManageCluster]);
 
     return <WrappedComponent {...props} />;
   };

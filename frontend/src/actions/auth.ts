@@ -6,7 +6,6 @@ import {
   LOAD_LOGIN_STATUS_FAILED,
   LOAD_LOGIN_STATUS_FULFILLED,
   LOAD_LOGIN_STATUS_PENDING,
-  LOGOUT,
   SET_AUTH_TOKEN,
 } from "types/common";
 import { setErrorNotificationAction } from "./notification";
@@ -54,17 +53,13 @@ export const validateTokenAction = (token: string): ThunkResult<Promise<string>>
 };
 
 export const logoutAction = (): ThunkResult<Promise<void>> => {
-  return async (dispatch, getState) => {
+  return async () => {
     try {
+      stopImpersonating(false);
       const res = await api.oidcLogout();
       window.location.href = res.endSessionEndpoint;
     } catch (e) {
       console.log(e);
     }
-
-    stopImpersonating();
-    dispatch({
-      type: LOGOUT,
-    });
   };
 };

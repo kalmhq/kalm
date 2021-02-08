@@ -20,13 +20,21 @@ import (
 )
 
 const (
-	RoleViewer        = "viewer"
-	RoleEditor        = "editor"
-	RoleOwner         = "owner"
+	RoleViewer = "viewer"
+	RoleEditor = "editor"
+	RoleOwner  = "owner"
+
+	// system roles can only be used in kalm-system namespace
 	ClusterRoleViewer = "clusterViewer"
 	ClusterRoleEditor = "clusterEditor"
 	ClusterRoleOwner  = "clusterOwner"
-	// TenantRoleOwner   = "tenantOwner"
+
+	// Two special roles, they should exist in kalm-system namespace
+	// If a subject has a rolebinding of suspended, it will lose all permissions regardless of other role bindings
+	RoleSuspended = "suspended"
+
+	// no permissions, just a placeholder to support kalm frontend
+	RolePlaceholder = "placeholder"
 
 	SubjectTypeUser  = "user"
 	SubjectTypeGroup = "group"
@@ -39,7 +47,7 @@ type RoleBindingSpec struct {
 	// +kubebuilder:validation:Enum=user;group
 	SubjectType string `json:"subjectType"`
 
-	// +kubebuilder:validation:Enum=viewer;editor;owner;clusterViewer;clusterEditor;clusterOwner;tenantOwner
+	// +kubebuilder:validation:Enum=viewer;editor;owner;clusterViewer;clusterEditor;clusterOwner;suspended;placeholder
 	Role string `json:"role"`
 
 	// Creator of this binding

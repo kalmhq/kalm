@@ -64,17 +64,6 @@ export const createCasbinEnforcerMiddleware = () => {
           canViewCluster: () => withSubjects(enforcer.canViewCluster),
           canEditCluster: () => withSubjects(enforcer.canEditCluster),
           canManageCluster: () => withSubjects(enforcer.canManageCluster),
-
-          canEditAnyNamespace: () => {
-            const applications = store.getState().applications.applications;
-
-            for (let i = 0; i < applications.length; i++) {
-              if (withSubjects(enforcer.canEditNamespace, applications[i].name)) {
-                return true;
-              }
-            }
-            return false;
-          },
         },
       });
     }

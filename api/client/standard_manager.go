@@ -140,15 +140,33 @@ func (m *StandardClientManager) UpdatePolicies() {
 		}
 	}
 
+	suspendedSubject := make(map[string]struct{})
+
+	for _, roleBinding := range m.RoleBindings {
+		if roleBinding.Spec.Role == v1alpha1.RoleSuspended {
+			suspendedSubject[ToSafeSubject(roleBinding.Spec.Subject, roleBinding.Spec.SubjectType)] = struct{}{}
+		}
+	}
+
 	for _, roleBinding := range m.RoleBindings {
 		if roleBinding.Spec.ExpiredAt != nil && roleBinding.Spec.ExpiredAt.Time.Before(time.Now()) {
+			continue
+		}
+
+		if roleBinding.Spec.Role == v1alpha1.RolePlaceholder {
+			continue
+		}
+
+		safeSubject := ToSafeSubject(roleBinding.Spec.Subject, roleBinding.Spec.SubjectType)
+
+		if _, isSuspended := suspendedSubject[safeSubject]; isSuspended {
 			continue
 		}
 
 		sb.WriteString(fmt.Sprintf("# policies for rolebinding %s\n", roleBinding.Name))
 		sb.WriteString(fmt.Sprintf(
 			"g, %s, %s\n",
-			ToSafeSubject(roleBinding.Spec.Subject, roleBinding.Spec.SubjectType),
+			safeSubject,
 			roleValueToPolicyValue(roleBinding.Namespace, roleBinding.Spec.Role)),
 		)
 	}

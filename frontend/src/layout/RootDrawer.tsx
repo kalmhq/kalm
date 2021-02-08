@@ -24,7 +24,6 @@ import {
   InfoIcon,
   KalmApplicationIcon,
   KalmCertificatesIcon,
-  KalmIngressIcon,
   KalmNodeIcon,
   KalmRegistryIcon,
   KalmRoutesIcon,
@@ -127,7 +126,7 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 
 const RootDrawerRaw: React.FC<Props> = (props) => {
   const getSideBarData = () => {
-    const { canEditAnyNamespace, canViewCluster, canManageCluster } = props;
+    const { canEditCluster, canViewCluster, canManageCluster } = props;
 
     return [
       {
@@ -146,7 +145,7 @@ const RootDrawerRaw: React.FC<Props> = (props) => {
             to: "/routes",
             icon: KalmRoutesIcon,
           },
-          canEditAnyNamespace()
+          canEditCluster()
             ? {
                 icon: CIIcon,
                 text: "Webhooks",
@@ -165,19 +164,19 @@ const RootDrawerRaw: React.FC<Props> = (props) => {
                 to: "/cluster/nodes",
               }
             : null,
-          canViewCluster()
-            ? {
-                icon: KalmIngressIcon,
-                text: "Load Balancer",
-                to: "/cluster/loadbalancer",
-              }
-            : null,
+          // canViewCluster()
+          //   ? {
+          //       icon: KalmIngressIcon,
+          //       text: "Load Balancer",
+          //       to: "/cluster/loadbalancer",
+          //     }
+          //   : null,
           {
             icon: KalmVolumeIcon,
             text: "Disks",
             to: "/cluster/disks",
           },
-          canEditAnyNamespace()
+          canEditCluster()
             ? {
                 icon: KalmRegistryIcon,
                 text: "Pull Secrets",

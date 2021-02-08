@@ -523,9 +523,14 @@ export const impersonate = (subject: string, subjectType: string) => {
   window.location.href = "/";
 };
 
-export const stopImpersonating = () => {
+export const stopImpersonating = (redirect: boolean = true) => {
   const data = window.localStorage.getItem(IMPERSONATION_KEY) || "";
   window.localStorage.removeItem(IMPERSONATION_KEY);
+
+  if (!redirect) {
+    return;
+  }
+
   const match = data.match(/subject=(.*)?; /);
 
   if (!match) {

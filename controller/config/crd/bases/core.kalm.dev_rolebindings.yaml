@@ -64,7 +64,8 @@ spec:
               - clusterViewer
               - clusterEditor
               - clusterOwner
-              - tenantOwner
+              - suspended
+              - placeholder
               type: string
             subject:
               minLength: 1

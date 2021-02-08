@@ -49,7 +49,7 @@ var _ webhook.Validator = &RoleBinding{}
 
 func (r *RoleBinding) GetNameBaseOnRoleAndSubject() string {
 	switch r.Spec.Role {
-	case ClusterRoleViewer, ClusterRoleEditor, ClusterRoleOwner:
+	case ClusterRoleViewer, ClusterRoleEditor, ClusterRoleOwner, RoleSuspended, RolePlaceholder:
 		return fmt.Sprintf("cluster-rolebinding-%x", md5.Sum([]byte(r.Spec.Subject)))
 	default:
 		return fmt.Sprintf("%s-rolebinding-%x", r.Namespace, md5.Sum([]byte(r.Spec.Subject)))
@@ -83,15 +83,15 @@ func (r *RoleBinding) ValidateUpdate(old runtime.Object) error {
 		}
 
 		switch oldRoleBinding.Spec.Role {
-		case ClusterRoleOwner, ClusterRoleViewer, ClusterRoleEditor:
+		case ClusterRoleOwner, ClusterRoleViewer, ClusterRoleEditor, RoleSuspended, RolePlaceholder:
 			switch r.Spec.Role {
-			case ClusterRoleOwner, ClusterRoleViewer, ClusterRoleEditor:
+			case ClusterRoleOwner, ClusterRoleViewer, ClusterRoleEditor, RoleSuspended, RolePlaceholder:
 			default:
 				return fmt.Errorf("Can't modify role scope from cluster to namespace.")
 			}
 		default:
 			switch r.Spec.Role {
-			case ClusterRoleOwner, ClusterRoleViewer, ClusterRoleEditor:
+			case ClusterRoleOwner, ClusterRoleViewer, ClusterRoleEditor, RoleSuspended, RolePlaceholder:
 				return fmt.Errorf("Can't modify role scope from namespace to cluster.")
 			}
 		}
@@ -115,7 +115,7 @@ func (r *RoleBinding) validate() error {
 	var rst KalmValidateErrorList
 
 	switch r.Spec.Role {
-	case ClusterRoleEditor, ClusterRoleOwner, ClusterRoleViewer:
+	case ClusterRoleEditor, ClusterRoleOwner, ClusterRoleViewer, RolePlaceholder, RoleSuspended:
 		if r.Namespace != KalmSystemNamespace {
 			rst = append(rst, KalmValidateError{
 				Err:  "cluster role binding mush be created in kalm-system namespace",
