@@ -66,14 +66,13 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
 		indexOfStatus(*status.InstallStatus) < indexOfStatus(installv1alpha1.InstallStateClusterInfoReported)
 
 	if shouldReportClusterInfo {
-		// post cluster info to kalm-SaaS
 		clusterInfo, ready := r.getClusterInfoIfIsReady(byocModeConfig)
 		if !ready {
 			r.Log.Info("BYOC cluster not ready yet, will wait...", "clusterInfo", clusterInfo)
 			return nil
 		}
 
-		// call Kalm-SaaS API
+		// post cluster info to kalm-SaaS
 		if ok, err := r.reportClusterInfoToKalmSaaS(clusterInfo, byocModeConfig.KalmSaaSDomain, byocModeConfig.ClusterUUID); err != nil {
 			r.Log.Error(err, "reportClusterInfoToKalmSaaS failed")
 			return err
