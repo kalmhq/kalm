@@ -10,8 +10,14 @@ import (
 )
 
 // example: us-west1-1.clusters.kalm-apps.com
-func (r *KalmOperatorConfigReconciler) reconcileHttpsCertForDomain(baseAppDomain string, applyForWildcardCert bool) error {
-	certName := getCertName(baseAppDomain, applyForWildcardCert)
+func (r *KalmOperatorConfigReconciler) reconcileHttpsCertForDomain(baseAppDomain string, applyForWildcardCert bool, certNameOpt ...string) error {
+
+	var certName string
+	if len(certNameOpt) > 0 && certNameOpt[0] != "" {
+		certName = certNameOpt[0]
+	} else {
+		certName = getCertName(baseAppDomain, applyForWildcardCert)
+	}
 
 	var certIssuer string
 	var domains []string

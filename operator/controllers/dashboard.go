@@ -116,7 +116,8 @@ func getKalmDashboardReplicas(configSpec installv1alpha1.KalmOperatorConfigSpec)
 
 const dashboardName = "kalm"
 
-func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard(configSpec installv1alpha1.KalmOperatorConfigSpec) error {
+func (r *KalmOperatorConfigReconciler) reconcileKalmDashboard() error {
+	configSpec := r.config.Spec
 
 	if err := r.reconcileDashboardComponent(configSpec); err != nil {
 		r.Log.Info("reconcileDashboardComponent fail", "error", err)
@@ -300,6 +301,7 @@ const (
 	KalmRouteName             = "kalm-route"
 	KalmProtectedEndpointName = "kalm"
 	SSO_NAME                  = "sso"
+	HttpsCertNameDashboard    = "dashboard"
 )
 
 // - wildcard cert
@@ -322,7 +324,7 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(configSpec in
 		return nil
 	}
 
-	if err := r.reconcileHttpsCertForDomain(baseDomain, applyForWildcardCert); err != nil {
+	if err := r.reconcileHttpsCertForDomain(baseDomain, applyForWildcardCert, HttpsCertNameDashboard); err != nil {
 		r.Log.Info("reconcileHttpsCertForDomain fail", "error", err)
 		return err
 	}

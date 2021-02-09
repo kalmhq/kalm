@@ -25,7 +25,8 @@ import (
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
 	"github.com/kalmhq/kalm/operator/utils"
 	promconfig "github.com/prometheus/prometheus/config"
-	v1 "k8s.io/api/apps/v1"
+	"istio.io/pkg/log"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 
 	"strconv"
@@ -58,8 +59,8 @@ type KalmOperatorConfigReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
-	Reader client.Reader
 	Ctx    context.Context
+	config *installv1alpha1.KalmOperatorConfig
 }
 
 //go:generate mkdir -p tmp
@@ -98,7 +99,6 @@ type KalmOperatorConfigReconciler struct {
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=*,verbs=*
 
 func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
 	log := r.Log.WithValues("kalmoperatorconfig", req.NamespacedName)
 
 	log.Info("KalmOperatorConfigReconciler reconciling...")
@@ -107,7 +107,7 @@ func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	// this controller won't do anything to the system.
 
 	var configs installv1alpha1.KalmOperatorConfigList
-	if err := r.Reader.List(ctx, &configs); err != nil {
+	if err := r.List(r.Ctx, &configs); err != nil {
 		log.Error(err, "list configs error")
 		return ctrl.Result{}, err
 	}
@@ -124,8 +124,9 @@ func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	}
 
 	config := &configs.Items[0]
+	r.config = config
 
-	err := r.reconcileResources(config, ctx, log)
+	err := r.reconcileResources()
 	if err == retryLaterErr {
 		r.Log.Info("Dependency not ready, retry after 5 seconds")
 		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
@@ -136,7 +137,7 @@ func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	return ctrl.Result{}, err
 }
 
-func (r *KalmOperatorConfigReconciler) applyFromYaml(ctx context.Context, yamlName string) error {
+func (r *KalmOperatorConfigReconciler) applyFromYaml(yamlName string) error {
 	fileContent := MustAsset(yamlName)
 
 	objectsBytes := utils.SeparateYamlBytes(fileContent)
@@ -153,7 +154,7 @@ func (r *KalmOperatorConfigReconciler) applyFromYaml(ctx context.Context, yamlNa
 		objectKey, err := client.ObjectKeyFromObject(object)
 
 		if err != nil {
-			r.Log.Error(err, fmt.Sprint("Get Object Key from object error"))
+			r.Log.Error(err, "get Object Key from object error")
 			return err
 		}
 
@@ -165,9 +166,9 @@ func (r *KalmOperatorConfigReconciler) applyFromYaml(ctx context.Context, yamlNa
 			return err
 		}
 
-		if err := r.Client.Get(ctx, objectKey, fetchedObj); err != nil {
+		if err := r.Client.Get(r.Ctx, objectKey, fetchedObj); err != nil {
 			if errors.IsNotFound(err) {
-				err = r.Client.Create(ctx, object)
+				err = r.Client.Create(r.Ctx, object)
 
 				if err != nil {
 					r.Log.Error(err, fmt.Sprintf("Create object error: %v", objectKey))
@@ -182,7 +183,7 @@ func (r *KalmOperatorConfigReconciler) applyFromYaml(ctx context.Context, yamlNa
 			}
 		}
 
-		if err := r.Client.Patch(ctx, object, client.Merge); err != nil {
+		if err := r.Client.Patch(r.Ctx, object, client.Merge); err != nil {
 			r.Log.Error(err, fmt.Sprintf("Apply object failed. %v", objectKey))
 			return err
 		}
@@ -196,65 +197,74 @@ var retryLaterErr = fmt.Errorf("retry later")
 
 const istioPromRecordingRulesFileName = "istio-prom-recording-rules.yaml"
 
-func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha1.KalmOperatorConfig, ctx context.Context, log logr.Logger) error {
-	// TODO delete when skip
-	if !config.Spec.SkipCertManagerInstallation {
-		//r.Log.Info("installing cert-manager")
+func (r *KalmOperatorConfigReconciler) reconcileResources() error {
+	config := r.config
 
-		if err := r.applyFromYaml(ctx, "cert-manager.yaml"); err != nil {
+	if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstalling); err != nil {
+		return err
+	}
+
+	if !config.Spec.SkipCertManagerInstallation {
+		if err := r.applyFromYaml("cert-manager.yaml"); err != nil {
 			log.Error(err, "install certManager error.")
+			return err
+		}
+
+		if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstallingCertMgr); err != nil {
 			return err
 		}
 	}
 
 	if !config.Spec.SkipIstioInstallation {
-		//r.Log.Info("installing istio")
-
-		if err := r.applyFromYaml(ctx, "istio.yaml"); err != nil {
+		if err := r.applyFromYaml("istio.yaml"); err != nil {
 			log.Error(err, "install istio error.")
 			return err
 		}
 
-		if err := r.applyFromYaml(ctx, "istiocontrolplane.yaml"); err != nil {
+		if err := r.applyFromYaml("istiocontrolplane.yaml"); err != nil {
 			log.Error(err, "install istio plane error.")
 			return err
 		}
 
-		if err := r.AddRecordingRulesForIstioPrometheus(ctx); err != nil {
+		if err := r.AddRecordingRulesForIstioPrometheus(); err != nil {
 			log.Error(err, "add recording rules form istio prometheus failed.")
+			return err
+		}
+
+		if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstallingIstio); err != nil {
 			return err
 		}
 	}
 
 	// check dp to determine if install is ready, dp will be ready after crd
 	if !config.Spec.SkipCertManagerInstallation && !config.Spec.SkipIstioInstallation {
-		if !r.isIstioReady(ctx) || !r.isCertManagerReady(ctx) {
+		if !r.isIstioReady() || !r.isCertManagerReady() {
 			return nil
 		}
 	} else if !config.Spec.SkipCertManagerInstallation {
-		if !r.isCertManagerReady(ctx) {
+		if !r.isCertManagerReady() {
 			return nil
 		}
 	} else if !config.Spec.SkipIstioInstallation {
-		if !r.isIstioReady(ctx) {
+		if !r.isIstioReady() {
 			return nil
 		}
 	}
 
 	configSpec := config.Spec
 	if configSpec.BYOCModeConfig != nil {
-		return r.reconcileBYOCMode(config)
+		return r.reconcileBYOCMode()
 	} else if configSpec.LocalModeConfig != nil {
-		return r.reconcileLocalMode(configSpec)
+		return r.reconcileLocalMode()
 	} else {
-		r.Log.Info("must specify at least one of: saasModeConfig, byocModeConfig and localModeConfig")
+		r.Log.Info("must specify at least one of: byocModeConfig and localModeConfig")
 		return nil
 	}
 }
 
-func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx context.Context) error {
+func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus() error {
 	cmPrometheus := corev1.ConfigMap{}
-	err := r.Get(ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &cmPrometheus)
+	err := r.Get(r.Ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &cmPrometheus)
 
 	if err != nil {
 		if !errors.IsNotFound(err) {
@@ -266,8 +276,8 @@ func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx c
 		return nil
 	}
 
-	dpPrometheus := v1.Deployment{}
-	err = r.Get(ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &dpPrometheus)
+	dpPrometheus := appsv1.Deployment{}
+	err = r.Get(r.Ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &dpPrometheus)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			return err
@@ -289,7 +299,7 @@ func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx c
 		cmPrometheus.Data["prometheus.yml"] = pConfig.String()
 		cmPrometheus.Data[istioPromRecordingRulesFileName] = string(MustAsset("istio-prom-recording-rules.yaml"))
 
-		if err := r.Update(ctx, &cmPrometheus); err != nil {
+		if err := r.Update(r.Ctx, &cmPrometheus); err != nil {
 			return err
 		}
 
@@ -297,7 +307,7 @@ func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx c
 		dpPrometheusCopy := dpPrometheus.DeepCopy()
 		dpPrometheusCopy.Spec.Template.ObjectMeta.Labels["date"] = strconv.Itoa(int(time.Now().Unix()))
 
-		err = r.Patch(ctx, dpPrometheusCopy, client.MergeFrom(&dpPrometheus))
+		err = r.Patch(r.Ctx, dpPrometheusCopy, client.MergeFrom(&dpPrometheus))
 
 		if err != nil {
 			return err
@@ -309,7 +319,7 @@ func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx c
 
 func (r *KalmOperatorConfigReconciler) checkIfDPReady(ctx context.Context, ns string, dpNameOpt ...string) bool {
 	for _, dpName := range dpNameOpt {
-		var dp v1.Deployment
+		var dp appsv1.Deployment
 		err := r.Get(ctx, types.NamespacedName{Name: dpName, Namespace: ns}, &dp)
 		if err != nil {
 			return false
@@ -338,17 +348,17 @@ func (r *KalmOperatorConfigReconciler) checkIfDPReady(ctx context.Context, ns st
 //}
 
 // make sure cert-manager is ready
-func (r *KalmOperatorConfigReconciler) isCertManagerReady(ctx context.Context) bool {
+func (r *KalmOperatorConfigReconciler) isCertManagerReady() bool {
 
 	dps := []string{"cert-manager", "cert-manager-cainjector", "cert-manager-webhook"}
 
-	return r.checkIfDPReady(ctx, NamespaceCertManager, dps...)
+	return r.checkIfDPReady(r.Ctx, NamespaceCertManager, dps...)
 }
 
-func (r *KalmOperatorConfigReconciler) isIstioReady(ctx context.Context) bool {
+func (r *KalmOperatorConfigReconciler) isIstioReady() bool {
 	dps := []string{"istiod", "istio-ingressgateway", "prometheus"}
 
-	return r.checkIfDPReady(ctx, NamespaceIstio, dps...)
+	return r.checkIfDPReady(r.Ctx, NamespaceIstio, dps...)
 }
 
 type KalmIstioPrometheusWather struct{}
@@ -381,7 +391,7 @@ func (k KalmEssentialNSWatcher) Map(object handler.MapObject) []reconcile.Reques
 
 		return []reconcile.Request{{
 			NamespacedName: types.NamespacedName{
-				Name:      "reconcile-caused-by-essential-ns-change",
+				Name:      "NS-CHANGE",
 				Namespace: curNS,
 			}},
 		}
@@ -408,7 +418,7 @@ func (k KalmDeploymentInEssentialNSWatcher) Map(object handler.MapObject) []reco
 
 		return []reconcile.Request{{
 			NamespacedName: types.NamespacedName{
-				Name:      "reconcile-caused-by-dp-change-in-essential-ns-" + object.Meta.GetName(),
+				Name:      "DP-CHANGE-" + object.Meta.GetName(),
 				Namespace: curNS,
 			},
 		}}
@@ -417,17 +427,35 @@ func (k KalmDeploymentInEssentialNSWatcher) Map(object handler.MapObject) []reco
 	return nil
 }
 
+type DashboardHttpsCertWatcher struct{}
+
+func (w DashboardHttpsCertWatcher) Map(obj handler.MapObject) []reconcile.Request {
+	if obj.Meta.GetName() != HttpsCertNameDashboard {
+		return nil
+	}
+
+	return []reconcile.Request{{
+		NamespacedName: types.NamespacedName{
+			Name: "HttpsCert-CHANGE-" + HttpsCertNameDashboard,
+		},
+	}}
+}
+
 func (r *KalmOperatorConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&installv1alpha1.KalmOperatorConfig{}).
 		Watches(&source.Kind{Type: &corev1.Namespace{}}, &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &KalmEssentialNSWatcher{},
 		}).
-		Watches(&source.Kind{Type: &v1.Deployment{}}, &handler.EnqueueRequestsFromMapFunc{
+		Watches(&source.Kind{Type: &appsv1.Deployment{}}, &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &KalmDeploymentInEssentialNSWatcher{},
 		}).
 		Watches(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &KalmIstioPrometheusWather{},
+		}).
+		// for BYOC mode, watch dashboard HttpsCert
+		Watches(&source.Kind{Type: &v1alpha1.HttpsCert{}}, &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: &DashboardHttpsCertWatcher{},
 		}).
 		Complete(r)
 }

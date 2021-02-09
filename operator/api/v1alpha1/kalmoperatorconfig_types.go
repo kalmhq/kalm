@@ -110,9 +110,29 @@ type CloudflareConfig struct {
 	DomainToZoneIDConfig map[string]string `json:"domainToZoneIDConfig,omitempty"`
 }
 
-// KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
+type InstallStatus string
+
+var (
+	InstallStateInstalling          InstallStatus = "INSTALLING"
+	InstallStateInstallingCertMgr   InstallStatus = "INSTALLING_CERT_MANAGER"
+	InstallStateInstallingIstio     InstallStatus = "INSTALLING_ISTIO"
+	InstallStateInstallingKalm      InstallStatus = "INSTALLING_KALM"
+	InstallStateClusterInfoReported InstallStatus = "CLUSTER_INFO_REPORTED"
+	InstallStateInstalled           InstallStatus = "INSTALLED"
+)
+
+var InstallStatusList = []InstallStatus{
+	InstallStateInstalling,
+	InstallStateInstallingCertMgr,
+	InstallStateInstallingIstio,
+	InstallStateInstallingKalm,
+	InstallStateClusterInfoReported,
+	InstallStateInstalled,
+}
+
 type KalmOperatorConfigStatus struct {
-	BYOCModeStatus *BYOCModeStatus `json:"byocModeStatus,omitempty"`
+	// BYOCModeStatus *BYOCModeStatus `json:"byocModeStatus,omitempty"`
+	InstallStatus *InstallStatus `json:"installStatus,omitempty"`
 }
 
 type BYOCModeStatus struct {
