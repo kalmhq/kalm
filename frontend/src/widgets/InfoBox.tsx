@@ -4,7 +4,9 @@ import { Body, Body2 } from "widgets/Label";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {},
+    root: {
+      border: "none",
+    },
   });
 
 interface InfoBoxOption {

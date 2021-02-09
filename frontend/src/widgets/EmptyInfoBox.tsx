@@ -31,7 +31,7 @@ class EmptyInfoBoxRaw extends React.PureComponent<Props, State> {
   public render() {
     const { image, title, content, button } = this.props;
     return (
-      <Paper variant="outlined">
+      <Paper variant="outlined" style={{ border: "none" }}>
         <Box p={2}>
           <Box p={2} display="flex" justifyContent="center">
             {image ? image : null}

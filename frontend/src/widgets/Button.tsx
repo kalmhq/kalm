@@ -92,7 +92,12 @@ export const CustomizedButton = withStyles(customizedButtonStyle)((props: Custom
   delete copiedProps.pending;
   // console.log("pending", props.pending);
   return (
-    <Button disabled={props.disabled || props.pending} {...copiedProps}>
+    <Button
+      disabled={props.disabled || props.pending}
+      {...copiedProps}
+      disableElevation={true}
+      style={{ fontWeight: 700 }}
+    >
       <CircularProgress
         style={{ marginRight: "6px", display: props.pending ? "inline" : "none" }}
         disableShrink={true}

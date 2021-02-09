@@ -43,7 +43,7 @@ const styles = (theme: Theme) =>
       "& > *": {
         marginLeft: 20,
       },
-      background: theme.palette.type === "light" ? "#e5e5e5" : "#212121",
+      background: theme.palette.type === "light" ? "#F5F5F5" : "#212121",
     },
   });
 

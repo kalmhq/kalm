@@ -42,7 +42,7 @@ class KPanelRaw extends React.PureComponent<Props, State> {
   public render() {
     const { classes, title, content, children, style } = this.props;
     return (
-      <Paper variant="outlined" style={style} className={classes.paper}>
+      <Paper variant="outlined" style={{ border: "none", ...style }} className={classes.paper}>
         {title && (
           <Box p={2} className={classes.borderBottom}>
             <Body>{title}</Body>

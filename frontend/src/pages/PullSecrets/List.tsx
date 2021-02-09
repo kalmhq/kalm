@@ -11,6 +11,7 @@ import { TDispatchProp } from "types";
 import { Registry } from "types/registry";
 import sc from "utils/stringConstants";
 import { SuccessBadge } from "widgets/Badge";
+import { CustomizedButton } from "widgets/Button";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { EditIcon, ErrorIcon, KalmRegistryIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
@@ -226,7 +227,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
         title={sc.EMPTY_REGISTRY_TITLE}
         content={sc.EMPTY_REGISTRY_SUBTITLE}
         button={
-          <Button
+          <CustomizedButton
             color="primary"
             variant="contained"
             size="small"
@@ -235,7 +236,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
             to="/cluster/pull-secrets/new"
           >
             New {pageObjectName}
-          </Button>
+          </CustomizedButton>
         }
       />
     ) : null;

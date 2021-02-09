@@ -50,7 +50,7 @@ const lightTheme = createMuiTheme({
     },
     background: {
       paper: "#fff",
-      default: "#e5e5e5",
+      default: "#F5F5F5",
     },
     type: "light",
   },

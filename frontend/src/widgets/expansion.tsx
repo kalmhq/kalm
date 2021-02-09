@@ -20,6 +20,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
       "& .MuiExpansionPanelSummary-root": {
         height: 48,
+        borderRadius: 10,
       },
       "& .MuiExpansionPanelSummary-root.Mui-expanded": {
         height: 48,
