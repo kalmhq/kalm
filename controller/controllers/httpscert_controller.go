@@ -116,6 +116,7 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 			if !ready {
 				r.Log.Info("acme server not ready yet, skipped for httpsCert:" + httpsCert.Name)
+				// todo, update status to show why this cert is not requested
 				return ctrl.Result{}, nil
 			}
 		}

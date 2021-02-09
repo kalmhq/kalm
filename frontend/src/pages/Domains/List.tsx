@@ -47,7 +47,13 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   const deleteDomain = async (domain: Domain) => {
     const promises = [];
     promises.push(dispatch(deleteDomainAction(domain.name)));
-    const cert = certificates.find((x) => x.domains.length === 1 && x.domains[0] === domain.domain);
+
+    let cert: Certificate | undefined;
+
+    cert = certificates.find((x) => x.domains.length === 1 && x.domains[0] === domain.domain);
+    if (!cert) {
+      cert = certificates.find((x) => !!x.domains.find((y) => y === domain.domain));
+    }
 
     if (cert) {
       promises.push(dispatch(deleteCertificateAction(cert.name)));

@@ -11,11 +11,10 @@ import { RootState } from "reducers";
 import { Domain } from "types/domains";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { ValidatorArrayOfIsDNS1123SubDomain, ValidatorRequired } from "../validator";
+import { ValidatorArrayOfIsDNS1123SubDomainWithOptionalWildcardPrefix, ValidatorRequired } from "../validator";
 
 export const RouteDomains: React.FC = () => {
-  const allDomains: Domain[] = useSelector((state: RootState) => state.domains.domains);
-  const domains = allDomains;
+  const domains: Domain[] = useSelector((state: RootState) => state.domains.domains);
   const domainsMap: { [key: string]: Domain } = {};
   domains.forEach((x) => (domainsMap[x.domain] = x));
 
@@ -28,7 +27,7 @@ export const RouteDomains: React.FC = () => {
           component={FinalSelectField}
           label="Select a domain"
           options={domains.map((x) => ({
-            value: normalizeWildcardDomain(x.domain),
+            value: x.domain,
             text: x.domain,
           }))}
         />
@@ -42,48 +41,52 @@ export const RouteDomains: React.FC = () => {
 
       const domainStaticSuffix = normalizeWildcardDomain(x.domain);
 
-      if (domain.endsWith(domainStaticSuffix)) {
-        const userInput = domain.slice(0, domain.length - domainStaticSuffix.length);
-
-        if (userInput.includes(".")) {
-          continue;
-        }
-
-        const format = (value: string) => {
-          return value.slice(0, domain.length - domainStaticSuffix.length);
-        };
-
-        const parse = (value: string) => {
-          if (value.startsWith(".")) {
-            value = value.slice(1);
-          }
-
-          if (value.endsWith(".")) {
-            value = value.slice(0, value.length - 1);
-          }
-
-          value = trimAndToLowerParse(value);
-
-          return value + domainStaticSuffix;
-        };
-
-        let domainStaticSuffixDisplayValue = domainStaticSuffix;
-        if (domainStaticSuffixDisplayValue.endsWith("kalm-apps.com") && domainStaticSuffixDisplayValue.length > 40) {
-          domainStaticSuffixDisplayValue = domainStaticSuffixDisplayValue.slice(0, 40) + "...";
-        }
-
-        return (
-          <Field
-            name={`hosts[${index}]`}
-            parse={parse}
-            format={format}
-            autoFocus
-            component={FinalTextField}
-            endAdornment={<InputAdornment position="end">{domainStaticSuffixDisplayValue}</InputAdornment>}
-            label="Domain"
-          />
-        );
+      if (!domain.endsWith(domainStaticSuffix)) {
+        continue;
       }
+
+      const userInput = domain.slice(0, domain.length - domainStaticSuffix.length);
+
+      // invalid
+      if (userInput.includes(".")) {
+        continue;
+      }
+
+      const format = (value: string) => {
+        return value.slice(0, domain.length - domainStaticSuffix.length);
+      };
+
+      const parse = (value: string) => {
+        if (value.startsWith(".")) {
+          value = value.slice(1);
+        }
+
+        if (value.endsWith(".")) {
+          value = value.slice(0, value.length - 1);
+        }
+
+        value = value.replaceAll(".", "-");
+        value = trimAndToLowerParse(value);
+
+        return value + domainStaticSuffix;
+      };
+
+      let domainStaticSuffixDisplayValue = domainStaticSuffix;
+      if (domainStaticSuffixDisplayValue.endsWith("kalm-apps.com") && domainStaticSuffixDisplayValue.length > 40) {
+        domainStaticSuffixDisplayValue = domainStaticSuffixDisplayValue.slice(0, 40) + "...";
+      }
+
+      return (
+        <Field
+          name={`hosts[${index}]`}
+          parse={parse}
+          format={format}
+          autoFocus
+          component={FinalTextField}
+          endAdornment={<InputAdornment position="end">{domainStaticSuffixDisplayValue}</InputAdornment>}
+          label="Domain"
+        />
+      );
     }
 
     return (
@@ -93,7 +96,7 @@ export const RouteDomains: React.FC = () => {
 
   return (
     <FieldArray<string, any>
-      validate={ValidatorArrayOfIsDNS1123SubDomain}
+      validate={ValidatorArrayOfIsDNS1123SubDomainWithOptionalWildcardPrefix}
       name="hosts"
       render={({ fields }) => (
         <div>

@@ -28,6 +28,19 @@ func (h *ApiHandler) handleListDomains(c echo.Context) error {
 	}
 
 	domains := resources.WrapDomainListAsResp(domainList.Items)
+
+	baseAppDomain := v1alpha1.GetEnvKalmBaseAppDomain()
+	if baseAppDomain != "" {
+		domains = append([]resources.Domain{
+			{
+				Name:       "default",
+				Domain:     "*." + baseAppDomain,
+				RecordType: "CNAME",
+				Target:     "",
+			},
+		}, domains...)
+	}
+
 	return c.JSON(http.StatusOK, domains)
 }
 
@@ -49,12 +62,6 @@ func (h *ApiHandler) handleCreateDomain(c echo.Context) error {
 	domain, err := getDomainFromContext(c)
 	if err != nil {
 		return err
-	}
-
-	domainVal := domain.Spec.Domain
-	if !v1alpha1.IsValidNoneWildcardDomain(domainVal) &&
-		!v1alpha1.IsValidWildcardDomain(domainVal) {
-		return fmt.Errorf("domain is valid: %s", domainVal)
 	}
 
 	if err := h.resourceManager.Create(domain); err != nil {

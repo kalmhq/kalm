@@ -10,7 +10,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouteMatch } from "react-router-dom";
 import { RootState } from "reducers";
-import { issuerManaged } from "types/certificate";
+import { Certificate, issuerManaged } from "types/certificate";
 import { DNSConfigItems } from "widgets/ACMEServer";
 import { HelpIcon, KalmCertificatesIcon } from "widgets/Icon";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
@@ -41,7 +41,12 @@ const DomainDetailPageRaw: React.FC = () => {
     return <Box p={2}>no such domain</Box>;
   }
 
-  const cert = certificates.find((x) => x.domains.length === 1 && x.domains[0] === domain.domain);
+  let cert: Certificate | undefined;
+
+  cert = certificates.find((x) => x.domains.length === 1 && x.domains[0] === domain.domain);
+  if (!cert) {
+    cert = certificates.find((x) => !!x.domains.find((y) => y === domain.domain));
+  }
 
   const applyCert = async () => {
     await dispatch(

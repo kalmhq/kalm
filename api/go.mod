@@ -5,7 +5,6 @@ go 1.15
 require (
 	github.com/casbin/casbin/v2 v2.11.2
 	github.com/coreos/go-oidc v2.2.1+incompatible
-	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/google/uuid v1.1.2

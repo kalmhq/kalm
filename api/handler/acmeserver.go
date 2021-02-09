@@ -8,6 +8,7 @@ import (
 )
 
 func (h *ApiHandler) InstallACMEServerHandlers(e *echo.Group) {
+	//todo only update, no create?
 	e.POST("/acmeserver", h.handleUpdateACMEServer)
 	e.GET("/acmeserver", h.handleGetACMEServer)
 	e.DELETE("/acmeserver", h.handleDeleteACMEServer)
@@ -28,6 +29,7 @@ func (h *ApiHandler) handleUpdateACMEServer(c echo.Context) error {
 		return fmt.Errorf("acmeDomain is blank")
 	}
 
+	// todo `ns.` or `ns-`
 	// ns.<acme-xyz>.<your-domain.com>
 	acmeServer.NSDomain = fmt.Sprintf("ns.%s", acmeServer.ACMEDomain)
 

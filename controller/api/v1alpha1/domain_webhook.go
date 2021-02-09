@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/kalmhq/kalm/controller/validation"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -64,7 +65,7 @@ func (r *Domain) Default() {
 // todo special case like: stackoverflow.co.uk is not handled yet
 func IsRootDomain(domain string) bool {
 	parts := strings.Split(domain, ".")
-	return IsValidNoneWildcardDomain(domain) && len(parts) == 2
+	return validation.ValidateFQDN(domain) == nil && len(parts) == 2
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-domain,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=domains,versions=v1alpha1,name=vdomain.kb.io
@@ -85,6 +86,13 @@ func (r *Domain) validate() error {
 	if r.Spec.Domain == "" {
 		rst = append(rst, KalmValidateError{
 			Err:  "domain must not be empty",
+			Path: "spec.domain",
+		})
+	}
+
+	if !isValidDomainInCert(r.Spec.Domain) {
+		rst = append(rst, KalmValidateError{
+			Err:  "domain is not valid",
 			Path: "spec.domain",
 		})
 	}

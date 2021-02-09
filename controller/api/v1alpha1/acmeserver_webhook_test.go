@@ -1,9 +1,10 @@
 package v1alpha1
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"testing"
 )
 
 func TestACMEServer_Validate(t *testing.T) {
@@ -12,8 +13,8 @@ func TestACMEServer_Validate(t *testing.T) {
 			Name: "acme",
 		},
 		Spec: ACMEServerSpec{
-			ACMEDomain: "fake-plugin",
-			NSDomain:   "fake-component",
+			ACMEDomain: ".fake-plugin",
+			NSDomain:   "*.fake-component",
 		},
 	}
 

@@ -47,7 +47,7 @@ spec:
                 baseDashboardDomain:
                   description: 'like: foobar.byoc.kalm.dev'
                   type: string
-                clusterName:
+                clusterUUID:
                   type: string
                 kalmSaaSDomain:
                   type: string

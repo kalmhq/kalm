@@ -26,7 +26,7 @@ func (r *KalmOperatorConfigReconciler) getOperatorReconciledDNS01HttpscertDomain
 	return acmeDomain
 }
 
-func (r *KalmOperatorConfigReconciler) getClusterIP() string {
+func (r *KalmOperatorConfigReconciler) getClusterIPAndHostname() (string, string) {
 	svc := corev1.Service{}
 	svcObjKey := client.ObjectKey{
 		Namespace: "istio-system",
@@ -34,18 +34,18 @@ func (r *KalmOperatorConfigReconciler) getClusterIP() string {
 	}
 
 	if err := r.Get(r.Ctx, svcObjKey, &svc); err != nil {
-		return ""
+		return "", ""
 	} else {
 		ing := svc.Status.LoadBalancer.Ingress
 		if len(ing) <= 0 {
-			return ""
+			return "", ""
 		}
 
-		return ing[0].IP
+		return ing[0].IP, ing[0].Hostname
 	}
 }
 
-func (r *KalmOperatorConfigReconciler) getACMEServerIP() string {
+func (r *KalmOperatorConfigReconciler) getACMEServerIPAndHostname() (string, string) {
 	svc := corev1.Service{}
 	svcObjKey := client.ObjectKey{
 		Namespace: "kalm-system",
@@ -53,13 +53,13 @@ func (r *KalmOperatorConfigReconciler) getACMEServerIP() string {
 	}
 
 	if err := r.Get(r.Ctx, svcObjKey, &svc); err != nil {
-		return ""
-	} else {
-		ing := svc.Status.LoadBalancer.Ingress
-		if len(ing) <= 0 {
-			return ""
-		}
-
-		return ing[0].IP
+		return "", ""
 	}
+
+	ing := svc.Status.LoadBalancer.Ingress
+	if len(ing) <= 0 {
+		return "", ""
+	}
+
+	return ing[0].IP, ing[0].Hostname
 }

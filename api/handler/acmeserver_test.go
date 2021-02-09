@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -44,7 +45,8 @@ func (suite *ACMEServerHandlerTestSuite) TestGetEmpty() {
 
 func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 	acmeDomain := "acme.example.com"
-	nsDomain := "ns.example.com"
+	// nsDomain := "ns.example.com"
+	expectedNSDomain := fmt.Sprintf("ns.%s", acmeDomain)
 
 	// create
 	suite.DoTestRequest(&TestRequestContext{
@@ -56,7 +58,6 @@ func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 		Path:      "/v1alpha1/acmeserver",
 		Body: resources.ACMEServer{
 			ACMEDomain: acmeDomain,
-			NSDomain:   nsDomain,
 		},
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsUnauthorizedError(rec, "editor", "cluster")
@@ -65,7 +66,7 @@ func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 			var res resources.ACMEServer
 			rec.BodyAsJSON(&res)
 
-			suite.Equal(201, rec.Code)
+			suite.Equal(200, rec.Code)
 			suite.Equal(v1alpha1.ACMEServerName, res.Name)
 		},
 	})
@@ -87,7 +88,7 @@ func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 
 			suite.Equal(v1alpha1.ACMEServerName, acmeResp.Name)
 			suite.Equal(acmeDomain, acmeResp.ACMEDomain)
-			suite.Equal(nsDomain, acmeResp.NSDomain)
+			suite.Equal(expectedNSDomain, acmeResp.NSDomain)
 			suite.Equal("", acmeResp.IPForNameServer)
 			suite.Equal(false, acmeResp.Ready)
 		},
