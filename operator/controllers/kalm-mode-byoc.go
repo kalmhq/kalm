@@ -147,6 +147,7 @@ func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo C
 
 	resp, err := http.Post(kalmSaaSAPI, "application/json; charset=UTF-8", bytes.NewReader(payload))
 	if err != nil {
+		r.Log.Info("error when reportClusterInfoToKalmSaaS", "error", err)
 		return false, err
 	}
 
@@ -155,7 +156,7 @@ func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo C
 		return false, nil
 	}
 
-	return true, err
+	return true, nil
 }
 
 // - update kalmOperatorConfig install status
@@ -236,6 +237,7 @@ func (r *KalmOperatorConfigReconciler) reportInstallProcessToKalmSaaS(state inst
 
 	resp, err := client.Do(req)
 	if err != nil {
+		r.Log.Info("err when client.Do in reportInstallProcessToKalmSaaS", "err", err)
 		return false, err
 	}
 
@@ -243,6 +245,8 @@ func (r *KalmOperatorConfigReconciler) reportInstallProcessToKalmSaaS(state inst
 		r.Log.Info("reportInstallProcessToKalmSaaS failed", "resp", resp.Body, "status", resp.StatusCode)
 		return false, nil
 	}
+
+	r.Log.Info("reportInstallProcessToKalmSaaS ok", "resp", resp.Body, "status", resp.StatusCode)
 
 	return true, nil
 }
