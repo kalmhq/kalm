@@ -454,9 +454,9 @@ func (r *KalmOperatorConfigReconciler) SetupWithManager(mgr ctrl.Manager) error 
 			ToRequests: &KalmIstioPrometheusWather{},
 		}).
 		// for BYOC mode, watch dashboard HttpsCert
-		Watches(&source.Kind{Type: &v1alpha1.HttpsCert{}}, &handler.EnqueueRequestsFromMapFunc{
-			ToRequests: &DashboardHttpsCertWatcher{},
-		}).
+		// Watches(&source.Kind{Type: &v1alpha1.HttpsCert{}}, &handler.EnqueueRequestsFromMapFunc{
+		// 	ToRequests: &DashboardHttpsCertWatcher{},
+		// }).
 		Complete(r)
 }
 
