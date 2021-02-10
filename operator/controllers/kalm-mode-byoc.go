@@ -94,10 +94,12 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
 	} else if yes {
 		if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstalled); err != nil {
 			return err
+		} else {
+			return nil
 		}
+	} else {
+		return retryLaterErr
 	}
-
-	return nil
 }
 
 type ClusterInfo struct {
