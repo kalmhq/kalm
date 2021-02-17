@@ -1,4 +1,4 @@
-import { Avatar, Box, Button } from "@material-ui/core";
+import { Avatar, Box } from "@material-ui/core";
 import { blue } from "@material-ui/core/colors";
 import { blinkTopProgressAction } from "actions/settings";
 import { deleteAllRoleBindingsAction } from "actions/user";
@@ -9,6 +9,7 @@ import { BasePage } from "pages/BasePage";
 import React from "react";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
+import CustomButton from "theme/Button";
 import { RoleBinding } from "types/member";
 import { gravatar } from "utils/gavatar";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
@@ -60,9 +61,9 @@ export const MemberListPage: React.FC = () => {
   const renderSecondHeaderRight = () => {
     return (
       <>
-        <Button component={Link} color="primary" size="small" variant="contained" to={`/members/new`}>
+        <CustomButton component={Link} color="primary" size="small" variant="outlined" to={`/members/new`}>
           Add Member
-        </Button>
+        </CustomButton>
       </>
     );
   };
