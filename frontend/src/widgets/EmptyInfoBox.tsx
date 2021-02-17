@@ -47,8 +47,10 @@ class EmptyInfoBoxRaw extends React.PureComponent<Props, State> {
           <Box p={2} display="flex" justifyContent="center">
             <Typography color="textPrimary">{title}</Typography>
           </Box>
-          <Box pb={2} display="flex" justifyContent="center">
-            <Typography color="textSecondary">{content}</Typography>
+          <Box pb={2} display="flex" justifyContent="center" alignItems="center" marginX="auto" maxWidth={800}>
+            <Typography color="textSecondary" style={{ textAlign: "center" }}>
+              {content}
+            </Typography>
           </Box>
           <Box p={2} display="flex" justifyContent="center">
             {button}

@@ -1,5 +1,5 @@
-import { Box, Button, Link as KMLink, Typography } from "@material-ui/core";
-import { blue } from "@material-ui/core/colors";
+import { Box, Link as KMLink, Typography } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import { deleteCertificateAction } from "actions/certificate";
 import { deleteDomainAction } from "actions/domains";
 import { setSuccessNotificationAction } from "actions/notification";
@@ -9,6 +9,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
+import CustomButton from "theme/Button";
 import { Certificate } from "types/certificate";
 import { Domain } from "types/domains";
 import sc from "utils/stringConstants";
@@ -155,7 +156,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
     const { canEditCluster } = props;
     return (
       <EmptyInfoBox
-        image={<WebIcon style={{ height: 120, width: 120, color: blue[200] }} />}
+        image={<WebIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={sc.EMPTY_DOMAIN_TITLE}
         content={sc.EMPTY_DOMAIN_SUBTITLE}
         button={
@@ -204,7 +205,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
       secondHeaderRight={
         canEditCluster() ? (
           <>
-            <Button
+            <CustomButton
               color="primary"
               variant="contained"
               size="small"
@@ -213,8 +214,8 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
               to="/domains/new"
             >
               New Domain
-            </Button>
-            <Button
+            </CustomButton>
+            <CustomButton
               color="primary"
               variant="contained"
               size="small"
@@ -223,7 +224,7 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
               to="/domains/acme"
             >
               Manage ACME DNS server
-            </Button>
+            </CustomButton>
           </>
         ) : null
       }
