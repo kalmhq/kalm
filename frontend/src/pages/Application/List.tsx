@@ -1,5 +1,5 @@
 import { Box, createStyles, Grid, Theme, Tooltip, WithStyles } from "@material-ui/core";
-import { blue } from "@material-ui/core/colors";
+import { grey } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -288,7 +288,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
 
     return (
       <EmptyInfoBox
-        image={<KalmApplicationIcon style={{ height: 120, width: 120, color: blue[200] }} />}
+        image={<KalmApplicationIcon style={{ height: 120, width: 120, color: grey[200] }} />}
         title={sc.EMPTY_APP_TITLE}
         content={sc.EMPTY_APP_SUBTITLE}
         button={

@@ -1,14 +1,5 @@
-import {
-  Box,
-  Button,
-  createStyles,
-  Link as KMLink,
-  Theme,
-  Typography,
-  WithStyles,
-  withStyles,
-} from "@material-ui/core";
-import { blue } from "@material-ui/core/colors";
+import { Box, createStyles, Link as KMLink, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import { deleteDeployAccessTokenAction } from "actions/deployAccessToken";
 import { blinkTopProgressAction } from "actions/settings";
 import { withDeployAccessTokens, WithDeployAccessTokensProps } from "hoc/withDeployAccessTokens";
@@ -19,6 +10,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
+import CustomButton from "theme/Button";
 import {
   DeployAccessToken,
   DeployAccessTokenScopeCluster,
@@ -62,7 +54,7 @@ class WebhookPageRaw extends React.PureComponent<Props, State> {
   private renderEmpty() {
     return (
       <EmptyInfoBox
-        image={<CIIcon style={{ height: 120, width: 120, color: blue[200] }} />}
+        image={<CIIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={sc.EMPTY_WEBHOOK_TITLE}
         content={sc.EMPTY_WEBHOOK_SUBTITLE}
         button={
@@ -228,9 +220,9 @@ class WebhookPageRaw extends React.PureComponent<Props, State> {
         secondHeaderRight={
           this.canEdit() ? (
             <>
-              <Button component={Link} color="primary" variant="outlined" size="small" to="/webhooks/keys/new">
+              <CustomButton component={Link} color="primary" variant="outlined" size="small" to="/webhooks/keys/new">
                 New Webhook
-              </Button>
+              </CustomButton>
             </>
           ) : null
         }

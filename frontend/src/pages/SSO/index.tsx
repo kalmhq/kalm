@@ -1,5 +1,5 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { blue } from "@material-ui/core/colors";
+import { grey } from "@material-ui/core/colors";
 import Alert from "@material-ui/lab/Alert/Alert";
 import { setSuccessNotificationAction } from "actions/notification";
 import { api } from "api";
@@ -189,7 +189,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
     const { canEditCluster } = this.props;
     return canEditCluster() ? (
       <EmptyInfoBox
-        image={<SSOIcon style={{ height: 120, width: 120, color: blue[200] }} />}
+        image={<SSOIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={sc.EMPTY_SSO_TITLE}
         content={
           <>

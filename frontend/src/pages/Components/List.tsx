@@ -1,5 +1,5 @@
 import { Box, createStyles, Link as KMLink, Theme, WithStyles } from "@material-ui/core";
-import { blue } from "@material-ui/core/colors";
+import { grey } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -121,7 +121,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
 
     return (
       <EmptyInfoBox
-        image={<KalmComponentsIcon style={{ height: 120, width: 120, color: blue[200] }} />}
+        image={<KalmComponentsIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={"This App doesn’t have any Components"}
         content="Components are the fundamental building blocks of your Application. Each Component corresponds to a single image, and typically represents a service or a cronjob."
         button={

@@ -1,5 +1,5 @@
 import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
-import { blue } from "@material-ui/core/colors";
+import { grey } from "@material-ui/core/colors";
 import { Alert } from "@material-ui/lab";
 import { setErrorNotificationAction } from "actions/notification";
 import { deletePersistentVolumeAction } from "actions/persistentVolume";
@@ -215,7 +215,7 @@ export class VolumesRaw extends React.Component<Props, States> {
     const { dispatch } = this.props;
     return (
       <EmptyInfoBox
-        image={<KalmVolumeIcon style={{ height: 120, width: 120, color: blue[200] }} />}
+        image={<KalmVolumeIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={sc.EMPTY_VOLUME_TITLE}
         content={sc.EMPTY_VOLUME_SUBTITLE}
         button={

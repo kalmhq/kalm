@@ -1,14 +1,5 @@
-import {
-  Box,
-  Button,
-  createStyles,
-  Link as KMLink,
-  Theme,
-  Typography,
-  withStyles,
-  WithStyles,
-} from "@material-ui/core";
-import { blue } from "@material-ui/core/colors";
+import { Box, createStyles, Link as KMLink, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
@@ -17,6 +8,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
+import CustomButton from "theme/Button";
 import { TDispatchProp } from "types";
 import { Certificate } from "types/certificate";
 import { formatDate } from "utils/date";
@@ -222,7 +214,7 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
     const { canEditCluster } = props;
     return (
       <EmptyInfoBox
-        image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: blue[200] }} />}
+        image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={sc.EMPTY_CERT_TITLE}
         content={sc.EMPTY_CERT_SUBTITLE}
         button={
@@ -279,7 +271,7 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
         canEditCluster() ? (
           <>
             {/* <H6>Certificates</H6> */}
-            <Button
+            <CustomButton
               color="primary"
               variant="outlined"
               size="small"
@@ -288,8 +280,8 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
               to="/certificates/new"
             >
               New Certificate
-            </Button>
-            <Button
+            </CustomButton>
+            <CustomButton
               color="primary"
               variant="outlined"
               size="small"
@@ -298,7 +290,7 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
               to="/certificates/upload"
             >
               Upload Certificate
-            </Button>
+            </CustomButton>
           </>
         ) : null
       }
