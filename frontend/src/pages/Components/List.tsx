@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Link as KMLink, Theme, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Link as KMLink, Theme, WithStyles } from "@material-ui/core";
 import { blue } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
@@ -16,6 +16,7 @@ import React, { useState } from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
+import CustomButton from "theme/Button";
 import { ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
@@ -100,7 +101,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
     return (
       <>
         {canEditNamespace(activeNamespaceName) && (
-          <Button
+          <CustomButton
             tutorial-anchor-id="add-component-button"
             component={Link}
             color="primary"
@@ -109,7 +110,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
             to={`/applications/${activeNamespaceName}/components/new`}
           >
             Add Component
-          </Button>
+          </CustomButton>
         )}
       </>
     );

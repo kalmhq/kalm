@@ -22,6 +22,7 @@ const styles = (theme: Theme) =>
       background: theme.palette.background.paper,
       // borderBottom: `1px solid ${theme.palette.divider}`,
       display: "flex",
+      marginBottom: 8,
     },
     left: {
       width: LEFT_SECTION_OPEN_WIDTH,

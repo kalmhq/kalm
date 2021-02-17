@@ -9,7 +9,7 @@ import TableRow from "@material-ui/core/TableRow";
 import React, { useCallback } from "react";
 import { useAsyncDebounce, useGlobalFilter, usePagination, useTable } from "react-table";
 import { FilterListIcon } from "./Icon";
-import { Body } from "./Label";
+import { CardTitle } from "./Label";
 
 interface RowData {
   [key: string]: any;
@@ -95,12 +95,12 @@ export const KRTable = ({
   );
 
   return (
-    <Paper variant={"outlined"} style={noOutline ? { border: "none", width: "100%" } : {}}>
+    <Paper elevation={0} style={noOutline ? { border: "none", width: "100%", padding: 20 } : {}}>
       {showTitle ? (
         <Grid container spacing={noOutline ? 0 : 2}>
           <Grid item md={9}>
             <Box display="flex" alignItems="center" padding="8px 16px">
-              <Body>{title || ""}</Body>
+              <CardTitle>{title || ""}</CardTitle>
             </Box>
           </Grid>
           <Grid item md={3}>

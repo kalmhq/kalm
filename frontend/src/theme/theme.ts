@@ -25,28 +25,54 @@ const lightTheme = createMuiTheme({
     MuiButton: {
       root: {
         borderRadius: "10px",
+        fontWeight: "bold",
+      },
+      containedPrimary: {
+        boxShadow: "none",
+        "&:hover": {
+          boxShadow: "none",
+        },
       },
     },
     MuiTableCell: {
-      head: {
-        color: "rgba(0, 0, 0, 0.5)",
-      },
       root: {
         paddingTop: 8,
         paddingBottom: 8,
+      },
+      head: {
+        color: "rgba(0, 0, 0, 0.5)",
+        borderBottom: "dashed 1px lightgray",
+      },
+      body: {
+        borderBottom: "dashed 1px lightgray",
+      },
+    },
+    MuiTableRow: {
+      root: {
+        "&:last-child td": {
+          borderBottom: "none",
+        },
+        "&:last-child th": {
+          borderBottom: "none",
+        },
+      },
+      head: {
+        borderBottom: "dashed 1px lightgray",
       },
     },
   },
   palette: {
     primary: {
-      main: primaryColor,
-      contrastText: "#FFFFFF",
+      main: "#36A7FC",
+      light: "rgb(71, 145, 219)",
+      dark: "rgb(17, 82, 147)",
+      contrastText: "#fff",
     },
     secondary: {
-      light: blue[100],
-      main: blue[200],
-      dark: blue[300],
-      contrastText: "#FFFFFF",
+      light: "#ffb74d",
+      main: "#f9b934",
+      dark: "#f57c00",
+      contrastText: "rgba(0, 0, 0, 0.87)",
     },
     background: {
       paper: "#fff",

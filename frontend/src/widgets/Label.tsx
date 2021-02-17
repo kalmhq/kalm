@@ -113,6 +113,11 @@ export const Body = withStyles(styles)((props: LabelProps) => {
 });
 Body.displayName = "Body";
 
+export const CardTitle = withStyles(styles)((props: LabelProps) => {
+  return <Typography style={{ fontSize: 16, fontWeight: "bold" }}>{props.children}</Typography>;
+});
+CardTitle.displayName = "CardTitle";
+
 export const Body2 = withStyles(styles)((props: LabelProps) => {
   return (
     <Label variant="body2" {...props}>

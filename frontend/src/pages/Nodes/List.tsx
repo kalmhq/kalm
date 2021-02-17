@@ -20,6 +20,7 @@ import { NodeStatus } from "pages/Nodes/NodeStatus";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
+import CustomButton from "theme/Button";
 import { TDispatchProp } from "types";
 import { Node } from "types/node";
 import { formatAgeFromNow, TimestampFilter } from "utils/date";
@@ -317,9 +318,15 @@ export class NodeListRaw extends React.Component<Props, States> {
         <PopupState variant="popover" popupId={"nodes"}>
           {(popupState) => (
             <>
-              <Button style={{ padding: 0 }} color="primary" size="small" variant="text" {...bindTrigger(popupState)}>
+              <CustomButton
+                style={{ padding: 0 }}
+                color="primary"
+                size="small"
+                variant="text"
+                {...bindTrigger(popupState)}
+              >
                 How to add a new node?
-              </Button>
+              </CustomButton>
               <Popover
                 {...customBindPopover(popupState)}
                 anchorOrigin={{

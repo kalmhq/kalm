@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Theme, Tooltip, Typography, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, Tooltip, Typography, withStyles, WithStyles } from "@material-ui/core";
 import { blue } from "@material-ui/core/colors";
 import { setErrorNotificationAction } from "actions/notification";
 import { deleteRegistryAction } from "actions/registries";
@@ -7,6 +7,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
+import CustomButton from "theme/Button";
 import { TDispatchProp } from "types";
 import { Registry } from "types/registry";
 import sc from "utils/stringConstants";
@@ -205,7 +206,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
     return (
       <>
         {/* <H6>Private Docker Registries</H6> */}
-        <Button
+        <CustomButton
           color="primary"
           variant="outlined"
           size="small"
@@ -214,7 +215,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
           to="/cluster/pull-secrets/new"
         >
           New {pageObjectName}
-        </Button>
+        </CustomButton>
       </>
     );
   }

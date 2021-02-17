@@ -16,6 +16,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
+import CustomButton from "theme/Button";
 import { ComponentLikePort, WorkloadType } from "types/componentTemplate";
 import { Expansion } from "widgets/expansion";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
@@ -197,7 +198,7 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
     return (
       <div className={classes.secondHeaderRight}>
         {component.workloadType === "cronjob" && (
-          <Button
+          <CustomButton
             color="primary"
             size="small"
             variant="outlined"
@@ -211,7 +212,7 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
             }}
           >
             Run Once
-          </Button>
+          </CustomButton>
         )}
 
         <H6 className={classes.secondHeaderRightItem}>Component {component.name}</H6>
