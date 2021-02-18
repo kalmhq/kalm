@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"time"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -110,29 +112,46 @@ type CloudflareConfig struct {
 	DomainToZoneIDConfig map[string]string `json:"domainToZoneIDConfig,omitempty"`
 }
 
-type InstallStatus string
+type InstallStatusKey string
 
 var (
-	InstallStateInstalling          InstallStatus = "INSTALLING"
-	InstallStateInstallingCertMgr   InstallStatus = "INSTALLING_CERT_MANAGER"
-	InstallStateInstallingIstio     InstallStatus = "INSTALLING_ISTIO"
-	InstallStateInstallingKalm      InstallStatus = "INSTALLING_KALM"
-	InstallStateClusterInfoReported InstallStatus = "CLUSTER_INFO_REPORTED"
-	InstallStateInstalled           InstallStatus = "INSTALLED"
+	InstallStateStart                        InstallStatusKey = "START"
+	InstallStateInstalCertMgr                InstallStatusKey = "INSTALL_CERT_MANAGER"
+	InstallStateInstalIstio                  InstallStatusKey = "INSTALL_ISTIO"
+	InstallStateInstalKalmController         InstallStatusKey = "INSTALL_KALM_CONTROLLER"
+	InstallStateInstalKalmDashboard          InstallStatusKey = "INSTALL_KALM_DASHBOARD"
+	InstallStateInstalACMEServer             InstallStatusKey = "INSTALL_ACME_SERVER"
+	InstallStateConfigureKalmDashboardAccess InstallStatusKey = "CONFIGURE_KALM_DASHBOARD_ACCESS"
+	InstallStateConfigureACMEServerAccess    InstallStatusKey = "CONFIGURE_ACME_SERVER_ACCESS"
+	InstallStateReportClusterInfo            InstallStatusKey = "REPORT_CLUSTER_INFO"
+	InstallStateClusterFullySetup            InstallStatusKey = "CLUSTER_FULLY_SETUP"
+	InstallStateDone                         InstallStatusKey = "DONE"
 )
 
-var InstallStatusList = []InstallStatus{
-	InstallStateInstalling,
-	InstallStateInstallingCertMgr,
-	InstallStateInstallingIstio,
-	InstallStateInstallingKalm,
-	InstallStateClusterInfoReported,
-	InstallStateInstalled,
+var InstallStates = []InstallState{
+	{InstallStateStart, 1 * time.Minute},
+	{InstallStateInstalCertMgr, 1 * time.Minute},
+	{InstallStateInstalIstio, 1 * time.Minute},
+	{InstallStateInstalKalmController, 1 * time.Minute},
+	{InstallStateInstalKalmDashboard, 1 * time.Minute},
+	{InstallStateInstalACMEServer, 1 * time.Minute},
+	{InstallStateConfigureKalmDashboardAccess, 2 * time.Minute},
+	{InstallStateConfigureACMEServerAccess, 2 * time.Minute},
+	{InstallStateReportClusterInfo, 1 * time.Minute},
+	{InstallStateClusterFullySetup, 1 * time.Minute},
+	{InstallStateDone, 1 * time.Minute},
+}
+
+type InstallState struct {
+	Key     InstallStatusKey
+	Timeout time.Duration
+	// TimeoutHint string
 }
 
 type KalmOperatorConfigStatus struct {
-	// BYOCModeStatus *BYOCModeStatus `json:"byocModeStatus,omitempty"`
-	InstallStatus *InstallStatus `json:"installStatus,omitempty"`
+	BYOCModeStatus   *BYOCModeStatus   `json:"byocModeStatus,omitempty"`
+	InstallStatusKey *InstallStatusKey `json:"installStatus,omitempty"`
+	// Conditions       []KalmInstallCondition
 }
 
 type BYOCModeStatus struct {

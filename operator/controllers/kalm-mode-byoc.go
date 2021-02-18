@@ -16,9 +16,9 @@ import (
 
 func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
 
-	if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstallingKalm); err != nil {
-		return err
-	}
+	// if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstallingKalm); err != nil {
+	// 	return err
+	// }
 
 	if err := r.reconcileKalmController(); err != nil {
 		r.Log.Info("reconcileKalmController fail", "error", err)
@@ -62,8 +62,8 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
 	}
 
 	status := r.config.Status
-	shouldReportClusterInfo := status.InstallStatus == nil ||
-		indexOfStatus(*status.InstallStatus) < indexOfStatus(installv1alpha1.InstallStateClusterInfoReported)
+	shouldReportClusterInfo := status.BYOCModeStatus == nil ||
+		status.BYOCModeStatus.ClusterInfoHasSendToKalmSaaS == false
 
 	if shouldReportClusterInfo {
 		clusterInfo, ready := r.getClusterInfoIfIsReady(byocModeConfig)
@@ -79,27 +79,33 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
 		} else if !ok {
 			r.Log.Info("fail to report BYOC cluster info to Kalm-SaaS, will retry later...")
 			return nil
-		} else {
-			if _, err := r.updateInstallProcess(installv1alpha1.InstallStateClusterInfoReported); err != nil {
-				return err
-			}
 		}
+
+		if status.BYOCModeStatus == nil {
+			r.config.Status.BYOCModeStatus = &installv1alpha1.BYOCModeStatus{}
+		}
+		r.config.Status.BYOCModeStatus.ClusterInfoHasSendToKalmSaaS = true
+
+		return r.Status().Update(r.Ctx, r.config)
 	} else {
 		r.Log.Info("ClusterInfo already reported")
 	}
 
-	// check if everything is ok now
-	if yes, err := r.isBYOCModeFullySetup(); err != nil {
-		return err
-	} else if yes {
-		if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstalled); err != nil {
-			return err
-		} else {
-			return nil
-		}
-	} else {
-		return retryLaterErr
-	}
+	return nil
+
+	// // check if everything is ok now
+	// if yes, err := r.isBYOCModeFullySetup(); err != nil {
+	// 	return err
+	// } else if yes {
+	// 	// if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstalled); err != nil {
+	// 	// 	return err
+	// 	// } else {
+	// 	// 	return nil
+	// 	// }
+	// 	return nil
+	// } else {
+	// 	return retryLaterErr
+	// }
 }
 
 type ClusterInfo struct {
@@ -161,42 +167,148 @@ func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo C
 
 // - update kalmOperatorConfig install status
 // - for byoc, report install progress
-func (r *KalmOperatorConfigReconciler) updateInstallProcess(newStatus installv1alpha1.InstallStatus) (updated bool, err error) {
-	config := r.config
-	curStatus := config.Status.InstallStatus
+// func (r *KalmOperatorConfigReconciler) updateInstallProcess(newStatus installv1alpha1.InstallStatusKey) (updated bool, err error) {
+// 	config := r.config
+// 	curStatus := config.Status.InstallStatusKey
 
-	if curStatus != nil && indexOfStatus(newStatus) <= indexOfStatus(*curStatus) {
+// 	if curStatus != nil && indexOfStatus(newStatus) <= indexOfStatus(*curStatus) {
+// 		return false, nil
+// 	}
+
+// 	// report progress first for byoc, so if fail, we have chance to report again
+// 	if config.Spec.BYOCModeConfig != nil {
+// 		ok, err := r.reportInstallProcessToKalmSaaS(newStatus)
+
+// 		// only deal with failure for final state: INSTALLED
+// 		// cuz if this missed, SaaS will be in wrong state
+// 		// other states can be skipped
+// 		if newStatus == installv1alpha1.InstallStateInstalled {
+// 			if err != nil {
+// 				return false, err
+// 			} else if !ok {
+// 				return false, fmt.Errorf("reportInstallProcessToKalmSaaS failed for status: %s", newStatus)
+// 			}
+// 		}
+// 	}
+
+// 	// update to new install status
+// 	config.Status.InstallStatusKey = &newStatus
+// 	if err := r.Status().Update(r.Ctx, config); err != nil {
+// 		return false, err
+// 	}
+
+// 	return true, err
+// }
+
+func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err error) {
+
+	var i int
+	for ; i < len(installv1alpha1.InstallStates); i++ {
+		state := installv1alpha1.InstallStates[i]
+
+		if state.Key == installv1alpha1.InstallStateStart {
+			continue
+		}
+
+		if state.Key == installv1alpha1.InstallStateInstalCertMgr {
+			if !r.isCertManagerReady() {
+				break
+			}
+		}
+
+		if state.Key == installv1alpha1.InstallStateInstalIstio {
+			if !r.isIstioReady() {
+				break
+			}
+		}
+
+		if state.Key == installv1alpha1.InstallStateInstalKalmController &&
+			!r.isKalmControllerReady() {
+			break
+		}
+
+		if state.Key == installv1alpha1.InstallStateInstalKalmDashboard {
+			if !r.isKalmDashboardReady() {
+				break
+			}
+		}
+
+		if state.Key == installv1alpha1.InstallStateInstalACMEServer {
+			if !r.isACMEServerReady() {
+				break
+			}
+		}
+
+		if state.Key == installv1alpha1.InstallStateConfigureKalmDashboardAccess {
+			if !r.isKalmDashboardAccessReady() {
+				break
+			}
+		}
+		if state.Key == installv1alpha1.InstallStateConfigureACMEServerAccess {
+			if !r.isACMEServerAccessReady() {
+				break
+			}
+		}
+
+		if state.Key == installv1alpha1.InstallStateReportClusterInfo {
+			if !r.isClusterInfoReported() {
+				break
+			}
+		}
+
+		if r.config.Spec.BYOCModeConfig != nil &&
+			state.Key == installv1alpha1.InstallStateClusterFullySetup {
+
+			ok, err := r.isBYOCModeFullySetup()
+			if err != nil || !ok {
+				break
+			}
+		}
+
+		//final state
+		if state.Key == installv1alpha1.InstallStateDone {
+			break
+		}
+	}
+
+	// todo also set status.conditions
+
+	config := r.config
+	curStatusKey := config.Status.InstallStatusKey
+	newStatusKey := installv1alpha1.InstallStates[i].Key
+
+	if curStatusKey != nil && indexOfStatus(newStatusKey) <= indexOfStatus(*curStatusKey) {
 		return false, nil
 	}
 
 	// report progress first for byoc, so if fail, we have chance to report again
 	if config.Spec.BYOCModeConfig != nil {
-		ok, err := r.reportInstallProcessToKalmSaaS(newStatus)
+		ok, err := r.reportInstallProcessToKalmSaaS(newStatusKey)
 
 		// only deal with failure for final state: INSTALLED
 		// cuz if this missed, SaaS will be in wrong state
 		// other states can be skipped
-		if newStatus == installv1alpha1.InstallStateInstalled {
+		if newStatusKey == installv1alpha1.InstallStateDone {
 			if err != nil {
 				return false, err
 			} else if !ok {
-				return false, fmt.Errorf("reportInstallProcessToKalmSaaS failed for status: %s", newStatus)
+				return false, fmt.Errorf("reportInstallProcessToKalmSaaS failed for status: %s", newStatusKey)
 			}
 		}
 	}
 
 	// update to new install status
-	config.Status.InstallStatus = &newStatus
+	config.Status.InstallStatusKey = &newStatusKey
 	if err := r.Status().Update(r.Ctx, config); err != nil {
 		return false, err
 	}
 
-	return true, err
+	return true, nil
 }
 
-func indexOfStatus(status installv1alpha1.InstallStatus) int {
-	for i, item := range installv1alpha1.InstallStatusList {
-		if status == item {
+func indexOfStatus(key installv1alpha1.InstallStatusKey) int {
+	for i, state := range installv1alpha1.InstallStates {
+		if key == state.Key {
 			return i
 		}
 	}
@@ -204,7 +316,7 @@ func indexOfStatus(status installv1alpha1.InstallStatus) int {
 	return -1
 }
 
-func (r *KalmOperatorConfigReconciler) reportInstallProcessToKalmSaaS(state installv1alpha1.InstallStatus) (bool, error) {
+func (r *KalmOperatorConfigReconciler) reportInstallProcessToKalmSaaS(state installv1alpha1.InstallStatusKey) (bool, error) {
 	if r.config == nil || r.config.Spec.BYOCModeConfig == nil {
 		return false, fmt.Errorf("not KalmOperatorConfig or BYOCConfig found")
 	}
@@ -217,8 +329,8 @@ func (r *KalmOperatorConfigReconciler) reportInstallProcessToKalmSaaS(state inst
 	kalmSaaSAPI := fmt.Sprintf("https://%s/api/v1/clusters/%s", kalmSaaSDomain, uuid)
 
 	payload := struct {
-		State          installv1alpha1.InstallStatus `json:"state,omitempty"`
-		CallbackSecret string                        `json:"callback_secret,omitempty"`
+		State          installv1alpha1.InstallStatusKey `json:"state,omitempty"`
+		CallbackSecret string                           `json:"callback_secret,omitempty"`
 	}{
 		state,
 		callbackSecret,

@@ -132,8 +132,12 @@ spec:
           type: object
         status:
           properties:
+            byocModeStatus:
+              properties:
+                clusterInfoHasSendToKalmSaaS:
+                  type: boolean
+              type: object
             installStatus:
-              description: BYOCModeStatus *BYOCModeStatus `json:"byocModeStatus,omitempty"`
               type: string
           type: object
       type: object
