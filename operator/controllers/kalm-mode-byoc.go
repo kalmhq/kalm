@@ -5,7 +5,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -143,6 +145,14 @@ func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo C
 	if err != nil {
 		r.Log.Info("error when reportClusterInfoToKalmSaaS", "error", err)
 		return false, err
+	}
+
+	// deal with cluster already inited
+	if resp.StatusCode == 400 {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err == nil && strings.Contains(string(body), "cluster is already initialized") {
+			return true, nil
+		}
 	}
 
 	if resp.StatusCode != 200 {
