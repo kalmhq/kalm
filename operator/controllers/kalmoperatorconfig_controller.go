@@ -138,6 +138,8 @@ func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 }
 
 func (r *KalmOperatorConfigReconciler) applyFromYaml(yamlName string) error {
+	r.Log.Info(fmt.Sprintf("apply yaml: %s", yamlName))
+
 	fileContent := MustAsset(yamlName)
 
 	objectsBytes := utils.SeparateYamlBytes(fileContent)
@@ -187,7 +189,7 @@ func (r *KalmOperatorConfigReconciler) applyFromYaml(yamlName string) error {
 			r.Log.Error(err, fmt.Sprintf("Apply object failed. %v", objectKey))
 			return err
 		}
-		r.Log.Info(fmt.Sprintf("Patch object %s, kind: %s", objectKey.String(), object.GetObjectKind()))
+		// r.Log.Info(fmt.Sprintf("Patch object %s, kind: %s", objectKey.String(), object.GetObjectKind()))
 	}
 
 	return nil

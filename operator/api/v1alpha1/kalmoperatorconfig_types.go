@@ -19,6 +19,7 @@ package v1alpha1
 import (
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -129,29 +130,50 @@ var (
 )
 
 var InstallStates = []InstallState{
-	{InstallStateStart, 1 * time.Minute},
-	{InstallStateInstalCertMgr, 1 * time.Minute},
-	{InstallStateInstalIstio, 1 * time.Minute},
-	{InstallStateInstalKalmController, 1 * time.Minute},
-	{InstallStateInstalKalmDashboard, 1 * time.Minute},
-	{InstallStateInstalACMEServer, 1 * time.Minute},
-	{InstallStateConfigureKalmDashboardAccess, 2 * time.Minute},
-	{InstallStateConfigureACMEServerAccess, 2 * time.Minute},
-	{InstallStateReportClusterInfo, 1 * time.Minute},
-	{InstallStateClusterFullySetup, 1 * time.Minute},
-	{InstallStateDone, 1 * time.Minute},
+	{InstallStateStart, 1 * time.Minute, ""},
+	{InstallStateInstalCertMgr, 1 * time.Minute, ""},
+	{InstallStateInstalIstio, 1 * time.Minute, ""},
+	{InstallStateInstalKalmController, 1 * time.Minute, ""},
+	{InstallStateInstalKalmDashboard, 1 * time.Minute, ""},
+	{InstallStateInstalACMEServer, 1 * time.Minute, ""},
+	{InstallStateConfigureKalmDashboardAccess, 2 * time.Minute, "External access not ready, check your cloud provider load balancer service"},
+	{InstallStateConfigureACMEServerAccess, 2 * time.Minute, "External access not ready, check your cloud provider load balancer service"},
+	{InstallStateReportClusterInfo, 1 * time.Minute, ""},
+	{InstallStateClusterFullySetup, 1 * time.Minute, ""},
+	{InstallStateDone, 1 * time.Minute, ""},
 }
 
 type InstallState struct {
-	Key     InstallStatusKey
-	Timeout time.Duration
-	// TimeoutHint string
+	Key         InstallStatusKey
+	Timeout     time.Duration
+	TimeoutHint string
 }
 
 type KalmOperatorConfigStatus struct {
-	BYOCModeStatus   *BYOCModeStatus   `json:"byocModeStatus,omitempty"`
-	InstallStatusKey *InstallStatusKey `json:"installStatus,omitempty"`
-	// Conditions       []KalmInstallCondition
+	BYOCModeStatus    *BYOCModeStatus    `json:"byocModeStatus,omitempty"`
+	InstallStatusKey  *InstallStatusKey  `json:"installStatus,omitempty"`
+	InstallConditions []InstallCondition `json:"installCondition,omitempty"`
+}
+
+type InstallCondition struct {
+	// Type of the condition.
+	Type InstallStatusKey `json:"type"`
+
+	// Status of the condition, one of ('True', 'False', 'Unknown').
+	Status corev1.ConditionStatus `json:"status"`
+
+	// Reason is a brief machine readable explanation for the condition's last
+	// transition.
+	// +optional
+	Reason string `json:"reason,omitempty"`
+
+	// Message is a human readable description of the details of the last
+	// transition, complementing reason.
+	// +optional
+	Message string `json:"message,omitempty"`
+
+	// +optional
+	LastTransitionTime *metav1.Time `json:"lastTransitionTime,omitempty" description:"last time the condition transit from one status to another"`
 }
 
 type BYOCModeStatus struct {

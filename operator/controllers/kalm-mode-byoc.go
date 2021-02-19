@@ -6,11 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -62,13 +64,13 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
 	}
 
 	status := r.config.Status
-	shouldReportClusterInfo := status.BYOCModeStatus == nil ||
-		status.BYOCModeStatus.ClusterInfoHasSendToKalmSaaS == false
+	shouldReportClusterInfo := status.BYOCModeStatus == nil || !status.BYOCModeStatus.ClusterInfoHasSendToKalmSaaS
 
 	if shouldReportClusterInfo {
 		clusterInfo, ready := r.getClusterInfoIfIsReady(byocModeConfig)
 		if !ready {
 			r.Log.Info("BYOC cluster not ready yet, will wait...", "clusterInfo", clusterInfo)
+			// return retryLaterErr
 			return nil
 		}
 
@@ -92,20 +94,6 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
 	}
 
 	return nil
-
-	// // check if everything is ok now
-	// if yes, err := r.isBYOCModeFullySetup(); err != nil {
-	// 	return err
-	// } else if yes {
-	// 	// if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstalled); err != nil {
-	// 	// 	return err
-	// 	// } else {
-	// 	// 	return nil
-	// 	// }
-	// 	return nil
-	// } else {
-	// 	return retryLaterErr
-	// }
 }
 
 type ClusterInfo struct {
@@ -202,9 +190,9 @@ func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo C
 
 func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err error) {
 
-	var i int
-	for ; i < len(installv1alpha1.InstallStates); i++ {
-		state := installv1alpha1.InstallStates[i]
+	var stateIdx int
+	for ; stateIdx < len(installv1alpha1.InstallStates); stateIdx++ {
+		state := installv1alpha1.InstallStates[stateIdx]
 
 		if state.Key == installv1alpha1.InstallStateStart {
 			continue
@@ -271,23 +259,74 @@ func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err
 		}
 	}
 
-	// todo also set status.conditions
+	config := r.config.DeepCopy()
 
-	config := r.config
-	curStatusKey := config.Status.InstallStatusKey
-	newStatusKey := installv1alpha1.InstallStates[i].Key
+	// curStatusKey := config.Status.InstallStatusKey
+	newStatus := installv1alpha1.InstallStates[stateIdx]
+	newStatusKey := newStatus.Key
 
-	if curStatusKey != nil && indexOfStatus(newStatusKey) <= indexOfStatus(*curStatusKey) {
-		return false, nil
+	// if curStatusKey != nil && indexOfStatus(newStatusKey) <= indexOfStatus(*curStatusKey) {
+	// 	return false, nil
+	// }
+
+	// setup status.installConditions
+	newInstallConditions := []installv1alpha1.InstallCondition{}
+	for i, state := range installv1alpha1.InstallStates {
+		var s corev1.ConditionStatus
+		isReady := i < stateIdx || stateIdx == len(installv1alpha1.InstallStates)-1
+		if isReady {
+			s = corev1.ConditionTrue
+		} else {
+			s = corev1.ConditionFalse
+		}
+
+		newCondition := installv1alpha1.InstallCondition{
+			Type:   state.Key,
+			Status: s,
+		}
+
+		oldCondition := findConditionByKey(state.Key, config.Status.InstallConditions)
+		// if oldCondition == nil || oldCondition.Status != newCondition.Status {
+		// 	now := metav1.NewTime(time.Now())
+		// 	newCondition.LastTransitionTime = &now
+		// } else if oldCondition != nil && oldCondition.LastTransitionTime != nil {
+		// 	newCondition.LastTransitionTime = oldCondition.LastTransitionTime
+		// } else {
+		// 	newCondition.LastTransitionTime = oldCondition.LastTransitionTime
+		// }
+		if oldCondition != nil && oldCondition.LastTransitionTime != nil && oldCondition.Status == newCondition.Status {
+			newCondition.LastTransitionTime = oldCondition.LastTransitionTime
+		} else {
+			now := metav1.NewTime(time.Now())
+			newCondition.LastTransitionTime = &now
+		}
+
+		//check if timeout
+		if newCondition.Status == corev1.ConditionFalse && i <= stateIdx {
+			secondsElapse := time.Now().Unix() - newCondition.LastTransitionTime.Unix()
+			if secondsElapse > int64(state.Timeout.Seconds()) {
+				newCondition.Reason = "Timeout"
+				newCondition.Message = state.TimeoutHint
+			}
+		}
+
+		newInstallConditions = append(newInstallConditions, newCondition)
 	}
 
-	// report progress first for byoc, so if fail, we have chance to report again
+	config.Status.InstallConditions = newInstallConditions
+	config.Status.InstallStatusKey = &newStatusKey
+
+	// update to new install status
+	if err := r.Status().Update(r.Ctx, config); err != nil {
+		return false, err
+	}
+
 	if config.Spec.BYOCModeConfig != nil {
 		ok, err := r.reportInstallProcessToKalmSaaS(newStatusKey)
 
 		// only deal with failure for final state: INSTALLED
 		// cuz if this missed, SaaS will be in wrong state
-		// other states can be skipped
+		// failure in other states can be ignored
 		if newStatusKey == installv1alpha1.InstallStateDone {
 			if err != nil {
 				return false, err
@@ -297,23 +336,38 @@ func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err
 		}
 	}
 
-	// update to new install status
-	config.Status.InstallStatusKey = &newStatusKey
-	if err := r.Status().Update(r.Ctx, config); err != nil {
-		return false, err
-	}
-
 	return true, nil
 }
 
-func indexOfStatus(key installv1alpha1.InstallStatusKey) int {
-	for i, state := range installv1alpha1.InstallStates {
-		if key == state.Key {
-			return i
+func findConditionByKey(key installv1alpha1.InstallStatusKey, conditions []installv1alpha1.InstallCondition) *installv1alpha1.InstallCondition {
+	for i := range conditions {
+		cond := conditions[i]
+		if cond.Type != key {
+			continue
 		}
+
+		return &cond
 	}
 
-	return -1
+	return nil
+}
+
+// func indexOfStatus(key installv1alpha1.InstallStatusKey) int {
+// 	for i, state := range installv1alpha1.InstallStates {
+// 		if key == state.Key {
+// 			return i
+// 		}
+// 	}
+
+// 	return -1
+// }
+
+type InstallProgress struct {
+	State             installv1alpha1.InstallStatusKey   `json:"state,omitempty"`
+	CallbackSecret    string                             `json:"callback_secret,omitempty"`
+	IsTimeout         bool                               `json:"is_timeout,omitempty"`
+	Message           string                             `json:"message,omitempty"`
+	InstallConditions []installv1alpha1.InstallCondition `json:"install_conditions,omitempty"`
 }
 
 func (r *KalmOperatorConfigReconciler) reportInstallProcessToKalmSaaS(state installv1alpha1.InstallStatusKey) (bool, error) {
@@ -328,12 +382,27 @@ func (r *KalmOperatorConfigReconciler) reportInstallProcessToKalmSaaS(state inst
 
 	kalmSaaSAPI := fmt.Sprintf("https://%s/api/v1/clusters/%s", kalmSaaSDomain, uuid)
 
-	payload := struct {
-		State          installv1alpha1.InstallStatusKey `json:"state,omitempty"`
-		CallbackSecret string                           `json:"callback_secret,omitempty"`
-	}{
-		state,
-		callbackSecret,
+	isTimeout := false
+	msg := ""
+
+	for i, cond := range r.config.Status.InstallConditions {
+		if cond.Status != corev1.ConditionFalse {
+			continue
+		}
+
+		firstStuckCond := r.config.Status.InstallConditions[i]
+		isTimeout = firstStuckCond.Reason == "Timeout"
+		msg = firstStuckCond.Message
+
+		break
+	}
+
+	payload := InstallProgress{
+		State:             state,
+		CallbackSecret:    callbackSecret,
+		IsTimeout:         isTimeout,
+		Message:           msg,
+		InstallConditions: r.config.Status.InstallConditions,
 	}
 	payloadJson, _ := json.Marshal(payload)
 
