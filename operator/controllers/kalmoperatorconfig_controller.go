@@ -142,6 +142,7 @@ func (r *KalmOperatorConfigReconciler) ReloadConfig() error {
 	if config == nil {
 		return fmt.Errorf("config not exist")
 	}
+
 	if err := r.Get(r.Ctx, client.ObjectKey{Namespace: config.Namespace, Name: config.Name}, config); err != nil {
 		return err
 	}

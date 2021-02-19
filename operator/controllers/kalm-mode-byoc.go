@@ -203,6 +203,9 @@ func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo C
 // }
 
 func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err error) {
+	if r.config.Status.InstallStatusKey == &installv1alpha1.InstallStateDone {
+		return false, nil
+	}
 
 	var stateIdx int
 	for ; stateIdx < len(installv1alpha1.InstallStates); stateIdx++ {
