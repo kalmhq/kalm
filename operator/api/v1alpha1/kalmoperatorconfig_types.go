@@ -116,7 +116,7 @@ type CloudflareConfig struct {
 type InstallStatusKey string
 
 var (
-	InstallStateStart                        InstallStatusKey = "START"
+	InstallStateStart                        InstallStatusKey = "INSTALLING"
 	InstallStateInstalCertMgr                InstallStatusKey = "INSTALL_CERT_MANAGER"
 	InstallStateInstalIstio                  InstallStatusKey = "INSTALL_ISTIO"
 	InstallStateInstalKalmController         InstallStatusKey = "INSTALL_KALM_CONTROLLER"
@@ -126,7 +126,7 @@ var (
 	InstallStateConfigureACMEServerAccess    InstallStatusKey = "CONFIGURE_ACME_SERVER_ACCESS"
 	InstallStateReportClusterInfo            InstallStatusKey = "REPORT_CLUSTER_INFO"
 	InstallStateClusterFullySetup            InstallStatusKey = "CLUSTER_FULLY_SETUP"
-	InstallStateDone                         InstallStatusKey = "DONE"
+	InstallStateDone                         InstallStatusKey = "INSTALLED"
 )
 
 var InstallStates = []InstallState{
