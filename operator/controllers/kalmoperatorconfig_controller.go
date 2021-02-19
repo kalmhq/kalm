@@ -137,6 +137,18 @@ func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	return ctrl.Result{}, err
 }
 
+func (r *KalmOperatorConfigReconciler) ReloadConfig() error {
+	config := r.config
+	if config == nil {
+		return fmt.Errorf("config not exist")
+	}
+	if err := r.Get(r.Ctx, client.ObjectKey{Namespace: config.Namespace, Name: config.Name}, config); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *KalmOperatorConfigReconciler) applyFromYaml(yamlName string) error {
 	r.Log.Info(fmt.Sprintf("apply yaml: %s", yamlName))
 

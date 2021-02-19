@@ -65,6 +65,10 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
 		return err
 	}
 
+	if err := r.ReloadConfig(); err != nil {
+		return err
+	}
+
 	status := r.config.Status
 	shouldReportClusterInfo := status.BYOCModeStatus == nil || !status.BYOCModeStatus.ClusterInfoHasSendToKalmSaaS
 
