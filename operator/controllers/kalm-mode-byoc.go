@@ -203,7 +203,8 @@ func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo C
 // }
 
 func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err error) {
-	if r.config.Status.InstallStatusKey == &installv1alpha1.InstallStateDone {
+	if r.config.Status.InstallStatusKey != nil &&
+		*r.config.Status.InstallStatusKey == installv1alpha1.InstallStateDone {
 		return false, nil
 	}
 
@@ -333,11 +334,6 @@ func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err
 	config.Status.InstallConditions = newInstallConditions
 	config.Status.InstallStatusKey = &newStatusKey
 
-	// update to new install status
-	if err := r.Status().Update(r.Ctx, config); err != nil {
-		return false, err
-	}
-
 	if config.Spec.BYOCModeConfig != nil {
 		ok, err := r.reportInstallProcessToKalmSaaS(newStatusKey)
 
@@ -351,6 +347,11 @@ func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err
 				return false, fmt.Errorf("reportInstallProcessToKalmSaaS failed for status: %s", newStatusKey)
 			}
 		}
+	}
+
+	// update to new install status
+	if err := r.Status().Update(r.Ctx, config); err != nil {
+		return false, err
 	}
 
 	return true, nil
