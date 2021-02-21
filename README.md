@@ -18,7 +18,7 @@ In addition, Kalm simplifies the processes for many common Kubernetes integratio
 - Configuring private image registries
 - Plugin log systems such as PLG(Loki) and ELK
 
-[![Kalm](https://kalm.dev/gif/kalm_short.gif)](https://www.youtube.com/watch?v=F5wuQaPQ50s&ab_channel=KalmHQ)
+[![Kalm](https://docs.kalm.dev/gif/kalm_short.gif)](https://www.youtube.com/watch?v=F5wuQaPQ50s&ab_channel=KalmHQ)
 
 [overview video with voiceover](https://www.youtube.com/watch?v=F5wuQaPQ50s&ab_channel=KalmHQ)
 
