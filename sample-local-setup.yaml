@@ -1,0 +1,62 @@
+apiVersion: core.kalm.dev/v1alpha1
+kind: SingleSignOnConfig
+metadata:
+  name: sso
+  namespace: kalm-system
+spec:
+  domain: 35.224.22.5.nip.io
+  idTokenExpirySeconds: 300
+  temporaryUser:
+    email: admin@your-comp.com
+    passwordHash: $2a$12$c6ifCLThLY.37WLZgmb1feSgNep9Rd0riOjQYpsiymaFe4pyynn/e
+    userId: 938de17d-28cc-444c-b56a-7fc407ddd52e
+    username: admin
+---
+apiVersion: core.kalm.dev/v1alpha1
+kind: HttpRoute
+metadata:
+  name: kalm-route
+spec:
+  destinations:
+  - host: kalm.kalm-system.svc.cluster.local:80
+    weight: 1
+  hosts:
+  - 35.224.22.5.nip.io
+  httpRedirectToHttps: false
+  methods:
+  - GET
+  - HEAD
+  - POST
+  - PUT
+  - PATCH
+  - DELETE
+  - OPTIONS
+  - TRACE
+  - CONNECT
+  paths:
+  - /
+  schemes:
+  - https
+  - http
+---
+apiVersion: core.kalm.dev/v1alpha1
+kind: ProtectedEndpoint
+metadata:
+  name: component-kalm
+  namespace: kalm-system
+spec:
+  allowToPassIfHasBearerToken: true
+  name: kalm
+  ports:
+  - 3001
+---
+apiVersion: core.kalm.dev/v1alpha1
+kind: RoleBinding
+metadata:
+  name: manually-created-cluster-owner
+  namespace: kalm-system
+spec:
+  creator: kubectl
+  role: clusterOwner
+  subject: admin@your-comp.com
+  subjectType: user

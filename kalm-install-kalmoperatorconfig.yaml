@@ -24,4 +24,7 @@ metadata:
   namespace: kalm-operator
   name: kalmoperatorconfig-sample
 spec:
-  version: latest
+  controller:
+    useLetsencryptProductionAPI: true
+  localModeConfig: {}
+  version: 25a4e22c68fe4da044947f357509f6837ba3a848
