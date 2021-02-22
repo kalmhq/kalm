@@ -137,7 +137,22 @@ func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	return ctrl.Result{}, err
 }
 
+func (r *KalmOperatorConfigReconciler) ReloadConfig() error {
+	config := r.config
+	if config == nil {
+		return fmt.Errorf("config not exist")
+	}
+
+	if err := r.Get(r.Ctx, client.ObjectKey{Namespace: config.Namespace, Name: config.Name}, config); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *KalmOperatorConfigReconciler) applyFromYaml(yamlName string) error {
+	r.Log.Info(fmt.Sprintf("apply yaml: %s", yamlName))
+
 	fileContent := MustAsset(yamlName)
 
 	objectsBytes := utils.SeparateYamlBytes(fileContent)
@@ -187,7 +202,7 @@ func (r *KalmOperatorConfigReconciler) applyFromYaml(yamlName string) error {
 			r.Log.Error(err, fmt.Sprintf("Apply object failed. %v", objectKey))
 			return err
 		}
-		r.Log.Info(fmt.Sprintf("Patch object %s, kind: %s", objectKey.String(), object.GetObjectKind()))
+		// r.Log.Info(fmt.Sprintf("Patch object %s, kind: %s", objectKey.String(), object.GetObjectKind()))
 	}
 
 	return nil
@@ -200,9 +215,13 @@ const istioPromRecordingRulesFileName = "istio-prom-recording-rules.yaml"
 func (r *KalmOperatorConfigReconciler) reconcileResources() error {
 	config := r.config
 
-	if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstalling); err != nil {
+	if _, err := r.updateInstallProcess(); err != nil {
 		return err
 	}
+
+	// if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstalling); err != nil {
+	// 	return err
+	// }
 
 	if !config.Spec.SkipCertManagerInstallation {
 		if err := r.applyFromYaml("cert-manager.yaml"); err != nil {
@@ -210,9 +229,9 @@ func (r *KalmOperatorConfigReconciler) reconcileResources() error {
 			return err
 		}
 
-		if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstallingCertMgr); err != nil {
-			return err
-		}
+		// if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstallingCertMgr); err != nil {
+		// 	return err
+		// }
 	}
 
 	if !config.Spec.SkipIstioInstallation {
@@ -231,9 +250,9 @@ func (r *KalmOperatorConfigReconciler) reconcileResources() error {
 			return err
 		}
 
-		if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstallingIstio); err != nil {
-			return err
-		}
+		// if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstallingIstio); err != nil {
+		// 	return err
+		// }
 	}
 
 	// check dp to determine if install is ready, dp will be ready after crd
@@ -359,6 +378,39 @@ func (r *KalmOperatorConfigReconciler) isIstioReady() bool {
 	dps := []string{"istiod", "istio-ingressgateway", "prometheus"}
 
 	return r.checkIfDPReady(r.Ctx, NamespaceIstio, dps...)
+}
+
+func (r *KalmOperatorConfigReconciler) isKalmControllerReady() bool {
+	dps := []string{"kalm-controller"}
+
+	return r.checkIfDPReady(r.Ctx, NamespaceKalmSystem, dps...)
+}
+
+func (r *KalmOperatorConfigReconciler) isKalmDashboardReady() bool {
+	dps := []string{"kalm", "auth-proxy"}
+
+	return r.checkIfDPReady(r.Ctx, NamespaceKalmSystem, dps...)
+}
+
+func (r *KalmOperatorConfigReconciler) isACMEServerReady() bool {
+	dps := []string{"acme-server"}
+
+	return r.checkIfDPReady(r.Ctx, NamespaceKalmSystem, dps...)
+}
+
+func (r *KalmOperatorConfigReconciler) isKalmDashboardAccessReady() bool {
+	clusterIP, clusterHost := r.getClusterIPAndHostname()
+	return clusterIP != "" || clusterHost != ""
+}
+
+func (r *KalmOperatorConfigReconciler) isACMEServerAccessReady() bool {
+	acmeServerIP, acmeServerHostname := r.getACMEServerIPAndHostname()
+	return acmeServerIP != "" || acmeServerHostname != ""
+}
+
+func (r *KalmOperatorConfigReconciler) isClusterInfoReported() bool {
+	status := r.config.Status.BYOCModeStatus
+	return status != nil && status.ClusterInfoHasSendToKalmSaaS
 }
 
 type KalmIstioPrometheusWather struct{}

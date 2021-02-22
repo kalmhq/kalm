@@ -132,8 +132,38 @@ spec:
           type: object
         status:
           properties:
+            byocModeStatus:
+              properties:
+                clusterInfoHasSendToKalmSaaS:
+                  type: boolean
+              type: object
+            installCondition:
+              items:
+                properties:
+                  lastTransitionTime:
+                    format: date-time
+                    type: string
+                  message:
+                    description: Message is a human readable description of the details
+                      of the last transition, complementing reason.
+                    type: string
+                  reason:
+                    description: Reason is a brief machine readable explanation for
+                      the condition's last transition.
+                    type: string
+                  status:
+                    description: Status of the condition, one of ('True', 'False',
+                      'Unknown').
+                    type: string
+                  type:
+                    description: Type of the condition.
+                    type: string
+                required:
+                - status
+                - type
+                type: object
+              type: array
             installStatus:
-              description: BYOCModeStatus *BYOCModeStatus `json:"byocModeStatus,omitempty"`
               type: string
           type: object
       type: object

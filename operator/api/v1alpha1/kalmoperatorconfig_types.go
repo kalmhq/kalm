@@ -17,6 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"time"
+
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -110,29 +113,67 @@ type CloudflareConfig struct {
 	DomainToZoneIDConfig map[string]string `json:"domainToZoneIDConfig,omitempty"`
 }
 
-type InstallStatus string
+type InstallStatusKey string
 
 var (
-	InstallStateInstalling          InstallStatus = "INSTALLING"
-	InstallStateInstallingCertMgr   InstallStatus = "INSTALLING_CERT_MANAGER"
-	InstallStateInstallingIstio     InstallStatus = "INSTALLING_ISTIO"
-	InstallStateInstallingKalm      InstallStatus = "INSTALLING_KALM"
-	InstallStateClusterInfoReported InstallStatus = "CLUSTER_INFO_REPORTED"
-	InstallStateInstalled           InstallStatus = "INSTALLED"
+	InstallStateStart                        InstallStatusKey = "INSTALLING"
+	InstallStateInstalCertMgr                InstallStatusKey = "INSTALL_CERT_MANAGER"
+	InstallStateInstalIstio                  InstallStatusKey = "INSTALL_ISTIO"
+	InstallStateInstalKalmController         InstallStatusKey = "INSTALL_KALM_CONTROLLER"
+	InstallStateInstalKalmDashboard          InstallStatusKey = "INSTALL_KALM_DASHBOARD"
+	InstallStateInstalACMEServer             InstallStatusKey = "INSTALL_ACME_SERVER"
+	InstallStateConfigureKalmDashboardAccess InstallStatusKey = "CONFIGURE_KALM_DASHBOARD_ACCESS"
+	InstallStateConfigureACMEServerAccess    InstallStatusKey = "CONFIGURE_ACME_SERVER_ACCESS"
+	InstallStateReportClusterInfo            InstallStatusKey = "REPORT_CLUSTER_INFO"
+	InstallStateClusterFullySetup            InstallStatusKey = "CLUSTER_FULLY_SETUP"
+	InstallStateDone                         InstallStatusKey = "INSTALLED"
 )
 
-var InstallStatusList = []InstallStatus{
-	InstallStateInstalling,
-	InstallStateInstallingCertMgr,
-	InstallStateInstallingIstio,
-	InstallStateInstallingKalm,
-	InstallStateClusterInfoReported,
-	InstallStateInstalled,
+var InstallStates = []InstallState{
+	{InstallStateStart, 1 * time.Minute, ""},
+	{InstallStateInstalCertMgr, 1 * time.Minute, ""},
+	{InstallStateInstalIstio, 1 * time.Minute, ""},
+	{InstallStateInstalKalmController, 1 * time.Minute, ""},
+	{InstallStateInstalKalmDashboard, 1 * time.Minute, ""},
+	{InstallStateInstalACMEServer, 1 * time.Minute, ""},
+	{InstallStateConfigureKalmDashboardAccess, 2 * time.Minute, "External access not ready, check your cloud provider load balancer service"},
+	{InstallStateConfigureACMEServerAccess, 2 * time.Minute, "External access not ready, check your cloud provider load balancer service"},
+	{InstallStateReportClusterInfo, 1 * time.Minute, ""},
+	{InstallStateClusterFullySetup, 1 * time.Minute, ""},
+	{InstallStateDone, 1 * time.Minute, ""},
+}
+
+type InstallState struct {
+	Key         InstallStatusKey
+	Timeout     time.Duration
+	TimeoutHint string
 }
 
 type KalmOperatorConfigStatus struct {
-	// BYOCModeStatus *BYOCModeStatus `json:"byocModeStatus,omitempty"`
-	InstallStatus *InstallStatus `json:"installStatus,omitempty"`
+	BYOCModeStatus    *BYOCModeStatus    `json:"byocModeStatus,omitempty"`
+	InstallStatusKey  *InstallStatusKey  `json:"installStatus,omitempty"`
+	InstallConditions []InstallCondition `json:"installCondition,omitempty"`
+}
+
+type InstallCondition struct {
+	// Type of the condition.
+	Type InstallStatusKey `json:"type"`
+
+	// Status of the condition, one of ('True', 'False', 'Unknown').
+	Status corev1.ConditionStatus `json:"status"`
+
+	// Reason is a brief machine readable explanation for the condition's last
+	// transition.
+	// +optional
+	Reason string `json:"reason,omitempty"`
+
+	// Message is a human readable description of the details of the last
+	// transition, complementing reason.
+	// +optional
+	Message string `json:"message,omitempty"`
+
+	// +optional
+	LastTransitionTime *metav1.Time `json:"lastTransitionTime,omitempty" description:"last time the condition transit from one status to another"`
 }
 
 type BYOCModeStatus struct {
