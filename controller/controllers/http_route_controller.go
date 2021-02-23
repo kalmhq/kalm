@@ -98,11 +98,12 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 		}
 	}
 
-	if spec.Timeout != nil {
-		httpRoute.Timeout = &protoTypes.Duration{
-			Seconds: int64(*spec.Timeout),
-		}
-	}
+	// Disable 5s timeout bug
+	// if spec.Timeout != nil {
+	// 	httpRoute.Timeout = &protoTypes.Duration{
+	// 		Seconds: int64(*spec.Timeout),
+	// 	}
+	// }
 
 	if spec.Retries != nil {
 		httpRoute.Retries = &istioNetworkingV1Beta1.HTTPRetry{
