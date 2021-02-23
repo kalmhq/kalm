@@ -105,15 +105,15 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 	// 	}
 	// }
 
-	if spec.Retries != nil {
-		httpRoute.Retries = &istioNetworkingV1Beta1.HTTPRetry{
-			Attempts: int32(spec.Retries.Attempts),
-			PerTryTimeout: &protoTypes.Duration{
-				Seconds: int64(spec.Retries.PerTtyTimeoutSeconds),
-			},
-			RetryOn: strings.Join(spec.Retries.RetryOn, ","),
-		}
-	}
+	// if spec.Retries != nil {
+	// 	httpRoute.Retries = &istioNetworkingV1Beta1.HTTPRetry{
+	// 		Attempts: int32(spec.Retries.Attempts),
+	// 		PerTryTimeout: &protoTypes.Duration{
+	// 			Seconds: int64(spec.Retries.PerTtyTimeoutSeconds),
+	// 		},
+	// 		RetryOn: strings.Join(spec.Retries.RetryOn, ","),
+	// 	}
+	// }
 
 	if spec.Mirror != nil {
 		dest := toHttpRouteDestination(spec.Mirror.Destination, 100)
