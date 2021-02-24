@@ -27,4 +27,4 @@ spec:
   controller:
     useLetsencryptProductionAPI: true
   localModeConfig: {}
-  version: 25a4e22c68fe4da044947f357509f6837ba3a848
+  version: KALM_VERSION_PLACEHOLDER
