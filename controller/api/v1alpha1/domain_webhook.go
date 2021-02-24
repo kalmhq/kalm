@@ -18,7 +18,6 @@ package v1alpha1
 import (
 	"context"
 	"fmt"
-	"os"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -51,12 +50,7 @@ func (r *Domain) Default() {
 		return
 	}
 
-	if clusterIP == "" && hostname == "" {
-		isLocalMode := os.Getenv("KALM_MODE") == "local"
-		if isLocalMode {
-			r.Spec.DNSType = DNSTypeKalmSimpleRecord
-		}
-	} else if hostname != "" {
+	if hostname != "" {
 		r.Spec.DNSType = DNSTypeCNAME
 		r.Spec.DNSTarget = hostname
 	} else if clusterIP != "" {
@@ -85,11 +79,6 @@ func (r *Domain) validate() error {
 			Err:  "domain must not be empty",
 			Path: "spec.domain",
 		})
-	}
-
-	// skip check if Domain type is KalmSimpleRecord
-	if r.Spec.DNSType == DNSTypeKalmSimpleRecord {
-		return nil
 	}
 
 	if !isValidDomainInCert(r.Spec.Domain) {
