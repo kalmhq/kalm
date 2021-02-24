@@ -107,6 +107,7 @@ func removeExtAuthPathPrefix(path string) string {
 func getOriginalURL(c echo.Context) string {
 	// If the request is rewrite at route level, use the original path
 	requestURI := c.Request().Header.Get("X-Envoy-Original-Path")
+	logger.Info(fmt.Sprintf("X-Envoy-Original-Path: %s", requestURI))
 
 	if requestURI == "" {
 		requestURI = removeExtAuthPathPrefix(c.Request().RequestURI)
@@ -117,7 +118,8 @@ func getOriginalURL(c echo.Context) string {
 	}
 
 	ur := fmt.Sprintf("%s://%s%s", c.Scheme(), c.Request().Host, requestURI)
-	logger.Info(fmt.Sprintf("original url %s", ur))
+	logger.Info(fmt.Sprintf("original url %s, requestURI: %s(%s), c.Scheme: %s, c.Request.Host: %s, c.Request.URL.Scheme: %s",
+		ur, requestURI, c.Request().RequestURI, c.Scheme(), c.Request().Host, c.Request().URL.Scheme))
 	return ur
 }
 func getStringSignature(data string) string {
