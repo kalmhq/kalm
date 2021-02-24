@@ -22,9 +22,10 @@ import (
 type DNSType string
 
 const (
-	DNSTypeCNAME = "CNAME"
-	DNSTypeA     = "A"
-	DNSTypeNS    = "NS"
+	DNSTypeCNAME            = "CNAME"
+	DNSTypeA                = "A"
+	DNSTypeNS               = "NS"
+	DNSTypeKalmSimpleRecord = "KalmSimpleRecord" // special record in kalm, used in local mode without external access
 )
 
 // DNSRecordSpec defines the desired state of DNSRecord

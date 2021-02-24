@@ -5,7 +5,7 @@ if [ -z "$DASHBOARD_DOMAIN" ]
 then
       echo "Run like: ./script/configure-local-mode.sh <domain-for-dashboard>"
       echo ""
-      echo "should provide domain info"
+      echo "must provide domain info for kalm dashboard"
       echo ""
       exit 0
 fi
