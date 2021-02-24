@@ -343,8 +343,14 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
     const { applications, canViewNamespace, canEditNamespace } = props;
     const data: any[] = [];
 
-    applications &&
-      applications.forEach((application, index) => {
+    if (applications) {
+      for (let i = 0; i < applications.length; i++) {
+        const application = applications[i];
+
+        if (application.name === "kalm-system") {
+          continue;
+        }
+
         const applicationDetails = application as ApplicationDetails;
         const applicationName = applicationDetails.name;
 
@@ -359,7 +365,8 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
             actions: renderActions(applicationDetails),
           });
         }
-      });
+      }
+    }
 
     return data;
   };
