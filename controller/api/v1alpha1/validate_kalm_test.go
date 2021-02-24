@@ -110,33 +110,6 @@ func TestIsValidWildcardDomain(t *testing.T) {
 	}
 }
 
-func TestIsRootDomain(t *testing.T) {
-	type domainTest struct {
-		domain string
-		result bool
-	}
-
-	domainTests := []domainTest{
-		{"google.com", true},
-		{"map.google.com", false},
-		// {"stackoverflow.co.uk", true}, //todo
-		{"x.y.com", false},
-		{"10.0.0.1.xip.io", false},
-
-		{"*.com", false},
-		{"*.x.com", false},
-		{".x.y.com", false},
-		{"*", false},
-		{"a*.com", false},
-		{"a*b.com", false},
-		{"*a.com", false},
-	}
-
-	for _, domainTest := range domainTests {
-		assert.Equal(t, domainTest.result, IsRootDomain(domainTest.domain), "fail test on "+domainTest.domain)
-	}
-}
-
 func TestIsValidEmail(t *testing.T) {
 	emails := []string{
 		"test@golangcode.com",

@@ -18,9 +18,7 @@ package v1alpha1
 import (
 	"context"
 	"fmt"
-	"strings"
 
-	"github.com/kalmhq/kalm/controller/validation"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -48,7 +46,6 @@ func (r *Domain) Default() {
 	domainlog.Info("default", "name", r.Name)
 
 	clusterIP, hostname, err := GetClusterIPOrHostname()
-
 	if err != nil {
 		return
 	}
@@ -60,12 +57,6 @@ func (r *Domain) Default() {
 		r.Spec.DNSType = DNSTypeA
 		r.Spec.DNSTarget = clusterIP
 	}
-}
-
-// todo special case like: stackoverflow.co.uk is not handled yet
-func IsRootDomain(domain string) bool {
-	parts := strings.Split(domain, ".")
-	return validation.ValidateFQDN(domain) == nil && len(parts) == 2
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-domain,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=domains,versions=v1alpha1,name=vdomain.kb.io

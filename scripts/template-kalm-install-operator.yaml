@@ -1,0 +1,648 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: operator
+  name: kalm-operator
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: kalmoperatorconfigs.install.kalm.dev
+spec:
+  group: install.kalm.dev
+  names:
+    kind: KalmOperatorConfig
+    listKind: KalmOperatorConfigList
+    plural: kalmoperatorconfigs
+    singular: kalmoperatorconfig
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: KalmOperatorConfig is the Schema for the kalmoperatorconfigs API
+      properties:
+        apiVersion:
+          description:
+            "APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources"
+          type: string
+        kind:
+          description:
+            "Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
+          properties:
+            byocModeConfig:
+              properties:
+                baseAppDomain:
+                  description: "like: foobar.byoc-clusters.kalm-apps.com"
+                  type: string
+                baseDNSDomain:
+                  description: "like: foobar.byoc-clusters.kalm-dns.com"
+                  type: string
+                baseDashboardDomain:
+                  description: "like: foobar.byoc.kalm.dev"
+                  type: string
+                clusterName:
+                  type: string
+                kalmSaaSDomain:
+                  type: string
+                oidcIssuer:
+                  properties:
+                    clientId:
+                      type: string
+                    clientSecret:
+                      type: string
+                    issuerURL:
+                      description: "like: https://staging.kalm.dev/oidc"
+                      type: string
+                  type: object
+                owner:
+                  type: string
+              type: object
+            controller:
+              description: Controller Config
+              properties:
+                externalDNSServerIP:
+                  type: string
+                useLetsencryptProductionAPI:
+                  type: boolean
+                version:
+                  type: string
+              type: object
+            dashboard:
+              description: Dashboard Config
+              properties:
+                args:
+                  items:
+                    type: string
+                  type: array
+                envs:
+                  items:
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+                    required:
+                      - name
+                      - value
+                    type: object
+                  type: array
+                replicas:
+                  format: int32
+                  type: integer
+                version:
+                  type: string
+              type: object
+            kalmType:
+              description: deprecated, diff mode has diff config now
+              type: string
+            kalmVersion:
+              description: deprecated, use Version instead
+              type: string
+            localModeConfig:
+              properties:
+                cloudflareConfig:
+                  properties:
+                    apiToken:
+                      type: string
+                    domainToZoneIDConfig:
+                      additionalProperties:
+                        type: string
+                      type: object
+                  type: object
+              type: object
+            physicalClusterId:
+              type: string
+            saasModeConfig:
+              properties:
+                baseAppDomain:
+                  description: "like: us-west1-1.clusters.kalm-apps.com"
+                  type: string
+                baseDNSDomain:
+                  description: "like: us-west1-1.clusters.kalm-dns.com"
+                  type: string
+                baseDashboardDomain:
+                  description: "like: us-west1-1.kalm.dev"
+                  type: string
+                cloudflareConfig:
+                  properties:
+                    apiToken:
+                      type: string
+                    domainToZoneIDConfig:
+                      additionalProperties:
+                        type: string
+                      type: object
+                  type: object
+                oidcIssuer:
+                  properties:
+                    clientId:
+                      type: string
+                    clientSecret:
+                      type: string
+                    issuerURL:
+                      description: "like: https://staging.kalm.dev/oidc"
+                      type: string
+                  type: object
+              type: object
+            skipCertManagerInstallation:
+              type: boolean
+            skipIstioInstallation:
+              type: boolean
+            skipKalmDashboardInstallation:
+              description: SkipKalmControllerInstallation bool `json:"skipKalmControllerInstallation,omitempty"`
+              type: boolean
+            version:
+              type: string
+          type: object
+        status:
+          description: KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
+          properties:
+            byocModeStatus:
+              properties:
+                clusterInfoHasSendToKalmSaaS:
+                  type: boolean
+              type: object
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: "*"
+  name: kalm-privileged
+spec:
+  allowPrivilegeEscalation: true
+  allowedCapabilities:
+    - "*"
+  fsGroup:
+    rule: RunAsAny
+  hostIPC: true
+  hostNetwork: true
+  hostPID: true
+  hostPorts:
+    - max: 65535
+      min: 0
+  privileged: true
+  runAsUser:
+    rule: RunAsAny
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    rule: RunAsAny
+  volumes:
+    - "*"
+---
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  annotations:
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
+    apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: docker/default,runtime/default
+    seccomp.security.alpha.kubernetes.io/defaultProfileName: runtime/default
+  name: kalm-restricted
+spec:
+  allowPrivilegeEscalation: false
+  fsGroup:
+    ranges:
+      - max: 65535
+        min: 1
+    rule: MustRunAs
+  hostIPC: false
+  hostNetwork: false
+  hostPID: false
+  privileged: false
+  readOnlyRootFilesystem: false
+  requiredDropCapabilities:
+    - ALL
+  runAsUser:
+    rule: MustRunAsNonRoot
+  seLinux:
+    rule: RunAsAny
+  supplementalGroups:
+    ranges:
+      - max: 65535
+        min: 1
+    rule: MustRunAs
+  volumes:
+    - configMap
+    - emptyDir
+    - projected
+    - secret
+    - downwardAPI
+    - persistentVolumeClaim
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kalm-operator-leader-election-role
+  namespace: kalm-operator
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps/status
+    verbs:
+      - get
+      - update
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: kalm-operator
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - endpoints
+      - events
+      - namespaces
+      - persistentvolumeclaims
+      - pods
+      - secrets
+      - serviceaccounts
+      - services
+    verbs:
+      - "*"
+  - apiGroups:
+      - acme.cert-manager.io
+    resources:
+      - "*"
+    verbs:
+      - "*"
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - mutatingwebhookconfigurations
+      - validatingwebhookconfigurations
+    verbs:
+      - "*"
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+      - customresourcedefinitions.apiextensions.k8s.io
+    verbs:
+      - "*"
+  - apiGroups:
+      - apiregistration.k8s.io
+    resources:
+      - apiservices
+    verbs:
+      - get
+      - list
+      - update
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - daemonsets
+      - deployments
+      - deployments/finalizers
+      - ingresses
+      - replicasets
+      - statefulsets
+    verbs:
+      - "*"
+  - apiGroups:
+      - auditregistration.k8s.io
+    resources:
+      - auditsinks
+    verbs:
+      - get
+      - list
+      - update
+      - watch
+  - apiGroups:
+      - authentication.istio.io
+    resources:
+      - "*"
+    verbs:
+      - "*"
+  - apiGroups:
+      - autoscaling
+    resources:
+      - horizontalpodautoscalers
+    verbs:
+      - "*"
+  - apiGroups:
+      - cert-manager.io
+    resources:
+      - "*"
+    verbs:
+      - "*"
+  - apiGroups:
+      - config.istio.io
+    resources:
+      - "*"
+    verbs:
+      - "*"
+  - apiGroups:
+      - core.kalm.dev
+    resources:
+      - "*"
+    verbs:
+      - "*"
+  - apiGroups:
+      - extensions
+    resources:
+      - daemonsets
+      - deployments
+      - deployments/finalizers
+      - ingresses
+      - ingresses/finalizers
+      - replicasets
+      - statefulsets
+    verbs:
+      - "*"
+  - apiGroups:
+      - install.istio.io
+    resources:
+      - "*"
+    verbs:
+      - "*"
+  - apiGroups:
+      - install.kalm.dev
+    resources:
+      - kalmoperatorconfigs
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - install.kalm.dev
+    resources:
+      - kalmoperatorconfigs/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - monitoring.coreos.com
+    resources:
+      - servicemonitors
+    verbs:
+      - create
+      - get
+  - apiGroups:
+      - networking.istio.io
+    resources:
+      - "*"
+    verbs:
+      - "*"
+  - apiGroups:
+      - policy
+    resources:
+      - poddisruptionbudgets*
+      - podsecuritypolicies
+    verbs:
+      - "*"
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - clusterrolebindings
+      - clusterroles
+      - rolebindings
+      - roles
+    verbs:
+      - "*"
+  - apiGroups:
+      - rbac.istio.io
+    resources:
+      - "*"
+    verbs:
+      - "*"
+  - apiGroups:
+      - route.openshift.io
+    resources:
+      - routes/custom-host
+    verbs:
+      - create
+  - apiGroups:
+      - security.istio.io
+    resources:
+      - "*"
+    verbs:
+      - "*"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kalm-proxy-role
+rules:
+  - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+  - apiGroups:
+      - authorization.k8s.io
+    resources:
+      - subjectaccessreviews
+    verbs:
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kalm-system:psp:privileged
+rules:
+  - apiGroups:
+      - policy
+    resourceNames:
+      - kalm-privileged
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kalm-system:psp:restricted
+rules:
+  - apiGroups:
+      - policy
+    resourceNames:
+      - kalm-restricted
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kalm-operator-leader-election-rolebinding
+  namespace: kalm-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kalm-operator-leader-election-role
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: kalm-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kalm-kalm-operator:psp:privileged
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kalm-system:psp:privileged
+subjects:
+  - kind: ServiceAccount
+    name: kalm-operator
+    namespace: kalm-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kalm-kalm-system-default:psp:privileged
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kalm-system:psp:privileged
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: kalm-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kalm-operator-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kalm-operator
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: kalm-operator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kalm-proxy-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kalm-proxy-role
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: kalm-operator
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    control-plane: operator
+  name: kalm-operator-metrics-service
+  namespace: kalm-operator
+spec:
+  ports:
+    - name: https
+      port: 8443
+      targetPort: https
+  selector:
+    control-plane: operator
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: operator
+  name: kalm-operator
+  namespace: kalm-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: operator
+  template:
+    metadata:
+      labels:
+        control-plane: operator
+    spec:
+      containers:
+        - args:
+            - --secure-listen-address=0.0.0.0:8443
+            - --upstream=http://127.0.0.1:8080/
+            - --logtostderr=true
+            - --v=10
+          image: gcr.io/kubebuilder/kube-rbac-proxy:v0.4.1
+          name: kube-rbac-proxy
+          ports:
+            - containerPort: 8443
+              name: https
+        - args:
+            - --metrics-addr=127.0.0.1:8080
+            - --enable-leader-election
+          command:
+            - /manager
+          image: kalmhq/kalm-operator:KALM_VERSION_PLACEHOLDER
+          imagePullPolicy: Always
+          name: manager
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+            requests:
+              cpu: 100m
+              memory: 20Mi
+      terminationGracePeriodSeconds: 10
