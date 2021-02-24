@@ -99,21 +99,20 @@ const RenderHttpRouteDestinationsRaw: React.FC = () => {
           </Collapse>
           {fields.value &&
             fields.value.map((destination, index) => {
+              // This may be caused by edit of component network service port but didn't change route.
+              const invalidDestination = !options.find((x) => x.value === destination.host);
+
               return (
                 <Grid container spacing={2} key={index} alignItems="center">
                   <Grid item xs={8} sm={8} md={6} lg={4} xl={4}>
                     <Field
                       name={`destinations.${index}.host`}
-                      render={(props: FieldRenderProps<string>) => (
-                        <AutoCompleteSingleValue
-                          {...props}
-                          options={options.map((o) => o.value)}
-                          optionsForRender={options}
-                        />
+                      render={(props: FieldRenderProps<any>) => (
+                        <AutoCompleteSingleValue {...props} options={options} />
                       )}
                       label="Choose a target"
                       validate={ValidatorRequired}
-                      options={options}
+                      helperText={invalidDestination ? "This target doesn't exist in the options, please check." : ""}
                       noOptionsText={
                         <Alert severity="warning">
                           <AlertTitle>No valid targets found.</AlertTitle>

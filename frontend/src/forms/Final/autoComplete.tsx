@@ -11,14 +11,12 @@ import {
 } from "@material-ui/lab";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import clsx from "clsx";
-import debug from "debug";
 import React, { ReactNode } from "react";
 import { FieldRenderProps } from "react-final-form";
 import { theme } from "theme/theme";
 import { KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
 import { Caption } from "widgets/Label";
 
-const autoCompleteDebug = debug("kalm:auto-compolete");
 export interface AutoCompleteForRenderOption {
   value: string;
   label: string;
@@ -175,16 +173,16 @@ export const AutoCompleteMultiValuesFreeSolo: X = function <T>(props: AutoComple
 };
 
 export interface AutoCompleteSingleValueProps<T>
-  extends FieldRenderProps<T>,
+  extends FieldRenderProps<string>,
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText">,
     Pick<AutocompleteProps<T>, "noOptionsText">,
-    UseAutocompleteSingleProps<T> {
-  optionsForRender?: AutoCompleteForRenderOption[];
-}
+    UseAutocompleteSingleProps<T> {}
 
 const NO_GROUP = "__no__group__";
 
-export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueProps<string>): JSX.Element {
+export const AutoCompleteSingleValue = function (
+  props: AutoCompleteSingleValueProps<AutoCompleteForRenderOption>,
+): JSX.Element {
   const {
     label,
     helperText,
@@ -193,7 +191,6 @@ export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueP
     options,
     placeholder,
     noOptionsText,
-    optionsForRender,
   } = props;
 
   const {
@@ -205,51 +202,38 @@ export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueP
     groupUl,
   } = AutoCompleteSingleValueStyle();
 
-  autoCompleteDebug("optionsForRender:", options, optionsForRender);
+  let currentValue: AutoCompleteForRenderOption | null;
+  const valueInOptions = options.find((x) => x.value === value);
 
-  const getOptionFromValue = (value: string, callback: (op: AutoCompleteForRenderOption) => string): string => {
-    if (!optionsForRender) {
-      return NO_GROUP;
-    }
-
-    const option = optionsForRender?.find((x) => x.value === value);
-
-    if (!option) {
-      return value;
-    }
-
-    return callback(option);
-  };
+  if (!valueInOptions) {
+    currentValue = {
+      value: value,
+      label: value,
+      group: "Not Valid",
+    };
+  } else {
+    currentValue = valueInOptions;
+  }
 
   return (
-    <Autocomplete
+    <Autocomplete<AutoCompleteForRenderOption>
       openOnFocus
       noOptionsText={noOptionsText}
       options={options}
       size="small"
-      groupBy={(value) => getOptionFromValue(value, (op) => op.group)}
+      groupBy={(value) => value.group}
       filterOptions={createFilterOptions({
         ignoreCase: true,
         matchFrom: "any",
-        stringify: (value) => getOptionFromValue(value, (op) => op.label),
+        stringify: (value) => value.label,
       })}
-      getOptionLabel={(value) => getOptionFromValue(value, (op) => op.label)}
+      getOptionLabel={(value) => {
+        return value.label;
+      }}
       renderOption={(value) => {
-        if (!optionsForRender) {
-          return value;
-        }
-
-        const option = optionsForRender?.find((x) => x.value === value);
-
-        if (!option) {
-          return null;
-        }
-
-        autoCompleteDebug("renderOption:", value, option);
-
         return (
-          <div className={groupUl} key={option!.label} data-value={value}>
-            <Typography>{option!.label}</Typography>
+          <div className={groupUl} key={value.label} data-value={value}>
+            <Typography>{value.label}</Typography>
           </div>
         );
       }}
@@ -282,11 +266,13 @@ export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueP
           );
         }
       }}
-      value={value}
+      value={currentValue}
       onBlur={onBlur}
       forcePopupIcon={true}
-      onChange={(_: any, value: string | null) => {
-        onChange(value);
+      onChange={(_: any, value: AutoCompleteForRenderOption | null) => {
+        if (value) {
+          onChange(value.value);
+        }
       }}
       renderInput={(params) => {
         return (

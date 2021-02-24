@@ -1,14 +1,10 @@
+import { storiesOf } from "@storybook/react";
+import { AutoCompleteMultipleValue, AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
+import { FormDataPreview } from "forms/Final/util";
+import { NormalizePorts, stringArrayTrimParse } from "forms/normalizer";
+import { ValidatorArrayOfIsValidHostInCertificate } from "forms/validator";
 import React from "react";
 import { Field, FieldRenderProps, Form } from "react-final-form";
-import {
-  AutoCompleteMultipleValue,
-  AutoCompleteMultiValuesFreeSolo,
-  AutoCompleteSingleValue,
-} from "forms/Final/autoComplete";
-import { NormalizePorts, NormalizeString, stringArrayTrimParse } from "forms/normalizer";
-import { storiesOf } from "@storybook/react";
-import { ValidatorArrayOfIsValidHostInCertificate } from "forms/validator";
-import { FormDataPreview } from "forms/Final/util";
 
 export const MultipleNumberValuesFreeSolo = () => (
   <Form
@@ -87,67 +83,67 @@ export const MultipleValueSelect = () => (
   />
 );
 
-export const SingleValueSelect = () => (
-  <Form
-    onSubmit={console.log}
-    keepDirtyOnReinitialize
-    render={({ values }) => (
-      <form>
-        <Field
-          render={(props: FieldRenderProps<string>) => (
-            <AutoCompleteSingleValue {...props} options={["value1", "system", "database"]} />
-          )}
-          label="Value type is string"
-          name="values"
-          placeholder={"Select specific values"}
-          parse={NormalizeString}
-        />
+// export const SingleValueSelect = () => (
+//   <Form
+//     onSubmit={console.log}
+//     keepDirtyOnReinitialize
+//     render={({ values }) => (
+//       <form>
+//         <Field
+//           render={(props: FieldRenderProps<string>) => (
+//             <AutoCompleteSingleValue {...props} options={["value1", "system", "database"]} />
+//           )}
+//           label="Value type is string"
+//           name="values"
+//           placeholder={"Select specific values"}
+//           parse={NormalizeString}
+//         />
 
-        <Field
-          render={(props: FieldRenderProps<string>) => (
-            <AutoCompleteSingleValue
-              {...props}
-              options={["mysql", "mongo", "postgres", "nginx", "envoy"]}
-              optionsForRender={[
-                {
-                  value: "mysql",
-                  label: "Mysql Database",
-                  group: "database",
-                },
-                {
-                  value: "mongo",
-                  label: "Mongo",
-                  group: "database",
-                },
-                {
-                  value: "postgres",
-                  label: "Postgres",
-                  group: "database",
-                },
-                {
-                  value: "nginx",
-                  label: "Nginx",
-                  group: "proxy",
-                },
-                {
-                  value: "envoy",
-                  label: "Envoy",
-                  group: "proxy",
-                },
-              ]}
-            />
-          )}
-          label="Value type is string"
-          name="values2"
-          placeholder={"Select specific values"}
-          parse={NormalizeString}
-        />
+//         <Field
+//           render={(props: FieldRenderProps<string>) => (
+//             <AutoCompleteSingleValue
+//               {...props}
+//               options={["mysql", "mongo", "postgres", "nginx", "envoy"]}
+//               optionsForRender={[
+//                 {
+//                   value: "mysql",
+//                   label: "Mysql Database",
+//                   group: "database",
+//                 },
+//                 {
+//                   value: "mongo",
+//                   label: "Mongo",
+//                   group: "database",
+//                 },
+//                 {
+//                   value: "postgres",
+//                   label: "Postgres",
+//                   group: "database",
+//                 },
+//                 {
+//                   value: "nginx",
+//                   label: "Nginx",
+//                   group: "proxy",
+//                 },
+//                 {
+//                   value: "envoy",
+//                   label: "Envoy",
+//                   group: "proxy",
+//                 },
+//               ]}
+//             />
+//           )}
+//           label="Value type is string"
+//           name="values2"
+//           placeholder={"Select specific values"}
+//           parse={NormalizeString}
+//         />
 
-        <FormDataPreview />
-      </form>
-    )}
-  />
-);
+//         <FormDataPreview />
+//       </form>
+//     )}
+//   />
+// );
 
 storiesOf("Field/AutoComplete", module)
   .add("MultipleNumberValuesFreeSolo", () => {
@@ -158,7 +154,7 @@ storiesOf("Field/AutoComplete", module)
   })
   .add("MultipleValueSelect", () => {
     return <MultipleValueSelect />;
-  })
-  .add("SingleValueSelect", () => {
-    return <SingleValueSelect />;
   });
+// .add("SingleValueSelect", () => {
+//   return <SingleValueSelect />;
+// });
