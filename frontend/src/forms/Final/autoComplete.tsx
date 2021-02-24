@@ -1,7 +1,6 @@
-import { OutlinedTextFieldProps, TextField, Theme, Typography } from "@material-ui/core";
+import { OutlinedTextFieldProps, TextField, Theme } from "@material-ui/core";
 import Chip from "@material-ui/core/Chip";
 import { grey } from "@material-ui/core/colors";
-import Divider from "@material-ui/core/Divider";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import {
   AutocompleteProps,
@@ -14,8 +13,6 @@ import clsx from "clsx";
 import React, { ReactNode } from "react";
 import { FieldRenderProps } from "react-final-form";
 import { theme } from "theme/theme";
-import { KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
-import { Caption } from "widgets/Label";
 
 export interface AutoCompleteForRenderOption {
   value: string;
@@ -178,8 +175,6 @@ export interface AutoCompleteSingleValueProps<T>
     Pick<AutocompleteProps<T>, "noOptionsText">,
     UseAutocompleteSingleProps<T> {}
 
-const NO_GROUP = "__no__group__";
-
 export const AutoCompleteSingleValue = function (
   props: AutoCompleteSingleValueProps<AutoCompleteForRenderOption>,
 ): JSX.Element {
@@ -193,14 +188,14 @@ export const AutoCompleteSingleValue = function (
     noOptionsText,
   } = props;
 
-  const {
-    groupLabelDefault,
-    groupIcon,
-    logoIcon,
-    groupLabelCurrent,
-    groupLabel,
-    groupUl,
-  } = AutoCompleteSingleValueStyle();
+  // const {
+  //   groupLabelDefault,
+  //   groupIcon,
+  //   logoIcon,
+  //   groupLabelCurrent,
+  //   groupLabel,
+  //   groupUl,
+  // } = AutoCompleteSingleValueStyle();
 
   let currentValue: AutoCompleteForRenderOption | null;
   const valueInOptions = options.find((x) => x.value === value);
@@ -221,7 +216,7 @@ export const AutoCompleteSingleValue = function (
       noOptionsText={noOptionsText}
       options={options}
       size="small"
-      groupBy={(value) => value.group}
+      // groupBy={(value) => value.group}
       filterOptions={createFilterOptions({
         ignoreCase: true,
         matchFrom: "any",
@@ -230,42 +225,38 @@ export const AutoCompleteSingleValue = function (
       getOptionLabel={(value) => {
         return value.label;
       }}
-      renderOption={(value) => {
-        return (
-          <div className={groupUl} key={value.label} data-value={value}>
-            <Typography>{value.label}</Typography>
-          </div>
-        );
-      }}
-      renderGroup={({ key, children }) => {
-        if (key === NO_GROUP) {
-          return children;
-        }
-
-        if (key === "default") {
-          return (
-            <div key={key}>
-              <div className={groupLabelDefault}>
-                <KalmLogoIcon className={clsx(groupIcon, logoIcon)} />
-                <Caption>{key}</Caption>
-              </div>
-              {children}
-              <Divider />
-            </div>
-          );
-        } else {
-          return (
-            <div key={key}>
-              <div className={groupLabel}>
-                <KalmApplicationIcon className={groupIcon} />
-                <Caption className={clsx(key.includes("Current") ? groupLabelCurrent : {})}>{key}</Caption>
-              </div>
-              {children}
-              <Divider />
-            </div>
-          );
-        }
-      }}
+      // renderOption={(value) => {
+      //   return (
+      //     <div className={groupUl} key={value.label} data-value={value}>
+      //       <Typography>{value.label}</Typography>
+      //     </div>
+      //   );
+      // }}
+      // renderGroup={({ key, children }) => {
+      //   if (key === "default") {
+      //     return (
+      //       <div key={key}>
+      //         <div className={groupLabelDefault}>
+      //           <KalmLogoIcon className={clsx(groupIcon, logoIcon)} />
+      //           <Caption>{key}</Caption>
+      //         </div>
+      //         {children}
+      //         <Divider />
+      //       </div>
+      //     );
+      //   } else {
+      //     return (
+      //       <div key={key}>
+      //         <div className={groupLabel}>
+      //           <KalmApplicationIcon className={groupIcon} />
+      //           <Caption className={clsx(key.includes("Current") ? groupLabelCurrent : {})}>{key}</Caption>
+      //         </div>
+      //         {children}
+      //         <Divider />
+      //       </div>
+      //     );
+      //   }
+      // }}
       value={currentValue}
       onBlur={onBlur}
       forcePopupIcon={true}

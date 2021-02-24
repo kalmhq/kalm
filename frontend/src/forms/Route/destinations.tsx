@@ -62,7 +62,7 @@ const RenderHttpRouteDestinationsRaw: React.FC = () => {
           const displayNamespace = svc.namespace;
           options.push({
             value: `${svc.name}.${svc.namespace}.svc.cluster.local:${port.port}`,
-            label: svc.name + ":" + port.port + `(${port.appProtocol})`,
+            label: svc.name + "." + svc.namespace + ":" + port.port + `(${port.appProtocol})`,
             group: displayNamespace,
           });
         });
@@ -100,7 +100,7 @@ const RenderHttpRouteDestinationsRaw: React.FC = () => {
           {fields.value &&
             fields.value.map((destination, index) => {
               // This may be caused by edit of component network service port but didn't change route.
-              const invalidDestination = !options.find((x) => x.value === destination.host);
+              const invalidDestination = !!destination.host && !options.find((x) => x.value === destination.host);
 
               return (
                 <Grid container spacing={2} key={index} alignItems="center">
