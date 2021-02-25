@@ -11,6 +11,7 @@ import {
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import clsx from "clsx";
 import React, { useState } from "react";
+import { Subtitle1 } from "widgets/Label";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -24,7 +25,6 @@ const useStyles = makeStyles((theme: Theme) =>
       "& .MuiExpansionPanelSummary-root.Mui-expanded": {
         height: 48,
         minHeight: 48,
-        borderBottom: `1px solid ${theme.palette.divider}`,
       },
     },
     highRoot: {
@@ -37,7 +37,6 @@ const useStyles = makeStyles((theme: Theme) =>
       "& .MuiExpansionPanelSummary-root.Mui-expanded": {
         // height: 48,
         // minHeight: 48,
-        borderBottom: `1px solid ${theme.palette.divider}`,
       },
     },
     heading: {
@@ -77,7 +76,9 @@ export const Expansion: React.FC<ExpansionProps> = (props) => {
     if (typeof title === "string") {
       return (
         <>
-          <Box className={classes.heading}>{title}</Box>
+          <Subtitle1 className={classes.heading}>
+            <strong>{title}</strong>
+          </Subtitle1>
           {subTitle ? <Typography className={classes.secondaryHeading}>{subTitle}</Typography> : null}
         </>
       );

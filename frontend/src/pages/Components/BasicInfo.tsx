@@ -34,7 +34,7 @@ import { WrenchIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 import { SecretValueLabel } from "widgets/Label";
-import { VerticalHeadTable } from "widgets/VerticalHeadTable";
+import { VerticalHeadTableItem } from "widgets/VerticalHeadTable";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -68,9 +68,10 @@ const styles = (theme: Theme) =>
       display: "flex",
       flexDirection: "row",
     },
-    rowOdd: {
-      backgroundColor: theme.palette.type === "light" ? theme.palette.grey[100] : theme.palette.grey[700],
+    itemTitle: {
+      color: theme.palette.grey[500],
     },
+    rowOdd: {},
     rowEven: {
       backgroundColor: theme.palette.type === "light" ? theme.palette.grey[50] : theme.palette.grey[800],
     },
@@ -126,17 +127,17 @@ const mapStateToProps = (state: RootState) => {
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   activeNamespaceName: string;
   component: ApplicationComponentDetails;
+  setName: "first" | "second" | "third"; // refactor this later
 }
 
 const ComponentBasicInfoRaw: React.FC<Props> = (props) => {
+  const { component, classes, activeNamespaceName, dispatch, setName } = props;
+
   const renderCreatedAt = () => {
-    const { component } = props;
     return getComponentCreatedFromAndAtString(component);
   };
 
   const renderComponentStatus = () => {
-    const { component } = props;
-
     let running = 0;
     let pending = 0;
     let error = 0;
@@ -179,7 +180,6 @@ const ComponentBasicInfoRaw: React.FC<Props> = (props) => {
   };
 
   const renderComponentCPU = () => {
-    const { component, classes } = props;
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
@@ -196,7 +196,6 @@ const ComponentBasicInfoRaw: React.FC<Props> = (props) => {
   };
 
   const renderComponentMemory = () => {
-    const { component, classes } = props;
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
@@ -217,16 +216,14 @@ const ComponentBasicInfoRaw: React.FC<Props> = (props) => {
   };
 
   const renderPort = (key: any, protocol: string, port: number) => {
-    const { classes } = props;
     return (
       <div className={classes.port} key={key}>
         {protocol}:{port}
       </div>
     );
   };
-  const renderPorts = () => {
-    const { classes, activeNamespaceName, component } = props;
 
+  const renderPorts = () => {
     if (component.ports && component.ports!.length > 0) {
       const ports = component.ports?.map((port, index) => {
         const portString = port.servicePort ?? port.containerPort;
@@ -277,7 +274,6 @@ const ComponentBasicInfoRaw: React.FC<Props> = (props) => {
   };
 
   const renderHealth = () => {
-    const { component, activeNamespaceName, dispatch } = props;
     const readinessProbe = component.readinessProbe;
     const livenessProbe = component.livenessProbe;
     const icon =
@@ -307,11 +303,12 @@ const ComponentBasicInfoRaw: React.FC<Props> = (props) => {
   };
 
   const renderEnvs = () => {
-    const { component, classes } = props;
     const envs = component.env;
+
     if (envs === undefined || envs?.length === 0) {
       return "-";
     }
+
     return (
       <ExpansionPanel className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={envs.length <= 1}>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>{envs.length} variables</ExpansionPanelSummary>
@@ -342,11 +339,12 @@ const ComponentBasicInfoRaw: React.FC<Props> = (props) => {
   };
 
   const renderConfigFiles = () => {
-    const { component, classes } = props;
     const configs = component.preInjectedFiles;
+
     if (configs === undefined || configs?.length === 0) {
       return <>-</>;
     }
+
     return configs?.map((config, index) => {
       return (
         <Box key={index} className={classes.columnWrapper}>
@@ -362,12 +360,10 @@ const ComponentBasicInfoRaw: React.FC<Props> = (props) => {
   };
 
   const renderRestartStrategy = () => {
-    const { component } = props;
     return component.restartStrategy ?? "Rolling Update";
   };
 
   const renderGracefulTermination = () => {
-    const { component } = props;
     const duration =
       component.terminationGracePeriodSeconds === undefined ? "30" : component.terminationGracePeriodSeconds;
 
@@ -375,11 +371,12 @@ const ComponentBasicInfoRaw: React.FC<Props> = (props) => {
   };
 
   const renderDisks = () => {
-    const { component, classes } = props;
     const disks = component.volumes;
+
     if (disks === undefined || disks?.length === 0) {
       return "-";
     }
+
     return (
       <ExpansionPanel className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={true}>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
@@ -415,28 +412,50 @@ const ComponentBasicInfoRaw: React.FC<Props> = (props) => {
     );
   };
 
-  const { component, activeNamespaceName, dispatch } = props;
-  return (
-    <VerticalHeadTable
-      items={[
-        { name: "Created At", content: renderCreatedAt() },
+  let allItems: VerticalHeadTableItem[] = [];
+
+  switch (setName) {
+    case "first":
+      allItems = [
         { name: "Name", content: component.name },
         { name: "Namespace", content: activeNamespaceName },
+        { name: "Age", content: renderCreatedAt() },
         { name: "Workload Type", content: component.workloadType },
         { name: "Pod Status", content: renderComponentStatus() },
         { name: "Image", content: renderCopyableImageName(component.image, dispatch) },
+      ];
+      break;
+    case "second":
+      allItems = [
         { name: "Command", content: renderCommandValue(component.command, dispatch) },
         { name: "Environment Variables", content: renderEnvs() },
         { name: "Configuration Files", content: renderConfigFiles() },
         { name: "Exposed Ports", content: renderPorts() },
         { name: "Disks", content: renderDisks() },
+      ];
+      break;
+    case "third":
+      allItems = [
         { name: "Health", content: renderHealth() },
         { name: "CPU", content: renderComponentCPU() },
         { name: "Memory", content: renderComponentMemory() },
         { name: "Restart Strategy", content: renderRestartStrategy() },
         { name: "Graceful Termination", content: renderGracefulTermination() },
-      ]}
-    />
+      ];
+      break;
+  }
+
+  return (
+    <Box>
+      {allItems.map((item) => {
+        return (
+          <Box mb={2}>
+            <div className={classes.itemTitle}>{item.name}</div>
+            {item.content || "-"}
+          </Box>
+        );
+      })}
+    </Box>
   );
 };
 

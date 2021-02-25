@@ -20,6 +20,14 @@ const lightTheme = createMuiTheme({
     MuiExpansionPanel: {
       rounded: {
         borderRadius: "10px",
+        "&:first-child": {
+          borderTopLeftRadius: "10px",
+          borderTopRightRadius: "10px",
+        },
+        "&:last-child": {
+          borderBottomLeftRadius: "10px",
+          borderBottomRightRadius: "10px",
+        },
       },
     },
     MuiButton: {
@@ -30,10 +38,6 @@ const lightTheme = createMuiTheme({
     MuiTableCell: {
       head: {
         color: "rgba(0, 0, 0, 0.5)",
-      },
-      root: {
-        paddingTop: 8,
-        paddingBottom: 8,
       },
     },
   },
@@ -66,6 +70,14 @@ const darkTheme = createMuiTheme({
     MuiExpansionPanel: {
       rounded: {
         borderRadius: "10px",
+        "&:first-child": {
+          borderTopLeftRadius: "10px",
+          borderTopRightRadius: "10px",
+        },
+        "&:last-child": {
+          borderBottomLeftRadius: "10px",
+          borderBottomRightRadius: "10px",
+        },
       },
     },
     MuiButton: {

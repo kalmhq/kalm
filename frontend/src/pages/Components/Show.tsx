@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteComponentAction } from "actions/component";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { api } from "api";
@@ -35,6 +35,9 @@ const styles = (theme: Theme) =>
       marginLeft: theme.spacing(2),
       marginRight: theme.spacing(2),
     },
+    rightBorder: {
+      borderRight: `1px dashed ${theme.palette.divider}`,
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -49,12 +52,13 @@ interface Props
     WithRoutesDataProps {}
 
 const ComponentShowRaw: React.FC<Props> = (props) => {
+  const { classes, component, httpRoutes, activeNamespaceName, canEditNamespace, dispatch } = props;
+
   const getServicePort = (port: ComponentLikePort) => {
     return port.servicePort || port.containerPort;
   };
 
   const renderStatefulSetNetwork = () => {
-    const { component, activeNamespaceName } = props;
     const hasService = component.ports && component.ports!.length > 0;
 
     return (
@@ -99,7 +103,6 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
   };
 
   const renderCommonNetwork = () => {
-    const { component, activeNamespaceName } = props;
     const hasService = component.ports && component.ports!.length > 0;
 
     return (
@@ -142,8 +145,6 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
   };
 
   const renderRoutes = () => {
-    const { httpRoutes, component, activeNamespaceName, canEditNamespace } = props;
-
     const serviceName = `${component.name}`;
 
     const routes = httpRoutes.filter(
@@ -160,24 +161,22 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
     );
   };
   const renderPods = () => {
-    const { component, activeNamespaceName, canEditNamespace } = props;
-
     return (
       <Expansion title="pods" defaultUnfold>
-        <PodsTable
-          activeNamespaceName={activeNamespaceName}
-          component={component}
-          pods={component.pods}
-          workloadType={component.workloadType as WorkloadType}
-          canEdit={canEditNamespace(activeNamespaceName)}
-        />
+        <Box p={2}>
+          <PodsTable
+            activeNamespaceName={activeNamespaceName}
+            component={component}
+            pods={component.pods}
+            workloadType={component.workloadType as WorkloadType}
+            canEdit={canEditNamespace(activeNamespaceName)}
+          />
+        </Box>
       </Expansion>
     );
   };
 
   const renderJobs = () => {
-    const { component, activeNamespaceName, canEditNamespace } = props;
-
     return (
       <Expansion title="Jobs" defaultUnfold>
         <JobsTable
@@ -192,8 +191,6 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
   };
 
   const renderSecondHeaderRight = () => {
-    const { classes, component, activeNamespaceName, canEditNamespace, dispatch } = props;
-
     return (
       <div className={classes.secondHeaderRight}>
         {component.workloadType === "cronjob" && (
@@ -247,7 +244,6 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
     );
   };
 
-  const { component, activeNamespaceName } = props;
   return (
     <BasePage
       secondHeaderRight={renderSecondHeaderRight()}
@@ -256,7 +252,19 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
     >
       <Box p={2}>
         <Expansion title={"Basic"} defaultUnfold>
-          <ComponentBasicInfo component={component} activeNamespaceName={activeNamespaceName} />
+          <Box p={2} pb={4}>
+            <Grid container spacing={4}>
+              <Grid item md={3} className={classes.rightBorder}>
+                <ComponentBasicInfo component={component} activeNamespaceName={activeNamespaceName} setName="first" />
+              </Grid>
+              <Grid item md={4} className={classes.rightBorder}>
+                <ComponentBasicInfo component={component} activeNamespaceName={activeNamespaceName} setName="second" />
+              </Grid>
+              <Grid item md={5}>
+                <ComponentBasicInfo component={component} activeNamespaceName={activeNamespaceName} setName="third" />
+              </Grid>
+            </Grid>
+          </Box>
         </Expansion>
         {!!component.jobs && renderJobs()}
         {renderPods()}

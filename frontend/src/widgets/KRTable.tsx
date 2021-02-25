@@ -112,7 +112,7 @@ export const KRTable = ({
           </Grid>
         </Grid>
       ) : null}
-      <MuiTable {...getTableProps()}>
+      <MuiTable {...getTableProps()} className="dashedBorder">
         <TableHead>
           {headerGroups.map((headerGroup) => (
             <TableRow {...headerGroup.getHeaderGroupProps()}>
