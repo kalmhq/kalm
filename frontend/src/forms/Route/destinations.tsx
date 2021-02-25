@@ -2,7 +2,6 @@ import { Box, Grid } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Collapse from "@material-ui/core/Collapse";
 import Typography from "@material-ui/core/Typography";
-import Warning from "@material-ui/icons/Warning";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { AutoCompleteForRenderOption, AutoCompleteSingleValue } from "forms/Final/autoComplete";
 import { FinialSliderRender } from "forms/Final/slicer";
@@ -105,7 +104,7 @@ const RenderHttpRouteDestinationsRaw: React.FC = () => {
 
               return (
                 <Grid container spacing={2} key={index} alignItems="center">
-                  <Grid item xs={8} sm={8} md={6} lg={4} xl={4}>
+                  <Grid item xs={8} sm={8}>
                     <Field
                       name={`destinations.${index}.host`}
                       render={(props: FieldRenderProps<any>) => (
@@ -136,7 +135,7 @@ const RenderHttpRouteDestinationsRaw: React.FC = () => {
                       />
                     </Grid>
                   ) : null}
-                  <Grid item md={1}>
+                  <Grid item md={2}>
                     <IconButtonWithTooltip
                       tooltipPlacement="top"
                       tooltipTitle="Delete"
@@ -146,11 +145,11 @@ const RenderHttpRouteDestinationsRaw: React.FC = () => {
                       <DeleteIcon />
                     </IconButtonWithTooltip>
                   </Grid>
-                  {destination.weight === 0 ? (
+                  {/* {destination.weight === 0 ? (
                     <Grid item md={3}>
                       <Warning /> Requests won't go into this target since it has 0 weight.
                     </Grid>
-                  ) : null}
+                  ) : null} */}
                 </Grid>
               );
             })}{" "}
