@@ -167,41 +167,6 @@ func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo C
 	return true, nil
 }
 
-// - update kalmOperatorConfig install status
-// - for byoc, report install progress
-// func (r *KalmOperatorConfigReconciler) updateInstallProcess(newStatus installv1alpha1.InstallStatusKey) (updated bool, err error) {
-// 	config := r.config
-// 	curStatus := config.Status.InstallStatusKey
-
-// 	if curStatus != nil && indexOfStatus(newStatus) <= indexOfStatus(*curStatus) {
-// 		return false, nil
-// 	}
-
-// 	// report progress first for byoc, so if fail, we have chance to report again
-// 	if config.Spec.BYOCModeConfig != nil {
-// 		ok, err := r.reportInstallProcessToKalmSaaS(newStatus)
-
-// 		// only deal with failure for final state: INSTALLED
-// 		// cuz if this missed, SaaS will be in wrong state
-// 		// other states can be skipped
-// 		if newStatus == installv1alpha1.InstallStateInstalled {
-// 			if err != nil {
-// 				return false, err
-// 			} else if !ok {
-// 				return false, fmt.Errorf("reportInstallProcessToKalmSaaS failed for status: %s", newStatus)
-// 			}
-// 		}
-// 	}
-
-// 	// update to new install status
-// 	config.Status.InstallStatusKey = &newStatus
-// 	if err := r.Status().Update(r.Ctx, config); err != nil {
-// 		return false, err
-// 	}
-
-// 	return true, err
-// }
-
 func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err error) {
 	if r.config.Status.InstallStatusKey != nil &&
 		*r.config.Status.InstallStatusKey == installv1alpha1.InstallStateDone {
@@ -209,8 +174,16 @@ func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err
 	}
 
 	var stateIdx int
-	for ; stateIdx < len(installv1alpha1.InstallStates); stateIdx++ {
-		state := installv1alpha1.InstallStates[stateIdx]
+
+	var installStates []installv1alpha1.InstallState
+	if r.config.Spec.BYOCModeConfig != nil {
+		installStates = installv1alpha1.InstallStatesForBYOC
+	} else {
+		installStates = installv1alpha1.InstallStatesForLocal
+	}
+
+	for ; stateIdx < len(installStates); stateIdx++ {
+		state := installStates[stateIdx]
 
 		if state.Key == installv1alpha1.InstallStateStart {
 			continue
@@ -280,18 +253,14 @@ func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err
 	config := r.config.DeepCopy()
 
 	// curStatusKey := config.Status.InstallStatusKey
-	newStatus := installv1alpha1.InstallStates[stateIdx]
+	newStatus := installStates[stateIdx]
 	newStatusKey := newStatus.Key
-
-	// if curStatusKey != nil && indexOfStatus(newStatusKey) <= indexOfStatus(*curStatusKey) {
-	// 	return false, nil
-	// }
 
 	// setup status.installConditions
 	newInstallConditions := []installv1alpha1.InstallCondition{}
-	for i, state := range installv1alpha1.InstallStates {
+	for i, state := range installStates {
 		var s corev1.ConditionStatus
-		isReady := i < stateIdx || stateIdx == len(installv1alpha1.InstallStates)-1
+		isReady := i < stateIdx || stateIdx == len(installStates)-1
 		if isReady {
 			s = corev1.ConditionTrue
 		} else {
@@ -304,14 +273,7 @@ func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err
 		}
 
 		oldCondition := findConditionByKey(state.Key, config.Status.InstallConditions)
-		// if oldCondition == nil || oldCondition.Status != newCondition.Status {
-		// 	now := metav1.NewTime(time.Now())
-		// 	newCondition.LastTransitionTime = &now
-		// } else if oldCondition != nil && oldCondition.LastTransitionTime != nil {
-		// 	newCondition.LastTransitionTime = oldCondition.LastTransitionTime
-		// } else {
-		// 	newCondition.LastTransitionTime = oldCondition.LastTransitionTime
-		// }
+
 		if oldCondition != nil && oldCondition.LastTransitionTime != nil && oldCondition.Status == newCondition.Status {
 			newCondition.LastTransitionTime = oldCondition.LastTransitionTime
 		} else {
