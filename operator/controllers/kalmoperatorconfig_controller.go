@@ -219,19 +219,11 @@ func (r *KalmOperatorConfigReconciler) reconcileResources() error {
 		return err
 	}
 
-	// if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstalling); err != nil {
-	// 	return err
-	// }
-
 	if !config.Spec.SkipCertManagerInstallation {
 		if err := r.applyFromYaml("cert-manager.yaml"); err != nil {
 			log.Error(err, "install certManager error.")
 			return err
 		}
-
-		// if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstallingCertMgr); err != nil {
-		// 	return err
-		// }
 	}
 
 	if !config.Spec.SkipIstioInstallation {
@@ -249,10 +241,6 @@ func (r *KalmOperatorConfigReconciler) reconcileResources() error {
 			log.Error(err, "add recording rules form istio prometheus failed.")
 			return err
 		}
-
-		// if _, err := r.updateInstallProcess(installv1alpha1.InstallStateInstallingIstio); err != nil {
-		// 	return err
-		// }
 	}
 
 	// check dp to determine if install is ready, dp will be ready after crd
