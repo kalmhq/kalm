@@ -152,6 +152,7 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 
 type Claims struct {
 	Groups []string `json:"groups"`
+	Email  string   `json:"email"`
 }
 
 func handleExtAuthz(c echo.Context) error {
@@ -241,7 +242,10 @@ func handleExtAuthz(c echo.Context) error {
 		}
 	}
 
-	if !inGrantedGroups(c, idToken) {
+	var claims Claims
+	_ = idToken.Claims(&claims)
+
+	if !inGrantedGroups(c, &claims) {
 		clearTokenInCookie(c)
 		return c.JSON(401, "You don't in any granted groups. Contact you admin please.")
 	}
@@ -250,6 +254,7 @@ func handleExtAuthz(c echo.Context) error {
 	// if the verify returns no error. It's safe to get claims in this way
 	parts := strings.Split(token.IDTokenString, ".")
 	c.Response().Header().Set(controllers.KALM_SSO_USERINFO_HEADER, parts[1])
+	c.Response().Header().Set(controllers.KALM_AUTH_EMAIL, claims.Email)
 
 	return c.NoContent(200)
 }
@@ -376,7 +381,7 @@ func shouldLetPass(c echo.Context) bool {
 		strings.HasPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 }
 
-func inGrantedGroups(c echo.Context, idToken *oidc.IDToken) bool {
+func inGrantedGroups(c echo.Context, claims *Claims) bool {
 	grantedGroups := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_GROUPS_HEADER)
 
 	if grantedGroups == "" {
@@ -384,15 +389,13 @@ func inGrantedGroups(c echo.Context, idToken *oidc.IDToken) bool {
 	}
 
 	groups := strings.Split(grantedGroups, "|")
-	var claim Claims
-	_ = idToken.Claims(&claim)
 
 	gm := make(map[string]struct{}, len(groups))
 	for _, g := range groups {
 		gm[g] = struct{}{}
 	}
 
-	for _, g := range claim.Groups {
+	for _, g := range claims.Groups {
 		if _, ok := gm[g]; ok {
 			return true
 		}

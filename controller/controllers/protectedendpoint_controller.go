@@ -241,6 +241,9 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterListenerPatches(req ct
 								map[string]interface{}{
 									"exact": KALM_SSO_USERINFO_HEADER,
 								},
+								map[string]interface{}{
+									"exact": KALM_AUTH_EMAIL,
+								},
 							},
 						},
 					},
