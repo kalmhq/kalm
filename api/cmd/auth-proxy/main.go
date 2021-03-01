@@ -21,6 +21,7 @@ import (
 	"github.com/kalmhq/kalm/api/server"
 	"github.com/kalmhq/kalm/api/utils"
 	"github.com/kalmhq/kalm/controller/controllers"
+	"github.com/kalmhq/kalm/controller/validation"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 	"golang.org/x/net/http2"
@@ -116,9 +117,19 @@ func getOriginalURL(c echo.Context) string {
 		requestURI = "/"
 	}
 
-	ur := fmt.Sprintf("%s://%s%s", c.Scheme(), c.Request().Host, requestURI)
-	logger.Info(fmt.Sprintf("original url %s", ur))
-	return ur
+	// a dirty fix for redirecting to https when access using IP
+	var scheme string
+	host := c.Request().Host
+	isIP := validation.ValidateIPAddress(host) == nil
+	if isIP {
+		scheme = "http"
+	} else {
+		scheme = c.Scheme()
+	}
+
+	url := fmt.Sprintf("%s://%s%s", scheme, c.Request().Host, requestURI)
+	logger.Info(fmt.Sprintf("original url %s", url))
+	return url
 }
 func getStringSignature(data string) string {
 	signBytes := sha256.Sum256(append([]byte(data), []byte(clientSecret)...))

@@ -129,7 +129,7 @@ var (
 	InstallStateDone                         InstallStatusKey = "INSTALLED"
 )
 
-var InstallStates = []InstallState{
+var InstallStatesForBYOC = []InstallState{
 	{InstallStateStart, 1 * time.Minute, ""},
 	{InstallStateInstalCertMgr, 1 * time.Minute, ""},
 	{InstallStateInstalIstio, 1 * time.Minute, ""},
@@ -140,6 +140,15 @@ var InstallStates = []InstallState{
 	{InstallStateConfigureACMEServerAccess, 2 * time.Minute, "External access not ready, check your cloud provider load balancer service"},
 	{InstallStateReportClusterInfo, 1 * time.Minute, ""},
 	{InstallStateClusterFullySetup, 1 * time.Minute, ""},
+	{InstallStateDone, 1 * time.Minute, ""},
+}
+
+var InstallStatesForLocal = []InstallState{
+	{InstallStateStart, 1 * time.Minute, ""},
+	{InstallStateInstalCertMgr, 1 * time.Minute, ""},
+	{InstallStateInstalIstio, 1 * time.Minute, ""},
+	{InstallStateInstalKalmController, 1 * time.Minute, ""},
+	{InstallStateInstalKalmDashboard, 1 * time.Minute, ""},
 	{InstallStateDone, 1 * time.Minute, ""},
 }
 

@@ -14,7 +14,7 @@ resources:
   - bases/core.kalm.dev_httproutes.yaml
   - bases/core.kalm.dev_singlesignonconfigs.yaml
   - bases/core.kalm.dev_protectedendpoints.yaml
-  - bases/core.kalm.dev_deploykeys.yaml
+  #- bases/core.kalm.dev_deploykeys.yaml
   - bases/core.kalm.dev_acmeservers.yaml
   - bases/core.kalm.dev_logsystems.yaml
   - bases/core.kalm.dev_rolebindings.yaml
