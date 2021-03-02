@@ -70,7 +70,7 @@ type ComponentSpec struct {
 	Command string `json:"command,omitempty"`
 
 	// +optional
-	EnableHeadlessService bool `json:"enableHeadlessService"`
+	EnableHeadlessService bool `json:"enableHeadlessService,omitempty"`
 
 	Ports []Port `json:"ports,omitempty"`
 
@@ -109,9 +109,6 @@ type ComponentSpec struct {
 	RunnerPermission *RunnerPermission `json:"runnerPermission,omitempty"`
 
 	PreInjectedFiles []PreInjectFile `json:"preInjectedFiles,omitempty"`
-
-	// +optional
-	Priority int `json:"priority"`
 
 	// This is only meaningful if this component is a cronjob workload.
 	// Controller should immediately trigger a job and set its value to false if it's true.
