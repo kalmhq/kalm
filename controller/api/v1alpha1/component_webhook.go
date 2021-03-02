@@ -476,7 +476,7 @@ func (r *Component) validateRunnerPermission() (rst KalmValidateErrorList) {
 	return rst
 }
 
-func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu, mem, ephemeralStorage resource.Quantity) *v1.ResourceRequirements {
+func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu, mem resource.Quantity) *v1.ResourceRequirements {
 	var rst *v1.ResourceRequirements
 	if requirements == nil {
 		rst = &v1.ResourceRequirements{}
@@ -513,14 +513,6 @@ func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu,
 		}
 	}
 
-	if _, exist := limits[v1.ResourceEphemeralStorage]; !exist {
-		if req, exist := requests[v1.ResourceEphemeralStorage]; exist {
-			limits[v1.ResourceEphemeralStorage] = req
-		} else {
-			limits[v1.ResourceEphemeralStorage] = ephemeralStorage
-		}
-	}
-
 	rst.Limits = limits
 
 	// storage is not a standard resource for containers
@@ -537,9 +529,6 @@ func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu,
 	if _, exist := requests[v1.ResourceMemory]; !exist {
 		requests[v1.ResourceMemory] = resource.MustParse("1Mi")
 	}
-	if _, exist := requests[v1.ResourceEphemeralStorage]; !exist {
-		requests[v1.ResourceEphemeralStorage] = resource.MustParse("1Mi")
-	}
 	rst.Requests = requests
 
 	return rst
@@ -548,9 +537,8 @@ func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu,
 func (r *Component) setupResourceRequirementIfAbsent() {
 	defaultCPULimit := resource.MustParse("200m")
 	defaultMemoryLimit := resource.MustParse("128Mi")
-	defaultEphemeralStorageLimit := resource.MustParse("128Mi")
 
-	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.ResourceRequirements, defaultCPULimit, defaultMemoryLimit, defaultEphemeralStorageLimit)
+	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.ResourceRequirements, defaultCPULimit, defaultMemoryLimit)
 
 	r.Spec.ResourceRequirements = filledResRequirement
 }
@@ -558,9 +546,8 @@ func (r *Component) setupResourceRequirementIfAbsent() {
 func (r *Component) setupIstioResourceRequirementIfAbsent() {
 	defaultCPULimit := resource.MustParse("100m")
 	defaultMemoryLimit := resource.MustParse("128Mi")
-	defaultEphemeralStorageLimit := resource.MustParse("64Mi")
 
-	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.IstioResourceRequirements, defaultCPULimit, defaultMemoryLimit, defaultEphemeralStorageLimit)
+	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.IstioResourceRequirements, defaultCPULimit, defaultMemoryLimit)
 
 	r.Spec.IstioResourceRequirements = filledResRequirement
 }
