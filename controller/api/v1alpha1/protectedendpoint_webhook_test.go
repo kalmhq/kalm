@@ -1,9 +1,10 @@
 package v1alpha1
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"testing"
 )
 
 func TestProtectedEndpoint_Validate(t *testing.T) {
@@ -14,7 +15,6 @@ func TestProtectedEndpoint_Validate(t *testing.T) {
 		},
 		Spec: ProtectedEndpointSpec{
 			EndpointName: "test-ep",
-			Type:         SSOConnectorTypeGithub,
 			Ports:        []uint32{8080},
 			Groups:       []string{},
 		},

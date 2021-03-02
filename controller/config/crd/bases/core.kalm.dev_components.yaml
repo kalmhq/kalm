@@ -9,9 +9,6 @@ metadata:
   name: components.core.kalm.dev
 spec:
   additionalPrinterColumns:
-  - JSONPath: .metadata.labels.tenant
-    name: Tenant
-    type: string
   - JSONPath: .spec.workloadType
     name: Workload
     type: string

@@ -9,9 +9,6 @@ metadata:
   name: httproutes.core.kalm.dev
 spec:
   additionalPrinterColumns:
-  - JSONPath: .metadata.labels.tenant
-    name: Tenant
-    type: string
   - JSONPath: .spec.hosts
     name: Hosts
     type: string

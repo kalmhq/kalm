@@ -9,9 +9,6 @@ metadata:
   name: protectedendpoints.core.kalm.dev
 spec:
   additionalPrinterColumns:
-  - JSONPath: .metadata.labels.tenant
-    name: Tenant
-    type: string
   - JSONPath: .spec.type
     name: Type
     type: string
