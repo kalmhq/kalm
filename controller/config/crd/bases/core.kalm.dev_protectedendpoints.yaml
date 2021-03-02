@@ -63,16 +63,6 @@ spec:
                 format: int32
                 type: integer
               type: array
-            tenants:
-              items:
-                type: string
-              type: array
-            type:
-              enum:
-              - Port
-              - Component
-              - HttpRoute
-              type: string
           required:
           - name
           type: object

@@ -70,10 +70,6 @@ type SingleSignOnConfigSpec struct {
 
 	IDTokenExpirySeconds *uint32 `json:"idTokenExpirySeconds,omitempty"`
 
-	// deprecated, use NeedExtraOAuthScope instead
-	// +optional
-	// KalmMode string `json:"kalmMode"`
-
 	// +optional
 	NeedExtraOAuthScope bool `json:"needExtraOAuthScope,omitempty"`
 }

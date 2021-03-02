@@ -412,7 +412,6 @@ func (r *KalmOperatorConfigReconciler) reconcileProtectedEndpointForDashboard(ba
 			EndpointName:                "kalm",
 			Ports:                       []uint32{3001},
 			AllowToPassIfHasBearerToken: true,
-			Tenants:                     []string{"*"},
 		},
 	}
 
