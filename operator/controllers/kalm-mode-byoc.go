@@ -287,6 +287,9 @@ func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err
 			if secondsElapse > int64(state.Timeout.Seconds()) {
 				newCondition.Reason = "Timeout"
 				newCondition.Message = state.TimeoutHint
+
+				possibleReasons := r.getPossibleReasonsForTimeout(newCondition.Type)
+				newCondition.Message += fmt.Sprintf(" %s", possibleReasons)
 			}
 		}
 
