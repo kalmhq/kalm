@@ -52,11 +52,14 @@ const KALM_SSO_SET_COOKIE_PAYLOAD_HEADER = "kalm-set-cookie"
 const KALM_ROUTE_HEADER = "kalm-route"
 const KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER = "allow-to-pass-if-has-bearer-token"
 
+const KALM_AUTH_EMAIL = "kalm-auth-email"
+
 var DANGEROUS_HEADERS = []string{
 	KALM_SSO_USERINFO_HEADER,
 	KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER,
 	KALM_ROUTE_HEADER,
 	KALM_SSO_SET_COOKIE_PAYLOAD_HEADER,
+	KALM_AUTH_EMAIL,
 }
 
 type HttpRouteReconcilerTask struct {
