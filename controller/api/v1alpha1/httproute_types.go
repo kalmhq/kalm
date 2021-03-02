@@ -155,7 +155,6 @@ type HttpRouteStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="Tenant",type="string",JSONPath=".metadata.labels.tenant"
 // +kubebuilder:printcolumn:name="Hosts",type="string",JSONPath=".spec.hosts"
 // +kubebuilder:printcolumn:name="Paths",type="string",JSONPath=".spec.paths"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"

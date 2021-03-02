@@ -77,7 +77,6 @@ type HttpsCertCondition struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="Tenant",type="string",JSONPath=".metadata.labels.tenant"
 // +kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.conditions[0].status`
 // +kubebuilder:printcolumn:name="Message",type=string,JSONPath=`.status.conditions[0].message`
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
