@@ -81,6 +81,8 @@ type BYOCModeConfig struct {
 	// like: foobar.byoc-clusters.kalm-dns.com
 	BaseDNSDomain string `json:"baseDNSDomain,omitempty"`
 
+	ClusterName string `json:"clusterName,omitempty"`
+
 	OIDCIssuer *OIDCIssuerConfig `json:"oidcIssuer,omitempty"`
 }
 
