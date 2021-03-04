@@ -133,15 +133,15 @@ var (
 
 var InstallStatesForBYOC = []InstallState{
 	{InstallStateStart, 1 * time.Minute, ""},
-	{InstallStateInstalCertMgr, 1 * time.Minute, ""},
-	{InstallStateInstalIstio, 1 * time.Minute, ""},
-	{InstallStateInstalKalmController, 1 * time.Minute, ""},
-	{InstallStateInstalKalmDashboard, 1 * time.Minute, ""},
-	{InstallStateInstalACMEServer, 1 * time.Minute, ""},
-	{InstallStateConfigureKalmDashboardAccess, 2 * time.Minute, "External access not ready, check your cloud provider load balancer service"},
-	{InstallStateConfigureACMEServerAccess, 2 * time.Minute, "External access not ready, check your cloud provider load balancer service"},
-	{InstallStateReportClusterInfo, 1 * time.Minute, ""},
-	{InstallStateClusterFullySetup, 1 * time.Minute, ""},
+	{InstallStateInstalCertMgr, 1 * time.Minute, "cert-manger installation takes longer than expected."},
+	{InstallStateInstalIstio, 1 * time.Minute, "Istio installation takes longer than expected."},
+	{InstallStateInstalKalmController, 1 * time.Minute, "kalm-controller installation takes longer than expected."},
+	{InstallStateInstalKalmDashboard, 1 * time.Minute, "kalm-dashboard installation takes longer than expected."},
+	{InstallStateInstalACMEServer, 1 * time.Minute, "acme-dns-server installation taker longer than expected."},
+	{InstallStateConfigureKalmDashboardAccess, 2 * time.Minute, "External access for kalm-dashboard not ready, please check your cloud provider's load balancer service for details."},
+	{InstallStateConfigureACMEServerAccess, 2 * time.Minute, "External access for acme-dns-server not ready, please check your cloud provider's load balancer service for details."},
+	{InstallStateReportClusterInfo, 1 * time.Minute, "Report cluster info to kalm-SaaS takes longer than expected."},
+	{InstallStateClusterFullySetup, 1 * time.Minute, "Cluster fully setup takes longer than expected."},
 	{InstallStateDone, 1 * time.Minute, ""},
 }
 
