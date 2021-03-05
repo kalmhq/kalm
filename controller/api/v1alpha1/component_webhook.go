@@ -97,9 +97,6 @@ func (r *Component) Default() {
 	}
 
 	if !IsKalmSystemNamespace(r.Namespace) {
-		// only set hard limit on tenant component
-		// this makes system component possible to consumes more resource as request grows
-
 		// set default resourceRequirement & limits
 		r.setupResourceRequirementIfAbsent()
 
@@ -158,10 +155,6 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 
 	return nil
 }
-
-// func emitWarning(obj runtime.Object, reason, msg string) {
-// 	eventRecorder.Event(obj, v1.EventTypeWarning, reason, msg)
-// }
 
 func isIdenticalVolMap(mapNew map[string]Volume, mapOld map[string]Volume) (bool, error) {
 
@@ -514,11 +507,6 @@ func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu,
 	}
 
 	rst.Limits = limits
-
-	// storage is not a standard resource for containers
-	// if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceStorage]; !exist {
-	// 	r.Spec.ResourceRequirements.Limits[v1.ResourceStorage] = resource.MustParse("1Gi")
-	// }
 
 	// Requests
 
