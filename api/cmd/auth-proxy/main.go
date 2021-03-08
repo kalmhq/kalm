@@ -174,6 +174,13 @@ func handleExtAuthz(c echo.Context) error {
 		contextLogger.Info("handleExtAuthz", zap.String("header", k), zap.Any("value", v))
 	}
 
+	// allow traffic to pass (AND semanteme)
+	//   - If `let-pass-if-has-bearer-token` header is explicitly declared
+	//   - There is a bearerAuthorization token
+	if shouldLetPass(c) {
+		return c.NoContent(200)
+	}
+
 	if getOauth2Config() == nil {
 		return c.String(503, "Please configure KALM OIDC environments.")
 	}
@@ -195,13 +202,6 @@ func handleExtAuthz(c echo.Context) error {
 
 		contextLogger.Info("valid jwt token")
 		return handleSetIDToken(c)
-	}
-
-	// allow traffic to pass (AND semanteme)
-	//   - If `let-pass-if-has-bearer-token` header is explicitly declared
-	//   - There is a bearer token
-	if shouldLetPass(c) {
-		return c.NoContent(200)
 	}
 
 	token, err := getTokenFromRequest(c)
@@ -256,9 +256,9 @@ func handleExtAuthz(c echo.Context) error {
 	var claims Claims
 	_ = idToken.Claims(&claims)
 
-	if !inGrantedGroups(c, &claims) {
+	if !isAuthorized(c, &claims) {
 		clearTokenInCookie(c)
-		return c.JSON(401, "You don't in any granted groups. Contact you admin please.")
+		return c.JSON(401, "Access denied. Contact you admin please.")
 	}
 
 	// Set user info in meta header
@@ -392,23 +392,37 @@ func shouldLetPass(c echo.Context) bool {
 		strings.HasPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 }
 
-func inGrantedGroups(c echo.Context, claims *Claims) bool {
+// When auth-proxy works as a ext_authz filter in envoy, the request will come along with
+// `kalm-sso-granted-groups` and `kalm-sso-granted-emails`.
+// If the `email` in the claims is in `kalm-sso-granted-emails` OR the `groups` in the claims have intersections with `kalm-sso-granted-groups`,
+// then the request is considered authorized, otherwise, the request will be blocked.
+func isAuthorized(c echo.Context, claims *Claims) bool {
 	grantedGroups := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_GROUPS_HEADER)
+	grantedEmails := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_EMAILS_HEADER)
 
-	if grantedGroups == "" {
-		return true
+	if grantedGroups != "" {
+		groups := strings.Split(grantedGroups, "|")
+
+		gm := make(map[string]struct{}, len(groups))
+		for _, g := range groups {
+			gm[g] = struct{}{}
+		}
+
+		for _, g := range claims.Groups {
+			if _, ok := gm[g]; ok {
+				return true
+			}
+		}
 	}
 
-	groups := strings.Split(grantedGroups, "|")
+	if grantedEmails != "" {
+		email := strings.ToLower(claims.Email)
+		emails := strings.Split(grantedEmails, "|")
 
-	gm := make(map[string]struct{}, len(groups))
-	for _, g := range groups {
-		gm[g] = struct{}{}
-	}
-
-	for _, g := range claims.Groups {
-		if _, ok := gm[g]; ok {
-			return true
+		for _, e := range emails {
+			if email == e {
+				return true
+			}
 		}
 	}
 
