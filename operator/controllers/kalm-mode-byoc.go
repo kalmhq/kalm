@@ -99,6 +99,21 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
 		r.Log.Info("ClusterInfo already reported")
 	}
 
+	//if stuck at CLUSTER_FULLY_SETUP, retry later
+	var firstPendingStateKey installv1alpha1.InstallStatusKey
+	for _, c := range status.InstallConditions {
+		if c.Status == corev1.ConditionTrue {
+			continue
+		}
+
+		firstPendingStateKey = c.Type
+		break
+	}
+
+	if firstPendingStateKey == installv1alpha1.InstallStateClusterFullySetup {
+		return retryLaterErr
+	}
+
 	return nil
 }
 
