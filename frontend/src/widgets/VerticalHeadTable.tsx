@@ -2,7 +2,7 @@ import { Table, TableContainer, TableBody, TableRow, TableCell } from "@material
 import React from "react";
 
 export interface VerticalHeadTableItem {
-  name: string;
+  name: string | React.ReactNode;
   content: React.ReactNode;
 }
 

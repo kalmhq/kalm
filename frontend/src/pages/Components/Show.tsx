@@ -68,7 +68,7 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
           {component.pods.map((pod) => (
             <Box key={pod.name} mb={2}>
               <H6>{pod.name}</H6>
-              <Body>
+              <Body color={"textSecondary"}>
                 Cluster FQDN DNS:{" "}
                 <strong>
                   {hasService
@@ -76,11 +76,11 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
                     : "none"}
                 </strong>
               </Body>
-              <Body>
+              <Body color={"textSecondary"}>
                 Cluster DNS:{" "}
                 <strong>{hasService ? `${pod.name}.${component.name}-headless.${activeNamespaceName}` : "none"}</strong>
               </Body>
-              <Body>
+              <Body color={"textSecondary"}>
                 Namespace DNS: <strong>{hasService ? `${pod.name}.${component.name}-headless` : "none"}</strong>
               </Body>
             </Box>
@@ -89,12 +89,16 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
         {component.ports && (
           <VerticalHeadTable
             items={component.ports?.map((port) => ({
-              name: "Exposed port: " + port.protocol,
+              name: (
+                <Body color={"textSecondary"}>
+                  Exposed port: <strong>{port.protocol}</strong>
+                </Body>
+              ),
               content: (
-                <span>
+                <Body color={"textSecondary"}>
                   Expose port <strong>{port.containerPort}</strong> to cluster port{" "}
                   <strong>{getServicePort(port)}</strong>
-                </span>
+                </Body>
               ),
             }))}
           />
@@ -109,26 +113,30 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
     return (
       <Expansion title={"Networking"} defaultUnfold>
         <Box p={2}>
-          <Body>
+          <Body color={"textSecondary"}>
             Cluster FQDN DNS:{" "}
             <strong>{hasService ? `${component.name}.${activeNamespaceName}.svc.cluster.local` : "none"}</strong>
           </Body>
-          <Body>
+          <Body color={"textSecondary"}>
             Cluster DNS: <strong>{hasService ? `${component.name}.${activeNamespaceName}` : "none"}</strong>
           </Body>
-          <Body>
+          <Body color={"textSecondary"}>
             Namespace DNS: <strong>{hasService ? `${component.name}` : "none"}</strong>
           </Body>
         </Box>
         {component.ports && (
           <VerticalHeadTable
             items={component.ports?.map((port) => ({
-              name: "Exposed port: " + port.protocol,
+              name: (
+                <Body color={"textSecondary"}>
+                  Exposed port: <strong>{port.protocol}</strong>
+                </Body>
+              ),
               content: (
-                <span>
+                <Body color={"textSecondary"}>
                   Expose port <strong>{port.containerPort}</strong> to cluster port{" "}
                   <strong>{port.servicePort || port.containerPort}</strong>
-                </span>
+                </Body>
               ),
             }))}
           />
