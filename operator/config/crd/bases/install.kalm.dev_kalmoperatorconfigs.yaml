@@ -136,6 +136,8 @@ spec:
               properties:
                 clusterInfoHasSendToKalmCloud:
                   type: boolean
+                installStatusKeySendToKalmCloud:
+                  type: string
               type: object
             installCondition:
               items:
