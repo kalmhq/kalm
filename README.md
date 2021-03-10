@@ -64,7 +64,7 @@ It is safe to ignore errors for non-existent resources because they may have bee
 
 ```
 # rm kalm-operator
-kubectl delete -f kalm-install-operator.yaml
+kubectl delete --ignore-not-found=true -f kalm-install-operator.yaml
 
 # rm kalm
 kubectl delete --ignore-not-found=true -f kalm.yaml
