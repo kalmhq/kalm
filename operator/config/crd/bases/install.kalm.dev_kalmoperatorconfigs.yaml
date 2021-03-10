@@ -1,3 +1,4 @@
+
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
@@ -21,16 +22,14 @@ spec:
       description: KalmOperatorConfig is the Schema for the kalmoperatorconfigs API
       properties:
         apiVersion:
-          description:
-            "APIVersion defines the versioned schema of this representation
+          description: 'APIVersion defines the versioned schema of this representation
             of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources"
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
           type: string
         kind:
-          description:
-            "Kind is a string value representing the REST resource this
+          description: 'Kind is a string value representing the REST resource this
             object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
           type: string
         metadata:
           type: object
@@ -40,13 +39,13 @@ spec:
             byocModeConfig:
               properties:
                 baseAppDomain:
-                  description: "like: foobar.byoc-clusters.kalm-apps.com"
+                  description: 'like: foobar.byoc-clusters.kalm-apps.com'
                   type: string
                 baseDNSDomain:
-                  description: "like: foobar.byoc-clusters.kalm-dns.com"
+                  description: 'like: foobar.byoc-clusters.kalm-dns.com'
                   type: string
                 baseDashboardDomain:
-                  description: "like: foobar.byoc.kalm.dev"
+                  description: 'like: foobar.byoc.kalm.dev'
                   type: string
                 clusterName:
                   type: string
@@ -61,7 +60,7 @@ spec:
                     clientSecret:
                       type: string
                     issuerURL:
-                      description: "like: https://staging.kalm.dev/oidc"
+                      description: 'like: https://staging.kalm.dev/oidc'
                       type: string
                   type: object
                 owner:
@@ -92,8 +91,8 @@ spec:
                       value:
                         type: string
                     required:
-                      - name
-                      - value
+                    - name
+                    - value
                     type: object
                   type: array
                 replicas:
@@ -109,7 +108,6 @@ spec:
               description: deprecated, use Version instead
               type: string
             localModeConfig:
-              description: CloudModeConfig  *CloudModeConfig  `json:"cloudModeConfig,omitempty"`
               properties:
                 cloudflareConfig:
                   properties:
@@ -147,26 +145,23 @@ spec:
                     format: date-time
                     type: string
                   message:
-                    description:
-                      Message is a human readable description of the details
+                    description: Message is a human readable description of the details
                       of the last transition, complementing reason.
                     type: string
                   reason:
-                    description:
-                      Reason is a brief machine readable explanation for
+                    description: Reason is a brief machine readable explanation for
                       the condition's last transition.
                     type: string
                   status:
-                    description:
-                      Status of the condition, one of ('True', 'False',
+                    description: Status of the condition, one of ('True', 'False',
                       'Unknown').
                     type: string
                   type:
                     description: Type of the condition.
                     type: string
                 required:
-                  - status
-                  - type
+                - status
+                - type
                 type: object
               type: array
             installStatus:
@@ -175,9 +170,9 @@ spec:
       type: object
   version: v1alpha1
   versions:
-    - name: v1alpha1
-      served: true
-      storage: true
+  - name: v1alpha1
+    served: true
+    storage: true
 status:
   acceptedNames:
     kind: ""
