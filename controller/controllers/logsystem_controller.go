@@ -382,7 +382,7 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 				},
 				{
 					Name:  "GF_AUTH_PROXY_HEADER_NAME",
-					Value: "X-Auth-Email",
+					Value: "Kalm-Auth-Email",
 				},
 				{
 					Name:  "GF_AUTH_PROXY_AUTO_SIGN_UP",
@@ -402,7 +402,7 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 				},
 				{
 					Name:  "GF_AUTH_PROXY_HEADERS",
-					Value: "Username:X-Auth-Username Name:X-Auth-Username",
+					Value: "Username:Kalm-Auth-Email Name:Kalm-Auth-Email",
 				},
 				{
 					Name:  "GF_USERS_AUTO_ASSIGN_ORG_ROLE",
