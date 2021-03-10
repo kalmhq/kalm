@@ -26,6 +26,7 @@ import (
 	rbacV1 "k8s.io/api/rbac/v1"
 	storageV1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -40,25 +41,28 @@ type LogSystemReconciler struct {
 
 type LogSystemReconcilerTask struct {
 	*LogSystemReconciler
-	req       *ctrl.Request
-	ctx       context.Context
-	logSystem *corev1alpha1.LogSystem
-	loki      *corev1alpha1.Component
-	grafana   *corev1alpha1.Component
-	promtail  *corev1alpha1.Component
+	req                      *ctrl.Request
+	ctx                      context.Context
+	logSystem                *corev1alpha1.LogSystem
+	loki                     *corev1alpha1.Component
+	grafana                  *corev1alpha1.Component
+	grafanaProtectedEndpoint *corev1alpha1.ProtectedEndpoint
+	promtail                 *corev1alpha1.Component
 }
 
 type LogSystemComponentNames struct {
-	Loki     string `json:"loki"`
-	Grafana  string `json:"grafana"`
-	Promtail string `json:"promtail"`
+	Loki                     string `json:"loki"`
+	Grafana                  string `json:"grafana"`
+	GrafanaProtectedEndpoint string `json:"grafanaProtectedEndpoint"`
+	Promtail                 string `json:"promtail"`
 }
 
 func (r *LogSystemReconcilerTask) getComponentNames() *LogSystemComponentNames {
 	return &LogSystemComponentNames{
-		Loki:     fmt.Sprintf("%s-loki", r.req.Name),
-		Grafana:  fmt.Sprintf("%s-grafana", r.req.Name),
-		Promtail: fmt.Sprintf("%s-promtail", r.req.Name),
+		Loki:                     fmt.Sprintf("%s-loki", r.req.Name),
+		Grafana:                  fmt.Sprintf("%s-grafana", r.req.Name),
+		GrafanaProtectedEndpoint: fmt.Sprintf("%s-grafana", r.req.Name),
+		Promtail:                 fmt.Sprintf("%s-promtail", r.req.Name),
 	}
 }
 
@@ -129,6 +133,15 @@ func (r *LogSystemReconcilerTask) LoadPLGMonolithicResources() error {
 	}
 	r.grafana = &grafana
 
+	var grafanaProtectedEndpoint corev1alpha1.ProtectedEndpoint
+	if err := r.Get(r.ctx, r.NameToNamespacedName(names.GrafanaProtectedEndpoint), &grafanaProtectedEndpoint); err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
+		return err
+	}
+	r.grafanaProtectedEndpoint = &grafanaProtectedEndpoint
+
 	var promtail corev1alpha1.Component
 	if err := r.Get(r.ctx, r.NameToNamespacedName(names.Promtail), &promtail); err != nil {
 		if errors.IsNotFound(err) {
@@ -191,8 +204,8 @@ func (r *LogSystemReconcilerTask) GetStorageClassName(specifiedStorageClass *str
 
 	// This cluster doesn't have a default StorageClass
 	// The admin have to give an explicit StorageClass
-	err := fmt.Errorf("require Loki storageClass")
-	r.EmitWarningEvent(r.logSystem, err, "Loki storageClass is not set and there is no default StorageClass")
+	err := fmt.Errorf("require storageClass")
+	r.EmitWarningEvent(r.logSystem, err, "storageClass is not set and there is no default StorageClass")
 	return nil, err
 }
 
@@ -329,6 +342,11 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 	}
 
 	replicas := int32(1)
+	storageClass, err := r.GetStorageClassName(nil)
+
+	if err != nil {
+		return err
+	}
 
 	grafana := &corev1alpha1.Component{
 		ObjectMeta: metav1.ObjectMeta{
@@ -349,12 +367,56 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 			},
 			Env: []corev1alpha1.EnvVar{
 				{
-					Name:  "GF_AUTH_ANONYMOUS_ENABLED",
+					Name:  "GF_DEFAULT_INSTANCE_NAME",
+					Value: r.logSystem.Name,
+				},
+				{
+					Name:  "GF_AUTH_DISABLE_SIGNOUT_MENU",
 					Value: "true",
 				},
 				{
-					Name:  "GF_AUTH_ANONYMOUS_ORG_ROLE",
+					Name:  "GF_AUTH_OAUTH_AUTO_LOGIN",
+					Value: "true",
+				},
+				{
+					Name:  "GF_AUTH_DISABLE_LOGIN_FORM",
+					Value: "true",
+				},
+				{
+					Name:  "GF_AUTH_PROXY_ENABLED",
+					Value: "true",
+				},
+				{
+					Name:  "GF_AUTH_PROXY_HEADER_NAME",
+					Value: "X-Auth-Email",
+				},
+				{
+					Name:  "GF_AUTH_PROXY_AUTO_SIGN_UP",
+					Value: "true",
+				},
+				{
+					Name:  "GF_AUTH_PROXY_HEADER_PROPERTY",
+					Value: "email",
+				},
+				{
+					Name:  "GF_AUTH_BASIC_ENABLED",
+					Value: "false",
+				},
+				{
+					Name:  "GF_USERS_ALLOW_SIGN_UP",
+					Value: "false",
+				},
+				{
+					Name:  "GF_AUTH_PROXY_HEADERS",
+					Value: "Username:X-Auth-Username Name:X-Auth-Username",
+				},
+				{
+					Name:  "GF_USERS_AUTO_ASSIGN_ORG_ROLE",
 					Value: "Admin",
+				},
+				{
+					Name:  "GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION",
+					Value: "true",
 				},
 			},
 			ReadinessProbe: &v1.Probe{
@@ -382,6 +444,15 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 						Port:   intstr.FromInt(3000),
 						Scheme: v1.URISchemeHTTP,
 					},
+				},
+			},
+			Volumes: []corev1alpha1.Volume{
+				{
+					HostPath:         "",
+					Path:             "/var/lib/grafana",
+					Size:             resource.MustParse("1Gi"),
+					StorageClassName: storageClass,
+					Type:             corev1alpha1.VolumeTypePersistentVolumeClaim,
 				},
 			},
 			PreInjectedFiles: []corev1alpha1.PreInjectFile{
@@ -418,6 +489,38 @@ datasources:
 
 		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.grafana)); err != nil {
 			r.Log.Error(err, "Patch grafana component failed.")
+			return err
+		}
+	}
+
+	grafanaProtectedEndpoint := &corev1alpha1.ProtectedEndpoint{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      names.GrafanaProtectedEndpoint,
+			Namespace: r.req.Namespace,
+		},
+		Spec: corev1alpha1.ProtectedEndpointSpec{
+			EndpointName: names.Grafana,
+			Type:         corev1alpha1.TypeComponent,
+			Ports:        []uint32{3000},
+		},
+	}
+
+	if r.grafanaProtectedEndpoint == nil {
+		if err := ctrl.SetControllerReference(r.logSystem, grafanaProtectedEndpoint, r.Scheme); err != nil {
+			r.EmitWarningEvent(r.logSystem, err, "unable to set owner for grafanaProtectedEndpoint")
+			return err
+		}
+
+		if err := r.Create(r.ctx, grafanaProtectedEndpoint); err != nil {
+			r.EmitWarningEvent(r.logSystem, err, "unable to create grafanaProtectedEndpoint component")
+			return err
+		}
+	} else {
+		copied := r.grafanaProtectedEndpoint.DeepCopy()
+		copied.Spec = grafanaProtectedEndpoint.Spec
+
+		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.grafanaProtectedEndpoint)); err != nil {
+			r.Log.Error(err, "Patch grafanaProtectedEndpoint component failed.")
 			return err
 		}
 	}
@@ -945,6 +1048,7 @@ func (r *LogSystemReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.LogSystem{}).
 		Owns(&corev1alpha1.Component{}).
+		Owns(&corev1alpha1.ProtectedEndpoint{}).
 		Complete(r)
 }
 
