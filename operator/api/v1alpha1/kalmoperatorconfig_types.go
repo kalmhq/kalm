@@ -140,7 +140,7 @@ var InstallStatesForBYOC = []InstallState{
 	{InstallStateInstalACMEServer, 1 * time.Minute, "acme-dns-server installation taker longer than expected."},
 	{InstallStateConfigureKalmDashboardAccess, 2 * time.Minute, "External access for kalm-dashboard not ready, please check your cloud provider's load balancer service for details."},
 	{InstallStateConfigureACMEServerAccess, 2 * time.Minute, "External access for acme-dns-server not ready, please check your cloud provider's load balancer service for details."},
-	{InstallStateReportClusterInfo, 1 * time.Minute, "Report cluster info to kalm-SaaS takes longer than expected."},
+	{InstallStateReportClusterInfo, 1 * time.Minute, "Report cluster info to kalm-cloud takes longer than expected."},
 	{InstallStateClusterFullySetup, 1 * time.Minute, "Cluster fully setup takes longer than expected."},
 	{InstallStateDone, 1 * time.Minute, ""},
 }

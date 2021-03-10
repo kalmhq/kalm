@@ -80,12 +80,12 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
 			return nil
 		}
 
-		// post cluster info to kalm-SaaS
+		// post cluster info to kalm-cloud
 		if ok, err := r.reportClusterInfoToKalmSaaS(clusterInfo, byocModeConfig.KalmSaaSDomain, byocModeConfig.ClusterUUID); err != nil {
 			r.Log.Error(err, "reportClusterInfoToKalmSaaS failed")
 			return err
 		} else if !ok {
-			r.Log.Info("fail to report BYOC cluster info to Kalm-SaaS, will retry later...")
+			r.Log.Info("fail to report BYOC cluster info to Kalm-Cloud, will retry later...")
 			return nil
 		}
 
@@ -501,7 +501,7 @@ func (r *KalmOperatorConfigReconciler) getRootAccessToken() (string, error) {
 
 func (r *KalmOperatorConfigReconciler) getCallbackSecret() (string, error) {
 	ns := "kalm-operator"
-	secName := "kalm-saas-token"
+	secName := "kalm-cloud-token"
 
 	sec := corev1.Secret{}
 	if err := r.Get(r.Ctx, client.ObjectKey{Namespace: ns, Name: secName}, &sec); err != nil {

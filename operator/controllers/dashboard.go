@@ -318,7 +318,7 @@ const (
 // - wildcard cert
 // - httpRoute
 // - protectedEndpoint
-// - sso to kalm-SaaS
+// - sso to kalm-cloud
 func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(configSpec installv1alpha1.KalmOperatorConfigSpec) error {
 
 	var baseDomain string
