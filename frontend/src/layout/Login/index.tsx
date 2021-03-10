@@ -1,4 +1,4 @@
-import { Button, createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { validateTokenAction } from "actions/auth";
 import { push } from "connected-react-router";
@@ -6,6 +6,7 @@ import React, { ChangeEvent } from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { ThunkDispatch } from "redux-thunk";
+import CustomButton from "theme/Button";
 import { Actions } from "types";
 import { KalmLogo2Icon, KalmTextLogoIcon } from "widgets/Icon";
 import { KMLink } from "widgets/Link";
@@ -133,9 +134,9 @@ export class LoginRaw extends React.PureComponent<Props, State> {
                 error={!!error}
               />
 
-              <Button variant="contained" color="primary" onClick={this.handleSubmit}>
+              <CustomButton color="primary" onClick={this.handleSubmit}>
                 Login
-              </Button>
+              </CustomButton>
             </div>
           </div>
         </Paper>

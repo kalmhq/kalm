@@ -1,5 +1,5 @@
-import { Avatar, Box, Button } from "@material-ui/core";
-import { blue } from "@material-ui/core/colors";
+import { Avatar, Box } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import { blinkTopProgressAction } from "actions/settings";
 import { deleteAllRoleBindingsAction } from "actions/user";
 import { impersonate } from "api/api";
@@ -9,6 +9,7 @@ import { BasePage } from "pages/BasePage";
 import React from "react";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
+import CustomButton from "theme/Button";
 import { RoleBinding } from "types/member";
 import { gravatar } from "utils/gavatar";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
@@ -60,9 +61,9 @@ export const MemberListPage: React.FC = () => {
   const renderSecondHeaderRight = () => {
     return (
       <>
-        <Button component={Link} color="primary" size="small" variant="contained" to={`/members/new`}>
+        <CustomButton component={Link} color="primary" size="small" variant="outlined" to={`/members/new`}>
           Add Member
-        </Button>
+        </CustomButton>
       </>
     );
   };
@@ -74,7 +75,7 @@ export const MemberListPage: React.FC = () => {
 
     return (
       <EmptyInfoBox
-        image={<PeopleIcon style={{ height: 120, width: 120, color: blue[200] }} />}
+        image={<PeopleIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={"Your cluster has not been authorized to other members"}
         content={"Authorize other members to manage this cluster together."}
         button={

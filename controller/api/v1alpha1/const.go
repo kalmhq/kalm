@@ -24,7 +24,7 @@ const (
 type KalmMode string
 
 var (
-	KalmModeSaaS  KalmMode = "saas"
+	KalmModeCloud KalmMode = "cloud"
 	KalmModeLocal KalmMode = "local"
 	KalmModeBYOC  KalmMode = "byoc" // Bring Your Own Cluster
 )

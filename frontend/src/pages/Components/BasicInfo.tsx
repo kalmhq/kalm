@@ -18,7 +18,6 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import clsx from "clsx";
 import { push } from "connected-react-router";
 import { HealthTab, NetworkingTab } from "forms/ComponentLike";
-import { ComponentCPUChart, ComponentMemoryChart } from "pages/Components/Chart";
 import { renderCommandValue, renderCopyableImageName } from "pages/Components/InfoComponents";
 import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
 import React from "react";
@@ -182,15 +181,15 @@ const ComponentBasicInfoRaw: React.FC<Props> = (props) => {
   const renderComponentCPU = () => {
     return (
       <Grid container className={classes.gridWrapper}>
-        <Grid item md={2}>
+        <Grid item md={4}>
           {component.cpuLimit ? `Limit: ${component.cpuLimit}` : stringConsts.LIMIT_NOT_SET}
         </Grid>
-        <Grid item md={2}>
+        <Grid item md={4}>
           {component.cpuRequest ? `Request: ${component.cpuRequest}` : stringConsts.REQUEST_NOT_SET}
         </Grid>
-        <Grid item md={8}>
+        {/* <Grid item md={8}>
           <ComponentCPUChart component={component} />
-        </Grid>
+        </Grid> */}
       </Grid>
     );
   };
@@ -198,19 +197,19 @@ const ComponentBasicInfoRaw: React.FC<Props> = (props) => {
   const renderComponentMemory = () => {
     return (
       <Grid container className={classes.gridWrapper}>
-        <Grid item md={2}>
+        <Grid item md={4}>
           {component.memoryLimit
             ? `Limit: ${sizeStringToMi(`${component.memoryLimit}`)}Mi`
             : stringConsts.LIMIT_NOT_SET}
         </Grid>
-        <Grid item md={2}>
+        <Grid item md={4}>
           {component.memoryRequest
             ? `Request: ${sizeStringToMi(`${component.memoryRequest}`)}Mi`
             : stringConsts.REQUEST_NOT_SET}
         </Grid>
-        <Grid item md={8}>
+        {/* <Grid item md={8}>
           <ComponentMemoryChart component={component} />
-        </Grid>
+        </Grid> */}
       </Grid>
     );
   };

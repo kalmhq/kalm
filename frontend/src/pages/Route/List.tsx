@@ -1,5 +1,5 @@
-import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { blue } from "@material-ui/core/colors";
+import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import CheckIcon from "@material-ui/icons/Check";
 import { deleteRouteAction } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
@@ -12,6 +12,7 @@ import { BasePage } from "pages/BasePage";
 import { Methods } from "pages/Route/Methods";
 import React from "react";
 import { Link } from "react-router-dom";
+import CustomButton from "theme/Button";
 import { ClusterInfo } from "types/cluster";
 import { HttpRoute } from "types/route";
 import sc from "utils/stringConstants";
@@ -170,7 +171,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
 
     return (
       <EmptyInfoBox
-        image={<KalmRoutesIcon style={{ height: 120, width: 120, color: blue[200] }} />}
+        image={<KalmRoutesIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={sc.EMPTY_ROUTES_TITLE}
         content={sc.EMPTY_ROUTES_SUBTITLE}
         button={
@@ -301,7 +302,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
       <BasePage
         secondHeaderRight={
           canEditCluster() ? (
-            <Button
+            <CustomButton
               tutorial-anchor-id="add-route"
               component={Link}
               color="primary"
@@ -310,7 +311,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
               to={`/routes/new`}
             >
               Add Route
-            </Button>
+            </CustomButton>
           ) : null
         }
       >

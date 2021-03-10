@@ -1,4 +1,4 @@
-import { Button, Typography } from "@material-ui/core";
+import { Typography } from "@material-ui/core";
 import Box from "@material-ui/core/Box/Box";
 import { createCertificateAction } from "actions/certificate";
 import { deleteDomainAction } from "actions/domains";
@@ -10,6 +10,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouteMatch } from "react-router-dom";
 import { RootState } from "reducers";
+import CustomButton from "theme/Button";
 import { Certificate, issuerManaged } from "types/certificate";
 import { DNSConfigItems } from "widgets/ACMEServer";
 import { HelpIcon, KalmCertificatesIcon } from "widgets/Icon";
@@ -90,7 +91,7 @@ const DomainDetailPageRaw: React.FC = () => {
         canEditCluster() ? (
           <>
             {!cert ? (
-              <Button
+              <CustomButton
                 startIcon={<KalmCertificatesIcon />}
                 color="primary"
                 variant="outlined"
@@ -99,10 +100,10 @@ const DomainDetailPageRaw: React.FC = () => {
                 onClick={applyCert}
               >
                 Apply SSL Certificate
-              </Button>
+              </CustomButton>
             ) : null}
 
-            <Button
+            <CustomButton
               startIcon={<HelpIcon />}
               color="primary"
               variant="outlined"
@@ -110,7 +111,7 @@ const DomainDetailPageRaw: React.FC = () => {
               onClick={() => dispatch(push("/domains/" + domain.name + "/tour"))}
             >
               Setup Tour
-            </Button>
+            </CustomButton>
 
             <DeleteButtonWithConfirmPopover
               useText

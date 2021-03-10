@@ -1,5 +1,5 @@
-import { Box, Button, createStyles, Theme, Tooltip, Typography, withStyles, WithStyles } from "@material-ui/core";
-import { blue } from "@material-ui/core/colors";
+import { Box, createStyles, Theme, Tooltip, Typography, withStyles, WithStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import { setErrorNotificationAction } from "actions/notification";
 import { deleteRegistryAction } from "actions/registries";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
@@ -7,6 +7,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
+import CustomButton from "theme/Button";
 import { TDispatchProp } from "types";
 import { Registry } from "types/registry";
 import sc from "utils/stringConstants";
@@ -204,7 +205,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
     return (
       <>
         {/* <H6>Private Docker Registries</H6> */}
-        <Button
+        <CustomButton
           color="primary"
           variant="contained"
           size="small"
@@ -212,8 +213,8 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
           tutorial-anchor-id="add-certificate"
           to="/cluster/pull-secrets/new"
         >
-          Add {pageObjectName}
-        </Button>
+          New {pageObjectName}
+        </CustomButton>
       </>
     );
   }
@@ -222,11 +223,11 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
     const { canEditCluster } = this.props;
     return canEditCluster() ? (
       <EmptyInfoBox
-        image={<KalmRegistryIcon style={{ height: 120, width: 120, color: blue[200] }} />}
+        image={<KalmRegistryIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={sc.EMPTY_REGISTRY_TITLE}
         content={sc.EMPTY_REGISTRY_SUBTITLE}
         button={
-          <Button
+          <CustomButton
             color="primary"
             variant="contained"
             size="small"
@@ -235,7 +236,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
             to="/cluster/pull-secrets/new"
           >
             Add {pageObjectName}
-          </Button>
+          </CustomButton>
         }
       />
     ) : null;

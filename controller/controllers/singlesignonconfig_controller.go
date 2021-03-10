@@ -326,7 +326,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileSecret() error {
 			},
 		}
 
-		// in BYOC mode, clientId & secret should be generated from kalm-SaaS
+		// in BYOC mode, clientId & secret should be generated from Kalm-Cloud
 		if r.ssoConfig.Spec.Issuer != "" &&
 			r.ssoConfig.Spec.IssuerClientId != "" &&
 			r.ssoConfig.Spec.IssuerClientSecret != "" {

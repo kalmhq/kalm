@@ -6,7 +6,7 @@ import { KTooltip } from "widgets/KTooltip";
 const Warning = ({ title, tooltip }: { title: string; tooltip: string }) => {
   return (
     <KTooltip title={tooltip}>
-      <Box color="warning.main" display={"inline-block"}>
+      <Box display={"inline-block"}>
         {title}
         <HelpIcon fontSize="small" style={{ verticalAlign: "middle", marginLeft: 4 }} />
       </Box>

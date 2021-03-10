@@ -1,5 +1,5 @@
-import { Box, Button, createStyles, Grid, Theme, Tooltip, WithStyles } from "@material-ui/core";
-import { blue } from "@material-ui/core/colors";
+import { Box, createStyles, Grid, Theme, Tooltip, WithStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -11,6 +11,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
+import CustomButton from "theme/Button";
 import { primaryColor } from "theme/theme";
 import { ApplicationDetails } from "types/application";
 import { getApplicationCreatedAtString } from "utils/application";
@@ -18,7 +19,6 @@ import sc from "utils/stringConstants";
 import { ApplicationCard } from "widgets/ApplicationCard";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { CustomizedButton } from "widgets/Button";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { KalmApplicationIcon, KalmDetailsIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
@@ -254,7 +254,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
       <>
         {/* <H6>Applications</H6> */}
         {canEditCluster() && (
-          <Button
+          <CustomButton
             tutorial-anchor-id="add-application"
             component={Link}
             color="primary"
@@ -262,8 +262,8 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
             variant="contained"
             to={`/applications/new`}
           >
-            {sc.NEW_APP_BUTTON}
-          </Button>
+            + {sc.NEW_APP_BUTTON}
+          </CustomButton>
         )}
         {/* <IconButtonWithTooltip
           tooltipTitle={usingApplicationCard ? "Using List View" : "Using Card View"}
@@ -288,12 +288,12 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
 
     return (
       <EmptyInfoBox
-        image={<KalmApplicationIcon style={{ height: 120, width: 120, color: blue[200] }} />}
+        image={<KalmApplicationIcon style={{ height: 120, width: 120, color: grey[200] }} />}
         title={sc.EMPTY_APP_TITLE}
         content={sc.EMPTY_APP_SUBTITLE}
         button={
           canEditCluster() && (
-            <CustomizedButton
+            <CustomButton
               variant="contained"
               color="primary"
               onClick={() => {
@@ -302,7 +302,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
               }}
             >
               {sc.NEW_APP_BUTTON}
-            </CustomizedButton>
+            </CustomButton>
           )
         }
       />
@@ -372,7 +372,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
   };
 
   const renderKRTable = () => {
-    return <KRTable showTitle={true} title="Apps" columns={getKRTableColumns()} data={getKRTableData()} />;
+    return <KRTable noOutline showTitle={true} title="Apps" columns={getKRTableColumns()} data={getKRTableData()} />;
   };
 
   const renderGrid = () => {
