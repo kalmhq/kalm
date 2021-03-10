@@ -72,6 +72,7 @@ func getKalmDashboardCommand(configSpec installv1alpha1.KalmOperatorConfigSpec) 
 
 func getKalmDashboardEnvs(configSpec installv1alpha1.KalmOperatorConfigSpec) []corev1alpha1.EnvVar {
 	var envs []corev1alpha1.EnvVar
+
 	if configSpec.Dashboard != nil {
 		for _, nv := range configSpec.Dashboard.Envs {
 			envs = append(envs, corev1alpha1.EnvVar{
@@ -83,8 +84,18 @@ func getKalmDashboardEnvs(configSpec installv1alpha1.KalmOperatorConfigSpec) []c
 	}
 
 	var baseAppDomain string
-	if configSpec.BYOCModeConfig != nil && configSpec.BYOCModeConfig.BaseAppDomain != "" {
-		baseAppDomain = configSpec.BYOCModeConfig.BaseAppDomain
+	if configSpec.BYOCModeConfig != nil {
+		if configSpec.BYOCModeConfig.BaseAppDomain != "" {
+			baseAppDomain = configSpec.BYOCModeConfig.BaseAppDomain
+		}
+
+		if configSpec.BYOCModeConfig.ClusterName != "" {
+			envs = append(envs, corev1alpha1.EnvVar{
+				Name:  v1alpha1.ENV_KALM_CLUSTER_NAME,
+				Value: configSpec.BYOCModeConfig.ClusterName,
+				Type:  corev1alpha1.EnvVarTypeStatic,
+			})
+		}
 	}
 
 	// BaseAppDomain
@@ -307,7 +318,7 @@ const (
 // - wildcard cert
 // - httpRoute
 // - protectedEndpoint
-// - sso to kalm-SaaS
+// - sso to kalm-cloud
 func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(configSpec installv1alpha1.KalmOperatorConfigSpec) error {
 
 	var baseDomain string
@@ -449,7 +460,7 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 	expirySec := uint32(300)
 
 	var needExtraOAuthScope bool
-	if kalmMode == v1alpha1.KalmModeBYOC || kalmMode == v1alpha1.KalmModeSaaS {
+	if kalmMode == v1alpha1.KalmModeBYOC {
 		needExtraOAuthScope = true
 	}
 

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -33,6 +34,7 @@ type ClusterInfo struct {
 	CanBeInitialized  bool          `json:"canBeInitialized"`
 	KubernetesVersion *version.Info `json:"kubernetesVersion"`
 	KalmVersion       *version.Info `json:"kalmVersion"`
+	ClusterName       string        `json:"clusterName"`
 }
 
 var KubernetesVersion *version.Info
@@ -97,6 +99,8 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 			info.IsProduction = true
 		}
 	}
+
+	info.ClusterName = os.Getenv("KALM_CLUSTER_NAME")
 
 	var certNotFound, routeNotFound, ssoNotFound bool
 

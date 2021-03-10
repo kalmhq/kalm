@@ -9,6 +9,7 @@ export const LOAD_EXTRA_INFO_FULFILLED = "LOAD_EXTRA_INFO_FULFILLED";
 export const LOAD_EXTRA_INFO_FAILED = "LOAD_EXTRA_INFO_FAILED";
 
 export interface ClusterInfo {
+  clusterName: string;
   ingressIP: string;
   ingressHostname: string;
   httpPort: number;

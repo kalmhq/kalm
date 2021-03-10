@@ -70,7 +70,7 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
 	}
 
 	status := r.config.Status
-	shouldReportClusterInfo := status.BYOCModeStatus == nil || !status.BYOCModeStatus.ClusterInfoHasSendToKalmSaaS
+	shouldReportClusterInfo := status.BYOCModeStatus == nil || !status.BYOCModeStatus.ClusterInfoHasSendToKalmCloud
 
 	if shouldReportClusterInfo {
 		clusterInfo, ready := r.getClusterInfoIfIsReady(byocModeConfig)
@@ -80,23 +80,38 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
 			return nil
 		}
 
-		// post cluster info to kalm-SaaS
-		if ok, err := r.reportClusterInfoToKalmSaaS(clusterInfo, byocModeConfig.KalmSaaSDomain, byocModeConfig.ClusterUUID); err != nil {
-			r.Log.Error(err, "reportClusterInfoToKalmSaaS failed")
+		// post cluster info to kalm-cloud
+		if ok, err := r.reportClusterInfoToKalmCloud(clusterInfo, byocModeConfig.KalmCloudDomain, byocModeConfig.ClusterUUID); err != nil {
+			r.Log.Error(err, "reportClusterInfoToKalmCloud failed")
 			return err
 		} else if !ok {
-			r.Log.Info("fail to report BYOC cluster info to Kalm-SaaS, will retry later...")
+			r.Log.Info("fail to report BYOC cluster info to Kalm-Cloud, will retry later...")
 			return nil
 		}
 
 		if status.BYOCModeStatus == nil {
 			r.config.Status.BYOCModeStatus = &installv1alpha1.BYOCModeStatus{}
 		}
-		r.config.Status.BYOCModeStatus.ClusterInfoHasSendToKalmSaaS = true
+		r.config.Status.BYOCModeStatus.ClusterInfoHasSendToKalmCloud = true
 
 		return r.Status().Update(r.Ctx, r.config)
 	} else {
 		r.Log.Info("ClusterInfo already reported")
+	}
+
+	//if stuck at CLUSTER_FULLY_SETUP, retry later
+	var firstPendingStateKey installv1alpha1.InstallStatusKey
+	for _, c := range status.InstallConditions {
+		if c.Status == corev1.ConditionTrue {
+			continue
+		}
+
+		firstPendingStateKey = c.Type
+		break
+	}
+
+	if firstPendingStateKey == installv1alpha1.InstallStateClusterFullySetup {
+		return retryLaterErr
 	}
 
 	return nil
@@ -138,16 +153,16 @@ func (r *KalmOperatorConfigReconciler) getClusterInfoIfIsReady(byocModeConfig *i
 	return info, isReady
 }
 
-func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo ClusterInfo, kalmSaaSDomain string, uuid string) (bool, error) {
+func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmCloud(clusterInfo ClusterInfo, kalmCloudDomain string, uuid string) (bool, error) {
 
-	kalmSaaSAPI := fmt.Sprintf("https://%s/api/v1/clusters/%s", kalmSaaSDomain, uuid)
+	kalmCloudAPI := fmt.Sprintf("https://%s/api/v1/clusters/%s", kalmCloudDomain, uuid)
 	payload, _ := json.Marshal(clusterInfo)
 
-	r.Log.Info("reportClusterInfoToKalmSaaS", "api", kalmSaaSAPI, "payload", string(payload))
+	r.Log.Info("reportClusterInfoToKalmCloud", "api", kalmCloudAPI, "payload", string(payload))
 
-	resp, err := http.Post(kalmSaaSAPI, "application/json; charset=UTF-8", bytes.NewReader(payload))
+	resp, err := http.Post(kalmCloudAPI, "application/json; charset=UTF-8", bytes.NewReader(payload))
 	if err != nil {
-		r.Log.Info("error when reportClusterInfoToKalmSaaS", "error", err)
+		r.Log.Info("error when reportClusterInfoToKalmCloud", "error", err)
 		return false, err
 	}
 
@@ -160,7 +175,7 @@ func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo C
 	}
 
 	if resp.StatusCode != 200 {
-		r.Log.Info("reportClusterInfoToKalmSaaS failed", "resp", resp.Body, "status", resp.StatusCode)
+		r.Log.Info("reportClusterInfoToKalmCloud failed", "resp", resp.Body, "status", resp.StatusCode)
 		return false, nil
 	}
 
@@ -170,7 +185,16 @@ func (r *KalmOperatorConfigReconciler) reportClusterInfoToKalmSaaS(clusterInfo C
 func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err error) {
 	if r.config.Status.InstallStatusKey != nil &&
 		*r.config.Status.InstallStatusKey == installv1alpha1.InstallStateDone {
-		return false, nil
+
+		if r.config.Spec.BYOCModeConfig == nil {
+			return false, nil
+		}
+
+		byocModeStatus := r.config.Status.BYOCModeStatus
+		if byocModeStatus != nil &&
+			byocModeStatus.InstallStatusKeySendToKalmCloud == installv1alpha1.InstallStateDone {
+			return false, nil
+		}
 	}
 
 	var stateIdx int
@@ -300,18 +324,20 @@ func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err
 	config.Status.InstallStatusKey = &newStatusKey
 
 	if config.Spec.BYOCModeConfig != nil {
-		ok, err := r.reportInstallProcessToKalmSaaS(newStatusKey)
+		ok, err := r.reportInstallProcessToKalmCloud(newStatusKey)
 
 		// only deal with failure for final state: INSTALLED
-		// cuz if this missed, SaaS will be in wrong state
+		// cuz if this missed, Cloud will be in wrong state
 		// failure in other states can be ignored
 		if newStatusKey == installv1alpha1.InstallStateDone {
 			if err != nil {
 				return false, err
 			} else if !ok {
-				return false, fmt.Errorf("reportInstallProcessToKalmSaaS failed for status: %s", newStatusKey)
+				return false, fmt.Errorf("reportInstallProcessToKalmCloud failed for status: %s", newStatusKey)
 			}
 		}
+
+		config.Status.BYOCModeStatus.InstallStatusKeySendToKalmCloud = newStatusKey
 	}
 
 	// update to new install status
@@ -353,17 +379,17 @@ type InstallProgress struct {
 	InstallConditions []installv1alpha1.InstallCondition `json:"install_conditions,omitempty"`
 }
 
-func (r *KalmOperatorConfigReconciler) reportInstallProcessToKalmSaaS(state installv1alpha1.InstallStatusKey) (bool, error) {
+func (r *KalmOperatorConfigReconciler) reportInstallProcessToKalmCloud(state installv1alpha1.InstallStatusKey) (bool, error) {
 	if r.config == nil || r.config.Spec.BYOCModeConfig == nil {
 		return false, fmt.Errorf("not KalmOperatorConfig or BYOCConfig found")
 	}
 
-	kalmSaaSDomain := r.config.Spec.BYOCModeConfig.KalmSaaSDomain
+	kalmCloudDomain := r.config.Spec.BYOCModeConfig.KalmCloudDomain
 	uuid := r.config.Spec.BYOCModeConfig.ClusterUUID
 
 	callbackSecret, _ := r.getCallbackSecret()
 
-	kalmSaaSAPI := fmt.Sprintf("https://%s/api/v1/clusters/%s", kalmSaaSDomain, uuid)
+	kalmCloudAPI := fmt.Sprintf("https://%s/api/v1/clusters/%s", kalmCloudDomain, uuid)
 
 	isTimeout := false
 	msg := ""
@@ -389,11 +415,11 @@ func (r *KalmOperatorConfigReconciler) reportInstallProcessToKalmSaaS(state inst
 	}
 	payloadJson, _ := json.Marshal(payload)
 
-	r.Log.Info("reportInstallProcessToKalmSaaS", "api", kalmSaaSAPI, "payload", string(payloadJson))
+	r.Log.Info("reportInstallProcessToKalmCloud", "api", kalmCloudAPI, "payload", string(payloadJson))
 
 	client := &http.Client{}
 
-	req, err := http.NewRequest(http.MethodPut, kalmSaaSAPI, bytes.NewBuffer(payloadJson))
+	req, err := http.NewRequest(http.MethodPut, kalmCloudAPI, bytes.NewBuffer(payloadJson))
 	if err != nil {
 		return false, err
 	}
@@ -401,16 +427,16 @@ func (r *KalmOperatorConfigReconciler) reportInstallProcessToKalmSaaS(state inst
 
 	resp, err := client.Do(req)
 	if err != nil {
-		r.Log.Info("err when client.Do in reportInstallProcessToKalmSaaS", "err", err)
+		r.Log.Info("err when client.Do in reportInstallProcessToKalmCloud", "err", err)
 		return false, err
 	}
 
 	if resp.StatusCode != 200 {
-		r.Log.Info("reportInstallProcessToKalmSaaS failed", "resp", resp.Body, "status", resp.StatusCode)
+		r.Log.Info("reportInstallProcessToKalmCloud failed", "resp", resp.Body, "status", resp.StatusCode)
 		return false, nil
 	}
 
-	r.Log.Info("reportInstallProcessToKalmSaaS ok", "resp", resp.Body, "status", resp.StatusCode)
+	r.Log.Info("reportInstallProcessToKalmCloud ok", "resp", resp.Body, "status", resp.StatusCode)
 
 	return true, nil
 }
@@ -486,7 +512,7 @@ func (r *KalmOperatorConfigReconciler) getRootAccessToken() (string, error) {
 
 func (r *KalmOperatorConfigReconciler) getCallbackSecret() (string, error) {
 	ns := "kalm-operator"
-	secName := "kalm-saas-token"
+	secName := "kalm-cloud-token"
 
 	sec := corev1.Secret{}
 	if err := r.Get(r.Ctx, client.ObjectKey{Namespace: ns, Name: secName}, &sec); err != nil {

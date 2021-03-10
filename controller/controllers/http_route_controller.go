@@ -47,6 +47,7 @@ const (
 
 // const KALM_SSO_GRANTED_TENANTS_HEADER = "kalm-sso-granted-tenants"
 const KALM_SSO_GRANTED_GROUPS_HEADER = "kalm-sso-granted-groups"
+const KALM_SSO_GRANTED_EMAILS_HEADER = "kalm-sso-granted-emails"
 const KALM_SSO_USERINFO_HEADER = "kalm-sso-userinfo"
 const KALM_SSO_SET_COOKIE_PAYLOAD_HEADER = "kalm-set-cookie"
 const KALM_ROUTE_HEADER = "kalm-route"

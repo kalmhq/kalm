@@ -11,7 +11,8 @@ import {
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import clsx from "clsx";
 import React, { useState } from "react";
-import { Subtitle1 } from "widgets/Label";
+
+import { CardTitle } from "widgets/Label";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -25,9 +26,12 @@ const useStyles = makeStyles((theme: Theme) =>
       "& .MuiExpansionPanelSummary-root.Mui-expanded": {
         height: 48,
         minHeight: 48,
+        borderBottom: `1px dashed ${theme.palette.divider}`,
       },
+      padding: 20,
     },
     highRoot: {
+      padding: 20,
       "&expanded": {
         margin: "auto",
       },
@@ -68,7 +72,7 @@ export interface ExpansionProps {
 }
 
 export const Expansion: React.FC<ExpansionProps> = (props) => {
-  const { defaultUnfold, subTitle, title, children, hasError, nested, high } = props;
+  const { defaultUnfold, subTitle, title, children, hasError, high } = props;
   const classes = useStyles();
   const [isUnfolded, setIsUnfolded] = useState(!!defaultUnfold);
 
@@ -76,9 +80,7 @@ export const Expansion: React.FC<ExpansionProps> = (props) => {
     if (typeof title === "string") {
       return (
         <>
-          <Subtitle1 className={classes.heading}>
-            <strong>{title}</strong>
-          </Subtitle1>
+          <CardTitle className={classes.heading}>{title}</CardTitle>
           {subTitle ? <Typography className={classes.secondaryHeading}>{subTitle}</Typography> : null}
         </>
       );
@@ -90,7 +92,6 @@ export const Expansion: React.FC<ExpansionProps> = (props) => {
   return (
     <ExpansionPanel
       className={clsx(high ? classes.highRoot : classes.root)}
-      variant={nested ? "elevation" : "outlined"}
       elevation={0}
       expanded={isUnfolded}
       onChange={() => setIsUnfolded(!isUnfolded)}

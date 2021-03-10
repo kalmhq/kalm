@@ -24,7 +24,7 @@ const (
 type KalmMode string
 
 var (
-	KalmModeSaaS  KalmMode = "saas"
+	// KalmModeCloud KalmMode = "cloud"
 	KalmModeLocal KalmMode = "local"
 	KalmModeBYOC  KalmMode = "byoc" // Bring Your Own Cluster
 )
@@ -53,6 +53,8 @@ const (
 	ENV_CLOUDFLARE_DOMAIN_TO_ZONEID_CONFIG = "CLOUDFLARE_DOMAIN_TO_ZONEID_CONFIG"
 
 	ENV_EXTERNAL_DNS_SERVER_IP = "EXTERNAL_DNS_SERVER_IP"
+
+	ENV_KALM_CLUSTER_NAME = "KALM_CLUSTER_NAME"
 
 	// auth-proxy
 	ENV_NEED_EXTRA_OAUTH_SCOPE = "NEED_EXTRA_OAUTH_SCOPE"
