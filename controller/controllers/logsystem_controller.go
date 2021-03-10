@@ -26,7 +26,6 @@ import (
 	rbacV1 "k8s.io/api/rbac/v1"
 	storageV1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -342,11 +341,6 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 	}
 
 	replicas := int32(1)
-	storageClass, err := r.GetStorageClassName(nil)
-
-	if err != nil {
-		return err
-	}
 
 	grafana := &corev1alpha1.Component{
 		ObjectMeta: metav1.ObjectMeta{
@@ -444,15 +438,6 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 						Port:   intstr.FromInt(3000),
 						Scheme: v1.URISchemeHTTP,
 					},
-				},
-			},
-			Volumes: []corev1alpha1.Volume{
-				{
-					Path:             "/var/lib/grafana",
-					Size:             resource.MustParse("1Gi"),
-					StorageClassName: storageClass,
-					Type:             corev1alpha1.VolumeTypePersistentVolumeClaimTemplate,
-					PVC:              "grafana-storage",
 				},
 			},
 			PreInjectedFiles: []corev1alpha1.PreInjectFile{
