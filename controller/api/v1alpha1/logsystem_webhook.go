@@ -17,6 +17,7 @@ package v1alpha1
 
 import (
 	"fmt"
+
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -73,11 +74,6 @@ func (r *LogSystem) Default() {
 			r.Spec.PLGConfig.Loki.DiskSize = &quantity
 		}
 
-		if r.Spec.PLGConfig.Loki.StorageClass == nil && r.Spec.StorageClass == nil {
-			standard := "standard"
-			r.Spec.PLGConfig.Loki.StorageClass = &standard
-		}
-
 		if r.Spec.PLGConfig.Grafana.Image == "" {
 			r.Spec.PLGConfig.Grafana.Image = GrafanaImage
 		}
@@ -129,14 +125,6 @@ func (r *LogSystem) validate() error {
 			rst = append(rst, KalmValidateError{
 				Err:  fmt.Sprintf("loki config can't be blank when using %s stack", r.Spec.Stack),
 				Path: "spec.plgConfig.loki",
-			})
-			break
-		}
-
-		if r.Spec.StorageClass == nil && r.Spec.PLGConfig.Loki.StorageClass == nil {
-			rst = append(rst, KalmValidateError{
-				Err:  fmt.Sprintf("can't find storageClass for loki. Set either in spec.storageClass or spec.plgConfig.loki.storageClass"),
-				Path: "spec.plgConfig.loki.storageClass",
 			})
 			break
 		}

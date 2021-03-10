@@ -24,6 +24,7 @@ import (
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
+	storageV1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -160,6 +161,41 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithic() error {
 	return nil
 }
 
+func (r *LogSystemReconcilerTask) GetStorageClassName(specifiedStorageClass *string) (*string, error) {
+	storageClass := specifiedStorageClass
+
+	// if not nil, return
+	if storageClass != nil {
+		return storageClass, nil
+	}
+
+	// if the root sc is not nil, return
+	if r.logSystem.Spec.StorageClass != nil {
+		return r.logSystem.Spec.StorageClass, nil
+	}
+
+	var storageClasses storageV1.StorageClassList
+
+	if err := r.List(r.ctx, &storageClasses); err != nil {
+		return nil, err
+	}
+
+	// find and use the default sc
+	for i := range storageClasses.Items {
+		sc := storageClasses.Items[i]
+
+		if sc.Annotations["storageclass.kubernetes.io/is-default-class"] == "true" {
+			return &sc.Name, nil
+		}
+	}
+
+	// This cluster doesn't have a default StorageClass
+	// The admin have to give an explicit StorageClass
+	err := fmt.Errorf("require Loki storageClass")
+	r.EmitWarningEvent(r.logSystem, err, "Loki storageClass is not set and there is no default StorageClass")
+	return nil, err
+}
+
 func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicLoki() error {
 	names := r.getComponentNames()
 
@@ -173,6 +209,12 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicLoki() error {
 		// Use the old image if exists
 		// make sure we won't update loki image implicitly
 		lokiImage = r.loki.Spec.Image
+	}
+
+	storageClass, err := r.GetStorageClassName(r.logSystem.Spec.PLGConfig.Loki.StorageClass)
+
+	if err != nil {
+		return err
 	}
 
 	replicas := int32(1)
@@ -239,7 +281,7 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicLoki() error {
 			Volumes: []corev1alpha1.Volume{
 				{
 					Size:             *r.logSystem.Spec.PLGConfig.Loki.DiskSize,
-					StorageClassName: r.logSystem.Spec.PLGConfig.Loki.StorageClass,
+					StorageClassName: storageClass,
 					Type:             corev1alpha1.VolumeTypePersistentVolumeClaimTemplate,
 					Path:             "/data",
 					PVC:              "storage",
@@ -297,19 +339,14 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 			Image:        grafanaImage,
 			WorkloadType: corev1alpha1.WorkloadTypeServer,
 			Replicas:     &replicas,
+			Ports: []corev1alpha1.Port{
 
-			// Use anonymous in this version
-			// Will integrate kalm permission later.
-			// Don't open port to avoid grafana access from outside.
-
-			//Ports: []corev1alpha1.Port{
-			//
-			//	{
-			//		ContainerPort: 3000,
-			//		ServicePort:   3000,
-			//		Protocol:      corev1alpha1.PortProtocolHTTP,
-			//	},
-			//},
+				{
+					ContainerPort: 3000,
+					ServicePort:   3000,
+					Protocol:      corev1alpha1.PortProtocolHTTP,
+				},
+			},
 			Env: []corev1alpha1.EnvVar{
 				{
 					Name:  "GF_AUTH_ANONYMOUS_ENABLED",
