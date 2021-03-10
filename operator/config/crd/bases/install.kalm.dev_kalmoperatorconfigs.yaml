@@ -51,7 +51,7 @@ spec:
                   type: string
                 clusterUUID:
                   type: string
-                kalmSaaSDomain:
+                kalmCloudDomain:
                   type: string
                 oidcIssuer:
                   properties:
@@ -108,7 +108,6 @@ spec:
               description: deprecated, use Version instead
               type: string
             localModeConfig:
-              description: SaaSModeConfig  *SaaSModeConfig  `json:"saasModeConfig,omitempty"`
               properties:
                 cloudflareConfig:
                   properties:
@@ -127,7 +126,6 @@ spec:
             skipIstioInstallation:
               type: boolean
             skipKalmDashboardInstallation:
-              description: SkipKalmControllerInstallation bool `json:"skipKalmControllerInstallation,omitempty"`
               type: boolean
             version:
               type: string
@@ -136,7 +134,7 @@ spec:
           properties:
             byocModeStatus:
               properties:
-                clusterInfoHasSendToKalmSaaS:
+                clusterInfoHasSendToKalmCloud:
                   type: boolean
               type: object
             installCondition:

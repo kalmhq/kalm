@@ -318,7 +318,7 @@ const (
 // - wildcard cert
 // - httpRoute
 // - protectedEndpoint
-// - sso to kalm-SaaS
+// - sso to kalm-cloud
 func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(configSpec installv1alpha1.KalmOperatorConfigSpec) error {
 
 	var baseDomain string
@@ -461,7 +461,7 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 	expirySec := uint32(300)
 
 	var needExtraOAuthScope bool
-	if kalmMode == v1alpha1.KalmModeBYOC || kalmMode == v1alpha1.KalmModeSaaS {
+	if kalmMode == v1alpha1.KalmModeBYOC || kalmMode == v1alpha1.KalmModeCloud {
 		needExtraOAuthScope = true
 	}
 
