@@ -58,7 +58,7 @@ type KalmOperatorConfigSpec struct {
 	KalmType string `json:"kalmType,omitempty"`
 
 	BYOCModeConfig *BYOCModeConfig `json:"byocModeConfig,omitempty"`
-	// SaaSModeConfig  *SaaSModeConfig  `json:"saasModeConfig,omitempty"`
+
 	LocalModeConfig *LocalModeConfig `json:"localModeConfig,omitempty"`
 
 	PhysicalClusterID string `json:"physicalClusterId,omitempty"`
@@ -70,9 +70,9 @@ type KalmOperatorConfigSpec struct {
 }
 
 type BYOCModeConfig struct {
-	ClusterUUID    string `json:"clusterUUID,omitempty"`
-	KalmSaaSDomain string `json:"kalmSaaSDomain,omitempty"`
-	Owner          string `json:"owner,omitempty"`
+	ClusterUUID     string `json:"clusterUUID,omitempty"`
+	KalmCloudDomain string `json:"kalmCloudDomain,omitempty"`
+	Owner           string `json:"owner,omitempty"`
 
 	// like: foobar.byoc.kalm.dev
 	BaseDashboardDomain string `json:"baseDashboardDomain,omitempty"`
@@ -86,7 +86,7 @@ type BYOCModeConfig struct {
 	OIDCIssuer *OIDCIssuerConfig `json:"oidcIssuer,omitempty"`
 }
 
-type SaaSModeConfig struct {
+type CloudModeConfig struct {
 	// like: us-west1-1.kalm.dev
 	BaseDashboardDomain string `json:"baseDashboardDomain,omitempty"`
 	// like: us-west1-1.clusters.kalm-apps.com
@@ -188,7 +188,7 @@ type InstallCondition struct {
 }
 
 type BYOCModeStatus struct {
-	ClusterInfoHasSendToKalmSaaS bool `json:"clusterInfoHasSendToKalmSaaS,omitempty"`
+	clusterInfoHasSendToKalmCloud bool `json:"clusterInfoHasSendToKalmCloud,omitempty"`
 }
 
 // +kubebuilder:object:root=true

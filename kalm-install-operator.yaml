@@ -56,7 +56,7 @@ spec:
                   type: string
                 clusterName:
                   type: string
-                kalmSaaSDomain:
+                kalmCloudDomain:
                   type: string
                 oidcIssuer:
                   properties:
@@ -126,7 +126,7 @@ spec:
               type: object
             physicalClusterId:
               type: string
-            saasModeConfig:
+            cloudModeConfig:
               properties:
                 baseAppDomain:
                   description: "like: us-west1-1.clusters.kalm-apps.com"
@@ -172,7 +172,7 @@ spec:
           properties:
             byocModeStatus:
               properties:
-                clusterInfoHasSendToKalmSaaS:
+                clusterInfoHasSendToKalmCloud:
                   type: boolean
               type: object
           type: object

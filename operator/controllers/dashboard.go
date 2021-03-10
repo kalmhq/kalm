@@ -461,7 +461,7 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 	expirySec := uint32(300)
 
 	var needExtraOAuthScope bool
-	if kalmMode == v1alpha1.KalmModeBYOC || kalmMode == v1alpha1.KalmModeSaaS {
+	if kalmMode == v1alpha1.KalmModeBYOC || kalmMode == v1alpha1.KalmModeCloud {
 		needExtraOAuthScope = true
 	}
 
