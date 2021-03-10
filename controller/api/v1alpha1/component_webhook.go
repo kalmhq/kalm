@@ -101,10 +101,10 @@ func (r *Component) Default() {
 		// this makes system component possible to consumes more resource as request grows
 
 		// set default resourceRequirement & limits
-		r.setupResourceRequirementIfAbsent()
+		// r.setupResourceRequirementIfAbsent()
 
 		// set for istio proxy
-		r.setupIstioResourceRequirementIfAbsent()
+		// r.setupIstioResourceRequirementIfAbsent()
 	}
 }
 
