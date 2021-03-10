@@ -398,7 +398,7 @@ func (r *KalmOperatorConfigReconciler) isACMEServerAccessReady() bool {
 
 func (r *KalmOperatorConfigReconciler) isClusterInfoReported() bool {
 	status := r.config.Status.BYOCModeStatus
-	return status != nil && status.clusterInfoHasSendToKalmCloud
+	return status != nil && status.ClusterInfoHasSendToKalmCloud
 }
 
 type KalmIstioPrometheusWather struct{}

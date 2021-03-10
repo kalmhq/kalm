@@ -70,7 +70,7 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
 	}
 
 	status := r.config.Status
-	shouldReportClusterInfo := status.BYOCModeStatus == nil || !status.BYOCModeStatus.clusterInfoHasSendToKalmCloud
+	shouldReportClusterInfo := status.BYOCModeStatus == nil || !status.BYOCModeStatus.ClusterInfoHasSendToKalmCloud
 
 	if shouldReportClusterInfo {
 		clusterInfo, ready := r.getClusterInfoIfIsReady(byocModeConfig)
@@ -92,7 +92,7 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
 		if status.BYOCModeStatus == nil {
 			r.config.Status.BYOCModeStatus = &installv1alpha1.BYOCModeStatus{}
 		}
-		r.config.Status.BYOCModeStatus.clusterInfoHasSendToKalmCloud = true
+		r.config.Status.BYOCModeStatus.ClusterInfoHasSendToKalmCloud = true
 
 		return r.Status().Update(r.Ctx, r.config)
 	} else {
