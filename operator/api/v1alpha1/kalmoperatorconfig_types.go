@@ -45,9 +45,8 @@ type ControllerConfig struct {
 
 // KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
 type KalmOperatorConfigSpec struct {
-	SkipIstioInstallation       bool `json:"skipIstioInstallation,omitempty"`
-	SkipCertManagerInstallation bool `json:"skipCertManagerInstallation,omitempty"`
-	// SkipKalmControllerInstallation bool `json:"skipKalmControllerInstallation,omitempty"`
+	SkipIstioInstallation         bool `json:"skipIstioInstallation,omitempty"`
+	SkipCertManagerInstallation   bool `json:"skipCertManagerInstallation,omitempty"`
 	SkipKalmDashboardInstallation bool `json:"skipKalmDashboardInstallation,omitempty"`
 
 	// deprecated, use Version instead

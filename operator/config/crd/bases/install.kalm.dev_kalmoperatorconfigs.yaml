@@ -126,7 +126,6 @@ spec:
             skipIstioInstallation:
               type: boolean
             skipKalmDashboardInstallation:
-              description: SkipKalmControllerInstallation bool `json:"skipKalmControllerInstallation,omitempty"`
               type: boolean
             version:
               type: string
