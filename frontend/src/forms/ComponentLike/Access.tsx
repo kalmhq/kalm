@@ -59,6 +59,7 @@ const ComponentAccessRaw: React.FC<Props> = (props) => {
   }
 
   const ps = ports?.map((x) => x.containerPort) || [];
+  const psUnique = Array.from(new Set(ps));
 
   return (
     <Grid container spacing={2}>
@@ -71,7 +72,7 @@ const ComponentAccessRaw: React.FC<Props> = (props) => {
       <Grid item xs={12}>
         <Field
           render={(props: FieldRenderProps<number[]>) => (
-            <AutoCompleteMultiValuesFreeSolo<number> {...props} options={ps} />
+            <AutoCompleteMultiValuesFreeSolo<number> {...props} options={psUnique} />
           )}
           label="Ports"
           name="protectedEndpoint.ports"
