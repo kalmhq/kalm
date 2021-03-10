@@ -86,19 +86,6 @@ type BYOCModeConfig struct {
 	OIDCIssuer *OIDCIssuerConfig `json:"oidcIssuer,omitempty"`
 }
 
-type CloudModeConfig struct {
-	// like: us-west1-1.kalm.dev
-	BaseDashboardDomain string `json:"baseDashboardDomain,omitempty"`
-	// like: us-west1-1.clusters.kalm-apps.com
-	BaseAppDomain string `json:"baseAppDomain,omitempty"`
-	// like: us-west1-1.clusters.kalm-dns.com
-	BaseDNSDomain string `json:"baseDNSDomain,omitempty"`
-
-	OIDCIssuer *OIDCIssuerConfig `json:"oidcIssuer,omitempty"`
-
-	CloudflareConfig *CloudflareConfig `json:"cloudflareConfig,omitempty"`
-}
-
 type LocalModeConfig struct {
 	CloudflareConfig *CloudflareConfig `json:"cloudflareConfig,omitempty"`
 }
