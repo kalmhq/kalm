@@ -476,12 +476,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 					Weight: 1,
 				},
 			},
-			Timeout: &timeout,
-			Retries: &v1alpha1.HttpRouteRetries{
-				Attempts:             3,
-				PerTtyTimeoutSeconds: 2,
-				RetryOn:              []string{"gateway-error", "connect-failure", "refused-stream"},
-			},
 		},
 	}
 
@@ -706,12 +700,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() err
 					Host:   fmt.Sprintf("%s.%s.svc.cluster.local", KALM_AUTH_PROXY_NAME, KALM_DEX_NAMESPACE),
 					Weight: 1,
 				},
-			},
-			Timeout: &timeout,
-			Retries: &v1alpha1.HttpRouteRetries{
-				Attempts:             3,
-				PerTtyTimeoutSeconds: 2,
-				RetryOn:              []string{"gateway-error", "connect-failure", "refused-stream"},
 			},
 		},
 	}
