@@ -41,6 +41,8 @@ const ENVOY_EXT_AUTH_PATH_PREFIX = "ext_authz"
 
 var logger *zap.Logger
 
+var issuerIsGoogle bool
+
 // CSRF protection and pass payload
 type OauthState struct {
 	Nonce       string
@@ -64,6 +66,13 @@ func getOauth2Config() *oauth2.Config {
 	oidcProviderUrl := os.Getenv("KALM_OIDC_PROVIDER_URL")
 	authProxyURL = os.Getenv("KALM_OIDC_AUTH_PROXY_URL")
 
+	// Support for this scope differs between OpenID Connect providers. For instance
+	// Google rejects it, favoring appending "access_type=offline" as part of the
+	// authorization request instead.
+	//
+	// See: https://openid.net/specs/openid-connect-core-1_0.html#OfflineAccess
+	issuerIsGoogle = oidcProviderUrl == "https://accounts.google.com"
+
 	logger.Info(fmt.Sprintf("ClientID: %s", clientID))
 	logger.Info(fmt.Sprintf("oidcProviderUrl: %s", oidcProviderUrl))
 	logger.Info(fmt.Sprintf("authProxyURL: %s", authProxyURL))
@@ -82,8 +91,13 @@ func getOauth2Config() *oauth2.Config {
 	}
 
 	oidcVerifier = provider.Verifier(&oidc.Config{ClientID: clientID})
+	var scopes []string
 
-	scopes := []string{oidc.ScopeOpenID, "profile", "email", "groups", "offline_access"}
+	if issuerIsGoogle {
+		scopes = []string{oidc.ScopeOpenID, "profile", "email"}
+	} else {
+		scopes = []string{oidc.ScopeOpenID, "profile", "email", "groups", oidc.ScopeOfflineAccess}
+	}
 
 	oauth2Config = &oauth2.Config{
 		ClientID:     clientID,
@@ -534,9 +548,19 @@ func handleOIDCLogin(c echo.Context) error {
 
 	return c.Redirect(
 		302,
-		oauth2Config.AuthCodeURL(
-			base64.RawStdEncoding.EncodeToString(encryptedState),
-		),
+		getOauth2AuthCodeUrlWithState(encryptedState),
+	)
+}
+
+func getOauth2AuthCodeUrlWithState(state []byte) string {
+	var options []oauth2.AuthCodeOption
+
+	if issuerIsGoogle {
+		options = append(options, oauth2.AccessTypeOffline)
+	}
+
+	return oauth2Config.AuthCodeURL(
+		base64.RawStdEncoding.EncodeToString(state), options...,
 	)
 }
 
