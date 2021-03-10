@@ -42,6 +42,7 @@ const ENVOY_EXT_AUTH_PATH_PREFIX = "ext_authz"
 var logger *zap.Logger
 
 var issuerIsGoogle bool
+var issuerIsInternalDex bool
 
 // CSRF protection and pass payload
 type OauthState struct {
@@ -72,6 +73,7 @@ func getOauth2Config() *oauth2.Config {
 	//
 	// See: https://openid.net/specs/openid-connect-core-1_0.html#OfflineAccess
 	issuerIsGoogle = oidcProviderUrl == "https://accounts.google.com"
+	issuerIsInternalDex = strings.HasSuffix(oidcProviderUrl, "/dex")
 
 	logger.Info(fmt.Sprintf("ClientID: %s", clientID))
 	logger.Info(fmt.Sprintf("oidcProviderUrl: %s", oidcProviderUrl))
@@ -95,8 +97,10 @@ func getOauth2Config() *oauth2.Config {
 
 	if issuerIsGoogle {
 		scopes = []string{oidc.ScopeOpenID, "profile", "email"}
-	} else {
+	} else if issuerIsInternalDex {
 		scopes = []string{oidc.ScopeOpenID, "profile", "email", "groups", oidc.ScopeOfflineAccess}
+	} else {
+		scopes = []string{oidc.ScopeOpenID, "profile", "email", oidc.ScopeOfflineAccess}
 	}
 
 	oauth2Config = &oauth2.Config{
