@@ -335,9 +335,20 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(configSpec in
 		return nil
 	}
 
-	if err := r.reconcileHttpsCertForDomain(baseDomain, applyForWildcardCert, HttpsCertNameDashboard); err != nil {
-		r.Log.Info("reconcileHttpsCertForDomain fail", "error", err)
-		return err
+	// postpone cert for dashboard to speed up cert issuance
+	postponeCertReconcile := false
+	if r.config.Spec.BYOCModeConfig != nil {
+		byocStatus := r.config.Status.BYOCModeStatus
+		if byocStatus == nil || !byocStatus.ClusterInfoHasSendToKalmCloud {
+			postponeCertReconcile = true
+		}
+	}
+
+	if !postponeCertReconcile {
+		if err := r.reconcileHttpsCertForDomain(baseDomain, applyForWildcardCert, HttpsCertNameDashboard); err != nil {
+			r.Log.Info("reconcileHttpsCertForDomain fail", "error", err)
+			return err
+		}
 	}
 
 	if err := r.reconcileHttpRouteForDashboard(baseDomain); err != nil {

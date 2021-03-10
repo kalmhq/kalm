@@ -49,6 +49,14 @@ func (r *KalmOperatorConfigReconciler) reconcileBYOCMode() error {
 	if baseAppDomain != "" {
 		applyForWildcardCert := baseDNSDomain != ""
 
+		// postponeCertReconcile := false
+		// if r.config.Spec.BYOCModeConfig != nil {
+		// 	byocStatus := r.config.Status.BYOCModeStatus
+		// 	if byocStatus == nil || !byocStatus.ClusterInfoHasSendToKalmCloud {
+		// 		postponeCertReconcile = true
+		// 	}
+		// }
+
 		if err := r.reconcileHttpsCertForDomain(baseAppDomain, applyForWildcardCert); err != nil {
 			r.Log.Info("reconcileHttpsCertForDomain fail", "error", err)
 			return err
@@ -337,6 +345,9 @@ func (r *KalmOperatorConfigReconciler) updateInstallProcess() (updated bool, err
 			}
 		}
 
+		if config.Status.BYOCModeStatus == nil {
+			config.Status.BYOCModeStatus = &installv1alpha1.BYOCModeStatus{}
+		}
 		config.Status.BYOCModeStatus.InstallStatusKeySendToKalmCloud = newStatusKey
 	}
 
