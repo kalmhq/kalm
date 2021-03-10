@@ -297,7 +297,7 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicLoki() error {
 					StorageClassName: storageClass,
 					Type:             corev1alpha1.VolumeTypePersistentVolumeClaimTemplate,
 					Path:             "/data",
-					PVC:              "storage",
+					PVC:              "loki-storage",
 				},
 			},
 		},
@@ -448,11 +448,11 @@ func (r *LogSystemReconcilerTask) ReconcilePLGMonolithicGrafana() error {
 			},
 			Volumes: []corev1alpha1.Volume{
 				{
-					HostPath:         "",
 					Path:             "/var/lib/grafana",
 					Size:             resource.MustParse("1Gi"),
 					StorageClassName: storageClass,
-					Type:             corev1alpha1.VolumeTypePersistentVolumeClaim,
+					Type:             corev1alpha1.VolumeTypePersistentVolumeClaimTemplate,
+					PVC:              "grafana-storage",
 				},
 			},
 			PreInjectedFiles: []corev1alpha1.PreInjectFile{
