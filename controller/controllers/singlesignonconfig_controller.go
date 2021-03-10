@@ -443,8 +443,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 }
 
 func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
-	timeout := 5
-
 	dexRoute := v1alpha1.HttpRoute{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: KALM_DEX_NAME,
@@ -676,8 +674,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 }
 
 func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() error {
-	timeout := 5
-
 	authProxyRoute := v1alpha1.HttpRoute{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: KALM_AUTH_PROXY_NAME,
