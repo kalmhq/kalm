@@ -174,7 +174,8 @@ type InstallCondition struct {
 }
 
 type BYOCModeStatus struct {
-	ClusterInfoHasSendToKalmCloud bool `json:"clusterInfoHasSendToKalmCloud,omitempty"`
+	ClusterInfoHasSendToKalmCloud   bool             `json:"clusterInfoHasSendToKalmCloud,omitempty"`
+	InstallStatusKeySendToKalmCloud InstallStatusKey `json:"installStatusKeySendToKalmCloud,omitempty"`
 }
 
 // +kubebuilder:object:root=true
