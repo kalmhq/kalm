@@ -96,8 +96,6 @@ spec:
               type: string
             jwksUri:
               type: string
-            needExtraOAuthScope:
-              type: boolean
             port:
               type: integer
             showApproveScreen:
