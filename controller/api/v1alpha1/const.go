@@ -10,14 +10,6 @@ const (
 	ReasonExceedingQuota = "ExceedingQuota"
 	ReasonReschedule     = "ReSchedule"
 
-	// Tenant
-	// currently system tenant and global tenant sharing same name: global
-	// maybe separate names are better
-	//   systemTenant used for kalm-system
-	//   globalTenant used for local mode user workload
-	DefaultSystemTenantName = "global"
-	DefaultGlobalTenantName = "global"
-
 	ACMEServerName = "acme-server"
 )
 
