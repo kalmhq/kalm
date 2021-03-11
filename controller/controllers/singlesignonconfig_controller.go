@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -630,11 +629,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 					Name:  v1alpha1.ENV_KALM_PHYSICAL_CLUSTER_ID,
 					Value: v1alpha1.GetEnvPhysicalClusterID(),
 				},
-				{
-					Type:  v1alpha1.EnvVarTypeStatic,
-					Name:  v1alpha1.ENV_NEED_EXTRA_OAUTH_SCOPE,
-					Value: strconv.FormatBool(r.ssoConfig.Spec.NeedExtraOAuthScope),
-				},
 			},
 			ResourceRequirements: &corev1.ResourceRequirements{
 				Requests: map[corev1.ResourceName]resource.Quantity{
@@ -858,37 +852,6 @@ func (r *SingleSignOnConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 func NewSingleSignOnConfigReconciler(mgr ctrl.Manager) *SingleSignOnConfigReconciler {
 	return &SingleSignOnConfigReconciler{NewBaseReconciler(mgr, "SingleSignOnConfig")}
 }
-
-// type SSORequestMapper struct {
-// 	*BaseReconciler
-// }
-
-// func (r *SSORequestMapper) Map(object handler.MapObject) []reconcile.Request {
-// 	if route, ok := object.Object.(*v1alpha1.HttpRoute); ok {
-// 		tenantName, err := v1alpha1.GetTenantNameFromObj(route)
-
-// 		if err != nil || tenantName != "global" {
-// 			return nil
-// 		}
-// 	} else {
-// 		return nil
-// 	}
-
-// 	var ssoList v1alpha1.SingleSignOnConfigList
-
-// 	if err := r.Reader.List(context.Background(), &ssoList); err != nil {
-// 		r.Log.Error(err, fmt.Sprintf("List sso error in mapper."))
-// 		return nil
-// 	}
-
-// 	res := make([]reconcile.Request, len(ssoList.Items))
-
-// 	for i := range ssoList.Items {
-// 		res[i] = reconcile.Request{NamespacedName: types.NamespacedName{Name: ssoList.Items[i].Name}}
-// 	}
-
-// 	return res
-// }
 
 func (r *SingleSignOnConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).

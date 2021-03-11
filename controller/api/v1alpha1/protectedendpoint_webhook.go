@@ -39,10 +39,6 @@ var _ webhook.Defaulter = &ProtectedEndpoint{}
 
 func (r *ProtectedEndpoint) Default() {
 	protectedendpointlog.Info("default", "name", r.Name)
-
-	if IsKalmSystemNamespace(r.Namespace) {
-		return
-	}
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-v1alpha1-protectedendpoint,mutating=false,failurePolicy=fail,groups=core,resources=protectedendpointtypes,versions=v1alpha1,name=vprotectedendpointtype.kb.io

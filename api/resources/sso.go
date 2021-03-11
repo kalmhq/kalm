@@ -282,7 +282,7 @@ func (resourceManager *ResourceManager) UpdateProtectedEndpointForComponent(comp
 	}
 
 	protectedEndpointSpec.EndpointName = component.Name
-	protectedEndpointSpec.Type = v1alpha1.TypeComponent
+	// protectedEndpointSpec.Type = v1alpha1.TypeComponent
 
 	var endpoint v1alpha1.ProtectedEndpoint
 	err := resourceManager.Get(namespace, name, &endpoint)

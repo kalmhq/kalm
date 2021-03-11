@@ -19,29 +19,28 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// +kubebuilder:validation:Enum=Port;Component;HttpRoute
-type ProtectedEndpointType string
+// // +kubebuilder:validation:Enum=Port;Component;HttpRoute
+// type ProtectedEndpointType string
 
-const (
-	// Protect a single port of a component
-	TypePort ProtectedEndpointType = "Port"
+// const (
+// 	// Protect a single port of a component
+// 	TypePort ProtectedEndpointType = "Port"
 
-	// Protect all ports of a component
-	TypeComponent ProtectedEndpointType = "Component"
+// 	// Protect all ports of a component
+// 	TypeComponent ProtectedEndpointType = "Component"
 
-	// Protect all ports that receive traffic from this route
-	TypeHttpRoute ProtectedEndpointType = "HttpRoute"
-)
+// 	// Protect all ports that receive traffic from this route
+// 	TypeHttpRoute ProtectedEndpointType = "HttpRoute"
+// )
 
 // ProtectedEndpointSpec defines the desired state of ProtectedEndpoint
 type ProtectedEndpointSpec struct {
 	// +kubebuilder:validation:MinLength=1
-	EndpointName string                `json:"name"`
-	Type         ProtectedEndpointType `json:"type,omitempty"`
+	EndpointName string `json:"name"`
+	// Type         ProtectedEndpointType `json:"type,omitempty"`
 
-	Ports   []uint32 `json:"ports,omitempty"`
-	Groups  []string `json:"groups,omitempty"`
-	Tenants []string `json:"tenants,omitempty"`
+	Ports  []uint32 `json:"ports,omitempty"`
+	Groups []string `json:"groups,omitempty"`
 
 	// Allow auth proxy to let the request pass if it has bearer token.
 	// This flag should be set carefully. Please make sure that the upstream can handle the token correctly.
@@ -54,7 +53,6 @@ type ProtectedEndpointStatus struct {
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:printcolumn:name="Tenant",type="string",JSONPath=".metadata.labels.tenant"
 // +kubebuilder:printcolumn:name="Type",type="string",JSONPath=".spec.type"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
