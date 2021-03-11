@@ -20,6 +20,7 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";
 import { KRTable } from "widgets/KRTable";
+import { KLink } from "widgets/Link";
 
 const getRoleDescFromRoleBinding = (rolebinding: RoleBinding) => {
   switch (rolebinding.namespace) {
@@ -139,9 +140,9 @@ export const MemberListPage: React.FC = () => {
     for (let subject in roles) {
       data.push({
         avatar: (
-          <Link to={`/members/${subject}`}>
+          <KLink to={`/members/${subject}`}>
             <Avatar src={gravatar(subject, { size: 36 })} />
-          </Link>
+          </KLink>
         ),
         roles: (
           <Box>{roles[subject]?.roles?.length > 0 ? roles[subject].roles.map((x) => <Box>{x}</Box>) : "None"}</Box>
