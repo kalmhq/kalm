@@ -485,7 +485,6 @@ datasources:
 		},
 		Spec: corev1alpha1.ProtectedEndpointSpec{
 			EndpointName: names.Grafana,
-			Type:         corev1alpha1.TypeComponent,
 			Ports:        []uint32{3000},
 		},
 	}

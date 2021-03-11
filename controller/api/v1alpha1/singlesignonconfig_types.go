@@ -69,9 +69,6 @@ type SingleSignOnConfigSpec struct {
 	ExternalEnvoyExtAuthz *ExtAuthzEndpoint `json:"externalEnvoyExtAuthz,omitempty"`
 
 	IDTokenExpirySeconds *uint32 `json:"idTokenExpirySeconds,omitempty"`
-
-	// +optional
-	NeedExtraOAuthScope bool `json:"needExtraOAuthScope,omitempty"`
 }
 
 // SingleSignOnConfigStatus defines the observed state of SingleSignOnConfig

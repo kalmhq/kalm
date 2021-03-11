@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -629,11 +628,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 					Type:  v1alpha1.EnvVarTypeStatic,
 					Name:  v1alpha1.ENV_KALM_PHYSICAL_CLUSTER_ID,
 					Value: v1alpha1.GetEnvPhysicalClusterID(),
-				},
-				{
-					Type:  v1alpha1.EnvVarTypeStatic,
-					Name:  v1alpha1.ENV_NEED_EXTRA_OAUTH_SCOPE,
-					Value: strconv.FormatBool(r.ssoConfig.Spec.NeedExtraOAuthScope),
 				},
 			},
 			ResourceRequirements: &corev1.ResourceRequirements{

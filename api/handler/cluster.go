@@ -253,8 +253,6 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) (err error) {
 	ssoConfig := &resources.SSOConfig{
 		SingleSignOnConfigSpec: &v1alpha1.SingleSignOnConfigSpec{
 			Domain: body.Domain,
-			// for local mode, no
-			NeedExtraOAuthScope: false,
 		},
 	}
 
