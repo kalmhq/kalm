@@ -2,6 +2,7 @@ import { FormControlLabel, Grid } from "@material-ui/core";
 import Checkbox from "@material-ui/core/Checkbox";
 import { Alert } from "@material-ui/lab";
 import { FormApi } from "final-form";
+import { HelperTextSection } from "forms/ComponentLike";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { NormalizePorts, stringArrayTrimParse } from "forms/normalizer";
 import { withSSO, WithSSOProps } from "hoc/withSSO";
@@ -59,6 +60,7 @@ const ComponentAccessRaw: React.FC<Props> = (props) => {
   }
 
   const ps = ports?.map((x) => x.containerPort) || [];
+  const psUnique = Array.from(new Set(ps));
 
   return (
     <Grid container spacing={2}>
@@ -68,10 +70,11 @@ const ComponentAccessRaw: React.FC<Props> = (props) => {
           label="Only users authenticated by Single Sign-on can access"
         />
       </Grid>
+      <HelperTextSection>{sc.ACCESS_HELPER}</HelperTextSection>
       <Grid item xs={12}>
         <Field
           render={(props: FieldRenderProps<number[]>) => (
-            <AutoCompleteMultiValuesFreeSolo<number> {...props} options={ps} />
+            <AutoCompleteMultiValuesFreeSolo<number> {...props} options={psUnique} />
           )}
           label="Ports"
           name="protectedEndpoint.ports"

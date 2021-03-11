@@ -98,10 +98,10 @@ func (r *Component) Default() {
 
 	if !IsKalmSystemNamespace(r.Namespace) {
 		// set default resourceRequirement & limits
-		r.setupResourceRequirementIfAbsent()
+		// r.setupResourceRequirementIfAbsent()
 
 		// set for istio proxy
-		r.setupIstioResourceRequirementIfAbsent()
+		// r.setupIstioResourceRequirementIfAbsent()
 	}
 }
 

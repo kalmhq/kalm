@@ -171,7 +171,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
               blinkTopProgressAction();
             }}
             size="small"
-            tooltipTitle="Protected"
+            tooltipTitle="External access is restricted through SSO"
             to={`/applications/${appName}/components/${component.name}/edit#Access`}
           >
             <LockIcon fontSize="small" color="default" />

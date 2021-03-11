@@ -443,8 +443,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 }
 
 func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
-	timeout := 5
-
 	dexRoute := v1alpha1.HttpRoute{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: KALM_DEX_NAME,
@@ -475,12 +473,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 					Host:   fmt.Sprintf("%s.%s.svc.cluster.local:%d", KALM_DEX_NAME, KALM_DEX_NAMESPACE, 5556),
 					Weight: 1,
 				},
-			},
-			Timeout: &timeout,
-			Retries: &v1alpha1.HttpRouteRetries{
-				Attempts:             3,
-				PerTtyTimeoutSeconds: 2,
-				RetryOn:              []string{"gateway-error", "connect-failure", "refused-stream"},
 			},
 		},
 	}
@@ -682,8 +674,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 }
 
 func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() error {
-	timeout := 5
-
 	authProxyRoute := v1alpha1.HttpRoute{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: KALM_AUTH_PROXY_NAME,
@@ -706,12 +696,6 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() err
 					Host:   fmt.Sprintf("%s.%s.svc.cluster.local", KALM_AUTH_PROXY_NAME, KALM_DEX_NAMESPACE),
 					Weight: 1,
 				},
-			},
-			Timeout: &timeout,
-			Retries: &v1alpha1.HttpRouteRetries{
-				Attempts:             3,
-				PerTtyTimeoutSeconds: 2,
-				RetryOn:              []string{"gateway-error", "connect-failure", "refused-stream"},
 			},
 		},
 	}
