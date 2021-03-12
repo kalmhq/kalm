@@ -58,6 +58,18 @@ kubectl port-forward -n kalm-system $(kubectl get pod -n kalm-system -l app=kalm
 
 Kalm should now be accessible at [http://localhost:3010](http://localhost:3010).
 
+## Uninstall
+
+It is safe to ignore errors for non-existent resources because they may have been deleted hierarchically.
+
+```
+# rm kalm-operator
+kubectl delete --ignore-not-found=true -f kalm-install-operator.yaml
+
+# rm kalm
+kubectl delete --ignore-not-found=true -f kalm.yaml
+```
+
 ## Docs & Guides
 
 Detailed Documentation and Guides can be found at https://docs.kalm.dev
