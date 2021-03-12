@@ -459,7 +459,7 @@ func (r *KalmOperatorConfigReconciler) reconcileProtectedEndpointForDashboard(ba
 	}
 }
 
-const DisableOperatorOverwriteLabel = "disable-operator-overwrite"
+const DisableOperatorOverwriteAnnotation = "disable-operator-overwrite"
 
 func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 	oidcIssuer *installv1alpha1.OIDCIssuerConfig,
@@ -506,8 +506,8 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 	if isNew {
 		return r.Create(r.Ctx, &sso)
 	} else {
-		if sso.Labels[DisableOperatorOverwriteLabel] == "true" {
-			r.Log.Info(fmt.Sprintf("sso is set with label: %s as true, skip overwrite", DisableOperatorOverwriteLabel))
+		if sso.Annotations[DisableOperatorOverwriteAnnotation] == "true" {
+			r.Log.Info(fmt.Sprintf("sso is set with annotation: %s as true, skip overwrite", DisableOperatorOverwriteAnnotation))
 			return nil
 		}
 
