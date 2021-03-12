@@ -398,7 +398,7 @@ func (r *KalmOperatorConfigReconciler) isACMEServerAccessReady() bool {
 
 func (r *KalmOperatorConfigReconciler) isClusterInfoReported() bool {
 	status := r.config.Status.BYOCModeStatus
-	return status != nil && status.ClusterInfoHasSendToKalmSaaS
+	return status != nil && status.ClusterInfoHasSendToKalmCloud
 }
 
 type KalmIstioPrometheusWather struct{}
@@ -467,18 +467,24 @@ func (k KalmDeploymentInEssentialNSWatcher) Map(object handler.MapObject) []reco
 	return nil
 }
 
-type DashboardHttpsCertWatcher struct{}
+type KalmLoadBalancerServiceWatcher struct{}
 
-func (w DashboardHttpsCertWatcher) Map(obj handler.MapObject) []reconcile.Request {
-	if obj.Meta.GetName() != HttpsCertNameDashboard {
-		return nil
+func (w KalmLoadBalancerServiceWatcher) Map(obj handler.MapObject) []reconcile.Request {
+	ns := obj.Meta.GetNamespace()
+	name := obj.Meta.GetName()
+
+	if (ns == v1alpha1.KalmSystemNamespace && name == "lb-svc-acme-server") ||
+		(ns == "istio-system" && name == "istio-ingressgateway") {
+
+		return []reconcile.Request{{
+			NamespacedName: types.NamespacedName{
+				Namespace: ns,
+				Name:      "SVC-CHANGE-" + name,
+			},
+		}}
 	}
 
-	return []reconcile.Request{{
-		NamespacedName: types.NamespacedName{
-			Name: "HttpsCert-CHANGE-" + HttpsCertNameDashboard,
-		},
-	}}
+	return nil
 }
 
 func (r *KalmOperatorConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
@@ -493,10 +499,9 @@ func (r *KalmOperatorConfigReconciler) SetupWithManager(mgr ctrl.Manager) error 
 		Watches(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &KalmIstioPrometheusWather{},
 		}).
-		// for BYOC mode, watch dashboard HttpsCert
-		// Watches(&source.Kind{Type: &v1alpha1.HttpsCert{}}, &handler.EnqueueRequestsFromMapFunc{
-		// 	ToRequests: &DashboardHttpsCertWatcher{},
-		// }).
+		Watches(&source.Kind{Type: &corev1.Service{}}, &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: &KalmLoadBalancerServiceWatcher{},
+		}).
 		Complete(r)
 }
 

@@ -42,14 +42,14 @@ type ProtectedEndpointReconciler struct {
 
 type ProtectedEndpointReconcilerTask struct {
 	*ProtectedEndpointReconciler
-	ctx         context.Context
-	endpoint    *v1alpha1.ProtectedEndpoint
-	ssoConfig   *v1alpha1.SingleSignOnConfig
-	envoyFilter *v1alpha3.EnvoyFilter
+	ctx                     context.Context
+	endpoint                *v1alpha1.ProtectedEndpoint
+	ssoConfig               *v1alpha1.SingleSignOnConfig
+	envoyFilter             *v1alpha3.EnvoyFilter
+	allEmailsInRoleBindings string
 }
 
 func (r *ProtectedEndpointReconcilerTask) LoadResources(req ctrl.Request) error {
-
 	name := fmt.Sprintf("kalm-sso-%s", req.Name)
 	var envoyFilter v1alpha3.EnvoyFilter
 	err := r.Get(r.ctx, types.NamespacedName{
@@ -65,6 +65,36 @@ func (r *ProtectedEndpointReconcilerTask) LoadResources(req ctrl.Request) error 
 	} else {
 		r.envoyFilter = &envoyFilter
 	}
+
+	var roleBindingsList v1alpha1.RoleBindingList
+	err = r.List(r.ctx, &roleBindingsList)
+
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			r.Log.Error(err, "get roleBindings failed.")
+			return err
+		}
+	}
+
+	allEmailsInRoleBindings := []string{}
+	allEmailsInRoleBindingsMap := map[string]struct{}{}
+
+	for i := range roleBindingsList.Items {
+		roleBinding := roleBindingsList.Items[i]
+
+		if roleBinding.Spec.SubjectType != v1alpha1.SubjectTypeUser {
+			continue
+		}
+
+		subject := strings.ToLower(roleBinding.Spec.Subject)
+
+		if _, exist := allEmailsInRoleBindingsMap[subject]; !exist {
+			allEmailsInRoleBindingsMap[subject] = struct{}{}
+			allEmailsInRoleBindings = append(allEmailsInRoleBindings, subject)
+		}
+	}
+
+	r.allEmailsInRoleBindings = strings.Join(allEmailsInRoleBindings, "|")
 
 	return nil
 }
@@ -225,6 +255,10 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterListenerPatches(req ct
 							map[string]interface{}{
 								"key":   KALM_SSO_GRANTED_GROUPS_HEADER,
 								"value": grantedGroups,
+							},
+							map[string]interface{}{
+								"key":   KALM_SSO_GRANTED_EMAILS_HEADER,
+								"value": r.allEmailsInRoleBindings,
 							},
 							map[string]interface{}{
 								"key":   KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER,
@@ -489,6 +523,39 @@ func (r *WatchAllSSOConfig) Map(object handler.MapObject) []reconcile.Request {
 	return reqs
 }
 
+type WatchAllRoleBindings struct {
+	*BaseReconciler
+}
+
+func (r *WatchAllRoleBindings) Map(object handler.MapObject) []reconcile.Request {
+	_, ok := object.Object.(*v1alpha1.RoleBinding)
+
+	if !ok {
+		return nil
+	}
+
+	var endpointList v1alpha1.ProtectedEndpointList
+
+	if err := r.Reader.List(context.Background(), &endpointList); err != nil {
+		r.Log.Error(err, "Get protected endpoints list failed.")
+		return nil
+	}
+
+	var reqs []reconcile.Request
+
+	for _, endpoint := range endpointList.Items {
+		reqs = append(reqs, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      endpoint.Name,
+				Namespace: endpoint.Namespace,
+			},
+		})
+
+	}
+
+	return reqs
+}
+
 func (r *ProtectedEndpointReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.ProtectedEndpoint{}).
@@ -497,6 +564,12 @@ func (r *ProtectedEndpointReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			&source.Kind{Type: &v1alpha1.SingleSignOnConfig{}},
 			&handler.EnqueueRequestsFromMapFunc{
 				ToRequests: &WatchAllSSOConfig{r.BaseReconciler},
+			},
+		).
+		Watches(
+			&source.Kind{Type: &v1alpha1.RoleBinding{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: &WatchAllRoleBindings{r.BaseReconciler},
 			},
 		).
 		Complete(r)

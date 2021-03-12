@@ -104,10 +104,6 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		if err := r.reconcileCommonConfigMap(ns.Name); err != nil {
 			return ctrl.Result{}, err
 		}
-
-		// if err := r.reconcileCommonSecret(ns.Name); err != nil {
-		// 	return ctrl.Result{}, err
-		// }
 	}
 
 	// todo weird logic to process all ns here
@@ -180,10 +176,6 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-// const authzPolicyName = "kalm-authz-policy"
-
-// const networkPolicyName = "kalm-network-policy"
-
 func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 
 	expectedCAIssuer := v1alpha1.HttpsCertIssuer{
@@ -214,31 +206,6 @@ func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 		}
 	}
 
-	// defaultCertName := "default-https-cert"
-	// expectedCert := v1alpha1.HttpsCert{
-	// 	ObjectMeta: metav1.ObjectMeta{
-	// 		Name: defaultCertName,
-	// 		Labels: map[string]string{
-	// 			v1alpha1.TenantNameLabelKey: r.
-	// 		},
-	// 	},
-	// 	Spec: v1alpha1.HttpsCertSpec{
-	// 		HttpsCertIssuer: v1alpha1.DefaultCAIssuerName,
-	// 		Domains:         []string{"*"},
-	// 	},
-	// }
-
-	// var currentCert v1alpha1.HttpsCert
-	// if err = r.Get(r.ctx, types.NamespacedName{Name: defaultCertName}, &currentCert); err != nil {
-	// 	if !errors.IsNotFound(err) {
-	// 		return err
-	// 	}
-
-	// 	return r.Create(r.ctx, &expectedCert)
-	// } else {
-	// 	currentCert.Spec = expectedCert.Spec
-	// 	return r.Update(r.ctx, &currentCert)
-	// }
 	return nil
 }
 
@@ -300,30 +267,3 @@ func (r *KalmNSReconciler) reconcileCommonConfigMap(nsName string) error {
 
 	return nil
 }
-
-// var CommonSecretName = "namespace-scope-shared-envs"
-
-// func (r *KalmNSReconciler) reconcileCommonSecret(nsName string) error {
-
-// 	initSecret := v1.Secret{
-// 		ObjectMeta: metav1.ObjectMeta{
-// 			Namespace: nsName,
-// 			Name:      CommonSecretName,
-// 		},
-// 	}
-
-// 	key := client.ObjectKey{
-// 		Namespace: initSecret.Namespace,
-// 		Name:      initSecret.Name,
-// 	}
-
-// 	if err := r.Get(r.ctx, key, &v1.Secret{}); err != nil {
-// 		if errors.IsNotFound(err) {
-// 			return r.Create(r.ctx, &initSecret)
-// 		} else {
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }

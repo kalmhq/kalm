@@ -72,6 +72,7 @@ func getKalmDashboardCommand(configSpec installv1alpha1.KalmOperatorConfigSpec) 
 
 func getKalmDashboardEnvs(configSpec installv1alpha1.KalmOperatorConfigSpec) []corev1alpha1.EnvVar {
 	var envs []corev1alpha1.EnvVar
+
 	if configSpec.Dashboard != nil {
 		for _, nv := range configSpec.Dashboard.Envs {
 			envs = append(envs, corev1alpha1.EnvVar{
@@ -83,8 +84,18 @@ func getKalmDashboardEnvs(configSpec installv1alpha1.KalmOperatorConfigSpec) []c
 	}
 
 	var baseAppDomain string
-	if configSpec.BYOCModeConfig != nil && configSpec.BYOCModeConfig.BaseAppDomain != "" {
-		baseAppDomain = configSpec.BYOCModeConfig.BaseAppDomain
+	if configSpec.BYOCModeConfig != nil {
+		if configSpec.BYOCModeConfig.BaseAppDomain != "" {
+			baseAppDomain = configSpec.BYOCModeConfig.BaseAppDomain
+		}
+
+		if configSpec.BYOCModeConfig.ClusterName != "" {
+			envs = append(envs, corev1alpha1.EnvVar{
+				Name:  v1alpha1.ENV_KALM_CLUSTER_NAME,
+				Value: configSpec.BYOCModeConfig.ClusterName,
+				Type:  corev1alpha1.EnvVarTypeStatic,
+			})
+		}
 	}
 
 	// BaseAppDomain
@@ -307,7 +318,7 @@ const (
 // - wildcard cert
 // - httpRoute
 // - protectedEndpoint
-// - sso to kalm-SaaS
+// - sso to kalm-cloud
 func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(configSpec installv1alpha1.KalmOperatorConfigSpec) error {
 
 	var baseDomain string
@@ -324,9 +335,20 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(configSpec in
 		return nil
 	}
 
-	if err := r.reconcileHttpsCertForDomain(baseDomain, applyForWildcardCert, HttpsCertNameDashboard); err != nil {
-		r.Log.Info("reconcileHttpsCertForDomain fail", "error", err)
-		return err
+	// postpone cert for dashboard to speed up cert issuance
+	postponeCertReconcile := false
+	if r.config.Spec.BYOCModeConfig != nil {
+		byocStatus := r.config.Status.BYOCModeStatus
+		if byocStatus == nil || !byocStatus.ClusterInfoHasSendToKalmCloud {
+			postponeCertReconcile = true
+		}
+	}
+
+	if !postponeCertReconcile {
+		if err := r.reconcileHttpsCertForDomain(baseDomain, applyForWildcardCert, HttpsCertNameDashboard); err != nil {
+			r.Log.Info("reconcileHttpsCertForDomain fail", "error", err)
+			return err
+		}
 	}
 
 	if err := r.reconcileHttpRouteForDashboard(baseDomain); err != nil {
@@ -437,6 +459,8 @@ func (r *KalmOperatorConfigReconciler) reconcileProtectedEndpointForDashboard(ba
 	}
 }
 
+const DisableOperatorOverwriteAnnotation = "disable-operator-overwrite"
+
 func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 	oidcIssuer *installv1alpha1.OIDCIssuerConfig,
 	authProxyDomain string,
@@ -447,11 +471,6 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 	}
 
 	expirySec := uint32(300)
-
-	var needExtraOAuthScope bool
-	if kalmMode == v1alpha1.KalmModeBYOC || kalmMode == v1alpha1.KalmModeSaaS {
-		needExtraOAuthScope = true
-	}
 
 	expectedSSO := v1alpha1.SingleSignOnConfig{
 		ObjectMeta: metav1.ObjectMeta{
@@ -464,7 +483,6 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 			IssuerClientSecret:   oidcIssuer.ClientSecret,
 			IDTokenExpirySeconds: &expirySec,
 			Domain:               authProxyDomain,
-			NeedExtraOAuthScope:  needExtraOAuthScope,
 		},
 	}
 
@@ -488,6 +506,11 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 	if isNew {
 		return r.Create(r.Ctx, &sso)
 	} else {
+		if sso.Annotations[DisableOperatorOverwriteAnnotation] == "true" {
+			r.Log.Info(fmt.Sprintf("sso is set with annotation: %s as true, skip overwrite", DisableOperatorOverwriteAnnotation))
+			return nil
+		}
+
 		sso.Spec = expectedSSO.Spec
 		return r.Update(r.Ctx, &sso)
 	}

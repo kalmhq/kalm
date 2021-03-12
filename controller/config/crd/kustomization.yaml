@@ -18,7 +18,6 @@ resources:
   - bases/core.kalm.dev_acmeservers.yaml
   - bases/core.kalm.dev_logsystems.yaml
   - bases/core.kalm.dev_rolebindings.yaml
-  # - bases/core.kalm.dev_tenants.yaml
   # - bases/core.kalm.dev_clusterresourcequotas.yaml
   - bases/core.kalm.dev_domains.yaml
   - bases/core.kalm.dev_dnsrecords.yaml

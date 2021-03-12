@@ -11,6 +11,7 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/joho/godotenv v1.3.0
 	github.com/kalmhq/kalm/controller v0.0.0-20200722131031-2336d7eaf4c9
+	github.com/kalmhq/kalm/operator v0.0.0-20210302081042-e6a4c5b51613 // indirect
 	github.com/labstack/echo/v4 v4.1.17
 	github.com/labstack/gommon v0.3.0
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible

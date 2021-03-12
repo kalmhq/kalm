@@ -227,10 +227,10 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderBreadcrumbContent = (path: string) => {
+  private renderBreadcrumbContent = (path: string, clusterName: string) => {
     switch (path) {
       case "":
-        return "Kalm";
+        return !!clusterName ? clusterName : "Kalm";
       case "applications":
         return "Apps";
       case "routes":
@@ -287,7 +287,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                   } else if (index + 1 === pathArray.length) {
                     return (
                       <span key={index} className={`${classes.breadLink} disabled`}>
-                        {this.renderBreadcrumbContent(path)}
+                        {this.renderBreadcrumbContent(path, clusterInfo.clusterName)}
                       </span>
                     );
                   } else {
@@ -298,7 +298,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                         to={pathArray.slice(0, index + 1).join("/")}
                         onClick={() => blinkTopProgressAction()}
                       >
-                        {this.renderBreadcrumbContent(path)}
+                        {this.renderBreadcrumbContent(path, clusterInfo.clusterName)}
                       </Link>
                     );
                   }

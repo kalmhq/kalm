@@ -131,11 +131,6 @@ func (r *HttpRoute) validate() error {
 	return rst
 }
 
-func getValidSuffixOfAppDomain(tenantName, baseAppDomain string) string {
-	validSuffix := fmt.Sprintf("%s.%s", tenantName, baseAppDomain)
-	return validSuffix
-}
-
 func isValidDestinationHost(host string) bool {
 	host = stripIfHasPort(host)
 	return validation.ValidateFQDN(host) == nil

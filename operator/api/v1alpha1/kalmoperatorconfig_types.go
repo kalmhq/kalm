@@ -45,9 +45,8 @@ type ControllerConfig struct {
 
 // KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
 type KalmOperatorConfigSpec struct {
-	SkipIstioInstallation       bool `json:"skipIstioInstallation,omitempty"`
-	SkipCertManagerInstallation bool `json:"skipCertManagerInstallation,omitempty"`
-	// SkipKalmControllerInstallation bool `json:"skipKalmControllerInstallation,omitempty"`
+	SkipIstioInstallation         bool `json:"skipIstioInstallation,omitempty"`
+	SkipCertManagerInstallation   bool `json:"skipCertManagerInstallation,omitempty"`
 	SkipKalmDashboardInstallation bool `json:"skipKalmDashboardInstallation,omitempty"`
 
 	// deprecated, use Version instead
@@ -58,7 +57,7 @@ type KalmOperatorConfigSpec struct {
 	KalmType string `json:"kalmType,omitempty"`
 
 	BYOCModeConfig *BYOCModeConfig `json:"byocModeConfig,omitempty"`
-	// SaaSModeConfig  *SaaSModeConfig  `json:"saasModeConfig,omitempty"`
+
 	LocalModeConfig *LocalModeConfig `json:"localModeConfig,omitempty"`
 
 	PhysicalClusterID string `json:"physicalClusterId,omitempty"`
@@ -70,9 +69,9 @@ type KalmOperatorConfigSpec struct {
 }
 
 type BYOCModeConfig struct {
-	ClusterUUID    string `json:"clusterUUID,omitempty"`
-	KalmSaaSDomain string `json:"kalmSaaSDomain,omitempty"`
-	Owner          string `json:"owner,omitempty"`
+	ClusterUUID     string `json:"clusterUUID,omitempty"`
+	KalmCloudDomain string `json:"kalmCloudDomain,omitempty"`
+	Owner           string `json:"owner,omitempty"`
 
 	// like: foobar.byoc.kalm.dev
 	BaseDashboardDomain string `json:"baseDashboardDomain,omitempty"`
@@ -81,20 +80,9 @@ type BYOCModeConfig struct {
 	// like: foobar.byoc-clusters.kalm-dns.com
 	BaseDNSDomain string `json:"baseDNSDomain,omitempty"`
 
-	OIDCIssuer *OIDCIssuerConfig `json:"oidcIssuer,omitempty"`
-}
-
-type SaaSModeConfig struct {
-	// like: us-west1-1.kalm.dev
-	BaseDashboardDomain string `json:"baseDashboardDomain,omitempty"`
-	// like: us-west1-1.clusters.kalm-apps.com
-	BaseAppDomain string `json:"baseAppDomain,omitempty"`
-	// like: us-west1-1.clusters.kalm-dns.com
-	BaseDNSDomain string `json:"baseDNSDomain,omitempty"`
+	ClusterName string `json:"clusterName,omitempty"`
 
 	OIDCIssuer *OIDCIssuerConfig `json:"oidcIssuer,omitempty"`
-
-	CloudflareConfig *CloudflareConfig `json:"cloudflareConfig,omitempty"`
 }
 
 type LocalModeConfig struct {
@@ -138,7 +126,7 @@ var InstallStatesForBYOC = []InstallState{
 	{InstallStateInstalACMEServer, 1 * time.Minute, "acme-dns-server installation taker longer than expected."},
 	{InstallStateConfigureKalmDashboardAccess, 2 * time.Minute, "External access for kalm-dashboard not ready, please check your cloud provider's load balancer service for details."},
 	{InstallStateConfigureACMEServerAccess, 2 * time.Minute, "External access for acme-dns-server not ready, please check your cloud provider's load balancer service for details."},
-	{InstallStateReportClusterInfo, 1 * time.Minute, "Report cluster info to kalm-SaaS takes longer than expected."},
+	{InstallStateReportClusterInfo, 1 * time.Minute, "Report cluster info to kalm-cloud takes longer than expected."},
 	{InstallStateClusterFullySetup, 1 * time.Minute, "Cluster fully setup takes longer than expected."},
 	{InstallStateDone, 1 * time.Minute, ""},
 }
@@ -186,7 +174,8 @@ type InstallCondition struct {
 }
 
 type BYOCModeStatus struct {
-	ClusterInfoHasSendToKalmSaaS bool `json:"clusterInfoHasSendToKalmSaaS,omitempty"`
+	ClusterInfoHasSendToKalmCloud   bool             `json:"clusterInfoHasSendToKalmCloud,omitempty"`
+	InstallStatusKeySendToKalmCloud InstallStatusKey `json:"installStatusKeySendToKalmCloud,omitempty"`
 }
 
 // +kubebuilder:object:root=true

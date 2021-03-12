@@ -25,6 +25,7 @@ export const StringConstants = {
   ENV_VAR_HELPER:
     "Define environment variables for the main container of this component. This overrides environment variables specified within the image.",
   PORTS_HELPER: "To expose your container outside of its pod, you need to open the corresponding ports.",
+  ACCESS_HELPER: "You can protect unwanted external access to this component by checking the box below.",
   DISKS_HELPER: "Specify and mount a disk to your component. There are several ways to mount disks with Kalm.",
   COMMAND_HELPER:
     "Define a command for the main container of this component. This overrides the default Entrypoint and Cmd of the image.",
@@ -121,9 +122,9 @@ export const StringConstants = {
   APP_SETTINGS_PAGE_NAME: "Settings",
   APP_MEMBERS_PAGE_NAME: "Members",
   PROTECTED_ENDPOINT_PORT:
-    "Select the ports you want to protect. Leave blank to protected all ports of this component.",
+    "Select the ports you want to protect. Leaving this field blank will protect all of the ports.",
   PROTECTED_ENDPOINT_SPECIFIC_GROUPS:
-    "Select the groups you want to grant access permissions for this component. Leave blank to allow any sso member.",
+    "Enter groups in this field to grant access only to those specified here. Leaving this field blank will grant any member with permissions to view this application the ability to access this component.",
   CANT_NOT_EDIT: "Can NOT edit this field",
   REGISTRY_VERIFIED_ERROR: "Error",
   NO_PERMISSION_TIPS: "No permission to view this, please contact with admin.",
