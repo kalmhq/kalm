@@ -459,6 +459,8 @@ func (r *KalmOperatorConfigReconciler) reconcileProtectedEndpointForDashboard(ba
 	}
 }
 
+const DisableOperatorOverwriteAnnotation = "disable-operator-overwrite"
+
 func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 	oidcIssuer *installv1alpha1.OIDCIssuerConfig,
 	authProxyDomain string,
@@ -504,6 +506,11 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 	if isNew {
 		return r.Create(r.Ctx, &sso)
 	} else {
+		if sso.Annotations[DisableOperatorOverwriteAnnotation] == "true" {
+			r.Log.Info(fmt.Sprintf("sso is set with annotation: %s as true, skip overwrite", DisableOperatorOverwriteAnnotation))
+			return nil
+		}
+
 		sso.Spec = expectedSSO.Spec
 		return r.Update(r.Ctx, &sso)
 	}
