@@ -782,16 +782,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                   }
                 />
               </Grid>
-              <Grid item xs={6} sm={6} md={6}>
-                <KPanel
-                  title="Resource Limits"
-                  content={
-                    <Box p={2} tutorial-anchor-id="component-from-basic">
-                      {this.renderScheduling()}
-                    </Box>
-                  }
-                />
-              </Grid>
             </Grid>
 
             <Box mt={2}>
