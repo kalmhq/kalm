@@ -7,8 +7,7 @@ import (
 )
 
 type AccessToken struct {
-	Name   string `json:"name"`
-	Tenant string `json:"tenant"`
+	Name string `json:"name"`
 	*v1alpha1.AccessTokenSpec
 }
 
@@ -26,9 +25,6 @@ func (resourceManager *ResourceManager) CreateAccessToken(accessToken *AccessTok
 	resAccessToken := &v1alpha1.AccessToken{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: accessToken.Name,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: accessToken.Tenant,
-			},
 		},
 		Spec: *accessToken.AccessTokenSpec,
 	}
@@ -43,7 +39,6 @@ func (resourceManager *ResourceManager) CreateAccessToken(accessToken *AccessTok
 func BuildAccessTokenFromResource(dk *v1alpha1.AccessToken) *AccessToken {
 	return &AccessToken{
 		Name:            dk.Name,
-		Tenant:          dk.Labels[v1alpha1.TenantNameLabelKey],
 		AccessTokenSpec: &dk.Spec,
 	}
 }
@@ -99,8 +94,7 @@ func (resourceManager *ResourceManager) CreateDeployAccessToken(accessToken *Acc
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: accessToken.Name,
 			Labels: map[string]string{
-				AccessTokenTypeLabelKey:     DeployAccessTokenLabelValue,
-				v1alpha1.TenantNameLabelKey: accessToken.Tenant,
+				AccessTokenTypeLabelKey: DeployAccessTokenLabelValue,
 			},
 		},
 		Spec: *accessToken.AccessTokenSpec,

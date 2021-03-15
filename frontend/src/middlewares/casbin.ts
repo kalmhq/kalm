@@ -47,47 +47,25 @@ export const createCasbinEnforcerMiddleware = () => {
         return false;
       };
 
-      const { tenant } = action.payload.loginStatus;
+      store.dispatch({
+        type: SET_AUTH_METHODS,
+        payload: {
+          can: (action: string, namespace: string, resource: string) =>
+            withSubjects(enforcer.can, action, namespace, resource),
 
-      if (tenant !== "") {
-        store.dispatch({
-          type: SET_AUTH_METHODS,
-          payload: {
-            can: (action: string, scope: string, resource: string) =>
-              withSubjects(enforcer.can, action, tenant + "/" + scope, resource),
+          canView: (namespace: string, resource: string) => withSubjects(enforcer.canView, namespace, resource),
+          canEdit: (namespace: string, resource: string) => withSubjects(enforcer.canEdit, namespace, resource),
+          canManage: (namespace: string, resource: string) => withSubjects(enforcer.canManage, namespace, resource),
 
-            canView: (scope: string, resource: string) =>
-              withSubjects(enforcer.canView, tenant + "/" + scope, resource),
-            canEdit: (scope: string, resource: string) =>
-              withSubjects(enforcer.canEdit, tenant + "/" + scope, resource),
-            canManage: (scope: string, resource: string) =>
-              withSubjects(enforcer.canManage, tenant + "/" + scope, resource),
+          canViewNamespace: (namespace: string) => withSubjects(enforcer.canViewNamespace, namespace),
+          canEditNamespace: (namespace: string) => withSubjects(enforcer.canEditNamespace, namespace),
+          canManageNamespace: (namespace: string) => withSubjects(enforcer.canManageNamespace, namespace),
 
-            canViewNamespace: (scope: string) => withSubjects(enforcer.canViewScope, tenant + "/" + scope),
-            canEditNamespace: (scope: string) => withSubjects(enforcer.canEditScope, tenant + "/" + scope),
-            canManageNamespace: (scope: string) => withSubjects(enforcer.canManageScope, tenant + "/" + scope),
-
-            canViewCluster: () => withSubjects(enforcer.canViewCluster),
-            canEditCluster: () => withSubjects(enforcer.canEditCluster),
-            canManageCluster: () => withSubjects(enforcer.canManageCluster),
-
-            canViewTenant: () => withSubjects(enforcer.canViewScope, tenant + "/*"),
-            canEditTenant: () => withSubjects(enforcer.canEditScope, tenant + "/*"),
-            canManageTenant: () => withSubjects(enforcer.canManageScope, tenant + "/*"),
-
-            canEditAnyNamespace: () => {
-              const applications = store.getState().applications.applications;
-
-              for (let i = 0; i < applications.length; i++) {
-                if (withSubjects(enforcer.canEditScope, tenant + "/" + applications[i].name)) {
-                  return true;
-                }
-              }
-              return false;
-            },
-          },
-        });
-      }
+          canViewCluster: () => withSubjects(enforcer.canViewCluster),
+          canEditCluster: () => withSubjects(enforcer.canEditCluster),
+          canManageCluster: () => withSubjects(enforcer.canManageCluster),
+        },
+      });
     }
 
     return next(action);

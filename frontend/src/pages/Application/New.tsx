@@ -19,21 +19,19 @@ interface Props extends WithStyles<typeof styles> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
-class ApplicationNewRaw extends React.PureComponent<Props> {
-  public render() {
-    const { classes } = this.props;
-    return (
-      <BasePage secondHeaderRight={<H6>Create Application</H6>}>
-        <div className={classes.root}>
-          <Grid container spacing={2}>
-            <Grid item xs={8} sm={8} md={8}>
-              <ApplicationForm />
-            </Grid>
+const ApplicationNewRaw: React.FC<Props> = (props) => {
+  const { classes } = props;
+  return (
+    <BasePage secondHeaderRight={<H6>Create Application</H6>}>
+      <div className={classes.root}>
+        <Grid container spacing={2}>
+          <Grid item xs={8} sm={8} md={8}>
+            <ApplicationForm />
           </Grid>
-        </div>
-      </BasePage>
-    );
-  }
-}
+        </Grid>
+      </div>
+    </BasePage>
+  );
+};
 
 export const ApplicationNewPage = withStyles(styles)(connect()(ApplicationNewRaw));

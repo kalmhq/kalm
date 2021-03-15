@@ -8,7 +8,6 @@ import (
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
-	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -51,20 +50,8 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 
 	respVolumes := []resources.Volume{}
 	for _, kalmPVC := range kalmPVCList.Items {
-		kalmPVCTenant := kalmPVC.Labels[v1alpha1.TenantNameLabelKey]
-		if kalmPVCTenant == "" {
-			h.logger.Warn("pvc without tenant", zap.String("pvc", fmt.Sprintf("%s/%s", kalmPVC.Namespace, kalmPVC.Name)))
-			continue
-		}
-
 		// permission
-		pvcScope := kalmPVCTenant + "/" + kalmPVC.Namespace
-		if !h.clientManager.CanViewScope(currentUser, pvcScope) {
-			continue
-		}
-
-		// only show disk under current tenant to avoid confusion
-		if currentUser.Tenant != kalmPVCTenant {
+		if !h.clientManager.CanViewNamespace(currentUser, kalmPVC.Namespace) {
 			continue
 		}
 
@@ -98,9 +85,9 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 	pvcNamespace := c.Param("namespace")
 	pvcName := c.Param("name")
 
-	// MARK: diff with doc https://kalm.dev/docs/next/auth/roles (delete disk(pv))
+	// MARK: diff with doc https://docs.kalm.dev/next/auth/roles (delete disk(pv))
 	// nsEditor should be able to delete same ns pvc & pv
-	if !h.clientManager.CanEditScope(currentUser, currentUser.Tenant+"/"+pvcNamespace) {
+	if !h.clientManager.CanEditNamespace(currentUser, pvcNamespace) {
 		return resources.NoNamespaceEditorRoleError(pvcNamespace)
 	}
 
@@ -172,7 +159,7 @@ func (h *ApiHandler) handleAvailableVolsForSimpleWorkload(c echo.Context) error 
 		return fmt.Errorf("must provide namespace in query")
 	}
 
-	h.MustCanView(currentUser, currentUser.Tenant+"/"+ns, "*/*")
+	h.MustCanView(currentUser, ns, "*")
 
 	vols, err := h.findAvailableVolsForSimpleWorkload(getCurrentUser(c), ns)
 	if err != nil {
@@ -190,7 +177,7 @@ func (h *ApiHandler) handleAvailableVolsForSts(c echo.Context) error {
 		return fmt.Errorf("must provide namespace in query")
 	}
 
-	h.MustCanView(currentUser, currentUser.Tenant+"/"+ns, "*/*")
+	h.MustCanView(currentUser, ns, "*")
 
 	vols, err := h.findAvailableVolsForSts(ns)
 	if err != nil {
@@ -286,7 +273,7 @@ func (h *ApiHandler) findAvailableVolsForSimpleWorkload(c *kalmclient.ClientInfo
 		pv := diffNsFreePair.pv
 
 		// permission: if no edit permission in this ns, skip
-		if !h.clientManager.CanEditScope(c, pvc.Namespace) {
+		if !h.clientManager.CanEditNamespace(c, pvc.Namespace) {
 			continue
 		}
 

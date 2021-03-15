@@ -4,7 +4,7 @@ import {
   loadCertificateIssuersAction,
   loadCertificatesAction,
 } from "actions/certificate";
-import { loadClusterInfoAction, loadCurrentTenantInfoAction, loadExtraInfoAction } from "actions/cluster";
+import { loadClusterInfoAction } from "actions/cluster";
 import { loadDeployAccessTokensAction } from "actions/deployAccessToken";
 import { loadDomainsAction } from "actions/domains";
 import { loadNodesAction } from "actions/node";
@@ -22,7 +22,6 @@ import throttle from "lodash/throttle";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { getHasSelectedTenant } from "selectors/tenant";
 import { TDispatchProp } from "types";
 import { AccessTokenToDeployAccessToken } from "types/deployAccessToken";
 import {
@@ -40,7 +39,6 @@ import {
   RESOURCE_TYPE_ROLE_BINDING,
   RESOURCE_TYPE_SERVICE,
   RESOURCE_TYPE_SSO,
-  RESOURCE_TYPE_TENANT,
   RESOURCE_TYPE_VOLUME,
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
@@ -53,62 +51,46 @@ export interface WatchResMessage {
 }
 
 const mapStateToProps = (state: RootState) => {
-  const hasSelectedTenant = getHasSelectedTenant(state);
-
-  return {
-    hasSelectedTenant,
-  };
+  return {};
 };
 
 interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp, WithUserAuthProps {}
 
 class WithDataRaw extends React.PureComponent<Props> {
   public componentDidMount() {
-    if (!this.props.hasSelectedTenant) {
-      return;
-    }
-
     this.loadData();
     this.connectWebsocket();
   }
 
   private loadData() {
-    const { dispatch, canViewTenant, canEditTenant, canViewCluster, canManageTenant } = this.props;
+    const { dispatch, canManageCluster } = this.props;
 
-    dispatch(loadExtraInfoAction());
     dispatch(loadRoutesAction()); // all namespaces
     dispatch(loadApplicationsAction());
     dispatch(loadDeployAccessTokensAction());
     dispatch(loadProtectedEndpointAction());
+    dispatch(loadRegistriesAction());
+    dispatch(loadServicesAction("")); // for routes destinations
+    dispatch(loadPersistentVolumesAction());
+    dispatch(loadStorageClassesAction());
 
-    if (canViewTenant()) {
-      dispatch(loadCertificatesAction());
-      dispatch(loadRegistriesAction());
-      dispatch(loadServicesAction("")); // for routes destinations
-      dispatch(loadPersistentVolumesAction());
-      dispatch(loadStorageClassesAction());
-      dispatch(loadDomainsAction());
-    }
-
-    if (canEditTenant()) {
-      dispatch(loadCurrentTenantInfoAction());
-    }
-
-    if (canManageTenant()) {
-      dispatch(loadRoleBindingsAction());
-    }
-
-    if (canViewCluster()) {
-      dispatch(loadCertificateIssuersAction());
-      dispatch(loadCertificateAcmeServerAction());
+    if (canManageCluster()) {
       dispatch(loadSSOConfigAction());
-      dispatch(loadNodesAction());
-      dispatch(loadClusterInfoAction());
+      dispatch(loadRoleBindingsAction());
+      dispatch(loadCertificateAcmeServerAction());
+      dispatch(loadCertificateIssuersAction());
     }
+
+    // The following two are required for routes
+    dispatch(loadCertificatesAction());
+    dispatch(loadDomainsAction());
+
+    dispatch(loadNodesAction());
+    dispatch(loadClusterInfoAction());
   }
 
   private connectWebsocket() {
-    const { dispatch, authToken, impersonation, impersonationType, canViewTenant } = this.props;
+    const { dispatch, authToken, impersonation, impersonationType } = this.props;
     const rws = getWebsocketInstance();
     rws.addEventListener("open", () => {
       const message = {
@@ -120,10 +102,8 @@ class WithDataRaw extends React.PureComponent<Props> {
     });
 
     const reloadResources = () => {
-      if (canViewTenant()) {
-        dispatch(loadPersistentVolumesAction()); // is in use can't watch
-        dispatch(loadServicesAction("")); // for routes destinations
-      }
+      dispatch(loadPersistentVolumesAction()); // is in use can't watch
+      dispatch(loadServicesAction("")); // for routes destinations
     };
 
     const throttledReloadResouces = throttle(reloadResources, 10000, { leading: true, trailing: true });
@@ -286,17 +266,6 @@ class WithDataRaw extends React.PureComponent<Props> {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
             kind: RESOURCE_TYPE_DOMAIN,
-            payload: {
-              action: data.action,
-              data: data.data,
-            },
-          });
-          break;
-        }
-        case RESOURCE_TYPE_TENANT: {
-          dispatch({
-            type: WATCHED_RESOURCE_CHANGE,
-            kind: RESOURCE_TYPE_TENANT,
             payload: {
               action: data.action,
               data: data.data,

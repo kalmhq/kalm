@@ -1,21 +1,24 @@
-import { Box, Button } from "@material-ui/core";
+import { Box, Button, Link } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
 import { FinalBoolCheckboxRender } from "forms/Final/checkbox";
 import { FinalTextField } from "forms/Final/textfield";
 import { trimParse } from "forms/normalizer";
-import React from "react";
+import { default as React } from "react";
 import { Field } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { PreInjectedFile } from "types/componentTemplate";
-import StringConstants from "utils/stringConstants";
+import { default as sc, default as StringConstants } from "utils/stringConstants";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { Subtitle1 } from "widgets/Label";
 import { RichEditor } from "widgets/RichEditor";
+import { SectionTitle } from "widgets/SectionTitle";
+import { HelperTextSection } from ".";
 import { ValidatorInjectedFilePath } from "../validator";
 
 interface State {
@@ -194,19 +197,36 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     }
     return (
       <>
-        {this.renderEditContentDialog()}
-        {fieldsNodes}
-        <Box mb={2}>
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<AddIcon />}
-            size="small"
-            onClick={this.handlePush.bind(this)}
-          >
-            New File
-          </Button>
-        </Box>
+        <Grid item xs={12}>
+          <SectionTitle>
+            <Subtitle1>Config Files</Subtitle1>
+            <Box mb={2} mt={2} ml={2}>
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={<AddIcon />}
+                size="small"
+                style={{ height: 18, borderRadius: 5, fontSize: 12 }}
+                onClick={this.handlePush.bind(this)}
+              >
+                New File
+              </Button>
+            </Box>
+          </SectionTitle>
+        </Grid>
+        <Grid item xs={12}>
+          <HelperTextSection>
+            {sc.CONFIG_COMMAND_HELPER}
+            <span>&nbsp;</span>
+            <Link href="https://docs.kalm.dev/guide-config#adding-a-config-file" target="_blank">
+              {sc.LEARN_MORE_LABEL}
+            </Link>
+          </HelperTextSection>
+        </Grid>
+        <Grid item xs={12}>
+          {this.renderEditContentDialog()}
+          {fieldsNodes}
+        </Grid>
       </>
     );
   }

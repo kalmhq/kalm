@@ -11,7 +11,7 @@ import (
 
 func (h *ApiHandler) handleDeletePod(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+c.Param("namespace"), "*/*")
+	h.MustCanEdit(currentUser, c.Param("namespace"), "*")
 
 	err := h.resourceManager.Delete(&coreV1.Pod{ObjectMeta: metaV1.ObjectMeta{
 		Namespace: c.Param("namespace"),
@@ -27,7 +27,7 @@ func (h *ApiHandler) handleDeletePod(c echo.Context) error {
 
 func (h *ApiHandler) handleDeleteJob(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+c.Param("namespace"), "*/*")
+	h.MustCanEdit(currentUser, c.Param("namespace"), "*")
 
 	err := h.resourceManager.Delete(&batchV1.Job{ObjectMeta: metaV1.ObjectMeta{
 		Namespace: c.Param("namespace"),

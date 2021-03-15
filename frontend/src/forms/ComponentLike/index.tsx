@@ -52,7 +52,7 @@ import {
 import { ComponentAccess } from "./Access";
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
-import { IngressHint, Ports } from "./Ports";
+import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { ProbeFields } from "./Probes";
 
@@ -76,7 +76,6 @@ const mapStateToProps = (state: RootState) => {
     nodeLabels: state.nodes.labels,
     anchor,
     form: COMPONENT_FORM_ID,
-    isFrontendComponentSchedulingFeatureEnabled: state.extraInfo.info.isFrontendComponentSchedulingFeatureEnabled,
   };
 };
 
@@ -116,17 +115,17 @@ const styles = (theme: Theme) =>
       marginLeft: theme.spacing(1),
     },
     deployBtn: {
-      width: 360,
       position: "fixed",
       zIndex: COMPONENT_DEPLOY_BUTTON_ZINDEX,
       bottom: theme.spacing(3),
+      height: "40px",
     },
   });
 
 /**
  * A Styled component representing helper text.
  */
-const HelperTextSection: React.FC<{}> = ({ children }) => (
+export const HelperTextSection: React.FC<{}> = ({ children }) => (
   <Grid item xs={8}>
     {children}
   </Grid>
@@ -147,12 +146,6 @@ type RenderProps = FormRenderProps<ComponentLike>;
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   get tabs() {
-    const { isFrontendComponentSchedulingFeatureEnabled } = this.props;
-
-    if (!isFrontendComponentSchedulingFeatureEnabled) {
-      return tabs.filter((tab) => tab !== Scheduling);
-    }
-
     return tabs;
   }
 
@@ -230,89 +223,24 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   };
 
   private preInjectedFiles = () => {
-    return (
-      <>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Config Files</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <Grid item xs={12}>
-          <HelperTextSection>
-            {sc.CONFIG_COMMAND_HELPER}
-            <span>&nbsp;</span>
-            <Link href="https://kalm.dev/docs/guide-config#adding-a-config-file" target="_blank">
-              {sc.LEARN_MORE_LABEL}
-            </Link>
-          </HelperTextSection>
-        </Grid>
-        <Grid item xs={12}>
-          <PreInjectedFiles />
-        </Grid>
-      </>
-    );
+    return <PreInjectedFiles />;
   };
 
   private renderEnvs() {
-    return (
-      <>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Environment Variables</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <Grid item xs={12}>
-          <HelperTextSection>
-            {sc.ENV_VAR_HELPER}
-            <span>&nbsp;</span>
-            <Link href="https://kalm.dev/docs/guide-config#environment-varibles" target="_blank">
-              {sc.LEARN_MORE_LABEL}
-            </Link>
-          </HelperTextSection>
-        </Grid>
-        <Grid item xs={12}>
-          <Envs />
-        </Grid>
-      </>
-    );
+    return <Envs />;
   }
 
   public renderPorts() {
-    return (
-      <>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Ports</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <HelperTextSection>{sc.PORTS_HELPER}</HelperTextSection>
-        <Grid item xs={12}>
-          <Ports />
-        </Grid>
-        <Grid item xs={12}>
-          <IngressHint />
-        </Grid>
-      </>
-    );
+    return <Ports />;
   }
 
   private renderDisks(isEdit: boolean) {
     return (
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Disks</Subtitle1>
-          </SectionTitle>
-        </Grid>
-        <HelperTextSection>{sc.DISKS_HELPER}</HelperTextSection>
-        <Grid item xs={12}>
-          <FormSpy subscription={{ values: true }}>
-            {({ values }: FormSpyRenderProps<ComponentLike>) => {
-              return <Disks isEdit={isEdit} workloadType={values.workloadType} componentName={values.name} />;
-            }}
-          </FormSpy>
-        </Grid>
-      </Grid>
+      <FormSpy subscription={{ values: true }}>
+        {({ values }: FormSpyRenderProps<ComponentLike>) => {
+          return <Disks isEdit={isEdit} workloadType={values.workloadType} componentName={values.name} />;
+        }}
+      </FormSpy>
     );
   }
 
@@ -418,12 +346,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <SectionTitle>
-            <Subtitle1>Resources</Subtitle1>
-          </SectionTitle>
-        </Grid>
-
-        <Grid item xs={6}>
           <Field<string | undefined>
             component={FinalTextField}
             name="cpuLimit"
@@ -444,7 +366,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <Field<string | undefined>
             component={FinalTextField}
             name="memoryLimit"
@@ -466,7 +388,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <Field<string | undefined>
             component={FinalTextField}
             name="cpuRequest"
@@ -486,7 +408,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <Field<string | undefined>
             component={FinalTextField}
             name="memoryRequest"
@@ -507,26 +429,24 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        {this.props.isFrontendComponentSchedulingFeatureEnabled && (
-          <>
-            <Grid item xs={12}>
-              <SectionTitle>
-                <Subtitle1>Nodes</Subtitle1>
-              </SectionTitle>
-            </Grid>
-            <Grid item xs={12}>
-              <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
-            </Grid>
-            <Grid item xs={12}>
-              <Field
-                name="preferNotCoLocated"
-                type="checkbox"
-                component={FinalBoolCheckboxRender}
-                label={sc.SCHEDULING_COLOCATE_CHECKBOX}
-              />
-            </Grid>
-          </>
-        )}
+        <>
+          <Grid item xs={12}>
+            <SectionTitle>
+              <Subtitle1>Nodes</Subtitle1>
+            </SectionTitle>
+          </Grid>
+          <Grid item xs={12}>
+            <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
+          </Grid>
+          <Grid item xs={12}>
+            <Field
+              name="preferNotCoLocated"
+              type="checkbox"
+              component={FinalBoolCheckboxRender}
+              label={sc.SCHEDULING_COLOCATE_CHECKBOX}
+            />
+          </Grid>
+        </>
       </Grid>
     );
   }
@@ -660,7 +580,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         {({ errors }: FormSpyRenderProps<ComponentLike>) => {
           return (
             <Tabs
-              className={clsx(classes.borderBottom, classes.tabsRoot)}
+              className={clsx(classes.tabsRoot)}
               value={currentTabIndex}
               variant="scrollable"
               scrollButtons="auto"
@@ -693,7 +613,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderMain(isEdit: boolean) {
     return (
       <Grid container spacing={2}>
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <Field
             autoFocus
             component={FinalTextField}
@@ -706,7 +626,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             helperText={isEdit ? "Name can't be changed." : sc.NAME_RULE}
           />
         </Grid>
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <Field
             component={FinalTextField}
             id="component-image"
@@ -720,7 +640,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <FormSpy subscription={{ values: true }}>
             {({ values }: FormSpyRenderProps<ComponentLike>) => {
               let hasVolumes = false;
@@ -751,7 +671,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {({ values }: FormSpyRenderProps<ComponentLike>) => {
             return (
               <>
-                <Grid item xs={6}>
+                <Grid item xs={12}>
                   {this.renderReplicasOrSchedule(values.workloadType)}
                 </Grid>
                 {this.renderPrivateRegistryAlert(values.image)}
@@ -759,8 +679,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             );
           }}
         </FormSpy>
-
-        <Box p={1}>{this.renderScheduling()}</Box>
       </Grid>
     );
   }
@@ -821,7 +739,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <Grid container spacing={2}>
-        <Grid item xs={6} sm={6} md={6}>
+        <Grid item xs={12} sm={12} md={12} style={{ display: "flex", justifyContent: "flex-end" }}>
           <SubmitButton
             pending={isSubmittingApplicationComponent}
             disabled={isSubmittingApplicationComponent}
@@ -853,13 +771,29 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <form onSubmit={handleSubmit} className={classes.root} id="component-form">
             <FormTutorialHelper form={form} />
             <Prompt />
-            <KPanel
-              content={
-                <Box p={2} tutorial-anchor-id="component-from-basic">
-                  {this.renderMain(isEdit)}
-                </Box>
-              }
-            />
+            <Grid container spacing={2}>
+              <Grid item xs={6} sm={6} md={6}>
+                <KPanel
+                  title="Define Component"
+                  content={
+                    <Box p={2} tutorial-anchor-id="component-from-basic">
+                      {this.renderMain(isEdit)}
+                    </Box>
+                  }
+                />
+              </Grid>
+              <Grid item xs={6} sm={6} md={6}>
+                <KPanel
+                  title="Resource Limits"
+                  content={
+                    <Box p={2} tutorial-anchor-id="component-from-basic">
+                      {this.renderScheduling()}
+                    </Box>
+                  }
+                />
+              </Grid>
+            </Grid>
+
             <Box mt={2}>
               <KPanel
                 content={

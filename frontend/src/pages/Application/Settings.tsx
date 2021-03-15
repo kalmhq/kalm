@@ -25,11 +25,10 @@ const styles = (theme: Theme) =>
 
 interface Props extends WithNamespaceProps, WithStyles<typeof styles> {}
 
-class ApplicationSettingsRaw extends React.PureComponent<Props> {
-  private confirmDelete = async () => {
-    const { dispatch, activeNamespaceName } = this.props;
+const ApplicationSettingsRaw: React.FC<Props> = (props) => {
+  const confirmDelete = async () => {
+    const { dispatch, activeNamespaceName } = props;
     try {
-      console.log(activeNamespaceName);
       await dispatch(deleteApplicationAction(activeNamespaceName));
       await dispatch(setSuccessNotificationAction("Successfully delete an application"));
       dispatch(push(`/`));
@@ -38,45 +37,44 @@ class ApplicationSettingsRaw extends React.PureComponent<Props> {
     }
   };
 
-  public render() {
-    const { activeNamespaceName } = this.props;
-    const options = [
-      {
-        title: (
-          <DeleteButtonWithConfirmPopover
-            popupId="delete-application-popup"
-            popupTitle={`DELETE APPLICATION?`}
-            popupContent={
-              <Box>
-                This action cannot be undone. This will permanently delete all resources under application{" "}
-                <Typography color={"primary"} align={"center"} component="span">
-                  {activeNamespaceName}
-                </Typography>{" "}
-                includes: components, environment configs, config files etc.
-              </Box>
-            }
-            targetText={activeNamespaceName}
-            text={"delete application"}
-            useText={true}
-            confirmedAction={() => this.confirmDelete()}
-          />
-        ),
-        content: "",
-      },
-    ];
-    return (
-      <BasePage
-        secondHeaderLeft={<Namespaces />}
-        secondHeaderRight={<Body>{sc.APP_SETTINGS_PAGE_NAME}</Body>}
-        leftDrawer={<ApplicationSidebar />}
-      >
-        <Box p={2}>
-          <InfoBox title={"Dangerous Zone"} options={options} />
-        </Box>
-      </BasePage>
-    );
-  }
-}
+  const { activeNamespaceName } = props;
+  const options = [
+    {
+      title: (
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-application-popup"
+          popupTitle={`DELETE APPLICATION?`}
+          popupContent={
+            <Box>
+              This action cannot be undone. This will permanently delete all resources under application{" "}
+              <Typography color={"primary"} align={"center"} component="span">
+                {activeNamespaceName}
+              </Typography>{" "}
+              includes: components, environment configs, config files etc.
+            </Box>
+          }
+          targetText={activeNamespaceName}
+          text={"delete application"}
+          useText={true}
+          confirmedAction={() => confirmDelete()}
+        />
+      ),
+      content: "",
+    },
+  ];
+
+  return (
+    <BasePage
+      secondHeaderLeft={<Namespaces />}
+      secondHeaderRight={<Body>{sc.APP_SETTINGS_PAGE_NAME}</Body>}
+      leftDrawer={<ApplicationSidebar />}
+    >
+      <Box p={2}>
+        <InfoBox title={"Dangerous Zone"} options={options} />
+      </Box>
+    </BasePage>
+  );
+};
 
 export const ApplicationSettingsPage = withStyles(styles)(
   withNamespace(connect(mapStateToProps)(ApplicationSettingsRaw)),

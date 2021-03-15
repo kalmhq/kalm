@@ -6,15 +6,13 @@ import StepLabel from "@material-ui/core/StepLabel";
 import Stepper from "@material-ui/core/Stepper";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { createCertificateAction } from "actions/certificate";
-import { api } from "api";
 import { BasePage } from "pages/BasePage";
 import { CertStatus } from "pages/Domains/CertStatus";
-import { DomainTxtRecordStatus } from "pages/Domains/Status";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouteMatch } from "react-router-dom";
 import { RootState } from "reducers";
-import { issuerManaged } from "types/certificate";
+import { Certificate, issuerManaged } from "types/certificate";
 import { DNSConfigItems } from "widgets/ACMEServer";
 import { CodeBlock } from "widgets/CodeBlock";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
@@ -32,12 +30,13 @@ interface StepOption {
 
 const DomainTourPageRaw: React.FC = () => {
   const dispatch = useDispatch();
-  const { domains, isLoading, isFirstLoaded, certificates } = useSelector((state: RootState) => {
+  const { domains, isLoading, isFirstLoaded, certificates, acmeServer } = useSelector((state: RootState) => {
     return {
       isLoading: state.domains.isLoading,
       isFirstLoaded: state.domains.isFirstLoaded,
       domains: state.domains.domains,
       certificates: state.certificates.certificates,
+      acmeServer: state.certificates.acmeServer,
     };
   });
 
@@ -54,7 +53,12 @@ const DomainTourPageRaw: React.FC = () => {
 
   const isWildcard = domain.domain.startsWith("*");
 
-  const cert = certificates.find((x) => x.domains.length === 1 && x.domains[0] === domain.domain);
+  let cert: Certificate | undefined;
+
+  cert = certificates.find((x) => x.domains.length === 1 && x.domains[0] === domain.domain);
+  if (!cert) {
+    cert = certificates.find((x) => !!x.domains.find((y) => y === domain.domain));
+  }
 
   const renderHelper = (domain: string, type: string, target: string, proxyWarning: boolean = false) => {
     return (
@@ -96,95 +100,64 @@ const DomainTourPageRaw: React.FC = () => {
     completed: false,
   };
 
-  const step2: StepOption = {
-    title: `Verify your domain by adding a TXT record`,
-    content: (
-      <Box>
-        <>
-          <Box mt={2}>Add a TXT Record in your DNS config panel you just open.</Box>
-          <Box mt={2}>
-            <DNSConfigItems
-              items={[
-                {
-                  domain: domain.domain,
-                  type: "TXT",
-                  cnameRecord: domain.txt,
-                },
-              ]}
-            />
-          </Box>
-          <Box mt={2}>
-            Check to make sure they’re correct, then <strong>Save the changes</strong>.
-          </Box>
+  const steps: StepOption[] = [step1];
 
-          <Box mt={2}>
-            Wait for changes to take effect. Generally it will take effect within a few minutes to a few hours.
-          </Box>
-
-          <Box mt={2}>{renderHelper(domain.domain, "TXT", domain.txt)}</Box>
-          <Box mt={2} display="flex" flexDirection="row">
-            {!domain.txtReadyToCheck && (
-              <Button
-                variant="outlined"
-                color="primary"
-                size="small"
-                onClick={() => {
-                  api.triggerDomainCheck(domain.name, false, true);
-                }}
-              >
-                Check TXT Status
-              </Button>
-            )}
-
-            {domain.txtReadyToCheck && (
-              <Box pl={2} display="flex">
-                <DomainTxtRecordStatus domain={domain} />
-              </Box>
-            )}
-          </Box>
-        </>
-      </Box>
-    ),
-    completed: domain.txtStatus === "ready",
-  };
-
-  // We don't have a value to check whether the user has done the first step.
-  // But if the second is completed, it means the first one has to be complete.
-  step1.completed = step2.completed;
-
-  const steps: StepOption[] = [step1, step2];
-
-  const NoCertStep = (): StepOption | null => {
-    if (cert) {
-      return null;
-    }
-
+  const normalDomainNoCertStep = (): StepOption => {
     return {
       title: `Apply a certificate`,
       content: (
         <Box mt={2}>
-          <Box>
-            {domain.txtStatus === "ready" ? (
-              <>
-                {isWildcard ? null : (
-                  <Alert severity="info">
-                    Before applying, please ensure that the DNS records in the previous step have been configured
-                    correctly.
-                  </Alert>
-                )}
-              </>
-            ) : (
-              <Alert severity="info">
-                Before requesting a certificate, you need to complete step 2 to verify your ownership of the domain
-              </Alert>
-            )}
-          </Box>
+          <Alert severity="info">
+            Before applying, please ensure that the DNS records in the previous step have been configured correctly.
+          </Alert>
           <Box mt={2}>
             <Button
               variant="outlined"
               color="primary"
               size="small"
-              disabled={domain.txtStatus !== "ready"}
+              onClick={() => {
+                dispatch(
+                  createCertificateAction(
+                    {
+                      managedType: issuerManaged,
+                      domains: [domain.domain],
+                      name: "",
+                      selfManagedCertContent: "",
+                      selfManagedCertPrivateKey: "",
+                    },
+                    false,
+                  ),
+                );
+              }}
+            >
+              Apply Certificate
+            </Button>
+          </Box>
+        </Box>
+      ),
+      completed: false,
+    };
+  };
+
+  const wildcardCertificateNoCertStep = (): StepOption => {
+    return {
+      title: `Apply a certificate`,
+      content: (
+        <Box mt={2}>
+          {!acmeServer && (
+            <Alert severity="info">
+              <AlertTitle>ACME server is required</AlertTitle>
+              The ACME server on the cluster is not configured. This component is a necessary dependency for processing
+              wildcard certificates. Please go to the ACME Server page and follow the steps.
+            </Alert>
+          )}
+
+          <Box mt={2}>
+            <Button
+              variant="outlined"
+              color="primary"
+              size="small"
+              disabled={!acmeServer}
               onClick={() => {
                 dispatch(
                   createCertificateAction(
@@ -210,11 +183,11 @@ const DomainTourPageRaw: React.FC = () => {
   };
 
   const wildcardDomainWithCertStep = (): StepOption | null => {
-    if (!cert || !cert.wildcardCertDNSChallengeDomainMap) {
+    if (!cert!.wildcardCertDNSChallengeDomainMap) {
       return null;
     }
 
-    const certDomains = cert.wildcardCertDNSChallengeDomainMap;
+    const certDomains = cert!.wildcardCertDNSChallengeDomainMap;
     const firsKey = Object.keys(certDomains)[0];
     const firstDomain = `_acme-challenge.${Object.keys(certDomains)[0]}`;
     const firstTarget = certDomains[firsKey];
@@ -230,7 +203,7 @@ const DomainTourPageRaw: React.FC = () => {
                 If you are using <strong>Cloudflare</strong>, Please <strong>DO NOT</strong> enable Proxy for this
                 record
               </AlertTitle>
-              Using Cloudflare's CNAME proxy will cause txt records to fail verification.
+              Using Cloudflare's CNAME proxy will cause CNAME records to fail verification.
             </Alert>
           </Box>
           <Box mt={2}>
@@ -254,20 +227,16 @@ const DomainTourPageRaw: React.FC = () => {
           <Box mt={2}>{renderHelper(firstDomain, "CNAME", firstTarget)}</Box>
           <Box mt={2} display="flex" flexDirection="row">
             <Box pl={2} display="flex">
-              <CertStatus cert={cert} />
+              <CertStatus cert={cert!} />
             </Box>
           </Box>
         </Box>
       ),
-      completed: cert.ready === "True",
+      completed: cert!.ready === "True",
     };
   };
 
   const normalDomainWithCertStep = (): StepOption | null => {
-    if (!cert) {
-      return null;
-    }
-
     return {
       title: `Apply a certificate`,
       content: (
@@ -279,19 +248,29 @@ const DomainTourPageRaw: React.FC = () => {
             </Alert>
           </Box>
           <Box mt={2} display="flex">
-            <CertStatus cert={cert} />
+            <CertStatus cert={cert!} />
           </Box>
         </Box>
       ),
-      completed: cert.ready === "True",
+      completed: cert!.ready === "True",
     };
   };
 
-  let certStep: StepOption | null = !!cert
-    ? isWildcard
-      ? wildcardDomainWithCertStep()
-      : normalDomainWithCertStep()
-    : NoCertStep();
+  let certStep: StepOption | null = null;
+
+  if (cert) {
+    if (isWildcard) {
+      certStep = wildcardDomainWithCertStep();
+    } else {
+      certStep = normalDomainWithCertStep();
+    }
+  } else {
+    if (isWildcard) {
+      certStep = wildcardCertificateNoCertStep();
+    } else {
+      certStep = normalDomainNoCertStep();
+    }
+  }
 
   const trafficStep: StepOption = {
     title: `Configure ${domain.recordType} record to allow traffic to enter your cluster`,
@@ -307,7 +286,8 @@ const DomainTourPageRaw: React.FC = () => {
               {
                 domain: domain.domain,
                 type: domain.recordType,
-                cnameRecord: domain.target,
+                aRecord: domain.recordType === "A" ? domain.target : undefined,
+                cnameRecord: domain.recordType === "CNAME" ? domain.target : undefined,
               },
             ]}
           />
@@ -323,18 +303,11 @@ const DomainTourPageRaw: React.FC = () => {
         <Box mt={2}>{renderHelper(domain.domain, domain.recordType, domain.target, true)}</Box>
       </Box>
     ),
-    completed: isWildcard ? domain.status === "ready" : !!cert && cert.ready === "True",
+    completed: !!cert && cert.ready === "True",
   };
 
-  if (isWildcard) {
-    // Wildcard certificate uses DNS01 challenge. The challenge record is included in the traffic DNS CNAME record.
-    // To avoid wrong cache of the challenge record, it asks user to configure cert dns first.
-    if (certStep) steps.push(certStep);
-    steps.push(trafficStep);
-  } else {
-    steps.push(trafficStep);
-    if (certStep) steps.push(certStep);
-  }
+  steps.push(trafficStep);
+  if (certStep) steps.push(certStep);
 
   return (
     <BasePage>

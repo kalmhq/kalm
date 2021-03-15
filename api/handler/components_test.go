@@ -36,7 +36,7 @@ func (suite *ComponentTestSuite) TeardownSuite() {
 func (suite *ComponentTestSuite) TestGetEmptyComponentList() {
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetViewerRoleOfScope(defaultTenant, suite.namespace),
+			GetViewerRoleOfNamespace(suite.namespace),
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodGet,
@@ -54,7 +54,7 @@ func (suite *ComponentTestSuite) TestBasicRequestOfComponents() {
 	// Create
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetEditorRoleOfScope(defaultTenant, suite.namespace),
+			GetEditorRoleOfNamespace(suite.namespace),
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodPost,
@@ -79,7 +79,7 @@ func (suite *ComponentTestSuite) TestBasicRequestOfComponents() {
 	// Get
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetEditorRoleOfScope(defaultTenant, suite.namespace),
+			GetEditorRoleOfNamespace(suite.namespace),
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodGet,
@@ -98,7 +98,7 @@ func (suite *ComponentTestSuite) TestBasicRequestOfComponents() {
 	// Update
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetEditorRoleOfScope(defaultTenant, suite.namespace),
+			GetEditorRoleOfNamespace(suite.namespace),
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodPut,
@@ -123,7 +123,7 @@ func (suite *ComponentTestSuite) TestBasicRequestOfComponents() {
 	// Delete
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetEditorRoleOfScope(defaultTenant, suite.namespace),
+			GetEditorRoleOfNamespace(suite.namespace),
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodDelete,
@@ -139,7 +139,7 @@ func (suite *ComponentTestSuite) TestBasicRequestOfComponents() {
 	// Get Again
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetEditorRoleOfScope(defaultTenant, suite.namespace),
+			GetEditorRoleOfNamespace(suite.namespace),
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodGet,
@@ -173,7 +173,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithPVCAsVolume() {
 	// create component
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetEditorRoleOfScope(defaultTenant, suite.namespace),
+			GetEditorRoleOfNamespace(suite.namespace),
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodPost,
@@ -192,7 +192,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithPVCAsVolume() {
 	// Get List
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetViewerRoleOfScope(defaultTenant, suite.namespace),
+			GetViewerRoleOfNamespace(suite.namespace),
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodGet,
@@ -260,7 +260,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 	// create component
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetEditorRoleOfScope(defaultTenant, suite.namespace),
+			GetEditorRoleOfNamespace(suite.namespace),
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodPost,
@@ -313,7 +313,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithResourceRequirements() {
 	// create component
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetEditorRoleOfScope(defaultTenant, suite.namespace),
+			GetEditorRoleOfNamespace(suite.namespace),
 		},
 		Namespace: suite.namespace,
 		Method:    http.MethodPost,

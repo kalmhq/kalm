@@ -1,4 +1,4 @@
-import { Button, Typography } from "@material-ui/core";
+import { Typography } from "@material-ui/core";
 import Box from "@material-ui/core/Box/Box";
 import { createCertificateAction } from "actions/certificate";
 import { deleteDomainAction } from "actions/domains";
@@ -6,12 +6,12 @@ import { setSuccessNotificationAction } from "actions/notification";
 import { push } from "connected-react-router";
 import { BasePage } from "pages/BasePage";
 import { CertificateInfo } from "pages/Domains/CertInfo";
-import { DomainTxtRecordStatus } from "pages/Domains/Status";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouteMatch } from "react-router-dom";
 import { RootState } from "reducers";
-import { issuerManaged } from "types/certificate";
+import CustomButton from "theme/Button";
+import { Certificate, issuerManaged } from "types/certificate";
 import { DNSConfigItems } from "widgets/ACMEServer";
 import { HelpIcon, KalmCertificatesIcon } from "widgets/Icon";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
@@ -20,13 +20,13 @@ import { Loading } from "widgets/Loading";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 
 const DomainDetailPageRaw: React.FC = () => {
-  const { domains, isLoading, isFirstLoaded, certificates, canEditTenant } = useSelector((state: RootState) => {
+  const { domains, isLoading, isFirstLoaded, certificates, canEditCluster } = useSelector((state: RootState) => {
     return {
       isLoading: state.domains.isLoading,
       isFirstLoaded: state.domains.isFirstLoaded,
       domains: state.domains.domains,
       certificates: state.certificates.certificates,
-      canEditTenant: state.auth.permissionMethods.canEditTenant,
+      canEditCluster: state.auth.permissionMethods.canEditCluster,
     };
   });
 
@@ -42,7 +42,12 @@ const DomainDetailPageRaw: React.FC = () => {
     return <Box p={2}>no such domain</Box>;
   }
 
-  const cert = certificates.find((x) => x.domains.length === 1 && x.domains[0] === domain.domain);
+  let cert: Certificate | undefined;
+
+  cert = certificates.find((x) => x.domains.length === 1 && x.domains[0] === domain.domain);
+  if (!cert) {
+    cert = certificates.find((x) => !!x.domains.find((y) => y === domain.domain));
+  }
 
   const applyCert = async () => {
     await dispatch(
@@ -74,8 +79,6 @@ const DomainDetailPageRaw: React.FC = () => {
           items={[
             { name: "Name", content: domain.name },
             { name: "Domain", content: domain.domain },
-            { name: `TXT Record Status`, content: <DomainTxtRecordStatus domain={domain} /> },
-            // { name: `${domain.recordType} Record Status`, content: <DomainStatus status={domain.status} /> },
           ]}
         />
       </>
@@ -85,10 +88,10 @@ const DomainDetailPageRaw: React.FC = () => {
   return (
     <BasePage
       secondHeaderRight={
-        canEditTenant() ? (
+        canEditCluster() ? (
           <>
-            {!cert && !domain.isBuiltIn && domain.txtStatus === "ready" && (
-              <Button
+            {!cert ? (
+              <CustomButton
                 startIcon={<KalmCertificatesIcon />}
                 color="primary"
                 variant="outlined"
@@ -97,24 +100,21 @@ const DomainDetailPageRaw: React.FC = () => {
                 onClick={applyCert}
               >
                 Apply SSL Certificate
-              </Button>
-            )}
-
-            {domain.status !== "ready" || domain.txtStatus !== "ready" || (cert && cert.ready !== "True") ? (
-              <Button
-                startIcon={<HelpIcon />}
-                color="primary"
-                variant="outlined"
-                size="small"
-                onClick={() => dispatch(push("/domains/" + domain.name + "/tour"))}
-              >
-                Setup Tour
-              </Button>
+              </CustomButton>
             ) : null}
+
+            <CustomButton
+              startIcon={<HelpIcon />}
+              color="primary"
+              variant="outlined"
+              size="small"
+              onClick={() => dispatch(push("/domains/" + domain.name + "/tour"))}
+            >
+              Setup Tour
+            </CustomButton>
 
             <DeleteButtonWithConfirmPopover
               useText
-              disabled={domain.isBuiltIn}
               text="Delete"
               popupId="delete-Domain"
               popupContent={
@@ -137,15 +137,10 @@ const DomainDetailPageRaw: React.FC = () => {
         <KPanel title="Domain Info">
           <Box p={2}>
             {renderTable()}
-            {!domain.isBuiltIn && (
-              <Box mt={2}>
+            <Box mt={2}>
+              {domain.name !== "default" && (
                 <DNSConfigItems
                   items={[
-                    {
-                      domain: domain.domain,
-                      type: "TXT",
-                      txtRecord: domain.txt,
-                    },
                     {
                       domain: domain.domain,
                       type: domain.recordType,
@@ -153,8 +148,8 @@ const DomainDetailPageRaw: React.FC = () => {
                     },
                   ]}
                 />
-              </Box>
-            )}
+              )}
+            </Box>
           </Box>
         </KPanel>
 
@@ -163,12 +158,6 @@ const DomainDetailPageRaw: React.FC = () => {
             <CertificateInfo cert={cert} />
           </Box>
         ) : null}
-
-        {/* {domain.status === "pending" && (
-              <Box mt={2}>
-                <KPanel>{renderHelper()}</KPanel>
-              </Box>
-            )} */}
       </Box>
     </BasePage>
   );

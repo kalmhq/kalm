@@ -30,6 +30,11 @@ export interface HttpRouteDestination {
   weight: number;
 }
 
+export interface HttpRouteDestinationStatus {
+  status: string;
+  error: string;
+}
+
 export interface HttpRouteRetry {
   attempts: number;
   perTtyTimeoutSeconds: number;
@@ -72,6 +77,7 @@ export interface HttpRoute {
   stripPath?: boolean;
   conditions?: HttpRouteCondition[];
   destinations: HttpRouteDestination[];
+  destinationsStatus?: HttpRouteDestinationStatus[];
   httpRedirectToHttps?: boolean;
   timeout?: number;
   retries?: HttpRouteRetry;

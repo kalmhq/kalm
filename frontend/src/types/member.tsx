@@ -22,13 +22,13 @@ export interface RoleBinding {
   expiredAtTimestamp: number;
 }
 
-export const newEmptyRoleBinding = (isClusterLevel: boolean = false): RoleBinding => {
+export const newEmptyRoleBinding = (): RoleBinding => {
   return {
     name: "",
     namespace: "",
     subject: "",
     subjectType: SubjectTypeUser,
-    role: isClusterLevel ? "clusterViewer" : "viewer",
+    role: "",
     expiredAtTimestamp: 1,
   };
 };

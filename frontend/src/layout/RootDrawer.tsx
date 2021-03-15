@@ -1,6 +1,7 @@
 import {
   createStyles,
   Drawer,
+  IconButton,
   List,
   ListItem,
   ListItemIcon,
@@ -9,7 +10,7 @@ import {
   Theme,
 } from "@material-ui/core";
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { blinkTopProgressAction } from "actions/settings";
+import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import clsx from "clsx";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { APP_BAR_HEIGHT, LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
@@ -23,14 +24,14 @@ import {
   InfoIcon,
   KalmApplicationIcon,
   KalmCertificatesIcon,
-  KalmIngressIcon,
   KalmNodeIcon,
   KalmRegistryIcon,
   KalmRoutesIcon,
   KalmVolumeIcon,
+  MenuIcon,
+  MenuOpenIcon,
   PeopleIcon,
   SettingIcon,
-  UsageIcon,
 } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
@@ -55,12 +56,12 @@ const styles = (theme: Theme) =>
     },
     listItemSeleted: {
       borderLeft: `4px solid ${
-        theme.palette.type === "light" ? theme.palette.primary.dark : theme.palette.primary.light
+        theme.palette.type === "light" ? theme.palette.primary.main : theme.palette.primary.light
       }`,
     },
     listSubHeader: {
       textTransform: "uppercase",
-      color: theme.palette.text.secondary,
+      color: theme.palette.type === "light" ? "#000" : "inherit",
       "font-size": theme.typography.subtitle1.fontSize,
     },
     ListItemText: {
@@ -71,12 +72,16 @@ const styles = (theme: Theme) =>
       width: LEFT_SECTION_OPEN_WIDTH,
       flexShrink: 0,
       whiteSpace: "nowrap",
+      position: "relative",
     },
     drawerPaper: {
       width: LEFT_SECTION_OPEN_WIDTH,
       paddingTop: APP_BAR_HEIGHT,
     },
-
+    drawerPaperClose: {
+      width: LEFT_SECTION_OPEN_WIDTH,
+      paddingTop: APP_BAR_HEIGHT + 48,
+    },
     // material-ui official
     drawerOpen: {
       width: LEFT_SECTION_OPEN_WIDTH,
@@ -101,30 +106,34 @@ const styles = (theme: Theme) =>
       height: 48,
       paddingLeft: 12,
     },
+    shrinkButton: {
+      position: "absolute",
+      zIndex: 1,
+      right: 8,
+      top: APP_BAR_HEIGHT + 8,
+    },
+    shrinkButtonClose: {
+      position: "absolute",
+      zIndex: 1,
+      right: 0,
+      top: APP_BAR_HEIGHT,
+    },
   });
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, WithUserAuthProps {
   dispatch: TDispatch;
 }
 
-interface State {}
-
-class RootDrawerRaw extends React.PureComponent<Props, State> {
-  constructor(props: Props) {
-    super(props);
-
-    this.state = {};
-  }
-
-  private getSideBarData() {
-    const { canEditTenant, canViewCluster, canManageCluster, canViewTenant } = this.props;
+const RootDrawerRaw: React.FC<Props> = (props) => {
+  const getSideBarData = () => {
+    const { canEditCluster, canViewCluster, canManageCluster } = props;
 
     return [
       {
         name: "Application",
         items: [
           { icon: KalmApplicationIcon, text: "Apps", to: "/applications" },
-          canViewTenant()
+          canManageCluster()
             ? {
                 icon: KalmCertificatesIcon,
                 text: "Domains & Certs",
@@ -136,7 +145,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
             to: "/routes",
             icon: KalmRoutesIcon,
           },
-          canEditTenant()
+          canEditCluster()
             ? {
                 icon: CIIcon,
                 text: "Webhooks",
@@ -155,30 +164,23 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
                 to: "/cluster/nodes",
               }
             : null,
-          canViewCluster()
-            ? {
-                icon: KalmIngressIcon,
-                text: "Load Balancer",
-                to: "/cluster/loadbalancer",
-              }
-            : null,
+          // canViewCluster()
+          //   ? {
+          //       icon: KalmIngressIcon,
+          //       text: "Load Balancer",
+          //       to: "/cluster/loadbalancer",
+          //     }
+          //   : null,
           {
             icon: KalmVolumeIcon,
             text: "Disks",
             to: "/cluster/disks",
           },
-          canEditTenant()
+          canEditCluster()
             ? {
                 icon: KalmRegistryIcon,
-                text: "Pull secrets",
+                text: "Pull Secrets",
                 to: "/cluster/pull-secrets",
-              }
-            : null,
-          canViewTenant()
-            ? {
-                icon: UsageIcon,
-                text: "Usage",
-                to: "/usage",
               }
             : null,
         ],
@@ -186,27 +188,21 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
       {
         name: "Settings",
         items: [
-          canViewCluster()
+          canManageCluster()
             ? {
                 icon: SettingIcon,
                 text: "Single Sign-on",
                 to: "/sso",
               }
             : null,
-
-          // {
-          //   icon: SettingIcon,
-          //   text: "System",
-          //   to: "/system",
-          // },
           canManageCluster()
             ? {
                 icon: PeopleIcon,
                 text: "Members",
-                to: "/cluster/members",
+                to: "/members",
               }
             : null,
-          canManageCluster()
+          canViewCluster()
             ? {
                 icon: InfoIcon,
                 text: "Version",
@@ -216,76 +212,81 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
         ],
       },
     ];
-  }
+  };
 
-  render() {
-    const { classes, pathname, isOpenRootDrawer: open } = this.props;
-    return (
-      <Drawer
-        variant="permanent"
-        className={clsx(classes.drawer, {
+  const { classes, pathname, isOpenRootDrawer: open, dispatch } = props;
+  return (
+    <Drawer
+      variant="permanent"
+      className={clsx(classes.drawer, {
+        [classes.drawerOpen]: open,
+        [classes.drawerClose]: !open,
+      })}
+      classes={{
+        paper: clsx(open ? classes.drawerPaper : classes.drawerPaperClose, {
           [classes.drawerOpen]: open,
           [classes.drawerClose]: !open,
-        })}
-        classes={{
-          paper: clsx(classes.drawerPaper, {
-            [classes.drawerOpen]: open,
-            [classes.drawerClose]: !open,
-          }),
-        }}
+        }),
+      }}
+    >
+      <IconButton
+        className={open ? classes.shrinkButton : classes.shrinkButtonClose}
+        onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !open }))}
+        // size={"small"}
       >
-        <List style={{ paddingTop: open ? 8 : 0 }}>
-          {this.getSideBarData().map((group) => {
-            if (!group) {
-              return null;
-            }
+        {open ? <MenuOpenIcon /> : <MenuIcon />}
+      </IconButton>
+      <List style={{ paddingTop: open ? 8 : 0 }}>
+        {getSideBarData().map((group) => {
+          if (!group) {
+            return null;
+          }
 
-            if (group.items.filter((x) => !!x).length === 0) {
-              return null;
-            }
+          if (group.items.filter((x) => !!x).length === 0) {
+            return null;
+          }
 
-            return (
-              <React.Fragment key={group.name}>
-                {open ? (
-                  <ListSubheader disableSticky={true} className={classes.listSubHeader}>
-                    {group.name}
-                  </ListSubheader>
-                ) : null}
+          return (
+            <React.Fragment key={group.name}>
+              {open ? (
+                <ListSubheader disableSticky={true} className={classes.listSubHeader}>
+                  {group.name}
+                </ListSubheader>
+              ) : null}
 
-                {group.items!.map((item) => {
-                  if (!item) {
-                    return null;
-                  }
-                  return (
-                    <ListItem
-                      onClick={() => blinkTopProgressAction()}
-                      className={clsx(classes.listItem, {
-                        [classes.itemBorder]: !open,
-                      })}
-                      classes={{
-                        selected: classes.listItemSeleted,
-                      }}
-                      button
-                      component={NavLink}
-                      to={item.to}
-                      key={item.text}
-                      tutorial-anchor-id={"first-level-sidebar-item-" + item.text.toLocaleLowerCase()}
-                      selected={pathname.startsWith(item.to.split("?")[0])}
-                    >
-                      <ListItemIcon>
-                        <item.icon />
-                      </ListItemIcon>
-                      {open ? <ListItemText classes={{ primary: classes.ListItemText }} primary={item.text} /> : null}
-                    </ListItem>
-                  );
-                })}
-              </React.Fragment>
-            );
-          })}
-        </List>
-      </Drawer>
-    );
-  }
-}
+              {group.items!.map((item) => {
+                if (!item) {
+                  return null;
+                }
+                return (
+                  <ListItem
+                    onClick={() => blinkTopProgressAction()}
+                    className={clsx(classes.listItem, {
+                      [classes.itemBorder]: !open,
+                    })}
+                    classes={{
+                      selected: classes.listItemSeleted,
+                    }}
+                    button
+                    component={NavLink}
+                    to={item.to}
+                    key={item.text}
+                    tutorial-anchor-id={"first-level-sidebar-item-" + item.text.toLocaleLowerCase()}
+                    selected={pathname.startsWith(item.to.split("?")[0])}
+                  >
+                    <ListItemIcon>
+                      <item.icon />
+                    </ListItemIcon>
+                    {open ? <ListItemText classes={{ primary: classes.ListItemText }} primary={item.text} /> : null}
+                  </ListItem>
+                );
+              })}
+            </React.Fragment>
+          );
+        })}
+      </List>
+    </Drawer>
+  );
+};
 
 export const RootDrawer = withUserAuth(connect(mapStateToProps)(withStyles(styles)(RootDrawerRaw)));

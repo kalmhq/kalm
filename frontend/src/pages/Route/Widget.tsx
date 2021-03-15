@@ -1,7 +1,5 @@
 import {
   Box,
-  Card,
-  CardContent,
   createStyles,
   Table,
   TableBody,
@@ -83,7 +81,7 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
           ))}
         </TableCell>
         <TableCell>
-          <Targets destinations={route.destinations} />
+          <Targets destinations={route.destinations} destinationsStatus={route.destinationsStatus} />
         </TableCell>
         <TableCell>
           {canEdit && (
@@ -103,32 +101,32 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, routes } = this.props;
+    const { routes } = this.props;
 
     return (
-      <Card className={classes.root} variant="outlined">
-        <CardContent>
-          <TableContainer>
-            <Table size="small" aria-label="a dense table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Methods</TableCell>
-                  <TableCell>Schemes</TableCell>
-                  <TableCell>Hosts</TableCell>
-                  <TableCell>Paths</TableCell>
-                  <TableCell>Targets</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {routes.map((route, index) => {
-                  return this.renderRouteItem(route, index);
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
+      // <Card className={classes.root} variant="outlined">
+      // <CardContent>
+      <TableContainer>
+        <Table size="small" aria-label="a dense table">
+          <TableHead>
+            <TableRow>
+              <TableCell>Methods</TableCell>
+              <TableCell>Schemes</TableCell>
+              <TableCell>Hosts</TableCell>
+              <TableCell>Paths</TableCell>
+              <TableCell>Targets</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {routes.map((route, index) => {
+              return this.renderRouteItem(route, index);
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      // </CardContent>
+      // </Card>
     );
   }
 }

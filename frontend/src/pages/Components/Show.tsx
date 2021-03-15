@@ -1,19 +1,22 @@
-import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteComponentAction } from "actions/component";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { api } from "api";
+import { push } from "connected-react-router";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { BasePage } from "pages/BasePage";
 import { ComponentBasicInfo } from "pages/Components/BasicInfo";
+import { JobsTable } from "pages/Components/JobsTables";
 import { PodsTable } from "pages/Components/PodsTable";
 import { RouteWidgets } from "pages/Route/Widget";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
+import CustomButton from "theme/Button";
 import { ComponentLikePort, WorkloadType } from "types/componentTemplate";
 import { Expansion } from "widgets/expansion";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
@@ -33,6 +36,9 @@ const styles = (theme: Theme) =>
       marginLeft: theme.spacing(2),
       marginRight: theme.spacing(2),
     },
+    rightBorder: {
+      borderRight: `1px dashed ${theme.palette.divider}`,
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -46,20 +52,14 @@ interface Props
     WithUserAuthProps,
     WithRoutesDataProps {}
 
-interface State {}
+const ComponentShowRaw: React.FC<Props> = (props) => {
+  const { classes, component, httpRoutes, activeNamespaceName, canEditNamespace, dispatch } = props;
 
-class ComponentShowRaw extends React.PureComponent<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {};
-  }
-
-  private getServicePort = (port: ComponentLikePort) => {
+  const getServicePort = (port: ComponentLikePort) => {
     return port.servicePort || port.containerPort;
   };
 
-  private renderStatefulSetNetwork() {
-    const { component, activeNamespaceName } = this.props;
+  const renderStatefulSetNetwork = () => {
     const hasService = component.ports && component.ports!.length > 0;
 
     return (
@@ -68,7 +68,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
           {component.pods.map((pod) => (
             <Box key={pod.name} mb={2}>
               <H6>{pod.name}</H6>
-              <Body>
+              <Body color={"textSecondary"}>
                 Cluster FQDN DNS:{" "}
                 <strong>
                   {hasService
@@ -76,11 +76,11 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
                     : "none"}
                 </strong>
               </Body>
-              <Body>
+              <Body color={"textSecondary"}>
                 Cluster DNS:{" "}
                 <strong>{hasService ? `${pod.name}.${component.name}-headless.${activeNamespaceName}` : "none"}</strong>
               </Body>
-              <Body>
+              <Body color={"textSecondary"}>
                 Namespace DNS: <strong>{hasService ? `${pod.name}.${component.name}-headless` : "none"}</strong>
               </Body>
             </Box>
@@ -89,66 +89,71 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
         {component.ports && (
           <VerticalHeadTable
             items={component.ports?.map((port) => ({
-              name: "Exposed port: " + port.protocol,
+              name: (
+                <Body color={"textSecondary"}>
+                  Exposed port: <strong>{port.protocol}</strong>
+                </Body>
+              ),
               content: (
-                <span>
+                <Body color={"textSecondary"}>
                   Expose port <strong>{port.containerPort}</strong> to cluster port{" "}
-                  <strong>{this.getServicePort(port)}</strong>
-                </span>
+                  <strong>{getServicePort(port)}</strong>
+                </Body>
               ),
             }))}
           />
         )}
       </Expansion>
     );
-  }
+  };
 
-  private renderCommonNetwork() {
-    const { component, activeNamespaceName } = this.props;
+  const renderCommonNetwork = () => {
     const hasService = component.ports && component.ports!.length > 0;
 
     return (
       <Expansion title={"Networking"} defaultUnfold>
         <Box p={2}>
-          <Body>
+          <Body color={"textSecondary"}>
             Cluster FQDN DNS:{" "}
             <strong>{hasService ? `${component.name}.${activeNamespaceName}.svc.cluster.local` : "none"}</strong>
           </Body>
-          <Body>
+          <Body color={"textSecondary"}>
             Cluster DNS: <strong>{hasService ? `${component.name}.${activeNamespaceName}` : "none"}</strong>
           </Body>
-          <Body>
+          <Body color={"textSecondary"}>
             Namespace DNS: <strong>{hasService ? `${component.name}` : "none"}</strong>
           </Body>
         </Box>
         {component.ports && (
           <VerticalHeadTable
             items={component.ports?.map((port) => ({
-              name: "Exposed port: " + port.protocol,
+              name: (
+                <Body color={"textSecondary"}>
+                  Exposed port: <strong>{port.protocol}</strong>
+                </Body>
+              ),
               content: (
-                <span>
+                <Body color={"textSecondary"}>
                   Expose port <strong>{port.containerPort}</strong> to cluster port{" "}
                   <strong>{port.servicePort || port.containerPort}</strong>
-                </span>
+                </Body>
               ),
             }))}
           />
         )}
       </Expansion>
     );
-  }
+  };
 
-  private renderNetwork() {
-    if (this.props.component.workloadType === "statefulset") {
-      return this.renderStatefulSetNetwork();
+  const renderNetwork = () => {
+    if (props.component.workloadType === "statefulset") {
+      return renderStatefulSetNetwork();
     }
 
-    return this.renderCommonNetwork();
-  }
+    return renderCommonNetwork();
+  };
 
-  private renderRoutes() {
-    const { httpRoutes, component, activeNamespaceName, canEditNamespace } = this.props;
-
+  const renderRoutes = () => {
     const serviceName = `${component.name}`;
 
     const routes = httpRoutes.filter(
@@ -163,30 +168,42 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
         </Box>
       </Expansion>
     );
-  }
-  private renderPods() {
-    const { component, activeNamespaceName, canEditNamespace } = this.props;
-
+  };
+  const renderPods = () => {
     return (
       <Expansion title="pods" defaultUnfold>
-        <PodsTable
+        <Box p={2}>
+          <PodsTable
+            activeNamespaceName={activeNamespaceName}
+            component={component}
+            pods={component.pods}
+            workloadType={component.workloadType as WorkloadType}
+            canEdit={canEditNamespace(activeNamespaceName)}
+          />
+        </Box>
+      </Expansion>
+    );
+  };
+
+  const renderJobs = () => {
+    return (
+      <Expansion title="Jobs" defaultUnfold>
+        <JobsTable
           activeNamespaceName={activeNamespaceName}
           component={component}
-          pods={component.pods}
+          jobs={component.jobs!}
           workloadType={component.workloadType as WorkloadType}
           canEdit={canEditNamespace(activeNamespaceName)}
         />
       </Expansion>
     );
-  }
+  };
 
-  private renderSecondHeaderRight() {
-    const { classes, component, activeNamespaceName, canEditNamespace, dispatch } = this.props;
-
+  const renderSecondHeaderRight = () => {
     return (
       <div className={classes.secondHeaderRight}>
         {component.workloadType === "cronjob" && (
-          <Button
+          <CustomButton
             color="primary"
             size="small"
             variant="outlined"
@@ -200,7 +217,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
             }}
           >
             Run Once
-          </Button>
+          </CustomButton>
         )}
 
         <H6 className={classes.secondHeaderRightItem}>Component {component.name}</H6>
@@ -227,34 +244,45 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
             popupTitle="DELETE COMPONENT?"
             confirmedAction={async () => {
               await dispatch(deleteComponentAction(component.name, activeNamespaceName));
+              dispatch(push("/applications/" + activeNamespaceName + "/components"));
               dispatch(setSuccessNotificationAction("Delete component successfully"));
             }}
           />
         ) : null}
       </div>
     );
-  }
+  };
 
-  public render() {
-    const { component, activeNamespaceName } = this.props;
-    return (
-      <BasePage
-        secondHeaderRight={this.renderSecondHeaderRight()}
-        secondHeaderLeft={<Namespaces />}
-        leftDrawer={<ApplicationSidebar />}
-      >
-        <Box p={2}>
-          <Expansion title={"Basic"} defaultUnfold>
-            <ComponentBasicInfo component={component} activeNamespaceName={activeNamespaceName} />
-          </Expansion>
-          {this.renderPods()}
-          {this.renderNetwork()}
-          {this.renderRoutes()}
-        </Box>
-      </BasePage>
-    );
-  }
-}
+  return (
+    <BasePage
+      secondHeaderRight={renderSecondHeaderRight()}
+      secondHeaderLeft={<Namespaces />}
+      leftDrawer={<ApplicationSidebar />}
+    >
+      <Box p={2}>
+        <Expansion title={"Basic"} defaultUnfold>
+          <Box p={2} pb={4}>
+            <Grid container spacing={4}>
+              <Grid item md={3} className={classes.rightBorder}>
+                <ComponentBasicInfo component={component} activeNamespaceName={activeNamespaceName} setName="first" />
+              </Grid>
+              <Grid item md={4} className={classes.rightBorder}>
+                <ComponentBasicInfo component={component} activeNamespaceName={activeNamespaceName} setName="second" />
+              </Grid>
+              <Grid item md={5}>
+                <ComponentBasicInfo component={component} activeNamespaceName={activeNamespaceName} setName="third" />
+              </Grid>
+            </Grid>
+          </Box>
+        </Expansion>
+        {!!component.jobs && renderJobs()}
+        {renderPods()}
+        {renderNetwork()}
+        {renderRoutes()}
+      </Box>
+    </BasePage>
+  );
+};
 
 export const ComponentShowPage = withStyles(styles)(
   withUserAuth(connect(mapStateToProps)(withRoutesData(withComponent(ComponentShowRaw)))),

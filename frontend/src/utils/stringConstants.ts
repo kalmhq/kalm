@@ -25,6 +25,7 @@ export const StringConstants = {
   ENV_VAR_HELPER:
     "Define environment variables for the main container of this component. This overrides environment variables specified within the image.",
   PORTS_HELPER: "To expose your container outside of its pod, you need to open the corresponding ports.",
+  ACCESS_HELPER: "You can protect unwanted external access to this component by checking the box below.",
   DISKS_HELPER: "Specify and mount a disk to your component. There are several ways to mount disks with Kalm.",
   COMMAND_HELPER:
     "Define a command for the main container of this component. This overrides the default Entrypoint and Cmd of the image.",
@@ -71,7 +72,7 @@ export const StringConstants = {
   EMPTY_VOLUME_TITLE: "You don’t have any Disks.",
   EMPTY_VOLUME_SUBTITLE:
     "Disks can be attached to Components to provide persistent storage. Disks can be created in the App Components page, and will show up here automatically.",
-  EMPTY_REGISTRY_TITLE: "You haven't configured any Private Registry Secrets.",
+  EMPTY_REGISTRY_TITLE: "You haven't added any Private Registries",
   EMPTY_REGISTRY_SUBTITLE:
     "To pull images hosted on a private registry, first add a pull secret here. Public registries such as Docker Hub can be used directly.",
   EMPTY_SSO_TITLE: "You haven't configured Single Sign-On.",
@@ -116,14 +117,14 @@ export const StringConstants = {
   HSTS_DOMAINS_REQUIRED_HTTPS: "domains is included on the HSTS preload list, HTTPS is required.",
   APP_THEME_TOOLTIPS: "Toggle light/dark theme",
   APP_TUTORIAL_TOOLTIPS: "Toggle tutorial",
-  APP_AUTH_TOOLTIPS: "Auth menu",
+  APP_AUTH_TOOLTIPS: "User settings",
   APP_DASHBOARD_PAGE_NAME: "Dashboard",
   APP_SETTINGS_PAGE_NAME: "Settings",
   APP_MEMBERS_PAGE_NAME: "Members",
   PROTECTED_ENDPOINT_PORT:
-    "Select the ports you want to protect. Leave blank to protected all ports of this component.",
+    "Select the ports you want to protect. Leaving this field blank will protect all of the ports.",
   PROTECTED_ENDPOINT_SPECIFIC_GROUPS:
-    "Select the groups you want to grant access permissions for this component. Leave blank to allow any sso member.",
+    "Enter groups in this field to grant access only to those specified here. Leaving this field blank will grant any member with permissions to view this application the ability to access this component.",
   CANT_NOT_EDIT: "Can NOT edit this field",
   REGISTRY_VERIFIED_ERROR: "Error",
   NO_PERMISSION_TIPS: "No permission to view this, please contact with admin.",

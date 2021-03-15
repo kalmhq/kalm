@@ -84,7 +84,7 @@ type Volume struct {
 	Path string `json:"path"`
 
 	// +optional
-	HostPath string `json:"hostPath"`
+	HostPath string `json:"hostPath,omitempty"`
 
 	// If we need to create this volume first, the size of the volume
 	Size resource.Quantity `json:"size"`

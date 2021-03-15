@@ -1,6 +1,6 @@
 import { push } from "connected-react-router";
 import React, { useEffect } from "react";
-import { connect, useDispatch } from "react-redux";
+import { connect, useDispatch, useSelector } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
@@ -18,28 +18,30 @@ export interface WithUserAuthProps extends ReturnType<typeof mapStateToProps>, T
 export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
   const HOC: React.FC<WithUserAuthProps> = (props) => {
     const dispatch = useDispatch();
-    const { location, canEditTenant, canViewCluster, canViewTenant, canManageCluster } = props;
+    const { location, canEditCluster, canViewCluster, canManageCluster } = props;
 
     const didMount = () => {
       const canViewPage = () => {
         if (location.pathname.includes("/certificates")) {
-          return canEditTenant() || canViewCluster();
+          return canManageCluster();
+        } else if (location.pathname.includes("/domains")) {
+          return canManageCluster();
         } else if (location.pathname.includes("/webhooks")) {
-          return canEditTenant();
+          return canEditCluster();
         } else if (location.pathname.includes("/cluster/nodes")) {
           return canViewCluster();
         } else if (location.pathname.includes("/cluster/loadbalancer")) {
-          return canViewTenant();
+          return canViewCluster();
         } else if (location.pathname.includes("/cluster/disks")) {
           return true;
         } else if (location.pathname.includes("/cluster/pull-secrets")) {
-          return canEditTenant();
+          return canEditCluster();
         } else if (location.pathname.includes("/sso")) {
-          return canViewCluster();
-        } else if (location.pathname.includes("/cluster/members")) {
+          return canManageCluster();
+        } else if (location.pathname.includes("/members")) {
           return canManageCluster();
         } else if (location.pathname.includes("/version")) {
-          return canManageCluster();
+          return canViewCluster();
         }
         return true;
       };
@@ -49,7 +51,7 @@ export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
       }
     };
 
-    useEffect(didMount, [dispatch, location, canEditTenant, canViewCluster, canViewTenant, canManageCluster]);
+    useEffect(didMount, [dispatch, location, canEditCluster, canViewCluster, canManageCluster]);
 
     return <WrappedComponent {...props} />;
   };
@@ -62,3 +64,7 @@ export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
 function getDisplayName(WrappedComponent: React.ComponentType<any>) {
   return WrappedComponent.displayName || WrappedComponent.name || "Component";
 }
+
+export const useAuth = () => {
+  return useSelector(mapStateToProps);
+};

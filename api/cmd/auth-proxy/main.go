@@ -20,8 +20,8 @@ import (
 	"github.com/kalmhq/kalm/api/log"
 	"github.com/kalmhq/kalm/api/server"
 	"github.com/kalmhq/kalm/api/utils"
-	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
+	"github.com/kalmhq/kalm/controller/validation"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 	"golang.org/x/net/http2"
@@ -40,6 +40,9 @@ const KALM_TOKEN_KEY_NAME = "kalm-sso"
 const ENVOY_EXT_AUTH_PATH_PREFIX = "ext_authz"
 
 var logger *zap.Logger
+
+var issuerIsGoogle bool
+var issuerIsInternalDex bool
 
 // CSRF protection and pass payload
 type OauthState struct {
@@ -63,7 +66,14 @@ func getOauth2Config() *oauth2.Config {
 	clientSecret = os.Getenv("KALM_OIDC_CLIENT_SECRET")
 	oidcProviderUrl := os.Getenv("KALM_OIDC_PROVIDER_URL")
 	authProxyURL = os.Getenv("KALM_OIDC_AUTH_PROXY_URL")
-	needExtraOAuthScope := os.Getenv(v1alpha1.ENV_NEED_EXTRA_OAUTH_SCOPE) == "true"
+
+	// Support for this scope differs between OpenID Connect providers. For instance
+	// Google rejects it, favoring appending "access_type=offline" as part of the
+	// authorization request instead.
+	//
+	// See: https://openid.net/specs/openid-connect-core-1_0.html#OfflineAccess
+	issuerIsGoogle = oidcProviderUrl == "https://accounts.google.com"
+	issuerIsInternalDex = strings.HasSuffix(oidcProviderUrl, "/dex")
 
 	logger.Info(fmt.Sprintf("ClientID: %s", clientID))
 	logger.Info(fmt.Sprintf("oidcProviderUrl: %s", oidcProviderUrl))
@@ -83,11 +93,14 @@ func getOauth2Config() *oauth2.Config {
 	}
 
 	oidcVerifier = provider.Verifier(&oidc.Config{ClientID: clientID})
+	var scopes []string
 
-	scopes := []string{oidc.ScopeOpenID, "profile", "email", "groups", "offline_access"}
-	if needExtraOAuthScope {
-		// for saas and byoc
-		scopes = append(scopes, "tenants")
+	if issuerIsGoogle {
+		scopes = []string{oidc.ScopeOpenID, "profile", "email"}
+	} else if issuerIsInternalDex {
+		scopes = []string{oidc.ScopeOpenID, "profile", "email", "groups", oidc.ScopeOfflineAccess}
+	} else {
+		scopes = []string{oidc.ScopeOpenID, "profile", "email", oidc.ScopeOfflineAccess}
 	}
 
 	oauth2Config = &oauth2.Config{
@@ -122,9 +135,19 @@ func getOriginalURL(c echo.Context) string {
 		requestURI = "/"
 	}
 
-	ur := fmt.Sprintf("%s://%s%s", c.Scheme(), c.Request().Host, requestURI)
-	logger.Info(fmt.Sprintf("original url %s", ur))
-	return ur
+	// a dirty fix for redirecting to https when access using IP
+	var scheme string
+	host := c.Request().Host
+	isIP := validation.ValidateIPAddress(host) == nil
+	if isIP {
+		scheme = "http"
+	} else {
+		scheme = c.Scheme()
+	}
+
+	url := fmt.Sprintf("%s://%s%s", scheme, c.Request().Host, requestURI)
+	logger.Info(fmt.Sprintf("original url %s", url))
+	return url
 }
 func getStringSignature(data string) string {
 	signBytes := sha256.Sum256(append([]byte(data), []byte(clientSecret)...))
@@ -157,8 +180,8 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 ///////////////////////////////////
 
 type Claims struct {
-	Groups  []string `json:"groups"`
-	Tenants []string `json:"tenants"`
+	Groups []string `json:"groups"`
+	Email  string   `json:"email"`
 }
 
 func handleExtAuthz(c echo.Context) error {
@@ -167,6 +190,13 @@ func handleExtAuthz(c echo.Context) error {
 
 	for k, v := range c.Request().Header {
 		contextLogger.Info("handleExtAuthz", zap.String("header", k), zap.Any("value", v))
+	}
+
+	// allow traffic to pass (AND semanteme)
+	//   - If `let-pass-if-has-bearer-token` header is explicitly declared
+	//   - There is a bearerAuthorization token
+	if shouldLetPass(c) {
+		return c.NoContent(200)
 	}
 
 	if getOauth2Config() == nil {
@@ -190,13 +220,6 @@ func handleExtAuthz(c echo.Context) error {
 
 		contextLogger.Info("valid jwt token")
 		return handleSetIDToken(c)
-	}
-
-	// allow traffic to pass (AND semanteme)
-	//   - If `let-pass-if-has-bearer-token` header is explicitly declared
-	//   - There is a bearer token
-	if shouldLetPass(c) {
-		return c.NoContent(200)
 	}
 
 	token, err := getTokenFromRequest(c)
@@ -248,20 +271,19 @@ func handleExtAuthz(c echo.Context) error {
 		}
 	}
 
-	if !inGrantedTenants(c, idToken) {
-		clearTokenInCookie(c)
-		return c.JSON(401, "You don't in any granted tenants. Contact you admin please.")
-	}
+	var claims Claims
+	_ = idToken.Claims(&claims)
 
-	if !inGrantedGroups(c, idToken) {
+	if !isAuthorized(c, &claims) {
 		clearTokenInCookie(c)
-		return c.JSON(401, "You don't in any granted groups. Contact you admin please.")
+		return c.JSON(401, "Access denied. Contact you admin please.")
 	}
 
 	// Set user info in meta header
 	// if the verify returns no error. It's safe to get claims in this way
 	parts := strings.Split(token.IDTokenString, ".")
 	c.Response().Header().Set(controllers.KALM_SSO_USERINFO_HEADER, parts[1])
+	c.Response().Header().Set(controllers.KALM_AUTH_EMAIL, claims.Email)
 
 	return c.NoContent(200)
 }
@@ -388,56 +410,37 @@ func shouldLetPass(c echo.Context) bool {
 		strings.HasPrefix(c.Request().Header.Get("Authorization"), "Bearer ")
 }
 
-func inGrantedTenants(c echo.Context, idToken *oidc.IDToken) bool {
-	grantedTenants := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_TENANTS_HEADER)
-
-	if grantedTenants == "" {
-		return true
-	}
-
-	tenants := strings.Split(grantedTenants, "|")
-	physicalClusterID := v1alpha1.GetEnvPhysicalClusterID()
-	gm := make(map[string]struct{}, len(tenants))
-
-	for _, g := range tenants {
-		if g == "*" {
-			return true
-		}
-
-		gm[fmt.Sprintf("%s/%s", physicalClusterID, g)] = struct{}{}
-	}
-
-	var claim Claims
-	_ = idToken.Claims(&claim)
-
-	for _, g := range claim.Tenants {
-		if _, ok := gm[g]; ok {
-			return true
-		}
-	}
-
-	return false
-}
-
-func inGrantedGroups(c echo.Context, idToken *oidc.IDToken) bool {
+// When auth-proxy works as a ext_authz filter in envoy, the request will come along with
+// `kalm-sso-granted-groups` and `kalm-sso-granted-emails`.
+// If the `email` in the claims is in `kalm-sso-granted-emails` OR the `groups` in the claims have intersections with `kalm-sso-granted-groups`,
+// then the request is considered authorized, otherwise, the request will be blocked.
+func isAuthorized(c echo.Context, claims *Claims) bool {
 	grantedGroups := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_GROUPS_HEADER)
+	grantedEmails := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_EMAILS_HEADER)
 
-	if grantedGroups == "" {
-		return true
+	if grantedGroups != "" {
+		groups := strings.Split(grantedGroups, "|")
+
+		gm := make(map[string]struct{}, len(groups))
+		for _, g := range groups {
+			gm[g] = struct{}{}
+		}
+
+		for _, g := range claims.Groups {
+			if _, ok := gm[g]; ok {
+				return true
+			}
+		}
 	}
 
-	groups := strings.Split(grantedGroups, "|")
-	var claim Claims
-	_ = idToken.Claims(&claim)
+	if grantedEmails != "" {
+		email := strings.ToLower(claims.Email)
+		emails := strings.Split(grantedEmails, "|")
 
-	gm := make(map[string]struct{}, len(groups))
-	for _, g := range groups {
-		gm[g] = struct{}{}
-	}
-
-	for _, g := range claim.Groups {
-		if _, ok := gm[g]; ok {
-			return true
+		for _, e := range emails {
+			if email == e {
+				return true
+			}
 		}
 	}
 
@@ -549,9 +552,19 @@ func handleOIDCLogin(c echo.Context) error {
 
 	return c.Redirect(
 		302,
-		oauth2Config.AuthCodeURL(
-			base64.RawStdEncoding.EncodeToString(encryptedState),
-		),
+		getOauth2AuthCodeUrlWithState(encryptedState),
+	)
+}
+
+func getOauth2AuthCodeUrlWithState(state []byte) string {
+	var options []oauth2.AuthCodeOption
+
+	if issuerIsGoogle {
+		options = append(options, oauth2.AccessTypeOffline)
+	}
+
+	return oauth2Config.AuthCodeURL(
+		base64.RawStdEncoding.EncodeToString(state), options...,
 	)
 }
 

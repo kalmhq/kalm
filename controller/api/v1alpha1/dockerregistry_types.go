@@ -46,7 +46,6 @@ type DockerRegistryStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="Tenant",type="string",JSONPath=".metadata.labels.tenant"
 // +kubebuilder:printcolumn:name="Host",type="string",JSONPath=".spec.host",description="Host of the registry"
 // +kubebuilder:printcolumn:name="Verified",type="boolean",JSONPath=".status.authenticationVerified"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"

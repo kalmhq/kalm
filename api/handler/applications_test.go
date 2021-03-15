@@ -57,7 +57,7 @@ func (suite *ApplicationsHandlerTestSuite) TestApplicationListOnlyContainAuthori
 	// Get list
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetViewerRoleOfScope(defaultTenant, "list-test-2"),
+			GetViewerRoleOfNamespace("list-test-2"),
 		},
 		Namespace: "list-test-2",
 		Method:    http.MethodGet,
@@ -70,23 +70,6 @@ func (suite *ApplicationsHandlerTestSuite) TestApplicationListOnlyContainAuthori
 			suite.Equal("list-test-2", res[0].Name)
 		},
 	})
-
-	// Get list from another tenant
-	suite.DoTestRequest(&TestRequestContext{
-		Roles: []string{
-			GetViewerRoleOfScope(defaultTenant, "list-test-2"),
-		},
-		Tenant:    "anotherTenant",
-		Namespace: "list-test-2",
-		Method:    http.MethodGet,
-		Path:      "/v1alpha1/applications",
-		TestWithRoles: func(rec *ResponseRecorder) {
-			var res []resources.ApplicationDetails
-			rec.BodyAsJSON(&res)
-			suite.Equal(200, rec.Code)
-			suite.Len(res, 0)
-		},
-	})
 }
 
 func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyApplication() {
@@ -94,7 +77,7 @@ func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyApplication() {
 
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetViewerRoleOfScope(defaultTenant, name),
+			GetViewerRoleOfNamespace(name),
 			GetClusterEditorRole(),
 		},
 		Method: http.MethodPost,
@@ -115,7 +98,7 @@ func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyApplication() {
 	// get
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetViewerRoleOfScope(defaultTenant, name),
+			GetViewerRoleOfNamespace(name),
 		},
 		Namespace: name,
 		Method:    http.MethodGet,
@@ -129,20 +112,6 @@ func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyApplication() {
 
 			suite.NotNil(res.Application)
 			suite.Equal("test", res.Application.Name)
-		},
-	})
-
-	// get from another tenant
-	suite.DoTestRequest(&TestRequestContext{
-		Roles: []string{
-			GetViewerRoleOfScope(defaultTenant, name),
-		},
-		Namespace: name,
-		Tenant:    "Tenant2",
-		Method:    http.MethodGet,
-		Path:      "/v1alpha1/applications/" + name,
-		TestWithRoles: func(rec *ResponseRecorder) {
-			suite.Equal(404, rec.Code)
 		},
 	})
 }

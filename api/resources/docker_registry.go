@@ -50,7 +50,6 @@ type DockerRegistry struct {
 	*v1alpha1.DockerRegistrySpec   `json:",inline"`
 	*v1alpha1.DockerRegistryStatus `json:",inline"`
 	Name                           string `json:"name"`
-	Tenant                         string `json:"tenant"`
 	Username                       string `json:"username"`
 	Password                       string `json:"password"`
 }
@@ -121,20 +120,12 @@ func FromCRDRegistry(registry *v1alpha1.DockerRegistry, secret *coreV1.Secret) *
 		username = string(secret.Data["username"])
 	}
 
-	tenant, err := v1alpha1.GetTenantNameFromObj(registry)
-
-	if err != nil {
-		// TODO: return the error
-		tenant = ""
-	}
-
 	return &DockerRegistry{
 		DockerRegistrySpec:   &registry.Spec,
 		DockerRegistryStatus: &registry.Status,
 		Name:                 registry.Name,
 		Username:             username,
 		Password:             "", // do not pass password to client
-		Tenant:               tenant,
 	}
 }
 
@@ -142,9 +133,6 @@ func (resourceManager *ResourceManager) CreateDockerRegistry(registry *DockerReg
 	dockerRegistry := &v1alpha1.DockerRegistry{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: registry.Name,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: registry.Tenant,
-			},
 		},
 	}
 
@@ -157,7 +145,6 @@ func (resourceManager *ResourceManager) CreateDockerRegistry(registry *DockerReg
 			Name:      controllers.GetRegistryAuthenticationName(registry.Name),
 			Namespace: "kalm-system",
 			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey:           registry.Tenant,
 				"kalm-docker-registry-authentication": "true",
 			},
 		},

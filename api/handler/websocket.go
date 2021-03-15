@@ -251,12 +251,12 @@ func wsReadLoop(conn *WSConn, clientManager client.ClientManager) (err error) {
 
 			switch m.Type {
 			case WSRequestTypeSubscribePodLog:
-				if !conn.clientManager.CanView(conn.clientInfo, conn.clientInfo.Tenant+"/"+m.Namespace, "pods/"+m.PodName) {
+				if !conn.clientManager.CanView(conn.clientInfo, m.Namespace, "pods/"+m.PodName) {
 					res.Message = resources.NoObjectViewerRoleError(m.Namespace, "pods/"+m.PodName).Error()
 					break OuterSwitch
 				}
 			case WSRequestTypeExecStartSession, WSRequestTypeExecStdin, WSRequestTypeExecResize:
-				if !conn.clientManager.CanEdit(conn.clientInfo, conn.clientInfo.Tenant+"/"+m.Namespace, "pods/"+m.PodName) {
+				if !conn.clientManager.CanEdit(conn.clientInfo, m.Namespace, "pods/"+m.PodName) {
 					res.Message = resources.NoObjectEditorRoleError(m.Namespace, "pods/"+m.PodName).Error()
 					break OuterSwitch
 				}

@@ -13,19 +13,21 @@ import {
   withStyles,
 } from "@material-ui/core";
 import { api } from "api";
-import { Expansion } from "widgets/expansion";
+import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { bindTrigger } from "material-ui-popup-state";
 import { NodeStatus } from "pages/Nodes/NodeStatus";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
+import CustomButton from "theme/Button";
 import { TDispatchProp } from "types";
 import { Node } from "types/node";
-import { formatTimeDistance, TimestampFilter } from "utils/date";
+import { formatAgeFromNow, TimestampFilter } from "utils/date";
 import { customBindHover, customBindPopover } from "utils/popper";
 import { sizeStringToNumber } from "utils/sizeConv";
 import sc from "utils/stringConstants";
+import { Expansion } from "widgets/expansion";
 import { InfoBox } from "widgets/InfoBox";
 import { Subtitle1 } from "widgets/Label";
 import { InfoPaper } from "widgets/Paper";
@@ -36,7 +38,6 @@ import { NodeCPU, NodesCPU } from "./CPU";
 import { NodeMemory, NodesMemory } from "./Memory";
 import { NodePods } from "./Pods";
 import { ResourceRank } from "./ResourceRank";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -117,7 +118,7 @@ export class NodeListRaw extends React.Component<Props, States> {
             </Grid>
             <Grid item>{node.roles.join(",")}</Grid>
             <Grid item>{node.status.nodeInfo.kubeletVersion}</Grid>
-            <Grid item>Age: {formatTimeDistance(node.creationTimestamp)}</Grid>
+            <Grid item>Age: {formatAgeFromNow(node.creationTimestamp)}</Grid>
             <Grid item>{node.statusTexts.join(",")}</Grid>
             <Grid item>
               <Box display="flex">
@@ -132,7 +133,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                         <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
-                              <Paper variant="outlined" square>
+                              <Paper variant="outlined">
                                 <ResourceRank title="Pods" allocateds={cpuRankData} />
                               </Paper>
                             </Fade>
@@ -157,7 +158,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                         <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
-                              <Paper variant="outlined" square>
+                              <Paper variant="outlined">
                                 <ResourceRank title="Pods" allocateds={memoryRankData} />
                               </Paper>
                             </Fade>
@@ -173,7 +174,7 @@ export class NodeListRaw extends React.Component<Props, States> {
         }
       >
         {this.props.canEditCluster() ? (
-          <Box pb={2} pt={2}>
+          <Box p={2}>
             <Button
               style={{ marginRight: 20 }}
               color="primary"
@@ -199,7 +200,7 @@ export class NodeListRaw extends React.Component<Props, States> {
             },
             {
               name: "Age",
-              content: formatTimeDistance(node.creationTimestamp),
+              content: formatAgeFromNow(node.creationTimestamp),
             },
             {
               name: "CPU",
@@ -227,7 +228,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                         >
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
-                              <Paper variant="outlined" square>
+                              <Paper variant="outlined">
                                 <ResourceRank title="Pods" allocateds={cpuRankData} />
                               </Paper>
                             </Fade>
@@ -257,7 +258,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                         >
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
-                              <Paper variant="outlined" square>
+                              <Paper variant="outlined">
                                 <ResourceRank title="Pods" allocateds={memoryRankData} />
                               </Paper>
                             </Fade>
@@ -317,9 +318,15 @@ export class NodeListRaw extends React.Component<Props, States> {
         <PopupState variant="popover" popupId={"nodes"}>
           {(popupState) => (
             <>
-              <Button style={{ padding: 0 }} color="primary" size="small" variant="text" {...bindTrigger(popupState)}>
+              <CustomButton
+                style={{ padding: 0 }}
+                color="primary"
+                size="small"
+                variant="text"
+                {...bindTrigger(popupState)}
+              >
                 How to add a new node?
-              </Button>
+              </CustomButton>
               <Popover
                 {...customBindPopover(popupState)}
                 anchorOrigin={{
@@ -406,7 +413,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                         <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
-                              <Paper variant="outlined" square>
+                              <Paper variant="outlined">
                                 <ResourceRank title="Applications" allocateds={cpuRankData} />
                               </Paper>
                             </Fade>
@@ -431,7 +438,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                         <Popper {...customBindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
                           {({ TransitionProps }) => (
                             <Fade {...TransitionProps} timeout={100}>
-                              <Paper variant="outlined" square>
+                              <Paper variant="outlined">
                                 <ResourceRank title="Applications" allocateds={memoryRankData} />
                               </Paper>
                             </Fade>
@@ -453,7 +460,7 @@ export class NodeListRaw extends React.Component<Props, States> {
             </Box>
           ))}
         </Box>
-        <Box p={2}>{this.renderInfoBox()}</Box>
+        {/* <Box p={2}>{this.renderInfoBox()}</Box> */}
       </BasePage>
     );
   }

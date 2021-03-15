@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	controllerruntime "sigs.k8s.io/controller-runtime"
 )
 
@@ -15,9 +16,10 @@ type ACMEServer struct {
 }
 
 type ACMEServerResp struct {
-	*ACMEServer     `json:",inline"`
-	IPForNameServer string `json:"ipForNameServer"`
-	Ready           bool   `json:"ready"`
+	*ACMEServer           `json:",inline"`
+	IPForNameServer       string `json:"ipForNameServer"`
+	HostnameForNameServer string `json:"hostnameForNameServer"`
+	Ready                 bool   `json:"ready"`
 }
 
 func (resourceManager *ResourceManager) CreateACMEServer(server *ACMEServer) (*ACMEServer, error) {
@@ -41,6 +43,16 @@ func (resourceManager *ResourceManager) CreateACMEServer(server *ACMEServer) (*A
 }
 
 func (resourceManager *ResourceManager) UpdateACMEServer(server *ACMEServer) (*ACMEServer, error) {
+	acmeServer, err := resourceManager.GetACMEServer()
+
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return resourceManager.CreateACMEServer(server)
+		}
+
+		return nil, err
+	}
+
 	expectedACMEServer := v1alpha1.ACMEServer{
 		ObjectMeta: controllerruntime.ObjectMeta{
 			Name: v1alpha1.ACMEServerName,
@@ -51,18 +63,8 @@ func (resourceManager *ResourceManager) UpdateACMEServer(server *ACMEServer) (*A
 		},
 	}
 
-	acmeServer, err := resourceManager.GetACMEServer()
-
-	if err != nil {
-		return nil, err
-	}
-
 	if acmeServer == nil {
-		return nil, nil
-	}
-
-	if acmeServer.Name != v1alpha1.ACMEServerName {
-		return nil, fmt.Errorf("should only 1 acmeServer named as %s exist", v1alpha1.ACMEServerName)
+		return resourceManager.CreateACMEServer(server)
 	}
 
 	acmeServer.Spec = expectedACMEServer.Spec
@@ -107,8 +109,9 @@ func BuildACMEServerResponse(server *v1alpha1.ACMEServer) *ACMEServerResp {
 			ACMEDomain: server.Spec.ACMEDomain,
 			NSDomain:   server.Spec.NSDomain,
 		},
-		IPForNameServer: server.Status.IPForNameServer,
-		Ready:           server.Status.Ready,
+		IPForNameServer:       server.Status.NameServerIP,
+		HostnameForNameServer: server.Status.NameServerHostname,
+		Ready:                 server.Status.Ready,
 	}
 }
 
@@ -123,20 +126,12 @@ func (resourceManager *ResourceManager) GetACMEServerAsResp() (*ACMEServerResp, 
 		return nil, nil
 	}
 
-	return &ACMEServerResp{
-		ACMEServer: &ACMEServer{
-			Name:       server.Name,
-			ACMEDomain: server.Spec.ACMEDomain,
-			NSDomain:   server.Spec.NSDomain,
-		},
-		IPForNameServer: server.Status.IPForNameServer,
-		Ready:           server.Status.Ready,
-	}, nil
+	return BuildACMEServerResponse(server), nil
 }
 
 func (resourceManager *ResourceManager) DeleteACMEServer() error {
 	return resourceManager.Delete(&v1alpha1.ACMEServer{
-		ObjectMeta: metaV1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: v1alpha1.ACMEServerName,
 		},
 	})

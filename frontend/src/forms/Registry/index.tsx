@@ -84,8 +84,8 @@ const RegistryFormRaw: React.FC<Props> = (props) => {
                       component={FinalTextField}
                       validate={ValidatorRegistryHost}
                       parse={trimAndToLowerParse}
-                      placeholder="E.g. https://registry.kalm.dev"
-                      helperText={<span>Leave blank for private docker hub registry</span>}
+                      placeholder="E.g. https://ghcr.io"
+                      helperText={<span>The 'Host' field can be left blank for private docker hub registries</span>}
                     />
                   </Grid>
                 </Grid>

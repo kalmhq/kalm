@@ -25,7 +25,7 @@ func (suite *AuthTestSuite) TestLoginStatusWithToken() {
 }
 
 func (suite *AuthTestSuite) TestLoginStatusWithoutToken() {
-	rec := suite.NewRequestWithIdentity(http.MethodGet, "/login/status", nil, "foo@bar", "tenantA")
+	rec := suite.NewRequestWithIdentity(http.MethodGet, "/login/status", nil, "foo@bar", "groupA")
 	var res Res
 	rec.BodyAsJSON(&res)
 	suite.Equal(true, res.Authorized)

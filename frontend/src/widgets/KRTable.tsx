@@ -9,7 +9,7 @@ import TableRow from "@material-ui/core/TableRow";
 import React, { useCallback } from "react";
 import { useAsyncDebounce, useGlobalFilter, usePagination, useTable } from "react-table";
 import { FilterListIcon } from "./Icon";
-import { Body } from "./Label";
+import { CardTitle } from "./Label";
 
 interface RowData {
   [key: string]: any;
@@ -95,12 +95,12 @@ export const KRTable = ({
   );
 
   return (
-    <Paper variant={"outlined"} square style={noOutline ? { border: "none", width: "100%" } : {}}>
+    <Paper elevation={0} style={noOutline ? { border: "none", width: "100%", padding: 20 } : {}}>
       {showTitle ? (
         <Grid container spacing={noOutline ? 0 : 2}>
           <Grid item md={9}>
             <Box display="flex" alignItems="center" padding="8px 16px">
-              <Body>{title || ""}</Body>
+              <CardTitle>{title || ""}</CardTitle>
             </Box>
           </Grid>
           <Grid item md={3}>
@@ -112,7 +112,7 @@ export const KRTable = ({
           </Grid>
         </Grid>
       ) : null}
-      <MuiTable {...getTableProps()}>
+      <MuiTable {...getTableProps()} className="dashedBorder">
         <TableHead>
           {headerGroups.map((headerGroup) => (
             <TableRow {...headerGroup.getHeaderGroupProps()}>
@@ -123,6 +123,11 @@ export const KRTable = ({
           ))}
         </TableHead>
         <TableBody>
+          {page.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={columns.length}>No Data</TableCell>
+            </TableRow>
+          )}
           {page.map((row, i) => {
             prepareRow(row);
             return (

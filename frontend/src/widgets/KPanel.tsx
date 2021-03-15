@@ -3,17 +3,18 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { Body } from "./Label";
+import { Subtitle1 } from "widgets/Label";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
+    paper: {},
     borderBottom: {
-      borderBottom: `1px solid ${theme.palette.divider}`,
-      height: "40px",
-      padding: `0 ${theme.spacing(2)}px`,
-      display: "flex",
-      alignItems: "center",
+      // borderBottom: `1px solid ${theme.palette.divider}`,
+      // height: "40px",
+      // padding: `0 ${theme.spacing(2)}px`,
+      // display: "flex",
+      // alignItems: "center",
     },
   });
 
@@ -41,10 +42,12 @@ class KPanelRaw extends React.PureComponent<Props, State> {
   public render() {
     const { classes, title, content, children, style } = this.props;
     return (
-      <Paper square variant="outlined" style={style}>
+      <Paper variant="outlined" style={style} className={classes.paper}>
         {title && (
           <Box p={2} className={classes.borderBottom}>
-            <Body>{title}</Body>
+            <Subtitle1>
+              <strong>{title}</strong>
+            </Subtitle1>
           </Box>
         )}
         {content || children}

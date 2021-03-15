@@ -11,19 +11,17 @@ import (
 
 type Enforcer interface {
 	// performs the most fine-grained permission check
-	Can(subject, action, scope, resource string) bool
+	Can(subject, action, namespace, resource string) bool
 
-	CanView(subject, scope, resource string) bool
-	CanEdit(subject, scope, resource string) bool
-	CanManage(subject, scope, resource string) bool
+	CanView(subject, namespace, resource string) bool
+	CanEdit(subject, namespace, resource string) bool
+	CanManage(subject, namespace, resource string) bool
 
-	// Because the permissions of kalm are organized by tenant and application,
+	// Because the permissions of kalm are organized by application,
 	// the following functions should be more convenience to use.
-	// Scope should follow the format of "${tenantName}/${applicationName}"
-	// TODO: rename these functions
-	CanViewScope(subject, scope string) bool
-	CanEditScope(subject, scope string) bool
-	CanManageScope(subject, scope string) bool
+	CanViewNamespace(subject, namespace string) bool
+	CanEditNamespace(subject, namespace string) bool
+	CanManageNamespace(subject, namespace string) bool
 
 	CanViewCluster(subject string) bool
 	CanEditCluster(subject string) bool
@@ -52,44 +50,44 @@ func (e *KalmRBACEnforcer) Enforce(rvals ...interface{}) bool {
 	return res
 }
 
-func (e *KalmRBACEnforcer) Can(subject, action, scope, resource string) bool {
-	return e.Enforce(subject, action, scope, resource)
+func (e *KalmRBACEnforcer) Can(subject, action, namespace, resource string) bool {
+	return e.Enforce(subject, action, namespace, resource)
 }
 
-func (e *KalmRBACEnforcer) CanView(subject, scope, resource string) bool {
-	return e.Enforce(subject, ActionView, scope, resource)
+func (e *KalmRBACEnforcer) CanView(subject, namespace, resource string) bool {
+	return e.Enforce(subject, ActionView, namespace, resource)
 }
 
-func (e *KalmRBACEnforcer) CanEdit(subject, scope, resource string) bool {
-	return e.Enforce(subject, ActionEdit, scope, resource)
+func (e *KalmRBACEnforcer) CanEdit(subject, namespace, resource string) bool {
+	return e.Enforce(subject, ActionEdit, namespace, resource)
 }
 
-func (e *KalmRBACEnforcer) CanManage(subject, scope, resource string) bool {
-	return e.Enforce(subject, ActionManage, scope, resource)
+func (e *KalmRBACEnforcer) CanManage(subject, namespace, resource string) bool {
+	return e.Enforce(subject, ActionManage, namespace, resource)
 }
 
-func (e *KalmRBACEnforcer) CanViewScope(subject, scope string) bool {
-	return e.Enforce(subject, ActionView, scope, AnyResource)
+func (e *KalmRBACEnforcer) CanViewNamespace(subject, namespace string) bool {
+	return e.Enforce(subject, ActionView, namespace, AnyResource)
 }
 
-func (e *KalmRBACEnforcer) CanEditScope(subject, scope string) bool {
-	return e.Enforce(subject, ActionEdit, scope, AnyResource)
+func (e *KalmRBACEnforcer) CanEditNamespace(subject, namespace string) bool {
+	return e.Enforce(subject, ActionEdit, namespace, AnyResource)
 }
 
-func (e *KalmRBACEnforcer) CanManageScope(subject, scope string) bool {
-	return e.Enforce(subject, ActionManage, scope, AnyResource)
+func (e *KalmRBACEnforcer) CanManageNamespace(subject, namespace string) bool {
+	return e.Enforce(subject, ActionManage, namespace, AnyResource)
 }
 
 func (e *KalmRBACEnforcer) CanViewCluster(subject string) bool {
-	return e.Enforce(subject, ActionView, AnyScope, AnyResource)
+	return e.Enforce(subject, ActionView, AnyNamespace, AnyResource)
 }
 
 func (e *KalmRBACEnforcer) CanEditCluster(subject string) bool {
-	return e.Enforce(subject, ActionEdit, AnyScope, AnyResource)
+	return e.Enforce(subject, ActionEdit, AnyNamespace, AnyResource)
 }
 
 func (e *KalmRBACEnforcer) CanManageCluster(subject string) bool {
-	return e.Enforce(subject, ActionManage, AnyScope, AnyResource)
+	return e.Enforce(subject, ActionManage, AnyNamespace, AnyResource)
 }
 
 func (e *KalmRBACEnforcer) GetImplicitPermissionsForUser(subject string) ([][]string, error) {

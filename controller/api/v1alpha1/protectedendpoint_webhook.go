@@ -39,14 +39,6 @@ var _ webhook.Defaulter = &ProtectedEndpoint{}
 
 func (r *ProtectedEndpoint) Default() {
 	protectedendpointlog.Info("default", "name", r.Name)
-
-	if IsKalmSystemNamespace(r.Namespace) {
-		return
-	}
-
-	if err := InheritTenantFromNamespace(r); err != nil {
-		protectedendpointlog.Error(err, "fail to inherit tenant from ns", "protectedEndpoint", r.Name, "ns", r.Namespace)
-	}
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-v1alpha1-protectedendpoint,mutating=false,failurePolicy=fail,groups=core,resources=protectedendpointtypes,versions=v1alpha1,name=vprotectedendpointtype.kb.io
@@ -57,26 +49,12 @@ var _ webhook.Validator = &ProtectedEndpoint{}
 func (r *ProtectedEndpoint) ValidateCreate() error {
 	protectedendpointlog.Info("validate create", "name", r.Name)
 
-	if !IsKalmSystemNamespace(r.Namespace) && !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
-
 	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *ProtectedEndpoint) ValidateUpdate(old runtime.Object) error {
 	protectedendpointlog.Info("validate update", "name", r.Name)
-
-	if !IsKalmSystemNamespace(r.Namespace) {
-		if !HasTenantSet(r) {
-			return NoTenantFoundError
-		}
-
-		if IsTenantChanged(r, old) {
-			return TenantChangedError
-		}
-	}
 
 	return r.validate()
 }

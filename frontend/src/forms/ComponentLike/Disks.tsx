@@ -2,7 +2,7 @@ import { Box, Button, Grid, TextField } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import HelpIcon from "@material-ui/icons/Help";
 import { diskSizeFormat, diskSizeParse, trimParse } from "forms/normalizer";
-import React from "react";
+import { default as React } from "react";
 import { Field } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { connect, DispatchProp } from "react-redux";
@@ -22,11 +22,13 @@ import {
   workloadTypeStatefulSet,
 } from "types/componentTemplate";
 import { sizeStringToGi } from "utils/sizeConv";
-import StringConstants from "utils/stringConstants";
+import { default as sc, default as StringConstants } from "utils/stringConstants";
 import { AddIcon, DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { KTooltip } from "widgets/KTooltip";
-import { Caption, H6 } from "widgets/Label";
+import { Caption, H6, Subtitle1 } from "widgets/Label";
+import { SectionTitle } from "widgets/SectionTitle";
+import { HelperTextSection } from ".";
 import { FinalSelectField } from "../Final/select";
 import { FinalTextField } from "../Final/textfield";
 import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
@@ -357,48 +359,61 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
     const { fields } = this.props;
 
     return (
-      <Box>
-        <Box mb={2}>
-          <Grid item xs>
-            <Button
-              variant="outlined"
-              color="primary"
-              startIcon={<AddIcon />}
-              size="small"
-              onClick={this.handlePush.bind(this)}
-            >
-              Add
-            </Button>
-            {/* {submitFailed && error && <span>{error}</span>} */}
-          </Grid>
-        </Box>
-        {fields.value &&
-          fields.value.map((disk: Volume, index: number) => {
-            return (
-              <Grid container spacing={2} key={index}>
-                {this.getFieldComponents(disk, index).map((fieldComponent, fieldIndex) => {
-                  return (
-                    <Grid item xs={fieldIndex === 0 ? 3 : 2} key={`${fields.name}-${fieldIndex}`}>
-                      {fieldComponent}
-                    </Grid>
-                  );
-                })}
-
-                <Grid item xs={1}>
-                  <IconButtonWithTooltip
-                    tooltipPlacement="top"
-                    tooltipTitle="Delete"
-                    aria-label="delete"
-                    disabled={this.shouldDisabledStatefulSetPvcTemplate(disk.type)}
-                    onClick={this.handleRemove.bind(this, index)}
-                  >
-                    <DeleteIcon />
-                  </IconButtonWithTooltip>
-                </Grid>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <SectionTitle>
+            <Subtitle1>Disks</Subtitle1>
+            <Box mb={2} mt={2} ml={2}>
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={<AddIcon />}
+                size="small"
+                style={{ height: 18, borderRadius: 5, fontSize: 12 }}
+                onClick={this.handlePush.bind(this)}
+              >
+                Add
+              </Button>
+            </Box>
+          </SectionTitle>
+        </Grid>
+        <HelperTextSection>{sc.DISKS_HELPER}</HelperTextSection>
+        <Grid item xs={12}>
+          <Box>
+            <Box mb={2}>
+              <Grid item xs>
+                {/* {submitFailed && error && <span>{error}</span>} */}
               </Grid>
-            );
-          })}
-      </Box>
+            </Box>
+            {fields.value &&
+              fields.value.map((disk: Volume, index: number) => {
+                return (
+                  <Grid container spacing={2} key={index}>
+                    {this.getFieldComponents(disk, index).map((fieldComponent, fieldIndex) => {
+                      return (
+                        <Grid item xs={fieldIndex === 0 ? 3 : 2} key={`${fields.name}-${fieldIndex}`}>
+                          {fieldComponent}
+                        </Grid>
+                      );
+                    })}
+
+                    <Grid item xs={1}>
+                      <IconButtonWithTooltip
+                        tooltipPlacement="top"
+                        tooltipTitle="Delete"
+                        aria-label="delete"
+                        disabled={this.shouldDisabledStatefulSetPvcTemplate(disk.type)}
+                        onClick={this.handleRemove.bind(this, index)}
+                      >
+                        <DeleteIcon />
+                      </IconButtonWithTooltip>
+                    </Grid>
+                  </Grid>
+                );
+              })}
+          </Box>
+        </Grid>
+      </Grid>
     );
   }
 }

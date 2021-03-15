@@ -1,5 +1,5 @@
-import React from "react";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
+import React from "react";
 import { theme } from "theme/theme";
 
 const styles = () =>
@@ -10,7 +10,6 @@ const styles = () =>
       padding: `0 ${theme.spacing(2)}px`,
       height: 26,
       lineHeight: 26,
-      background: "rgba(0, 0, 0, 0.04)",
       display: "flex",
       alignItems: "center",
     },

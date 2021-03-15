@@ -42,7 +42,7 @@ func (suite *PodsHandlerTestSuite) TestPodsHandler() {
 	// delete pod
 	suite.DoTestRequest(&TestRequestContext{
 		Roles: []string{
-			GetEditorRoleOfScope(defaultTenant, "test-pods"),
+			GetEditorRoleOfNamespace("test-pods"),
 		},
 		Namespace: "test-pods",
 		Method:    http.MethodDelete,

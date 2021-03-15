@@ -1,14 +1,15 @@
+import { createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
+import { validateTokenAction } from "actions/auth";
 import { push } from "connected-react-router";
 import React, { ChangeEvent } from "react";
 import { connect } from "react-redux";
-import { ThunkDispatch } from "redux-thunk";
-import { Actions } from "types";
-import { validateTokenAction } from "actions/auth";
 import { RootState } from "reducers";
-import { Button, createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
-import { grey } from "@material-ui/core/colors";
-import { KMLink } from "widgets/Link";
+import { ThunkDispatch } from "redux-thunk";
+import CustomButton from "theme/Button";
+import { Actions } from "types";
 import { KalmLogo2Icon, KalmTextLogoIcon } from "widgets/Icon";
+import { KMLink } from "widgets/Link";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -106,7 +107,7 @@ export class LoginRaw extends React.PureComponent<Props, State> {
     const { error } = this.state;
     const instructions = (
       <>
-        <KMLink target="_blank" href="https://kalm.dev/docs/install#step-4-admin-service-account">
+        <KMLink target="_blank" href="https://docs.kalm.dev/install#step-4-admin-service-account">
           View instructions
         </KMLink>{" "}
         for token geneneration
@@ -114,7 +115,7 @@ export class LoginRaw extends React.PureComponent<Props, State> {
     );
     return (
       <div>
-        <Paper className={classes.loginPaper} square>
+        <Paper className={classes.loginPaper}>
           <div className={classes.paperContainer}>
             <div className={classes.portalText}>
               <KalmLogo2Icon style={{ width: 64, height: 64 }} />
@@ -133,9 +134,9 @@ export class LoginRaw extends React.PureComponent<Props, State> {
                 error={!!error}
               />
 
-              <Button variant="contained" color="primary" onClick={this.handleSubmit}>
+              <CustomButton color="primary" onClick={this.handleSubmit}>
                 Login
-              </Button>
+              </CustomButton>
             </div>
           </div>
         </Paper>

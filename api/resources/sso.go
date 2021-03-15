@@ -81,7 +81,6 @@ func (resourceManager *ResourceManager) GetProtectedEndpointsChannel(listOptions
 type ProtectedEndpoint struct {
 	Name                        string   `json:"name"`
 	Namespace                   string   `json:"namespace"`
-	Tenant                      string   `json:"tenant"`
 	EndpointName                string   `json:"endpointName"`
 	Ports                       []uint32 `json:"ports"`
 	Groups                      []string `json:"groups"`
@@ -161,12 +160,9 @@ func (resourceManager *ResourceManager) DeleteAllRoleBindings() error {
 }
 
 func ProtectedEndpointCRDToProtectedEndpoint(endpoint *v1alpha1.ProtectedEndpoint) *ProtectedEndpoint {
-	tenantName, _ := v1alpha1.GetTenantNameFromObj(endpoint)
-
 	ep := &ProtectedEndpoint{
 		Name:                        endpoint.Name,
 		Namespace:                   endpoint.Namespace,
-		Tenant:                      tenantName,
 		EndpointName:                endpoint.Spec.EndpointName,
 		Ports:                       endpoint.Spec.Ports,
 		Groups:                      endpoint.Spec.Groups,
@@ -214,15 +210,11 @@ func (resourceManager *ResourceManager) CreateProtectedEndpoint(ep *ProtectedEnd
 		ObjectMeta: metaV1.ObjectMeta{
 			Namespace: ep.Namespace,
 			Name:      getProtectedEndpointCRDNameFromEndpointName(ep.EndpointName),
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: ep.Tenant,
-			},
 		},
 		Spec: v1alpha1.ProtectedEndpointSpec{
 			EndpointName:                ep.EndpointName,
 			Ports:                       ep.Ports,
 			Groups:                      ep.Groups,
-			Tenants:                     []string{ep.Tenant},
 			AllowToPassIfHasBearerToken: ep.AllowToPassIfHasBearerToken,
 		},
 	}
@@ -245,15 +237,11 @@ func (resourceManager *ResourceManager) UpdateProtectedEndpoint(ep *ProtectedEnd
 		ObjectMeta: metaV1.ObjectMeta{
 			Namespace: ep.Namespace,
 			Name:      getProtectedEndpointCRDNameFromEndpointName(ep.EndpointName),
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: ep.Tenant,
-			},
 		},
 		Spec: v1alpha1.ProtectedEndpointSpec{
 			EndpointName:                ep.EndpointName,
 			Ports:                       ep.Ports,
 			Groups:                      ep.Groups,
-			Tenants:                     []string{ep.Tenant},
 			AllowToPassIfHasBearerToken: ep.AllowToPassIfHasBearerToken,
 		},
 	}
@@ -282,12 +270,6 @@ func (resourceManager *ResourceManager) UpdateProtectedEndpointForComponent(comp
 	namespace := component.Namespace
 	name := getProtectedEndpointCRDNameFromEndpointName(component.Name)
 
-	tenantName, err := v1alpha1.GetTenantNameFromObj(component)
-
-	if err != nil {
-		return err
-	}
-
 	if protectedEndpointSpec == nil {
 		err := resourceManager.Delete(&v1alpha1.ProtectedEndpoint{
 			ObjectMeta: metaV1.ObjectMeta{
@@ -300,10 +282,10 @@ func (resourceManager *ResourceManager) UpdateProtectedEndpointForComponent(comp
 	}
 
 	protectedEndpointSpec.EndpointName = component.Name
-	protectedEndpointSpec.Type = v1alpha1.TypeComponent
+	// protectedEndpointSpec.Type = v1alpha1.TypeComponent
 
 	var endpoint v1alpha1.ProtectedEndpoint
-	err = resourceManager.Get(namespace, name, &endpoint)
+	err := resourceManager.Get(namespace, name, &endpoint)
 
 	if errors.IsNotFound(err) {
 		endpoint := &v1alpha1.ProtectedEndpoint{
@@ -314,9 +296,6 @@ func (resourceManager *ResourceManager) UpdateProtectedEndpointForComponent(comp
 			ObjectMeta: metaV1.ObjectMeta{
 				Namespace: namespace,
 				Name:      name,
-				Labels: map[string]string{
-					v1alpha1.TenantNameLabelKey: tenantName,
-				},
 			},
 			Spec: *protectedEndpointSpec,
 		}

@@ -2,7 +2,7 @@ import Axios, { AxiosPromise, AxiosRequestConfig } from "axios";
 import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
 import { AcmeServerFormType, AcmeServerInfo, CertificateFormType, CertificateIssuerFormType } from "types/certificate";
-import { ExtraInfo, InitializeClusterResponse } from "types/cluster";
+import { InitializeClusterResponse } from "types/cluster";
 import {
   AccessTokenToDeployAccessToken,
   DeployAccessToken,
@@ -15,7 +15,6 @@ import { Node } from "types/node";
 import { Registry, RegistryFormType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { Tenant } from "types/tenant";
 
 export default class RealApi {
   public getClusterInfo = async () => {
@@ -33,22 +32,12 @@ export default class RealApi {
     return res.data;
   };
 
-  public getCurrentTenant = async () => {
-    const res = await axiosRequest<Tenant>({ method: "get", url: `/${K8sApiVersion}/tenants/current` });
-    return res.data;
-  };
-
   public validateToken = async (token: string): Promise<boolean> => {
     const res = await axiosRequest(
       { method: "post", url: "/login/token", headers: { Authorization: "Bearer " + token } },
       false,
     );
     return res.status === 200;
-  };
-
-  public loadExtraInfo = async () => {
-    const res = await axiosRequest<ExtraInfo>({ method: "get", url: `/${K8sApiVersion}/extraInfo` });
-    return res.data;
   };
 
   public getNodes = async () => {
@@ -265,6 +254,10 @@ export default class RealApi {
     return await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/pods/${namespace}/${name}` });
   };
 
+  public deleteJob = async (namespace: string, name: string) => {
+    return await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/jobs/${namespace}/${name}` });
+  };
+
   // RoleBindings
 
   public loadRoleBindings = async () => {
@@ -351,24 +344,13 @@ export default class RealApi {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/httpscerts/${name}` });
   };
 
-  // certificate acme server
-  public createAcmeServer = async (acmeServer: AcmeServerFormType): Promise<AcmeServerInfo> => {
-    const res = await axiosRequest({
-      method: "post",
-      url: `/${K8sApiVersion}/acmeserver`,
-      data: acmeServer,
-    });
-
-    return res.data;
-  };
-
-  public editAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
-    await axiosRequest({ method: "put", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
+  public setAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
+    await axiosRequest({ method: "post", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
     return; //Immutable.fromJS(res.data);
   };
 
-  public deleteAcmeServer = async (acmeServer: AcmeServerFormType): Promise<void> => {
-    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/acmeserver`, data: acmeServer });
+  public deleteAcmeServer = async (): Promise<void> => {
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/acmeserver` });
     return;
   };
 
@@ -538,10 +520,26 @@ export const generateKalmImpersonation = (subject: string, subjectType: string) 
 
 export const impersonate = (subject: string, subjectType: string) => {
   window.localStorage.setItem(IMPERSONATION_KEY, generateKalmImpersonation(subject, subjectType));
+  window.location.href = "/";
 };
 
-export const stopImpersonating = () => {
+export const stopImpersonating = (redirect: boolean = true) => {
+  const data = window.localStorage.getItem(IMPERSONATION_KEY) || "";
   window.localStorage.removeItem(IMPERSONATION_KEY);
+
+  if (!redirect) {
+    return;
+  }
+
+  const match = data.match(/subject=(.*)?; /);
+
+  if (!match) {
+    window.location.href = "/";
+    return;
+  }
+
+  const email = match[1];
+  window.location.href = "/members/" + email;
 };
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;

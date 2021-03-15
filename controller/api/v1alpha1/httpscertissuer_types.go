@@ -42,7 +42,7 @@ type ACMECloudFlareIssuer struct {
 
 type HTTP01Issuer struct {
 	// +optional
-	Email string `json:"email"`
+	Email string `json:"email,omitempty"`
 }
 
 type DNS01Issuer struct {

@@ -20,7 +20,6 @@ import (
 
 type HttpsCert struct {
 	Name          string `json:"name"`
-	Tenant        string `json:"tenant"`
 	IsSelfManaged bool   `json:"isSelfManaged"`
 
 	SelfManagedCertContent string `json:"selfManagedCertContent,omitempty"`
@@ -63,13 +62,9 @@ func BuildHttpsCertResponse(httpsCert *v1alpha1.HttpsCert) *HttpsCertResp {
 		reason = readyCond.Message
 	}
 
-	// TODO: deal with the error
-	tenant, _ := v1alpha1.GetTenantNameFromObj(httpsCert)
-
 	resp := HttpsCertResp{
 		HttpsCert: HttpsCert{
 			Name:          httpsCert.Name,
-			Tenant:        tenant,
 			IsSelfManaged: httpsCert.Spec.IsSelfManaged,
 			Domains:       httpsCert.Spec.Domains,
 		},
@@ -153,9 +148,6 @@ func (resourceManager *ResourceManager) CreateAutoManagedHttpsCert(cert *HttpsCe
 	res := v1alpha1.HttpsCert{
 		ObjectMeta: v1.ObjectMeta{
 			Name: cert.Name,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: cert.Tenant,
-			},
 		},
 		Spec: v1alpha1.HttpsCertSpec{
 			HttpsCertIssuer: cert.HttpsCertIssuer,
@@ -329,9 +321,6 @@ func (resourceManager *ResourceManager) CreateSelfManagedHttpsCert(cert *HttpsCe
 	res := v1alpha1.HttpsCert{
 		ObjectMeta: v1.ObjectMeta{
 			Name: cert.Name,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: cert.Tenant,
-			},
 		},
 		Spec: v1alpha1.HttpsCertSpec{
 			IsSelfManaged:             true,
@@ -374,9 +363,6 @@ func (resourceManager *ResourceManager) createCertSecretInNSIstioSystem(cert *Ht
 		ObjectMeta: v1.ObjectMeta{
 			Name:      cert.Name,
 			Namespace: nsIstioSystem,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: cert.Tenant,
-			},
 		},
 		Data: map[string][]byte{
 			"tls.crt": []byte(tlsCert),

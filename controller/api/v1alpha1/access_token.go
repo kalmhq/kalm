@@ -73,7 +73,6 @@ type AccessTokenStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="Tenant",type="string",JSONPath=".metadata.labels.tenant"
 // +kubebuilder:printcolumn:name="Type",type="string",JSONPath=".metadata.labels.tokenType"
 // +kubebuilder:printcolumn:name="Creator",type="string",JSONPath=".spec.creator"
 // +kubebuilder:printcolumn:name="ExpiredAt",type="string",JSONPath=".spec.expiredAt"

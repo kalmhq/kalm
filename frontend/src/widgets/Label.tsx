@@ -2,8 +2,8 @@ import { Box, Typography, TypographyProps } from "@material-ui/core";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import React from "react";
 import { theme } from "theme/theme";
-import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 import { VisibilityIcon, VisibilityOffIcon } from "./Icon";
+import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 
 const styles = () =>
   createStyles({
@@ -112,6 +112,11 @@ export const Body = withStyles(styles)((props: LabelProps) => {
   );
 });
 Body.displayName = "Body";
+
+export const CardTitle = withStyles(styles)((props: LabelProps) => {
+  return <Typography style={{ fontSize: 16, fontWeight: "bold" }}>{props.children}</Typography>;
+});
+CardTitle.displayName = "CardTitle";
 
 export const Body2 = withStyles(styles)((props: LabelProps) => {
   return (

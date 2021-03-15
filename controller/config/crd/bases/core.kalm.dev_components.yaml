@@ -9,9 +9,6 @@ metadata:
   name: components.core.kalm.dev
 spec:
   additionalPrinterColumns:
-  - JSONPath: .metadata.labels.tenant
-    name: Tenant
-    type: string
   - JSONPath: .spec.workloadType
     name: Workload
     type: string
@@ -303,8 +300,6 @@ spec:
               type: array
             preferNotCoLocated:
               type: boolean
-            priority:
-              type: integer
             readinessProbe:
               description: Probe describes a health check to be performed against
                 a container to determine whether it is alive or ready to receive traffic.

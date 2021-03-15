@@ -20,8 +20,6 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
-
 	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -55,29 +53,7 @@ var _ webhook.Validator = &AccessToken{}
 func (r *AccessToken) ValidateCreate() error {
 	accesstokenlog.Info("validate create", "name", r.Name)
 
-	tenantName, err := GetTenantNameFromObj(r)
-	if err != nil {
-		return err
-	} else if tenantName == "" {
-		return NoTenantLabelSetError
-	}
-
-	if tenantName == DefaultGlobalTenantName ||
-		tenantName == DefaultSystemTenantName {
-		return nil
-	}
-
-	if !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
-
 	if err := r.validate(); err != nil {
-		return err
-	}
-
-	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Create, false)
-	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
-		dockerregistrylog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
 		return err
 	}
 
@@ -87,14 +63,6 @@ func (r *AccessToken) ValidateCreate() error {
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *AccessToken) ValidateUpdate(old runtime.Object) error {
 	accesstokenlog.Info("validate update", "name", r.Name)
-
-	if !HasTenantSet(r) {
-		return NoTenantFoundError
-	}
-
-	if IsTenantChanged(r, old) {
-		return TenantChangedError
-	}
 
 	if oldAccessToken, ok := old.(*AccessToken); !ok {
 		return fmt.Errorf("old object is not an access token")
@@ -123,25 +91,6 @@ func GetAccessTokenNameFromToken(token string) string {
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *AccessToken) ValidateDelete() error {
 	accesstokenlog.Info("validate delete", "name", r.Name)
-
-	tenantName, err := GetTenantNameFromObj(r)
-	if err != nil {
-		accesstokenlog.Error(err, "ignored")
-		return nil
-	} else if tenantName == "" {
-		accesstokenlog.Error(err, "no tenant name, ignored", "ns/name", getKey(r))
-		return nil
-	}
-
-	if tenantName == DefaultGlobalTenantName ||
-		tenantName == DefaultSystemTenantName {
-		return nil
-	}
-
-	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Delete, false)
-	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
-		accesstokenlog.Error(err, "fail to release AccessTokenCnt, ignored", "name", r.Name)
-	}
 
 	return nil
 }

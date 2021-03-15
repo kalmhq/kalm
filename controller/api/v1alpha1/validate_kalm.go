@@ -1,72 +1,19 @@
 package v1alpha1
 
 import (
-	"fmt"
-	"net"
 	"net/url"
 	"regexp"
 	"strings"
 
-	"github.com/go-openapi/validate"
-	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
-	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	"k8s.io/apiextensions-apiserver/pkg/apiserver/validation"
+	"github.com/kalmhq/kalm/controller/validation"
 	apimachineryvalidation "k8s.io/apimachinery/pkg/api/validation"
 	v1validation "k8s.io/apimachinery/pkg/apis/meta/v1/validation"
 
 	//"k8s.io/utils/field"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
 	apimachineryval "k8s.io/apimachinery/pkg/util/validation"
 )
-
-func getValidatorForKalmSpec(crdDefinition []byte) (*validate.SchemaValidator, error) {
-	sch := runtime.NewScheme()
-	_ = apiextv1beta1.AddToScheme(sch)
-
-	decode := serializer.NewCodecFactory(sch).UniversalDeserializer().Decode
-
-	obj, _, err := decode(crdDefinition, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	crd, ok := obj.(*apiextv1beta1.CustomResourceDefinition)
-	if !ok {
-		return nil, fmt.Errorf("kalm CRD not valid")
-	}
-
-	openAPIV3Schema := crd.Spec.Validation.OpenAPIV3Schema
-
-	in := openAPIV3Schema
-	out := apiextensions.JSONSchemaProps{}
-	err = apiextv1beta1.Convert_v1beta1_JSONSchemaProps_To_apiextensions_JSONSchemaProps(in, &out, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	validator, _, err := validation.NewSchemaValidator(
-		&apiextensions.CustomResourceValidation{
-			OpenAPIV3Schema: &out,
-		})
-	if err != nil {
-		return nil, err
-	}
-
-	return validator, nil
-}
-
-// abc-def.xyz
-func isValidK8sHost(host string) bool {
-	errs := apimachineryval.IsDNS1123Subdomain(host)
-	return len(errs) == 0
-}
-
-func isValidIP(ip string) bool {
-	return net.ParseIP(ip) != nil
-}
 
 func isValidURL(s string) bool {
 	u, err := url.Parse(s)
@@ -77,20 +24,14 @@ func isValidURL(s string) bool {
 	return true
 }
 
-var domainReg = regexp.MustCompile(`^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$`)
-
-func IsValidNoneWildcardDomain(s string) bool {
-	return domainReg.MatchString(s)
-}
-
 // true:  *
 // true:  *.example.com
 // false: *.com
 // false: a*.example.com
 // false: a*b.example.com
-func IsValidWildcardDomain(s string) bool {
+func IsValidWildcardDomainInCert(s string) bool {
 	if s == "*" {
-		return true
+		return false
 	}
 
 	parts := strings.Split(s, ".")
@@ -101,19 +42,11 @@ func IsValidWildcardDomain(s string) bool {
 	first := parts[0]
 	rest := strings.Join(parts[1:], ".")
 
-	return first == "*" && IsValidNoneWildcardDomain(rest)
-}
-
-func isValidDomain(s string) bool {
-	if IsValidNoneWildcardDomain(s) || IsValidWildcardDomain(s) {
-		return true
-	}
-
-	return false
+	return first == "*" && validation.ValidateFQDN(rest) == nil
 }
 
 func isValidDomainInCert(s string) bool {
-	return isValidDomain(s)
+	return validation.ValidateFQDN(s) == nil || IsValidWildcardDomainInCert(s)
 }
 
 // abc-123-xyz

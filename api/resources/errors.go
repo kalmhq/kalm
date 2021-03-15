@@ -37,17 +37,13 @@ var InsufficientPermissionsError = errors.NewUnauthorized("You don't have enough
 var NoClusterViewerRoleError = errors.NewUnauthorized("Require viewer role in cluster level")
 var NoClusterEditorRoleError = errors.NewUnauthorized("Require editor role in cluster level")
 var NoClusterOwnerRoleError = errors.NewUnauthorized("Require owner role in cluster level")
-var NotATenantOwnerError = errors.NewUnauthorized("Require owner of a tenant")
-var NotTenantOwnerError = errors.NewUnauthorized("Require owner of the tenant")
-var UnauthorizedTenantError = errors.NewUnauthorized("You can't view resources of unauthorized tenant")
 
 type UnauthorizedError struct {
-	Email  string
-	Tenant string
-	Groups []string
-	Action string
-	Scope  string
-	Object string
+	Email     string
+	Groups    []string
+	Action    string
+	Namespace string
+	Object    string
 }
 
 func (e *UnauthorizedError) StatusCode() int {
@@ -67,5 +63,5 @@ func (e *UnauthorizedError) Error() string {
 		groupsString = "N/A"
 	}
 
-	return fmt.Sprintf("fail the auth check: [action: %s, scope: %s, object: %s], userAuthInfo: [tenant: %s, user: %s, groups: %s]", e.Action, e.Scope, e.Object, e.Tenant, e.Email, groupsString)
+	return fmt.Sprintf("fail the auth check: [action: %s, namespace: %s, object: %s], userAuthInfo: [user: %s, groups: %s]", e.Action, e.Namespace, e.Object, e.Email, groupsString)
 }

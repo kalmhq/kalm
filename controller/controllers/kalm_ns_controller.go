@@ -22,10 +22,7 @@ import (
 	"time"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
-	istioapisec "istio.io/api/security/v1beta1"
-	istiosec "istio.io/client-go/pkg/apis/security/v1beta1"
 	v1 "k8s.io/api/core/v1"
-	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -103,34 +100,10 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
-	tenant := ns.Labels[v1alpha1.TenantNameLabelKey]
-	isKalmCtrlPlaneNS := ns.Labels[v1alpha1.KalmControlPlaneLabelKey]
-
-	if isKalmCtrlPlaneNS == "true" ||
-		tenant == v1alpha1.DefaultGlobalTenantName ||
-		tenant == v1alpha1.DefaultSystemTenantName {
-
-		// disable network isolation for kalm-ctrl-plane for now
-		// if err := r.reconcileNetworkPoliciesForCtrlPlane(ns.Name); err != nil {
-		// 	return ctrl.Result{}, err
-		// }
-
-	} else if tenant != "" {
-		if err := r.reconcileNetworkPoliciesForTenant(ns.Name, tenant); err != nil {
-			return ctrl.Result{}, err
-		}
-	} else {
-		r.Log.Info("see ns neither tenant nor ctrl-plane", "ns", ns.Name)
-	}
-
 	if ns.Labels[KalmEnableLabelName] == "true" {
 		if err := r.reconcileCommonConfigMap(ns.Name); err != nil {
 			return ctrl.Result{}, err
 		}
-
-		// if err := r.reconcileCommonSecret(ns.Name); err != nil {
-		// 	return ctrl.Result{}, err
-		// }
 	}
 
 	// todo weird logic to process all ns here
@@ -203,250 +176,6 @@ func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-const authzPolicyName = "kalm-authz-policy"
-
-func (r *KalmNSReconciler) reconcileAuthorizationPoliciesForTenant(tenant string) error {
-	if tenant == "" {
-		return v1alpha1.NoTenantFoundError
-	}
-
-	nsList := v1.NamespaceList{}
-	if err := r.List(r.ctx, &nsList, client.MatchingLabels{v1alpha1.TenantNameLabelKey: tenant}); err != nil {
-		return err
-	}
-
-	var sameTenantNSList []string
-	for _, ns := range nsList.Items {
-		sameTenantNSList = append(sameTenantNSList, ns.Name)
-	}
-
-	allowSameTenantNSRule := istioapisec.Rule{
-		From: []*istioapisec.Rule_From{
-			{Source: &istioapisec.Source{Namespaces: sameTenantNSList}},
-		},
-	}
-
-	controlPlaneNSList := []string{"istio-system", "kube-system"}
-	allowKalmControlPlaneNSRule := istioapisec.Rule{
-		From: []*istioapisec.Rule_From{
-			{Source: &istioapisec.Source{Namespaces: controlPlaneNSList}},
-		},
-	}
-
-	for _, ns := range nsList.Items {
-		expectedAuthzPolicy := istiosec.AuthorizationPolicy{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      authzPolicyName,
-				Namespace: ns.Name,
-			},
-			Spec: istioapisec.AuthorizationPolicy{
-				Action: istioapisec.AuthorizationPolicy_ALLOW,
-				Rules: []*istioapisec.Rule{
-					&allowSameTenantNSRule,
-					&allowKalmControlPlaneNSRule,
-				},
-			},
-		}
-
-		isNew := false
-
-		authzPolicy := istiosec.AuthorizationPolicy{}
-		if err := r.Get(r.ctx, client.ObjectKey{Namespace: ns.Name, Name: authzPolicyName}, &authzPolicy); err != nil {
-			if errors.IsNotFound(err) {
-				isNew = true
-
-				authzPolicy = expectedAuthzPolicy
-			} else {
-				return err
-			}
-		} else {
-			authzPolicy.Spec = expectedAuthzPolicy.Spec
-		}
-
-		var err error
-		if isNew {
-			err = r.Create(r.ctx, &authzPolicy)
-		} else {
-			err = r.Update(r.ctx, &authzPolicy)
-		}
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-const networkPolicyName = "kalm-network-policy"
-
-func (r *KalmNSReconciler) reconcileNetworkPoliciesForTenant(ns, tenant string) error {
-	if tenant == "" {
-		return v1alpha1.NoTenantFoundError
-	}
-
-	expectedNetworkPolicy := networkingv1.NetworkPolicy{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: ns,
-			Name:      networkPolicyName,
-		},
-		Spec: networkingv1.NetworkPolicySpec{
-			PodSelector: metav1.LabelSelector{},
-			Ingress: []networkingv1.NetworkPolicyIngressRule{
-				{
-					From: []networkingv1.NetworkPolicyPeer{
-						{
-							NamespaceSelector: &metav1.LabelSelector{
-								MatchLabels: map[string]string{
-									v1alpha1.TenantNameLabelKey: tenant,
-								},
-							},
-						},
-						{
-							// allow access from kalm-contrl-plane
-							NamespaceSelector: &metav1.LabelSelector{
-								MatchLabels: map[string]string{
-									v1alpha1.KalmControlPlaneLabelKey: "true",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	isNew := false
-
-	np := networkingv1.NetworkPolicy{}
-	if err := r.Get(r.ctx, client.ObjectKey{Namespace: ns, Name: networkPolicyName}, &np); err != nil {
-		if errors.IsNotFound(err) {
-			isNew = true
-			np = expectedNetworkPolicy
-		} else {
-			return err
-		}
-	} else {
-		np.Spec = expectedNetworkPolicy.Spec
-	}
-
-	var err error
-	if isNew {
-		err = r.Create(r.ctx, &np)
-	} else {
-		err = r.Update(r.ctx, &np)
-	}
-
-	return err
-}
-
-// istio.AuthnPolicy
-// allow access within kalm-control-plane namespaces
-func (r *KalmNSReconciler) reconcileAuthorizationPoliciesForCtrlPlane(ns string) error {
-	nsList := v1.NamespaceList{}
-	if err := r.List(r.ctx, &nsList, client.MatchingLabels{v1alpha1.KalmControlPlaneLabelKey: "true"}); err != nil {
-		return err
-	}
-
-	var ctrlPlaneNSList []string
-	for _, tmpNS := range nsList.Items {
-		ctrlPlaneNSList = append(ctrlPlaneNSList, tmpNS.Name)
-	}
-
-	expectedAuthnPolicy := istiosec.AuthorizationPolicy{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: ns,
-			Name:      authzPolicyName,
-		},
-		Spec: istioapisec.AuthorizationPolicy{
-			Action: istioapisec.AuthorizationPolicy_ALLOW,
-			Rules: []*istioapisec.Rule{
-				{
-					From: []*istioapisec.Rule_From{
-						{
-							Source: &istioapisec.Source{
-								Namespaces: ctrlPlaneNSList,
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	var authnPolicy istiosec.AuthorizationPolicy
-	isNew := false
-
-	err := r.Get(r.ctx, client.ObjectKey{Namespace: expectedAuthnPolicy.Namespace, Name: expectedAuthnPolicy.Name}, &authnPolicy)
-	if err != nil {
-		if errors.IsNotFound(err) {
-			isNew = true
-
-			authnPolicy = expectedAuthnPolicy
-		} else {
-			authnPolicy.Spec = expectedAuthnPolicy.Spec
-		}
-	}
-
-	if isNew {
-		err = r.Create(r.ctx, &authnPolicy)
-	} else {
-		err = r.Update(r.ctx, &authnPolicy)
-	}
-
-	return err
-}
-
-// k8s.NP, allow access within kalm-control-plane namespaces
-func (r *KalmNSReconciler) reconcileNetworkPoliciesForCtrlPlane(ns string) error {
-	expectedNetworkPolicy := networkingv1.NetworkPolicy{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: ns,
-			Name:      networkPolicyName,
-		},
-		Spec: networkingv1.NetworkPolicySpec{
-			PodSelector: metav1.LabelSelector{},
-			Ingress: []networkingv1.NetworkPolicyIngressRule{
-				{
-					From: []networkingv1.NetworkPolicyPeer{
-						{
-							// allow access between kalm-contrl-plane
-							NamespaceSelector: &metav1.LabelSelector{
-								MatchLabels: map[string]string{
-									v1alpha1.KalmControlPlaneLabelKey: "true",
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	isNew := false
-
-	np := networkingv1.NetworkPolicy{}
-	if err := r.Get(r.ctx, client.ObjectKey{Namespace: ns, Name: networkPolicyName}, &np); err != nil {
-		if errors.IsNotFound(err) {
-			isNew = true
-			np = expectedNetworkPolicy
-		} else {
-			return err
-		}
-	} else {
-		np.Spec = expectedNetworkPolicy.Spec
-	}
-
-	var err error
-	if isNew {
-		err = r.Create(r.ctx, &np)
-	} else {
-		err = r.Update(r.ctx, &np)
-	}
-
-	return err
-}
-
 func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 
 	expectedCAIssuer := v1alpha1.HttpsCertIssuer{
@@ -477,31 +206,6 @@ func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 		}
 	}
 
-	// defaultCertName := "default-https-cert"
-	// expectedCert := v1alpha1.HttpsCert{
-	// 	ObjectMeta: metav1.ObjectMeta{
-	// 		Name: defaultCertName,
-	// 		Labels: map[string]string{
-	// 			v1alpha1.TenantNameLabelKey: r.
-	// 		},
-	// 	},
-	// 	Spec: v1alpha1.HttpsCertSpec{
-	// 		HttpsCertIssuer: v1alpha1.DefaultCAIssuerName,
-	// 		Domains:         []string{"*"},
-	// 	},
-	// }
-
-	// var currentCert v1alpha1.HttpsCert
-	// if err = r.Get(r.ctx, types.NamespacedName{Name: defaultCertName}, &currentCert); err != nil {
-	// 	if !errors.IsNotFound(err) {
-	// 		return err
-	// 	}
-
-	// 	return r.Create(r.ctx, &expectedCert)
-	// } else {
-	// 	currentCert.Spec = expectedCert.Spec
-	// 	return r.Update(r.ctx, &currentCert)
-	// }
 	return nil
 }
 
@@ -563,30 +267,3 @@ func (r *KalmNSReconciler) reconcileCommonConfigMap(nsName string) error {
 
 	return nil
 }
-
-// var CommonSecretName = "namespace-scope-shared-envs"
-
-// func (r *KalmNSReconciler) reconcileCommonSecret(nsName string) error {
-
-// 	initSecret := v1.Secret{
-// 		ObjectMeta: metav1.ObjectMeta{
-// 			Namespace: nsName,
-// 			Name:      CommonSecretName,
-// 		},
-// 	}
-
-// 	key := client.ObjectKey{
-// 		Namespace: initSecret.Namespace,
-// 		Name:      initSecret.Name,
-// 	}
-
-// 	if err := r.Get(r.ctx, key, &v1.Secret{}); err != nil {
-// 		if errors.IsNotFound(err) {
-// 			return r.Create(r.ctx, &initSecret)
-// 		} else {
-// 			return err
-// 		}
-// 	}
-
-// 	return nil
-// }

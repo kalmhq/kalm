@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { H6 } from "widgets/Label";
-import { SECOND_HEADER_HEIGHT, LEFT_SECTION_OPEN_WIDTH, SECOND_HEADER_ZINDEX, APP_BAR_HEIGHT } from "./Constants";
+import { APP_BAR_HEIGHT, LEFT_SECTION_OPEN_WIDTH, SECOND_HEADER_HEIGHT, SECOND_HEADER_ZINDEX } from "./Constants";
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -20,28 +20,31 @@ const styles = (theme: Theme) =>
       height: SECOND_HEADER_HEIGHT,
       width: "100%",
       background: theme.palette.background.paper,
-      borderBottom: `1px solid ${theme.palette.divider}`,
+      // borderBottom: `1px solid ${theme.palette.divider}`,
       display: "flex",
+      marginBottom: 8,
     },
     left: {
       width: LEFT_SECTION_OPEN_WIDTH,
       height: SECOND_HEADER_HEIGHT,
-      borderRight: `1px solid ${theme.palette.divider}`,
+      // borderRight: `1px solid ${theme.palette.divider}`,
     },
     leftTextContainer: {
       display: "flex",
       alignItems: "center",
       paddingLeft: 32,
-      borderRight: `1px solid ${theme.palette.divider}`,
+      // borderRight: `1px solid ${theme.palette.divider}`,
     },
     right: {
       flex: 1,
       height: SECOND_HEADER_HEIGHT,
       display: "flex",
       alignItems: "center",
+      paddingTop: 16,
       "& > *": {
         marginLeft: 20,
       },
+      background: theme.palette.type === "light" ? "#e5e5e5" : theme.palette.background.default,
     },
   });
 

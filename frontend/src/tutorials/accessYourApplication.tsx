@@ -23,9 +23,8 @@ const resetTutorial = () => {
 
 export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tutorial => {
   const state = store.getState();
-  const tenantName = state.auth.tenant;
   const apps = state.applications.applications;
-  const application = apps.find((x) => x.name === "tutorial" || x.name === `${tenantName}-tutorial`);
+  const application = apps.find((x) => x.name === "tutorial");
 
   if (!application) {
     return {
@@ -181,7 +180,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
                   destinations.find(
                     (destination) =>
                       destination.host === "echoserver.tutorial.svc.cluster.local:8001" ||
-                      destination.host === `echoserver.${tenantName}-tutorial.svc.cluster.local:8001`,
+                      destination.host === `echoserver.tutorial.svc.cluster.local:8001`,
                   )
                     ? undefined
                     : `Please use echoserver as the only target`,
@@ -197,7 +196,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
                   !!destinations.find(
                     (destination) =>
                       destination.host === "echoserver.tutorial.svc.cluster.local:8001" ||
-                      destination.host === `echoserver.${tenantName}-tutorial.svc.cluster.local:8001`,
+                      destination.host === `echoserver.tutorial.svc.cluster.local:8001`,
                   ),
               ),
           },

@@ -1,17 +1,6 @@
 resources:
-- manifests.yaml
-- service.yaml
+  - manifests.yaml
+  - service.yaml
 
 configurations:
-- kustomizeconfig.yaml
-
-patchesJson6902:
-- target:
-    group: admissionregistration.k8s.io
-    version: v1beta1
-    kind: ValidatingWebhookConfiguration
-    name: validating-webhook-configuration
-  # use suffix: .list instead of .yaml cuz otherwise envtest.start will fail
-  #   envtest requires all yaml files should be PartialObjectMetadata
-  #   https://github.com/kubernetes-sigs/controller-runtime/blob/v0.6.3/pkg/envtest/webhook.go#L373-L374
-  path: patch.list
+  - kustomizeconfig.yaml

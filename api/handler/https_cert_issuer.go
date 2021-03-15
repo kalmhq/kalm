@@ -16,10 +16,7 @@ func (h *ApiHandler) InstallHttpCertIssuerHandlers(e *echo.Group) {
 }
 
 func (h *ApiHandler) handleGetHttpsCertIssuer(c echo.Context) error {
-
-	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
-		return resources.NoClusterViewerRoleError
-	}
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	httpsCertIssuers, err := h.resourceManager.GetHttpsCertIssuerList()
 	if err != nil {
@@ -30,10 +27,7 @@ func (h *ApiHandler) handleGetHttpsCertIssuer(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
-
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
-	}
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	httpsCertIssuer, err := getHttpsCertIssuerFromContext(c)
 	if err != nil {
@@ -79,10 +73,7 @@ func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
 }
 
 func (h *ApiHandler) handleUpdateHttpsCertIssuer(c echo.Context) error {
-
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
-	}
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	httpsCertIssuer, err := getHttpsCertIssuerFromContext(c)
 	if err != nil {
@@ -98,10 +89,7 @@ func (h *ApiHandler) handleUpdateHttpsCertIssuer(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteHttpsCertIssuer(c echo.Context) error {
-
-	if !h.clientManager.CanEditCluster(getCurrentUser(c)) {
-		return resources.NoClusterEditorRoleError
-	}
+	h.MustCanManageCluster(getCurrentUser(c))
 
 	err := h.resourceManager.DeleteHttpsCertIssuer(c.Param("name"))
 

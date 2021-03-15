@@ -1,5 +1,5 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 
@@ -15,7 +15,7 @@ export interface WithClusterInfoProps extends ReturnType<typeof mapStateToProps>
 
 export const withClusterInfo = (WrappedComponent: React.ComponentType<any>) => {
   const HOC: React.FC<WithClusterInfoProps & any> = (props) => {
-    return <WrappedComponent {...props} {...useSelector(mapStateToProps)} />;
+    return <WrappedComponent {...props} {...useSelector(mapStateToProps)} dispatch={useDispatch()} />;
   };
 
   HOC.displayName = `WithClusterInfo(${getDisplayName(WrappedComponent)})`;

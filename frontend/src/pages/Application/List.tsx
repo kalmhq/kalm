@@ -1,17 +1,17 @@
-import { Box, Button, createStyles, Grid, Theme, Tooltip, WithStyles } from "@material-ui/core";
-import { indigo } from "@material-ui/core/colors";
+import { Box, createStyles, Grid, Theme, Tooltip, WithStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
+import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
-import { tenantApplicationNameFormat } from "forms/normalizer";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
+import CustomButton from "theme/Button";
 import { primaryColor } from "theme/theme";
 import { ApplicationDetails } from "types/application";
 import { getApplicationCreatedAtString } from "utils/application";
@@ -19,10 +19,9 @@ import sc from "utils/stringConstants";
 import { ApplicationCard } from "widgets/ApplicationCard";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { CustomizedButton } from "widgets/Button";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { KalmApplicationIcon, KalmDetailsIcon, KalmGridViewIcon, KalmListViewIcon } from "widgets/Icon";
-import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { KalmApplicationIcon, KalmDetailsIcon } from "widgets/Icon";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { KRTable } from "widgets/KRTable";
 import { Caption } from "widgets/Label";
 import { KLink } from "widgets/Link";
@@ -60,9 +59,9 @@ interface Props
     WithUserAuthProps,
     ReturnType<typeof mapStateToProps> {}
 
-class ApplicationListRaw extends React.PureComponent<Props> {
-  private confirmDelete = async (applicationDetails: ApplicationDetails) => {
-    const { dispatch } = this.props;
+const ApplicationListRaw: React.FC<Props> = (props) => {
+  const confirmDelete = async (applicationDetails: ApplicationDetails) => {
+    const { dispatch } = props;
     try {
       await dispatch(deleteApplicationAction(applicationDetails.name));
       await dispatch(setSuccessNotificationAction("Successfully delete an application"));
@@ -71,49 +70,48 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     }
   };
 
-  private renderCPU = (applicationListItem: ApplicationDetails) => {
+  const renderCPU = (applicationListItem: ApplicationDetails) => {
     const metrics = applicationListItem.metrics;
     return (
-      <SmallCPULineChart data={metrics && metrics.cpu} hoverText={this.hasPods(applicationListItem) ? "" : "No data"} />
+      <SmallCPULineChart data={metrics && metrics.cpu} hoverText={hasPods(applicationListItem) ? "" : "No data"} />
     );
   };
 
-  private renderMemory = (applicationListItem: ApplicationDetails) => {
+  const renderMemory = (applicationListItem: ApplicationDetails) => {
     const metrics = applicationListItem.metrics;
     return (
       <SmallMemoryLineChart
         data={metrics && metrics.memory}
-        hoverText={this.hasPods(applicationListItem) ? "" : "No data"}
+        hoverText={hasPods(applicationListItem) ? "" : "No data"}
       />
     );
   };
 
-  private renderName = (applicationDetails: ApplicationDetails) => {
-    const { auth, canViewNamespace } = this.props;
-    const displayApplicationName = tenantApplicationNameFormat(auth.tenant)(applicationDetails.name);
+  const renderName = (applicationDetails: ApplicationDetails) => {
+    const { canViewNamespace } = props;
 
     return (
       <>
         {canViewNamespace(applicationDetails.name) ? (
           <KLink to={`/applications/${applicationDetails.name}/components`} onClick={() => blinkTopProgressAction()}>
-            {displayApplicationName}
+            {applicationDetails.name}
           </KLink>
         ) : (
-          displayApplicationName
+          applicationDetails.name
         )}
       </>
     );
   };
 
-  private renderCreatedAt = (applicationDetails: ApplicationDetails) => {
-    const { componentsMap } = this.props;
+  const renderCreatedAt = (applicationDetails: ApplicationDetails) => {
+    const { componentsMap } = props;
     const components = componentsMap[applicationDetails.name];
 
     return <Caption>{components ? getApplicationCreatedAtString(components) : "-"}</Caption>;
   };
 
-  private hasPods = (applicationDetails: ApplicationDetails) => {
-    const { componentsMap } = this.props;
+  const hasPods = (applicationDetails: ApplicationDetails) => {
+    const { componentsMap } = props;
     let count = 0;
     componentsMap[applicationDetails.name]?.forEach((component) => {
       component.pods?.forEach((podStatus) => {
@@ -124,8 +122,8 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     return count !== 0;
   };
 
-  private renderStatus = (applicationDetails: ApplicationDetails) => {
-    const { componentsMap, canViewNamespace } = this.props;
+  const renderStatus = (applicationDetails: ApplicationDetails) => {
+    const { componentsMap, canViewNamespace } = props;
     const applicationName = applicationDetails.name;
 
     let podCount = 0;
@@ -196,8 +194,8 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     );
   };
 
-  private getRoutes = (applicationName: string) => {
-    const { httpRoutes } = this.props;
+  const getRoutes = (applicationName: string) => {
+    const { httpRoutes } = props;
     const applicationRoutes = httpRoutes.filter((x) => {
       let isCurrent = false;
       x.destinations.map((target) => {
@@ -212,10 +210,10 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     return applicationRoutes;
   };
 
-  private renderExternalAccesses = (applicationDetails: ApplicationDetails) => {
-    const { canViewNamespace, canEditNamespace } = this.props;
+  const renderExternalAccesses = (applicationDetails: ApplicationDetails) => {
+    const { canViewNamespace, canEditNamespace } = props;
     const applicationName = applicationDetails.name;
-    const applicationRoutes = this.getRoutes(applicationName);
+    const applicationRoutes = getRoutes(applicationName);
 
     if (applicationRoutes && applicationRoutes.length > 0 && canViewNamespace(applicationName)) {
       return (
@@ -230,8 +228,8 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     }
   };
 
-  private renderActions = (applicationDetails: ApplicationDetails) => {
-    const { canViewNamespace } = this.props;
+  const renderActions = (applicationDetails: ApplicationDetails) => {
+    const { canViewNamespace } = props;
     return (
       <>
         {canViewNamespace(applicationDetails.name) && (
@@ -250,24 +248,24 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     );
   };
 
-  private renderSecondHeaderRight() {
-    const { usingApplicationCard, dispatch, canEditTenant } = this.props;
+  const renderSecondHeaderRight = () => {
+    const { canEditCluster } = props;
     return (
       <>
         {/* <H6>Applications</H6> */}
-        {canEditTenant() && (
-          <Button
+        {canEditCluster() && (
+          <CustomButton
             tutorial-anchor-id="add-application"
             component={Link}
             color="primary"
             size="small"
-            variant="outlined"
+            variant="contained"
             to={`/applications/new`}
           >
-            {sc.NEW_APP_BUTTON}
-          </Button>
+            + {sc.NEW_APP_BUTTON}
+          </CustomButton>
         )}
-        <IconButtonWithTooltip
+        {/* <IconButtonWithTooltip
           tooltipTitle={usingApplicationCard ? "Using List View" : "Using Card View"}
           aria-label={usingApplicationCard ? "Using List View" : "Using Card View"}
           onClick={() =>
@@ -280,22 +278,22 @@ class ApplicationListRaw extends React.PureComponent<Props> {
           style={{ marginLeft: 12 }}
         >
           {usingApplicationCard ? <KalmGridViewIcon /> : <KalmListViewIcon />}
-        </IconButtonWithTooltip>
+        </IconButtonWithTooltip> */}
       </>
     );
-  }
+  };
 
-  private renderEmpty() {
-    const { dispatch, canEditTenant } = this.props;
+  const renderEmpty = () => {
+    const { dispatch, canEditCluster } = props;
 
     return (
       <EmptyInfoBox
-        image={<KalmApplicationIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        image={<KalmApplicationIcon style={{ height: 120, width: 120, color: grey[200] }} />}
         title={sc.EMPTY_APP_TITLE}
         content={sc.EMPTY_APP_SUBTITLE}
         button={
-          canEditTenant() && (
-            <CustomizedButton
+          canEditCluster() && (
+            <CustomButton
               variant="contained"
               color="primary"
               onClick={() => {
@@ -304,14 +302,14 @@ class ApplicationListRaw extends React.PureComponent<Props> {
               }}
             >
               {sc.NEW_APP_BUTTON}
-            </CustomizedButton>
+            </CustomButton>
           )
         }
       />
     );
-  }
+  };
 
-  private getKRTableColumns() {
+  const getKRTableColumns = () => {
     return [
       {
         Header: "Name",
@@ -339,54 +337,60 @@ class ApplicationListRaw extends React.PureComponent<Props> {
         accessor: "actions",
       },
     ];
-  }
+  };
 
-  private getKRTableData() {
-    const { applications, canViewNamespace, canEditNamespace } = this.props;
+  const getKRTableData = () => {
+    const { applications, canViewNamespace, canEditNamespace } = props;
     const data: any[] = [];
 
-    applications &&
-      applications.forEach((application, index) => {
+    if (applications) {
+      for (let i = 0; i < applications.length; i++) {
+        const application = applications[i];
+
+        if (application.name === "kalm-system") {
+          continue;
+        }
+
         const applicationDetails = application as ApplicationDetails;
         const applicationName = applicationDetails.name;
 
         if (canViewNamespace(applicationName) || canEditNamespace(applicationName)) {
           data.push({
-            name: this.renderName(applicationDetails),
-            status: this.renderStatus(applicationDetails),
-            cpu: this.renderCPU(applicationDetails),
-            memory: this.renderMemory(applicationDetails),
-            createdAt: this.renderCreatedAt(applicationDetails),
-            routes: this.renderExternalAccesses(applicationDetails),
-            actions: this.renderActions(applicationDetails),
+            name: renderName(applicationDetails),
+            status: renderStatus(applicationDetails),
+            cpu: renderCPU(applicationDetails),
+            memory: renderMemory(applicationDetails),
+            createdAt: renderCreatedAt(applicationDetails),
+            routes: renderExternalAccesses(applicationDetails),
+            actions: renderActions(applicationDetails),
           });
         }
-      });
+      }
+    }
 
     return data;
-  }
+  };
 
-  private renderKRTable() {
-    return <KRTable showTitle={true} title="Apps" columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
-  }
+  const renderKRTable = () => {
+    return <KRTable noOutline showTitle={true} title="Apps" columns={getKRTableColumns()} data={getKRTableData()} />;
+  };
 
-  private renderGrid = () => {
-    const { applications, componentsMap, canEditNamespace, canViewNamespace, auth } = this.props;
+  const renderGrid = () => {
+    const { applications, componentsMap, canEditNamespace, canViewNamespace } = props;
 
     const filteredApps = applications.filter((app) => {
       return canViewNamespace(app.name) || canEditNamespace(app.name);
     });
 
     const GridRow = (app: ApplicationDetails, index: number) => {
-      const applicationRoutes = this.getRoutes(app.name);
+      const applicationRoutes = getRoutes(app.name);
       return (
         <Grid key={index} item sm={6} md={4} lg={3}>
           <ApplicationCard
             application={app}
-            tenant={auth.tenant}
             componentsMap={componentsMap}
             httpRoutes={applicationRoutes}
-            confirmDelete={this.confirmDelete}
+            confirmDelete={confirmDelete}
             canEdit={canEditNamespace(app.name)}
           />
         </Grid>
@@ -402,25 +406,23 @@ class ApplicationListRaw extends React.PureComponent<Props> {
     );
   };
 
-  public render() {
-    const { isNamespaceLoading, isNamespaceFirstLoaded, applications, usingApplicationCard } = this.props;
-    return (
-      <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
-        <Box p={2}>
-          {isNamespaceLoading && !isNamespaceFirstLoaded ? (
-            <Loading />
-          ) : applications.length === 0 ? (
-            this.renderEmpty()
-          ) : usingApplicationCard ? (
-            this.renderGrid()
-          ) : (
-            this.renderKRTable()
-          )}
-        </Box>
-      </BasePage>
-    );
-  }
-}
+  const { isNamespaceLoading, isNamespaceFirstLoaded, applications, usingApplicationCard } = props;
+  return (
+    <BasePage secondHeaderRight={renderSecondHeaderRight()}>
+      <Box p={2}>
+        {isNamespaceLoading && !isNamespaceFirstLoaded ? (
+          <Loading />
+        ) : applications.length === 0 ? (
+          renderEmpty()
+        ) : usingApplicationCard ? (
+          renderGrid()
+        ) : (
+          renderKRTable()
+        )}
+      </Box>
+    </BasePage>
+  );
+};
 
 export const ApplicationListPage = withStyles(styles)(
   withNamespace(withUserAuth(connect(mapStateToProps)(ApplicationListRaw))),

@@ -51,7 +51,7 @@ export const Connectors: React.FC<Props> = () => {
 
                 return (
                   <Box mb={2} key={field}>
-                    <Paper variant="outlined" square>
+                    <Paper variant="outlined">
                       {connectorComponent}
                       <Box p={2} display="flex" flexDirection="row-reverse">
                         <DeleteButtonWithConfirmPopover

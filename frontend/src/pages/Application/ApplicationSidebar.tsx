@@ -1,23 +1,15 @@
-import { createStyles, List, ListItem, ListItemIcon, ListItemText, Theme } from "@material-ui/core";
+import { createStyles, List, ListItem, ListItemIcon, ListItemText, makeStyles, Theme } from "@material-ui/core";
 import AppsIcon from "@material-ui/icons/Apps";
-import { WithStyles, withStyles } from "@material-ui/styles";
 import { blinkTopProgressAction } from "actions/settings";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 import { NavLink, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
-import { TDispatch } from "types";
 import sc from "utils/stringConstants";
-import { DashboardIcon, KalmComponentsIcon, PeopleIcon, SettingIcon } from "widgets/Icon";
+import { DashboardIcon, KalmComponentsIcon, SettingIcon } from "widgets/Icon";
 
-const mapStateToProps = (state: RootState) => {
-  return {
-    activeNamespaceName: state.namespaces.active,
-  };
-};
-
-const styles = (theme: Theme) =>
+const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     listItem: {
       height: 40,
@@ -30,7 +22,7 @@ const styles = (theme: Theme) =>
     },
     listItemSelected: {
       borderLeft: `4px solid ${
-        theme.palette.type === "light" ? theme.palette.primary.dark : theme.palette.primary.light
+        theme.palette.type === "light" ? theme.palette.primary.main : theme.palette.primary.light
       }`,
     },
     listSubHeader: {
@@ -39,44 +31,37 @@ const styles = (theme: Theme) =>
     listItemText: {
       "font-size": theme.typography.subtitle1.fontSize,
     },
+  }),
+);
+
+interface Props extends WithUserAuthProps {}
+
+const ApplicationViewDrawerRaw: React.FC<Props> = (props) => {
+  const classes = useStyles();
+
+  const { activeNamespaceName } = useSelector((state: RootState) => {
+    return {
+      activeNamespaceName: state.namespaces.active,
+    };
   });
 
-interface Props extends WithStyles<typeof styles>, WithUserAuthProps, ReturnType<typeof mapStateToProps> {
-  dispatch: TDispatch;
-  // canEdit?: boolean;
-}
-
-interface State {}
-
-class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
-  constructor(props: Props) {
-    super(props);
-
-    this.state = {};
-  }
-
-  private getMenuData() {
-    const { activeNamespaceName, canManageNamespace: canManageScope, canEditTenant } = this.props;
+  const getMenuData = () => {
+    const { canManageNamespace } = props;
     const menus = [];
     menus.push({
       text: "Components",
       to: "/applications/" + activeNamespaceName + "/components",
       icon: <KalmComponentsIcon />,
     });
-    if (canManageScope(activeNamespaceName)) {
-      menus.push({
-        text: sc.APP_MEMBERS_PAGE_NAME,
-        to: "/applications/" + activeNamespaceName + "/members",
-        icon: <PeopleIcon />,
-      });
-    }
+
     menus.push({
       text: sc.APP_DASHBOARD_PAGE_NAME,
       to: "/applications/" + activeNamespaceName + "/metrics",
       highlightWhenExact: true,
       icon: <DashboardIcon />,
     });
-    if (canEditTenant()) {
+
+    if (canManageNamespace(activeNamespaceName)) {
       menus.push({
         text: sc.APP_SETTINGS_PAGE_NAME,
         to: "/applications/" + activeNamespaceName + "/settings",
@@ -85,39 +70,34 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
       });
     }
     return menus;
-  }
+  };
+  const menuData = getMenuData();
 
-  render() {
-    const {
-      classes,
-      location: { pathname },
-    } = this.props;
-    const menuData = this.getMenuData();
+  const {
+    location: { pathname },
+  } = props;
 
-    return (
-      <List style={{ width: "100%" }}>
-        {menuData.map((item, index) => (
-          <ListItem
-            onClick={() => blinkTopProgressAction()}
-            className={classes.listItem}
-            classes={{
-              selected: classes.listItemSelected,
-            }}
-            button
-            component={NavLink}
-            to={item.to}
-            key={item.text}
-            selected={item.highlightWhenExact ? pathname === item.to : pathname.startsWith(item.to.split("?")[0])}
-          >
-            <ListItemIcon>{item.icon ? item.icon : <AppsIcon />}</ListItemIcon>
-            <ListItemText classes={{ primary: classes.listItemText }} primary={item.text} />
-          </ListItem>
-        ))}
-      </List>
-    );
-  }
-}
+  return (
+    <List style={{ width: "100%" }}>
+      {menuData.map((item, index) => (
+        <ListItem
+          onClick={() => blinkTopProgressAction()}
+          className={classes.listItem}
+          classes={{
+            selected: classes.listItemSelected,
+          }}
+          button
+          component={NavLink}
+          to={item.to}
+          key={item.text}
+          selected={item.highlightWhenExact ? pathname === item.to : pathname.startsWith(item.to.split("?")[0])}
+        >
+          <ListItemIcon>{item.icon ? item.icon : <AppsIcon />}</ListItemIcon>
+          <ListItemText classes={{ primary: classes.listItemText }} primary={item.text} />
+        </ListItem>
+      ))}
+    </List>
+  );
+};
 
-export const ApplicationSidebar = withUserAuth(
-  withRouter(connect(mapStateToProps)(withStyles(styles)(ApplicationViewDrawerRaw))),
-);
+export const ApplicationSidebar = withUserAuth(withRouter(ApplicationViewDrawerRaw));

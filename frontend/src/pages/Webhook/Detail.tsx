@@ -1,4 +1,4 @@
-import { createStyles, Tab, Tabs, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Tab, Tabs, Theme, withStyles, WithStyles } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
 import { deleteDeployAccessTokenAction } from "actions/deployAccessToken";
 import { setSuccessNotificationAction } from "actions/notification";
@@ -391,15 +391,6 @@ workflows:
               useText
               popupId="delete-webhook-popup"
               popupTitle="DELETE WEBHOOK?"
-              popupContent={
-                <Box>
-                  This action cannot be undone. This will permanently delete
-                  <Typography color={"primary"} align={"center"}>
-                    {deployAccessToken.name}
-                  </Typography>
-                </Box>
-              }
-              targetText={deployAccessToken.name}
               confirmedAction={this.handleDelete}
             />
           </>

@@ -15,6 +15,7 @@ COPY api/ api/
 COPY utils/ utils/
 COPY lib/ lib/
 COPY vm/ vm/
+COPY validation/ validation/
 COPY controllers/ controllers/
 
 # Build

@@ -1,15 +1,12 @@
 package resources
 
 import (
-	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type Job struct {
-	Tenant string `json:"tenant"`
-
 	Namespace         string `json:"namespace"`
 	Name              string `json:"name"`
 	CronJob           string `json:"cronJob"`
@@ -19,8 +16,6 @@ type Job struct {
 }
 
 func BuildJobFromResource(job *batchv1.Job) *Job {
-	tenantName, _ := v1alpha1.GetTenantNameFromObj(job)
-
 	var cronJob string
 	for _, ownerRef := range job.OwnerReferences {
 		if ownerRef.Kind != "CronJob" {
@@ -51,7 +46,6 @@ func BuildJobFromResource(job *batchv1.Job) *Job {
 	}
 
 	return &Job{
-		Tenant:            tenantName,
 		Namespace:         job.Namespace,
 		Name:              job.Name,
 		CronJob:           cronJob,

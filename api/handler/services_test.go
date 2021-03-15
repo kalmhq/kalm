@@ -27,9 +27,6 @@ func (suite *ServicesHandlerTestSuite) TestServicesHandler() {
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      "test-services",
 			Namespace: suite.namespace,
-			Labels: map[string]string{
-				"tenant": defaultTenant,
-			},
 		},
 		Spec: v1.ServiceSpec{
 			Ports: []v1.ServicePort{
@@ -48,10 +45,10 @@ func (suite *ServicesHandlerTestSuite) TestServicesHandler() {
 	suite.DoTestRequest(&TestRequestContext{
 		Debug: true,
 		Roles: []string{
-			GetTenantOwnerRole(defaultTenant),
+			GetClusterOwnerRole(),
 		},
 		Method: http.MethodGet,
-		Path:   "/v1alpha1/services",
+		Path:   "/v1alpha1/services/" + suite.namespace,
 		TestWithoutRoles: func(rec *ResponseRecorder) {
 			suite.IsUnauthorizedError(rec)
 		},
@@ -59,7 +56,6 @@ func (suite *ServicesHandlerTestSuite) TestServicesHandler() {
 			var services []*resources.Service
 			rec.BodyAsJSON(&services)
 			suite.NotNil(rec)
-			// only return svc under this tenant
 			suite.EqualValues(1, len(services))
 			suite.EqualValues("test-services", services[0].Name)
 		},

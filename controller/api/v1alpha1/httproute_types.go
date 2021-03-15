@@ -140,15 +140,21 @@ type HttpRouteSpec struct {
 	CORS   *HttpRouteCORS   `json:"cors,omitempty"`
 }
 
+type HttpRouteDestinationStatus struct {
+	DestinationHost string `json:"destinationHost"`
+	Status          string `json:"status"`
+	Error           string `json:"error,omitempty"`
+}
+
 // HttpRouteStatus defines the observed state of HttpRoute
 type HttpRouteStatus struct {
-	HostCertifications map[string]string `json:"hostCertifications,omitempty"`
+	HostCertifications map[string]string            `json:"hostCertifications,omitempty"`
+	DestinationsStatus []HttpRouteDestinationStatus `json:"destinationsStatus"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="Tenant",type="string",JSONPath=".metadata.labels.tenant"
 // +kubebuilder:printcolumn:name="Hosts",type="string",JSONPath=".spec.hosts"
 // +kubebuilder:printcolumn:name="Paths",type="string",JSONPath=".spec.paths"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"

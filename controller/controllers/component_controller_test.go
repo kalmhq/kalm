@@ -43,39 +43,6 @@ func TestComponentControllerSuite(t *testing.T) {
 	suite.Run(t, new(ComponentControllerSuite))
 }
 
-func (suite *ComponentControllerSuite) TestNonGlobalTenantComponentCleanDangerousFields() {
-	// create
-	component := generateEmptyComponent(suite.ns.Name)
-
-	suite.createComponent(component)
-
-	key := types.NamespacedName{
-		Namespace: component.Namespace,
-		Name:      component.Name,
-	}
-
-	// will create a deployment and a service
-	suite.Eventually(func() bool {
-		var deployment appsV1.Deployment
-		var service coreV1.Service
-
-		if err := suite.K8sClient.Get(context.Background(), key, &deployment); err != nil {
-			return false
-		}
-
-		if err := suite.K8sClient.Get(context.Background(), key, &service); err != nil {
-			return false
-		}
-
-		return len(deployment.Spec.Template.Spec.Containers[0].Env) == 1 &&
-			len(service.Spec.Ports) == 1 &&
-			deployment.Labels["foo"] == "" && // label should be set correctly
-			deployment.Spec.Template.Labels["foo"] == "" && // pod template label should be set correctly
-			deployment.Annotations["foo"] == "" && // annotation should be set correctly
-			deployment.Spec.Template.Annotations["foo"] == "" // pod template annotation should be set correctly
-	}, "dp fields are not correctly cleaned")
-}
-
 func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 	// create
 	component := generateEmptyComponent(suite.ns.Name)
@@ -84,8 +51,6 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 	if component.Labels == nil {
 		component.Labels = make(map[string]string)
 	}
-
-	component.Labels[v1alpha1.TenantNameLabelKey] = v1alpha1.DefaultGlobalTenantName
 
 	suite.createComponent(component)
 

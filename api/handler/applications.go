@@ -1,12 +1,10 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/api/resources"
-	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	coreV1 "k8s.io/api/core/v1"
@@ -27,11 +25,7 @@ func (h *ApiHandler) InstallApplicationsHandlers(e *echo.Group) {
 
 func (h *ApiHandler) setApplicationIntoContext(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		currentUser := getCurrentUser(c)
-
-		list, err := h.resourceManager.GetNamespaces(client.MatchingLabels{
-			v1alpha1.TenantNameLabelKey: currentUser.Tenant,
-		}, client.MatchingField("metadata.name", c.Param("name")), client.Limit(1))
+		list, err := h.resourceManager.GetNamespaces(client.MatchingField("metadata.name", c.Param("name")), client.Limit(1))
 
 		if err != nil {
 			return err
@@ -55,8 +49,7 @@ func (h *ApiHandler) getApplicationFromContext(c echo.Context) *coreV1.Namespace
 // handlers
 
 func (h *ApiHandler) handleGetApplications(c echo.Context) error {
-	currentUser := getCurrentUser(c)
-	namespaces, err := h.resourceManager.GetNamespaces(belongsToTenant(currentUser.Tenant))
+	namespaces, err := h.resourceManager.GetNamespaces()
 	if err != nil {
 		return err
 	}
@@ -74,7 +67,7 @@ func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
 	namespace := h.getApplicationFromContext(c)
 	currentUser := getCurrentUser(c)
-	h.MustCanView(currentUser, fmt.Sprintf("%s/%s", currentUser.Tenant, namespace.Name), "applications/"+namespace.Name)
+	h.MustCanView(currentUser, namespace.Name, "applications/"+namespace.Name)
 
 	res, err := h.resourceManager.BuildApplicationDetails(namespace)
 
@@ -87,15 +80,11 @@ func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
 
 func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "applications/*")
+	h.MustCanEdit(currentUser, "*", "applications/*")
 
 	ns, err := bindKalmNamespaceFromRequestBody(c)
 
 	if err != nil {
-		return err
-	}
-
-	if err := v1alpha1.SetTenantForObj(ns, currentUser.Tenant); err != nil {
 		return err
 	}
 
@@ -114,7 +103,7 @@ func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
 
 func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/*", "applications/*")
+	h.MustCanEdit(currentUser, "*", "applications/*")
 
 	namespace := h.getApplicationFromContext(c)
 

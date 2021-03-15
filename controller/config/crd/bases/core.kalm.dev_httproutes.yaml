@@ -9,9 +9,6 @@ metadata:
   name: httproutes.core.kalm.dev
 spec:
   additionalPrinterColumns:
-  - JSONPath: .metadata.labels.tenant
-    name: Tenant
-    type: string
   - JSONPath: .spec.hosts
     name: Hosts
     type: string
@@ -228,10 +225,26 @@ spec:
         status:
           description: HttpRouteStatus defines the observed state of HttpRoute
           properties:
+            destinationsStatus:
+              items:
+                properties:
+                  destinationHost:
+                    type: string
+                  error:
+                    type: string
+                  status:
+                    type: string
+                required:
+                - destinationHost
+                - status
+                type: object
+              type: array
             hostCertifications:
               additionalProperties:
                 type: string
               type: object
+          required:
+          - destinationsStatus
           type: object
       type: object
   version: v1alpha1

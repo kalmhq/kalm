@@ -19,37 +19,22 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type DNSType string
-
-const (
-	DNSTypeCNAME = "CNAME"
-	DNSTypeA     = "A"
-	DNSTypeNS    = "NS"
-)
-
 type DomainSpec struct {
-	Domain                string  `json:"domain,omitempty"`
-	DNSType               DNSType `json:"dnsType,omitempty"`
-	DNSTarget             string  `json:"dnsTarget,omitempty"`
-	Txt                   string  `json:"txt,omitempty"`
-	IsKalmBuiltinDomain   bool    `json:"isKalmBuiltinDomain"`
-	DNSTargetReadyToCheck bool    `json:"dnsTargetReadyToCheck,omitempty"`
-	TxtReadyToCheck       bool    `json:"txtReadyToCheck,omitempty"`
+	Domain    string  `json:"domain,omitempty"`
+	DNSType   DNSType `json:"dnsType,omitempty"`
+	DNSTarget string  `json:"dnsTarget,omitempty"`
 }
 
 // DomainStatus defines the observed state of Domain
 type DomainStatus struct {
-	IsDNSTargetConfigured bool `json:"isDNSTargetConfigured"`
-	IsTxtConfigured       bool `json:"isTxtConfigured"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="Tenant",type="string",JSONPath=".metadata.labels.tenant"
 // +kubebuilder:printcolumn:name="Domain",type="string",JSONPath=".spec.domain"
 // +kubebuilder:printcolumn:name="DNSType",type="string",JSONPath=".spec.dnsType"
-// +kubebuilder:printcolumn:name="IsDNSTargetConfigured",type="boolean",JSONPath=".status.isDNSTargetConfigured"
+// +kubebuilder:printcolumn:name="DNSTarget",type="string",JSONPath=".spec.dnsTarget"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // Domain is the Schema for the domains API

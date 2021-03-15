@@ -49,7 +49,9 @@ spec:
                   type: string
                 clusterName:
                   type: string
-                kalmSaaSDomain:
+                clusterUUID:
+                  type: string
+                kalmCloudDomain:
                   type: string
                 oidcIssuer:
                   properties:
@@ -119,55 +121,52 @@ spec:
               type: object
             physicalClusterId:
               type: string
-            saasModeConfig:
-              properties:
-                baseAppDomain:
-                  description: 'like: us-west1-1.clusters.kalm-apps.com'
-                  type: string
-                baseDNSDomain:
-                  description: 'like: us-west1-1.clusters.kalm-dns.com'
-                  type: string
-                baseDashboardDomain:
-                  description: 'like: us-west1-1.kalm.dev'
-                  type: string
-                cloudflareConfig:
-                  properties:
-                    apiToken:
-                      type: string
-                    domainToZoneIDConfig:
-                      additionalProperties:
-                        type: string
-                      type: object
-                  type: object
-                oidcIssuer:
-                  properties:
-                    clientId:
-                      type: string
-                    clientSecret:
-                      type: string
-                    issuerURL:
-                      description: 'like: https://staging.kalm.dev/oidc'
-                      type: string
-                  type: object
-              type: object
             skipCertManagerInstallation:
               type: boolean
             skipIstioInstallation:
               type: boolean
             skipKalmDashboardInstallation:
-              description: SkipKalmControllerInstallation bool `json:"skipKalmControllerInstallation,omitempty"`
               type: boolean
             version:
               type: string
           type: object
         status:
-          description: KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
           properties:
             byocModeStatus:
               properties:
-                clusterInfoHasSendToKalmSaaS:
+                clusterInfoHasSendToKalmCloud:
                   type: boolean
+                installStatusKeySendToKalmCloud:
+                  type: string
               type: object
+            installCondition:
+              items:
+                properties:
+                  lastTransitionTime:
+                    format: date-time
+                    type: string
+                  message:
+                    description: Message is a human readable description of the details
+                      of the last transition, complementing reason.
+                    type: string
+                  reason:
+                    description: Reason is a brief machine readable explanation for
+                      the condition's last transition.
+                    type: string
+                  status:
+                    description: Status of the condition, one of ('True', 'False',
+                      'Unknown').
+                    type: string
+                  type:
+                    description: Type of the condition.
+                    type: string
+                required:
+                - status
+                - type
+                type: object
+              type: array
+            installStatus:
+              type: string
           type: object
       type: object
   version: v1alpha1

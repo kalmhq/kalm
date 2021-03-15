@@ -11,12 +11,10 @@ import (
 	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
 
 	"github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
-	"github.com/kalmhq/kalm/controller/api/builtin"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -26,7 +24,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 func init() {
@@ -142,10 +139,6 @@ func (suite *BasicSuite) createObject(obj runtime.Object) {
 	suite.Require().Nil(suite.K8sClient.Create(context.Background(), obj))
 }
 
-func (suite *BasicSuite) reloadTenant(tenant *v1alpha1.Tenant) {
-	suite.reloadObject(types.NamespacedName{Name: tenant.Name}, tenant)
-}
-
 func (suite *BasicSuite) reloadComponent(component *v1alpha1.Component) {
 	suite.reloadObject(types.NamespacedName{Name: component.Name, Namespace: component.Namespace}, component)
 }
@@ -229,22 +222,6 @@ func (suite *BasicSuite) SetupTestEnv(testEnv *envtest.Environment, disableWebho
 
 	mgr, err := ctrl.NewManager(cfg, mgrOptions)
 
-	if !disableWebhook {
-		webhookServer := mgr.GetWebhookServer()
-		webhookServer.Register("/validate-v1-ns", &webhook.Admission{
-			Handler: &builtin.NSValidator{},
-		})
-		webhookServer.Register("/admission-handler-v1-pvc", &webhook.Admission{
-			Handler: &builtin.PVCAdmissionHandler{},
-		})
-		webhookServer.Register("/admission-handler-v1-pod", &webhook.Admission{
-			Handler: &builtin.PodAdmissionHandler{},
-		})
-		webhookServer.Register("/admission-handler-v1-svc", &webhook.Admission{
-			Handler: &builtin.SvcAdmissionHandler{},
-		})
-	}
-
 	suite.Require().NotNil(mgr)
 	suite.Require().Nil(err)
 
@@ -264,10 +241,8 @@ func (suite *BasicSuite) SetupTestEnv(testEnv *envtest.Environment, disableWebho
 	suite.Require().Nil(NewGatewayReconciler(mgr).SetupWithManager(mgr))
 	suite.Require().Nil(NewSingleSignOnConfigReconciler(mgr).SetupWithManager(mgr))
 	suite.Require().Nil(NewProtectedEndpointReconciler(mgr).SetupWithManager(mgr))
-	suite.Require().Nil(NewTenantReconciler(mgr).SetupWithManager(mgr))
-	suite.Require().Nil(NewClusterResourceQuotaReconciler(mgr).SetupWithManager(mgr))
 
-	v1alpha1.InitializeWebhookClient(mgr)
+	// v1alpha1.InitializeWebhookClient(mgr)
 	suite.Require().Nil((&v1alpha1.AccessToken{}).SetupWebhookWithManager(mgr))
 	suite.Require().Nil((&v1alpha1.RoleBinding{}).SetupWebhookWithManager(mgr))
 	suite.Require().Nil((&v1alpha1.Component{}).SetupWebhookWithManager(mgr))
@@ -280,7 +255,6 @@ func (suite *BasicSuite) SetupTestEnv(testEnv *envtest.Environment, disableWebho
 	suite.Require().Nil((&v1alpha1.SingleSignOnConfig{}).SetupWebhookWithManager(mgr))
 	suite.Require().Nil((&v1alpha1.LogSystem{}).SetupWebhookWithManager(mgr))
 	suite.Require().Nil((&v1alpha1.ACMEServer{}).SetupWebhookWithManager(mgr))
-	suite.Require().Nil((&v1alpha1.Tenant{}).SetupWebhookWithManager(mgr))
 
 	mgrStopChannel := make(chan struct{})
 	suite.StopChannel = mgrStopChannel
@@ -370,46 +344,7 @@ func randomName() string {
 	return string(b)
 }
 
-func (suite *BasicSuite) SetupTenant() *v1alpha1.Tenant {
-	name := randomName()
-
-	tenant := &v1alpha1.Tenant{
-		ObjectMeta: metaV1.ObjectMeta{
-			Name: name,
-		},
-		Spec: v1alpha1.TenantSpec{
-			TenantDisplayName: "test-tenant-" + name,
-			ResourceQuota: map[v1alpha1.ResourceName]resource.Quantity{
-				v1alpha1.ResourceHttpRoutesCount:       resource.MustParse("100"),
-				v1alpha1.ResourceHttpsCertsCount:       resource.MustParse("100"),
-				v1alpha1.ResourceDockerRegistriesCount: resource.MustParse("100"),
-				v1alpha1.ResourceApplicationsCount:     resource.MustParse("100"),
-				v1alpha1.ResourceServicesCount:         resource.MustParse("100"),
-				v1alpha1.ResourceComponentsCount:       resource.MustParse("100"),
-				v1alpha1.ResourceCPU:                   resource.MustParse("100"),
-				v1alpha1.ResourceMemory:                resource.MustParse("100Gi"),
-				v1alpha1.ResourceStorage:               resource.MustParse("100Gi"),
-				v1alpha1.ResourceEphemeralStorage:      resource.MustParse("100Gi"),
-				v1alpha1.ResourceTraffic:               resource.MustParse("100Gi"),
-				v1alpha1.ResourceRoleBindingCount:      resource.MustParse("100"),
-				v1alpha1.ResourceAccessTokensCount:     resource.MustParse("100"),
-			},
-			Owners: []string{"david"},
-		},
-	}
-
-	suite.Require().Nil(suite.K8sClient.Create(context.Background(), tenant))
-
-	suite.Eventually(func() bool {
-		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: tenant.Name}, tenant)
-		return err == nil
-	})
-
-	return tenant
-}
-
-func (suite *BasicSuite) SetupKalmEnabledNs(nameOpt ...string) v1.Namespace {
-	tenant := suite.SetupTenant()
+func (suite *BasicSuite) SetupKalmEnabledNs(nameOpt ...string) corev1.Namespace {
 
 	var name string
 
@@ -419,12 +354,11 @@ func (suite *BasicSuite) SetupKalmEnabledNs(nameOpt ...string) v1.Namespace {
 		name = randomName()
 	}
 
-	ns := v1.Namespace{
-		ObjectMeta: metaV1.ObjectMeta{
+	ns := corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 			Labels: map[string]string{
-				KalmEnableLabelName:         "true",
-				v1alpha1.TenantNameLabelKey: tenant.Name,
+				KalmEnableLabelName: "true",
 			},
 		},
 	}
@@ -439,12 +373,17 @@ func (suite *BasicSuite) SetupKalmEnabledNs(nameOpt ...string) v1.Namespace {
 	return ns
 }
 
-func (suite *BasicSuite) ensureNsExists(name string) v1.Namespace {
-	ns := v1.Namespace{
-		ObjectMeta: metaV1.ObjectMeta{
+func (suite *BasicSuite) ensureNsExists(name string) corev1.Namespace {
+	ns := corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
+			Labels: map[string]string{
+				v1alpha1.KalmEnableLabelName: "true",
+			},
 		},
 	}
-	suite.K8sClient.Create(context.Background(), &ns)
+
+	_ = suite.K8sClient.Create(context.Background(), &ns)
+
 	return ns
 }

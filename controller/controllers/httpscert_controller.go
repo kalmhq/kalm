@@ -20,6 +20,8 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"time"
+
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -31,7 +33,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"time"
 )
 
 // HttpsCertReconciler reconciles a HttpsCert object
@@ -115,6 +116,7 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 			if !ready {
 				r.Log.Info("acme server not ready yet, skipped for httpsCert:" + httpsCert.Name)
+				// todo, update status to show why this cert is not requested
 				return ctrl.Result{}, nil
 			}
 		}
@@ -171,7 +173,6 @@ func (r *HttpsCertReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(genSourceForObject(&corev1alpha1.ACMEServer{}), &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: ACMEServerMapper{*r},
 		}).
-		Watches(genSourceForObject(&corev1alpha1.Tenant{}), &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }
 

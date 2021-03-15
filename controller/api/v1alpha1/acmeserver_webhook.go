@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"github.com/kalmhq/kalm/controller/validation"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -64,7 +65,7 @@ func (r *ACMEServer) validate() error {
 		})
 	}
 
-	if !IsValidNoneWildcardDomain(r.Spec.ACMEDomain) {
+	if validation.ValidateFQDN(r.Spec.ACMEDomain) != nil {
 		rst = append(rst, KalmValidateError{
 			Err:  "is not valid domain:" + r.Spec.ACMEDomain,
 			Path: "spec.acmeDomain",
@@ -78,7 +79,7 @@ func (r *ACMEServer) validate() error {
 		})
 	}
 
-	if !IsValidNoneWildcardDomain(r.Spec.NSDomain) {
+	if validation.ValidateFQDN(r.Spec.NSDomain) != nil {
 		rst = append(rst, KalmValidateError{
 			Err:  "is not valid domain:" + r.Spec.NSDomain,
 			Path: "spec.nsDomain",

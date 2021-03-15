@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -28,8 +27,6 @@ type ClientInfo struct {
 	Email             string       `json:"email"`
 	EmailVerified     bool         `json:"email_verified"`
 	Groups            []string     `json:"groups"`
-	Tenant            string       `json:"tenant"`
-	Tenants           []string     `json:"tenants"`
 	Impersonation     string       `json:"impersonation"`
 	ImpersonationType string       `json:"impersonationType"`
 }
@@ -44,9 +41,9 @@ type ClientManager interface {
 	CanView(client *ClientInfo, scope string, obj string) bool
 	CanEdit(client *ClientInfo, scope string, obj string) bool
 	CanManage(client *ClientInfo, scope string, obj string) bool
-	CanViewScope(client *ClientInfo, scope string) bool
-	CanEditScope(client *ClientInfo, scope string) bool
-	CanManageScope(client *ClientInfo, scope string) bool
+	CanViewNamespace(client *ClientInfo, scope string) bool
+	CanEditNamespace(client *ClientInfo, scope string) bool
+	CanManageNamespace(client *ClientInfo, scope string) bool
 	CanViewCluster(client *ClientInfo) bool
 	CanEditCluster(client *ClientInfo) bool
 	CanManageCluster(client *ClientInfo) bool
@@ -54,8 +51,6 @@ type ClientManager interface {
 	// special resources
 	CanOperateHttpRoute(c *ClientInfo, action string, route *resources.HttpRoute) bool
 	PermissionsGreaterThanOrEqualToAccessToken(c *ClientInfo, accessToken *resources.AccessToken) bool
-	CanManageRoleBinding(c *ClientInfo, roleBinding *v1alpha1.RoleBinding) bool
-	CanOperateDomains(c *ClientInfo, action string, domain *v1alpha1.Domain) bool
 
 	GetRBACEnforcer() rbac.Enforcer
 }
@@ -132,16 +127,16 @@ func (m *BaseClientManager) CanManage(client *ClientInfo, scope string, obj stri
 	return m.wrapper(client, m.RBACEnforcer.CanManage, scope, obj)
 }
 
-func (m *BaseClientManager) CanViewScope(client *ClientInfo, scope string) bool {
-	return m.wrapper(client, m.RBACEnforcer.CanViewScope, scope)
+func (m *BaseClientManager) CanViewNamespace(client *ClientInfo, scope string) bool {
+	return m.wrapper(client, m.RBACEnforcer.CanViewNamespace, scope)
 }
 
-func (m *BaseClientManager) CanEditScope(client *ClientInfo, scope string) bool {
-	return m.wrapper(client, m.RBACEnforcer.CanEditScope, scope)
+func (m *BaseClientManager) CanEditNamespace(client *ClientInfo, scope string) bool {
+	return m.wrapper(client, m.RBACEnforcer.CanEditNamespace, scope)
 }
 
-func (m *BaseClientManager) CanManageScope(client *ClientInfo, scope string) bool {
-	return m.wrapper(client, m.RBACEnforcer.CanManageScope, scope)
+func (m *BaseClientManager) CanManageNamespace(client *ClientInfo, scope string) bool {
+	return m.wrapper(client, m.RBACEnforcer.CanManageNamespace, scope)
 }
 
 func (m *BaseClientManager) CanViewCluster(client *ClientInfo) bool {
@@ -173,11 +168,6 @@ func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, ro
 		return false
 	}
 
-	if route.Tenant == "" {
-		log.Info("route tenant is empty", zap.String("routeName", route.Name), zap.Any("route", route))
-		return false
-	}
-
 	log.Info("check CanOperateHttpRoute", zap.String("route", route.Name))
 
 	for _, dest := range route.HttpRouteSpec.Destinations {
@@ -187,23 +177,20 @@ func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, ro
 		}
 	}
 
-	scope := fmt.Sprintf("%s/*", route.Tenant)
-
 	log.Info("check CanOperateHttpRoute, pass host check",
-		zap.String("client", c.Tenant),
 		zap.String("route", route.Name),
-		zap.String("scope", scope))
+		zap.String("name", "*"))
 
 	if action == "view" {
-		if !m.CanViewScope(c, scope) {
+		if !m.CanViewNamespace(c, "*") {
 			return false
 		}
 	} else if action == "edit" {
-		if !m.CanEditScope(c, scope) {
+		if !m.CanEditNamespace(c, "*") {
 			return false
 		}
 	} else if action == "manage" {
-		if !m.CanManageScope(c, scope) {
+		if !m.CanManageNamespace(c, "*") {
 			return false
 		}
 	} else {
@@ -212,39 +199,6 @@ func (m *BaseClientManager) CanOperateHttpRoute(c *ClientInfo, action string, ro
 
 	log.Info("check CanOperateHttpRoute, pass permission check", zap.String("route", route.Name))
 	return true
-}
-
-func (m *BaseClientManager) CanManageRoleBinding(c *ClientInfo, roleBinding *v1alpha1.RoleBinding) bool {
-	switch roleBinding.Spec.Role {
-	case v1alpha1.ClusterRoleViewer, v1alpha1.ClusterRoleEditor, v1alpha1.ClusterRoleOwner:
-		return m.CanManageCluster(c)
-	default:
-		// TODO: handle the error
-		tenantName, _ := v1alpha1.GetTenantNameFromObj(roleBinding)
-		scope := fmt.Sprintf("%s/%s", tenantName, roleBinding.Namespace)
-		return m.CanManageScope(c, scope)
-	}
-}
-
-func (m *BaseClientManager) CanOperateDomains(c *ClientInfo, action string, domain *v1alpha1.Domain) bool {
-	scope := fmt.Sprintf("%s/*", domain.Labels[v1alpha1.TenantNameLabelKey])
-	obj := fmt.Sprintf("domains/%s", domain.Name)
-
-	if action == "view" {
-		if m.CanView(c, scope, obj) {
-			return true
-		}
-	} else if action == "edit" {
-		if m.CanEdit(c, scope, obj) {
-			return true
-		}
-	} else if action == "manage" {
-		if m.CanManage(c, scope, obj) {
-			return true
-		}
-	}
-
-	return false
 }
 
 func extractAuthTokenFromClientRequestContext(c echo.Context) string {

@@ -29,6 +29,7 @@ import (
 	istioNetworkingV1Beta1 "istio.io/api/networking/v1beta1"
 	v1alpha32 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -44,18 +45,21 @@ const (
 	KALM_ROUTE_LABEL = "kalm-route"
 )
 
-const KALM_SSO_GRANTED_TENANTS_HEADER = "kalm-sso-granted-tenants"
 const KALM_SSO_GRANTED_GROUPS_HEADER = "kalm-sso-granted-groups"
+const KALM_SSO_GRANTED_EMAILS_HEADER = "kalm-sso-granted-emails"
 const KALM_SSO_USERINFO_HEADER = "kalm-sso-userinfo"
 const KALM_SSO_SET_COOKIE_PAYLOAD_HEADER = "kalm-set-cookie"
 const KALM_ROUTE_HEADER = "kalm-route"
 const KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER = "allow-to-pass-if-has-bearer-token"
+
+const KALM_AUTH_EMAIL = "kalm-auth-email"
 
 var DANGEROUS_HEADERS = []string{
 	KALM_SSO_USERINFO_HEADER,
 	KALM_ALLOW_TO_PASS_IF_HAS_BEARER_TOKEN_HEADER,
 	KALM_ROUTE_HEADER,
 	KALM_SSO_SET_COOKIE_PAYLOAD_HEADER,
+	KALM_AUTH_EMAIL,
 }
 
 type HttpRouteReconcilerTask struct {
@@ -97,21 +101,22 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 		}
 	}
 
-	if spec.Timeout != nil {
-		httpRoute.Timeout = &protoTypes.Duration{
-			Seconds: int64(*spec.Timeout),
-		}
-	}
+	// Disable 5s timeout bug
+	// if spec.Timeout != nil {
+	// 	httpRoute.Timeout = &protoTypes.Duration{
+	// 		Seconds: int64(*spec.Timeout),
+	// 	}
+	// }
 
-	if spec.Retries != nil {
-		httpRoute.Retries = &istioNetworkingV1Beta1.HTTPRetry{
-			Attempts: int32(spec.Retries.Attempts),
-			PerTryTimeout: &protoTypes.Duration{
-				Seconds: int64(spec.Retries.PerTtyTimeoutSeconds),
-			},
-			RetryOn: strings.Join(spec.Retries.RetryOn, ","),
-		}
-	}
+	// if spec.Retries != nil {
+	// 	httpRoute.Retries = &istioNetworkingV1Beta1.HTTPRetry{
+	// 		Attempts: int32(spec.Retries.Attempts),
+	// 		PerTryTimeout: &protoTypes.Duration{
+	// 			Seconds: int64(spec.Retries.PerTtyTimeoutSeconds),
+	// 		},
+	// 		RetryOn: strings.Join(spec.Retries.RetryOn, ","),
+	// 	}
+	// }
 
 	if spec.Mirror != nil {
 		dest := toHttpRouteDestination(spec.Mirror.Destination, 100)
@@ -196,14 +201,6 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 // Kalm route level http to https redirect is achieved by adding envoy filter for istio ingress gateway
 //
 func (r *HttpRouteReconcilerTask) buildHttpsRedirectEnvoyFilter(route *corev1alpha1.HttpRoute) (*v1alpha32.EnvoyFilter, error) {
-	var tenantName string
-
-	var err error
-	tenantName, err = corev1alpha1.GetTenantNameFromObj(route)
-
-	if err != nil {
-		return nil, err
-	}
 
 	filter := &v1alpha32.EnvoyFilter{
 		ObjectMeta: metaV1.ObjectMeta{
@@ -246,10 +243,6 @@ func (r *HttpRouteReconcilerTask) buildHttpsRedirectEnvoyFilter(route *corev1alp
 				},
 			},
 		},
-	}
-
-	if tenantName != "" {
-		filter.Labels[corev1alpha1.TenantNameLabelKey] = tenantName
 	}
 
 	// TODO route and filter are in different namespace. Can't set owner relationship for them.
@@ -355,6 +348,49 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 				hostVirtualService[host] = r.buildIstioHttpRoutes(&route)
 			}
 		}
+	}
+
+	var serviceList corev1.ServiceList
+	if err := r.Reader.List(r.ctx, &serviceList); err != nil {
+		return err
+	}
+	hostsMap := make(map[string]bool)
+	for _, service := range serviceList.Items {
+		for _, servicePort := range service.Spec.Ports {
+			host := service.Name + "." + service.Namespace + ".svc.cluster.local:" + fmt.Sprint(servicePort.Port)
+			hostsMap[host] = true
+
+			if servicePort.Protocol == corev1.ProtocolTCP && servicePort.Port == 80 {
+				host := service.Name + "." + service.Namespace + ".svc.cluster.local"
+				hostsMap[host] = true
+			}
+		}
+	}
+
+	for i := range r.routes {
+		route := r.routes[i]
+		if len(route.Status.DestinationsStatus) != len(route.Spec.Destinations) {
+			route.Status.DestinationsStatus = make([]corev1alpha1.HttpRouteDestinationStatus, len(route.Spec.Destinations))
+		}
+		for j := range route.Spec.Destinations {
+			destination := route.Spec.Destinations[j]
+			_, matchedTarget := hostsMap[destination.Host]
+			if matchedTarget {
+				route.Status.DestinationsStatus[j] = corev1alpha1.HttpRouteDestinationStatus{
+					DestinationHost: destination.Host,
+					Status:          "normal",
+					Error:           "",
+				}
+			} else {
+				route.Status.DestinationsStatus[j] = corev1alpha1.HttpRouteDestinationStatus{
+					DestinationHost: destination.Host,
+					Status:          "error",
+					Error:           "No HttpRoute destination matched",
+				}
+
+			}
+		}
+		r.Status().Update(r.ctx, &route)
 	}
 
 	for host, routes := range hostVirtualService {
@@ -759,6 +795,7 @@ func NewHttpRouteReconciler(mgr ctrl.Manager) *HttpRouteReconciler {
 type WatchAllKalmGateway struct{}
 type WatchAllKalmVirtualService struct{}
 type WatchAllKalmEnvoyFilter struct{}
+type WatchAllService struct{}
 
 func (*WatchAllKalmGateway) Map(object handler.MapObject) []reconcile.Request {
 	gateway, ok := object.Object.(*v1beta1.Gateway)
@@ -785,6 +822,13 @@ func (*WatchAllKalmEnvoyFilter) Map(object handler.MapObject) []reconcile.Reques
 	}
 	return []reconcile.Request{{NamespacedName: types.NamespacedName{}}}
 }
+func (*WatchAllService) Map(object handler.MapObject) []reconcile.Request {
+	_, ok := object.Object.(*corev1.Service)
+	if !ok {
+		return nil
+	}
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{}}}
+}
 
 func (r *HttpRouteReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
@@ -805,6 +849,12 @@ func (r *HttpRouteReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			&source.Kind{Type: &v1alpha32.EnvoyFilter{}},
 			&handler.EnqueueRequestsFromMapFunc{
 				ToRequests: &WatchAllKalmEnvoyFilter{},
+			},
+		).
+		Watches(
+			&source.Kind{Type: &corev1.Service{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: &WatchAllService{},
 			},
 		).
 		Complete(r)

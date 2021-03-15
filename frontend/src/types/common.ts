@@ -135,12 +135,6 @@ export interface PermissionMethods {
   canEditNamespace: (scope: string) => boolean;
   canManageNamespace: (scope: string) => boolean;
 
-  canViewTenant: () => boolean;
-  canEditTenant: () => boolean;
-  canManageTenant: () => boolean;
-
-  canEditAnyNamespace: () => boolean;
-
   canViewCluster: () => boolean;
   canEditCluster: () => boolean;
   canManageCluster: () => boolean;
@@ -160,12 +154,6 @@ export const emptyPermissionMethods: PermissionMethods = {
   canViewCluster: () => false,
   canEditCluster: () => false,
   canManageCluster: () => false,
-
-  canViewTenant: () => false,
-  canEditTenant: () => false,
-  canManageTenant: () => false,
-
-  canEditAnyNamespace: () => false,
 };
 
 export interface SetAuthMethodsAction {

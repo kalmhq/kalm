@@ -1,5 +1,5 @@
-import { Box, Button, createStyles, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
-import { indigo } from "@material-ui/core/colors";
+import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import CheckIcon from "@material-ui/icons/Check";
 import { deleteRouteAction } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
@@ -12,6 +12,7 @@ import { BasePage } from "pages/BasePage";
 import { Methods } from "pages/Route/Methods";
 import React from "react";
 import { Link } from "react-router-dom";
+import CustomButton from "theme/Button";
 import { ClusterInfo } from "types/cluster";
 import { HttpRoute } from "types/route";
 import sc from "utils/stringConstants";
@@ -119,7 +120,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderTargets = (row: HttpRoute) => {
-    return <Targets destinations={row.destinations} />;
+    return <Targets destinations={row.destinations} destinationsStatus={row.destinationsStatus} />;
   };
 
   private renderAdvanced(row: HttpRoute) {
@@ -143,9 +144,9 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions = (row: HttpRoute) => {
-    const { dispatch, canEditTenant } = this.props;
+    const { dispatch, canEditCluster } = this.props;
 
-    return canEditTenant() ? (
+    return canEditCluster() ? (
       <>
         <IconLinkWithToolTip
           onClick={() => {
@@ -159,15 +160,6 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         <DeleteButtonWithConfirmPopover
           popupId="delete-route-popup"
           popupTitle="DELETE ROUTE?"
-          popupContent={
-            <Box>
-              This action cannot be undone. This will permanently delete
-              <Typography color={"primary"} align={"center"}>
-                {row.hosts[0]}
-              </Typography>
-            </Box>
-          }
-          targetText={row.hosts[0]}
           confirmedAction={() => dispatch(deleteRouteAction(row))}
         />
       </>
@@ -175,15 +167,15 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderEmpty() {
-    const { dispatch, canEditTenant } = this.props;
+    const { dispatch, canEditCluster } = this.props;
 
     return (
       <EmptyInfoBox
-        image={<KalmRoutesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        image={<KalmRoutesIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={sc.EMPTY_ROUTES_TITLE}
         content={sc.EMPTY_ROUTES_SUBTITLE}
         button={
-          canEditTenant() ? (
+          canEditCluster() ? (
             <CustomizedButton
               variant="contained"
               color="primary"
@@ -201,10 +193,10 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private showActions() {
-    const { httpRoutes, canEditTenant } = this.props;
+    const { httpRoutes, canEditCluster } = this.props;
     let show = false;
     httpRoutes.forEach((route) => {
-      if (canEditTenant()) {
+      if (canEditCluster()) {
         show = true;
       }
     });
@@ -255,7 +247,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     const options = [
       {
         title: (
-          <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+          <KMLink href="https://docs.kalm.dev/TODO" target="_blank">
             How a http route works?
           </KMLink>
         ),
@@ -263,7 +255,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
       },
       {
         title: (
-          <KMLink href="https://kalm.dev/docs/certs" target="_blank">
+          <KMLink href="https://docs.kalm.dev/TODO" target="_blank">
             HttpRoute CRD
           </KMLink>
         ),
@@ -304,34 +296,32 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes, canEditAnyNamespace, canViewTenant } = this.props;
-
-    const filteredRoutes = httpRoutes.filter((route) => canViewTenant());
+    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes, canEditCluster } = this.props;
 
     return (
       <BasePage
         secondHeaderRight={
-          canEditAnyNamespace() ? (
-            <Button
+          canEditCluster() ? (
+            <CustomButton
               tutorial-anchor-id="add-route"
               component={Link}
               color="primary"
               size="small"
-              variant="outlined"
+              variant="contained"
               to={`/routes/new`}
             >
               Add Route
-            </Button>
+            </CustomButton>
           ) : null
         }
       >
         <Box p={2}>
           {isRoutesLoading && !isRoutesFirstLoaded ? (
             <Loading />
-          ) : filteredRoutes && filteredRoutes.length > 0 ? (
+          ) : httpRoutes && httpRoutes.length > 0 ? (
             <>
               {this.renderKRTable()}
-              {this.renderInfoBox()}
+              {/* {this.renderInfoBox()} */}
             </>
           ) : (
             this.renderEmpty()

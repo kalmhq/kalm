@@ -27,7 +27,6 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { ApplicationComponentDetails } from "types/application";
 import { Probe } from "types/componentTemplate";
-import { getComponentCreatedFromAndAtString } from "utils/application";
 import { sizeStringToGi, sizeStringToMi } from "utils/sizeConv";
 import stringConsts from "utils/stringConstants";
 import { WrenchIcon } from "widgets/Icon";
@@ -128,65 +127,58 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
   component: ApplicationComponentDetails;
 }
 
-interface State {}
+const ComponentBriefInfoRaw: React.FC<Props> = (props) => {
+  // const renderCreatedAt = () => {
+  //   const { component } = props;
+  //   return getComponentCreatedFromAndAtString(component);
+  // };
 
-class ComponentBriefInfoRaw extends React.PureComponent<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {};
-  }
+  // const renderComponentStatus = () => {
+  //   const { component } = props;
 
-  private renderCreatedAt = () => {
-    const { component } = this.props;
-    return getComponentCreatedFromAndAtString(component);
-  };
+  //   let running = 0;
+  //   let pending = 0;
+  //   let error = 0;
 
-  private renderComponentStatus = () => {
-    const { component } = this.props;
+  //   component.pods?.forEach((pod) => {
+  //     if (pod.isTerminating) {
+  //       pending = pending + 1;
+  //     } else {
+  //       switch (pod.status) {
+  //         case "Pending": {
+  //           pending = pending + 1;
+  //           break;
+  //         }
+  //         case "Failed": {
+  //           error = error + 1;
+  //           break;
+  //         }
+  //         case "Running":
+  //         case "Succeeded": {
+  //           running = running + 1;
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   });
+  //   let displayInfo = "";
+  //   if (running > 0) {
+  //     displayInfo += `Running: ${running} `;
+  //   }
 
-    let running = 0;
-    let pending = 0;
-    let error = 0;
+  //   if (pending > 0) {
+  //     displayInfo += `Pending: ${pending} `;
+  //   }
 
-    component.pods?.forEach((pod) => {
-      if (pod.isTerminating) {
-        pending = pending + 1;
-      } else {
-        switch (pod.status) {
-          case "Pending": {
-            pending = pending + 1;
-            break;
-          }
-          case "Failed": {
-            error = error + 1;
-            break;
-          }
-          case "Running":
-          case "Succeeded": {
-            running = running + 1;
-            break;
-          }
-        }
-      }
-    });
-    let displayInfo = "";
-    if (running > 0) {
-      displayInfo += `Running: ${running} `;
-    }
+  //   if (error > 0) {
+  //     displayInfo += `Error: ${error} `;
+  //   }
 
-    if (pending > 0) {
-      displayInfo += `Pending: ${pending} `;
-    }
+  //   return displayInfo;
+  // };
 
-    if (error > 0) {
-      displayInfo += `Error: ${error} `;
-    }
-
-    return displayInfo;
-  };
-
-  private renderComponentCPU = () => {
-    const { component, classes } = this.props;
+  const renderComponentCPU = () => {
+    const { component, classes } = props;
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
@@ -202,8 +194,8 @@ class ComponentBriefInfoRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderComponentMemory = () => {
-    const { component, classes } = this.props;
+  const renderComponentMemory = () => {
+    const { component, classes } = props;
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
@@ -223,21 +215,21 @@ class ComponentBriefInfoRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderPort = (key: any, protocol: string, port: number) => {
-    const { classes } = this.props;
+  const renderPort = (key: any, protocol: string, port: number) => {
+    const { classes } = props;
     return (
       <div className={classes.port} key={key}>
         {protocol}:{port}
       </div>
     );
   };
-  private renderPorts = () => {
-    const { classes, activeNamespaceName, component } = this.props;
+  const renderPorts = () => {
+    const { classes, activeNamespaceName, component } = props;
 
     if (component.ports && component.ports!.length > 0) {
       const ports = component.ports?.map((port, index) => {
         const portString = port.servicePort ?? port.containerPort;
-        return this.renderPort(index, port.protocol, portString);
+        return renderPort(index, port.protocol, portString);
       });
       return <div className={classes.portContainer}>{ports}</div>;
     } else {
@@ -249,7 +241,7 @@ class ComponentBriefInfoRaw extends React.PureComponent<Props, State> {
               tooltipTitle="Add Exposed Ports"
               aria-label="add-exposed-ports"
               onClick={() =>
-                this.props.dispatch(
+                props.dispatch(
                   push(`/applications/${activeNamespaceName}/components/${component.name}/edit#${NetworkingTab}`),
                 )
               }
@@ -266,7 +258,7 @@ class ComponentBriefInfoRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private getProbeType = (probe: Probe) => {
+  const getProbeType = (probe: Probe) => {
     if (probe.httpGet) {
       return "httpGet";
     }
@@ -282,8 +274,8 @@ class ComponentBriefInfoRaw extends React.PureComponent<Props, State> {
     return "unknown";
   };
 
-  private renderHealth = () => {
-    const { component, activeNamespaceName, dispatch } = this.props;
+  const renderHealth = () => {
+    const { component, activeNamespaceName, dispatch } = props;
     const readinessProbe = component.readinessProbe;
     const livenessProbe = component.livenessProbe;
     const icon =
@@ -302,31 +294,23 @@ class ComponentBriefInfoRaw extends React.PureComponent<Props, State> {
     return (
       <ItemWithHoverIcon icon={icon}>
         <Box pr={2}>
-          {readinessProbe ? (
-            `${this.getProbeType(readinessProbe)} readiness probe configured.`
-          ) : (
-            <NoReadinessProbeWarning />
-          )}
+          {readinessProbe ? `${getProbeType(readinessProbe)} readiness probe configured.` : <NoReadinessProbeWarning />}
         </Box>
         <Box pr={2}>
-          {livenessProbe ? (
-            `${this.getProbeType(livenessProbe)} liveness probe configured.`
-          ) : (
-            <NoLivenessProbeWarning />
-          )}
+          {livenessProbe ? `${getProbeType(livenessProbe)} liveness probe configured.` : <NoLivenessProbeWarning />}
         </Box>
       </ItemWithHoverIcon>
     );
   };
 
-  private renderEnvs = () => {
-    const { component, classes } = this.props;
+  const renderEnvs = () => {
+    const { component, classes } = props;
     const envs = component.env;
     if (envs === undefined || envs?.length === 0) {
       return null;
     }
     return (
-      <ExpansionPanel square className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={envs.length <= 1}>
+      <ExpansionPanel className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={envs.length <= 1}>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>{envs.length} variables</ExpansionPanelSummary>
         <ExpansionPanelDetails>
           <Table size="small" aria-label="Envs-Table">
@@ -354,8 +338,8 @@ class ComponentBriefInfoRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderConfigFiles = () => {
-    const { component, classes } = this.props;
+  const renderConfigFiles = () => {
+    const { component, classes } = props;
     const configs = component.preInjectedFiles;
     if (configs === undefined || configs?.length === 0) {
       return null;
@@ -378,14 +362,14 @@ class ComponentBriefInfoRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderRestartStrategy = () => {
-    const { component } = this.props;
+  const renderRestartStrategy = () => {
+    const { component } = props;
     if (component.restartStrategy === undefined) return null;
     return component.restartStrategy ?? "Rolling Update";
   };
 
-  private renderGracefulTermination = () => {
-    const { component } = this.props;
+  const renderGracefulTermination = () => {
+    const { component } = props;
     if (component.terminationGracePeriodSeconds === undefined) return null;
     const duration =
       component.terminationGracePeriodSeconds === undefined ? "30" : component.terminationGracePeriodSeconds;
@@ -393,14 +377,14 @@ class ComponentBriefInfoRaw extends React.PureComponent<Props, State> {
     return duration + "s";
   };
 
-  private renderDisks = () => {
-    const { component, classes } = this.props;
+  const renderDisks = () => {
+    const { component, classes } = props;
     const disks = component.volumes;
     if (disks === undefined || disks?.length === 0) {
       return null;
     }
     return (
-      <ExpansionPanel square className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={false}>
+      <ExpansionPanel className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={false}>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
           {disks?.length} {disks?.length > 1 ? "disks" : "disk"}
         </ExpansionPanelSummary>
@@ -434,30 +418,28 @@ class ComponentBriefInfoRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  public render() {
-    const { component, dispatch } = this.props;
-    const items = [
-      { name: "Image", content: renderCopyableImageName(component.image, dispatch) },
-      { name: "Command", content: renderCommandValue(component.command, dispatch) },
-      { name: "Environment Variables", content: this.renderEnvs() },
-      { name: "Configuration Files", content: this.renderConfigFiles() },
-      { name: "Exposed Ports", content: this.renderPorts() },
-      { name: "Disks", content: this.renderDisks() },
-      { name: "Health", content: this.renderHealth() },
-      { name: "CPU", content: this.renderComponentCPU() },
-      { name: "Memory", content: this.renderComponentMemory() },
-      { name: "Restart Strategy", content: this.renderRestartStrategy() },
-      { name: "Graceful Termination", content: this.renderGracefulTermination() },
-    ];
+  const { component, dispatch } = props;
+  const items = [
+    { name: "Image", content: renderCopyableImageName(component.image, dispatch) },
+    { name: "Command", content: renderCommandValue(component.command, dispatch) },
+    { name: "Environment Variables", content: renderEnvs() },
+    { name: "Configuration Files", content: renderConfigFiles() },
+    { name: "Exposed Ports", content: renderPorts() },
+    { name: "Disks", content: renderDisks() },
+    { name: "Health", content: renderHealth() },
+    { name: "CPU", content: renderComponentCPU() },
+    { name: "Memory", content: renderComponentMemory() },
+    { name: "Restart Strategy", content: renderRestartStrategy() },
+    { name: "Graceful Termination", content: renderGracefulTermination() },
+  ];
 
-    return (
-      <VerticalHeadTable
-        items={items.filter((item) => {
-          return item.content !== null;
-        })}
-      />
-    );
-  }
-}
+  return (
+    <VerticalHeadTable
+      items={items.filter((item) => {
+        return item.content !== null;
+      })}
+    />
+  );
+};
 
 export const ComponentBriefInfo = withStyles(styles)(connect(mapStateToProps)(ComponentBriefInfoRaw));

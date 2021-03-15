@@ -18,7 +18,7 @@ In addition, Kalm simplifies the processes for many common Kubernetes integratio
 - Configuring private image registries
 - Plugin log systems such as PLG(Loki) and ELK
 
-[![Kalm](https://kalm.dev/gif/kalm_short.gif)](https://www.youtube.com/watch?v=F5wuQaPQ50s&ab_channel=KalmHQ)
+[![Kalm](https://docs.kalm.dev/gif/kalm_short.gif)](https://www.youtube.com/watch?v=F5wuQaPQ50s&ab_channel=KalmHQ)
 
 [overview video with voiceover](https://www.youtube.com/watch?v=F5wuQaPQ50s&ab_channel=KalmHQ)
 
@@ -35,15 +35,20 @@ Kalm is currently in Closed Beta.
 
 ## Installation
 
-Kalm can be used with any Kubernetes cluster. For getting started on localhost, see our [guide](https://kalm.dev/docs/install#step-1-prerequisites) on installing `kubectl` and creating a `minikube` cluster.
+Kalm can be used with any Kubernetes cluster. For getting started on localhost, make sure `kubectl` is installed and a `minikube` cluster is created before hand.
 
 If you already have access to an existing cluster via kubectl, deploy Kalm via:
 
 ```shell
-curl -sL https://get.kalm.dev | bash
+# clone the repo 
+git clone https://github.com/kalmhq/kalm.git
+cd kalm
+
+# run the install script
+./scripts/install-local-mode.sh
 ```
 
-The whole process typically takes up to 5-10 minutes. Relax or check out the <a href="https://kalm.dev/docs" target="_blank">docs</a> in the mean time.
+The whole process typically takes up to 5-10 minutes. Relax or check out the <a href="https://docs.kalm.dev" target="_blank">docs</a> in the mean time.
 
 Once the installation is complete, open a port to the web server.
 
@@ -53,9 +58,21 @@ kubectl port-forward -n kalm-system $(kubectl get pod -n kalm-system -l app=kalm
 
 Kalm should now be accessible at [http://localhost:3010](http://localhost:3010).
 
+## Uninstall
+
+It is safe to ignore errors for non-existent resources because they may have been deleted hierarchically.
+
+```
+# rm kalm-operator
+kubectl delete --ignore-not-found=true -f kalm-install-operator.yaml
+
+# rm kalm
+kubectl delete --ignore-not-found=true -f kalm.yaml
+```
+
 ## Docs & Guides
 
-Detailed Documentation and Guides can be found at https://kalm.dev/docs.
+Detailed Documentation and Guides can be found at https://docs.kalm.dev
 
 ## License
 

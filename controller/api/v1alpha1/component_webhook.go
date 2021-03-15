@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"github.com/robfig/cron"
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -98,26 +97,11 @@ func (r *Component) Default() {
 	}
 
 	if !IsKalmSystemNamespace(r.Namespace) {
-		// only set hard limit on tenant component
-		// this makes system component possible to consumes more resource as request grows
-
 		// set default resourceRequirement & limits
-		r.setupResourceRequirementIfAbsent()
+		// r.setupResourceRequirementIfAbsent()
 
 		// set for istio proxy
-		r.setupIstioResourceRequirementIfAbsent()
-
-		if err := InheritTenantFromNamespace(r); err != nil {
-			componentlog.Error(err, "fail to inherit tenant from ns for component", "component", r.Name, "ns", r.Namespace)
-		} else {
-			// add tenant in spec.Labels to let underlying resources to inherit
-			if r.Spec.Labels == nil {
-				r.Spec.Labels = make(map[string]string)
-			}
-
-			r.Spec.Labels[TenantNameLabelKey] = r.Labels[TenantNameLabelKey]
-			componentlog.Info("inherit tenant from ns", "tenant", r.Labels[TenantNameLabelKey])
-		}
+		// r.setupIstioResourceRequirementIfAbsent()
 	}
 }
 
@@ -132,30 +116,6 @@ func (r *Component) ValidateCreate() error {
 	if errList := r.validate(); len(errList) > 0 {
 		componentlog.Error(errList, "validate fail")
 		return error(errList)
-	}
-
-	if !IsKalmSystemNamespace(r.Namespace) {
-
-		tenant, err := GetTenantFromObj(r)
-		if err != nil {
-			return NoTenantFoundError
-		}
-
-		// pre-check if resource of this component will exceed quota
-		resList := EstimateResourceConsumption(*r)
-
-		sumResList := SumResourceList(resList, tenant.Status.UsedResourceQuota)
-		// deny the creation if exceed resource quota
-		if exist, infoList := ExistGreaterResourceInList(sumResList, tenant.Spec.ResourceQuota); exist {
-			emitWarning(r, ReasonExceedingQuota, fmt.Sprintf("create this component will exceed resource quota, denied, exceeding list: %s", infoList))
-			return fmt.Errorf("create this component will exceed resource quota, %s", infoList)
-		}
-
-		reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Create, false)
-		if err := CheckAndUpdateTenant(tenant.Name, reqInfo, 3); err != nil {
-			componentlog.Error(err, "fail when try to allocate resource", "ns/name", getKey(r))
-			return err
-		}
 	}
 
 	return nil
@@ -193,50 +153,7 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 		return error(volErrList)
 	}
 
-	// tenant check
-	if !IsKalmSystemNamespace(r.Namespace) {
-		tenant, err := GetTenantFromObj(r)
-		if err != nil {
-			return err
-		}
-
-		if IsTenantChanged(r, old) {
-			return TenantChangedError
-		}
-
-		// deny the update if the replicas is too big
-		oldComponent, ok := old.(*Component)
-		if !ok {
-			return fmt.Errorf("invalid old component")
-		}
-
-		oldRes := EstimateResourceConsumption(*oldComponent)
-		newRes := EstimateResourceConsumption(*r)
-
-		resDelta := GetDeltaOfResourceList(oldRes, newRes)
-		sumResList := SumResourceList(resDelta, tenant.Status.UsedResourceQuota)
-
-		if exist, infoList := ExistGreaterResourceInList(sumResList, tenant.Spec.ResourceQuota); exist {
-			isMarkedAsExceedingQuota := r.Labels[KalmLabelKeyExceedingQuota] == "true"
-			tryingToUseMore, _ := ExistGreaterResourceInList(newRes, oldRes)
-
-			if !tryingToUseMore && isMarkedAsExceedingQuota {
-				componentlog.Info("component exceeding quota but stopping")
-				return nil
-			}
-
-			fmt.Println(">>>>>>>>", isMarkedAsExceedingQuota, tryingToUseMore, r.Labels)
-
-			emitWarning(r, ReasonExceedingQuota, fmt.Sprintf("update of component will exceed resource quota, denied, exceeding list: %s", infoList))
-			return fmt.Errorf("update this component will exceed resource quota")
-		}
-	}
-
 	return nil
-}
-
-func emitWarning(obj runtime.Object, reason, msg string) {
-	eventRecorder.Event(obj, v1.EventTypeWarning, reason, msg)
 }
 
 func isIdenticalVolMap(mapNew map[string]Volume, mapOld map[string]Volume) (bool, error) {
@@ -316,20 +233,6 @@ func (r *Component) validate() KalmValidateErrorList {
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateDelete() error {
 	componentlog.Info("validate delete", "name", r.Name)
-
-	if IsKalmSystemNamespace(r.Namespace) {
-		return nil
-	}
-
-	// release resource
-	tenantName := r.Labels[TenantNameLabelKey]
-	if tenantName != "" {
-		reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Delete, false)
-		if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
-			componentlog.Error(err, "fail to release componentCnt, ignored", "ns/name", getKey(r))
-		}
-	}
-
 	return nil
 }
 
@@ -566,7 +469,7 @@ func (r *Component) validateRunnerPermission() (rst KalmValidateErrorList) {
 	return rst
 }
 
-func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu, mem, ephemeralStorage resource.Quantity) *v1.ResourceRequirements {
+func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu, mem resource.Quantity) *v1.ResourceRequirements {
 	var rst *v1.ResourceRequirements
 	if requirements == nil {
 		rst = &v1.ResourceRequirements{}
@@ -603,20 +506,7 @@ func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu,
 		}
 	}
 
-	if _, exist := limits[v1.ResourceEphemeralStorage]; !exist {
-		if req, exist := requests[v1.ResourceEphemeralStorage]; exist {
-			limits[v1.ResourceEphemeralStorage] = req
-		} else {
-			limits[v1.ResourceEphemeralStorage] = ephemeralStorage
-		}
-	}
-
 	rst.Limits = limits
-
-	// storage is not a standard resource for containers
-	// if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceStorage]; !exist {
-	// 	r.Spec.ResourceRequirements.Limits[v1.ResourceStorage] = resource.MustParse("1Gi")
-	// }
 
 	// Requests
 
@@ -627,9 +517,6 @@ func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu,
 	if _, exist := requests[v1.ResourceMemory]; !exist {
 		requests[v1.ResourceMemory] = resource.MustParse("1Mi")
 	}
-	if _, exist := requests[v1.ResourceEphemeralStorage]; !exist {
-		requests[v1.ResourceEphemeralStorage] = resource.MustParse("1Mi")
-	}
 	rst.Requests = requests
 
 	return rst
@@ -638,9 +525,8 @@ func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu,
 func (r *Component) setupResourceRequirementIfAbsent() {
 	defaultCPULimit := resource.MustParse("200m")
 	defaultMemoryLimit := resource.MustParse("128Mi")
-	defaultEphemeralStorageLimit := resource.MustParse("128Mi")
 
-	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.ResourceRequirements, defaultCPULimit, defaultMemoryLimit, defaultEphemeralStorageLimit)
+	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.ResourceRequirements, defaultCPULimit, defaultMemoryLimit)
 
 	r.Spec.ResourceRequirements = filledResRequirement
 }
@@ -648,9 +534,8 @@ func (r *Component) setupResourceRequirementIfAbsent() {
 func (r *Component) setupIstioResourceRequirementIfAbsent() {
 	defaultCPULimit := resource.MustParse("100m")
 	defaultMemoryLimit := resource.MustParse("128Mi")
-	defaultEphemeralStorageLimit := resource.MustParse("64Mi")
 
-	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.IstioResourceRequirements, defaultCPULimit, defaultMemoryLimit, defaultEphemeralStorageLimit)
+	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.IstioResourceRequirements, defaultCPULimit, defaultMemoryLimit)
 
 	r.Spec.IstioResourceRequirements = filledResRequirement
 }

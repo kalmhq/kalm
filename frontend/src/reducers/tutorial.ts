@@ -1,15 +1,15 @@
+import produce, { createDraft } from "immer";
+import { Actions } from "types";
 import {
   CLOSE_TUTORIAL_DRAWER,
   OPEN_TUTORIAL_DRAWER,
   RESET_TUTORIAL_ACTION,
   SET_TUTORIAL_ACTION,
+  SET_TUTORIAL_FORM_VALUES,
   SET_TUTORIAL_HIGHLIGHT_STATUS,
   SET_TUTORIAL_STEP_COMPLETION_STATUS,
   Tutorial,
-  SET_TUTORIAL_FORM_VALUES,
 } from "types/tutorial";
-import { Actions } from "types";
-import produce, { createDraft } from "immer";
 
 export type State = {
   drawerOpen: boolean;
@@ -20,10 +20,8 @@ export type State = {
   formValues?: { [key: string]: any };
 };
 
-const DISABLE_TUTORIAL_AUTO_OPEN = "DISABLE_TUTORIAL_AUTO_OPEN";
-
 const initialState: State = {
-  drawerOpen: !window.localStorage.getItem(DISABLE_TUTORIAL_AUTO_OPEN),
+  drawerOpen: false,
   tutorial: undefined,
   tutorialStepStatus: {},
   currentStepIndex: -1,
@@ -57,7 +55,6 @@ const reducer = produce((state: State, action: Actions) => {
   }
 
   if (action.type === CLOSE_TUTORIAL_DRAWER) {
-    window.localStorage.setItem(DISABLE_TUTORIAL_AUTO_OPEN, "true");
     state.drawerOpen = false;
     return;
   }

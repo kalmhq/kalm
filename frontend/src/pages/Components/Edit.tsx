@@ -28,9 +28,9 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
   };
 };
 
-class ComponentEditRaw extends React.PureComponent<Props> {
-  private submit = async (formValues: ComponentLike) => {
-    const { dispatch, activeNamespaceName, component } = this.props;
+const ComponentEditRaw: React.FC<Props> = (props) => {
+  const submit = async (formValues: ComponentLike) => {
+    const { dispatch, activeNamespaceName, component } = props;
     if (formValues.preInjectedFiles) {
       formValues = produce(formValues, (draft) => {
         draft.preInjectedFiles = formValues.preInjectedFiles?.filter((file) => file.mountPath || file.content);
@@ -41,27 +41,25 @@ class ComponentEditRaw extends React.PureComponent<Props> {
     dispatch(push(`/applications/${activeNamespaceName}/components/${component.name}`));
   };
 
-  public render() {
-    const { component, initialValues } = this.props;
-    return (
-      <BasePage
-        secondHeaderLeft={<Namespaces />}
-        leftDrawer={<ApplicationSidebar />}
-        secondHeaderRight={<H6>Edit {component.name} Component</H6>}
-      >
-        <Box p={2}>
-          <Grid container spacing={2}>
-            <Grid item xs={8}>
-              <ComponentLikeForm _initialValues={initialValues} onSubmit={this.submit} />
-            </Grid>
-            <Grid xs={4} item>
-              <ComponentStatus component={component} />
-            </Grid>
+  const { component, initialValues } = props;
+  return (
+    <BasePage
+      secondHeaderLeft={<Namespaces />}
+      leftDrawer={<ApplicationSidebar />}
+      secondHeaderRight={<H6>Edit {component.name} Component</H6>}
+    >
+      <Box p={2}>
+        <Grid container spacing={2}>
+          <Grid item xs={8}>
+            <ComponentLikeForm _initialValues={initialValues} onSubmit={submit} />
           </Grid>
-        </Box>
-      </BasePage>
-    );
-  }
-}
+          <Grid xs={4} item>
+            <ComponentStatus component={component} />
+          </Grid>
+        </Grid>
+      </Box>
+    </BasePage>
+  );
+};
 
 export const ComponentEditPage = withComponent(withStyles(styles)(connect(mapStateToProps)(ComponentEditRaw)));

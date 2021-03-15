@@ -11,7 +11,6 @@ import components, { State as ApplicationComponentState } from "./component";
 import debounce, { State as DebounceState } from "./debounce";
 import dialogs, { State as DialogState } from "./dialog";
 import domains, { State as DomainsState } from "./domains";
-import extraInfo, { State as ExtraInfoState } from "./extraInfo";
 import namespaces, { State as NamespacesState } from "./namespaces";
 import nodes, { State as NodesState } from "./node";
 import notification, { State as NotificationState } from "./notification";
@@ -21,7 +20,6 @@ import routes, { State as RouteState } from "./route";
 import services, { State as ServiceState } from "./service";
 import settings, { State as SettingsState } from "./settings";
 import sso, { State as SSOState } from "./sso";
-import tenant, { State as TenantState } from "./tenant";
 import tutorial, { State as TutorialState } from "./tutorial";
 
 export type RootState = {
@@ -39,7 +37,6 @@ export type RootState = {
   roles: RolesState;
   routes: RouteState;
   cluster: ClusterState;
-  extraInfo: ExtraInfoState;
   tutorial: TutorialState;
   services: ServiceState;
   certificates: CertificateState;
@@ -47,7 +44,6 @@ export type RootState = {
   sso: SSOState;
   deployAccessTokens: DeployAccessTokensState;
   domains: DomainsState;
-  tenant: TenantState;
 };
 
 const rootReducer = (history: History<LocationState>) =>
@@ -68,13 +64,11 @@ const rootReducer = (history: History<LocationState>) =>
     routes,
     tutorial,
     cluster,
-    extraInfo,
     services,
     certificates,
     debounce,
     deployAccessTokens,
     domains,
-    tenant,
   });
 
 export default rootReducer;

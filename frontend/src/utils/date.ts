@@ -1,4 +1,4 @@
-import { differenceInMinutes, format, parseISO } from "date-fns";
+import { differenceInSeconds, format, parseISO } from "date-fns";
 
 export type TimestampFilter = "1h" | "12h" | "24h" | "7days" | "all";
 
@@ -25,11 +25,16 @@ export const formatDate = (date: Date): string => {
   return format(date, "yyyy-MM-dd HH:mm:ss");
 };
 
-export const formatTimeDistance = (t: any) => {
-  let minutes = differenceInMinutes(new Date(), t);
-  if (minutes <= 1) {
-    return "1m";
+// @param distance is millisecond
+export const formatTimeDistance = (distance: number) => {
+  let seconds = Math.floor(distance / 1000);
+
+  if (seconds < 60) {
+    return seconds + "s";
   }
+
+  let minutes = Math.floor(seconds / 60);
+
   const day = Math.floor(minutes / 1440);
   const hour = Math.floor((minutes - day * 1440) / 60);
   minutes = minutes - day * 1440 - hour * 60;
@@ -47,4 +52,9 @@ export const formatTimeDistance = (t: any) => {
     res += `${minutes}m`;
   }
   return res;
+};
+
+export const formatAgeFromNow = (t: any) => {
+  let seconds = differenceInSeconds(new Date(), t);
+  return formatTimeDistance(seconds * 1000);
 };

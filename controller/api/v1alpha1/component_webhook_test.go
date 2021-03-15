@@ -114,15 +114,10 @@ func TestComponentVolSTSMustSetPVC(t *testing.T) {
 func TestSTSVolOK2UpdateMountPathAndTmpVol(t *testing.T) {
 	sc := "standard"
 
-	tenant := SetupWebhookClientWithTenant()
-
 	componentOld := Component{
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: "kalm-system",
 			Name:      "kalm-comp-sts",
-			Labels: map[string]string{
-				TenantNameLabelKey: tenant.Name,
-			},
 		},
 		Spec: ComponentSpec{
 			Image:        fmt.Sprintf("%s:%s", "foo", "bar"),
@@ -145,9 +140,6 @@ func TestSTSVolOK2UpdateMountPathAndTmpVol(t *testing.T) {
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: "kalm-system",
 			Name:      "kalm-comp-sts",
-			Labels: map[string]string{
-				TenantNameLabelKey: tenant.Name,
-			},
 		},
 		Spec: ComponentSpec{
 			Image:        fmt.Sprintf("%s:%s", "foo", "bar"),
@@ -177,15 +169,11 @@ func TestSTSVolOK2UpdateMountPathAndTmpVol(t *testing.T) {
 
 func TestSTSForbiddenUpdatePersistVol(t *testing.T) {
 	sc := "standard"
-	tenant := SetupWebhookClientWithTenant()
 
 	componentOld := Component{
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: "kalm-system",
 			Name:      "kalm-comp-sts",
-			Labels: map[string]string{
-				TenantNameLabelKey: tenant.Name,
-			},
 		},
 		Spec: ComponentSpec{
 			Image:        fmt.Sprintf("%s:%s", "foo", "bar"),
@@ -208,9 +196,6 @@ func TestSTSForbiddenUpdatePersistVol(t *testing.T) {
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: "kalm-system",
 			Name:      "kalm-comp-sts",
-			Labels: map[string]string{
-				TenantNameLabelKey: tenant.Name,
-			},
 		},
 		Spec: ComponentSpec{
 			Image:        fmt.Sprintf("%s:%s", "foo", "bar"),

@@ -1,3 +1,5 @@
+import produce from "immer";
+import { Actions } from "types";
 import {
   emptyPermissionMethods,
   LOAD_LOGIN_STATUS_FAILED,
@@ -8,8 +10,6 @@ import {
   SET_AUTH_METHODS,
   SET_AUTH_TOKEN,
 } from "types/common";
-import { Actions } from "types";
-import produce from "immer";
 
 export type State = {
   firstLoaded: boolean;
@@ -23,8 +23,6 @@ export type State = {
   impersonation: string;
   impersonationType: string;
   permissionMethods: PermissionMethods;
-  tenant: string;
-  tenants: string[];
 };
 
 const AUTHORIZED_TOKEN_KEY = "AUTHORIZED_TOKEN_KEY";
@@ -42,8 +40,6 @@ const getInitialState = () => {
     impersonation: "",
     impersonationType: "",
     permissionMethods: emptyPermissionMethods,
-    tenant: "",
-    tenants: [],
   };
 };
 
@@ -60,8 +56,6 @@ const reducer = produce((state: State, action: Actions) => {
       state.groups = action.payload.loginStatus.groups;
       state.impersonationType = action.payload.loginStatus.impersonationType;
       state.avatarUrl = action.payload.loginStatus.avatarUrl;
-      state.tenant = action.payload.loginStatus.tenant;
-      state.tenants = action.payload.loginStatus.tenants;
       state.firstLoaded = true;
       state.isLoading = false;
       return;

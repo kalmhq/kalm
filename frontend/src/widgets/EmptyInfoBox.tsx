@@ -1,4 +1,4 @@
-import { Box, createStyles, Paper, Theme, withStyles, WithStyles, Typography } from "@material-ui/core";
+import { Box, createStyles, Paper, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -6,7 +6,15 @@ import { TDispatchProp } from "types";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {},
+    root: {
+      minHeight: 680,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    content: {
+      maxWidth: 580,
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -29,18 +37,20 @@ class EmptyInfoBoxRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { image, title, content, button } = this.props;
+    const { image, title, content, button, classes } = this.props;
     return (
-      <Paper square variant="outlined">
-        <Box p={2}>
+      <Paper variant="outlined" className={classes.root}>
+        <Box p={2} className={classes.content}>
           <Box p={2} display="flex" justifyContent="center">
             {image ? image : null}
           </Box>
           <Box p={2} display="flex" justifyContent="center">
             <Typography color="textPrimary">{title}</Typography>
           </Box>
-          <Box pb={2} display="flex" justifyContent="center">
-            <Typography color="textSecondary">{content}</Typography>
+          <Box pb={2} display="flex" justifyContent="center" alignItems="center" marginX="auto" maxWidth={800}>
+            <Typography color="textSecondary" style={{ textAlign: "center" }}>
+              {content}
+            </Typography>
           </Box>
           <Box p={2} display="flex" justifyContent="center">
             {button}

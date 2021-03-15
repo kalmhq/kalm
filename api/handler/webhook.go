@@ -60,7 +60,7 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 		return fmt.Errorf("invalid access token")
 	}
 
-	h.MustCanEdit(clientInfo, clientInfo.Tenant+"/"+callParams.Namespace, "components/"+callParams.ComponentName)
+	h.MustCanEdit(clientInfo, callParams.Namespace, "components/"+callParams.ComponentName)
 
 	crdComp, err := h.resourceManager.GetComponent(callParams.Namespace, callParams.ComponentName)
 

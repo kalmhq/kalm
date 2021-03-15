@@ -1,14 +1,18 @@
+import { api } from "api";
 import { ThunkResult } from "types";
 import {
   CREATE_ROLE_BINDINGS_FAILED,
   CREATE_ROLE_BINDINGS_FULFILLED,
   CREATE_ROLE_BINDINGS_PENDING,
+  DELETE_ROLE_BINDINGS_FAILED,
+  DELETE_ROLE_BINDINGS_FULFILLED,
+  DELETE_ROLE_BINDINGS_PENDING,
   LOAD_ROLE_BINDINGS_FAILED,
   LOAD_ROLE_BINDINGS_FULFILLED,
   LOAD_ROLE_BINDINGS_PENDING,
   RoleBinding,
+  SubjectTypeUser,
 } from "types/member";
-import { api } from "api";
 
 export const loadRoleBindingsAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
@@ -56,14 +60,24 @@ export const updateRoleBindingsAction = (roleBindingsBody: RoleBinding): ThunkRe
 
 export const deleteRoleBindingsAction = (namespace: string, bindingName: string): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
-    dispatch({ type: CREATE_ROLE_BINDINGS_PENDING });
+    dispatch({ type: DELETE_ROLE_BINDINGS_PENDING });
 
     try {
       await api.deleteRoleBinding(namespace, bindingName);
-      dispatch({ type: CREATE_ROLE_BINDINGS_FULFILLED });
+      dispatch({ type: DELETE_ROLE_BINDINGS_FULFILLED });
     } catch (e) {
-      dispatch({ type: CREATE_ROLE_BINDINGS_FAILED });
+      dispatch({ type: DELETE_ROLE_BINDINGS_FAILED });
       throw e;
     }
+  };
+};
+
+export const deleteAllRoleBindingsAction = (email: string): ThunkResult<Promise<void>> => {
+  return async (dispatch, getState) => {
+    const state = getState();
+    const roleBindings = state.roles.roleBindings.filter(
+      (x) => x.subject === email && x.subjectType === SubjectTypeUser,
+    );
+    await Promise.all(roleBindings.map((x) => api.deleteRoleBinding(x.namespace, x.name)));
   };
 };

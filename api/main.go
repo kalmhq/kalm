@@ -161,7 +161,7 @@ func startMainServer(runningConfig *config.Config, k8sClientConfig *rest.Config)
 	if runningConfig.PrivilegedLocalhostAccess {
 		clientManager = client.NewLocalClientManager(k8sClientConfig)
 	} else {
-		clientManager = client.NewStandardClientManager(k8sClientConfig)
+		clientManager = client.NewStandardClientManager(k8sClientConfig, "")
 	}
 
 	apiHandler := handler.NewApiHandler(clientManager)

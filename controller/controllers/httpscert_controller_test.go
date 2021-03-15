@@ -16,7 +16,6 @@ import (
 
 type HttpsCertControllerSuite struct {
 	BasicSuite
-	*v1alpha1.Tenant
 }
 
 func TestHttpsCertControllerSuite(t *testing.T) {
@@ -25,9 +24,6 @@ func TestHttpsCertControllerSuite(t *testing.T) {
 
 func (suite *HttpsCertControllerSuite) SetupSuite() {
 	suite.BasicSuite.SetupSuite()
-
-	tenant := suite.SetupTenant()
-	suite.Tenant = tenant
 }
 
 func (suite *HttpsCertControllerSuite) TearDownSuite() {
@@ -35,7 +31,7 @@ func (suite *HttpsCertControllerSuite) TearDownSuite() {
 }
 
 func (suite *HttpsCertControllerSuite) TestSelfManagedCertWithAbsentSecret() {
-	httpsCert := genSelfManagedHttpsCert(suite.Tenant.Name)
+	httpsCert := genSelfManagedHttpsCert()
 	suite.createHttpsCert(httpsCert)
 
 	//get
@@ -55,7 +51,7 @@ func (suite *HttpsCertControllerSuite) TestSelfManagedCertWithAbsentSecret() {
 }
 
 func (suite *HttpsCertControllerSuite) TestSelfManagedCertWithSecret() {
-	httpsCert := genSelfManagedHttpsCert(suite.Tenant.Name)
+	httpsCert := genSelfManagedHttpsCert()
 
 	//prepare secret for httpsCert first
 	suite.createObject(&corev1.Secret{
@@ -86,7 +82,7 @@ func (suite *HttpsCertControllerSuite) TestSelfManagedCertWithSecret() {
 func (suite *HttpsCertControllerSuite) TestBasicCRUD() {
 
 	//create
-	httpsCert := genHttpsCert(v1alpha1.DefaultCAIssuerName, suite.Tenant.Name)
+	httpsCert := genHttpsCert(v1alpha1.DefaultCAIssuerName)
 	suite.createHttpsCert(httpsCert)
 
 	//get
@@ -132,7 +128,7 @@ func (suite *HttpsCertControllerSuite) reloadHttpsCert(httpsCert *v1alpha1.Https
 	suite.Nil(err)
 }
 
-func genSelfManagedHttpsCert(tenant string, certNameOpt ...string) v1alpha1.HttpsCert {
+func genSelfManagedHttpsCert(certNameOpt ...string) v1alpha1.HttpsCert {
 	var certName string
 	if len(certNameOpt) > 0 {
 		certName = certNameOpt[0]
@@ -143,9 +139,6 @@ func genSelfManagedHttpsCert(tenant string, certNameOpt ...string) v1alpha1.Http
 	return v1alpha1.HttpsCert{
 		ObjectMeta: v1.ObjectMeta{
 			Name: certName,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: tenant,
-			},
 		},
 		Spec: v1alpha1.HttpsCertSpec{
 			IsSelfManaged:             true,
@@ -154,7 +147,7 @@ func genSelfManagedHttpsCert(tenant string, certNameOpt ...string) v1alpha1.Http
 		},
 	}
 }
-func genHttpsCert(issuer string, tenant string, certNameOpt ...string) v1alpha1.HttpsCert {
+func genHttpsCert(issuer string, certNameOpt ...string) v1alpha1.HttpsCert {
 	var certName string
 	if len(certNameOpt) > 0 {
 		certName = certNameOpt[0]
@@ -165,9 +158,6 @@ func genHttpsCert(issuer string, tenant string, certNameOpt ...string) v1alpha1.
 	return v1alpha1.HttpsCert{
 		ObjectMeta: v1.ObjectMeta{
 			Name: certName,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: tenant,
-			},
 		},
 		Spec: v1alpha1.HttpsCertSpec{
 			HttpsCertIssuer: issuer,

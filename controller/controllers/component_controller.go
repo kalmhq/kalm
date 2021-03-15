@@ -236,6 +236,10 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 		return nil
 	}
 
+	if !r.namespace.ObjectMeta.DeletionTimestamp.IsZero() {
+		return nil
+	}
+
 	if err := r.ReconcileService(); err != nil {
 		return err
 	}
@@ -256,7 +260,6 @@ func (r *ComponentReconcilerTask) GetLabels() map[string]string {
 		v1alpha1.KalmLabelNamespaceKey: r.component.Namespace,
 		v1alpha1.KalmLabelComponentKey: r.component.Name,
 		KalmLabelManaged:               "true",
-		v1alpha1.TenantNameLabelKey:    r.component.Labels[v1alpha1.TenantNameLabelKey],
 	}
 
 	if r.component.Spec.Labels != nil {
@@ -616,6 +619,8 @@ func (r *ComponentReconcilerTask) ReconcileComponentPluginBinding() error {
 func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 
 	if !IsNamespaceKalmEnabled(r.namespace) {
+		r.Log.Info("not kalm-enabled, clean workload of component", "comp", r.component.Name)
+
 		if r.deployment != nil {
 			if err := r.Delete(r.ctx, r.deployment); err != nil {
 				return err
@@ -1557,32 +1562,14 @@ func (r *ComponentReconcilerTask) SetupAttributes(req ctrl.Request) (err error) 
 	}
 	r.component = &component
 
-	tenant := component.Labels[v1alpha1.TenantNameLabelKey]
-	// If current controller is running under multi-tenancy mode
-	// No matter what's the original values of these fields are, they will be ignored.
-	if tenant != v1alpha1.DefaultGlobalTenantName {
-		r.component.Spec.Labels = nil
-		r.component.Spec.NodeSelectorLabels = nil
-		r.component.Spec.IstioResourceRequirements = nil
-		r.component.Spec.StartAfterComponents = nil
-		r.component.Spec.Annotations = nil
-		r.component.Spec.DnsPolicy = ""
-		r.component.Spec.RunnerPermission = nil
-	}
-
 	var ns corev1.Namespace
-	err = r.Reader.Get(r.ctx, types.NamespacedName{
-		Name: component.Namespace,
-	}, &ns)
-
+	err = r.Reader.Get(r.ctx, types.NamespacedName{Name: component.Namespace}, &ns)
 	if err != nil {
-		//if errors.IsNotFound(err) && !r.component.DeletionTimestamp.IsZero() {
-		//	return nil
-		//}
-
 		return err
 	}
+
 	r.namespace = ns
+
 	return nil
 }
 

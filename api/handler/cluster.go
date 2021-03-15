@@ -21,21 +21,20 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/client-go/kubernetes"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type ClusterInfo struct {
-	Version                 string                `json:"version"`
-	IngressIP               string                `json:"ingressIP"`
-	IngressHostname         string                `json:"ingressHostname"`
-	IsProduction            bool                  `json:"isProduction"`
-	HttpPort                *int                  `json:"httpPort"`
-	HttpsPort               *int                  `json:"httpsPort"`
-	TLSPort                 *int                  `json:"tlsPort"`
-	CanBeInitialized        bool                  `json:"canBeInitialized"`
-	KubernetesVersion       *version.Info         `json:"kubernetesVersion"`
-	KalmVersion             *version.Info         `json:"kalmVersion"`
-	AllocatableResourceList v1alpha1.ResourceList `json:"allocatableResourceList"`
+	Version           string        `json:"version"`
+	IngressIP         string        `json:"ingressIP"`
+	IngressHostname   string        `json:"ingressHostname"`
+	IsProduction      bool          `json:"isProduction"`
+	HttpPort          *int          `json:"httpPort"`
+	HttpsPort         *int          `json:"httpsPort"`
+	TLSPort           *int          `json:"tlsPort"`
+	CanBeInitialized  bool          `json:"canBeInitialized"`
+	KubernetesVersion *version.Info `json:"kubernetesVersion"`
+	KalmVersion       *version.Info `json:"kalmVersion"`
+	ClusterName       string        `json:"clusterName"`
 }
 
 var KubernetesVersion *version.Info
@@ -101,6 +100,8 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 		}
 	}
 
+	info.ClusterName = os.Getenv("KALM_CLUSTER_NAME")
+
 	var certNotFound, routeNotFound, ssoNotFound bool
 
 	wg := sync.WaitGroup{}
@@ -134,23 +135,6 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 		))
 	}()
 
-	clusterResourceQuota := new(v1alpha1.ClusterResourceQuota)
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		if err := h.resourceManager.Get("", v1alpha1.ClusterResourceQuotaName, clusterResourceQuota); err != nil {
-			if errors.IsNotFound(err) {
-				log.Log.Info("clusterResourceQuota not exist")
-			} else {
-				log.Log.Error(err, "fail to get clusterResourceQuota")
-			}
-
-			clusterResourceQuota = nil
-		}
-	}()
-
 	wg.Wait()
 
 	if info.IsProduction {
@@ -178,16 +162,6 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 
 	info.KalmVersion = KalmVersion
 
-	if clusterResourceQuota != nil {
-		used := clusterResourceQuota.Status.UsedResourceQuota
-		quota := clusterResourceQuota.Spec.ResourceQuota
-
-		// quota - used
-		allocatableResList := v1alpha1.GetDeltaOfResourceList(used, quota, true)
-
-		info.AllocatableResourceList = allocatableResList
-	}
-
 	if !h.clientManager.CanViewCluster(getCurrentUser(c)) {
 		info.IngressHostname = ""
 		info.IngressIP = ""
@@ -197,12 +171,9 @@ func (h *ApiHandler) getClusterInfo(c echo.Context) *ClusterInfo {
 }
 
 func (h *ApiHandler) handleExtraInfo(c echo.Context) error {
-	newTenantUrl := os.Getenv("KALM_NEW_TENANT_URL")
-
 	isLocalMode := h.KalmMode == v1alpha1.KalmModeLocal
 
 	return c.JSON(200, map[string]interface{}{
-		"newTenantUrl":                                newTenantUrl,
 		"isFrontendMembersManagementEnabled":          isLocalMode,
 		"isFrontendComponentSchedulingFeatureEnabled": isLocalMode,
 		"isFrontendSSOPageEnabled":                    isLocalMode,
@@ -276,15 +247,12 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) (err error) {
 				},
 			},
 		},
-		Name:   KalmRouteName,
-		Tenant: currentUser.Tenant,
+		Name: KalmRouteName,
 	}
 
 	ssoConfig := &resources.SSOConfig{
 		SingleSignOnConfigSpec: &v1alpha1.SingleSignOnConfigSpec{
 			Domain: body.Domain,
-			// for local mode, no
-			NeedExtraOAuthScope: false,
 		},
 	}
 
@@ -315,7 +283,6 @@ func (h *ApiHandler) handleInitializeCluster(c echo.Context) (err error) {
 		Name:            KalmRouteCertName,
 		HttpsCertIssuer: v1alpha1.DefaultHTTP01IssuerName,
 		Domains:         []string{body.Domain},
-		Tenant:          v1alpha1.DefaultSystemTenantName,
 	}
 
 	protectedEndpoint := &resources.ProtectedEndpoint{

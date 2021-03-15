@@ -1,5 +1,5 @@
-import { Box, Button, createStyles, Theme, Tooltip, Typography, withStyles, WithStyles } from "@material-ui/core";
-import { indigo } from "@material-ui/core/colors";
+import { Box, createStyles, Theme, Tooltip, Typography, withStyles, WithStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import { setErrorNotificationAction } from "actions/notification";
 import { deleteRegistryAction } from "actions/registries";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
@@ -7,6 +7,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
+import CustomButton from "theme/Button";
 import { TDispatchProp } from "types";
 import { Registry } from "types/registry";
 import sc from "utils/stringConstants";
@@ -34,7 +35,7 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-const pageObjectName: string = "Registry Pull Secret";
+const pageObjectName: string = "Private Registry";
 
 interface Props
   extends WithStyles<typeof styles>,
@@ -123,8 +124,8 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions(row: Registry) {
-    const { canEditTenant } = this.props;
-    return canEditTenant() ? (
+    const { canEditCluster } = this.props;
+    return canEditCluster() ? (
       <>
         <IconLinkWithToolTip tooltipTitle={"Edit"} to={`/cluster/pull-secrets/${row.name}/edit`}>
           <EditIcon />
@@ -140,7 +141,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private getKRTableColumns() {
-    const { canEditTenant } = this.props;
+    const { canEditCluster } = this.props;
 
     const columns = [
       {
@@ -165,7 +166,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
       },
     ];
 
-    if (canEditTenant()) {
+    if (canEditCluster()) {
       columns.push({
         Header: "Actions",
         accessor: "actions",
@@ -204,29 +205,29 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
     return (
       <>
         {/* <H6>Private Docker Registries</H6> */}
-        <Button
+        <CustomButton
           color="primary"
-          variant="outlined"
+          variant="contained"
           size="small"
           component={Link}
           tutorial-anchor-id="add-certificate"
           to="/cluster/pull-secrets/new"
         >
           New {pageObjectName}
-        </Button>
+        </CustomButton>
       </>
     );
   }
 
   private renderEmpty() {
-    const { canEditTenant } = this.props;
-    return canEditTenant() ? (
+    const { canEditCluster } = this.props;
+    return canEditCluster() ? (
       <EmptyInfoBox
-        image={<KalmRegistryIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        image={<KalmRegistryIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={sc.EMPTY_REGISTRY_TITLE}
         content={sc.EMPTY_REGISTRY_SUBTITLE}
         button={
-          <Button
+          <CustomButton
             color="primary"
             variant="contained"
             size="small"
@@ -234,21 +235,21 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
             tutorial-anchor-id="add-certificate"
             to="/cluster/pull-secrets/new"
           >
-            New {pageObjectName}
-          </Button>
+            Add {pageObjectName}
+          </CustomButton>
         }
       />
     ) : null;
   }
 
   private renderInfoBox() {
-    return <InfoBox title={pageObjectName} options={[]} guideLink={"https://kalm.dev/docs/registry"} />;
+    return <InfoBox title={pageObjectName} options={[]} guideLink={"https://docs.kalm.dev/registry"} />;
   }
 
   public render() {
-    const { isLoading, isFirstLoaded, registries, canEditTenant } = this.props;
+    const { isLoading, isFirstLoaded, registries, canEditCluster } = this.props;
     return (
-      <BasePage secondHeaderRight={canEditTenant() ? this.renderSecondHeaderRight() : null}>
+      <BasePage secondHeaderRight={canEditCluster() ? this.renderSecondHeaderRight() : null}>
         <Box p={2}>
           {isLoading && !isFirstLoaded ? (
             <Loading />

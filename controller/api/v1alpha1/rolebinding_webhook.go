@@ -19,7 +19,6 @@ import (
 	"crypto/md5"
 	"fmt"
 
-	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -42,14 +41,6 @@ var _ webhook.Defaulter = &RoleBinding{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *RoleBinding) Default() {
 	rolebindinglog.Info("default", "name", r.Name)
-
-	if IsKalmSystemNamespace(r.Namespace) {
-		return
-	}
-
-	if err := InheritTenantFromNamespace(r); err != nil {
-		rolebindinglog.Error(err, "fail to inherit tenant from ns", "roleBinding", r.Name, "ns", r.Namespace)
-	}
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-rolebinding,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=rolebindings,versions=v1alpha1,name=vrolebinding.kb.io
@@ -58,7 +49,7 @@ var _ webhook.Validator = &RoleBinding{}
 
 func (r *RoleBinding) GetNameBaseOnRoleAndSubject() string {
 	switch r.Spec.Role {
-	case ClusterRoleViewer, ClusterRoleEditor, ClusterRoleOwner:
+	case ClusterRoleViewer, ClusterRoleEditor, ClusterRoleOwner, RoleSuspended, RolePlaceholder:
 		return fmt.Sprintf("cluster-rolebinding-%x", md5.Sum([]byte(r.Spec.Subject)))
 	default:
 		return fmt.Sprintf("%s-rolebinding-%x", r.Namespace, md5.Sum([]byte(r.Spec.Subject)))
@@ -73,36 +64,12 @@ func (r *RoleBinding) ValidateCreate() error {
 		return err
 	}
 
-	if !IsKalmSystemNamespace(r.Namespace) {
-		tenant, err := GetTenantFromObj(r)
-		if err != nil {
-			rolebindinglog.Error(err, "fail to get tenant", "ns/name", getKey(r))
-			return err
-		}
-
-		reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Create, false)
-		if err := CheckAndUpdateTenant(tenant.Name, reqInfo, 3); err != nil {
-			rolebindinglog.Error(err, "fail to create roleBindingCount", "ns/name", getKey(r))
-			return err
-		}
-	}
-
 	return nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *RoleBinding) ValidateUpdate(old runtime.Object) error {
 	rolebindinglog.Info("validate update", "name", r.Name)
-
-	if !IsKalmSystemNamespace(r.Namespace) {
-		if !HasTenantSet(r) {
-			return NoTenantFoundError
-		}
-
-		if IsTenantChanged(r, old) {
-			return TenantChangedError
-		}
-	}
 
 	if oldRoleBinding, ok := old.(*RoleBinding); !ok {
 		return fmt.Errorf("old object is not an role binding")
@@ -116,15 +83,15 @@ func (r *RoleBinding) ValidateUpdate(old runtime.Object) error {
 		}
 
 		switch oldRoleBinding.Spec.Role {
-		case ClusterRoleOwner, ClusterRoleViewer, ClusterRoleEditor:
+		case ClusterRoleOwner, ClusterRoleViewer, ClusterRoleEditor, RoleSuspended, RolePlaceholder:
 			switch r.Spec.Role {
-			case ClusterRoleOwner, ClusterRoleViewer, ClusterRoleEditor:
+			case ClusterRoleOwner, ClusterRoleViewer, ClusterRoleEditor, RoleSuspended, RolePlaceholder:
 			default:
 				return fmt.Errorf("Can't modify role scope from cluster to namespace.")
 			}
 		default:
 			switch r.Spec.Role {
-			case ClusterRoleOwner, ClusterRoleViewer, ClusterRoleEditor:
+			case ClusterRoleOwner, ClusterRoleViewer, ClusterRoleEditor, RoleSuspended, RolePlaceholder:
 				return fmt.Errorf("Can't modify role scope from namespace to cluster.")
 			}
 		}
@@ -141,17 +108,6 @@ func (r *RoleBinding) ValidateDelete() error {
 		return nil
 	}
 
-	tenantName := r.Labels[TenantNameLabelKey]
-	if tenantName == "" {
-		rolebindinglog.Info("no tenant label set, ignored", "ns/name", getKey(r))
-		return nil
-	}
-
-	reqInfo := NewAdmissionRequestInfo(r, admissionv1beta1.Delete, false)
-	if err := CheckAndUpdateTenant(tenantName, reqInfo, 3); err != nil {
-		rolebindinglog.Error(err, "fail to release roleBindingCount, ignored", "ns/name", getKey(r))
-	}
-
 	return nil
 }
 
@@ -159,7 +115,7 @@ func (r *RoleBinding) validate() error {
 	var rst KalmValidateErrorList
 
 	switch r.Spec.Role {
-	case ClusterRoleEditor, ClusterRoleOwner, ClusterRoleViewer:
+	case ClusterRoleEditor, ClusterRoleOwner, ClusterRoleViewer, RolePlaceholder, RoleSuspended:
 		if r.Namespace != KalmSystemNamespace {
 			rst = append(rst, KalmValidateError{
 				Err:  "cluster role binding mush be created in kalm-system namespace",

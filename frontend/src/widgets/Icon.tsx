@@ -24,26 +24,26 @@ import GitHubIcon from "@material-ui/icons/GitHub";
 import PeopleAdd from "@material-ui/icons/GroupAdd";
 import Help from "@material-ui/icons/Help";
 import Info from "@material-ui/icons/Info";
+import Lock from "@material-ui/icons/Lock";
 import Menu from "@material-ui/icons/Menu";
 import MenuOpen from "@material-ui/icons/MenuOpen";
 import NoteAdd from "@material-ui/icons/NoteAdd";
 import OpenInBrowser from "@material-ui/icons/OpenInBrowser";
 import People from "@material-ui/icons/People";
+import PlayArrow from "@material-ui/icons/PlayArrow";
 import Publish from "@material-ui/icons/Publish";
 import SettingsIcon from "@material-ui/icons/Settings";
 import SettingsBackupRestoreIcon from "@material-ui/icons/SettingsBackupRestore";
 import SubjectIcon from "@material-ui/icons/Subject";
+import ViewList from "@material-ui/icons/ViewList";
 import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
-import ViewList from "@material-ui/icons/ViewList";
 import VpnKey from "@material-ui/icons/VpnKey";
 import Web from "@material-ui/icons/Web";
-import Lock from "@material-ui/icons/Lock";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
 // import { getDisplayName } from "permission/utils";
 import React from "react";
-import PlayArrow from "@material-ui/icons/PlayArrow";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -374,6 +374,56 @@ export const KalmUserIcon = withStyles(styles)((props: ColorIconsProps) => {
     </SvgIcon>
   );
 });
+
+export const KalmUserIconNew = ({ theme }: { theme?: string }) => {
+  return (
+    <svg width="27" height="27" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M13.5 1C6.6 1 1 6.6 1 13.5C1 20.4 6.6 26 13.5 26C20.4 26 26 20.4 26 13.5C26 6.6 20.4 1 13.5 1ZM7.3375 21.35C7.875 20.225 11.15 19.125 13.5 19.125C15.85 19.125 19.1375 20.225 19.6625 21.35C17.9625 22.7 15.825 23.5 13.5 23.5C11.175 23.5 9.0375 22.7 7.3375 21.35ZM21.45 19.5375C19.6625 17.3625 15.325 16.625 13.5 16.625C11.675 16.625 7.3375 17.3625 5.55 19.5375C4.275 17.8625 3.5 15.775 3.5 13.5C3.5 7.9875 7.9875 3.5 13.5 3.5C19.0125 3.5 23.5 7.9875 23.5 13.5C23.5 15.775 22.725 17.8625 21.45 19.5375ZM13.5 6C11.075 6 9.125 7.95 9.125 10.375C9.125 12.8 11.075 14.75 13.5 14.75C15.925 14.75 17.875 12.8 17.875 10.375C17.875 7.95 15.925 6 13.5 6ZM13.5 12.25C12.4625 12.25 11.625 11.4125 11.625 10.375C11.625 9.3375 12.4625 8.5 13.5 8.5C14.5375 8.5 15.375 9.3375 15.375 10.375C15.375 11.4125 14.5375 12.25 13.5 12.25Z"
+        fill={theme === "dark" ? "white" : "black"}
+        stroke={theme === "dark" ? "black" : "white"}
+        strokeWidth="0.5"
+      />
+    </svg>
+  );
+};
+
+export const HelpIconNew = ({ theme }: { theme?: string }) => {
+  return (
+    <svg width="27" height="27" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M12.25 21H14.75V18.5H12.25V21ZM13.5 1C6.6 1 1 6.6 1 13.5C1 20.4 6.6 26 13.5 26C20.4 26 26 20.4 26 13.5C26 6.6 20.4 1 13.5 1ZM13.5 23.5C7.9875 23.5 3.5 19.0125 3.5 13.5C3.5 7.9875 7.9875 3.5 13.5 3.5C19.0125 3.5 23.5 7.9875 23.5 13.5C23.5 19.0125 19.0125 23.5 13.5 23.5ZM13.5 6C10.7375 6 8.5 8.2375 8.5 11H11C11 9.625 12.125 8.5 13.5 8.5C14.875 8.5 16 9.625 16 11C16 13.5 12.25 13.1875 12.25 17.25H14.75C14.75 14.4375 18.5 14.125 18.5 11C18.5 8.2375 16.2625 6 13.5 6Z"
+        fill={theme === "dark" ? "white" : "black"}
+        stroke={theme === "dark" ? "black" : "white"}
+        strokeWidth="0.5"
+      />
+    </svg>
+  );
+};
+
+export const ThemeIconNew = () => {
+  return (
+    <svg width="27" height="27" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M14.5 10.8182C16.525 10.8182 18.1818 12.475 18.1818 14.5C18.1818 16.525 16.525 18.1818 14.5 18.1818C12.475 18.1818 10.8182 16.525 10.8182 14.5C10.8182 12.475 12.475 10.8182 14.5 10.8182ZM14.5 8.36364C11.1127 8.36364 8.36364 11.1127 8.36364 14.5C8.36364 17.8873 11.1127 20.6364 14.5 20.6364C17.8873 20.6364 20.6364 17.8873 20.6364 14.5C20.6364 11.1127 17.8873 8.36364 14.5 8.36364ZM2.22727 15.7273H4.68182C5.35682 15.7273 5.90909 15.175 5.90909 14.5C5.90909 13.825 5.35682 13.2727 4.68182 13.2727H2.22727C1.55227 13.2727 1 13.825 1 14.5C1 15.175 1.55227 15.7273 2.22727 15.7273ZM24.3182 15.7273H26.7727C27.4477 15.7273 28 15.175 28 14.5C28 13.825 27.4477 13.2727 26.7727 13.2727H24.3182C23.6432 13.2727 23.0909 13.825 23.0909 14.5C23.0909 15.175 23.6432 15.7273 24.3182 15.7273ZM13.2727 2.22727V4.68182C13.2727 5.35682 13.825 5.90909 14.5 5.90909C15.175 5.90909 15.7273 5.35682 15.7273 4.68182V2.22727C15.7273 1.55227 15.175 1 14.5 1C13.825 1 13.2727 1.55227 13.2727 2.22727ZM13.2727 24.3182V26.7727C13.2727 27.4477 13.825 28 14.5 28C15.175 28 15.7273 27.4477 15.7273 26.7727V24.3182C15.7273 23.6432 15.175 23.0909 14.5 23.0909C13.825 23.0909 13.2727 23.6432 13.2727 24.3182ZM7.12409 5.39364C6.64545 4.915 5.86 4.915 5.39364 5.39364C4.915 5.87227 4.915 6.65773 5.39364 7.12409L6.69455 8.425C7.17318 8.90364 7.95864 8.90364 8.425 8.425C8.89136 7.94636 8.90364 7.16091 8.425 6.69455L7.12409 5.39364ZM22.3055 20.575C21.8268 20.0964 21.0414 20.0964 20.575 20.575C20.0964 21.0536 20.0964 21.8391 20.575 22.3055L21.8759 23.6064C22.3545 24.085 23.14 24.085 23.6064 23.6064C24.085 23.1277 24.085 22.3423 23.6064 21.8759L22.3055 20.575ZM23.6064 7.12409C24.085 6.64545 24.085 5.86 23.6064 5.39364C23.1277 4.915 22.3423 4.915 21.8759 5.39364L20.575 6.69455C20.0964 7.17318 20.0964 7.95864 20.575 8.425C21.0536 8.89136 21.8391 8.90364 22.3055 8.425L23.6064 7.12409ZM8.425 22.3055C8.90364 21.8268 8.90364 21.0414 8.425 20.575C7.94636 20.0964 7.16091 20.0964 6.69455 20.575L5.39364 21.8759C4.915 22.3545 4.915 23.14 5.39364 23.6064C5.87227 24.0727 6.65773 24.085 7.12409 23.6064L8.425 22.3055Z"
+        fill="black"
+        stroke="white"
+        strokeWidth="0.5"
+      />
+    </svg>
+  );
+};
+
+export const KalmIcon = () => {
+  return (
+    <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M21.5523 14.9437C20.7401 19.4444 16.7329 22.7145 12.0217 22.7145C7.09387 22.7145 2.9964 19.0928 2.41878 14.4339H4.90975V16.0689C4.90975 17.6688 6.22744 18.9522 7.87004 18.9522H15.1264C16.8773 18.9522 18.4657 18.0731 19.3321 16.5788C20.1986 15.0844 20.1805 13.3087 19.278 11.8495L11.2455 0H9.33214V14.9965H11.6968V4.83474L17.2563 13.045C17.7076 13.801 17.7076 14.6976 17.2744 15.4536C16.8231 16.2271 16.0289 16.6667 15.1264 16.6667H7.87004C7.54513 16.6667 7.27437 16.403 7.27437 16.0865V12.1308H0V13.2736C0 19.7257 5.39712 25 12.0397 25C17.8881 25 22.87 20.9212 23.8989 15.3305C23.9892 14.8031 24.4585 14.4339 25 14.4339V12.1484C23.2852 12.1484 21.8412 13.3263 21.5523 14.9437Z"
+        fill="#2CA5FF"
+      />
+    </svg>
+  );
+};
 
 export const KalmLogoIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style, className } = props;

@@ -12,7 +12,7 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { ApplicationComponentDetails, PodStatus } from "types/application";
 import { WorkloadType } from "types/componentTemplate";
-import { formatTimeDistance } from "utils/date";
+import { formatAgeFromNow } from "utils/date";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { KalmConsoleIcon, KalmLogIcon } from "widgets/Icon";
 import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
@@ -36,46 +36,35 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
   canEdit?: boolean;
 }
 
-interface State {}
-
-class PodsTableRaw extends React.PureComponent<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {};
-  }
-
-  private renderPodName = (pod: PodStatus) => {
+const PodsTableRaw: React.FC<Props> = (props) => {
+  const renderPodName = (pod: PodStatus) => {
     return pod.name;
   };
 
-  private renderPodNode = (pod: PodStatus) => {
-    return pod.node;
-  };
-
-  private renderPodRestarts = (pod: PodStatus) => {
+  const renderPodRestarts = (pod: PodStatus) => {
     return pod.restarts;
   };
 
-  private renderPodStatusText = (pod: PodStatus) => {
+  const renderPodStatusText = (pod: PodStatus) => {
     return pod.statusText;
   };
 
-  private renderPodAGE = (pod: PodStatus) => {
-    return formatTimeDistance(pod.createTimestamp);
+  const renderPodAGE = (pod: PodStatus) => {
+    return formatAgeFromNow(pod.createTimestamp);
   };
 
-  private renderPodCPU = (pod: PodStatus) => {
+  const renderPodCPU = (pod: PodStatus) => {
     // return <SmallCPULineChart data={pod.metrics.cpu!} />;
-    return <PodCPUChart pod={pod} component={this.props.component} />;
+    return <PodCPUChart pod={pod} component={props.component} />;
   };
 
-  private renderPodMemory = (pod: PodStatus) => {
-    return <PodMemoryChart pod={pod} component={this.props.component} />;
+  const renderPodMemory = (pod: PodStatus) => {
+    return <PodMemoryChart pod={pod} component={props.component} />;
     // return <SmallMemoryLineChart data={pod.metrics.memory!} />;
   };
 
-  private renderPodActions = (pod: PodStatus) => {
-    const { activeNamespaceName, dispatch, canEdit } = this.props;
+  const renderPodActions = (pod: PodStatus) => {
+    const { activeNamespaceName, dispatch, canEdit } = props;
 
     return (
       <>
@@ -125,7 +114,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderPodStatus = (pod: PodStatus) => {
+  const renderPodStatus = (pod: PodStatus) => {
     if (pod.isTerminating) {
       return <PendingBadge />;
     }
@@ -148,7 +137,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
     return <SuccessBadge />;
   };
 
-  private renderPodStatusIcon = (pod: PodStatus) => {
+  const renderPodStatusIcon = (pod: PodStatus) => {
     if (pod.status === "Failed") {
       const popoverBody = (
         <Box p={2} maxWidth={800}>
@@ -163,18 +152,14 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
       );
 
       return (
-        <IconWithPopover
-          icon={this.renderPodStatus(pod)}
-          popoverBody={popoverBody}
-          popupId={`pod-${pod.name}-popover`}
-        />
+        <IconWithPopover icon={renderPodStatus(pod)} popoverBody={popoverBody} popupId={`pod-${pod.name}-popover`} />
       );
     }
 
-    return this.renderPodStatus(pod);
+    return renderPodStatus(pod);
   };
 
-  private getKRTableColumns() {
+  const getKRTableColumns = () => {
     return [
       { Header: "", accessor: "statusIcon" },
       { Header: "Pod Name", accessor: "name" },
@@ -186,36 +171,34 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
       { Header: "Memory", accessor: "memory" },
       { Header: "Actions", accessor: "actions" },
     ];
-  }
+  };
 
-  private getKRTableData() {
-    const { pods } = this.props;
+  const getKRTableData = () => {
+    const { pods } = props;
     const data: any[] = [];
 
     pods?.forEach((pod, index) => {
       data.push({
-        statusIcon: this.renderPodStatusIcon(pod),
-        name: this.renderPodName(pod),
-        // node: this.renderPodNode(pod),
-        restarts: this.renderPodRestarts(pod),
-        status: this.renderPodStatusText(pod),
-        age: this.renderPodAGE(pod),
-        cpu: this.renderPodCPU(pod),
-        memory: this.renderPodMemory(pod),
-        actions: this.renderPodActions(pod),
+        statusIcon: renderPodStatusIcon(pod),
+        name: renderPodName(pod),
+        // node: renderPodNode(pod),
+        restarts: renderPodRestarts(pod),
+        status: renderPodStatusText(pod),
+        age: renderPodAGE(pod),
+        cpu: renderPodCPU(pod),
+        memory: renderPodMemory(pod),
+        actions: renderPodActions(pod),
       });
     });
 
     return data;
-  }
+  };
 
-  private renderKRTable() {
-    return <KRTable noOutline columns={this.getKRTableColumns()} data={this.getKRTableData()} />;
-  }
+  const renderKRTable = () => {
+    return <KRTable noOutline columns={getKRTableColumns()} data={getKRTableData()} />;
+  };
 
-  public render() {
-    return <>{this.renderKRTable()}</>;
-  }
-}
+  return <>{renderKRTable()}</>;
+};
 
 export const PodsTable = withStyles(styles)(connect(mapStateToProps)(PodsTableRaw));

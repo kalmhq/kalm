@@ -4,12 +4,12 @@ import { updateRouteAction } from "actions/routes";
 import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
+import produce from "immer";
 import React from "react";
 import { AllHttpMethods, HttpRoute, methodsModeAll, methodsModeSpecific } from "types/route";
 import { Loading } from "widgets/Loading";
 import { ResourceNotFound } from "widgets/ResourceNotFound";
 import { BasePage } from "../BasePage";
-import produce from "immer";
 
 const styles = (theme: Theme) =>
   createStyles({

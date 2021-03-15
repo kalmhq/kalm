@@ -38,7 +38,7 @@ interface OwnProps {
 interface Props extends OwnProps, WithNamespaceProps, WithUserAuthProps {}
 
 const DeployAccessTokenFormRaw: React.FC<Props> = (props) => {
-  const { _initialValues, isNamespaceLoading, isNamespaceFirstLoaded, applications, canEditTenant, onSubmit } = props;
+  const { _initialValues, isNamespaceLoading, isNamespaceFirstLoaded, applications, canEditCluster, onSubmit } = props;
 
   const { allComponents } = useSelector((state: RootState) => {
     return {
@@ -66,7 +66,7 @@ const DeployAccessTokenFormRaw: React.FC<Props> = (props) => {
   });
 
   const scopeOptions: { value: string; label: string; explain?: string }[] = [];
-  if (canEditTenant()) {
+  if (canEditCluster()) {
     scopeOptions.push({
       value: DeployAccessTokenScopeCluster,
       label: "Cluster - Can update all components on this cluster",

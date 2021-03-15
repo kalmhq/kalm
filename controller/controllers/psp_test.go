@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/jetstack/cert-manager/pkg/api"
-	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	appsV1 "k8s.io/api/apps/v1"
 	authorizationv1 "k8s.io/api/authorization/v1"
@@ -138,9 +137,6 @@ func (suite *PSPSuite) TestCreateDefaultSaAndPSPRoleBinding() {
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      "privileged-pod",
 			Namespace: suite.ns.Name,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: "test",
-			},
 		},
 		Spec: coreV1.PodSpec{
 			Containers: []coreV1.Container{{

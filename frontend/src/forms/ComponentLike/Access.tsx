@@ -2,13 +2,12 @@ import { FormControlLabel, Grid } from "@material-ui/core";
 import Checkbox from "@material-ui/core/Checkbox";
 import { Alert } from "@material-ui/lab";
 import { FormApi } from "final-form";
+import { HelperTextSection } from "forms/ComponentLike";
 import { AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { NormalizePorts, stringArrayTrimParse } from "forms/normalizer";
 import { withSSO, WithSSOProps } from "hoc/withSSO";
 import React from "react";
 import { Field, FieldRenderProps } from "react-final-form";
-import { useSelector } from "react-redux";
-import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { ComponentLike } from "types/componentTemplate";
 import { Loading } from "widgets/Loading";
@@ -27,19 +26,13 @@ const ComponentAccessRaw: React.FC<Props> = (props) => {
     change("protectedEndpoint", !!protectedEndpoint ? undefined : {});
   };
 
-  const { isExtraInfoLoading, isExtraInfoLoaded, isFrontendSSOPageEnabled } = useSelector((state: RootState) => ({
-    isExtraInfoLoading: state.extraInfo.isLoading,
-    isExtraInfoLoaded: state.extraInfo.isFirstLoaded,
-    isFrontendSSOPageEnabled: state.extraInfo.info.isFrontendSSOPageEnabled,
-  }));
-
-  if ((isSSOConfigLoading && !isSSOConfigLoaded) || (isExtraInfoLoading && !isExtraInfoLoaded)) {
+  if (isSSOConfigLoading && !isSSOConfigLoaded) {
     return <Loading />;
   }
 
   let allGroups: string[] = [];
 
-  if (isFrontendSSOPageEnabled && (!ssoConfig || !ssoConfig.domain)) {
+  if (!ssoConfig || !ssoConfig.domain) {
     return (
       <Alert severity="info">
         <span>
@@ -67,6 +60,7 @@ const ComponentAccessRaw: React.FC<Props> = (props) => {
   }
 
   const ps = ports?.map((x) => x.containerPort) || [];
+  const psUnique = Array.from(new Set(ps));
 
   return (
     <Grid container spacing={2}>
@@ -76,36 +70,33 @@ const ComponentAccessRaw: React.FC<Props> = (props) => {
           label="Only users authenticated by Single Sign-on can access"
         />
       </Grid>
-      {isFrontendSSOPageEnabled && (
-        <>
-          <Grid item xs={12}>
-            <Field
-              render={(props: FieldRenderProps<number[]>) => (
-                <AutoCompleteMultiValuesFreeSolo<number> {...props} options={ps} />
-              )}
-              label="Ports"
-              name="protectedEndpoint.ports"
-              disabled={!props.protectedEndpoint}
-              placeholder="Select specific ports"
-              parse={NormalizePorts}
-              helperText={sc.PROTECTED_ENDPOINT_PORT}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Field
-              render={(props: FieldRenderProps<string[]>) => (
-                <AutoCompleteMultiValuesFreeSolo<string> {...props} options={allGroups} />
-              )}
-              label="Grant to specific groups"
-              name="protectedEndpoint.groups"
-              placeholder="e.g. my-github-org:a-team-name. a-gitlab-group-name"
-              parse={stringArrayTrimParse}
-              helperText={sc.PROTECTED_ENDPOINT_SPECIFIC_GROUPS}
-              disabled={!props.protectedEndpoint}
-            />
-          </Grid>
-        </>
-      )}
+      <HelperTextSection>{sc.ACCESS_HELPER}</HelperTextSection>
+      <Grid item xs={12}>
+        <Field
+          render={(props: FieldRenderProps<number[]>) => (
+            <AutoCompleteMultiValuesFreeSolo<number> {...props} options={psUnique} />
+          )}
+          label="Ports"
+          name="protectedEndpoint.ports"
+          disabled={!props.protectedEndpoint}
+          placeholder="Select specific ports"
+          parse={NormalizePorts}
+          helperText={sc.PROTECTED_ENDPOINT_PORT}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <Field
+          render={(props: FieldRenderProps<string[]>) => (
+            <AutoCompleteMultiValuesFreeSolo<string> {...props} options={allGroups} />
+          )}
+          label="Grant to specific groups"
+          name="protectedEndpoint.groups"
+          placeholder="e.g. my-github-org:a-team-name. a-gitlab-group-name"
+          parse={stringArrayTrimParse}
+          helperText={sc.PROTECTED_ENDPOINT_SPECIFIC_GROUPS}
+          disabled={!props.protectedEndpoint}
+        />
+      </Grid>
     </Grid>
   );
 };

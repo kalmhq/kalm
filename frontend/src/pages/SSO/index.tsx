@@ -1,5 +1,5 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { indigo } from "@material-ui/core/colors";
+import { grey } from "@material-ui/core/colors";
 import Alert from "@material-ui/lab/Alert/Alert";
 import { setSuccessNotificationAction } from "actions/notification";
 import { api } from "api";
@@ -122,7 +122,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
       <>
         <KPanel title={"Single Sign-on configuration Details"}>
           <Box p={2}>
-            <pre>Dex OIDC Issuer: https://{ssoConfig.domain}/dex</pre>
+            <pre>OIDC Issuer: https://{ssoConfig.domain}/dex</pre>
             {ssoConfig.connectors && ssoConfig.connectors.map(this.renderConnectorDetails)}
           </Box>
 
@@ -189,7 +189,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
     const { canEditCluster } = this.props;
     return canEditCluster() ? (
       <EmptyInfoBox
-        image={<SSOIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        image={<SSOIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={sc.EMPTY_SSO_TITLE}
         content={
           <>
@@ -215,19 +215,10 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
         options={[
           {
             title: (
-              <KMLink href="https://kalm.dev/docs/next/auth/sso" target="_blank">
+              <KMLink href="https://docs.kalm.dev/auth/sso" target="_blank">
                 Single Sign-On Guide
               </KMLink>
             ),
-            content: "",
-          },
-          {
-            title: (
-              <KMLink href="https://kalm.dev/docs/certs" target="_blank">
-                How to add a new user?(TODO)
-              </KMLink>
-            ),
-            draft: true,
             content: "",
           },
         ]}
@@ -249,9 +240,9 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
     return (
       <BasePage>
         <Box p={2}>{!!ssoConfig ? this.renderConfigDetails() : this.renderEmpty()}</Box>
-        <Box pb={2} pl={2} pr={2}>
+        {/* <Box pb={2} pl={2} pr={2}>
           {this.renderInfoBox()}
-        </Box>
+        </Box> */}
       </BasePage>
     );
   }

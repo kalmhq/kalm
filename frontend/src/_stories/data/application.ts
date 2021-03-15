@@ -53,6 +53,7 @@ export const createRoute = (name: string, namespace: string): HttpRoute[] => {
       schemes: schemes as any, //["http"],
       stripPath: true,
       destinations: destinations,
+      destinationsStatus: [],
       name: "bookinfo",
     },
   ];

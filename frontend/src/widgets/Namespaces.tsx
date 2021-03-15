@@ -13,7 +13,6 @@ import {
 } from "@material-ui/core";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
-import { tenantApplicationNameFormat } from "forms/normalizer";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { LEFT_SECTION_OPEN_WIDTH, NAMESPACES_ZINDEX, SECOND_HEADER_HEIGHT } from "layout/Constants";
@@ -30,9 +29,12 @@ const styles = (theme: Theme) =>
       width: "100%",
       justifyContent: "space-between",
       paddingLeft: 24,
+      paddingTop: 16,
       textTransform: "lowercase",
       border: 0,
       borderRadius: 0,
+      color: theme.palette.type === "light" ? "#000" : "inherit",
+      fontSize: theme.typography.subtitle1.fontSize,
     },
     menuList: {
       width: LEFT_SECTION_OPEN_WIDTH,
@@ -85,7 +87,6 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
       isNamespaceLoading,
       isNamespaceFirstLoaded,
       location,
-      auth,
       canViewNamespace,
       canEditNamespace,
     } = this.props;
@@ -117,7 +118,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
           {isNamespaceLoading && !isNamespaceFirstLoaded
             ? "Loading..."
             : activeNamespace
-            ? tenantApplicationNameFormat(auth.tenant)(activeNamespace.name)
+            ? activeNamespace.name
             : "Select a Application"}
           {open ? <ExpandLess /> : <ExpandMore />}
         </Button>
@@ -135,7 +136,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
               {...TransitionProps}
               style={{ transformOrigin: placement === "bottom" ? "center top" : "center bottom" }}
             >
-              <Paper variant="outlined" square>
+              <Paper variant="outlined">
                 <ClickAwayListener onClickAway={this.handleClose}>
                   <MenuList
                     autoFocusItem={open}
@@ -144,7 +145,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
                     classes={{ root: classes.menuList }}
                   >
                     {filteredApp.map((application) => {
-                      const name = tenantApplicationNameFormat(auth.tenant)(application.name);
+                      const name = application.name;
                       let to = `/applications/${application.name}/components`;
                       if (pathnameSplits[1] && pathnameSplits[2] && pathnameSplits[1] === "applications") {
                         pathnameSplits[2] = application.name;

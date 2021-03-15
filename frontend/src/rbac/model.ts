@@ -16,7 +16,7 @@ g = _, _
 e = some(where (p.eft == allow))
 
 [matchers]
-m = g(r.subject, p.subject) && objectMatchFunc(r.scope, p.scope) && objectMatchFunc(r.object, p.object) && r.action == p.action
+m = g(r.subject, p.subject) && (r.scope == p.scope || p.scope == "*") && objMatchFunc(r.object, p.object) && r.action == p.action
 `;
 
 function objMatch(key1: string, key2: string): boolean {
@@ -38,25 +38,14 @@ function objMatchFunc(...args: any[]): boolean {
   const name1: string = (arg0 || "").toString();
   const name2: string = (arg1 || "").toString();
 
-  const name1Parts = name1.split("/");
-  const name2Parts = name2.split("/");
-
-  if (name1Parts.length !== 2) {
-    throw new Error(`wrong object in objectMatchFunc ${name1}`);
-  }
-
-  if (name2Parts.length !== 2) {
-    throw new Error(`wrong object in objectMatchFunc ${name2}`);
-  }
-
-  return objMatch(name1Parts[0], name2Parts[0]) && objMatch(name1Parts[1], name2Parts[1]);
+  return objMatch(name1, name2);
 }
 
 const ActionView = "view";
 const ActionEdit = "edit";
 const ActionManage = "manage";
-const ResourceAll = "*/*";
-const AllScope = "*/*";
+const ResourceAll = "*";
+const AllScope = "*";
 
 export class RBACEnforcer {
   private enforcer: CoreEnforcer;
@@ -65,7 +54,7 @@ export class RBACEnforcer {
   constructor(policies: string) {
     this.policyAdapter = new StringAdapter(policies);
     const enforcer = new CoreEnforcer(newModelFromString(RBACModel), this.policyAdapter);
-    enforcer.addFunction("objectMatchFunc", objMatchFunc);
+    enforcer.addFunction("objMatchFunc", objMatchFunc);
     enforcer.loadPolicy();
     this.enforcer = enforcer;
   }
@@ -76,32 +65,32 @@ export class RBACEnforcer {
     this.enforcer.loadPolicy();
   }
 
-  public can(subject: string, action: string, scope: string, resource: string) {
-    return this.enforcer.enforce(subject, action, scope, resource);
+  public can(subject: string, action: string, namespace: string, resource: string) {
+    return this.enforcer.enforce(subject, action, namespace, resource);
   }
 
-  public canView(subject: string, scope: string, resource: string) {
-    return this.enforcer.enforce(subject, ActionView, scope, resource);
+  public canView(subject: string, namespace: string, resource: string) {
+    return this.enforcer.enforce(subject, ActionView, namespace, resource);
   }
 
-  public canEdit(subject: string, scope: string, resource: string) {
-    return this.enforcer.enforce(subject, ActionEdit, scope, resource);
+  public canEdit(subject: string, namespace: string, resource: string) {
+    return this.enforcer.enforce(subject, ActionEdit, namespace, resource);
   }
 
-  public canManage(subject: string, scope: string, resource: string) {
-    return this.enforcer.enforce(subject, ActionManage, scope, resource);
+  public canManage(subject: string, namespace: string, resource: string) {
+    return this.enforcer.enforce(subject, ActionManage, namespace, resource);
   }
 
-  public canViewScope(subject: string, scope: string) {
-    return this.enforcer.enforce(subject, ActionView, scope, ResourceAll);
+  public canViewNamespace(subject: string, namespace: string) {
+    return this.enforcer.enforce(subject, ActionView, namespace, ResourceAll);
   }
 
-  public canEditScope(subject: string, scope: string) {
-    return this.enforcer.enforce(subject, ActionEdit, scope, ResourceAll);
+  public canEditNamespace(subject: string, namespace: string) {
+    return this.enforcer.enforce(subject, ActionEdit, namespace, ResourceAll);
   }
 
-  public canManageScope(subject: string, scope: string) {
-    return this.enforcer.enforce(subject, ActionManage, scope, ResourceAll);
+  public canManageNamespace(subject: string, namespace: string) {
+    return this.enforcer.enforce(subject, ActionManage, namespace, ResourceAll);
   }
 
   public canViewCluster(subject: string) {

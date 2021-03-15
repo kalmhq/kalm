@@ -1,0 +1,3356 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: controller
+    istio-injection: enabled
+    kalm-control-plane: "true"
+    kalm-enabled: "true"
+    tenant: global
+  name: kalm-system
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: accesstokens.core.kalm.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .metadata.labels.tokenType
+    name: Type
+    type: string
+  - JSONPath: .spec.creator
+    name: Creator
+    type: string
+  - JSONPath: .spec.expiredAt
+    name: ExpiredAt
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: core.kalm.dev
+  names:
+    kind: AccessToken
+    listKind: AccessTokenList
+    plural: accesstokens
+    singular: accesstoken
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: AccessToken is the Schema for the deploykeys API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: A model to describe general access token permissions It's designed
+            to be easy to translate to casbin policies. This model should NOT be generate
+            manually through kubernetes api directly. Instead, use kalm apis to manage
+            records.
+          properties:
+            creator:
+              description: Creator of this key
+              minLength: 1
+              type: string
+            expiredAt:
+              description: Expire time of this key. Infinity if blank
+              format: date-time
+              type: string
+            memo:
+              type: string
+            rules:
+              description: Rules of this key
+              items:
+                properties:
+                  kind:
+                    minLength: 1
+                    type: string
+                  name:
+                    minLength: 1
+                    type: string
+                  namespace:
+                    minLength: 1
+                    type: string
+                  verb:
+                    enum:
+                    - view
+                    - edit
+                    - manage
+                    type: string
+                required:
+                - kind
+                - name
+                - namespace
+                - verb
+                type: object
+              minItems: 1
+              type: array
+            token:
+              description: The token, the access token name should be sha256 of this
+                token.
+              minLength: 64
+              type: string
+          required:
+          - creator
+          - rules
+          - token
+          type: object
+        status:
+          description: AccessTokenStatus defines the observed state of AccessTokeny
+          properties:
+            lastUsedAt:
+              type: integer
+            usedCount:
+              type: integer
+          required:
+          - lastUsedAt
+          - usedCount
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: acmeservers.core.kalm.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: core.kalm.dev
+  names:
+    kind: ACMEServer
+    listKind: ACMEServerList
+    plural: acmeservers
+    singular: acmeserver
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: ACMEServer is the Schema for the acmeservers API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: ACMEServerSpec defines the desired state of ACMEServer
+          properties:
+            acmeDomain:
+              description: sub-domains of this will server TXT record for DNS-Challenge
+              minLength: 1
+              type: string
+            nsDomain:
+              description: 'act as NameServer for us, the NS record should be: ACMEDomain
+                -> NSDomain'
+              minLength: 1
+              type: string
+          type: object
+        status:
+          description: ACMEServerStatus defines the observed state of ACMEServer
+          properties:
+            nameServerHostname:
+              type: string
+            nameServerIP:
+              type: string
+            ready:
+              type: boolean
+          required:
+          - ready
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: componentpluginbindings.core.kalm.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.isDisabled
+    name: Disabled
+    type: boolean
+  - JSONPath: .spec.pluginName
+    name: Plugin
+    type: string
+  - JSONPath: .spec.componentName
+    name: Component
+    type: string
+  - JSONPath: .status.configValid
+    name: ConfigValid
+    type: boolean
+  - JSONPath: .status.configError
+    name: ConfigError
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: core.kalm.dev
+  names:
+    kind: ComponentPluginBinding
+    listKind: ComponentPluginBindingList
+    plural: componentpluginbindings
+    singular: componentpluginbinding
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: ComponentPluginBinding is the Schema for the pluginbindings API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: ComponentPluginBindingSpec defines the desired state of ComponentPluginBinding
+          properties:
+            componentName:
+              description: If this field is empty, it will affect all components in
+                the application.
+              type: string
+            config:
+              description: configuration of this binding
+              type: object
+            isDisabled:
+              description: disable this pluginbinding
+              type: boolean
+            pluginName:
+              description: which plugin to use
+              minLength: 1
+              type: string
+          required:
+          - pluginName
+          type: object
+        status:
+          description: ComponentPluginBindingStatus defines the observed state of
+            ComponentPluginBinding
+          properties:
+            configError:
+              type: string
+            configValid:
+              type: boolean
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: componentplugins.core.kalm.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.compiledSuccessfully
+    name: Compiled
+    type: boolean
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: core.kalm.dev
+  names:
+    kind: ComponentPlugin
+    listKind: ComponentPluginList
+    plural: componentplugins
+    singular: componentplugin
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: ComponentPlugin is the Schema for the plugins API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: ComponentPluginSpec defines the desired state of ComponentPlugin
+          properties:
+            availableWorkloadType:
+              description: This array is only useful when subject is component. If
+                empty, means the plugin can be applied on all kinds of component.
+                If Not empty, this plugin can only be used on components with workload
+                type exists in this array.
+              items:
+                enum:
+                - server
+                - cronjob
+                - daemonset
+                - statefulset
+                type: string
+              type: array
+            configSchema:
+              type: object
+            icon:
+              description: icon of this plugin
+              type: string
+            src:
+              description: source code of the plugin
+              minLength: 1
+              type: string
+          required:
+          - src
+          type: object
+        status:
+          description: ComponentPluginStatus defines the observed state of ComponentPlugin
+          properties:
+            compiledSuccessfully:
+              type: boolean
+          required:
+          - compiledSuccessfully
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: components.core.kalm.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.workloadType
+    name: Workload
+    type: string
+  - JSONPath: .spec.image
+    name: Image
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: core.kalm.dev
+  names:
+    kind: Component
+    listKind: ComponentList
+    plural: components
+    singular: component
+  scope: Namespaced
+  subresources: {}
+  validation:
+    openAPIV3Schema:
+      description: Component is the Schema for the components API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: ComponentSpec defines the desired state of Component
+          properties:
+            Annotations:
+              additionalProperties:
+                type: string
+              description: annotations will add to pods
+              type: object
+            command:
+              type: string
+            dnsPolicy:
+              description: DNSPolicy defines how a pod's DNS will be configured.
+              enum:
+              - ClusterFirstWithHostNet
+              - ClusterFirst
+              - Default
+              - None
+              type: string
+            enableHeadlessService:
+              type: boolean
+            env:
+              items:
+                description: EnvVar represents an environment variable present in
+                  a Container.
+                properties:
+                  name:
+                    description: Name of the environment variable. Must be a C_IDENTIFIER.
+                    minLength: 1
+                    type: string
+                  prefix:
+                    type: string
+                  suffix:
+                    type: string
+                  type:
+                    enum:
+                    - static
+                    - external
+                    - linked
+                    - fieldref
+                    - builtin
+                    type: string
+                  value:
+                    type: string
+                required:
+                - name
+                type: object
+              type: array
+            image:
+              minLength: 1
+              type: string
+            immediateTrigger:
+              description: This is only meaningful if this component is a cronjob
+                workload. Controller should immediately trigger a job and set its
+                value to false if it's true.
+              type: boolean
+            istioResourceRequirements:
+              description: ResourceRequirements describes the compute resource requirements.
+              properties:
+                limits:
+                  additionalProperties:
+                    type: string
+                  description: 'Limits describes the maximum amount of compute resources
+                    allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                  type: object
+                requests:
+                  additionalProperties:
+                    type: string
+                  description: 'Requests describes the minimum amount of compute resources
+                    required. If Requests is omitted for a container, it defaults
+                    to Limits if that is explicitly specified, otherwise to an implementation-defined
+                    value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                  type: object
+              type: object
+            labels:
+              additionalProperties:
+                type: string
+              description: labels will add to pods
+              type: object
+            livenessProbe:
+              description: Probe describes a health check to be performed against
+                a container to determine whether it is alive or ready to receive traffic.
+              properties:
+                exec:
+                  description: One and only one of the following should be specified.
+                    Exec specifies the action to take.
+                  properties:
+                    command:
+                      description: Command is the command line to execute inside the
+                        container, the working directory for the command  is root
+                        ('/') in the container's filesystem. The command is simply
+                        exec'd, it is not run inside a shell, so traditional shell
+                        instructions ('|', etc) won't work. To use a shell, you need
+                        to explicitly call out to that shell. Exit status of 0 is
+                        treated as live/healthy and non-zero is unhealthy.
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                failureThreshold:
+                  description: Minimum consecutive failures for the probe to be considered
+                    failed after having succeeded. Defaults to 3. Minimum value is
+                    1.
+                  format: int32
+                  type: integer
+                httpGet:
+                  description: HTTPGet specifies the http request to perform.
+                  properties:
+                    host:
+                      description: Host name to connect to, defaults to the pod IP.
+                        You probably want to set "Host" in httpHeaders instead.
+                      type: string
+                    httpHeaders:
+                      description: Custom headers to set in the request. HTTP allows
+                        repeated headers.
+                      items:
+                        description: HTTPHeader describes a custom header to be used
+                          in HTTP probes
+                        properties:
+                          name:
+                            description: The header field name
+                            type: string
+                          value:
+                            description: The header field value
+                            type: string
+                        required:
+                        - name
+                        - value
+                        type: object
+                      type: array
+                    path:
+                      description: Path to access on the HTTP server.
+                      type: string
+                    port:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      description: Name or number of the port to access on the container.
+                        Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                      x-kubernetes-int-or-string: true
+                    scheme:
+                      description: Scheme to use for connecting to the host. Defaults
+                        to HTTP.
+                      type: string
+                  required:
+                  - port
+                  type: object
+                initialDelaySeconds:
+                  description: 'Number of seconds after the container has started
+                    before liveness probes are initiated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
+                  format: int32
+                  type: integer
+                periodSeconds:
+                  description: How often (in seconds) to perform the probe. Default
+                    to 10 seconds. Minimum value is 1.
+                  format: int32
+                  type: integer
+                successThreshold:
+                  description: Minimum consecutive successes for the probe to be considered
+                    successful after having failed. Defaults to 1. Must be 1 for liveness
+                    and startup. Minimum value is 1.
+                  format: int32
+                  type: integer
+                tcpSocket:
+                  description: 'TCPSocket specifies an action involving a TCP port.
+                    TCP hooks not yet supported TODO: implement a realistic TCP lifecycle
+                    hook'
+                  properties:
+                    host:
+                      description: 'Optional: Host name to connect to, defaults to
+                        the pod IP.'
+                      type: string
+                    port:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      description: Number or name of the port to access on the container.
+                        Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                      x-kubernetes-int-or-string: true
+                  required:
+                  - port
+                  type: object
+                timeoutSeconds:
+                  description: 'Number of seconds after which the probe times out.
+                    Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
+                  format: int32
+                  type: integer
+              type: object
+            nodeSelectorLabels:
+              additionalProperties:
+                type: string
+              type: object
+            ports:
+              items:
+                properties:
+                  containerPort:
+                    format: int32
+                    maximum: 65535
+                    minimum: 1
+                    type: integer
+                  protocol:
+                    allOf:
+                    - enum:
+                      - http
+                      - https
+                      - http2
+                      - grpc
+                      - grpc-web
+                      - tcp
+                      - udp
+                      - unknown
+                    - enum:
+                      - http
+                      - https
+                      - http2
+                      - grpc
+                      - grpc-web
+                      - tcp
+                      - udp
+                      - unknown
+                    type: string
+                  servicePort:
+                    description: port for service
+                    format: int32
+                    maximum: 65535
+                    minimum: 1
+                    type: integer
+                required:
+                - containerPort
+                - protocol
+                type: object
+              type: array
+            preInjectedFiles:
+              items:
+                properties:
+                  base64:
+                    description: To support binary content, it allows set base64 encoded
+                      data into `Content` field and set this flag to `true`. Binary
+                      data will be restored instead of plain string in `Content`.
+                    type: boolean
+                  content:
+                    description: the content of the file
+                    minLength: 1
+                    type: string
+                  mountPath:
+                    minLength: 1
+                    type: string
+                  readonly:
+                    type: boolean
+                  runnable:
+                    type: boolean
+                required:
+                - content
+                - mountPath
+                - runnable
+                type: object
+              type: array
+            preferNotCoLocated:
+              type: boolean
+            readinessProbe:
+              description: Probe describes a health check to be performed against
+                a container to determine whether it is alive or ready to receive traffic.
+              properties:
+                exec:
+                  description: One and only one of the following should be specified.
+                    Exec specifies the action to take.
+                  properties:
+                    command:
+                      description: Command is the command line to execute inside the
+                        container, the working directory for the command  is root
+                        ('/') in the container's filesystem. The command is simply
+                        exec'd, it is not run inside a shell, so traditional shell
+                        instructions ('|', etc) won't work. To use a shell, you need
+                        to explicitly call out to that shell. Exit status of 0 is
+                        treated as live/healthy and non-zero is unhealthy.
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                failureThreshold:
+                  description: Minimum consecutive failures for the probe to be considered
+                    failed after having succeeded. Defaults to 3. Minimum value is
+                    1.
+                  format: int32
+                  type: integer
+                httpGet:
+                  description: HTTPGet specifies the http request to perform.
+                  properties:
+                    host:
+                      description: Host name to connect to, defaults to the pod IP.
+                        You probably want to set "Host" in httpHeaders instead.
+                      type: string
+                    httpHeaders:
+                      description: Custom headers to set in the request. HTTP allows
+                        repeated headers.
+                      items:
+                        description: HTTPHeader describes a custom header to be used
+                          in HTTP probes
+                        properties:
+                          name:
+                            description: The header field name
+                            type: string
+                          value:
+                            description: The header field value
+                            type: string
+                        required:
+                        - name
+                        - value
+                        type: object
+                      type: array
+                    path:
+                      description: Path to access on the HTTP server.
+                      type: string
+                    port:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      description: Name or number of the port to access on the container.
+                        Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                      x-kubernetes-int-or-string: true
+                    scheme:
+                      description: Scheme to use for connecting to the host. Defaults
+                        to HTTP.
+                      type: string
+                  required:
+                  - port
+                  type: object
+                initialDelaySeconds:
+                  description: 'Number of seconds after the container has started
+                    before liveness probes are initiated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
+                  format: int32
+                  type: integer
+                periodSeconds:
+                  description: How often (in seconds) to perform the probe. Default
+                    to 10 seconds. Minimum value is 1.
+                  format: int32
+                  type: integer
+                successThreshold:
+                  description: Minimum consecutive successes for the probe to be considered
+                    successful after having failed. Defaults to 1. Must be 1 for liveness
+                    and startup. Minimum value is 1.
+                  format: int32
+                  type: integer
+                tcpSocket:
+                  description: 'TCPSocket specifies an action involving a TCP port.
+                    TCP hooks not yet supported TODO: implement a realistic TCP lifecycle
+                    hook'
+                  properties:
+                    host:
+                      description: 'Optional: Host name to connect to, defaults to
+                        the pod IP.'
+                      type: string
+                    port:
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      description: Number or name of the port to access on the container.
+                        Number must be in the range 1 to 65535. Name must be an IANA_SVC_NAME.
+                      x-kubernetes-int-or-string: true
+                  required:
+                  - port
+                  type: object
+                timeoutSeconds:
+                  description: 'Number of seconds after which the probe times out.
+                    Defaults to 1 second. Minimum value is 1. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
+                  format: int32
+                  type: integer
+              type: object
+            replicas:
+              format: int32
+              type: integer
+            resourceRequirements:
+              description: ResourceRequirements describes the compute resource requirements.
+              properties:
+                limits:
+                  additionalProperties:
+                    type: string
+                  description: 'Limits describes the maximum amount of compute resources
+                    allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                  type: object
+                requests:
+                  additionalProperties:
+                    type: string
+                  description: 'Requests describes the minimum amount of compute resources
+                    required. If Requests is omitted for a container, it defaults
+                    to Limits if that is explicitly specified, otherwise to an implementation-defined
+                    value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                  type: object
+              type: object
+            restartPolicy:
+              description: RestartPolicy describes how the container should be restarted.
+                Only one of the following restart policies may be specified. If none
+                of the following policies is specified, the default one is RestartPolicyAlways.
+              enum:
+              - Always
+              - OnFailure
+              - Never
+              type: string
+            restartStrategy:
+              enum:
+              - Recreate
+              - RollingUpdate
+              type: string
+            runnerPermission:
+              properties:
+                roleType:
+                  type: string
+                rules:
+                  items:
+                    description: PolicyRule holds information that describes a policy
+                      rule, but does not contain information about who the rule applies
+                      to or which namespace the rule applies to.
+                    properties:
+                      apiGroups:
+                        description: APIGroups is the name of the APIGroup that contains
+                          the resources.  If multiple API groups are specified, any
+                          action requested against one of the enumerated resources
+                          in any API group will be allowed.
+                        items:
+                          type: string
+                        type: array
+                      nonResourceURLs:
+                        description: NonResourceURLs is a set of partial urls that
+                          a user should have access to.  *s are allowed, but only
+                          as the full, final step in the path Since non-resource URLs
+                          are not namespaced, this field is only applicable for ClusterRoles
+                          referenced from a ClusterRoleBinding. Rules can either apply
+                          to API resources (such as "pods" or "secrets") or non-resource
+                          URL paths (such as "/api"),  but not both.
+                        items:
+                          type: string
+                        type: array
+                      resourceNames:
+                        description: ResourceNames is an optional white list of names
+                          that the rule applies to.  An empty set means that everything
+                          is allowed.
+                        items:
+                          type: string
+                        type: array
+                      resources:
+                        description: Resources is a list of resources this rule applies
+                          to.  ResourceAll represents all resources.
+                        items:
+                          type: string
+                        type: array
+                      verbs:
+                        description: Verbs is a list of Verbs that apply to ALL the
+                          ResourceKinds and AttributeRestrictions contained in this
+                          rule.  VerbAll represents all kinds.
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - verbs
+                    type: object
+                  type: array
+              required:
+              - roleType
+              - rules
+              type: object
+            schedule:
+              type: string
+            startAfterComponents:
+              items:
+                type: string
+              type: array
+            terminationGracePeriodSeconds:
+              format: int64
+              type: integer
+            volumes:
+              items:
+                properties:
+                  hostPath:
+                    type: string
+                  path:
+                    description: the path we use to mount this volume to container
+                    type: string
+                  pvToMatch:
+                    description: instead of auto-provision new PV using StorageClass
+                      we try to re-use existing PV
+                    type: string
+                  pvc:
+                    description: "use to store pvc name, so the disk won't be recreate
+                      during restart This field also can be used with existing pvc
+                      \n for Type: pvc, required, todo validate this in webhook?"
+                    type: string
+                  size:
+                    description: If we need to create this volume first, the size
+                      of the volume
+                    type: string
+                  storageClassName:
+                    description: Identify the StorageClass to create the pvc
+                    type: string
+                  type:
+                    description: Volume type
+                    enum:
+                    - emptyDirMemory
+                    - emptyDir
+                    - pvc
+                    - pvcTemplate
+                    - hostpath
+                    type: string
+                required:
+                - path
+                - size
+                type: object
+              type: array
+            workloadType:
+              allOf:
+              - enum:
+                - server
+                - cronjob
+                - daemonset
+                - statefulset
+              - enum:
+                - server
+                - cronjob
+                - statefulset
+                - daemonset
+              type: string
+          required:
+          - image
+          type: object
+        status:
+          description: ComponentStatus defines the observed state of Component
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: dnsrecords.core.kalm.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.domain
+    name: Domain
+    type: string
+  - JSONPath: .spec.dnsType
+    name: DNSType
+    type: string
+  - JSONPath: .spec.dnsTarget
+    name: DNSTarget
+    type: string
+  - JSONPath: .status.isConfigured
+    name: IsConfigured
+    type: boolean
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: core.kalm.dev
+  names:
+    kind: DNSRecord
+    listKind: DNSRecordList
+    plural: dnsrecords
+    singular: dnsrecord
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: DNSRecord is the Schema for the dnsrecords API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: DNSRecordSpec defines the desired state of DNSRecord
+          properties:
+            dnsTarget:
+              type: string
+            dnsType:
+              type: string
+            domain:
+              type: string
+          type: object
+        status:
+          description: DNSRecordStatus defines the observed state of DNSRecord
+          properties:
+            isConfigured:
+              type: boolean
+          required:
+          - isConfigured
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: dockerregistries.core.kalm.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.host
+    description: Host of the registry
+    name: Host
+    type: string
+  - JSONPath: .status.authenticationVerified
+    name: Verified
+    type: boolean
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: core.kalm.dev
+  names:
+    kind: DockerRegistry
+    listKind: DockerRegistryList
+    plural: dockerregistries
+    singular: dockerregistry
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: DockerRegistry is the Schema for the dockerregistries API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: DockerRegistrySpec defines the desired state of DockerRegistry
+          properties:
+            host:
+              type: string
+            poolingIntervalSeconds:
+              type: integer
+          type: object
+        status:
+          description: DockerRegistryStatus defines the observed state of DockerRegistry
+          properties:
+            authenticationVerified:
+              type: boolean
+            repositories:
+              items:
+                properties:
+                  name:
+                    type: string
+                  tags:
+                    items:
+                      properties:
+                        manifest:
+                          type: string
+                        name:
+                          type: string
+                        timeCreatedMs:
+                          type: string
+                        timeUploadedMs:
+                          type: string
+                      required:
+                      - manifest
+                      - name
+                      - timeCreatedMs
+                      - timeUploadedMs
+                      type: object
+                    type: array
+                required:
+                - name
+                - tags
+                type: object
+              type: array
+          type: object
+      required:
+      - spec
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: domains.core.kalm.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.domain
+    name: Domain
+    type: string
+  - JSONPath: .spec.dnsType
+    name: DNSType
+    type: string
+  - JSONPath: .spec.dnsTarget
+    name: DNSTarget
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: core.kalm.dev
+  names:
+    kind: Domain
+    listKind: DomainList
+    plural: domains
+    singular: domain
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: Domain is the Schema for the domains API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          properties:
+            dnsTarget:
+              type: string
+            dnsType:
+              type: string
+            domain:
+              type: string
+          type: object
+        status:
+          description: DomainStatus defines the observed state of Domain
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: httproutes.core.kalm.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.hosts
+    name: Hosts
+    type: string
+  - JSONPath: .spec.paths
+    name: Paths
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: core.kalm.dev
+  names:
+    kind: HttpRoute
+    listKind: HttpRouteList
+    plural: httproutes
+    singular: httproute
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: HttpRoute is the Schema for the httproutes API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: HttpRouteSpec defines the desired state of HttpRoute
+          properties:
+            conditions:
+              items:
+                properties:
+                  name:
+                    minLength: 1
+                    type: string
+                  operator:
+                    allOf:
+                    - enum:
+                      - equal
+                      - withPrefix
+                      - matchRegexp
+                    - enum:
+                      - equal
+                      - withPrefix
+                      - matchRegexp
+                    type: string
+                  type:
+                    allOf:
+                    - enum:
+                      - query
+                      - header
+                    - enum:
+                      - query
+                      - header
+                    type: string
+                  value:
+                    type: string
+                required:
+                - name
+                - operator
+                - type
+                - value
+                type: object
+              type: array
+            cors:
+              properties:
+                allowCredentials:
+                  type: boolean
+                allowHeaders:
+                  items:
+                    type: string
+                  type: array
+                allowMethods:
+                  items:
+                    type: string
+                  type: array
+                allowOrigins:
+                  items:
+                    type: string
+                  type: array
+                maxAgeSeconds:
+                  type: integer
+              type: object
+            delay:
+              properties:
+                delaySeconds:
+                  minimum: 1
+                  type: integer
+                percentage:
+                  minimum: 0
+                  type: integer
+              required:
+              - delaySeconds
+              - percentage
+              type: object
+            destinations:
+              items:
+                properties:
+                  host:
+                    minLength: 1
+                    type: string
+                  weight:
+                    minimum: 0
+                    type: integer
+                required:
+                - host
+                - weight
+                type: object
+              minItems: 1
+              type: array
+            fault:
+              properties:
+                errorStatus:
+                  type: integer
+                percentage:
+                  minimum: 0
+                  type: integer
+              required:
+              - errorStatus
+              - percentage
+              type: object
+            hosts:
+              items:
+                type: string
+              minItems: 1
+              type: array
+            httpRedirectToHttps:
+              type: boolean
+            methods:
+              items:
+                enum:
+                - GET
+                - HEAD
+                - POST
+                - PUT
+                - PATCH
+                - DELETE
+                - OPTIONS
+                - TRACE
+                - CONNECT
+                type: string
+              minItems: 1
+              type: array
+            mirror:
+              properties:
+                destination:
+                  properties:
+                    host:
+                      minLength: 1
+                      type: string
+                    weight:
+                      minimum: 0
+                      type: integer
+                  required:
+                  - host
+                  - weight
+                  type: object
+                percentage:
+                  minimum: 0
+                  type: integer
+              required:
+              - destination
+              - percentage
+              type: object
+            paths:
+              items:
+                type: string
+              minItems: 1
+              type: array
+            retries:
+              properties:
+                attempts:
+                  minimum: 0
+                  type: integer
+                perTtyTimeoutSeconds:
+                  minimum: 1
+                  type: integer
+                retryOn:
+                  items:
+                    type: string
+                  type: array
+              required:
+              - attempts
+              - perTtyTimeoutSeconds
+              - retryOn
+              type: object
+            schemes:
+              items:
+                enum:
+                - http
+                - https
+                type: string
+              minItems: 1
+              type: array
+            stripPath:
+              type: boolean
+            timeout:
+              type: integer
+          required:
+          - destinations
+          - hosts
+          - methods
+          - paths
+          - schemes
+          type: object
+        status:
+          description: HttpRouteStatus defines the observed state of HttpRoute
+          properties:
+            destinationsStatus:
+              items:
+                properties:
+                  destinationHost:
+                    type: string
+                  error:
+                    type: string
+                  status:
+                    type: string
+                required:
+                - destinationHost
+                - status
+                type: object
+              type: array
+            hostCertifications:
+              additionalProperties:
+                type: string
+              type: object
+          required:
+          - destinationsStatus
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: httpscertissuers.core.kalm.dev
+spec:
+  group: core.kalm.dev
+  names:
+    kind: HttpsCertIssuer
+    listKind: HttpsCertIssuerList
+    plural: httpscertissuers
+    singular: httpscertissuer
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: HttpsCertIssuer is the Schema for the httpscertissuers API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: HttpsCertIssuerSpec defines the desired state of HttpsCertIssuer
+          properties:
+            acmeCloudFlare:
+              properties:
+                apiTokenSecretName:
+                  minLength: 1
+                  type: string
+                email:
+                  minLength: 1
+                  type: string
+              required:
+              - apiTokenSecretName
+              - email
+              type: object
+            caForTest:
+              type: object
+            dns01:
+              properties:
+                baseACMEDomain:
+                  type: string
+                configs:
+                  additionalProperties:
+                    properties:
+                      allowfrom:
+                        items:
+                          type: string
+                        type: array
+                      fulldomain:
+                        type: string
+                      password:
+                        type: string
+                      subdomain:
+                        type: string
+                      username:
+                        type: string
+                    required:
+                    - fulldomain
+                    - password
+                    - subdomain
+                    - username
+                    type: object
+                  type: object
+              required:
+              - baseACMEDomain
+              - configs
+              type: object
+            http01:
+              properties:
+                email:
+                  type: string
+              type: object
+          type: object
+        status:
+          description: HttpsCertIssuerStatus defines the observed state of HttpsCertIssuer
+          properties:
+            ok:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file'
+              type: boolean
+          required:
+          - ok
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: httpscerts.core.kalm.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.conditions[0].status
+    name: Ready
+    type: string
+  - JSONPath: .status.conditions[0].message
+    name: Message
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: core.kalm.dev
+  names:
+    kind: HttpsCert
+    listKind: HttpsCertList
+    plural: httpscerts
+    singular: httpscert
+  scope: Cluster
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: HttpsCert is the Schema for the httpscerts API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: HttpsCertSpec defines the desired state of HttpsCert
+          properties:
+            domains:
+              items:
+                type: string
+              minItems: 1
+              type: array
+            httpsCertIssuer:
+              type: string
+            isSelfManaged:
+              type: boolean
+            selfManagedCertSecretName:
+              type: string
+          required:
+          - domains
+          type: object
+        status:
+          description: HttpsCertStatus defines the observed state of HttpsCert
+          properties:
+            conditions:
+              items:
+                properties:
+                  message:
+                    description: Message is a human readable description of the details
+                      of the last transition, complementing reason.
+                    type: string
+                  reason:
+                    description: Reason is a brief machine readable explanation for
+                      the condition's last transition.
+                    type: string
+                  status:
+                    description: Status of the condition, one of ('True', 'False',
+                      'Unknown').
+                    type: string
+                  type:
+                    description: Type of the condition, currently ('Ready').
+                    type: string
+                required:
+                - status
+                - type
+                type: object
+              type: array
+            expireTimestamp:
+              format: int64
+              type: integer
+            isSignedByTrustedCA:
+              type: boolean
+            wildcardCertDNSChallengeDomainMap:
+              additionalProperties:
+                type: string
+              type: object
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: logsystems.core.kalm.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.stack
+    name: Stack
+    type: string
+  group: core.kalm.dev
+  names:
+    kind: LogSystem
+    listKind: LogSystemList
+    plural: logsystems
+    singular: logsystem
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: LogSystem is the Schema for the deploykeys API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: LogSystemSpec defines the desired state oLogSystemf
+          properties:
+            plgConfig:
+              description: Need to exist if the stack is plg-*
+              properties:
+                grafana:
+                  properties:
+                    image:
+                      description: lock the image, which make the image will not update
+                        unexpectedly after kalm is upgraded.
+                      type: string
+                  required:
+                  - image
+                  type: object
+                loki:
+                  properties:
+                    diskSize:
+                      description: only works when stack is plg-monolithic
+                      type: string
+                    image:
+                      description: lock the image, which make loki will not update
+                        unexpectedly after kalm is upgraded.
+                      type: string
+                    retentionDays:
+                      description: 'Zero means disable retention. If it''s not zero,
+                        this value will affect   table_manager.retention_deletes_enabled
+                        to be true   table_manager.retention_period   chunk_store_config.max_look_back_period   period_config.index.period
+                        Read more:   https://grafana.com/docs/loki/latest/operations/storage/table-manager/   https://grafana.com/docs/loki/latest/operations/storage/retention/'
+                      format: int32
+                      type: integer
+                    storageClass:
+                      description: only works when stack is plg-monolithic
+                      type: string
+                  required:
+                  - image
+                  - retentionDays
+                  type: object
+                promtail:
+                  properties:
+                    image:
+                      description: lock the image, which make the image will not update
+                        unexpectedly after kalm is upgraded.
+                      type: string
+                  required:
+                  - image
+                  type: object
+              required:
+              - grafana
+              - loki
+              - promtail
+              type: object
+            stack:
+              enum:
+              - plg-monolithic
+              type: string
+            storageClass:
+              description: This sc will be used in pvc template if a disk is required.
+                This value can be overwrite from deeper struct attribute.
+              type: string
+          required:
+          - stack
+          type: object
+        status:
+          description: LogSystemStatus defines the observed state oLogSystemf
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: protectedendpoints.core.kalm.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.type
+    name: Type
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: core.kalm.dev
+  names:
+    kind: ProtectedEndpoint
+    listKind: ProtectedEndpointList
+    plural: protectedendpoints
+    singular: protectedendpoint
+  scope: Namespaced
+  subresources: {}
+  validation:
+    openAPIV3Schema:
+      description: ProtectedEndpoint is the Schema for the protectedendpoints API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: ProtectedEndpointSpec defines the desired state of ProtectedEndpoint
+          properties:
+            allowToPassIfHasBearerToken:
+              description: Allow auth proxy to let the request pass if it has bearer
+                token. This flag should be set carefully. Please make sure that the
+                upstream can handle the token correctly. Otherwise, client can bypass
+                kalm sso by sending a not empty bearer token.
+              type: boolean
+            groups:
+              items:
+                type: string
+              type: array
+            name:
+              minLength: 1
+              type: string
+            ports:
+              items:
+                format: int32
+                type: integer
+              type: array
+          required:
+          - name
+          type: object
+        status:
+          description: ProtectedEndpointStatus defines the observed state of ProtectedEndpoint
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: rolebindings.core.kalm.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.subject
+    name: Subject
+    type: string
+  - JSONPath: .spec.creator
+    name: Creator
+    type: string
+  - JSONPath: .spec.expiredAt
+    name: ExpiredAt
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: core.kalm.dev
+  names:
+    kind: RoleBinding
+    listKind: RoleBindingList
+    plural: rolebindings
+    singular: rolebinding
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: RoleBinding is the Schema for the deploykeys API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          properties:
+            creator:
+              description: Creator of this binding
+              minLength: 1
+              type: string
+            expiredAt:
+              description: Expire time of this key. Infinity if blank
+              format: date-time
+              type: string
+            role:
+              enum:
+              - viewer
+              - editor
+              - owner
+              - clusterViewer
+              - clusterEditor
+              - clusterOwner
+              - suspended
+              - placeholder
+              type: string
+            subject:
+              minLength: 1
+              type: string
+            subjectType:
+              enum:
+              - user
+              - group
+              type: string
+          required:
+          - creator
+          - role
+          - subject
+          - subjectType
+          type: object
+        status:
+          description: RoleBindingStatus defines the observed state of RoleBinding
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.2.4
+  creationTimestamp: null
+  name: singlesignonconfigs.core.kalm.dev
+spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.domain
+    description: Domain of dex
+    name: Domain
+    type: string
+  - JSONPath: .spec.issuer
+    name: Issuer
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
+  group: core.kalm.dev
+  names:
+    kind: SingleSignOnConfig
+    listKind: SingleSignOnConfigList
+    plural: singlesignonconfigs
+    singular: singlesignonconfig
+  scope: Namespaced
+  subresources: {}
+  validation:
+    openAPIV3Schema:
+      description: SingleSignOnConfig is the Schema for the singlesignonconfigs API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: SingleSignOnConfigSpec defines the desired state of SingleSignOnConfig
+          properties:
+            alwaysShowLoginScreen:
+              type: boolean
+            connectors:
+              items:
+                properties:
+                  config:
+                    type: object
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  type:
+                    type: string
+                required:
+                - config
+                - id
+                - name
+                - type
+                type: object
+              type: array
+            domain:
+              description: The following are for kalm dex oidc provider
+              type: string
+            externalEnvoyExtAuthz:
+              description: Create service entry if the ext_authz service is running
+                out of istio mesh
+              properties:
+                host:
+                  type: string
+                port:
+                  type: integer
+                scheme:
+                  type: string
+              required:
+              - host
+              - port
+              - scheme
+              type: object
+            idTokenExpirySeconds:
+              format: int32
+              type: integer
+            issuer:
+              description: These four are for arbitrary oidc provider
+              type: string
+            issuerClientId:
+              type: string
+            issuerClientSecret:
+              type: string
+            jwksUri:
+              type: string
+            needExtraOAuthScope:
+              type: boolean
+            port:
+              type: integer
+            showApproveScreen:
+              type: boolean
+            temporaryUser:
+              properties:
+                email:
+                  type: string
+                passwordHash:
+                  description: bcrypt hash of the password
+                  type: string
+                userId:
+                  type: string
+                username:
+                  type: string
+              required:
+              - email
+              - passwordHash
+              - userId
+              - username
+              type: object
+            useHttp:
+              description: Default scheme is https, this flag is to change it to http
+              type: boolean
+          type: object
+        status:
+          description: SingleSignOnConfigStatus defines the observed state of SingleSignOnConfig
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kalm-leader-election-role
+  namespace: kalm-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - configmaps/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: kalm-controller
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolume
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - create
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - cronjobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cert-manager.io
+  resources:
+  - certificates
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cert-manager.io
+  resources:
+  - clusterissuers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - acmeservers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - acmeservers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - applications
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - componentpluginbindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - componentpluginbindings/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - componentplugins
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - componentplugins/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - components
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - components/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - dnsrecords
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - dnsrecords/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - dockerregistries
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - dockerregistries/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - domains
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - domains/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - httproutes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - httproutes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - httpscertissuers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - httpscertissuers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - httpscerts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - httpscerts/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - logsystems
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - logsystems/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - protectedendpoints
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - protectedendpoints/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - singlesignonconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - singlesignonconfigs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - dex.coreos.com
+  resources:
+  - '*'
+  verbs:
+  - create
+- apiGroups:
+  - extensions
+  resources:
+  - daemonsets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - deployments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - metrics.k8s.io
+  resources:
+  - '*'
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - networking.istio.io
+  resources:
+  - destinationrules
+  verbs:
+  - '*'
+- apiGroups:
+  - networking.istio.io
+  resources:
+  - envoyfilters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - networking.istio.io
+  resources:
+  - envoyfilters/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - networking.istio.io
+  resources:
+  - gateways
+  verbs:
+  - '*'
+- apiGroups:
+  - networking.istio.io
+  resources:
+  - serviceentries
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - networking.istio.io
+  resources:
+  - serviceentries/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - networking.istio.io
+  resources:
+  - virtualservices
+  verbs:
+  - '*'
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterrolebindings
+  - clusterroles
+  verbs:
+  - '*'
+- apiGroups:
+  - security.istio.io
+  resources:
+  - authorizationpolicies
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - security.istio.io
+  resources:
+  - authorizationpolicies/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - security.istio.io
+  resources:
+  - requestauthentications
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - security.istio.io
+  resources:
+  - requestauthentications/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - storageclasses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kalm-proxy-role
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kalm-leader-election-rolebinding
+  namespace: kalm-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kalm-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: kalm-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kalm-controller-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kalm-controller
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: kalm-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kalm-controller-rolebinding-view
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: kalm-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kalm-proxy-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kalm-proxy-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: kalm-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kalm-system-default-service-account-as-cluster-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: kalm-system
+- kind: ServiceAccount
+  name: component-kalm
+  namespace: system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    control-plane: controller
+  name: kalm-controller-metrics-service
+  namespace: kalm-system
+spec:
+  ports:
+  - name: https
+    port: 8443
+    targetPort: https
+  selector:
+    control-plane: controller
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kalm-webhook-service
+  namespace: kalm-system
+spec:
+  ports:
+  - port: 443
+    targetPort: 9443
+  selector:
+    control-plane: controller
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: kalm-serving-cert
+  namespace: kalm-system
+spec:
+  dnsNames:
+  - kalm-webhook-service.kalm-system.svc
+  - kalm-webhook-service.kalm-system.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: kalm-selfsigned-issuer
+  secretName: webhook-server-cert
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Issuer
+metadata:
+  name: kalm-selfsigned-issuer
+  namespace: kalm-system
+spec:
+  selfSigned: {}
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: kalm-system/kalm-serving-cert
+  creationTimestamp: null
+  name: kalm-mutating-webhook-configuration
+webhooks:
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /mutate-core-kalm-dev-v1alpha1-accesstoken
+  failurePolicy: Fail
+  name: maccesstoken.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - accesstokens
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /mutate-core-kalm-dev-v1alpha1-componentpluginbinding
+  failurePolicy: Fail
+  name: mcomponentpluginbinding.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - componentpluginbindings
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /mutate-core-kalm-dev-v1alpha1-component
+  failurePolicy: Fail
+  name: mcomponent.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - components
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /mutate-core-kalm-dev-v1alpha1-dockerregistry
+  failurePolicy: Fail
+  name: mdockerregistry.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - dockerregistries
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /mutate-core-kalm-dev-v1alpha1-domain
+  failurePolicy: Fail
+  name: mdomain.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - domains
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /mutate-core-kalm-dev-v1alpha1-httproute
+  failurePolicy: Fail
+  name: mhttproute.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - httproutes
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /mutate-core-kalm-dev-v1alpha1-httpscert
+  failurePolicy: Fail
+  name: mhttpscert.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - httpscerts
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /mutate-core-kalm-dev-v1alpha1-logsystem
+  failurePolicy: Fail
+  name: mlogsystem.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - logsystems
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /mutate-core-v1alpha1-protectedendpoint
+  failurePolicy: Fail
+  name: mprotectedendpointtype.kb.io
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - protectedendpointtypes
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /mutate-core-kalm-dev-v1alpha1-rolebinding
+  failurePolicy: Fail
+  name: mrolebinding.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - rolebindings
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /mutate-core-kalm-dev-v1alpha1-singlesignonconfig
+  failurePolicy: Fail
+  name: msinglesignonconfig.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - singlesignonconfigs
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: kalm-system/kalm-serving-cert
+  creationTimestamp: null
+  name: kalm-validating-webhook-configuration
+webhooks:
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /validate-core-kalm-dev-v1alpha1-accesstoken
+  failurePolicy: Fail
+  name: vaccesstoken.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    - DELETE
+    resources:
+    - accesstokens
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /validate-core-kalm-dev-v1alpha1-acmeserver
+  failurePolicy: Fail
+  name: vacmeserver.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - acmeservers
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /validate-core-kalm-dev-v1alpha1-componentpluginbinding
+  failurePolicy: Fail
+  name: vcomponentpluginbinding.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - componentpluginbindings
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /validate-core-kalm-dev-v1alpha1-component
+  failurePolicy: Fail
+  name: vcomponent.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    - DELETE
+    resources:
+    - components
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /validate-core-kalm-dev-v1alpha1-dockerregistry
+  failurePolicy: Fail
+  name: vdockerregistry.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    - DELETE
+    resources:
+    - dockerregistries
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /validate-core-kalm-dev-v1alpha1-domain
+  failurePolicy: Fail
+  name: vdomain.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - domains
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /validate-core-kalm-dev-v1alpha1-httproute
+  failurePolicy: Fail
+  name: vhttproute.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    - DELETE
+    resources:
+    - httproutes
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /validate-core-kalm-dev-v1alpha1-httpscert
+  failurePolicy: Fail
+  name: vhttpscert.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    - DELETE
+    resources:
+    - httpscerts
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /validate-core-kalm-dev-v1alpha1-httpscertissuer
+  failurePolicy: Fail
+  name: vhttpscertissuer.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - httpscertissuers
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /validate-core-kalm-dev-v1alpha1-logsystem
+  failurePolicy: Fail
+  name: vlogsystem.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - logsystems
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /validate-core-v1alpha1-protectedendpoint
+  failurePolicy: Fail
+  name: vprotectedendpointtype.kb.io
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - protectedendpointtypes
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /validate-core-kalm-dev-v1alpha1-rolebinding
+  failurePolicy: Fail
+  name: vrolebinding.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - rolebindings
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: kalm-webhook-service
+      namespace: kalm-system
+      path: /validate-core-kalm-dev-v1alpha1-singlesignonconfig
+  failurePolicy: Fail
+  name: vsinglesignonconfig.kb.io
+  rules:
+  - apiGroups:
+    - core.kalm.dev
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - singlesignonconfigs

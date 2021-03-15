@@ -33,7 +33,7 @@ class ResourceNotFoundRaw extends React.PureComponent<Props, State> {
   public render() {
     const { text, redirect, redirectText } = this.props;
     return (
-      <Paper square variant="outlined">
+      <Paper variant="outlined">
         <Box p={2}>
           <Box p={2} display="flex" justifyContent="center">
             <H1>404</H1>

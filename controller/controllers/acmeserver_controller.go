@@ -53,7 +53,7 @@ type ACMEServerReconciler struct {
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=acmeservers/status,verbs=get;update;patch
 
 func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("acmeserver", req.NamespacedName)
+	_ = r.Log.WithValues("acmeserver", req.NamespacedName)
 
 	acmeServerList := corev1alpha1.ACMEServerList{}
 	if err := r.List(r.ctx, &acmeServerList); err != nil {
@@ -62,22 +62,7 @@ func (r *ACMEServerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 
 	size := len(acmeServerList.Items)
 	if size <= 0 {
-		// check if wildcard httpsCert exists
-		//   if yes, create a acme-server
-
-		wildcardCerts, err := r.findWildcardCerts()
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-
-		if len(wildcardCerts) <= 0 {
-			log.Info("no wildcardCerts exist yet, skip install of acme-server")
-			return ctrl.Result{}, nil
-		}
-
-		err = r.installACMEServer(wildcardCerts[0])
-
-		return ctrl.Result{}, err
+		return ctrl.Result{}, nil
 	} else if size > 1 {
 		return ctrl.Result{}, fmt.Errorf("at most 1 config for acmeServer, see: %d", size)
 	}
@@ -139,7 +124,7 @@ func pickStorageClass(list v1.StorageClassList) v1.StorageClass {
 	return scList[0]
 }
 
-func genContentForACMEServerConfig(acmeDomain, nsDomain, nsDomainIP string) string {
+func genContentForACMEServerConfig(acmeDomain, nsDomain string) string {
 	template := `
 [general]
 # DNS interface. Note that systemd-resolved may reserve port 53 on 127.0.0.53
@@ -157,8 +142,8 @@ nsname = "ACME_DOMAIN_PLACEHOLDER"
 # predefined records served in addition to the TXT
 records = [
     # domain pointing to the public IP of your acme-dns server
-    "ACME_DOMAIN_PLACEHOLDER. A  NS_DOMAIN_IP_PLACEHOLDER",
-    # specify that acme.example.xyz will resolve any *.acme.example.xyz records
+    #"ACME_DOMAIN_PLACEHOLDER. A  NS_DOMAIN_IP_PLACEHOLDER", # this record seems not necessary 
+    # specify that ns-acme.example.xyz will resolve any *.acme.example.xyz records
     "ACME_DOMAIN_PLACEHOLDER. NS NS_DOMAIN_PLACEHOLDER.",
 ]
 # debug messages from CORS etc
@@ -208,7 +193,7 @@ logformat = "text"`
 
 	rst := strings.ReplaceAll(template, "ACME_DOMAIN_PLACEHOLDER", acmeDomain)
 	rst = strings.ReplaceAll(rst, "NS_DOMAIN_PLACEHOLDER", nsDomain)
-	rst = strings.ReplaceAll(rst, "NS_DOMAIN_IP_PLACEHOLDER", nsDomainIP)
+	// rst = strings.ReplaceAll(rst, "NS_DOMAIN_IP_PLACEHOLDER", nsDomainIP)
 
 	return rst
 }
@@ -462,6 +447,10 @@ func (r *ACMEServerReconciler) reconcileLoadBalanceServiceForNSDomain(acmeServer
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: KalmSystemNamespace,
 			Name:      GetNameForLoadBalanceServiceForNSDomain(),
+			//todo tmp fix for aws, this will use NLB(which support UDP)instead of CLB
+			Annotations: map[string]string{
+				"service.beta.kubernetes.io/aws-load-balancer-type": "nlb",
+			},
 		},
 		Spec: corev1.ServiceSpec{
 			Type: corev1.ServiceTypeLoadBalancer,
@@ -507,6 +496,14 @@ func (r *ACMEServerReconciler) reconcileLoadBalanceServiceForNSDomain(acmeServer
 
 		copied.Spec.Selector = expectedLBService.Spec.Selector
 		copied.Spec.Type = expectedLBService.Spec.Type
+
+		if copied.Annotations == nil {
+			copied.Annotations = make(map[string]string)
+		}
+		for k, v := range expectedLBService.Annotations {
+			copied.Annotations[k] = v
+		}
+
 		//nodePort is auto set
 		//copied.Spec.Ports = expectedLBService.Spec.Ports
 
@@ -602,13 +599,16 @@ func (r *ACMEServerReconciler) reconcileStatus(server corev1alpha1.ACMEServer) e
 	}
 
 	ingList := svc.Status.LoadBalancer.Ingress
-	if len(ingList) <= 0 || ingList[0].IP == "" {
-		r.Log.Info("loadBalancer IP for lb-svc not ready yet")
+	if len(ingList) <= 0 || (ingList[0].IP == "" && ingList[0].Hostname == "") {
+		r.Log.Info("loadBalancer ip & hostname for lb-svc not ready yet")
 
-		server.Status.IPForNameServer = ""
+		server.Status.NameServerIP = ""
+		server.Status.NameServerHostname = ""
 		server.Status.Ready = false
 	} else {
-		server.Status.IPForNameServer = ingList[0].IP
+		server.Status.NameServerIP = ingList[0].IP
+		server.Status.NameServerHostname = ingList[0].Hostname
+
 		// todo more strict check
 		server.Status.Ready = true
 	}
@@ -616,32 +616,46 @@ func (r *ACMEServerReconciler) reconcileStatus(server corev1alpha1.ACMEServer) e
 	return r.Status().Update(r.ctx, &server)
 }
 
+func firstNonEmpty(strs ...string) string {
+	for _, str := range strs {
+		if str == "" {
+			continue
+		}
+
+		return str
+	}
+
+	return ""
+}
+
 var ErrLBSvcForACMEServerNotReady = fmt.Errorf("LoadBalancer service for ACMEServer not ready yet")
 
 func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.ACMEServer) error {
 	// find if lb-svc IP is ready
-	var lbSvc corev1.Service
-	err := r.Get(r.ctx, client.ObjectKey{
-		Namespace: KalmSystemNamespace,
-		Name:      GetNameForLoadBalanceServiceForNSDomain(),
-	}, &lbSvc)
-	if err != nil {
-		return err
-	}
+	// var lbSvc corev1.Service
+	// err := r.Get(r.ctx, client.ObjectKey{
+	// 	Namespace: KalmSystemNamespace,
+	// 	Name:      GetNameForLoadBalanceServiceForNSDomain(),
+	// }, &lbSvc)
+	// if err != nil {
+	// 	return err
+	// }
 
-	if len(lbSvc.Status.LoadBalancer.Ingress) <= 0 ||
-		lbSvc.Status.LoadBalancer.Ingress[0].IP == "" {
+	// lbIngress := lbSvc.Status.LoadBalancer.Ingress
+	// if len(lbIngress) <= 0 || (lbIngress[0].IP == "" && lbIngress[0].Hostname == "") {
 
-		r.Log.Info("loadBalancer for ACME DNS not ready yet")
-		return ErrLBSvcForACMEServerNotReady
-	}
+	// 	r.Log.Info("loadBalancer for ACME DNS not ready yet")
+	// 	return ErrLBSvcForACMEServerNotReady
+	// }
 
-	ip := lbSvc.Status.LoadBalancer.Ingress[0].IP
+	// test if ip config for ns-acme.xxx is not necessary
+	// ip := lbSvc.Status.LoadBalancer.Ingress[0].IP
+	// hostname := lbSvc.Status.LoadBalancer.Ingress[0].Hostname
 
 	acmeDomain := acmeServer.Spec.ACMEDomain
 	nsDomain := acmeServer.Spec.NSDomain
 
-	acmeServerConfigContent := genContentForACMEServerConfig(acmeDomain, nsDomain, ip)
+	acmeServerConfigContent := genContentForACMEServerConfig(acmeDomain, nsDomain)
 
 	var scList v1.StorageClassList
 	if err := r.List(r.ctx, &scList); err != nil {
@@ -699,7 +713,7 @@ func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.AC
 	isNew := false
 	comp := corev1alpha1.Component{}
 
-	err = r.Get(r.ctx, client.ObjectKey{Namespace: expectedComp.Namespace, Name: expectedComp.Name}, &comp)
+	err := r.Get(r.ctx, client.ObjectKey{Namespace: expectedComp.Namespace, Name: expectedComp.Name}, &comp)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			isNew = true
@@ -726,59 +740,6 @@ func (r *ACMEServerReconciler) reconcileACMEComponent(acmeServer corev1alpha1.AC
 	}
 
 	return err
-}
-
-func (r *ACMEServerReconciler) findWildcardCerts() ([]corev1alpha1.HttpsCert, error) {
-	var httpsCertList corev1alpha1.HttpsCertList
-	if err := r.List(r.ctx, &httpsCertList); err != nil {
-		return nil, err
-	}
-
-	var rst []corev1alpha1.HttpsCert
-	for _, cert := range httpsCertList.Items {
-		if cert.Spec.HttpsCertIssuer != corev1alpha1.DefaultDNS01IssuerName {
-			continue
-		}
-
-		rst = append(rst, cert)
-	}
-
-	return rst, nil
-}
-
-func (r *ACMEServerReconciler) installACMEServer(cert corev1alpha1.HttpsCert) error {
-	domains := cert.Spec.Domains
-	if len(domains) <= 0 {
-		return fmt.Errorf("spec.domains is empty")
-	}
-
-	baseDomain := rmWildcardPrefixIfExist(domains[0])
-
-	// acme-xxyyzz.example.com
-	acmeDomain := fmt.Sprintf("acme-%s.%s", sha1String(baseDomain)[:6], baseDomain)
-	// ns.acme-xxyyzz.example.com
-	nsDomain := fmt.Sprintf("ns.%s", acmeDomain)
-
-	expectedACMEServer := corev1alpha1.ACMEServer{
-		ObjectMeta: ctrl.ObjectMeta{
-			Name: v1alpha1.ACMEServerName,
-		},
-		Spec: corev1alpha1.ACMEServerSpec{
-			ACMEDomain: acmeDomain,
-			NSDomain:   nsDomain,
-		},
-	}
-
-	return r.Create(r.ctx, &expectedACMEServer)
-}
-
-func rmWildcardPrefixIfExist(domain string) string {
-	domain = strings.TrimSpace(domain)
-	if strings.HasPrefix(domain, "*.") {
-		domain = domain[2:]
-	}
-
-	return domain
 }
 
 func (r *ACMEServerReconciler) updateStatusOfCertsUsingDNSIssuer(httpsCertIssuer corev1alpha1.HttpsCertIssuer) error {

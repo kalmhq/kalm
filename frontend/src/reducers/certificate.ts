@@ -1,3 +1,4 @@
+import { produce } from "immer";
 import { Actions } from "types";
 import {
   AcmeServerInfo,
@@ -9,12 +10,10 @@ import {
   LOAD_ACME_SERVER_FAILED,
   LOAD_ACME_SERVER_FULFILLED,
   LOAD_ACME_SERVER_PENDING,
-  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
   LOAD_CERTIFICATES_FAILED,
   LOAD_CERTIFICATES_FULFILLED,
   LOAD_CERTIFICATES_PENDING,
-  SET_IS_SUBMITTING_ACME_SERVER,
-  SET_IS_SUBMITTING_CERTIFICATE,
+  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
 } from "types/certificate";
 import {
   RESOURCE_ACTION_ADD,
@@ -24,16 +23,13 @@ import {
   RESOURCE_TYPE_HTTPS_CERT,
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
-import { produce } from "immer";
 import { addOrUpdateInArray, isInArray, removeInArray, removeInArrayByName } from "./utils";
 
 export interface State {
   isLoading: boolean;
   isFirstLoaded: boolean;
-  isSubmittingCreateCertificate: boolean;
   certificates: Certificate[];
   certificateIssuers: CertificateIssuer[];
-  isSubmittingCreateAcmeServer: boolean;
   isAcmeServerLoading: boolean;
   acmeServer: AcmeServerInfo | null;
 }
@@ -41,10 +37,8 @@ export interface State {
 const initialState: State = {
   isLoading: false,
   isFirstLoaded: false,
-  isSubmittingCreateCertificate: false,
   certificates: [],
   certificateIssuers: [],
-  isSubmittingCreateAcmeServer: false,
   isAcmeServerLoading: false,
   acmeServer: null,
 };
@@ -134,14 +128,6 @@ const reducer = produce((state: State, action: Actions) => {
       }
 
       break;
-    }
-    case SET_IS_SUBMITTING_CERTIFICATE: {
-      state.isSubmittingCreateCertificate = action.payload.isSubmittingCertificate;
-      return;
-    }
-    case SET_IS_SUBMITTING_ACME_SERVER: {
-      state.isSubmittingCreateAcmeServer = action.payload.isSubmittingAcmeServer;
-      return;
     }
   }
 

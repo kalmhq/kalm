@@ -25,32 +25,30 @@ export const AcmeForm: React.FC<Props> = (props) => {
       keepDirtyOnReinitialize={true}
       render={({ handleSubmit }) => (
         <form id="acme-form" onSubmit={handleSubmit}>
-          <Box p={2}>
-            <Prompt />
-            <KPanel
-              content={
-                <Box p={2}>
-                  <Grid container spacing={2}>
-                    <Grid item md={12}>
-                      <Field
-                        name="acmeDomain"
-                        label="ACME Domain"
-                        component={FinalTextField}
-                        validate={ValidatorIsDNS1123SubDomain}
-                        parse={trimAndToLowerParse}
-                        helperText="The domain name of your ACME server"
-                        placeholder="e.g. acme-random-suffix.your-domain.com"
-                      />
-                    </Grid>
+          <Prompt />
+          <KPanel
+            content={
+              <Box p={2}>
+                <Grid container spacing={2}>
+                  <Grid item md={12}>
+                    <Field
+                      name="acmeDomain"
+                      label="ACME Domain"
+                      component={FinalTextField}
+                      validate={ValidatorIsDNS1123SubDomain}
+                      parse={trimAndToLowerParse}
+                      helperText="The domain name of your ACME server"
+                      placeholder="e.g. acme-random-suffix.your-domain.com"
+                    />
                   </Grid>
+                </Grid>
 
-                  <FormDataPreview />
-                </Box>
-              }
-            />
-            <Box pt={2}>
-              <SubmitButton>Save</SubmitButton>
-            </Box>
+                <FormDataPreview />
+              </Box>
+            }
+          />
+          <Box pt={2}>
+            <SubmitButton>Save</SubmitButton>
           </Box>
         </form>
       )}

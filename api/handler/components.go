@@ -23,13 +23,12 @@ func (h *ApiHandler) InstallComponentsHandlers(e *echo.Group) {
 
 func (h *ApiHandler) handleListComponents(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanView(currentUser, currentUser.Tenant+"/"+c.Param("applicationName"), "components/*")
+	h.MustCanView(currentUser, c.Param("applicationName"), "components/*")
 
 	var componentList v1alpha1.ComponentList
 
 	if err := h.resourceManager.List(
 		&componentList,
-		belongsToTenant(currentUser.Tenant),
 		client.InNamespace(c.Param("applicationName")),
 	); err != nil {
 		return err
@@ -48,7 +47,7 @@ func (h *ApiHandler) handleTriggerJob(c echo.Context) error {
 	currentUser := getCurrentUser(c)
 	applicationName := c.Param("applicationName")
 	componentName := c.Param("name")
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+applicationName, "components/"+componentName)
+	h.MustCanEdit(currentUser, applicationName, "components/"+componentName)
 
 	var component v1alpha1.Component
 	if err := h.resourceManager.Get(applicationName, c.Param("name"), &component); err != nil {
@@ -75,7 +74,7 @@ func (h *ApiHandler) handleTriggerJob(c echo.Context) error {
 
 func (h *ApiHandler) handleCreateComponent(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+c.Param("applicationName"), "components/*")
+	h.MustCanEdit(currentUser, c.Param("applicationName"), "components/*")
 
 	component, err := bindResourcesComponentFromRequestBody(c)
 
@@ -83,7 +82,6 @@ func (h *ApiHandler) handleCreateComponent(c echo.Context) error {
 		return err
 	}
 
-	component.Tenant = currentUser.Tenant
 	crdComponent := getCrdComponent(component)
 
 	// permission, check if component try to re-use disk from other ns
@@ -126,9 +124,8 @@ func (h *ApiHandler) handleUpdateComponent(c echo.Context) error {
 	currentUser := getCurrentUser(c)
 
 	component.Name = c.Param("name")
-	component.Tenant = currentUser.Tenant
 
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+c.Param("applicationName"), "components/"+component.Name)
+	h.MustCanEdit(currentUser, c.Param("applicationName"), "components/"+component.Name)
 
 	crdComponent := getCrdComponent(component)
 
@@ -159,7 +156,7 @@ func (h *ApiHandler) handleUpdateComponent(c echo.Context) error {
 
 func (h *ApiHandler) handleGetComponent(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanView(currentUser, currentUser.Tenant+"/"+c.Param("applicationName"), "components/"+c.Param("name"))
+	h.MustCanView(currentUser, c.Param("applicationName"), "components/"+c.Param("name"))
 
 	var component v1alpha1.Component
 	if err := h.resourceManager.Get(c.Param("applicationName"), c.Param("name"), &component); err != nil {
@@ -177,7 +174,7 @@ func (h *ApiHandler) handleGetComponent(c echo.Context) error {
 
 func (h *ApiHandler) handleDeleteComponent(c echo.Context) error {
 	currentUser := getCurrentUser(c)
-	h.MustCanEdit(currentUser, currentUser.Tenant+"/"+c.Param("applicationName"), "components/"+c.Param("name"))
+	h.MustCanEdit(currentUser, c.Param("applicationName"), "components/"+c.Param("name"))
 
 	if err := h.resourceManager.Delete(&v1alpha1.Component{ObjectMeta: metaV1.ObjectMeta{
 		Name:      c.Param("name"),
@@ -220,7 +217,7 @@ func (h *ApiHandler) checkPermissionOnVolume(c *client2.ClientInfo, vols []v1alp
 			continue
 		}
 
-		if !h.clientManager.CanEditScope(c, c.Tenant+"/"+boundingPVC.Namespace) {
+		if !h.clientManager.CanEditNamespace(c, boundingPVC.Namespace) {
 			return resources.NoNamespaceEditorRoleError(boundingPVC.Namespace)
 		}
 	}
@@ -237,9 +234,6 @@ func getCrdComponent(component *resources.Component) *v1alpha1.Component {
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      component.Name,
 			Namespace: component.Namespace,
-			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: component.Tenant,
-			},
 		},
 		Spec: *component.ComponentSpec,
 	}

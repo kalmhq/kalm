@@ -31,10 +31,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	"github.com/kalmhq/kalm/controller/api/builtin"
-	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 
@@ -181,16 +178,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = controllers.NewTenantReconciler(mgr).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller: Tenant")
-		os.Exit(1)
-	}
-
-	if err = controllers.NewClusterResourceQuotaReconciler(mgr).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller: ClusterResourceQuota")
-		os.Exit(1)
-	}
-
 	if err = controllers.NewDomainReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller: Domain")
 		os.Exit(1)
@@ -203,7 +190,6 @@ func main() {
 
 	// only run webhook if explicitly declared
 	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
-		v1alpha1.InitializeWebhookClient(mgr)
 
 		if err = (&corev1alpha1.AccessToken{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "AccessToken")
@@ -265,33 +251,10 @@ func main() {
 			os.Exit(1)
 		}
 
-		if err = (&corev1alpha1.Tenant{}).SetupWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "Tenant")
-			os.Exit(1)
-		}
-
 		if err = (&corev1alpha1.Domain{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Domain")
 			os.Exit(1)
 		}
-
-		hookServer := mgr.GetWebhookServer()
-		// ns webhook
-		hookServer.Register("/validate-v1-ns", &webhook.Admission{
-			Handler: &builtin.NSValidator{},
-		})
-		// pv webhook
-		hookServer.Register("/admission-handler-v1-pvc", &webhook.Admission{
-			Handler: &builtin.PVCAdmissionHandler{},
-		})
-		// pod webhook
-		hookServer.Register("/admission-handler-v1-pod", &webhook.Admission{
-			Handler: &builtin.PodAdmissionHandler{Recorder: mgr.GetEventRecorderFor("podAdmissionHandler")},
-		})
-		// svc webhook
-		hookServer.Register("/admission-handler-v1-svc", &webhook.Admission{
-			Handler: &builtin.SvcAdmissionHandler{},
-		})
 
 		setupLog.Info("WEBHOOK enabled")
 	} else {
@@ -300,20 +263,6 @@ func main() {
 	//+kubebuilder:scaffold:builder
 
 	stopCh := ctrl.SetupSignalHandler()
-
-	//start domain check loop
-	if domainChecker, err := controllers.NewDomainChecker(mgr); err != nil {
-		setupLog.Error(err, "fail NewDomainChecker")
-		os.Exit(1)
-	} else {
-		go func() {
-			if err := domainChecker.Run(stopCh); err != nil {
-				setupLog.Error(err, "domainChecker exit with err")
-			} else {
-				setupLog.Info("domainChecker exit")
-			}
-		}()
-	}
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(stopCh); err != nil {

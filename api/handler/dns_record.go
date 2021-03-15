@@ -29,9 +29,6 @@ type DNSRecord struct {
 
 func (h *ApiHandler) handleListDNSRecords(c echo.Context) error {
 	curUser := getCurrentUser(c)
-	if curUser.Tenant != v1alpha1.DefaultSystemTenantName {
-		return fmt.Errorf("only tenant: %s can manage DNSRecord", v1alpha1.DefaultSystemTenantName)
-	}
 
 	h.MustCanManageCluster(curUser)
 
@@ -45,9 +42,6 @@ func (h *ApiHandler) handleListDNSRecords(c echo.Context) error {
 
 func (h *ApiHandler) handleGetDNSRecord(c echo.Context) error {
 	curUser := getCurrentUser(c)
-	if curUser.Tenant != v1alpha1.DefaultSystemTenantName {
-		return fmt.Errorf("only tenant: %s can manage DNSRecord", v1alpha1.DefaultSystemTenantName)
-	}
 
 	h.MustCanManageCluster(curUser)
 
@@ -64,9 +58,6 @@ func (h *ApiHandler) handleCreateDNSRecord(c echo.Context) error {
 	// permission check: only global cluster manager can create DNSRecord
 
 	curUser := getCurrentUser(c)
-	if curUser.Tenant != v1alpha1.DefaultSystemTenantName {
-		return fmt.Errorf("only tenant: %s can manage DNSRecord", v1alpha1.DefaultSystemTenantName)
-	}
 
 	h.MustCanManageCluster(curUser)
 
@@ -85,9 +76,6 @@ func (h *ApiHandler) handleCreateDNSRecord(c echo.Context) error {
 // can only update DNSTarget
 func (h *ApiHandler) handleUpdateDNSRecord(c echo.Context) error {
 	curUser := getCurrentUser(c)
-	if curUser.Tenant != v1alpha1.DefaultSystemTenantName {
-		return fmt.Errorf("only tenant: %s can manage DNSRecord", v1alpha1.DefaultSystemTenantName)
-	}
 
 	h.MustCanManageCluster(curUser)
 
@@ -113,9 +101,6 @@ func (h *ApiHandler) handleUpdateDNSRecord(c echo.Context) error {
 
 func (h *ApiHandler) handleDeleteDNSRecord(c echo.Context) error {
 	curUser := getCurrentUser(c)
-	if curUser.Tenant != v1alpha1.DefaultSystemTenantName {
-		return fmt.Errorf("only tenant: %s can manage DNSRecord", v1alpha1.DefaultSystemTenantName)
-	}
 
 	h.MustCanManageCluster(curUser)
 

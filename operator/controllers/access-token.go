@@ -11,26 +11,23 @@ func (r *KalmOperatorConfigReconciler) reconcileRootAccessTokenForBYOC() error {
 	return r.reconcileRootAccessToken(memo)
 }
 
-func (r *KalmOperatorConfigReconciler) reconcileRootAccessTokenForSaaS() error {
-	memo := "created by kalm-operator when initializing SaaS cluster"
-	return r.reconcileRootAccessToken(memo)
-}
+const rootAccessTokenLabel = "root-access-token"
 
 func (r *KalmOperatorConfigReconciler) reconcileRootAccessToken(memo string) error {
-	tokenList := v1alpha1.AccessTokenList{}
 
+	tokenList := v1alpha1.AccessTokenList{}
 	if err := r.List(r.Ctx, &tokenList); err != nil {
 		return err
 	}
 
 	// token name is sha256(rand(128))
-	// so we only check if a token labels with global tenant is generated
+	// so we only check if a token with given label
 	for _, token := range tokenList.Items {
-		tenantName := token.Labels[v1alpha1.TenantNameLabelKey]
-		if tenantName == v1alpha1.DefaultSystemTenantName {
-			r.Log.Info("accessToken labeled with global tenant is found, create token skipped")
-			return nil
+		if token.Labels[rootAccessTokenLabel] != "true" {
+			continue
 		}
+
+		return nil
 	}
 
 	token := rand.String(128)
@@ -40,7 +37,7 @@ func (r *KalmOperatorConfigReconciler) reconcileRootAccessToken(memo string) err
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 			Labels: map[string]string{
-				v1alpha1.TenantNameLabelKey: v1alpha1.DefaultSystemTenantName,
+				rootAccessTokenLabel: "true",
 			},
 		},
 		Spec: v1alpha1.AccessTokenSpec{

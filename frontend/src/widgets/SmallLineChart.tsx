@@ -19,7 +19,9 @@ const smallLineChartStyles = (theme: Theme) =>
       position: "relative",
       display: "inline-block",
       verticalAlign: "middle",
-      border: `1px solid ${theme.palette.type === "light" ? grey[300] : grey[700]}`,
+      border: `2px solid ${theme.palette.type === "light" ? grey[300] : grey[700]}`,
+      borderRadius: 4,
+      overflow: "hidden",
     },
     text: {
       left: 0,
@@ -69,7 +71,7 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
         {
           lineTension: 0.1,
           borderColor: borderColorFixed || "#DDD",
-          borderWidth: 1,
+          borderWidth: 2,
           backgroundColor: backgroundColorFixed || "rgba(75,192,192,0.4)",
           pointHoverRadius: 0,
           pointRadius: 0,

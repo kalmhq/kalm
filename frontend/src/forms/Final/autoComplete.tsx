@@ -1,7 +1,6 @@
-import { OutlinedTextFieldProps, TextField, Theme, Typography } from "@material-ui/core";
+import { OutlinedTextFieldProps, TextField, Theme } from "@material-ui/core";
 import Chip from "@material-ui/core/Chip";
 import { grey } from "@material-ui/core/colors";
-import Divider from "@material-ui/core/Divider";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import {
   AutocompleteProps,
@@ -14,8 +13,6 @@ import clsx from "clsx";
 import React, { ReactNode } from "react";
 import { FieldRenderProps } from "react-final-form";
 import { theme } from "theme/theme";
-import { KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
-import { Caption } from "widgets/Label";
 
 export interface AutoCompleteForRenderOption {
   value: string;
@@ -173,16 +170,14 @@ export const AutoCompleteMultiValuesFreeSolo: X = function <T>(props: AutoComple
 };
 
 export interface AutoCompleteSingleValueProps<T>
-  extends FieldRenderProps<T>,
+  extends FieldRenderProps<string>,
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText">,
     Pick<AutocompleteProps<T>, "noOptionsText">,
-    UseAutocompleteSingleProps<T> {
-  optionsForRender?: AutoCompleteForRenderOption[];
-}
+    UseAutocompleteSingleProps<T> {}
 
-const NO_GROUP = "__no__group__";
-
-export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueProps<string>): JSX.Element {
+export const AutoCompleteSingleValue = function (
+  props: AutoCompleteSingleValueProps<AutoCompleteForRenderOption>,
+): JSX.Element {
   const {
     label,
     helperText,
@@ -191,118 +186,84 @@ export const AutoCompleteSingleValue = function (props: AutoCompleteSingleValueP
     options,
     placeholder,
     noOptionsText,
-    optionsForRender,
   } = props;
 
-  const {
-    groupLabelDefault,
-    groupIcon,
-    logoIcon,
-    groupLabelCurrent,
-    groupLabel,
-    groupUl,
-  } = AutoCompleteSingleValueStyle();
+  // const {
+  //   groupLabelDefault,
+  //   groupIcon,
+  //   logoIcon,
+  //   groupLabelCurrent,
+  //   groupLabel,
+  //   groupUl,
+  // } = AutoCompleteSingleValueStyle();
+
+  let currentValue: AutoCompleteForRenderOption | null;
+  const valueInOptions = options.find((x) => x.value === value);
+
+  if (!valueInOptions) {
+    currentValue = {
+      value: value,
+      label: value,
+      group: "Not Valid",
+    };
+  } else {
+    currentValue = valueInOptions;
+  }
 
   return (
-    <Autocomplete
+    <Autocomplete<AutoCompleteForRenderOption>
       openOnFocus
       noOptionsText={noOptionsText}
       options={options}
       size="small"
-      groupBy={(value) => {
-        if (!optionsForRender) {
-          return NO_GROUP;
-        }
-
-        const option = optionsForRender?.find((x) => x.value === value);
-
-        if (!option) {
-          return value;
-        }
-
-        return option.group;
-      }}
+      // groupBy={(value) => value.group}
       filterOptions={createFilterOptions({
         ignoreCase: true,
         matchFrom: "any",
-        stringify: (value: string) => {
-          if (!optionsForRender) {
-            return value;
-          }
-
-          const option = optionsForRender?.find((x) => x.value === value);
-
-          if (!option) {
-            return value;
-          }
-
-          return option.label;
-        },
+        stringify: (value) => value.label,
       })}
-      getOptionLabel={(value: string) => {
-        if (!optionsForRender) {
-          return value;
-        }
-
-        const option = optionsForRender?.find((x) => x.value === value);
-
-        if (!option) {
-          return value;
-        }
-
-        return option.label;
+      getOptionLabel={(value) => {
+        return value.label;
       }}
-      renderOption={(value) => {
-        if (!optionsForRender) {
-          return value;
-        }
-
-        const option = optionsForRender?.find((x) => x.value === value);
-
-        if (!option) {
-          return null;
-        }
-
-        return (
-          <div className={groupUl}>
-            <Typography>{option!.label}</Typography>
-          </div>
-        );
-      }}
-      renderGroup={({ key, children }) => {
-        if (key === NO_GROUP) {
-          return children;
-        }
-
-        if (key === "default") {
-          return (
-            <div key={key}>
-              <div className={groupLabelDefault}>
-                <KalmLogoIcon className={clsx(groupIcon, logoIcon)} />
-                <Caption>{key}</Caption>
-              </div>
-              {children}
-              <Divider />
-            </div>
-          );
-        } else {
-          return (
-            <div key={key}>
-              <div className={groupLabel}>
-                <KalmApplicationIcon className={groupIcon} />
-                <Caption className={clsx(key.includes("Current") ? groupLabelCurrent : {})}>{key}</Caption>
-              </div>
-              {children}
-              <Divider />
-            </div>
-          );
-        }
-      }}
-      value={value}
+      // renderOption={(value) => {
+      //   return (
+      //     <div className={groupUl} key={value.label} data-value={value}>
+      //       <Typography>{value.label}</Typography>
+      //     </div>
+      //   );
+      // }}
+      // renderGroup={({ key, children }) => {
+      //   if (key === "default") {
+      //     return (
+      //       <div key={key}>
+      //         <div className={groupLabelDefault}>
+      //           <KalmLogoIcon className={clsx(groupIcon, logoIcon)} />
+      //           <Caption>{key}</Caption>
+      //         </div>
+      //         {children}
+      //         <Divider />
+      //       </div>
+      //     );
+      //   } else {
+      //     return (
+      //       <div key={key}>
+      //         <div className={groupLabel}>
+      //           <KalmApplicationIcon className={groupIcon} />
+      //           <Caption className={clsx(key.includes("Current") ? groupLabelCurrent : {})}>{key}</Caption>
+      //         </div>
+      //         {children}
+      //         <Divider />
+      //       </div>
+      //     );
+      //   }
+      // }}
+      value={currentValue}
       onBlur={onBlur}
       forcePopupIcon={true}
-      onChange={(_: any, value: string | null) => {
-        onChange(value);
+      onChange={(_: any, value: AutoCompleteForRenderOption | null) => {
+        if (value) {
+          onChange(value.value);
+        }
       }}
       renderInput={(params) => {
         return (

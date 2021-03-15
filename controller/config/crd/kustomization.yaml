@@ -2,26 +2,25 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
-- bases/core.kalm.dev_accesstokens.yaml
-- bases/core.kalm.dev_components.yaml
-- bases/core.kalm.dev_componentplugins.yaml
-- bases/core.kalm.dev_componentpluginbindings.yaml
-#- bases/core.kalm.dev_componenttemplates.yaml
-#- bases/core.kalm.dev_dependencies.yaml
-- bases/core.kalm.dev_httpscertissuers.yaml
-- bases/core.kalm.dev_httpscerts.yaml
-- bases/core.kalm.dev_dockerregistries.yaml
-- bases/core.kalm.dev_httproutes.yaml
-- bases/core.kalm.dev_singlesignonconfigs.yaml
-- bases/core.kalm.dev_protectedendpoints.yaml
-- bases/core.kalm.dev_deploykeys.yaml
-- bases/core.kalm.dev_acmeservers.yaml
-- bases/core.kalm.dev_logsystems.yaml
-- bases/core.kalm.dev_rolebindings.yaml
-- bases/core.kalm.dev_tenants.yaml
-- bases/core.kalm.dev_clusterresourcequotas.yaml
-- bases/core.kalm.dev_domains.yaml
-- bases/core.kalm.dev_dnsrecords.yaml
+  - bases/core.kalm.dev_accesstokens.yaml
+  - bases/core.kalm.dev_components.yaml
+  - bases/core.kalm.dev_componentplugins.yaml
+  - bases/core.kalm.dev_componentpluginbindings.yaml
+  #- bases/core.kalm.dev_componenttemplates.yaml
+  #- bases/core.kalm.dev_dependencies.yaml
+  - bases/core.kalm.dev_httpscertissuers.yaml
+  - bases/core.kalm.dev_httpscerts.yaml
+  - bases/core.kalm.dev_dockerregistries.yaml
+  - bases/core.kalm.dev_httproutes.yaml
+  - bases/core.kalm.dev_singlesignonconfigs.yaml
+  - bases/core.kalm.dev_protectedendpoints.yaml
+  #- bases/core.kalm.dev_deploykeys.yaml
+  - bases/core.kalm.dev_acmeservers.yaml
+  - bases/core.kalm.dev_logsystems.yaml
+  - bases/core.kalm.dev_rolebindings.yaml
+  # - bases/core.kalm.dev_clusterresourcequotas.yaml
+  - bases/core.kalm.dev_domains.yaml
+  - bases/core.kalm.dev_dnsrecords.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:

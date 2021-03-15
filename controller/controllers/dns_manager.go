@@ -173,3 +173,33 @@ func getRootDomain(domain string) string {
 
 	return parts[size-2] + "." + parts[size-1]
 }
+
+func initCloudflareDNSManagerFromEnv() (*CloudflareDNSManager, error) {
+	token := v1alpha1.GetEnvCloudflareToken()
+	if token == "" {
+		return nil, fmt.Errorf("ENV: CLOUDFLARE_TOKEN not exist")
+	}
+
+	// domain1:zone1;domain2:zone2
+	domain2ZoneConfig := v1alpha1.GetEnvCloudflareDomainToZoneIDConfig()
+	if domain2ZoneConfig == "" {
+		return nil, fmt.Errorf("ENV: CLOUDFLARE_DOMAIN_TO_ZONEID_CONFIG not exist")
+	}
+
+	domain2ZoneMap := make(map[string]string)
+	for _, pair := range strings.Split(domain2ZoneConfig, ";") {
+		parts := strings.Split(pair, ":")
+
+		if len(parts) != 2 {
+			continue
+		}
+		domain2ZoneMap[parts[0]] = parts[1]
+	}
+
+	cloudflareDNSMgr, err := NewCloudflareDNSManager(token, domain2ZoneMap)
+	if err != nil {
+		return nil, err
+	}
+
+	return cloudflareDNSMgr, nil
+}

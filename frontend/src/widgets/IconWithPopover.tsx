@@ -28,9 +28,7 @@ export class IconWithPopover extends React.PureComponent<Props> {
                 {icon}
               </FlexRowItemCenterBox>
               <Popper style={{ zIndex: POPPER_ZINDEX }} {...customBindPopover(popupState)}>
-                <Paper variant="outlined" square>
-                  {popoverBody}
-                </Paper>
+                <Paper variant="outlined">{popoverBody}</Paper>
               </Popper>
             </>
           );
