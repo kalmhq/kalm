@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -266,6 +267,9 @@ func getCloudflareDomainToZoneConfigStr(cloudflareConfig *installv1alpha1.Cloudf
 	for domain, zone := range cloudflareDomainToZoneConfig {
 		configs = append(configs, fmt.Sprintf("%s:%s", domain, zone))
 	}
+	// make configs stable to avoid changing ENVs which makes DP keeps changing
+	sort.Strings(configs)
+
 	configStr := strings.Join(configs, ";")
 
 	return configStr
