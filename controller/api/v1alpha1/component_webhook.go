@@ -97,9 +97,6 @@ func (r *Component) Default() {
 	}
 
 	if !IsKalmSystemNamespace(r.Namespace) {
-		// only set hard limit on tenant component
-		// this makes system component possible to consumes more resource as request grows
-
 		// set default resourceRequirement & limits
 		// r.setupResourceRequirementIfAbsent()
 
@@ -158,10 +155,6 @@ func (r *Component) ValidateUpdate(old runtime.Object) error {
 
 	return nil
 }
-
-// func emitWarning(obj runtime.Object, reason, msg string) {
-// 	eventRecorder.Event(obj, v1.EventTypeWarning, reason, msg)
-// }
 
 func isIdenticalVolMap(mapNew map[string]Volume, mapOld map[string]Volume) (bool, error) {
 
@@ -476,7 +469,7 @@ func (r *Component) validateRunnerPermission() (rst KalmValidateErrorList) {
 	return rst
 }
 
-func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu, mem, ephemeralStorage resource.Quantity) *v1.ResourceRequirements {
+func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu, mem resource.Quantity) *v1.ResourceRequirements {
 	var rst *v1.ResourceRequirements
 	if requirements == nil {
 		rst = &v1.ResourceRequirements{}
@@ -513,20 +506,7 @@ func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu,
 		}
 	}
 
-	if _, exist := limits[v1.ResourceEphemeralStorage]; !exist {
-		if req, exist := requests[v1.ResourceEphemeralStorage]; exist {
-			limits[v1.ResourceEphemeralStorage] = req
-		} else {
-			limits[v1.ResourceEphemeralStorage] = ephemeralStorage
-		}
-	}
-
 	rst.Limits = limits
-
-	// storage is not a standard resource for containers
-	// if _, exist := r.Spec.ResourceRequirements.Limits[v1.ResourceStorage]; !exist {
-	// 	r.Spec.ResourceRequirements.Limits[v1.ResourceStorage] = resource.MustParse("1Gi")
-	// }
 
 	// Requests
 
@@ -537,9 +517,6 @@ func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu,
 	if _, exist := requests[v1.ResourceMemory]; !exist {
 		requests[v1.ResourceMemory] = resource.MustParse("1Mi")
 	}
-	if _, exist := requests[v1.ResourceEphemeralStorage]; !exist {
-		requests[v1.ResourceEphemeralStorage] = resource.MustParse("1Mi")
-	}
 	rst.Requests = requests
 
 	return rst
@@ -548,9 +525,8 @@ func fillResourceRequirementIfAbsent(requirements *v1.ResourceRequirements, cpu,
 func (r *Component) setupResourceRequirementIfAbsent() {
 	defaultCPULimit := resource.MustParse("200m")
 	defaultMemoryLimit := resource.MustParse("128Mi")
-	defaultEphemeralStorageLimit := resource.MustParse("128Mi")
 
-	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.ResourceRequirements, defaultCPULimit, defaultMemoryLimit, defaultEphemeralStorageLimit)
+	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.ResourceRequirements, defaultCPULimit, defaultMemoryLimit)
 
 	r.Spec.ResourceRequirements = filledResRequirement
 }
@@ -558,9 +534,8 @@ func (r *Component) setupResourceRequirementIfAbsent() {
 func (r *Component) setupIstioResourceRequirementIfAbsent() {
 	defaultCPULimit := resource.MustParse("100m")
 	defaultMemoryLimit := resource.MustParse("128Mi")
-	defaultEphemeralStorageLimit := resource.MustParse("64Mi")
 
-	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.IstioResourceRequirements, defaultCPULimit, defaultMemoryLimit, defaultEphemeralStorageLimit)
+	filledResRequirement := fillResourceRequirementIfAbsent(r.Spec.IstioResourceRequirements, defaultCPULimit, defaultMemoryLimit)
 
 	r.Spec.IstioResourceRequirements = filledResRequirement
 }

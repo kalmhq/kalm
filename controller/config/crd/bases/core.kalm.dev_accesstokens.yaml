@@ -9,9 +9,6 @@ metadata:
   name: accesstokens.core.kalm.dev
 spec:
   additionalPrinterColumns:
-  - JSONPath: .metadata.labels.tenant
-    name: Tenant
-    type: string
   - JSONPath: .metadata.labels.tokenType
     name: Type
     type: string

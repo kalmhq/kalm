@@ -6,5 +6,4 @@ metadata:
     kalm-enabled: "true"
     istio-injection: enabled
     kalm-control-plane: "true"
-    tenant: global
   name: system

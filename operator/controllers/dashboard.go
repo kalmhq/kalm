@@ -434,7 +434,6 @@ func (r *KalmOperatorConfigReconciler) reconcileProtectedEndpointForDashboard(ba
 			EndpointName:                "kalm",
 			Ports:                       []uint32{3001},
 			AllowToPassIfHasBearerToken: true,
-			Tenants:                     []string{"*"},
 		},
 	}
 
@@ -460,6 +459,8 @@ func (r *KalmOperatorConfigReconciler) reconcileProtectedEndpointForDashboard(ba
 	}
 }
 
+const DisableOperatorOverwriteAnnotation = "disable-operator-overwrite"
+
 func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 	oidcIssuer *installv1alpha1.OIDCIssuerConfig,
 	authProxyDomain string,
@@ -470,11 +471,6 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 	}
 
 	expirySec := uint32(300)
-
-	var needExtraOAuthScope bool
-	if kalmMode == v1alpha1.KalmModeBYOC {
-		needExtraOAuthScope = true
-	}
 
 	expectedSSO := v1alpha1.SingleSignOnConfig{
 		ObjectMeta: metav1.ObjectMeta{
@@ -487,7 +483,6 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 			IssuerClientSecret:   oidcIssuer.ClientSecret,
 			IDTokenExpirySeconds: &expirySec,
 			Domain:               authProxyDomain,
-			NeedExtraOAuthScope:  needExtraOAuthScope,
 		},
 	}
 
@@ -511,6 +506,11 @@ func (r *KalmOperatorConfigReconciler) reconcileSSOForOIDCIssuer(
 	if isNew {
 		return r.Create(r.Ctx, &sso)
 	} else {
+		if sso.Annotations[DisableOperatorOverwriteAnnotation] == "true" {
+			r.Log.Info(fmt.Sprintf("sso is set with annotation: %s as true, skip overwrite", DisableOperatorOverwriteAnnotation))
+			return nil
+		}
+
 		sso.Spec = expectedSSO.Spec
 		return r.Update(r.Ctx, &sso)
 	}

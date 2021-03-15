@@ -70,7 +70,7 @@ type ComponentSpec struct {
 	Command string `json:"command,omitempty"`
 
 	// +optional
-	EnableHeadlessService bool `json:"enableHeadlessService"`
+	EnableHeadlessService bool `json:"enableHeadlessService,omitempty"`
 
 	Ports []Port `json:"ports,omitempty"`
 
@@ -110,9 +110,6 @@ type ComponentSpec struct {
 
 	PreInjectedFiles []PreInjectFile `json:"preInjectedFiles,omitempty"`
 
-	// +optional
-	Priority int `json:"priority"`
-
 	// This is only meaningful if this component is a cronjob workload.
 	// Controller should immediately trigger a job and set its value to false if it's true.
 	ImmediateTrigger bool `json:"immediateTrigger,omitempty"`
@@ -125,7 +122,6 @@ type ComponentStatus struct {
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:printcolumn:name="Tenant",type="string",JSONPath=".metadata.labels.tenant"
 // +kubebuilder:printcolumn:name="Workload",type="string",JSONPath=".spec.workloadType"
 // +kubebuilder:printcolumn:name="Image",type="string",JSONPath=".spec.image"
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"

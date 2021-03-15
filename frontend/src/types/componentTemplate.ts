@@ -153,6 +153,6 @@ export const newEmptyComponentLike: ComponentLike = {
   replicas: 1,
   workloadType: workloadTypeServer,
   dnsPolicy: "ClusterFirst",
-  schedule: "* * * * *",
+  schedule: "",
   restartStrategy: "RollingUpdate",
 };

@@ -9,9 +9,6 @@ metadata:
   name: httpscerts.core.kalm.dev
 spec:
   additionalPrinterColumns:
-  - JSONPath: .metadata.labels.tenant
-    name: Tenant
-    type: string
   - JSONPath: .status.conditions[0].status
     name: Ready
     type: string
