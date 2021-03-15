@@ -237,9 +237,18 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterListenerPatches(req ct
 		}
 
 		if v, exist := config["groups"]; exist {
-			ssoGroups, ok := v.([]string)
-			if ok {
-				groups = append(groups, ssoGroups...)
+			ssoGroups, ok := v.([]interface{})
+			if !ok {
+				continue
+			}
+
+			for _, g := range ssoGroups {
+				strGroup, ok := g.(string)
+				if !ok {
+					continue
+				}
+
+				groups = append(groups, strGroup)
 			}
 		}
 	}
