@@ -24,7 +24,10 @@ import (
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/utils"
 )
+
+const DNSRecordFinalizer = "dns-record-finalizer"
 
 // DNSRecordReconciler reconciles a DNSRecord object
 type DNSRecordReconciler struct {
@@ -48,10 +51,12 @@ func NewDNSRecordReconciler(mgr ctrl.Manager) *DNSRecordReconciler {
 	}
 }
 
+// if this annotation is marked with true, will not delete DNS record at cloudflare
+const SkipRemoveRecordOnDeleteAnnotation = "skip-remove-record-on-delete"
+
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=dnsrecords,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=dnsrecords/status,verbs=get;update;patch
 
-// todo: 1. finalizer for DNSRecord to clean DNSRecord in cloudflare
 func (r *DNSRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("dnsrecord", req.NamespacedName)
 
@@ -67,6 +72,35 @@ func (r *DNSRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 
 		return ctrl.Result{}, err
+	}
+
+	copied := record.DeepCopy()
+
+	if record.DeletionTimestamp != nil {
+		skipRemoveRecord := false
+		if record.Annotations[SkipRemoveRecordOnDeleteAnnotation] == "true" {
+			skipRemoveRecord = true
+		}
+
+		if !skipRemoveRecord {
+		  // ensure DNS Record is deleted before deletion of CDR
+		  if exist, err := r.dnsMgr.Exist(record.Spec.DNSType, record.Spec.Domain, record.Spec.DNSTarget); err != nil {
+		  	return ctrl.Result{}, err
+		  } else if exist {
+		  	if err := r.dnsMgr.DeleteDNSRecord(record.Spec.DNSType, record.Spec.Domain); err != nil {
+		  		return ctrl.Result{}, err
+		  	}
+		  }
+		}
+
+		copied.Finalizers = utils.RemoveString(copied.Finalizers, DNSRecordFinalizer)
+
+		return ctrl.Result{}, r.Update(r.ctx, copied)
+	} else {
+		if !utils.ContainsString(copied.Finalizers, DNSRecordFinalizer) {
+			copied.Finalizers = append(copied.Finalizers, DNSRecordFinalizer)
+			return ctrl.Result{}, r.Update(r.ctx, copied)
+		}
 	}
 
 	err := r.dnsMgr.UpsertDNSRecord(record.Spec.DNSType, record.Spec.Domain, record.Spec.DNSTarget)
@@ -86,7 +120,6 @@ func (r *DNSRecordReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
-	copied := record.DeepCopy()
 	copied.Status.IsConfigured = recordExist
 
 	return ctrl.Result{}, r.Status().Update(r.ctx, copied)

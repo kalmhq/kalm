@@ -417,6 +417,8 @@ func shouldLetPass(c echo.Context) bool {
 func isAuthorized(c echo.Context, claims *Claims) bool {
 	grantedGroups := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_GROUPS_HEADER)
 	grantedEmails := c.Request().Header.Get(controllers.KALM_SSO_GRANTED_EMAILS_HEADER)
+	logger.Info(fmt.Sprintf("granted groups: %s, emails: %s", grantedGroups, grantedEmails))
+	logger.Info(fmt.Sprintf("claims groups: %s, email: %s", claims.Groups, claims.Email))
 
 	if grantedGroups != "" {
 		groups := strings.Split(grantedGroups, "|")

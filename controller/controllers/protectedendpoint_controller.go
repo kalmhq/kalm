@@ -17,6 +17,7 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -222,10 +223,42 @@ func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilter(req ctrl.Request) *v1
 func (r *ProtectedEndpointReconcilerTask) BuildEnvoyFilterListenerPatches(req ctrl.Request) []*v1alpha32.EnvoyFilter_EnvoyConfigObjectPatch {
 	oidcProviderInfo := GetOIDCProviderInfo(r.ssoConfig)
 
-	var grantedGroups string
-	if len(r.endpoint.Spec.Groups) > 0 {
-		grantedGroups = strings.Join(r.endpoint.Spec.Groups, "|")
+	var groups []string
+	for _, connector := range r.ssoConfig.Spec.Connectors {
+		if connector.Config == nil {
+			continue
+		}
+
+		var config map[string]interface{}
+		err := json.Unmarshal(connector.Config.Raw, &config)
+		if err != nil {
+			r.Log.Error(err, "Unmarshal connector config failed, ignored")
+			continue
+		}
+
+		if v, exist := config["groups"]; exist {
+			ssoGroups, ok := v.([]interface{})
+			if !ok {
+				continue
+			}
+
+			for _, g := range ssoGroups {
+				strGroup, ok := g.(string)
+				if !ok {
+					continue
+				}
+
+				groups = append(groups, strGroup)
+			}
+		}
 	}
+
+	// groups is a mix of:
+	// - config in sso connectors
+	// - config in this ProtectedEndpointSpec
+	groups = append(groups, r.endpoint.Spec.Groups...)
+
+	grantedGroups := strings.Join(groups, "|")
 
 	patch := &v1alpha32.EnvoyFilter_Patch{
 		Operation: v1alpha32.EnvoyFilter_Patch_INSERT_BEFORE,
