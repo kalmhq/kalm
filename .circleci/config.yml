@@ -1,6 +1,5 @@
 version: 2.1
 #orbs:
-#  hello-orb: kalmhq-ns1/hello-orb@dev:0.0.1
 #  deploy-orb: kalmhq-ns1/deploy-orb@dev:0.0.3
 jobs:
   test-dashboard:
@@ -184,15 +183,6 @@ jobs:
             ruby scripts/update-kalmop-config-yaml.rb dashboard $CIRCLE_SHA1
             # apply
             kubectl apply -f tmp/updated.yaml
-  #deploy-auth-proxy:
-  #  executor: deploy-orb/default
-  #  steps:
-  #    - deploy-orb/deploy:
-  #        KALM_API_ADDRESS: https://dashboard.kapp.live
-  #        KALM_DEPLOY_KEY: $DEPLOY_KEY
-  #        KALM_APP: kalm-system
-  #        KALM_COMPONENT: auth-proxy
-  #        KALM_COMPONENT_IMG_TAG: $CIRCLE_SHA1
   deploy-controller:
     docker:
       - image: circleci/ruby:2.4.1
@@ -256,8 +246,6 @@ workflows:
           filters:
             branches:
               only:
-                - master
-                - multiple-tenancy
                 - main
             tags:
               only: /^v.*/
@@ -269,26 +257,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
-                - multiple-tenancy
-      - deploy-dashboard:
-          name: deploy-dashboard-to-us-west1-1-cluster
-          context: deploy-us-west1-1-cluster
-          requires:
-            - build-push-dashboard-image
-          filters:
-            branches:
-              only:
-                - master
-                - multiple-tenancy
-      #- deploy-auth-proxy:
-      #    context: deploy-demo-cluster
-      #    requires:
-      #      - build-push-dashboard-image
-      #    filters:
-      #      branches:
-      #        only:
-      #          - master
+                - main
   controller:
     jobs:
       - test-controller:
@@ -312,9 +281,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
                 - main
-                - multiple-tenancy
             tags:
               only: /^v.*/
       - deploy-controller:
@@ -325,18 +292,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
-                - multiple-tenancy
-      - deploy-controller:
-          name: deploy-controller-to-west1-1-cluster
-          context: deploy-us-west1-1-cluster
-          requires:
-            - build-push-controller-image
-          filters:
-            branches:
-              only:
-                - master
-                - multiple-tenancy
+                - main
   operator:
     jobs:
       - build-push-operator-image:
@@ -344,9 +300,6 @@ workflows:
           filters:
             branches:
               only:
-                - master
-                - multiple-tenancy
-                - cert
                 - main
             tags:
               only: /^v.*/
@@ -368,15 +321,4 @@ workflows:
           filters:
             branches:
               only:
-                - master
-                - multiple-tenancy
-      - deploy-operator:
-          name: deploy-operator-to-us-west1-1-cluster
-          context: deploy-us-west1-1-cluster
-          requires:
-            - build-push-operator-image
-          filters:
-            branches:
-              only:
-                - master
-                - multiple-tenancy
+                - main
