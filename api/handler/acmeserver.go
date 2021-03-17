@@ -29,9 +29,8 @@ func (h *ApiHandler) handleUpdateACMEServer(c echo.Context) error {
 		return fmt.Errorf("acmeDomain is blank")
 	}
 
-	// todo `ns.` or `ns-`
-	// ns.<acme-xyz>.<your-domain.com>
-	acmeServer.NSDomain = fmt.Sprintf("ns.%s", acmeServer.ACMEDomain)
+	// ns-<acme-xyz>.<your-domain.com>
+	acmeServer.NSDomain = fmt.Sprintf("ns-%s", acmeServer.ACMEDomain)
 
 	acmeServer, err = h.resourceManager.UpdateACMEServer(acmeServer)
 

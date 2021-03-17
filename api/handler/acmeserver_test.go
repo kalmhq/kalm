@@ -46,7 +46,7 @@ func (suite *ACMEServerHandlerTestSuite) TestGetEmpty() {
 func (suite *ACMEServerHandlerTestSuite) TestCreateGetDelete() {
 	acmeDomain := "acme.example.com"
 	// nsDomain := "ns.example.com"
-	expectedNSDomain := fmt.Sprintf("ns.%s", acmeDomain)
+	expectedNSDomain := fmt.Sprintf("ns-%s", acmeDomain)
 
 	// create
 	suite.DoTestRequest(&TestRequestContext{
