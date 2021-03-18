@@ -26,3 +26,17 @@ spec:
           requests:
             cpu: 100m
             memory: 256Mi
+    ingressGateways:
+    - k8s:
+        serviceAnnotations:
+          "service.beta.kubernetes.io/aws-load-balancer-proxy-protocol": "*"
+        affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - istio-ingressgateway
+              topologyKey: kubernetes.io/hostname
