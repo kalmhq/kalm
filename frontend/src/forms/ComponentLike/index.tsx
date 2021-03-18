@@ -613,7 +613,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderMain(isEdit: boolean) {
     return (
       <Grid container spacing={2}>
-        <Grid item xs={12}>
+        <Grid item xs={6}>
           <Field
             autoFocus
             component={FinalTextField}
@@ -626,7 +626,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             helperText={isEdit ? "Name can't be changed." : sc.NAME_RULE}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={6}>
           <Field
             component={FinalTextField}
             id="component-image"
@@ -640,7 +640,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid item xs={6}>
           <FormSpy subscription={{ values: true }}>
             {({ values }: FormSpyRenderProps<ComponentLike>) => {
               let hasVolumes = false;
@@ -671,7 +671,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {({ values }: FormSpyRenderProps<ComponentLike>) => {
             return (
               <>
-                <Grid item xs={12}>
+                <Grid item xs={6}>
                   {this.renderReplicasOrSchedule(values.workloadType)}
                 </Grid>
                 {this.renderPrivateRegistryAlert(values.image)}
@@ -772,7 +772,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <FormTutorialHelper form={form} />
             <Prompt />
             <Grid container spacing={2}>
-              <Grid item xs={6} sm={6} md={6}>
+              <Grid item xs={12} sm={12} md={12}>
                 <KPanel
                   title="Define Component"
                   content={
