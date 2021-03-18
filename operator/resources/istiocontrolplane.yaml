@@ -30,8 +30,8 @@ spec:
     - name: istio-ingressgateway
       enabled: true
       k8s:
-        serviceAnnotations:
-          "service.beta.kubernetes.io/aws-load-balancer-proxy-protocol": "*"
+        # serviceAnnotations:
+        #   "service.beta.kubernetes.io/aws-load-balancer-proxy-protocol": "*"
         affinity:
           podAntiAffinity:
             requiredDuringSchedulingIgnoredDuringExecution:
