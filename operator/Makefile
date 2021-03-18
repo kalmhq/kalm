@@ -24,15 +24,15 @@ endif
 	go generate ./...
 
 # Run tests
-test: generate fmt vet manifests go-generate
+test: generate fmt vet manifests
 	go test ./... -coverprofile cover.out
 
 # Build manager binary
-manager: generate fmt vet go-generate
+manager: generate fmt vet
 	go build -o bin/manager .
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
-run: generate fmt vet manifests go-generate
+run: generate fmt vet manifests
 	go run .
 
 # Install CRDs into a cluster
@@ -44,12 +44,12 @@ uninstall: manifests
 	kustomize build config/crd | kubectl delete -f -
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
-deploy: manifests go-generate
+deploy: manifests
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/default | kubectl apply -f -
 
 # Generate manifests e.g. CRD, RBAC etc.
-manifests: controller-gen
+manifests: controller-gen go-generate
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=operator webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 # Run go fmt against code
@@ -61,7 +61,7 @@ vet:
 	go vet ./...
 
 # Generate code
-generate: controller-gen
+generate: controller-gen go-generate
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths="./..."
 
 # Build the docker image
