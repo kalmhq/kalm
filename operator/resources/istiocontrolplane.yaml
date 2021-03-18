@@ -27,7 +27,9 @@ spec:
             cpu: 100m
             memory: 256Mi
     ingressGateways:
-    - k8s:
+    - name: istio-ingressgateway
+      enabled: true
+      k8s:
         serviceAnnotations:
           "service.beta.kubernetes.io/aws-load-balancer-proxy-protocol": "*"
         affinity:
