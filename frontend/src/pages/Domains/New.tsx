@@ -13,7 +13,7 @@ export const DomainNewPage = () => {
 
   const onSubmit = async (values: DomainCreation) => {
     const domain = await dispatch(createDomainAction(values));
-    dispatch(push(`/domains/${domain.name}/tour`));
+    dispatch(push(`/domains/${domain.name}/config`));
   };
 
   return (

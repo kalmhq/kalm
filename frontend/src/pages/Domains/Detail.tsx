@@ -77,7 +77,7 @@ const DomainDetailPageRaw: React.FC = () => {
               color="primary"
               variant="outlined"
               size="small"
-              onClick={() => dispatch(push("/domains/" + domain.name + "/tour"))}
+              onClick={() => dispatch(push("/domains/" + domain.name + "/config"))}
             >
               Configure
             </CustomButton>

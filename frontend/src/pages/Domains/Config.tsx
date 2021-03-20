@@ -28,7 +28,7 @@ interface StepOption {
   isActive?: boolean;
 }
 
-const DomainTourPageRaw: React.FC = () => {
+const DomainConfigPageRaw: React.FC = () => {
   const dispatch = useDispatch();
   const { domains, isLoading, isFirstLoaded, certificates, acmeServer } = useSelector((state: RootState) => {
     return {
@@ -331,4 +331,4 @@ const DomainTourPageRaw: React.FC = () => {
   );
 };
 
-export const DomainTourPage = DomainTourPageRaw;
+export const DomainConfigPage = DomainConfigPageRaw;
