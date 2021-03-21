@@ -12,7 +12,6 @@ import { RootState } from "reducers";
 import CustomButton from "theme/Button";
 import { Certificate } from "types/certificate";
 import { DNSConfigItems } from "widgets/ACMEServer";
-import { HelpIcon } from "widgets/Icon";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { KPanel } from "widgets/KPanel";
 import { Loading } from "widgets/Loading";
@@ -73,7 +72,6 @@ const DomainDetailPageRaw: React.FC = () => {
         canEditCluster() ? (
           <>
             <CustomButton
-              startIcon={<HelpIcon />}
               color="primary"
               variant="outlined"
               size="small"
