@@ -11,7 +11,6 @@ import { MetricList } from "types/common";
 import { getStartTimestamp, TimestampFilter } from "utils/date";
 import { formatCPU, formatMemory } from "utils/sizeConv";
 import { KTooltip } from "widgets/KTooltip";
-import { WarningColorText } from "widgets/Text";
 
 const smallLineChartStyles = (theme: Theme) =>
   createStyles({
@@ -94,19 +93,6 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
         text = formatValue(data[data.length - 1]!.y);
       } else {
         text = data[data.length - 1]!.y.toString();
-      }
-
-      if (limit) {
-        const p = Math.round((data[data.length - 1]!.y / limit) * 100);
-        if (p > 85) {
-          title = "Occupy more than 85% of resources, please consider modifying the resource limit.";
-          percentage = <WarningColorText>({p}%)</WarningColorText>;
-        } else if (p < 15) {
-          title = "Only takes up less than 15% of resources, please consider modifying the resource limit.";
-          percentage = <WarningColorText>({p}%)</WarningColorText>;
-        } else {
-          percentage = <span>({p}%)</span>;
-        }
       }
     }
 
@@ -358,8 +344,8 @@ export const SmallMemoryLineChart = (props: Pick<Props, "limit" | "data" | "hove
       formatValue={formatMemory}
       width={120}
       height={24}
-      borderColor="rgba(75,192,192, 1)"
-      backgroundColor="rgba(75,192,192,0.5)"
+      borderColor="#00DD66"
+      backgroundColor="rgba(0,221,102,0.25)"
     />
   );
 };
@@ -371,8 +357,8 @@ export const SmallCPULineChart = (props: Pick<Props, "limit" | "data" | "hoverTe
       formatValue={formatCPU}
       width={120}
       height={24}
-      borderColor="rgba(33, 150, 243, 1)"
-      backgroundColor="rgba(33, 150, 243, 0.5)"
+      borderColor="#36A7FC"
+      backgroundColor="rgba(54, 167, 252, 0.25)"
     />
   );
 };
@@ -384,8 +370,8 @@ export const CardMemoryLineChart = (props: Pick<Props, "limit" | "data" | "hover
       formatValue={formatMemory}
       width={200}
       height={24}
-      borderColor="rgba(75,192,192, 1)"
-      backgroundColor="rgba(75,192,192,0.5)"
+      borderColor="#00DD66"
+      backgroundColor="rgba(0,221,102,0.25)"
     />
   );
 };
@@ -397,8 +383,8 @@ export const CardCPULineChart = (props: Pick<Props, "limit" | "data" | "hoverTex
       formatValue={formatCPU}
       width={200}
       height={24}
-      borderColor="rgba(33, 150, 243, 1)"
-      backgroundColor="rgba(33, 150, 243, 0.5)"
+      borderColor="#36A7FC"
+      backgroundColor="rgba(54, 167, 252, 0.25)"
     />
   );
 };
