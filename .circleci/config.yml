@@ -10,6 +10,7 @@ jobs:
       - run:
           name: auto tag
           command: |
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             ./scripts/auto-tag.sh -v patch
   test-dashboard:
     docker:
@@ -245,6 +246,7 @@ workflows:
               only:
                 - main
       - auto-tag:
+          context: kalm-ci
           requires:
             - test-dashboard
             - test-controller
