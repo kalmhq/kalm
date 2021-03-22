@@ -61,13 +61,22 @@ jobs:
               KALM_BUILD_ENV_GIT_COMMIT=$CIRCLE_SHA1
               KALM_BUILD_ENV_GIT_VERSION=$CIRCLE_TAG
             fi
+
+            if [ -z "$CIRCLE_BRANCH" ]
+            then
+              CACHE_REF=default-cache
+            else
+              CACHE_REF=$CIRCLE_BRANCH-cache
+            fi
+
             docker buildx build \
               --output=type=docker \
-              --cache-from=type=registry,ref=kalmhq/kalm:$CIRCLE_BRANCH-cache \
-              --cache-to=type=registry,ref=kalmhq/kalm:$CIRCLE_BRANCH-cache,mode=max \
+              --cache-from=type=registry,ref=kalmhq/kalm:$CACHE_REF \
+              --cache-to=type=registry,ref=kalmhq/kalm:$CACHE_REF,mode=max \
               --build-arg KALM_BUILD_ENV_GIT_COMMIT=$KALM_BUILD_ENV_GIT_COMMIT \
               --build-arg KALM_BUILD_ENV_GIT_VERSION=$KALM_BUILD_ENV_GIT_VERSION \
               -t kalmhq/kalm:latest .
+
             docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_SHA1
             docker push kalmhq/kalm:latest
             docker push kalmhq/kalm:$CIRCLE_SHA1
@@ -121,11 +130,20 @@ jobs:
             # use driver: docker-container
             docker buildx create --name mybuilder --use
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+            if [ -z "$CIRCLE_BRANCH" ]
+            then
+              CACHE_REF=default-cache
+            else
+              CACHE_REF=$CIRCLE_BRANCH-cache
+            fi
+
             docker buildx build \
               --output=type=docker \
-              --cache-from=type=registry,ref=kalmhq/kalm-controller:$CIRCLE_BRANCH-cache \
-              --cache-to=type=registry,ref=kalmhq/kalm-controller:$CIRCLE_BRANCH-cache,mode=max \
+              --cache-from=type=registry,ref=kalmhq/kalm-controller:$CACHE_REF \
+              --cache-to=type=registry,ref=kalmhq/kalm-controller:$CACHE_REF,mode=max \
               -t kalmhq/kalm-controller:latest .
+
             docker tag  kalmhq/kalm-controller:latest kalmhq/kalm-controller:$CIRCLE_SHA1
             docker push kalmhq/kalm-controller:latest
             docker push kalmhq/kalm-controller:$CIRCLE_SHA1
@@ -152,11 +170,20 @@ jobs:
             # use driver: docker-container
             docker buildx create --name mybuilder --use
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+            if [ -z "$CIRCLE_BRANCH" ]
+            then
+              CACHE_REF=default-cache
+            else
+              CACHE_REF=$CIRCLE_BRANCH-cache
+            fi
+
             docker buildx build \
               --output=type=docker \
-              --cache-from=type=registry,ref=kalmhq/kalm-operator:$CIRCLE_BRANCH-cache \
-              --cache-to=type=registry,ref=kalmhq/kalm-operator:$CIRCLE_BRANCH-cache,mode=max \
+              --cache-from=type=registry,ref=kalmhq/kalm-operator:$CACHE_REF \
+              --cache-to=type=registry,ref=kalmhq/kalm-operator:$CACHE_REF,mode=max \
               -t kalmhq/kalm-operator:latest .
+
             docker tag  kalmhq/kalm-operator:latest kalmhq/kalm-operator:$CIRCLE_SHA1
             docker push kalmhq/kalm-operator:latest
             docker push kalmhq/kalm-operator:$CIRCLE_SHA1
