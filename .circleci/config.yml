@@ -2,6 +2,15 @@ version: 2.1
 #orbs:
 #  deploy-orb: kalmhq-ns1/deploy-orb@dev:0.0.3
 jobs:
+  auto-tag:
+    machine:
+      image: ubuntu-2004:202008-01
+    steps:
+      - checkout
+      - run:
+          name: auto tag
+          command: |
+            ./scripts/auto-tag.sh -v patch
   test-dashboard:
     docker:
       - image: circleci/golang:1.15.2
@@ -223,10 +232,29 @@ jobs:
             IMG=kalmhq/kalm-operator:${CIRCLE_SHA1} make deploy
 workflows:
   version: 2
+  auto-tag:
+    jobs:
+      - test-dashboard:
+          filters:
+            branches:
+              only:
+                - main
+      - test-controller:
+          filters:
+            branches:
+              only:
+                - main
+      - auto-tag:
+          requires:
+            - test-dashboard
+            - test-controller
   dashboard:
     jobs:
       - test-dashboard:
           filters:
+            branches:
+              only:
+                - main
             tags:
               only: /^v.*/
       - hold:
@@ -262,6 +290,9 @@ workflows:
     jobs:
       - test-controller:
           filters:
+            branches:
+              only:
+                - main
             tags:
               only: /^v.*/
       - hold:
