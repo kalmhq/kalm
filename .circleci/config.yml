@@ -263,24 +263,7 @@ jobs:
             IMG=kalmhq/kalm-operator:${CIRCLE_SHA1} make deploy
 workflows:
   version: 2
-  auto-tag:
-    jobs:
-      - test-dashboard:
-          filters:
-            branches:
-              only:
-                - main
-      - test-controller:
-          filters:
-            branches:
-              only:
-                - main
-      - auto-tag:
-          context: kalm-ci
-          requires:
-            - test-dashboard
-            - test-controller
-  dashboard:
+  main-workflow:
     jobs:
       - test-dashboard:
           filters:
@@ -289,6 +272,72 @@ workflows:
                 - main
             tags:
               only: /^v.*/
+      - test-controller:
+          filters:
+            branches:
+              only:
+                - main
+            tags:
+              only: /^v.*/
+      - build-push-operator-image:
+          context: kalm-ci
+          filters:
+            branches:
+              only:
+                - main
+            tags:
+              only: /^v.*/
+      - build-push-dashboard-image:
+          context: kalm-ci
+          requires:
+            - test-dashboard
+      - build-push-controller-image:
+          context: kalm-ci
+          requires:
+            - test-controller
+      - auto-tag:
+          context: kalm-ci
+          requires:
+            - build-push-operator-image
+            - build-push-dashboard-image
+            - build-push-controller-image
+          filters:
+            branches:
+              only:
+                - main
+      - deploy-operator:
+          name: deploy-operator-to-internal-cluster
+          context: deploy-internal-cluster
+          requires:
+            - build-push-operator-image
+          filters:
+            branches:
+              only:
+                - main
+      - deploy-dashboard:
+          name: deploy-dashboard-internal-cluster
+          context: deploy-internal-cluster
+          requires:
+            - build-push-dashboard-image
+          filters:
+            branches:
+              only:
+                - main
+      - deploy-controller:
+          name: deploy-controller-to-internal-cluster
+          context: deploy-internal-cluster
+          requires:
+            - build-push-controller-image
+          filters:
+            branches:
+              only:
+                - main
+  dashboard:
+    jobs:
+      - test-dashboard:
+          filters:
+            branches:
+              ignore: main
       - hold:
           type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
           filters:
@@ -299,36 +348,14 @@ workflows:
           context: kalm-ci
           requires:
             - hold
-      - build-push-dashboard-image:
-          context: kalm-ci
-          requires:
-            - test-dashboard
-          filters:
-            branches:
-              only:
-                - main
-            tags:
-              only: /^v.*/
-      - deploy-dashboard:
-          name: deploy-dashboard-internal-cluster
-          context: deploy-internal-cluster
-          requires:
-            - build-push-dashboard-image
-          filters:
-            branches:
-              only:
-                - main
   controller:
     jobs:
       - test-controller:
           filters:
             branches:
-              only:
-                - main
-            tags:
-              only: /^v.*/
+              ignore: main
       - hold:
-          type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
+          type: approval
           filters:
             branches:
               ignore: main
@@ -337,35 +364,8 @@ workflows:
           context: kalm-ci
           requires:
             - hold
-      - build-push-controller-image:
-          context: kalm-ci
-          requires:
-            - test-controller
-          filters:
-            branches:
-              only:
-                - main
-            tags:
-              only: /^v.*/
-      - deploy-controller:
-          name: deploy-controller-to-internal-cluster
-          context: deploy-internal-cluster
-          requires:
-            - build-push-controller-image
-          filters:
-            branches:
-              only:
-                - main
   operator:
     jobs:
-      - build-push-operator-image:
-          context: kalm-ci
-          filters:
-            branches:
-              only:
-                - main
-            tags:
-              only: /^v.*/
       - hold:
           type: approval
           filters:
@@ -376,12 +376,3 @@ workflows:
           context: kalm-ci
           requires:
             - hold
-      - deploy-operator:
-          name: deploy-operator-to-internal-cluster
-          context: deploy-internal-cluster
-          requires:
-            - build-push-operator-image
-          filters:
-            branches:
-              only:
-                - main
