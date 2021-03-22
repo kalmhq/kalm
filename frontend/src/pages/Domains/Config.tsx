@@ -20,6 +20,7 @@ import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle1 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { TextAndCopyButton } from "widgets/TextAndCopyButton";
+import { Link } from "react-router-dom";
 
 interface StepOption {
   title: string;
@@ -28,7 +29,7 @@ interface StepOption {
   isActive?: boolean;
 }
 
-const DomainTourPageRaw: React.FC = () => {
+const DomainConfigPageRaw: React.FC = () => {
   const dispatch = useDispatch();
   const { domains, isLoading, isFirstLoaded, certificates, acmeServer } = useSelector((state: RootState) => {
     return {
@@ -97,7 +98,7 @@ const DomainTourPageRaw: React.FC = () => {
   const step1: StepOption = {
     title: "Open your domain DNS config panel",
     content: <Box>Log in to your registrar account, and navigate to DNS config panel.</Box>,
-    completed: false,
+    completed: cert?.ready === "True",
   };
 
   const steps: StepOption[] = [step1];
@@ -193,43 +194,51 @@ const DomainTourPageRaw: React.FC = () => {
     const firstTarget = certDomains[firsKey];
 
     return {
-      title: `Apply a certificate`,
+      title: cert!.ready ? "The domain " + cert?.domains + " is now fully configured. " : "Apply a certificate",
       content: (
         <Box>
-          <Box mt={2}>Add a CNAME Record in your DNS config panel.</Box>
-          <Box mt={2}>
-            <Alert severity="warning">
-              <AlertTitle>
-                If you are using <strong>Cloudflare</strong>, Please <strong>DO NOT</strong> enable Proxy for this
-                record
-              </AlertTitle>
-              Using Cloudflare's CNAME proxy will cause CNAME records to fail verification.
-            </Alert>
-          </Box>
-          <Box mt={2}>
-            <DNSConfigItems
-              items={Object.keys(certDomains).map((domain) => ({
-                domain: `_acme-challenge.${domain}`,
-                type: "CNAME",
-                cnameRecord: certDomains[domain],
-              }))}
-            />
-          </Box>
+          {cert!.ready ? (
+            <Button variant="outlined" color="primary" size="small" to={`/domains/${domain.name}`} component={Link}>
+              Back
+            </Button>
+          ) : (
+            <>
+              <Box mt={2}>Add a CNAME Record in your DNS config panel.</Box>
+              <Box mt={2}>
+                <Alert severity="warning">
+                  <AlertTitle>
+                    If you are using <strong>Cloudflare</strong>, Please <strong>DO NOT</strong> enable Proxy for this
+                    record
+                  </AlertTitle>
+                  Using Cloudflare's CNAME proxy will cause CNAME records to fail verification.
+                </Alert>
+              </Box>
+              <Box mt={2}>
+                <DNSConfigItems
+                  items={Object.keys(certDomains).map((domain) => ({
+                    domain: `_acme-challenge.${domain}`,
+                    type: "CNAME",
+                    cnameRecord: certDomains[domain],
+                  }))}
+                />
+              </Box>
 
-          <Box mt={2}>
-            Check to make sure they’re correct, then <strong>Save the changes</strong>.
-          </Box>
+              <Box mt={2}>
+                Check to make sure they’re correct, then <strong>Save the changes</strong>.
+              </Box>
 
-          <Box mt={2}>
-            Wait for changes to take effect. Generally it will take effect within a few minutes to a few hours.
-          </Box>
+              <Box mt={2}>
+                Wait for changes to take effect. Generally it will take effect within a few minutes to a few hours.
+              </Box>
 
-          <Box mt={2}>{renderHelper(firstDomain, "CNAME", firstTarget)}</Box>
-          <Box mt={2} display="flex" flexDirection="row">
-            <Box pl={2} display="flex">
-              <CertStatus cert={cert!} />
-            </Box>
-          </Box>
+              <Box mt={2}>{renderHelper(firstDomain, "CNAME", firstTarget)}</Box>
+              <Box mt={2} display="flex" flexDirection="row">
+                <Box pl={2} display="flex">
+                  <CertStatus cert={cert!} />
+                </Box>
+              </Box>
+            </>
+          )}
         </Box>
       ),
       completed: cert!.ready === "True",
@@ -238,21 +247,29 @@ const DomainTourPageRaw: React.FC = () => {
 
   const normalDomainWithCertStep = (): StepOption | null => {
     return {
-      title: `Apply a certificate`,
+      title: cert!.ready ? "The domain " + cert?.domains + " is now fully configured. " : "Apply a certificate",
       content: (
         <Box>
-          <Box mt={2}>
-            <Alert severity="info">
-              This step will be completed automatically, please ensure that the DNS record in the previous step is
-              configured correctly. Please wait.
-            </Alert>
-          </Box>
-          <Box mt={2} display="flex">
-            <CertStatus cert={cert!} />
-          </Box>
+          {cert!.ready ? (
+            <Button variant="outlined" color="primary" size="small" to={`/domains/${domain.name}`} component={Link}>
+              Back
+            </Button>
+          ) : (
+            <>
+              <Box mt={2}>
+                <Alert severity="info">
+                  This step will be completed automatically, please ensure that the DNS record in the previous step is
+                  configured correctly. Please wait.
+                </Alert>
+              </Box>
+              <Box mt={2} display="flex">
+                <CertStatus cert={cert!} />
+              </Box>
+            </>
+          )}
         </Box>
       ),
-      completed: cert!.ready === "True",
+      completed: true,
     };
   };
 
@@ -315,7 +332,12 @@ const DomainTourPageRaw: React.FC = () => {
         <KPanel>
           <Stepper orientation="vertical">
             {steps.map((step, index) => (
-              <Step completed={step.completed} active={!step.completed} key={index}>
+              <Step
+                completed={step.completed}
+                active={!step.completed}
+                expanded={!step.completed || index === 2}
+                key={index}
+              >
                 <StepLabel>
                   <Subtitle1>{step.title}</Subtitle1>
                 </StepLabel>
@@ -331,4 +353,4 @@ const DomainTourPageRaw: React.FC = () => {
   );
 };
 
-export const DomainTourPage = DomainTourPageRaw;
+export const DomainConfigPage = DomainConfigPageRaw;

@@ -19,7 +19,7 @@ import { DiskListPage } from "pages/Disks/List";
 import { DomainDetailPage } from "pages/Domains/Detail";
 import { DomainListPage } from "pages/Domains/List";
 import { DomainNewPage } from "pages/Domains/New";
-import { DomainTourPage } from "pages/Domains/Tour";
+import { DomainConfigPage } from "pages/Domains/Config";
 import { LoadBalancerInfoPage } from "pages/LoadBalancer";
 import { MemberListPage } from "pages/Members";
 import { MemberPage } from "pages/Members/Details";
@@ -105,7 +105,7 @@ export const KalmRoutes = (
           <Route exact path="/domains/new" component={DomainNewPage} />
           <Route exact path="/domains/acme" component={ACMEPage} />
           <Route exact path="/domains/:name" component={DomainDetailPage} />
-          <Route exact path="/domains/:name/tour" component={DomainTourPage} />
+          <Route exact path="/domains/:name/config" component={DomainConfigPage} />
 
           <Route exact path="/certificates" component={CertificateListPage} />
           <Route exact path="/certificates/new" component={CertificateNewPage} />

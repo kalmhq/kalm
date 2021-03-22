@@ -1,6 +1,5 @@
 import { Typography } from "@material-ui/core";
 import Box from "@material-ui/core/Box/Box";
-import { createCertificateAction } from "actions/certificate";
 import { deleteDomainAction } from "actions/domains";
 import { setSuccessNotificationAction } from "actions/notification";
 import { push } from "connected-react-router";
@@ -11,9 +10,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRouteMatch } from "react-router-dom";
 import { RootState } from "reducers";
 import CustomButton from "theme/Button";
-import { Certificate, issuerManaged } from "types/certificate";
+import { Certificate } from "types/certificate";
 import { DNSConfigItems } from "widgets/ACMEServer";
-import { HelpIcon, KalmCertificatesIcon } from "widgets/Icon";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { KPanel } from "widgets/KPanel";
 import { Loading } from "widgets/Loading";
@@ -49,23 +47,6 @@ const DomainDetailPageRaw: React.FC = () => {
     cert = certificates.find((x) => !!x.domains.find((y) => y === domain.domain));
   }
 
-  const applyCert = async () => {
-    await dispatch(
-      createCertificateAction(
-        {
-          name: "",
-          domains: [domain.domain],
-          managedType: issuerManaged,
-          selfManagedCertContent: "",
-          selfManagedCertPrivateKey: "",
-        },
-        false,
-      ),
-    );
-
-    dispatch(push("/domains/" + domain.name + "/tour"));
-  };
-
   const deleteDomain = async () => {
     await dispatch(deleteDomainAction(domain.name));
     dispatch(setSuccessNotificationAction(`Successfully deleted domain ${domain.domain}`));
@@ -90,27 +71,13 @@ const DomainDetailPageRaw: React.FC = () => {
       secondHeaderRight={
         canEditCluster() ? (
           <>
-            {!cert ? (
-              <CustomButton
-                startIcon={<KalmCertificatesIcon />}
-                color="primary"
-                variant="outlined"
-                size="small"
-                tutorial-anchor-id="add-domain"
-                onClick={applyCert}
-              >
-                Apply SSL Certificate
-              </CustomButton>
-            ) : null}
-
             <CustomButton
-              startIcon={<HelpIcon />}
               color="primary"
               variant="outlined"
               size="small"
-              onClick={() => dispatch(push("/domains/" + domain.name + "/tour"))}
+              onClick={() => dispatch(push("/domains/" + domain.name + "/config"))}
             >
-              Setup Tour
+              Configure
             </CustomButton>
 
             <DeleteButtonWithConfirmPopover

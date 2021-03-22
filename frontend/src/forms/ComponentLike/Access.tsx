@@ -64,13 +64,14 @@ const ComponentAccessRaw: React.FC<Props> = (props) => {
 
   return (
     <Grid container spacing={2}>
+      <HelperTextSection>{sc.ACCESS_HELPER}</HelperTextSection>
       <Grid item xs={12}>
         <FormControlLabel
           control={<Checkbox checked={!!props.protectedEndpoint} onChange={handleCheckBoxChangeClick} />}
           label="Only users authenticated by Single Sign-on can access"
         />
       </Grid>
-      <HelperTextSection>{sc.ACCESS_HELPER}</HelperTextSection>
+
       <Grid item xs={12}>
         <Field
           render={(props: FieldRenderProps<number[]>) => (
