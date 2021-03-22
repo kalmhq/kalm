@@ -82,7 +82,7 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
   };
 
   private renderText() {
-    const { limit, data, formatValue } = this.props;
+    const { data, formatValue } = this.props;
     // let text = "Data available soon";
     let text = "";
     let percentage: React.ReactNode;
