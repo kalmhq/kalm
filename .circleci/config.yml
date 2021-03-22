@@ -291,10 +291,22 @@ workflows:
           context: kalm-ci
           requires:
             - test-dashboard
+          filters:
+            branches:
+              only:
+                - main
+            tags:
+              only: /^v.*/
       - build-push-controller-image:
           context: kalm-ci
           requires:
             - test-controller
+          filters:
+            branches:
+              only:
+                - main
+            tags:
+              only: /^v.*/
       - auto-tag:
           context: kalm-ci
           requires:
