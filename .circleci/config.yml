@@ -6,6 +6,9 @@ jobs:
     machine:
       image: ubuntu-2004:202008-01
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "96:82:d6:5d:87:53:78:7e:d4:c1:1e:5e:8b:91:9d:b6"
       - checkout
       - run:
           name: auto tag
