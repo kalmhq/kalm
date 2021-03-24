@@ -131,7 +131,7 @@ const DomainConfigPageRaw: React.FC = () => {
                 );
               }}
             >
-              Apply Certificate
+              GENERATE CERTIFICATE
             </Button>
           </Box>
         </Box>
@@ -174,7 +174,7 @@ const DomainConfigPageRaw: React.FC = () => {
                 );
               }}
             >
-              Apply Certificate
+              GENERATE CERTIFICATE
             </Button>
           </Box>
         </Box>
