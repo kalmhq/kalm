@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -338,9 +339,24 @@ func (r *KalmOperatorConfigReconciler) reconcileAccessForDashboard(configSpec in
 	// postpone cert for dashboard to speed up cert issuance
 	postponeCertReconcile := false
 	if r.config.Spec.BYOCModeConfig != nil {
+		// if have not send cluster info to kalm
 		byocStatus := r.config.Status.BYOCModeStatus
 		if byocStatus == nil || !byocStatus.ClusterInfoHasSendToKalmCloud {
 			postponeCertReconcile = true
+		}
+
+		// if report time less than 1 minute
+		installConditions := r.config.Status.InstallConditions
+		for _, cond := range installConditions {
+			if cond.Type != installv1alpha1.InstallStateReportClusterInfo {
+				continue
+			}
+
+			now := time.Now()
+			if cond.Status != corev1.ConditionTrue || !now.After(cond.LastTransitionTime.Add(30*time.Second)) {
+				postponeCertReconcile = true
+				break
+			}
 		}
 	}
 
