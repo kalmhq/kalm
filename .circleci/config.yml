@@ -2,6 +2,19 @@ version: 2.1
 #orbs:
 #  deploy-orb: kalmhq-ns1/deploy-orb@dev:0.0.3
 jobs:
+  auto-tag:
+    machine:
+      image: ubuntu-2004:202008-01
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "96:82:d6:5d:87:53:78:7e:d4:c1:1e:5e:8b:91:9d:b6"
+      - checkout
+      - run:
+          name: auto tag
+          command: |
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            ./scripts/auto-tag.sh -v patch
   test-dashboard:
     docker:
       - image: circleci/golang:1.15.2
@@ -48,13 +61,22 @@ jobs:
               KALM_BUILD_ENV_GIT_COMMIT=$CIRCLE_SHA1
               KALM_BUILD_ENV_GIT_VERSION=$CIRCLE_TAG
             fi
+
+            if [ -z "$CIRCLE_BRANCH" ]
+            then
+              CACHE_REF=default-cache
+            else
+              CACHE_REF=$CIRCLE_BRANCH-cache
+            fi
+
             docker buildx build \
               --output=type=docker \
-              --cache-from=type=registry,ref=kalmhq/kalm:$CIRCLE_BRANCH-cache \
-              --cache-to=type=registry,ref=kalmhq/kalm:$CIRCLE_BRANCH-cache,mode=max \
+              --cache-from=type=registry,ref=kalmhq/kalm:$CACHE_REF \
+              --cache-to=type=registry,ref=kalmhq/kalm:$CACHE_REF,mode=max \
               --build-arg KALM_BUILD_ENV_GIT_COMMIT=$KALM_BUILD_ENV_GIT_COMMIT \
               --build-arg KALM_BUILD_ENV_GIT_VERSION=$KALM_BUILD_ENV_GIT_VERSION \
               -t kalmhq/kalm:latest .
+
             docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_SHA1
             docker push kalmhq/kalm:latest
             docker push kalmhq/kalm:$CIRCLE_SHA1
@@ -108,11 +130,20 @@ jobs:
             # use driver: docker-container
             docker buildx create --name mybuilder --use
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+            if [ -z "$CIRCLE_BRANCH" ]
+            then
+              CACHE_REF=default-cache
+            else
+              CACHE_REF=$CIRCLE_BRANCH-cache
+            fi
+
             docker buildx build \
               --output=type=docker \
-              --cache-from=type=registry,ref=kalmhq/kalm-controller:$CIRCLE_BRANCH-cache \
-              --cache-to=type=registry,ref=kalmhq/kalm-controller:$CIRCLE_BRANCH-cache,mode=max \
+              --cache-from=type=registry,ref=kalmhq/kalm-controller:$CACHE_REF \
+              --cache-to=type=registry,ref=kalmhq/kalm-controller:$CACHE_REF,mode=max \
               -t kalmhq/kalm-controller:latest .
+
             docker tag  kalmhq/kalm-controller:latest kalmhq/kalm-controller:$CIRCLE_SHA1
             docker push kalmhq/kalm-controller:latest
             docker push kalmhq/kalm-controller:$CIRCLE_SHA1
@@ -139,11 +170,20 @@ jobs:
             # use driver: docker-container
             docker buildx create --name mybuilder --use
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+            if [ -z "$CIRCLE_BRANCH" ]
+            then
+              CACHE_REF=default-cache
+            else
+              CACHE_REF=$CIRCLE_BRANCH-cache
+            fi
+
             docker buildx build \
               --output=type=docker \
-              --cache-from=type=registry,ref=kalmhq/kalm-operator:$CIRCLE_BRANCH-cache \
-              --cache-to=type=registry,ref=kalmhq/kalm-operator:$CIRCLE_BRANCH-cache,mode=max \
+              --cache-from=type=registry,ref=kalmhq/kalm-operator:$CACHE_REF \
+              --cache-to=type=registry,ref=kalmhq/kalm-operator:$CACHE_REF,mode=max \
               -t kalmhq/kalm-operator:latest .
+
             docker tag  kalmhq/kalm-operator:latest kalmhq/kalm-operator:$CIRCLE_SHA1
             docker push kalmhq/kalm-operator:latest
             docker push kalmhq/kalm-operator:$CIRCLE_SHA1
@@ -223,22 +263,30 @@ jobs:
             IMG=kalmhq/kalm-operator:${CIRCLE_SHA1} make deploy
 workflows:
   version: 2
-  dashboard:
+  main-workflow:
     jobs:
       - test-dashboard:
           filters:
+            branches:
+              only:
+                - main
             tags:
               only: /^v.*/
-      - hold:
-          type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
+      - test-controller:
           filters:
             branches:
-              ignore: main
-      - build-push-dashboard-image:
-          name: manual-build-push-dashboard-image
+              only:
+                - main
+            tags:
+              only: /^v.*/
+      - build-push-operator-image:
           context: kalm-ci
-          requires:
-            - hold
+          filters:
+            branches:
+              only:
+                - main
+            tags:
+              only: /^v.*/
       - build-push-dashboard-image:
           context: kalm-ci
           requires:
@@ -249,31 +297,6 @@ workflows:
                 - main
             tags:
               only: /^v.*/
-      - deploy-dashboard:
-          name: deploy-dashboard-internal-cluster
-          context: deploy-internal-cluster
-          requires:
-            - build-push-dashboard-image
-          filters:
-            branches:
-              only:
-                - main
-  controller:
-    jobs:
-      - test-controller:
-          filters:
-            tags:
-              only: /^v.*/
-      - hold:
-          type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
-          filters:
-            branches:
-              ignore: main
-      - build-push-controller-image:
-          name: manual-build-push-controller-image
-          context: kalm-ci
-          requires:
-            - hold
       - build-push-controller-image:
           context: kalm-ci
           requires:
@@ -284,6 +307,34 @@ workflows:
                 - main
             tags:
               only: /^v.*/
+      - auto-tag:
+          context: kalm-ci
+          requires:
+            - build-push-operator-image
+            - build-push-dashboard-image
+            - build-push-controller-image
+          filters:
+            branches:
+              only:
+                - main
+      - deploy-operator:
+          name: deploy-operator-to-internal-cluster
+          context: deploy-internal-cluster
+          requires:
+            - build-push-operator-image
+          filters:
+            branches:
+              only:
+                - main
+      - deploy-dashboard:
+          name: deploy-dashboard-internal-cluster
+          context: deploy-internal-cluster
+          requires:
+            - build-push-dashboard-image
+          filters:
+            branches:
+              only:
+                - main
       - deploy-controller:
           name: deploy-controller-to-internal-cluster
           context: deploy-internal-cluster
@@ -293,16 +344,40 @@ workflows:
             branches:
               only:
                 - main
-  operator:
+  dashboard:
     jobs:
-      - build-push-operator-image:
-          context: kalm-ci
+      - test-dashboard:
           filters:
             branches:
-              only:
-                - main
-            tags:
-              only: /^v.*/
+              ignore: main
+      - hold:
+          type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
+          filters:
+            branches:
+              ignore: main
+      - build-push-dashboard-image:
+          name: manual-build-push-dashboard-image
+          context: kalm-ci
+          requires:
+            - hold
+  controller:
+    jobs:
+      - test-controller:
+          filters:
+            branches:
+              ignore: main
+      - hold:
+          type: approval
+          filters:
+            branches:
+              ignore: main
+      - build-push-controller-image:
+          name: manual-build-push-controller-image
+          context: kalm-ci
+          requires:
+            - hold
+  operator:
+    jobs:
       - hold:
           type: approval
           filters:
@@ -313,12 +388,3 @@ workflows:
           context: kalm-ci
           requires:
             - hold
-      - deploy-operator:
-          name: deploy-operator-to-internal-cluster
-          context: deploy-internal-cluster
-          requires:
-            - build-push-operator-image
-          filters:
-            branches:
-              only:
-                - main

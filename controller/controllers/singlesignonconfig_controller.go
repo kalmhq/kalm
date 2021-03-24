@@ -191,11 +191,26 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 func (r *SingleSignOnConfigReconcilerTask) DeleteResources() error {
 	if r.secret != nil {
 		if err := r.Delete(r.ctx, r.secret); err != nil {
-			r.Log.Error(err, "delete dex secret error")
+			r.Log.Error(err, "delete secret error")
 			return err
 		}
 	}
 
+	if err := r.deleteDexResources(); err != nil {
+		return err
+	}
+
+	if r.externalEnvoyExtAuthz != nil {
+		if err := r.Delete(r.ctx, r.externalEnvoyExtAuthz); err != nil {
+			r.Log.Error(err, "delete externalEnvoyExtAuthz error")
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *SingleSignOnConfigReconcilerTask) deleteDexResources() error {
 	if r.dexComponent != nil {
 		if err := r.Delete(r.ctx, r.dexComponent); err != nil {
 			r.Log.Error(err, "delete dex component error")
@@ -206,13 +221,6 @@ func (r *SingleSignOnConfigReconcilerTask) DeleteResources() error {
 	if r.dexRoute != nil {
 		if err := r.Delete(r.ctx, r.dexRoute); err != nil {
 			r.Log.Error(err, "delete dex route error")
-			return err
-		}
-	}
-
-	if r.externalEnvoyExtAuthz != nil {
-		if err := r.Delete(r.ctx, r.externalEnvoyExtAuthz); err != nil {
-			r.Log.Error(err, "delete externalEnvoyExtAuthz error")
 			return err
 		}
 	}
@@ -812,8 +820,9 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources() error {
 		return err
 	}
 
-	// use dex mode
 	if r.ssoConfig.Spec.Issuer == "" {
+		// use dex mode
+
 		if err := r.ReconcileDexComponent(); err != nil {
 			return err
 		}
@@ -823,6 +832,11 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources() error {
 		}
 
 		if err := r.ReconcileDexRouteCert(); err != nil {
+			return err
+		}
+	} else {
+		// use ext OIDC provider, local dex is not needed
+		if err := r.deleteDexResources(); err != nil {
 			return err
 		}
 	}
