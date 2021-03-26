@@ -106,7 +106,7 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/settings", h.handleListSettings)
 
 	gv1Alpha1WithAuth.GET("/version", h.handleCurrentVersion)
-	gv1Alpha1WithAuth.PUT("/version", h.handleUpdateVersion)
+	gv1Alpha1WithAuth.PUT("/version", h.handleUpgradeVersion)
 }
 
 func NewApiHandler(clientManager client.ClientManager) *ApiHandler {
