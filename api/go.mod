@@ -33,3 +33,4 @@ require (
 )
 
 replace github.com/kalmhq/kalm/controller => ../controller
+replace github.com/kalmhq/kalm/operator   => ../operator

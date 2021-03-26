@@ -104,6 +104,9 @@ func (h *ApiHandler) InstallMainRoutes(e *echo.Echo) {
 	h.InstallACMEServerHandlers(gv1Alpha1WithAuth)
 
 	gv1Alpha1WithAuth.GET("/settings", h.handleListSettings)
+
+	gv1Alpha1WithAuth.GET("/version", h.handleCurrentVersion)
+	gv1Alpha1WithAuth.PUT("/version", h.handleUpdateVersion)
 }
 
 func NewApiHandler(clientManager client.ClientManager) *ApiHandler {

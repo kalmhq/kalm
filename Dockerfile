@@ -24,6 +24,7 @@ WORKDIR /workspace/api
 
 # Copy dependencies
 COPY controller/ /workspace/controller
+COPY operator/ /workspace/operator
 
 # Copy the Go Modules manifests
 COPY api/go.mod go.mod
