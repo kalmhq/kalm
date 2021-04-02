@@ -68,7 +68,7 @@ const ComponentAccessRaw: React.FC<Props> = (props) => {
       <Grid item xs={12}>
         <FormControlLabel
           control={<Checkbox checked={!!props.protectedEndpoint} onChange={handleCheckBoxChangeClick} />}
-          label="Only users authenticated by Single Sign-on can access"
+          label="Require SSO authentication to access this component"
         />
       </Grid>
 
