@@ -16,6 +16,7 @@ jobs:
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             ./scripts/auto-tag.sh -v patch
   test-dashboard:
+    parallelism: 4
     docker:
       - image: circleci/golang:1.15.2
     environment:
@@ -272,7 +273,6 @@ workflows:
                 - main
             tags:
               only: /^v.*/
-          parallelism: 4
       - test-controller:
           filters:
             branches:
@@ -280,7 +280,6 @@ workflows:
                 - main
             tags:
               only: /^v.*/
-          parallelism: 4
       - build-push-operator-image:
           context: kalm-ci
           filters:
@@ -299,7 +298,6 @@ workflows:
                 - main
             tags:
               only: /^v.*/
-          parallelism: 4
       - build-push-controller-image:
           context: kalm-ci
           requires:
