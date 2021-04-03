@@ -24,7 +24,7 @@ const styles = () =>
 type LabelProps = React.Props<any> & WithStyles<typeof styles> & TypographyProps;
 const LabelRaw = (props: LabelProps) => {
   return (
-    <Typography variant={props.variant} className={props.classes.root} {...props}>
+    <Typography component={"div"} variant={props.variant} className={props.classes.root} {...props}>
       {props.children}
     </Typography>
   );
