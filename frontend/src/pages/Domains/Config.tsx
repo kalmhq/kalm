@@ -105,12 +105,10 @@ const DomainConfigPageRaw: React.FC = () => {
 
   const normalDomainNoCertStep = (): StepOption => {
     return {
-      title: `Apply a certificate`,
+      title: `Generate certificate`,
       content: (
         <Box mt={2}>
-          <Alert severity="info">
-            Before applying, please ensure that the DNS records in the previous step have been configured correctly.
-          </Alert>
+          <Alert severity="info">Please first ensure that the DNS records above are configured correctly</Alert>
           <Box mt={2}>
             <Button
               variant="outlined"
@@ -142,7 +140,7 @@ const DomainConfigPageRaw: React.FC = () => {
 
   const wildcardCertificateNoCertStep = (): StepOption => {
     return {
-      title: `Apply a certificate`,
+      title: `Generate certificate`,
       content: (
         <Box mt={2}>
           {!acmeServer && (
