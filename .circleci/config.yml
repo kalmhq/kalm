@@ -91,6 +91,7 @@ jobs:
     environment:
       KUBEBUILDER_ASSETS: /home/circleci/kubebuilder/bin
       GO111MODULE: "on"
+    parallelism: 8
     steps:
       - checkout
       - run:
@@ -110,11 +111,9 @@ jobs:
       - run:
           name: run test
           working_directory: ./controller
-          command: make test
-      - run:
-          name: upload coverage
-          working_directory: ./controller
-          command: bash <(curl -s https://codecov.io/bash)
+          command: |
+            PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
+            gotestsum -- $PACKAGE_NAMES
   build-push-controller-image:
     machine:
       image: ubuntu-2004:202008-01
