@@ -22,8 +22,10 @@ jobs:
     environment:
       KUBEBUILDER_ASSETS: /home/circleci/kubebuilder/bin
       GO111MODULE: "on"
+      TEST_RESULTS: /tmp/test-results
     steps:
       - checkout
+      - run: mkdir -p $TEST_RESULTS # create the test results directory
       - run:
           name: Install kubebuilder
           command: |
@@ -43,7 +45,12 @@ jobs:
           working_directory: ./api
           command: |
             PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
-            gotestsum -- $PACKAGE_NAMES
+            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
+      - store_artifacts: # upload test summary for display in Artifacts
+          path: /tmp/test-results
+          destination: raw-test-output
+      - store_test_results: # upload test results for display in Test Summary
+          path: /tmp/test-results
   build-push-dashboard-image:
     machine:
       image: ubuntu-2004:202008-01
