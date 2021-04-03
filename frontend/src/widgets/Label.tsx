@@ -21,10 +21,12 @@ const styles = () =>
     },
   });
 
-// type LabelProps = React.Props<any> & WithStyles<typeof styles> & TypographyProps;
-interface LabelProps extends TypographyProps {
+interface LabelPropsInterface extends TypographyProps {
   component?: string;
 }
+
+type LabelProps = React.Props<any> & WithStyles<typeof styles> & LabelPropsInterface;
+
 const LabelRaw = (props: React.Props<any> & WithStyles<typeof styles> & LabelProps) => {
   return (
     <Typography component={"div"} variant={props.variant} className={props.classes.root} {...props}>
