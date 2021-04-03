@@ -272,6 +272,7 @@ workflows:
                 - main
             tags:
               only: /^v.*/
+          parallelism: 4
       - test-controller:
           filters:
             branches:
@@ -279,6 +280,7 @@ workflows:
                 - main
             tags:
               only: /^v.*/
+          parallelism: 4
       - build-push-operator-image:
           context: kalm-ci
           filters:
@@ -297,6 +299,7 @@ workflows:
                 - main
             tags:
               only: /^v.*/
+          parallelism: 4
       - build-push-controller-image:
           context: kalm-ci
           requires:
