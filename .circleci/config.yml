@@ -43,9 +43,7 @@ jobs:
           working_directory: ./api
           command: |
             PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
-            gotestsum --junitfile ~/report/gotestsum-report.xml -- $PACKAGE_NAMES
-      - store_test_results:
-          path: ~/report
+            gotestsum -- $PACKAGE_NAMES
   build-push-dashboard-image:
     machine:
       image: ubuntu-2004:202008-01
