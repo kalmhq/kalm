@@ -46,7 +46,7 @@ jobs:
           command: |
             PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
             gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -coverprofile={$TEST_RESULTS}/cover.out -- $PACKAGE_NAMES
-            go tool cover -html={$TEST_RESULTS}/cover.out -o {$TEST_RESULTS}/coverage.html
+            go tool cover -html=${TEST_RESULTS}/cover.out -o ${TEST_RESULTS}/coverage.html
       - store_artifacts: # upload test summary for display in Artifacts
           path: /tmp/test-results
           destination: raw-test-output
