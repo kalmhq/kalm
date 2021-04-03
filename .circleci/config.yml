@@ -16,7 +16,7 @@ jobs:
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             ./scripts/auto-tag.sh -v patch
   test-dashboard:
-    parallelism: 4
+    parallelism: 8
     docker:
       - image: circleci/golang:1.15.2
     environment:
@@ -41,7 +41,9 @@ jobs:
       - run:
           name: run test
           working_directory: ./api
-          command: go test -coverprofile=coverage.txt -covermode=atomic -v ./...
+          command: |
+            PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
+            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
       - run:
           name: upload coverage
           working_directory: ./api
