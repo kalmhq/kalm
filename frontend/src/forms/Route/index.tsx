@@ -9,7 +9,7 @@ import { FinalTextField } from "forms/Final/textfield";
 import { FormDataPreview } from "forms/Final/util";
 import { ROUTE_FORM_ID } from "forms/formIDs";
 import { NormalizePositiveNumber, stringArrayTrimAndToLowerCaseParse, stringArrayTrimParse } from "forms/normalizer";
-import { RenderHttpRouteDestinations } from "forms/Route/destinations";
+import { TargetsPanel } from "forms/Route/targetsPanel";
 import { RouteDomains } from "forms/Route/Domains";
 import { ValidatorArrayNotEmpty, ValidatorArrayOfPath } from "forms/validator";
 import routesGif from "images/routes.gif";
@@ -152,7 +152,7 @@ const RouteFormRaw: React.FC<RouteFormProps> = (props) => {
       <Box p={2}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={12} md={12}>
-            <RenderHttpRouteDestinations />
+            <TargetsPanel />
           </Grid>
           <Grid item xs={8} sm={8} md={8}>
             <CollapseWrapper title={stringConstants.ROUTE_MULTIPLE_TARGETS_HELPER}>

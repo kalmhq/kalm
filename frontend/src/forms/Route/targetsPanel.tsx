@@ -22,7 +22,7 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorArrayNotEmpty, ValidatorRequired } from "../validator";
 import { AddButton } from "../../widgets/Button";
 
-const RenderHttpRouteDestinationsRaw: React.FC = () => {
+const TargetsPanelRaw: React.FC = () => {
   const { services } = useSelector((state: RootState) => {
     return {
       services: state.services.services,
@@ -154,4 +154,4 @@ const RenderHttpRouteDestinationsRaw: React.FC = () => {
   );
 };
 
-export const RenderHttpRouteDestinations = RenderHttpRouteDestinationsRaw;
+export const TargetsPanel = TargetsPanelRaw;
