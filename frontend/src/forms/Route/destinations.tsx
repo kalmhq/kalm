@@ -76,7 +76,7 @@ const RenderHttpRouteDestinationsRaw: React.FC = () => {
         <div>
           <Box mt={2} mr={2} mb={2}>
             <AddButton
-              handler={() =>
+              onClick={() =>
                 fields.push({
                   host: "",
                   weight: 1,

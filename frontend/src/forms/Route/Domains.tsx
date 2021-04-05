@@ -103,7 +103,7 @@ export const RouteDomains: React.FC = () => {
         <div>
           <Box display="flex" mb={1}>
             <AddButton
-              handler={() => {
+              onClick={() => {
                 fields.push("");
               }}
             >

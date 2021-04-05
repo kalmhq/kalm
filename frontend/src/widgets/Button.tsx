@@ -254,7 +254,7 @@ export const AddButton = (props: AddButtonProps) => {
       startIcon={<AddIcon />}
       size="small"
       id="add-target-button"
-      onClick={props.handler}
+      onClick={props.onClick}
     >
       {props.children}
     </Button>
@@ -262,5 +262,5 @@ export const AddButton = (props: AddButtonProps) => {
 };
 
 type AddButtonProps = ButtonProps & {
-  handler: () => void;
+  onClick: () => void;
 };

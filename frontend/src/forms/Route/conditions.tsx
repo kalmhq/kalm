@@ -11,6 +11,14 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorRequired } from "../validator";
 
 export const RenderHttpRouteConditions: React.FC = () => {
+  //helper method to create an entry in the rules field
+  const createField = (t: string) => ({
+    type: t,
+    operator: "equal",
+    name: "",
+    value: "",
+  });
+
   return (
     <FieldArray<HttpRouteCondition, any>
       name="conditions"
@@ -19,13 +27,8 @@ export const RenderHttpRouteConditions: React.FC = () => {
           <Box display="flex">
             <Box mt={2} mr={2} mb={2}>
               <AddButton
-                handler={() => {
-                  fields.push({
-                    type: "header",
-                    operator: "equal",
-                    name: "",
-                    value: "",
-                  });
+                onClick={() => {
+                  fields.push(createField("header"));
                 }}
               >
                 Add Header Rule
@@ -33,13 +36,8 @@ export const RenderHttpRouteConditions: React.FC = () => {
             </Box>
             <Box mt={2} mr={2} mb={2}>
               <AddButton
-                handler={() => {
-                  fields.push({
-                    type: "query",
-                    operator: "equal",
-                    name: "",
-                    value: "",
-                  });
+                onClick={() => {
+                  fields.push(createField("query"));
                 }}
               >
                 Add Query Rule
