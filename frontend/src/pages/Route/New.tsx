@@ -18,6 +18,7 @@ const mapStateToProps = (state: RootState) => {
 interface Props extends WithNamespaceProps, ReturnType<typeof mapStateToProps> {}
 
 class RouteNewRaw extends React.PureComponent<Props> {
+  // handler for submitting a new route
   private onSubmit = async (route: HttpRoute) => {
     const { dispatch } = this.props;
 

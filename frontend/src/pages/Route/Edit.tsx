@@ -69,7 +69,7 @@ class RouteEditRaw extends React.PureComponent<Props> {
       }
     });
 
-    return <RouteForm isEdit onSubmit={this.onSubmit} initial={initial} />;
+    return <RouteForm isEditing onSubmit={this.onSubmit} initial={initial} />;
   }
 
   public render() {

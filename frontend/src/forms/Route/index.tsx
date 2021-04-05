@@ -32,11 +32,8 @@ import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
-
-// const useStyles = makeStyles((theme: Theme) => createStyles({}));
-
-interface Props {
-  isEdit?: boolean;
+interface RouteFormProps {
+  isEditing?: boolean;
   onSubmit: any;
   initial: HttpRoute;
 }
@@ -53,8 +50,8 @@ const schemaOptions = [
   },
 ];
 
-const RouteFormRaw: React.FC<Props> = (props) => {
-  const { isEdit, initial, onSubmit } = props;
+const RouteFormRaw: React.FC<RouteFormProps> = (props) => {
+  const { isEditing, initial, onSubmit } = props;
   const { tutorialState, certificates } = useSelector((state: RootState) => {
     const certificates = state.certificates.certificates;
 
@@ -413,7 +410,7 @@ const RouteFormRaw: React.FC<Props> = (props) => {
               </Expansion>
             </Box>
             <Box mt={2}>
-              <SubmitButton id="add-route-submit-button">{isEdit ? "Update" : "Create"} Route</SubmitButton>
+              <SubmitButton id="add-route-submit-button">{isEditing ? "Update" : "Create"} Route</SubmitButton>
             </Box>
             <FormDataPreview />
           </form>
