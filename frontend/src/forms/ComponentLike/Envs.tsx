@@ -1,4 +1,4 @@
-import { Box, Button, Fade, Grid, Link } from "@material-ui/core";
+import { Box, Fade, Grid, Link } from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import { FinalTextField } from "forms/Final/textfield";
 import { trimParse } from "forms/normalizer";
@@ -8,7 +8,8 @@ import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { EnvItem } from "types/application";
 import { ComponentLikeEnv } from "types/componentTemplate";
 import sc from "utils/stringConstants";
-import { AddIcon, DeleteIcon } from "widgets/Icon";
+import { SkinnyAddButton } from "widgets/Button";
+import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Subtitle1 } from "widgets/Label";
 import { SectionTitle } from "widgets/SectionTitle";
@@ -29,16 +30,7 @@ class RenderEnvs extends React.PureComponent<Props> {
   private renderAddButton = () => {
     return (
       <Box mb={2} mt={2} ml={2}>
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<AddIcon />}
-          size="small"
-          style={{ height: 18, borderRadius: 5, fontSize: 12 }}
-          onClick={this.handlePush.bind(this)}
-        >
-          New Variable
-        </Button>
+        <SkinnyAddButton onClick={this.handlePush.bind(this)}>New Variable</SkinnyAddButton>
       </Box>
     );
   };

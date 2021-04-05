@@ -243,10 +243,9 @@ export const DangerButton = (props: ButtonProps) => {
 };
 
 /**
- * AddButton is styled to have an "+" sign on the left. Typically used alongside multi-item forms.
- * @param props ButtonProps with a handler
+ * AddButton is styled to have an "+" sign on the left. Typically used alongside arrays.
  */
-export const AddButton = (props: AddButtonProps) => {
+export const AddButton = (props: ButtonProps) => {
   return (
     <Button
       variant="outlined"
@@ -254,6 +253,7 @@ export const AddButton = (props: AddButtonProps) => {
       startIcon={<AddIcon />}
       size="small"
       id="add-target-button"
+      style={props.style}
       onClick={props.onClick}
     >
       {props.children}
@@ -261,6 +261,13 @@ export const AddButton = (props: AddButtonProps) => {
   );
 };
 
-type AddButtonProps = ButtonProps & {
-  onClick: () => void;
+/**
+ * Identical to AddButton except skinnier. Typically used alongside arrays
+ */
+export const SkinnyAddButton = (props: ButtonProps) => {
+  return (
+    <AddButton onClick={props.onClick} style={{ height: 18, borderRadius: 5, fontSize: 12 }}>
+      {props.children}
+    </AddButton>
+  );
 };

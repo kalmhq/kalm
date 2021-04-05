@@ -1,4 +1,4 @@
-import { Box, Button, Link } from "@material-ui/core";
+import { Button, Link } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
@@ -12,8 +12,9 @@ import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { PreInjectedFile } from "types/componentTemplate";
 import { default as sc, default as StringConstants } from "utils/stringConstants";
+import { SkinnyAddButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
-import { AddIcon, DeleteIcon } from "widgets/Icon";
+import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Subtitle1 } from "widgets/Label";
 import { RichEditor } from "widgets/RichEditor";
@@ -200,18 +201,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
         <Grid item xs={12}>
           <SectionTitle>
             <Subtitle1>Config Files</Subtitle1>
-            <Box mb={2} mt={2} ml={2}>
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<AddIcon />}
-                size="small"
-                style={{ height: 18, borderRadius: 5, fontSize: 12 }}
-                onClick={this.handlePush.bind(this)}
-              >
-                New File
-              </Button>
-            </Box>
+            <SkinnyAddButton onClick={this.handlePush.bind(this)}>New File</SkinnyAddButton>
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>

@@ -1,4 +1,4 @@
-import { Box, Button, Fade, Grid, Link, Paper, Popper } from "@material-ui/core";
+import { Box, Fade, Grid, Link, Paper, Popper } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
 import { normalizePort } from "forms/normalizer";
 import { POPPER_ZINDEX } from "layout/Constants";
@@ -15,7 +15,8 @@ import {
   PortProtocolUDP,
 } from "types/componentTemplate";
 import sc from "utils/stringConstants";
-import { AddIcon, DeleteIcon } from "widgets/Icon";
+import { SkinnyAddButton } from "widgets/Button";
+import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Subtitle1 } from "widgets/Label";
 import { PortChart } from "widgets/PortChart";
@@ -51,16 +52,7 @@ class RenderPorts extends React.PureComponent<Props> {
           <SectionTitle>
             <Subtitle1>Ports</Subtitle1>
             <Box mb={2} mt={2} ml={2}>
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<AddIcon />}
-                size="small"
-                style={{ height: 18, borderRadius: 5, fontSize: 12 }}
-                onClick={this.handlePush.bind(this)}
-              >
-                Add
-              </Button>
+              <SkinnyAddButton onClick={this.handlePush.bind(this)}>Add Port</SkinnyAddButton>
             </Box>
           </SectionTitle>
         </Grid>

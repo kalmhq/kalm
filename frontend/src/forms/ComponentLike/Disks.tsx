@@ -1,4 +1,4 @@
-import { Box, Button, Grid, TextField } from "@material-ui/core";
+import { Box, Grid, TextField } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import HelpIcon from "@material-ui/icons/Help";
 import { diskSizeFormat, diskSizeParse, trimParse } from "forms/normalizer";
@@ -23,7 +23,8 @@ import {
 } from "types/componentTemplate";
 import { sizeStringToGi } from "utils/sizeConv";
 import { default as sc, default as StringConstants } from "utils/stringConstants";
-import { AddIcon, DeleteIcon } from "widgets/Icon";
+import { SkinnyAddButton } from "widgets/Button";
+import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { KTooltip } from "widgets/KTooltip";
 import { Caption, H6, Subtitle1 } from "widgets/Label";
@@ -364,16 +365,7 @@ class RenderVolumesRaw extends React.PureComponent<Props> {
           <SectionTitle>
             <Subtitle1>Disks</Subtitle1>
             <Box mb={2} mt={2} ml={2}>
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<AddIcon />}
-                size="small"
-                style={{ height: 18, borderRadius: 5, fontSize: 12 }}
-                onClick={this.handlePush.bind(this)}
-              >
-                Add
-              </Button>
+              <SkinnyAddButton onClick={this.handlePush.bind(this)}>Add</SkinnyAddButton>
             </Box>
           </SectionTitle>
         </Grid>
