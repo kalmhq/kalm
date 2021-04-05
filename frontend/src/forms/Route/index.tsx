@@ -184,6 +184,10 @@ const RouteFormRaw: React.FC<RouteFormProps> = (props) => {
       : finalValidateOrNotBlockByTutorial(values, tutorialState, ROUTE_FORM_ID);
   };
 
+  //UX improvement: provide an intial target if there isn't one (this can probably be refactored)
+  if (initial.destinations.length === 0) {
+    initial.destinations.push({ weight: 1, host: "" });
+  }
   return (
     <Form
       onSubmit={onSubmit}
