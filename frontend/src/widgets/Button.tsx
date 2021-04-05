@@ -17,6 +17,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import CloseIcon from "@material-ui/icons/Close";
 import CheckIcon from "@material-ui/icons/Check";
 import { FormSpy } from "react-final-form";
+import { AddIcon } from "widgets/Icon";
 
 const customizedButtonStyle = (theme: Theme) => {
   return createStyles({
@@ -239,4 +240,27 @@ export const DangerButton = (props: ButtonProps) => {
       />
     </Box>
   );
+};
+
+/**
+ * AddButton is styled to have an "+" sign on the left. Typically used alongside multi-item forms.
+ * @param props ButtonProps with a handler
+ */
+export const AddButton = (props: AddButtonProps) => {
+  return (
+    <Button
+      variant="outlined"
+      color="primary"
+      startIcon={<AddIcon />}
+      size="small"
+      id="add-target-button"
+      onClick={props.handler}
+    >
+      {props.children}
+    </Button>
+  );
+};
+
+type AddButtonProps = ButtonProps & {
+  handler: () => void;
 };

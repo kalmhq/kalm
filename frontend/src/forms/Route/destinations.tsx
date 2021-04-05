@@ -1,5 +1,4 @@
 import { Box, Grid } from "@material-ui/core";
-import Button from "@material-ui/core/Button";
 import Collapse from "@material-ui/core/Collapse";
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
@@ -18,9 +17,10 @@ import {
   PortProtocolHTTPS,
 } from "types/componentTemplate";
 import { HttpRouteDestination } from "types/route";
-import { AddIcon, DeleteIcon } from "widgets/Icon";
+import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorArrayNotEmpty, ValidatorRequired } from "../validator";
+import { AddButton } from "../../widgets/Button";
 
 const RenderHttpRouteDestinationsRaw: React.FC = () => {
   const { services } = useSelector((state: RootState) => {
@@ -75,21 +75,16 @@ const RenderHttpRouteDestinationsRaw: React.FC = () => {
       render={({ fields, meta: { error, touched } }: FieldArrayRenderProps<HttpRouteDestination, any>) => (
         <div>
           <Box mt={2} mr={2} mb={2}>
-            <Button
-              variant="outlined"
-              color="primary"
-              startIcon={<AddIcon />}
-              size="small"
-              id="add-target-button"
-              onClick={() =>
+            <AddButton
+              handler={() =>
                 fields.push({
                   host: "",
                   weight: 1,
                 })
               }
             >
-              Add a target
-            </Button>
+              Add A Target
+            </AddButton>
           </Box>
           {touched && error && typeof error === "string" ? <Alert severity="error">{error}</Alert> : null}
           <Collapse in={fields.value && fields.value.length > 1}>
