@@ -1,4 +1,4 @@
-import { Box, Button, Grid } from "@material-ui/core";
+import { Box, Grid } from "@material-ui/core";
 import InputAdornment from "@material-ui/core/InputAdornment/InputAdornment";
 import { FinalSelectField } from "forms/Final/select";
 import { FinalTextField } from "forms/Final/textfield";
@@ -9,7 +9,8 @@ import { FieldArray } from "react-final-form-arrays";
 import { useSelector } from "react-redux";
 import { RootState } from "reducers";
 import { Domain } from "types/domains";
-import { AddIcon, DeleteIcon } from "widgets/Icon";
+import { AddButton } from "widgets/Button";
+import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorArrayOfIsDNS1123SubDomainWithOptionalWildcardPrefix, ValidatorRequired } from "../validator";
 
@@ -101,17 +102,13 @@ export const RouteDomains: React.FC = () => {
       render={({ fields }) => (
         <div>
           <Box display="flex" mb={1}>
-            <Button
-              variant="outlined"
-              color="primary"
-              startIcon={<AddIcon />}
-              size="small"
-              onClick={() => {
+            <AddButton
+              handler={() => {
                 fields.push("");
               }}
             >
-              Add a domain
-            </Button>
+              Add a Domain
+            </AddButton>
           </Box>
           {fields.value &&
             fields.value.map((host, index) => (

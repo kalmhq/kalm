@@ -1,11 +1,12 @@
-import { Box, Button, Grid } from "@material-ui/core";
+import { Box, Grid } from "@material-ui/core";
 import { FinalSelectField } from "forms/Final/select";
 import { FinalTextField } from "forms/Final/textfield";
 import React from "react";
 import { Field } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
 import { HttpRouteCondition } from "types/route";
-import { AddIcon, DeleteIcon } from "widgets/Icon";
+import { AddButton } from "widgets/Button";
+import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { ValidatorRequired } from "../validator";
 
@@ -17,12 +18,8 @@ export const RenderHttpRouteConditions: React.FC = () => {
         <div>
           <Box display="flex">
             <Box mt={2} mr={2} mb={2}>
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<AddIcon />}
-                size="small"
-                onClick={() => {
+              <AddButton
+                handler={() => {
                   fields.push({
                     type: "header",
                     operator: "equal",
@@ -32,15 +29,11 @@ export const RenderHttpRouteConditions: React.FC = () => {
                 }}
               >
                 Add Header Rule
-              </Button>
+              </AddButton>
             </Box>
             <Box mt={2} mr={2} mb={2}>
-              <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<AddIcon />}
-                size="small"
-                onClick={() => {
+              <AddButton
+                handler={() => {
                   fields.push({
                     type: "query",
                     operator: "equal",
@@ -50,7 +43,7 @@ export const RenderHttpRouteConditions: React.FC = () => {
                 }}
               >
                 Add Query Rule
-              </Button>
+              </AddButton>
             </Box>
           </Box>
           {fields.value &&
