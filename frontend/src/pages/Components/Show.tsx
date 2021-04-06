@@ -32,6 +32,9 @@ const styles = (theme: Theme) =>
       display: "flex",
       alignItems: "center",
     },
+    networkingPanel: {
+      fontSize: theme.typography.subtitle2.fontSize,
+    },
     secondHeaderRightItem: {
       marginLeft: theme.spacing(2),
       marginRight: theme.spacing(2),
@@ -59,30 +62,34 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
     return port.servicePort || port.containerPort;
   };
 
+  //TODO refactor this, there's no need for a second duplicate method
   const renderStatefulSetNetwork = () => {
     const hasService = component.ports && component.ports!.length > 0;
-
     return (
       <Expansion title={"Networking"} defaultUnfold>
         <Box p={2}>
           {component.pods.map((pod) => (
             <Box key={pod.name} mb={2}>
               <H6>{pod.name}</H6>
-              <Body color={"textSecondary"}>
-                Cluster FQDN DNS:{" "}
-                <strong>
-                  {hasService
-                    ? `${pod.name}.${component.name}-headless.${activeNamespaceName}.svc.cluster.local`
-                    : "none"}
-                </strong>
-              </Body>
-              <Body color={"textSecondary"}>
-                Cluster DNS:{" "}
-                <strong>{hasService ? `${pod.name}.${component.name}-headless.${activeNamespaceName}` : "none"}</strong>
-              </Body>
-              <Body color={"textSecondary"}>
-                Namespace DNS: <strong>{hasService ? `${pod.name}.${component.name}-headless` : "none"}</strong>
-              </Body>
+              <div className={classes.networkingPanel}>
+                <Body color={"textSecondary"}>
+                  Cluster FQDN DNS:{" "}
+                  <strong>
+                    {hasService
+                      ? `${pod.name}.${component.name}-headless.${activeNamespaceName}.svc.cluster.local`
+                      : "none"}
+                  </strong>
+                </Body>
+                <Body color={"textSecondary"}>
+                  Cluster DNS:{" "}
+                  <strong>
+                    {hasService ? `${pod.name}.${component.name}-headless.${activeNamespaceName}` : "none"}
+                  </strong>
+                </Body>
+                <Body color={"textSecondary"}>
+                  Namespace DNS: <strong>{hasService ? `${pod.name}.${component.name}-headless` : "none"}</strong>
+                </Body>
+              </div>
             </Box>
           ))}
         </Box>
@@ -109,34 +116,25 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
 
   const renderCommonNetwork = () => {
     const hasService = component.ports && component.ports!.length > 0;
-
+    console.log(classes.networkingPanel);
     return (
       <Expansion title={"Networking"} defaultUnfold>
-        <Box p={2}>
-          <Body color={"textSecondary"}>
-            Cluster FQDN DNS:{" "}
-            <strong>{hasService ? `${component.name}.${activeNamespaceName}.svc.cluster.local` : "none"}</strong>
-          </Body>
-          <Body color={"textSecondary"}>
-            Cluster DNS: <strong>{hasService ? `${component.name}.${activeNamespaceName}` : "none"}</strong>
-          </Body>
-          <Body color={"textSecondary"}>
-            Namespace DNS: <strong>{hasService ? `${component.name}` : "none"}</strong>
-          </Body>
+        <Box className={classes.networkingPanel} p={2}>
+          <div>
+            Cluster FQDN DNS: {hasService ? `${component.name}.${activeNamespaceName}.svc.cluster.local` : "none"}
+          </div>
+          <div>Cluster DNS: {hasService ? `${component.name}.${activeNamespaceName}` : "none"}</div>
+          <div>Namespace DNS: {hasService ? `${component.name}` : "none"}</div>
         </Box>
         {component.ports && (
           <VerticalHeadTable
             items={component.ports?.map((port) => ({
-              name: (
-                <Body color={"textSecondary"}>
-                  Exposed port: <strong>{port.protocol}</strong>
-                </Body>
-              ),
+              name: <div>Protocol: {port.protocol}</div>,
               content: (
-                <Body color={"textSecondary"}>
+                <div>
                   Expose port <strong>{port.containerPort}</strong> to cluster port{" "}
                   <strong>{port.servicePort || port.containerPort}</strong>
-                </Body>
+                </div>
               ),
             }))}
           />
