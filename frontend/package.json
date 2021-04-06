@@ -116,10 +116,5 @@
     "storybook-addon-deps": "^2.0.1",
     "ts-loader": "^7.0.5",
     "webpack-bundle-analyzer": "^3.8.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "./scripts/pre-commit.sh"
-    }
   }
 }
