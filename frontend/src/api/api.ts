@@ -542,7 +542,7 @@ export const stopImpersonating = (redirect: boolean = true) => {
   window.location.href = "/members/" + email;
 };
 
-export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
+export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PREFIX;
 export const K8sApiVersion = process.env.REACT_APP_K8S_API_VERSION;
 export const k8sWsPrefix = !K8sApiPrefix
   ? window.location.origin.replace(/^http/, "ws")

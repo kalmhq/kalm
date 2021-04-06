@@ -216,9 +216,9 @@ func run(runningConfig *config.Config) {
 	clonedConfig.PrivilegedLocalhostAccess = true
 	clonedConfig.BindAddress = "127.0.0.1"
 	clonedConfig.Port = 3010
-	go startMainServer(clonedConfig, k8sClientConfig)
+	startMainServer(clonedConfig, k8sClientConfig)
 
 	// real server serve
-	runningConfig.PrivilegedLocalhostAccess = false
-	startMainServer(runningConfig, k8sClientConfig)
+	// runningConfig.PrivilegedLocalhostAccess = false
+	// startMainServer(runningConfig, k8sClientConfig)
 }

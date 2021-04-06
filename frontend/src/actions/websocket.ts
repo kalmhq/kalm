@@ -1,6 +1,6 @@
 import ReconnectingWebSocket from "reconnecting-websocket";
 
-const wsPrefix = (process.env.REACT_APP_K8S_API_PERFIX || window.location.origin || "").replace(/^http/, "ws") + "/ws";
+const wsPrefix = (process.env.REACT_APP_K8S_API_PREFIX || window.location.origin || "").replace(/^http/, "ws") + "/ws";
 
 let rws: ReconnectingWebSocket;
 

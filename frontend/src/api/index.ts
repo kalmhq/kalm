@@ -32,7 +32,7 @@ export const getObjectRequestUrl = async (object: K8sObject) => {
 
 export const getObjectListRequestUrl = async (object: K8sObject) => {
   const url = await getPathForKind(object);
-  return `http://localhost:3001/proxy/${url}`;
+  return `${process.env.REACT_APP_K8S_API_V2_PREFIX}/proxy/${url}`;
 };
 
 export const getPathForKind = async (object: K8sObject) => {
