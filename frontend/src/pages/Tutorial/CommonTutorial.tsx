@@ -17,10 +17,10 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { Loading } from "widgets/Loading";
-import { TutorialSubStepCompoent } from "./TutorialSubStep";
-import { Highlight } from "./Highlight";
 import { KMLink } from "widgets/Link";
+import { Loading } from "widgets/Loading";
+import { Highlight } from "./Highlight";
+import { TutorialSubStepCompoent } from "./TutorialSubStep";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -63,7 +63,6 @@ const mapStateToProps = (state: RootState) => {
   return {
     currentStepIndex: tutorial.currentStepIndex,
     tutorial: tutorial.tutorial!,
-    pathname: state.router.location.pathname as string,
   };
 };
 

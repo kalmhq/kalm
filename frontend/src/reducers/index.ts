@@ -1,5 +1,3 @@
-import { connectRouter } from "connected-react-router";
-import { History, LocationState } from "history";
 import deployAccessTokens, { State as DeployAccessTokensState } from "reducers/deployAccessToken";
 import roles, { State as RolesState } from "reducers/roleBinding";
 import { combineReducers } from "redux";
@@ -27,7 +25,6 @@ export type RootState = {
   applications: ApplicationState;
   components: ApplicationComponentState;
   auth: AuthState;
-  router: any; //RouterState<LocationState>;
   notification: NotificationState;
   dialogs: DialogState;
   nodes: NodesState;
@@ -46,14 +43,13 @@ export type RootState = {
   domains: DomainsState;
 };
 
-const rootReducer = (history: History<LocationState>) =>
+const rootReducer = () =>
   combineReducers<RootState>({
     namespaces,
     nodes,
     registries,
     auth,
     dialogs,
-    router: connectRouter(history),
     persistentVolumes,
     applications,
     components,

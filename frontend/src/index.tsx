@@ -1,30 +1,16 @@
-import { ConnectedRouter } from "connected-react-router";
+import { App } from "app/index";
 import "driver.js/dist/driver.min.css";
-import { createBrowserHistory } from "history";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
 import React from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
-import { HistoryUserConfirmation } from "widgets/History";
-import configureStore from "./configureStore";
+import store from "./configureStore";
 import "./index.css";
 import * as serviceWorker from "./serviceWorker";
-import { setStore } from "store";
-import { App } from "app/index";
-
-export const history = createBrowserHistory({
-  getUserConfirmation: HistoryUserConfirmation,
-});
-
-const store = configureStore(history);
-
-setStore(store);
 
 ReactDOM.render(
   <Provider store={store}>
-    <ConnectedRouter history={history}>
-      <App />
-    </ConnectedRouter>
+    <App />
   </Provider>,
   document.getElementById("root"),
 );
