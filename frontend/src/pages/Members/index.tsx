@@ -147,7 +147,7 @@ export const MemberListPage: React.FC = () => {
         roles: (
           <Box>{roles[subject]?.roles?.length > 0 ? roles[subject].roles.map((x) => <Box>{x}</Box>) : "None"}</Box>
         ),
-        subject: <Link to={`/members/${subject}`}>{subject}</Link>,
+        subject: <KLink to={`/members/${subject}`}>{subject}</KLink>,
         actions: renderActions(roles[subject].rolebinding),
       });
     }
