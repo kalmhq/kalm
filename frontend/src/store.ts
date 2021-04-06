@@ -19,10 +19,14 @@ import services from "reducers/service";
 import settings from "reducers/settings";
 import sso from "reducers/sso";
 import tutorial from "reducers/tutorial";
+import { makeReducerForKind } from "reducers/util";
 import { createLogger } from "redux-logger";
+import { Deployment, Namespace } from "types/k8s";
 
 export const store = configureStore({
   reducer: {
+    namespacesV2: makeReducerForKind<Namespace>("Namespace", {}),
+    deploymentsV2: makeReducerForKind<Deployment>("Deployment", {}),
     namespaces,
     nodes,
     registries,

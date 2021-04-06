@@ -1,5 +1,5 @@
 import { getObjectListRequestUrl } from "api";
-import { StreamingEventType } from "../types";
+import { Resources, StreamingEventType } from "../types";
 
 export const parseFirstTimeStreamingData = (data: string) => {
   const items = data.split("}\n{");
@@ -26,7 +26,10 @@ export const parseStreamingData = <T>(dataString: string) => {
   return data;
 };
 
-export const watchResourceList = async <T>(kind: string, onData: (type: StreamingEventType, object: T) => void) => {
+export const watchResourceList = async <T = Resources>(
+  kind: string,
+  onData: (type: StreamingEventType, object: T) => void,
+) => {
   // use raw xhr here. Will migrate to axios if this issue is fixed
   // https://github.com/axios/axios/issues/479
 

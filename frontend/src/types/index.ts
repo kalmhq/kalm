@@ -4,6 +4,7 @@ import { RootState } from "store";
 import { DeployAccessTokenActions } from "types/deployAccessToken";
 import { VolumeActions } from "types/disk";
 import { DomainsActions } from "types/domains";
+import { Deployment, Namespace } from "types/k8s";
 import { RoleBindingsActions } from "types/member";
 import { Metadata } from "types/meta";
 import { SSOConfigActions } from "types/sso";
@@ -12,7 +13,6 @@ import { CertificateActions } from "./certificate";
 import { ClusterActions } from "./cluster";
 import { CommonActions } from "./common";
 import { DebounceActions } from "./debounce";
-import { Deployment, Namespace } from "./k8s";
 import { NamespaceActions } from "./namespace";
 import { NodeActions } from "./node";
 import { RegistriesActions } from "./registry";
@@ -58,10 +58,11 @@ export type StreamingEventType =
   | typeof StreamingEventTypeDeleted
   | typeof StreamingEventTypeModified;
 
-export type SteamEventAction<T = Namespace | Deployment> = {
+export type Resources = Namespace | Deployment;
+
+export type SteamEventAction<T = Resources> = {
   type: StreamingEventType;
-  kind: "Namespace" | "Deployment";
-  data: T;
+  payload: T;
 };
 
 export interface K8sObject {

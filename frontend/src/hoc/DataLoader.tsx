@@ -8,7 +8,7 @@ export const DataLoader: React.FC = () => {
 
   const watchList = useCallback(
     (kind: string) => {
-      watchResourceList(kind, (type, obj) => dispatch({ type, kind, data: obj }));
+      watchResourceList(kind, (type, obj) => dispatch({ type, payload: obj }));
     },
     [dispatch],
   );
