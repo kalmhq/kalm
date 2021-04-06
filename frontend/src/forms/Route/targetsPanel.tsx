@@ -39,7 +39,7 @@ const TargetsPanelRaw: React.FC = () => {
         ns !== "default" &&
         ns !== "kalm-operator" &&
         ns !== "kalm-imgconv" &&
-        ns !== "kalm-system" &&
+        // ns !== "kalm-system" &&
         ns !== "kube-system" &&
         ns !== "istio-system" &&
         ns !== "cert-manager" &&
