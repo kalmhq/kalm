@@ -31,7 +31,7 @@ const RenderGithubConnectorOrganizations: React.FC<{
   return (
     <FieldArray<GithubOrg>
       name={name}
-      validate={ValidatorArrayNotEmpty}
+      validate={ValidatorArrayNotEmpty as any}
       render={({ fields, meta: { error, touched } }) => (
         <>
           {touched && error && typeof error === "string" ? (

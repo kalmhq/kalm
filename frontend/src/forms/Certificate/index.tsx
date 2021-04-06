@@ -56,7 +56,7 @@ const CertificateFormRaw: React.FC<Props> = (props) => {
                           label="Domain"
                           validate={ValidatorIsCommonOrWildcardDNS1123SubDomain}
                           parse={(v) => [trimAndToLowerParse(v)] as any}
-                          format={(v) => v[0]}
+                          format={(v: any) => v[0]}
                           options={readyDomains.map((x) => ({
                             value: x.domain,
                             text: x.domain,

@@ -15,7 +15,7 @@ import {
 import { WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
-import { Autocomplete, AutocompleteProps, UseAutocompleteProps } from "@material-ui/lab";
+import { Autocomplete } from "@material-ui/lab";
 import { k8sWsPrefix } from "api/api";
 import { push, replace } from "connected-react-router";
 import debug from "debug";
@@ -109,11 +109,9 @@ const autocompleteStyles = (_theme: Theme) =>
     },
   });
 
-const MyAutocomplete = withStyles(autocompleteStyles)(
-  (props: AutocompleteProps<string> & UseAutocompleteProps<string>) => {
-    return <Autocomplete {...props} />;
-  },
-);
+const MyAutocomplete = withStyles(autocompleteStyles)((props: any) => {
+  return <Autocomplete {...props} />;
+});
 
 interface Props extends WithNamespaceProps, WithUserAuthProps, WithStyles<typeof styles> {}
 
@@ -535,14 +533,14 @@ export class LogStream extends React.PureComponent<Props, State> {
         options={names}
         onChange={this.onInputChange}
         value={Array.from(subscribedPodNames)}
-        renderTags={(options: string[], getTagProps) =>
+        renderTags={(options: string[], getTagProps: any) =>
           options.map((option: string, index: number) => {
             return (
               <Chip
                 variant="outlined"
                 label={option}
                 size="small"
-                onClick={(event) => {
+                onClick={(event: any) => {
                   const value = subscribedPods.find((x) => x[0] === option)!;
                   this.setState({ value });
                   event.stopPropagation();
@@ -553,7 +551,7 @@ export class LogStream extends React.PureComponent<Props, State> {
             );
           })
         }
-        renderInput={(params) => (
+        renderInput={(params: any) => (
           <TextField
             label={"Pods"}
             {...params}

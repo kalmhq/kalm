@@ -1,5 +1,5 @@
 import * as Yup from "yup";
-import { addMethod, ArraySchema, mixed, number, object, Schema, string, ValidationError } from "yup";
+import { addMethod, mixed, number, object, string, ValidationError } from "yup";
 
 addMethod(object, "unique", function (propertyName, message) {
   //@ts-ignore
@@ -55,9 +55,9 @@ export const regExpIp = new RegExp(
 // https://regex101.com/r/wG1nZ3/37
 export const regExpWildcardDomain = new RegExp(/^(\*\.)?([\w-]+\.)+[a-zA-Z]+$/);
 
-const yupValidatorWrap = function <T>(...v: Schema<T>[]) {
+const yupValidatorWrap = function <T>(...v: any[]) {
   return function (value: T) {
-    let schema: Schema<T>;
+    let schema: any;
 
     if (v.length === 1) {
       schema = v[0];
@@ -82,7 +82,7 @@ const yupValidatorWrap = function <T>(...v: Schema<T>[]) {
   };
 };
 
-const yupValidatorWrapForArray = function <T>(arraySchema: ArraySchema<T>, ...v: Schema<T>[]) {
+const yupValidatorWrapForArray = function <T>(arraySchema: any, ...v: any[]) {
   return function (values: T[]) {
     try {
       arraySchema.validateSync(values);
@@ -173,26 +173,24 @@ export const ValidatorIsEnvVarName = yupValidatorWrap<string>(IsEnvVarName);
 export const ValidatorIsDNS123Label = yupValidatorWrap<string>(IsDNS1123Label);
 export const ValidatorIsDNS1123SubDomain = yupValidatorWrap<string>(IsDNS1123SubDomain);
 export const ValidatorArrayOfIsDNS1123SubDomain = yupValidatorWrapForArray<string>(
-  Yup.array<string>().required("Should have at least one item"),
+  Yup.array().required("Should have at least one item"),
   IsDNS1123SubDomain,
 );
 
-export const ValidatorArrayOfIsDNS1123SubDomainWithOptionalWildcardPrefix = yupValidatorWrapForArray<string>(
-  Yup.array<string>().required("Should have at least one item"),
+export const ValidatorArrayOfIsDNS1123SubDomainWithOptionalWildcardPrefix = yupValidatorWrapForArray(
+  Yup.array().required("Should have at least one item"),
   IsDNS1123SubDomainWithOptionalWildcardPrefix,
 );
 
-export const ValidatorArrayOfIsValidHostInCertificate = yupValidatorWrapForArray<string>(
-  Yup.array<string>().required("Should have at least one item"),
+export const ValidatorArrayOfIsValidHostInCertificate = yupValidatorWrapForArray(
+  Yup.array().required("Should have at least one item"),
   IsValidHostInCertificate,
 );
 
-export const ValidatorIsWildcardDNS1123SubDomain = yupValidatorWrap<string>(IsWildcardDNS1123SubDomain);
-export const ValidatorIsCommonOrWildcardDNS1123SubDomain = yupValidatorWrap<string>(
-  IsOrCommonOrWildcardDNS1123SubDomain,
-);
-export const ValidatorArrayOfDIsWildcardDNS1123SubDomain = yupValidatorWrapForArray<string>(
-  Yup.array<string>().required("Should have at least one item"),
+export const ValidatorIsWildcardDNS1123SubDomain = yupValidatorWrap(IsWildcardDNS1123SubDomain);
+export const ValidatorIsCommonOrWildcardDNS1123SubDomain = yupValidatorWrap(IsOrCommonOrWildcardDNS1123SubDomain);
+export const ValidatorArrayOfDIsWildcardDNS1123SubDomain = yupValidatorWrapForArray(
+  Yup.array().required("Should have at least one item"),
   IsWildcardDNS1123SubDomain,
 );
 
@@ -208,7 +206,7 @@ export const NoPrefixSlashError = 'Should start with a "/"';
 export const PathArrayCantBeBlankError = "Should have at least one path prefix";
 export const InvalidHostError = "Host must be a valid IP address or hostname.";
 export const ValidatorArrayOfPath = yupValidatorWrapForArray<string>(
-  Yup.array<string>().required(PathArrayCantBeBlankError),
+  Yup.array().required(PathArrayCantBeBlankError),
   Yup.string()
     .required("Path Prefix can'b be blank")
     .matches(/^\//, NoPrefixSlashError)
@@ -293,7 +291,7 @@ export const validateHostWithWildcardPrefix = yupValidatorWrap<string | undefine
 );
 
 export const ValidatorIpAndHosts = yupValidatorWrapForArray(
-  Yup.array<string>().required("Required"),
+  Yup.array().required("Required"),
   string()
     .required("Required")
     .max(511)

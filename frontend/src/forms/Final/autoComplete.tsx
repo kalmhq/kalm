@@ -2,12 +2,7 @@ import { OutlinedTextFieldProps, TextField, Theme } from "@material-ui/core";
 import Chip from "@material-ui/core/Chip";
 import { grey } from "@material-ui/core/colors";
 import makeStyles from "@material-ui/core/styles/makeStyles";
-import {
-  AutocompleteProps,
-  createFilterOptions,
-  UseAutocompleteMultipleProps,
-  UseAutocompleteSingleProps,
-} from "@material-ui/lab";
+import { AutocompleteProps, createFilterOptions, UseAutocompleteProps } from "@material-ui/lab";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import clsx from "clsx";
 import React, { ReactNode } from "react";
@@ -71,7 +66,7 @@ export const AutoCompleteSingleValueStyle = makeStyles((_theme: Theme) => ({
 
 export interface AutoCompleteMultiValuesFreeSoloProps<T>
   extends FieldRenderProps<T[]>,
-    Omit<UseAutocompleteMultipleProps<T>, "multiple">,
+    Omit<UseAutocompleteProps<T, true, true, true>, "multiple">,
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
   InputLabelProps?: {};
   disabled?: boolean;
@@ -172,8 +167,8 @@ export const AutoCompleteMultiValuesFreeSolo: X = function <T>(props: AutoComple
 export interface AutoCompleteSingleValueProps<T>
   extends FieldRenderProps<string>,
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText">,
-    Pick<AutocompleteProps<T>, "noOptionsText">,
-    UseAutocompleteSingleProps<T> {}
+    Pick<AutocompleteProps<T, true, true, true>, "noOptionsText">,
+    UseAutocompleteProps<T, true, true, true> {}
 
 export const AutoCompleteSingleValue = function (
   props: AutoCompleteSingleValueProps<AutoCompleteForRenderOption>,
@@ -284,7 +279,7 @@ export const AutoCompleteSingleValue = function (
 
 interface AutoCompleteMultipleValuesProps<T>
   extends FieldRenderProps<T[]>,
-    Omit<UseAutocompleteMultipleProps<T>, "multiple">,
+    Omit<UseAutocompleteProps<T, true, true, true>, "multiple">,
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
   InputLabelProps?: {};
   disabled?: boolean;

@@ -40,7 +40,7 @@ export const BasePageRaw: React.FC<BasePageProps> = (props) => {
 
         <Box flex="1">
           <Container maxWidth={fullContainer ? false : "lg"} disableGutters style={{ margin: 0 }}>
-            {children}
+            {children as any}
           </Container>
         </Box>
       </Box>

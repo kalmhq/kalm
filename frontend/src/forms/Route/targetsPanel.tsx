@@ -16,11 +16,10 @@ import {
   PortProtocolHTTP2,
   PortProtocolHTTPS,
 } from "types/componentTemplate";
-import { HttpRouteDestination } from "types/route";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { ValidatorArrayNotEmpty, ValidatorRequired } from "../validator";
 import { AddButton } from "../../widgets/Button";
+import { ValidatorArrayNotEmpty, ValidatorRequired } from "../validator";
 
 const TargetsPanelRaw: React.FC = () => {
   const { services } = useSelector((state: RootState) => {
@@ -72,7 +71,7 @@ const TargetsPanelRaw: React.FC = () => {
     <FieldArray
       validate={ValidatorArrayNotEmpty}
       name="destinations"
-      render={({ fields, meta: { error, touched } }: FieldArrayRenderProps<HttpRouteDestination, any>) => (
+      render={({ fields, meta: { error, touched } }: FieldArrayRenderProps<any, any>) => (
         <div>
           <Box mt={2} mr={2} mb={2}>
             <AddButton

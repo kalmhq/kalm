@@ -9,8 +9,8 @@ import { FinalTextField } from "forms/Final/textfield";
 import { FormDataPreview } from "forms/Final/util";
 import { ROUTE_FORM_ID } from "forms/formIDs";
 import { NormalizePositiveNumber, stringArrayTrimAndToLowerCaseParse, stringArrayTrimParse } from "forms/normalizer";
-import { TargetsPanel } from "forms/Route/targetsPanel";
 import { RouteDomains } from "forms/Route/Domains";
+import { TargetsPanel } from "forms/Route/targetsPanel";
 import { ValidatorArrayNotEmpty, ValidatorArrayOfPath } from "forms/validator";
 import routesGif from "images/routes.gif";
 import React from "react";
@@ -174,10 +174,10 @@ const RouteFormRaw: React.FC<RouteFormProps> = (props) => {
     const { methods, methodsMode, schemes } = values;
 
     if (methodsMode === methodsModeSpecific) {
-      errors.methods = ValidatorArrayNotEmpty(methods);
+      errors.methods = ValidatorArrayNotEmpty(methods as any);
     }
 
-    errors.schemes = ValidatorArrayNotEmpty(schemes);
+    errors.schemes = ValidatorArrayNotEmpty(schemes as any);
 
     return Object.keys(errors).length > 0
       ? errors

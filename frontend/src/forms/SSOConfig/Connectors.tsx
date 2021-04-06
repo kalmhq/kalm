@@ -19,7 +19,7 @@ export interface Props {}
 export const Connectors: React.FC<Props> = () => {
   return (
     <FieldArray<SSOGithubConnector | SSOGitlabConnector>
-      validate={ValidatorArrayNotEmpty}
+      validate={ValidatorArrayNotEmpty as any}
       name="connectors"
       render={({ fields, meta: { error, touched } }) => (
         <>

@@ -592,11 +592,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               {this.tabs.map((tab) => {
                 if (
                   this.tabs[currentTabIndex] !== tab &&
-                  ((tab === Configurations && (errors.preInjectedFiles || errors.env || errors.command)) ||
-                    (tab === NetworkingTab && errors.ports) ||
-                    (tab === DisksTab && errors.volumes) ||
-                    (tab === HealthTab && (errors.livenessProbe || errors.readinessProbe)) ||
-                    (tab === Scheduling && (errors.cpuLimit || errors.memoryLimit || errors.nodeSelectorLabels)))
+                  ((tab === Configurations && (errors!.preInjectedFiles || errors!.env || errors!.command)) ||
+                    (tab === NetworkingTab && errors!.ports) ||
+                    (tab === DisksTab && errors!.volumes) ||
+                    (tab === HealthTab && (errors!.livenessProbe || errors!.readinessProbe)) ||
+                    (tab === Scheduling && (errors!.cpuLimit || errors!.memoryLimit || errors!.nodeSelectorLabels)))
                 ) {
                   return <Tab key={tab} label={tab} className={classes.hasError} />;
                 }
