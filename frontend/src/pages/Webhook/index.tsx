@@ -4,7 +4,6 @@ import { deleteDeployAccessTokenAction } from "actions/deployAccessToken";
 import { blinkTopProgressAction } from "actions/settings";
 import { withDeployAccessTokens, WithDeployAccessTokensProps } from "hoc/withDeployAccessTokens";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
@@ -40,8 +39,7 @@ interface Props
   extends WithStyles<typeof styles>,
     ReturnType<typeof mapStateToProps>,
     WithDeployAccessTokensProps,
-    WithNamespaceProps,
-    WithUserAuthProps {}
+    WithNamespaceProps {}
 
 interface State {}
 
@@ -188,8 +186,7 @@ class WebhookPageRaw extends React.PureComponent<Props, State> {
   };
 
   private canEdit() {
-    const { canEditNamespace, canEditCluster, activeNamespaceName } = this.props;
-    return canEditNamespace(activeNamespaceName) || canEditCluster();
+    return true;
   }
 
   private renderInfoBox() {
@@ -235,5 +232,5 @@ class WebhookPageRaw extends React.PureComponent<Props, State> {
 }
 
 export const WebhookPage = withNamespace(
-  withUserAuth(withStyles(styles)(withDeployAccessTokens(connect(mapStateToProps)(WebhookPageRaw)))),
+  withStyles(styles)(withDeployAccessTokens(connect(mapStateToProps)(WebhookPageRaw))),
 );

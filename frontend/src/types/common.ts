@@ -124,43 +124,6 @@ export interface LoadStatusAction {
   type: typeof LOAD_LOGIN_STATUS_FAILED | typeof LOAD_LOGIN_STATUS_PENDING;
 }
 
-export interface PermissionMethods {
-  can: (action: string, scope: string, object: string) => boolean;
-
-  canView: (scope: string, resource: string) => boolean;
-  canEdit: (scope: string, resource: string) => boolean;
-  canManage: (scope: string, resource: string) => boolean;
-
-  canViewNamespace: (scope: string) => boolean;
-  canEditNamespace: (scope: string) => boolean;
-  canManageNamespace: (scope: string) => boolean;
-
-  canViewCluster: () => boolean;
-  canEditCluster: () => boolean;
-  canManageCluster: () => boolean;
-}
-
-export const emptyPermissionMethods: PermissionMethods = {
-  can: (action: string, scope: string, object: string) => false,
-
-  canView: (scope: string, resource: string) => false,
-  canEdit: (scope: string, resource: string) => false,
-  canManage: (scope: string, resource: string) => false,
-
-  canViewNamespace: (scope: string) => false,
-  canEditNamespace: (scope: string) => false,
-  canManageNamespace: (scope: string) => false,
-
-  canViewCluster: () => false,
-  canEditCluster: () => false,
-  canManageCluster: () => false,
-};
-
-export interface SetAuthMethodsAction {
-  type: typeof SET_AUTH_METHODS;
-  payload: PermissionMethods;
-}
-
 export type CommonActions =
   | LogoutAction
   | LoadStatusAction
@@ -174,5 +137,4 @@ export type CommonActions =
   | OpenControlledDialogAction
   | CloseControlledDialogAction
   | ClearControlledDialogAction
-  | NamespaceActions
-  | SetAuthMethodsAction;
+  | NamespaceActions;

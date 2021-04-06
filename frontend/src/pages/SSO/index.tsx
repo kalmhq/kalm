@@ -5,7 +5,6 @@ import { setSuccessNotificationAction } from "actions/notification";
 import { api } from "api";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withSSO, WithSSOProps } from "hoc/withSSO";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { Link } from "react-router-dom";
@@ -26,12 +25,13 @@ import { KPanel } from "widgets/KPanel";
 import { Body, Subtitle1 } from "widgets/Label";
 import { KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
+
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
   });
 
-interface Props extends WithStyles<typeof styles>, WithSSOProps, WithUserAuthProps, WithNamespaceProps {}
+interface Props extends WithStyles<typeof styles>, WithSSOProps, WithNamespaceProps {}
 
 interface State {}
 
@@ -112,7 +112,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderConfigDetails = () => {
-    const { ssoConfig, canEditCluster } = this.props;
+    const { ssoConfig } = this.props;
 
     if (!ssoConfig) {
       return null;
@@ -125,46 +125,42 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
             <pre>OIDC Issuer: https://{ssoConfig.domain}/dex</pre>
             {ssoConfig.connectors && ssoConfig.connectors.map(this.renderConnectorDetails)}
           </Box>
+          <>
+            <Box p={2} display="inline-block">
+              <CustomizedButton component={Link} size="small" to="/sso/config" variant="outlined" color="primary">
+                Edit
+              </CustomizedButton>
+            </Box>
 
-          {canEditCluster() && (
-            <>
+            {ssoConfig.connectors && ssoConfig.connectors.length > 0 && !!ssoConfig.temporaryUser ? (
               <Box p={2} display="inline-block">
-                <CustomizedButton component={Link} size="small" to="/sso/config" variant="outlined" color="primary">
-                  Edit
-                </CustomizedButton>
-              </Box>
-
-              {ssoConfig.connectors && ssoConfig.connectors.length > 0 && !!ssoConfig.temporaryUser ? (
-                <Box p={2} display="inline-block">
-                  <Alert severity="info">
-                    After you create connector in your Single Sign-on config, it's strongly recommended to delete your
-                    temporary admin email account which is generated when you setup your cluster. Since the account
-                    doesn't have expired time and doesn't support multi factor authentication, it's not safe for long
-                    time usage.
-                    <br />
-                    Before the deletion, please test your new connector to confirm your settings are correct.
-                  </Alert>
-                  <Box mt={2}>
-                    {" "}
-                    <DeleteButtonWithConfirmPopover
-                      useText
-                      text="Delete Temporary Admin User"
-                      popupId="delete-temporary-user"
-                      popupTitle="Are your sure to delete temporary user?"
-                      confirmedAction={this.deleteTemporaryUser}
-                    />
-                  </Box>
+                <Alert severity="info">
+                  After you create connector in your Single Sign-on config, it's strongly recommended to delete your
+                  temporary admin email account which is generated when you setup your cluster. Since the account
+                  doesn't have expired time and doesn't support multi factor authentication, it's not safe for long time
+                  usage.
+                  <br />
+                  Before the deletion, please test your new connector to confirm your settings are correct.
+                </Alert>
+                <Box mt={2}>
+                  {" "}
+                  <DeleteButtonWithConfirmPopover
+                    useText
+                    text="Delete Temporary Admin User"
+                    popupId="delete-temporary-user"
+                    popupTitle="Are your sure to delete temporary user?"
+                    confirmedAction={this.deleteTemporaryUser}
+                  />
                 </Box>
-              ) : null}
-            </>
-          )}
+              </Box>
+            ) : null}
+          </>
         </KPanel>
       </>
     );
   };
 
   private renderEmptyText = () => {
-    const { canEditCluster } = this.props;
     return (
       <Box>
         <Body>
@@ -173,21 +169,18 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
           Kalm SSO will integrate with your existing user system, such as <strong>github</strong>,{" "}
           <strong>gitlab</strong>, <strong>google</strong>, etc.
         </Body>
-        {canEditCluster() ? (
-          <Box mt={2} width={300}>
-            <CustomizedButton component={Link} to="/sso/config" variant="contained" color="primary">
-              Enable Single Sign-on
-            </CustomizedButton>
-            {/*{loaded && ssoConfig ? <DangerButton>Delete Single Sign-On Config</DangerButton> : null}*/}
-          </Box>
-        ) : null}
+        <Box mt={2} width={300}>
+          <CustomizedButton component={Link} to="/sso/config" variant="contained" color="primary">
+            Enable Single Sign-on
+          </CustomizedButton>
+          {/*{loaded && ssoConfig ? <DangerButton>Delete Single Sign-On Config</DangerButton> : null}*/}
+        </Box>
       </Box>
     );
   };
 
   private renderEmpty() {
-    const { canEditCluster } = this.props;
-    return canEditCluster() ? (
+    return (
       <EmptyInfoBox
         image={<SSOIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={sc.EMPTY_SSO_TITLE}
@@ -205,7 +198,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
           </CustomizedButton>
         }
       />
-    ) : null;
+    );
   }
 
   private renderInfoBox() {
@@ -248,4 +241,4 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const SSOPage = withNamespace(withUserAuth(withStyles(styles)(withSSO(SSOPageRaw))));
+export const SSOPage = withNamespace(withStyles(styles)(withSSO(SSOPageRaw)));

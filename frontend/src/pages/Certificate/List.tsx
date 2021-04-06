@@ -2,7 +2,6 @@ import { Box, createStyles, Link as KMLink, Theme, Typography, withStyles, WithS
 import { grey } from "@material-ui/core/colors";
 import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
@@ -51,7 +50,6 @@ const mapStateToProps = (state: RootState) => {
 
 interface Props
   extends WithCertificatesDataProps,
-    WithUserAuthProps,
     WithStyles<typeof styles>,
     ReturnType<typeof mapStateToProps>,
     TDispatchProp {}
@@ -78,23 +76,18 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
   };
 
   const renderActions = (cert: Certificate) => {
-    const { canEditCluster } = props;
     return (
       <>
-        {canEditCluster() && (
-          <>
-            {cert.isSelfManaged && (
-              <IconLinkWithToolTip tooltipTitle="Edit" aria-label="edit" to={`/certificates/${cert.name}/edit`}>
-                <EditIcon />
-              </IconLinkWithToolTip>
-            )}
-            <DeleteButtonWithConfirmPopover
-              popupId="delete-certificate-popup"
-              popupTitle="DELETE CERTIFICATE?"
-              confirmedAction={() => confirmDelete(cert)}
-            />
-          </>
+        {cert.isSelfManaged && (
+          <IconLinkWithToolTip tooltipTitle="Edit" aria-label="edit" to={`/certificates/${cert.name}/edit`}>
+            <EditIcon />
+          </IconLinkWithToolTip>
         )}
+        <DeleteButtonWithConfirmPopover
+          popupId="delete-certificate-popup"
+          popupTitle="DELETE CERTIFICATE?"
+          confirmedAction={() => confirmDelete(cert)}
+        />
       </>
     );
   };
@@ -148,8 +141,6 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
   };
 
   const getKRTableColumns = () => {
-    const { canEditCluster } = props;
-
     const columns = [
       {
         Header: "Cert Name",
@@ -177,12 +168,10 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
       },
     ];
 
-    if (canEditCluster()) {
-      columns.push({
-        Header: "Actions",
-        accessor: "actions",
-      });
-    }
+    columns.push({
+      Header: "Actions",
+      accessor: "actions",
+    });
 
     return columns;
   };
@@ -211,18 +200,15 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
   };
 
   const renderEmpty = () => {
-    const { canEditCluster } = props;
     return (
       <EmptyInfoBox
         image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={sc.EMPTY_CERT_TITLE}
         content={sc.EMPTY_CERT_SUBTITLE}
         button={
-          canEditCluster() ? (
-            <CustomizedButton variant="contained" color="primary" component={Link} to="/certificates/new">
-              New Certificate
-            </CustomizedButton>
-          ) : null
+          <CustomizedButton variant="contained" color="primary" component={Link} to="/certificates/new">
+            New Certificate
+          </CustomizedButton>
         }
       />
     );
@@ -264,35 +250,33 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
     return <InfoBox title={title} options={options} />;
   };
 
-  const { isFirstLoaded, isLoading, certificates, canEditCluster } = props;
+  const { isFirstLoaded, isLoading, certificates } = props;
   return (
     <BasePage
       secondHeaderRight={
-        canEditCluster() ? (
-          <>
-            {/* <H6>Certificates</H6> */}
-            <CustomButton
-              color="primary"
-              variant="outlined"
-              size="small"
-              component={Link}
-              tutorial-anchor-id="add-certificate"
-              to="/certificates/new"
-            >
-              New Certificate
-            </CustomButton>
-            <CustomButton
-              color="primary"
-              variant="outlined"
-              size="small"
-              component={Link}
-              tutorial-anchor-id="upload-certificate"
-              to="/certificates/upload"
-            >
-              Upload Certificate
-            </CustomButton>
-          </>
-        ) : null
+        <>
+          {/* <H6>Certificates</H6> */}
+          <CustomButton
+            color="primary"
+            variant="outlined"
+            size="small"
+            component={Link}
+            tutorial-anchor-id="add-certificate"
+            to="/certificates/new"
+          >
+            New Certificate
+          </CustomButton>
+          <CustomButton
+            color="primary"
+            variant="outlined"
+            size="small"
+            component={Link}
+            tutorial-anchor-id="upload-certificate"
+            to="/certificates/upload"
+          >
+            Upload Certificate
+          </CustomButton>
+        </>
       }
     >
       <Box p={2}>
@@ -312,6 +296,6 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
   );
 };
 
-export const CertificateListPage = withUserAuth(
-  withStyles(styles)(connect(mapStateToProps)(CertificateDataWrapper(CertificateListPageRaw))),
+export const CertificateListPage = withStyles(styles)(
+  connect(mapStateToProps)(CertificateDataWrapper(CertificateListPageRaw)),
 );

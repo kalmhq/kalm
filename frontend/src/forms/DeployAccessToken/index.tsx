@@ -5,7 +5,6 @@ import { FinalTextField } from "forms/Final/textfield";
 import { FormDataPreview } from "forms/Final/util";
 import { ValidatorRequired } from "forms/validator";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
 import { Field, FieldRenderProps, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
 import { OnChange } from "react-final-form-listeners";
@@ -35,10 +34,10 @@ interface OwnProps {
   _initialValues: DeployAccessToken;
 }
 
-interface Props extends OwnProps, WithNamespaceProps, WithUserAuthProps {}
+interface Props extends OwnProps, WithNamespaceProps {}
 
 const DeployAccessTokenFormRaw: React.FC<Props> = (props) => {
-  const { _initialValues, isNamespaceLoading, isNamespaceFirstLoaded, applications, canEditCluster, onSubmit } = props;
+  const { _initialValues, isNamespaceLoading, isNamespaceFirstLoaded, applications, onSubmit } = props;
 
   const { allComponents } = useSelector((state: RootState) => {
     return {
@@ -66,12 +65,10 @@ const DeployAccessTokenFormRaw: React.FC<Props> = (props) => {
   });
 
   const scopeOptions: { value: string; label: string; explain?: string }[] = [];
-  if (canEditCluster()) {
-    scopeOptions.push({
-      value: DeployAccessTokenScopeCluster,
-      label: "Cluster - Can update all components on this cluster",
-    });
-  }
+  scopeOptions.push({
+    value: DeployAccessTokenScopeCluster,
+    label: "Cluster - Can update all components on this cluster",
+  });
   scopeOptions.push({
     value: DeployAccessTokenScopeNamespace,
     label: "Specific Applications - Can update all components in selected applications",
@@ -163,4 +160,4 @@ const DeployAccessTokenFormRaw: React.FC<Props> = (props) => {
   );
 };
 
-export const DeployAccessTokenForm = withUserAuth(withNamespace(DeployAccessTokenFormRaw));
+export const DeployAccessTokenForm = withNamespace(DeployAccessTokenFormRaw);

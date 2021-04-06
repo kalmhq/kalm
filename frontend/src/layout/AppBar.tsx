@@ -8,7 +8,6 @@ import { closeTutorialDrawerAction, openTutorialDrawerAction } from "actions/tut
 import { stopImpersonating } from "api/api";
 import { push } from "connected-react-router";
 import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
 import { connect } from "react-redux";
 import { Link, RouteComponentProps, withRouter } from "react-router-dom";
@@ -114,8 +113,7 @@ interface Props
   extends WithStyles<typeof styles>,
     ReturnType<typeof mapStateToProps>,
     RouteComponentProps,
-    WithClusterInfoProps,
-    WithUserAuthProps {
+    WithClusterInfoProps {
   dispatch: TDispatch;
 }
 
@@ -308,7 +306,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           </div>
 
           <div className={classes.barRight}>
-            {this.props.canEditCluster() && clusterInfo.canBeInitialized && (
+            {clusterInfo.canBeInitialized && (
               <Box mr={2}>
                 <Button to="/setup" component={Link} onClick={console.log} variant="outlined" color="secondary">
                   Finish the setup steps
@@ -327,5 +325,5 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
 }
 
 export const AppBarComponent = connect(mapStateToProps)(
-  withStyles(styles)(withUserAuth(withClusterInfo(withRouter(AppBarComponentRaw)))),
+  withStyles(styles)(withClusterInfo(withRouter(AppBarComponentRaw))),
 );

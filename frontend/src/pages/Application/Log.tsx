@@ -113,7 +113,7 @@ const MyAutocomplete = withStyles(autocompleteStyles)((props: any) => {
   return <Autocomplete {...props} />;
 });
 
-interface Props extends WithNamespaceProps, WithUserAuthProps, WithStyles<typeof styles> {}
+interface Props extends WithNamespaceProps, WithStyles<typeof styles>, WithUserAuthProps {}
 
 const tailLinesOptions = [100, 200, 500, 1000, 2000];
 
@@ -835,4 +835,4 @@ export class LogStream extends React.PureComponent<Props, State> {
   }
 }
 
-export const Log = withStyles(styles)(withNamespace(withUserAuth(LogStream)));
+export const Log = withStyles(styles)(withUserAuth(withNamespace(LogStream)));

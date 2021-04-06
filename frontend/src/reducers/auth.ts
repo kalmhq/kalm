@@ -1,13 +1,10 @@
 import produce from "immer";
 import { Actions } from "types";
 import {
-  emptyPermissionMethods,
   LOAD_LOGIN_STATUS_FAILED,
   LOAD_LOGIN_STATUS_FULFILLED,
   LOAD_LOGIN_STATUS_PENDING,
   LOGOUT,
-  PermissionMethods,
-  SET_AUTH_METHODS,
   SET_AUTH_TOKEN,
 } from "types/common";
 
@@ -22,7 +19,6 @@ export type State = {
   avatarUrl: string;
   impersonation: string;
   impersonationType: string;
-  permissionMethods: PermissionMethods;
 };
 
 const AUTHORIZED_TOKEN_KEY = "AUTHORIZED_TOKEN_KEY";
@@ -39,7 +35,6 @@ const getInitialState = () => {
     avatarUrl: "",
     impersonation: "",
     impersonationType: "",
-    permissionMethods: emptyPermissionMethods,
   };
 };
 
@@ -76,10 +71,6 @@ const reducer = produce((state: State, action: Actions) => {
     case LOGOUT: {
       window.localStorage.removeItem(AUTHORIZED_TOKEN_KEY);
       return getInitialState();
-    }
-    case SET_AUTH_METHODS: {
-      state.permissionMethods = action.payload;
-      return;
     }
   }
 

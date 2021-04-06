@@ -5,7 +5,6 @@ import { api } from "api";
 import { push } from "connected-react-router";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { BasePage } from "pages/BasePage";
 import { ComponentBasicInfo } from "pages/Components/BasicInfo";
@@ -52,11 +51,10 @@ interface Props
   extends WithStyles<typeof styles>,
     ReturnType<typeof mapStateToProps>,
     WithComponentProp,
-    WithUserAuthProps,
     WithRoutesDataProps {}
 
 const ComponentShowRaw: React.FC<Props> = (props) => {
-  const { classes, component, httpRoutes, activeNamespaceName, canEditNamespace, dispatch } = props;
+  const { classes, component, httpRoutes, activeNamespaceName, dispatch } = props;
 
   const getServicePort = (port: ComponentLikePort) => {
     return port.servicePort || port.containerPort;
@@ -162,7 +160,7 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
     return (
       <Expansion title={"Routes"} defaultUnfold>
         <Box p={2}>
-          <RouteWidgets routes={routes} canEdit={canEditNamespace(activeNamespaceName)} />
+          <RouteWidgets routes={routes} canEdit={true} />
         </Box>
       </Expansion>
     );
@@ -176,7 +174,7 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
             component={component}
             pods={component.pods}
             workloadType={component.workloadType as WorkloadType}
-            canEdit={canEditNamespace(activeNamespaceName)}
+            canEdit={true}
           />
         </Box>
       </Expansion>
@@ -191,7 +189,7 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
           component={component}
           jobs={component.jobs!}
           workloadType={component.workloadType as WorkloadType}
-          canEdit={canEditNamespace(activeNamespaceName)}
+          canEdit={true}
         />
       </Expansion>
     );
@@ -219,34 +217,30 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
         )}
 
         <H6 className={classes.secondHeaderRightItem}>Component {component.name}</H6>
-        {canEditNamespace(activeNamespaceName) && (
-          <Button
-            tutorial-anchor-id="edit-component"
-            component={Link}
-            color="primary"
-            size="small"
-            className={classes.secondHeaderRightItem}
-            variant="outlined"
-            to={`/applications/${activeNamespaceName}/components/${component.name}/edit`}
-          >
-            Edit
-          </Button>
-        )}
-        {canEditNamespace(activeNamespaceName) ? (
-          <DeleteButtonWithConfirmPopover
-            iconSize="small"
-            popupId="delete-pod-popup"
-            text="Delete"
-            useText={true}
-            targetText={component.name}
-            popupTitle="DELETE COMPONENT?"
-            confirmedAction={async () => {
-              await dispatch(deleteComponentAction(component.name, activeNamespaceName));
-              dispatch(push("/applications/" + activeNamespaceName + "/components"));
-              dispatch(setSuccessNotificationAction("Delete component successfully"));
-            }}
-          />
-        ) : null}
+        <Button
+          tutorial-anchor-id="edit-component"
+          component={Link}
+          color="primary"
+          size="small"
+          className={classes.secondHeaderRightItem}
+          variant="outlined"
+          to={`/applications/${activeNamespaceName}/components/${component.name}/edit`}
+        >
+          Edit
+        </Button>
+        <DeleteButtonWithConfirmPopover
+          iconSize="small"
+          popupId="delete-pod-popup"
+          text="Delete"
+          useText={true}
+          targetText={component.name}
+          popupTitle="DELETE COMPONENT?"
+          confirmedAction={async () => {
+            await dispatch(deleteComponentAction(component.name, activeNamespaceName));
+            dispatch(push("/applications/" + activeNamespaceName + "/components"));
+            dispatch(setSuccessNotificationAction("Delete component successfully"));
+          }}
+        />
       </div>
     );
   };
@@ -283,5 +277,5 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
 };
 
 export const ComponentShowPage = withStyles(styles)(
-  withUserAuth(connect(mapStateToProps)(withRoutesData(withComponent(ComponentShowRaw)))),
+  connect(mapStateToProps)(withRoutesData(withComponent(ComponentShowRaw))),
 );

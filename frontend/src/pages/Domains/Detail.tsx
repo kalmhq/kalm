@@ -18,13 +18,12 @@ import { Loading } from "widgets/Loading";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 
 const DomainDetailPageRaw: React.FC = () => {
-  const { domains, isLoading, isFirstLoaded, certificates, canEditCluster } = useSelector((state: RootState) => {
+  const { domains, isLoading, isFirstLoaded, certificates } = useSelector((state: RootState) => {
     return {
       isLoading: state.domains.isLoading,
       isFirstLoaded: state.domains.isFirstLoaded,
       domains: state.domains.domains,
       certificates: state.certificates.certificates,
-      canEditCluster: state.auth.permissionMethods.canEditCluster,
     };
   });
 
@@ -69,35 +68,33 @@ const DomainDetailPageRaw: React.FC = () => {
   return (
     <BasePage
       secondHeaderRight={
-        canEditCluster() ? (
-          <>
-            <CustomButton
-              color="primary"
-              variant="outlined"
-              size="small"
-              onClick={() => dispatch(push("/domains/" + domain.name + "/config"))}
-            >
-              Configure
-            </CustomButton>
+        <>
+          <CustomButton
+            color="primary"
+            variant="outlined"
+            size="small"
+            onClick={() => dispatch(push("/domains/" + domain.name + "/config"))}
+          >
+            Configure
+          </CustomButton>
 
-            <DeleteButtonWithConfirmPopover
-              useText
-              text="Delete"
-              popupId="delete-Domain"
-              popupContent={
-                <Box>
-                  This action cannot be undone. This will permanently delete{" "}
-                  <Typography color={"primary"} align={"center"} component="span">
-                    {domain.domain}
-                  </Typography>
-                </Box>
-              }
-              targetText={domain.domain}
-              popupTitle="Are your sure to delete this domain?"
-              confirmedAction={deleteDomain}
-            />
-          </>
-        ) : null
+          <DeleteButtonWithConfirmPopover
+            useText
+            text="Delete"
+            popupId="delete-Domain"
+            popupContent={
+              <Box>
+                This action cannot be undone. This will permanently delete{" "}
+                <Typography color={"primary"} align={"center"} component="span">
+                  {domain.domain}
+                </Typography>
+              </Box>
+            }
+            targetText={domain.domain}
+            popupTitle="Are your sure to delete this domain?"
+            confirmedAction={deleteDomain}
+          />
+        </>
       }
     >
       <Box p={2}>

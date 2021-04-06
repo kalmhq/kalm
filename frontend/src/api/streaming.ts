@@ -4,6 +4,10 @@ import { StreamingEventType } from "../types";
 export const parseFirstTimeStreamingData = (data: string) => {
   const items = data.split("}\n{");
 
+  if (items.length === 1) {
+    return items;
+  }
+
   return items.map((item, i) => {
     if (i === 0) {
       item = item + "}";

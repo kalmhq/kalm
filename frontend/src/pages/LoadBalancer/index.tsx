@@ -3,13 +3,11 @@ import { Alert } from "@material-ui/lab";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { K8sApiPrefix } from "api/api";
 import copy from "copy-to-clipboard";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { ClusterInfo } from "types/cluster";
-import sc from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CopyIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
@@ -17,6 +15,7 @@ import { InfoBox } from "widgets/InfoBox";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 import { KRTable } from "widgets/KRTable";
 import { BasePage } from "../BasePage";
+
 const mapStateToProps = (state: RootState) => {
   return {
     ingressInfo: state.cluster.info,
@@ -49,7 +48,7 @@ interface States {
   loadingLoadBalancerInfo: boolean;
 }
 
-type Props = ReturnType<typeof mapStateToProps> & WithUserAuthProps & TDispatchProp & WithStyles<typeof styles>;
+type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
 export class LoadBalancerInfoRaw extends React.Component<Props, States> {
   constructor(props: Props) {
@@ -119,7 +118,6 @@ export class LoadBalancerInfoRaw extends React.Component<Props, States> {
   };
 
   private renderHostName = (row: ClusterInfo) => {
-    const { canViewCluster } = this.props;
     const ipContent = row.ingressIP;
     const hostName = row.ingressHostname;
     const coms = [];
@@ -130,11 +128,7 @@ export class LoadBalancerInfoRaw extends React.Component<Props, States> {
       coms.push(this.generateCopyContent(ipContent));
     }
 
-    return canViewCluster() ? (
-      <FlexRowItemCenterBox>{coms}</FlexRowItemCenterBox>
-    ) : (
-      <FlexRowItemCenterBox>{sc.NO_PERMISSION_TIPS}</FlexRowItemCenterBox>
-    );
+    return <FlexRowItemCenterBox>{coms}</FlexRowItemCenterBox>;
   };
 
   private getKRTableColumns() {
@@ -209,4 +203,4 @@ export class LoadBalancerInfoRaw extends React.Component<Props, States> {
   }
 }
 
-export const LoadBalancerInfoPage = withUserAuth(connect(mapStateToProps)(withStyles(styles)(LoadBalancerInfoRaw)));
+export const LoadBalancerInfoPage = connect(mapStateToProps)(withStyles(styles)(LoadBalancerInfoRaw));

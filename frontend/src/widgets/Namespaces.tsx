@@ -14,7 +14,6 @@ import {
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { LEFT_SECTION_OPEN_WIDTH, NAMESPACES_ZINDEX, SECOND_HEADER_HEIGHT } from "layout/Constants";
 import React from "react";
 import { Link, withRouter } from "react-router-dom";
@@ -44,7 +43,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof styles>, WithUserAuthProps, WithNamespaceProps {}
+interface Props extends WithStyles<typeof styles>, WithNamespaceProps {}
 
 interface State {
   open: boolean;
@@ -80,16 +79,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const {
-      classes,
-      applications,
-      activeNamespace,
-      isNamespaceLoading,
-      isNamespaceFirstLoaded,
-      location,
-      canViewNamespace,
-      canEditNamespace,
-    } = this.props;
+    const { classes, applications, activeNamespace, isNamespaceLoading, isNamespaceFirstLoaded, location } = this.props;
     const { open } = this.state;
 
     if (isNamespaceLoading && !isNamespaceFirstLoaded) {
@@ -102,9 +92,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
 
     const pathnameSplits = location.pathname.split("/");
 
-    const filteredApp = applications.filter((app) => {
-      return canEditNamespace(app.name) || canViewNamespace(app.name);
-    });
+    const filteredApp = applications;
 
     return (
       <div className={classes.root}>
@@ -175,4 +163,4 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const Namespaces = withUserAuth(withNamespace(withStyles(styles)(withRouter(NamespacesRaw))));
+export const Namespaces = withNamespace(withStyles(styles)(withRouter(NamespacesRaw)));

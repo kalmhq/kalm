@@ -6,7 +6,6 @@ import { setErrorNotificationAction, setSuccessNotificationAction } from "action
 import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
@@ -53,11 +52,7 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface Props
-  extends WithStyles<typeof styles>,
-    WithNamespaceProps,
-    WithUserAuthProps,
-    ReturnType<typeof mapStateToProps> {}
+interface Props extends WithStyles<typeof styles>, WithNamespaceProps, ReturnType<typeof mapStateToProps> {}
 
 const ApplicationListRaw: React.FC<Props> = (props) => {
   const confirmDelete = async (applicationDetails: ApplicationDetails) => {
@@ -88,17 +83,11 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
   };
 
   const renderName = (applicationDetails: ApplicationDetails) => {
-    const { canViewNamespace } = props;
-
     return (
       <>
-        {canViewNamespace(applicationDetails.name) ? (
-          <KLink to={`/applications/${applicationDetails.name}/components`} onClick={() => blinkTopProgressAction()}>
-            {applicationDetails.name}
-          </KLink>
-        ) : (
-          applicationDetails.name
-        )}
+        <KLink to={`/applications/${applicationDetails.name}/components`} onClick={() => blinkTopProgressAction()}>
+          {applicationDetails.name}
+        </KLink>
       </>
     );
   };
@@ -123,8 +112,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
   };
 
   const renderStatus = (applicationDetails: ApplicationDetails) => {
-    const { componentsMap, canViewNamespace } = props;
-    const applicationName = applicationDetails.name;
+    const { componentsMap } = props;
 
     let podCount = 0;
     let successCount = 0;
@@ -154,7 +142,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
       });
     });
 
-    if (!canViewNamespace(applicationName) || podCount === 0) {
+    if (podCount === 0) {
       return "no pods";
     }
 
@@ -211,60 +199,47 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
   };
 
   const renderExternalAccesses = (applicationDetails: ApplicationDetails) => {
-    const { canViewNamespace, canEditNamespace } = props;
     const applicationName = applicationDetails.name;
     const applicationRoutes = getRoutes(applicationName);
 
-    if (applicationRoutes && applicationRoutes.length > 0 && canViewNamespace(applicationName)) {
-      return (
-        <RoutesPopover
-          applicationRoutes={applicationRoutes}
-          applicationName={applicationName}
-          canEdit={canEditNamespace(applicationName)}
-        />
-      );
+    if (applicationRoutes && applicationRoutes.length > 0) {
+      return <RoutesPopover applicationRoutes={applicationRoutes} applicationName={applicationName} canEdit={true} />;
     } else {
       return "-";
     }
   };
 
   const renderActions = (applicationDetails: ApplicationDetails) => {
-    const { canViewNamespace } = props;
     return (
       <>
-        {canViewNamespace(applicationDetails.name) && (
-          <IconLinkWithToolTip
-            onClick={() => {
-              blinkTopProgressAction();
-            }}
-            // size="small"
-            tooltipTitle="Details"
-            to={`/applications/${applicationDetails.name}/components`}
-          >
-            <KalmDetailsIcon />
-          </IconLinkWithToolTip>
-        )}
+        <IconLinkWithToolTip
+          onClick={() => {
+            blinkTopProgressAction();
+          }}
+          // size="small"
+          tooltipTitle="Details"
+          to={`/applications/${applicationDetails.name}/components`}
+        >
+          <KalmDetailsIcon />
+        </IconLinkWithToolTip>
       </>
     );
   };
 
   const renderSecondHeaderRight = () => {
-    const { canEditCluster } = props;
     return (
       <>
         {/* <H6>Applications</H6> */}
-        {canEditCluster() && (
-          <CustomButton
-            tutorial-anchor-id="add-application"
-            component={Link}
-            color="primary"
-            size="small"
-            variant="contained"
-            to={`/applications/new`}
-          >
-            + {sc.NEW_APP_BUTTON}
-          </CustomButton>
-        )}
+        <CustomButton
+          tutorial-anchor-id="add-application"
+          component={Link}
+          color="primary"
+          size="small"
+          variant="contained"
+          to={`/applications/new`}
+        >
+          + {sc.NEW_APP_BUTTON}
+        </CustomButton>
         {/* <IconButtonWithTooltip
           tooltipTitle={usingApplicationCard ? "Using List View" : "Using Card View"}
           aria-label={usingApplicationCard ? "Using List View" : "Using Card View"}
@@ -284,7 +259,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
   };
 
   const renderEmpty = () => {
-    const { dispatch, canEditCluster } = props;
+    const { dispatch } = props;
 
     return (
       <EmptyInfoBox
@@ -292,18 +267,16 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
         title={sc.EMPTY_APP_TITLE}
         content={sc.EMPTY_APP_SUBTITLE}
         button={
-          canEditCluster() && (
-            <CustomButton
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                blinkTopProgressAction();
-                dispatch(push(`/applications/new`));
-              }}
-            >
-              {sc.NEW_APP_BUTTON}
-            </CustomButton>
-          )
+          <CustomButton
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              blinkTopProgressAction();
+              dispatch(push(`/applications/new`));
+            }}
+          >
+            {sc.NEW_APP_BUTTON}
+          </CustomButton>
         }
       />
     );
@@ -340,7 +313,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
   };
 
   const getKRTableData = () => {
-    const { applications, canViewNamespace, canEditNamespace } = props;
+    const { applications } = props;
     const data: any[] = [];
 
     if (applications) {
@@ -352,19 +325,15 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
         }
 
         const applicationDetails = application as ApplicationDetails;
-        const applicationName = applicationDetails.name;
-
-        if (canViewNamespace(applicationName) || canEditNamespace(applicationName)) {
-          data.push({
-            name: renderName(applicationDetails),
-            status: renderStatus(applicationDetails),
-            cpu: renderCPU(applicationDetails),
-            memory: renderMemory(applicationDetails),
-            createdAt: renderCreatedAt(applicationDetails),
-            routes: renderExternalAccesses(applicationDetails),
-            actions: renderActions(applicationDetails),
-          });
-        }
+        data.push({
+          name: renderName(applicationDetails),
+          status: renderStatus(applicationDetails),
+          cpu: renderCPU(applicationDetails),
+          memory: renderMemory(applicationDetails),
+          createdAt: renderCreatedAt(applicationDetails),
+          routes: renderExternalAccesses(applicationDetails),
+          actions: renderActions(applicationDetails),
+        });
       }
     }
 
@@ -376,11 +345,9 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
   };
 
   const renderGrid = () => {
-    const { applications, componentsMap, canEditNamespace, canViewNamespace } = props;
+    const { applications, componentsMap } = props;
 
-    const filteredApps = applications.filter((app) => {
-      return canViewNamespace(app.name) || canEditNamespace(app.name);
-    });
+    const filteredApps = applications;
 
     const GridRow = (app: ApplicationDetails, index: number) => {
       const applicationRoutes = getRoutes(app.name);
@@ -391,7 +358,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
             componentsMap={componentsMap}
             httpRoutes={applicationRoutes}
             confirmDelete={confirmDelete}
-            canEdit={canEditNamespace(app.name)}
+            canEdit={true}
           />
         </Grid>
       );
@@ -424,6 +391,4 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
   );
 };
 
-export const ApplicationListPage = withStyles(styles)(
-  withNamespace(withUserAuth(connect(mapStateToProps)(ApplicationListRaw))),
-);
+export const ApplicationListPage = withStyles(styles)(withNamespace(connect(mapStateToProps)(ApplicationListRaw)));

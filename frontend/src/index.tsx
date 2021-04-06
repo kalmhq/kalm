@@ -4,7 +4,7 @@ import "perfect-scrollbar/css/perfect-scrollbar.css";
 import React from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
-import store from "./configureStore";
+import { store } from "./configureStore";
 import "./index.css";
 import * as serviceWorker from "./serviceWorker";
 

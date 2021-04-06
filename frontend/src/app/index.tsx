@@ -1,11 +1,13 @@
+import { CssBaseline, PaletteType, ThemeProvider } from "@material-ui/core";
 import React from "react";
-import { CssBaseline, ThemeProvider, PaletteType } from "@material-ui/core";
-import { ScrollToTop } from "widgets/ScrollToTop";
-import { KalmRoutes } from "routes";
-import { Snackbar } from "widgets/Notification";
-import { RootState } from "reducers";
-import { getTheme } from "theme/theme";
 import { connect } from "react-redux";
+import { BrowserRouter } from "react-router-dom";
+import { RootState } from "reducers";
+import { KalmRoutes } from "routes";
+import { getTheme } from "theme/theme";
+import { HistoryUserConfirmation } from "widgets/History";
+import { Snackbar } from "widgets/Notification";
+import { ScrollToTop } from "widgets/ScrollToTop";
 
 const mapStateToProps = (state: RootState) => {
   const usingTheme = state.settings.usingTheme;
@@ -22,7 +24,7 @@ class AppRaw extends React.PureComponent<Props, State> {
     const { usingTheme } = this.props;
     const theme = getTheme(usingTheme as PaletteType);
     return (
-      <>
+      <BrowserRouter getUserConfirmation={HistoryUserConfirmation}>
         <div id="history-prompt-anchor" />
 
         <ScrollToTop>
@@ -32,7 +34,7 @@ class AppRaw extends React.PureComponent<Props, State> {
             {KalmRoutes}
           </ThemeProvider>
         </ScrollToTop>
-      </>
+      </BrowserRouter>
     );
   }
 }

@@ -3,7 +3,6 @@ import { grey } from "@material-ui/core/colors";
 import { deleteCertificateAction } from "actions/certificate";
 import { deleteDomainAction } from "actions/domains";
 import { setSuccessNotificationAction } from "actions/notification";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,11 +23,10 @@ import { KLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
 import { SuccessColorText, WarningColorText } from "widgets/Text";
 
-interface Props extends WithUserAuthProps {}
+interface Props {}
 
 const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   const dispatch = useDispatch();
-  const { canEditCluster } = props;
 
   const { isFirstLoaded, isLoading, domains, certificates } = useSelector((state: RootState) => {
     return {
@@ -89,24 +87,22 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
             <KalmDetailsIcon />
           </IconLinkWithToolTip>
         }
-        {canEditCluster() && (
-          <>
-            <DeleteButtonWithConfirmPopover
-              popupId="delete-domain-popup"
-              popupTitle="DELETE DOMAIN?"
-              popupContent={
-                <Box>
-                  This action cannot be undone. This will permanently delete{" "}
-                  <Typography color={"primary"} align={"center"} component="span">
-                    {domain.domain}
-                  </Typography>
-                </Box>
-              }
-              targetText={domain.domain}
-              confirmedAction={() => deleteDomain(domain)}
-            />
-          </>
-        )}
+        <>
+          <DeleteButtonWithConfirmPopover
+            popupId="delete-domain-popup"
+            popupTitle="DELETE DOMAIN?"
+            popupContent={
+              <Box>
+                This action cannot be undone. This will permanently delete{" "}
+                <Typography color={"primary"} align={"center"} component="span">
+                  {domain.domain}
+                </Typography>
+              </Box>
+            }
+            targetText={domain.domain}
+            confirmedAction={() => deleteDomain(domain)}
+          />
+        </>
       </>
     );
   };
@@ -123,12 +119,10 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
       },
     ];
 
-    if (canEditCluster()) {
-      columns.push({
-        Header: "Actions",
-        accessor: "actions",
-      });
-    }
+    columns.push({
+      Header: "Actions",
+      accessor: "actions",
+    });
 
     return columns;
   };
@@ -153,20 +147,17 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   };
 
   const renderEmpty = () => {
-    const { canEditCluster } = props;
     return (
       <EmptyInfoBox
         image={<WebIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={sc.EMPTY_DOMAIN_TITLE}
         content={sc.EMPTY_DOMAIN_SUBTITLE}
         button={
-          canEditCluster() ? (
-            <>
-              <CustomizedButton variant="contained" color="primary" component={Link} to="/domains/new">
-                New Domain
-              </CustomizedButton>
-            </>
-          ) : null
+          <>
+            <CustomizedButton variant="contained" color="primary" component={Link} to="/domains/new">
+              New Domain
+            </CustomizedButton>
+          </>
         }
       />
     );
@@ -203,30 +194,28 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   return (
     <BasePage
       secondHeaderRight={
-        canEditCluster() ? (
-          <>
-            <CustomButton
-              color="primary"
-              variant="contained"
-              size="small"
-              component={Link}
-              tutorial-anchor-id="add-domain"
-              to="/domains/new"
-            >
-              New Domain
-            </CustomButton>
-            <CustomButton
-              color="primary"
-              variant="contained"
-              size="small"
-              component={Link}
-              tutorial-anchor-id="add-domain"
-              to="/domains/acme"
-            >
-              Manage ACME DNS server
-            </CustomButton>
-          </>
-        ) : null
+        <>
+          <CustomButton
+            color="primary"
+            variant="contained"
+            size="small"
+            component={Link}
+            tutorial-anchor-id="add-domain"
+            to="/domains/new"
+          >
+            New Domain
+          </CustomButton>
+          <CustomButton
+            color="primary"
+            variant="contained"
+            size="small"
+            component={Link}
+            tutorial-anchor-id="add-domain"
+            to="/domains/acme"
+          >
+            Manage ACME DNS server
+          </CustomButton>
+        </>
       }
     >
       <Box p={2}>
@@ -239,4 +228,4 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
   );
 };
 
-export const DomainListPage = withUserAuth(DomainListPageRaw);
+export const DomainListPage = DomainListPageRaw;

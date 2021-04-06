@@ -1,6 +1,6 @@
+import { store } from "configureStore";
 import { SettingObject } from "reducers/settings";
-import { SET_SETTINGS, SetSettingsAction } from "types/common";
-import { store } from "store";
+import { SetSettingsAction, SET_SETTINGS } from "types/common";
 
 export const setSettingsAction = (settings: Partial<SettingObject>): SetSettingsAction => {
   return {

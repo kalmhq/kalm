@@ -8,7 +8,6 @@ import {
 import { impersonate } from "api/api";
 import { push } from "connected-react-router";
 import { WithRoleBindingProps, withRoleBindings } from "hoc/withRoleBinding";
-import { WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,7 +21,7 @@ import { KPanel } from "widgets/KPanel";
 import { KRTable } from "widgets/KRTable";
 import { Loading } from "widgets/Loading";
 
-interface Props extends WithUserAuthProps, WithRoleBindingProps {}
+interface Props extends WithRoleBindingProps {}
 
 const columns = [
   {

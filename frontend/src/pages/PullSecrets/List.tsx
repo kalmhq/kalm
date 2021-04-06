@@ -2,7 +2,6 @@ import { Box, createStyles, Theme, Tooltip, Typography, withStyles, WithStyles }
 import { grey } from "@material-ui/core/colors";
 import { setErrorNotificationAction } from "actions/notification";
 import { deleteRegistryAction } from "actions/registries";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
@@ -37,11 +36,7 @@ const mapStateToProps = (state: RootState) => {
 
 const pageObjectName: string = "Private Registry";
 
-interface Props
-  extends WithStyles<typeof styles>,
-    ReturnType<typeof mapStateToProps>,
-    TDispatchProp,
-    WithUserAuthProps {}
+interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
 interface State {
   isDeleteConfirmDialogOpen: boolean;
@@ -124,8 +119,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions(row: Registry) {
-    const { canEditCluster } = this.props;
-    return canEditCluster() ? (
+    return (
       <>
         <IconLinkWithToolTip tooltipTitle={"Edit"} to={`/cluster/pull-secrets/${row.name}/edit`}>
           <EditIcon />
@@ -137,12 +131,10 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
           confirmedAction={() => this.confirmDelete(row)}
         />
       </>
-    ) : null;
+    );
   }
 
   private getKRTableColumns() {
-    const { canEditCluster } = this.props;
-
     const columns = [
       {
         Header: "Name",
@@ -166,12 +158,10 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
       },
     ];
 
-    if (canEditCluster()) {
-      columns.push({
-        Header: "Actions",
-        accessor: "actions",
-      });
-    }
+    columns.push({
+      Header: "Actions",
+      accessor: "actions",
+    });
 
     return columns;
   }
@@ -220,8 +210,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderEmpty() {
-    const { canEditCluster } = this.props;
-    return canEditCluster() ? (
+    return (
       <EmptyInfoBox
         image={<KalmRegistryIcon style={{ height: 120, width: 120, color: grey[300] }} />}
         title={sc.EMPTY_REGISTRY_TITLE}
@@ -239,7 +228,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
           </CustomButton>
         }
       />
-    ) : null;
+    );
   }
 
   private renderInfoBox() {
@@ -247,9 +236,9 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isLoading, isFirstLoaded, registries, canEditCluster } = this.props;
+    const { isLoading, isFirstLoaded, registries } = this.props;
     return (
-      <BasePage secondHeaderRight={canEditCluster() ? this.renderSecondHeaderRight() : null}>
+      <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         <Box p={2}>
           {isLoading && !isFirstLoaded ? (
             <Loading />
@@ -265,4 +254,4 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const PullSecretsListPage = withUserAuth(withStyles(styles)(connect(mapStateToProps)(PullSecretsListPageRaw)));
+export const PullSecretsListPage = withStyles(styles)(connect(mapStateToProps)(PullSecretsListPageRaw));

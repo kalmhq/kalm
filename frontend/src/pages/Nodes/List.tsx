@@ -13,7 +13,6 @@ import {
   withStyles,
 } from "@material-ui/core";
 import { api } from "api";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { bindTrigger } from "material-ui-popup-state";
 import { NodeStatus } from "pages/Nodes/NodeStatus";
@@ -57,7 +56,7 @@ interface States {
   chartDateFilter: string;
 }
 
-type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles> & WithUserAuthProps;
+type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
 export class NodeListRaw extends React.Component<Props, States> {
   constructor(props: Props) {
@@ -173,20 +172,18 @@ export class NodeListRaw extends React.Component<Props, States> {
           </Grid>
         }
       >
-        {this.props.canEditCluster() ? (
-          <Box p={2}>
-            <Button
-              style={{ marginRight: 20 }}
-              color="primary"
-              size="small"
-              variant="outlined"
-              node-name={node.name}
-              onClick={this.handleClickCordonButton}
-            >
-              {this.hasCordon(node) ? "Enable Scheduling" : "Disable Scheduling"}
-            </Button>
-          </Box>
-        ) : null}
+        <Box p={2}>
+          <Button
+            style={{ marginRight: 20 }}
+            color="primary"
+            size="small"
+            variant="outlined"
+            node-name={node.name}
+            onClick={this.handleClickCordonButton}
+          >
+            {this.hasCordon(node) ? "Enable Scheduling" : "Disable Scheduling"}
+          </Button>
+        </Box>
 
         <VerticalHeadTable
           items={[
@@ -594,4 +591,4 @@ export class NodeListRaw extends React.Component<Props, States> {
   }
 }
 
-export const NodeListPage = withUserAuth(connect(mapStateToProps)(withStyles(styles)(NodeListRaw)));
+export const NodeListPage = connect(mapStateToProps)(withStyles(styles)(NodeListRaw));

@@ -1,7 +1,6 @@
 import { createStyles, List, ListItem, ListItemIcon, ListItemText, makeStyles, Theme } from "@material-ui/core";
 import AppsIcon from "@material-ui/icons/Apps";
 import { blinkTopProgressAction } from "actions/settings";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import React from "react";
 import { useSelector } from "react-redux";
 import { NavLink, withRouter } from "react-router-dom";
@@ -34,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-interface Props extends WithUserAuthProps {}
+interface Props {}
 
 const ApplicationViewDrawerRaw: React.FC<Props> = (props) => {
   const classes = useStyles();
@@ -46,7 +45,6 @@ const ApplicationViewDrawerRaw: React.FC<Props> = (props) => {
   });
 
   const getMenuData = () => {
-    const { canManageNamespace } = props;
     const menus = [];
     menus.push({
       text: "Components",
@@ -61,21 +59,17 @@ const ApplicationViewDrawerRaw: React.FC<Props> = (props) => {
       icon: <DashboardIcon />,
     });
 
-    if (canManageNamespace(activeNamespaceName)) {
-      menus.push({
-        text: sc.APP_SETTINGS_PAGE_NAME,
-        to: "/applications/" + activeNamespaceName + "/settings",
-        highlightWhenExact: true,
-        icon: <SettingIcon />,
-      });
-    }
+    menus.push({
+      text: sc.APP_SETTINGS_PAGE_NAME,
+      to: "/applications/" + activeNamespaceName + "/settings",
+      highlightWhenExact: true,
+      icon: <SettingIcon />,
+    });
     return menus;
   };
   const menuData = getMenuData();
 
-  const {
-    location: { pathname },
-  } = props;
+  const pathname = window.location.pathname;
 
   return (
     <List style={{ width: "100%" }}>
@@ -100,4 +94,4 @@ const ApplicationViewDrawerRaw: React.FC<Props> = (props) => {
   );
 };
 
-export const ApplicationSidebar = withUserAuth(withRouter(ApplicationViewDrawerRaw));
+export const ApplicationSidebar = withRouter(ApplicationViewDrawerRaw);

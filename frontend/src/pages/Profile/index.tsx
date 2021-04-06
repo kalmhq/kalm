@@ -1,8 +1,8 @@
-import { Box, createStyles, Theme, Typography, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles } from "@material-ui/core";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import withStyles from "@material-ui/core/styles/withStyles";
-import { Alert, AlertTitle } from "@material-ui/lab";
+import { Alert } from "@material-ui/lab";
 import { stopImpersonating } from "api/api";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
@@ -20,7 +20,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof styles>, WithUserAuthProps, WithNamespaceProps {}
+interface Props extends WithStyles<typeof styles>, WithNamespaceProps, WithUserAuthProps {}
 
 interface State {}
 
@@ -39,63 +39,14 @@ class ProfilePageRaw extends React.PureComponent<Props, State> {
   };
 
   private getApplicationRoles = () => {
-    const { canViewNamespace, canEditNamespace, canManageNamespace, applications } = this.props;
+    const { applications } = this.props;
 
     return applications
       .map((application) => {
-        let role = "";
-
-        if (canManageNamespace(application.name)) {
-          role = "Owner";
-        } else if (canEditNamespace(application.name)) {
-          role = "Editor";
-        } else if (canViewNamespace(application.name)) {
-          role = "Viewer";
-        }
+        let role = "Owner";
         return { applicationName: application.name, role: role };
       })
       .filter((x) => !!x.role);
-  };
-
-  private renderRoles = () => {
-    const { canViewCluster, canEditCluster, canManageCluster, auth } = this.props;
-
-    if (auth.policies === "") {
-      return (
-        <Alert severity="warning">
-          <AlertTitle>No Role</AlertTitle>
-          <Typography>
-            Although you have been authenticated, you do not have any role, which means you cannot access any resources.
-            Please contact your cluster admin for help.
-          </Typography>
-        </Alert>
-      );
-    }
-
-    let clusterRole: React.ReactNode = null;
-
-    if (canManageCluster()) {
-      clusterRole = <strong>Cluster Owner</strong>;
-    } else if (canEditCluster()) {
-      clusterRole = <strong>Cluster Editor</strong>;
-    } else if (canViewCluster()) {
-      clusterRole = <strong>Cluster Viewer</strong>;
-    }
-
-    const roles = this.getApplicationRoles();
-
-    return roles.length > 0 ? (
-      <KPanel title="Roles">
-        <Box p={2}>
-          {clusterRole}
-          {roles.map((x) => (
-            <p key={x.applicationName}>
-              <strong>{x.role}</strong> in application <strong>{x.applicationName}</strong>
-            </p>
-          ))}
-        </Box>
-      </KPanel>
-    ) : null;
   };
 
   private renderEmailOrName = () => {
@@ -189,7 +140,6 @@ class ProfilePageRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <Box mb={2}>{this.renderBasicInfo()}</Box>
-        <Box mb={2}>{this.renderRoles()}</Box>
 
         {this.props.auth.policies !== "" && (
           <CollapseWrapper title="View detailed permission policies">

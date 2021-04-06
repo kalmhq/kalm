@@ -63,7 +63,7 @@ class WithDataRaw extends React.PureComponent<Props> {
   }
 
   private loadData() {
-    const { dispatch, canManageCluster } = this.props;
+    const { dispatch } = this.props;
 
     dispatch(loadRoutesAction()); // all namespaces
     dispatch(loadApplicationsAction());
@@ -74,12 +74,10 @@ class WithDataRaw extends React.PureComponent<Props> {
     dispatch(loadPersistentVolumesAction());
     dispatch(loadStorageClassesAction());
 
-    if (canManageCluster()) {
-      dispatch(loadSSOConfigAction());
-      dispatch(loadRoleBindingsAction());
-      dispatch(loadCertificateAcmeServerAction());
-      dispatch(loadCertificateIssuersAction());
-    }
+    dispatch(loadSSOConfigAction());
+    dispatch(loadRoleBindingsAction());
+    dispatch(loadCertificateAcmeServerAction());
+    dispatch(loadCertificateIssuersAction());
 
     // The following two are required for routes
     dispatch(loadCertificatesAction());

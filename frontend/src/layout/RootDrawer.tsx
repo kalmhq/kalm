@@ -12,7 +12,6 @@ import {
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import clsx from "clsx";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { APP_BAR_HEIGHT, LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
 import React from "react";
 import { connect } from "react-redux";
@@ -120,95 +119,73 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, WithUserAuthProps {
+interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
   dispatch: TDispatch;
 }
 
 const RootDrawerRaw: React.FC<Props> = (props) => {
   const getSideBarData = () => {
-    const { canEditCluster, canViewCluster, canManageCluster } = props;
-
     return [
       {
         name: "Application",
         items: [
           { icon: KalmApplicationIcon, text: "Apps", to: "/applications" },
-          canManageCluster()
-            ? {
-                icon: KalmCertificatesIcon,
-                text: "Domains & Certs",
-                to: "/domains",
-              }
-            : null,
+          {
+            icon: KalmCertificatesIcon,
+            text: "Domains & Certs",
+            to: "/domains",
+          },
           {
             text: "Routes",
             to: "/routes",
             icon: KalmRoutesIcon,
           },
-          canEditCluster()
-            ? {
-                icon: CIIcon,
-                text: "Webhooks",
-                to: "/webhooks",
-              }
-            : null,
+          {
+            icon: CIIcon,
+            text: "Webhooks",
+            to: "/webhooks",
+          },
         ],
       },
       {
         name: "Cluster",
         items: [
-          canViewCluster()
-            ? {
-                icon: KalmNodeIcon,
-                text: "Nodes",
-                to: "/cluster/nodes",
-              }
-            : null,
-          // canViewCluster()
-          //   ? {
-          //       icon: KalmIngressIcon,
-          //       text: "Load Balancer",
-          //       to: "/cluster/loadbalancer",
-          //     }
-          //   : null,
+          {
+            icon: KalmNodeIcon,
+            text: "Nodes",
+            to: "/cluster/nodes",
+          },
+
           {
             icon: KalmVolumeIcon,
             text: "Disks",
             to: "/cluster/disks",
           },
-          canEditCluster()
-            ? {
-                icon: KalmRegistryIcon,
-                text: "Pull Secrets",
-                to: "/cluster/pull-secrets",
-              }
-            : null,
+          {
+            icon: KalmRegistryIcon,
+            text: "Pull Secrets",
+            to: "/cluster/pull-secrets",
+          },
         ],
       },
       {
         name: "Settings",
         items: [
-          canManageCluster()
-            ? {
-                icon: SettingIcon,
-                text: "Single Sign-on",
-                to: "/sso",
-              }
-            : null,
-          canManageCluster()
-            ? {
-                icon: PeopleIcon,
-                text: "Members",
-                to: "/members",
-              }
-            : null,
-          canViewCluster()
-            ? {
-                icon: InfoIcon,
-                text: "Version",
-                to: "/version",
-              }
-            : null,
+          {
+            icon: SettingIcon,
+            text: "Single Sign-on",
+            to: "/sso",
+          },
+          {
+            icon: PeopleIcon,
+            text: "Members",
+            to: "/members",
+          },
+          {
+            icon: InfoIcon,
+            text: "Version",
+            to: "/version",
+          },
         ],
       },
     ];
@@ -289,4 +266,4 @@ const RootDrawerRaw: React.FC<Props> = (props) => {
   );
 };
 
-export const RootDrawer = withUserAuth(connect(mapStateToProps)(withStyles(styles)(RootDrawerRaw)));
+export const RootDrawer = connect(mapStateToProps)(withStyles(styles)(RootDrawerRaw));

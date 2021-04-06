@@ -7,7 +7,6 @@ import { blinkTopProgressAction } from "actions/settings";
 import { api } from "api";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { getPodLogQuery } from "pages/Application/Log";
 import { ComponentCPUChart, ComponentMemoryChart } from "pages/Components/Chart";
@@ -57,11 +56,7 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface Props
-  extends WithStyles<typeof styles>,
-    WithUserAuthProps,
-    WithNamespaceProps,
-    ReturnType<typeof mapStateToProps> {}
+interface Props extends WithStyles<typeof styles>, WithNamespaceProps, ReturnType<typeof mapStateToProps> {}
 
 const ComponentRaw: React.FC<Props> = (props) => {
   const [isDeleteConfirmDialogOpen, setIsDeleteConfirmDialogOpen] = useState(false);
@@ -96,28 +91,26 @@ const ComponentRaw: React.FC<Props> = (props) => {
   };
 
   const renderSecondHeaderRight = () => {
-    const { activeNamespaceName, canEditNamespace } = props;
+    const { activeNamespaceName } = props;
 
     return (
       <>
-        {canEditNamespace(activeNamespaceName) && (
-          <CustomButton
-            tutorial-anchor-id="add-component-button"
-            component={Link}
-            color="primary"
-            size="small"
-            variant="outlined"
-            to={`/applications/${activeNamespaceName}/components/new`}
-          >
-            Add Component
-          </CustomButton>
-        )}
+        <CustomButton
+          tutorial-anchor-id="add-component-button"
+          component={Link}
+          color="primary"
+          size="small"
+          variant="outlined"
+          to={`/applications/${activeNamespaceName}/components/new`}
+        >
+          Add Component
+        </CustomButton>
       </>
     );
   };
 
   const renderEmpty = () => {
-    const { dispatch, activeNamespaceName, canEditNamespace } = props;
+    const { dispatch, activeNamespaceName } = props;
 
     return (
       <EmptyInfoBox
@@ -125,18 +118,16 @@ const ComponentRaw: React.FC<Props> = (props) => {
         title={"This App doesn’t have any Components"}
         content="Components are the fundamental building blocks of your Application. Each Component corresponds to a single image, and typically represents a service or a cronjob."
         button={
-          canEditNamespace(activeNamespaceName) && (
-            <CustomizedButton
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                blinkTopProgressAction();
-                dispatch(push(`/applications/${activeNamespaceName}/components/new`));
-              }}
-            >
-              Add Component
-            </CustomizedButton>
-          )
+          <CustomizedButton
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              blinkTopProgressAction();
+              dispatch(push(`/applications/${activeNamespaceName}/components/new`));
+            }}
+          >
+            Add Component
+          </CustomizedButton>
         }
       />
     );
@@ -160,13 +151,13 @@ const ComponentRaw: React.FC<Props> = (props) => {
     return <InfoBox title={title} options={options} />;
   };
   const renderProtected = (component: ApplicationComponentDetails) => {
-    const { activeNamespaceName, canEditNamespace } = props;
+    const { activeNamespaceName } = props;
     const appName = activeNamespaceName;
     return (
       <Box>
         {component.protectedEndpoint ? (
           <IconLinkWithToolTip
-            disabled={!canEditNamespace(appName)}
+            disabled={false}
             onClick={() => {
               blinkTopProgressAction();
             }}
@@ -254,17 +245,10 @@ const ComponentRaw: React.FC<Props> = (props) => {
   };
 
   const renderExternalAccesses = (component: ApplicationComponentDetails, applicationName: string) => {
-    const { canViewNamespace, canEditNamespace } = props;
     const applicationRoutes = getRoutes(component.name, applicationName);
 
-    if (applicationRoutes && applicationRoutes.length > 0 && canViewNamespace(applicationName)) {
-      return (
-        <RoutesPopover
-          applicationRoutes={applicationRoutes}
-          applicationName={applicationName}
-          canEdit={canEditNamespace(applicationName)}
-        />
-      );
+    if (applicationRoutes && applicationRoutes.length > 0) {
+      return <RoutesPopover applicationRoutes={applicationRoutes} applicationName={applicationName} canEdit={true} />;
     } else {
       return "-";
     }
@@ -307,7 +291,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
   };
 
   const componentControls = (component: ApplicationComponentDetails) => {
-    const { activeNamespaceName, dispatch, canEditNamespace } = props;
+    const { activeNamespaceName, dispatch } = props;
     const appName = activeNamespaceName;
     return (
       <Box>
@@ -321,18 +305,16 @@ const ComponentRaw: React.FC<Props> = (props) => {
         >
           <KalmViewListIcon />
         </IconLinkWithToolTip>
-        {canEditNamespace(activeNamespaceName) ? (
-          <IconLinkWithToolTip
-            onClick={() => {
-              blinkTopProgressAction();
-            }}
-            tooltipTitle="Edit"
-            size="small"
-            to={`/applications/${appName}/components/${component.name}/edit`}
-          >
-            <EditIcon />
-          </IconLinkWithToolTip>
-        ) : null}
+        <IconLinkWithToolTip
+          onClick={() => {
+            blinkTopProgressAction();
+          }}
+          tooltipTitle="Edit"
+          size="small"
+          to={`/applications/${appName}/components/${component.name}/edit`}
+        >
+          <EditIcon />
+        </IconLinkWithToolTip>
 
         {component.workloadType === "cronjob" ? (
           <IconButtonWithTooltip
@@ -380,6 +362,4 @@ const ComponentRaw: React.FC<Props> = (props) => {
   );
 };
 
-export const ComponentListPage = withStyles(styles)(
-  withNamespace(withUserAuth(connect(mapStateToProps)(ComponentRaw))),
-);
+export const ComponentListPage = withStyles(styles)(withNamespace(connect(mapStateToProps)(ComponentRaw)));

@@ -6,7 +6,6 @@ import { deletePersistentVolumeAction } from "actions/persistentVolume";
 import { blinkTopProgressAction } from "actions/settings";
 import { K8sApiPrefix } from "api/api";
 import { push } from "connected-react-router";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { StorageType } from "pages/Disks/StorageType";
 import React from "react";
 import { connect } from "react-redux";
@@ -47,7 +46,7 @@ interface States {
   deletingPersistentVolume?: Disk;
 }
 
-type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles> & WithUserAuthProps;
+type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
 export class VolumesRaw extends React.Component<Props, States> {
   constructor(props: Props) {
@@ -90,8 +89,7 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private renderActions = (disk: Disk) => {
-    const { canEditCluster } = this.props;
-    return canEditCluster() ? (
+    return (
       <>
         {this.isInUseAndHasComponent(disk) ? (
           <IconButtonWithTooltip
@@ -108,7 +106,7 @@ export class VolumesRaw extends React.Component<Props, States> {
           />
         )}
       </>
-    ) : null;
+    );
   };
 
   private renderSecondHeaderRight() {
@@ -168,8 +166,6 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private getKRTableColumns() {
-    const { canEditCluster } = this.props;
-
     const columns = [
       { Header: "Volume Name", accessor: "name" },
       { Header: "Mounted", accessor: "isInUse" },
@@ -178,12 +174,10 @@ export class VolumesRaw extends React.Component<Props, States> {
       { Header: "Size", accessor: "capacity" },
     ];
 
-    if (canEditCluster()) {
-      columns.push({
-        Header: "Actions",
-        accessor: "actions",
-      });
-    }
+    columns.push({
+      Header: "Actions",
+      accessor: "actions",
+    });
 
     return columns;
   }
@@ -278,4 +272,4 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 }
 
-export const DiskListPage = withUserAuth(connect(mapStateToProps)(withStyles(styles)(VolumesRaw)));
+export const DiskListPage = connect(mapStateToProps)(withStyles(styles)(VolumesRaw));

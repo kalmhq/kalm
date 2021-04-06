@@ -1,7 +1,7 @@
+import { setErrorNotificationAction } from "actions/notification";
+import { store } from "configureStore";
 import createThunkErrorHandlerMiddleware from "redux-thunk-error-handler";
 import { StatusFailure } from "types";
-import { setErrorNotificationAction } from "actions/notification";
-import { store } from "store";
 
 const ErrorHandler = (e: any) => {
   if (e.response && e.response.data.status === StatusFailure) {

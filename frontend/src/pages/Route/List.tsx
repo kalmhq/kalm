@@ -7,7 +7,6 @@ import { push } from "connected-react-router";
 import { withClusterInfo } from "hoc/withClusterInfo";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
-import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { BasePage } from "pages/BasePage";
 import { Methods } from "pages/Route/Methods";
 import React from "react";
@@ -34,7 +33,7 @@ const styles = (theme: Theme) =>
     root: {},
   });
 
-interface Props extends WithStyles<typeof styles>, WithRoutesDataProps, WithNamespaceProps, WithUserAuthProps {}
+interface Props extends WithStyles<typeof styles>, WithRoutesDataProps, WithNamespaceProps {}
 
 interface State {}
 
@@ -144,9 +143,9 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions = (row: HttpRoute) => {
-    const { dispatch, canEditCluster } = this.props;
+    const { dispatch } = this.props;
 
-    return canEditCluster() ? (
+    return (
       <>
         <IconLinkWithToolTip
           onClick={() => {
@@ -163,11 +162,11 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           confirmedAction={() => dispatch(deleteRouteAction(row))}
         />
       </>
-    ) : null;
+    );
   };
 
   private renderEmpty() {
-    const { dispatch, canEditCluster } = this.props;
+    const { dispatch } = this.props;
 
     return (
       <EmptyInfoBox
@@ -175,30 +174,26 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         title={sc.EMPTY_ROUTES_TITLE}
         content={sc.EMPTY_ROUTES_SUBTITLE}
         button={
-          canEditCluster() ? (
-            <CustomizedButton
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                blinkTopProgressAction();
-                dispatch(push(`/routes/new`));
-              }}
-            >
-              Add Route
-            </CustomizedButton>
-          ) : null
+          <CustomizedButton
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              blinkTopProgressAction();
+              dispatch(push(`/routes/new`));
+            }}
+          >
+            Add Route
+          </CustomizedButton>
         }
       />
     );
   }
 
   private showActions() {
-    const { httpRoutes, canEditCluster } = this.props;
+    const { httpRoutes } = this.props;
     let show = false;
     httpRoutes.forEach((route) => {
-      if (canEditCluster()) {
-        show = true;
-      }
+      show = true;
     });
     return show;
   }
@@ -296,23 +291,21 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes, canEditCluster } = this.props;
+    const { isRoutesFirstLoaded, isRoutesLoading, httpRoutes } = this.props;
 
     return (
       <BasePage
         secondHeaderRight={
-          canEditCluster() ? (
-            <CustomButton
-              tutorial-anchor-id="add-route"
-              component={Link}
-              color="primary"
-              size="small"
-              variant="contained"
-              to={`/routes/new`}
-            >
-              Add Route
-            </CustomButton>
-          ) : null
+          <CustomButton
+            tutorial-anchor-id="add-route"
+            component={Link}
+            color="primary"
+            size="small"
+            variant="contained"
+            to={`/routes/new`}
+          >
+            Add Route
+          </CustomButton>
         }
       >
         <Box p={2}>
@@ -331,4 +324,4 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     );
   }
 }
-export const RouteListPage = withNamespace(withUserAuth(withRoutesData(withStyles(styles)(RouteListPageRaw))));
+export const RouteListPage = withNamespace(withRoutesData(withStyles(styles)(RouteListPageRaw)));
