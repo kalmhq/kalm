@@ -1,6 +1,5 @@
 import { Box, Grid } from "@material-ui/core";
 import InputAdornment from "@material-ui/core/InputAdornment/InputAdornment";
-import { RootState } from "configureStore";
 import { FinalSelectField } from "forms/Final/select";
 import { FinalTextField } from "forms/Final/textfield";
 import { normalizeWildcardDomain, trimAndToLowerParse } from "forms/normalizer";
@@ -8,6 +7,7 @@ import React from "react";
 import { Field } from "react-final-form";
 import { FieldArray } from "react-final-form-arrays";
 import { useSelector } from "react-redux";
+import { RootState } from "store";
 import { Domain } from "types/domains";
 import { AddButton } from "widgets/Button";
 import { DeleteIcon } from "widgets/Icon";

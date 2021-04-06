@@ -1,6 +1,6 @@
-import { RootState } from "configureStore";
 import { RouterAction } from "connected-react-router";
 import { ThunkAction, ThunkDispatch } from "redux-thunk";
+import { RootState } from "store";
 import { DeployAccessTokenActions } from "types/deployAccessToken";
 import { VolumeActions } from "types/disk";
 import { DomainsActions } from "types/domains";

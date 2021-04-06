@@ -1,5 +1,5 @@
 import Axios, { AxiosPromise, AxiosRequestConfig } from "axios";
-import { store } from "configureStore";
+import { store } from "store";
 import { Application, ApplicationComponent } from "types/application";
 import { AcmeServerFormType, AcmeServerInfo, CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { InitializeClusterResponse } from "types/cluster";

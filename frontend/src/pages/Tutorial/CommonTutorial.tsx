@@ -12,10 +12,10 @@ import {
   withStyles,
   WithStyles,
 } from "@material-ui/core";
-import { RootState } from "configureStore";
 import Driver from "driver.js";
 import React from "react";
 import { connect } from "react-redux";
+import { RootState } from "store";
 import { TDispatchProp } from "types";
 import { KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";

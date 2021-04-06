@@ -2,19 +2,19 @@ import { Box, Grid } from "@material-ui/core";
 import Collapse from "@material-ui/core/Collapse";
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import { RootState } from "configureStore";
 import { AutoCompleteForRenderOption, AutoCompleteSingleValue } from "forms/Final/autoComplete";
 import { FinialSliderRender } from "forms/Final/slicer";
 import React from "react";
 import { Field, FieldRenderProps } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { useSelector } from "react-redux";
+import { RootState } from "store";
 import {
   PortProtocolGRPC,
   PortProtocolGRPCWEB,
   PortProtocolHTTP,
   PortProtocolHTTP2,
-  PortProtocolHTTPS,
+  PortProtocolHTTPS
 } from "types/componentTemplate";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";

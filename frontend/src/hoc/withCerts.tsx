@@ -1,6 +1,6 @@
-import { RootState } from "configureStore";
 import React from "react";
 import { useSelector } from "react-redux";
+import { RootState } from "store";
 
 const mapStateToProps = (state: RootState) => {
   return {

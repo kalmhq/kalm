@@ -1,6 +1,6 @@
-import { RootState } from "configureStore";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "store";
 import { TDispatchProp } from "types";
 
 const mapStateToProps = (state: RootState) => {

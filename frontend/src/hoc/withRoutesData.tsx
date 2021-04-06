@@ -1,7 +1,7 @@
-import { RootState } from "configureStore";
 import React from "react";
 import { connect } from "react-redux";
 import { RouteComponentProps } from "react-router";
+import { RootState } from "store";
 import { TDispatchProp } from "types";
 
 const mapStateToProps = (

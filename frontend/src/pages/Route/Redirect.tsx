@@ -1,8 +1,8 @@
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { RootState } from "configureStore";
 import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
+import { RootState } from "store";
 import { TDispatchProp } from "types";
 
 const styles = (theme: Theme) =>

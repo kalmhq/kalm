@@ -1,6 +1,6 @@
-import { RootState, store } from "configureStore";
 import { CERTIFICATE_FORM_ID } from "forms/formIDs";
 import React from "react";
+import { RootState, store } from "store";
 import {
   isCertificateFormFieldValueEqualTo,
   isUnderPath,

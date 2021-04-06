@@ -1,5 +1,5 @@
-import { RootState } from "configureStore";
 import React from "react";
+import { RootState } from "store";
 import { Actions } from "types";
 
 export const OPEN_TUTORIAL_DRAWER = "OPEN_TUTORIAL_DRAWER";

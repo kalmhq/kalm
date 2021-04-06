@@ -1,12 +1,12 @@
 import { Box, LinearProgress } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
-import { RootState } from "configureStore";
 import { DataLoader } from "hoc/DataLoader";
 import { WithData } from "hoc/withData";
 import { TutorialDrawer } from "pages/Tutorial";
 import React from "react";
 import { connect } from "react-redux";
+import { RootState } from "store";
 import { TDispatchProp } from "types";
 import { AppBarComponent } from "./AppBar";
 import { APP_BAR_HEIGHT, LEFT_SECTION_OPEN_WIDTH, TOP_PROGRESS_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "./Constants";

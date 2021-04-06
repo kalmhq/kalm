@@ -1,5 +1,4 @@
 import { Box, Grid } from "@material-ui/core";
-import { RootState } from "configureStore";
 import { FinalSelectField } from "forms/Final/select";
 import { FormDataPreview } from "forms/Final/util";
 import { CERTIFICATE_FORM_ID } from "forms/formIDs";
@@ -8,6 +7,7 @@ import { ValidatorIsCommonOrWildcardDNS1123SubDomain } from "forms/validator";
 import React from "react";
 import { Field, Form } from "react-final-form";
 import { useSelector } from "react-redux";
+import { RootState } from "store";
 import { FormTutorialHelper } from "tutorials/formValueToReduxStoreListener";
 import { CertificateFormType } from "types/certificate";
 import { SubmitButton } from "widgets/Button";

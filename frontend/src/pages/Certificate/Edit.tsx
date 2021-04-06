@@ -1,6 +1,5 @@
 import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { createCertificateAction } from "actions/certificate";
-import { RootState } from "configureStore";
 import { push } from "connected-react-router";
 import { CertificateUploadForm } from "forms/Certificate/uploadForm";
 import produce from "immer";
@@ -8,6 +7,7 @@ import { BasePage } from "pages/BasePage";
 import { CertificateNotFound } from "pages/Certificate/NotFound";
 import React from "react";
 import { connect } from "react-redux";
+import { RootState } from "store";
 import { TDispatchProp } from "types";
 import { CertificateFormType, selfManaged } from "types/certificate";
 import { H6 } from "widgets/Label";

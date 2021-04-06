@@ -1,12 +1,12 @@
 import { Box, Grid } from "@material-ui/core";
 import { updateRegistryAction } from "actions/registries";
-import { RootState } from "configureStore";
 import { push } from "connected-react-router";
 import { RegistryForm } from "forms/Registry";
 import { BasePage } from "pages/BasePage";
 import React, { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouteMatch } from "react-router-dom";
+import { RootState } from "store";
 import { RegistryFormType } from "types/registry";
 import { H6 } from "widgets/Label";
 import { Loading } from "widgets/Loading";

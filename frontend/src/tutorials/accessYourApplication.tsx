@@ -1,7 +1,7 @@
 import { resetTutorialAction } from "actions/tutorial";
-import { RootState, store } from "configureStore";
 import { ROUTE_FORM_ID } from "forms/formIDs";
 import React from "react";
+import { RootState, store } from "store";
 import {
   isFormFieldMeet,
   isFormFieldValueEqualTo,

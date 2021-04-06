@@ -1,9 +1,9 @@
 import { CssBaseline, PaletteType, ThemeProvider } from "@material-ui/core";
-import { RootState } from "configureStore";
 import React from "react";
 import { connect } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 import { KalmRoutes } from "routes";
+import { RootState } from "store";
 import { getTheme } from "theme/theme";
 import { HistoryUserConfirmation } from "widgets/History";
 import { Snackbar } from "widgets/Notification";

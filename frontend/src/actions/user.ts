@@ -1,5 +1,5 @@
 import { api } from "api";
-import { AppThunk } from "configureStore";
+import { AppThunk } from "store";
 import { ThunkResult } from "types";
 import {
   CREATE_ROLE_BINDINGS_FAILED,

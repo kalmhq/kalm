@@ -6,13 +6,13 @@ import {
   updateRoleBindingsAction,
 } from "actions/user";
 import { impersonate } from "api/api";
-import { RootState } from "configureStore";
 import { push } from "connected-react-router";
 import { WithRoleBindingProps, withRoleBindings } from "hoc/withRoleBinding";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouteMatch } from "react-router-dom";
+import { RootState } from "store";
 import { RoleBinding, SubjectTypeUser } from "types/member";
 import { gravatar } from "utils/gavatar";
 import { FlexRowItemCenterBox } from "widgets/Box";

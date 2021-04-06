@@ -12,11 +12,11 @@ import {
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import clsx from "clsx";
-import { RootState } from "configureStore";
 import { APP_BAR_HEIGHT, LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
 import React from "react";
 import { connect } from "react-redux";
 import { NavLink } from "react-router-dom";
+import { RootState } from "store";
 import { TDispatch } from "types";
 import {
   CIIcon,

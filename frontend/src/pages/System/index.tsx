@@ -1,9 +1,9 @@
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
-import { RootState } from "configureStore";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
+import { RootState } from "store";
 import { TDispatchProp } from "types";
 
 const styles = (theme: Theme) =>

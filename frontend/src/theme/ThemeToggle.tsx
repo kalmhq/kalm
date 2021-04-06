@@ -1,8 +1,8 @@
 import { createStyles, Switch, Theme, Tooltip, withStyles, WithStyles } from "@material-ui/core";
 import { setSettingsAction } from "actions/settings";
-import { RootState } from "configureStore";
 import React from "react";
 import { connect } from "react-redux";
+import { RootState } from "store";
 import { TDispatchProp } from "types";
 import StringConstants from "utils/stringConstants";
 import { BrightnessDarkIcon, BrightnessLightIcon } from "widgets/Icon";

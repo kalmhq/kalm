@@ -1,10 +1,10 @@
 import { Box } from "@material-ui/core";
 import { loadLoginStatusAction } from "actions/auth";
-import { RootState } from "configureStore";
 import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
+import { RootState } from "store";
 import { Actions } from "types";
 import { Loading } from "widgets/Loading";
 import { getDisplayName } from "./utils";

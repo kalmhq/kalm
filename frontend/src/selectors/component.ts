@@ -1,4 +1,4 @@
-import { RootState } from "configureStore";
+import { RootState } from "store";
 import { workloadTypeStatefulSet } from "types/componentTemplate";
 
 export const getComponentFormVolumeOptions = (

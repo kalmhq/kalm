@@ -1,10 +1,10 @@
 import { createStyles, List, ListItem, ListItemIcon, ListItemText, makeStyles, Theme } from "@material-ui/core";
 import AppsIcon from "@material-ui/icons/Apps";
 import { blinkTopProgressAction } from "actions/settings";
-import { RootState } from "configureStore";
 import React from "react";
 import { useSelector } from "react-redux";
 import { NavLink, withRouter } from "react-router-dom";
+import { RootState } from "store";
 import sc from "utils/stringConstants";
 import { DashboardIcon, KalmComponentsIcon, SettingIcon } from "widgets/Icon";
 

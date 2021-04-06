@@ -12,10 +12,10 @@ import {
   WithStyles,
 } from "@material-ui/core";
 import { blinkTopProgressAction } from "actions/settings";
-import { RootState } from "configureStore";
 import { Methods } from "pages/Route/Methods";
 import React from "react";
 import { connect } from "react-redux";
+import { RootState } from "store";
 import { TDispatchProp } from "types";
 import { HttpRoute } from "types/route";
 import { FlexRowItemCenterBox } from "widgets/Box";

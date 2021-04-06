@@ -1,8 +1,8 @@
-import { RootState } from "configureStore";
 import hoistNonReactStatics from "hoist-non-react-statics";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
+import { RootState } from "store";
 import { Actions } from "types";
 
 const mapStateToProps = (state: RootState) => {

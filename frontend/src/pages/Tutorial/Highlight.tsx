@@ -1,9 +1,9 @@
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { setTutorialHighlightStatusAction } from "actions/tutorial";
-import { RootState } from "configureStore";
 import Driver from "driver.js";
 import React from "react";
 import { connect } from "react-redux";
+import { RootState } from "store";
 import { TDispatchProp } from "types";
 import { TutorialHighlight } from "types/tutorial";
 

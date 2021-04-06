@@ -1,10 +1,10 @@
 import { Box, Button, Grid } from "@material-ui/core";
 import { deleteAcmeServerAction, setAcmeServerAction } from "actions/certificate";
-import { RootState } from "configureStore";
 import { AcmeForm } from "forms/Certificate/acmeForm";
 import { BasePage } from "pages/BasePage";
 import { default as React, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "store";
 import { AcmeServerFormType } from "types/certificate";
 import { ACMEServer } from "widgets/ACMEServer";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";

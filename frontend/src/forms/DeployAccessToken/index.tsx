@@ -1,5 +1,4 @@
 import { Box } from "@material-ui/core";
-import { RootState } from "configureStore";
 import { AutoCompleteMultipleValue } from "forms/Final/autoComplete";
 import { FinalRadioGroupRender } from "forms/Final/radio";
 import { FinalTextField } from "forms/Final/textfield";
@@ -10,6 +9,7 @@ import React from "react";
 import { Field, FieldRenderProps, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react-final-form";
 import { OnChange } from "react-final-form-listeners";
 import { useSelector } from "react-redux";
+import { RootState } from "store";
 import { Application, ApplicationComponentDetails } from "types/application";
 import {
   DeployAccessToken,

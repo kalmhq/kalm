@@ -1,8 +1,8 @@
 import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { RootState } from "configureStore";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
+import { RootState } from "store";
 import { Actions } from "types";
 import { H6 } from "widgets/Label";
 import ApplicationForm from "../../forms/Application";

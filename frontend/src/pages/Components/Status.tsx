@@ -1,7 +1,7 @@
 import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
-import { RootState } from "configureStore";
 import React from "react";
 import { connect } from "react-redux";
+import { RootState } from "store";
 import { TDispatchProp } from "types";
 import { ApplicationComponentDetails } from "types/application";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
