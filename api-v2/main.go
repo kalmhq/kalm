@@ -5,6 +5,8 @@ import (
 	"os"
 	"sort"
 
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
+
 	"github.com/kalmhq/kuench/api/config"
 	"github.com/kalmhq/kuench/api/handlers"
 	"github.com/labstack/echo/v4"
