@@ -1,12 +1,12 @@
 import { Box, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { RootState } from "configureStore";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
 import sc from "utils/stringConstants";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 import { InfoBox } from "widgets/InfoBox";

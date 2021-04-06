@@ -1,9 +1,9 @@
+import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { RootState } from "configureStore";
+import { SNACKBAR_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "layout/Constants";
 import { SnackbarProvider, useSnackbar } from "notistack";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { SNACKBAR_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "layout/Constants";
 
 const getMessageFromState = (state: RootState) => ({
   message: state.notification,

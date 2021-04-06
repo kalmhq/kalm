@@ -2,10 +2,10 @@ import { Box, createStyles, Link, Theme, WithStyles, withStyles } from "@materia
 import { Alert } from "@material-ui/lab";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { K8sApiPrefix } from "api/api";
+import { RootState } from "configureStore";
 import copy from "copy-to-clipboard";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { ClusterInfo } from "types/cluster";
 import { FlexRowItemCenterBox } from "widgets/Box";

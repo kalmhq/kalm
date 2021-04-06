@@ -13,16 +13,16 @@ import CloseIcon from "@material-ui/icons/Close";
 import KeyboardBackspaceIcon from "@material-ui/icons/KeyboardBackspace";
 import { closeTutorialDrawerAction, resetTutorialAction, setTutorialAction } from "actions/tutorial";
 import clsx from "clsx";
+import { RootState } from "configureStore";
+import { DRAWER_HIGH_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "layout/Constants";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
 import { tutorialConfigs } from "tutorials";
 import { TDispatchProp } from "types";
 import { Tutorial, TutorialFactory } from "types/tutorial";
 import { Body } from "widgets/Label";
-import { CommonTutorial } from "./CommonTutorial";
-import { DRAWER_HIGH_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "layout/Constants";
 import { KMLink } from "widgets/Link";
+import { CommonTutorial } from "./CommonTutorial";
 
 class TutorialItem extends React.PureComponent<{
   title: string;

@@ -13,12 +13,12 @@ import {
   withStyles,
 } from "@material-ui/core";
 import { api } from "api";
+import { RootState } from "configureStore";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { bindTrigger } from "material-ui-popup-state";
 import { NodeStatus } from "pages/Nodes/NodeStatus";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
 import CustomButton from "theme/Button";
 import { TDispatchProp } from "types";
 import { Node } from "types/node";

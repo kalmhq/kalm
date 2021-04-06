@@ -1,12 +1,12 @@
 import { Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { RootState } from "configureStore";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { HttpRoute } from "types/route";
-import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
-import { OpenInBrowserIcon } from "./Icon";
 import { ClusterInfo } from "types/cluster";
+import { HttpRoute } from "types/route";
+import { OpenInBrowserIcon } from "./Icon";
+import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 
 const styles = (theme: Theme) =>
   createStyles({

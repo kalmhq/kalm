@@ -1,8 +1,8 @@
-import React from "react";
 import { FormControlLabel, Switch } from "@material-ui/core";
-import { RootState } from "reducers";
-import { connect, DispatchProp } from "react-redux";
 import { setSettingsAction } from "actions/settings";
+import { RootState } from "configureStore";
+import React from "react";
+import { connect, DispatchProp } from "react-redux";
 
 const mapStateToProps = (state: RootState) => {
   return {

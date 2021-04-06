@@ -17,11 +17,11 @@ import { loadProtectedEndpointAction, loadSSOConfigAction } from "actions/sso";
 import { loadRoleBindingsAction } from "actions/user";
 import { getWebsocketInstance } from "actions/websocket";
 import { generateKalmImpersonation } from "api/api";
+import { RootState } from "configureStore";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import throttle from "lodash/throttle";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { AccessTokenToDeployAccessToken } from "types/deployAccessToken";
 import {

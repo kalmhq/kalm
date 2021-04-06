@@ -1,8 +1,8 @@
 import { createStyles, Theme } from "@material-ui/core";
 import { WithStyles, withStyles } from "@material-ui/styles";
+import { RootState } from "configureStore";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { H6 } from "widgets/Label";
 import { APP_BAR_HEIGHT, LEFT_SECTION_OPEN_WIDTH, SECOND_HEADER_HEIGHT, SECOND_HEADER_ZINDEX } from "./Constants";

@@ -1,10 +1,10 @@
-import React from "react";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { TDispatchProp } from "types";
-import { connect } from "react-redux";
-import { RootState } from "reducers";
-import { RouteComponentProps, withRouter } from "react-router-dom";
+import { RootState } from "configureStore";
+import React from "react";
 import { FormSpy } from "react-final-form";
+import { connect } from "react-redux";
+import { RouteComponentProps, withRouter } from "react-router-dom";
+import { TDispatchProp } from "types";
 import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>

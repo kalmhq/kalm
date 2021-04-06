@@ -2,6 +2,7 @@ import { Box, Button, createStyles, Grid, Theme, withStyles, WithStyles } from "
 import { deleteComponentAction } from "actions/component";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { api } from "api";
+import { RootState } from "configureStore";
 import { push } from "connected-react-router";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
@@ -14,7 +15,6 @@ import { RouteWidgets } from "pages/Route/Widget";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
-import { RootState } from "reducers";
 import CustomButton from "theme/Button";
 import { ComponentLikePort, WorkloadType } from "types/componentTemplate";
 import { Expansion } from "widgets/expansion";

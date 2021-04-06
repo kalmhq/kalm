@@ -1,11 +1,11 @@
 import { Box } from "@material-ui/core";
 import { setCurrentNamespaceAction } from "actions/namespaces";
+import { RootState } from "configureStore";
 import { LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
 import { BasePage } from "pages/BasePage";
 import React, { useEffect } from "react";
 import { connect, useDispatch } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
-import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Loading } from "widgets/Loading";
 import { ResourceNotFound } from "widgets/ResourceNotFound";

@@ -1,12 +1,12 @@
 import { Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { setSuccessNotificationAction } from "actions/notification";
+import { RootState } from "configureStore";
+import copy from "copy-to-clipboard";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { HttpRoute } from "types/route";
 import { isPrivateIP } from "utils/ip";
-import copy from "copy-to-clipboard";
 import { CopyIcon } from "./Icon";
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 

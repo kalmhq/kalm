@@ -11,10 +11,10 @@ import {
 } from "@material-ui/core";
 import { WithStyles } from "@material-ui/styles";
 import { setSuccessNotificationAction } from "actions/notification";
+import { RootState } from "configureStore";
 import copy from "copy-to-clipboard";
 import React from "react";
 import { connect, useDispatch } from "react-redux";
-import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { PendingBadge, SuccessBadge } from "widgets/Badge";
 import { BlankTargetLink } from "widgets/BlankTargetLink";

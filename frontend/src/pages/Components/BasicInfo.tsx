@@ -16,13 +16,13 @@ import {
 } from "@material-ui/core";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import clsx from "clsx";
+import { RootState } from "configureStore";
 import { push } from "connected-react-router";
 import { HealthTab, NetworkingTab } from "forms/ComponentLike";
 import { renderCommandValue, renderCopyableImageName } from "pages/Components/InfoComponents";
 import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { ApplicationComponentDetails } from "types/application";
 import { Probe } from "types/componentTemplate";

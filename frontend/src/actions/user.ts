@@ -1,4 +1,5 @@
 import { api } from "api";
+import { AppThunk } from "configureStore";
 import { ThunkResult } from "types";
 import {
   CREATE_ROLE_BINDINGS_FAILED,
@@ -72,7 +73,7 @@ export const deleteRoleBindingsAction = (namespace: string, bindingName: string)
   };
 };
 
-export const deleteAllRoleBindingsAction = (email: string): ThunkResult<Promise<void>> => {
+export const deleteAllRoleBindingsAction = (email: string): AppThunk => {
   return async (dispatch, getState) => {
     const state = getState();
     const roleBindings = state.roles.roleBindings.filter(

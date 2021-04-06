@@ -1,8 +1,8 @@
-import React from "react";
 import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
-import { TDispatchProp } from "types";
+import { RootState } from "configureStore";
+import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
+import { TDispatchProp } from "types";
 import { Node } from "types/node";
 import { SuccessBadge, WarningBadge } from "widgets/Badge";
 

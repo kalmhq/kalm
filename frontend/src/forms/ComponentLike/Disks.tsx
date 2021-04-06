@@ -1,12 +1,12 @@
 import { Box, Grid, TextField } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import HelpIcon from "@material-ui/icons/Help";
+import { RootState } from "configureStore";
 import { diskSizeFormat, diskSizeParse, trimParse } from "forms/normalizer";
 import { default as React } from "react";
 import { Field } from "react-final-form";
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { connect, DispatchProp } from "react-redux";
-import { RootState } from "reducers";
 import {
   Volume,
   VolumeTypeHostPath,

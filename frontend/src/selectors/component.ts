@@ -1,4 +1,4 @@
-import { RootState } from "reducers";
+import { RootState } from "configureStore";
 import { workloadTypeStatefulSet } from "types/componentTemplate";
 
 export const getComponentFormVolumeOptions = (

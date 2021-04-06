@@ -1,6 +1,7 @@
 import { Box, Collapse, Grid } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
+import { RootState } from "configureStore";
 import arrayMutators from "final-form-arrays";
 import { AutoCompleteMultipleValue, AutoCompleteMultiValuesFreeSolo } from "forms/Final/autoComplete";
 import { FinalBoolCheckboxRender, FinalCheckboxGroupRender } from "forms/Final/checkbox";
@@ -18,7 +19,6 @@ import { Field, FieldRenderProps, Form, FormRenderProps } from "react-final-form
 import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { useSelector } from "react-redux";
 import { Link as RouteLink } from "react-router-dom";
-import { RootState } from "reducers";
 import { FormTutorialHelper } from "tutorials/formValueToReduxStoreListener";
 import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { httpMethods, HttpRoute, methodsModeAll, methodsModeSpecific } from "types/route";

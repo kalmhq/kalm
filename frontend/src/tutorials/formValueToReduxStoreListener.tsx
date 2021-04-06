@@ -1,8 +1,8 @@
 import { setTutorialFormValues } from "actions/tutorial";
+import { RootState } from "configureStore";
 import React from "react";
 import { FormSpy } from "react-final-form";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 
 const mapStateToProps = (state: RootState) => {

@@ -2,13 +2,13 @@ import { Box, createStyles, Link as KMLink, Theme, Typography, WithStyles, withS
 import { grey } from "@material-ui/core/colors";
 import { deleteDeployAccessTokenAction } from "actions/deployAccessToken";
 import { blinkTopProgressAction } from "actions/settings";
+import { RootState } from "configureStore";
 import { withDeployAccessTokens, WithDeployAccessTokensProps } from "hoc/withDeployAccessTokens";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
-import { RootState } from "reducers";
 import CustomButton from "theme/Button";
 import {
   DeployAccessToken,

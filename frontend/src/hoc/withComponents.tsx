@@ -1,7 +1,7 @@
+import { RootState } from "configureStore";
 import hoistNonReactStatics from "hoist-non-react-statics";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "types";
 

@@ -1,5 +1,5 @@
 import { api } from "api";
-import { ThunkResult } from "types";
+import { AppThunk } from "configureStore";
 import {
   ApplicationComponent,
   ApplicationComponentDetails,
@@ -13,7 +13,7 @@ import {
 import { correctComponentFormValuesForSubmit } from "utils/application";
 import { setIsSubmittingApplicationComponentAction } from "./application";
 
-export const loadComponentsAction = (namespace: string): ThunkResult<Promise<void>> => {
+export const loadComponentsAction = (namespace: string): AppThunk => {
   return async (dispatch) => {
     dispatch({ type: LOAD_COMPONENTS_PENDING });
 
@@ -35,14 +35,12 @@ export const loadComponentsAction = (namespace: string): ThunkResult<Promise<voi
   };
 };
 
-export const createComponentAction = (
-  componentValues: ApplicationComponent,
-  applicationName?: string,
-): ThunkResult<Promise<void>> => {
+export const createComponentAction = (componentValues: ApplicationComponent, applicationName?: string): AppThunk => {
   return async (dispatch, getState) => {
     if (!applicationName) {
       applicationName = getState().namespaces.active;
     }
+
     dispatch(setIsSubmittingApplicationComponentAction(true));
 
     let component: ApplicationComponentDetails;
@@ -65,10 +63,7 @@ export const createComponentAction = (
   };
 };
 
-export const updateComponentAction = (
-  componentValues: ApplicationComponent,
-  applicationName?: string,
-): ThunkResult<Promise<void>> => {
+export const updateComponentAction = (componentValues: ApplicationComponent, applicationName?: string): AppThunk => {
   return async (dispatch, getState) => {
     if (!applicationName) {
       applicationName = getState().namespaces.active;
@@ -95,7 +90,7 @@ export const updateComponentAction = (
   };
 };
 
-export const deleteComponentAction = (componentName: string, applicationName?: string): ThunkResult<Promise<void>> => {
+export const deleteComponentAction = (componentName: string, applicationName?: string): AppThunk => {
   return async (dispatch, getState) => {
     if (!applicationName) {
       applicationName = getState().namespaces.active;

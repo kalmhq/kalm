@@ -2,11 +2,11 @@ import { Box, createStyles, Link as KMLink, Theme, Typography, withStyles, WithS
 import { grey } from "@material-ui/core/colors";
 import { deleteCertificateAction } from "actions/certificate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { RootState } from "configureStore";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
-import { RootState } from "reducers";
 import CustomButton from "theme/Button";
 import { TDispatchProp } from "types";
 import { Certificate } from "types/certificate";

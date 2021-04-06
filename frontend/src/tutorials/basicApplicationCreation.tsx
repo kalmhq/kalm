@@ -1,8 +1,7 @@
 import { setTutorialAction } from "actions/tutorial";
-import { store } from "configureStore";
+import { RootState, store } from "configureStore";
 import { APPLICATION_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
 import React from "react";
-import { RootState } from "reducers";
 import { AccessYourApplicationTutorialFactory } from "tutorials/accessYourApplication";
 import {
   getFormValue,

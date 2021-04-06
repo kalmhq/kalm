@@ -1,6 +1,7 @@
 import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { updateComponentAction } from "actions/component";
 import { setSuccessNotificationAction } from "actions/notification";
+import { RootState } from "configureStore";
 import { push } from "connected-react-router";
 import { ComponentLikeForm } from "forms/ComponentLike";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
@@ -9,7 +10,6 @@ import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
 import { ComponentLike } from "types/componentTemplate";
 import { componentDetailsToComponent, correctComponentFormValuesForInit } from "utils/application";
 import { ComponentStatus } from "widgets/ComponentStatus";

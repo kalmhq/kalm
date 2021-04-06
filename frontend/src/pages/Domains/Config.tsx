@@ -6,12 +6,12 @@ import StepLabel from "@material-ui/core/StepLabel";
 import Stepper from "@material-ui/core/Stepper";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { createCertificateAction } from "actions/certificate";
+import { RootState } from "configureStore";
 import { BasePage } from "pages/BasePage";
 import { CertStatus } from "pages/Domains/CertStatus";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useRouteMatch } from "react-router-dom";
-import { RootState } from "reducers";
+import { Link, useRouteMatch } from "react-router-dom";
 import { Certificate, issuerManaged } from "types/certificate";
 import { DNSConfigItems } from "widgets/ACMEServer";
 import { CodeBlock } from "widgets/CodeBlock";
@@ -20,7 +20,6 @@ import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle1 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { TextAndCopyButton } from "widgets/TextAndCopyButton";
-import { Link } from "react-router-dom";
 
 interface StepOption {
   title: string;

@@ -1,9 +1,49 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { Action, configureStore, ThunkAction } from "@reduxjs/toolkit";
+import applications from "reducers/application";
+import auth from "reducers/auth";
+import certificates from "reducers/certificate";
+import cluster from "reducers/cluster";
+import components from "reducers/component";
+import debounce from "reducers/debounce";
+import deployAccessTokens from "reducers/deployAccessToken";
+import dialogs from "reducers/dialog";
+import domains from "reducers/domains";
+import namespaces from "reducers/namespaces";
+import nodes from "reducers/node";
+import notification from "reducers/notification";
+import persistentVolumes from "reducers/persistentVolume";
+import registries from "reducers/registry";
+import roles from "reducers/roleBinding";
+import routes from "reducers/route";
+import services from "reducers/service";
+import settings from "reducers/settings";
+import sso from "reducers/sso";
+import tutorial from "reducers/tutorial";
 import { createLogger } from "redux-logger";
-import createRootReducer from "./reducers";
 
 export const store = configureStore({
-  reducer: createRootReducer(),
+  reducer: {
+    namespaces,
+    nodes,
+    registries,
+    auth,
+    dialogs,
+    persistentVolumes,
+    applications,
+    components,
+    notification,
+    settings,
+    sso,
+    roles,
+    routes,
+    tutorial,
+    cluster,
+    services,
+    certificates,
+    debounce,
+    deployAccessTokens,
+    domains,
+  },
   middleware: (getDefaultMiddleware) => {
     if (process.env.REACT_APP_DEBUG === "true") {
       const logger = createLogger({
@@ -19,3 +59,6 @@ export const store = configureStore({
   },
   devTools: process.env.NODE_ENV !== "production",
 });
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppThunk<ReturnType = void> = ThunkAction<ReturnType, RootState, unknown, Action<string>>;

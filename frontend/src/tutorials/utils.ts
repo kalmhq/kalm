@@ -1,6 +1,6 @@
+import { RootState } from "configureStore";
 import { getIn } from "final-form";
 import { APPLICATION_FORM_ID, CERTIFICATE_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
-import { RootState } from "reducers";
 import { State as TutorialState } from "reducers/tutorial";
 
 export const finalValidateOrNotBlockByTutorial = (

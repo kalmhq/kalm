@@ -13,8 +13,9 @@ export interface SettingObject {
 
 export type State = SettingObject;
 
-const initialState = {
+const initialState: State = {
   isDisplayingHelpers: window.localStorage.getItem("isDisplayingHelpers") === "true",
+  isSubmittingApplication: false,
   isOpenRootDrawer: window.localStorage.getItem("isOpenRootDrawer") !== "false",
   usingApplicationCard: false,
   usingTheme: window.localStorage.getItem("usingTheme") ?? "light",
@@ -34,7 +35,7 @@ const reducer = produce((state: State, action: Actions) => {
   window.localStorage.setItem("usingApplicationCard", state.usingApplicationCard.toString());
   window.localStorage.setItem("usingTheme", state.usingTheme || "light");
 
-  return;
+  return state;
 }, initialState);
 
 export default reducer;

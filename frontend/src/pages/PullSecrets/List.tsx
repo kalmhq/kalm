@@ -2,10 +2,10 @@ import { Box, createStyles, Theme, Tooltip, Typography, withStyles, WithStyles }
 import { grey } from "@material-ui/core/colors";
 import { setErrorNotificationAction } from "actions/notification";
 import { deleteRegistryAction } from "actions/registries";
+import { RootState } from "configureStore";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
-import { RootState } from "reducers";
 import CustomButton from "theme/Button";
 import { TDispatchProp } from "types";
 import { Registry } from "types/registry";

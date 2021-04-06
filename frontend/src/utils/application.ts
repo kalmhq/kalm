@@ -1,5 +1,5 @@
+import { RootState } from "configureStore";
 import produce from "immer";
-import { RootState } from "reducers";
 import { getComponentFormVolumeOptions } from "selectors/component";
 import { ApplicationComponent, ApplicationComponentDetails } from "types/application";
 import {
