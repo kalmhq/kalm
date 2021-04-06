@@ -134,7 +134,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
                   >
                     {filteredApp.map((application) => {
                       const name = application.name;
-                      let to = `/applications/${application.name}/components`;
+                      let to = `/namespaces/${application.name}/components`;
                       if (pathnameSplits[1] && pathnameSplits[2] && pathnameSplits[1] === "applications") {
                         pathnameSplits[2] = application.name;
                         to = pathnameSplits.slice(0, 4).join("/");

@@ -55,7 +55,7 @@ const ApplicationForm: React.FC<Props> = () => {
   const onSubmit = async (applicationFormValue: Application) => {
     await dispatch(createApplicationAction(applicationFormValue));
     dispatch(setSuccessNotificationAction("Create application successfully"));
-    dispatch(push(`/applications/${applicationFormValue.name}/components/new`));
+    dispatch(push(`/namespaces/${applicationFormValue.name}/components/new`));
   };
 
   return (

@@ -366,7 +366,7 @@ workflows:
           <Box p={2}>
             <ResourceNotFound
               text={`Webhook ${match.params.name} not found.`}
-              redirect={`/applications`}
+              redirect={`/namespaces`}
               redirectText="Go back to Apps List"
             ></ResourceNotFound>
           </Box>

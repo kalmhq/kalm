@@ -64,7 +64,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
   private renderName = () => {
     const { application } = this.props;
     return (
-      <KLink to={`/applications/${application.name}/components`} onClick={() => blinkTopProgressAction()}>
+      <KLink to={`/namespaces/${application.name}/components`} onClick={() => blinkTopProgressAction()}>
         <H6>{application.name}</H6>
       </KLink>
     );
@@ -224,7 +224,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
           }}
           // size="small"
           tooltipTitle="Details"
-          to={`/applications/${application.name}/components`}
+          to={`/namespaces/${application.name}/components`}
         >
           <KalmDetailsIcon />
         </IconLinkWithToolTip>

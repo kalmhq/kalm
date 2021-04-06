@@ -48,20 +48,20 @@ const ApplicationViewDrawerRaw: React.FC<Props> = (props) => {
     const menus = [];
     menus.push({
       text: "Components",
-      to: "/applications/" + activeNamespaceName + "/components",
+      to: "/namespaces/" + activeNamespaceName + "/components",
       icon: <KalmComponentsIcon />,
     });
 
     menus.push({
       text: sc.APP_DASHBOARD_PAGE_NAME,
-      to: "/applications/" + activeNamespaceName + "/metrics",
+      to: "/namespaces/" + activeNamespaceName + "/metrics",
       highlightWhenExact: true,
       icon: <DashboardIcon />,
     });
 
     menus.push({
       text: sc.APP_SETTINGS_PAGE_NAME,
-      to: "/applications/" + activeNamespaceName + "/settings",
+      to: "/namespaces/" + activeNamespaceName + "/settings",
       highlightWhenExact: true,
       icon: <SettingIcon />,
     });

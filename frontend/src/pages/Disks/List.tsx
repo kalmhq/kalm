@@ -126,7 +126,7 @@ export class VolumesRaw extends React.Component<Props, States> {
     return (
       <KLink
         style={{ color: primaryColor }}
-        to={`/applications/${disk.componentNamespace}/components`}
+        to={`/namespaces/${disk.componentNamespace}/components`}
         onClick={() => blinkTopProgressAction()}
       >
         {disk.componentNamespace}
@@ -145,7 +145,7 @@ export class VolumesRaw extends React.Component<Props, States> {
     return (
       <KLink
         style={{ color: primaryColor }}
-        to={`/applications/${disk.componentNamespace}/components/${disk.componentName}`}
+        to={`/namespaces/${disk.componentNamespace}/components/${disk.componentName}`}
         onClick={() => blinkTopProgressAction()}
       >
         {disk.componentName}
@@ -218,7 +218,7 @@ export class VolumesRaw extends React.Component<Props, States> {
             color="primary"
             onClick={() => {
               blinkTopProgressAction();
-              dispatch(push(`/applications`));
+              dispatch(push(`/namespaces`));
             }}
           >
             View Applications

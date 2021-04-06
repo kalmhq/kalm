@@ -25,7 +25,7 @@ const ComponentNewRaw: React.FC<Props> = (props) => {
 
     await dispatch(createComponentAction(formValues, activeNamespaceName));
     dispatch(setSuccessNotificationAction("Create component successfully"));
-    dispatch(push(`/applications/${activeNamespaceName}/components`));
+    dispatch(push(`/namespaces/${activeNamespaceName}/components`));
   };
 
   return (

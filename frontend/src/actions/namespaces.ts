@@ -7,8 +7,8 @@ export const setCurrentNamespaceAction = (namespace: string, redirect: boolean =
     if (redirect) {
       const pathname = window.location.pathname;
       const pathnameSplits = pathname.split("/");
-      // eg. "/applications/app1/components/component1/edit".split("/")
-      // => ["", "applications", "app1", "components", "component1", "edit"]
+      // eg. "/namespaces/app1/components/component1/edit".split("/")
+      // => ["", "namespaces", "app1", "components", "component1", "edit"]
       if (pathnameSplits[1] && pathnameSplits[2] && pathnameSplits[1] === "applications") {
         pathnameSplits[2] = namespace;
         dispatch(push(pathnameSplits.slice(0, 4).join("/")));

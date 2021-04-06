@@ -130,8 +130,8 @@ const DetailsRaw: React.FC<Props> = (props) => {
         c.pods?.forEach((p) => {
           p.warnings.forEach((w) => {
             warnings.push({
-              componentName: <Link href={`/applications/${activeNamespace?.name}/components/${c.name}`}>{c.name}</Link>,
-              podName: <Link href={`/applications/${activeNamespace?.name}/components/${c.name}`}>{p.name}</Link>,
+              componentName: <Link href={`/namespaces/${activeNamespace?.name}/components/${c.name}`}>{c.name}</Link>,
+              podName: <Link href={`/namespaces/${activeNamespace?.name}/components/${c.name}`}>{p.name}</Link>,
               message: <Typography color="error">{w.message}</Typography>,
             });
           });

@@ -83,24 +83,24 @@ export const KalmRoutes = (
           <Route exact path="/webhooks/keys/new" component={DeployAccessTokenNewPage} />
           <Route exact path="/webhooks/keys/:name" component={DeployAccessTokenDetailPage} />
 
-          <Route exact path="/applications" component={ApplicationListPage} />
-          <Route exact path="/applications/new" component={ApplicationNewPage} />
-          <Route exact path="/applications/:applicationName/" component={ComponentListPage} />
-          <Route exact path="/applications/:applicationName/metrics" component={ApplicationShowPage} />
-          <Route exact path="/applications/:applicationName/settings" component={ApplicationSettingsPage} />
+          <Route exact path="/namespaces" component={ApplicationListPage} />
+          <Route exact path="/namespaces/new" component={ApplicationNewPage} />
+          <Route exact path="/namespaces/:applicationName/" component={ComponentListPage} />
+          <Route exact path="/namespaces/:applicationName/metrics" component={ApplicationShowPage} />
+          <Route exact path="/namespaces/:applicationName/settings" component={ApplicationSettingsPage} />
 
           <Route exact path="/routes" component={RouteListPage} />
           <Route exact path="/routes/new" component={RouteNewPage} />
           <Route exact path="/routes/:name/edit" component={RouteEditPage} />
           <Route exact path="/routes/:name" component={RouteRedirectList} />
 
-          <Route exact path="/applications/:applicationName/components" component={ComponentListPage} />
-          <Route exact path="/applications/:applicationName/components/new" component={ComponentNewPage} />
-          <Route exact path="/applications/:applicationName/components/:name" component={ComponentShowPage} />
-          <Route exact path="/applications/:applicationName/components/:name/edit" component={ComponentEditPage} />
+          <Route exact path="/namespaces/:applicationName/components" component={ComponentListPage} />
+          <Route exact path="/namespaces/:applicationName/components/new" component={ComponentNewPage} />
+          <Route exact path="/namespaces/:applicationName/components/:name" component={ComponentShowPage} />
+          <Route exact path="/namespaces/:applicationName/components/:name/edit" component={ComponentEditPage} />
 
-          <Route exact path="/applications/:applicationName/logs" component={Log} />
-          <Route exact path="/applications/:applicationName/shells" component={Log} />
+          <Route exact path="/namespaces/:applicationName/logs" component={Log} />
+          <Route exact path="/namespaces/:applicationName/shells" component={Log} />
 
           <Route exact path="/domains" component={DomainListPage} />
           <Route exact path="/domains/new" component={DomainNewPage} />
