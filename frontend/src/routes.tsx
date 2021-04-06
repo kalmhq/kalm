@@ -16,10 +16,10 @@ import { ComponentListPage } from "pages/Components/List";
 import { ComponentNewPage } from "pages/Components/New";
 import { ComponentShowPage } from "pages/Components/Show";
 import { DiskListPage } from "pages/Disks/List";
+import { DomainConfigPage } from "pages/Domains/Config";
 import { DomainDetailPage } from "pages/Domains/Detail";
 import { DomainListPage } from "pages/Domains/List";
 import { DomainNewPage } from "pages/Domains/New";
-import { DomainConfigPage } from "pages/Domains/Config";
 import { LoadBalancerInfoPage } from "pages/LoadBalancer";
 import { MemberListPage } from "pages/Members";
 import { MemberPage } from "pages/Members/Details";
@@ -42,11 +42,12 @@ import { VersionPage } from "pages/Version";
 import { WebhookPage } from "pages/Webhook";
 import { DeployAccessTokenDetailPage } from "pages/Webhook/Detail";
 import { DeployAccessTokenNewPage } from "pages/Webhook/New";
-import { RequireAuthorized, RequireNotAuthorized } from "permission/Authorization";
+import { RequireNotAuthorized } from "permission/Authorization";
 import React from "react";
 import { Redirect, Route, Switch } from "react-router";
 
-const RequireAuthorizedDashboard = RequireAuthorized(DashboardLayout);
+// const RequireAuthorizedDashboard = RequireAuthorized(DashboardLayout);
+const RequireAuthorizedDashboard = DashboardLayout;
 
 export const KalmRoutes = (
   <Switch>

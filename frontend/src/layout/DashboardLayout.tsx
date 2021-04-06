@@ -1,9 +1,9 @@
 import { Box, LinearProgress } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
+import { DataLoader } from "hoc/DataLoader";
 import { WithData } from "hoc/withData";
 import { TutorialDrawer } from "pages/Tutorial";
-import { RequireAuthorized } from "permission/Authorization";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -87,10 +87,11 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
           </div>
           <TutorialDrawer />
           <WithData />
+          <DataLoader />
         </div>
       </ErrorBoundary>
     );
   }
 }
 
-export const DashboardLayout = withStyles(styles)(RequireAuthorized(connect(mapStateToProps)(DashboardLayoutRaw)));
+export const DashboardLayout = withStyles(styles)(connect(mapStateToProps)(DashboardLayoutRaw));
