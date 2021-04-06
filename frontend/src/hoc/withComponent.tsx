@@ -1,7 +1,7 @@
 import { Box } from "@material-ui/core";
 import hoistNonReactStatics from "hoist-non-react-statics";
-import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { BasePage } from "pages/BasePage";
+import { ApplicationSidebar } from "pages/Namespace/ApplicationSidebar";
 import React from "react";
 import { connect } from "react-redux";
 import { RouteComponentProps } from "react-router-dom";
