@@ -21,8 +21,6 @@ import { Field, Form, FormRenderProps, FormSpy, FormSpyRenderProps } from "react
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "store";
-import { FormTutorialHelper } from "tutorials/formValueToReduxStoreListener";
-import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import {
   ComponentLike,
@@ -71,7 +69,6 @@ const mapStateToProps = (state: RootState) => {
 
   return {
     registries: state.registries.registries,
-    tutorialState: state.tutorial,
     isSubmittingApplicationComponent: state.components.isSubmittingApplicationComponent,
     nodeLabels: state.nodes.labels,
     anchor,
@@ -601,7 +598,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                   return <Tab key={tab} label={tab} className={classes.hasError} />;
                 }
 
-                return <Tab key={tab} label={tab} tutorial-anchor-id={tab} />;
+                return <Tab key={tab} label={tab} />;
               })}
             </Tabs>
           );
@@ -754,7 +751,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { classes, _initialValues, onSubmit, form, tutorialState } = this.props;
+    const { classes, _initialValues, onSubmit, form } = this.props;
     const isEdit = !!_initialValues.name;
     return (
       <Form
@@ -763,24 +760,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         onSubmit={onSubmit}
         subscription={{ submitting: true, pristine: true, dirty: true }}
         keepDirtyOnReinitialize
-        validate={(values) => finalValidateOrNotBlockByTutorial(values, tutorialState, form)}
         mutators={{
           ...arrayMutators,
         }}
         render={({ handleSubmit }: RenderProps) => (
           <form onSubmit={handleSubmit} className={classes.root} id="component-form">
-            <FormTutorialHelper form={form} />
             <Prompt />
             <Grid container spacing={2}>
               <Grid item xs={12} sm={12} md={12}>
-                <KPanel
-                  title="Define Component"
-                  content={
-                    <Box p={2} tutorial-anchor-id="component-from-basic">
-                      {this.renderMain(isEdit)}
-                    </Box>
-                  }
-                />
+                <KPanel title="Define Component" content={<Box p={2}>{this.renderMain(isEdit)}</Box>} />
               </Grid>
             </Grid>
 

@@ -43,7 +43,7 @@ export const CertificateUploadForm: React.FC<Props> = (props) => {
         } = props;
 
         return (
-          <form onSubmit={handleSubmit} tutorial-anchor-id="certificate-form-upload">
+          <form onSubmit={handleSubmit}>
             <Box p={2}>
               <Prompt />
               <KPanel>

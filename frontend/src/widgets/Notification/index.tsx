@@ -1,5 +1,5 @@
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { SNACKBAR_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "layout/Constants";
+import { SNACKBAR_ZINDEX } from "layout/Constants";
 import { SnackbarProvider, useSnackbar } from "notistack";
 import React from "react";
 import { connect } from "react-redux";
@@ -26,7 +26,7 @@ const NotificationComponent = connect(getMessageFromState)(({ message }: ReturnT
 });
 
 const mapStateToProps = (state: RootState) => {
-  return { isTutorialDrawerOpen: state.tutorial.drawerOpen };
+  return {};
 };
 
 const styles = (theme: Theme) =>
@@ -40,25 +40,19 @@ const styles = (theme: Theme) =>
         duration: theme.transitions.duration.leavingScreen,
       }),
     },
-    anchorOriginBottomRightWhenTutorialOpen: {
-      marginRight: TUTORIAL_DRAWER_WIDTH,
-    },
   });
 
 export const Snackbar = connect(mapStateToProps)(
   withStyles(styles)(
     class extends React.PureComponent<ReturnType<typeof mapStateToProps> & WithStyles<typeof styles>> {
       public render() {
-        const { isTutorialDrawerOpen, classes } = this.props;
+        const { classes } = this.props;
 
         return (
           <SnackbarProvider
             classes={{
               containerAnchorOriginBottomRight: classes.containerRoot,
               root: classes.root,
-              anchorOriginBottomRight: isTutorialDrawerOpen
-                ? classes.anchorOriginBottomRightWhenTutorialOpen
-                : undefined,
             }}
             maxSnack={3}
             anchorOrigin={{

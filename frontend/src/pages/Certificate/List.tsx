@@ -256,24 +256,10 @@ const CertificateListPageRaw: React.FC<Props> = (props) => {
       secondHeaderRight={
         <>
           {/* <H6>Certificates</H6> */}
-          <CustomButton
-            color="primary"
-            variant="outlined"
-            size="small"
-            component={Link}
-            tutorial-anchor-id="add-certificate"
-            to="/certificates/new"
-          >
+          <CustomButton color="primary" variant="outlined" size="small" component={Link} to="/certificates/new">
             New Certificate
           </CustomButton>
-          <CustomButton
-            color="primary"
-            variant="outlined"
-            size="small"
-            component={Link}
-            tutorial-anchor-id="upload-certificate"
-            to="/certificates/upload"
-          >
+          <CustomButton color="primary" variant="outlined" size="small" component={Link} to="/certificates/upload">
             Upload Certificate
           </CustomButton>
         </>

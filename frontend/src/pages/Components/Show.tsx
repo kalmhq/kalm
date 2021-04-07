@@ -218,7 +218,6 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
 
         <H6 className={classes.secondHeaderRightItem}>Component {component.name}</H6>
         <Button
-          tutorial-anchor-id="edit-component"
           component={Link}
           color="primary"
           size="small"

@@ -4,7 +4,6 @@ import deepOrange from "@material-ui/core/colors/deepOrange";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { logoutAction } from "actions/auth";
 import { blinkTopProgressAction } from "actions/settings";
-import { closeTutorialDrawerAction, openTutorialDrawerAction } from "actions/tutorial";
 import { stopImpersonating } from "api/api";
 import { push } from "connected-react-router";
 import { withClusterInfo, WithClusterInfoProps } from "hoc/withClusterInfo";
@@ -17,7 +16,7 @@ import { TDispatch } from "types";
 import { SubjectTypeUser } from "types/member";
 import StringConstants from "utils/stringConstants";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { HelpIconNew, ImpersonateIcon, KalmIcon, KalmUserIconNew } from "widgets/Icon";
+import { ImpersonateIcon, KalmIcon, KalmUserIconNew } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
 
@@ -32,7 +31,6 @@ const mapStateToProps = (state: RootState) => {
 
   return {
     isOpenRootDrawer: state.settings.isOpenRootDrawer,
-    tutorialDrawerOpen: state.tutorial.drawerOpen,
     impersonation,
     impersonationType,
     activeNamespace,
@@ -210,21 +208,6 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     return <ThemeToggle />;
   };
 
-  renderTutorialIcon = () => {
-    const { tutorialDrawerOpen, dispatch, usingTheme } = this.props;
-    return (
-      <IconButtonWithTooltip
-        tooltipTitle={StringConstants.APP_TUTORIAL_TOOLTIPS}
-        aria-label={StringConstants.APP_TUTORIAL_TOOLTIPS}
-        onClick={(event: React.MouseEvent<HTMLElement>) => {
-          tutorialDrawerOpen ? dispatch(closeTutorialDrawerAction()) : dispatch(openTutorialDrawerAction());
-        }}
-      >
-        <HelpIconNew theme={usingTheme} />
-      </IconButtonWithTooltip>
-    );
-  };
-
   private renderBreadcrumbContent = (path: string, clusterName: string) => {
     switch (path) {
       case "":
@@ -315,7 +298,6 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             )}
 
             <Box className={classes.barAvatar}>{this.renderThemeIcon()}</Box>
-            <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
             <div className={classes.barAvatar}>{this.renderAuth()}</div>
           </div>
         </div>

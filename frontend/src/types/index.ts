@@ -19,7 +19,6 @@ import { RegistriesActions } from "./registry";
 import { ResourceActions } from "./resources";
 import { RouteActions } from "./route";
 import { ServiceActions } from "./service";
-import { TutorialActions } from "./tutorial";
 
 export type Actions =
   | RouterAction
@@ -33,7 +32,6 @@ export type Actions =
   | ServiceActions
   | VolumeActions
   | ClusterActions
-  | TutorialActions
   | ResourceActions
   | DebounceActions
   | SSOConfigActions

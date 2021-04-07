@@ -167,14 +167,6 @@ class LoadBalancerInfoRaw extends React.Component<Props, States> {
         ),
         content: "",
       },
-      {
-        title: (
-          <Link href="#" target="_blank">
-            Link to tutorial
-          </Link>
-        ),
-        content: "",
-      },
     ];
 
     return <InfoBox title={title} options={options}></InfoBox>;

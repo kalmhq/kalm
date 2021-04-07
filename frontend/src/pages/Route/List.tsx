@@ -296,14 +296,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     return (
       <BasePage
         secondHeaderRight={
-          <CustomButton
-            tutorial-anchor-id="add-route"
-            component={Link}
-            color="primary"
-            size="small"
-            variant="contained"
-            to={`/routes/new`}
-          >
+          <CustomButton component={Link} color="primary" size="small" variant="contained" to={`/routes/new`}>
             Add Route
           </CustomButton>
         }

@@ -179,7 +179,7 @@ class DeployAccessTokenDetailPageRaw extends React.PureComponent<Props> {
         aria-label="component form tabs"
       >
         {tabs.map((tab) => {
-          return <Tab key={tab} label={tab} tutorial-anchor-id={tab} />;
+          return <Tab key={tab} label={tab} />;
         })}
       </Tabs>
     );

@@ -195,14 +195,7 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
     return (
       <>
         {/* <H6>Private Docker Registries</H6> */}
-        <CustomButton
-          color="primary"
-          variant="contained"
-          size="small"
-          component={Link}
-          tutorial-anchor-id="add-certificate"
-          to="/cluster/pull-secrets/new"
-        >
+        <CustomButton color="primary" variant="contained" size="small" component={Link} to="/cluster/pull-secrets/new">
           New {pageObjectName}
         </CustomButton>
       </>
@@ -221,7 +214,6 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
             variant="contained"
             size="small"
             component={Link}
-            tutorial-anchor-id="add-certificate"
             to="/cluster/pull-secrets/new"
           >
             Add {pageObjectName}

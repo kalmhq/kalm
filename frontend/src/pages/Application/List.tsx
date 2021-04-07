@@ -230,14 +230,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
     return (
       <>
         {/* <H6>Applications</H6> */}
-        <CustomButton
-          tutorial-anchor-id="add-application"
-          component={Link}
-          color="primary"
-          size="small"
-          variant="contained"
-          to={`/applications/new`}
-        >
+        <CustomButton component={Link} color="primary" size="small" variant="contained" to={`/applications/new`}>
           + {sc.NEW_APP_BUTTON}
         </CustomButton>
         {/* <IconButtonWithTooltip

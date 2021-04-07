@@ -22,7 +22,7 @@ const DomainFormRaw: React.FC<Props> = (props) => {
     <Form<DomainCreation> onSubmit={onSubmit} initialValues={{ domain: "" }} keepDirtyOnReinitialize>
       {({ handleSubmit }) => {
         return (
-          <form onSubmit={handleSubmit} tutorial-anchor-id="domain-form" id="domain-form">
+          <form onSubmit={handleSubmit} id="domain-form">
             <KPanel>
               <Box p={2}>
                 <Grid container spacing={2}>

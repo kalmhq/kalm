@@ -195,24 +195,10 @@ const DomainListPageRaw: React.FunctionComponent<Props> = (props) => {
     <BasePage
       secondHeaderRight={
         <>
-          <CustomButton
-            color="primary"
-            variant="contained"
-            size="small"
-            component={Link}
-            tutorial-anchor-id="add-domain"
-            to="/domains/new"
-          >
+          <CustomButton color="primary" variant="contained" size="small" component={Link} to="/domains/new">
             New Domain
           </CustomButton>
-          <CustomButton
-            color="primary"
-            variant="contained"
-            size="small"
-            component={Link}
-            tutorial-anchor-id="add-domain"
-            to="/domains/acme"
-          >
+          <CustomButton color="primary" variant="contained" size="small" component={Link} to="/domains/acme">
             Manage ACME DNS server
           </CustomButton>
         </>

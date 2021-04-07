@@ -1,14 +1,12 @@
 import { Box, Grid } from "@material-ui/core";
 import { FinalSelectField } from "forms/Final/select";
 import { FormDataPreview } from "forms/Final/util";
-import { CERTIFICATE_FORM_ID } from "forms/formIDs";
 import { trimAndToLowerParse } from "forms/normalizer";
 import { ValidatorIsCommonOrWildcardDNS1123SubDomain } from "forms/validator";
 import React from "react";
 import { Field, Form } from "react-final-form";
 import { useSelector } from "react-redux";
 import { RootState } from "store";
-import { FormTutorialHelper } from "tutorials/formValueToReduxStoreListener";
 import { CertificateFormType } from "types/certificate";
 import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
@@ -37,9 +35,8 @@ const CertificateFormRaw: React.FC<Props> = (props) => {
     <Form onSubmit={onSubmit} initialValues={initialValues} keepDirtyOnReinitialize>
       {({ handleSubmit }) => {
         return (
-          <form onSubmit={handleSubmit} tutorial-anchor-id="certificate-form" id="certificate-form">
+          <form onSubmit={handleSubmit} id="certificate-form">
             <Box p={2}>
-              <FormTutorialHelper form={CERTIFICATE_FORM_ID} />
               <Prompt message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
               <KPanel
                 content={

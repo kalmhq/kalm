@@ -96,7 +96,6 @@ const ComponentRaw: React.FC<Props> = (props) => {
     return (
       <>
         <CustomButton
-          tutorial-anchor-id="add-component-button"
           component={Link}
           color="primary"
           size="small"

@@ -158,7 +158,7 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
       <KPanel
         title={"Component Status"}
         content={
-          <Box p={2} tutorial-anchor-id="component-from-pods-status">
+          <Box p={2}>
             <div className={classes.chartWrapperOpen}>
               <DoughnutChart
                 title={""}

@@ -13,8 +13,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useHistory } from "react-router";
 import { RootState } from "store";
 import { theme } from "theme/theme";
-import { FormTutorialHelper } from "tutorials/formValueToReduxStoreListener";
-import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { Application } from "types/application";
 import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
@@ -47,9 +45,8 @@ const ApplicationForm: React.FC<Props> = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
-  const { tutorialState, form } = useSelector((state: RootState) => {
+  const { form } = useSelector((state: RootState) => {
     return {
-      tutorialState: state.tutorial,
       form: APPLICATION_FORM_ID,
     };
   });
@@ -65,13 +62,11 @@ const ApplicationForm: React.FC<Props> = () => {
       initialValues={{ name: "" }}
       onSubmit={onSubmit}
       keepDirtyOnReinitialize
-      validate={(values) => finalValidateOrNotBlockByTutorial(values, tutorialState, form)}
       render={({ handleSubmit, values }: FormRenderProps<Application>) => (
-        <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">
-          <FormTutorialHelper form={form} />
+        <form onSubmit={handleSubmit} className={classes.root}>
           <KPanel
             content={
-              <Box p={2} tutorial-anchor-id="application-form-name-field">
+              <Box p={2}>
                 <Field
                   name="name"
                   label="App Name"
@@ -101,11 +96,7 @@ const ApplicationForm: React.FC<Props> = () => {
           <FormDataPreview />
 
           <Box pt={3} className={classes.displayFlex}>
-            <SubmitButton
-              tutorial-anchor-id="application-form-submit-button"
-              className={`${classes.submitButton}`}
-              id="add-application-submit-button"
-            >
+            <SubmitButton className={`${classes.submitButton}`} id="add-application-submit-button">
               Create App
             </SubmitButton>
           </Box>

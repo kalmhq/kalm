@@ -3,14 +3,13 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import clsx from "clsx";
 import { DataLoader } from "hoc/DataLoader";
 import { WithData } from "hoc/withData";
-import { TutorialDrawer } from "pages/Tutorial";
 import { RequireAuthorized } from "permission/Authorization";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "store";
 import { TDispatchProp } from "types";
 import { AppBarComponent } from "./AppBar";
-import { APP_BAR_HEIGHT, LEFT_SECTION_OPEN_WIDTH, TOP_PROGRESS_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "./Constants";
+import { APP_BAR_HEIGHT, LEFT_SECTION_OPEN_WIDTH, TOP_PROGRESS_ZINDEX } from "./Constants";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { RootDrawer } from "./RootDrawer";
 
@@ -32,7 +31,6 @@ const styles = (theme: Theme) => {
       display: "flex",
       flexDirection: "column",
       position: "relative",
-      marginRight: -1 * TUTORIAL_DRAWER_WIDTH,
 
       transition: theme.transitions.create("margin", {
         easing: theme.transitions.easing.sharp,
@@ -52,7 +50,6 @@ const styles = (theme: Theme) => {
 const mapStateToProps = (state: RootState) => {
   return {
     isShowTopProgress: state.settings.isShowTopProgress,
-    showTutorialDrawer: state.tutorial.drawerOpen,
   };
 };
 
@@ -64,13 +61,13 @@ interface Props
 
 class DashboardLayoutRaw extends React.PureComponent<Props> {
   render() {
-    const { classes, children, isShowTopProgress, showTutorialDrawer } = this.props;
+    const { classes, children, isShowTopProgress } = this.props;
     return (
       <ErrorBoundary>
         <div className={classes.root}>
           <div
             className={clsx(classes.mainContent, {
-              [classes.mainContentShift]: showTutorialDrawer,
+              [classes.mainContentShift]: false,
             })}
           >
             {isShowTopProgress ? <LinearProgress className={classes.progress} /> : null}
@@ -86,7 +83,6 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
               </Box>
             </Box>
           </div>
-          <TutorialDrawer />
           <WithData />
           <DataLoader />
         </div>

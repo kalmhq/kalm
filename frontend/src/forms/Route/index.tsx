@@ -7,7 +7,6 @@ import { FinalBoolCheckboxRender, FinalCheckboxGroupRender } from "forms/Final/c
 import { FinalRadioGroupRender } from "forms/Final/radio";
 import { FinalTextField } from "forms/Final/textfield";
 import { FormDataPreview } from "forms/Final/util";
-import { ROUTE_FORM_ID } from "forms/formIDs";
 import { NormalizePositiveNumber, stringArrayTrimAndToLowerCaseParse, stringArrayTrimParse } from "forms/normalizer";
 import { RouteDomains } from "forms/Route/Domains";
 import { TargetsPanel } from "forms/Route/targetsPanel";
@@ -19,8 +18,6 @@ import { FieldArray, FieldArrayRenderProps } from "react-final-form-arrays";
 import { useSelector } from "react-redux";
 import { Link as RouteLink } from "react-router-dom";
 import { RootState } from "store";
-import { FormTutorialHelper } from "tutorials/formValueToReduxStoreListener";
-import { finalValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { httpMethods, HttpRoute, methodsModeAll, methodsModeSpecific } from "types/route";
 import { arraysMatch } from "utils";
 import { includesForceHttpsDomain } from "utils/domain";
@@ -52,11 +49,10 @@ const schemaOptions = [
 
 const RouteFormRaw: React.FC<RouteFormProps> = (props) => {
   const { isEditing, initial, onSubmit } = props;
-  const { tutorialState, certificates } = useSelector((state: RootState) => {
+  const { certificates } = useSelector((state: RootState) => {
     const certificates = state.certificates.certificates;
 
     return {
-      tutorialState: state.tutorial,
       domains: state.domains.domains,
       certificates,
     };
@@ -179,9 +175,7 @@ const RouteFormRaw: React.FC<RouteFormProps> = (props) => {
 
     errors.schemes = ValidatorArrayNotEmpty(schemes as any);
 
-    return Object.keys(errors).length > 0
-      ? errors
-      : finalValidateOrNotBlockByTutorial(values, tutorialState, ROUTE_FORM_ID);
+    return errors;
   };
 
   //UX improvement: provide an intial target if there isn't one (this can probably be refactored)
@@ -220,7 +214,6 @@ const RouteFormRaw: React.FC<RouteFormProps> = (props) => {
 
         return (
           <form onSubmit={handleSubmit} id="route-form">
-            <FormTutorialHelper form={ROUTE_FORM_ID} />
             <Prompt />
             <Box>
               <Grid container spacing={2}>

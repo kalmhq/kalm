@@ -248,7 +248,6 @@ const RootDrawerRaw: React.FC<Props> = (props) => {
                     component={NavLink}
                     to={item.to}
                     key={item.text}
-                    tutorial-anchor-id={"first-level-sidebar-item-" + item.text.toLocaleLowerCase()}
                     selected={pathname.startsWith(item.to.split("?")[0])}
                   >
                     <ListItemIcon>
