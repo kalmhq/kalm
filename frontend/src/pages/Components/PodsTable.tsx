@@ -1,5 +1,4 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { loadApplicationAction } from "actions/application";
 import { loadComponentsAction } from "actions/component";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { blinkTopProgressAction } from "actions/settings";
@@ -103,7 +102,6 @@ const PodsTableRaw: React.FC<Props> = (props) => {
                 dispatch(setSuccessNotificationAction(`Delete pod ${pod.name} successfully`));
                 // reload
                 dispatch(loadComponentsAction(activeNamespaceName));
-                dispatch(loadApplicationAction(activeNamespaceName));
               } catch (e) {
                 dispatch(setErrorNotificationAction(e.response.data.message));
               }

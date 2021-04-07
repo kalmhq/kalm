@@ -1,4 +1,3 @@
-import { loadApplicationsAction } from "actions/application";
 import {
   loadCertificateAcmeServerAction,
   loadCertificateIssuersAction,
@@ -66,7 +65,6 @@ class WithDataRaw extends React.PureComponent<Props> {
     const { dispatch } = this.props;
 
     dispatch(loadRoutesAction()); // all namespaces
-    dispatch(loadApplicationsAction());
     dispatch(loadDeployAccessTokensAction());
     dispatch(loadProtectedEndpointAction());
     dispatch(loadRegistriesAction());

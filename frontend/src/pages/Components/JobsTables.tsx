@@ -1,4 +1,3 @@
-import { loadApplicationAction } from "actions/application";
 import { loadComponentsAction } from "actions/component";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { blinkTopProgressAction } from "actions/settings";
@@ -47,7 +46,6 @@ export const JobsTable: React.FC<Props> = (props) => {
                 dispatch(setSuccessNotificationAction(`Delete job ${job.name} successfully`));
                 // reload
                 dispatch(loadComponentsAction(activeNamespaceName));
-                dispatch(loadApplicationAction(activeNamespaceName));
               } catch (e) {
                 dispatch(setErrorNotificationAction(e.response.data.message));
               }
