@@ -1,9 +1,9 @@
-import { Actions } from "types";
-import { VariantType } from "notistack";
-import { SET_NOTIFICATION_MESSAGE } from "types/common";
 import produce from "immer";
+import { VariantType } from "notistack";
+import { Actions } from "types";
+import { SET_NOTIFICATION_MESSAGE } from "types/common";
 
-export type State = {
+type State = {
   message: string;
   variant: VariantType;
 };

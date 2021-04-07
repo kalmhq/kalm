@@ -20,7 +20,7 @@ import {
 } from "types/resources";
 import { addOrUpdateInArray, removeInArray, removeInArrayByName } from "./utils";
 
-export type State = {
+type State = {
   persistentVolumes: PersistentVolumes;
   storageClasses: StorageClasses;
   simpleOptions: VolumeOptions; // for simple workloads, including: Deployment, CronJob and DaemonSet

@@ -48,7 +48,7 @@ interface States {
 
 type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
-export class VolumesRaw extends React.Component<Props, States> {
+class VolumesRaw extends React.Component<Props, States> {
   constructor(props: Props) {
     super(props);
     this.state = {

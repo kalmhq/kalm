@@ -25,7 +25,7 @@ import {
 } from "types/resources";
 import { addOrUpdateInArray, isInArray, removeInArray, removeInArrayByName } from "./utils";
 
-export interface State {
+interface State {
   isLoading: boolean;
   isFirstLoaded: boolean;
   certificates: Certificate[];

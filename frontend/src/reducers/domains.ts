@@ -17,7 +17,7 @@ import {
 } from "types/resources";
 import { addOrUpdateInArray, removeInArray, removeInArrayByName } from "./utils";
 
-export interface State {
+interface State {
   isLoading: boolean;
   isFirstLoaded: boolean;
   domains: Domain[];

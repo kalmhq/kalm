@@ -46,15 +46,12 @@ import { RequireNotAuthorized } from "permission/Authorization";
 import React from "react";
 import { Redirect, Route, Switch } from "react-router-dom";
 
-// const RequireAuthorizedDashboard = RequireAuthorized(DashboardLayout);
-const RequireAuthorizedDashboard = DashboardLayout;
-
 export const KalmRoutes = (
   <Switch>
     <Route path="/404" component={Page404} />
     <Route path="/login" component={RequireNotAuthorized(Login)} />
     <Route path="/">
-      <RequireAuthorizedDashboard>
+      <DashboardLayout>
         <Switch>
           <Route exact path="/profile" component={ProfilePage} />
 
@@ -115,7 +112,7 @@ export const KalmRoutes = (
           <Route exact path="/certificates/:name" component={CertificateDetailPage} />
           <Route component={NoMatch} />
         </Switch>
-      </RequireAuthorizedDashboard>
+      </DashboardLayout>
     </Route>
   </Switch>
 );

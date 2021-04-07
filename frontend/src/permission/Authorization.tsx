@@ -15,7 +15,6 @@ const mapStateToProps = (state: RootState) => {
   const firstLoaded = auth.firstLoaded;
   const isLoading = auth.isLoading;
   const policies = auth.policies;
-
   return {
     isLoading,
     authorized,
@@ -33,9 +32,7 @@ interface Options {
   mustNotAuthorized?: boolean;
 }
 
-export const Authorized = ({ mustAuthorized, mustNotAuthorized }: Options) => (
-  WrappedComponent: React.ComponentType<any>,
-) => {
+const Authorized = ({ mustAuthorized, mustNotAuthorized }: Options) => (WrappedComponent: React.ComponentType<any>) => {
   const wrapper: React.ComponentType<Props> = class extends React.Component<Props> {
     componentDidMount() {
       const { firstLoaded } = this.props;

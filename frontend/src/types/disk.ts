@@ -15,7 +15,7 @@ export interface Disk {
 }
 export type PersistentVolumes = Disk[];
 
-export interface VolumeOption {
+interface VolumeOption {
   name: string;
   isInUse: boolean;
   componentNamespace?: string;
@@ -27,7 +27,7 @@ export interface VolumeOption {
 }
 export type VolumeOptions = VolumeOption[];
 
-export interface StorageClass {
+interface StorageClass {
   name: string;
   isManaged: boolean;
   docLink: string;
@@ -35,35 +35,35 @@ export interface StorageClass {
 }
 export type StorageClasses = StorageClass[];
 
-export interface LoadPersistentVolumesAction {
+interface LoadPersistentVolumesAction {
   type: typeof LOAD_PERSISTENT_VOLUMES;
   payload: {
     persistentVolumes: PersistentVolumes;
   };
 }
 
-export interface DeletePersistentVolumeAction {
+interface DeletePersistentVolumeAction {
   type: typeof DELETE_PERSISTENT_VOLUME;
   payload: {
     name: string;
   };
 }
 
-export interface LoadStorageClassesAction {
+interface LoadStorageClassesAction {
   type: typeof LOAD_STORAGE_CLASSES;
   payload: {
     storageClasses: StorageClasses;
   };
 }
 
-export interface LoadSimpleOptionsAction {
+interface LoadSimpleOptionsAction {
   type: typeof LOAD_SIMPLE_OPTIONS;
   payload: {
     simpleOptions: VolumeOptions;
   };
 }
 
-export interface LoadStatefulSetOptionsAction {
+interface LoadStatefulSetOptionsAction {
   type: typeof LOAD_STATEFULSET_OPTIONS;
   payload: {
     statefulSetOptions: VolumeOptions;

@@ -16,14 +16,14 @@ export const PublicRegistriesList = [
   "quay.io",
 ];
 
-export interface RepositoryTag {
+interface RepositoryTag {
   name: string;
   manifest: string;
   timeCreatedMs: string;
   timeUploadedMs: string;
 }
 
-export interface Repository {
+interface Repository {
   name: string;
   tags: RepositoryTag[];
 }
@@ -54,28 +54,28 @@ export const newEmptyRegistry = (): RegistryFormType => {
   };
 };
 
-export interface LoadRegistriesAction {
+interface LoadRegistriesAction {
   type: typeof LOAD_REGISTRIES_FULFILLED;
   payload: {
     registries: Registry[];
   };
 }
 
-export interface CreateRegistryAction {
+interface CreateRegistryAction {
   type: typeof CREATE_REGISTRY;
   payload: {
     registry: Registry;
   };
 }
 
-export interface UpdateRegistryAction {
+interface UpdateRegistryAction {
   type: typeof UPDATE_REGISTRY;
   payload: {
     registry: Registry;
   };
 }
 
-export interface DeleteRegistryAction {
+interface DeleteRegistryAction {
   type: typeof DELETE_REGISTRY;
   payload: {
     name: string;
@@ -89,7 +89,7 @@ export interface SetIsSubmittingRegistry {
   };
 }
 
-export interface RegistriesStateAction {
+interface RegistriesStateAction {
   type: typeof LOAD_REGISTRIES_PENDING | typeof LOAD_REGISTRIES_FAILED;
 }
 

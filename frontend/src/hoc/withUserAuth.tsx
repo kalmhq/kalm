@@ -1,5 +1,5 @@
 import React from "react";
-import { connect, useSelector } from "react-redux";
+import { connect } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "store";
 import { TDispatchProp } from "types";
@@ -26,7 +26,3 @@ export const withUserAuth = (WrappedComponent: React.ComponentType<any>) => {
 function getDisplayName(WrappedComponent: React.ComponentType<any>) {
   return WrappedComponent.displayName || WrappedComponent.name || "Component";
 }
-
-export const useAuth = () => {
-  return useSelector(mapStateToProps);
-};

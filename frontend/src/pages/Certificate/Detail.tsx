@@ -36,7 +36,7 @@ const mapStateToProps = (state: RootState) => {
 
 const styles = (theme: Theme) => createStyles({});
 
-export interface Props
+interface Props
   extends ReturnType<typeof mapStateToProps>,
     RouteComponentProps,
     WithStyles<typeof styles>,

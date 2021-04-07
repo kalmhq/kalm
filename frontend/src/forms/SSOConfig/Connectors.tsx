@@ -14,7 +14,7 @@ import {
 } from "types/sso";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
 
-export interface Props {}
+interface Props {}
 
 export const Connectors: React.FC<Props> = () => {
   return (

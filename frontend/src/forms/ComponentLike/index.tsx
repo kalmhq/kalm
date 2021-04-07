@@ -138,7 +138,7 @@ interface RawProps {
 
 interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-export interface Props extends RouteComponentProps, WithStyles<typeof styles>, ConnectedProps, RawProps, WithTheme {}
+interface Props extends RouteComponentProps, WithStyles<typeof styles>, ConnectedProps, RawProps, WithTheme {}
 
 interface State {}
 

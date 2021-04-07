@@ -219,7 +219,7 @@ export const Ports = () => {
   return <FieldArray name="ports" component={RenderPorts} validate={ValidatorPorts} />;
 };
 
-export const IngressHint = () => {
+const IngressHint = () => {
   return (
     <>
       <Link style={{ cursor: "pointer" }} href={"/routes"} target="_blank" rel="noopener noreferrer">

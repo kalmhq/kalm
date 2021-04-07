@@ -16,7 +16,7 @@ import {
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
 
-export interface State {
+interface State {
   isLoading: boolean;
   loaded: boolean;
   deployAccessTokens: DeployAccessToken[];

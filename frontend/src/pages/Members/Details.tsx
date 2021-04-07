@@ -3,7 +3,7 @@ import {
   createRoleBindingsAction,
   deleteAllRoleBindingsAction,
   deleteRoleBindingsAction,
-  updateRoleBindingsAction,
+  updateRoleBindingsAction
 } from "actions/user";
 import { impersonate } from "api/api";
 import { push } from "connected-react-router";
@@ -61,7 +61,7 @@ const clusterRoleOptions = [
   </MenuItem>,
 ];
 
-export const MemberPageRaw: React.FC<Props> = (props) => {
+const MemberPageRaw: React.FC<Props> = (props) => {
   const match = useRouteMatch<{ email: string }>();
   const email = match.params.email;
   const dispatch = useDispatch();

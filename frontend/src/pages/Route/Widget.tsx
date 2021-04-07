@@ -131,7 +131,7 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const RouteWidget = withStyles(styles)(connect(mapStateToProps)(RouteWidgetRaw));
+const RouteWidget = withStyles(styles)(connect(mapStateToProps)(RouteWidgetRaw));
 
 export const RouteWidgets = ({ routes, canEdit }: { routes: HttpRoute[]; canEdit: boolean }) => {
   return (

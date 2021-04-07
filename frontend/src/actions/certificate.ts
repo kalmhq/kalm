@@ -4,10 +4,7 @@ import {
   AcmeServerFormType,
   Certificate,
   CertificateFormType,
-  CertificateIssuer,
-  CertificateIssuerFormType,
   CREATE_CERTIFICATE,
-  CREATE_CERTIFICATE_ISSUER,
   DELETE_ACME_SERVER,
   DELETE_CERTIFICATE,
   dns01Mananged,
@@ -117,22 +114,6 @@ export const createCertificateAction = (
 
     dispatch({ type: CREATE_CERTIFICATE, payload: { certificate } });
     return certificate;
-  };
-};
-
-export const createCertificateIssuerAction = (
-  certificateIssuerForm: CertificateIssuerFormType,
-  isEdit?: boolean,
-): ThunkResult<Promise<void>> => {
-  return async (dispatch) => {
-    let certificateIssuer: CertificateIssuer;
-    try {
-      certificateIssuer = await api.createCertificateIssuer(certificateIssuerForm, isEdit);
-    } catch (e) {
-      throw e;
-    }
-
-    dispatch({ type: CREATE_CERTIFICATE_ISSUER, payload: { certificateIssuer } });
   };
 };
 

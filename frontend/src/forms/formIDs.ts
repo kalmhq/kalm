@@ -1,11 +1,4 @@
 export const APPLICATION_FORM_ID = "application";
 export const COMPONENT_FORM_ID = "component";
 export const CERTIFICATE_FORM_ID = "certificate";
-export const CERTIFICATE_UPLOAD_FORM_ID = "certificate-upload";
-export const ISSUER_FORM_ID = "issuer";
-export const REGISTRY_FORM_ID = "registry";
 export const ROUTE_FORM_ID = "route";
-export const SSO_CONFIG_FORM_ID = "sso";
-export const PROTECTED_ENDPOINT_ID = "protectedEndpoint";
-export const DEPLOY_ACCESS_TOKEN_ID = "deployAccessToken";
-export const DOMAIN_FORM_ID = "domain";

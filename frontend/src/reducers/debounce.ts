@@ -1,10 +1,10 @@
-import { Actions } from "types";
-import { SET_DEBOUNCING, SET_TIMER, DebouncesMap } from "types/debounce";
 import produce from "immer";
+import { Actions } from "types";
+import { DebouncesMap, SET_DEBOUNCING, SET_TIMER } from "types/debounce";
 
-export type State = DebouncesMap;
+type State = DebouncesMap;
 
-export let initialState: State = {};
+let initialState: State = {};
 
 const reducer = produce((state: State, action: Actions) => {
   switch (action.type) {

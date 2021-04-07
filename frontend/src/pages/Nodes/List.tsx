@@ -58,7 +58,7 @@ interface States {
 
 type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
-export class NodeListRaw extends React.Component<Props, States> {
+class NodeListRaw extends React.Component<Props, States> {
   constructor(props: Props) {
     super(props);
     this.state = {

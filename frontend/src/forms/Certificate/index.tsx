@@ -16,7 +16,7 @@ import { Body, Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import sc from "../../utils/stringConstants";
 
-export interface Props {
+interface Props {
   isEdit?: boolean;
   onSubmit: any;
   initialValues: CertificateFormType;

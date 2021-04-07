@@ -1,7 +1,7 @@
 import { getObjectListRequestUrl } from "api";
 import { Resources, StreamingEventType } from "../types";
 
-export const parseFirstTimeStreamingData = (data: string) => {
+const parseFirstTimeStreamingData = (data: string) => {
   const items = data.split("}\n{");
 
   if (items.length === 1) {
@@ -21,7 +21,7 @@ export const parseFirstTimeStreamingData = (data: string) => {
   });
 };
 
-export const parseStreamingData = <T>(dataString: string) => {
+const parseStreamingData = <T>(dataString: string) => {
   const data: { type: StreamingEventType; object: T } = JSON.parse(dataString);
   return data;
 };

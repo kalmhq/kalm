@@ -18,7 +18,7 @@ import {
   UPDATE_ROUTE_FULFILLED,
 } from "types/route";
 
-export type State = {
+type State = {
   isLoading: boolean;
   isFirstLoaded: boolean;
   httpRoutes: HttpRoute[];

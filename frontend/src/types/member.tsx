@@ -11,7 +11,6 @@ export const DELETE_ROLE_BINDINGS_FAILED = "DELETE_ROLE_BINDINGS_FAILED";
 export const DELETE_ROLE_BINDINGS_FULFILLED = "DELETE_ROLE_BINDINGS_FULFILLED";
 
 export const SubjectTypeUser = "user";
-export const SubjectTypeGroup = "group";
 
 export interface RoleBinding {
   name: string;
@@ -22,18 +21,7 @@ export interface RoleBinding {
   expiredAtTimestamp: number;
 }
 
-export const newEmptyRoleBinding = (): RoleBinding => {
-  return {
-    name: "",
-    namespace: "",
-    subject: "",
-    subjectType: SubjectTypeUser,
-    role: "",
-    expiredAtTimestamp: 1,
-  };
-};
-
-export interface RoleBindingRequestStatusAction {
+interface RoleBindingRequestStatusAction {
   type:
     | typeof LOAD_ROLE_BINDINGS_PENDING
     | typeof LOAD_ROLE_BINDINGS_FAILED
@@ -43,18 +31,18 @@ export interface RoleBindingRequestStatusAction {
     | typeof DELETE_ROLE_BINDINGS_FAILED;
 }
 
-export interface LoadRoleBindingsAction {
+interface LoadRoleBindingsAction {
   type: typeof LOAD_ROLE_BINDINGS_FULFILLED;
   payload: {
     roleBindings: RoleBinding[];
   };
 }
 
-export interface CreateRoleBindingAction {
+interface CreateRoleBindingAction {
   type: typeof CREATE_ROLE_BINDINGS_FULFILLED;
 }
 
-export interface DeleteRoleBindingAction {
+interface DeleteRoleBindingAction {
   type: typeof DELETE_ROLE_BINDINGS_FULFILLED;
 }
 

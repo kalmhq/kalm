@@ -12,7 +12,7 @@ export interface GoogleDNSCNAMEResponse {
   type: number;
 }
 
-export interface GoogleDNSNSResponse {
+interface GoogleDNSNSResponse {
   TTL: number;
   data: string;
   name: string;

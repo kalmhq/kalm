@@ -125,7 +125,7 @@ export const isComponentFormFieldValueEqualTo = (rootState: RootState, field: st
   return isFormFieldValueEqualTo(rootState, COMPONENT_FORM_ID, field, value);
 };
 
-export const isCertificateFormFieldValueEqualTo = (rootState: RootState, field: string, value: any) => {
+const isCertificateFormFieldValueEqualTo = (rootState: RootState, field: string, value: any) => {
   return isFormFieldValueEqualTo(rootState, CERTIFICATE_FORM_ID, field, value);
 };
 

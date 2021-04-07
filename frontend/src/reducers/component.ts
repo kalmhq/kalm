@@ -20,7 +20,7 @@ import {
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
 
-export type State = {
+type State = {
   components: { [key: string]: ApplicationComponentDetails[] }; // key applicationName
   isListLoading: boolean;
   isListFirstLoaded: boolean;

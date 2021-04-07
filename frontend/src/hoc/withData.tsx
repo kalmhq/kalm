@@ -41,7 +41,7 @@ import {
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
 
-export interface WatchResMessage {
+interface WatchResMessage {
   namespace: string;
   kind: string;
   action: ResourceActionType;

@@ -11,7 +11,7 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-export interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp {
+interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp {
   form: string;
   values: any;
 }

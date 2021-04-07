@@ -1,5 +1,3 @@
-import React from "react";
-import clsx from "clsx";
 import {
   Box,
   Button,
@@ -12,11 +10,13 @@ import {
   WithStyles,
   withStyles,
 } from "@material-ui/core";
-import { primaryColor } from "theme/theme";
 import { makeStyles } from "@material-ui/core/styles";
-import CloseIcon from "@material-ui/icons/Close";
 import CheckIcon from "@material-ui/icons/Check";
+import CloseIcon from "@material-ui/icons/Close";
+import clsx from "clsx";
+import React from "react";
 import { FormSpy } from "react-final-form";
+import { primaryColor } from "theme/theme";
 import { AddIcon } from "widgets/Icon";
 
 const customizedButtonStyle = (theme: Theme) => {
@@ -54,7 +54,7 @@ const customizedButtonStyle = (theme: Theme) => {
   });
 };
 
-export const ButtonWhite = (props: ButtonProps) => {
+const ButtonWhite = (props: ButtonProps) => {
   return (
     <Box boxShadow={3} m={0} p={0} style={{ width: "fit-content", borderRadius: 5 }}>
       <Button size="small" style={{ paddingLeft: 20, paddingRight: 20 }} color="primary" {...props}>
@@ -64,7 +64,7 @@ export const ButtonWhite = (props: ButtonProps) => {
   );
 };
 
-export const ButtonGrey = (props: ButtonProps) => {
+const ButtonGrey = (props: ButtonProps) => {
   return (
     <Button
       variant="contained"
@@ -126,7 +126,7 @@ export const SubmitButton = (props: SubmitButtonProps) => {
   );
 };
 
-export const RaisedButton = (props: RaisedButtonProps) => {
+const RaisedButton = (props: RaisedButtonProps) => {
   return (
     <CustomizedButton variant="contained" {...props}>
       {props.children}

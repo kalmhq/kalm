@@ -4,7 +4,7 @@ import { Actions } from "types";
 import { LOGOUT } from "types/common";
 import { SET_CURRENT_NAMESPACE } from "types/namespace";
 
-export type State = {
+type State = {
   active: string;
 };
 

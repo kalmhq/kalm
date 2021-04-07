@@ -166,7 +166,7 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
   }
 }
 
-export const SmallLineChart = withStyles(smallLineChartStyles)(withTheme(SmallLineChartRaw));
+const SmallLineChart = withStyles(smallLineChartStyles)(withTheme(SmallLineChartRaw));
 
 const lineChartStyles = (theme: Theme) =>
   createStyles({
@@ -307,7 +307,7 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
   }
 }
 
-export const LineChart = withStyles(lineChartStyles)(LineChartRaw);
+const LineChart = withStyles(lineChartStyles)(LineChartRaw);
 
 export const BigCPULineChart = (props: Pick<LineChartProps, "data" | "yAxesWidth" | "filter">) => {
   return (

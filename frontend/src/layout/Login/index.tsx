@@ -74,7 +74,7 @@ interface Props extends WithStyles<typeof styles> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
-export class LoginRaw extends React.PureComponent<Props, State> {
+class LoginRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {

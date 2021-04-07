@@ -10,7 +10,7 @@ import { DNS01ChallengeLink } from "widgets/Link";
 import { SuccessColorText } from "widgets/Text";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 
-export interface Props {
+interface Props {
   cert: Certificate;
 }
 

@@ -4,10 +4,6 @@ export const LOAD_CLUSTER_INFO_PENDING = "LOAD_CLUSTER_INFO_PENDING";
 export const LOAD_CLUSTER_INFO_FULFILLED = "LOAD_CLUSTER_INFO_FULFILLED";
 export const LOAD_CLUSTER_INFO_FAILED = "LOAD_CLUSTER_INFO_FAILED";
 
-export const LOAD_EXTRA_INFO_PENDING = "LOAD_EXTRA_INFO_PENDING";
-export const LOAD_EXTRA_INFO_FULFILLED = "LOAD_EXTRA_INFO_FULFILLED";
-export const LOAD_EXTRA_INFO_FAILED = "LOAD_EXTRA_INFO_FAILED";
-
 export interface ClusterInfo {
   clusterName: string;
   ingressIP: string;
@@ -38,7 +34,7 @@ export interface ClusterInfo {
   };
 }
 
-export type TemporaryAdmin = {
+type TemporaryAdmin = {
   username: string;
   password: string;
   email: string;
@@ -50,12 +46,12 @@ export type InitializeClusterResponse = {
   sso: SSOConfig;
 };
 
-export interface LoadClusterInfoFulfilledAction {
+interface LoadClusterInfoFulfilledAction {
   type: typeof LOAD_CLUSTER_INFO_FULFILLED;
   payload: ClusterInfo;
 }
 
-export interface LoadClusterInfoStatusAction {
+interface LoadClusterInfoStatusAction {
   type: typeof LOAD_CLUSTER_INFO_PENDING | typeof LOAD_CLUSTER_INFO_FAILED;
 }
 

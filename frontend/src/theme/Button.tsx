@@ -29,7 +29,7 @@ interface ICButton extends StandardProps<ButtonProps, ClassKey> {
   to?: any;
 }
 
-export const CustomButton = ({ children, ...rest }: ICButton) => {
+const CustomButton = ({ children, ...rest }: ICButton) => {
   const classes = useStyles();
   return (
     <Button {...rest} disableElevation variant="contained" className={classes.root}>

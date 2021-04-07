@@ -1,5 +1,4 @@
 import { Box, CircularProgress } from "@material-ui/core";
-import HelpIcon from "@material-ui/icons/Help";
 import WarningIcon from "@material-ui/icons/Warning";
 import React from "react";
 import { CheckCircleIcon, ErrorIcon } from "./Icon";
@@ -42,16 +41,6 @@ export const ErrorBadge = (props: { text?: string }) => {
   return (
     <Box display="inline-flex" alignItems="center">
       <ErrorIcon />
-      {props.text && <Spacer />}
-      {props.text}
-    </Box>
-  );
-};
-
-export const UnknownBadge = (props: { text?: string }) => {
-  return (
-    <Box display="inline-flex" alignItems="center">
-      <HelpIcon color="disabled" />
       {props.text && <Spacer />}
       {props.text}
     </Box>

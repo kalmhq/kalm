@@ -1,10 +1,5 @@
 import { sizeStringToGi, sizeStringToMi, sizeStringToNumber } from "utils/sizeConv";
 
-export const NormalizeNumber = (value: string): number | any => {
-  const integerValue = parseInt(value, 10);
-  return isNaN(integerValue) ? null : integerValue;
-};
-
 export const NormalizePositiveNumber = (value?: number | string): any => {
   if (value === undefined) {
     return;
@@ -47,39 +42,6 @@ export const stringArrayTrimParse = (values: string[]) => {
 
 export const stringArrayTrimAndToLowerCaseParse = (values: string[]) => {
   return values.map((x) => x.trim().toLowerCase()).filter((x) => !!x);
-};
-
-export const NormalizeString = (value: string) => {
-  return value.trim();
-};
-
-export const NormalizeBoolean = (value: string): boolean => {
-  return !!value;
-};
-
-export const NormalizeHosts = (values: string[] | string, previousValue: string[]): string[] => {
-  // only if no tags in autocomplete but unsubmit text in input field
-
-  let res;
-  if (!Array.isArray(values)) {
-    res = previousValue;
-  } else {
-    res = values;
-  }
-  // console.log("res", res);
-  return res;
-};
-
-export const NormalizeNumberOrAlphabet = (value: string): string | number => {
-  const portInteger = parseInt(value, 10);
-  if (isNaN(portInteger) && portInteger > 0) {
-    return portInteger;
-  } else {
-    if (value.match(/^([a-zA-Z]*)$/)) {
-      return value;
-    }
-  }
-  return "";
 };
 
 export const diskSizeFormat = (value: any) => {
@@ -156,7 +118,7 @@ export const cpuParse = (value: any) => {
   return valueNum + "m";
 };
 
-export const toLowerCaseStringParse = (value: string) => {
+const toLowerCaseStringParse = (value: string) => {
   if (!value) return value;
   return value.toLowerCase();
 };
@@ -170,7 +132,7 @@ interface StringParser {
   (value: string): string;
 }
 
-export const combineParsers = function (...fns: StringParser[]): StringParser {
+const combineParsers = function (...fns: StringParser[]): StringParser {
   return function (value: string) {
     for (let i = 0; i < fns.length; i++) {
       value = fns[i](value);

@@ -6,7 +6,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import { TransitionHandlerProps } from "@material-ui/core/transitions";
 import React from "react";
 
-export interface ConfirmDialogProps extends TransitionHandlerProps {
+interface ConfirmDialogProps extends TransitionHandlerProps {
   content: React.ReactNode;
   title: React.ReactNode;
 

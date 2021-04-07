@@ -143,7 +143,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-export const generateQueryForPods = (namespace: string, podNames: [string, string][], active?: [string, string]) => {
+const generateQueryForPods = (namespace: string, podNames: [string, string][], active?: [string, string]) => {
   const search = {
     pods: podNames.length > 0 ? podNames : undefined,
     active: active || undefined,
@@ -161,7 +161,7 @@ export const getPodLogQuery = (namespace: string, pod: PodStatus): string => {
   return generateQueryForPods(namespace, [[pod.name, containerName]], [pod.name, containerName]);
 };
 
-export class LogStream extends React.PureComponent<Props, State> {
+class LogStream extends React.PureComponent<Props, State> {
   private ws: ReconnectingWebSocket;
   private wsQueueMessages: any[] = [];
   private terminals: Map<string, XtermRaw> = new Map();

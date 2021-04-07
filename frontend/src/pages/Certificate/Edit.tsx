@@ -34,7 +34,7 @@ const styles = (theme: Theme) =>
     root: {},
   });
 
-export interface Props extends WithStyles<typeof styles>, TDispatchProp, ReturnType<typeof mapStateToProps> {}
+interface Props extends WithStyles<typeof styles>, TDispatchProp, ReturnType<typeof mapStateToProps> {}
 
 const CertificateEditRaw: React.FC<Props> = (props) => {
   const submit = async (certificate: CertificateFormType) => {

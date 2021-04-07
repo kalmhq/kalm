@@ -20,7 +20,7 @@ interface TutorialConfigItem {
   factory: TutorialFactory;
 }
 
-export interface TutorialConfig {
+interface TutorialConfig {
   name: string;
   items: TutorialConfigItem[];
 }
@@ -49,7 +49,7 @@ export interface TutorialHighlight {
   triggeredByState?(state: RootState): boolean;
 }
 
-export interface TutorialStep {
+interface TutorialStep {
   name: string;
   description: React.ReactNode;
   error?: boolean;

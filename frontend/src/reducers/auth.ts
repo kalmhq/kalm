@@ -8,7 +8,7 @@ import {
   SET_AUTH_TOKEN,
 } from "types/common";
 
-export type State = {
+type State = {
   firstLoaded: boolean;
   isLoading: boolean;
   authorized: boolean;

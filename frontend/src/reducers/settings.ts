@@ -11,7 +11,7 @@ export interface SettingObject {
   usingTheme: string;
 }
 
-export type State = SettingObject;
+type State = SettingObject;
 
 const initialState: State = {
   isDisplayingHelpers: window.localStorage.getItem("isDisplayingHelpers") === "true",

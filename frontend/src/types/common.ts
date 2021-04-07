@@ -8,7 +8,7 @@ export const LOAD_LOGIN_STATUS_PENDING = "LOAD_LOGIN_STATUS_PENDING";
 export const LOAD_LOGIN_STATUS_FULFILLED = "LOAD_LOGIN_STATUS_FULFILLED";
 export const LOAD_LOGIN_STATUS_FAILED = "LOAD_LOGIN_STATUS_FAILED";
 export const SET_AUTH_TOKEN = "SET_AUTH_TOKEN";
-export const SET_AUTH_METHODS = "SET_AUTH_METHODS";
+const SET_AUTH_METHODS = "SET_AUTH_METHODS";
 export const LOGOUT = "LOGOUT";
 
 export const SET_NOTIFICATION_MESSAGE = "SET_NOTIFICATION_MESSAGE";
@@ -20,16 +20,16 @@ export const OPEN_CONTROLLED_DIALOG = "OPEN_CONTROLLED_DIALOG";
 export const CLOSE_CONTROLLED_DIALOG = "CLOSE_CONTROLLED_DIALOG";
 export const CLEAR_CONTROLLED_DIALOG_DATA = "CLEAR_CONTROLLED_DIALOG_DATA";
 
-export const EnvTypeExternal = "external";
-export const EnvTypeStatic = "static";
-export const EnvTypeLinked = "linked";
+const EnvTypeExternal = "external";
+const EnvTypeStatic = "static";
+const EnvTypeLinked = "linked";
 
 export type ControlledDialogParams<T> = {
   open: boolean;
   data: T;
 };
 
-export type MetricItem = {
+type MetricItem = {
   x: number;
   y: number;
 };
@@ -42,18 +42,14 @@ export type Metrics = {
   memory: MetricList;
 };
 
-export const StatusTypeRunning = "RUNNING";
-export const StatusTypePending = "PENDING";
-export const StatusTypeCreating = "CREATING";
-export const StatusTypeError = "Error";
+const StatusTypeRunning = "RUNNING";
+const StatusTypePending = "PENDING";
+const StatusTypeCreating = "CREATING";
+const StatusTypeError = "Error";
 
-export type Status =
-  | typeof StatusTypeRunning
-  | typeof StatusTypePending
-  | typeof StatusTypeCreating
-  | typeof StatusTypeError;
+type Status = typeof StatusTypeRunning | typeof StatusTypePending | typeof StatusTypeCreating | typeof StatusTypeError;
 
-export interface SetNotificationMessageAction {
+interface SetNotificationMessageAction {
   type: typeof SET_NOTIFICATION_MESSAGE;
   payload: {
     message: string;
@@ -66,21 +62,21 @@ export interface SetSettingsAction {
   payload: Partial<SettingObject>;
 }
 
-export interface InitControlledDialogAction {
+interface InitControlledDialogAction {
   type: typeof INIT_CONTROLLED_DIALOG;
   payload: {
     dialogID: string;
   };
 }
 
-export interface DestroyControlledDialogAction {
+interface DestroyControlledDialogAction {
   type: typeof DESTROY_CONTROLLED_DIALOG;
   payload: {
     dialogID: string;
   };
 }
 
-export interface OpenControlledDialogAction {
+interface OpenControlledDialogAction {
   type: typeof OPEN_CONTROLLED_DIALOG;
   payload: {
     dialogID: string;
@@ -88,39 +84,39 @@ export interface OpenControlledDialogAction {
   };
 }
 
-export interface CloseControlledDialogAction {
+interface CloseControlledDialogAction {
   type: typeof CLOSE_CONTROLLED_DIALOG;
   payload: {
     dialogID: string;
   };
 }
 
-export interface ClearControlledDialogAction {
+interface ClearControlledDialogAction {
   type: typeof CLEAR_CONTROLLED_DIALOG_DATA;
   payload: {
     dialogID: string;
   };
 }
 
-export interface LoadLoginStatusAction {
+interface LoadLoginStatusAction {
   type: typeof LOAD_LOGIN_STATUS_FULFILLED;
   payload: {
     loginStatus: LoginStatus;
   };
 }
 
-export interface SetAuthTokenAction {
+interface SetAuthTokenAction {
   type: typeof SET_AUTH_TOKEN;
   payload: {
     token: string;
   };
 }
 
-export interface LogoutAction {
+interface LogoutAction {
   type: typeof LOGOUT;
 }
 
-export interface LoadStatusAction {
+interface LoadStatusAction {
   type: typeof LOAD_LOGIN_STATUS_FAILED | typeof LOAD_LOGIN_STATUS_PENDING;
 }
 

@@ -21,7 +21,7 @@ export interface DomainCreation {
   domain: string;
 }
 
-export interface DomainRequestStatusAction {
+interface DomainRequestStatusAction {
   type:
     | typeof LOAD_DOMAINS_PENDING
     | typeof LOAD_DOMAINS_FAILED
@@ -31,21 +31,21 @@ export interface DomainRequestStatusAction {
     | typeof DELETE_DOMAIN_FAILED;
 }
 
-export interface LoadDomainsAction {
+interface LoadDomainsAction {
   type: typeof LOAD_DOMAINS_FULFILLED;
   payload: {
     domains: Domain[];
   };
 }
 
-export interface CreateDomainAction {
+interface CreateDomainAction {
   type: typeof CREATE_DOMAIN_FULFILLED;
   payload: {
     domain: Domain;
   };
 }
 
-export interface DeleteDomainAction {
+interface DeleteDomainAction {
   type: typeof DELETE_DOMAIN_FULFILLED;
   payload: {
     name: string;

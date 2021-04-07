@@ -12,41 +12,41 @@ export const UPDATE_SSO_CONFIG_FULFILLED = "UPDATE_SSO_CONFIG_FULFILLED";
 export const UPDATE_SSO_CONFIG_PENDING = "UPDATE_SSO_CONFIG_PENDING";
 export const UPDATE_SSO_CONFIG_FAILED = "UPDATE_SSO_CONFIG_FAILED";
 
-export const DELETE_SSO_CONFIG_FULFILLED = "DELETE_SSO_CONFIG_FULFILLED";
-export const DELETE_SSO_CONFIG_PENDING = "DELETE_SSO_CONFIG_PENDING";
-export const DELETE_SSO_CONFIG_FAILED = "DELETE_SSO_CONFIG_FAILED";
+const DELETE_SSO_CONFIG_FULFILLED = "DELETE_SSO_CONFIG_FULFILLED";
+const DELETE_SSO_CONFIG_PENDING = "DELETE_SSO_CONFIG_PENDING";
+const DELETE_SSO_CONFIG_FAILED = "DELETE_SSO_CONFIG_FAILED";
 
 export const LOAD_PROTECTED_ENDPOINTS_FULFILLED = "LOAD_PROTECTED_ENDPOINTS_FULFILLED";
 export const LOAD_PROTECTED_ENDPOINTS_PENDING = "LOAD_PROTECTED_ENDPOINTS_PENDING";
 export const LOAD_PROTECTED_ENDPOINTS_FAILED = "LOAD_PROTECTED_ENDPOINTS_FAILED";
 
-export const CREATE_PROTECTED_ENDPOINT_FULFILLED = "CREATE_PROTECTED_ENDPOINT_FULFILLED";
-export const CREATE_PROTECTED_ENDPOINT_PENDING = "CREATE_PROTECTED_ENDPOINT_PENDING";
-export const CREATE_PROTECTED_ENDPOINT_FAILED = "CREATE_PROTECTED_ENDPOINT_FAILED";
+const CREATE_PROTECTED_ENDPOINT_FULFILLED = "CREATE_PROTECTED_ENDPOINT_FULFILLED";
+const CREATE_PROTECTED_ENDPOINT_PENDING = "CREATE_PROTECTED_ENDPOINT_PENDING";
+const CREATE_PROTECTED_ENDPOINT_FAILED = "CREATE_PROTECTED_ENDPOINT_FAILED";
 
-export const UPDATE_PROTECTED_ENDPOINT_FULFILLED = "UPDATE_PROTECTED_ENDPOINT_FULFILLED";
-export const UPDATE_PROTECTED_ENDPOINT_PENDING = "UPDATE_PROTECTED_ENDPOINT_PENDING";
-export const UPDATE_PROTECTED_ENDPOINT_FAILED = "UPDATE_PROTECTED_ENDPOINT_FAILED";
+const UPDATE_PROTECTED_ENDPOINT_FULFILLED = "UPDATE_PROTECTED_ENDPOINT_FULFILLED";
+const UPDATE_PROTECTED_ENDPOINT_PENDING = "UPDATE_PROTECTED_ENDPOINT_PENDING";
+const UPDATE_PROTECTED_ENDPOINT_FAILED = "UPDATE_PROTECTED_ENDPOINT_FAILED";
 
-export const DELETE_PROTECTED_ENDPOINT_FULFILLED = "DELETE_PROTECTED_ENDPOINT_FULFILLED";
-export const DELETE_PROTECTED_ENDPOINT_PENDING = "DELETE_PROTECTED_ENDPOINT_PENDING";
-export const DELETE_PROTECTED_ENDPOINT_FAILED = "DELETE_PROTECTED_ENDPOINT_FAILED";
+const DELETE_PROTECTED_ENDPOINT_FULFILLED = "DELETE_PROTECTED_ENDPOINT_FULFILLED";
+const DELETE_PROTECTED_ENDPOINT_PENDING = "DELETE_PROTECTED_ENDPOINT_PENDING";
+const DELETE_PROTECTED_ENDPOINT_FAILED = "DELETE_PROTECTED_ENDPOINT_FAILED";
 
-export interface LoadProtectedEndpointsAction {
+interface LoadProtectedEndpointsAction {
   type: typeof LOAD_PROTECTED_ENDPOINTS_FULFILLED;
   payload: ProtectedEndpoint[];
 }
 
-export interface DeleteProtectedEndpointAction {
+interface DeleteProtectedEndpointAction {
   type: typeof DELETE_PROTECTED_ENDPOINT_FULFILLED;
 }
 
-export interface CreateProtectedEndpointAction {
+interface CreateProtectedEndpointAction {
   type: typeof CREATE_PROTECTED_ENDPOINT_FULFILLED;
   payload: ProtectedEndpoint;
 }
 
-export interface UpdateProtectedEndpointAction {
+interface UpdateProtectedEndpointAction {
   type: typeof UPDATE_PROTECTED_ENDPOINT_FULFILLED;
   payload: ProtectedEndpoint;
 }
@@ -58,37 +58,26 @@ export interface ProtectedEndpoint {
   ports?: number[];
   groups?: string[];
 }
-
-export const newEmptyProtectedEndpoint = (): ProtectedEndpoint => {
-  return {
-    name: "",
-    namespace: "",
-    endpointName: "",
-    groups: [],
-    ports: [],
-  };
-};
-
-export interface LoadSSOConfigAction {
+interface LoadSSOConfigAction {
   type: typeof LOAD_SSO_CONFIG_FULFILLED;
   payload: SSOConfig | null;
 }
 
-export interface DeleteSSOConfigAction {
+interface DeleteSSOConfigAction {
   type: typeof DELETE_SSO_CONFIG_FULFILLED;
 }
 
-export interface CreateSSOConfigAction {
+interface CreateSSOConfigAction {
   type: typeof CREATE_SSO_CONFIG_FULFILLED;
   payload: SSOConfig;
 }
 
-export interface UpdateSSOConfigAction {
+interface UpdateSSOConfigAction {
   type: typeof UPDATE_SSO_CONFIG_FULFILLED;
   payload: SSOConfig;
 }
 
-export interface SSOConfigsStateAction {
+interface SSOConfigsStateAction {
   type:
     | typeof LOAD_SSO_CONFIG_PENDING
     | typeof LOAD_SSO_CONFIG_FAILED
@@ -124,7 +113,7 @@ export type SSO_CONNECTOR_TYPE = string;
 export const SSO_CONNECTOR_TYPE_GITHUB: SSO_CONNECTOR_TYPE = "github";
 export const SSO_CONNECTOR_TYPE_GITLAB: SSO_CONNECTOR_TYPE = "gitlab";
 
-export interface GitlabConfig {
+interface GitlabConfig {
   baseURL: string;
   clientID: string;
   clientSecret: string;
@@ -136,7 +125,7 @@ export interface GithubOrg {
   teams: string[];
 }
 
-export interface GithubConfig {
+interface GithubConfig {
   clientID: string;
   clientSecret: string;
   orgs: GithubOrg[];

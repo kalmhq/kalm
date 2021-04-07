@@ -11,7 +11,7 @@ import {
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
 
-export type State = {
+type State = {
   isLoading: boolean;
   isFirstLoaded: boolean;
   metrics: Metrics;

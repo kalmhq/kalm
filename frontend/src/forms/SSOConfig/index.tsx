@@ -47,7 +47,7 @@ interface OwnProps {
   initial: SSOConfig;
 }
 
-export interface Props extends OwnProps {}
+interface Props extends OwnProps {}
 
 const SSOConfigFormRaw: React.FC<Props> = (props) => {
   const classes = useStyles();

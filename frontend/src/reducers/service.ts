@@ -10,7 +10,7 @@ import {
 } from "types/resources";
 import { LOAD_SERVICES_FAILED, LOAD_SERVICES_FULFILLED, LOAD_SERVICES_PENDING, Service } from "types/service";
 
-export type State = {
+type State = {
   isLoading: boolean;
   isFirstLoaded: boolean;
   services: Service[];

@@ -20,7 +20,7 @@ import {
 } from "types/resources";
 import { addOrUpdateInArray, isInArray, removeInArray, removeInArrayByName } from "./utils";
 
-export type State = {
+type State = {
   isLoading: boolean;
   isFirstLoaded: boolean;
   isSubmittingRegistry: boolean;

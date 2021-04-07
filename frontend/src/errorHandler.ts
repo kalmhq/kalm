@@ -1,5 +1,4 @@
 import { setErrorNotificationAction } from "actions/notification";
-import createThunkErrorHandlerMiddleware from "redux-thunk-error-handler";
 import { store } from "store";
 import { StatusFailure } from "types";
 
@@ -9,5 +8,3 @@ const ErrorHandler = (e: any) => {
   }
   throw e;
 };
-
-export const errorHandlerMiddleware = createThunkErrorHandlerMiddleware({ onError: ErrorHandler });

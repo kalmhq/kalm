@@ -11,7 +11,6 @@ import {
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import clsx from "clsx";
 import React, { useState } from "react";
-
 import { CardTitle } from "widgets/Label";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -61,7 +60,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export interface ExpansionProps {
+interface ExpansionProps {
   title: React.ReactNode;
   hasError?: boolean;
   subTitle?: string;

@@ -1,9 +1,9 @@
 import produce from "immer";
 import { Actions, Resources } from "../types";
 
-export type KindState<T> = { [key: string]: T };
+type KindState<T> = { [key: string]: T };
 
-export const makeKindInitialState = <T>(): KindState<T> => {
+const makeKindInitialState = <T>(): KindState<T> => {
   return {};
 };
 

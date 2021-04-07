@@ -13,7 +13,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-export interface BasePageProps extends React.Props<any>, WithStyles<typeof styles> {
+interface BasePageProps extends React.Props<any>, WithStyles<typeof styles> {
   noScrollContainer?: boolean;
   leftDrawer?: React.ReactNode;
   secondHeaderLeft?: React.ReactNode;
@@ -21,7 +21,7 @@ export interface BasePageProps extends React.Props<any>, WithStyles<typeof style
   fullContainer?: boolean;
 }
 
-export const BasePageRaw: React.FC<BasePageProps> = (props) => {
+const BasePageRaw: React.FC<BasePageProps> = (props) => {
   const { children, leftDrawer, secondHeaderLeft, secondHeaderRight, fullContainer, classes } = props;
   const hasSecondHeader = !!secondHeaderLeft || !!secondHeaderRight;
 

@@ -1,7 +1,7 @@
 import { Component } from "react";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 
-export class ScrollToTopRaw extends Component<RouteComponentProps> {
+class ScrollToTopRaw extends Component<RouteComponentProps> {
   public componentDidUpdate(prevProps: RouteComponentProps) {
     if (this.props.location !== prevProps.location) {
       window.scrollTo(0, 0);

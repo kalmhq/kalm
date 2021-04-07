@@ -47,12 +47,11 @@ export type TDispatch = ThunkDispatch<RootState, undefined, Actions>;
 export type TDispatchProp = { dispatch: TDispatch };
 
 export const StatusFailure = "Failure";
-export const StatusSuccess = "Success";
 export const SomethingWrong = "Something wrong";
 
-export const StreamingEventTypeAdded = "ADDED";
-export const StreamingEventTypeDeleted = "DELETED";
-export const StreamingEventTypeModified = "MODIFIED";
+const StreamingEventTypeAdded = "ADDED";
+const StreamingEventTypeDeleted = "DELETED";
+const StreamingEventTypeModified = "MODIFIED";
 export type StreamingEventType =
   | typeof StreamingEventTypeAdded
   | typeof StreamingEventTypeDeleted
@@ -60,7 +59,7 @@ export type StreamingEventType =
 
 export type Resources = Namespace | Deployment;
 
-export type SteamEventAction<T = Resources> = {
+type SteamEventAction<T = Resources> = {
   type: StreamingEventType;
   payload: T;
 };

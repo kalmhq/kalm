@@ -3,12 +3,6 @@ import { ComponentLike } from "./componentTemplate";
 
 export const CREATE_APPLICATION = "CREATE_APPLICATION";
 export const DELETE_APPLICATION = "DELETE_APPLICATION";
-export const LOAD_APPLICATIONS_PENDING = "LOAD_APPLICATIONS_PENDING";
-export const LOAD_APPLICATIONS_FULFILLED = "LOAD_APPLICATIONS_FULFILLED";
-export const LOAD_APPLICATIONS_FAILED = "LOAD_APPLICATIONS_FAILED";
-export const LOAD_APPLICATION_PENDING = "LOAD_APPLICATION_PENDING";
-export const LOAD_APPLICATION_FULFILLED = "LOAD_APPLICATION_FULFILLED";
-export const LOAD_APPLICATION_FAILED = "LOAD_APPLICATION_FAILED";
 export const SET_IS_SUBMITTING_APPLICATION = "SET_IS_SUBMITTING_APPLICATION";
 export const SET_IS_SUBMITTING_APPLICATION_COMPONENT = "SET_IS_SUBMITTING_APPLICATION_COMPONENT";
 export const CREATE_COMPONENT = "CREATE_COMPONENT";
@@ -25,7 +19,7 @@ export interface EnvItem {
   value: string;
 }
 
-export type ServiceStatus = {
+type ServiceStatus = {
   name: string;
   clusterIP: string;
   ports: {
@@ -36,7 +30,7 @@ export type ServiceStatus = {
   }[];
 };
 
-export type PodWarning = { message: string };
+type PodWarning = { message: string };
 
 export type PodStatus = {
   name: string;
@@ -85,7 +79,7 @@ export interface ApplicationComponentDetails extends ApplicationComponent {
   istioMetricHistories: IstioMetricHistories;
 }
 
-export type IstioMetricHistories = {
+type IstioMetricHistories = {
   httpRequestsTotal?: MetricList;
   httpRespCode2XXCount?: MetricList;
   httpRespCode4XXCount?: MetricList;
@@ -107,21 +101,21 @@ export interface ApplicationDetails extends Application {
   roles: string[];
 }
 
-export interface CreateApplicationAction {
+interface CreateApplicationAction {
   type: typeof CREATE_APPLICATION;
   payload: {
     application: ApplicationDetails;
   };
 }
 
-export interface DeleteApplicationAction {
+interface DeleteApplicationAction {
   type: typeof DELETE_APPLICATION;
   payload: {
     applicationName: string;
   };
 }
 
-export interface CreateComponentAction {
+interface CreateComponentAction {
   type: typeof CREATE_COMPONENT;
   payload: {
     applicationName: string;
@@ -129,7 +123,7 @@ export interface CreateComponentAction {
   };
 }
 
-export interface UpdateComponentAction {
+interface UpdateComponentAction {
   type: typeof UPDATE_COMPONENT;
   payload: {
     applicationName: string;
@@ -137,7 +131,7 @@ export interface UpdateComponentAction {
   };
 }
 
-export interface DeleteComponentAction {
+interface DeleteComponentAction {
   type: typeof DELETE_COMPONENT;
   payload: {
     applicationName: string;
@@ -145,15 +139,15 @@ export interface DeleteComponentAction {
   };
 }
 
-export interface LoadComponentsPendingAction {
+interface LoadComponentsPendingAction {
   type: typeof LOAD_COMPONENTS_PENDING;
 }
 
-export interface LoadComponentsFailedAction {
+interface LoadComponentsFailedAction {
   type: typeof LOAD_COMPONENTS_FAILED;
 }
 
-export interface LoadComponentsFulfilledAction {
+interface LoadComponentsFulfilledAction {
   type: typeof LOAD_COMPONENTS_FULFILLED;
   payload: {
     applicationName: string;
@@ -161,40 +155,10 @@ export interface LoadComponentsFulfilledAction {
   };
 }
 
-export interface LoadAllNamespacesComponentsAction {
+interface LoadAllNamespacesComponentsAction {
   type: typeof LOAD_ALL_NAMESAPCES_COMPONETS;
   payload: {
     components: { [key: string]: ApplicationComponentDetails[] }; // key applicationName
-  };
-}
-
-export interface LoadApplicationsPendingAction {
-  type: typeof LOAD_APPLICATIONS_PENDING;
-}
-
-export interface LoadApplicationsFailedAction {
-  type: typeof LOAD_APPLICATIONS_FAILED;
-}
-
-export interface LoadApplicationsFulfilledAction {
-  type: typeof LOAD_APPLICATIONS_FULFILLED;
-  payload: {
-    applicationList: ApplicationDetails[];
-  };
-}
-
-export interface LoadApplicationPendingAction {
-  type: typeof LOAD_APPLICATION_PENDING;
-}
-
-export interface LoadApplicationFailedAction {
-  type: typeof LOAD_APPLICATION_FAILED;
-}
-
-export interface LoadApplicationFulfilledAction {
-  type: typeof LOAD_APPLICATION_FULFILLED;
-  payload: {
-    application: ApplicationDetails;
   };
 }
 
@@ -215,12 +179,6 @@ export interface SetIsSubmittingApplicationComponent {
 export type ApplicationActions =
   | CreateApplicationAction
   | DeleteApplicationAction
-  | LoadApplicationsFulfilledAction
-  | LoadApplicationsPendingAction
-  | LoadApplicationsFailedAction
-  | LoadApplicationPendingAction
-  | LoadApplicationFulfilledAction
-  | LoadApplicationFailedAction
   | SetIsSubmittingApplication
   | SetIsSubmittingApplicationComponent
   | CreateComponentAction

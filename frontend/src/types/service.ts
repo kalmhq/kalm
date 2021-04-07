@@ -14,14 +14,14 @@ export interface Service {
   }[];
 }
 
-export interface LoadServicesAction {
+interface LoadServicesAction {
   type: typeof LOAD_SERVICES_FULFILLED;
   payload: {
     services: Service[];
   };
 }
 
-export interface ServicesStateAction {
+interface ServicesStateAction {
   type: typeof LOAD_SERVICES_PENDING | typeof LOAD_SERVICES_FAILED;
 }
 

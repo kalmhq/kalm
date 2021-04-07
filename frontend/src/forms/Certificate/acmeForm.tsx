@@ -10,7 +10,7 @@ import { SubmitButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Prompt } from "widgets/Prompt";
 
-export interface Props {
+interface Props {
   onSubmit: any;
   initial: AcmeServerFormType;
 }

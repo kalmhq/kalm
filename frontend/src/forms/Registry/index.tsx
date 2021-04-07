@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 type RenderProps = FormRenderProps<RegistryFormType>;
 
-export interface Props {
+interface Props {
   isEdit?: boolean;
   onSubmit: any;
   initial: RegistryFormType;

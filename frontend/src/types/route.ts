@@ -35,28 +35,28 @@ export interface HttpRouteDestinationStatus {
   error: string;
 }
 
-export interface HttpRouteRetry {
+interface HttpRouteRetry {
   attempts: number;
   perTtyTimeoutSeconds: number;
   retryOn: string[];
 }
 
-export interface HttpRouteMirror {
+interface HttpRouteMirror {
   destination: HttpRouteDestination;
   percentage: number;
 }
 
-export interface HttpRouteFault {
+interface HttpRouteFault {
   percentage: number;
   errorStatus: number;
 }
 
-export interface HttpRouteDelay {
+interface HttpRouteDelay {
   percentage: number;
   delaySeconds: number;
 }
 
-export interface HttpRouteCORS {
+interface HttpRouteCORS {
   allowOrigin: string[];
   allowMethods: string[];
   allowCredentials: boolean;
@@ -108,35 +108,35 @@ export const newEmptyRouteForm = (defaultDomain?: string): HttpRoute => {
   };
 };
 
-export interface LoadHttpRoutesAction {
+interface LoadHttpRoutesAction {
   type: typeof LOAD_ROUTES_FULFILLED;
   payload: {
     httpRoutes: HttpRoute[];
   };
 }
 
-export interface DeleteRouteAction {
+interface DeleteRouteAction {
   type: typeof DELETE_ROUTE_FULFILLED;
   payload: {
     route: HttpRoute;
   };
 }
 
-export interface CreateRouteAction {
+interface CreateRouteAction {
   type: typeof CREATE_ROUTE_FULFILLED;
   payload: {
     route: HttpRoute;
   };
 }
 
-export interface UpdateRouteAction {
+interface UpdateRouteAction {
   type: typeof UPDATE_ROUTE_FULFILLED;
   payload: {
     route: HttpRoute;
   };
 }
 
-export interface RoutesStateAction {
+interface RoutesStateAction {
   type:
     | typeof LOAD_ROUTES_PENDING
     | typeof LOAD_ROUTES_FAILED

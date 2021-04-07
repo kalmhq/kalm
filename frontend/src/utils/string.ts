@@ -11,9 +11,6 @@ export const pluralize = (str: string, num: number) => {
   return `${num} ${str}`;
 };
 
-export const shortness = (str: string, leading = 30) => {
-  return `${str.slice(0, leading)}...`;
-};
 export const shortnessImage = (str: string, privateHosts?: string[]) => {
   let result = str.split(":")[0];
   if (privateHosts) {

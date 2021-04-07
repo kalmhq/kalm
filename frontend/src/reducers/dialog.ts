@@ -1,3 +1,5 @@
+import produce from "immer";
+import { Actions } from "types";
 import {
   CLEAR_CONTROLLED_DIALOG_DATA,
   CLOSE_CONTROLLED_DIALOG,
@@ -7,10 +9,8 @@ import {
   LOGOUT,
   OPEN_CONTROLLED_DIALOG,
 } from "types/common";
-import { Actions } from "types";
-import produce from "immer";
 
-export type State = { [key: string]: ControlledDialogParams<any> };
+type State = { [key: string]: ControlledDialogParams<any> };
 
 const initialState: State = {};
 

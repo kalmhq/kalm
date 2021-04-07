@@ -8,20 +8,20 @@ export const LOAD_DEPLOY_ACCESS_TOKENS_FAILED = "LOAD_DEPLOY_ACCESS_TOKENS_FAILE
 export const LOAD_DEPLOY_ACCESS_TOKENS_FULFILLED = "LOAD_DEPLOY_ACCESS_TOKENS_FULFILLED";
 export const LOAD_DEPLOY_ACCESS_TOKENS_PENDING = "LOAD_DEPLOY_ACCESS_TOKENS_PENDING";
 
-export type DeployAccessTokenScope = string;
+type DeployAccessTokenScope = string;
 
 export const DeployAccessTokenScopeCluster: DeployAccessTokenScope = "cluster";
 export const DeployAccessTokenScopeNamespace: DeployAccessTokenScope = "namespace";
 export const DeployAccessTokenScopeComponent: DeployAccessTokenScope = "component";
 
-export interface AccessTokenRule {
+interface AccessTokenRule {
   namespace: string;
   name: string;
   verb: string;
   kind: string;
 }
 
-export interface AccessToken {
+interface AccessToken {
   name: string;
   memo: string;
   creator: string;
@@ -119,21 +119,21 @@ export const newEmptyDeployAccessToken = (): DeployAccessToken => {
   };
 };
 
-export interface LoadDeployAccessTokensAction {
+interface LoadDeployAccessTokensAction {
   type: typeof LOAD_DEPLOY_ACCESS_TOKENS_FULFILLED;
   payload: DeployAccessToken[];
 }
 
-export interface DeleteDeployAccessTokenAction {
+interface DeleteDeployAccessTokenAction {
   type: typeof DELETE_DEPLOY_ACCESS_TOKEN_FULFILLED;
 }
 
-export interface CreateDeployAccessTokenAction {
+interface CreateDeployAccessTokenAction {
   type: typeof CREATE_DEPLOY_ACCESS_TOKEN_FULFILLED;
   payload: DeployAccessToken;
 }
 
-export interface DeployAccessTokenStateAction {
+interface DeployAccessTokenStateAction {
   type:
     | typeof CREATE_DEPLOY_ACCESS_TOKEN_FAILED
     | typeof CREATE_DEPLOY_ACCESS_TOKEN_PENDING

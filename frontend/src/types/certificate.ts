@@ -4,88 +4,88 @@ export const LOAD_CERTIFICATES_FAILED = "LOAD_CERTIFICATES_FAILED";
 export const DELETE_CERTIFICATE = "DELETE_CERTIFICATE";
 export const LOAD_CERTIFICATE_ISSUERS_FULFILLED = "LOAD_CERTIFICATE_ISSUERS_FULFILLED";
 export const LOAD_CERTIFICATE_ISSUERS_PENDING = "LOAD_CERTIFICATE_ISSUERS_PENDING";
-export const LOAD_CERTIFICATE_ISSUERS_FAILED = "LOAD_CERTIFICATE_ISSUERS_FAILED";
+const LOAD_CERTIFICATE_ISSUERS_FAILED = "LOAD_CERTIFICATE_ISSUERS_FAILED";
 export const CREATE_CERTIFICATE = "CREATE_CERTIFICATE";
 export const CREATE_CERTIFICATE_ISSUER = "CREATE_CERTIFICATE_ISSUER";
 export const LOAD_ACME_SERVER_FULFILLED = "LOAD_ACME_SERVER_FULFILLED";
 export const LOAD_ACME_SERVER_PENDING = "LOAD_ACME_SERVER_PENDING";
 export const LOAD_ACME_SERVER_FAILED = "LOAD_ACME_SERVER_FAILED";
-export const CREATE_ACME_SERVER = "CREATE_ACME_SERVER";
+const CREATE_ACME_SERVER = "CREATE_ACME_SERVER";
 export const DELETE_ACME_SERVER = "DELETE_ACME_SERVER";
 
-export interface CreateCertificateAction {
+interface CreateCertificateAction {
   type: typeof CREATE_CERTIFICATE;
   payload: {
     certificate: Certificate;
   };
 }
 
-export interface CreateCertificateIssuerAction {
+interface CreateCertificateIssuerAction {
   type: typeof CREATE_CERTIFICATE_ISSUER;
   payload: {
     certificateIssuer: CertificateIssuer;
   };
 }
-export interface EditAcmeServerAction {
+interface EditAcmeServerAction {
   type: typeof CREATE_ACME_SERVER;
   payload: {
     acmeServer: AcmeServerInfo;
   };
 }
 
-export interface DeleteAcmeServerAction {
+interface DeleteAcmeServerAction {
   type: typeof DELETE_ACME_SERVER;
   payload: {
     acmeServer: null;
   };
 }
 
-export interface LoadCertificatesPendingAction {
+interface LoadCertificatesPendingAction {
   type: typeof LOAD_CERTIFICATES_PENDING;
 }
 
-export interface LoadCertificatesFailedAction {
+interface LoadCertificatesFailedAction {
   type: typeof LOAD_CERTIFICATES_FAILED;
 }
 
-export interface LoadCertificatesAction {
+interface LoadCertificatesAction {
   type: typeof LOAD_CERTIFICATES_FULFILLED;
   payload: {
     certificates: Certificate[];
   };
 }
 
-export interface LoadAcmeServerPendingAction {
+interface LoadAcmeServerPendingAction {
   type: typeof LOAD_ACME_SERVER_PENDING;
 }
 
-export interface LoadAcmeServerFailedAction {
+interface LoadAcmeServerFailedAction {
   type: typeof LOAD_ACME_SERVER_FAILED;
 }
 
-export interface LoadAcmeServerAction {
+interface LoadAcmeServerAction {
   type: typeof LOAD_ACME_SERVER_FULFILLED;
   payload: {
     acmeServer: AcmeServerInfo | null;
   };
 }
 
-export interface LoadCertificateIssuersPendingAction {
+interface LoadCertificateIssuersPendingAction {
   type: typeof LOAD_CERTIFICATE_ISSUERS_PENDING;
 }
 
-export interface LoadCertificateIssuersFailedAction {
+interface LoadCertificateIssuersFailedAction {
   type: typeof LOAD_CERTIFICATE_ISSUERS_FAILED;
 }
 
-export interface LoadCertificateIssuersAction {
+interface LoadCertificateIssuersAction {
   type: typeof LOAD_CERTIFICATE_ISSUERS_FULFILLED;
   payload: {
     certificateIssuers: CertificateIssuer[];
   };
 }
 
-export interface DeleteCertificate {
+interface DeleteCertificate {
   type: typeof DELETE_CERTIFICATE;
   payload: {
     name: string;
@@ -104,8 +104,8 @@ export const dns01Mananged = "default-dns01-issuer";
 export const issuerManaged = "issuerManaged";
 export const selfManaged = "selfManaged";
 
-export const cloudFlare = "cloudFlare";
-export const caForTest = "caForTest";
+const cloudFlare = "cloudFlare";
+const caForTest = "caForTest";
 
 // wildcard support httpsCertIssuser type
 export const dns01Issuer = "default-dns01-issuer";
@@ -121,29 +121,12 @@ export const newEmptyCertificateForm: CertificateFormType = {
   reason: "",
 };
 
-export const newUpdateEmptyCertificateForm: CertificateFormType = {
-  name: "",
-  managedType: selfManaged,
-  selfManagedCertContent: "",
-  selfManagedCertPrivateKey: "",
-  domains: [],
-  ready: "",
-  reason: "",
-};
-
 export const newEmptyCertificateUploadForm: CertificateFormType = {
   name: "",
   managedType: selfManaged,
   selfManagedCertContent: "",
   selfManagedCertPrivateKey: "",
   domains: [],
-};
-
-export const newEmptyCertificateIssuerForm = (): CertificateIssuerFormType => {
-  return {
-    name: "",
-    issuerType: cloudFlare,
-  };
 };
 
 export interface Certificate {
@@ -166,7 +149,7 @@ export interface CertificateIssuer {
   caForTest?: {};
 }
 
-export interface AcmeCloudFlare {
+interface AcmeCloudFlare {
   account: string;
   secret: string;
 }

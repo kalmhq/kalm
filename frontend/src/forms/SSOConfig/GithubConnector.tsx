@@ -16,7 +16,7 @@ import { KMLink } from "widgets/Link";
 import { FinalTextField } from "../Final/textfield";
 import { ValidatorArrayNotEmpty, ValidatorRequired } from "../validator";
 
-export const ValidatorOrgs = (values: any[], _allValues?: any, _props?: any, _name?: any) => {
+const ValidatorOrgs = (values: any[], _allValues?: any, _props?: any, _name?: any) => {
   if (!values) return undefined;
 
   if (values.length === 0) {

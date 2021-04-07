@@ -44,7 +44,7 @@ export const deleteApplicationAction = (name: string): ThunkResult<Promise<void>
   };
 };
 
-export const setIsSubmittingApplicationAction = (isSubmittingApplication: boolean): SetIsSubmittingApplication => {
+const setIsSubmittingApplicationAction = (isSubmittingApplication: boolean): SetIsSubmittingApplication => {
   return {
     type: SET_IS_SUBMITTING_APPLICATION,
     payload: {

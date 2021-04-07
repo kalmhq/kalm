@@ -4,7 +4,7 @@ import { Actions } from "types";
 import { ApplicationDetails, SET_IS_SUBMITTING_APPLICATION } from "types/application";
 import { LOGOUT } from "types/common";
 
-export type State = {
+type State = {
   applications: ApplicationDetails[];
   isListLoading: boolean;
   isListFirstLoaded: boolean;

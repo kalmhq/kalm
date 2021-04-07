@@ -1,8 +1,8 @@
-import React from "react";
 import { Paper, PaperProps, Theme } from "@material-ui/core";
-import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
+import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
+import React from "react";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -56,34 +56,3 @@ const PaperRaw = (props: InfoPaperProps) => {
 };
 
 export const InfoPaper = withStyles(styles)(PaperRaw);
-
-export const WhitePaper = withStyles(styles)((props: InfoPaperProps) => {
-  return (
-    <InfoPaper {...props} paperType="white">
-      {props.children}
-    </InfoPaper>
-  );
-});
-
-export const LightInfoPaper = withStyles(styles)((props: InfoPaperProps) => {
-  return (
-    <InfoPaper {...props} paperType="light">
-      {props.children}
-    </InfoPaper>
-  );
-});
-
-export const NormalInfoPaper = withStyles(styles)((props: InfoPaperProps) => {
-  return (
-    <InfoPaper paperType="normal" {...props}>
-      {props.children}
-    </InfoPaper>
-  );
-});
-export const DarkInfoPaper = withStyles(styles)((props: InfoPaperProps) => {
-  return (
-    <InfoPaper paperType="dark" {...props}>
-      {props.children}
-    </InfoPaper>
-  );
-});

@@ -35,7 +35,7 @@ export type ResourceActionType =
   | typeof RESOURCE_ACTION_ADD
   | typeof RESOURCE_ACTION_DELETE;
 
-export interface NodeResourceAction {
+interface NodeResourceAction {
   type: typeof WATCHED_RESOURCE_CHANGE;
   kind: typeof RESOURCE_TYPE_NODE;
   payload: {
@@ -44,7 +44,7 @@ export interface NodeResourceAction {
   };
 }
 
-export interface ComponentResourceAction {
+interface ComponentResourceAction {
   type: typeof WATCHED_RESOURCE_CHANGE;
   kind: typeof RESOURCE_TYPE_COMPONENT;
   payload: {
@@ -54,7 +54,7 @@ export interface ComponentResourceAction {
   };
 }
 
-export interface HttpRouteResourceAction {
+interface HttpRouteResourceAction {
   type: typeof WATCHED_RESOURCE_CHANGE;
   kind: typeof RESOURCE_TYPE_HTTP_ROUTE;
   payload: {
@@ -64,7 +64,7 @@ export interface HttpRouteResourceAction {
   };
 }
 
-export interface HttpsCertResourceAction {
+interface HttpsCertResourceAction {
   type: typeof WATCHED_RESOURCE_CHANGE;
   kind: typeof RESOURCE_TYPE_HTTPS_CERT;
   payload: {
@@ -73,7 +73,7 @@ export interface HttpsCertResourceAction {
   };
 }
 
-export interface RegistryResourceAction {
+interface RegistryResourceAction {
   type: typeof WATCHED_RESOURCE_CHANGE;
   kind: typeof RESOURCE_TYPE_REGISTRY;
   payload: {
@@ -82,7 +82,7 @@ export interface RegistryResourceAction {
   };
 }
 
-export interface VolumeResourceAction {
+interface VolumeResourceAction {
   type: typeof WATCHED_RESOURCE_CHANGE;
   kind: typeof RESOURCE_TYPE_VOLUME;
   payload: {
@@ -91,7 +91,7 @@ export interface VolumeResourceAction {
   };
 }
 
-export interface SSOConfigResourceAction {
+interface SSOConfigResourceAction {
   type: typeof WATCHED_RESOURCE_CHANGE;
   kind: typeof RESOURCE_TYPE_SSO;
   payload: {
@@ -100,7 +100,7 @@ export interface SSOConfigResourceAction {
   };
 }
 
-export interface ProtectedEndpointResourceAction {
+interface ProtectedEndpointResourceAction {
   type: typeof WATCHED_RESOURCE_CHANGE;
   kind: typeof RESOURCE_TYPE_PROTECTED_ENDPOINT;
   payload: {
@@ -109,7 +109,7 @@ export interface ProtectedEndpointResourceAction {
   };
 }
 
-export interface DeployAccessTokenResourceAction {
+interface DeployAccessTokenResourceAction {
   type: typeof WATCHED_RESOURCE_CHANGE;
   kind: typeof RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN;
   payload: {
@@ -118,7 +118,7 @@ export interface DeployAccessTokenResourceAction {
   };
 }
 
-export interface ServiceResourceAction {
+interface ServiceResourceAction {
   type: typeof WATCHED_RESOURCE_CHANGE;
   kind: typeof RESOURCE_TYPE_SERVICE;
   payload: {
@@ -127,7 +127,7 @@ export interface ServiceResourceAction {
   };
 }
 
-export interface RoleBindingResourceAction {
+interface RoleBindingResourceAction {
   type: typeof WATCHED_RESOURCE_CHANGE;
   kind: typeof RESOURCE_TYPE_ROLE_BINDING;
   payload: {
@@ -136,7 +136,7 @@ export interface RoleBindingResourceAction {
   };
 }
 
-export interface ACMEServerResourceAction {
+interface ACMEServerResourceAction {
   type: typeof WATCHED_RESOURCE_CHANGE;
   kind: typeof RESOURCE_TYPE_ACME_SERVER;
   payload: {
@@ -145,7 +145,7 @@ export interface ACMEServerResourceAction {
   };
 }
 
-export interface DomainResourceAction {
+interface DomainResourceAction {
   type: typeof WATCHED_RESOURCE_CHANGE;
   kind: typeof RESOURCE_TYPE_DOMAIN;
   payload: {

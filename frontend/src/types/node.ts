@@ -4,7 +4,7 @@ export const LOAD_NODES_PENDING = "LOAD_NODES_PENDING";
 export const LOAD_NODES_FULFILLED = "LOAD_NODES_FULFILLED";
 export const LOAD_NODES_FAILED = "LOAD_NODES_FAILED";
 
-export type ResourceList = {
+type ResourceList = {
   cpu: string;
   memory: string;
   pods: string;
@@ -65,17 +65,17 @@ export interface Node {
   metrics: Metrics;
 }
 
-export type NodesListResponse = {
+type NodesListResponse = {
   nodes: Node[];
   metrics: Metrics;
 };
 
-export interface LoadNodesAction {
+interface LoadNodesAction {
   type: typeof LOAD_NODES_FULFILLED;
   payload: NodesListResponse;
 }
 
-export interface NodeStateAction {
+interface NodeStateAction {
   type: typeof LOAD_NODES_PENDING | typeof LOAD_NODES_FAILED;
 }
 

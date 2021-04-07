@@ -1,48 +1,5 @@
 import { MouseEventHandler } from "react";
-import {
-  TableInstance,
-  UseColumnOrderInstanceProps,
-  UseColumnOrderState,
-  UseExpandedHooks,
-  UseExpandedInstanceProps,
-  UseExpandedOptions,
-  UseExpandedRowProps,
-  UseExpandedState,
-  UseFiltersColumnOptions,
-  UseFiltersColumnProps,
-  UseFiltersInstanceProps,
-  UseFiltersOptions,
-  UseFiltersState,
-  UseGlobalFiltersInstanceProps,
-  UseGlobalFiltersOptions,
-  UseGlobalFiltersState,
-  UseGroupByCellProps,
-  UseGroupByColumnOptions,
-  UseGroupByColumnProps,
-  UseGroupByHooks,
-  UseGroupByInstanceProps,
-  UseGroupByOptions,
-  UseGroupByRowProps,
-  UseGroupByState,
-  UsePaginationInstanceProps,
-  UsePaginationOptions,
-  UsePaginationState,
-  UseResizeColumnsColumnOptions,
-  UseResizeColumnsColumnProps,
-  UseResizeColumnsOptions,
-  UseResizeColumnsState,
-  UseRowSelectHooks,
-  UseRowSelectInstanceProps,
-  UseRowSelectOptions,
-  UseRowSelectRowProps,
-  UseRowSelectState,
-  UseSortByColumnOptions,
-  UseSortByColumnProps,
-  UseSortByHooks,
-  UseSortByInstanceProps,
-  UseSortByOptions,
-  UseSortByState,
-} from "react-table";
+import { TableInstance } from "react-table";
 
 declare module "react-table" {
   export interface UseFlexLayoutInstanceProps<D extends object> {
@@ -118,4 +75,4 @@ declare module "react-table" {
       UseRowSelectRowProps<D> {}
 }
 
-export type TableMouseEventHandler = (instance: TableInstance<T>) => MouseEventHandler;
+type TableMouseEventHandler = (instance: TableInstance<T>) => MouseEventHandler;

@@ -8,13 +8,13 @@ import {
 } from "types/cluster";
 import { LOGOUT } from "types/common";
 
-export interface DependencyStateContent {
+interface DependencyStateContent {
   info: ClusterInfo;
   isLoading: boolean;
   isFirstLoaded: boolean;
 }
 
-export type State = DependencyStateContent;
+type State = DependencyStateContent;
 
 const initialState: State = {
   info: {} as any,

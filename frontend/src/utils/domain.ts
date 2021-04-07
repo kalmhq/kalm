@@ -1,5 +1,5 @@
 // https://source.chromium.org/chromium/chromium/src/+/master:net/http/transport_security_state_static.json
-export const forceHttpsDomainSuffixes = [
+const forceHttpsDomainSuffixes = [
   "android",
   "app",
   "bank",

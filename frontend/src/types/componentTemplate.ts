@@ -10,7 +10,7 @@ export interface ComponentLikeEnv {
   value: string;
 }
 
-export type PortProtocol = string;
+type PortProtocol = string;
 
 export const PortProtocolHTTP: PortProtocol = "http";
 export const PortProtocolHTTPS: PortProtocol = "https";
@@ -30,11 +30,11 @@ export interface NodeSelectorLabels {
   [key: string]: string;
 }
 
-export type PodAffinityType = string;
-export const PodAffinityTypePreferFanout: PodAffinityType = "prefer-fanout"; // multi host
-export const PodAffinityTypePreferGather: PodAffinityType = "prefer-gather"; //same host
+type PodAffinityType = string;
+const PodAffinityTypePreferFanout: PodAffinityType = "prefer-fanout"; // multi host
+const PodAffinityTypePreferGather: PodAffinityType = "prefer-gather"; //same host
 
-export type VolumeType = string;
+type VolumeType = string;
 export const VolumeTypeTemporaryMemory: VolumeType = "emptyDirMemory";
 export const VolumeTypeTemporaryDisk: VolumeType = "emptyDir";
 export const VolumeTypePersistentVolumeClaim: VolumeType = "pvc";
@@ -68,18 +68,10 @@ export interface PreInjectedFile {
   readonly?: boolean;
 }
 
-export type ConfigMount = {
-  paths: string[];
-  mountPath: string;
-};
-
-export interface HttpHeader {
+interface HttpHeader {
   name: string;
   value: string;
 }
-
-export type HttpHeaders = HttpHeader[];
-
 export interface Probe {
   exec?: {
     command?: string[];

@@ -4,7 +4,7 @@
  * This flat strings map is probably sufficient for now, but we should
  * replace this with a sophisticated solution if Localization is ever needed.
  */
-export const StringConstants = {
+const StringConstants = {
   APP_NAME: "Kalm",
   LIMIT_NOT_SET: "Limit Not Set",
   REQUEST_NOT_SET: "Request Not Set",

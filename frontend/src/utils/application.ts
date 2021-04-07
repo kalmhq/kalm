@@ -179,7 +179,7 @@ export const getApplicationCreatedAtString = (components: ApplicationComponentDe
   return createdAtString;
 };
 
-export const getApplicationCreatedAtDate = (components: ApplicationComponentDetails[]): Date => {
+const getApplicationCreatedAtDate = (components: ApplicationComponentDetails[]): Date => {
   let createdAt = new Date(0);
 
   components.forEach((component) => {
@@ -192,7 +192,7 @@ export const getApplicationCreatedAtDate = (components: ApplicationComponentDeta
   return createdAt;
 };
 
-export const getComponentCreatedAtString = (component: ApplicationComponentDetails): string => {
+const getComponentCreatedAtString = (component: ApplicationComponentDetails): string => {
   const createdAt = getComponentCreatedAtDate(component);
   const createdAtString = createdAt <= new Date(0) ? "-" : formatDate(createdAt);
   return createdAtString;
@@ -205,7 +205,7 @@ export const getComponentCreatedFromAndAtString = (component: ApplicationCompone
   return createdAtString;
 };
 
-export const getComponentCreatedAtDate = (component: ApplicationComponentDetails): Date => {
+const getComponentCreatedAtDate = (component: ApplicationComponentDetails): Date => {
   let createdAt = new Date(0);
 
   component.pods?.forEach((podStatus) => {

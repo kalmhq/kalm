@@ -89,7 +89,7 @@ export const deleteRegistryAction = (name: string): ThunkResult<Promise<void>> =
   };
 };
 
-export const setIsSubmittingRegistry = (isSubmittingRegistry: boolean): SetIsSubmittingRegistry => {
+const setIsSubmittingRegistry = (isSubmittingRegistry: boolean): SetIsSubmittingRegistry => {
   return {
     type: SET_IS_SUBMITTING_REGISTRY,
     payload: {

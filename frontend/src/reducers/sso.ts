@@ -1,5 +1,14 @@
+import produce, { original } from "immer";
 import { Actions } from "types";
 import { LOGOUT } from "types/common";
+import {
+  RESOURCE_ACTION_ADD,
+  RESOURCE_ACTION_DELETE,
+  RESOURCE_ACTION_UPDATE,
+  RESOURCE_TYPE_PROTECTED_ENDPOINT,
+  RESOURCE_TYPE_SSO,
+  WATCHED_RESOURCE_CHANGE,
+} from "types/resources";
 import {
   LOAD_PROTECTED_ENDPOINTS_FAILED,
   LOAD_PROTECTED_ENDPOINTS_FULFILLED,
@@ -10,17 +19,8 @@ import {
   ProtectedEndpoint,
   SSOConfig,
 } from "types/sso";
-import {
-  RESOURCE_ACTION_ADD,
-  RESOURCE_ACTION_DELETE,
-  RESOURCE_ACTION_UPDATE,
-  RESOURCE_TYPE_PROTECTED_ENDPOINT,
-  RESOURCE_TYPE_SSO,
-  WATCHED_RESOURCE_CHANGE,
-} from "types/resources";
-import produce, { original } from "immer";
 
-export type State = {
+type State = {
   isLoading: boolean;
   loaded: boolean;
   config: SSOConfig | null;

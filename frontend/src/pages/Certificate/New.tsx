@@ -14,7 +14,7 @@ const styles = (theme: Theme) =>
     root: {},
   });
 
-export interface Props extends WithStyles<typeof styles>, TDispatchProp {}
+interface Props extends WithStyles<typeof styles>, TDispatchProp {}
 
 interface State {}
 class CertificateNewRaw extends React.Component<Props, State> {

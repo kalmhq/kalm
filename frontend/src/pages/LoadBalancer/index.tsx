@@ -50,7 +50,7 @@ interface States {
 
 type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
-export class LoadBalancerInfoRaw extends React.Component<Props, States> {
+class LoadBalancerInfoRaw extends React.Component<Props, States> {
   constructor(props: Props) {
     super(props);
     this.state = {

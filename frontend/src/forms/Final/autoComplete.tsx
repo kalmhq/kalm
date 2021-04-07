@@ -23,7 +23,7 @@ const FreeSoloStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-export const AutoCompleteSingleValueStyle = makeStyles((_theme: Theme) => ({
+const AutoCompleteSingleValueStyle = makeStyles((_theme: Theme) => ({
   groupLabel: {
     background: theme.palette.type === "light" ? theme.palette.grey[50] : theme.palette.background.paper,
     borderBottom: `1px solid ${theme.palette.divider}`,
@@ -64,7 +64,7 @@ export const AutoCompleteSingleValueStyle = makeStyles((_theme: Theme) => ({
   },
 }));
 
-export interface AutoCompleteMultiValuesFreeSoloProps<T>
+interface AutoCompleteMultiValuesFreeSoloProps<T>
   extends FieldRenderProps<T[]>,
     Omit<UseAutocompleteProps<T, true, true, true>, "multiple">,
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
@@ -164,7 +164,7 @@ export const AutoCompleteMultiValuesFreeSolo: X = function <T>(props: AutoComple
   );
 };
 
-export interface AutoCompleteSingleValueProps<T>
+interface AutoCompleteSingleValueProps<T>
   extends FieldRenderProps<string>,
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText">,
     Pick<AutocompleteProps<T, true, true, true>, "noOptionsText">,
