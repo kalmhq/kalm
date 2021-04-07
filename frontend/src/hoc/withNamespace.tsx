@@ -73,7 +73,7 @@ export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
             <Box p={2}>
               <ResourceNotFound
                 text="App not found"
-                redirect={`/namespaces`}
+                redirect={`/applications`}
                 redirectText="Go back to Apps List"
               ></ResourceNotFound>
             </Box>

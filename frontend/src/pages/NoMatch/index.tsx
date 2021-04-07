@@ -2,7 +2,7 @@ import { createStyles, Link, Theme, Typography, withStyles, WithStyles } from "@
 import { push, replace } from "connected-react-router";
 import React, { Component } from "react";
 import { connect, DispatchProp } from "react-redux";
-import { RouteComponentProps, withRouter } from "react-router-dom";
+import { withRouter, RouteComponentProps } from "react-router-dom";
 
 interface NoMatchRawProps extends DispatchProp, RouteComponentProps {}
 
@@ -11,7 +11,7 @@ class NoMatchRaw extends Component<NoMatchRawProps> {
     const { dispatch, location } = this.props;
     if (location.pathname === "/") {
       // auto redirect applications
-      dispatch(replace("/namespaces"));
+      dispatch(replace("/applications"));
     } else {
       dispatch(replace("/404"));
     }

@@ -38,7 +38,7 @@ const ComponentEditRaw: React.FC<Props> = (props) => {
     }
     await dispatch(updateComponentAction(formValues, activeNamespaceName));
     dispatch(setSuccessNotificationAction("Update component successfully"));
-    dispatch(push(`/namespaces/${activeNamespaceName}/components/${component.name}`));
+    dispatch(push(`/applications/${activeNamespaceName}/components/${component.name}`));
   };
 
   const { component, initialValues } = props;

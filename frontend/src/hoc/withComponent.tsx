@@ -40,7 +40,7 @@ export const withComponent = (WrappedComponent: React.ComponentType<any>) => {
           <Box p={2}>
             <ResourceNotFound
               text="Component not found"
-              redirect={`/namespaces/${props.applicationName}/components`}
+              redirect={`/applications/${props.applicationName}/components`}
               redirectText="Go back to Components List"
             />
           </Box>

@@ -240,7 +240,7 @@ const ComponentBasicInfoRaw: React.FC<Props> = (props) => {
               size="small"
               onClick={() =>
                 props.dispatch(
-                  push(`/namespaces/${activeNamespaceName}/components/${component.name}/edit#${NetworkingTab}`),
+                  push(`/applications/${activeNamespaceName}/components/${component.name}/edit#${NetworkingTab}`),
                 )
               }
             >
@@ -283,7 +283,7 @@ const ComponentBasicInfoRaw: React.FC<Props> = (props) => {
           aria-label="add-health-probes"
           size="small"
           onClick={() =>
-            dispatch(push(`/namespaces/${activeNamespaceName}/components/${component.name}/edit#${HealthTab}`))
+            dispatch(push(`/applications/${activeNamespaceName}/components/${component.name}/edit#${HealthTab}`))
           }
         >
           <WrenchIcon fontSize="small" />

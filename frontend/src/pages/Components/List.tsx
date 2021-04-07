@@ -101,7 +101,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
           color="primary"
           size="small"
           variant="outlined"
-          to={`/namespaces/${activeNamespaceName}/components/new`}
+          to={`/applications/${activeNamespaceName}/components/new`}
         >
           Add Component
         </CustomButton>
@@ -123,7 +123,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
             color="primary"
             onClick={() => {
               blinkTopProgressAction();
-              dispatch(push(`/namespaces/${activeNamespaceName}/components/new`));
+              dispatch(push(`/applications/${activeNamespaceName}/components/new`));
             }}
           >
             Add Component
@@ -163,7 +163,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
             }}
             size="small"
             tooltipTitle="External access is restricted through SSO"
-            to={`/namespaces/${appName}/components/${component.name}/edit#Access`}
+            to={`/applications/${appName}/components/${component.name}/edit#Access`}
           >
             <LockIcon fontSize="small" color="default" />
           </IconLinkWithToolTip>
@@ -197,7 +197,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
           componentName: (
             <Box display={"flex"}>
               <Box display="flex" minWidth={100}>
-                <KMLink component={Link} to={`/namespaces/${activeNamespaceName}/components/${component.name}`}>
+                <KMLink component={Link} to={`/applications/${activeNamespaceName}/components/${component.name}`}>
                   {component.name}
                 </KMLink>
               </Box>
@@ -269,7 +269,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
             tooltipTitle={`${pod.name} ${pod.statusText}`}
             target="_blank"
             rel="noopener noreferrer"
-            to={`/namespaces/${activeNamespaceName}/logs?` + getPodLogQuery(activeNamespaceName, pod)}
+            to={`/applications/${activeNamespaceName}/logs?` + getPodLogQuery(activeNamespaceName, pod)}
           >
             {getPod({ info: pod, key: index })}
           </IconLinkWithToolTip>,
@@ -301,7 +301,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
           }}
           size="small"
           tooltipTitle="Details"
-          to={`/namespaces/${appName}/components/${component.name}`}
+          to={`/applications/${appName}/components/${component.name}`}
         >
           <KalmViewListIcon />
         </IconLinkWithToolTip>
@@ -311,7 +311,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
           }}
           tooltipTitle="Edit"
           size="small"
-          to={`/namespaces/${appName}/components/${component.name}/edit`}
+          to={`/applications/${appName}/components/${component.name}/edit`}
         >
           <EditIcon />
         </IconLinkWithToolTip>

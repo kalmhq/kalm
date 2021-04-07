@@ -56,7 +56,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           {
             title: "Go to applications page",
             irrevocable: true,
-            shouldCompleteByState: (state: RootState) => isUnderPath(state, "/namespaces", "/namespaces/new"),
+            shouldCompleteByState: (state: RootState) => isUnderPath(state, "/applications", "/applications/new"),
           },
           {
             title: (
@@ -65,7 +65,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
               </span>
             ),
             irrevocable: true,
-            shouldCompleteByState: (state: RootState) => isUnderPath(state, "/namespaces/new"),
+            shouldCompleteByState: (state: RootState) => isUnderPath(state, "/applications/new"),
           },
           {
             title: (

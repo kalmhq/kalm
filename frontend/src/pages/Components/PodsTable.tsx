@@ -74,7 +74,7 @@ const PodsTableRaw: React.FC<Props> = (props) => {
           }}
           size="small"
           tooltipTitle="Log"
-          to={`/namespaces/${activeNamespaceName}/logs?` + getPodLogQuery(activeNamespaceName, pod)}
+          to={`/applications/${activeNamespaceName}/logs?` + getPodLogQuery(activeNamespaceName, pod)}
         >
           <KalmLogIcon />
         </IconLinkWithToolTip>
@@ -85,7 +85,7 @@ const PodsTableRaw: React.FC<Props> = (props) => {
             }}
             tooltipTitle="Shell"
             size="small"
-            to={`/namespaces/${activeNamespaceName}/shells?` + getPodLogQuery(activeNamespaceName, pod)}
+            to={`/applications/${activeNamespaceName}/shells?` + getPodLogQuery(activeNamespaceName, pod)}
           >
             <KalmConsoleIcon />
           </IconLinkWithToolTip>

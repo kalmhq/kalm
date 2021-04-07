@@ -85,7 +85,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
   const renderName = (applicationDetails: ApplicationDetails) => {
     return (
       <>
-        <KLink to={`/namespaces/${applicationDetails.name}/components`} onClick={() => blinkTopProgressAction()}>
+        <KLink to={`/applications/${applicationDetails.name}/components`} onClick={() => blinkTopProgressAction()}>
           {applicationDetails.name}
         </KLink>
       </>
@@ -150,7 +150,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
 
     return (
       <KLink
-        to={`/namespaces/${applicationDetails.name}/components`}
+        to={`/applications/${applicationDetails.name}/components`}
         style={{ color: primaryColor }}
         onClick={() => blinkTopProgressAction()}
       >
@@ -218,7 +218,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
           }}
           // size="small"
           tooltipTitle="Details"
-          to={`/namespaces/${applicationDetails.name}/components`}
+          to={`/applications/${applicationDetails.name}/components`}
         >
           <KalmDetailsIcon />
         </IconLinkWithToolTip>
@@ -236,7 +236,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
           color="primary"
           size="small"
           variant="contained"
-          to={`/namespaces/new`}
+          to={`/applications/new`}
         >
           + {sc.NEW_APP_BUTTON}
         </CustomButton>
@@ -272,7 +272,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
             color="primary"
             onClick={() => {
               blinkTopProgressAction();
-              dispatch(push(`/namespaces/new`));
+              dispatch(push(`/applications/new`));
             }}
           >
             {sc.NEW_APP_BUTTON}

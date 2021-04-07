@@ -224,7 +224,7 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
           size="small"
           className={classes.secondHeaderRightItem}
           variant="outlined"
-          to={`/namespaces/${activeNamespaceName}/components/${component.name}/edit`}
+          to={`/applications/${activeNamespaceName}/components/${component.name}/edit`}
         >
           Edit
         </Button>
@@ -237,7 +237,7 @@ const ComponentShowRaw: React.FC<Props> = (props) => {
           popupTitle="DELETE COMPONENT?"
           confirmedAction={async () => {
             await dispatch(deleteComponentAction(component.name, activeNamespaceName));
-            dispatch(push("/namespaces/" + activeNamespaceName + "/components"));
+            dispatch(push("/applications/" + activeNamespaceName + "/components"));
             dispatch(setSuccessNotificationAction("Delete component successfully"));
           }}
         />

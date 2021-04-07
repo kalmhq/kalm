@@ -242,7 +242,7 @@ const ComponentBriefInfoRaw: React.FC<Props> = (props) => {
               aria-label="add-exposed-ports"
               onClick={() =>
                 props.dispatch(
-                  push(`/namespaces/${activeNamespaceName}/components/${component.name}/edit#${NetworkingTab}`),
+                  push(`/applications/${activeNamespaceName}/components/${component.name}/edit#${NetworkingTab}`),
                 )
               }
             >
@@ -285,7 +285,7 @@ const ComponentBriefInfoRaw: React.FC<Props> = (props) => {
           tooltipTitle="Add Health Probes"
           aria-label="add-health-probes"
           onClick={() =>
-            dispatch(push(`/namespaces/${activeNamespaceName}/components/${component.name}/edit#${HealthTab}`))
+            dispatch(push(`/applications/${activeNamespaceName}/components/${component.name}/edit#${HealthTab}`))
           }
         >
           <WrenchIcon fontSize="small" />

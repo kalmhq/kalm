@@ -210,7 +210,7 @@ export class LogStream extends React.PureComponent<Props, State> {
     const { activeNamespaceName } = this.props;
 
     if (!window.location.search) {
-      this.props.dispatch(push(`/namespaces/${activeNamespaceName}/components`));
+      this.props.dispatch(push(`/applications/${activeNamespaceName}/components`));
     }
 
     if (prevState.subscribedPods.length !== this.state.subscribedPods.length || this.state.value !== prevState.value) {

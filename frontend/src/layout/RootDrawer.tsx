@@ -129,7 +129,7 @@ const RootDrawerRaw: React.FC<Props> = (props) => {
       {
         name: "Application",
         items: [
-          { icon: KalmApplicationIcon, text: "Apps", to: "/namespaces" },
+          { icon: KalmApplicationIcon, text: "Apps", to: "/applications" },
           {
             icon: KalmCertificatesIcon,
             text: "Domains & Certs",
