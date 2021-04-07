@@ -10,7 +10,6 @@ export const makeKindInitialState = <T>(): KindState<T> => {
 // TODO: How to fix the typing ????
 export const makeReducerForKind = <T = Resources>(kind: string, initialState: KindState<T>) => {
   return produce((state: KindState<T>, action: Actions) => {
-    console.log(action);
     // @ts-ignore
     if (!action.payload || !action.payload || action.payload.kind !== kind) {
       return state;
