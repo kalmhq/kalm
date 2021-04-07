@@ -16,7 +16,6 @@ import CloseIcon from "@material-ui/icons/Close";
 import clsx from "clsx";
 import React from "react";
 import { FormSpy } from "react-final-form";
-import { primaryColor } from "theme/theme";
 import { AddIcon } from "widgets/Icon";
 
 const customizedButtonStyle = (theme: Theme) => {
@@ -54,39 +53,12 @@ const customizedButtonStyle = (theme: Theme) => {
   });
 };
 
-const ButtonWhite = (props: ButtonProps) => {
-  return (
-    <Box boxShadow={3} m={0} p={0} style={{ width: "fit-content", borderRadius: 5 }}>
-      <Button size="small" style={{ paddingLeft: 20, paddingRight: 20 }} color="primary" {...props}>
-        {props.children}
-      </Button>
-    </Box>
-  );
-};
-
-const ButtonGrey = (props: ButtonProps) => {
-  return (
-    <Button
-      variant="contained"
-      size="small"
-      style={{ paddingLeft: 20, paddingRight: 20, color: primaryColor }}
-      {...props}
-    >
-      {props.children}
-    </Button>
-  );
-};
-
 type CustomizedButtonProps = ButtonProps &
   WithStyles<typeof customizedButtonStyle> & {
     pending?: boolean;
     to?: string;
     component?: React.ReactNode;
   };
-
-type RaisedButtonProps = ButtonProps & {
-  pending?: boolean;
-};
 
 export const CustomizedButton = withStyles(customizedButtonStyle)((props: CustomizedButtonProps) => {
   const copiedProps = { ...props };
@@ -123,14 +95,6 @@ export const SubmitButton = (props: SubmitButtonProps) => {
         />
       )}
     </FormSpy>
-  );
-};
-
-const RaisedButton = (props: RaisedButtonProps) => {
-  return (
-    <CustomizedButton variant="contained" {...props}>
-      {props.children}
-    </CustomizedButton>
   );
 };
 

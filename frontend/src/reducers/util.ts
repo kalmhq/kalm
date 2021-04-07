@@ -3,9 +3,9 @@ import { Actions, Resources } from "../types";
 
 type KindState<T> = { [key: string]: T };
 
-const makeKindInitialState = <T>(): KindState<T> => {
-  return {};
-};
+// const makeKindInitialState = <T>(): KindState<T> => {
+//   return {};
+// };
 
 // TODO: How to fix the typing ????
 export const makeReducerForKind = <T = Resources>(kind: string, initialState: KindState<T>) => {

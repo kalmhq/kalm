@@ -192,12 +192,6 @@ const getApplicationCreatedAtDate = (components: ApplicationComponentDetails[]):
   return createdAt;
 };
 
-const getComponentCreatedAtString = (component: ApplicationComponentDetails): string => {
-  const createdAt = getComponentCreatedAtDate(component);
-  const createdAtString = createdAt <= new Date(0) ? "-" : formatDate(createdAt);
-  return createdAtString;
-};
-
 export const getComponentCreatedFromAndAtString = (component: ApplicationComponentDetails): string => {
   const createdAt = getComponentCreatedAtDate(component);
   const createdAtString =

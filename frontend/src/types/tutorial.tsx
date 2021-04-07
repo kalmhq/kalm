@@ -15,16 +15,6 @@ export const SET_TUTORIAL_FORM_VALUES = "SET_TUTORIAL_FORM_VALUES";
 
 export type TutorialFactory = (title: string) => Tutorial;
 
-interface TutorialConfigItem {
-  name: string;
-  factory: TutorialFactory;
-}
-
-interface TutorialConfig {
-  name: string;
-  items: TutorialConfigItem[];
-}
-
 export interface TutorialSubStep {
   title: React.ReactNode;
   irrevocable?: boolean;

@@ -1,5 +1,5 @@
 import { getIn } from "final-form";
-import { APPLICATION_FORM_ID, CERTIFICATE_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
+import { APPLICATION_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
 import { State as TutorialState } from "reducers/tutorial";
 import { RootState } from "store";
 
@@ -123,10 +123,6 @@ export const isApplicationFormFieldValueEqualTo = (rootState: RootState, field: 
 
 export const isComponentFormFieldValueEqualTo = (rootState: RootState, field: string, value: string) => {
   return isFormFieldValueEqualTo(rootState, COMPONENT_FORM_ID, field, value);
-};
-
-const isCertificateFormFieldValueEqualTo = (rootState: RootState, field: string, value: any) => {
-  return isFormFieldValueEqualTo(rootState, CERTIFICATE_FORM_ID, field, value);
 };
 
 export const isUnderPath = (state: RootState, ...paths: string[]) => {

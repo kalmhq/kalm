@@ -1,7 +1,6 @@
 import { createMuiTheme, PaletteType } from "@material-ui/core";
 import { blue } from "@material-ui/core/colors";
 
-const primaryBackgroud = blue[50];
 export const primaryColor = "#36A7FC";
 
 let themeRaw = createMuiTheme({

@@ -31,8 +31,6 @@ export interface NodeSelectorLabels {
 }
 
 type PodAffinityType = string;
-const PodAffinityTypePreferFanout: PodAffinityType = "prefer-fanout"; // multi host
-const PodAffinityTypePreferGather: PodAffinityType = "prefer-gather"; //same host
 
 type VolumeType = string;
 export const VolumeTypeTemporaryMemory: VolumeType = "emptyDirMemory";

@@ -1,13 +1,11 @@
 import { OutlinedTextFieldProps, TextField, Theme } from "@material-ui/core";
 import Chip from "@material-ui/core/Chip";
-import { grey } from "@material-ui/core/colors";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import { AutocompleteProps, createFilterOptions, UseAutocompleteProps } from "@material-ui/lab";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import clsx from "clsx";
 import React, { ReactNode } from "react";
 import { FieldRenderProps } from "react-final-form";
-import { theme } from "theme/theme";
 
 export interface AutoCompleteForRenderOption {
   value: string;
@@ -20,47 +18,6 @@ const FreeSoloStyles = makeStyles((theme: Theme) => ({
   error: {
     color: theme.palette.error.main,
     border: "1px solid " + theme.palette.error.main,
-  },
-}));
-
-const AutoCompleteSingleValueStyle = makeStyles((_theme: Theme) => ({
-  groupLabel: {
-    background: theme.palette.type === "light" ? theme.palette.grey[50] : theme.palette.background.paper,
-    borderBottom: `1px solid ${theme.palette.divider}`,
-    paddingLeft: 12,
-    display: "flex",
-    alignItems: "center",
-    fontSize: theme.typography.subtitle2.fontSize,
-    textTransform: "capitalize",
-    paddingTop: 4,
-    paddingBottom: 4,
-  },
-  groupLabelDefault: {
-    background: theme.palette.type === "light" ? theme.palette.grey[50] : theme.palette.background.paper,
-    borderBottom: `1px solid ${theme.palette.divider}`,
-    paddingLeft: 12,
-    display: "flex",
-    alignItems: "center",
-    fontSize: theme.typography.subtitle2.fontSize,
-    textTransform: "capitalize",
-    paddingTop: 4,
-    paddingBottom: 4,
-  },
-  groupLabelCurrent: {
-    color: theme.palette.type === "light" ? theme.palette.primary.dark : theme.palette.primary.light,
-    fontWeight: 500,
-  },
-  groupIcon: {
-    marginRight: theme.spacing(1),
-  },
-  logoIcon: {
-    marginRight: theme.spacing(2),
-    color: theme.palette.type === "light" ? theme.palette.getContrastText(grey[700]) : theme.palette.background.default,
-    background: theme.palette.type === "light" ? grey[700] : "#FFFFFF",
-  },
-
-  groupUl: {
-    marginLeft: 32,
   },
 }));
 

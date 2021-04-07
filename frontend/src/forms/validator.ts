@@ -28,30 +28,6 @@ addMethod(object, "unique", function (propertyName, message) {
   });
 });
 
-const ValidatorOneof = (...options: (string | RegExp)[]) => {
-  return (value: string) => {
-    if (!value) return undefined;
-
-    for (let i = 0; i < options.length; i++) {
-      if (typeof options[i] === "string" && value === options[i]) {
-        return undefined;
-      } else if (
-        typeof options[i] === "object" &&
-        options[i].constructor.name === "RegExp" &&
-        value.match(options[i])
-      ) {
-        return undefined;
-      }
-    }
-
-    return `Must be one of ${options.map((x) => x.toString()).join(", ")}`;
-  };
-};
-
-const regExpIp = new RegExp(
-  "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
-);
-
 // https://regex101.com/r/wG1nZ3/37
 const regExpWildcardDomain = new RegExp(/^(\*\.)?([\w-]+\.)+[a-zA-Z]+$/);
 
@@ -204,7 +180,6 @@ export const ValidatorArrayOfDIsWildcardDNS1123SubDomain = yupValidatorWrapForAr
 const NotValidPathPrefixError = "Not a valid path prefix";
 export const NoPrefixSlashError = 'Should start with a "/"';
 export const PathArrayCantBeBlankError = "Should have at least one path prefix";
-const InvalidHostError = "Host must be a valid IP address or hostname.";
 export const ValidatorArrayOfPath = yupValidatorWrapForArray<string>(
   Yup.array().required(PathArrayCantBeBlankError),
   Yup.string()
@@ -277,33 +252,6 @@ export const ValidatorRegistryHost = yupValidatorWrap<string | undefined>(
 );
 export const ValidatorArrayNotEmpty = yupValidatorWrapForArray(
   Yup.array<any>().required("Should have at least one item"),
-);
-
-const validateHostWithWildcardPrefix = yupValidatorWrap<string | undefined>(
-  string()
-    .required("Required")
-    .max(511)
-    .test(
-      "",
-      InvalidHostError,
-      (value) => value === undefined || !!String(value).match(regExpIp) || !!String(value).match(regExpWildcardDomain),
-    ),
-);
-
-const ValidatorIpAndHosts = yupValidatorWrapForArray(
-  Yup.array().required("Required"),
-  string()
-    .required("Required")
-    .max(511)
-    .test(
-      "",
-      InvalidHostError,
-      (value) =>
-        value === undefined ||
-        value === "*" ||
-        !!String(value).match(regExpIp) ||
-        !!String(value).match(regExpWildcardDomain),
-    ),
 );
 
 export const ValidateHost = yupValidatorWrap<string | undefined>(

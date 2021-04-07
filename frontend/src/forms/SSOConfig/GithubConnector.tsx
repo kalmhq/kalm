@@ -16,14 +16,6 @@ import { KMLink } from "widgets/Link";
 import { FinalTextField } from "../Final/textfield";
 import { ValidatorArrayNotEmpty, ValidatorRequired } from "../validator";
 
-const ValidatorOrgs = (values: any[], _allValues?: any, _props?: any, _name?: any) => {
-  if (!values) return undefined;
-
-  if (values.length === 0) {
-    return "You should at least configure one organization.";
-  }
-};
-
 const RenderGithubConnectorOrganizations: React.FC<{
   name: string;
 }> = (props) => {
