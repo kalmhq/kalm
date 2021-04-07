@@ -2,7 +2,6 @@ import { MetricList, Metrics } from "./common";
 import { ComponentLike } from "./componentTemplate";
 
 export const CREATE_APPLICATION = "CREATE_APPLICATION";
-export const DELETE_APPLICATION = "DELETE_APPLICATION";
 export const SET_IS_SUBMITTING_APPLICATION = "SET_IS_SUBMITTING_APPLICATION";
 export const SET_IS_SUBMITTING_APPLICATION_COMPONENT = "SET_IS_SUBMITTING_APPLICATION_COMPONENT";
 export const CREATE_COMPONENT = "CREATE_COMPONENT";
@@ -108,13 +107,6 @@ interface CreateApplicationAction {
   };
 }
 
-interface DeleteApplicationAction {
-  type: typeof DELETE_APPLICATION;
-  payload: {
-    applicationName: string;
-  };
-}
-
 interface CreateComponentAction {
   type: typeof CREATE_COMPONENT;
   payload: {
@@ -162,7 +154,7 @@ interface LoadAllNamespacesComponentsAction {
   };
 }
 
-export interface SetIsSubmittingApplication {
+interface SetIsSubmittingApplication {
   type: typeof SET_IS_SUBMITTING_APPLICATION;
   payload: {
     isSubmittingApplication: boolean;
@@ -178,7 +170,6 @@ export interface SetIsSubmittingApplicationComponent {
 
 export type ApplicationActions =
   | CreateApplicationAction
-  | DeleteApplicationAction
   | SetIsSubmittingApplication
   | SetIsSubmittingApplicationComponent
   | CreateComponentAction

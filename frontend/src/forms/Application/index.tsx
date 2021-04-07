@@ -1,8 +1,8 @@
 import { Box, createStyles } from "@material-ui/core";
 import { makeStyles, Theme } from "@material-ui/core/styles";
-import { createApplicationAction } from "actions/application";
 import { setSuccessNotificationAction } from "actions/notification";
-import { push } from "connected-react-router";
+import { createResource } from "api";
+import { kalmToK8sNamespace } from "api/transformers";
 import { FinalTextField } from "forms/Final/textfield";
 import { FormDataPreview } from "forms/Final/util";
 import { APPLICATION_FORM_ID } from "forms/formIDs";
@@ -10,6 +10,7 @@ import { trimAndToLowerParse } from "forms/normalizer";
 import React from "react";
 import { Field, Form, FormRenderProps } from "react-final-form";
 import { useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router";
 import { RootState } from "store";
 import { theme } from "theme/theme";
 import { FormTutorialHelper } from "tutorials/formValueToReduxStoreListener";
@@ -45,6 +46,7 @@ interface Props {}
 const ApplicationForm: React.FC<Props> = () => {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const history = useHistory();
   const { tutorialState, form } = useSelector((state: RootState) => {
     return {
       tutorialState: state.tutorial,
@@ -53,9 +55,9 @@ const ApplicationForm: React.FC<Props> = () => {
   });
 
   const onSubmit = async (applicationFormValue: Application) => {
-    await dispatch(createApplicationAction(applicationFormValue));
+    await createResource(kalmToK8sNamespace(applicationFormValue));
     dispatch(setSuccessNotificationAction("Create application successfully"));
-    dispatch(push(`/applications/${applicationFormValue.name}/components/new`));
+    history.push(`/applications/${applicationFormValue.name}/components/new`);
   };
 
   return (

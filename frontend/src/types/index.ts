@@ -66,5 +66,6 @@ type SteamEventAction<T = Resources> = {
 
 export interface K8sObject {
   kind: string;
+  apiVersion: string;
   metadata: Metadata;
 }

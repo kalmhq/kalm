@@ -82,7 +82,7 @@ const ComponentRaw: React.FC<Props> = (props) => {
     const { dispatch } = props;
     try {
       if (deletingComponentItem) {
-        await dispatch(deleteApplicationAction(deletingComponentItem.name));
+        await deleteApplicationAction(deletingComponentItem.name);
         await dispatch(setSuccessNotificationAction("Successfully delete an application"));
       }
     } catch {

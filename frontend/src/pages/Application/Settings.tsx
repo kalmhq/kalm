@@ -1,11 +1,11 @@
 import { Box, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import React from "react";
 import { connect } from "react-redux";
+import { useHistory } from "react-router";
 import { RootState } from "store";
 import sc from "utils/stringConstants";
 import { DeleteButtonWithConfirmPopover } from "widgets/IconWithPopover";
@@ -26,12 +26,14 @@ const styles = (theme: Theme) =>
 interface Props extends WithNamespaceProps, WithStyles<typeof styles> {}
 
 const ApplicationSettingsRaw: React.FC<Props> = (props) => {
+  const history = useHistory();
+
   const confirmDelete = async () => {
     const { dispatch, activeNamespaceName } = props;
     try {
-      await dispatch(deleteApplicationAction(activeNamespaceName));
+      await deleteApplicationAction(activeNamespaceName);
       await dispatch(setSuccessNotificationAction("Successfully delete an application"));
-      dispatch(push(`/`));
+      history.push(`/applications`);
     } catch {
       dispatch(setErrorNotificationAction());
     }

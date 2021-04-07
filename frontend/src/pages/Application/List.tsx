@@ -58,7 +58,7 @@ const ApplicationListRaw: React.FC<Props> = (props) => {
   const confirmDelete = async (applicationDetails: ApplicationDetails) => {
     const { dispatch } = props;
     try {
-      await dispatch(deleteApplicationAction(applicationDetails.name));
+      await deleteApplicationAction(applicationDetails.name);
       await dispatch(setSuccessNotificationAction("Successfully delete an application"));
     } catch {
       dispatch(setErrorNotificationAction());

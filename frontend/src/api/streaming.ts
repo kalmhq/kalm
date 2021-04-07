@@ -36,7 +36,7 @@ export const watchResourceList = async <T = Resources>(
   // TODO: reconnect if the connection is broken
   // TODO: close xhr if the above component is unmounted
 
-  const url = await getObjectListRequestUrl({ kind, metadata: { name: "" } });
+  const url = await getObjectListRequestUrl({ kind, apiVersion: "", metadata: { name: "" } });
 
   const makeRequest = () => {
     var last_index = 0;

@@ -1,16 +1,17 @@
 import RealApi from "api/api";
 import { loadApiResources } from "api/resources";
+import axios from "axios";
 import { K8sObject } from "types";
 
 export const api = new RealApi();
 
 export { watchResourceList } from "./streaming";
 
-//  const createResource = async (object: K8sObject) => {
-//   const url = await getObjectListRequestUrl(object);
-//   const res = await axios.post(url, object);
-//   console.log(res);
-// };
+export const createResource = async (object: K8sObject) => {
+  const url = await getObjectListRequestUrl(object);
+  const res = await axios.post(url, object);
+  console.log(res);
+};
 
 //  const updateResource = async (object: K8sObject) => {
 //   const url = await getObjectRequestUrl(object);
@@ -18,16 +19,16 @@ export { watchResourceList } from "./streaming";
 //   console.log(res);
 // };
 
-//  const deleteResource = async (object: K8sObject) => {
-//   const url = await getObjectRequestUrl(object);
-//   const res = await axios.delete(url);
-//   console.log(res);
-// };
+export const deleteResource = async (object: K8sObject) => {
+  const url = await getObjectRequestUrl(object);
+  const res = await axios.delete(url);
+  console.log(res);
+};
 
-// export const getObjectRequestUrl = async (object: K8sObject) => {
-//   const url = await getObjectListRequestUrl(object);
-//   return url + "/" + object.metadata.name;
-// };
+const getObjectRequestUrl = async (object: K8sObject) => {
+  const url = await getObjectListRequestUrl(object);
+  return url + "/" + object.metadata.name;
+};
 
 export const getObjectListRequestUrl = async (object: K8sObject) => {
   const url = await getPathForKind(object);
