@@ -26,7 +26,6 @@ import { AccessTokenToDeployAccessToken } from "types/deployAccessToken";
 import {
   ResourceActionType,
   RESOURCE_TYPE_ACME_SERVER,
-  RESOURCE_TYPE_APPLICATION,
   RESOURCE_TYPE_COMPONENT,
   RESOURCE_TYPE_DEPLOY_ACCESS_TOKEN,
   RESOURCE_TYPE_DOMAIN,
@@ -112,17 +111,7 @@ class WithDataRaw extends React.PureComponent<Props> {
           dispatch(setErrorNotificationAction(data.data));
           break;
         }
-        case RESOURCE_TYPE_APPLICATION: {
-          dispatch({
-            type: WATCHED_RESOURCE_CHANGE,
-            kind: RESOURCE_TYPE_APPLICATION,
-            payload: {
-              action: data.action,
-              data: data.data,
-            },
-          });
-          break;
-        }
+
         case RESOURCE_TYPE_COMPONENT: {
           throttledReloadResouces();
           dispatch({

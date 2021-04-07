@@ -4,7 +4,7 @@ import { RoleBinding } from "types/member";
 import { Node } from "types/node";
 import { Service } from "types/service";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
-import { ApplicationComponentDetails, ApplicationDetails } from "./application";
+import { ApplicationComponentDetails } from "./application";
 import { AcmeServerInfo, Certificate } from "./certificate";
 import { Disk } from "./disk";
 import { Registry } from "./registry";
@@ -17,7 +17,6 @@ export const RESOURCE_ACTION_ADD = "Add";
 export const RESOURCE_ACTION_DELETE = "Delete";
 
 export const RESOURCE_TYPE_NODE = "Node";
-export const RESOURCE_TYPE_APPLICATION = "Application";
 export const RESOURCE_TYPE_COMPONENT = "Component";
 export const RESOURCE_TYPE_HTTP_ROUTE = "HttpRoute";
 export const RESOURCE_TYPE_HTTPS_CERT = "HttpsCert";
@@ -42,15 +41,6 @@ export interface NodeResourceAction {
   payload: {
     action: ResourceActionType;
     data: Node;
-  };
-}
-
-export interface ApplicationResourceAction {
-  type: typeof WATCHED_RESOURCE_CHANGE;
-  kind: typeof RESOURCE_TYPE_APPLICATION;
-  payload: {
-    action: ResourceActionType;
-    data: ApplicationDetails;
   };
 }
 
@@ -166,7 +156,6 @@ export interface DomainResourceAction {
 
 export type ResourceActions =
   | NodeResourceAction
-  | ApplicationResourceAction
   | ComponentResourceAction
   | HttpRouteResourceAction
   | HttpsCertResourceAction
