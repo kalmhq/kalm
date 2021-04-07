@@ -3,7 +3,7 @@ import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import { ApplicationSidebar } from "pages/Namespace/ApplicationSidebar";
+import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "store";

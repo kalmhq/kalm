@@ -22,7 +22,7 @@ import debug from "debug";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { withUserAuth, WithUserAuthProps } from "hoc/withUserAuth";
 import { produce } from "immer";
-import { ApplicationSidebar } from "pages/Namespace/ApplicationSidebar";
+import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import queryString from "qs";
 import React from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";

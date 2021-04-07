@@ -1,5 +1,10 @@
 import { DashboardLayout } from "layout/DashboardLayout";
 import { Login } from "layout/Login";
+import { ApplicationListPage } from "pages/Application/List";
+import { Log } from "pages/Application/Log";
+import { ApplicationNewPage } from "pages/Application/New";
+import { ApplicationSettingsPage } from "pages/Application/Settings";
+import { ApplicationShowPage } from "pages/Application/Show";
 import { ACMEPage } from "pages/Certificate/Acme";
 import { CertificateDetailPage } from "pages/Certificate/Detail";
 import { CertificateEditPage } from "pages/Certificate/Edit";
@@ -19,11 +24,6 @@ import { LoadBalancerInfoPage } from "pages/LoadBalancer";
 import { MemberListPage } from "pages/Members";
 import { MemberPage } from "pages/Members/Details";
 import { MemberNewPage } from "pages/Members/New";
-import { NamespaceList } from "pages/Namespace/List";
-import { Log } from "pages/Namespace/Log";
-import { ApplicationNewPage } from "pages/Namespace/New";
-import { ApplicationSettingsPage } from "pages/Namespace/Settings";
-import { ApplicationShowPage } from "pages/Namespace/Show";
 import { NodeListPage } from "pages/Nodes/List";
 import { NoMatch, Page404 } from "pages/NoMatch";
 import { ProfilePage } from "pages/Profile";
@@ -83,7 +83,7 @@ export const KalmRoutes = (
           <Route exact path="/webhooks/keys/new" component={DeployAccessTokenNewPage} />
           <Route exact path="/webhooks/keys/:name" component={DeployAccessTokenDetailPage} />
 
-          <Route exact path="/namespaces" component={NamespaceList} />
+          <Route exact path="/namespaces" component={ApplicationListPage} />
           <Route exact path="/namespaces/new" component={ApplicationNewPage} />
           <Route exact path="/namespaces/:applicationName/" component={ComponentListPage} />
           <Route exact path="/namespaces/:applicationName/metrics" component={ApplicationShowPage} />

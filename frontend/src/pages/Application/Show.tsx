@@ -1,6 +1,6 @@
 import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import { ApplicationSidebar } from "pages/Namespace/ApplicationSidebar";
+import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "store";
