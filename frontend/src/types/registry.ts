@@ -1,7 +1,3 @@
-export const SET_IS_SUBMITTING_REGISTRY = "SET_IS_SUBMITTING_REGISTRY";
-export const LOAD_REGISTRIES_PENDING = "LOAD_REGISTRIES_PENDING";
-export const LOAD_REGISTRIES_FULFILLED = "LOAD_REGISTRIES_FULFILLED";
-export const LOAD_REGISTRIES_FAILED = "LOAD_REGISTRIES_FAILED";
 export const CREATE_REGISTRY = "CREATE_REGISTRY";
 export const UPDATE_REGISTRY = "UPDATE_REGISTRY";
 export const DELETE_REGISTRY = "DELETE_REGISTRY";
@@ -53,14 +49,6 @@ export const newEmptyRegistry = (): RegistryFormType => {
     host: "",
   };
 };
-
-interface LoadRegistriesAction {
-  type: typeof LOAD_REGISTRIES_FULFILLED;
-  payload: {
-    registries: Registry[];
-  };
-}
-
 interface CreateRegistryAction {
   type: typeof CREATE_REGISTRY;
   payload: {
@@ -82,21 +70,4 @@ interface DeleteRegistryAction {
   };
 }
 
-export interface SetIsSubmittingRegistry {
-  type: typeof SET_IS_SUBMITTING_REGISTRY;
-  payload: {
-    isSubmittingRegistry: boolean;
-  };
-}
-
-interface RegistriesStateAction {
-  type: typeof LOAD_REGISTRIES_PENDING | typeof LOAD_REGISTRIES_FAILED;
-}
-
-export type RegistriesActions =
-  | LoadRegistriesAction
-  | RegistriesStateAction
-  | CreateRegistryAction
-  | UpdateRegistryAction
-  | DeleteRegistryAction
-  | SetIsSubmittingRegistry;
+export type RegistriesActions = CreateRegistryAction | UpdateRegistryAction | DeleteRegistryAction;

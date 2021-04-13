@@ -71,16 +71,6 @@ export default class RealApi {
 
   // registry
 
-  public getRegistries = async (): Promise<Registry[]> => {
-    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/registries` });
-    return res.data;
-  };
-
-  public getRegistry = async (name: string) => {
-    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/registries/${name}` });
-    return res.data;
-  };
-
   public createRegistry = async (registry: RegistryFormType): Promise<Registry> => {
     const res = await axiosRequest({
       method: "post",

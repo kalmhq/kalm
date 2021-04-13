@@ -8,7 +8,6 @@ import { loadDeployAccessTokensAction } from "actions/deployAccessToken";
 import { loadDomainsAction } from "actions/domains";
 import { setErrorNotificationAction } from "actions/notification";
 import { loadPersistentVolumesAction, loadStorageClassesAction } from "actions/persistentVolume";
-import { loadRegistriesAction } from "actions/registries";
 import { loadRoutesAction } from "actions/routes";
 import { loadServicesAction } from "actions/service";
 import { loadProtectedEndpointAction, loadSSOConfigAction } from "actions/sso";
@@ -65,7 +64,6 @@ class WithDataRaw extends React.PureComponent<Props> {
     dispatch(loadRoutesAction()); // all namespaces
     dispatch(loadDeployAccessTokensAction());
     dispatch(loadProtectedEndpointAction());
-    dispatch(loadRegistriesAction());
     dispatch(loadServicesAction("")); // for routes destinations
     dispatch(loadPersistentVolumesAction());
     dispatch(loadStorageClassesAction());
