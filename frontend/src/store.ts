@@ -27,6 +27,7 @@ export const store = configureStore({
     namespacesV2: makeReducerForKind<Namespace>("Namespace", {}),
     deploymentsV2: makeReducerForKind<Deployment>("Deployment", {}),
     nodesV2: makeReducerForKind<K8sNode>("Node", {}),
+    secretsV2: makeReducerForKind<K8sNode>("Secret", {}),
     namespaces,
     nodes,
     registries,

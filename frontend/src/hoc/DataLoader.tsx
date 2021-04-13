@@ -17,6 +17,7 @@ export const DataLoader: React.FC = () => {
   useEffect(() => {
     loadApiResources();
     watchList("Namespace");
+    watchList("Secret");
     watchList("Deployment");
     watchList("Node");
     watchList("DockerRegistry");

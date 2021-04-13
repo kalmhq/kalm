@@ -1,4 +1,3 @@
-export const CREATE_REGISTRY = "CREATE_REGISTRY";
 export const UPDATE_REGISTRY = "UPDATE_REGISTRY";
 export const DELETE_REGISTRY = "DELETE_REGISTRY";
 
@@ -49,13 +48,6 @@ export const newEmptyRegistry = (): RegistryFormType => {
     host: "",
   };
 };
-interface CreateRegistryAction {
-  type: typeof CREATE_REGISTRY;
-  payload: {
-    registry: Registry;
-  };
-}
-
 interface UpdateRegistryAction {
   type: typeof UPDATE_REGISTRY;
   payload: {
@@ -70,4 +62,4 @@ interface DeleteRegistryAction {
   };
 }
 
-export type RegistriesActions = CreateRegistryAction | UpdateRegistryAction | DeleteRegistryAction;
+export type RegistriesActions = UpdateRegistryAction | DeleteRegistryAction;

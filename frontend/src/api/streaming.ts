@@ -52,6 +52,11 @@ export const watchResourceList = async <T = Resources>(
 
       // first time data
       if (last_index === 0) {
+        // the first batch is not a complete batch, do not parse, wait fot the next chunk
+        if (xhr.responseText.substring(curr_index - 1) !== "\n") {
+          return;
+        }
+
         last_index = curr_index;
 
         parseFirstTimeStreamingData(s).forEach((item) => {
@@ -62,9 +67,11 @@ export const watchResourceList = async <T = Resources>(
         return;
       }
 
-      last_index = curr_index;
-      const data = parseStreamingData<T>(s);
-      onData(data.type, data.object);
+      try {
+        const data = parseStreamingData<T>(s);
+        onData(data.type, data.object);
+        last_index = curr_index;
+      } catch (e) {}
     };
 
     xhr.onerror = () => {

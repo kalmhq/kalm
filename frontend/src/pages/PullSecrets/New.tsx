@@ -1,5 +1,6 @@
 import { Grid } from "@material-ui/core";
-import { createRegistryAction } from "actions/registries";
+import { createResource } from "api";
+import { kalmToK8sDockerRegistry } from "api/transformers";
 import { push } from "connected-react-router";
 import { RegistryForm } from "forms/Registry";
 import { BasePage } from "pages/BasePage";
@@ -12,7 +13,11 @@ const PullSecretsNewPageRaw: FC = () => {
   const dispatch = useDispatch();
 
   const submit = async (registryValue: RegistryFormType) => {
-    await dispatch(createRegistryAction(registryValue));
+    await Promise.all([
+      createResource(kalmToK8sDockerRegistry(registryValue)),
+      createResource(kalmToK8sDockerRegistry(registryValue)),
+    ]);
+
     dispatch(push("/cluster/pull-secrets"));
   };
 
