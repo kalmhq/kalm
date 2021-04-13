@@ -48,10 +48,17 @@ export interface K8sNode extends K8sObject {
 
 export interface DockerRegistry extends K8sObject {
   spec: {
+    host?: string;
     poolingIntervalSeconds?: number;
   };
   status: {
     authenticationVerified?: boolean;
     repositories?: Repository[];
   };
+}
+
+export interface Secret extends K8sObject {
+  kind: "Secret";
+  apiVersion: "v1";
+  data: { [key: string]: string };
 }

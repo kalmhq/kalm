@@ -33,8 +33,7 @@ export const watchResourceList = async <T = Resources>(
   // use raw xhr here. Will migrate to axios if this issue is fixed
   // https://github.com/axios/axios/issues/479
 
-  // TODO: reconnect if the connection is broken
-  // TODO: close xhr if the above component is unmounted
+  let lastXHR: XMLHttpRequest;
 
   const url = await getObjectListRequestUrl({ kind, apiVersion: "", metadata: { name: "" } });
 
@@ -79,7 +78,13 @@ export const watchResourceList = async <T = Resources>(
     };
 
     xhr.send();
+
+    return xhr;
   };
 
-  makeRequest();
+  lastXHR = makeRequest();
+
+  return () => {
+    lastXHR.abort();
+  };
 };

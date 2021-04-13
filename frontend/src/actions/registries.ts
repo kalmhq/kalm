@@ -1,6 +1,6 @@
 import { api } from "api";
 import { ThunkResult } from "types";
-import { DELETE_REGISTRY, Registry, RegistryFormType, UPDATE_REGISTRY } from "types/registry";
+import { Registry, RegistryFormType, UPDATE_REGISTRY } from "types/registry";
 
 export const updateRegistryAction = (registryValues: RegistryFormType): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
@@ -15,19 +15,6 @@ export const updateRegistryAction = (registryValues: RegistryFormType): ThunkRes
       type: UPDATE_REGISTRY,
       payload: {
         registry,
-      },
-    });
-  };
-};
-
-export const deleteRegistryAction = (name: string): ThunkResult<Promise<void>> => {
-  return async (dispatch) => {
-    await api.deleteRegistry(name);
-
-    dispatch({
-      type: DELETE_REGISTRY,
-      payload: {
-        name,
       },
     });
   };

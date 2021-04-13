@@ -21,7 +21,7 @@ const initialState: State = {
 
 const reducer = produce((state: State, action: Actions) => {
   // @ts-ignore
-  if (!action.payload || !action.payload || action.payload.kind !== "Node") {
+  if (!action.payload || !action.payload || action.payload.kind !== "DockerRegistry") {
     return state;
   }
 

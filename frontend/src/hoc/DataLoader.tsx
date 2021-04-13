@@ -8,7 +8,7 @@ export const DataLoader: React.FC = () => {
 
   const watchList = useCallback(
     (kind: string) => {
-      watchResourceList(kind, (type, obj) => dispatch({ type, payload: obj }));
+      return watchResourceList(kind, (type, obj) => dispatch({ type, payload: obj }));
     },
     [dispatch],
   );
@@ -16,11 +16,18 @@ export const DataLoader: React.FC = () => {
   // did mount
   useEffect(() => {
     loadApiResources();
-    watchList("Namespace");
-    watchList("Secret");
-    watchList("Deployment");
-    watchList("Node");
-    watchList("DockerRegistry");
+
+    const cancels = [
+      watchList("Namespace"),
+      watchList("Secret"),
+      watchList("Deployment"),
+      watchList("Node"),
+      watchList("DockerRegistry"),
+    ];
+
+    return () => {
+      cancels.map((cancelFuncPromise) => cancelFuncPromise.then((cancelFunc) => cancelFunc()));
+    };
   }, [watchList]);
 
   return null;

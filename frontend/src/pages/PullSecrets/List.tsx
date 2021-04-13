@@ -1,7 +1,7 @@
 import { Box, createStyles, Theme, Tooltip, Typography, withStyles, WithStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import { setErrorNotificationAction } from "actions/notification";
-import { deleteRegistryAction } from "actions/registries";
+import { deleteResource } from "api";
+import { kalmToK8sDockerRegistry } from "api/transformers";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
@@ -80,12 +80,15 @@ class PullSecretsListPageRaw extends React.PureComponent<Props, State> {
   // };
 
   private confirmDelete = async (registry: Registry) => {
-    const { dispatch } = this.props;
-    try {
-      await dispatch(deleteRegistryAction(registry.name));
-    } catch {
-      dispatch(setErrorNotificationAction());
-    }
+    await deleteResource({
+      kind: "Secret",
+      apiVersion: "v1",
+      metadata: {
+        name: registry.name + "-authentication",
+        namespace: "kalm-system",
+      },
+    });
+    await deleteResource(kalmToK8sDockerRegistry(registry));
   };
 
   private renderName(row: Registry) {

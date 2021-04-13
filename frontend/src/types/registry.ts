@@ -1,5 +1,4 @@
 export const UPDATE_REGISTRY = "UPDATE_REGISTRY";
-export const DELETE_REGISTRY = "DELETE_REGISTRY";
 
 export const PublicRegistriesList = [
   "docker.io",
@@ -55,11 +54,4 @@ interface UpdateRegistryAction {
   };
 }
 
-interface DeleteRegistryAction {
-  type: typeof DELETE_REGISTRY;
-  payload: {
-    name: string;
-  };
-}
-
-export type RegistriesActions = UpdateRegistryAction | DeleteRegistryAction;
+export type RegistriesActions = UpdateRegistryAction;

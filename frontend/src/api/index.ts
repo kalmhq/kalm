@@ -2,22 +2,23 @@ import RealApi from "api/api";
 import { loadApiResources } from "api/resources";
 import axios from "axios";
 import { K8sObject } from "types";
+import { Secret } from "types/k8s";
 
 export const api = new RealApi();
 
 export { watchResourceList } from "./streaming";
 
-export const createResource = async (object: K8sObject) => {
+export const createResource = async (object: K8sObject | Secret) => {
   const url = await getObjectListRequestUrl(object);
   const res = await axios.post(url, object);
   console.log(res);
 };
 
-//  const updateResource = async (object: K8sObject) => {
-//   const url = await getObjectRequestUrl(object);
-//   const res = await axios.put(url, object);
-//   console.log(res);
-// };
+export const updateResource = async (object: K8sObject) => {
+  const url = await getObjectRequestUrl(object);
+  const res = await axios.put(url, object);
+  console.log(res);
+};
 
 export const deleteResource = async (object: K8sObject) => {
   const url = await getObjectRequestUrl(object);

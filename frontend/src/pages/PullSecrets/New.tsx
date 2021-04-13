@@ -1,24 +1,34 @@
 import { Grid } from "@material-ui/core";
 import { createResource } from "api";
 import { kalmToK8sDockerRegistry } from "api/transformers";
-import { push } from "connected-react-router";
 import { RegistryForm } from "forms/Registry";
 import { BasePage } from "pages/BasePage";
 import React, { FC } from "react";
-import { useDispatch } from "react-redux";
+import { useHistory } from "react-router";
 import { newEmptyRegistry, RegistryFormType } from "types/registry";
 import { H6 } from "widgets/Label";
 
-const PullSecretsNewPageRaw: FC = () => {
-  const dispatch = useDispatch();
+export const PullSecretsNewPage: FC = () => {
+  const history = useHistory();
 
   const submit = async (registryValue: RegistryFormType) => {
-    await Promise.all([
-      createResource(kalmToK8sDockerRegistry(registryValue)),
-      createResource(kalmToK8sDockerRegistry(registryValue)),
-    ]);
-
-    dispatch(push("/cluster/pull-secrets"));
+    await createResource({
+      kind: "Secret",
+      apiVersion: "v1",
+      metadata: {
+        name: registryValue.name + "-authentication",
+        namespace: "kalm-system",
+        labels: {
+          "kalm-docker-registry-authentication": "true",
+        },
+      },
+      data: {
+        username: btoa(registryValue.username),
+        password: btoa(registryValue.password),
+      },
+    });
+    await createResource(kalmToK8sDockerRegistry(registryValue));
+    history.push("/cluster/pull-secrets");
   };
 
   return (
@@ -31,5 +41,3 @@ const PullSecretsNewPageRaw: FC = () => {
     </BasePage>
   );
 };
-
-export const PullSecretsNewPage = PullSecretsNewPageRaw;

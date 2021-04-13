@@ -1,7 +1,7 @@
 import { Application, ApplicationDetails } from "types/application";
 import { DockerRegistry, K8sNode, Namespace } from "types/k8s";
 import { Node } from "types/node";
-import { Registry, RegistryFormType } from "types/registry";
+import { Registry } from "types/registry";
 
 export const k8sToKalmNamespace = (ns: Namespace): ApplicationDetails => {
   return {
@@ -89,17 +89,19 @@ export const k8sToKalmDockerRegistry = (ns: DockerRegistry): Registry => {
     password: "*****",
     host: "",
     poolingIntervalSeconds: ns.spec.poolingIntervalSeconds || 0,
-    authenticationVerified: !!ns.status.authenticationVerified,
-    repositories: ns.status.repositories || [],
+    authenticationVerified: ns.status && !!ns.status.authenticationVerified,
+    repositories: ns.status ? ns.status.repositories || [] : [],
   };
 };
 
-export const kalmToK8sDockerRegistry = (registry: RegistryFormType): DockerRegistry => {
+export const kalmToK8sDockerRegistry = (registry: { name: string; host: string }): DockerRegistry => {
   return {
     kind: "DockerRegistry",
     apiVersion: "core.kalm.dev/v1alpha1",
     metadata: { name: registry.name },
-    spec: {},
+    spec: {
+      host: registry.host,
+    },
     status: {},
   };
 };

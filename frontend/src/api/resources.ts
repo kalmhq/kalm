@@ -45,10 +45,10 @@ const loadApiResourcesRaw = async () => {
 };
 
 export const loadApiResources = async () => {
-  // if (window.localStorage.getItem("apiResources")) {
-  //   loadApiResourcesRaw();
-  //   return JSON.parse(window.localStorage.getItem("apiResources")!) as APIResourceList[];
-  // }
+  if (window.localStorage.getItem("apiResources")) {
+    // loadApiResourcesRaw();
+    return JSON.parse(window.localStorage.getItem("apiResources")!) as APIResourceList[];
+  }
 
   return await loadApiResourcesRaw();
 };
