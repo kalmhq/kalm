@@ -11,7 +11,6 @@ import {
 import { GoogleDNSARecordResponse, GoogleDNSCNAMEResponse } from "types/dns";
 import { Domain, DomainCreation } from "types/domains";
 import { RoleBinding } from "types/member";
-import { Node } from "types/node";
 import { Registry, RegistryFormType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
@@ -38,21 +37,6 @@ export default class RealApi {
       false,
     );
     return res.status === 200;
-  };
-
-  public getNodes = async () => {
-    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/nodes` });
-    return res.data;
-  };
-
-  public cordonNode = async (name: string): Promise<Node> => {
-    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/nodes/${name}/cordon` });
-    return res.data;
-  };
-
-  public uncordonNode = async (name: string): Promise<Node> => {
-    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/nodes/${name}/uncordon` });
-    return res.data;
   };
 
   public getPersistentVolumes = async () => {

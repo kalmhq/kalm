@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   createStyles,
   Fade,
   Grid,
@@ -12,7 +11,6 @@ import {
   WithStyles,
   withStyles,
 } from "@material-ui/core";
-import { api } from "api";
 import { POPPER_ZINDEX } from "layout/Constants";
 import PopupState, { bindTrigger } from "material-ui-popup-state";
 import { NodeStatus } from "pages/Nodes/NodeStatus";
@@ -65,22 +63,6 @@ class NodeListRaw extends React.Component<Props, States> {
       chartDateFilter: "all",
     };
   }
-
-  private hasCordon = (node: Node) => node.statusTexts.includes("SchedulingDisabled");
-
-  private handleClickCordonButton = (event: React.MouseEvent) => {
-    const name = event.currentTarget!.getAttribute("node-name")!;
-    if (!name) return;
-
-    const node = this.props.nodes.find((n) => n.name === name)!;
-    if (!node) return;
-
-    if (this.hasCordon(node)) {
-      api.uncordonNode(name);
-    } else {
-      api.cordonNode(name);
-    }
-  };
 
   private renderNodePanel = (node: Node) => {
     let labels: React.ReactNode[] = [];
@@ -172,19 +154,6 @@ class NodeListRaw extends React.Component<Props, States> {
           </Grid>
         }
       >
-        <Box p={2}>
-          <Button
-            style={{ marginRight: 20 }}
-            color="primary"
-            size="small"
-            variant="outlined"
-            node-name={node.name}
-            onClick={this.handleClickCordonButton}
-          >
-            {this.hasCordon(node) ? "Enable Scheduling" : "Disable Scheduling"}
-          </Button>
-        </Box>
-
         <VerticalHeadTable
           items={[
             {

@@ -1,9 +1,5 @@
 import { Metrics } from "./common";
 
-export const LOAD_NODES_PENDING = "LOAD_NODES_PENDING";
-export const LOAD_NODES_FULFILLED = "LOAD_NODES_FULFILLED";
-export const LOAD_NODES_FAILED = "LOAD_NODES_FAILED";
-
 type ResourceList = {
   cpu: string;
   memory: string;
@@ -64,19 +60,3 @@ export interface Node {
   };
   metrics: Metrics;
 }
-
-type NodesListResponse = {
-  nodes: Node[];
-  metrics: Metrics;
-};
-
-interface LoadNodesAction {
-  type: typeof LOAD_NODES_FULFILLED;
-  payload: NodesListResponse;
-}
-
-interface NodeStateAction {
-  type: typeof LOAD_NODES_PENDING | typeof LOAD_NODES_FAILED;
-}
-
-export type NodeActions = LoadNodesAction | NodeStateAction;

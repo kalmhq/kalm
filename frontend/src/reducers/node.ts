@@ -1,15 +1,9 @@
+import { k8sToKalmNode } from "api/transformers";
 import produce from "immer";
-import { addOrUpdateInArray, isInArray, removeInArray } from "reducers/utils";
 import { Actions } from "types";
 import { LOGOUT, Metrics } from "types/common";
-import { LOAD_NODES_FAILED, LOAD_NODES_FULFILLED, LOAD_NODES_PENDING, Node } from "types/node";
-import {
-  RESOURCE_ACTION_ADD,
-  RESOURCE_ACTION_DELETE,
-  RESOURCE_ACTION_UPDATE,
-  RESOURCE_TYPE_NODE,
-  WATCHED_RESOURCE_CHANGE,
-} from "types/resources";
+import { K8sNode } from "types/k8s";
+import { Node } from "types/node";
 
 type State = {
   isLoading: boolean;
@@ -32,67 +26,44 @@ const initialState: State = {
   labels: [],
 };
 
-const setLabels = (state: State): State => {
-  let labelsSet = new Set();
-  state.nodes.forEach((node) => {
-    const labels = node.labels || {};
-
-    if (labels) {
-      for (let key in labels) {
-        let value = labels[key];
-        labelsSet.add(`${key}:${value}`);
-      }
-    }
-  });
-
-  state.labels = Array.from(labelsSet) as string[];
-  return state;
-};
-
 const reducer = produce((state: State, action: Actions) => {
+  // @ts-ignore
+  if (!action.payload || !action.payload || action.payload.kind !== "Node") {
+    return state;
+  }
+
   switch (action.type) {
-    case WATCHED_RESOURCE_CHANGE: {
-      if (action.kind !== RESOURCE_TYPE_NODE) {
-        return;
+    case "ADDED": {
+      const index = state.nodes.findIndex((x) => x.name === action.payload.metadata.name);
+
+      if (index >= 0) {
+        state.nodes[index] = k8sToKalmNode((action.payload as any) as K8sNode);
+      } else {
+        state.nodes.push(k8sToKalmNode((action.payload as any) as K8sNode));
       }
-      switch (action.payload.action) {
-        case RESOURCE_ACTION_ADD: {
-          if (!isInArray(state.nodes, action.payload.data)) {
-            state.nodes = addOrUpdateInArray(state.nodes, action.payload.data);
-          }
-          break;
-        }
-        case RESOURCE_ACTION_DELETE: {
-          state.nodes = removeInArray(state.nodes, action.payload.data);
-          break;
-        }
-        case RESOURCE_ACTION_UPDATE: {
-          state.nodes = addOrUpdateInArray(state.nodes, action.payload.data);
-          break;
-        }
-      }
-      state = setLabels(state);
-      return;
+
+      return state;
     }
+    case "DELETED": {
+      const index = state.nodes.findIndex((x) => x.name === action.payload.metadata.name);
+
+      if (index >= 0) {
+        delete state.nodes[index];
+      }
+      return state;
+    }
+    case "MODIFIED": {
+      const index = state.nodes.findIndex((x) => x.name === action.payload.metadata.name);
+
+      if (index >= 0) {
+        state.nodes[index] = k8sToKalmNode((action.payload as any) as K8sNode);
+      }
+      return state;
+    }
+  }
+  switch (action.type) {
     case LOGOUT: {
       return initialState;
-    }
-    case LOAD_NODES_PENDING: {
-      state.isLoading = true;
-      return;
-    }
-    case LOAD_NODES_FAILED: {
-      state.isLoading = false;
-      return;
-    }
-    case LOAD_NODES_FULFILLED: {
-      state.isLoading = false;
-      state.isFirstLoaded = true;
-      state.nodes = action.payload.nodes;
-      state.metrics = action.payload.metrics;
-
-      state = setLabels(state);
-      return;
     }
   }
 

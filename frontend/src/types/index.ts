@@ -4,7 +4,7 @@ import { RootState } from "store";
 import { DeployAccessTokenActions } from "types/deployAccessToken";
 import { VolumeActions } from "types/disk";
 import { DomainsActions } from "types/domains";
-import { Deployment, Namespace } from "types/k8s";
+import { Deployment, K8sNode, Namespace } from "types/k8s";
 import { RoleBindingsActions } from "types/member";
 import { Metadata } from "types/meta";
 import { SSOConfigActions } from "types/sso";
@@ -14,7 +14,6 @@ import { ClusterActions } from "./cluster";
 import { CommonActions } from "./common";
 import { DebounceActions } from "./debounce";
 import { NamespaceActions } from "./namespace";
-import { NodeActions } from "./node";
 import { RegistriesActions } from "./registry";
 import { ResourceActions } from "./resources";
 import { RouteActions } from "./route";
@@ -25,7 +24,6 @@ export type Actions =
   | CommonActions
   | ApplicationActions
   | NamespaceActions
-  | NodeActions
   | RegistriesActions
   | RouteActions
   | CertificateActions
@@ -55,7 +53,7 @@ export type StreamingEventType =
   | typeof StreamingEventTypeDeleted
   | typeof StreamingEventTypeModified;
 
-export type Resources = Namespace | Deployment;
+export type Resources = Namespace | Deployment | K8sNode;
 
 type SteamEventAction<T = Resources> = {
   type: StreamingEventType;

@@ -6,7 +6,6 @@ import {
 import { loadClusterInfoAction } from "actions/cluster";
 import { loadDeployAccessTokensAction } from "actions/deployAccessToken";
 import { loadDomainsAction } from "actions/domains";
-import { loadNodesAction } from "actions/node";
 import { setErrorNotificationAction } from "actions/notification";
 import { loadPersistentVolumesAction, loadStorageClassesAction } from "actions/persistentVolume";
 import { loadRegistriesAction } from "actions/registries";
@@ -80,7 +79,6 @@ class WithDataRaw extends React.PureComponent<Props> {
     dispatch(loadCertificatesAction());
     dispatch(loadDomainsAction());
 
-    dispatch(loadNodesAction());
     dispatch(loadClusterInfoAction());
   }
 

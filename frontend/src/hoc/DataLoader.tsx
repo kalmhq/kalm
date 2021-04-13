@@ -18,6 +18,7 @@ export const DataLoader: React.FC = () => {
     loadApiResources();
     watchList("Namespace");
     watchList("Deployment");
+    watchList("Node");
   }, [watchList]);
 
   return null;
