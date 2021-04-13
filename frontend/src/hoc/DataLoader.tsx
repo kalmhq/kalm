@@ -19,6 +19,7 @@ export const DataLoader: React.FC = () => {
     watchList("Namespace");
     watchList("Deployment");
     watchList("Node");
+    watchList("DockerRegistry");
   }, [watchList]);
 
   return null;

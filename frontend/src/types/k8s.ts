@@ -1,4 +1,5 @@
 import { K8sObject } from "types";
+import { Repository } from "types/registry";
 
 export interface Namespace extends K8sObject {}
 
@@ -42,5 +43,15 @@ export interface K8sNode extends K8sObject {
       names: string[];
       sizeBytes: number;
     }[];
+  };
+}
+
+export interface DockerRegistry extends K8sObject {
+  spec: {
+    poolingIntervalSeconds?: number;
+  };
+  status: {
+    authenticationVerified?: boolean;
+    repositories?: Repository[];
   };
 }

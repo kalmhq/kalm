@@ -1,6 +1,7 @@
 import { Application, ApplicationDetails } from "types/application";
-import { K8sNode, Namespace } from "types/k8s";
+import { DockerRegistry, K8sNode, Namespace } from "types/k8s";
 import { Node } from "types/node";
+import { Registry } from "types/registry";
 
 export const k8sToKalmNamespace = (ns: Namespace): ApplicationDetails => {
   return {
@@ -80,3 +81,29 @@ export const k8sToKalmNode = (node: K8sNode): Node => {
     },
   };
 };
+
+export const k8sToKalmDockerRegistry = (ns: DockerRegistry): Registry => {
+  return {
+    name: ns.metadata.name,
+    username: "*****",
+    password: "*****",
+    host: "",
+    poolingIntervalSeconds: ns.spec.poolingIntervalSeconds || 0,
+    authenticationVerified: !!ns.status.authenticationVerified,
+    repositories: ns.status.repositories || [],
+  };
+};
+
+// export const kalmToK8sDockerRegistry = (ns: Registry): DockerRegistry => {
+//   return {
+//     kind: "Namespace",
+//     apiVersion: "v1",
+//     metadata: {
+//       name: ns.name,
+//       labels: {
+//         "istio-injection": "enabled",
+//         "kalm-enabled": "true",
+//       },
+//     },
+//   };
+// };

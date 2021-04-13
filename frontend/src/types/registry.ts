@@ -23,7 +23,7 @@ interface RepositoryTag {
   timeUploadedMs: string;
 }
 
-interface Repository {
+export interface Repository {
   name: string;
   tags: RepositoryTag[];
 }

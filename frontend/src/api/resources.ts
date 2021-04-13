@@ -36,17 +36,21 @@ interface APIResourceList {
   resources: APIResource[];
 }
 
-export const loadApiResources = async () => {
-  if (window.localStorage.getItem("apiResources")) {
-    return JSON.parse(window.localStorage.getItem("apiResources")!) as APIResourceList[];
-  }
-
+const loadApiResourcesRaw = async () => {
   const apiResources = await _loadApiResources();
   const apisResources = await _loadApisResources();
   const res = apiResources.concat(apisResources);
-
   window.localStorage.setItem("apiResources", JSON.stringify(res));
   return res;
+};
+
+export const loadApiResources = async () => {
+  // if (window.localStorage.getItem("apiResources")) {
+  //   loadApiResourcesRaw();
+  //   return JSON.parse(window.localStorage.getItem("apiResources")!) as APIResourceList[];
+  // }
+
+  return await loadApiResourcesRaw();
 };
 
 const _loadApiResources = async (): Promise<APIResourceList[]> => {
