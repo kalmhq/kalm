@@ -114,7 +114,7 @@ class DeployAccessTokenDetailPageRaw extends React.PureComponent<Props> {
               <Box mt={2}>
                 <Subtitle2>Endpoint</Subtitle2>
                 <Box mt={2} ml={2}>
-                  <CodeBlock>{`POST https://<your-kalm-host>/webhooks/components`}</CodeBlock>
+                  <CodeBlock>{`POST https://<your-kalm-host>/webhook/components`}</CodeBlock>
                 </Box>
               </Box>
               <Box mt={2}>
