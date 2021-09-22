@@ -785,6 +785,18 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *corev1.Po
 	// TODO consider to move to plugin
 	if component.Spec.Replicas != nil {
 		deployment.Spec.Replicas = component.Spec.Replicas
+
+		labelMap, err := metaV1.LabelSelectorAsSelector(deployment.Spec.Selector)
+		if err != nil {
+			r.WarningEvent(err, "Error retrieving Deployment labels")
+			return err
+		}
+		component.Status.Selector = labelMap.String()
+		component.Status.Replicas = *deployment.Spec.Replicas
+		if err := r.Status().Update(ctx, component); err != nil {
+			r.WarningEvent(err, "unable to update component status for Application")
+			return err
+		}
 	} else {
 		deployment.Spec.Replicas = nil
 	}

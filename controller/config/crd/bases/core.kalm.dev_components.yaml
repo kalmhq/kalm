@@ -18,6 +18,9 @@ spec:
   - JSONPath: .metadata.creationTimestamp
     name: Age
     type: date
+  - JSONPath: .spec.replicas
+    name: Scale
+    type: integer
   group: core.kalm.dev
   names:
     kind: Component
@@ -25,7 +28,12 @@ spec:
     plural: components
     singular: component
   scope: Namespaced
-  subresources: {}
+  subresources:
+    scale:
+      labelSelectorPath: .status.selector
+      specReplicasPath: .spec.replicas
+      statusReplicasPath: .status.replicas
+    status: {}
   validation:
     openAPIV3Schema:
       description: Component is the Schema for the components API
@@ -566,6 +574,18 @@ spec:
           type: object
         status:
           description: ComponentStatus defines the observed state of Component
+          properties:
+            replicas:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file'
+              format: int32
+              type: integer
+            selector:
+              type: string
+          required:
+          - replicas
+          - selector
           type: object
       type: object
   version: v1alpha1
