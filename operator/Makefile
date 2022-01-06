@@ -1,6 +1,6 @@
 
 # Image URL to use all building/pushing image targets
-IMG ?= kalmhq/kalm-operator:latest
+IMG ?= ialaddin/kalm-operator:latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
@@ -18,7 +18,7 @@ ifeq (, $(shell which go-bindata))
 	go get -u github.com/go-bindata/go-bindata/...
 endif
 ifeq (, $(shell which kustomize))
-	curl -s "https://raw.githubusercontent.com/kalmhq/kalm/master/scripts/install-kustomize.sh" | bash
+	curl -s "https://raw.githubusercontent.com/iAladdin/kalm/master/scripts/install-kustomize.sh" | bash
 	sudo mv ./kustomize /usr/local/bin/kustomize
 endif
 	go generate ./...

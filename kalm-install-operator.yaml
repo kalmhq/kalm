@@ -635,7 +635,7 @@ spec:
             - --enable-leader-election
           command:
             - /manager
-          image: kalmhq/kalm-operator:latest
+          image: ialaddin/kalm-operator:latest
           imagePullPolicy: Always
           name: manager
           resources:

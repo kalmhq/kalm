@@ -48,7 +48,7 @@ metadata:
   name: kalm-dashboard
   namespace: kalm-system
 spec:
-  image: kalmhq/kalm:latest
+  image: ialaddin/kalm:latest
   workloadType: server
   command: ./kalm-api-server
   ports:

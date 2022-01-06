@@ -45,12 +45,12 @@ import (
 
 const (
 	NamespaceKalmSystem = "kalm-system"
-	//KalmImgRepo          = "quay.io/kalmhq/kalm"
+	//KalmImgRepo          = "quay.io/ialaddin/kalm"
 	NamespaceCertManager = "cert-manager"
 	NamespaceIstio       = "istio-system"
 
-	KalmDashboardImgRepo  = "kalmhq/kalm"
-	KalmControllerImgRepo = "kalmhq/kalm-controller"
+	KalmDashboardImgRepo  = "ialaddin/kalm"
+	KalmControllerImgRepo = "ialaddin/kalm-controller"
 	FallbackImgVersion    = "latest"
 )
 

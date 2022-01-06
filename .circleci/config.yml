@@ -1,40 +1,24 @@
 version: 2.1
-#orbs:
-#  deploy-orb: kalmhq-ns1/deploy-orb@dev:0.0.3
 jobs:
-  auto-tag:
-    machine:
-      image: ubuntu-2004:202008-01
-    steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "96:82:d6:5d:87:53:78:7e:d4:c1:1e:5e:8b:91:9d:b6"
-      - checkout
-      - run:
-          name: auto tag
-          command: |
-            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            ./scripts/auto-tag.sh -v patch
   test-dashboard:
-    parallelism: 8
     docker:
       - image: circleci/golang:1.15.2
     environment:
       KUBEBUILDER_ASSETS: /home/circleci/kubebuilder/bin
       GO111MODULE: "on"
-      TEST_RESULTS: /tmp/test-results
     steps:
       - checkout
-      - run: mkdir -p $TEST_RESULTS # create the test results directory
       - run:
           name: Install kubebuilder
           command: |
             os=$(go env GOOS)
             arch=$(go env GOARCH)
             echo $os $arch
-            echo https://go.kubebuilder.io/dl/2.3.1/${os}/${arch}
-            curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
-            sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
+            echo https://github.com/kubernetes-sigs/kubebuilder/releases/download/v2.3.1/kubebuilder_2.3.1_${os}_${arch}.tar.gz
+            curl -fsL "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v2.3.1/kubebuilder_2.3.1_${os}_${arch}.tar.gz" -o kubebuilder-tools
+            tar -zvxf kubebuilder-tools
+            sudo mv kubebuilder_2.3.1_${os}_${arch}/ $HOME/kubebuilder/
+            ls -al $HOME/kubebuilder/
             export PATH=$PATH:$HOME/kubebuilder/bin
       - run:
           name: go get
@@ -43,15 +27,43 @@ jobs:
       - run:
           name: run test
           working_directory: ./api
+          command: go test -coverprofile=coverage.txt -covermode=atomic -v ./...
+      - run:
+          name: upload coverage
+          working_directory: ./api
+          command: bash <(curl -s https://codecov.io/bash)
+  test-controller:
+    docker:
+      - image: circleci/golang:1.13.11
+    environment:
+      KUBEBUILDER_ASSETS: /home/circleci/kubebuilder/bin
+      GO111MODULE: "on"
+    steps:
+      - checkout
+      - run:
+          name: Install kubebuilder
           command: |
-            PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
-            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- -coverprofile=${TEST_RESULTS}/cover.out -- $PACKAGE_NAMES
-            go tool cover -html=${TEST_RESULTS}/cover.out -o ${TEST_RESULTS}/coverage.html
-      - store_artifacts: # upload test summary for display in Artifacts
-          path: /tmp/test-results
-          destination: raw-test-output
-      - store_test_results: # upload test results for display in Test Summary
-          path: /tmp/test-results
+            os=$(go env GOOS)
+            arch=$(go env GOARCH)
+            echo $os $arch
+            echo https://github.com/kubernetes-sigs/kubebuilder/releases/download/v2.3.1/kubebuilder_2.3.1_${os}_${arch}.tar.gz
+            curl -fsL "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v2.3.1/kubebuilder_2.3.1_${os}_${arch}.tar.gz" -o kubebuilder-tools
+            tar -zvxf kubebuilder-tools
+            sudo mv kubebuilder_2.3.1_${os}_${arch}/ $HOME/kubebuilder/
+            ls -al $HOME/kubebuilder/
+            export PATH=$PATH:$HOME/kubebuilder/bin
+      - run:
+          name: go get
+          working_directory: ./controller
+          command: go get -d ./...
+      - run:
+          name: run test
+          working_directory: ./controller
+          command: make test
+      - run:
+          name: upload coverage
+          working_directory: ./controller
+          command: bash <(curl -s https://codecov.io/bash)
   build-push-dashboard-image:
     machine:
       image: ubuntu-2004:202008-01
@@ -61,74 +73,34 @@ jobs:
           name: Build & Push Docker image
           command: |
             export DOCKER_CLI_EXPERIMENTAL=enabled
-            docker buildx create --name mybuilder --use
+            docker buildx create --buildkitd-flags '--debug' --name mybuilder --use
+
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
             if [ $CIRCLE_BRANCH = "master" ]
             then
               KALM_BUILD_ENV_GIT_COMMIT=$CIRCLE_SHA1
               KALM_BUILD_ENV_GIT_VERSION=$CIRCLE_TAG
             fi
 
-            if [ -z "$CIRCLE_BRANCH" ]
-            then
-              CACHE_REF=default-cache
-            else
-              CACHE_REF=$CIRCLE_BRANCH-cache
-            fi
-
             docker buildx build \
               --output=type=docker \
-              --cache-from=type=registry,ref=kalmhq/kalm:$CACHE_REF \
-              --cache-to=type=registry,ref=kalmhq/kalm:$CACHE_REF,mode=max \
               --build-arg KALM_BUILD_ENV_GIT_COMMIT=$KALM_BUILD_ENV_GIT_COMMIT \
               --build-arg KALM_BUILD_ENV_GIT_VERSION=$KALM_BUILD_ENV_GIT_VERSION \
-              -t kalmhq/kalm:latest .
+              -t ialaddin/kalm:latest .
+              # --cache-from=type=registry,ref=ialaddin/kalm:$CIRCLE_BRANCH-cache \
+              # --cache-to=type=registry,ref=ialaddin/kalm:$CIRCLE_BRANCH-cache,mode=max \
+              
 
-            docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_SHA1
-            docker push kalmhq/kalm:latest
-            docker push kalmhq/kalm:$CIRCLE_SHA1
+            docker tag ialaddin/kalm:latest ialaddin/kalm:$CIRCLE_SHA1
+            docker push ialaddin/kalm:latest
+            docker push ialaddin/kalm:$CIRCLE_SHA1
 
             if [ "$CIRCLE_TAG" != "" ]
             then
-              docker tag kalmhq/kalm:latest kalmhq/kalm:$CIRCLE_TAG
-              docker push kalmhq/kalm:$CIRCLE_TAG
+              docker tag ialaddin/kalm:latest ialaddin/kalm:$CIRCLE_TAG
+              docker push ialaddin/kalm:$CIRCLE_TAG
             fi
-  test-controller:
-    docker:
-      - image: circleci/golang:1.13.11
-    environment:
-      KUBEBUILDER_ASSETS: /home/circleci/kubebuilder/bin
-      GO111MODULE: "on"
-      TEST_RESULTS: /tmp/test-results
-    parallelism: 8
-    steps:
-      - checkout
-      - run: mkdir -p $TEST_RESULTS # create the test results directory
-      - run:
-          name: Install kubebuilder
-          command: |
-            os=$(go env GOOS)
-            arch=$(go env GOARCH)
-            echo $os $arch
-            echo https://go.kubebuilder.io/dl/2.3.1/${os}/${arch}
-            curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
-            sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
-            export PATH=$PATH:$HOME/kubebuilder/bin
-      - run:
-          name: go get
-          working_directory: ./controller
-          command: go get -d ./...
-      - run:
-          name: run test
-          working_directory: ./controller
-          command: |
-            PACKAGE_NAMES=$(go list ./... | circleci tests split --split-by=timings --timings-type=classname)
-            gotestsum --junitfile ${TEST_RESULTS}/gotestsum-report.xml -- $PACKAGE_NAMES
-      - store_artifacts: # upload test summary for display in Artifacts
-          path: /tmp/test-results
-          destination: raw-test-output
-      - store_test_results: # upload test results for display in Test Summary
-          path: /tmp/test-results
   build-push-controller-image:
     machine:
       image: ubuntu-2004:202008-01
@@ -142,28 +114,24 @@ jobs:
             export DOCKER_CLI_EXPERIMENTAL=enabled
             # use driver: docker-container
             docker buildx create --name mybuilder --use
-            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
-            if [ -z "$CIRCLE_BRANCH" ]
-            then
-              CACHE_REF=default-cache
-            else
-              CACHE_REF=$CIRCLE_BRANCH-cache
-            fi
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
             docker buildx build \
               --output=type=docker \
-              --cache-from=type=registry,ref=kalmhq/kalm-controller:$CACHE_REF \
-              --cache-to=type=registry,ref=kalmhq/kalm-controller:$CACHE_REF,mode=max \
-              -t kalmhq/kalm-controller:latest .
+              -t ialaddin/kalm-controller:latest .
+              # --cache-from=type=registry,ref=ialaddin/kalm-controller:$CIRCLE_BRANCH-cache \
+              # --cache-to=type=registry,ref=ialaddin/kalm-controller:$CIRCLE_BRANCH-cache,mode=max \
+              
 
-            docker tag  kalmhq/kalm-controller:latest kalmhq/kalm-controller:$CIRCLE_SHA1
-            docker push kalmhq/kalm-controller:latest
-            docker push kalmhq/kalm-controller:$CIRCLE_SHA1
+            docker tag  ialaddin/kalm-controller:latest ialaddin/kalm-controller:$CIRCLE_SHA1
+            docker push ialaddin/kalm-controller:latest
+            docker push ialaddin/kalm-controller:$CIRCLE_SHA1
+
             if [ "$CIRCLE_TAG" != "" ]
             then
-              docker tag kalmhq/kalm-controller:latest kalmhq/kalm-controller:$CIRCLE_TAG
-              docker push kalmhq/kalm-controller:$CIRCLE_TAG
+              docker tag ialaddin/kalm-controller:latest ialaddin/kalm-controller:$CIRCLE_TAG
+              docker push ialaddin/kalm-controller:$CIRCLE_TAG
             fi
   build-push-operator-image:
     machine:
@@ -181,223 +149,178 @@ jobs:
             # enable buildx
             export DOCKER_CLI_EXPERIMENTAL=enabled
             # use driver: docker-container
-            docker buildx create --name mybuilder --use
-            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker buildx create --buildkitd-flags '--debug' --name mybuilder --use
 
-            if [ -z "$CIRCLE_BRANCH" ]
-            then
-              CACHE_REF=default-cache
-            else
-              CACHE_REF=$CIRCLE_BRANCH-cache
-            fi
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
             docker buildx build \
               --output=type=docker \
-              --cache-from=type=registry,ref=kalmhq/kalm-operator:$CACHE_REF \
-              --cache-to=type=registry,ref=kalmhq/kalm-operator:$CACHE_REF,mode=max \
-              -t kalmhq/kalm-operator:latest .
+              -t ialaddin/kalm-operator:latest .
+              
+              # --cache-from=type=registry,ref=ialaddin/kalm-operator:$CIRCLE_BRANCH-cache \
+              # --cache-to=type=registry,ref=ialaddin/kalm-operator:$CIRCLE_BRANCH-cache,mode=max \
+              
 
-            docker tag  kalmhq/kalm-operator:latest kalmhq/kalm-operator:$CIRCLE_SHA1
-            docker push kalmhq/kalm-operator:latest
-            docker push kalmhq/kalm-operator:$CIRCLE_SHA1
+            docker tag  ialaddin/kalm-operator:latest ialaddin/kalm-operator:$CIRCLE_SHA1
+            docker push ialaddin/kalm-operator:latest
+            docker push ialaddin/kalm-operator:$CIRCLE_SHA1
+
             if [ "$CIRCLE_TAG" != "" ]
             then
-              docker tag kalmhq/kalm-operator:latest kalmhq/kalm-operator:$CIRCLE_TAG
-              docker push kalmhq/kalm-operator:$CIRCLE_TAG
+              docker tag ialaddin/kalm-operator:latest ialaddin/kalm-operator:$CIRCLE_TAG
+              docker push ialaddin/kalm-operator:$CIRCLE_TAG
             fi
-  #deploy-dashboard:
-  #  executor: deploy-orb/default
-  #  steps:
-  #    - deploy-orb/deploy:
-  #        KALM_API_ADDRESS: https://dashboard.kapp.live
-  #        KALM_DEPLOY_KEY: $DEPLOY_KEY
-  #        KALM_APP: kalm-system
-  #        KALM_COMPONENT: kalm
-  #        KALM_COMPONENT_IMG_TAG: $CIRCLE_SHA1
-  deploy-dashboard:
-    docker:
-      - image: circleci/ruby:2.4.1
-    steps:
-      - checkout
-      - run:
-          name: deploy
-          command: |
-            curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
-            chmod +x ./kubectl
-            sudo mv ./kubectl /usr/local/bin/kubectl
-            mkdir ${HOME}/.kube
-            echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
-
-            # get current kalmoperator config
-            mkdir tmp
-            kubectl get kalmoperatorconfigs.install.kalm.dev -n kalm-operator kalmoperatorconfig-sample -oyaml > tmp/kalm-op-config.yaml
-
-            # update dashboard version
-            ruby scripts/update-kalmop-config-yaml.rb dashboard $CIRCLE_SHA1
-            # apply
-            kubectl apply -f tmp/updated.yaml
-  deploy-controller:
-    docker:
-      - image: circleci/ruby:2.4.1
-    steps:
-      - checkout
-      - run:
-          name: deploy
-          command: |
-            curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
-            chmod +x ./kubectl
-            sudo mv ./kubectl /usr/local/bin/kubectl
-            mkdir ${HOME}/.kube
-            echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
-
-            # get current kalmoperator config
-            mkdir tmp
-            kubectl get kalmoperatorconfigs.install.kalm.dev -n kalm-operator kalmoperatorconfig-sample -oyaml > tmp/kalm-op-config.yaml
-
-            # update controller version
-            ruby scripts/update-kalmop-config-yaml.rb controller $CIRCLE_SHA1
-            # apply
-            kubectl apply -f tmp/updated.yaml
-  deploy-operator:
-    docker:
-      - image: circleci/golang:1.13.11
-    steps:
-      - checkout
-      - run:
-          name: deploy
-          working_directory: ./operator
-          command: |
-            curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
-            chmod +x ./kubectl
-            sudo mv ./kubectl /usr/local/bin/kubectl
-            mkdir ${HOME}/.kube
-            echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
-
-            IMG=kalmhq/kalm-operator:${CIRCLE_SHA1} make deploy
+  # deploy-dashboard:
+  #   executor: deploy-orb/default
+  #   steps:
+  #     - deploy-orb/deploy:
+  #         KALM_API_ADDRESS: https://dashboard.kapp.live
+  #         KALM_DEPLOY_KEY: $DEPLOY_KEY
+  #         KALM_APP: kalm-system
+  #         KALM_COMPONENT: kalm
+  #         KALM_COMPONENT_IMG_TAG: $CIRCLE_SHA1
+  # deploy-auth-proxy:
+  #   executor: deploy-orb/default
+  #   steps:
+  #     - deploy-orb/deploy:
+  #         KALM_API_ADDRESS: https://dashboard.kapp.live
+  #         KALM_DEPLOY_KEY: $DEPLOY_KEY
+  #         KALM_APP: kalm-system
+  #         KALM_COMPONENT: auth-proxy
+  #         KALM_COMPONENT_IMG_TAG: $CIRCLE_SHA1
+  # deploy-controller:
+  #   docker:
+  #     - image: circleci/golang:1.13.11
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: deploy
+  #         working_directory: ./controller
+  #         command: |
+  #           curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
+  #           chmod +x ./kubectl
+  #           sudo mv ./kubectl /usr/local/bin/kubectl
+  #           mkdir ${HOME}/.kube
+  #           echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
+  #           IMG=ialaddin/kalm-controller:latest make deploy
+  #           kubectl -n kalm-system patch deployment kalm-controller -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
+  # deploy-operator:
+  #   docker:
+  #     - image: circleci/golang:1.13.11
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: deploy
+  #         working_directory: ./operator
+  #         command: |
+  #           curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
+  #           chmod +x ./kubectl
+  #           sudo mv ./kubectl /usr/local/bin/kubectl
+  #           mkdir ${HOME}/.kube
+  #           echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
+  #           IMG=ialaddin/kalm-operator:latest make deploy
+  #           kubectl -n kalm-operator patch deployment kalm-operator -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
 workflows:
   version: 2
-  main-workflow:
+  dashboard:
     jobs:
       - test-dashboard:
           filters:
-            branches:
-              only:
-                - main
             tags:
               only: /^v.*/
-      - test-controller:
+      - hold:
+          type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
           filters:
             branches:
-              only:
-                - main
-            tags:
-              only: /^v.*/
-      - build-push-operator-image:
-          context: kalm-ci
-          filters:
-            branches:
-              only:
-                - main
-            tags:
-              only: /^v.*/
+              ignore: master
       - build-push-dashboard-image:
-          context: kalm-ci
+          name: manual-build-push-dashboard-image
+          context: kalm
+          requires:
+            - hold
+      - build-push-dashboard-image:
+          context: kalm
           requires:
             - test-dashboard
           filters:
             branches:
               only:
-                - main
+                - master
             tags:
               only: /^v.*/
+      # - deploy-dashboard:
+      #     context: deploy-demo-cluster
+      #     requires:
+      #       - build-push-dashboard-image
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
+      # - deploy-auth-proxy:
+      #     context: deploy-demo-cluster
+      #     requires:
+      #       - build-push-dashboard-image
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
+  controller:
+    jobs:
+      - test-controller:
+          filters:
+            tags:
+              only: /^v.*/
+      - hold:
+          type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
+          filters:
+            branches:
+              ignore: master
       - build-push-controller-image:
-          context: kalm-ci
+          name: manual-build-push-controller-image
+          context: kalm
+          requires:
+            - hold
+      - build-push-controller-image:
+          context: kalm
           requires:
             - test-controller
           filters:
             branches:
               only:
-                - main
+                - master
             tags:
               only: /^v.*/
-      - auto-tag:
-          context: kalm-ci
-          requires:
-            - build-push-operator-image
-            - build-push-dashboard-image
-            - build-push-controller-image
-          filters:
-            branches:
-              only:
-                - main
-      - deploy-operator:
-          name: deploy-operator-to-internal-cluster
-          context: deploy-internal-cluster
-          requires:
-            - build-push-operator-image
-          filters:
-            branches:
-              only:
-                - main
-      - deploy-dashboard:
-          name: deploy-dashboard-internal-cluster
-          context: deploy-internal-cluster
-          requires:
-            - build-push-dashboard-image
-          filters:
-            branches:
-              only:
-                - main
-      - deploy-controller:
-          name: deploy-controller-to-internal-cluster
-          context: deploy-internal-cluster
-          requires:
-            - build-push-controller-image
-          filters:
-            branches:
-              only:
-                - main
-  dashboard:
-    jobs:
-      - test-dashboard:
-          filters:
-            branches:
-              ignore: main
-      - hold:
-          type: approval # <<< This key-value pair will set your workflow to a status of "On Hold"
-          filters:
-            branches:
-              ignore: main
-      - build-push-dashboard-image:
-          name: manual-build-push-dashboard-image
-          context: kalm-ci
-          requires:
-            - hold
-  controller:
-    jobs:
-      - test-controller:
-          filters:
-            branches:
-              ignore: main
-      - hold:
-          type: approval
-          filters:
-            branches:
-              ignore: main
-      - build-push-controller-image:
-          name: manual-build-push-controller-image
-          context: kalm-ci
-          requires:
-            - hold
+      # - deploy-controller:
+      #     context: deploy-demo-cluster
+      #     requires:
+      #       - build-push-controller-image
+      #     filters:
+      #       branches:
+      #         only: master
   operator:
     jobs:
+      - build-push-operator-image:
+          context: kalm
+          filters:
+            branches:
+              only:
+                - master
+            tags:
+              only: /^v.*/
       - hold:
           type: approval
           filters:
             branches:
-              ignore: main
+              ignore: master
       - build-push-operator-image:
           name: manual-build-push-operator-image
-          context: kalm-ci
+          context: kalm
           requires:
             - hold
+      # - deploy-operator:
+      #     context: deploy-demo-cluster
+      #     requires:
+      #       - build-push-operator-image
+      #     filters:
+      #       branches:
+      #         only: master
