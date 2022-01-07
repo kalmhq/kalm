@@ -43,6 +43,7 @@ func (r *SingleSignOnConfig) SetupWebhookWithManager(mgr ctrl.Manager) error {
 const (
 	SSOConnectorTypeGithub = "github"
 	SSOConnectorTypeGitlab = "gitlab"
+	SSOConnectorTypeGoogle = "google"
 )
 
 // +kubebuilder:object:generate=false
@@ -70,6 +71,19 @@ type SSOGitlabConnector struct {
 		ClientID     string   `json:"clientID"`
 		ClientSecret string   `json:"clientSecret"`
 		Groups       []string `json:"groups"`
+	} `json:"config"`
+}
+
+// +kubebuilder:object:generate=false
+type SSOGoogleConnector struct {
+	ID     string `json:"id"`
+	Type   string `json:"type"`
+	Name   string `json:"name"`
+	Config struct {
+		HostedDomains string   `json:"hostedDomains"`
+		ClientID      string   `json:"clientID"`
+		ClientSecret  string   `json:"clientSecret"`
+		Groups        []string `json:"groups"`
 	} `json:"config"`
 }
 
@@ -176,6 +190,41 @@ func (r *SingleSignOnConfig) commonValidate() error {
 				}
 
 				var typeConnector SSOGitlabConnector
+				err = json.Unmarshal(bts, &typeConnector)
+
+				if err != nil {
+					allErrs = append(allErrs, field.Invalid(basePath, r.Name, "Unmarshal to json failed."))
+					continue
+				}
+
+				if typeConnector.Config.ClientID == "" {
+					allErrs = append(allErrs, field.Invalid(basePath.Child("config", "clientID"), r.Name, "Can't be blank"))
+				}
+
+				if typeConnector.Config.ClientSecret == "" {
+					allErrs = append(allErrs, field.Invalid(basePath.Child("config", "clientSecret"), r.Name, "Can't be blank"))
+				}
+
+				if len(typeConnector.Config.Groups) == 0 {
+					allErrs = append(allErrs, field.Invalid(basePath.Child("config", "groups"), r.Name, "Can't be blank"))
+				}
+
+				for j := range typeConnector.Config.Groups {
+					groupName := typeConnector.Config.Groups[j]
+
+					if groupName == "" {
+						allErrs = append(allErrs, field.Invalid(basePath.Child("config", "groups", strconv.Itoa(j)), r.Name, "Can't be blank"))
+					}
+				}
+			} else if connector.Type == SSOConnectorTypeGoogle {
+				bts, err := json.Marshal(connector)
+
+				if err != nil {
+					allErrs = append(allErrs, field.Invalid(basePath, r.Name, "Marshal to json failed."))
+					continue
+				}
+
+				var typeConnector SSOGoogleConnector
 				err = json.Unmarshal(bts, &typeConnector)
 
 				if err != nil {

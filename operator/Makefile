@@ -72,6 +72,12 @@ docker-build: generate fmt vet manifests go-generate
 docker-push:
 	docker push ${IMG}
 
+# Build the docker image
+docker-local-build: generate fmt vet manifests go-generate
+	cp ../controller ./controller
+	docker build . -t ${IMG}
+	rm -rf ./controller
+
 # find or download controller-gen
 # download controller-gen if necessary
 controller-gen:

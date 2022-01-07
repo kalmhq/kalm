@@ -609,7 +609,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 		},
 		Spec: v1alpha1.ComponentSpec{
 			WorkloadType: v1alpha1.WorkloadTypeServer,
-			Image:        fmt.Sprintf("kalmhq/kalm:%s", authProxyImgTag),
+			Image:        fmt.Sprintf("ialaddin/kalm:%s", authProxyImgTag),
 			Command:      "./auth-proxy",
 			Ports: []v1alpha1.Port{
 				{
