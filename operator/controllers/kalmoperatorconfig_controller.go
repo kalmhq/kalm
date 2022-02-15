@@ -155,8 +155,6 @@ func (r *KalmOperatorConfigReconciler) applyFromYaml(yamlName string) error {
 
 	fileContent := MustAsset(yamlName)
 
-	r.Log.Info(fmt.Sprintf("YAML File content: %x", fileContent))
-
 	objectsBytes := utils.SeparateYamlBytes(fileContent)
 	decode := serializer.NewCodecFactory(r.Scheme).UniversalDeserializer().Decode
 
@@ -167,6 +165,7 @@ func (r *KalmOperatorConfigReconciler) applyFromYaml(yamlName string) error {
 			r.Log.Error(err, fmt.Sprintf("Decode yaml %s error.", yamlName))
 			return err
 		}
+		r.Log.Info(fmt.Sprintf("YAML File content: \n %+v \n", object))
 
 		objectKey, err := client.ObjectKeyFromObject(object)
 
