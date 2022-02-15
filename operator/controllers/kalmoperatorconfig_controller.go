@@ -155,6 +155,8 @@ func (r *KalmOperatorConfigReconciler) applyFromYaml(yamlName string) error {
 
 	fileContent := MustAsset(yamlName)
 
+	r.Log.Info(fmt.Sprintf("YAML File content: %x", fileContent))
+
 	objectsBytes := utils.SeparateYamlBytes(fileContent)
 	decode := serializer.NewCodecFactory(r.Scheme).UniversalDeserializer().Decode
 
@@ -202,7 +204,7 @@ func (r *KalmOperatorConfigReconciler) applyFromYaml(yamlName string) error {
 			r.Log.Error(err, fmt.Sprintf("Apply object failed. %v", objectKey))
 			return err
 		}
-		r.Log.Info(fmt.Sprintf("Patch object %s, kind: %s", objectKey.String(), object.GetObjectKind()))
+		// r.Log.Info(fmt.Sprintf("Patch object %s, kind: %s", objectKey.String(), object.GetObjectKind()))
 	}
 
 	return nil
