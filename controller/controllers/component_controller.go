@@ -1185,7 +1185,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *corev1.
 		}
 		containerPorts = append(containerPorts, p)
 	}
-	log.Info("debug containerPorts", containerPorts)
+	log.Info("debug containerPorts", "containerPorts", containerPorts)
 
 	template = &corev1.PodTemplateSpec{
 		ObjectMeta: metaV1.ObjectMeta{
@@ -1210,7 +1210,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *corev1.
 			SecurityContext: GetPodSecurityContextFromAnnotation(annotations),
 		},
 	}
-	log.Info("debug template", template)
+	log.Info("debug template", "template", template)
 
 	if v, exist := component.Annotations[AnnoLastUpdatedByWebhook]; exist {
 		template.ObjectMeta.Annotations[AnnoLastUpdatedByWebhook] = v
