@@ -1106,6 +1106,27 @@ func (r *ComponentReconcilerTask) FixProbe(probe *corev1.Probe) *corev1.Probe {
 	return probe
 }
 
+func (r *ComponentReconcilerTask) ConvertToContainerPorts(ports []v1alpha1.Port) []corev1.ContainerPort {
+	containerPorts := make([]corev1.ContainerPort, len(r.component.Spec.Ports))
+
+	for _, port := range ports {
+		serverPortName := fmt.Sprintf("%s-%d", port.Protocol, port.ServicePort)
+		p := corev1.ContainerPort{
+			Name:          serverPortName,
+			HostPort:      int32(port.ServicePort),
+			ContainerPort: int32(port.ContainerPort),
+		}
+		if port.Protocol == v1alpha1.PortProtocolUDP {
+			p.Protocol = corev1.ProtocolUDP
+		} else {
+			p.Protocol = corev1.ProtocolTCP
+		}
+		containerPorts = append(containerPorts, p)
+	}
+
+	return containerPorts
+}
+
 func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *corev1.PodTemplateSpec, err error) {
 	component := r.component
 
@@ -1152,6 +1173,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *corev1.
 					},
 					ReadinessProbe: r.FixProbe(component.Spec.ReadinessProbe),
 					LivenessProbe:  r.FixProbe(component.Spec.LivenessProbe),
+					Ports:          r.ConvertToContainerPorts(component.Spec.Ports),
 				},
 			},
 			SecurityContext: GetPodSecurityContextFromAnnotation(annotations),
