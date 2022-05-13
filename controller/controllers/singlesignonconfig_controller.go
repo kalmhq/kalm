@@ -389,8 +389,15 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 				"sidecar.istio.io/inject": "false",
 			},
 			WorkloadType: v1alpha1.WorkloadTypeServer,
-			Image:        "quay.io/dexidp/dex:v2.24.0",
+			Image:        "quay.io/dexidp/dex:v2.28.1",
 			Command:      "/usr/local/bin/dex serve /etc/dex/cfg/config.yaml",
+			Env: []v1alpha1.EnvVar{
+				{
+					Type:  v1alpha1.EnvVarTypeStatic,
+					Name:  "KUBERNETES_POD_NAMESPACE",
+					Value: KALM_DEX_NAMESPACE,
+				},
+			},
 			Ports: []v1alpha1.Port{
 				{
 					ContainerPort: 5556,
@@ -602,7 +609,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 		},
 		Spec: v1alpha1.ComponentSpec{
 			WorkloadType: v1alpha1.WorkloadTypeServer,
-			Image:        fmt.Sprintf("kalmhq/kalm:%s", authProxyImgTag),
+			Image:        fmt.Sprintf("ialaddin/kalm:%s", authProxyImgTag),
 			Command:      "./auth-proxy",
 			Ports: []v1alpha1.Port{
 				{

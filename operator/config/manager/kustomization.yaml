@@ -1,8 +1,8 @@
 resources:
-- manager.yaml
+  - manager.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
-- name: controller
-  newName: kalmhq/kalm-operator
-  newTag: latest
+  - name: controller
+    newName: ialaddin/kalm-operator
+    newTag: latest

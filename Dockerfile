@@ -39,7 +39,7 @@ ARG KALM_BUILD_ENV_GIT_COMMIT
 
 # Build
 RUN CGO_ENABLED=1 go build -installsuffix 'static' \
-    -ldflags "-X github.com/kalmhq/kalm/api/config.GIT_VERSION=$KALM_BUILD_ENV_GIT_VERSION -X github.com/kalmhq/kalm/api/config.GIT_COMMIT=$KALM_BUILD_ENV_GIT_COMMIT -X 'github.com/kalmhq/kalm/api/config.BUILD_TIME=$(date -Iseconds)' -X 'github.com/kalmhq/kalm/api/config.PLATFORM=$(go version | cut -d ' ' -f 4)' -X 'github.com/kalmhq/kalm/api/config.GO_VERSION=$(go version | cut -d ' ' -f 3)' -extldflags '-static'" \
+    -ldflags "-X github.com/iAladdin/kalm/api/config.GIT_VERSION=$KALM_BUILD_ENV_GIT_VERSION -X github.com/iAladdin/kalm/api/config.GIT_COMMIT=$KALM_BUILD_ENV_GIT_COMMIT -X 'github.com/iAladdin/kalm/api/config.BUILD_TIME=$(date -Iseconds)' -X 'github.com/iAladdin/kalm/api/config.PLATFORM=$(go version | cut -d ' ' -f 4)' -X 'github.com/iAladdin/kalm/api/config.GO_VERSION=$(go version | cut -d ' ' -f 3)' -extldflags '-static'" \
     -o kalm-api-server main.go
 
 RUN go build -ldflags "-s -w" -o auth-proxy ./cmd/auth-proxy

@@ -17,10 +17,10 @@ spec:
       serviceAccountName: istio-operator
       containers:
         - name: istio-operator
-          image: docker.io/istio/operator:1.7.3
+          image: docker.io/istio/operator:1.7.8
           command:
-          - operator
-          - server
+            - operator
+            - server
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -46,4 +46,3 @@ spec:
               value: "istio-operator"
             - name: WAIT_FOR_RESOURCES_TIMEOUT
               value: 300s
-...

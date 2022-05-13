@@ -123,7 +123,7 @@ func (r *KalmOperatorConfigReconciler) getAbnormalDPConditions(dpName string, ns
 			}
 
 			if normalCond[1] != string(cond.Status) {
-				rst = append(rst, fmt.Sprintf("%s, %s"), cond.Reason, cond.Message)
+				rst = append(rst, fmt.Sprintf("%s, %s", cond.Reason, cond.Message))
 			}
 		}
 	}
