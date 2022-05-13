@@ -1170,15 +1170,10 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *corev1.
 			continue
 		}
 
-		if port.ServicePort == 0 && port.ContainerPort != 0 {
-			port.ServicePort = port.ContainerPort
-		}
-
 		serverPortName := fmt.Sprintf("%s-%d", port.Protocol, port.ServicePort)
 
 		p := corev1.ContainerPort{
 			Name:          serverPortName,
-			HostPort:      int32(port.ServicePort),
 			ContainerPort: int32(port.ContainerPort),
 		}
 		if port.Protocol == v1alpha1.PortProtocolUDP {
@@ -1186,11 +1181,11 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *corev1.
 		} else {
 			p.Protocol = corev1.ProtocolTCP
 		}
-		log.Info("debug containerPorts", "containerPorts", containerPorts)
-		log.Info("debug containerPorts", "port", p)
+		// log.Info("debug containerPorts", "containerPorts", containerPorts)
+		// log.Info("debug containerPorts", "port", p)
 		containerPorts = append(containerPorts, p)
 	}
-	log.Info("debug containerPorts", "containerPorts", containerPorts)
+	// log.Info("debug containerPorts", "containerPorts", containerPorts)
 
 	template = &corev1.PodTemplateSpec{
 		ObjectMeta: metaV1.ObjectMeta{
