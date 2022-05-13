@@ -1110,7 +1110,13 @@ func (r *ComponentReconcilerTask) ConvertToContainerPorts(ports []v1alpha1.Port)
 	containerPorts := make([]corev1.ContainerPort, len(r.component.Spec.Ports))
 
 	for _, port := range ports {
+
+		if port.ServicePort == 0 && port.ContainerPort != 0 {
+			port.ServicePort = port.ContainerPort
+		}
+
 		serverPortName := fmt.Sprintf("%s-%d", port.Protocol, port.ServicePort)
+
 		p := corev1.ContainerPort{
 			Name:          serverPortName,
 			HostPort:      int32(port.ServicePort),
@@ -1156,6 +1162,29 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *corev1.
 		}
 	}
 
+	containerPorts := make([]corev1.ContainerPort, len(r.component.Spec.Ports))
+
+	for _, port := range r.component.Spec.Ports {
+
+		if port.ServicePort == 0 && port.ContainerPort != 0 {
+			port.ServicePort = port.ContainerPort
+		}
+
+		serverPortName := fmt.Sprintf("%s-%d", port.Protocol, port.ServicePort)
+
+		p := corev1.ContainerPort{
+			Name:          serverPortName,
+			HostPort:      int32(port.ServicePort),
+			ContainerPort: int32(port.ContainerPort),
+		}
+		if port.Protocol == v1alpha1.PortProtocolUDP {
+			p.Protocol = corev1.ProtocolUDP
+		} else {
+			p.Protocol = corev1.ProtocolTCP
+		}
+		containerPorts = append(containerPorts, p)
+	}
+
 	template = &corev1.PodTemplateSpec{
 		ObjectMeta: metaV1.ObjectMeta{
 			Labels:      labels,
@@ -1173,7 +1202,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *corev1.
 					},
 					ReadinessProbe: r.FixProbe(component.Spec.ReadinessProbe),
 					LivenessProbe:  r.FixProbe(component.Spec.LivenessProbe),
-					Ports:          r.ConvertToContainerPorts(component.Spec.Ports),
+					Ports:          containerPorts,
 				},
 			},
 			SecurityContext: GetPodSecurityContextFromAnnotation(annotations),
