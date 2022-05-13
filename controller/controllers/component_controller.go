@@ -1166,6 +1166,9 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *corev1.
 	containerPorts := make([]corev1.ContainerPort, len(r.component.Spec.Ports))
 
 	for _, port := range r.component.Spec.Ports {
+		if port.ContainerPort == 0 {
+			continue
+		}
 
 		if port.ServicePort == 0 && port.ContainerPort != 0 {
 			port.ServicePort = port.ContainerPort
@@ -1183,6 +1186,8 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *corev1.
 		} else {
 			p.Protocol = corev1.ProtocolTCP
 		}
+		log.Info("debug containerPorts", "containerPorts", containerPorts)
+		log.Info("debug containerPorts", "port", p)
 		containerPorts = append(containerPorts, p)
 	}
 	log.Info("debug containerPorts", "containerPorts", containerPorts)
