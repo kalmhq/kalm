@@ -1163,7 +1163,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *corev1.
 		}
 	}
 
-	containerPorts := make([]corev1.ContainerPort, len(r.component.Spec.Ports))
+	var containerPorts []corev1.ContainerPort
 
 	for _, port := range r.component.Spec.Ports {
 		if port.ContainerPort == 0 {
